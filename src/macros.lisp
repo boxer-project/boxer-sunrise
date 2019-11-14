@@ -51,89 +51,87 @@ Modification History (most recent at top)
 
 |#
 
-#-(or mcl lispm lispworks) 
-(in-package 'boxer :use '(lisp) :nicknames '(box))
+(defpackage :boxer (:use :common-lisp) (:nicknames :box))
 
-#+(or mcl lispworks)
 (in-package :box)
-
-
 
 ;;;; Macros to avoid using Common Lisp declarations
 
-;;;; Things that ought to be done right in Come-on Lisp but aren't.
+;;; Things that ought to be done right in Come-on Lisp but aren't.
+;;; https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node153.html
+;;; Compatibility note: In MacLisp, the assoc function uses an equal
+;;; comparison rather than eql, which is the default test for assoc
+;;; in Common Lisp. Where in MacLisp one would write (assoc x y), in
+;;; Common Lisp one must write (assoc x y :test #'equal) to get the
+;;; completely identical effect. Similarly, one can get the precise
+;;; effect, and no more, of the MacLisp (assq x y) by writing in
+;;; Common Lisp (assoc x y :test #'eq).
 (defmacro fast-assq (thing place)
-#+3600      `(zl:assq ,thing ,place)
-#+MCL       `(ccl:assq ,thing ,place)
-#+lispworks `(sys:assq ,thing ,place)
-#-(or 3600 mcl lispworks)  (cond ((fboundp 'user::assq) `(user::assq ,thing ,place))
-                                 (t `(assoc ,thing ,place :test #'eq))))
+  `(assoc ,thing ,place :test #'eq))
 
+;;; https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node144.html
+;;; Compatibility note: In MacLisp, the delete function uses an equal
+;;; comparison rather than eql, which is the default test for delete
+;;; in Common Lisp. Where in MacLisp one would write (delete x y), one
+;;; must in Common Lisp write (delete x y :test #'equal) to get the
+;;; completely identical effect. Similarly, one can get the precise
+;;; effect, and no more, of the MacLisp (delq x y) by writing in
+;;; Common Lisp (delete x y :test #'eq).
 (defmacro fast-delq (thing place)
-#+3600      `(zl:delq ,thing ,place)
-#+MCL       `(ccl:delq ,thing ,place)
-#+lispworks `(sys:delq ,thing ,place)
-#-(or 3600 mcl lispworks)  (cond ((fboundp 'user::delq) `(user::delq ,thing ,place))
-                                 (t `(delete ,thing ,place :test #'eql))))
+  `(delete ,thing ,place :test #'eq))
 
 (defmacro fast-del-if (fun place)
-  #+3600 `(zl:del-if ,fun ,place)
-  #-3600 (cond #-MCL ((fboundp 'user::del-if) `(user::del-if ,fun ,place))
-               (t `(delete-if ,fun ,place))))
+  `(delete-if ,fun ,place))
 
+;;; https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node152.html
+;;; Compatibility note: In MacLisp, the member function uses an equal
+;;; comparison rather than eql, which is the default test for member
+;;; in Common Lisp. Where in MacLisp one would write (member x y), in
+;;; Common Lisp one must write (member x y :test #'equal) to get a
+;;; completely identical effect. Similarly, one can get the precise
+;;; effect, and no more, of the MacLisp (memq x y) by writing in
+;;; Common Lisp (member x y :test #'eq).
 (defmacro fast-memq (thing place)
-#+3600      `(zl:memq ,thing ,place)
-#+MCL       `(ccl:memq ,thing ,place)
-#+lispworks `(sys:memq ,thing ,place)
-#-(or 3600 mcl lispworks)  (cond ((fboundp 'user::memq) `(user::memq ,thing ,place))
-                                 (t `(member ,thing ,place))))
-
-
+  `(member ,thing ,place :test #'eq))
 
 ;;; Arithmetic
 
 ;;; single floats are sufficient for most of the things we
 ;;; need to do, unfortunately, different implementations require
 ;;; different types of declarations so...
-(deftype boxer-float ()
-  #+lucid 'float ; lucid only has 1 floating pt representation
-  #+excl 'single-float
-  #+symbolics 'single-float
-  #-(or lucid excl symbolics) 'float)
+(deftype boxer-float () 'float)
 
 
 ;;; lcl::fix and lcl::fixr are not supported.
 
-;;;#+Lucid (defmacro fix  (a) `(lcl::fix  ,a))
-;;;#+Lucid (defmacro fixr (a) `(lcl::fixr ,a))
 (defmacro fix  (a) `(values (floor ,a)))
 (defmacro fixr (a) `(values (truncate ,a)))
 
 (defvar *constant-folding-macros* nil)
 (defvar *constant-folding-macro-bindings* nil)
 
-(defmacro constant-let* (varlist &body body)
-  (if (null varlist) `(progn . ,body)
-      `(constant-let (,(car varlist))
-	 (constant-let* ,(cdr varlist)
-	   . ,body))))
+;; sgithens commenting out these compiler-let and constant-let items for now.
+;; They only seem to be used in sicilian-borders.lisp, border-macros.lisp, and evalmacs.lisp
+;; There is also a reference to compiler-let in pkg.lisp
+
+;; (defmacro constant-let* (varlist &body body)
+;;   (if (null varlist) `(progn . ,body)
+;;       `(constant-let (,(car varlist))
+;; 	 (constant-let* ,(cdr varlist)
+;; 	   . ,body))))
 
 ; +++ a portable replacement should be found now that compiler-let is no longer in the language
-#+MCL
-(defmacro compiler-let (let-forms &body body)
-  `(ccl:compiler-let ,let-forms ,@body))
-
 #+lispworks
 (defmacro compiler-let (let-forms &body body)
   `(lispworks:compiler-let ,let-forms ,@body))
 
-(defmacro constant-let (varlist &body body)
-  (let ((new-varlist
-	  (mapcar #'(lambda (pair) (list (car pair) (simplify-arg (cadr pair))))
-		  varlist)))
-    `(compiler-let ((*constant-folding-macro-bindings*
-                     ',(append *constant-folding-macro-bindings* new-varlist)))
-       (let ,new-varlist . ,body))))
+;; (defmacro constant-let (varlist &body body)
+;;   (let ((new-varlist
+;; 	  (mapcar #'(lambda (pair) (list (car pair) (simplify-arg (cadr pair))))
+;; 		  varlist)))
+;;     `(compiler-let ((*constant-folding-macro-bindings*
+;;                      ',(append *constant-folding-macro-bindings* new-varlist)))
+;;        (let ,new-varlist . ,body))))
 
 (defmacro defconstant-folding-macro (name args &body body)
   (unless (fast-memq name *constant-folding-macros*)
@@ -283,27 +281,13 @@ Modification History (most recent at top)
 
 (defmacro incf& (arg &optional (amount nil supplied?))
   (if supplied?
-      #-lispm
       `(the fixnum (incf (the fixnum ,arg) (the fixnum ,amount)))
-      #+lispm
-      `(the fixnum (setf ,arg (the fixnum (+ (the fixnum ,arg)
-					     (the fixnum ,amount)))))
-      #-lispm
-      `(the fixnum (incf (the fixnum ,arg)))
-      #+lispm
-      `(the fixnum (setf ,arg (the fixnum (+ (the fixnum ,arg) 1))))))
+      `(the fixnum (incf (the fixnum ,arg)))))
 
 (defmacro decf& (arg &optional (amount nil supplied?))
   (if supplied?
-      #-lispm
       `(the fixnum (decf (the fixnum ,arg) (the fixnum ,amount)))
-      #+lispm
-      `(the fixnum (setf ,arg (the fixnum (- (the fixnum ,arg)
-					     (the fixnum ,amount)))))
-      #-lispm
-      `(the fixnum (decf (the fixnum ,arg)))
-      #+lispm
-      `(the fixnum (setf ,arg (the fixnum (- (the fixnum ,arg) 1))))))
+      `(the fixnum (decf (the fixnum ,arg)))))
 
 ;;; Lucid's 1+ doesn't compile as well.
 ;;; One hopes that everybody else will optimize (+ 1 ...) into (1+ ...) if they
@@ -321,30 +305,14 @@ Modification History (most recent at top)
 (defconstant-folding-macro zerop& (arg)
   `(zerop (the fixnum ,(simplify-arg arg))))
   
-#-mcl
 (defmacro svref& (vector index)
   `(svref (the simple-vector ,vector) (the fixnum ,index)))
-
-#+mcl  ; extra juice
-(defsubst svref& (vector index)
-  (declare (optimize (speed 3) (safety 0)))
-  (svref (the simple-vector vector) (the fixnum index)))
-
-#+mcl
-(defsetf svref& set-svref&)
-
-#+mcl
-(defsubst set-svref& (vector index new-val)
-  (declare (optimize (speed 3) (safety 0)))
-  (setf (svref (the simple-vector vector) (the fixnum index))
-        new-val))
 
 (defmacro svlength (vector)
   `(length (the simple-vector ,vector)))
 
 (defmacro svposition (thing vector)
   `(position ,thing (the simple-vector ,vector)))
-
 
 (defmacro abs& (n)
   `(the fixnum
@@ -391,33 +359,17 @@ Modification History (most recent at top)
       (do ((,iteration-var 0 (1+& ,iteration-var)))
 	  ((=& ,iteration-var ,limit-var) ,return-value)
 	. ,body))))
-
 
 ;;;; byte diddling...
 ;;; Ideally these should expand into machine instructions 
 ;;; for any particular implementation
 
-#+Lucid 
-(defmacro ldb& (bytespec integer)
-  `(lucid::ldb& ,bytespec ,integer))
-
-#-Lucid
 (defmacro ldb& (bytespec integer)
   `(the fixnum (ldb ,bytespec (the fixnum ,integer))))
 
-#+Lucid
-(defmacro dpb& (newbyte bytespec integer)
-  `(lucid::dpb& ,newbyte ,bytespec ,integer))
-
-#-Lucid
 (defmacro dpb& (newbyte bytespec integer)
   `(the fixnum (dpb (the fixnum ,newbyte) ,bytespec (the fixnum ,integer))))
 
-#+Lucid
-(defmacro ash& (a b)
-  `(lucid::ash& ,a ,b))
-
-#-Lucid
 (defmacro ash& (a b)
   `(the fixnum (ash (the fixnum ,a) (the fixnum ,b))))
 
@@ -438,8 +390,6 @@ Modification History (most recent at top)
 
 (defmacro logeqv& (a b)
   `(logeqv (the fixnum ,a) (the fixnum ,b)))
-
-
 
 ;;; I wonder if these will be useful...
 ;;; Perhaps in lucid when compiling for the 68881
@@ -474,17 +424,7 @@ Modification History (most recent at top)
 	     (* (the float ,(first args))
 		(float-times ,@(rest args)))))))
 
-
 ;;; Random useful macros.
-
-;; for LispMs and lucid, we just import the system version in pkg.lisp
-
-#+excl
-(defmacro defsubst (name arglist &rest body)
-  `(progn (defun ,name ,arglist ,@body)
-          (defun (:property ,name comp::.compiler-macro.) (macroarg env)
-            (sublis (mapcar 'cons ',arglist (cdr macroarg))
-                   '(locally ,@body)))))
 
 (defsubst cha? (cha) (characterp cha))
 
@@ -545,31 +485,7 @@ Modification History (most recent at top)
   `(OR (AND (>= ,X ,A) (<= ,X ,B))
        (AND (<= ,X ,A) (>= ,X ,B))))
 
-
-
-
 ;;;; Stack Consing...
-#+lispm
-(defmacro with-stack-list ((var &rest elements) &body body)
-  `(sys:with-stack-list (,var ,@elements) ,@body))
-
-#+lispm
-(defmacro with-stack-list* ((var &rest elements) &body body)
-  `(sys:with-stack-list* (,var ,@elements) ,@body))
-
-#+lcl3.0
-(defmacro with-stack-list ((var &rest elements) &body body)
-  `(let ((,var (list ,@elements)))
-     (declare (user::dynamic-extent ,var))
-     ,@body))
-
-#+lcl3.0
-(defmacro with-stack-list* ((var &rest elements) &body body)
-  `(let ((,var (list* ,@elements)))
-     (declare (user::dynamic-extent ,var))
-     ,@body))
-
-#-(or lispm lcl3.0)
 (defmacro with-stack-list ((var &rest elements) &body body)
   ;; SYNTAX: (WITH-STACK-LIST (var exp1 ... expN) body)
   ;; Equivalent to (LET ((var (MAPCAR #'EVAL '(exp1 ... expN)))) body)
@@ -577,7 +493,6 @@ Modification History (most recent at top)
   ;; therefore DISAPPEARS when WITH-STACK-LIST is exited.
   `(let ((,var (list ,@elements))) ,@body))
 
-#-(or lispm lcl3.0)
 (defmacro with-stack-list* ((var &rest elements) &body body)
   ;; SYNTAX: (WITH-STACK-LIST* (var exp1 ... expN) body)
   ;; Equivalent to (LET ((var (APPLY #'LIST* (MAPCAR #'EVAL '(exp1 ... expN))))) body)
@@ -585,63 +500,25 @@ Modification History (most recent at top)
   ;; therefore DISAPPEARS when WITH-STACK-LIST is exited.
   `(let ((,var (list* ,@elements))) ,@body))
 
-
-
 ;;;; ZetaLispy things
 
-#-mcl
 (defmacro neq (x y)
   `(not (eq ,x ,y)))
-
-;; sleep trashes the scaling (clipping?) state
-#+ccl-3
-(shadow "SLEEP" (find-package 'boxer))
-
-#+ccl-3
-(defun boxer::sleep (seconds)
-  (ccl::sleep seconds)
-  (window-system-dependent-set-origin %origin-x-offset %origin-y-offset))
   
 ;; looping sleep, no scheduling
 ;; top version assumes max (get-internal-real-time) is a fixnum
-#-mcl
-(defun snooze (seconds)
-  (let* ((internal-duration (fix (* seconds internal-time-units-per-second)))
-         (end (+ (get-internal-real-time) internal-duration)))
-    (loop (when (>= (get-internal-real-time) end) (return nil)))))
-
-#+mcl
 (defun snooze (seconds)
   (let* ((internal-duration (fix (* seconds internal-time-units-per-second)))
          (end (+ (get-internal-real-time) internal-duration)))
     (loop (when (>= (get-internal-real-time) end) (return nil)))))
 
 (DEFUN SPACE-OUT (TIME-IN-60THS)
-  #+LISPM (SI:PROCESS-SLEEP TIME-IN-60THS)
-  #+X (progn time-in-60ths (xlib::xflush))
-  #+clx (progn time-in-60ths (bw::display-force-output bw::*display*))
-  #-(OR X clx LISPM) (SLEEP (/ TIME-IN-60THS 60.)))
+  (SLEEP (/ TIME-IN-60THS 60.)))
 
 (defmacro old-functionp (thing)
   `(or (functionp ,thing)
        (and (symbolp ,thing)
             (functionp (symbol-function ,thing)))))
-
-#|
-;; This is here because MULTIPLE-VALUE-SETQ expands into ZL:MULTIPLE-VALUE 
-;; which is a special form that the PCL walker can't currently handle
-#+(or SYMBOLICS excl)
-(SHADOW 'BOXER::MULTIPLE-VALUE-SETQ)
-#+(or SYMBOLICS excl)
-(DEFMACRO MULTIPLE-VALUE-SETQ (VARS FORM)
-  (LET ((NEW-VALS (MAPCAR #'(LAMBDA (X) (GENSYM)) VARS))
-	(SETSEXPRS NIL))
-    `(MULTIPLE-VALUE-BIND ,NEW-VALS
-	 ,FORM
-       ,@(DOTIMES (N (LENGTH VARS) (NREVERSE SETSEXPRS))
-	    (PUSH (LIST 'SETQ (NTH N VARS) (NTH N NEW-VALS)) SETSEXPRS)))))
-|#
-
 
 ;;; Trig in Degrees
 ;; There are 3 flavors of trig here, use the one which works best in 
@@ -666,15 +543,6 @@ Modification History (most recent at top)
   (defun sind (x) (sin (float-times (float x) *degs->rads*)))
 
   (defun cosd (x) (cos (float-times (float x) *degs->rads*)))
-  )
-
-#+lispm
-(progn					; single precision
-  (defconstant *simple-pi* (coerce pi 'single-float))
-
-  (defun sind (x) (sin (* x (/ *simple-pi* 180.))))
-
-  (defun cosd (x) (cos (* x (/ *simple-pi* 180.))))
   )
 
 #+tltrig
@@ -749,40 +617,16 @@ Modification History (most recent at top)
 	(tlcos-float-internal degrees)))
   )
 
-#|
 
-#+LISPM
-(SI:DEFF SUBSET #'SI:SUBSET)
-#-LISPM
-(DEFUN SUBSET (PRED LIST)
-  (WITH-COLLECTION
-    (DOLIST (ITEM LIST)
-      (WHEN (FUNCALL PRED ITEM)
-	(COLLECT ITEM)))))
-
-#+LISPM
-(SI:DEFF SUBSET-NOT #'SI:SUBSET-NOT)
-#-LISPM
-(DEFUN SUBSET-NOT (PRED LIST)
-  (WITH-COLLECTION
-    (DOLIST (ITEM LIST)
-      (UNLESS (FUNCALL PRED ITEM)
-	(COLLECT ITEM)))))
-
-|#
-
-#+LISPM (SI:DEFF WITHOUT-INTERRUPTS 'SI:WITHOUT-INTERRUPTS)
-#+MCL
-(defmacro without-interrupts (&body body)
-  `(ccl:without-interrupts ,@body))
-#+(and (not lispworks6) lispworks)
+#+lispworks
 (defmacro without-interrupts (&body body)
   `(lispworks:without-interrupts ,@body))
-#+lispworks6
-(defmacro without-interrupts (&body body)
-  `(mp:with-interrupts-blocked ,@body))
 
-#-(or LISPM MCL lispworks)
+#+sbcl
+(defmacro without-interrupts (&body body)
+  `(sb-sys:without-interrupts ,@body))
+
+#-(or LISPM MCL lispworks sbcl)
 (DEFMACRO WITHOUT-INTERRUPTS (&BODY BODY)
   `(PROGN ,@BODY))
 
@@ -815,8 +659,6 @@ Modification History (most recent at top)
        `((lambda ,(nreverse ,run-time-vars)  ,wrapped-body)
          . ,(nreverse ,run-time-vals)))))
 
-
-
 (DEFMACRO SPLICE-LIST-INTO-LIST (INTO-LIST LIST BEFORE-ITEM)
   `(SETF ,INTO-LIST (SPLICE-LIST-INTO-LIST-1 ,INTO-LIST ,LIST ,BEFORE-ITEM)))
 
@@ -842,8 +684,6 @@ Modification History (most recent at top)
 
 (DEFMACRO SPLICE-ITEM-ONTO-LIST (ONTO-LIST ITEM)
   `(SPLICE-LIST-ONTO-LIST ,ONTO-LIST `(,,ITEM)))
-
-;(DEFMACRO SPLICE-LIST-OUT-OF-LIST (&YOW LOSING-BADLY)) ;doesn't make sense
 
 (DEFMACRO SPLICE-ITEM-OUT-OF-LIST (OUT-OF-LIST ITEM)
   `(SETF ,OUT-OF-LIST (DELETE ,ITEM ,OUT-OF-LIST)))
@@ -873,7 +713,6 @@ Modification History (most recent at top)
 	   ((EQ (CADR SCAN) ,TO-ITEM)
 	    (SETQ TO-ITEM-PREVIOUS-CONS SCAN)))))
 
-
 ;;;new list splicing macros that use index numbers...
 
 (DEFMACRO SPLICE-LIST-INTO-LIST-AT (INTO-LIST LIST POSITION)
@@ -927,9 +766,6 @@ Modification History (most recent at top)
 
 
 (defmacro simple-wait-with-timeout (timeout function &rest args)
-  #+(and lucid (not clx)) ; bad interaction with CLX
-  `(lcl::process-wait-with-timeout "Simple Wait" ,timeout ,function . ,args)
-  #-(and lucid (not clx))
   `(let* ((initial-time (get-internal-real-time))
 	  (end-time (+ (round (* internal-time-units-per-second ,timeout))
 		       initial-time)))
@@ -954,58 +790,12 @@ Modification History (most recent at top)
            ((>= current-time end-time))
          ))))
 
-
-#| defined differently in vrtdef.lisp
-
-;;;; Fast Type checking mechanisms
-;; The evaluator assumes that all of the objects with which it has to deal 
-;; with will be either a symbol, a number, or a simple vector.  We will also
-;; require that the first slot in the array contains a symbol that specifies
-;; the type to the evaluator.  This lets us do (svref <thing> 0) in order 
-;; to obtain an object's type.
-
-(defmacro fast-eval-doit-box? (thing)
-  `(eq (svref ,thing 0) 'doit-box))
-
-(defmacro fast-eval-data-box? (thing)
-  `(eq (svref ,thing 0) 'data-box))
-
-(defmacro fast-eval-sprite-box? (thing)
-  `(eq (svref ,thing 0) 'sprite-box))
-
-(defmacro fast-eval-port-box? (thing)
-  `(eq (svref ,thing 0) 'port-box))
-
-|#
-
-#|
-(defmacro fast-editor-doit-box? (thing)
-  `(doit-box? ,thing))
-
-(defmacro fast-editor-data-box? (thing)
-  `(data-box? ,thing))
-
-(defmacro fast-editor-sprite-box? (thing)
-  `(sprite-box? ,thing))
-
-(defmacro fast-editor-port-box? (thing)
-  `(port-box? ,thing))
-|#
-
-
 (defmacro symbol-format (stream string &rest args)
   `(let ((*print-case* :upcase))
      (format ,stream ,string ,@args)))
 
-;;; execute something at the listener level. Useful for issuing warnings from
-;;; within drawing code, for instance.
-#+mcl
-(defmacro at-user-level (&body body)
-  `(let ((continuation #'(lambda () ,@body)))
-     (ccl:eval-enqueue `(funcall ,continuation))))
-
 ;;; do nothing in other implementations
-#-mcl
+;;; #-mcl
 (defmacro at-user-level (&body body)
   `(progn ,@body))
 
@@ -1028,18 +818,6 @@ Modification History (most recent at top)
 #+(or opengl lwwin)
 (defun input-code (key-event) 
   (if (numberp key-event) key-event (char-code key-event)))
-
-#+mcl ; special key handling should have already happened in the event handler
-(defun input-code (key-event) (ldb #.(byte 9 0) key-event))
-
-#| ; old mcl version
-(defun input-code (key-event) 
-  (let* ((key (ldb #.(byte 8 8) key-event))
-         (special (assoc key *mcl-special-keycodes*)))
-    (if special
-      (get (cadr special) :mcl-special-char-code)
-      (ldb #.(byte 8 0) key-event))))
-|#
   
 ;;; INPUT-BITS should return 1 for :control, 2 for :meta
 #-(or mcl lispworks)
@@ -1052,35 +830,11 @@ Modification History (most recent at top)
 (defun make-char (char &optional (bits 0) font)
   (declare (ignore font))
   (lispworks:make-char char bits))
-
-;; Inside Mac, Mac ToolBox Essentials pg 2-126, 2-20
-;; modifiers are high byte of high word , so position 24 +
-;; cmd=0, shift=1, alphalock=2, option=3, control=4
-#+mcl
-(defun input-bits (key-event) 
-  (+& (*& 2 (ldb #.(byte 1 27) key-event)) ; meta bit
-      (if (and (zerop& (ldb #.(byte 1 24) key-event)) ; cmd bit
-               (zerop& (ldb #.(byte 1 28) key-event)))
-        0 1)))
         
 ;;; lisp error handling
 
-#+mcl
-(defmacro with-lisp-error-reporting (&body body)
-  (let ((ctag (gensym)))
-    `(catch ',ctag
-       (ignore-errors 
-        (ccl::handler-bind 
-          ((ccl::error #'(lambda (c)
-                           (boxer-editor-error "Lisp Error:~A" c)
-                           (throw ',ctag nil))))
-          (progn . ,body))))))
-
-#-mcl
 (defmacro with-lisp-error-reporting (&body body)
   `(ignore-errors (progn . ,body)))
-
-
 
 ;; useful for networking dispatch
 
