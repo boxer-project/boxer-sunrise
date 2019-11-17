@@ -17,7 +17,7 @@
 
 
 
- Copyright 1982 - 1985  Massachusetts Institute of Technology 
+ Copyright 1982 - 1985  Massachusetts Institute of Technology
 
  Permission to use, copy, modify, distribute, and sell this software
  and its documentation for any purpose is hereby granted without fee,
@@ -47,7 +47,7 @@ Modification History (most recent at top)
 
  7/17/13 removed *{bold,italics,tiny}-font-no* vars, clarifying comment for boxer-font-descriptor
  3/17/12 added new fill-row class for text justification hacking
- 3/ 6/11 added (defvar *boxtop-text-font*) to keep all the defined font vars 
+ 3/ 6/11 added (defvar *boxtop-text-font*) to keep all the defined font vars
          in the same place
  no more sprite boxes
  changed graphics-sheet slot in BOX class to "graphics-info"
@@ -73,7 +73,7 @@ Modification History (most recent at top)
 
 ;;
 ;; this could be a lot faster, we should be able to do a compile time
-;; check to see if TYPE is a class and then put in the appropriate code instead 
+;; check to see if TYPE is a class and then put in the appropriate code instead
 ;; of the OR which is there now.
 
 #-(and lucid clos)
@@ -135,7 +135,7 @@ Modification History (most recent at top)
 
 
 ;;;; Boxer Object Definitions
-;;;  These are low level SUBCLASSes designed to be combined into higher level 
+;;;  These are low level SUBCLASSes designed to be combined into higher level
 ;;;  BOXER objects Which eventually get instantiated
 
 ;;;  This gives BOXER objects their very own PLIST
@@ -153,7 +153,7 @@ Modification History (most recent at top)
 (defclass virtual-copy-subclass
     ()
   ((virtual-copy-rows :initform nil)
-   (contained-links :initform nil 
+   (contained-links :initform nil
 		    :accessor contained-links)
    (branch-links :initform nil
 		 :accessor branch-links))
@@ -217,7 +217,7 @@ Modification History (most recent at top)
   "The Lowest Level Scren Box Which Contains the *mark*")
 
 (DEFVAR *BOXER-FUNCTIONS* NIL
-  "This variable contains a list of symbols for all the 
+  "This variable contains a list of symbols for all the
    lisp functions imported to Boxer.")
 
 (DEFVAR *EDITOR-NUMERIC-ARGUMENT* NIL
@@ -339,7 +339,7 @@ Modification History (most recent at top)
 			    (when (and (standard-char-p (code-char i))
 				       (not (alphanumericp (code-char i))))
 			      (push (code-char i) list))))
-					     
+
 
 (DEFVAR *BOXER-VERSION-INFO* NIL
   "This variable keeps track of what version of boxer is currently loaded
@@ -384,7 +384,7 @@ Modification History (most recent at top)
 
 (defclass actual-obj-subclass
     ()
-  ((screen-objs :initform nil 
+  ((screen-objs :initform nil
 		:accessor actual-obj-screen-objs)
    (tick :initform 1
 	 :accessor actual-obj-tick))
@@ -419,7 +419,7 @@ Modification History (most recent at top)
   ()
   (:metaclass block-compile-class))
 
-;; changed graphics-sheet to graphics-info to hold all graphical 
+;; changed graphics-sheet to graphics-info to hold all graphical
 ;; objects - name change should help catch undone things
 
 (defclass box
@@ -462,8 +462,8 @@ Modification History (most recent at top)
 
 #| No more sprite boxes !!!
 ;;; Just add a slot for the turtle to a normal box
-(defclass sprite-box 
-    (box) 
+(defclass sprite-box
+    (box)
   ((associated-turtle :initform nil :initarg :associated-turtle
 		      :accessor sprite-box-associated-turtle))
   (:metaclass block-compile-class))
@@ -522,7 +522,7 @@ Modification History (most recent at top)
   (transform nil) ; opengl transform matrix
 
   ;; these are obsolete....
-  (prepared-flag nil)       
+  (prepared-flag nil)
   ;; used to avoid redundant prepare sheets (see bu::with-sprites-hidden)
   (bit-array-dirty? nil)
   ;; used to avoid saving cleared bitmap backgrounds
@@ -537,7 +537,7 @@ Modification History (most recent at top)
 
 ;;; if we use bit positions in a fixnum for various boolean values of
 ;;; a box, we can save A LOT OF SPACE at a modest cost in speed.
-;;; Right now, each flag costs a word of storage vs 1 bit 
+;;; Right now, each flag costs a word of storage vs 1 bit
 ;;; The speed cost is about an extra 12 MC68020 (10 sparc instructions)
 ;;; per flag reference
 
@@ -587,7 +587,7 @@ Modification History (most recent at top)
 (define-box-flag autoload-file? 9)
 
 ;; a flag which tells the printer that the box and all it's inferiors
-;; is guaranteed to be freshly CONSed with no links to any other existing 
+;; is guaranteed to be freshly CONSed with no links to any other existing
 ;; editor structure.  It is therefore OK to just incorporate the box into
 ;; the printed result without copying
 (define-box-flag all-new-box? 10)
@@ -619,14 +619,14 @@ Modification History (most recent at top)
         (cond ((null name))
               (t (let ((flag-set? (not (zerop (ldb (byte 1 i) flags)))))
                    (cond ((and (null show-all?) (null flag-set?)))
-                         (t (format t "~&~A: ~A" name 
+                         (t (format t "~&~A: ~A" name
                                     (if flag-set? "true" "false")))))))))))
 
 ;; move graphics-view? here ?
 
 
 
-;;;BP's are pointers which are used to move within REAL(that is, ACTUAL) 
+;;;BP's are pointers which are used to move within REAL(that is, ACTUAL)
 ;;;structure.  Note that they have nothing to do with SCREEN structure...
 ;;;The *point* is a BP as is the *mark*
 ;;;however, operations which move the *point* and the *mark* also update the
@@ -655,7 +655,7 @@ Modification History (most recent at top)
 
 #|
 
-;;; These are here because of lossage in the franz expansion of defstructs 
+;;; These are here because of lossage in the franz expansion of defstructs
 ;;; with the :type option set
 #+excl
 (defsetf bp-row (bp) (new-row) `(setf (nth 1 ,bp) ,new-row))
@@ -689,7 +689,7 @@ Modification History (most recent at top)
 
 ;;;; Font Descriptors
 ;;; This is the main datastructure for specifying font info in the editor
-;;; Note that the "size" encoded in the font-no is relative, see 
+;;; Note that the "size" encoded in the font-no is relative, see
 ;;; These are stored in a slot in the chas-array (like BP's) and need to
 ;;; be updated (like BP's) by things like SLIDE-CHAS-ARRAY-CHAS
 
@@ -761,7 +761,7 @@ Modification History (most recent at top)
 ;;; no matter what.
 ;;;
 ;;; Some interface boxes have special properties that are NOT represented
-;;; by the usual text representation of boxes (usually graphical).  The 
+;;; by the usual text representation of boxes (usually graphical).  The
 ;;; interface structs for these boxes have an additional slot which contains
 ;;; the function used to convert between the "real" value and the particular
 ;;; special box property.  The back conversion (box ==> "real" value) is
