@@ -62,7 +62,7 @@ Modification History (most recent at top)
 ;;; the first element is a simple vector of contents and the second element
 ;;; is a fill pointer.  If the fill pointer needs to grow past the length of
 ;;; the contents, then we allocate a new storage vector and move all
-;;; the contents over to the new one.  We maintain free lists of these 
+;;; the contents over to the new one.  We maintain free lists of these
 ;;; vectors and pop/push them as required.
 
 (defconstant *default-initial-storage-vector-length* 8.)
@@ -78,7 +78,7 @@ Modification History (most recent at top)
   (fill-pointer 0))
 
 
-;;; 
+;;;
 
 (defvar *compile-in-storage-vector-error-checking* t)
 (defvar *compile-in-storage-metering-info* t)
@@ -130,14 +130,14 @@ Modification History (most recent at top)
 
 ;;;; Allocation / DeAllocation
 
-;;; we maintain free lists of available SV's.  We might want to add 
+;;; we maintain free lists of available SV's.  We might want to add
 ;;; another slot to the SV header and link them together that way instead
 
 (defvar *storage-vectors* nil)
 
 (defvar *storage-vector-sizes* '(8. 16. 32. 64. 128.))
 
-;; for each storage vector size, we need to associate the number of 
+;; for each storage vector size, we need to associate the number of
 ;; contents-vectors to pre-cons
 (defvar *initial-storage-setup-alist*
 	'((8 . 512) (16 . 512) (32 . 512) (64 . 32) (128 . 4)
@@ -147,7 +147,7 @@ Modification History (most recent at top)
 	  ;; to have to transport them so the tradeoff is unclear
 	  (256 . 0) (1024 . 0)))
 
-;;; increment of growth after we have passed the point where there 
+;;; increment of growth after we have passed the point where there
 ;;; may be pre-allocated vectors
 (defconstant *storage-vector-terminal-growth-quantum* 256.)
 
@@ -172,10 +172,10 @@ Modification History (most recent at top)
 
 
 
-;;;; Metering info.  
+;;;; Metering info.
 
-;;; Whether or not a lot of this gets included in 
-;;; compiled code  will depend upon the COMPILE time 
+;;; Whether or not a lot of this gets included in
+;;; compiled code  will depend upon the COMPILE time
 ;;; value of *compile-in-storage-metering-info*
 
 (defconstant *max-storage-meters* 8)
@@ -320,7 +320,7 @@ Modification History (most recent at top)
 ;			   . ,what-to-do)
 ;			 clauses))))
 ;	     (nreverse clauses))))
-       
+
 ;; this is dependent on the values of *initial-storage-setup-alist*
 ;; but I can't convince the macro to work write so those values are
 ;; hardcoded into both allocate- and free-c-vector
@@ -405,7 +405,7 @@ Modification History (most recent at top)
     (expand-deallocate-clauses length cvect)))
 
 
-;; we might want to pre-cons some headers but for now, I'll just cons them on 
+;; we might want to pre-cons some headers but for now, I'll just cons them on
 ;; the fly
 (defun allocate-sv-header ()
   (make-array 2 :initial-contents '(nil 0)))
@@ -426,7 +426,7 @@ Modification History (most recent at top)
   (setf (%sv-contents sv) nil)
   ;; if we are saving old headers, then do so now
   )
-	  
+
 
 ;;; this is called when the number of contents want to exceed the available
 ;;; room in the current contents vector
@@ -469,7 +469,7 @@ Modification History (most recent at top)
 (defun sv-assure-room (sv required-room)
   (cond ((<& required-room (storage-vector-max-length sv))
 	 sv)
-	;; I suppose we ought to be TOTALLY safe and check 
+	;; I suppose we ought to be TOTALLY safe and check
 	;; AGAIN, AFTER we've called grow-storage-vector once
 	(t (grow-storage-vector sv)
 	   (sv-assure-room sv required-room))))
@@ -651,7 +651,7 @@ Modification History (most recent at top)
 
 (eval-when (compile)
   #+lucid
-  (progn    
+  (progn
     (format t "~&***NOTE: Turning bounds checking back on in the compiled code...")
     (lcl::compiler-options :bounds-check nil))
   #+mcl
