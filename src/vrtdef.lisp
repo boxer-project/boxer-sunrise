@@ -36,7 +36,7 @@ Modification History (most recent at top)
 
  9/24/11 fast-eval-sprite-box? warns of obsolescence during compilation
          fast-vc-has-sprite? added as new way to check for spriteness
-12/10/09 process-editor-mutation-queue-within-eval no longer clears 
+12/10/09 process-editor-mutation-queue-within-eval no longer clears
          *editor-objects-to-be-modified*. Some important mods were being missed
  2/10/03 merged current LW and MCL files
  2/17/01 merged current LW and MCL files
@@ -55,7 +55,7 @@ Modification History (most recent at top)
 
 
 
-;;; provide low level error checking that can be removed at compile time by 
+;;; provide low level error checking that can be removed at compile time by
 ;;; setting this variable to NIL and recompiling
 
 (defvar *virtual-copy-debugging-option-on?* t)
@@ -103,7 +103,7 @@ Modification History (most recent at top)
 
 (defvar *vc-debug-break-char* #-MCL #\control-b #+MCL #\^B)
 
-;; this is like the Trace-Entering macro that the evaluator 
+;; this is like the Trace-Entering macro that the evaluator
 ;; uses except simpler and it looks at different variables
 (defmacro trace-vc (place &rest args)
   (when *virtual-copy-debugging-option-on?*
@@ -130,14 +130,14 @@ Modification History (most recent at top)
     `(,predicate-form (error ,reason . ,reason-args))))
 
 ;;;; Some Object Definitions
-;;  The lowest level of Objects is the CHUNK.  These are what the CHUNKER 
+;;  The lowest level of Objects is the CHUNK.  These are what the CHUNKER
 ;;  returns as components of a ROW.  CHUNK's are contained by POINTERS which
 ;;  can either be a SINGLEton pointer or a MULTIPLE pointer.  POINTERS are
 ;;  contained in EVROWS which are components of VIRTUAL-COPY's
 ;;
-;;  CHUNK's and POINTER's are excellent candidates for speed bumming. 
+;;  CHUNK's and POINTER's are excellent candidates for speed bumming.
 ;;  we want to be able to make CHUNK-CHUNK as fast as possible and we want to
-;;  be able to optimize storage for CHUNKs in the common case where they 
+;;  be able to optimize storage for CHUNKs in the common case where they
 ;;  don't posess all of their possible attributes
 ;;
 ;;  The functions that handle POINTERs treat them as typed pointers. So if
@@ -151,16 +151,16 @@ Modification History (most recent at top)
 
 ;;; Maintaining Formatting Information
 
-;; at CHUNK time, each chunk in a row will have a left-formatting and a 
+;; at CHUNK time, each chunk in a row will have a left-formatting and a
 ;; right-formatting property.  These will be a pointer to a vector
 ;; representation for the row along with offsets into the  vector.  We need
 ;; to CONs the vector rather than keeping pointers to a ROW's CHAS-ARRAY
 ;; because it is possible for a ROW to be modified in the middle of an
 ;; Evaluation which would invalidate any pointers into the CHAS-ARRAY
 ;;
-;; we may be able to hold on to the vector representation in between 
+;; we may be able to hold on to the vector representation in between
 ;; top level calls to eval.  Currently, they are consed each time.
-;; the place to fix it is in the formatting-array method(s) in 
+;; the place to fix it is in the formatting-array method(s) in
 ;; simple-stream.lisp
 ;;
 ;; We also make an optimization for generic whitespace.  A number
@@ -183,7 +183,7 @@ Modification History (most recent at top)
   (stop -1)
   (font-info nil))
 
-(defvar *fonts-in-formatting-info* 
+(defvar *fonts-in-formatting-info*
   "should font information be parsed and stored in formatting info structs")
 
 (defsubst formatting-info? (thing)
@@ -259,8 +259,8 @@ Modification History (most recent at top)
 
 ;;; this binds info used by make-local-formatting-info
 ;;; this should be wrapped around the largest reasonable object
-;;; that might be chunked.  For example, it is wrapped around 
-;;; chunk-row. 
+;;; that might be chunked.  For example, it is wrapped around
+;;; chunk-row.
 (defmacro with-local-formatting-info ((stream) &body body)
   `(let ((%%local-formatting-array%% (formatting-array ,stream))
 	 (%%local-formatting-offset%% (stream-position ,stream)))
@@ -288,12 +288,12 @@ Modification History (most recent at top)
 ;;
 ;;  AT the moment, a CHUNK is a simple vector with slots for CHUNK (Lisp
 ;;  representation), PNAME (what the thing looks like), RIGHT-FORMAT
-;;  (formatting info between the next object and this one (usually spaces), 
+;;  (formatting info between the next object and this one (usually spaces),
 ;;  LEFT-FORMAT (formnatting info between this CHUNK and the previous CHUNK
 ;;  (can be EQ with previous RIGHT-FORMAT) and a PLIST like slot
 ;;  for extensable properties which at the moment are:
 ;;  LABEL (Lisp Symbol) and EVAL-PROP
-;; 
+;;
 ;;  For Example, the second CHUNK on a Boxer row that looks like this:
 ;;  [BOX]  Foo: BaR ; a comment
 ;;  would look like this:
@@ -303,7 +303,7 @@ Modification History (most recent at top)
 ;;  RIGHT-FORMAT  -> " ; a comment"
 ;;  PLIST         -> (:LABEL BU::FOO)
 ;;
-;; We might want to Pre-cons a bunch of these (should put in some metering to 
+;; We might want to Pre-cons a bunch of these (should put in some metering to
 ;; figure out how usage of chunks)  The problem is deallocation (that is, when
 ;; to do it (:modified maybe))
 ;;
@@ -333,7 +333,7 @@ Modification History (most recent at top)
 
 (defsubst chunk-p (thing) (and (simple-vector-p thing) (fast-chunk? thing)))
 
-;;; this is here for bootstrapping reasons, the working one is 
+;;; this is here for bootstrapping reasons, the working one is
 ;;; in chunker.lisp (eventually)
 (defun print-chunk (chunk stream depth)
   (declare (ignore depth))
@@ -352,7 +352,7 @@ Modification History (most recent at top)
 			`(:label ,label :eval-prop ,eval-prop)))))
 
 
-;;; Special evaluator proerties like unbox are bundled up into a struct with 
+;;; Special evaluator proerties like unbox are bundled up into a struct with
 ;;; the first  element EQ to the eval-property
 ;;; see chunk-for-eval (in chunker.lisp) for more details
 ;;;
@@ -381,15 +381,15 @@ Modification History (most recent at top)
 
 
 
-;;;; Pointers. 
-;; There are 2 types of pointers. either SINGLE or MULTIPLE.  A single 
+;;;; Pointers.
+;; There are 2 types of pointers. either SINGLE or MULTIPLE.  A single
 ;; pointer looks like: (SINGLE . <element>)
 ;; Multi-pointers are created when a slot in a ROW is modified.  The
 ;; identity of the modifier and the time of time of the modification are
 ;;  used to determine how to disambiguate the multi-pointer.  A multi-pointer
 ;;  looks like:
 ;; (MULTIPLE . <multi-pointer-slot1> <multi-pointer-slot2>...
-;;  ... <multi-pointer-slotn>) 
+;;  ... <multi-pointer-slotn>)
 ;; where each <multi-pointer-slot> looks like:
 ;; (<who-modified> <when-modified> <element>)
 ;; The ONLY LEGITIMATE WAY TO ACCESS A POINTER's VALUE is via POINTER-VALUE
@@ -455,10 +455,10 @@ Modification History (most recent at top)
 
 ;;;; Rows
 ;;  Rows are composed of Pointers (either SINGLE or MULTIPLE).
-;;  They are basically a list. We use DEFSTRUCT for the abstraction because 
+;;  They are basically a list. We use DEFSTRUCT for the abstraction because
 ;;  we may want to put some caches (maybe LENGTH-IN-CHARS or INFERIOR-PORTS)
-;;  and flags (INFERIOR-NAMES?) in later to speed things up  
-;;  ROW-FORMAT is used when there are NO entries but the row contains ONLY 
+;;  and flags (INFERIOR-NAMES?) in later to speed things up
+;;  ROW-FORMAT is used when there are NO entries but the row contains ONLY
 ;;  formatting info such as a comment
 (defstruct (evrow :copier
 		  (:predicate evrow?)
@@ -475,7 +475,7 @@ Modification History (most recent at top)
   (warn "Evrow-entries is obsolete, use evrow-pointers instead.")
   `(evrow-pointers ,evrow))
 
-;;; The basic structure contains all the slots 
+;;; The basic structure contains all the slots
 ;;; used explicitly by the virtual-copy algorthm
 ;;; it is used both by virtual-copy's and vc-rows-entry's
 
@@ -514,7 +514,7 @@ Modification History (most recent at top)
 ;;
 (defstruct (virtual-copy (:type vector)
 			 (:include virtual-copy-internal-slots)
-			 (:conc-name vc-) 
+			 (:conc-name vc-)
 			 (:copier %copy-vc))	;need to write our own version
   (name nil)
   (progenitor nil)			;A backpointer to the original Box
@@ -534,7 +534,7 @@ Modification History (most recent at top)
 ;; in Lucid's lisp, the code for this function is only 8 bytes longer
 ;; once we have three vc types.
 (defun virtual-copy? (thing)
-  (and (simple-vector-p thing) 
+  (and (simple-vector-p thing)
        (let ((type (vc-type thing)))
 	 (or (eq type 'data-box)
 	     (eq type 'doit-box)
@@ -568,21 +568,21 @@ Modification History (most recent at top)
 ;; like the name.  Virtual-copy slots which are only used for
 ;; caches need not be included either.
 
-;; the TIME slot is used to select the correct Vc-Rows-Entry 
+;; the TIME slot is used to select the correct Vc-Rows-Entry
 ;; from above based on the CREATION-TIME of the top level
 ;; Virtual-Copy (or Vc-Rows-Entry)
 
 ;; The CACHED-BINDING-ALIST slot is used for the same thing that the
 ;; CACHED-BINDING-ALIST slot in virtual copies is used for.  The reason
 ;; why they appear separately is that we may eventually flush the slot
-;; from one or both structures.  
+;; from one or both structures.
 ;; Need to do some metering on frequency of variable access.  Probably
 ;; it is MUCH more likely that there will be Multiple variable lookup
 ;; from vc-rows-entry's than from virtual-copy's
 
 ;; the SINGLE-IS-EXACT? slot is used to interpret the meaning of
-;; dereferencing multipointers of type 'single 
-;; In general, it should only be T when the vc-rows-entry corresponds 
+;; dereferencing multipointers of type 'single
+;; In general, it should only be T when the vc-rows-entry corresponds
 ;; to the initial chunking of the editor-box
 
 (defstruct (vc-rows-entry (:type vector)
@@ -605,7 +605,7 @@ Modification History (most recent at top)
 ;;; Mutations of editor structure are an enormous time sink
 ;;; What we do is to queue them around calls to eval and process
 ;;; the actual modification of the editor structure all at once.
-;;; This can save us a lot of work in many cases iteratively updating 
+;;; This can save us a lot of work in many cases iteratively updating
 ;;; a variable (need only perform the concete part of the update once)
 
 (defvar *editor-objects-to-be-modified*)
@@ -645,7 +645,7 @@ Modification History (most recent at top)
   (push thing *non-lisp-data-structures-in-vcs*))
 
 (defun unqueue-non-lisp-structure-for-deallocation (thing)
-  (setq *non-lisp-data-structures-in-vcs* 
+  (setq *non-lisp-data-structures-in-vcs*
         (fast-delq thing *non-lisp-data-structures-in-vcs*)))
 
 (defmacro with-non-lisp-structure-deallocation (&body body)
@@ -731,7 +731,7 @@ Modification History (most recent at top)
 ;;;; variables
 
 (DEFVAR *EVAL-IN-PROGRESS* NIL
-  "Bound by top level eval functions and used by the :MODIFIED message to 
+  "Bound by top level eval functions and used by the :MODIFIED message to
    decide when to flush old eval structure. ")
 
 (DEFVAR *FUNNY-FUNCTION-ARGLIST-TABLE* (MAKE-HASH-TABLE))
@@ -744,12 +744,12 @@ Modification History (most recent at top)
 (DEFVAR *EVALUATOR-COPYING-FUNCTION* 'SHALLOW-COPY-FOR-EVALUATOR)
 
 (DEFVAR *MULTIPLE-ROW-TOP-LEVEL-UNBOX-ACTION* :FLATTEN
-  "What happens when we unbox a box with multiple rows at top level. Valid 
-   values are :ERROR (signal an error), :TRUNCATE (use only the top row) 
+  "What happens when we unbox a box with multiple rows at top level. Valid
+   values are :ERROR (signal an error), :TRUNCATE (use only the top row)
    and :FLATTEN (use each row sequentially). ")
 
 (DEFVAR *CURRENT-EVALUATION-START-TIME* 0
-  "Global time that the current Eval was initiated.  Used by the VC 
+  "Global time that the current Eval was initiated.  Used by the VC
    mechanisms to flush caches.")
 
 (DEFVAR *MUTATE-EDITOR-BOXES-DURING-EVAL?* NIL
@@ -763,7 +763,7 @@ Modification History (most recent at top)
 
 ;;;; Accessor and Mutator Substs
 
-;;; Note that some of the accessors have already been defined automatically by 
+;;; Note that some of the accessors have already been defined automatically by
 ;;; the DEFSTRUCTS like VC-ROWS, VP-TARGET
 
 (defun box-name (box)
@@ -800,8 +800,8 @@ Modification History (most recent at top)
 	   (if (null when)
 	       (virtual-copy-rows box)
 	       (virtual-copy-rows box when)))
-	  (t (eval::primitive-signal-error 
-	      :vc-error 
+	  (t (eval::primitive-signal-error
+	      :vc-error
 	      box-or-port
 	      "is not a virtual copy or a box")))))
 
@@ -859,7 +859,7 @@ Modification History (most recent at top)
 (defvar *try-extra-hard-to-only-copy-what-we-have-to* t)
 
 (defvar *links-to-be-copied* nil
-  "This should be bound to the CONTAINED-LINKS slot of the box to be 
+  "This should be bound to the CONTAINED-LINKS slot of the box to be
    copied by the top level VC function")
 
 (defvar *virtual-copy-target-alist* nil
@@ -885,10 +885,10 @@ Modification History (most recent at top)
 
 
 ;;;; Fast Type checking mechanisms
-;; The evaluator assumes that all of the objects with which it has to deal 
+;; The evaluator assumes that all of the objects with which it has to deal
 ;; with will be either a symbol, a number, or a simple vector.  We will also
-;; require that slot 0 in the array contains a symbol that specifies the type 
-;; to the evaluator.  This lets us do (svref <thing> 0) in order 
+;; require that slot 0 in the array contains a symbol that specifies the type
+;; to the evaluator.  This lets us do (svref <thing> 0) in order
 ;; to obtain an object's type.
 
 (defmacro fast-eval-doit-box? (thing)
@@ -902,14 +902,14 @@ Modification History (most recent at top)
   `(eq (svref& ,thing 0) 'sprite-box))
 
 ;; this is the new way to check for "spriteness"
-;; in virtual copies 
+;; in virtual copies
 (defun fast-vc-has-sprite? (thing) (member 'turtle (vc-graphics thing)))
 
 (defmacro fast-eval-port-box? (thing)
   `(eq (svref& ,thing 0) 'port-box))
 
 
-;;; Error checking 
+;;; Error checking
 
 ;;; These are COMPILE TIME CONSTANTs !!!
 ;;; used for error checking macros
@@ -927,7 +927,7 @@ Modification History (most recent at top)
       `(progn . ,body)
       `(if (valid-link-type? (link-type ,link))
 	   (progn . ,body)
-	   (error "The Link, ~S, was not a valid type of link" ,link))))		  
+	   (error "The Link, ~S, was not a valid type of link" ,link))))
 
 (defun expand-type-checking-pairs (list)
   (if (oddp (length list))
@@ -1110,5 +1110,5 @@ Modification History (most recent at top)
    special structures in the editor box should be copied and put into the VC")
 
 (defvar *print-vc-special-structures-hook* nil
-  "A list of functions, each taking 2 args, a VC and the new editor box.  Any 
+  "A list of functions, each taking 2 args, a VC and the new editor box.  Any
    special structures in the VC should be converted and placed in the editor box")
