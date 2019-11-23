@@ -38,7 +38,7 @@ Modification History (most recent at top)
  2/10/03 merged current mac & PC source
  4/17/02 added char-case macro
  4/08/02 added string-case macro
- 3/27/00 smarter LWWIN version of input-code 
+ 3/27/00 smarter LWWIN version of input-code
  8/03/99 added lwwin version of key-event?
  4/10/99 added constant *degs->rads* = (/ pi 180.0) (can't believe this wasn't
          already done !!)
@@ -51,6 +51,8 @@ Modification History (most recent at top)
 
 |#
 
+(defpackage :bu)
+(defpackage :eval)
 (defpackage :boxer (:use :common-lisp) (:nicknames :box))
 
 (in-package :box)
@@ -107,8 +109,13 @@ Modification History (most recent at top)
 (defmacro fix  (a) `(values (floor ,a)))
 (defmacro fixr (a) `(values (truncate ,a)))
 
-(defvar *constant-folding-macros* nil)
-(defvar *constant-folding-macro-bindings* nil)
+(eval-when
+    (:compile-toplevel :load-toplevel :execute)
+  (defvar *constant-folding-macros* nil)
+  (defvar *constant-folding-macro-bindings* nil)
+)
+
+
 
 ;; sgithens commenting out these compiler-let and constant-let items for now.
 ;; They only seem to be used in sicilian-borders.lisp, border-macros.lisp, and evalmacs.lisp
@@ -141,6 +148,9 @@ Modification History (most recent at top)
 (defun constant-folding-macro? (thing)
   (fast-memq thing *constant-folding-macros*))
 
+(eval-when
+    (:compile-toplevel :load-toplevel :execute)
+
 (defun simplify-arg (arg)
   (cond ((constantp arg)
 	 (if (symbolp arg)
@@ -157,16 +167,20 @@ Modification History (most recent at top)
 		 (t (values arg t)))))
 	(t (values arg t))))
 
-(defun replace-constant-vars (args)
-  (let ((new-args nil)
-	(constant-x t))
-    (dolist (arg args)
-      (multiple-value-bind (newarg not-c?)
-	  (simplify-arg arg)
-	(push newarg new-args)
-	(when not-c?
-	  (setq constant-x nil))))
-    (values (nreverse new-args) constant-x)))
+
+  (defun replace-constant-vars (args)
+    (let ((new-args nil)
+	  (constant-x t))
+      (dolist (arg args)
+        (multiple-value-bind (newarg not-c?)
+	    (simplify-arg arg)
+	  (push newarg new-args)
+	  (when not-c?
+	    (setq constant-x nil))))
+      (values (nreverse new-args) constant-x)))
+
+)
+
 
 (defconstant-folding-macro +& (&rest args) `(fixnum-plus . ,args))
 (defconstant-folding-macro fixnum-plus (&rest args)
@@ -304,7 +318,7 @@ Modification History (most recent at top)
 
 (defconstant-folding-macro zerop& (arg)
   `(zerop (the fixnum ,(simplify-arg arg))))
-  
+
 (defmacro svref& (vector index)
   `(svref (the simple-vector ,vector) (the fixnum ,index)))
 
@@ -361,7 +375,7 @@ Modification History (most recent at top)
 	. ,body))))
 
 ;;;; byte diddling...
-;;; Ideally these should expand into machine instructions 
+;;; Ideally these should expand into machine instructions
 ;;; for any particular implementation
 
 (defmacro ldb& (bytespec integer)
@@ -426,7 +440,7 @@ Modification History (most recent at top)
 
 ;;; Random useful macros.
 
-(defsubst cha? (cha) (characterp cha))
+;;(defsubst cha? (cha) (characterp cha))
 
 (DEFMACRO BARF (string . args)
   `(ERROR ,string . ,args))
@@ -504,7 +518,7 @@ Modification History (most recent at top)
 
 (defmacro neq (x y)
   `(not (eq ,x ,y)))
-  
+
 ;; looping sleep, no scheduling
 ;; top version assumes max (get-internal-real-time) is a fixnum
 (defun snooze (seconds)
@@ -521,7 +535,7 @@ Modification History (most recent at top)
             (functionp (symbol-function ,thing)))))
 
 ;;; Trig in Degrees
-;; There are 3 flavors of trig here, use the one which works best in 
+;; There are 3 flavors of trig here, use the one which works best in
 ;; your implementation.  The three flavors are:
 ;;  . double precision floating point.  Seems to work best when there
 ;;    is good hardware support for IEEE floating point and also
@@ -651,7 +665,7 @@ Modification History (most recent at top)
                    (push ,gensym-var ,run-time-vars)
                    (push ,var ,run-time-vals)
                    ,gensym-var))
-            expand-time-val-forms))    
+            expand-time-val-forms))
     `(let* (,run-time-vars
             ,run-time-vals
             (wrapped-body
@@ -816,9 +830,9 @@ Modification History (most recent at top)
 (defun input-code (key-event) (char-code key-event))
 
 #+(or opengl lwwin)
-(defun input-code (key-event) 
+(defun input-code (key-event)
   (if (numberp key-event) key-event (char-code key-event)))
-  
+
 ;;; INPUT-BITS should return 1 for :control, 2 for :meta
 #-(or mcl lispworks)
 (defun input-bits (key-event) (char-bits key-event))
@@ -830,7 +844,7 @@ Modification History (most recent at top)
 (defun make-char (char &optional (bits 0) font)
   (declare (ignore font))
   (lispworks:make-char char bits))
-        
+
 ;;; lisp error handling
 
 (defmacro with-lisp-error-reporting (&body body)
@@ -849,7 +863,7 @@ Modification History (most recent at top)
                                   (list* `(string-equal ,key ,(car clause))
                                          (cdr clause)))
                                  ((listp (car clause))
-                                  (list* `(member ,key ',(car clause) 
+                                  (list* `(member ,key ',(car clause)
                                                   :test #'string-equal)
                                          (cdr clause)))))
                        clauses)))
@@ -863,7 +877,7 @@ Modification History (most recent at top)
                                   (list* `(char-equal ,key ,(car clause))
                                          (cdr clause)))
                                  ((listp (car clause))
-                                  (list* `(member ,key ',(car clause) 
+                                  (list* `(member ,key ',(car clause)
                                                   :test #'char-equal)
                                          (cdr clause)))))
                        clauses)))

@@ -64,76 +64,60 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
+(in-package :boxer)
 
-
-
-
+; DEFSUBST (some implementation have it and others don't)
+; https://lisp-hug.lispworks.narkive.com/xK5EMsyd/defsubst
+(defmacro defsubst (name args &body body)
+  `(progn
+     (declaim (inline ,name))
+     (defun ,name ,args
+       ,@body)))
 
 ;;
 ;; this could be a lot faster, we should be able to do a compile time
 ;; check to see if TYPE is a class and then put in the appropriate code instead
 ;; of the OR which is there now.
-
-#-(and lucid clos)
 (defmacro fast-iwmc-class-p (thing)
   (warn "You need to define a version of FAST-IWMC-CLASS-P for ~A of ~A"
 	(lisp-implementation-version) (lisp-implementation-type))
   `(typep ,thing 'structure))
 
-
-;;; +++ temp
-#+mcl
-(defun expand-mcl-type-check (var type class)
-  (declare (ignore class))
-  `(typep ,var ',type))
-
-#+pcl
-(defun expand-pcl-type-check (var type class)
-  (if (typep class 'block-compile-class)
-      (let* ((c&s-symbol
-	      (pcl::bcm-class-and-instantiable-superiors-symbol class))
-	     (c&s (symbol-value c&s-symbol)))
-	(cond ((null c&s)
-	       (warn "~%The class ~A claims to not be instantiable" class)
-	       nil)
-	      ((= 1 (length c&s))
-	       `(and (pcl::iwmc-class-p ,var)
-		     (eq (pcl::wrapper-class
-			   (pcl::iwmc-class-class-wrapper ,var))
-			 (car ,c&s-symbol))))
-	      (t
-	       `(and (pcl::iwmc-class-p ,var)
-		     (member (pcl::wrapper-class
-			       (pcl::iwmc-class-class-wrapper ,var))
-			     ,c&s-symbol :test #'eq)))))
-      `(and (pcl::iwmc-class-p ,var) (typep ,var ',type))))
-
 (defvar *include-compiled-type-checking* t)
 
 ;; now does the compile time check for PCL-ness
-(defmacro deftype-checking-macros (type type-string)
-  (let ((predicate-name (intern (symbol-format nil "~a?" type)))
-	(check-arg-name (intern (symbol-format nil "CHECK-~a-ARG" type)))
-	(bcm-class (let ((class (find-class type nil)))
-		     (when (typep class 'block-compile-class)
-		       class))))
-    `(progn
-       (defsubst  ,predicate-name (x)
-	 ,(if (null bcm-class)
-	      `(typep x ',type)
-	      (#+clos expand-clos-type-check #+pcl expand-pcl-type-check
-               #+mcl expand-mcl-type-check
-               'x type bcm-class)))
-       (defmacro  ,check-arg-name (x)
-	 ,(when *include-compiled-type-checking*
-	    ``(check-type ,x  (satisfies ,',predicate-name) ,,type-string))))))
+;; sgithens - 2019-11-17 This is currently used once in this file,
+;; 4 times in grobjs.lisp, many times in optimize-classes.lisp,
+;; and once in simple-stream.lisp. I'm not sure it will still be necessary
+;; for a modern SBCL CLOS type implementation. Not quite ready to delete it
+;; though...
+;; (defmacro deftype-checking-macros (type type-string)
+;;   (let ((predicate-name (intern (symbol-format nil "~a?" type)))
+;; 	(check-arg-name (intern (symbol-format nil "CHECK-~a-ARG" type)))
+;; 	(bcm-class (let ((class (find-class type nil)))
+;; 		     (when (typep class 'block-compile-class)
+;; 		       class))))
+;;     `(progn
+;;        (defsubst  ,predicate-name (x)
+;; 	 ,(if (null bcm-class)
+;; 	      `(typep x ',type)
+;; 	      (#+clos expand-clos-type-check #+pcl expand-pcl-type-check
+;;                #+mcl expand-mcl-type-check
+;;                'x type bcm-class)))
+;;        (defmacro  ,check-arg-name (x)
+;; 	 ,(when *include-compiled-type-checking*
+;; 	    ``(check-type ,x  (satisfies ,',predicate-name) ,,type-string))))))
 
+;; Previously this was in a source file lw-bcm.lisp, though on modern machines
+;; it seems unlikely we'll need to bring this forward. sgithens - 2019-11-17
 
-
+(defclass block-compile-class (standard-class)
+  ((counter :initform 0)))
 
-
+;; https://stackoverflow.com/questions/19446174/sbcl-clos-why-do-i-have-to-add-a-validate-superclass-method-here
+(defmethod sb-mop:validate-superclass ((class block-compile-class)
+                                                 (super standard-class))
+            t)
 ;;;; Boxer Object Definitions
 ;;;  These are low level SUBCLASSes designed to be combined into higher level
 ;;;  BOXER objects Which eventually get instantiated
@@ -143,10 +127,7 @@ Modification History (most recent at top)
 (defclass plist-subclass
 	  ()
   ((plist :initform nil :accessor plist))
-  (:metaclass block-compile-class)
-  #-lispworks5(:abstract-class t))
-
-
+  (:metaclass block-compile-class))
 
 ;;; This has Slots That are used by the Virtual Copy Mechanism.
 
@@ -158,12 +139,9 @@ Modification History (most recent at top)
    (branch-links :initform nil
 		 :accessor branch-links))
   (:metaclass block-compile-class)
-  #-lispworks5(:abstract-class t)
   (:documentation "Interface to virtual copy"))
 
 ;; All of the methods are defined in the virtcopy files
-
-
 
 ;;;; Stuff that is particular to boxer.
 
@@ -240,7 +218,6 @@ Modification History (most recent at top)
 
 (defvar *following-mouse-region* nil)
 
-
 ;;;; Variables Having To Do With Redisplay.
 
 (DEFVAR *REDISPLAY-WINDOW* NIL
@@ -350,8 +327,6 @@ Modification History (most recent at top)
   "This variable is bound to T inside editor commands that delete
    but then re-insert boxes.")
 
-
-
 ;;; STEPPING VARS
 
 (defvar *step-flag* nil
@@ -362,9 +337,6 @@ Modification History (most recent at top)
    copy of the the currently-executing box, placed in the stepping
    window.  The :funcall method needs the actual box so it can
    flash lights inside it.")
-
-
-
 
 ;; a function or list of functions to be run after the evaluator exits
 ;; (so far) used in boxwin-mcl to process inout recieved during eval
@@ -389,7 +361,6 @@ Modification History (most recent at top)
    (tick :initform 1
 	 :accessor actual-obj-tick))
   (:metaclass block-compile-class)
-  #-lispworks5(:abstract-class t)
   (:documentation "Used by editor objects to interface with the redisplay" ))
 
 ;;;; Instantiable Objects...
@@ -460,16 +431,6 @@ Modification History (most recent at top)
      ()
   (:metaclass block-compile-class))
 
-#| No more sprite boxes !!!
-;;; Just add a slot for the turtle to a normal box
-(defclass sprite-box
-    (box)
-  ((associated-turtle :initform nil :initarg :associated-turtle
-		      :accessor sprite-box-associated-turtle))
-  (:metaclass block-compile-class))
-|#
-
-
 ;; for delineating regions in the editor...
 
 (defstruct (interval
@@ -529,9 +490,8 @@ Modification History (most recent at top)
   )
 
 ;; this can stay here cause its for a Struct and not a PCL Class
-(deftype-checking-macros GRAPHICS-SHEET "A Bit Array for Graphics Boxes")
-
-
+;; sgithens - See above on definition of deftype-checking-macros
+;;(deftype-checking-macros GRAPHICS-SHEET "A Bit Array for Graphics Boxes")
 
 ;;;; Flags
 
@@ -624,8 +584,6 @@ Modification History (most recent at top)
 
 ;; move graphics-view? here ?
 
-
-
 ;;;BP's are pointers which are used to move within REAL(that is, ACTUAL)
 ;;;structure.  Note that they have nothing to do with SCREEN structure...
 ;;;The *point* is a BP as is the *mark*
@@ -650,24 +608,6 @@ Modification History (most recent at top)
 (defsubst row-bps (row) (bps row))
 
 (defsetf row-bps set-bps)
-;(DEFSETF ROW-BPS (ROW) (NEW-BPS) `(SET-BPS ,ROW ,NEW-BPS))
-
-
-#|
-
-;;; These are here because of lossage in the franz expansion of defstructs
-;;; with the :type option set
-#+excl
-(defsetf bp-row (bp) (new-row) `(setf (nth 1 ,bp) ,new-row))
-#+excl
-(defsetf bp-cha-no (bp) (new-cha-no) `(setf (nth 2 ,bp) ,new-cha-no))
-#+excl
-(defsetf bp-screen-box (bp) (new-screen-box) `(setf (nth 3 ,bp) ,new-screen-box))
-#+excl
-(defsetf bp-type (bp) (new-type) `(setf (nth 4 ,bp) ,new-type))
-
-|#
-
 
 (defmacro move-bp (bp form)
   `(multiple-value-bind (new-row new-cha-no new-screen-box)
@@ -683,9 +623,6 @@ Modification History (most recent at top)
 
 (DEFUN BP-CHA (BP)
   (CHA-AT-CHA-NO (BP-ROW BP) (BP-CHA-NO BP)))
-
-
-
 
 ;;;; Font Descriptors
 ;;; This is the main datastructure for specifying font info in the editor
@@ -732,8 +669,6 @@ Modification History (most recent at top)
               (string symbol-or-string)
               (string-upcase symbol-or-string))
           'keyword))
-
-
 
 ;;;; Box Interface Structures
 

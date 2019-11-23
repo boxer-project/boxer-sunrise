@@ -8,6 +8,9 @@
 
 (plan nil)
 
+(print "Sgithens from the test file")
+(print boxer::*constant-folding-macros*)
+
 ;; blah blah blah.
 
 (finalize)

@@ -14,9 +14,16 @@
   :depends-on ()
   :components ((:module "src"
                 :components
-                ((:file "boxer-sunrise2"))))
+                ((:file "boxer-sunrise2")
+                 (:file "macros")
+                 (:file "boxdef"))))
+                 ;; (:file "storage"))))
+                 ;;(:file "vrtdef"))))
+
+  ;; storage.lisp
+  ;; vrtdef.lisp
   :description ""
   :long-description
   #.(read-file-string
-     (subpathname *load-pathname* "README.markdown"))
+     (subpathname *load-pathname* "README.md"))
   :in-order-to ((test-op (test-op "boxer-sunrise2-test"))))
