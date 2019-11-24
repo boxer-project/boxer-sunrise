@@ -16,12 +16,10 @@
                 :components
                 ((:file "boxer-sunrise2")
                  (:file "macros")
-                 (:file "boxdef"))))
-                 ;; (:file "storage"))))
-                 ;;(:file "vrtdef"))))
+                 (:file "boxdef")
+                 (:file "storage")
+                 (:file "vrtdef"))))
 
-  ;; storage.lisp
-  ;; vrtdef.lisp
   :description ""
   :long-description
   #.(read-file-string
