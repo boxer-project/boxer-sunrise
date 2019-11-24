@@ -49,11 +49,7 @@ Modification History (most recent at top)
 
 |#
 
-
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
-
-
+(in-package :boxer)
 
 ;;; provide low level error checking that can be removed at compile time by
 ;;; setting this variable to NIL and recompiling
@@ -62,10 +58,13 @@ Modification History (most recent at top)
 
 (defvar *vc-debugging?* nil)
 
-(defvar *vc-debug-block-size* 16
-  "Should be larger than the largest number of variables in any TRACE-VC")
+(eval-when
+    (:compile-toplevel :load-toplevel :execute)
+  (defvar *vc-debug-block-size* 16
+    "Should be larger than the largest number of variables in any TRACE-VC")
 
-(defvar *vc-debug-block* nil)
+  (defvar *vc-debug-block* nil)
+)
 
 (defmacro init-vc-debug-block ()
   `(progn
@@ -78,7 +77,6 @@ Modification History (most recent at top)
 		  (svref *vc-debug-block* ,i))))))))
 
 (defun fill-vc-debug-block (&rest args)
-  #+lucid (declare (lcl::dynamic-extent args))
   (do* ((i 0 (1+ i))
 	(restargs args (cdr restargs))
 	(arg (car restargs) (car restargs)))
@@ -96,12 +94,12 @@ Modification History (most recent at top)
     `(when (not (null *vc-debugging?*))
        (format *trace-output* ,format-string ,@args))))
 
-(eval-when (eval load)
+(eval-when (:load-toplevel :execute)
   (unless (null *virtual-copy-debugging-option-on?*)
     (init-vc-debug-block))
   )
 
-(defvar *vc-debug-break-char* #-MCL #\control-b #+MCL #\^B)
+(defvar *vc-debug-break-char* #\^B)
 
 ;; this is like the Trace-Entering macro that the evaluator
 ;; uses except simpler and it looks at different variables
@@ -280,9 +278,7 @@ Modification History (most recent at top)
   (cond ((numberp fi) fi)
 	((%formatting-info? fi)
 	 (-& (fi-stop fi) (fi-start fi)))
-	(t (error "~A is not a valid Formatting-Info"))))
-
-
+	(t (error "~A is not a valid Formatting-Info" fi))))
 
 ;;; CHUNK's
 ;;
@@ -319,8 +315,7 @@ Modification History (most recent at top)
 					      pname
 					      chunk
 					      right-format
-					      &optional plist))
-		  #-(or lispworks lucid mcl) (:print-function print-chunk))
+					      &optional plist)))
   left-format
   pname
   chunk
@@ -378,8 +373,6 @@ Modification History (most recent at top)
 (defsubst eval-prop-prop (ep) (svref& ep 1))
 
 (defsubst eval-prop-contents (ep) (svref& ep 2))
-
-
 
 ;;;; Pointers.
 ;; There are 2 types of pointers. either SINGLE or MULTIPLE.  A single
@@ -450,8 +443,6 @@ Modification History (most recent at top)
       (format stream "#<MPS ~A>" (%mps-when mps))
       (format stream "#<MPS who:~A when:~A what:~A>"
 	      (%mps-who mps) (%mps-when mps) (%mps-value mps))))
-
-
 
 ;;;; Rows
 ;;  Rows are composed of Pointers (either SINGLE or MULTIPLE).
@@ -585,6 +576,8 @@ Modification History (most recent at top)
 ;; In general, it should only be T when the vc-rows-entry corresponds
 ;; to the initial chunking of the editor-box
 
+(eval-when
+    (:compile-toplevel :load-toplevel :execute)
 (defstruct (vc-rows-entry (:type vector)
 			  (:include virtual-copy-internal-slots)
 			  (:constructor %make-vc-rows-entry))
@@ -592,6 +585,7 @@ Modification History (most recent at top)
   (cached-binding-alist nil)
   (single-is-exact? nil)
   (editor-box-backpointer nil))
+)
 
 ;;; localize the lossage here...
 
@@ -776,18 +770,6 @@ Modification History (most recent at top)
   (if (virtual-copy? box-not-a-port) (vc-rows box-not-a-port)
       (error "~A is not a virtual copy" box-not-a-port)))
 
-;; MCL appgen loses on the general form of defsetf
-#+mcl
-(defun %set-fast-box-rows (box new-rows)
-  (if (virtual-copy? box)
-      (setf (vc-rows box) new-rows)
-      (change-vc-rows box new-rows))
-  new-rows)
-
-#+mcl
-(defsetf fast-box-rows %set-fast-box-rows)
-
-#-mcl
 (defsetf fast-box-rows (box) (new-rows)
   `(if (virtual-copy? ,box) (setf (vc-rows ,box) ,new-rows)
        (change-vc-rows ,box ,new-rows)))
@@ -805,24 +787,6 @@ Modification History (most recent at top)
 	      box-or-port
 	      "is not a virtual copy or a box")))))
 
-;; who uses this?
-
-;; MCL appgen loses on the general form of defsetf
-#+mcl
-(defun %set-box-rows (box-or-port new-rows)
-  (let ((box (box-or-port-target box-or-port)))
-     (cond ((virtual-copy? box)
-	    (setf (fast-box-rows box) new-rows))
-	   ((box? box)
-	    (change-virtual-copy-rows box new-rows))
-	   (t (eval::primitive-signal-error
-	       box "is not a virtual copy or a box"))))
-  new-rows)
-
-#+mcl
-(defsetf get-box-rows %set-box-rows)
-
-#-mcl
 (defsetf get-box-rows (box-or-port) (new-rows)
   `(let ((box (box-or-port-target ,box-or-port)))
      (cond ((virtual-copy? box)
@@ -832,24 +796,10 @@ Modification History (most recent at top)
 	   (t (eval::primitive-signal-error
 	       box "is not a virtual copy or a box")))))
 
-;; MCL appgen loses on the general form of defsetf
-#+mcl
-(defun %set-box-name (box new-name)
-  (etypecase box
-     (virtual-copy (setf (vc-name box) new-name))
-     (virtual-port (setf (vp-name box) new-name)))
-  new-name)
-
-#+mcl
-(defsetf box-name %set-box-name)
-
-#-mcl
 (defsetf box-name (box) (new-name)
   `(etypecase ,box
      (virtual-copy (setf (vc-name ,box) ,new-name))
      (virtual-port (setf (vp-name ,box) ,new-name))))
-
-
 
 ;;;; Port-Target Links
 
@@ -883,7 +833,6 @@ Modification History (most recent at top)
   (port nil)
   (target nil))
 
-
 ;;;; Fast Type checking mechanisms
 ;; The evaluator assumes that all of the objects with which it has to deal
 ;; with will be either a symbol, a number, or a simple vector.  We will also
@@ -913,17 +862,17 @@ Modification History (most recent at top)
 
 ;;; These are COMPILE TIME CONSTANTs !!!
 ;;; used for error checking macros
-(defconstant *link-checking-paranoia* t)
+(defconstant +link-checking-paranoia+ t)
 
-(defconstant *compile-with-vc-metering* t)
+(defconstant +compile-with-vc-metering+ t)
 
-(defconstant *type-checking-on* t)
+(defconstant +type-checking-on+ t)
 
 (defsubst valid-link-type? (foo)
   (fast-memq foo *valid-link-types*))
 
 (defmacro with-link-type-checking ((link) &body body)
-  (if (null *link-checking-paranoia*)
+  (if (null +link-checking-paranoia+)
       `(progn . ,body)
       `(if (valid-link-type? (link-type ,link))
 	   (progn . ,body)
@@ -932,7 +881,7 @@ Modification History (most recent at top)
 (defun expand-type-checking-pairs (list)
   (if (oddp (length list))
       (error
-       "Odd number of elements in ~S which should contain PLACE-TYPE pairs")
+       "Odd number of elements in ~S which should contain PLACE-TYPE pairs" list)
       (let ((sexprs nil))
 	(do* ((l list (cddr l))
 	      (place (car l) (car l))
@@ -941,15 +890,12 @@ Modification History (most recent at top)
 	  (push `(check-type ,place ,type) sexprs)))))
 
 (defmacro with-type-checking (place-type-pairs &body body)
-  (if (null *type-checking-on*)
+  (if (null +type-checking-on+)
       `(,@body)
       `(progn ,@(expand-type-checking-pairs place-type-pairs)
 	      ,@body)))
 
-
-
 ;;; Metering Statistics
-
 
 (defvar *vc-metering-on* t)
 (defvar *current-vc-recording-structure* nil)
@@ -987,7 +933,7 @@ Modification History (most recent at top)
 
 
 (defmacro record-top-level-copy (ed-box)
-  (unless (null *compile-with-vc-metering*)
+  (unless (null +compile-with-vc-metering+)
     `(unless (null *vc-metering-on*)
        (vc-debugging "~%Virtual Copying Editor Box: ~A at ~D" ,ed-box *tick*)
        (incf (vcs-top-level-copies *current-vc-recording-structure*))
@@ -996,7 +942,7 @@ Modification History (most recent at top)
 	 (incf (vcs-portless-copies *current-vc-recording-structure*))))))
 
 (defmacro record-vc-copy (vc)
-  (unless (null *compile-with-vc-metering*)
+  (unless (null +compile-with-vc-metering+)
     `(unless (null *vc-metering-on*)
        (vc-debugging "~%Virtual Copying VC: ~A at ~D" ,vc *tick*)
        (incf (vcs-vc-of-vcs *current-vc-recording-structure*))
@@ -1004,35 +950,35 @@ Modification History (most recent at top)
 	 (incf (vcs-portless-copies *current-vc-recording-structure*))))))
 
 (defmacro record-inferior-node-search ()
-  (unless (null *compile-with-vc-metering*)
+  (unless (null +compile-with-vc-metering+)
     `(unless (null *vc-metering-on*)
        (incf (vcs-nodes-searched *current-vc-recording-structure*)))))
 
 (defmacro record-inferior-node-copy (box)
-  (unless (null *compile-with-vc-metering*)
+  (unless (null +compile-with-vc-metering+)
     `(unless (null *vc-metering-on*)
        (vc-debugging "~%Copying Inferior Node: ~A" ,box)
        (incf (vcs-nodes-articulated *current-vc-recording-structure*)))))
 
 (defmacro record-search-list-length (length)
-  (unless (null *compile-with-vc-metering*)
+  (unless (null +compile-with-vc-metering+)
     `(unless (null *vc-metering-on*)
        (incf (vcs-acc-link-list-length *current-vc-recording-structure*)
 	     ,length))))
 
 (defmacro record-row-decache-from-mpg ()
-  (unless (null *compile-with-vc-metering*)
+  (unless (null +compile-with-vc-metering+)
     `(unless (null *vc-metering-on*)
        (incf (vcs-rows-flushed-by-mpg *current-vc-recording-structure*)))))
 
 (defmacro record-single-ptr-ref ()
-  (unless (null *compile-with-vc-metering*)
+  (unless (null +compile-with-vc-metering+)
     `(unless (null *vc-metering-on*)
        (incf (vcs-single-ptr-refs *current-vc-recording-structure*)))))
 
 ;;; careful, this one has to always return the value
 (defmacro record-multi-ptr-ref (mp val)
-  (if (null *compile-with-vc-metering*)
+  (if (null +compile-with-vc-metering+)
       `,val
       `(unless (null *vc-metering-on*)
 	 (vc-debugging "~%DeReferencing MultiPointer: ~A ==> ~A" ,mp ,val)
@@ -1043,57 +989,54 @@ Modification History (most recent at top)
 	 ,val)))
 
 (defmacro record-row-entry-vc-creation ()
-  (unless (null *compile-with-vc-metering*)
+  (unless (null +compile-with-vc-metering+)
     `(unless (null *vc-metering-on*)
        (incf (vcs-row-entry-vcs *current-vc-recording-structure*)))))
 
 (defmacro record-vc-var-lookup ()
-  (unless (null *compile-with-vc-metering*)
+  (unless (null +compile-with-vc-metering+)
     `(unless (null *vc-metering-on*)
        (incf (vcs-vc-var-lookups *current-vc-recording-structure*)))))
 
 (defmacro record-vc-var-lookup-cache-hit ()
-  (unless (null *compile-with-vc-metering*)
+  (unless (null +compile-with-vc-metering+)
     `(unless (null *vc-metering-on*)
        (incf (vcs-vc-var-lookup-cache-hits *current-vc-recording-structure*)))))
 
 (defmacro record-vc-var-lookup-cache-miss ()
-  (unless (null *compile-with-vc-metering*)
+  (unless (null +compile-with-vc-metering+)
     `(unless (null *vc-metering-on*)
        (incf (vcs-vc-var-lookup-cache-misses
 	      *current-vc-recording-structure*)))))
 
 (defmacro record-vc-var-lookup-cache-fill ()
-  (unless (null *compile-with-vc-metering*)
+  (unless (null +compile-with-vc-metering+)
     `(unless (null *vc-metering-on*)
        (incf (vcs-vc-var-lookup-cache-fills
 	      *current-vc-recording-structure*)))))
 
 (defmacro record-vcre-var-lookup ()
-  (unless (null *compile-with-vc-metering*)
+  (unless (null +compile-with-vc-metering+)
     `(unless (null *vc-metering-on*)
        (incf (vcs-vcre-var-lookups *current-vc-recording-structure*)))))
 
 (defmacro record-vcre-var-lookup-cache-hit ()
-  (unless (null *compile-with-vc-metering*)
+  (unless (null +compile-with-vc-metering+)
     `(unless (null *vc-metering-on*)
        (incf (vcs-vcre-var-lookup-cache-hits
 	      *current-vc-recording-structure*)))))
 
 (defmacro record-vcre-var-lookup-cache-miss ()
-  (unless (null *compile-with-vc-metering*)
+  (unless (null +compile-with-vc-metering+)
     `(unless (null *vc-metering-on*)
        (incf (vcs-vcre-var-lookup-cache-misses
 	      *current-vc-recording-structure*)))))
 
 (defmacro record-vcre-var-lookup-cache-fill ()
-  (unless (null *compile-with-vc-metering*)
+  (unless (null +compile-with-vc-metering+)
     `(unless (null *vc-metering-on*)
        (incf (vcs-vcre-var-lookup-cache-fills
 	      *current-vc-recording-structure*)))))
-
-
-
 
 ;;;;; TIME
 
