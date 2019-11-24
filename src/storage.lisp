@@ -35,27 +35,16 @@ Modification History (most recent at top)
 
 |#
 
+(in-package :boxer)
 
-#-(or mcl lispm lispworks) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or mcl lispworks)       (in-package :boxer)
-
-(eval-when (compile)
-  #+lucid
-  (progn
-    (format t "~&***NOTE: Turning on bounds checking in the compiled code...")
-    (lcl::compiler-options :bounds-check t))
-  #+mcl
-  (progn
-    (format t "~&***NOTE: Throwing caution to the winds, SAFETY=0")
-    (proclaim '(optimize (safety 0))))
-  #+lispworks
-  (progn
-    (format t "~&***NOTE: Throwing caution to the winds, SAFETY=0")
-    (proclaim '(optimize (speed 3) (safety 0))))
-  )
-
-
-
+;; sgithens - 2019-11-23 Removing this optimization, which I no longer
+;; think is needed these days. Either way, compiling on current SBCL this
+;; causes some pretty intense C like unhandled memory errors.
+;; (eval-when (compile)
+;;   (progn
+;;     (format t "~&***NOTE: Throwing caution to the winds, SAFETY=0")
+;;     (proclaim '(optimize (speed 3) (safety 0))))
+;; )
 
 ;;;; Da Data Structure
 ;;; Storage vectors (SV's) are a 2 element simple-vector:
@@ -80,8 +69,11 @@ Modification History (most recent at top)
 
 ;;;
 
-(defvar *compile-in-storage-vector-error-checking* t)
-(defvar *compile-in-storage-metering-info* t)
+(eval-when
+    (:compile-toplevel :load-toplevel :execute)
+	(defvar *compile-in-storage-vector-error-checking* t)
+	(defvar *compile-in-storage-metering-info* t)
+)
 
 (defmacro %sv-fill-pointer (sv)
   `(svref& ,sv 1))
@@ -139,13 +131,16 @@ Modification History (most recent at top)
 
 ;; for each storage vector size, we need to associate the number of
 ;; contents-vectors to pre-cons
-(defvar *initial-storage-setup-alist*
-	'((8 . 512) (16 . 512) (32 . 512) (64 . 32) (128 . 4)
-	  ;; if we are forced to cons these, we might as well
-	  ;; have a place to save them
-	  ;; on the other hand, saving them will force the GC
-	  ;; to have to transport them so the tradeoff is unclear
-	  (256 . 0) (1024 . 0)))
+(eval-when
+    (:compile-toplevel :load-toplevel :execute)
+	(defvar *initial-storage-setup-alist*
+		'((8 . 512) (16 . 512) (32 . 512) (64 . 32) (128 . 4)
+		;; if we are forced to cons these, we might as well
+		;; have a place to save them
+		;; on the other hand, saving them will force the GC
+		;; to have to transport them so the tradeoff is unclear
+		(256 . 0) (1024 . 0)))
+)
 
 ;;; increment of growth after we have passed the point where there
 ;;; may be pre-allocated vectors
@@ -169,9 +164,6 @@ Modification History (most recent at top)
 	(push (make-array (car (nth i *initial-storage-setup-alist*)))
 	      (svref& *storage-vector-free-lists* i))))))
 
-
-
-
 ;;;; Metering info.
 
 ;;; Whether or not a lot of this gets included in
@@ -180,7 +172,10 @@ Modification History (most recent at top)
 
 (defconstant *max-storage-meters* 8)
 
-(defvar *storage-substrate-metering-info* (make-array *max-storage-meters*))
+(eval-when
+    (:compile-toplevel :load-toplevel :execute)
+	(defvar *storage-substrate-metering-info* (make-array *max-storage-meters*))
+)
 
 (defvar *storage-meter-initializers* nil)
 
@@ -296,9 +291,6 @@ Modification History (most recent at top)
 (eval-when (eval load)
   (initialize-storage-meters)
   )
-
-
-
 
 ;;; this used to be a redisplay related init but now that we
 ;;; are using these for lots of other things (like chas-arrays
@@ -496,9 +488,6 @@ Modification History (most recent at top)
       ((>=& orig-no old-active-length))
     (setf (svref& cvect (+& orig-no distance)) (svref& cvect orig-no))))
 
-
-
-
 ;;;; The Outside Interface
 
 ;;; iteration macros
@@ -527,8 +516,6 @@ Modification History (most recent at top)
 		     (svref& contents ,index-var)))
 	      ((=& ,index-var last))
 	   . ,body)))))
-
-
 
 ;;; access and info
 (defsubst sv-nth (n sv)
@@ -649,17 +636,8 @@ Modification History (most recent at top)
     (setf (storage-vector-active-length new-vector) fill-ptr)
     new-vector))
 
-(eval-when (compile)
-  #+lucid
-  (progn
-    (format t "~&***NOTE: Turning bounds checking back on in the compiled code...")
-    (lcl::compiler-options :bounds-check nil))
-  #+mcl
-  (progn
-    (format t "~&***NOTE: Restoring, SAFETY=1")
-    (proclaim '(optimize (safety 1))))
-  #+lispworks
-  (progn
-    (format t "~&***NOTE: Restoring, SPEED=1, SAFETY=3")
-    (proclaim '(optimize (speed 1) (safety 3))))
-  )
+;; See note at top with `proclaim` usage
+;; (eval-when (compile)
+;;   (progn
+;;     (format t "~&***NOTE: Restoring, SPEED=1, SAFETY=3")
+;;     (proclaim '(optimize (speed 1) (safety 3)))))
