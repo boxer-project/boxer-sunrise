@@ -1,4 +1,4 @@
-; -*- Mode:LISP; Syntax: Common-Lisp; Package:BOXER;-*- 
+; -*- Mode:LISP; Syntax: Common-Lisp; Package:BOXER;-*-
 #|
 
 
@@ -34,7 +34,7 @@ Modification History (most recent at the top)
 
  1/21/12 changed the definition of sprite-screen-box class
  9/18/10 show-redisplay-init-code
- 6/04/09 support for redisplaying changed horizontal scrolling in redisplaying-unit 
+ 6/04/09 support for redisplaying changed horizontal scrolling in redisplaying-unit
  2/10/09 removed inf-shift, cached-border-info slots from SB's and out-of-sync-mark slot from SR's
  2/07/09 removed new-{wid,hei} and new-{x,y}-got-clipped? slots from screen-obj
          added max-scroll-wid for screen-boxes
@@ -119,7 +119,7 @@ Modification History (most recent at the top)
    (bps :initform nil :accessor bps)
    (display-style-list :initform (make-display-style :style nil)
 		       :accessor display-style-list)
-   (superior-screen-box :initform nil :accessor superior-screen-box)    
+   (superior-screen-box :initform nil :accessor superior-screen-box)
 ;   (cached-border-info :initform nil :accessor cached-border-info)  ; remove?
    (cached-absolute-pos :initform nil :accessor cached-absolute-pos)
    ;; scrolling vars
@@ -169,7 +169,7 @@ Modification History (most recent at the top)
 
 (DEFVAR %DRAWING-FONT-MAP NIL
   "Inside of a drawing-on-window, this variable is bound to %drawing-window's
-   font-map.")  
+   font-map.")
 
 (DEFVAR %ORIGIN-X-OFFSET 0
   "Inside of a drawing-on-window, this variable is bound to x-offset of the
