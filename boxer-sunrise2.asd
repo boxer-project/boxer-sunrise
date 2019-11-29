@@ -24,8 +24,11 @@
                  (:file "disdcl")
                  ;; Beginning of `DRAW` module
                  ;;(:file "opengl-utils")
+                 (:file "draw-low-stubs")
                  (:file "draw-high-common")
                  (:file "draw-high-hardware-clip")
+                 ;; Beginning of `DISPLAYDEFS` module
+                 (:file "disdef")
                 )))
   :description ""
   :long-description
