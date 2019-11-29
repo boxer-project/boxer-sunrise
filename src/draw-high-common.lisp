@@ -56,9 +56,6 @@
 
 (in-package :boxer)
 
-
-
-
 ;; This version of the draw-high file contains software clipping
 ;; versions of drawing primitives used in the redisplay
 
@@ -119,8 +116,6 @@
            (with-system-dependent-bitmap-drawing (,bitmap ,bwidth-var ,bheight-var)
 	     . ,body))))))
 
-
-
 ;;; Drawing functions which don't respect the clipping environment.
 ;;; They expect the hardware to do the clipping.  These are mostly
 ;;; used by sprite graphics and should NOT be used in the redisplay
@@ -137,27 +132,14 @@
   (%draw-filled-arc %drawing-window alu (scale-x x) (scale-y y)
 		    wid hei start-angle sweep-angle))
 
-;;; the points arg is in the form of ((x0 . y0) (x1 . y1)...) pairs
-#-opengl
-(defun draw-poly (alu points)
-  (unless (null points)
-    (%draw-poly (boxer-points->window-system-points points
-						    (x `(scale-x ,x))
-						    (y `(scale-y ,y)))
-		alu %drawing-window)))
-
 ;; should'nt transform the points because translation is done @ hardware level in OpenGL
-#+opengl
 (defun draw-poly (alu points)
   (unless (null points)
     (%draw-poly (boxer-points->window-system-points points (x x) (y y))
 		alu %drawing-window)))
 
-
-
 ;;; +++ maybe these are supposed to be the same, maybe not
-#+MCL (defvar char-bits-limit char-code-limit)
-#+lispworks (defvar char-bits-limit lispworks:char-bits-limit)
+(defvar char-bits-limit 4096)
 
 
 ;; Support for displaying control characters
