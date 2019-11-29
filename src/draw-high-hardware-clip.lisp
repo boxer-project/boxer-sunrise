@@ -56,8 +56,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
+(in-package :boxer)
 
 
 ;;;; Scaling and Clipping Macros
@@ -127,18 +126,7 @@ Modification History (most recent at top)
        . ,body)))
 
 ;; **** changed, see draw-low-mcl for details...
-#-opengl
-(defmacro with-origin-at ((x y) &body body)
-  `(unwind-protect
-     (let ((%origin-x-offset (+& %origin-x-offset ,x))
-           (%origin-y-offset (+& %origin-y-offset ,y)))
-       (window-system-dependent-set-origin %origin-x-offset %origin-y-offset)
-       . ,body)
-     ;; make sure it gets reset to the old value
-     (window-system-dependent-set-origin %origin-x-offset %origin-y-offset)))
-
 ;; Opengl set-origin is RELATIVE !
-#+opengl
 (defmacro with-origin-at ((x y) &body body)
   (let ((fx (gensym)) (fy (gensym)) (ux (gensym)) (uy (gensym)))
     `(let* ((,fx (float ,x)) (,fy (float ,y))
@@ -256,28 +244,3 @@ Modification History (most recent at top)
 (defun draw-string (alu font-no string region-x region-y &optional window)
   (declare (ignore window))
   (%draw-string alu font-no string region-x region-y %drawing-window))
-
-
-
-
-#| ;these should now be handled in draw-high-common.lisp
-
-(defun draw-point (alu x y)
-  (%draw-point x y alu %drawing-window))
-
-(defun draw-arc (alu x y wid hei start-angle sweep-angle)
-  (%draw-arc %drawing-window alu x y wid hei start-angle sweep-angle))
-
-(defun draw-filled-arc (alu x y wid hei start-angle sweep-angle)
-  (%draw-filled-arc %drawing-window alu x y wid hei start-angle sweep-angle))
-
-;;; the points arg is in the form of ((x0 . y0) (x1 . y1)...) pairs
-(defun draw-poly (alu points)
-  (unless (null points)
-    (with-drawing
-      (%draw-poly (boxer-points->window-system-points points
-						      (x x)
-						      (y y))
-                  alu %drawing-window))))
-
-|#
