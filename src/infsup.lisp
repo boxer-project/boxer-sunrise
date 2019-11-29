@@ -68,10 +68,7 @@ Modification History (most recent at the top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
-
-
+(in-package :boxer)
 
 ;;; Rows have a fairly hairy scheme for keeping track of their chas, the order
 ;;; they are in etc. The main data structure used to implement this scheme is
@@ -151,8 +148,6 @@ Modification History (most recent at the top)
 (defsubst chas-array-assure-room (chas-array required-room)
   (sv-assure-room chas-array required-room))
 
-
-
 ;;; CHAS-ARRAY-SLIDE-CHAS the primitive function that functions which need to
 ;;; slide chas around in a chas-array should call. This function takes care of
 ;;; adjusting the BPs that point to the chas-array to compensate for the slide.
@@ -214,8 +209,6 @@ Modification History (most recent at the top)
 ;					    (bfd-cha-no fd2)))))
   )
 
-
-
 ;;; CHAS-ARRAY-INSERT-CHA-1 is an internal function used by all of the
 ;;; functions which insert chas into a chas-array. Functions which want
 ;;; to call this function must have taken care of sliding the chas from
@@ -258,8 +251,6 @@ Modification History (most recent at the top)
   (decf& (chas-array-active-length from-chas-array) 1)
   ;; NOTE: these were in reverse order for LW version during 2/11/03 src merge
   (compact-fds from-chas-array))
-
-
 
 ;;; CHAS-ARRAY-MOVE-CHAS is the fundamental function used to move chas
 ;;; from one chas-array to another chas-array. This function takes care
@@ -375,9 +366,6 @@ Modification History (most recent at the top)
     (dolist (ufd unneeded-fds) (chas-array-delete-bfd chas-array ufd))))
 
 
-
-
-
 ;;; Methods that support the interaction between rows and BP's.
 ;;; and between rows and Font Descriptors
 
@@ -401,8 +389,6 @@ Modification History (most recent at the top)
     (setf (chas-array-bps chas-array)
 	  (fast-delq bp (chas-array-bps chas-array)))))
 
-
-
 
 ;;; First, some Font Descriptor utilities
 
@@ -465,8 +451,6 @@ Modification History (most recent at the top)
 (defmethod delete-bfd ((self row) bfd)
   (chas-array-delete-bfd (slot-value self 'chas-array) bfd))
 
-
-
 
 ;;; These are the functions (to rows) that other sections of code may call
 ;;; to find out about or modify the connection structure of rows and chas:
@@ -577,8 +561,6 @@ Modification History (most recent at the top)
 	   ((=& index stop-cha-no))
 	(unless (cha? cha)
 	  (collect cha)))))
-
-
 
 (defun copy-current-bfd (at-cha-no)
   (let ((new (make-bfd at-cha-no (bfd-font-no *current-font-descriptor*))))
@@ -692,7 +674,6 @@ Modification History (most recent at the top)
   (insert-list-of-chas-at-cha-no self list-of-chas
 	(chas-array-active-length (chas-array self))))
 
-
 
 ;;; Box rows are kept a doubly linked list. The box points to its first row,
 ;;; and each row has pointers to its next and previous rows. The first row in
@@ -707,6 +688,7 @@ Modification History (most recent at the top)
 
 (defmethod set-first-inferior-row ((box box) new)
   (setf (first-inferior-row box) new))
+
 
 ;;; These are the messages (to boxs) that other sections of code may call
 ;;; to find out about or modify the connection structure of boxs and rows:
@@ -843,10 +825,6 @@ Modification History (most recent at the top)
 	(set-previous-row row-next-row row-prev-row)))))
 
 
-
-
-
-
 ;;; These are no longer used.  They work (6/6/88), but do much useless work,
 ;;; and KILL-ROW was ever called.  See KILL-BOX-CONTENTS, the more efficient
 ;;; replacement.
@@ -920,7 +898,6 @@ Modification History (most recent at the top)
   (kill-rows-at-row-no self (row-row-no self row)))
 |#
 
-
 
 ;;; Operations that take existing box rows as position specifiers. These
 ;;; operations are built on top of the operations that take row positions
@@ -1000,7 +977,6 @@ Modification History (most recent at the top)
     ;; of the editor-rows we just removed
     (dolist (sb (screen-objs self))
       (setf (scroll-to-actual-row sb) nil))))
-
 
 (defmacro action-at-bp-internal (&body do-action-form)
   `(let ((old-bp-type (bp-type bp)))
@@ -1029,9 +1005,6 @@ Modification History (most recent at the top)
       (let ((*boxes-being-temporarily-deleted* t))
 	(insert-row-chas bp temp-row :fixed)))))
 
-
-
-
 (defun delete-chas-to-end-of-row (bp &optional (force-bp-type nil))
   (action-at-bp-internal
     (let ((row (bp-row bp))
@@ -1048,7 +1021,6 @@ Modification History (most recent at the top)
 	(kill-rows-at-row-no box (+ (row-row-no box row) 1))))))
 |#
 
-
 
 ;;;; FIND-LOWEST-COMMON-SUPERIOR-BOX
 ;;; This function takes two boxes as its inputs and find the lowest box
@@ -1098,7 +1070,7 @@ Modification History (most recent at the top)
       ((null superior) nil)
     (and (=& i n) (return superior))))
 
-
+
 ;;;;FIND-PATH
 
 ;; The FIND-PATH function is used to find the "path" between two boxes.
@@ -1186,7 +1158,6 @@ Modification History (most recent at the top)
 	     (send-exit-messages destination-box
 				 destination-screen-box)))))
 
-
 
 ;; Needs these to keep reDisplay code alive.
 
@@ -1203,7 +1174,6 @@ Modification History (most recent at the top)
 (defmethod next-obj ((row row))
   (slot-value row 'next-row))
 
-
 
 ;;; New, faster mapping function.
 ;;; Uses DOLIST paradigm instead of MAPC paradigm to eliminate lexical context
