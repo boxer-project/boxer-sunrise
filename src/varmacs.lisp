@@ -118,9 +118,9 @@ Modification History (most recent at the top)
   variable-name)
 
 (defun eval-var-defined? (variable-name)
-  (find variable-name *eval-state-vars* :key #'evsi-variable-name))    
+  (find variable-name *eval-state-vars* :key #'evsi-variable-name))
 
-(defmacro define-eval-var (name &key 
+(defmacro define-eval-var (name &key
 				(local nil local-specified-p)
 				(global nil global-specified-p))
   (when (and local-specified-p global-specified-p)
@@ -147,13 +147,13 @@ Modification History (most recent at the top)
             (cond ((null global) nil)
                   ((numberp global) global)
                   ((symbolp global) (symbol-value global))
-                  ((listp global) 
+                  ((listp global)
                    (let ((fun (car global)))
                      (cond ((eq fun 'quote) (cadr global))
                            (t (apply fun (cdr global))))))
                   (t (error "Don't know how to initialize ~S from ~S"
                             (evsi-variable-name var) global)))))))
-  
+
 
 ;;;
 ;;; Macros for setting up sprite triggers.
