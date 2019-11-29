@@ -18,7 +18,7 @@
 
 
 
-  Copyright 1982 - 1985 Massachusetts Institute of Technology 
+  Copyright 1982 - 1985 Massachusetts Institute of Technology
 
  Permission to use, copy, modify, distribute, and sell this software
  and its documentation for any purpose is hereby granted without fee,
@@ -46,11 +46,11 @@ Modification History (most recent at the top)
 
  2/ 2/12 allocate-screen-obj-internal: graphics mode check should only be done for boxes
  1/22/12 revised all intial-no-of-free-*** upwards
- 1/21/12 sprite-screen-box capabilities added 
+ 1/21/12 sprite-screen-box capabilities added
 12/01/10 force-graphics-output changed to use only #+'s
 11/08/10 *{default,current}-font-descriptor* init moved to redisplay init
 11/14/08 *repaint-during-eval?*
- 3/01/07 with-screen-box-modification-tracking, queue-modified-graphics-box, 
+ 3/01/07 with-screen-box-modification-tracking, queue-modified-graphics-box,
          *screen-boxes-modified*
  6/12/06 changed the def-redisplay-init for opengl stuff
 10/15/03 added force-graphics-output for generic graphics buffer flushing
@@ -68,7 +68,7 @@ Modification History (most recent at the top)
  4/28/98 added macrolet'd recheck-font-state to with-font-hacking
  4/20/98 changed with-font-hacking to detect and use pen colors
          added initializations for various font parameters
- 4/18/98 Change log started 
+ 4/18/98 Change log started
 
 
 |#
@@ -81,7 +81,7 @@ Modification History (most recent at the top)
 ;;;this file contains all the macro and defsubsts
 ;;;for the display code
 
-;;; this should be phased out either when the redisplay is converted to 
+;;; this should be phased out either when the redisplay is converted to
 ;;; the new character scheme or when box boxers are re-implememented
 
 ;(DEFVAR *FONT-NUMBER-FOR-NAMING* #-symbolics 2.
@@ -153,11 +153,11 @@ Modification History (most recent at the top)
   (setq *GRAY* *GRAY0*
 	*filegray* (make-pattern '((1 1) (1 1)))
 	*graphicsgray* *gray1*))
-	
-;;; The X implementation requires that the font map stuff be set 
+
+;;; The X implementation requires that the font map stuff be set
 ;;; up BEFORE the redisplay inits are run but we better check first...
 (def-redisplay-initialization
- (progn (initialize-gray-patterns)    
+ (progn (initialize-gray-patterns)
     #+lispworks (initialize-colors)
     ;; moved here because FD's need init'd colors
     (setq *default-font-descriptor* (make-bfd -1 *default-font*)
@@ -239,7 +239,7 @@ Modification History (most recent at the top)
                   (ALLOCATE-GRAPHICS-SCREEN-BOX-INTERNAL ACTUAL-OBJ))
                  ((screen-obj? gi)
                   (allocate-sprite-screen-box-internal actual-obj))
-                 (t 
+                 (t
                   (barf "Can't allocate a graphics screen obj for ~S"
                         actual-obj)))))
 	((and (port-box? actual-obj)
@@ -275,7 +275,7 @@ Modification History (most recent at the top)
 	((SCREEN-ROW? SCREEN-OBJ) (DEALLOCATE-SCREEN-ROW-INTERNAL SCREEN-OBJ))
 	((graphics-screen-sheet? screen-obj)
 	 (deallocate-graphics-screen-sheet-internal screen-obj))
-        ((sprite-screen-box? screen-obj) 
+        ((sprite-screen-box? screen-obj)
          (deallocate-sprite-screen-box-internal screen-obj))
 	(T (BARF "Can't deallocate ~S" SCREEN-OBJ))))
 
@@ -352,7 +352,7 @@ Modification History (most recent at the top)
   `(LET* ((*REDISPLAY-WINDOW* ,WINDOW)
 	  (*OUTERMOST-SCREEN-BOX* (OUTERMOST-SCREEN-BOX ,WINDOW))
 	  (.OUTERMOST-SCREEN-BOX. *OUTERMOST-SCREEN-BOX*))
-     (QUEUEING-SCREEN-OBJS-DEALLOCATION 
+     (QUEUEING-SCREEN-OBJS-DEALLOCATION
        (DRAWING-ON-WINDOW (,WINDOW)
 	 (UNWIND-PROTECT
 	   (PROGN . ,BODY)
@@ -433,7 +433,7 @@ Modification History (most recent at the top)
 ;; a stub for allocation
 (defun free-sr-rdp1-info (info) (declare (ignore info))  nil)
 
-;;; right now these are flushed by the got-redisplayed 
+;;; right now these are flushed by the got-redisplayed
 ;;; method (probably not the best place)
 
 (defvar *repaint-during-eval?* :always
@@ -452,7 +452,7 @@ Modification History (most recent at the top)
 
 
 
-;;; right now these are flushed by the got-redisplayed 
+;;; right now these are flushed by the got-redisplayed
 ;;; method (probably not the best place)
 
 (defvar *absolute-position-caches-filled* ':toplevel)
@@ -479,7 +479,7 @@ Modification History (most recent at the top)
 ;; final redisplay
 
 
-;; these are neccessary because of file dependencies 
+;; these are neccessary because of file dependencies
 ;; specifically, the SETF of the clip-cache occurs before the struct
 ;; get defined
 #+clx
@@ -516,7 +516,7 @@ Modification History (most recent at the top)
   (warn "recheck-font-state should be inside of with-font-hacking")
   '(error "recheck-font-state called outside of with-font-hacking"))
 
-(defmacro with-font-hacking ((font-descriptors 
+(defmacro with-font-hacking ((font-descriptors
                               &key (start-cha-no 0) (cha-drawing? nil))
 			     &body body)
   (let ((initial-font-no (gensym)))
@@ -535,10 +535,10 @@ Modification History (most recent at the top)
 				     (bfd-cha-no
 				      (car remaining-font-descriptors)))))))
                 (recheck-font-state (cha-no)
-                  `(set-font-info (bfd-font-no 
-                                   (closest-bfd-internal 
+                  `(set-font-info (bfd-font-no
+                                   (closest-bfd-internal
                                     ,',font-descriptors ,cha-no)))))
-       (let* ((,initial-font-no (bfd-font-no 
+       (let* ((,initial-font-no (bfd-font-no
                                  (closest-bfd-internal ,font-descriptors
                                                        ,start-cha-no)))
               (remaining-font-descriptors
@@ -566,7 +566,7 @@ Modification History (most recent at the top)
 					 &body body)
   (let ((index-name (or index-var-name (gensym))))
     `(let ((fds (or ,font-descriptors (screen-chas-array-fds ,screen-chas))))
-       (with-font-hacking (fds :start-cha-no (or ,start 0) 
+       (with-font-hacking (fds :start-cha-no (or ,start 0)
                                :cha-drawing? ,cha-drawing?)
 	 (do-vector-contents (,var ,screen-chas
 				   :start ,start
@@ -578,7 +578,7 @@ Modification History (most recent at the top)
 
 
 ;;; for systems which buffer graphics
-;;; this applies equally to command buffering a la X or 
+;;; this applies equally to command buffering a la X or
 ;;; double buffering a la OpenGL, OSX Quickdraw
 
 (defun force-graphics-output ()
