@@ -72,7 +72,7 @@ Modification History (most recent at the top)
 #+Symbolics
 (si::enable-who-calls si::*old-who-calls-mode*)
 
-;;; Variable Stacks 
+;;; Variable Stacks
 (define-eval-var *lexical-variables-root* :global (boxer::point-box))
 
 ;;; Dynamic Variables
@@ -89,7 +89,7 @@ Modification History (most recent at the top)
 ;; bump this higher for better performance (especially in the X implementation
 ;; where the poll is very expensive).  The knee of the performance curve
 ;; for fib 20 is around 1000
-(defvar *initial-poll-count* 200) 
+(defvar *initial-poll-count* 200)
 
 ;;; we rebind the polling variables when running background processes
 ;;; because keyboard response is more important than execution speed in
@@ -103,7 +103,7 @@ Modification History (most recent at the top)
                                #+opengl 'boxer::repaint-in-eval
                                #-(or opengl carbon-compat) nil)
 
-;; this number should be less than *initial-poll-count* 
+;; this number should be less than *initial-poll-count*
 (defvar *periodic-eval-times* #+(or carbon-compat opengl) '(100)
   #-(or carbon-compat opengl) nil)
 
@@ -136,7 +136,7 @@ Modification History (most recent at the top)
 ;;; Initialized by init-process-state-vector.
 (define-eval-var *current-process* :global *current-process*)
 (define-eval-var *process-state* :global ':TOPLEVEL)
-(define-eval-var *process-doit-cursor-position* 
+(define-eval-var *process-doit-cursor-position*
     :global (init-process-doit-cursor-position))
 
 ;;; Debugger variables
@@ -233,7 +233,7 @@ Modification History (most recent at the top)
 (define-eval-var boxer::*current-sprite* :global nil)
 
 (defvar boxer::*supress-graphics-recording?* nil)
-;; this needs to be defined with a value of NIL for the benefit of other 
+;; this needs to be defined with a value of NIL for the benefit of other
 ;; (unrelated) redisplay initializers
 (define-eval-var boxer::*supress-graphics-recording?* :global nil)
 
