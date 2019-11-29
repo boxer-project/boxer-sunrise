@@ -73,10 +73,7 @@ Modification History (most recent at the top)
 
 |#
 
-
-#-(or mcl lispm lispworks) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
-
+(in-package :boxer)
 
 ;;;this file contains all the macro and defsubsts
 ;;;for the display code
@@ -158,14 +155,12 @@ Modification History (most recent at the top)
 ;;; up BEFORE the redisplay inits are run but we better check first...
 (def-redisplay-initialization
  (progn (initialize-gray-patterns)
-    #+lispworks (initialize-colors)
+        (initialize-colors)
     ;; moved here because FD's need init'd colors
     (setq *default-font-descriptor* (make-bfd -1 *default-font*)
           *current-font-descriptor* (make-bfd -1 *default-font*))
     (drawing-on-window (*boxer-pane*)
       (set-font-info *normal-font-no*))))
-
-
 
 
 ;;;NOTE:it must be loaded before any of the other display files
@@ -173,10 +168,9 @@ Modification History (most recent at the top)
 (DEFSUBST MAKE-SCREEN-CHA (ACTUAL-CHA)
   ACTUAL-CHA)
 
-(DEfSUBST SCREEN-CHA? (SC) (CHARACTERP SC))
+(DEFSUBST SCREEN-CHA? (SC) (CHARACTERP SC))
 
 (DEFMACRO CHA-WIDTH (CHA) `(CHA-WID ,CHA))
-#+LISPM(COMPILER:MAKE-OBSOLETE CHA-WIDTH "Use CHA-WID Instead")
 
 (DEFVAR FREE-SCREEN-ROWS NIL
   "A list of free screen-rows.")
@@ -194,9 +188,9 @@ Modification History (most recent at the top)
 ;;; they were devised in a world of megabyte sized memory
 (DEFVAR INITIAL-NO-OF-FREE-SCREEN-ROWS 150)
 
-(DEFVAR INITIAL-NO-OF-FREE-SCREEN-BOXS 300) ; #+lispm 600. #-lispm 100.
+(DEFVAR INITIAL-NO-OF-FREE-SCREEN-BOXS 300)
 
-(DEFVAR INITIAL-NO-OF-FREE-GRAPHICS-SCREEN-BOXS 20) ; #+lispm 50. #-lispm 10.)
+(DEFVAR INITIAL-NO-OF-FREE-GRAPHICS-SCREEN-BOXS 20)
 
 (DEFVAR initial-no-of-free-sprite-screen-boxs 20)
 
@@ -328,9 +322,7 @@ Modification History (most recent at the top)
      (PROGN . ,BODY)))
 
 (defmacro with-real-time (&body body)
-  #+ti `(hacks:with-real-time . ,body)
-  #+symbolics `(progn . ,body)
-  #-lispm `(progn . ,body))
+  `(progn . ,body))
 
 ;;;****************************************************************;;;
 ;;;                      REDISPLAY MACROS                          ;;;
@@ -403,8 +395,6 @@ Modification History (most recent at the top)
   `(check-type ,x (satisfies graphics-screen-sheet?)
 	       "A graphics screen sheet"))
 
-
-
 ;;; random useful structs and stuff
 
 (defstruct (display-style (:predicate display-style?))
@@ -449,9 +439,6 @@ Modification History (most recent at the top)
       (unless (fast-memq sb *screen-boxes-modified*)
         (push sb *screen-boxes-modified*)))))
 
-
-
-
 ;;; right now these are flushed by the got-redisplayed
 ;;; method (probably not the best place)
 
@@ -466,7 +453,6 @@ Modification History (most recent at the top)
   (sx 0)
   (sy 0)
   (valid nil)
-  #+clx (clip-cache nil) ; see draw-low-clx for details
   )
 
 
@@ -478,25 +464,12 @@ Modification History (most recent at the top)
 ;; might have to propagate modified to EB's after eval for proper
 ;; final redisplay
 
-
-;; these are neccessary because of file dependencies
-;; specifically, the SETF of the clip-cache occurs before the struct
-;; get defined
-#+clx
-(defun ab-pos-clip-cache (pos-cache) (ab-pos-cache-clip-cache pos-cache))
-#+clx
-(defun set-ab-pos-clip-cache (pos-cache new)
-  (setf (ab-pos-cache-clip-cache pos-cache) new))
-
-
 (defmacro with-absolute-position-cache-recording (&body body)
   `(let ((*absolute-position-caches-filled* nil))
      (unwind-protect
 	  (progn . ,body)
        (dolist (cache *absolute-position-caches-filled*)
 	 (setf (ab-pos-cache-valid cache) nil)))))
-
-
 
 ;;;; Fonts
 
@@ -575,15 +548,10 @@ Modification History (most recent at the top)
 	   (check-and-handle-font-changes ,index-name)
 	   . ,body)))))
 
-
-
 ;;; for systems which buffer graphics
 ;;; this applies equally to command buffering a la X or
 ;;; double buffering a la OpenGL, OSX Quickdraw
 
 (defun force-graphics-output ()
-  #+X (xlib::xflush)
-  #+CLX (xlib::display-force-output bw::*display*)
   ;; this is the new paradigm, defined in the draw-low- files
-  #+opengl (flush-port-buffer)
-  )
+  (flush-port-buffer))
