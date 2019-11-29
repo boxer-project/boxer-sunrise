@@ -18,8 +18,10 @@
                  (:file "macros")
                  (:file "boxdef")
                  (:file "storage")
-                 (:file "vrtdef"))))
-
+                 (:file "vrtdef")
+                 ;; This is the beginning of the redisplay module from original
+                 ;; boxer, when I get a chance to split this up in to modules.
+                 (:file "disdcl"))))
   :description ""
   :long-description
   #.(read-file-string
