@@ -29,6 +29,8 @@
                  (:file "draw-high-hardware-clip")
                  ;; Beginning of `DISPLAYDEFS` module
                  (:file "disdef")
+                 ;; Beginning of `RELATIONSHIPS` module
+                 (:file "infsup")
                 )))
   :description ""
   :long-description
