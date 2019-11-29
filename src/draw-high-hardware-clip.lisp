@@ -1,4 +1,4 @@
-; -*- Mode:LISP; Syntax: Common-Lisp; Package:BOXER; Base:8.-*- 
+; -*- Mode:LISP; Syntax: Common-Lisp; Package:BOXER; Base:8.-*-
 #|
 
 
@@ -88,10 +88,10 @@ Modification History (most recent at top)
 ; **** no longer used, see draw-low-mcl for details
 ;(defmacro with-drawing (&body body)
 ;  `(progn
-;     (update-window-system-state)    
+;     (update-window-system-state)
 ;     ,@body))
 
-;;; Wrap this around the body of let forms that bind clipping variables. 
+;;; Wrap this around the body of let forms that bind clipping variables.
 ;;; Now a no-op, but a more efficient implementation might make use of this.
 ;(defmacro with-clip-bindings (&body body)
 ;  `(progn ,@body))
@@ -162,7 +162,7 @@ Modification History (most recent at top)
      . ,body))
 
 ;;; This MUST use the hardware clipping regardless of speed.
-;;; It is used only around bodies which do sprite graphics 
+;;; It is used only around bodies which do sprite graphics
 ;;; so the frequency of use is MUCH less than it is in the redisplay
 ;;;
 ;;; this adjusts the clipping to be width and height AT the current
@@ -213,7 +213,7 @@ Modification History (most recent at top)
         ;; rect, so we have to make sure we don't pull in any
         ;; pixels from outside the clipping region from the source rect
         (wid (min& full-wid (-& %clip-rig from-x)))
-        (hei (min& full-hei (-& %clip-bot from-y))))    
+        (hei (min& full-hei (-& %clip-bot from-y))))
     (unless (or (zerop full-wid) (zerop full-hei))
     (%bitblt-in-screen alu-seta wid hei
 		       %drawing-array from-x from-y
@@ -256,7 +256,7 @@ Modification History (most recent at top)
 (defun draw-string (alu font-no string region-x region-y &optional window)
   (declare (ignore window))
   (%draw-string alu font-no string region-x region-y %drawing-window))
-  
+
 
 
 

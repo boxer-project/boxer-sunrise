@@ -1,4 +1,4 @@
-; -*- Mode:LISP; Syntax: Common-Lisp; Package:BOXER; Base:8.-*- 
+; -*- Mode:LISP; Syntax: Common-Lisp; Package:BOXER; Base:8.-*-
 #|
 
 
@@ -17,7 +17,7 @@
 
 
 
- Copyright 1982 - 1985 Massachusetts Institute of Technology 
+ Copyright 1982 - 1985 Massachusetts Institute of Technology
 
  Permission to use, copy, modify, distribute, and sell this software
  and its documentation for any purpose is hereby granted without fee,
@@ -47,7 +47,7 @@
 
    Only the primitives and macros which do not respect clipping are
    in this file.  The files draw-high-software/hardware-clip.lisp
-   contain the low level functions and macros (predominately used 
+   contain the low level functions and macros (predominately used
    in the redisplay) which pay attention to the clipping state.
 
 
@@ -63,7 +63,7 @@
 ;; versions of drawing primitives used in the redisplay
 
 
-;; Make an array of the same type as the screen array.  Args are screen, 
+;; Make an array of the same type as the screen array.  Args are screen,
 ;; width and height
 
 ;;;; DRAWING-ON-WINDOW
@@ -94,8 +94,8 @@
 	 (sheet-inside-width ,window) (sheet-inside-height ,window))
 	 . ,body))))
 
-;;; WITH-FONT-MAP-BOUND is meant to be used by all those functions 
-;;; (like BOX-BORDER-FN's that have to be called in an environment where the 
+;;; WITH-FONT-MAP-BOUND is meant to be used by all those functions
+;;; (like BOX-BORDER-FN's that have to be called in an environment where the
 ;;; font map is supposed to be bound but nothing else (like all those
 ;;; wonderful drawing type things and stuff) needs to be bound
 
@@ -114,7 +114,7 @@
              (,bwidth-var (offscreen-bitmap-width ,bitmap))
              (,bheight-var (offscreen-bitmap-height ,bitmap)))
          %drawing-window %drawing-array ; bound but never used errors....
-         (drawing-on-window-bootstrap-clipping-and-scaling 
+         (drawing-on-window-bootstrap-clipping-and-scaling
            (0 0 ,bwidth-var ,bheight-var)
            (with-system-dependent-bitmap-drawing (,bitmap ,bwidth-var ,bheight-var)
 	     . ,body))))))
