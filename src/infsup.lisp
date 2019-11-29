@@ -14,7 +14,7 @@
 
 
 
-  Copyright 1982, 1983, 1984, 1985 Massachusetts Institute of Technology 
+  Copyright 1982, 1983, 1984, 1985 Massachusetts Institute of Technology
 
  Permission to use, copy, modify, distribute, and sell this software
  and its documentation for any purpose is hereby granted without fee,
@@ -103,7 +103,7 @@ Modification History (most recent at the top)
   `(%sv-fill-pointer ,chas-array))
 
 
-;;; Instead of DEFTYPE-CHECKING-MACROS because the explicit type 
+;;; Instead of DEFTYPE-CHECKING-MACROS because the explicit type
 ;;; declaration means that CHAS-ARRAY's aren't in the type lattice
 (defun chas-array? (thing)
   (and (simple-vector-p thing)
@@ -327,7 +327,7 @@ Modification History (most recent at the top)
     (unless (bfd= from-starting-bfd into-starting-bfd)
       ;; make sure the newly inserted chas start with the same BFD they did
       ;; when they were in the from-chas-array
-      (chas-array-insert-bfd into-chas-array 
+      (chas-array-insert-bfd into-chas-array
                              (copy-fd-at from-starting-bfd
                                          into-chas-array-strt-cha-no)))
     ;; now move all the FD's in the section being moved
@@ -337,8 +337,8 @@ Modification History (most recent at the top)
                (return))
               ((and (zerop& bfd-cha-no) (zerop& from-chas-array-strt-cha-no))
                ;; special case: leave the bfd, but copy it for the other row also
-               (chas-array-insert-bfd into-chas-array 
-                                      (copy-fd-at bfd 
+               (chas-array-insert-bfd into-chas-array
+                                      (copy-fd-at bfd
                                                   into-chas-array-strt-cha-no)))
               ((>=& bfd-cha-no from-chas-array-strt-cha-no)
                (chas-array-delete-bfd from-chas-array bfd)
@@ -346,7 +346,7 @@ Modification History (most recent at the top)
                      (+& into-chas-array-strt-cha-no
                          (-& bfd-cha-no from-chas-array-strt-cha-no)))
                (chas-array-insert-bfd into-chas-array bfd)))))
-    ;; now make sure the chas in the into-chas-array which have been pushed 
+    ;; now make sure the chas in the into-chas-array which have been pushed
     ;; down the row start with the same BFD that they did before
     (let ((into-chas-array-stop-cha-no (+& into-chas-array-strt-cha-no
                                            no-of-chas-to-move)))
@@ -355,7 +355,7 @@ Modification History (most recent at the top)
                         (closest-bfd-internal (chas-array-fds into-chas-array)
                                               into-chas-array-stop-cha-no)))
         (chas-array-insert-bfd into-chas-array
-                               (copy-fd-at into-starting-bfd 
+                               (copy-fd-at into-starting-bfd
                                            into-chas-array-stop-cha-no))))
     ;; it is safe to compact FD's now
     (compact-fds into-chas-array) (compact-fds from-chas-array)))
@@ -446,7 +446,7 @@ Modification History (most recent at the top)
 		      (setf (bfd-font-no next-fd) (bfd-font-no bfd)
                             (bfd-color   next-fd) (bfd-color   bfd))
 		      (return))))))))
-			
+
 (defun chas-array-delete-bfd (chas-array bfd)
   (setf (chas-array-fds chas-array)
 	(fast-delq bfd (chas-array-fds chas-array))))
@@ -464,25 +464,25 @@ Modification History (most recent at the top)
 
 (defmethod delete-bfd ((self row) bfd)
   (chas-array-delete-bfd (slot-value self 'chas-array) bfd))
-		    
+
 
 
 
-;;; These are the functions (to rows) that other sections of code may call 
+;;; These are the functions (to rows) that other sections of code may call
 ;;; to find out about or modify the connection structure of rows and chas:
 ;;;
 ;;; length-in-chas
 ;;; cha-at-cha-no
 ;;; cha-cha-no
-;;; 
+;;;
 ;;; chas
-;;; 
+;;;
 ;;; insert-cha-at-cha-no
 ;;; insert-row-chas-at-cha-no
 ;;; delete-cha-at-cha-no
 ;;; delete-chas-between-cha-nos
 ;;; kill-chas-at-cha-no
-;;; 
+;;;
 ;;; insert-cha-before-cha
 ;;; insert-cha-after-cha
 ;;; insert-row-chas-before-cha
@@ -491,7 +491,7 @@ Modification History (most recent at the top)
 ;;; delete-between-chas
 ;;; kill-cha
 ;;;
-;;; In addition the macro DO-ROW-CHAS ((<var> <row>) <body>) is defined to 
+;;; In addition the macro DO-ROW-CHAS ((<var> <row>) <body>) is defined to
 ;;; be used by other sections of code to iterate through a row's chas.
 ;;;
 
@@ -511,18 +511,18 @@ Modification History (most recent at the top)
                               ,stop)))
      (let ((,var nil))				       	;Note that there is a
        (do ((,cha-no ,start (+& ,cha-no 1))  	       	;good reason for using
-	    . ,other-do-vars)			       	;this weird 
-	   ((>=& ,cha-no ,active-length))                  ;(LET ((,VAR NIL)) ...)         
+	    . ,other-do-vars)			       	;this weird
+	   ((>=& ,cha-no ,active-length))                  ;(LET ((,VAR NIL)) ...)
 	 (setq ,var
 	       (fast-chas-array-get-cha ,chas ,cha-no));(SETQ ,VAR <foo>)
-         (macrolet ((change-cha (new-cha) 
-                      `(setf (fast-chas-array-get-cha ,',chas ,',cha-no) 
+         (macrolet ((change-cha (new-cha)
+                      `(setf (fast-chas-array-get-cha ,',chas ,',cha-no)
                              ,new-cha)))
 	   . ,body))))))
 
 (defmethod length-in-chas ((self row))
   (chas-array-active-length (slot-value self 'chas-array)))
-  
+
 (defmethod cha-at-cha-no ((self row) n)
   (let ((chas-array (slot-value self 'chas-array)))
     (cond ((or (<& n 0)
@@ -592,16 +592,16 @@ Modification History (most recent at the top)
              (bfd-hood self cha-no)
            (unless (bfd= *current-font-descriptor* current-bfd)
              (if (=& cha-no (bfd-cha-no current-bfd))
-                 (setf (bfd-font-no current-bfd) 
+                 (setf (bfd-font-no current-bfd)
                        (bfd-font-no *current-font-descriptor*)
                        (bfd-color   current-bfd)
                        (bfd-color   *current-font-descriptor*))
                  (insert-bfd self (copy-current-bfd cha-no)))
              ;; preserve the font following the new insertion
-             ;; unless there are no following chars OR we are inserting at 
+             ;; unless there are no following chars OR we are inserting at
              ;; the end of a row
              (cond ((=& cha-no (length-in-chas self))) ; inserting at end of row
-                   ((and following-bfd (=& (1+& cha-no) 
+                   ((and following-bfd (=& (1+& cha-no)
                                            (bfd-cha-no following-bfd)))
                     ;; no need for trailing BFD but in this case we should
                     ;; check to see if the slid over following-bfd needs
@@ -660,7 +660,7 @@ Modification History (most recent at the top)
     (modified return-row)
     (do-row-chas ((c return-row))
       (unless (cha? c)
-	;; note that the Boxes here still think they are inferiors of 
+	;; note that the Boxes here still think they are inferiors of
 	;; the original row So that DELETE-SELF-ACTION can win
 	(delete-self-action c)
 	(set-superior-row c return-row)))
@@ -708,26 +708,26 @@ Modification History (most recent at the top)
 (defmethod set-first-inferior-row ((box box) new)
   (setf (first-inferior-row box) new))
 
-;;; These are the messages (to boxs) that other sections of code may call 
+;;; These are the messages (to boxs) that other sections of code may call
 ;;; to find out about or modify the connection structure of boxs and rows:
 ;;;
 ;;; length-in-rows
 ;;; length-in-chas
 ;;; row-at-row-no
 ;;; row-row-no
-;;; 
+;;;
 ;;; rows
-;;; 
+;;;
 ;;; insert-row-at-row-no
 ;;; delete-row-at-row-no
 ;;; delete-row
-;;; 
+;;;
 ;;; insert-row-before-row
 ;;; insert-row-after-row
 ;;;
 ;;; kill-box-contents
 ;;;
-;;; In addition the macro DO-BOX-ROWS ((<var> <box>) <body>) is defined to 
+;;; In addition the macro DO-BOX-ROWS ((<var> <box>) <body>) is defined to
 ;;; be used by other sections of code to iterate through a box's rows.
 #|
  ;;; obsolete:
@@ -856,7 +856,7 @@ Modification History (most recent at the top)
     (unless (null box-first-row)
       (let ((row-at-row-no (row-at-row-no self row-no))
 	    (row-bf-row-no (row-at-row-no self (- row-no 1)))
-	    (box-last-row (do* ((next-box-row (next-row box-first-row) 
+	    (box-last-row (do* ((next-box-row (next-row box-first-row)
 					      (next-row box-row))
 				(box-row box-first-row next-box-row))
 			       (())
@@ -970,13 +970,13 @@ Modification History (most recent at the top)
 	  (unless (null prev-row) (set-next-row prev-row next-row)))
       (unless (null next-row) (set-previous-row next-row prev-row)))))
 
-  
+
 ;; Use this instead of (kill-row box (row-at-row-no 0 box)).
 ;; Later, we can optimize out the DELETE-SELF-ACTION stuff:
-;; First, we delete all static variables except those 
+;; First, we delete all static variables except those
 ;; defined in the closet row.
 ;;
-;; Second, if the box is transparent, we must delete all exported names 
+;; Second, if the box is transparent, we must delete all exported names
 ;; from the  superior box and look through the box for more transparent boxes.
 ;;
 ;; Third, we flush the various caches.
@@ -1167,7 +1167,7 @@ Modification History (most recent at the top)
 ;;; This moves the *point* upward in the hierarchy via the exit method
 ;;; until it reaches the destination-box
 ;;; the one-step-up? arg controls whether or not triggers are run in
-;;; the exit method.  Right now, EVERY trigger on the upward path will 
+;;; the exit method.  Right now, EVERY trigger on the upward path will
 ;;; get a chance to run. It is not clear that this is the right thing
 
 (defun send-exit-messages (destination-box destination-screen-box
@@ -1178,14 +1178,14 @@ Modification History (most recent at the top)
 	   nil)
 	  ((superior? destination-screen-box (point-screen-box)) nil)
 	  ((null (superior-box current-box)) nil)
-	  (t (exit current-box 
+	  (t (exit current-box
 		   (superior-screen-box (bp-screen-box *point*))
 		   (superior-box current-box)
 		   one-step-up?)
 	     (maybe-handle-trigger-in-editor)
 	     (send-exit-messages destination-box
 				 destination-screen-box)))))
-  
+
 
 
 ;; Needs these to keep reDisplay code alive.
