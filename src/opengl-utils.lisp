@@ -12,7 +12,7 @@
 
  Low level prims for dealing with fonts & colors
 
-Modification History (most recent at the top) 
+Modification History (most recent at the top)
 
  8/12/14 charcode->oglfont-index
  4/23/14 added ogl-font-ascent
@@ -45,7 +45,7 @@ Modification History (most recent at the top)
 
 ;;; State management (see Red Book appendix B for state vars)
 ;; Note, type can be either an atomic type of a list of type and length
-;; valid types are: :SIGNED-8 :SIGNED-16 :SIGNED-32 :UNSIGNED-8 :UNSIGNED-16 
+;; valid types are: :SIGNED-8 :SIGNED-16 :SIGNED-32 :UNSIGNED-8 :UNSIGNED-16
 ;;                  :UNSIGNED-32 (:DOUBLE :DOUBLE-FLOAT) (:FLOAT :SINGLE-FLOAT)
 (defmacro get-opengl-state (pname type &optional return-vector)
   (let ((gl-vect-var (gensym)))
@@ -59,7 +59,7 @@ Modification History (most recent at the top)
                                   (make-gl-vector ,(canonicalize-type
                                                     (if (listp type) (car type) type))
                                                   ,(if (listp type) (cadr type) 1))))))
-         (unwind-protect 
+         (unwind-protect
              (progn
                (,(ecase (if (listp type) (car type) type)
                    (:boolean 'gl-get-booleanv)
@@ -81,7 +81,7 @@ Modification History (most recent at the top)
                                 (t (error "~D is not a valid boolean value" raw)))))
                       (t
                        `(gl-vector-aref ,gl-vect-var 0))))
-           (when (null ,return-vector) 
+           (when (null ,return-vector)
              (opengl::free-gl-vector ,gl-vect-var)))))))
 
 ;; for debugging
@@ -110,7 +110,7 @@ Modification History (most recent at the top)
                  (coerce ,arg ,type))
                 (t (error "*opengl-type-checking-action*,~S, should be :COERCE or :ERROR"
                           *opengl-type-checking-action*))))))
-         
+
 
 
 ;;; new layer of opengl drawing primitives which (optional) check & coerce parameter type
@@ -127,8 +127,8 @@ Modification History (most recent at the top)
 
 
 ;;; note that gl-begin can also be
-;; modes can be: *gl-points*, *gl-lines*, *GL-LINE-LOOP*, *GL-LINE-STRIP*, 
-;; *GL-TRIANGLES*, *GL-TRIANGLE-STRIP*, *GL-TRIANGLE-FAN*, *GL-QUADS*, 
+;; modes can be: *gl-points*, *gl-lines*, *GL-LINE-LOOP*, *GL-LINE-STRIP*,
+;; *GL-TRIANGLES*, *GL-TRIANGLE-STRIP*, *GL-TRIANGLE-FAN*, *GL-QUADS*,
 ;; *GL-QUAD-STRIP*, or *gl-polygon*
 
 (defun ogl-draw-poly (points)
@@ -180,7 +180,7 @@ Modification History (most recent at the top)
 ;; in Windows-1252 between #x80 and #x9F
 ;; That is the job of the function charcode->oglfont-index
 
-(defconstant *opengl-font-start* 0) 
+(defconstant *opengl-font-start* 0)
 (defparameter *opengl-font-end*  #x2123)
 (defparameter *opengl-font-cache-end* 255)
 
@@ -206,7 +206,7 @@ Modification History (most recent at the top)
     (#x2021 135)  ; double dagger
     (#x02C6 136)  ; circumflex
     (#x2030 137)  ; permille
-    (#x0160 138)  ; 
+    (#x0160 138)  ;
     (#x2039 139)  ; &lsaquo single angle quote, left
     (#x0152 140)  ; OE (dipthong)
     (#x017D 142)  ; Z+hacek
@@ -228,7 +228,7 @@ Modification History (most recent at the top)
 (defun unicode->oglfont-index (unicode)
   (let ((trans (cadr (assoc unicode *unicode-window-1252* :test #'=))))
     (cond ((null trans) *default-char-code*)
-          (t (-& trans *opengl-font-start*)))))  
+          (t (-& trans *opengl-font-start*)))))
 
 (defmacro do-ofont-chars ((char-code-var &key (end '*opengl-font-end*)) &body body)
   `(do ((,char-code-var *opengl-font-start* (1+& ,char-code-var)))
@@ -239,7 +239,7 @@ Modification History (most recent at the top)
                         (:print-function %print-opengl-font))
   (native-font nil)   ;
   (dl-base-addr nil)  ; NIL means font is not in GPU cache
-  (width nil) ; 
+  (width nil) ;
   (height 0)
   ;; since opengl char drawing is baseline based, this is a useful
   ;; parameter to have available...
@@ -302,7 +302,7 @@ Modification History (most recent at the top)
           (opengl-font-height ofont) (opengl::glut-font-height glutfont))
     (cond ((opengl::glut-fixed-width-font? glutfont)
            (setf (opengl-font-width ofont) (opengl::glut-char-width #\a glutfont)))
-          (t (let ((widths-array (make-array (- *opengl-font-end* 
+          (t (let ((widths-array (make-array (- *opengl-font-end*
                                                 *opengl-font-start*)
                                              :element-type 'fixnum))
                    (maxwid 0))
@@ -334,9 +334,9 @@ Modification History (most recent at the top)
           (opengl-font-height ofont) (+ ascent (gp::get-font-descent pane
                                                                      native-font)))
     (cond ((gp::font-fixed-width-p pane native-font)
-           (setf (opengl-font-width ofont) 
+           (setf (opengl-font-width ofont)
                  (gp::get-char-width pane #\a native-font)))
-          (t (let ((widths-array (make-array (- *opengl-font-end* 
+          (t (let ((widths-array (make-array (- *opengl-font-end*
                                                 *opengl-font-start*)
                                              :element-type 'float
                                              ; :element-type 'fixnum
@@ -344,14 +344,14 @@ Modification History (most recent at the top)
                    (maxwid 0))
                (do-ofont-chars (char-code :end *opengl-font-cache-end*)
                  (let ((trans-idx (-& char-code *opengl-font-start*))
-                       (cw (gp::get-char-width pane (code-char char-code) 
+                       (cw (gp::get-char-width pane (code-char char-code)
                                                native-font)))
                    (setf (aref widths-array trans-idx) cw)
                    (setq maxwid (max maxwid cw))))
                (setf (opengl-font-width ofont) maxwid)
                (setf (opengl-font-widths-array ofont) widths-array))))
     ofont))
-                         
+
 
 ;; should do smarter error handling here
 ;; for now, allow wgl-use-font to signal the error (:errorp t)
@@ -378,7 +378,7 @@ Modification History (most recent at the top)
                                             :font (opengl-font-native-font ofont)
                                             :outlinep *opengl-font-outline-p*
                                             :start *opengl-font-start*
-                                            :count (- *opengl-font-end* 
+                                            :count (- *opengl-font-end*
                                                       *opengl-font-start*)))))
                   (t
                    (if *use-capogi-fonts*
@@ -387,14 +387,14 @@ Modification History (most recent at the top)
                                           :font (opengl-font-native-font ofont)
                                           :outlinep *opengl-font-outline-p*
                                           :start *opengl-font-start*
-                                          :count (- *opengl-font-end* 
+                                          :count (- *opengl-font-end*
                                                     *opengl-font-start*)))))))
     (setf (opengl-font-dl-base-addr ofont) ba))
   ofont)
 
 (defun %ogl-decache-font (ofont)
   (unless (null (opengl-font-dl-base-addr ofont))
-    ;; it is possible for a font to be in the cache, but unfilled because of the 
+    ;; it is possible for a font to be in the cache, but unfilled because of the
     ;; new lazy caching scheme
     (gl-delete-lists (opengl-font-dl-base-addr ofont) *opengl-font-cache-end*)  ;was *opengl-font-end*
     (setf (opengl-font-dl-base-addr ofont) nil)))
@@ -415,7 +415,7 @@ Modification History (most recent at the top)
 ;;; External Interface
 ;; ogl-set-font
 ;; ogl-font-height
-;; ogl-char-width,height 
+;; ogl-char-width,height
 ;; ogl-draw-character
 ;; ogl-draw-string
 ;; ogl-string-width, height  (font string)
@@ -447,7 +447,7 @@ Modification History (most recent at the top)
                    (*current-opengl-font-base-addr*
                     (opengl-font-dl-base-addr ,font)))
                . ,body))
-         (when (null (opengl-font-dl-base-addr ,oldfont)) 
+         (when (null (opengl-font-dl-base-addr ,oldfont))
            (ogl-cache-font ,oldfont))))))
 
 ;;; Font cache is a FIFO list of font structs
@@ -529,7 +529,7 @@ Modification History (most recent at the top)
 (defun ogl-draw-string (text x y)
   (gl-raster-pos2-f (ogl-type x 'float) (ogl-type (+ y (opengl-font-ascent *current-opengl-font*)) 'float))
   (let* ((base (-& *current-opengl-font-base-addr*
-                   ;; this is pretty flaky and will break if there ever is a 
+                   ;; this is pretty flaky and will break if there ever is a
                    ;; char-code which is less than *opengl-font-start*
                    *opengl-font-start*)))
     ;; Set up for a string-drawing display list call.
@@ -549,9 +549,9 @@ Modification History (most recent at the top)
 ;; useful for debugging as in (dolist (f *cached-fonts*) (d-font f))
 (defun d-font (ofont)
   (let* ((nf (bw::opengl-font-native-font ofont))
-         (attr (gp:font-description-attributes 
+         (attr (gp:font-description-attributes
                 (gp::font-description nf))))
-    (format t "~%~A  ~D  ~A,~A: base addr = ~D" (getf attr :name) (getf attr :size) 
+    (format t "~%~A  ~D  ~A,~A: base addr = ~D" (getf attr :name) (getf attr :size)
             (getf attr :weight) (getf attr :slant) (bw::opengl-font-dl-base-addr ofont))))
 
 
@@ -561,7 +561,7 @@ Modification History (most recent at the top)
 
 ;;;; COLORS
 
-;; we'll use opengl vectors as the primary color object, this allows us to 
+;; we'll use opengl vectors as the primary color object, this allows us to
 ;; bind and pass them around as they need to be in the upper level boxer code
 
 (defvar *ogl-current-color-vector*) ; init'd in start-boxer (boxwin-opengl.lisp)
@@ -571,9 +571,9 @@ Modification History (most recent at the top)
 
 (defun make-ogl-color (r g b &optional (alpha 1.0))
   (incf *ogl-color-counter*)
-  (box::with-stack-list (color (coerce r 'single-float) 
-                               (coerce g 'single-float) 
-                               (coerce b 'single-float) 
+  (box::with-stack-list (color (coerce r 'single-float)
+                               (coerce g 'single-float)
+                               (coerce b 'single-float)
                                (coerce alpha 'single-float))
     (make-gl-vector :float 4 :contents color)))
 
@@ -631,11 +631,11 @@ Modification History (most recent at the top)
 
 (defun print-color (ogl-color)
   (format t "<OGL-Color R:~3F G:~3F B:~3F alpha:~3F>" (ogl-color-red ogl-color)
-          (ogl-color-green ogl-color) (ogl-color-blue ogl-color) 
+          (ogl-color-green ogl-color) (ogl-color-blue ogl-color)
           (ogl-color-alpha ogl-color)))
 
 (defun ogl-report (&optional clear?)
-  (format t "~&~D OGL colors allocated, ~D freed, ~D leaked" 
+  (format t "~&~D OGL colors allocated, ~D freed, ~D leaked"
           bw::*ogl-color-counter* bw::*ogl-color-freed*
           (- bw::*ogl-color-counter* bw::*ogl-color-freed*))
   (when clear? (setq bw::*ogl-color-counter* 0 bw::*ogl-color-freed* 0)))
@@ -654,10 +654,10 @@ Modification History (most recent at the top)
   (debug-opengl-print "~%OGL Reshape (~D, ~D)" width height)
   (gl-matrix-mode *gl-projection*)
   (gl-load-identity)
-  ;; orthographic projection, 0,0 = top,left 
+  ;; orthographic projection, 0,0 = top,left
   ;; Note:GL-Ortho wants double-floats as args (and insists on the mac)
   (gl-ortho (coerce 0.0 'double-float)            (coerce (float width) 'double-float)
-            (coerce (float height) 'double-float) (coerce 0.0 'double-float) 
+            (coerce (float height) 'double-float) (coerce 0.0 'double-float)
             (coerce -1.0 'double-float)           (coerce 1.0 'double-float)))
 
 
@@ -668,12 +668,12 @@ Modification History (most recent at the top)
 
 ;; NOTE: this must match the format in *pixmap-data-type* and *pixmap-data-format*
 (defun opengl::color->pixel (color)
-  (dpb (float-color-to-byte-value (ogl-color-alpha color)) 
+  (dpb (float-color-to-byte-value (ogl-color-alpha color))
        opengl::*gl-rgba-rev-alpha-byte*
        (dpb (float-color-to-byte-value (ogl-color-blue color))
             opengl::*gl-rgba-rev-blue-byte*
             (dpb (float-color-to-byte-value (ogl-color-green color))
-                 opengl::*gl-rgba-rev-green-byte* 
+                 opengl::*gl-rgba-rev-green-byte*
                  (float-color-to-byte-value (ogl-color-red color))))))
 
 (defun opengl::pixel->color (pixel)
