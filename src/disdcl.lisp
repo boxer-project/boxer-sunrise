@@ -90,8 +90,7 @@ Modification History (most recent at the top)
    (tick :initform -1 :accessor screen-obj-tick)
    (needs-redisplay-pass-2? :initform nil :accessor screen-obj-needs-redisplay-pass-2?)
    (force-redisplay-infs? :initform nil :accessor screen-obj-force-redisplay-infs?))
-  (:metaclass block-compile-class)
-  (:abstract-class t))
+  (:metaclass block-compile-class))
 
 ;; These only exist as a mixin for the box flavor
 (defclass SCREEN-CHAR-SUBCLASS
