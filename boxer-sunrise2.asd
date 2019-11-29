@@ -21,7 +21,12 @@
                  (:file "vrtdef")
                  ;; This is the beginning of the redisplay module from original
                  ;; boxer, when I get a chance to split this up in to modules.
-                 (:file "disdcl"))))
+                 (:file "disdcl")
+                 ;; Beginning of `DRAW` module
+                 ;;(:file "opengl-utils")
+                 (:file "draw-high-common")
+                 (:file "draw-high-hardware-clip")
+                )))
   :description ""
   :long-description
   #.(read-file-string
