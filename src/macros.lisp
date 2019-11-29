@@ -54,6 +54,7 @@ Modification History (most recent at top)
 (defpackage :bu)
 (defpackage :eval)
 (defpackage :boxer (:use :common-lisp) (:nicknames :box))
+(defpackage :boxer-window (:use :common-lisp) (:nicknames :bw))
 
 (in-package :box)
 
