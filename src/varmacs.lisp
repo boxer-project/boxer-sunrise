@@ -26,11 +26,8 @@ Modification History (most recent at the top)
 
 |#
 
-#-(or lispworks mcl) (in-package 'eval)
-#+(or lispworks mcl) (in-package :eval)
-
-
-
+;; sgithens (in-package :eval)
+(in-package :boxer)
 
 (defvar *number-of-eval-state-vars* 0)
 (defvar *eval-state-vars* nil)
@@ -154,7 +151,7 @@ Modification History (most recent at the top)
                   (t (error "Don't know how to initialize ~S from ~S"
                             (evsi-variable-name var) global)))))))
 
-
+
 ;;;
 ;;; Macros for setting up sprite triggers.
 ;;;

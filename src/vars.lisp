@@ -32,8 +32,8 @@ Modification History (most recent at the top)
 
 ;;;
 
-#-(or mcl lispm) (in-package 'eval)
-#+mcl            (in-package :eval)
+;; sgithens (in-package :eval)
+(in-package :boxer)
 
 ;;; Preamble
 
@@ -64,13 +64,7 @@ Modification History (most recent at the top)
 (define-eval-var *vpdl-size*        :global *default-vpdl-size*)
 
 ;;; PDL
-#+Symbolics
-(defvar si::*old-who-calls-mode* si::*who-calls-mode*)
-#+Symbolics
-(si::disable-who-calls)
 (define-eval-var *pdl* :global nil)
-#+Symbolics
-(si::enable-who-calls si::*old-who-calls-mode*)
 
 ;;; Variable Stacks
 (define-eval-var *lexical-variables-root* :global (boxer::point-box))
@@ -104,8 +98,7 @@ Modification History (most recent at the top)
                                #-(or opengl carbon-compat) nil)
 
 ;; this number should be less than *initial-poll-count*
-(defvar *periodic-eval-times* #+(or carbon-compat opengl) '(100)
-  #-(or carbon-compat opengl) nil)
+(defvar *periodic-eval-times*  '(100))
 
 ;;; Evaluator State Variables
 
