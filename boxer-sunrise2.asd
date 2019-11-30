@@ -28,9 +28,15 @@
                  (:file "draw-high-common")
                  (:file "draw-high-hardware-clip")
                  ;; Beginning of `DISPLAYDEFS` module
+                 ;; "Some more Definitions for Drawing things"
                  (:file "disdef")
                  ;; Beginning of `RELATIONSHIPS` module
+                 ;; "The basic underlying structure of the Editor is defined here"
                  (:file "infsup")
+                 ;; Beginning of `evalvars` module
+                 ;; "Definitions necessary for describing evaluator state variables"
+                 (:file "varmacs")
+                 (:file "vars")
                 )))
   :description ""
   :long-description
