@@ -15,7 +15,7 @@
 
 
 
- Copyright 1985, 1986 Massachusetts Institute of Technology 
+ Copyright 1985, 1986 Massachusetts Institute of Technology
 
  Permission to use, copy, modify, distribute, and sell this software
  and its documentation for any purpose is hereby granted without fee,
@@ -65,7 +65,7 @@ Modification History (most recent at top)
        (catch 'boxer-error
 	 (unwind-protect
 	      (compiler-let (#+Lucid (lcl:*style-warnings* nil))
-		;; Keep Lucid from warning us about binding *foo* 
+		;; Keep Lucid from warning us about binding *foo*
 		;; if *foo* isn't special.
 		(let ,(create-local-eval-state-vars-bvl)
 		  (compiler-let (#+Lucid (lcl:*style-warnings* t))
@@ -109,11 +109,11 @@ Modification History (most recent at top)
 (defmacro quick-time ()
   #+Lispm `(time:microsecond-time)
   #+(or Allegro Lucid mcl lispworks) `(get-internal-real-time)
-  #-(or Lispm Lucid Allegro mcl lispworks) (error "Can't define quick-time"))  
+  #-(or Lispm Lucid Allegro mcl lispworks) (error "Can't define quick-time"))
 
 (defmacro init-timing ()
   (when *compile-with-debugging*
-    `(when-debugging 
+    `(when-debugging
       (setq *timing-overhead* 0)
       (setq *start-time* (quick-time))
       (trace-entering Testing)
@@ -135,11 +135,11 @@ Modification History (most recent at top)
 	   ,@(boxer::with-collection
 	      (dolist (arg args)
 		(boxer::collect `(format t "~S ~S, " ',arg ,arg))))
-	   (do () ((not (char-equal (read-char) 
+	   (do () ((not (char-equal (read-char)
 				    #+lispm #\SUSPEND
                                     #+MCL #\c      ;;; MCL has primitive char names
                                     #+lwwin #\c
-				    #-(or lispm lwwin mcl) #\control-c))) 
+				    #-(or lispm lwwin mcl) #\control-c)))
 	     (break))
 	   (setq *start-time* (quick-time)))))))
 
@@ -159,7 +159,7 @@ Modification History (most recent at top)
 ;;;
 ;;; DO NOT depend on this function to distinguish editor objects from evaluator
 ;;; objects, since it might return T on an editor object, or any object,
-;;; in some implementations.  This function should be renamed 
+;;; in some implementations.  This function should be renamed
 ;;; to SAFE-TO-CALL-FAST-EVAL-PREDICATES?
 
 ;;; POSSIBLE-EVAL-OBJECT? tells whether it is legal to look in slot 0.
@@ -241,7 +241,7 @@ Modification History (most recent at top)
   (cond (always?
 	 `(if (poll-internal)
 	      (setq *poll-count* 1)))
-	(t 
+	(t
 	 `(or *last-interrupt-char*
               (let ((pc (decf& *poll-count*)))
 	        (cond ((zerop& pc)
@@ -255,7 +255,7 @@ Modification History (most recent at top)
 ;;;
 ;;; Arg Flavors
 ;;;
-;;; Here's the theory: 
+;;; Here's the theory:
 ;;; Never put numbers in boxes or take them out.  The primitives will do it
 ;;; themselves via functions.
 
