@@ -45,7 +45,7 @@ Modification History (most recent at top)
   (:abstract-class t)
   (:documentation "A Mixin for Foreign data types inthe boxer evaluator"))
 
-;; called from CHANGE.  <new-value> will be standard boxer data, possibly a 
+;; called from CHANGE.  <new-value> will be standard boxer data, possibly a
 ;; port-to other foreign-data
 (defmethod foreign-data-set ((fd foreign-data) new-value)
   (declare (ignore new-value))
@@ -69,11 +69,11 @@ Modification History (most recent at top)
 
 
 ;; if TELL is passed some foreign data, it will call this generic function
-(defmethod lookup-variable-in-foreign-data ((fd foreign-data) var) 
+(defmethod lookup-variable-in-foreign-data ((fd foreign-data) var)
   (declare (ignore var))
   nil)
 
-(defmethod eval::boxer-symeval-dots-list-fd (error-symbol 
+(defmethod eval::boxer-symeval-dots-list-fd (error-symbol
                                              (fd foreign-data) list)
   (declare (ignore list))
   (eval::signal-error :dots-variable-lookup "in" error-symbol))
