@@ -358,17 +358,17 @@ Modification History (most recent at top)
 ; (let ((val chunk))
 ;    (dolist (ep eval-props val)
 ;      (setq val (make-array 3 :initial-contents
-;			    `(eval::special-eval-token ,ep ,val))))))
+;			    `(boxer-eval::special-eval-token ,ep ,val))))))
 
 (defun make-eval-prop (prop contents)
   (let ((eval-prop-array (make-array 3)))
-    (setf (svref& eval-prop-array 0) 'eval::special-eval-token)
+    (setf (svref& eval-prop-array 0) 'boxer-eval::special-eval-token)
     (setf (svref& eval-prop-array 1) prop)
     (setf (svref& eval-prop-array 2) contents)
     eval-prop-array))
 
 (defsubst eval-prop? (thing)
-  (and (vectorp thing) (eq (svref& thing 0) 'eval::special-eval-token)))
+  (and (vectorp thing) (eq (svref& thing 0) 'boxer-eval::special-eval-token)))
 
 (defsubst eval-prop-prop (ep) (svref& ep 1))
 
@@ -782,7 +782,7 @@ Modification History (most recent at top)
 	   (if (null when)
 	       (virtual-copy-rows box)
 	       (virtual-copy-rows box when)))
-	  (t (eval::primitive-signal-error
+	  (t (boxer-eval::primitive-signal-error
 	      :vc-error
 	      box-or-port
 	      "is not a virtual copy or a box")))))
@@ -793,7 +793,7 @@ Modification History (most recent at top)
 	    (setf (fast-box-rows box) ,new-rows))
 	   ((box? box)
 	    (change-virtual-copy-rows box ,new-rows))
-	   (t (eval::primitive-signal-error
+	   (t (boxer-eval::primitive-signal-error
 	       box "is not a virtual copy or a box")))))
 
 (defsetf box-name (box) (new-name)

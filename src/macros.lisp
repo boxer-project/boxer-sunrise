@@ -52,7 +52,7 @@ Modification History (most recent at top)
 |#
 
 (defpackage :bu)
-(defpackage :eval)
+(defpackage :boxer-eval)
 (defpackage :boxer (:use :common-lisp) (:nicknames :box))
 (defpackage :boxer-window (:use :common-lisp) (:nicknames :bw))
 
@@ -129,6 +129,7 @@ Modification History (most recent at top)
 ;; 	   . ,body))))
 
 ; +++ a portable replacement should be found now that compiler-let is no longer in the language
+; https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node83.html
 #+lispworks
 (defmacro compiler-let (let-forms &body body)
   `(lispworks:compiler-let ,let-forms ,@body))
