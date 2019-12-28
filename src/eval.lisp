@@ -17,7 +17,7 @@
 
 
 
- Copyright 1985, 1986 Massachusetts Institute of Technology 
+ Copyright 1985, 1986 Massachusetts Institute of Technology
 
  Permission to use, copy, modify, distribute, and sell this software
  and its documentation for any purpose is hereby granted without fee,
@@ -42,7 +42,7 @@
 
 Modification History (most recent at top)
 
-10/31/11 fixed typo 
+10/31/11 fixed typo
  9/28/11 Handled conversion of sprite boxes to data boxes with sprite props
  2/11/03 merged current LW and MCL files
 
@@ -71,7 +71,7 @@ Modification History (most recent at top)
 	  ;; *EXECUTING-FUNCTION* will be NIL here, because we're
 	  ;; only called from toplevel.
 	  (setq *executing-pointer* ,iline-name)
-	  ;; *EXECUTING-LINE* is a ufun body cdr except at top level, 
+	  ;; *EXECUTING-LINE* is a ufun body cdr except at top level,
 	  ;; where  it is a list and used mostly by error messages.
 	  (setq *executing-line* *executing-line*)
 	  (go EVAL-LOOP))
@@ -158,7 +158,7 @@ Modification History (most recent at top)
 	  (setq *executing-pointer* nil)
 	  (go got-value))
 	 #|  ;; TOKEN is probably never necessary.  It's like DATAFY-INTERNAL
-             ;; without the box.  If you find yourself wanting to use this to 
+             ;; without the box.  If you find yourself wanting to use this to
              ;; get at variable names, you should be using ports instead.
            (token
 	     (vpdl-push (car *executing-pointer*))
@@ -171,7 +171,7 @@ Modification History (most recent at top)
 	(trace-entering raw-token-dispatch *thing-pointer*)
 	(cond ((symbolp *thing-pointer*) (go symbol))
 	      ((numberp *thing-pointer*) (go number))
-	      ((fast-eval-data-box? *thing-pointer*) 
+	      ((fast-eval-data-box? *thing-pointer*)
                ;; data boxes might have sprites...
                (cond ((box::fast-vc-has-sprite? *thing-pointer*)
                       (setq *thing-pointer* (boxer::port-to *thing-pointer*))
@@ -189,11 +189,11 @@ Modification History (most recent at top)
 	       (go raw-boxer-function))
               ((typep *thing-pointer* 'boxer::foreign-data)
                (go FOREIGN-DATA))
-	      (t (signal-error 
+	      (t (signal-error
 		  :eval-error
 		  "unusual object encountered in eval:" *thing-pointer*)
 		 (go handle-exception)))
-	
+
       NUMBER
 	(trace-entering number *thing-pointer*)
 	;; We enter NUMBER only when encountering a number on the input line,
@@ -208,7 +208,7 @@ Modification History (most recent at top)
 				 (boxer::data-boxify *thing-pointer*))))
 	 (otherwise))
 	(go self-evaluating-object)
-	
+
       EDITOR-DATA-BOX
 	(trace-entering editor-data-box *thing-pointer*)
 	(when-stepping
@@ -223,7 +223,7 @@ Modification History (most recent at top)
 			   (boxer::copy-box *thing-pointer* nil))))
 	 (go self-evaluating-object))
 	(go data-box)
-	
+
       DATA-BOX
 	(trace-entering data-box *thing-pointer*)
 	(special-arg-handling-cases
@@ -233,7 +233,7 @@ Modification History (most recent at top)
 					 (copy-thing *thing-pointer*))))
 	 (otherwise (setq *thing-pointer* (copy-thing *thing-pointer*))))
 	(go self-evaluating-object)
-	
+
       FOREIGN-DATA  ;; is mostly like DATA-BOX's
         (trace-entering foreign-data *thing-pointer*)
         (special-arg-handling-cases
@@ -251,14 +251,14 @@ Modification History (most recent at top)
 	 (otherwise (setq *function*
 			  (cached-code-virtual-copy *thing-pointer*))
 		    (go eval-args-setup)))
-	
+
       EDITOR-DOIT-BOX
 	(trace-entering editor-doit-box *thing-pointer*)
 	(special-arg-handling-cases
 	 (bu::datafy (go datafy-object))
 	 (otherwise (setq *function* (cached-code-editor-box *thing-pointer*))
 		    (go eval-args-setup)))
-	
+
 ;;; EDITOR-PORTS are encountered only inside variables, and have
 ;;; only editor boxes as targets.
       EDITOR-PORT
@@ -274,7 +274,7 @@ Modification History (most recent at top)
 		(t
 		 (setq *function* (cached-code-editor-port *thing-pointer*))
 		 (go eval-args-setup))))
-	
+
 ;;; PORTS are seen either in variables on directly, and can have
 ;;; editor/eval data boxes or editor doit boxes.
       PORT
@@ -289,14 +289,14 @@ Modification History (most recent at top)
 		(t
 		 (setq *function* (cached-code-virtual-port *thing-pointer*))
 		 (go eval-args-setup))))
-	
+
       SPECIAL-TOKEN
 	(trace-entering special-token *thing-pointer* *executing-pointer*)
 	;; @->BU::@.
 	;; BU::EVAL-IT, BU::PREVIOUS-TELL-ENVIRONMENT objects left alone
 	(cond ((unbox-token? *thing-pointer*)
 	       (setq *executing-pointer*
-		     (list* 
+		     (list*
 		      'BU::@
 		      (special-token-item *thing-pointer*)
 		      (cdr *executing-pointer*)))
@@ -314,15 +314,15 @@ Modification History (most recent at top)
 			       "Unknown SPECIAL-TOKEN object: "
 			       *thing-pointer*)
 		 (go handle-exception)))
-	
+
       PREVIOUS-TELL-ENVIRONMENT-TOKEN
-	(trace-entering previous-tell-environment-token *thing-pointer* 
+	(trace-entering previous-tell-environment-token *thing-pointer*
 			*executing-pointer*)
 	;; Inside a previous-tell-environment token may be a symbol, a box,
         ;; a number, or another token.
 	;; Handle this just like symbol.
 	(go symbol)
-	
+
       EVAL-IT-TOKEN
 	(trace-entering eval-it-token *thing-pointer* *executing-pointer*)
 	;; These are errors now.
@@ -330,11 +330,11 @@ Modification History (most recent at top)
 	 :!-out-of-place
 	 "The ! character is used only inside BUILD.  Maybe you want ^?")
 	(go handle-exception)
-	
+
       DOTS-LIST-TOKEN
 	(trace-entering dots-list-token *thing-pointer* *executing-pointer*)
 	(go symbol)
-	
+
       SYMBOL
 	(trace-entering symbol *thing-pointer* *executing-pointer*)
 	;; Symbol dispatches only to NUMBER, DATA-BOX, and PORT.
@@ -343,7 +343,7 @@ Modification History (most recent at top)
 	;;  a special flavor-overriding token
 	;;  an eval doit, port, or data box
 	;;  a number
-	;;  a regular or infix primitive 
+	;;  a regular or infix primitive
 	;;  an editor data, doit, or port box
 	;; We check the special word case first.
 	;; We don't cdr down *EXECUTING-POINTER* and in general and
@@ -364,7 +364,7 @@ Modification History (most recent at top)
 			(setq *arglist*
 			      (cons (cdar *arglist*) (cdr *arglist*)))
 			(go eval-loop-skip-poll-and-errors))))
-	
+
 	;; When there's an @, we get a special token, and the special
 	;; token gets expanded by the SPECIAL-TOKEN handler into
 	;; an @ followed by the item.  Then it comes directly here
@@ -378,10 +378,10 @@ Modification History (most recent at top)
 	;; or something) then we can just move the BU::@ primitive
 	;; to the EVAL package.
 	(special-arg-handling-cases
-	 (bu::datafy 
+	 (bu::datafy
 	  (unless (eq *thing-pointer* 'BU::@)
 	    (go datafy-object))))
-	
+
 	;; Otherwise we're going to evaluate the variable, do some
 	;; hacks to support bare numbers and bare editor objects
 	;; living in variables, and then do our own version of TOKEN-DISPATCH,
@@ -421,7 +421,7 @@ Modification History (most recent at top)
 		 (signal-error :unbound-variable variable-name)
 		 (go handle-exception))
 		((eval-object? *thing-pointer*)
-		 ;; Everything in this clause is something that has the 
+		 ;; Everything in this clause is something that has the
 		 ;; type in slot 0 and is not an editor object.
 		 (cond
 		   ((boxer-function? *thing-pointer*)
@@ -437,7 +437,7 @@ Modification History (most recent at top)
 		      ;; Ideally these should be distinguished at read time,
 		      ;; but that's harder in Boxer when spaces count.
 		      (cond ((eq variable-name 'bu::-)
-			     (setq *thing-pointer* 
+			     (setq *thing-pointer*
 				   (boxer-toplevel-symeval
 				    '%negative-internal)))
 			    (t (signal-error :infix-out-of-place variable-name)
@@ -479,11 +479,11 @@ Modification History (most recent at top)
 		   ;; ************ Black Box Interface ************
 		   (t (signal-error
 		       :eval-error
-		       "unusual object encountered in eval: variable" 
-		       variable-name "value" 
+		       "unusual object encountered in eval: variable"
+		       variable-name "value"
 		       *thing-pointer* variable-name)
 		      (go handle-exception))))
-		;; Editor objects -- they might be POSSIBLE-EVAL-OBJECT? T in 
+		;; Editor objects -- they might be POSSIBLE-EVAL-OBJECT? T in
 		;; some implementations, but EVAL-OBJECT? is supposed to catch
 		;; those cases.
                 ;; NOTE: 10/01/2011 sprite check has to come before data-box because sprites
@@ -495,11 +495,11 @@ Modification History (most recent at top)
 		((data-box? *thing-pointer*) (go editor-data-box))
 		((port-box? *thing-pointer*) (go editor-port))
 		(t (signal-error
-		    :eval-error 
-		    "unusual object encountered in eval: variable" 
+		    :eval-error
+		    "unusual object encountered in eval: variable"
 		    variable-name "value" *thing-pointer* variable-name)
 		   (go handle-exception))))
-	
+
       RAW-BOXER-FUNCTION
 	;; a compiled boxer function is actually a primitive object,
 	;; usually put in the token stream by some weird macro or
@@ -507,7 +507,7 @@ Modification History (most recent at top)
 	(trace-entering raw-boxer-function *executing-pointer*)
 	(setq *function* *thing-pointer*)
 	;;... falls through ...
-	
+
       EVAL-ARGS-SETUP
 	;; We expect the function in *function*
 	(trace-entering eval-args-setup *executing-pointer*)
@@ -517,7 +517,7 @@ Modification History (most recent at top)
 	;; If there are no args, avoid all contact.
 	;; Skip making the eval args frame and go directly to UFUNCALL-NO-ARGS
 	;; or SFUN-SKIP-ARGS.
-	;; This check does an extra BOXER-FUNCTION-ARGLIST call on 
+	;; This check does an extra BOXER-FUNCTION-ARGLIST call on
 	;; functions with arguments, but it's just an AREF.
 	(when (null (boxer-function-arglist *function*))
 	  (cond ((interpreted-boxer-function? *function*)
@@ -538,20 +538,20 @@ Modification History (most recent at top)
 	;; when *current-function* is non-nil.
 	(setq *arglist* (boxer-function-arglist *current-function*))
 	(go check-if-all-args)
-	
+
       DATAFY-OBJECT
 	(trace-entering DATAFY-OBJECT)
 	(setq *thing-pointer* (boxer::data-boxify *thing-pointer*))
 ;;; ... fall through ...
       SELF-EVALUATING-OBJECT
 	(trace-entering self-evaluating-object *thing-pointer*)
-	(when-stepping (step-self-evaluating-object *thing-pointer*) 
+	(when-stepping (step-self-evaluating-object *thing-pointer*)
 		       (step-redisplay))
 ;;; ... fall through ...
       SELF-QUOTING-INTERNAL-DATUM
 	(setq *executing-pointer* (cdr *executing-pointer*))
 	(vpdl-push *thing-pointer*)
-;;; ... fall through ... 
+;;; ... fall through ...
       GOT-VALUE
 	(trace-entering got-value)
 	(unless (null *executing-pointer*)
@@ -569,16 +569,16 @@ Modification History (most recent at top)
 	      (let ((infix-function (boxer-toplevel-symeval next-token)))
 		;; then if we're not looking for anyone else's args
 		;; or if we are looking for someone else's args but the
-		;; precedence of this infix function is greater than the 
+		;; precedence of this infix function is greater than the
 		;; function we're gathering args for...
 		(when (or (null *current-function*)
 			  (>& (boxer-function-precedence infix-function)
 			      (boxer-function-precedence *current-function*)))
-		  (when-stepping 
+		  (when-stepping
 		   (step-handle-infix-function infix-function next-token)
 		   (step-redisplay)
 		   (pdl-push-frame stepper-eval-args-frame *stepper-item-no*))
-		  
+
 		  ;; then we should do this infix function now, so push an
 		  ;; eval args frame for it.
 		  (pdl-push-frame eval-args-frame *arglist* *current-function*)
@@ -586,7 +586,7 @@ Modification History (most recent at top)
 		  ;;get number of args (should always be 2 for infix functions)
 		  (setq *arglist*
 			(cdr (boxer-function-arglist infix-function)))
-		  ;; CROCK: 
+		  ;; CROCK:
 		  ;; We COMPLETELY ignore the flavor of the first input
 		  ;; to infix functions.  If we wanted a port to the
 		  ;; first arg we've already lost.  If there are ever
@@ -595,7 +595,7 @@ Modification History (most recent at top)
 		  ;; in the future, probably.  For now, we can just
 		  ;; vpdl-pop the arg and arg-case treat it here.
 		  (setq *executing-pointer* (cdr *executing-pointer*))
-		  (when-stepping 
+		  (when-stepping
 		   (step-advance-token)
 		   (step-advance-token)
 		   (step-redisplay))
@@ -613,24 +613,24 @@ Modification History (most recent at top)
 	   ;; the end of the procedure.
 	   (setq *returned-value* (vpdl-pop))
 	   (go eval-finished-unit)))
-	
+
       EVAL-FINISHED-UNIT
 	(trace-entering eval-finished-unit)
 	;; When we come here we have just evaluated a single expression.
 	(go eval-loop)
-	
+
       CHECK-IF-ALL-ARGS
 	(trace-entering check-if-all-args *arglist*)
-	(cond ((null *arglist*) 
+	(cond ((null *arglist*)
 	       (go funcall))
 	      ;; for now we always take the default number of args
 	      (t (go eval-finished-unit)))
-	
+
       FUNCALL
 	(if (compiled-boxer-function? *current-function*)
 	    (go sfuncall)
 	    (go ufuncall))
-	
+
       UFUNCALL
 	(trace-entering ufuncall *current-function*)
 	;; pop the eval-args frame.  save the function away first.
@@ -650,13 +650,13 @@ Modification History (most recent at top)
 	   (go tail-recurse))
 |#
 	(go ufuncall-really)
-	
+
       UFUNCALL-REALLY
-	(trace-entering ufuncall-really)        
+	(trace-entering ufuncall-really)
 	;; push the UFUN-FRAME
 	;; We don't need to push *arglist* because it's not examined unless
 	;; current-function is non-nil, and it's set to nil here.
-	
+
 	;; If the function is from a port, we alter the save away the
 	;; *-variable-roots and set them accordingly before proceeding
 	;; with the function call.
@@ -683,7 +683,7 @@ Modification History (most recent at top)
 	(setq *ufuncall-sfun-epilog-handler* nil)
 	(setq *executing-function* *function*)
 	(setq *executing-line* (interpreted-boxer-function-text *function*))
-	(setq *current-function* nil)          
+	(setq *current-function* nil)
         (dynamically-bind-variables-and-locals
          (interpreted-boxer-function-reversed-arg-names *function*)
          (interpreted-boxer-function-locals *function*))
@@ -698,11 +698,11 @@ Modification History (most recent at top)
 	  (go ufuncall-return))
 	(setq *executing-pointer* (car *executing-line*))
 	(go eval-loop)
-	
+
       TAIL-RECURSE
 	;; sorry
 	(go ufuncall-really)
-	
+
       SFUNCALL
 	(trace-entering sfuncall *current-function*)
 	(setq *executing-sfun* *current-function*)
@@ -711,7 +711,7 @@ Modification History (most recent at top)
 	 (let ((it *stepper-item-no*))
 	   (pdl-pop-frame stepper-eval-args-frame *stepper-item-no*)
 	   (step-finish-eval-args it)))
-	
+
       SFUNCALL-SKIP-ARGS
 	(trace-entering SFUNCALL-SKIP-ARGS)
 	(when-stepping
@@ -727,21 +727,21 @@ Modification History (most recent at top)
 		     (compiled-boxer-function-object *executing-sfun*))
 		    (funcall
 		     (compiled-boxer-function-object *executing-sfun*)))))
-	;; preserve the executing_sfun as function in case we need it if 
-	;; this sfun didn't return a value and one was wanted 
+	;; preserve the executing_sfun as function in case we need it if
+	;; this sfun didn't return a value and one was wanted
 	(setq *function* *executing-sfun*)
-	;; set executing-sfun to nil again for error messages and for pause 
+	;; set executing-sfun to nil again for error messages and for pause
 	;; on so it can tell whether to be invisible
 	(setq *executing-sfun* nil)
 	;; Handle trigger stuff (merge it into sfun continuation)
 	(when (not (null *trigger-list-to-run*))
-	  (setq *returned-value* 
+	  (setq *returned-value*
 		(handle-trigger-list-in-eval *returned-value*
 					     *executing-pointer*)))
 	;; go to the sfun's continuation
       SFUNCALL-CONTINUATION-DISPATCH
 	(trace-entering SFUNCALL-CONTINUATION-DISPATCH
-			*sfun-continuation* *returned-value*)	
+			*sfun-continuation* *returned-value*)
 	(case *sfun-continuation*
 	  (*std-sfun-continuation* (go sfuncall-return)) ;Used by most sfuns.
 	  (*macroexpand-sfun-continuation*
@@ -761,11 +761,11 @@ Modification History (most recent at top)
 	   ;; since we use *returned-value* pass the procedure, we need to
 	   ;; bash it back to *novalue* after we are through
 	   ;; procedures that get run will set *returned-value* themselves,
-	   ;; this is for the case of the empty procedure 
+	   ;; this is for the case of the empty procedure
 	   (setq *returned-value* *novalue*)
 	   (go ufuncall-really))
 	  (*run-list-sfun-continuation*
-	   ;; Used by REPEAT and recursive EVAL 
+	   ;; Used by REPEAT and recursive EVAL
 	   ;; invocations and by ATSIGN to insert things
 	   ;; into the token stream.  Bug in recursive
 	   ;; eval use -- frames don't get popped.
@@ -789,11 +789,11 @@ Modification History (most recent at top)
 			   *sfun-continuation*)
 	     (go handle-exception)))
 	;; can't fall through
-	
+
       SFUNCALL-RETURN
 	(trace-entering sfuncall-return *returned-value*)
-	;; If an error was signalled, we know that a value has not been 
-	;; returned [at best, it was caught and we are about to run a 
+	;; If an error was signalled, we know that a value has not been
+	;; returned [at best, it was caught and we are about to run a
 	;;           catch resumption list:]
 	;; ^^^that was a logo comment.  one day when we have an error system...
 	;; Go recover from it.
@@ -804,7 +804,7 @@ Modification History (most recent at top)
 		(step-function-return-sequence *returned-value*)
 		(step-redisplay))
 	       (go funcall-return-no-value))
-	      (t 
+	      (t
 	       (special-arg-handling-cases
 		(bu::datafy
 		    (setq *returned-value*
@@ -840,7 +840,7 @@ Modification History (most recent at top)
 
 		  (vpdl-push *returned-value*)
 		  (go got-value)))
-	
+
       EVAL-DONE-WITH-LINE
 	(trace-entering eval-done-with-line)
 	;; When we get here, if there is a current function, we haven't gotten
@@ -934,7 +934,7 @@ Modification History (most recent at top)
                    ((typep *returned-value* 'boxer::foreign-data)
                     (setq *returned-value* (boxer::port-to *returned-value*)))
 		   ((not (fast-eval-port-box? *returned-value*))
-		    (evaluator-helpful-message 
+		    (evaluator-helpful-message
 		     "Made a PORT to a copy of the result of a DOIT box.")
 		    (setq *returned-value*
 			  (boxer::port-to (copy-thing *returned-value*))))))
@@ -953,7 +953,7 @@ Modification History (most recent at top)
 		(step-redisplay)
 		(step-advance-token)
 		(step-redisplay))
-               
+
                ;; yuck
                (when (typep *returned-value* 'boxer::foreign-data)
                  (setq *returned-value* (copy-thing *returned-value*)))
@@ -988,13 +988,13 @@ Modification History (most recent at top)
 	  ;; handler can win
 	  (setq *exception-signalled* nil)
 	  (case old-exception-value
-	    (error-exception 
+	    (error-exception
 	     (when (eq (handle-error) :background-error)
 	       (go DONE-WITH-EVAL)))
 	    ((pause-int-exception pause-sfun-exception pause-error-exception)
 	     (pause old-exception-value))
 	    ;; here for interrupts of various sorts
-	    (t (signal-error :eval-error "Bad value for exception signalled:" 
+	    (t (signal-error :eval-error "Bad value for exception signalled:"
 		      old-exception-value)
 	       (go handle-exception))))
 	;; if there was another exception signalled during the handling above,
