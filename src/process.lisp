@@ -35,7 +35,7 @@ Modification History (most recent at top)
 
 ;;; Hmm, that means we can't use process-variable inside a recursive-prim.
 
-;;; This file and process-prims need to be recompiled whenever there are 
+;;; This file and process-prims need to be recompiled whenever there are
 ;;; changes in the state variables, local or global, including changes in
 ;;; recursive primitives.
 
@@ -43,7 +43,7 @@ Modification History (most recent at top)
 ;;; :LOCAL state variables.
 
 ;;; The variable info is sorted just before final use.
- 
+
 
 (defmacro process-variable (process variable-name)
   (declare-eval-state-variable-index-macro)
@@ -65,7 +65,7 @@ Modification History (most recent at top)
 ;;; Call this to make a process vector for a new process.
 (defun init-process-state-vector ()
   (setq *current-process* (%make-process-state-vector))
-  (setf (process-variable *current-process* *current-process*) 
+  (setf (process-variable *current-process* *current-process*)
 	*current-process*))
 
 (defmacro %reset-process (proc)
@@ -155,7 +155,7 @@ Modification History (most recent at top)
 
 (defun %retrieve-evaluator-state-internal ()
   (%retrieve-evaluator-state-internal-1))
-			
+
 
 
 
@@ -182,16 +182,16 @@ Modification History (most recent at top)
 	     ;; we should walk up ufun frames and append rest-of-line
 	     ;; to the top level *executing-pointer*
 	     (primitive-signal-error :process "The box, " box ", is busy"))))))
-  
+
 
 ;;
 
 
 ;;; Scheduler stuff
 
-;;; Each process keep track of the position of the cursor when the user 
-;;; pressed DOIT.  When the process returns a value, Boxer moves the cursor 
-;;; to the best approximation of THERE that exists and prints the returned 
+;;; Each process keep track of the position of the cursor when the user
+;;; pressed DOIT.  When the process returns a value, Boxer moves the cursor
+;;; to the best approximation of THERE that exists and prints the returned
 ;;; value.
 
 #|    (setf (process-variable *current-process* *process-doit-cursor-position*)
@@ -209,9 +209,9 @@ Modification History (most recent at top)
 ;;;
 ;;; (1) IF there is no unhandled input
 ;;;       THEN IF there is another process waiting to be run,
-;;;              THEN do a process switch 
+;;;              THEN do a process switch
 ;;;            OTHERWISE, do nothing (continue
-;;;                       with the current process) and return NIL 
+;;;                       with the current process) and return NIL
 ;;; (2) IF there is unhandled input
 ;;;       THEN IF there is a process in :iowait
 ;;;              THEN handle the input with the process's bindings and
@@ -227,7 +227,7 @@ Modification History (most recent at top)
 ;;;              THEN switch to that process and return T, setting
 ;;;               the *last-interrupt-char*
 ;;;            OTHERWISE do a process switch if we can
-;;; 
+;;;
 
 ;;;
 ;;; This is (should be) 2 tiered, polling for input
@@ -260,7 +260,7 @@ Modification History (most recent at top)
       (setq *boxer-processes* (list proc))
       (nconc (last *boxer-processes*) (list proc))))
 
-;; we could slam the evaluator state into the process before 
+;; we could slam the evaluator state into the process before
 ;; finishing it, instead, we'll just reset it explicitly here
 (defun process-finish (proc)
   (reset-process proc)
