@@ -30,9 +30,9 @@ Modification History (most recent at the top)
  1/25/02 make sure that we have a ufun-frame in find-ufun-frame-with-name
          before asking for ufun frame slots
  2/17/01 merged current LW and MCL files
-10/23/99 genericized the index arithmetic in bu::repeat because of reports 
+10/23/99 genericized the index arithmetic in bu::repeat because of reports
          of users running into the fixnum size limit
- 4/21/99 implemented ANY-OF and ALL-OF 
+ 4/21/99 implemented ANY-OF and ALL-OF
  4/21/99 Start logging changes: source = boxer version 2.3
 
 |#
@@ -89,7 +89,7 @@ Modification History (most recent at the top)
   (BOXER::PORT-TO *LEXICAL-VARIABLES-ROOT*))
 
 (defboxer-primitive bu::copy (box)
-  (if (or (port-box? box) (and (vectorp box) (fast-eval-port-box? box))) 
+  (if (or (port-box? box) (and (vectorp box) (fast-eval-port-box? box)))
       (copy-thing (boxer::get-port-target box))
       box))
 
@@ -166,9 +166,9 @@ Modification History (most recent at the top)
 				      (list-rest rest-of-line-must-be-empty))
   :state-variables (*ifs-list*)
   :before
-  (cond 
+  (cond
     ((not (null rest-of-line-must-be-empty))
-     (signal-error :ifs-bug 
+     (signal-error :ifs-bug
 		   "IFS statements must appear on lines by themselves."))
     ((or (numberp box) (not (fast-eval-data-box? box)))
      (signal-error :ifs-format "expects a data box"))
@@ -243,7 +243,7 @@ Modification History (most recent at the top)
 	       ((false? b) (boxer-boolean nil))
 	       (t (signal-error :NOT-TRUE-OR-FALSE b))))
 	(t (signal-error :NOT-TRUE-OR-FALSE a))))
-	 
+
 (defboxer-primitive (bu::not 0) ((dont-copy true-or-false))
   (cond ((true? true-or-false) (boxer-boolean nil))
 	((false? true-or-false) (boxer-boolean t))
@@ -259,7 +259,7 @@ Modification History (most recent at the top)
                                        'bu::some " instead"))
         (t
          (cond ((not (null rest-of-line-must-be-empty))
-                (signal-error 
+                (signal-error
                  :any-of-bug
                  "ANY-OF statements must appear on lines by themselves."))
                ((or (numberp box) (not (fast-eval-data-box? box)))
@@ -270,13 +270,13 @@ Modification History (most recent at the top)
 	                          (cached-code-editor-box box))))
                          (1stline (do ((line (car code) (car code)))
 			              ((null code) nil)
-			            (if (null line) 
+			            (if (null line)
                                         (pop code)
                                       (return (pop code))))))
                     (if (null 1stline) *false*
                       (progn
                         (set-and-save-state-variables code)
-                        (recursive-eval-invoke 
+                        (recursive-eval-invoke
                          (list* 'eval::any-of 1stline)))))))))
   :after (cond ((null *boolean-clauses*)
                 (restore-state-variables) nil)
@@ -289,7 +289,7 @@ Modification History (most recent at the top)
 			   (restore-state-variables) nil)
 			  (t
 			   (cons 'eval::any-of nextline)))))))
-             
+
 ;; give helper function same name in eval package is a crock to make
 ;; the error message come out right
 (defboxer-primitive eval::any-of ((dont-copy clause) (list-rest ignore))
@@ -304,7 +304,7 @@ Modification History (most recent at the top)
   :state-variables (*boolean-clauses*)
   :before
   (cond ((not (null rest-of-line-must-be-empty))
-         (signal-error 
+         (signal-error
           :some-of-bug
           "SOME statements must appear on lines by themselves."))
         ((or (numberp box) (not (fast-eval-data-box? box)))
@@ -315,13 +315,13 @@ Modification History (most recent at the top)
                            (cached-code-editor-box box))))
                   (1stline (do ((line (car code) (car code)))
                                ((null code) nil)
-                             (if (null line) 
+                             (if (null line)
                                  (pop code)
                                (return (pop code))))))
              (if (null 1stline) *false*
                (progn
                  (set-and-save-state-variables code)
-                 (recursive-eval-invoke 
+                 (recursive-eval-invoke
                   (list* 'eval::some-of 1stline)))))))
   :after (cond ((null *boolean-clauses*)
                 (restore-state-variables) nil)
@@ -334,7 +334,7 @@ Modification History (most recent at the top)
 			   (restore-state-variables) nil)
 			  (t
 			   (cons 'eval::some-of nextline)))))))
-             
+
 ;; give helper function same name in eval package is a crock to make
 ;; the error message come out right
 (defboxer-primitive eval::some-of ((dont-copy clause) (list-rest ignore))
@@ -371,7 +371,7 @@ Modification History (most recent at the top)
                     (if (null 1stline) *true*
                       (progn
                         (set-and-save-state-variables code)
-                        (recursive-eval-invoke 
+                        (recursive-eval-invoke
                          (list* 'eval::all-of 1stline)))))))))
   :after (cond ((null *boolean-clauses*)
                 (restore-state-variables) nil)
@@ -384,7 +384,7 @@ Modification History (most recent at the top)
 			   (restore-state-variables) nil)
 			  (t
 			   (cons 'eval::all-of nextline)))))))
-             
+
 (defboxer-primitive eval::all-of ((dont-copy clause) (list-rest ignore))
   ignore
   (cond ((true? clause) *true*)
@@ -532,17 +532,17 @@ Modification History (most recent at the top)
 ;;; See FOR-EACH-BOX below.
 (defrecursive-eval-primitive bu::for-each-item ((bu::port-to variable)
 						box (list-rest what))
-  :state-variables (*for-each-variable-object* 
+  :state-variables (*for-each-variable-object*
 		    *for-each-counter*
 		    *for-each-length*
-		    *for-each-box* 
+		    *for-each-box*
 		    *for-each-list*)
   :before (let ((variable-object (boxer::get-port-target variable))
 		(length (if (numberp box) 1
 			    (boxer::box-length-in-elements box))))
 	    (cond ((zerop& length) *novalue*)
 		  (t (boxer::change variable-object (boxer::item 1 box))
-		     (set-and-save-state-variables 
+		     (set-and-save-state-variables
 		      variable-object
 		      1
 		      length
@@ -576,10 +576,10 @@ Modification History (most recent at the top)
 
 (defrecursive-eval-primitive bu::for-each-box ((bu::port-to variable)
 					       box (list-rest what))
-  :state-variables (*for-each-variable-object* 
+  :state-variables (*for-each-variable-object*
 		    *for-each-counter*
 		    *for-each-length*
-		    *for-each-box* 
+		    *for-each-box*
 		    *for-each-list*)
   :before (let ((variable-object (boxer::get-port-target variable))
 		(length (if (numberp box) 1
@@ -610,14 +610,14 @@ Modification History (most recent at the top)
 |#
 
 (defrecursive-eval-primitive bu::for-each-row ((bu::port-to variable) box (list-rest what))
-  :state-variables (*for-each-variable-object* 
+  :state-variables (*for-each-variable-object*
 		    *for-each-counter*
 		    *for-each-length*
-		    *for-each-box* 
+		    *for-each-box*
 		    *for-each-list*)
   :before (let ((variable-object (boxer::get-port-target variable)))
 	    (boxer::change variable-object (boxer::nth-row 1 box))
-	    (set-and-save-state-variables 
+	    (set-and-save-state-variables
 	     variable-object
 	     1
 	     (if (numberp box) 1 (boxer::number-of-rows box))
@@ -628,7 +628,7 @@ Modification History (most recent at the top)
 		(restore-state-variables)
 		nil)
 	       (t (incf *for-each-counter*)
-		  (boxer::change *for-each-variable-object* 
+		  (boxer::change *for-each-variable-object*
 				 (boxer::nth-row *for-each-counter* box))
 		  *for-each-list*)))
 
@@ -639,26 +639,26 @@ Modification History (most recent at the top)
 ;;; @ (unbox)
 ;;;
 
-;;; UNBOX (@) is an implied EVAL followed by an UNBOX, with the result 
+;;; UNBOX (@) is an implied EVAL followed by an UNBOX, with the result
 ;;; stuck into the token stream.
-;;; 1. For symbols and self-evaluating objects we can TRY to skip the 
+;;; 1. For symbols and self-evaluating objects we can TRY to skip the
 ;;;    full EVAL phase:
-;;;   If the object to unbox is a symbol, we get the value immediately and 
-;;;    continue unboxing. If the object is a number, then the result is the 
+;;;   If the object to unbox is a symbol, we get the value immediately and
+;;;    continue unboxing. If the object is a number, then the result is the
 ;;;    number and we dispatch to NUMBER, skipping the rest of the @ process
 ;;;    because numbers are self-evaluating and not unboxable.
 ;;;   Otherwise the object is a self-evaluating box.  To do the recursive eval,
 ;;;    we make a procedure out of its contents and run that contents as if the
-;;;    box were invisible.  (Later if we have a variable for the box being 
+;;;    box were invisible.  (Later if we have a variable for the box being
 ;;;    funcalled, we must make sure that variable doesn't get bound.)
-;;; 2. Then we take that result and put it into the token stream. 
+;;; 2. Then we take that result and put it into the token stream.
 ;;;   If the result is a DATA box we dispatch to DATA-BOX.  If the result is a
-;;;    number of tokens, we must put them into a procedure and put that 
+;;;    number of tokens, we must put them into a procedure and put that
 ;;;    procedure into the token stream.
 ;;; Notes:
-;;; When we get a self-evaluating box, we strip away the box and put its 
+;;; When we get a self-evaluating box, we strip away the box and put its
 ;;; contents into a procedure.  We can do some hackery here to make the simple
-;;; unbox case simple -- if there is only one box inside the box and it's a 
+;;; unbox case simple -- if there is only one box inside the box and it's a
 ;;; self-evaluating object then we just return that object.
 ;;; MULTIPLE @ isn't done.
 ;;; The interaction between &REST and @ and DATAFY and @ isn't done.
@@ -689,7 +689,7 @@ Modification History (most recent at the top)
 ;; this is probably not quite right yet.
 ;; it would be nice to get rid of the case dispatch.
 (defun boxer::flat-box-unport-for-atsign (vp)
-  (let ((list (boxer::flat-box-items-copy-for-atsign 
+  (let ((list (boxer::flat-box-items-copy-for-atsign
 	       (boxer::vp-target vp))))
     (do ((tail list (cdr tail))
 	 (item (car list) (car tail)))
@@ -698,7 +698,7 @@ Modification History (most recent at the top)
 		 (special-token? item))
 	     item)
 	    ((boxer::port-box? item)
-	     (setf (car tail) 
+	     (setf (car tail)
 		   (boxer::make-virtual-port-from-editor-port item)))
 	    ((boxer::virtual-copy? item)
 	     (setf (car tail)
@@ -706,8 +706,8 @@ Modification History (most recent at the top)
 	    ((boxer::box? item)
 	     (setf (car tail)
 		   (boxer::port-to item)))
-	    (t (primitive-signal-error 
-		:atsign-bug 
+	    (t (primitive-signal-error
+		:atsign-bug
 		"Unrecognized object" item "in @"))))))
 ;;; STOP
 ;;; STOP takes an optional box name to stop (i.e., like a throw tag)
@@ -719,13 +719,13 @@ Modification History (most recent at the top)
   (when (not (null *current-function*))
     (primitive-signal-error :DOESN\'T-OUTPUT))
   (cond ((not (null possible-procedure-name))
-	 (if (null (cdr possible-procedure-name)) 
+	 (if (null (cdr possible-procedure-name))
 	     (unwind-to-tag (car possible-procedure-name))
 	     (primitive-signal-error
 	      :excess-args-error "needs at most one DOIT-BOX name as input")))
 	(t (unwind-to-frame (find-next-ufun-frame *pdl*))))
   (setq *executing-pointer* nil)
-  (setq *executing-line* '(nil))	 
+  (setq *executing-line* '(nil))
   *returned-value*)
 
 ;;; STOP-LOOP
@@ -767,7 +767,7 @@ Modification History (most recent at the top)
   ;; followed by:
   (do ()
       ((eq (stack-frame-type *pdl*) 'ufun-frame))
-    (if (not (null *pdl*)) 
+    (if (not (null *pdl*))
         (funcall (get-stack-frame-unwinder (stack-frame-type *pdl*)))
         (return))))
 
@@ -811,7 +811,7 @@ Modification History (most recent at the top)
   :after (cond ((null *error-signalled?*)
                 (restore-state-variables)
                 nil)
-               (t ;; *error-signalled?* should have a list of handler and 
+               (t ;; *error-signalled?* should have a list of handler and
                   ;; the error box
                   (prog1 *error-signalled?*
                     (setq *error-signalled?* nil)))))
@@ -824,8 +824,8 @@ Modification History (most recent at the top)
         (parsed-handlers nil))
     (dolist (line ftext (nreverse parsed-handlers))
       (cond ((null (cdr line))
-             (signal-error 
-              :handler-errors-format 
+             (signal-error
+              :handler-errors-format
               "Handler lines should be pairs of error-type(s) and handlers"
               handlers-box))
             (t (push (list*
@@ -834,7 +834,7 @@ Modification History (most recent at the top)
                                      (find-package "KEYWORD")))
                             ((or (boxer::box? (car line))
                                  (boxer::virtual-copy? (car line)))
-                             (mapcar #'(lambda (x) 
+                             (mapcar #'(lambda (x)
                                          (intern (symbol-name x)
                                                  (find-package "KEYWORD")))
                                      (boxer::flat-box-items (car line))))
@@ -846,11 +846,11 @@ Modification History (most recent at the top)
 
 (defun find-error-handler (error-type start-frame)
   (do ((handler-frame (find-error-handler-frame start-frame)
-                      (find-error-handler-frame 
+                      (find-error-handler-frame
                        (stack-frame-next-frame handler-frame)))
-       (handlers *error-handler-list* 
+       (handlers *error-handler-list*
                  ;; Note: this grabs the value from the PREVIOUS frame (do NOT do*)
-                 (dbg-handle-errors-special-frame-*error-handler-list* 
+                 (dbg-handle-errors-special-frame-*error-handler-list*
                   handler-frame)))
       ((null handler-frame) nil)
     (let ((handler (get-error-handler error-type handlers)))
@@ -875,7 +875,7 @@ Modification History (most recent at the top)
   ;; this is like signal error except we setup the error reporting args
   ;; in a different way to avoid seeing things like "Error, Primitive: Error"
   ;; search for a possible handler
-  (let ((canonicalized-error 
+  (let ((canonicalized-error
          (intern (symbol-name (car (boxer::flat-box-items error-type)))
                  (find-package "KEYWORD"))))
     (multiple-value-bind (ehf handler)
