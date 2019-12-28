@@ -42,20 +42,19 @@ Modification History (most recent at top)
   ()
   ()
   (:metaclass block-compile-class)
-  (:abstract-class t)
   (:documentation "A Mixin for Foreign data types inthe boxer evaluator"))
 
 ;; called from CHANGE.  <new-value> will be standard boxer data, possibly a
 ;; port-to other foreign-data
 (defmethod foreign-data-set ((fd foreign-data) new-value)
   (declare (ignore new-value))
-  (eval::primitive-signal-error "No set method defined for "
+  (boxer-eval::primitive-signal-error "No set method defined for "
                                 (type-of fd)
                                 " type of foreign data"))
 
 ;; converts foreign data to a boxer object
 (defmethod virtual-copy-foreign-data ((fd foreign-data))
-  (eval::primitive-signal-error "No Virtual Copy method defined for "
+  (boxer-eval::primitive-signal-error "No Virtual Copy method defined for "
                                 (type-of fd)
                                 " type of foreign data"))
 
@@ -73,10 +72,10 @@ Modification History (most recent at top)
   (declare (ignore var))
   nil)
 
-(defmethod eval::boxer-symeval-dots-list-fd (error-symbol
+(defmethod boxer-eval::boxer-symeval-dots-list-fd (error-symbol
                                              (fd foreign-data) list)
   (declare (ignore list))
-  (eval::signal-error :dots-variable-lookup "in" error-symbol))
+  (boxer-eval::signal-error :dots-variable-lookup "in" error-symbol))
 
 
 
