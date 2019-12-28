@@ -50,14 +50,14 @@ Modification History (most recent at top)
 #+mcl            (in-package :eval)
 
 ;;;;
-;;;; This file handles variables and binding in Boxer programs. 
+;;;; This file handles variables and binding in Boxer programs.
 
 ;;; Static Variable Lookup and Caching
 ;;; Bugs:
 ;;;  Something should control the growth of the cache.  Maybe we can
 ;;;  make it a ring buffer.
-;;; It would be nice if deleted variables could be made to go away 
-;;; automatically, since in this scheme they don't go away until you try 
+;;; It would be nice if deleted variables could be made to go away
+;;; automatically, since in this scheme they don't go away until you try
 ;;; to access one.
 
 (defconstant *non-caching-variable-uid* -2)
@@ -219,8 +219,8 @@ Modification History (most recent at top)
 	   ;; one set of virtual copy rows.  If there is, then the
 	   ;; BOX has been CHANGEd
 	   ;;
-	   ;; Also, IWBNI we could tell whether we happen to be in the 
-	   ;; recursive case here and at least signal a warning that we are 
+	   ;; Also, IWBNI we could tell whether we happen to be in the
+	   ;; recursive case here and at least signal a warning that we are
 	   ;; scoping for a variable up through a box that has been CHANGEd
 	   (cond ((setq tmp
 			(boxer::lookup-variable-in-vc-rows-entry (car vc-rows)
@@ -249,7 +249,7 @@ Modification History (most recent at top)
 ;;; valid, so we don't need to flush any caches, so we don't
 ;;; put in a new uid.
 ;;;
-;;; Otherwise, if the variable doesn't already exist in this box, we make a 
+;;; Otherwise, if the variable doesn't already exist in this box, we make a
 ;;; static variable entry and push it on the static-variables-alist of the box.
 ;;; If the variable exists in a box outside this one, we change
 ;;; the uid for that variable, to cause it to be flushed from
@@ -287,16 +287,16 @@ already exist.  I have enough trouble already with this hairy cache scheme."
                   ;; not the best solution but rather benign
                   ;(warn "Trying to link a box-interface into a box-interface")
                   )
-                 ((let ((intbox (boxer::box-interface-box 
+                 ((let ((intbox (boxer::box-interface-box
                                  (static-variable-value existing-entry))))
                     (and (boxer::box? intbox)
                          (not (eq intbox value))))
-                  ;; looks like there is already a box associated with this 
+                  ;; looks like there is already a box associated with this
                   ;; make sure the behavior here matches the regular (box)
                   ;; name conflict clause below
                   (boxer::avoid-box-name-conflict-by-removing-name value))
                  (t
-	          (boxer::link-box-into-interface 
+	          (boxer::link-box-into-interface
                    (static-variable-value existing-entry) value))))
 	  (t (boxer::avoid-box-name-conflict-by-removing-name value)
 	     ;; alternatively, we could use:
@@ -340,7 +340,7 @@ already exist.  I have enough trouble already with this hairy cache scheme."
 		(slot-value self 'static-variables-alist))))
 
 ;; this is used by avoid-box-name-conflict-by-removing-name rather than
-;; remove-static-variable.  It differs in that the value is passed in as 
+;; remove-static-variable.  It differs in that the value is passed in as
 ;; well to be used for comparison purposes
 (defmethod remove-static-variable-pair ((self boxer::box) variable value
                                         &optional (box-interface-too? nil))
@@ -350,7 +350,7 @@ already exist.  I have enough trouble already with this hairy cache scheme."
 				     (eq (static-variable-name entry) variable)
 				     (boxer::box-interface?
 				      (static-variable-value entry))
-                                     (eq (boxer::box-interface-box 
+                                     (eq (boxer::box-interface-box
                                           (static-variable-value entry))
                                          value))
 				;; should do some sort of consistency check
@@ -399,7 +399,7 @@ already exist.  I have enough trouble already with this hairy cache scheme."
 	  (remove-static-variable superior-box name))))))
 
 
-#|    (remove-all-static-bindings-with-matching-value superior-box self) |# 
+#|    (remove-all-static-bindings-with-matching-value superior-box self) |#
 
 
 ;;;
@@ -453,25 +453,25 @@ already exist.  I have enough trouble already with this hairy cache scheme."
 (defun dynamic-variable-lookup (variable)
   ;; This gives something like a 20% speedup in MCL -- MT
   #+mcl (declare (optimize (speed 3) (safety 0)))
-  ;; Array and bottom locals are for compilers that can't do the 
+  ;; Array and bottom locals are for compilers that can't do the
   ;; side-effect analysis (most of them).
   (let ((array *dynamic-variables-names-array*)
 	(bottom  *dynamic-variables-bottom*))
     (do ((index (1-& *dynamic-variables-top*) (1-& index)))
 	((<& index bottom) nil)
-      (when (eq variable (svref& array index)) 
+      (when (eq variable (svref& array index))
 	(return (svref& *dynamic-variables-values-array* index))))))
 
 ;; used by landscapes
 (defun %dynamic-variable-set (variable newvalue)
   #+mcl (declare (optimize (speed 3) (safety 0)))
-  ;; Array and bottom locals are for compilers that can't do the 
+  ;; Array and bottom locals are for compilers that can't do the
   ;; side-effect analysis (most of them).
   (let ((array *dynamic-variables-names-array*)
 	(bottom  *dynamic-variables-bottom*))
     (do ((index (1-& *dynamic-variables-top*) (1-& index)))
 	((<& index bottom) :error)
-      (when (eq variable (svref& array index)) 
+      (when (eq variable (svref& array index))
 	(return (setf (svref& *dynamic-variables-values-array* index)
                       newvalue))))))
 
@@ -482,7 +482,7 @@ already exist.  I have enough trouble already with this hairy cache scheme."
 	(bottom *dynamic-variables-bottom*))
     (do ((index (1-& *dynamic-variables-top*) (1-& index)))
 	((<& index bottom) nil)
-      (when (eq name (svref& array index)) 
+      (when (eq name (svref& array index))
 	(return index)))))
 
 ;;; This function is for BOXER-SET-INTERNAL.
@@ -521,7 +521,7 @@ already exist.  I have enough trouble already with this hairy cache scheme."
 	      (svref& *dynamic-variables-values-array* i)))
       (setq *dynamic-variables-names-array* new-names-array)
       (setq *dynamic-variables-values-array* new-values-array))))
-    
+
 ;;;
 ;;; Dynamic variable binding interface.
 ;;;
@@ -529,8 +529,8 @@ already exist.  I have enough trouble already with this hairy cache scheme."
 ;;; a list of static-variable-objects, and the values for the arglist
 ;;; variables on the VPDL.
 
-;;; Rather than pusing the dynamic stack pointer in the ufuncall 
-;;; frame, we push a marker on the dynamic variables stack to 
+;;; Rather than pusing the dynamic stack pointer in the ufuncall
+;;; frame, we push a marker on the dynamic variables stack to
 ;;; mark procedure boundaries.
 ;;; We should do tests and see which is better.
 (defun dynamically-bind-variables-and-locals (arglist local-list)
@@ -573,16 +573,16 @@ already exist.  I have enough trouble already with this hairy cache scheme."
 ;;; array index to stop lookup up at, default 0.  *dynamic-variables-top* is
 ;;; where to start looking from.  *dynamic-variables-names-array* is the array
 ;;; of names, and *dynamic-variables-values-array* is the array of values.
-;;; the local 
+;;; the local
 ;;; WRONG:
 ;;; Dynamic Boxer variables exist in an alist.  You get the value of a
 ;;; variable by calling the lookup function on it.
 
-;;; If the variable is not found in the alist, then the static variables 
-;;; of the boxes in the lexical scope of the outermost box being executed 
-;;; are searched.  This searching happens by asking the DOIT'ed box to look 
-;;; up the variable in its static alist, and failing finding it there to 
-;;; ask the box it is inside of to do the same, all the way to the 
+;;; If the variable is not found in the alist, then the static variables
+;;; of the boxes in the lexical scope of the outermost box being executed
+;;; are searched.  This searching happens by asking the DOIT'ed box to look
+;;; up the variable in its static alist, and failing finding it there to
+;;; ask the box it is inside of to do the same, all the way to the
 ;;; toplevel box.
 
 ;;; We cache references to lexical variables to keep execution deep inside box
@@ -646,7 +646,7 @@ already exist.  I have enough trouble already with this hairy cache scheme."
 ;;; 4/10/99 now that we have ASK, we have to indirect, perhaps
 ;;; later we can bum these functions to to address the 1st pt above
 ;;; NOTE: undiscovered on the mac because type checking was left OUT
-;;; because we habitually used safety = 1 
+;;; because we habitually used safety = 1
 (defun ask/tell-frame-dynamic-variables-bottom (frame)
   (if (ask-special-frame-p frame)
       (dbg-ask-special-frame-*dynamic-variables-bottom* frame)
@@ -666,7 +666,7 @@ already exist.  I have enough trouble already with this hairy cache scheme."
 (defun boxer-symeval-handle-^ (special-token-object)
   (let ((old-frame *old-tell-special-frame*))
     (if (null old-frame)
-	(signal-error :too-many-^ 
+	(signal-error :too-many-^
 		      "can't find a box named" special-token-object)
 	(let ((*dynamic-variables-bottom*
                (ask/tell-frame-dynamic-variables-bottom old-frame))
@@ -690,7 +690,7 @@ already exist.  I have enough trouble already with this hairy cache scheme."
 	      (*old-tell-special-frame*
 	       (ask/tell-frame-old-tell-special-frame old-frame)))
 	  (boxer-symeval variable)))))
-	
+
 (defun boxer-symeval-dots-list (symbol-for-error list)
   (let ((root (boxer-symeval (car list))))
     (cond ((eq root *novalue*) *novalue*)
@@ -738,8 +738,8 @@ already exist.  I have enough trouble already with this hairy cache scheme."
 	   (boxer-symeval-dots-list-eb symbol-for-error root (cdr list)))
           ((typep root 'boxer::foreign-data)
            (boxer-symeval-dots-list-fd symbol-for-error root (cdr list)))
-	  (t (signal-error 
-	      :dots-variable-lookup 
+	  (t (signal-error
+	      :dots-variable-lookup
 	      "in" symbol-for-error (car list) "is not a DATA box or PORT")))))
 
 (defun boxer-symeval-dots-list-vc (symbol-for-error box vars)
@@ -802,7 +802,7 @@ already exist.  I have enough trouble already with this hairy cache scheme."
 |#
 
 ;;; This function is related to (and calls) lookup-static-variable-internal
-;;; but is used for the ^ feature.  It looks up the second value in the box 
+;;; but is used for the ^ feature.  It looks up the second value in the box
 ;;; hierarchy.  It doesn't go through the cache.
 (defmethod lookup-static-variable-previous-value-internal ((self boxer::box)
 							   variable)
@@ -815,7 +815,7 @@ already exist.  I have enough trouble already with this hairy cache scheme."
 	(if (null sup)
 	    nil
 	    (lookup-static-variable-previous-value-internal sup variable)))))
-		 
+
 ;; Used for getting global values of things like infix functions
 ;; and other things the user can't bind.
 (defun boxer-toplevel-symeval (variable)
