@@ -31,7 +31,7 @@ Modification History (most recent at the top)
 #-(or lispworks mcl lispm) (in-package 'eval)
 #+(or lispworks mcl)       (in-package :eval)
 
-;;; This file deals with 
+;;; This file deals with
 ;;;    the VPDL,
 ;;;    the PDL,
 ;;;    the stack frame declarations which the evaluator uses directly,
@@ -55,11 +55,11 @@ Modification History (most recent at the top)
 ;;;
 ;;; Instead, for the less common stack frames, we will keep them
 ;;; in a single per process vector.  Trading off one level of indirection
-;;; in stack frame allocation/deallocation for a substantially smaller 
+;;; in stack frame allocation/deallocation for a substantially smaller
 ;;; process state
 ;;;
 ;;; At some point we will probably want to meter what the real usage
-;;; is and move some particular frames resources directly into the 
+;;; is and move some particular frames resources directly into the
 ;;; process state.  At the moment, ufun-frames, eval-args-frame and
 ;;; doit-port-funcall-frames are directly in the process state.  All
 ;;; other frames, expecially those associated with primitives are
@@ -89,7 +89,7 @@ Modification History (most recent at the top)
 
 (defmacro special-frame-source (frame-name)
   `(svref& *special-eval-frames* ,(special-stack-frame-offset frame-name)))
-  
+
 (defvar *special-stack-frame-initializers*)
 
 ;;; this called inside of setup-eval
@@ -97,7 +97,7 @@ Modification History (most recent at the top)
   (let ((inits (make-array *max-special-stack-frame-offset*)))
     (dolist (pair *stack-frame-name-offset-alist*)
       (setf (svref& inits (cdr pair))
-	    (symbol-function 
+	    (symbol-function
 	     (intern-in-eval-package
 	      ;; this should be the same as the "pool-allocate"
 	      ;; function name defined below
@@ -151,9 +151,9 @@ Modification History (most recent at the top)
 		     (symbol-format nil "DEALLOCATE-~A-INTERNAL" name)))
 	(create (intern-in-eval-package (symbol-format nil "CREATE-NEW-~A-INTERNAL"
 						name)))
-	(pdl-push-frame (intern-in-eval-package 
+	(pdl-push-frame (intern-in-eval-package
 			 (symbol-format nil "PDL-PUSH-~S-INTERNAL" name)))
-	(pdl-pop-frame (intern-in-eval-package 
+	(pdl-pop-frame (intern-in-eval-package
 			(symbol-format nil "PDL-POP-~S-INTERNAL" name)))
 	(reset-name (intern-in-eval-package
 		     (symbol-format nil "RESET-~S-ALLOCATION" name)))
@@ -193,7 +193,7 @@ Modification History (most recent at the top)
 	   (let ((size (stack-frame-cache-size ,(source)))
 		 (next-free (stack-frame-cache-pointer ,(source))))
 	     (when (=& size next-free)
-	       (when (and *warn-about-stack-growth* 
+	       (when (and *warn-about-stack-growth*
                           (>=& size ,warning-quantity))
 		 (evaluator-notice ,growth-notice))
 	       (poll t)
@@ -210,7 +210,7 @@ Modification History (most recent at the top)
 	   ;; it's not particularly suitable for use with
 	   ;; the current frame alloc/dealloc mechanism, whereby
 	   ;; frames are kept in arrays, since the array gets
-	   ;; thrown away too.  if we keep this simple 
+	   ;; thrown away too.  if we keep this simple
 	   ;; deallocation algorithm then maybe we should
 	   ;; change the allocation algorithm to use conses
 	   ;; or something.  but it's probably better to redo
@@ -321,7 +321,7 @@ Modification History (most recent at the top)
 (defvar *stack-frame-resetters* nil)
 
 (defun add-stack-frame-resetter (frame-type reset-function)
-  (setq *stack-frame-resetters* 
+  (setq *stack-frame-resetters*
 	(delete frame-type *stack-frame-resetters*
 		:test #'(lambda (a b) (eq a (car b)))))
   (push (cons frame-type reset-function) *stack-frame-resetters*))
@@ -331,7 +331,7 @@ Modification History (most recent at the top)
 (defvar *stack-frame-unwinders* nil)
 
 (defun add-stack-frame-unwinder (frame-type unwind-function)
-  (setq *stack-frame-unwinders* 
+  (setq *stack-frame-unwinders*
 	(delete frame-type *stack-frame-unwinders*
 		:test #'(lambda (a b) (eq a (car b)))))
   (push (cons frame-type unwind-function) *stack-frame-unwinders*))
@@ -368,7 +368,7 @@ Modification History (most recent at the top)
     (setf (car list) name)
     list))
 
-	 
+
 ;;; The function for resetting the stacks after a Lisp error which
 ;;; prevented proper unwinding of the stacks.  Only the first
 ;;; form *should* be necessary, since the PDL handlers should
@@ -378,7 +378,7 @@ Modification History (most recent at the top)
 ;;; that things get close to consistent, we reset the other stacks
 ;;; by hand.  If they're already reset, it won't matter.
 (defun reset-stacks ()
-  (unwind-protect 
+  (unwind-protect
        (dolist (pair *stack-frame-resetters*)
 	 (funcall (cdr pair)))
     (setq *pdl* nil)
@@ -398,8 +398,8 @@ Modification History (most recent at the top)
 						(string frame-type)))
        (frame)
      (format t "~%~A:" ',frame-type)
-     (format 
-      t 
+     (format
+      t
       ,(string-trim
 	"()"
 	(format
@@ -409,7 +409,7 @@ Modification History (most recent at the top)
 	      #'(lambda (name)
 		  (concatenate 'string
 			       "~%"
-			       (nstring-capitalize 
+			       (nstring-capitalize
 				(string-trim "*"
 					     (substitute #\space #\-
 							 (string name))))
@@ -439,7 +439,7 @@ Modification History (most recent at the top)
 
 (define-stack-frame (ufun-frame 100 100 200 400 nil)
     "Making more procedure copies"
-  (progn (dynamically-unbind-variables) 
+  (progn (dynamically-unbind-variables)
 	 (restore-state-variables))
   *executing-function* *executing-line* *executing-pointer*
   *run-list-sfun-epilog-handler* *ufuncall-sfun-epilog-handler*
