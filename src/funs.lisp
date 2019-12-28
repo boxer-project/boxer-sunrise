@@ -27,7 +27,7 @@ Modification History (most recent at top)
  9/18/01 updated COMPILED-BOXER-FUNCTION-NAME for lispworks
  2/13/01 merged current LW and MCL files
 12/16/99 added placeholder stub for compiled-boxer-function-name
- 5/04/99 make sure we always use VC mechanism in 
+ 5/04/99 make sure we always use VC mechanism in
          convert-editor-box-to-interpreted-procedure-internal
  5/04/99 starting logging changes: source = Boxer version 2.3 pre-release
 
@@ -151,14 +151,14 @@ Modification History (most recent at top)
 
 #-(or lispm lucid excl mcl lispworks)
 (defun compiled-boxer-function-name (function)
- ;  (warn 
+ ;  (warn
  ;   "~%The function, Compiled-Boxer-Function-Name, needs to be defined for ~A"
  ;   (lisp-implementation-type))
  (multiple-value-bind (exp env name)
      (function-lambda-expression function)
    (declare (ignore exp env))
    name))
-  
+
 
 ;;; BOXER-FUNCTION-NARGS should be called sparingly, since it calls
 ;;; length.  The evaulator doesn't use it.
@@ -200,7 +200,7 @@ Modification History (most recent at top)
 	 (precedence (if (symbolp name-descriptor)
 			 (calculate-default-precedence arglist)
 			 (cadr name-descriptor)))
-	 (infixp (and (consp name-descriptor) 
+	 (infixp (and (consp name-descriptor)
 		      (not (null (member 'infix name-descriptor))))))
     `(progn
        (proclaim '(special ,name))
@@ -271,23 +271,23 @@ Modification History (most recent at top)
   (unless (eq 'LIST-REST (caar (last arglist)))
     (error "Bugs in the implementation of DEFRECURSIVE-EVAL-PRIMITIVE will prevent this from working: ~S ~S" name arglist))
   (let ((FRAME-NAME (intern
-		     (concatenate 'string (symbol-name name) "-SPECIAL-FRAME") 
+		     (concatenate 'string (symbol-name name) "-SPECIAL-FRAME")
 		     'eval))
 	(USUAL-STATE-VARIABLES '(*RUN-LIST-SFUN-EPILOG-HANDLER*
 				 *EXECUTING-POINTER*)))
     `(progn
-       (DEFINE-STACK-FRAME (,frame-name .,(or stack-frame-allocation 
+       (DEFINE-STACK-FRAME (,frame-name .,(or stack-frame-allocation
 					      '(10 5 10 10)))
 	   ,(format nil "Making more room for ~A" name)
 	 ,unwind-protect-form
 	 ,@usual-state-variables
 	 . ,state-variables)
        (DEFBOXER-PRIMITIVE ,name ,arglist
-	 (macrolet ((SET-AND-SAVE-STATE-VARIABLES 
+	 (macrolet ((SET-AND-SAVE-STATE-VARIABLES
 			(&rest values)
 		      `(progn (pdl-push-frame
 			       ,',frame-name
-			       ;; +++ this previously contained an illegal 
+			       ;; +++ this previously contained an illegal
 			       ;; backquote construct, I'm hoping this has
 			       ;; the right effect
 			       . ,',(append usual-state-variables
@@ -295,13 +295,13 @@ Modification History (most recent at top)
 			      .,(mapcar #'(lambda (var val)
 					    `(setq ,var ,val))
 					',state-variables values)))
-		    (RESTORE-STATE-VARIABLES 
+		    (RESTORE-STATE-VARIABLES
 			()
 		      `(pdl-pop-frame ,',frame-name
                                       ;; +++ see above
                                       . ,',(append usual-state-variables
 						   state-variables)))
-		    (RECURSIVE-EVAL-INVOKE 
+		    (RECURSIVE-EVAL-INVOKE
 			(list)
 		      `(progn
 			 (setq *sfun-continuation*
@@ -315,7 +315,7 @@ Modification History (most recent at top)
 
 #|
 (setq *run-list-sfun-epilog-handler*
-      #'(lambda () 
+      #'(lambda ()
 	  (cond ((not (null *stop-flag*))
 		 (funcall ,',(get-stack-frame-unwinder
 			      frame-name))
@@ -332,17 +332,17 @@ Modification History (most recent at top)
 ;;; :BEFORE is the form which gets run before the recursive funcall.
 ;;;         This part of the function should look at the args, and
 ;;;         if it decides to do a recursive funcall it should:
-;;;          call SET-AND-SAVE-STATE-VARIABLES (with the args 
+;;;          call SET-AND-SAVE-STATE-VARIABLES (with the args
 ;;;             in the same order as above).
-;;;          call RECURSIVE-FUNCALL-INVOKE as the LAST SUBFORM.  
+;;;          call RECURSIVE-FUNCALL-INVOKE as the LAST SUBFORM.
 ;;;          If it doesn't, the recursive funcall won't happen.
 ;;; :AFTER is the form which gets run after the recursive funcall.
 ;;;        It has can examine, modify, or restore the state variables.
 ;;;        It should either call RESTORE-STATE-VARIABLES and return NIL, or if
 ;;;        desired, a new list to run (for RECURSIVE-EVAL only).????????
 ;;; :UNWIND-PROTECT-FORM is the form which gets run when the stack is unwinding
-;;;                      because of an error or throw.  It may be omitted if 
-;;;                      nothing other than (RESTORE-STATE-VARIABLES) need 
+;;;                      because of an error or throw.  It may be omitted if
+;;;                      nothing other than (RESTORE-STATE-VARIABLES) need
 ;;;                      be done.
 
 (defmacro defrecursive-funcall-primitive
@@ -353,7 +353,7 @@ Modification History (most recent at top)
   (let ((*package* (find-package "EVAL")))
     (let ((FRAME-NAME (intern
 		       (concatenate 'string (symbol-name name)
-				    "-SPECIAL-FRAME") 
+				    "-SPECIAL-FRAME")
 		       'eval))
 	  (USUAL-STATE-VARIABLES '(*UFUNCALL-SFUN-EPILOG-HANDLER*)))
       `(progn
@@ -367,7 +367,7 @@ Modification History (most recent at top)
 	   ,@usual-state-variables
 	   . ,state-variables)
 	 (DEFBOXER-PRIMITIVE ,name ,arglist
-	   (macrolet ((SET-AND-SAVE-STATE-VARIABLES 
+	   (macrolet ((SET-AND-SAVE-STATE-VARIABLES
 		       (&rest values)
 		       `(progn (pdl-push-frame ,',frame-name
 					       ,',@usual-state-variables
@@ -375,12 +375,12 @@ Modification History (most recent at top)
 			       .,(mapcar #'(lambda (var val)
 					     `(setq ,var ,val))
 					 ',state-variables values)))
-		      (RESTORE-STATE-VARIABLES 
+		      (RESTORE-STATE-VARIABLES
 		       ()
 		       `(pdl-pop-frame ,',frame-name
 				       ,',@usual-state-variables
 				       . ,',state-variables))
-		      (RECURSIVE-FUNCALL-INVOKE 
+		      (RECURSIVE-FUNCALL-INVOKE
 		       (function)
 		       `(progn
 			  (setq *sfun-continuation*
@@ -426,8 +426,8 @@ Modification History (most recent at top)
   (let ((name (gensym)))
     (proclaim `(special ,name))
     (let ((lisp-function-object
-	    (compile-lambda-if-possible 
-	      name 
+	    (compile-lambda-if-possible
+	      name
 	      `(lambda ()
 		 (let ,(mapcar
 			 #'(lambda (u) `(,u (vpdl-pop-no-test)))
@@ -446,14 +446,14 @@ Modification History (most recent at top)
 
 ;;;; Functions which define keys.
 ;;;;
-;; set in MAKE-INPUT-DEVICES (has to be declared here because the key 
-;; definition functions may need to use it to determine the appropriate 
+;; set in MAKE-INPUT-DEVICES (has to be declared here because the key
+;; definition functions may need to use it to determine the appropriate
 ;; shifted key names)
 (defvar boxer::*current-input-device-platform* nil
   "The input platform associated with the existing input device names")
 
-;;; Use exclusively this function for defining keys, and define the key 
-;;; function itself using DEFBOXER-COMMAND.  Using this function insures 
+;;; Use exclusively this function for defining keys, and define the key
+;;; function itself using DEFBOXER-COMMAND.  Using this function insures
 ;;; that the -KEY value won't be cached in lexical environments.  (Just
 ;;; think of the mess if every key you ever typed were cached in a
 ;;; lexical environment!)
@@ -544,14 +544,14 @@ Modification History (most recent at top)
   ;; VPs are made either as top level copies from editor ports or by
   ;; PORT-TO from editor or eval boxes.  The backpointer points to
   ;; the original editor port, if it exists.
-  ;; If there is a backpointer then the target is either an editor doit 
+  ;; If there is a backpointer then the target is either an editor doit
   ;; or editor data, and we just call cached-code-editor-port.
-  ;; If there's no backpointer, the target is either an eval data or 
-  ;; editor data box and we can't cache the code (because we won't know 
+  ;; If there's no backpointer, the target is either an eval data or
+  ;; editor data box and we can't cache the code (because we won't know
   ;; when it becomes invalid.)
   ;; We don't have ports to eval doit boxes.
   (if (null (boxer::vp-editor-port-backpointer vp))
-      (let ((new-fun (if (fast-eval-data-box? 
+      (let ((new-fun (if (fast-eval-data-box?
 			  (boxer::vp-target vp))
 			 (convert-virtual-copy-to-interpreted-procedure-internal
 			  (boxer::vp-target vp))
@@ -560,25 +560,25 @@ Modification History (most recent at top)
 	(setf (interpreted-boxer-function-lexical-call-p new-fun) t)
 	new-fun)
       (cached-code-editor-port (boxer::vp-editor-port-backpointer vp))))
-	  
+
 (defmethod cached-code ((box boxer::box))
   box
   (error "cached-code: Call either cached-code-editor-box, cached-code-editor-port, cached-code-virtual-copy or cached-code-virtual-port"))
 
-(defvar *flavored-input-markers* '(bu::datafy bu::port-to bu::dont-port 
+(defvar *flavored-input-markers* '(bu::datafy bu::port-to bu::dont-port
 				   bu::box-rest))
 
 (defun flavored-input-marker? (symbol)
   (fast-memq symbol *flavored-input-markers*))
 
-;;; This is the function that does all the hairy calculation for making boxer 
-;;; functions from doit boxes, data boxes, or ports.  If there is more than 
-;;; one set of virtual copy rows for the editor box, then this box has been 
-;;; CHANGEd but not updated (since we haven't yet returned to top level).  
-;;; If that's the case we call some even hairier function for getting the 
-;;; eval objects.  This uncertainty doesn't affect the cacheability of the 
-;;; resulting code, since if there are subsequent modifications the code will 
-;;; be flushed, and if there are references still to the older box the 
+;;; This is the function that does all the hairy calculation for making boxer
+;;; functions from doit boxes, data boxes, or ports.  If there is more than
+;;; one set of virtual copy rows for the editor box, then this box has been
+;;; CHANGEd but not updated (since we haven't yet returned to top level).
+;;; If that's the case we call some even hairier function for getting the
+;;; eval objects.  This uncertainty doesn't affect the cacheability of the
+;;; resulting code, since if there are subsequent modifications the code will
+;;; be flushed, and if there are references still to the older box the
 ;;; EDITOR-BOX-CACHEABLE? mechanism will detect that via time stamps.
 ;;; new version which allows boxes in input line (and removes them from
 ;;; interpreted-boxer-function-locals)
@@ -723,8 +723,8 @@ Modification History (most recent at top)
   ;; and if they have, then we have to call
   ;; something like convert-editor-box-to-interpreted-procedure-internal
   ;; except that it would be convert-vc-box... and it wouldn't
-  ;; cache the code in the vc or anything.  
-  (cached-code 
+  ;; cache the code in the vc or anything.
+  (cached-code
     (if (fast-eval-doit-box? box)
 	(boxer::vc-progenitor box)
 	box)))
@@ -732,7 +732,7 @@ Modification History (most recent at top)
 ;; either kind of port to either kind of box
 ;; actually, vc port to doit box isn't handled
 ;; or even needed (probly)
-;; For now we just take the code object from the 
+;; For now we just take the code object from the
 ;; doit or vc-doit, copy the structure itself,
 ;; and set the lexical-call-p slot to t.
 ;; It would be nice to cache this somehow.
