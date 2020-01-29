@@ -10,29 +10,16 @@
 ;;;Initial revision
 ;;;
 
+    Boxer
+    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
 
+    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
 
+    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
 
+    https://opensource.org/licenses/BSD-3-Clause
 
-
-
-
- Copyright 1985, 1986 Massachusetts Institute of Technology
-
- Permission to use, copy, modify, distribute, and sell this software
- and its documentation for any purpose is hereby granted without fee,
- provided that the above copyright notice appear in all copies and that
- both that copyright notice and this permission notice appear in
- supporting documentation, and that the name of M.I.T. not be used in
- advertising or publicity pertaining to distribution of the software
- without specific, written prior permission.  M.I.T. makes no
- representations about the suitability of this software for any
- purpose.  It is provided "as is" without express or implied warranty.
-
-
-  Enhancements Copyright 1986 - 1996 Regents of the University of California
-
-  Additional Portions Copyright 1999 - 2011 Pyxisystems LLC
 
                                          +-Data--+
                 This file is part of the | BOXER | system
