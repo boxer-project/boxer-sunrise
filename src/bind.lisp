@@ -46,8 +46,7 @@ Modification History (most recent at top)
 
 ;;; NEED TO WORK ON BOXER-SYMEVAL.
 
-#-(or mcl lispm) (in-package 'eval)
-#+mcl            (in-package :eval)
+(in-package :boxer-eval)
 
 ;;;;
 ;;;; This file handles variables and binding in Boxer programs.

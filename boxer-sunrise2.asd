@@ -37,6 +37,20 @@
                  ;; "Definitions necessary for describing evaluator state variables"
                  (:file "varmacs")
                  (:file "vars")
+                 ;; Beginning of `EVALDEFS` module
+                 ;; "Basic Defs and Macros used by the evaluator including how variables work."
+                ;;  (:file "evalmacs")
+                ;;  (:file "fdeval"))))
+                 ;;(:file "bind")
+                 ;;(:file "funs")
+                 ;;(:file "stacks")
+                 ;;(:file "eval")
+                 ;; Beginning of `EVALPRIMS` module
+                 ;; "Evaluator Primitives"
+                 ;;(:file "prims")
+                 ;; Beginning of `PROCESSES` module
+                 ;; "Macros and functions for creating processes"
+                 ;;(:file "process")
                 )))
   :description ""
   :long-description
