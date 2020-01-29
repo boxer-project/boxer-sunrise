@@ -51,11 +51,20 @@ Modification History (most recent at top)
 
 |#
 
-#-(or mcl lispm lispworks) (in-package 'eval)
-#+(or lispworks mcl)       (in-package :eval)
+(in-package :boxer-eval)
 
 (defun intern-in-eval-package (thing)
-  (intern (string thing) 'eval))
+  (intern (string thing) 'boxer-eval))
+
+(eval-when
+  (:compile-toplevel :load-toplevel :execute)
+    (defun create-local-eval-state-vars-bvl ()
+      (mapcan #'(lambda (entry)
+            (if (evsi-local-p entry)
+          (list (list (evsi-variable-name entry) (evsi-local-initial-value entry)))
+              nil))
+            *eval-state-vars*))
+)
 
 ;;; The evaluator invokes this macro right at the beginning
 ;;; to set up the state variables and handle unexpected Lisp errors.
@@ -64,11 +73,9 @@ Modification History (most recent at top)
     `(let ((,eval-completion-gensym nil))
        (catch 'boxer-error
 	 (unwind-protect
-	      (compiler-let (#+Lucid (lcl:*style-warnings* nil))
-		;; Keep Lucid from warning us about binding *foo*
-		;; if *foo* isn't special.
+	      (compiler-let ()
 		(let ,(create-local-eval-state-vars-bvl)
-		  (compiler-let (#+Lucid (lcl:*style-warnings* t))
+		  (compiler-let ()
 		    (prog1 (progn . ,body) (setq ,eval-completion-gensym t)))))
 	   (unless ,eval-completion-gensym
 	     (when boxer::*boxer-system-hacker* (format t "~%Unwinding stack..."))
@@ -76,17 +83,6 @@ Modification History (most recent at top)
 	     (reset-stacks)
 	     (when boxer::*boxer-system-hacker* (format t "Done~%"))))))))
 
-(defun create-local-eval-state-vars-bvl ()
-  (mapcan #'(lambda (entry)
-	      (if (evsi-local-p entry)
-		  (list (list (evsi-variable-name entry) (evsi-local-initial-value entry)))
-		       nil))
-	       *eval-state-vars*))
-
-
-
-
-
 ;;;
 ;;; Evaluator Debugging
 ;;;
@@ -107,9 +103,7 @@ Modification History (most recent at top)
      ., body))
 
 (defmacro quick-time ()
-  #+Lispm `(time:microsecond-time)
-  #+(or Allegro Lucid mcl lispworks) `(get-internal-real-time)
-  #-(or Lispm Lucid Allegro mcl lispworks) (error "Can't define quick-time"))
+ `(get-internal-real-time))
 
 (defmacro init-timing ()
   (when *compile-with-debugging*
@@ -130,16 +124,13 @@ Modification History (most recent at top)
        (when *debugging*
 	 (let ((time (quick-time)))
 	   (setq *last-timing-figure* (- time *start-time* *timing-overhead*))
-	   (format t #+3600 "~Dus~%" #-3600 "~Dms~%" *last-timing-figure*)
+	   (format t "~Dms~%" *last-timing-figure*)
 	   (format t "~A " ',place)
 	   ,@(boxer::with-collection
 	      (dolist (arg args)
 		(boxer::collect `(format t "~S ~S, " ',arg ,arg))))
 	   (do () ((not (char-equal (read-char)
-				    #+lispm #\SUSPEND
-                                    #+MCL #\c      ;;; MCL has primitive char names
-                                    #+lwwin #\c
-				    #-(or lispm lwwin mcl) #\control-c)))
+				    #\c))); TODO sgithens #\control-c)))
 	     (break))
 	   (setq *start-time* (quick-time)))))))
 
@@ -180,18 +171,7 @@ Modification History (most recent at top)
 ;; This function distinguishes eval objects from editor objects,
 ;; but doesn't guarantee to distinguish eval objects from other vectors.
 (defmacro eval-object? (thing)
-  #+(or lucid lispworks)
-  `(simple-vector-p ,thing)
-  #+(and pcl (or excl lispm))
-  `(and (vectorp ,thing) (not (eq (svref& ,thing 0) 'pcl::iwmc-class)))
-  #+mcl
-  `(vectorp ,thing)
-  #-(or lucid lispm excl mcl lispworks)
-  (warn "Check if your CLOS or PCL implementation uses vectors to make its objects~%~
-         If (vectorp (make-instance <whatever>) is T, then you will have to~%~
-         change the definition of ~S to handle this" 'eval-object?)
-  #-(or lucid lispm excl mcl lispworks)
-  `(vectorp ,thing))
+  `(simple-vector-p ,thing))
 
 (defmacro special-token? (thing)
   `(eq (svref& ,thing 0) 'special-eval-token))
@@ -225,9 +205,6 @@ Modification History (most recent at top)
 (defmacro compile-lambda-if-possible (name lambda-form)
   `(cond ((null *compile-boxer-generated-lambda?*) ,lambda-form)
 	 ((eq *compile-boxer-generated-lambda?* :fast-compile)
-	  #+lucid (setq *old-compilation-speed*
-			(cdr (fast-assq 'compilation-speed
-					lucid::*compiler-optimizations*)))
 	  (proclaim '(optimize (compilation-speed 3)))
 	  (unwind-protect (symbol-function (compile ,name ,lambda-form))
 	    (proclaim `(optimize (compilation-speed ,*old-compilation-speed*)))))
@@ -292,6 +269,6 @@ Modification History (most recent at top)
 ;;;
 ;;; Virtual Copy Interface
 ;;;
-(defmacro eval::copy-thing (object)
+(defmacro boxer-eval::copy-thing (object)
   `(boxer::virtual-copy ,object))
 
