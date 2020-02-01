@@ -1,4 +1,4 @@
-# R&D Notes
+# Development Notes
 
 ## Running cl-opengl examples
 
@@ -11,4 +11,11 @@ On Ubuntu this can be installed with `apt-get install freeglut3`.
 (ql:quickload 'cl-opengl)
 (asdf:load-system 'cl-glut-examples)
 (cl-glut-examples:run-examples)
+```
+
+## Running the lispworks opengl examples
+
+```lisp
+(load (example-file "opengl/examples/load"))
+(setf v (capi:display (make-instance 'icosahedron-viewer)))
 ```
