@@ -23,7 +23,7 @@
                  ;; boxer, when I get a chance to split this up in to modules.
                  (:file "disdcl")
                  ;; Beginning of `DRAW` module
-                 ;;(:file "opengl-utils")
+                ;;  (:file "opengl-utils")
                  (:file "draw-low-stubs")
                  (:file "draw-high-common")
                  (:file "draw-high-hardware-clip")
@@ -39,8 +39,8 @@
                  (:file "vars")
                  ;; Beginning of `EVALDEFS` module
                  ;; "Basic Defs and Macros used by the evaluator including how variables work."
-                ;;  (:file "evalmacs")
-                ;;  (:file "fdeval"))))
+                 ;; (:file "evalmacs")
+                 ;; (:file "fdeval"))))
                  ;;(:file "bind")
                  ;;(:file "funs")
                  ;;(:file "stacks")
@@ -51,6 +51,10 @@
                  ;; Beginning of `PROCESSES` module
                  ;; "Macros and functions for creating processes"
                  ;;(:file "process")
+                 ;; Beginning of `BOXWIN` module
+                 ;; "The interface between the Boxer Editor and the window system"
+                 ;; these are also window system specific
+                 ;; (:file "boxwin-opengl")
                 )))
   :description ""
   :long-description
