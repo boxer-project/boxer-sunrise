@@ -25,15 +25,15 @@ Modification History (most recent at top)
  6/23/10 put timestamps back into debug printing during startup
  3/21/10 file export menu added
  1/10/10 finished crash reporter, installed in boxer-system-error-restart{-loop}
- 1/03/10 defvar *starting-window-{width, height}*, (possibly) set by prefs, 
+ 1/03/10 defvar *starting-window-{width, height}*, (possibly) set by prefs,
          checked by window-system-specific-start-boxer-1
 12/13/09 image-to-bitmap rewritten to use OpenGL stuff
 11/23/09 resize-handler, resize-handler-utility, *suppressed-actions*
- 7/06/09 fixed typo in with-mouse-tracking which caused the body to run continously 
+ 7/06/09 fixed typo in with-mouse-tracking which caused the body to run continously
          even if the mouse was not moved
  6/06/09 main loop now uses boxer::repaint-with-cursor-relocation
 10/30/08 boxer-click-handler for the mac encodes multi button mice as shifted clicks
- 2/25/08 added QUIT item to file menu for #+win32 
+ 2/25/08 added QUIT item to file menu for #+win32
  1/02/08 abort-event? and abort-gesture? check for #\escape
 12/20/05 paste, paste-{test,pict}, image-to-bitmap
 12/15/05 window-system-specific-start-boxer-1 uses lw:lisp-image-name to
@@ -42,7 +42,7 @@ Modification History (most recent at top)
  7/20/05 *fullscreen-window-p* changed from nil to T
 12/28/04 added "Print" back to File menu
 12/22/04 Help menu changes: (boxwin-lw.lisp)
-12/21/04 new 30 day expiration for window-system-specific-start-boxer, 
+12/21/04 new 30 day expiration for window-system-specific-start-boxer,
          valid-key-or-quit support function
  6/15/04 removed mouse documentation code (moved to mousedoc.lisp)
  7/10/03 fixed bug in window-system-specific-start-boxer which required
@@ -65,9 +65,9 @@ Modification History (most recent at top)
          setup-evaluator, FINALLY check for start box and (re)setup-editor
  6/02/02 window-system-specific-start-boxer setup-evaluator needs to come BEFORE
          setup-editor
- 3/13/02 boxer-pane-mouse-down? flushes any pending input because if we are 
+ 3/13/02 boxer-pane-mouse-down? flushes any pending input because if we are
          checking the state of the mouse buttons, we don't want any mouse down
-         state to appear as a click 
+         state to appear as a click
  1/15/02 added boxer-pane-mouse-x and boxer-pane-mouse-y
  1/11/02 added new hints to name-pane def to fix bug in file save window resizing
 11/05/01 commented out graphics popup documentation from document-mouse-dispatch
@@ -133,10 +133,10 @@ Modification History (most recent at top)
    REDISPLAY is called." )
 
 (defvar *redisplayable-window-outermost-box-alist* nil
-  "An alist that keeps track of the outermost screen box for each 
+  "An alist that keeps track of the outermost screen box for each
    redisplayable window in *redisplayable-windows*. ")
 
-(defvar *point-blinker* nil)  
+(defvar *point-blinker* nil)
 
 ;; this should be initialized from some system parameter
 ;; and also adjustable as a preference...
@@ -183,9 +183,9 @@ Modification History (most recent at top)
 
 ;;;;; Menus
 
-(defvar *font-sub-font-menu* 
+(defvar *font-sub-font-menu*
   (make-instance 'capi::menu :title "Font"
-                 :items 
+                 :items
                  (list (make-instance 'capi::menu-component
                                       :interaction :single-selection
                                       :popup-callback 'set-font-menu-selection
@@ -195,18 +195,18 @@ Modification History (most recent at top)
 ;; numbers are from draw-low-lw
 (defvar *font-sub-size-menu*
   (make-instance 'capi::menu :title "Size"
-                 :items-function 
+                 :items-function
                  #'(lambda (interface)
                      (declare (ignore interface))
                      (list (make-instance 'capi::menu-component
                                           :interaction :single-selection
                                           :popup-callback 'set-font-size-menu-selection
                                           ; :items box::*bfd-font-size-values*
-                                          ; :print-function 'box::font-size-menu-item-name 
+                                          ; :print-function 'box::font-size-menu-item-name
                                           :items
                                           (mapcar #'(lambda (data)
-                                                      (make-instance 'capi:menu-item 
-                                                                     :data data 
+                                                      (make-instance 'capi:menu-item
+                                                                     :data data
                                                                      :print-function
                                                                      'box::font-size-menu-item-name))
                                                   boxer::*bfd-font-size-values*)
@@ -216,11 +216,11 @@ Modification History (most recent at top)
 ;                                      :interaction :single-selection
 ;                                      :popup-callback 'set-font-size-menu-selection
 ;                                      ; :items box::*bfd-font-size-values*
-;                                      ; :print-function 'box::font-size-menu-item-name 
+;                                      ; :print-function 'box::font-size-menu-item-name
 ;                                      :items
 ;                                      (mapcar #'(lambda (data)
-;                                                  (make-instance 'capi:menu-item 
-;                                                                 :data data 
+;                                                  (make-instance 'capi:menu-item
+;                                                                 :data data
 ;                                                                 :print-function
 ;                                                                 'box::font-size-menu-item-name))
 ;                                              boxer::*bfd-font-size-values*)
@@ -243,27 +243,27 @@ Modification History (most recent at top)
                  ; items need to be init'ed AFTER the colors have been setup
                  ; so we can use the color as the data of the menu-items
                  ; this is just a placeholder
-                 :items 
+                 :items
                  (list (make-instance 'capi::menu-component
                                       :interaction :single-selection
                                       :popup-callback 'set-font-color-menu-selection
-                                      :items '(:black :white :red :green :blue 
+                                      :items '(:black :white :red :green :blue
                                                :cyan :magenta :yellow :purple :gray :orange)
                                       :callback 'font-color-menu-action))))
 
 (defvar *file-export-menu*
   (make-instance 'capi::menu :title "Export..."
-                 :items 
+                 :items
                  (list (make-instance 'capi:menu-component
                                       :interaction :single-selection
                                       :items-function 'box::file-export-items-function
                                       :callback 'box::file-export-menu-action))))
 
-#+cocoa 
+#+cocoa
 (define-interface cocoa-boxer-interface (capi:cocoa-default-application-interface)
   ()
   (:menus
-   (application-menu "BoxerApp" 
+   (application-menu "BoxerApp"
                      ((:component
                        (("About Boxer"
                          :callback 'about-boxer-function
@@ -286,7 +286,7 @@ Modification History (most recent at top)
                          :callback-data :all-normal))
                          :callback #'(setf capi:top-level-interface-display-state)
                          :callback-type :data-interface)
-                      (:component                       
+                      (:component
                        (("Quit" :accelerator #\q :callback-type :interface :callback 'capi:destroy)))))
    (file-menu "File" ((:component
                        (("New"))))))
@@ -305,7 +305,7 @@ Modification History (most recent at top)
    (progree-layout column-layout
                    '(loadbar-pane message-pane)
                    :columns 1 :rows 2 :x-uniform-size-p t))
-  (:menus (min-menu "" ((:component 
+  (:menus (min-menu "" ((:component
                          (("Quit" :callback 'capi:destroy))))))
   ;(:menu-bar min-menu)
   (:default-initargs
@@ -319,7 +319,7 @@ Modification History (most recent at top)
                      &optional newtext (cr? T))
   (let ((loadbar-pane (slot-value self 'loadbar-pane)))
     (capi::apply-in-pane-process loadbar-pane
-                                 #'(setf capi:range-slug-start) 
+                                 #'(setf capi:range-slug-start)
                                  percentage loadbar-pane))
   (when (not (null newtext))
     (let* ((message-pane (slot-value self 'message-pane))
@@ -327,7 +327,7 @@ Modification History (most recent at top)
            (new-text (progn
                        (cond ((listp existing-text))
                              ((stringp existing-text)
-                              (cond ((string= existing-text "") 
+                              (cond ((string= existing-text "")
                                      (setq existing-text nil))
                                     (t (setq existing-text (list existing-text))))))
                        (cond ((null existing-text)
@@ -340,12 +340,12 @@ Modification History (most recent at top)
                              (t
                               (append existing-text (list newtext)))))))
       (capi::apply-in-pane-process message-pane
-                                   #'(setf capi::display-pane-text) 
+                                   #'(setf capi::display-pane-text)
                                    new-text message-pane))))
-             
+
 (define-interface boxer-frame ()
   ()
-  (:panes 
+  (:panes
    (name-pane title-pane :text "status line"
               :min-width nil :max-width :screen-width
               :visible-min-height *boxer-status-pane-height*
@@ -370,13 +370,13 @@ Modification History (most recent at top)
                               ((:button-2 :second-press) boxer-dclick-2-handler)
                               ((:button-3 :second-press) boxer-dclick-3-handler)
                               ;; shifted double clicks
-                              ((:button-1 :second-press :control) 
+                              ((:button-1 :second-press :control)
                                boxer-c-dclick-1-handler)
-                              ((:button-2 :second-press :control) 
+                              ((:button-2 :second-press :control)
                                boxer-c-dclick-2-handler)
                               ((:button-3 :second-press :control)
                                boxer-c-dclick-3-handler)
-                              ((:button-1 :second-press :meta)   
+                              ((:button-1 :second-press :meta)
                                boxer-a-dclick-1-handler)
                               ((:button-2 :second-press :meta)
                                boxer-a-dclick-2-handler)
@@ -439,14 +439,14 @@ Modification History (most recent at top)
                               #+cocoa
                               (:gesture-spec gesture-spec-handler)
                               #-cocoa
-                              (:character boxer-key-handler))               
+                              (:character boxer-key-handler))
                :display-callback 'boxer-expose-window-handler
                :resize-callback 'resize-handler
                :visible-min-width  *boxer-pane-minimum-width*
                :visible-min-height *boxer-pane-minimum-height*
                ))
   (:layouts
-   (boxer-layout column-layout 
+   (boxer-layout column-layout
                  '(name-pane boxer-pane)
                  :columns 1 :rows 2 :y-gap 1 :x-uniform-size-p t))
   ;; menu item actions are defined in lw-menu.lisp
@@ -465,7 +465,7 @@ Modification History (most recent at top)
                       (:component
                        (("Link to File" :callback 'open-xref)))
                       (:component
-                       (("Print" :accelerator #\p :callback 'window-hardcopy 
+                       (("Print" :accelerator #\p :callback 'window-hardcopy
                                  :callback-type :interface)))
                       #+win32 ; Macs hang this on the application menu
                       (:component
@@ -483,7 +483,7 @@ Modification History (most recent at top)
                                       :enabled-function 'box-check-menu-item-enabled?)))
                       (:component (("Preferences..." :callback 'menu-prefs)))
                       ("Find" :accelerator #\f :callback 'menu-find)))
-   (make-menu "Make" ((:component 
+   (make-menu "Make" ((:component
                        (("Data	{" :callback 'menu-data-box)
                         ("Doit	[" :callback 'menu-doit-box)))
                       (:component
@@ -491,17 +491,17 @@ Modification History (most recent at top)
                                   :callback 'menu-turtle-box)
                         ("Graphics" ;:accelerator "alt-g"
                          :callback 'menu-graphics-box)
-                        ("Sprite" ;:accelerator "alt-s" 
+                        ("Sprite" ;:accelerator "alt-s"
                          :callback 'menu-sprite-box)))
                       (:component
-                       (("Port" ;:accelerator "alt-p" 
+                       (("Port" ;:accelerator "alt-p"
                          :callback 'menu-port)))
                       ("Unbox" :accelerator #\@ :callback 'menu-unbox)))
    (box-menu "Box" ((:component (("Name	|" :callback 'menu-name
-                                           :enabled-function 
+                                           :enabled-function
                                            'box-check-menu-item-enabled?)))
                     (:component
-                     (("Closet" :callback 'menu-closet-flip 
+                     (("Closet" :callback 'menu-closet-flip
                                 :title-function 'closet-menu-item-print
                                 :enabled-function 'box-check-menu-item-enabled?)
                       ("Graphics" :callback 'menu-graphics-flip
@@ -509,7 +509,7 @@ Modification History (most recent at top)
                                   :enabled-function 'graphics-flip-menu-item-enabled?)
                       ("Data/Doit" :callback 'menu-data-doit-flip
                                    :title-function 'type-menu-item-print
-                                   :enabled-function 
+                                   :enabled-function
                                    'type-flip-menu-item-enabled?)
                       ("Transparency" :callback 'menu-transparency-flip
                                       :title-function 'trans-menu-item-print
@@ -518,9 +518,9 @@ Modification History (most recent at top)
                     display-props-sub-menu
                     boxtops-sub-menu
                     #+win32 ; broken on the macs...
-                    (:component (("Box Properties" 
+                    (:component (("Box Properties"
                                   :callback 'menu-box-properties
-                                  :enabled-function 
+                                  :enabled-function
                                   'box-check-menu-item-enabled?)))
                     ("Key/Mouse Mode	Ctrl-Alt-V"
                      :callback 'menu-key-mouse-mode
@@ -529,11 +529,11 @@ Modification History (most recent at top)
                                           :callback 'menu-do-line)))
                   ;(:component (("Step" :callback 'menu-step)))
                   (:component (("Stop	Ctrl-." :callback 'menu-stop)))))
-   (font-menu "Font" (("Zoom +" ;:accelerator "alt->" 
+   (font-menu "Font" (("Zoom +" ;:accelerator "alt->"
                        :callback 'menu-font-bigger)
-                      ("Zoom -"; :accelerator "alt-<" 
+                      ("Zoom -"; :accelerator "alt-<"
                        :callback 'menu-font-smaller)
-                      ;*font-sub-font-menu* *font-sub-size-menu* 
+                      ;*font-sub-font-menu* *font-sub-size-menu*
                       ;*font-sub-style-menu* *font-sub-color-menu*
                       ))
    (place-menu "Places" ((:component (("Top Level" :callback 'menu-top-level)))
@@ -570,8 +570,8 @@ Modification History (most recent at top)
    )
   (:menu-bar file-menu edit-menu make-menu box-menu do-menu font-menu place-menu help-menu)
 ;  (:menu-bar file-menu)
-  (:default-initargs 
-   :title "Boxer" 
+  (:default-initargs
+   :title "Boxer"
    :width  *boxer-frame-initial-width*
    :height *boxer-frame-initial-height*
    :confirm-destroy-function 'check-for-unsaved-boxes
@@ -587,13 +587,13 @@ Modification History (most recent at top)
   (declare (ignore interface))
   (push (cons message args) *osx-events-log*)
   (case message
-    (:open-file 
+    (:open-file
      (if (null *display-bootstrapping-no-boxes-yet*)
          ;; might want to do this if we are running in eval (e.g. long simulation) and the user
          ;; double clicks a file
          (safe-open-double-clicked-file args)
        (push (cons message args) *pending-osx-events*)))
-    #+lispworks6.1 (:finished-launching) 
+    #+lispworks6.1 (:finished-launching)
     (t (status-line-display 'boxer::boxer-editor-error
                             (format nil "Unhandled OSX event: ~A" message)))))
 
@@ -603,7 +603,7 @@ Modification History (most recent at top)
            (if (listp (car args))
                (dolist (p (car args))
                  (boxer::insert-cha boxer::*point* (boxer::read-internal p)))
-             (boxer::insert-cha boxer::*point* 
+             (boxer::insert-cha boxer::*point*
                                 (boxer::read-internal (car args))))
            (boxer::repaint)))))
 
@@ -616,12 +616,12 @@ Modification History (most recent at top)
 
 ;; some menu inits have to be preformed after the window is displayed
 (defun fixup-menus ()
-  ;; font color menu needs to be updated 
+  ;; font color menu needs to be updated
   ;*font-sub-color-menu*
   ;; all the font sub menus need to be added to the font menu
   (setf (capi::menu-items (slot-value *boxer-frame* 'font-menu))
         (append (capi::menu-items (slot-value *boxer-frame* 'font-menu))
-                (list *font-sub-font-menu* *font-sub-size-menu* 
+                (list *font-sub-font-menu* *font-sub-size-menu*
                       *font-sub-style-menu* *font-sub-color-menu*)))
   (setf (capi::menu-items (slot-value *boxer-frame* 'bw::file-menu))
         (let ((fmis (capi::menu-items (slot-value *boxer-frame* 'bw::file-menu))))
@@ -674,12 +674,12 @@ Modification History (most recent at top)
                    (make-instance 'capi:pinboard-layout
                                   :min-width 400 :min-height 200
                                   :description
-                                  (list (make-instance 
+                                  (list (make-instance
                                          'capi:title-pane
                                          :x 20 :y 20 :width 360 :height 100
                                          :text (format nil "This Boxer application expired on ~D/~D/~D" month date year))
                                         (make-instance
-                                         'capi:push-button 
+                                         'capi:push-button
                                          :x 175 :y 100 :width 50 :height 20
                                          :text "OK"
                                          :selection-callback
@@ -702,11 +702,11 @@ Modification History (most recent at top)
         (t (valid-key-or-quit T))))
 
 (defun valid-key-or-quit (&optional offer-demo?)
-  (do ((keystring (boxer::boxer-license-dialog offer-demo?) 
+  (do ((keystring (boxer::boxer-license-dialog offer-demo?)
                   (boxer::boxer-license-dialog offer-demo?)))
       ((when (not (null keystring))
          (let ((ln (read-from-string keystring nil nil)))
-           (and (numberp ln) 
+           (and (numberp ln)
                 (or (boxer::valid-license-number ln)
                     (and offer-demo? (zerop ln))))))
        (when (and offer-demo? (every #'(lambda (x) (char= x #\0)) keystring))
@@ -726,10 +726,10 @@ Modification History (most recent at top)
            (window-system-specific-start-boxer-1)))
         ((boxer::valid-boxer-license?)
          (window-system-specific-start-boxer-1))
-        ((capi::prompt-for-confirmation 
+        ((capi::prompt-for-confirmation
           "A valid License Key was not found for this machine.  Do you want to enter one now ?")
          ;; try and get a valid license
-         (do ((keystring (boxer::boxer-license-dialog) 
+         (do ((keystring (boxer::boxer-license-dialog)
                          (boxer::boxer-license-dialog)))
              ((when (not (null keystring))
                 (let ((ln (read-from-string keystring nil nil)))
@@ -755,7 +755,7 @@ Modification History (most recent at top)
         (break "Start Boxer"))
       (when (boxer::box? *old-world*)
         (setf (boxer::slot-value *old-world* 'boxer::screen-objs) nil))
-      (setq eval::*current-process* nil)  
+      (setq eval::*current-process* nil)
       (setq *old-world* boxer::*initial-box*)
       ;; extensions
       (setq boxer::*starting-directory-pathname* (lw:lisp-image-name))
@@ -763,12 +763,12 @@ Modification History (most recent at top)
       (start-boxer-progress "Loaded Extensions ~D" (get-internal-real-time) 20)
       ;; load prefs if they exists
       (let ((pf (boxer::default-lw-pref-file-name)))
-        (when (and pf (probe-file pf)) 
+        (when (and pf (probe-file pf))
           (boxer::handle-preference-initializations pf)))
       (start-boxer-progress "Initialized Preferences ~D"
                             (get-internal-real-time) 30)
       ;; maybe set the size of the boxer window...
-      ;; check window size prefs, they will be overidden by the following 
+      ;; check window size prefs, they will be overidden by the following
       ;; fullscreen-window check
       (let ((screen (convert-to-screen)))
         (when (> *starting-window-width* 0)
@@ -777,8 +777,8 @@ Modification History (most recent at top)
           (set-hint-table *boxer-frame* (list :height *starting-window-height*)))
         ;; fullscreen check AFTER prefs are loaded but BEFORE display ?
         (when *fullscreen-window-p*
-          (set-hint-table *boxer-frame* 
-                          (list :x 0 :y 0 
+          (set-hint-table *boxer-frame*
+                          (list :x 0 :y 0
                                 :width (- (screen-width screen) 10)
                                 :height (- (screen-height screen) 120)))))
       (start-boxer-progress "Setting Hints ~D" (get-internal-real-time) 40)
@@ -798,7 +798,7 @@ Modification History (most recent at top)
 ;     (let ((gs (gp::get-graphics-state *boxer-pane*)))
 ;     (setf (gp::graphics-state-foreground gs) boxer::*foreground-color*))
       ;; opengl equivalent would be...
-      (rendering-on (*boxer-pane*) 
+      (rendering-on (*boxer-pane*)
         (initialize-ogl-color-pool)
         (ogl-set-color box::*foreground-color*)
         ;; do other OpenGL inits...
@@ -817,7 +817,7 @@ Modification History (most recent at top)
           (cond ((not (null as-world?))
                  (setup-editor start-box))
                 (t (setup-editor (boxer::make-box (list (list start-box))))))))
-      (unless boxer::*boxer-version-info* 
+      (unless boxer::*boxer-version-info*
         (setq boxer::*boxer-version-info*
               (format nil "~:(~A~) Boxer" (machine-instance))))
       (set-cursor-visibility *point-blinker* t)
@@ -846,7 +846,7 @@ Modification History (most recent at top)
                ((probe-file *default-starting-box-file*)
                 (if (not (null boxer::*uc-copyright-free*))
                     (start-box-copyright-warning)
-                  (ignore-errors (values (boxer::load-binary-box-internal 
+                  (ignore-errors (values (boxer::load-binary-box-internal
                                           *default-starting-box-file*)
                                          T))))))))
 
@@ -854,13 +854,13 @@ Modification History (most recent at top)
   (boxer::make-box '(("Warning: start.box file detected")
                      ("The name of the initial box file has been changed")
                      ("to boxer-init.box"))))
-  
+
 
 #|
 (defun window-system-specific-start-boxer ()
   (when (boxer::box? *old-world*)
     (setf (boxer::slot-value *old-world* 'boxer::screen-objs) nil))
-  (setq eval::*current-process* nil)  
+  (setq eval::*current-process* nil)
   (setq *old-world* boxer::*initial-box*)
   (capi:display *boxer-frame*)
   (boxer::fill-bootstrapped-font-caches)
@@ -872,7 +872,7 @@ Modification History (most recent at top)
   (setq *expose-window-handler-function* 'expose-window-function)
   (setup-editor *old-world*)
   (eval::setup-evaluator)
-  (unless boxer::*boxer-version-info* 
+  (unless boxer::*boxer-version-info*
     (setq boxer::*boxer-version-info*
           (format nil "~:(~A~) Boxer" (machine-instance))))
   (set-cursor-visibility *point-blinker* t)
@@ -886,8 +886,8 @@ Modification History (most recent at top)
   )
 |#
 
-;;; We would like to make the editor somewhat reentrant for things like 
-;;; recursive edit levels this allows us to do things like call the 
+;;; We would like to make the editor somewhat reentrant for things like
+;;; recursive edit levels this allows us to do things like call the
 ;;; evaluator inside of an INPUT box
 
 ;;; THis should really be moved into a machine independent file....
@@ -898,7 +898,7 @@ Modification History (most recent at top)
   `(progv '(*region-being-defined* boxer::*editor-numeric-argument*
 	    boxer::*propagate-modified-messages?*)
           `(nil nil ,',recursive-p)
-     (unwind-protect 
+     (unwind-protect
 	 (progn . ,body)
 ;       (when (not (null *region-being-defined*))
 ;       (flush-region *region-being-defined*))
@@ -910,7 +910,7 @@ Modification History (most recent at top)
   (boxer::force-repaint)
   (boxer-command-loop))
 
-(defun boxer-command-loop ()  
+(defun boxer-command-loop ()
   (boxer-system-error-restart-loop
     (boxer-editor-bindings nil
       (boxer-command-loop-internal))))
@@ -924,7 +924,7 @@ Modification History (most recent at top)
 
 (defvar *double-click-pause-time* 0.4 "Time to wait for a possible second click")
 
-(defvar *double-click-wander* 5 
+(defvar *double-click-wander* 5
   "Number of pixels the mouse is allowed to shift between clicks")
 
 (defun user-event-in-queue? ()
@@ -964,10 +964,10 @@ Modification History (most recent at top)
                     (cond ((> (mouse-event-number-of-clicks new-input) 1)
                            (handle-boxer-input (pop *boxer-eval-queue*)))
                           (t ;; looks like the event system recorded it as
-                             ;; a pair of single clicks, throw out the second 
+                             ;; a pair of single clicks, throw out the second
                              ;; one and bash fields in the 1st one
                              (pop *boxer-eval-queue*)
-                             (setf (mouse-event-click click) 
+                             (setf (mouse-event-click click)
                                    (+ (mouse-event-click click) 3)
                                    ;; if we allow wandering, should we use the pos
                                    ;; of the 1st or 2nd click
@@ -985,18 +985,18 @@ Modification History (most recent at top)
     (catch 'boxer::boxer-editor-top-level
       (let ((input (pop *boxer-eval-queue*)))
         (cond ((null input)
-               (unless just-redisplayed? 
+               (unless just-redisplayed?
                  (boxer::repaint-with-cursor-relocation) (setq just-redisplayed? t))
                (mp::process-allow-scheduling)
                (when (no-more-input?)
                  (boxer-idle-function)
                  ;; be a good multi-processing citizen
-                 ;; NOTE: when the idle function is fixed to actually document 
+                 ;; NOTE: when the idle function is fixed to actually document
                  ;; the mouse, we will need to change this to
                  ;; mp::process-allow-scheduling so it can run continously...
                  (mp::process-wait "Boxer Input"
-                                   #'(lambda () 
-                                       (not (null (car *boxer-eval-queue*))))))) 
+                                   #'(lambda ()
+                                       (not (null (car *boxer-eval-queue*)))))))
               ((key-event? input)
                (handle-boxer-input (input-code input) (input-bits input))
                (setq just-redisplayed? nil))
@@ -1005,7 +1005,7 @@ Modification History (most recent at top)
                ;; processing of any mouse actions to
                ;; insure that we have an up to date view
                ;; of the editor
-               ;; 
+               ;;
                ;; also check for double click by pausing and looking for a
                ;; double click event
                (when (null just-redisplayed?) (boxer::repaint))
@@ -1015,9 +1015,9 @@ Modification History (most recent at top)
                (when (null just-redisplayed?) (boxer::repaint-with-cursor-relocation))
                (funcall input)
                (setq just-redisplayed? nil))
-              ((and (consp input) 
+              ((and (consp input)
                     (or (functionp (car input))
-                        (and (symbolp (car input)) 
+                        (and (symbolp (car input))
                              (not (null (symbol-function (car input)))))))
                (apply (car input) (cdr input)))
               ((not (null boxer::*boxer-system-hacker*))
@@ -1060,7 +1060,7 @@ Modification History (most recent at top)
 	((BOXER-CONTINUE
 	  #'(lambda () (throw 'system-error-restart-loop nil))
 	  :report-function
-	  #'(lambda (stream) 
+	  #'(lambda (stream)
 	      (unless (or ,warned-about-error-already-gensym
 			  boxer::*boxer-system-hacker*
 			  boxer::*inside-lisp-breakpoint-p*)
@@ -1097,7 +1097,7 @@ Modification History (most recent at top)
 	 ((BOXER-CONTINUE
 	   #'(lambda () (throw 'system-error-restart-loop nil))
 	   :report-function
-	   #'(lambda (stream) 
+	   #'(lambda (stream)
 	       (unless (or ,warned-about-error-already-gensym
 			   boxer::*boxer-system-hacker*
 			   boxer::*inside-lisp-breakpoint-p*)
@@ -1133,13 +1133,13 @@ Modification History (most recent at top)
 	           (setq ,warned-about-error-already-gensym nil))))))))
 
 ;; a hook for other stuff, on the mac, this ensures heap size
-(defun boxer-idle-function () 
+(defun boxer-idle-function ()
   #+mcl (ensure-macheap)
   )
 
 (defun handle-event-internal (event &optional bits)
   (boxer-system-error-restart
-;    (boxer-editor-bindings nil  
+;    (boxer-editor-bindings nil
     ;  Wrong place, this needs to be wrapped around the top level loop
       (catch 'boxer::boxer-editor-top-level
         (handle-boxer-input event bits)
@@ -1161,7 +1161,7 @@ Modification History (most recent at top)
   )
 
 (fli:define-c-typedef :lppoint (:pointer :point))
-  
+
 ;; BOOL GetCursorPos (LPPOIN lpPoint) ;
 (fli:define-foreign-function (%get-cursor-pos "GetCursorPos") ((lppoint :lppoint))
   :language :c
@@ -1170,12 +1170,12 @@ Modification History (most recent at top)
   :module "user32.dll")
 
 ;; eventually, statically allocate the point
-;; NOTE: this is relative to the upper left corner of the screen, need to 
+;; NOTE: this is relative to the upper left corner of the screen, need to
 ;;       offset the result by the location of the boxer window
 (defun get-cursor-pos ()
   (fli:with-dynamic-foreign-objects ()
     (let ((pt (fli:allocate-dynamic-foreign-object :type :point)))
-      (unwind-protect 
+      (unwind-protect
           (progn (%get-cursor-pos pt)
             (values (fli:foreign-slot-value pt 'x)
                     (fli:foreign-slot-value pt 'y)))
@@ -1193,7 +1193,7 @@ Modification History (most recent at top)
 
 ;; these are interface stubs, the main work is done after
 ;; Single Clicks...
-;; the only work done here is to setup *mouse-down-p* for use by MOUSE-BUTTONS 
+;; the only work done here is to setup *mouse-down-p* for use by MOUSE-BUTTONS
 
 (defvar *shift-clicks-emulates-multi-buttons* t
   "Mac Emulation, left mouse simulates mac mouse")
@@ -1202,87 +1202,87 @@ Modification History (most recent at top)
 (defconstant *click-2-byte-selector* (byte 1 1))
 (defconstant *click-3-byte-selector* (byte 1 2))
 
-(defun boxer-click-1-handler (w x y) 
+(defun boxer-click-1-handler (w x y)
   (declare (ignore w))
   (cond ((null *mouse-down-p*) (setq *mouse-down-p* 1))
         (t (setq *mouse-down-p* (dpb 1 *click-1-byte-selector* *mouse-down-p*))))
   (boxer-click-handler x y 0))
 
 (defun boxer-click-2-handler (w x y)
-  (declare (ignore w)) 
+  (declare (ignore w))
   (cond ((null *mouse-down-p*) (setq *mouse-down-p* 2))
         (t (setq *mouse-down-p* (dpb 1 *click-2-byte-selector* *mouse-down-p*))))
   (boxer-click-handler x y 1))
 
-(defun boxer-click-3-handler (w x y) 
-  (declare (ignore w)) 
+(defun boxer-click-3-handler (w x y)
+  (declare (ignore w))
   (cond ((null *mouse-down-p*) (setq *mouse-down-p* 4))
         (t (setq *mouse-down-p* (dpb 1 *click-3-byte-selector* *mouse-down-p*))))
   (boxer-click-handler x y 2))
 
 ;; shifted singled clicks...
 
-(defun boxer-c-click-1-handler (w x y) 
-  (declare (ignore w)) 
+(defun boxer-c-click-1-handler (w x y)
+  (declare (ignore w))
   (setq *mouse-down-p* 1) (boxer-click-handler x y 0 nil 1))
 
 (defun boxer-c-click-2-handler (w x y)
-  (declare (ignore w)) 
+  (declare (ignore w))
   (setq *mouse-down-p* 2) (boxer-click-handler x y 1 nil 1))
 
-(defun boxer-c-click-3-handler (w x y) 
+(defun boxer-c-click-3-handler (w x y)
   (declare (ignore w))
   (setq *mouse-down-p* 4) (boxer-click-handler x y 2 nil 1))
 
-(defun boxer-a-click-1-handler (w x y) 
-  (declare (ignore w)) 
+(defun boxer-a-click-1-handler (w x y)
+  (declare (ignore w))
   (setq *mouse-down-p* 1) (boxer-click-handler x y 0 nil 2))
 
 (defun boxer-a-click-2-handler (w x y)
   (declare (ignore w))
   (setq *mouse-down-p* 2) (boxer-click-handler x y 1 nil 2))
 
-(defun boxer-a-click-3-handler (w x y) 
+(defun boxer-a-click-3-handler (w x y)
   (declare (ignore w))
   (setq *mouse-down-p* 4) (boxer-click-handler x y 2 nil 2))
 
-(defun boxer-c-a-click-1-handler (w x y) 
+(defun boxer-c-a-click-1-handler (w x y)
   (declare (ignore w)) (setq *mouse-down-p* 1) (boxer-click-handler x y 0 nil 3))
 (defun boxer-c-a-click-2-handler (w x y)
   (declare (ignore w)) (setq *mouse-down-p* 2) (boxer-click-handler x y 1 nil 3))
-(defun boxer-c-a-click-3-handler (w x y) 
+(defun boxer-c-a-click-3-handler (w x y)
   (declare (ignore w)) (setq *mouse-down-p* 4) (boxer-click-handler x y 2 nil 3))
 
 
 ;; double clicks
-(defun boxer-dclick-1-handler (w x y) 
+(defun boxer-dclick-1-handler (w x y)
   (declare (ignore w)) (setq *mouse-down-p* 1) (boxer-click-handler x y 0 t))
 
 (defun boxer-dclick-2-handler (w x y)
   (declare (ignore w)) (setq *mouse-down-p* 2) (boxer-click-handler x y 1 t))
-(defun boxer-dclick-3-handler (w x y) 
+(defun boxer-dclick-3-handler (w x y)
   (declare (ignore w)) (setq *mouse-down-p* 4) (boxer-click-handler x y 2 t))
 
 ;; shifted double clicks
-(defun boxer-c-dclick-1-handler (w x y) 
+(defun boxer-c-dclick-1-handler (w x y)
   (declare (ignore w)) (setq *mouse-down-p* 1) (boxer-click-handler x y 0 t 1))
 (defun boxer-c-dclick-2-handler (w x y)
   (declare (ignore w)) (setq *mouse-down-p* 2) (boxer-click-handler x y 1 t 1))
-(defun boxer-c-dclick-3-handler (w x y) 
+(defun boxer-c-dclick-3-handler (w x y)
   (declare (ignore w)) (setq *mouse-down-p* 4) (boxer-click-handler x y 2 t 1))
 
-(defun boxer-a-dclick-1-handler (w x y) 
+(defun boxer-a-dclick-1-handler (w x y)
   (declare (ignore w)) (setq *mouse-down-p* 1) (boxer-click-handler x y 0 t 2))
 (defun boxer-a-dclick-2-handler (w x y)
   (declare (ignore w)) (setq *mouse-down-p* 2) (boxer-click-handler x y 1 t 2))
-(defun boxer-a-dclick-3-handler (w x y) 
+(defun boxer-a-dclick-3-handler (w x y)
   (declare (ignore w)) (setq *mouse-down-p* 4) (boxer-click-handler x y 2 t 2))
 
-(defun boxer-c-a-dclick-1-handler (w x y) 
+(defun boxer-c-a-dclick-1-handler (w x y)
   (declare (ignore w)) (setq *mouse-down-p* 1) (boxer-click-handler x y 0 t 3))
 (defun boxer-c-a-dclick-2-handler (w x y)
   (declare (ignore w)) (setq *mouse-down-p* 2) (boxer-click-handler x y 1 t 3))
-(defun boxer-c-a-dclick-3-handler (w x y) 
+(defun boxer-c-a-dclick-3-handler (w x y)
   (declare (ignore w)) (setq *mouse-down-p* 4) (boxer-click-handler x y 2 t 3))
 
 
@@ -1305,7 +1305,7 @@ Modification History (most recent at top)
 
 (defun boxer-pane-mouse-position ()
   ;; must allow track mouse handler in the interface(boxer) process to run
-  (mp::process-allow-scheduling) 
+  (mp::process-allow-scheduling)
   (values *track-mouse-x* *track-mouse-y*))
 
 (defun boxer-pane-mouse-x ()  (mp::process-allow-scheduling) *track-mouse-x*)
@@ -1333,7 +1333,7 @@ Modification History (most recent at top)
 (defun boxer-pane-mouse-down? ()
   (flush-input)
   ;; flush any pending input because if we are checking the state of the mouse
-  ;; buttons, we don't want any mouse down state to appear as a click 
+  ;; buttons, we don't want any mouse down state to appear as a click
   *mouse-down-p*)
 
 ;; VK_SHIFT   = #x10
@@ -1391,8 +1391,8 @@ Modification History (most recent at top)
                                 (body-function-name (gensym)))
 			       &body body)
   (declare (ignore event-skip timeout))
-  `(let ((,original-x-variable ,original-x-value) 
-         (,original-y-variable ,original-y-value) 
+  `(let ((,original-x-variable ,original-x-value)
+         (,original-y-variable ,original-y-value)
          (moved-p nil))
      (flet ((,body-function-name () . ,body))
        (with-mouse-cursor (,action)
@@ -1415,8 +1415,8 @@ Modification History (most recent at top)
                                (= ,original-y-variable last-mouse-y))
                     (record-mouse-state 2 ; anything non zero will do
                                         ,original-x-variable ,original-y-variable))))
-           (unless moved-p 
-             (unless (and (= ,original-x-variable ,original-x-value) 
+           (unless moved-p
+             (unless (and (= ,original-x-variable ,original-x-value)
                           (= ,original-y-variable ,original-y-value))
                (setq moved-p t)))
            (unless (and (= ,original-x-variable last-mouse-x)
@@ -1434,19 +1434,19 @@ Modification History (most recent at top)
            (nil) ; don't wait at all
            ((:down :button-press)
             ;; check for the mouse to be up before checking for the mouse to
-            ;; be down.  If we dont do this, then consecutive calls to 
+            ;; be down.  If we dont do this, then consecutive calls to
             ;; xxx-on-click will just return immediately after the 1st click
             ;; without waiting for the click
             (with-mouse-cursor (:retarget)
-              (mp::process-wait "Mouse Wait" 
+              (mp::process-wait "Mouse Wait"
                                 #'(lambda ()(not (boxer-pane-mouse-down?))))
-              (mp::process-wait "Mouse Wait" 
+              (mp::process-wait "Mouse Wait"
                                 #'(lambda ()(boxer-pane-mouse-down?)))
               ;; there should be a mouse event in the queue now so flush it
               (flush-input)))
            (:up
             (with-mouse-cursor (:retarget)
-              (mp::process-wait "Mouse Wait" 
+              (mp::process-wait "Mouse Wait"
                                 #'(lambda ()(not (boxer-pane-mouse-down?)))))))
          (multiple-value-bind (mx my)
              (boxer-pane-mouse-position)
@@ -1474,8 +1474,8 @@ Modification History (most recent at top)
 (defvar *saved-keys* nil)
 (defvar *save-key-length* 40)
 
-(defun save-key (char) 
-  (if (> (length *saved-keys*) *save-key-length*) 
+(defun save-key (char)
+  (if (> (length *saved-keys*) *save-key-length*)
       (setq *saved-keys* (nconc (cdr *saved-keys*) (list char)))
     (setq *saved-keys* (nconc *saved-keys* (list char)))))
 
@@ -1487,8 +1487,8 @@ Modification History (most recent at top)
   (next-event-id)
   (undocument-mouse)
   (save-key char)
-  (cond ((abort-event? char)         
-         (if (or boxer::*evaluation-in-progress?* 
+  (cond ((abort-event? char)
+         (if (or boxer::*evaluation-in-progress?*
                  eval::*enable-interrupt-polling-in-editor*)
              (boxer-interrupt)
            (queue-event (input-char->key-event char))))
@@ -1503,8 +1503,8 @@ Modification History (most recent at top)
   (save-key gesture)
 ;  (handle-boxer-input (sys::gesture-spec-data gesture) (gesture-spec-modifier gesture))
 ;  (redisplay)
-  (cond ((abort-gesture? gesture) 
-         (if (or boxer::*evaluation-in-progress?* 
+  (cond ((abort-gesture? gesture)
+         (if (or boxer::*evaluation-in-progress?*
                  eval::*enable-interrupt-polling-in-editor*)
              (boxer-interrupt)
            (queue-event (input-gesture->key-event gesture))))
@@ -1535,7 +1535,7 @@ Modification History (most recent at top)
                (status-line-display 'boxer::boxer-editor-error
                                            "Please use only alphanumeric keys")
                (get-character-input window :plain-char-wanted? t))
-             (values 
+             (values
               (code-char (input-code input))
               (input-bits input))))
           ((and (eq input 'boxer::com-abort)
@@ -1546,9 +1546,9 @@ Modification History (most recent at top)
            (beep)
            (status-line-display 'boxer::boxer-editor-error
                                        "Please press a key instead")
-           (get-character-input window 
+           (get-character-input window
                                 :plain-char-wanted? plain-char-wanted?)))))
-  
+
 
 ;; unused, see handlers in top level interface def
 (defun boxer-abort-handler (w x y)
@@ -1561,7 +1561,7 @@ Modification History (most recent at top)
 
 
 ;; mouse state
-;; 
+;;
 
 (defun mouse-button-state ()
   (if *dribble-playback*
@@ -1624,8 +1624,8 @@ Modification History (most recent at top)
 	      ((box::>& ,original-y-variable ,max-y)
 	       (warp-pointer *boxer-pane* ,max-x ,max-y))
 	      (t
-	       (warp-pointer *boxer-pane* ,max-x ,original-y-variable)))) 
-       ((box::<& ,original-y-variable ,min-y) 
+	       (warp-pointer *boxer-pane* ,max-x ,original-y-variable))))
+       ((box::<& ,original-y-variable ,min-y)
 	(warp-pointer *boxer-pane* ,original-x-variable ,min-y))
        ((box::>& ,original-y-variable ,max-y)
 	(warp-pointer *boxer-pane* ,original-x-variable ,max-y))
@@ -1637,10 +1637,10 @@ Modification History (most recent at top)
 (defun ogl-init (width height)
   (gl-matrix-mode *gl-projection*)
   (gl-load-identity)
-  ;; orthographic projection, 0,0 = top,left 
+  ;; orthographic projection, 0,0 = top,left
   ;; Note:GL-Ortho wants double-floats as args (and insists on the mac)
   (gl-ortho (coerce 0.0 'double-float)            (coerce (float width) 'double-float)
-            (coerce (float height) 'double-float) (coerce 0.0 'double-float) 
+            (coerce (float height) 'double-float) (coerce 0.0 'double-float)
             (coerce -1.0 'double-float)           (coerce 1.0 'double-float)))
 
 
@@ -1716,8 +1716,8 @@ Modification History (most recent at top)
              (push 'resize-handler-utility *suppressed-actions*))))))
 
 (defun resize-handler-utility (&optional width height)
-  (rendering-on (*boxer-pane*) 
-    (if (null width) 
+  (rendering-on (*boxer-pane*)
+    (if (null width)
         (multiple-value-bind (ww wh)
             (window-inside-size *boxer-pane*)
           (ogl-reshape ww wh))
@@ -1749,11 +1749,11 @@ Modification History (most recent at top)
 
 (defun boxer-interrupt () (setq *interrupt-flag* t *boxer-eval-queue* nil))
 
-;; this may need to force a process switch to give the input handlers a chance 
+;; this may need to force a process switch to give the input handlers a chance
 ;; to run
 (defun keyboard-interrupt? (window)
   (declare (ignore window))
-  (if *interrupt-flag* 
+  (if *interrupt-flag*
        (progn (setq *interrupt-flag* nil) t)
        (values nil (valid-input?))))
 
@@ -1770,7 +1770,7 @@ Modification History (most recent at top)
 
 ;;;; Blinkers, mostly copied from clx
 
-;; if there ever is more than 1 window, this ought to become an alist 
+;; if there ever is more than 1 window, this ought to become an alist
 ;; of windows and blinkers
 ;; and we should extend the blinker structure to point to the owning window...
 (defvar *boxer-window-blinker-alist* nil)
@@ -1815,7 +1815,7 @@ Modification History (most recent at top)
     (when (blinker-visibility blinker)
       (draw-blinker blinker))
     blinker))
-		 
+
 ;; Of course the nice thing to do would be to make this generic and
 ;; define blinkers with DEFCLASS but I'm worried about speed at
 ;;  the moment. Also there is a VERY limited number of blinker types
@@ -1850,7 +1850,7 @@ Modification History (most recent at top)
   (box::draw-rectangle alu-xor
    (blinker-width blinker) (blinker-height blinker)
    (blinker-x blinker)     (blinker-y blinker)))
-  
+
 
 ;;; these are used by others
 
@@ -1871,7 +1871,7 @@ Modification History (most recent at top)
                 `(etypecase ,blinker
                    (region-row-blinker (draw-region-row-blinker ,blinker))
                    (blinker (draw-blinker ,blinker)))))
-     (boxer::without-interrupts 
+     (boxer::without-interrupts
        (unwind-protect
          (progn (when (blinker-visibility ,blinker)
                   (box::drawing-on-window-without-prepare-sheet (*boxer-pane*)
@@ -1897,17 +1897,17 @@ Modification History (most recent at top)
       (unwind-protect
 	 (progn (boxer::without-interrupts
                   (boxer::drawing-on-window-without-prepare-sheet (*boxer-pane*)
-                    ;; **** this will set the value of the offset to be the 
+                    ;; **** this will set the value of the offset to be the
                     ;; **** origin of the *boxer-pane*
                     (boxer::with-origin-at (0 0)
                       ;; **** this will set the offset in the window system
 		      (dolist (b ,blinker-list)
-		        (when (blinker-visibility b) 
+		        (when (blinker-visibility b)
                           (draw-generic-blinker b))))))
 		. ,body)
        (boxer::without-interrupts
          (boxer::drawing-on-window-without-prepare-sheet (*boxer-pane*)
-           ;; **** this will set the value of the offset to be the 
+           ;; **** this will set the value of the offset to be the
            ;; **** origin of the *boxer-pane*
            (boxer::with-origin-at (0 0)
              ;; **** this will set the offset in the window system
@@ -1920,9 +1920,9 @@ Modification History (most recent at top)
 (defun set-cursor-visibility (blinker new-vis)
   (setf (blinker-visibility blinker) new-vis))
 
-;; This is a crock. depends too much on *point-blinker* being the correct 
+;; This is a crock. depends too much on *point-blinker* being the correct
 ;; thing need to change the window representation so we can ask a window
-;; which of its blinkers corresponds to the MAIN cursor.  We do this for 
+;; which of its blinkers corresponds to the MAIN cursor.  We do this for
 ;; now cause the only window that need this is the *boxer-pane*
 
 ;; OpenGL note: no more with-open-blinker, just change the vars
@@ -1981,7 +1981,7 @@ Modification History (most recent at top)
 (defun about-boxer-function ()
   (capi:display-message-on-screen (capi:convert-to-screen nil)
                                   (sm::system-version 'boxer::boxer)))
-                                  
+
 
 ;;; System clipboard
 
@@ -1991,7 +1991,7 @@ Modification History (most recent at top)
       (dotimes (i (length string))
         (let ((char (aref string i)))
           (if (member char '(#\Newline #\Return #\Linefeed))
-              (boxer::insert-row boxer::*point* 
+              (boxer::insert-row boxer::*point*
                                  (boxer::make-initialized-row) :moving)
               (boxer::insert-cha boxer::*point* char :moving)))))))
 
@@ -2015,7 +2015,7 @@ Modification History (most recent at top)
       (boxer::copy-image-to-bitmap image bim wid hei)
       (values bim wid hei))))
 
-(defun paste-pict (&optional (img (capi::clipboard *boxer-pane* :image) 
+(defun paste-pict (&optional (img (capi::clipboard *boxer-pane* :image)
                                   img-supplied-p))
   (multiple-value-bind (bm wid hei)
       (image-to-bitmap img)
@@ -2027,7 +2027,7 @@ Modification History (most recent at top)
         (setf (boxer::graphics-sheet-bit-array gs) bm)
         (setf (boxer::graphics-sheet-bit-array-dirty? gs) T)
         (setf (boxer::graphics-info gb) gs)
-        (setf (boxer::display-style-graphics-mode? 
+        (setf (boxer::display-style-graphics-mode?
                (boxer::display-style-list gb)) T)
         (boxer::insert-cha boxer::*point* gb :moving)))))
 
@@ -2063,36 +2063,36 @@ Modification History (most recent at top)
                    ~%  in ~A ~A ~
                    ~%  running on ~A, a ~A ~
                    ~%  under ~A ~A ~%~%"
-            system-string xtens 
-            (lisp-implementation-type) (lisp-implementation-version)                         
+            system-string xtens
+            (lisp-implementation-type) (lisp-implementation-version)
             (machine-instance) (machine-type)
             (software-type) (software-version))))
 
 (defun write-crash-report-internal (&optional (stream *error-output*))
   (bug-report-header stream)
-  (let ((*print-readably* nil) 
-        (*print-miser-width* 40) 
-        (*print-circle* t) 
+  (let ((*print-readably* nil)
+        (*print-miser-width* 40)
+        (*print-circle* t)
         (*print-pretty* t))
     (dbg::output-backtrace :verbose :stream stream)))
 
 (defun write-crash-report ()
   (ignore-errors
-    (with-open-file (stream (crash-reporting-filename) :direction ':output 
+    (with-open-file (stream (crash-reporting-filename) :direction ':output
                             :if-exists ':append :if-does-not-exist ':create)
-      (let ((*terminal-io* stream) 
-            (*standard-output* stream) 
+      (let ((*terminal-io* stream)
+            (*standard-output* stream)
             (*debug-io* stream))
         (write-crash-report-internal stream)))))
 
 #|
 ;; foofah
-(defun test-button-handler (int x y) 
+(defun test-button-handler (int x y)
   (declare (ignore int)) (format t "(~D, ~D)  " x y))
 
 (define-interface TEST ()
     ()
-  (:panes 
+  (:panes
    (test-pane output-pane
               :input-model '(((:button-1 :press) test-button-handler)
                              (:character boxer-key-handler))
@@ -2111,8 +2111,8 @@ Modification History (most recent at top)
                        ("Link to Windows File" "Print"))
                       ("Quit" :callback 'lw-quit))))
   (:menu-bar  file-menu)
-  (:default-initargs :title "testing..." 
+  (:default-initargs :title "testing..."
    :width 300 :height 200))
-              
+
 
 |#
