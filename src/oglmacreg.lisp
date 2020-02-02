@@ -26,10 +26,10 @@
 ;; #$kCurrentUserFolderType only applies to the current user which might not
 ;;  be a constant
 ;; #$kapplicationsupportfoldertype has a problem with teacher/student installs
-;;   because of insifficient priviledges- either writing the file or updating 
+;;   because of insifficient priviledges- either writing the file or updating
 ;;   the "magic" files for the demo
 
-(defun pyxi-support-folder () 
+(defun pyxi-support-folder ()
   (make-pathname :directory '(:absolute "Users" "Shared" "PyxiSystems")))
 ;  (let ((app-support (ccl::findfolder #$konsystemdisk
 ;                                      #$kSharedUserDataFolderType)))
@@ -77,7 +77,7 @@
                                :max-characters 4 :enabled t))
          (license-text (make-instance 'capi:title-pane :x 20 :y 20
                                       :text "License Key Entry"))
-         (items (list 
+         (items (list
                 ;; the license number in 4 digit fields...
                 license-text
                 group1
@@ -89,27 +89,27 @@
                 group4
                 ;; other buttons
                 (make-instance 'capi:push-button :x 60 :y 70 :width 50 :height 20
-                               :text "OK" 
-                               :selection-callback 
+                               :text "OK"
+                               :selection-callback
                                #'(lambda (&rest ignore)
                                    (declare (ignore ignore))
                                    (capi:exit-dialog
-                                    (concatenate 
-                                     'string 
+                                    (concatenate
+                                     'string
                                      (capi:text-input-pane-text group1)
                                      (capi:text-input-pane-text group2)
                                      (capi:text-input-pane-text group3)
-                                     (capi:text-input-pane-text group4)))))                
+                                     (capi:text-input-pane-text group4)))))
                 (make-instance 'capi:push-button :x 190 :y 70 :width 50 :height 20
                                :text "Cancel"
                                :selection-callback 'capi:abort-dialog)))
          (ld (capi:make-container
-              (make-instance 
+              (make-instance
                'capi:pinboard-layout :min-width 300 :min-height 120
                :description
                (if offer-demo?
                    (append items
-                           (list (make-instance 'capi:push-button 
+                           (list (make-instance 'capi:push-button
                                                 :x 120 :y 70 :width 50 :height 20
                                                 :text "Demo"
                                                 :selection-callback
@@ -146,7 +146,7 @@
 ;;;This should NOT appear in the app !!!!
 #|
 (defun generate-license-keys (&key (min-key *license-min*) (n-keys 10))
-  (do ((n (* (ceiling (/ min-key (max *license-prime-A* 
+  (do ((n (* (ceiling (/ min-key (max *license-prime-A*
                                       *license-prime-B*)))
              *license-prime-B*)
           (+ n *license-prime-B*))
@@ -162,10 +162,10 @@
 
 (defun print-license-key (n)
   (format *license-key-stream* "~:19,'0,'-,4D~%" n))
-  
+
 
 ;;; New expiration scheme for demo, no more hard coded date
-;;; 
+;;;
 ;;; Weaknesses
 ;;;    1) expiration scheme just a simple (unencrypted flag)
 ;;;    2) if (unencrypted) date file is constantly reset, the magic numbers
@@ -184,10 +184,10 @@
 ;;; these essentially function as one time pads except they sit in the app
 ;;; Note: all these numbers were achieved via (random most-positive-fixnum)
 (defvar *magic-expiration-array*
-  #(34734175  271118789 276516700 38802561  25471640  135929489 405980097 
-    509323053 430523074 231983845 149157935 269856512 406603131 102862860 
-    296363948 105592821 197139497 513778864 209276327 133492344 494102449 
-    535204507 213166693 115796836 467770347 423059588 400308497 51688408 
+  #(34734175  271118789 276516700 38802561  25471640  135929489 405980097
+    509323053 430523074 231983845 149157935 269856512 406603131 102862860
+    296363948 105592821 197139497 513778864 209276327 133492344 494102449
+    535204507 213166693 115796836 467770347 423059588 400308497 51688408
     158928445 436662981))
 
 (defconstant *expiration-code* 240353669)
@@ -235,9 +235,9 @@
 (defun initialize-demo-date ()
   (write-demo-info (svref *magic-expiration-array* 0) (%now-date) 0))
 
-(defun write-demo-info (magic date 
+(defun write-demo-info (magic date
                               &optional
-                              (place (position magic 
+                              (place (position magic
                                                *magic-expiration-array*
                                                :test #'=)))
   (cond ((null place)
@@ -263,7 +263,7 @@
           (t
            (with-open-file (d-in dpath)
              (let ((dl (read-line d-in  nil nil)))
-               (when (stringp dl) 
+               (when (stringp dl)
                  (- (read-from-string dl nil nil)
                     (svref *magic-date-array* place)))))))))
 
@@ -276,9 +276,9 @@
               (t "Boxer Free Demo"))))
 
 
-;; write the next magic number if it's been more than a day since the last date, 
+;; write the next magic number if it's been more than a day since the last date,
 ;; maybe expired the boxer
-;; also setup message 
+;; also setup message
 
 (defun demo-next-day ()
   (let ((dmp (demo-magic-pathname))(ddp (demo-date-pathname)))
@@ -287,7 +287,7 @@
            (let* ((magic-number (get-demo-magic dmp))
                   (last-date (get-demo-date ddp magic-number))
                   (place (when (numberp magic-number)
-                           (position magic-number *magic-expiration-array* 
+                           (position magic-number *magic-expiration-array*
                                      :test #'=)))
                   (last-place (1- (length *magic-expiration-array*)))
                   (now (%now-date)))
@@ -299,7 +299,7 @@
                    ((< place last-place)
                     ;; the steady state case
                     (cond ((> now last-date)
-                           (write-demo-info (svref *magic-expiration-array* 
+                           (write-demo-info (svref *magic-expiration-array*
                                                    (1+ place))
                                             now)
                            (demo-banner (1+ place)))
@@ -307,7 +307,7 @@
                            ;; same day, don't increment
                            (demo-banner place))
                           (t ;; tampering ?
-                           (write-demo-info (svref *magic-expiration-array* 
+                           (write-demo-info (svref *magic-expiration-array*
                                                    place)
                                             now)
                            (demo-banner place))))
@@ -319,7 +319,7 @@
            (unexpected-magic-info)
            ))))
 
-;; display of icons for file boxes....             
+;; display of icons for file boxes....
 
 ;; stub (just a rectangle...)
 (defun draw-file-icon-image (x y)
