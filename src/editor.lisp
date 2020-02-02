@@ -59,13 +59,13 @@ Modification History (most recent at top)
          original port parameter
  2/15/99 make-intialized-row checks for existing BFD vars because they may not be
          defined in the LW version until after *boxer-frame* is made
- 2/09/99 avoid-box-name-conflict-by-removing-name checks for boxness 
+ 2/09/99 avoid-box-name-conflict-by-removing-name checks for boxness
  1/ 8/99 removed keyword check for set-type, removed obsolete warning TYPE method
 10/30/98 get-string-from-status-line now looks for and can handle menu item aborts
  9/ 2/98 added bfd= from comsf.lisp so it will be defined before its' 1st use
  8/ 4/98 added interval clause to listp clause in
          queue-editor-objs-for-deallocation
- 7/30/98 changed make-initialized-row to set the font on new row to avoid 
+ 7/30/98 changed make-initialized-row to set the font on new row to avoid
          reversion to default font bug
 
  7/30/98 Started Logging changes: source = boxer version 2.3beta
@@ -80,9 +80,9 @@ Modification History (most recent at top)
 
 
 
-;;;;INIT methods.  
+;;;;INIT methods.
 
-;; these next 2 should be examined more closely and the call to 
+;; these next 2 should be examined more closely and the call to
 ;; shared-initialize shopuld be made more specific
 
 (defun make-uninitialized-row (&rest init-plist)
@@ -116,7 +116,7 @@ Modification History (most recent at top)
                  (bfd= *current-font-descriptor* *default-font-descriptor*))
       (insert-bfd new-row (copy-fd-at *current-font-descriptor* 0)))
     new-row))
-  
+
 
 (defun make-initialized-box (&rest init-plist)
   #+lucid (declare (lcl::dynamic-extent init-plist))
@@ -151,11 +151,11 @@ Modification History (most recent at top)
   (let ((gi (getf init-plist :graphics-info)))
     (unless (null gi) (setf (slot-value self 'graphics-info) gi)))
   ;; initialize flags...
-  (when (null *global-hotspot-control?*) 
+  (when (null *global-hotspot-control?*)
     (when *top-left-hotspots-on?*    (set-top-left-hotspot-active? self    t))
     (when *top-right-hotspots-on?*   (set-top-right-hotspot-active? self   t))
     (when *bottom-left-hotspots-on?* (set-bottom-left-hotspot-active? self t))
-    (when (null *only-shrink-wrap-text-boxes*) 
+    (when (null *only-shrink-wrap-text-boxes*)
       (set-bottom-right-hotspot-active? self t))
     )
   (when (eq (find-class 'box) (class-of self))
@@ -255,7 +255,7 @@ Modification History (most recent at top)
                                                       (point-box))))
                   (set-point-screen-box new-screen-box))
                  ((superior? new-actual-box new-actual-box-via-screen)
-                  ;; screen/editor mismatch, dont walk up screen structure if 
+                  ;; screen/editor mismatch, dont walk up screen structure if
                   ;; it is already above us
                   (move-point (box-self-bp-values (point-box))))
                  (t
@@ -280,7 +280,7 @@ Modification History (most recent at top)
                                                       (point-box))))
                   (set-point-screen-box new-screen-box))
                  ((superior? new-actual-box new-actual-box-via-screen)
-                  ;; screen/editor mismatch, dont walk up screen structure if 
+                  ;; screen/editor mismatch, dont walk up screen structure if
                   ;; it is already above us
                   (move-point (box-self-bp-values (point-box))))
                  (t
@@ -424,11 +424,11 @@ Modification History (most recent at top)
 
 ;;; Hook for editing in the middle of an EVAL
 ;;; actual definition is in vrtdef.lisp
-;(defvar *propagate-modified-messages?* nil) 
+;(defvar *propagate-modified-messages?* nil)
 
 (defun edit-during-eval? () *propagate-modified-messages?*)
 
-;; used to be in redisp.lisp but it seesm that (for the moment) 
+;; used to be in redisp.lisp but it seesm that (for the moment)
 ;; call-next-method wants the super's methods to be already
 ;; defined when it is compiled
 (defmethod modified ((self actual-obj-subclass))
@@ -471,14 +471,14 @@ Modification History (most recent at top)
 	     (setf (cached-code self) nil)
              (let ((old-gss (getf (slot-value self 'plist) 'old-graphics-sheets)))
                (when (consp old-gss)
-                 (dolist (gs-pair old-gss) 
+                 (dolist (gs-pair old-gss)
                    (let ((ba (graphics-sheet-bit-array (cdr gs-pair))))
                      (unless (null ba) (free-offscreen-bitmap ba))))
                  (setf (getf (slot-value self 'plist) 'old-graphics-sheets)
                        nil)))
 	     (decache-build-function self)
 	     ;; decache visible-screen-objs
-	     (decache-visible-screen-objs self)	     
+	     (decache-visible-screen-objs self)
 	     ;; finally mark this box as having been modified by THIS pass
 	     (mark-this-modified-pass self)
              (redisplay-related-modified))))))
@@ -548,8 +548,8 @@ Modification History (most recent at top)
          (*handled-dirty-file-boxes* nil))
      (unwind-protect
        (dolist (,boxvar *dirty-file-boxes*) . ,body)
-       (setq *dirty-file-boxes* 
-             (remove-if #'(lambda (dfb) 
+       (setq *dirty-file-boxes*
+             (remove-if #'(lambda (dfb)
                             (fast-memq dfb *handled-dirty-file-boxes*))
                         *dirty-file-boxes*)))))
 
@@ -643,7 +643,7 @@ Modification History (most recent at top)
       (setq *editor-objs-waiting-to-be-deallocated*
             (cdr *editor-objs-waiting-to-be-deallocated*)))))
 
-;; this should probably check a PTTT table and remove it self 
+;; this should probably check a PTTT table and remove it self
 (defmethod deallocate-self ((self port-box))
   (unless (null (ports self))
     (remove-port (ports self) self))
@@ -657,7 +657,7 @@ Modification History (most recent at top)
   (when (storage-chunk? self)
     ;; Inform the server that the box will be deleted
     (boxnet::queue-for-server-deletion self))
-  ;; should deallocate system dependent objects which have 
+  ;; should deallocate system dependent objects which have
   ;; been hung on the box
   (deallocate-system-dependent-structures self)
   (do-box-rows ((row self))
@@ -705,7 +705,7 @@ Modification History (most recent at top)
   (unless (eq (class-of self) new-class)
     (change-class self new-class)
     (modified self)))
-    
+
 (defmethod toggle-type ((self box))
   (set-type self
 	    (toggling-box-types-next-box-type (class-name (class-of self)))))
@@ -766,7 +766,7 @@ higher level copy operation. ")
 ;; Doesn't create the back pointer so that the port can eventually be GC'd
 ;; ports which use this should NEVER, NEVER, NEVER be inserted into the editor
 (defmethod set-port-to-box-for-eval ((self port-box) new-value)
-  (setf (ports self) new-value))     
+  (setf (ports self) new-value))
 
 (defmethod first-inferior-row ((self port-box))
   (let ((target (ports self)))
@@ -826,7 +826,7 @@ higher level copy operation. ")
         (declare (special searched-ports))
         (dolist (bl (branch-links target))
 	  (when (and (port-branch-link? bl)
-		     (circular-port-r? self (link-target bl)))	  
+		     (circular-port-r? self (link-target bl)))
 	    (return t))))))
 
 (defun circular-port-r? (port target)
@@ -859,7 +859,7 @@ higher level copy operation. ")
 
 ;;; in/out of the editor hierarchy
 
-;;; hooks for various maintenance tasks that boxes have to perform themselves 
+;;; hooks for various maintenance tasks that boxes have to perform themselves
 ;;; when they are inserted/deleted from the hierarchy
 ;;; Every Box needs to hack the namespace and the deallocation of screen objs
 
@@ -990,13 +990,13 @@ higher level copy operation. ")
   (CHECK-BP-ARG BP)
   (OR (NULL NEW-SCREEN-BOX) (CHECK-SCREEN-BOX-ARG NEW-SCREEN-BOX))
   (LET ((OLD-SCREEN-BOX (BP-SCREEN-BOX BP)))
-    (UNLESS (EQ OLD-SCREEN-BOX NEW-SCREEN-BOX) 
-      (SETF (BP-SCREEN-BOX BP) NEW-SCREEN-BOX) 
+    (UNLESS (EQ OLD-SCREEN-BOX NEW-SCREEN-BOX)
+      (SETF (BP-SCREEN-BOX BP) NEW-SCREEN-BOX)
       (UNLESS (NULL OLD-SCREEN-BOX) (DELETE-BP OLD-SCREEN-BOX BP))
       (ADD-BP NEW-SCREEN-BOX BP))))
 
 (DEFUN SET-BP-FROM-BP (BP FROM-BP &OPTIONAL (SCREEN-BOX-TOO? T))
-  "Changes the first BP to point to the same place as the 
+  "Changes the first BP to point to the same place as the
    second BP without the type. "
   (CHECK-BP-ARG BP)
   (CHECK-BP-ARG FROM-BP)
@@ -1016,12 +1016,12 @@ higher level copy operation. ")
 (DEFUN BP-BOX (BP)
   (SUPERIOR-BOX (BP-ROW BP)))
 
-;;; Comparing BP's. BP-> returns T if <BP1> is farther along in the buffer 
-;;; than <BP2>.  Note that farther along is defined in a top-to-bottom 
+;;; Comparing BP's. BP-> returns T if <BP1> is farther along in the buffer
+;;; than <BP2>.  Note that farther along is defined in a top-to-bottom
 ;;; left-to-right sense and that depth is ignored since the function traverses
 ;;;  upward into the lowest common superior box before doing the compare
 
-;; Both rows are assumed to be in the same box.  
+;; Both rows are assumed to be in the same box.
 (defun row-> (row1 row2 &optional box)
   (declare (ignore box))
   (do ((row (previous-row row1) (previous-row row)))
@@ -1046,7 +1046,7 @@ higher level copy operation. ")
       ((null row) nil)
     (when (eq row row2) (return t))))
 
-;; this assumes that the BP's are in the same box and have already been 
+;; this assumes that the BP's are in the same box and have already been
 ;; decoded into ROWs and CHA-NOs and returns T if the BP represented
 ;; by ROW1, CHA-NO1 come FIRST
 (defsubst bp-compare-internal-simple (row1 row2 cha-no1 cha-no2)
@@ -1058,7 +1058,7 @@ higher level copy operation. ")
 
 ;; this gets used ONLY IF the BP's aren't in the same box
 ;; returns the BP which occurs FIRST
-;; since we are doing all this marching up and down in box structure, we 
+;; since we are doing all this marching up and down in box structure, we
 ;; might as well also throw back the top level box which is inferior to
 ;; the lowest common superior for each BP so that other functions won't
 ;; have to do all this work.  The order of the values returned are:
@@ -1081,7 +1081,7 @@ higher level copy operation. ")
 	      ((null top12)
 	       (values bp2 (car path12) (car path21)))
 	      ((and (null top21)	;BP1 is in some inferior of BOX2 and
-		    (eq :equal	
+		    (eq :equal
 			(bp-compare-internal-simple
 			  apparent-row1 row2
 			  (cha-cha-no apparent-row1 (car path21))
@@ -1103,8 +1103,8 @@ higher level copy operation. ")
 	      (t (values bp2 (car path12) (car path21))))))))
 
 (defun bp-compare (bp1 bp2)
-  "returns the BP which occurs FIRST. If they are in the same place, the 
-first one is returned.  If they are on different levels, and the superior BP 
+  "returns the BP which occurs FIRST. If they are in the same place, the
+first one is returned.  If they are on different levels, and the superior BP
 points to the Box which contains the lower BP,then the superior BP is returned"
   (let ((row1 (bp-row bp1)) (box1 (bp-box bp1))
 	(row2 (bp-row bp2)) (box2 (bp-box bp2)))
@@ -1126,13 +1126,13 @@ points to the Box which contains the lower BP,then the superior BP is returned"
   (and (eq (bp-row bp1)    (bp-row bp2))
        (=  (bp-cha-no bp1) (bp-cha-no bp2))))
 
-;;; These two functions take two BP's and return two BP's which are ordered 
-;;; according to location in the BUFFER and are guaranteed to be at the same 
+;;; These two functions take two BP's and return two BP's which are ordered
+;;; according to location in the BUFFER and are guaranteed to be at the same
 ;;; level i.e. corresponding to rows in the same BOX.  Note that when the
 ;;; second BP is in a subbox, the returned second BP's CHA-NO will be one
 ;;; greater than the Box's own CHA-NO so that the Box itself will be included
 ;;; in the specified region.
-;;; Note that ORDER-BPS creates new BP's to return so we don't have to worry 
+;;; Note that ORDER-BPS creates new BP's to return so we don't have to worry
 ;;; about accidently mutating something like the *POINT*
 
 (defun order-bps (bp1 bp2)
@@ -1227,7 +1227,7 @@ points to the Box which contains the lower BP,then the superior BP is returned"
 	       NEW-BOX
 	       (BP-COMPUTE-NEW-SCREEN-BOX-IN
 		 OLD-BOX (SUPERIOR-BOX NEW-BOX) OLD-SCREEN-BOX)))))
-	   
+
 (DEFUN VISIBLE-SCREEN-OBJ-OF-INFERIOR-ACTUAL-OBJ (INFERIOR-ACTUAL-OBJ
 						  SUPERIOR-SCREEN-OBJ)
   (CAR (MEMBER SUPERIOR-SCREEN-OBJ (DISPLAYED-SCREEN-OBJS INFERIOR-ACTUAL-OBJ)
@@ -1395,7 +1395,7 @@ points to the Box which contains the lower BP,then the superior BP is returned"
   (cdr (assoc (point-screen-box) (slot-value (point-row) 'screen-objs))))
 
 (DEFUN SETUP-EDITOR (&OPTIONAL initial-box)
-  (SETQ *INITIAL-BOX* (or initial-box			  
+  (SETQ *INITIAL-BOX* (or initial-box
 			  (let ((new (make-instance 'data-box))
 				(cr (make-row '())))
 			    (add-closet-row new cr)
@@ -1413,15 +1413,15 @@ points to the Box which contains the lower BP,then the superior BP is returned"
   (SETF (SUPERIOR-SCREEN-BOX (CAR (SCREEN-OBJS *INITIAL-BOX*))) *BOXER-PANE*)
   ;; some inits...
   (initialize-horizontal-border-thicknesses)
-  (MULTIPLE-VALUE-BIND (ROW CHA-NO)	  
+  (MULTIPLE-VALUE-BIND (ROW CHA-NO)
       (BOX-FIRST-BP-VALUES *INITIAL-BOX*)
     (MOVE-POINT-1 ROW CHA-NO (CAR (SCREEN-OBJS *INITIAL-BOX*)))))
 
 
 
 ;;;; The Boxer Status Line
-;;;  We are currently using ONE line of the *NAME-PANE*.  In the future, we 
-;;;  might want to expand this to several lines and make it like an EMACS 
+;;;  We are currently using ONE line of the *NAME-PANE*.  In the future, we
+;;;  might want to expand this to several lines and make it like an EMACS
 ;;;  typein window (then again, maybe not)
 
 (defvar *boxer-status-string-alist* nil
@@ -1464,15 +1464,15 @@ points to the Box which contains the lower BP,then the superior BP is returned"
   (window-system-dependent-redraw-status-line
    (get-boxer-status-string)))
 
-;;; use 'boxer-editor-error for status-line ID so it will get 
+;;; use 'boxer-editor-error for status-line ID so it will get
 ;; flushed on subsequent keyboard input
 (defun status-line-y-or-n-p (prompt-string)
   (status-line-display 'boxer-editor-error prompt-string)
   (let ((char (get-character-input *boxer-pane*)))
     (status-line-display 'boxer-editor-error
 			 (format nil "~A ~C" prompt-string char))
-    (prog1 
-	(cond ((or (char= char #\y) (char= char #\Y))	   
+    (prog1
+	(cond ((or (char= char #\y) (char= char #\Y))
 	       T)
 	      (t nil))
       (status-line-undisplay 'y-or-n-p))))
@@ -1480,7 +1480,7 @@ points to the Box which contains the lower BP,then the superior BP is returned"
 (defvar *input-throw-tag* nil)
 
 (defvar *no-echo-char* #\*)
-(defvar *no-echo-string* (make-array 10 :element-type 
+(defvar *no-echo-string* (make-array 10 :element-type
 				     #-lucid 'character #+lucid 'string-char
                                      :initial-element *no-echo-char*
                                      :fill-pointer 0 :adjustable t))
@@ -1506,35 +1506,35 @@ points to the Box which contains the lower BP,then the superior BP is returned"
                     (t
                      (case char
                        ((#+mcl #\enter #+sun #.(code-char 214) ; Sun ENTER see keydef-high
-                               #\return #\linefeed) 
+                               #\return #\linefeed)
                         (setq cancelled? nil) (return))
                        ((#\delete #-mcl #\backspace)
                         (let ((fp (fill-pointer return-string)))
-                          (unless (zerop& fp) 
+                          (unless (zerop& fp)
                             (setf (fill-pointer return-string) (1-& fp))
-                            (unless echo-chars? 
+                            (unless echo-chars?
                               (setf (fill-pointer *no-echo-string*) (1-& fp))))))
-                       (otherwise 
+                       (otherwise
                         (vector-push-extend char return-string)
                         (unless echo-chars?
                           (vector-push-extend *no-echo-char* *no-echo-string*))))))
-              (status-line-display 
-               'boxer-editor-error 
+              (status-line-display
+               'boxer-editor-error
                (format nil "~A ~A" prompt-string
                        (if echo-chars? return-string *no-echo-string*))))))
     (status-line-undisplay 'boxer-editor-error)
     (if cancelled? (values "" T) return-string)))
-                                           
+
 
 #|
 (defun get-boxer-status-string (outermost-box-name other-string)
   (flet ((get-boxer-version-string ()
 				   (or *boxer-version-info*
 				       (system-version 'boxer))))
-    
+
     (cond ((null other-string)
 	   (when (null outermost-box-name)
-	     (setq outermost-box-name (name-string (outermost-box))))	   
+	     (setq outermost-box-name (name-string (outermost-box))))
 	   (if (null *editor-numeric-argument*)
 	       (format nil "~A |         Outermost Box: ~A"
 		       (get-boxer-version-string) outermost-box-name)
@@ -1552,7 +1552,7 @@ points to the Box which contains the lower BP,then the superior BP is returned"
    (get-boxer-status-string new-name other-string)
    (not (null new-name))))
 |#
-	      
+
 
 
 ;;; Name Tab utilities
@@ -1567,7 +1567,7 @@ points to the Box which contains the lower BP,then the superior BP is returned"
       (error "An attempt was made to insert the box, ~S, into the row ~S"
 	     cha row)
       (chas-array-insert-cha (chas-array row)
-			     cha-no 
+			     cha-no
                              #-mcl (make-char cha 0)
                              #+mcl cha))
   (modified row))
@@ -1598,7 +1598,7 @@ points to the Box which contains the lower BP,then the superior BP is returned"
 	 (environment (and superior-box (superior-box superior-box))))
     (cond ((and (or force-rename?
 		    (not (eq new-name cached-name)))
-		(not (null new-name)))           
+		(not (null new-name)))
 	   ;; if the name has changed, then remove the old
 	   ;; name from the environment
 	   (unless (null environment)
@@ -1675,7 +1675,7 @@ points to the Box which contains the lower BP,then the superior BP is returned"
 
 ;; 2/9/99 ehl
 ;; under some anomalous conditions, sprite lite objects can be passed here
-;; so we need to check for boxness 
+;; so we need to check for boxness
 
 (defun avoid-box-name-conflict-by-removing-name (new-box)
   (when (box? new-box)
@@ -1700,13 +1700,13 @@ points to the Box which contains the lower BP,then the superior BP is returned"
 ;;;; Closets
 
 ;;; closets are implemented as a (sometimes) invisible row in the
-;;; box with 1 or more transparent boxes on it.  The invisibility is 
+;;; box with 1 or more transparent boxes on it.  The invisibility is
 ;;; controlled by setting the scroll-to-actual-row of the corresponding screen
 ;;; boxes.  The closets slot of the box also points to this row so we
-;;; have a fast check for closets as well as a way to recover closets info 
+;;; have a fast check for closets as well as a way to recover closets info
 ;;; when we munge rows.
 
-;;; Note that CHANGE is supposed to preserve closets info while munging the 
+;;; Note that CHANGE is supposed to preserve closets info while munging the
 ;;; datastructure part of the box.  [The initial motivation for this was to
 ;;; preserve MODIFIED-TRIGGERs across calls to CHANGE]
 
@@ -1763,7 +1763,7 @@ points to the Box which contains the lower BP,then the superior BP is returned"
   (let ((bcr (when (box? box) (slot-value box 'closets))))
     (eq row bcr)))
 
-;; we ought to provide some methods for removing the closet if all the entries 
+;; we ought to provide some methods for removing the closet if all the entries
 ;; on it have been removed.  Still needs to thought....
 
 (defun box-location-string (box &optional (return-string "") max-string-length)
@@ -1774,6 +1774,6 @@ points to the Box which contains the lower BP,then the superior BP is returned"
         (concatenate 'string "..." return-string)
         (box-location-string (superior-box box)
                              (if (string= return-string "")
-                               box-string 
+                               box-string
                                (concatenate 'string box-string "." return-string))
                              max-string-length)))))
