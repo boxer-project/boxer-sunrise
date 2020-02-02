@@ -7,7 +7,7 @@
                                              +-Data--+
                     This file is part of the | BOXER | system
                                              +-------+
-				    
+
        This file contains all of the high level code that the redisplay uses
        in the OpenGL port
 
@@ -26,13 +26,13 @@ Modification History (most recent at the top)
          repaint-cursor-internal
  8/23/11 flush-port-buffer removed from repaint-window and repaint-cursor,
          added to repaint-internal, repaint-in-eval
-         removed force-repaint-window 
+         removed force-repaint-window
  8/12/11 repaint
 11/09/10 repaint-window: flush-port-buffer instead of bw::swap-buffers
 11/07/10 use capi:apply-in-pane-process in repaint
  9/26/10 added repaint-mouse-docs to repaint-window
  2/05/10 extra reality checking added to repaint
-12/09/09 repaint-guts checks for null *outermost-screen-box* 
+12/09/09 repaint-guts checks for null *outermost-screen-box*
 11/27/09 repaint-pass-2-sr closet highlighting added
 11/24/09 repaint-in-eval checks bw::*suppressed-actions*
 11/20/09 added force? arg to repaint-in-eval
@@ -56,7 +56,7 @@ Modification History (most recent at the top)
 ;;; this file approximates the functionality of the old redisp file.
 
 ;; call this, then swap buffers
-;; rebuild the entire screen, later wewill want to be more targeted, especially for 
+;; rebuild the entire screen, later wewill want to be more targeted, especially for
 ;; speed inside of eval when we can localize to fixed areas i.e. inside graphics boxes
 
 
@@ -89,7 +89,7 @@ Modification History (most recent at the top)
 ;; 1st cut, recalculate everything
 ;; 2nd cut, get smarter (need to hack deep active sprite problem)
 ;; if no deep active sprite, then use timestamps or force-repaint flag
-(defmethod needs-repaint-pass-1? ((self screen-obj) 
+(defmethod needs-repaint-pass-1? ((self screen-obj)
                                   &optional (max-wid nil) (max-hei nil))
   (cond ((or (<= (slot-value self 'tick)
                  (actual-obj-tick (screen-obj-actual-obj self)))
@@ -109,12 +109,12 @@ Modification History (most recent at the top)
          t)
         (t nil)))
 
-;(defmethod needs-repaint-pass-1? ((self screen-obj) 
+;(defmethod needs-repaint-pass-1? ((self screen-obj)
 ;                                  &optional (max-wid nil) (max-hei nil))
 ;  (declare (ignore max-wid max-hei))
 ;  t)
 
-;; if we intend to rebuild the entire screen with every key stroke, 
+;; if we intend to rebuild the entire screen with every key stroke,
 ;; this will always be T, we may want to be more selective in what we erase
 ;; and redraw for efficiency
 ;(defmethod needs-repaint-pass-2? ((self screen-obj))
@@ -140,7 +140,7 @@ Modification History (most recent at the top)
 ;  (setf (inf-shift self) nil))
 
 ;; Pass 1 should be accumalating changed rects...
-(defmethod repaint-inferiors-pass-1-sb ((self screen-box) 
+(defmethod repaint-inferiors-pass-1-sb ((self screen-box)
                                         infs-new-max-wid infs-new-max-hei
                                         &optional
                                         (first-inf-x-offset 0) (first-inf-y-offset 0)
@@ -161,7 +161,7 @@ Modification History (most recent at the top)
                ;; the box, then...
                (when (and (not-null screen-rows)
                           (not (box-ellipsis-style? screen-rows)))
-                 ;; PORTNOTE: previously 
+                 ;; PORTNOTE: previously
                  ;;    erase-and-queue-for-deallocation-screen-rows-from
                  (queue-for-deallocation-screen-rows-from screen-rows 0)
                  (kill-screen-rows-from self 0))
@@ -198,7 +198,7 @@ Modification History (most recent at the top)
                      (inf-x-offset first-inf-x-offset)
                      (inf-y-offset first-inf-y-offset))
                  ;; at the start of each pass through the loop bind
-                 ;; inf-screen-obj, and inf-actual-obj to the next obj in 
+                 ;; inf-screen-obj, and inf-actual-obj to the next obj in
                  ;; the screen and actual structures respectively.
                  (setq infs-new-max-wid (- infs-new-max-wid scroll-x-offset)
                        infs-new-max-hei (- infs-new-max-hei scroll-y-offset))
@@ -212,8 +212,8 @@ Modification History (most recent at the top)
                                        (screen-row-at-row-no self row-no)))
                       ;; If there are no more inferior screen-objs or if the
                       ;; current state of the clipping means that there is no
-                      ;; room to display any more inferiors or the box is 
-                      ;; shrunken we quit. If there are any inferior 
+                      ;; room to display any more inferiors or the box is
+                      ;; shrunken we quit. If there are any inferior
                       ;; screen-objs left in the old screen structure
                       ;; punt them.
                       ((or (null inf-actual-obj)
@@ -234,17 +234,17 @@ Modification History (most recent at the top)
                    (when (or (null inf-screen-obj)
                              (not (eq (screen-obj-actual-obj inf-screen-obj)
                                       inf-actual-obj)))
-                     (setq inf-screen-obj 
-                           (rp1-sb-patch-out-of-synch-lossage 
+                     (setq inf-screen-obj
+                           (rp1-sb-patch-out-of-synch-lossage
                             self inf-actual-obj inf-screen-obj
                             inf-x-offset inf-y-offset)))
                    ;; at this point we know that inf-screen-obj and
                    ;; inf-actual-obj match. If it wants to let
                    ;; inf-screen-obj do :redisplay-pass-1.
-                   (when (needs-repaint-pass-1? inf-screen-obj 
+                   (when (needs-repaint-pass-1? inf-screen-obj
                                          infs-new-max-wid infs-new-max-hei)
                      (set-screen-obj-offsets inf-screen-obj inf-x-offset inf-y-offset)
-                     (repaint-pass-1-sr inf-screen-obj 
+                     (repaint-pass-1-sr inf-screen-obj
                                         infs-new-max-wid infs-new-max-hei))
                    		     ;; Finally, let inf-screen-obj make its contibution to the
 		     ;; total new-wid, new-hei etc. of all the inf-screen-objs.
@@ -253,7 +253,7 @@ Modification History (most recent at the top)
 							infs-new-y-got-clipped?
 							inf-y-offset
 							infs-new-max-hei)
-		       ;; inf-screen-obj has to be a 
+		       ;; inf-screen-obj has to be a
 		       ;; screen-row, so we don't pass
 		       ;; INF-X-OFFSET and NEW-MAX-WID
 		       (rp1-sr-increment-superior-parameters
@@ -286,10 +286,10 @@ Modification History (most recent at the top)
 	   ;; (One common cause for this is a deletion).
            (let ((start-pos (screen-row-row-no self inf-screen-obj))
                  (stop-pos  (screen-row-row-no self matching-screen-obj)))
-             (queue-for-deallocation-screen-rows-from (slot-value self 'screen-rows) 
+             (queue-for-deallocation-screen-rows-from (slot-value self 'screen-rows)
                                                       start-pos stop-pos)
              (delete-screen-rows-from-to self start-pos stop-pos)
-             (set-screen-obj-offsets matching-screen-obj 
+             (set-screen-obj-offsets matching-screen-obj
                                      screen-obj-x-offset screen-obj-y-offset)
              matching-screen-obj))
           (t
@@ -298,7 +298,7 @@ Modification History (most recent at the top)
 	   ;; obj. (Probably the most common cause for this is an insertion)
            ;;Just insert the matching-screen-obj in the right place and we're done.
            (insert-screen-row self matching-screen-obj inf-screen-obj)
-           (set-screen-obj-offsets matching-screen-obj 
+           (set-screen-obj-offsets matching-screen-obj
                                    screen-obj-x-offset screen-obj-y-offset)
            matching-screen-obj))))
 
@@ -319,10 +319,10 @@ Modification History (most recent at the top)
 
 ;;;; Methods used for redisplaying ROWS
 ;;;
-;;; The main difference between redisplaying rows and redisplaying boxes is 
-;;; that rows have to know what is going on with their inferiors because chas 
+;;; The main difference between redisplaying rows and redisplaying boxes is
+;;; that rows have to know what is going on with their inferiors because chas
 ;;; cannot take care of such things as clipping and drawing by themselves (like
-;;; rows can). 
+;;; rows can).
 ;;; simple basic version, loop along maching screen-chas to actual-chas, if
 ;;; we encounter a box, adjust the box's offsets, then patch it into the row
 ;;; if we're doing selective erasing, should do it now...
@@ -358,9 +358,9 @@ Modification History (most recent at the top)
               (inf-actual-obj (cha-at-cha-no actual-obj cha-no)
                               (cha-at-cha-no actual-obj cha-no))
               (inf-screen-obj))
-             ((or (null inf-actual-obj) 
+             ((or (null inf-actual-obj)
                   infs-new-x-got-clipped?)
-              ;; hmmm, sb's in the row wont get properly dealloced if they 
+              ;; hmmm, sb's in the row wont get properly dealloced if they
               ;; fall off the end due to clipping....
 ;              (when (not-null inf-screen-obj)
 ;                (rp1-sr-punt-extra-screen-objs-from self cha-no
@@ -388,7 +388,7 @@ Modification History (most recent at the top)
                                  (check-and-handle-font-changes rest-cha-no)
                                  (incf new-max-scroll (if (screen-cha? rest-cha)
                                                           (cha-wid rest-cha)
-                                                        ;; just guess for a box since we dont want to 
+                                                        ;; just guess for a box since we dont want to
                                                         ;; have to recurse for unseen boxes
                                                         (unseen-box-width rest-cha)))))))))
           ;; handle any font changes first
@@ -406,14 +406,14 @@ Modification History (most recent at the top)
           ;; match. If it wants to (and is a screen-box) let inf-screen-obj do
           ;; redisplay-pass-1.
           (cond ((screen-cha? inf-screen-obj)
-                 ;; must be a screen cha so the ROW has to check for clipping 
+                 ;; must be a screen cha so the ROW has to check for clipping
                  ;; and increment its own infs-screen-objs parameters
                  (multiple-value-setq (infs-new-wid infs-new-hei
                                                     infs-new-x-got-clipped?
                                                     infs-new-y-got-clipped?
                                                     inf-x-offset infs-new-max-wid
                                                     new-baseline)
-                     (screen-cha-increment-superior-parameters 
+                     (screen-cha-increment-superior-parameters
                       inf-screen-obj
                       infs-new-wid infs-new-hei
                       infs-new-x-got-clipped? infs-new-y-got-clipped?
@@ -421,15 +421,15 @@ Modification History (most recent at the top)
                       infs-new-max-wid infs-new-max-hei new-baseline)))
                 (t
                  ;; must be a box so let the box do some work...
-                 ;; that is, redisplay if it wants to and then make its 
+                 ;; that is, redisplay if it wants to and then make its
                  ;; contribution to all the infs-screen-objs parameters
                  (when (needs-repaint-pass-1? inf-screen-obj
                                               infs-new-max-wid infs-new-max-hei)
-                   (repaint-pass-1-sb inf-screen-obj 
+                   (repaint-pass-1-sb inf-screen-obj
                                         infs-new-max-wid infs-new-max-hei))
                  (multiple-value-setq (infs-new-wid infs-new-hei
-                                       infs-new-x-got-clipped? 
-                                       infs-new-y-got-clipped? 
+                                       infs-new-x-got-clipped?
+                                       infs-new-y-got-clipped?
                                        inf-x-offset infs-new-max-wid)
                      (rp1-sb-increment-superior-parameters
                       inf-screen-obj
@@ -442,7 +442,7 @@ Modification History (most recent at the top)
 (defvar *average-cha-wid* 6)
 
 (defmethod unseen-box-width ((self box))
-  (max *minimum-box-wid* 
+  (max *minimum-box-wid*
        (+ *box-borders-horizontal-extent*
           (let ((max-row-wid 0))
             (do-box-rows ((row self))
@@ -450,7 +450,7 @@ Modification History (most recent at the top)
                                      (* (length-in-chas row) *average-cha-wid*))))
               max-row-wid))))
 
-;; this mainly has to inform any further boxes that their services 
+;; this mainly has to inform any further boxes that their services
 ;; will no longer be required....
 (defmethod rp1-sr-punt-extra-screen-objs-from ((self screen-row)
 					     no-of-first-obj-to-punt
@@ -470,7 +470,7 @@ Modification History (most recent at the top)
 						 infs-new-hei
                                                  infs-new-x-got-clipped?
                                                  infs-new-y-got-clipped?
-						 inf-x-offset  
+						 inf-x-offset
 						 infs-new-max-wid
 						 infs-new-max-hei
                                                  current-baseline)
@@ -502,7 +502,7 @@ Modification History (most recent at the top)
 
 
 (defmethod repaint-pass-1-sr ((self screen-row) max-wid max-hei)
-  (with-drawing-inside-region ((slot-value self 'x-offset) 
+  (with-drawing-inside-region ((slot-value self 'x-offset)
                                (slot-value self 'y-offset)
 			       (slot-value self 'wid)
                                (slot-value self 'hei))
@@ -529,17 +529,17 @@ Modification History (most recent at the top)
   (with-slots (max-scroll-wid) self
     (cond ((null max-scroll-wid)
            (setq max-scroll-wid new-scroll-wid))
-          ((numberp max-scroll-wid) 
+          ((numberp max-scroll-wid)
            (setq max-scroll-wid (max max-scroll-wid new-scroll-wid))))))
 
 (defmethod repaint-pass-1-sb ((self screen-box) max-wid max-hei)
-  (with-slots (wid hei x-got-clipped? y-got-clipped? 
+  (with-slots (wid hei x-got-clipped? y-got-clipped?
                    actual-obj scroll-to-actual-row box-type)
       self
     (let ((new-box-type (class-name (class-of actual-obj)))
 	  (new-display-style (display-style actual-obj))
           (boxtop (boxtop actual-obj)))
-      (cond ((and (eq new-display-style :supershrunk) 
+      (cond ((and (eq new-display-style :supershrunk)
                   (not (eq self *outermost-screen-box*)))
              ;; SUPERSHRUNK
              (multiple-value-bind (sswid sshei)
@@ -565,7 +565,7 @@ Modification History (most recent at the top)
                ;; check for clipping
                (setq wid (min max-wid btwid)
                      hei (min max-hei bthei)
-                     x-got-clipped? (> btwid max-wid) 
+                     x-got-clipped? (> btwid max-wid)
                      y-got-clipped? (> bthei max-hei))
                ;; we may want to put this into a redisplay-boxtop method
                ;; if boxtops get too blinky
@@ -581,7 +581,7 @@ Modification History (most recent at the top)
              (when (eq (display-style self) :supershrunk)
                (set-display-style self nil))
              (when (neq box-type new-box-type) (setq box-type new-box-type))
-             (multiple-value-bind (l-border-wid t-border-wid 
+             (multiple-value-bind (l-border-wid t-border-wid
                                                 r-border-wid b-border-wid)
                  (box-borders-widths new-box-type self)
                ;; ought to hack the borders to return all
@@ -590,7 +590,7 @@ Modification History (most recent at the top)
                    (box-borders-minimum-size new-box-type self)
                  (multiple-value-bind (fixed-wid fixed-hei)
                      (fixed-size self)
-                   (let (;; If the screen-box has a fixed size, then the 
+                   (let (;; If the screen-box has a fixed size, then the
                          ;; fixed size effectively sets both upper and lower
                          ;; limits on the size of the box.
                          (real-max-wid (if (null fixed-wid)
@@ -620,8 +620,8 @@ Modification History (most recent at the top)
                      (setf (slot-value self 'wid) (+ l-border-wid r-border-wid))
                      (setf (slot-value self 'hei) (+ t-border-wid b-border-wid))
                      ;; Now that we know how much room the borders are going
-                     ;; to take up, and we know the real max size of the 
-                     ;; screen-box, we can go off and figure out how much 
+                     ;; to take up, and we know the real max size of the
+                     ;; screen-box, we can go off and figure out how much
                      ;; space the screen-rows are going to take up.
                      (multiple-value-bind (rows-new-wid rows-new-hei
                                                         rows-new-x-got-clipped?
@@ -673,21 +673,21 @@ Modification History (most recent at the top)
 
 ;; need to keep track of scrolling info on the editor box so that when we
 ;; come back to a previously scrolled box (for which the screen structure
-;; may have, in the interim, been deallocated) we can then restore the 
+;; may have, in the interim, been deallocated) we can then restore the
 ;; scrolled state
 (defmethod record-scroll-info ((self box) screen-box row)
   (let* ((current-scroll-info (getf (slot-value self 'plist) 'scroll-info))
          (port-chain (get-port-chain screen-box))
          (match (assoc port-chain current-scroll-info :test #'equal)))
     (cond ((not (null match)) (setf (cdr match) row))
-          (t (push (cons port-chain row) 
+          (t (push (cons port-chain row)
                    (getf (slot-value self 'plist) 'scroll-info))))))
 
 
 ;; walk up the screen hierarchy looking for ports.  This provides the most
 ;; reliable way of identifying unique screen structure without actually
 ;; using screen structure.  We can't use screen objs because they are
-;; ephemeral, and worse, can become either deallocated or allocated to 
+;; ephemeral, and worse, can become either deallocated or allocated to
 ;; a totally different editor object
 (defun get-port-chain (screen-box)
   (let ((ports nil))
@@ -767,12 +767,12 @@ Modification History (most recent at the top)
          (row-baseline (slot-value self 'baseline))
          (row-fds (row-fds (slot-value self 'actual-obj))))
     (do-screen-chas-with-font-info (inf-screen-obj (slot-value self 'screen-chas)
-                                                   :index-var-name cha-no 
+                                                   :index-var-name cha-no
                                                    :font-descriptors row-fds
                                                    :cha-drawing? t)
       (cond ((screen-cha? inf-screen-obj)
-             ;; draw the char 
-             (draw-cha alu-seta inf-screen-obj 
+             ;; draw the char
+             (draw-cha alu-seta inf-screen-obj
                        inf-x-offset (+ row-baseline inf-y-offset))
 	     ;; update the inf-x-offset
 	     (incf inf-x-offset (cha-wid inf-screen-obj)))
@@ -781,7 +781,7 @@ Modification History (most recent at the top)
              ;; this SHOULD be correct as a result of pass-1
              (unless (and (= (screen-obj-x-offset inf-screen-obj) inf-x-offset)
                           ;; should we bother to checks y-offsets ?
-                          )               
+                          )
                (setf (screen-obj-x-offset inf-screen-obj) inf-x-offset)
                (setf (screen-obj-y-offset inf-screen-obj) inf-y-offset))
              (when (needs-repaint-pass-2? inf-screen-obj)
@@ -807,7 +807,7 @@ Modification History (most recent at the top)
   (with-slots (x-offset y-offset wid hei actual-obj box-type)
       self
     (with-drawing-inside-region (x-offset y-offset wid hei)
-      (maintaining-pen-color 
+      (maintaining-pen-color
         ;; need this because we may be in the middle of a colored font run
         (%set-pen-color *foreground-color*)
         ;; During redisplay-pass-2 the only part of the screen the redisplay
@@ -850,7 +850,7 @@ Modification History (most recent at the top)
 ;; useful for testing
 (defun colorit (w h x y)
   (with-pen-color ((bw::make-ogl-color (+ .3 (random .7))
-                                       (random 1.0) 
+                                       (random 1.0)
                                        (+ .3 (random .7)) .2))
     (draw-rectangle alu-seta w h x y)))
 
@@ -949,7 +949,7 @@ Modification History (most recent at the top)
 	      (with-turtle-clipping (inner-width inner-height)
 		;; first handle the background or video if there is any
                 (cond ((not (null av-info))
-                       (draw-current-av-info av-info 0 0 
+                       (draw-current-av-info av-info 0 0
                                              inner-width inner-height))
 		      ((not (null (graphics-sheet-background graphics-sheet)))
 		       (with-pen-color ((graphics-sheet-background graphics-sheet))
@@ -957,7 +957,7 @@ Modification History (most recent at the top)
                 (let ((ba (graphics-sheet-bit-array graphics-sheet)))
                   (unless (null ba)
 		    (#-X BITBLT-TO-SCREEN #+(and SUN X) bitblt-pixrect-to-screen
-                     ALU-SETA 
+                     ALU-SETA
                      (min inner-width  (offscreen-bitmap-width  ba))
                      (min inner-height (offscreen-bitmap-height ba))
                      ba 0 0 0 0)))
@@ -997,10 +997,10 @@ Modification History (most recent at the top)
 
 ;;; called also by printing routines.
 (defun repaint-guts ()
-  (unless (null *outermost-screen-box*) 
+  (unless (null *outermost-screen-box*)
     ;; can happen asynch, during window startup if window systems tries to update before
     ;; all the boxer innards are created
-    (top-level-repaint-pass-1) 
+    (top-level-repaint-pass-1)
     (top-level-repaint-pass-2)))
 
 (defun top-level-repaint-pass-1 ()
@@ -1029,13 +1029,13 @@ Modification History (most recent at the top)
       (dolist (region *region-list*)
         (when (not (null region)) (interval-update-repaint-all-rows region)))
       (setq *redisplay-clues* nil)
-      ;; comment out next line for outermost box save document, updates will 
+      ;; comment out next line for outermost box save document, updates will
       ;; occur inside of set-outermost-box instead...
-      (when (bp? *point*) 
+      (when (bp? *point*)
         (set-window-name (current-file-status (point-box)))
         ;; repaint-cursor can now cause horizontal scrolling of the box neccessitating an
         ;; additional repaint, if so, it will throw to 'scroll-x-changed TAG
-        (unless just-windows? 
+        (unless just-windows?
           #+opengl
           (capi:apply-in-pane-process *boxer-pane* #'repaint-cursor)
           #-opengl
@@ -1046,19 +1046,19 @@ Modification History (most recent at the top)
   (let ((*complete-redisplay-in-progress?* t))
     (redisplaying-unit
       (dolist (redisplayable-window *redisplayable-windows*)
-        (repaint-window redisplayable-window (not (eq redisplayable-window 
+        (repaint-window redisplayable-window (not (eq redisplayable-window
                                                       *boxer-pane*))))
       (dolist (region *region-list*)
         (when (not (null region)) (interval-update-repaint-all-rows region)))
       (setq *redisplay-clues* nil)
-      ;; comment out next line for outermost box save document, updates will 
+      ;; comment out next line for outermost box save document, updates will
       ;; occur inside of set-outermost-box instead...
-      (when (bp? *point*) 
+      (when (bp? *point*)
         (set-window-name (current-file-status (point-box)))
-        ;; repaint-cursor can now cause horizontal scrolling of the box 
+        ;; repaint-cursor can now cause horizontal scrolling of the box
         ;; neccessitating an additional repaint, if so, it will throw
         ;; to 'scroll-x-changed TAG
-        (unless just-windows? 
+        (unless just-windows?
           (repaint-cursor *point* nil)))
       ;; swap buffers here, after all drawing is complete
       (flush-port-buffer *boxer-pane*))))
@@ -1070,7 +1070,7 @@ Modification History (most recent at the top)
 (defun repaint-with-cursor-relocation ()
   (let ((*allow-redisplay-encore? t))
     (repaint)))
-  
+
 (defun force-repaint ()
   (let ((*complete-redisplay-in-progress?* t))
     (repaint)))
@@ -1139,8 +1139,8 @@ Modification History (most recent at the top)
                                             0)))
                 (set-cursorpos *boxer-pane* cursor-x (- (+ cursor-y offset-from-top) on-scroll-row-offset))
                 (set-cursor-size *point-blinker* c-width (+ c-height on-scroll-row-offset))))
-;            (cond ((and (or (eq (bp-row cursor) scroll-row) 
-;                            (and (null scroll-row) 
+;            (cond ((and (or (eq (bp-row cursor) scroll-row)
+;                            (and (null scroll-row)
 ;                                 (box? actual-box)
 ;                                 (eq (bp-row cursor)
 ;                                     (first-inferior-row actual-box))))
@@ -1150,7 +1150,7 @@ Modification History (most recent at the top)
 ;                                                         scroll-y-offset)))
 ;                  (t
 ;                   (set-cursorpos *boxer-pane* cursor-x cursor-y)
-;                   (SET-CURSOR-SIZE *POINT-BLINKER* 3 
+;                   (SET-CURSOR-SIZE *POINT-BLINKER* 3
 ;                                    (get-cursor-height cha))))
             )))))
 
@@ -1159,7 +1159,7 @@ Modification History (most recent at the top)
 (defvar *unseen-box-cursor-height* 17)
 
 ;; returns width, height & offset-from-top
-;; cursor in front of a box should be displayed from the top of the row, for chars it should 
+;; cursor in front of a box should be displayed from the top of the row, for chars it should
 ;; be anchored on the baseline
 (defun cursor-info (cursor)
   (let* ((row (bp-row cursor))
@@ -1172,13 +1172,13 @@ Modification History (most recent at the top)
            (cond ((null (displayed-screen-objs cha)) ; box is not visible
                   (values *default-cursor-width* *unseen-box-cursor-height* 0))
                  (t (let ((sb (inf-current-screen-box cha)))
-                      (if (null sb) 
+                      (if (null sb)
                           (values *default-cursor-width* *unseen-box-cursor-height* 0)
                         (values *default-cursor-width* (screen-obj-hei sb) 0))))))
           ((name-row? row) (values *default-cursor-width* (string-hei *border-name-font*) 0))
-          (t (values *default-cursor-width* 
+          (t (values *default-cursor-width*
                      (string-ascent font-no)
-                     (if (null screen-row) 0 
+                     (if (null screen-row) 0
                        (- (slot-value screen-row 'baseline) (string-ascent font-no))))))))
 
 (defun get-cursor-height (cha)
@@ -1203,9 +1203,9 @@ Modification History (most recent at the top)
 
 ;;; This is called periodically during eval
 ;;; Try to avoid excessive repaints by:
-;;;  1) Don't repaint more often than *eval-repaint-quantum* (default 50 
+;;;  1) Don't repaint more often than *eval-repaint-quantum* (default 50
 ;;;     milliseconds)
-;;;  2) Make sure we wait at least *eval-repaint-ration* times the length of the 
+;;;  2) Make sure we wait at least *eval-repaint-ration* times the length of the
 ;;;     last repaint to keep repaint time from dominating the processors time
 ;;;     (default is 2, i.e. repaint will never take up more than 1/2 the
 ;;;     processor time)
@@ -1218,12 +1218,12 @@ Modification History (most recent at the top)
                    (>& now (+ *last-eval-repaint* (* *eval-repaint-ratio*
                                                      *last-repaint-duration*)))))
       (cond ((or (eq *repaint-during-eval?* :never)
-                 (and (eq *repaint-during-eval?* :changed-graphics) 
+                 (and (eq *repaint-during-eval?* :changed-graphics)
                       (null *screen-boxes-modified*))))
-            (t  
+            (t
              (setq *last-eval-repaint* now)
              (process-editor-mutation-queue-within-eval)
-             (unless (null bw::*suppressed-actions*) 
+             (unless (null bw::*suppressed-actions*)
                (funcall (pop bw::*suppressed-actions*)))
              (repaint-window *boxer-pane*)
              (setq *last-repaint-duration* (- (get-internal-real-time) now)))))))
