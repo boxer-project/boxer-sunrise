@@ -584,8 +584,8 @@ Modification History (most recent at top)
   (sv-place row (slot-value self 'screen-rows)))
 
 ;;; Graphics-screen-box accessors
-;;; since graphics boxes have NO rows we use the SCREEN-ROWS instance variable 
-;;; which should be renamed immediate inferiors or some such to reflect the fact 
+;;; since graphics boxes have NO rows we use the SCREEN-ROWS instance variable
+;;; which should be renamed immediate inferiors or some such to reflect the fact
 ;;; that it can contain SHEETS
 (DEFMETHOD SCREEN-SHEET ((SELF GRAPHICS-SCREEN-BOX))
   (SCREEN-ROWS SELF))
