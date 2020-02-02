@@ -26,19 +26,19 @@ Modification History (most recent at top)
  2/12/05 *mouse-doc-wait-time* reduced from 1 to .5 secs
          maybe-undocument-mouse added for more frequent checks on the validity
          of existing mouse docs
-         check to see if mouse is still on the same spot added to popup-doc-delay 
+         check to see if mouse is still on the same spot added to popup-doc-delay
  8/24/04 used new var *change-mouse-on-hotspots* to conditionalize mouse cursor
          changing
- 6/18/04 conditionalized mouse doc strings for macs ("Hold" instead of 
+ 6/18/04 conditionalized mouse doc strings for macs ("Hold" instead of
          "Right Click" for "Other Choices")
- 6/15/04 started file (unifying mouse documentation code from the various 
+ 6/15/04 started file (unifying mouse documentation code from the various
          boxwin-xxx files
 
 |#
 
 
 
-(in-package :boxer-window) 
+(in-package :boxer-window)
 
 ;;;; Mouse Documentation
 
@@ -51,27 +51,27 @@ Modification History (most recent at top)
 (defvar *custom-mouse-doc-string* "")
 
 (defmacro def-mouse-doc-string (docfun id string )
-  `(progn 
+  `(progn
      (defun ,docfun ()
        (unless (=& ,id *current-mouse-string-id*)
          (setq *current-mouse-string-id* ,id)
          (status-line-display :mouse-doc ,string)))))
 
 (defun clear-mouse-doc-string ()
-  (setq *current-mouse-string-id* 0) 
+  (setq *current-mouse-string-id* 0)
   (boxer::status-line-undisplay :mouse-doc))
 
 (def-mouse-doc-string mouse-doc-supershrink 1
   #+mcl "Click to Supershrink (Hold for more choices)"
   #-mcl "Click to Supershrink (Right click for more choices)")
 
-(def-mouse-doc-string mouse-doc-shrink 2 
+(def-mouse-doc-string mouse-doc-shrink 2
   #+mcl "Click to Shrink (Hold for more choices)"
   #-mcl "Click to Shrink (Right click for more choices)")
 
 (def-mouse-doc-string mouse-doc-hotspot-off 3 "Press to enable Clicking")
 
-(def-mouse-doc-string mouse-doc-expand 4 
+(def-mouse-doc-string mouse-doc-expand 4
   #+mcl "Click to Expand (Hold for more choices)"
   #-mcl "Click to Expand (Right Click for more choices)")
 
@@ -79,11 +79,11 @@ Modification History (most recent at top)
   #+mcl "Click to Expand to Fullscreen (Hold for more choices)"
   #-mcl "Click to Expand to Fullscreen (Right Click for more choices)")
 
-(def-mouse-doc-string mouse-doc-graphics-flip 6 
+(def-mouse-doc-string mouse-doc-graphics-flip 6
   #+mcl "Flip to Graphics (Hold for more choices)"
   #-mcl "Flip to Graphics (Right Click for more choices)")
 
-(def-mouse-doc-string mouse-doc-text-flip 7 
+(def-mouse-doc-string mouse-doc-text-flip 7
   #+mcl "Flip to Text (Hold for more choices)"
   #-mcl "Flip to Text (Right Click for more choices)")
 
@@ -91,14 +91,14 @@ Modification History (most recent at top)
 
 (def-mouse-doc-string mouse-doc-resize-off 9 "Press to Select Manual Sizing")
 
-(def-mouse-doc-string mouse-doc-type 10 
+(def-mouse-doc-string mouse-doc-type 10
   "Press to Change Type and Other Properties")
 
 (def-mouse-doc-string mouse-doc-name 11  "Give this box a name")
 
 (def-mouse-doc-string mouse-doc-graphics 12 "Graphics Mouse Click")
 
-(def-mouse-doc-string mouse-doc-sprite 13 "Sprite Mouse Click") 
+(def-mouse-doc-string mouse-doc-sprite 13 "Sprite Mouse Click")
 
 ;; special cases for top left & top right
 
@@ -117,7 +117,7 @@ Modification History (most recent at top)
 
 ;; Non OpenGL needs to keep track of a pixmap which is
 ;; a snapshot of the highlighted part of the box before the highlight
-;; 
+;;
 ;; OpenGL uses 2 slots which cache the X,Y coords of where to draw the
 ;; highlighting
 
@@ -125,12 +125,12 @@ Modification History (most recent at top)
 
 ;; mouse status is a vector
 (defun mouse-doc-status () *mouse-doc-status*)
-(defun set-mouse-doc-status (place screen-box) 
+(defun set-mouse-doc-status (place screen-box)
   (setf (svref *mouse-doc-status* 0) place
         (svref *mouse-doc-status* 1) screen-box))
 
 ;; deallocate backing store here ? (can't, need originating bitmap)
-(defun clear-mouse-doc-status ()  
+(defun clear-mouse-doc-status ()
   (setf (svref *mouse-doc-status* 0) nil
         (svref *mouse-doc-status* 1) nil
         (svref *mouse-doc-status* 2) nil
@@ -152,13 +152,13 @@ Modification History (most recent at top)
 #-opengl
 (defun mouse-doc-status-backing () (svref& *mouse-doc-status* 2))
 
-  
+
 (defun set-mouse-doc-status-place (newplace)
   (setf (svref& *mouse-doc-status* 0) newplace))
 (defun set-mouse-doc-status-screen-box (newsb)
   (setf (svref& *mouse-doc-status* 1) newsb))
 #+opengl
-(defun set-mouse-doc-status-xy (x y) 
+(defun set-mouse-doc-status-xy (x y)
   (setf (svref& *mouse-doc-status* 2) x
         (svref& *mouse-doc-status* 3) y))
 #-opengl
@@ -187,9 +187,9 @@ Modification History (most recent at top)
 ;; There are 3 types of mouse documentation functions
 ;;  o The mouse-doc-{shrink,supershrink,expand,etc} functions display a
 ;;    documentation phrase in the status line
-;;  o The highlight-doc-xxx functions are responsible for highlighting the 
+;;  o The highlight-doc-xxx functions are responsible for highlighting the
 ;;    sensitive area under the mouse and (perhaps) changing the mouse cursor
-;;  o The popup-doc-xxx functions popup a terse doc message on the screen (bubble 
+;;  o The popup-doc-xxx functions popup a terse doc message on the screen (bubble
 ;;    help)
 ;;
 
@@ -198,7 +198,7 @@ Modification History (most recent at top)
     (unless (member 'document-mouse-handler *boxer-eval-queue*)
       (queue-event 'document-mouse-handler))))
 
-(defun document-mouse-handler ()  
+(defun document-mouse-handler ()
   (multiple-value-bind (place screen-box)
       (boxer::drawing-on-window (*boxer-pane*) (mouse-place))
     (cond ((and (eq place (mouse-doc-status-place))
@@ -233,20 +233,20 @@ Modification History (most recent at top)
 #+lispworks
 (defun popup-doc-delay ()
   (let ((original-event-id (1+ (event-id))))
-    (or 
+    (or
      (mp:process-wait-with-timeout "Mouse Documentation"
                                    *mouse-doc-wait-time*
-                                   #'(lambda () 
+                                   #'(lambda ()
                                        (> (event-id) original-event-id)))
      (neq (mouse-place) (mouse-doc-status-place)))))
 
 #+mcl
 (defun popup-doc-delay ()
   (let ((original-event-id (event-id)))
-    (or 
+    (or
      (process-wait-with-timeout "Mouse Documentation"
                                 (round (* 60 *mouse-doc-wait-time*))
-                                #'(lambda () 
+                                #'(lambda ()
                                     (not (= (event-id) original-event-id))))
      (boxer::drawing-on-window (*boxer-pane*)
        ;; why is this neccessarry ? shouldn't we already be in a drawing-on-window ?
@@ -271,7 +271,7 @@ Modification History (most recent at top)
 (defun maybe-undocument-mouse ()
   (when (and *document-mouse* boxer::*popup-doc-on?*)
     (multiple-value-bind (place screen-box)
-                         (boxer::drawing-on-window (*boxer-pane*) (mouse-place))     
+                         (boxer::drawing-on-window (*boxer-pane*) (mouse-place))
       (cond ((and (eq place (mouse-doc-status-place))
                   (eq screen-box (mouse-doc-status-screen-box))
                   )
@@ -292,7 +292,7 @@ Modification History (most recent at top)
      (unless (eq *current-mouse-doc* :bottom-right)
        (setq *current-mouse-doc* :bottom-right)
        (when *change-mouse-on-hotspots* (set-mouse-cursor-internal :hotspot)))
-     (cond ((boxer::bottom-right-hotspot-active? 
+     (cond ((boxer::bottom-right-hotspot-active?
              (boxer::screen-obj-actual-obj screen-box))
             (unless popup-only? (mouse-doc-resize))
             (boxer::popup-doc-resize screen-box popup-only?))
@@ -300,12 +300,12 @@ Modification History (most recent at top)
               (boxer::popup-doc-resize screen-box popup-only? t))))
     ((:type :port-target-type)
      (unless (eq *current-mouse-doc* :type-tab-doc)
-       (setq *current-mouse-doc* :type-tab-doc)           
+       (setq *current-mouse-doc* :type-tab-doc)
        (when *change-mouse-on-hotspots* (set-mouse-cursor-internal :type-tab)))
      (unless (eq (boxer::box-type screen-box) 'boxer::sprite-box)
        (unless popup-only? (mouse-doc-type))
        (boxer::popup-doc-toggle-type screen-box popup-only?)))
-    ((:name-handle)         
+    ((:name-handle)
      (unless (eq *current-mouse-doc* :name-doc)
        (setq *current-mouse-doc* :name-doc)
         (when *change-mouse-on-hotspots* (set-mouse-cursor-internal :name-box)))
@@ -328,7 +328,7 @@ Modification History (most recent at top)
            (unless (and (=& *current-mouse-string-id* *custom-string-id*)
                         (string= *custom-mouse-doc-string* custom-doc))
              (setq *current-mouse-string-id* *custom-string-id*)
-             (boxer::boxer-editor-message 
+             (boxer::boxer-editor-message
               (setq *custom-mouse-doc-string* custom-doc)))))))
     (t  #-opengl
         (when *change-mouse-on-hotspots*
@@ -351,14 +351,14 @@ Modification History (most recent at top)
                       (t nil)))
          (target (when edbox (boxer::box-or-port-target edbox))))
     (case place
-      (:top-left     (boxer::popup-undoc-shrink 
+      (:top-left     (boxer::popup-undoc-shrink
                       screen-box
                       (and (eq (boxer::display-style edbox) :shrunk)
                            (not (eq screen-box (outermost-screen-box))))))
-      (:top-right    (boxer::popup-undoc-expand 
+      (:top-right    (boxer::popup-undoc-expand
                       screen-box (neq (boxer::display-style edbox) :shrunk)))
       (:bottom-left  (unless (null (slot-value target 'boxer::graphics-sheet))
-                       (boxer::popup-undoc-view-flip 
+                       (boxer::popup-undoc-view-flip
                         screen-box (not (boxer::graphics-screen-box? screen-box)))))
       (:bottom-right (if (boxer::bottom-right-hotspot-active? edbox)
                        (boxer::popup-undoc-resize screen-box)
@@ -372,8 +372,8 @@ Modification History (most recent at top)
 (defun safe-get-sprite-mouse-doc (sprite-box)
   (when (boxer::sprite-box? sprite-box)
     (let ((doc nil))
-      (ignore-errors 
-       (setq doc 
+      (ignore-errors
+       (setq doc
              (let* ((eval::*lexical-variables-root* sprite-box)
                     (docbox (eval::boxer-symeval 'bu::sprite-mouse-documentation)))
                (unless (eq docbox eval::*novalue*)
@@ -401,7 +401,7 @@ Modification History (most recent at top)
            (unless popup-only? (mouse-doc-supershrink))
            ;; this highlights the hotspot, and pops up a doc bubble
            (boxer::popup-doc-shrink screen-box T popup-only?))
-          (t (unless popup-only? 
+          (t (unless popup-only?
                (if (eq edbox boxer::*initial-box*)
                  (mouse-doc-tl-menu-only)
                  (mouse-doc-shrink)))
@@ -421,10 +421,10 @@ Modification History (most recent at top)
           (t (unless popup-only? (mouse-doc-fullscreen))
              (boxer::popup-doc-expand screen-box t popup-only?)))))
 
-(defun document-bottom-left-mouse (screen-box popup-only?)  
+(defun document-bottom-left-mouse (screen-box popup-only?)
   (let* ((edbox (box::screen-obj-actual-obj screen-box))
          (target (box::box-or-port-target edbox)))
-    (cond ((not (boxer::bottom-left-hotspot-on? edbox)) 
+    (cond ((not (boxer::bottom-left-hotspot-on? edbox))
            (unless (eq *current-mouse-doc* :bottom-left)
              (setq *current-mouse-doc* :bottom-left)
              (when *change-mouse-on-hotspots* (set-mouse-cursor-internal :hotspot)))
@@ -433,7 +433,7 @@ Modification History (most recent at top)
            (unless (eq *current-mouse-doc* :normal)
              (setq *current-mouse-doc* :normal)
              (when *change-mouse-on-hotspots* (set-mouse-cursor-internal :normal)))
-           (unless (=& *current-mouse-string-id* 0) 
+           (unless (=& *current-mouse-string-id* 0)
              (clear-mouse-doc-string)))
           ((boxer::graphics-screen-box? screen-box)
            (unless (eq *current-mouse-doc* :bottom-left)
@@ -441,7 +441,7 @@ Modification History (most recent at top)
              (when *change-mouse-on-hotspots* (set-mouse-cursor-internal :hotspot)))
            (unless popup-only? (mouse-doc-text-flip))
            (boxer::popup-doc-view-flip screen-box nil popup-only?))
-          (t 
+          (t
            (unless (eq *current-mouse-doc* :bottom-left)
              (setq *current-mouse-doc* :bottom-left)
              (when *change-mouse-on-hotspots* (set-mouse-cursor-internal :hotspot)))
