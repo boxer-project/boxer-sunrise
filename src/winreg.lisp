@@ -27,7 +27,7 @@ Modification History (most recent at top)
          to get app's directory instead of get-working-directory which can
          vary depending upon hopw the app is started
 10/10/05 temporary file icon hack using external image
- 9/25/05 change standard-icon to use fli:make-pointer instead of 
+ 9/25/05 change standard-icon to use fli:make-pointer instead of
          boxer::make-pointer (how did this EVER work before ??)
  9/23/05 added "Demo" button to boxer-license-dialog
 12/22/04 ported 30 day expiration utilities from macreg
@@ -249,7 +249,7 @@ hand.)
   (let ((oldpenvar (gensym)))
     `(fli:with-dynamic-foreign-objects ()
        (let ((,oldpenvar (win32::select-object ,hdc ,newpen)))
-         (unwind-protect 
+         (unwind-protect
              (progn . ,body)
            (win32::select-object ,hdc ,oldpenvar))))))
 
@@ -257,7 +257,7 @@ hand.)
   (let ((oldbrushvar (gensym)))
     `(fli:with-dynamic-foreign-objects ()
        (let ((,oldbrushvar (win32::select-object ,hdc ,newbrush)))
-         (unwind-protect 
+         (unwind-protect
              (progn . ,body)
            (win32::select-object ,hdc ,oldbrushvar))))))
 
@@ -267,7 +267,7 @@ hand.)
     `(fli:with-dynamic-foreign-objects ()
        (let ((,oldpenvar (win32::select-object ,hdc ,newpen))
              (,oldbrushvar (win32::select-object ,hdc ,newbrush)))
-         (unwind-protect 
+         (unwind-protect
              (progn . ,body)
            (win32::select-object ,hdc ,oldpenvar)
            (win32::select-object ,hdc ,oldbrushvar))))))
@@ -285,17 +285,17 @@ hand.)
          (index (read-from-string (subseq pathname (1+ commapos)) nil nil)))
     (when (integerp index)
       (values (subseq pathname 0 commapos) index))))
-            
+
 
 
 
 ;;; fli
 
-;(fli:define-foreign-function (%extract-icon "ExtractIcon" :dbcs) 
+;(fli:define-foreign-function (%extract-icon "ExtractIcon" :dbcs)
 ;    ((hinstance :pointer) (iconfilename :pointer) (icon-index :int))
 ;  :result-type :integer :module :shell32)
 
-(fli:define-foreign-function (%extract-icon "ExtractIcon" :dbcs) 
+(fli:define-foreign-function (%extract-icon "ExtractIcon" :dbcs)
     ((hinstance :pointer) (iconfilename :pointer) (icon-index :signed-long))
   :result-type :signed-long :module :shell32)
 
@@ -313,7 +313,7 @@ hand.)
 (defconstant IDI_ASTERISK 32516)
 (defconstant IDI_WINLOGO 32517)
 
-(defun standard-icon (icon-id) 
+(defun standard-icon (icon-id)
   (win32::load-icon (fli::make-pointer :address 0) icon-id))
 
 (defun icon-value-internal (type)
@@ -327,7 +327,7 @@ hand.)
 ;; a caching scheme, we'll use an alist instead of a hashtable since we
 ;; don't expect too many entries
 (defvar *icon-values-cache* nil)
-(defun icon-value-entry (type) (cdr (assoc type *icon-values-cache* 
+(defun icon-value-entry (type) (cdr (assoc type *icon-values-cache*
                                            :test #'string-equal)))
 (defun set-icon-value-entry (type new-value)
   (let ((new-entry (cons type new-value)))
@@ -349,13 +349,13 @@ hand.)
 (defconstant *byte-3* (byte 1 3))
 
 
-(defsubst di-offset?    () 
+(defsubst di-offset?    ()
   (not (zerop& (ldb *byte-0* *windows-draw-icon-options*))))
 
-(defsubst di-set-rop?   () 
+(defsubst di-set-rop?   ()
   (not (zerop& (ldb *byte-1* *windows-draw-icon-options*))))
 
-(defsubst di-set-pen?   () 
+(defsubst di-set-pen?   ()
   (not (zerop& (ldb *byte-2* *windows-draw-icon-options*))))
 
 (defsubst di-set-brush? ()
@@ -394,7 +394,7 @@ hand.)
 ;;;        3) unlocking demo ?
 
 (defun get-boxer-registry-value (key)
-  (win32::registry-value "Software\\Pyxisystems\\Boxer" 
+  (win32::registry-value "Software\\Pyxisystems\\Boxer"
                          key :key-type :local-machine :errorp nil))
 
 (defun get-boxer-license-key ()
@@ -402,8 +402,8 @@ hand.)
 
 (defun set-boxer-registry-value (key keystring)
   ;(win32:create-registry-key "Software\\Pyxisystems\\Boxer" key)
-  (setf (win32::registry-value "Software\\Pyxisystems\\Boxer" 
-                               key :key-type :local-machine 
+  (setf (win32::registry-value "Software\\Pyxisystems\\Boxer"
+                               key :key-type :local-machine
                                :expected-type :string :errorp nil)
         keystring))
 
@@ -425,7 +425,7 @@ hand.)
                                :max-characters 4 :enabled t))
          (license-text (make-instance 'capi:title-pane :x 20 :y 20
                                       :text "License Key Entry"))
-         (items (list 
+         (items (list
                 ;; the license number in 4 digit fields...
                 license-text
                 group1
@@ -437,27 +437,27 @@ hand.)
                 group4
                 ;; other buttons
                 (make-instance 'capi:push-button :x 60 :y 70 :width 50 :height 20
-                               :text "OK" 
-                               :selection-callback 
+                               :text "OK"
+                               :selection-callback
                                #'(lambda (&rest ignore)
                                    (declare (ignore ignore))
                                    (capi:exit-dialog
-                                    (concatenate 
-                                     'string 
+                                    (concatenate
+                                     'string
                                      (capi:text-input-pane-text group1)
                                      (capi:text-input-pane-text group2)
                                      (capi:text-input-pane-text group3)
-                                     (capi:text-input-pane-text group4)))))                
+                                     (capi:text-input-pane-text group4)))))
                 (make-instance 'capi:push-button :x 190 :y 70 :width 50 :height 20
                                :text "Cancel"
                                :selection-callback 'capi:abort-dialog)))
          (ld (capi:make-container
-              (make-instance 
+              (make-instance
                'capi:pinboard-layout :min-width 300 :min-height 120
                :description
                (if offer-demo?
                    (append items
-                           (list (make-instance 'capi:push-button 
+                           (list (make-instance 'capi:push-button
                                                 :x 120 :y 70 :width 50 :height 20
                                                 :text "Demo"
                                                 :selection-callback
@@ -490,7 +490,7 @@ hand.)
 ;;;This should NOT appear in the app !!!!
 #|
 (defun generate-license-keys (&key (min-key *license-min*) (n-keys 10))
-  (do ((n (* (ceiling (/ min-key (max *license-prime-A* 
+  (do ((n (* (ceiling (/ min-key (max *license-prime-A*
                                       *license-prime-B*)))
              *license-prime-B*)
           (+ n *license-prime-B*))
@@ -506,10 +506,10 @@ hand.)
 
 (defun print-license-key (n)
   (format *license-key-stream* "~19,'0,'-,4:D~%" n))
-  
+
 
 ;;; New expiration scheme for demo, no more hard coded date
-;;; 
+;;;
 ;;; Weaknesses
 ;;;    1) expiration scheme just a simple (unencrypted flag)
 ;;;    2) if (unencrypted) date file is constantly reset, the magic numbers
@@ -528,10 +528,10 @@ hand.)
 ;;; these essentially function as one time pads except they sit in the app
 ;;; Note: all these numbers were achieved via (random most-positive-fixnum)
 (defvar *magic-expiration-array*
-  #(34734175  271118789 276516700 38802561  25471640  135929489 405980097 
-    509323053 430523074 231983845 149157935 269856512 406603131 102862860 
-    296363948 105592821 197139497 513778864 209276327 133492344 494102449 
-    535204507 213166693 115796836 467770347 423059588 400308497 51688408 
+  #(34734175  271118789 276516700 38802561  25471640  135929489 405980097
+    509323053 430523074 231983845 149157935 269856512 406603131 102862860
+    296363948 105592821 197139497 513778864 209276327 133492344 494102449
+    535204507 213166693 115796836 467770347 423059588 400308497 51688408
     158928445 436662981))
 
 (defconstant *expiration-code* 240353669)
@@ -583,9 +583,9 @@ hand.)
 (defun initialize-demo-date ()
   (write-demo-info (svref *magic-expiration-array* 0) (%now-date) 0))
 
-(defun write-demo-info (magic date 
+(defun write-demo-info (magic date
                               &optional
-                              (place (position magic 
+                              (place (position magic
                                                *magic-expiration-array*
                                                :test #'=)))
   (cond ((null place)
@@ -593,7 +593,7 @@ hand.)
         (t
          (set-boxer-registry-value "DMagic" (format nil "~D" magic))
          (set-boxer-registry-value "DDate" (format nil "~D" (+ date
-                                                               (svref *magic-date-array* 
+                                                               (svref *magic-date-array*
                                                                       place)))))))
 
 
@@ -607,7 +607,7 @@ hand.)
            (error "Invalid demo code: ~D" magic))
           (t
            (let ((dl (get-boxer-registry-value "DDate")))
-             (when (stringp dl) 
+             (when (stringp dl)
                (- (read-from-string dl nil nil)
                   (svref *magic-date-array* place))))))))
 
@@ -620,16 +620,16 @@ hand.)
               (t "Boxer Free Demo"))))
 
 
-;; write the next magic number if it's been more than a day since the last date, 
+;; write the next magic number if it's been more than a day since the last date,
 ;; maybe expired the boxer
-;; also setup message 
+;; also setup message
 
 (defun demo-next-day ()
   ;; all this had better be true
   (let* ((magic-number (get-demo-magic))
          (last-date (get-demo-date magic-number))
          (place (when (numberp magic-number)
-                  (position magic-number *magic-expiration-array* 
+                  (position magic-number *magic-expiration-array*
                             :test #'=)))
          (last-place (1- (length *magic-expiration-array*)))
          (now (%now-date)))
@@ -641,7 +641,7 @@ hand.)
           ((< place last-place)
            ;; the steady state case
            (cond ((> now last-date)
-                  (write-demo-info (svref *magic-expiration-array* 
+                  (write-demo-info (svref *magic-expiration-array*
                                           (1+ place))
                                    now)
                   (demo-banner (1+ place)))
@@ -654,17 +654,17 @@ hand.)
                     (demo-banner place))))
           ((>= place last-place)
            (expire-boxer)
-           (demo-banner :last)))))             
+           (demo-banner :last)))))
 
 ;;; temporary boxer file icon drawing hack
 (defvar *boxer-file-icon-image* nil)
 
 (def-redisplay-initialization
- (setq *boxer-file-icon-image* 
+ (setq *boxer-file-icon-image*
        (ignore-errors
-         (gp:convert-external-image 
+         (gp:convert-external-image
           *boxer-pane*
-          (gp:read-external-image 
+          (gp:read-external-image
            (merge-pathnames "boxer-file-icon.BMP"
                             (lw::lisp-image-name)))))))
 
@@ -677,7 +677,7 @@ hand.)
 height-ellipse)
   (fli:with-dynamic-foreign-objects ()
     (let* ((hwnd (slot-value (capi-internals::representation port) 'win32:hwnd))
-           (hdc (slot-value (capi-internals::representation port) 
+           (hdc (slot-value (capi-internals::representation port)
                             'capi-win32-lib::hdc))
            (hpen (win32::create-pen win32::ps_solid 1 win32::black_pen))
            (oldpen (win32::select-object hdc hpen))
@@ -705,7 +705,7 @@ height-ellipse)
 (defun my-draw-icon (port hicon x y)
   (fli:with-dynamic-foreign-objects ()
     (let* ((hwnd (slot-value (capi-internals::representation port) 'win32:hwnd))
-           (hdc (slot-value (capi-internals::representation port) 
+           (hdc (slot-value (capi-internals::representation port)
                             'capi-win32-lib::hdc))
            (hpen (win32::create-pen win32::ps_solid 0 win32::black_pen))
            (oldpen (win32::select-object hdc hpen))
