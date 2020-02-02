@@ -29,7 +29,7 @@ Modification History (most recent at top)
   (let ((printer (capi:print-dialog :owner window
                                     :print-pages-p nil
                                     :print-copies-p t))
-        ;; 
+        ;;
         (pane (slot-value window 'boxer-pane)))
     (when printer
       (capi:with-print-job (printer-port :pane pane :printer printer)
