@@ -32,13 +32,13 @@ Modification History (most recent at top)
 #+mcl (in-package :boxnet)
 
 ;;; Call setup-server.
-;;; Then call either SETUP-CONNECTION-WAITING-PROCESS 
+;;; Then call either SETUP-CONNECTION-WAITING-PROCESS
 ;;; or ENABLE-POLLING with a function which receives
 ;;; a stream as input.  That function should deal with the stream,
 ;;; but should not interact with the display or anything.
 ;;; It should use the bw::*boxer-command-loop-event-handlers-queue*
 ;;; mechanism for getting things to run later.
-;;; 
+;;;
 ;;; We should macroize all that and relax the restrictions and
 ;;; probably just settle on polling and punt the interrupt stuff
 ;;; and regularize the names.
@@ -104,7 +104,7 @@ Modification History (most recent at top)
 
 ;;returns the file descriptor bits to give to select-and-accept.
 #+(and Lucid (not solaris))
-(lcl:define-c-function (socket-listen-and-bind "_socket_listen_and_bind") 
+(lcl:define-c-function (socket-listen-and-bind "_socket_listen_and_bind")
     ((port-number :integer))
   :result-type :integer)
 
@@ -144,11 +144,11 @@ Modification History (most recent at top)
 #+Lucid
 (defun setup-connection-waiting-process (handler-function)
   (setq *connection-waiting-process*
-	(lcl::make-process 
+	(lcl::make-process
 	 :function #'handle-connection :args (list handler-function)
 	 :wait-function (let ((socket *socket*)
 			      (process lcl::*current-process*))
-			  #'(lambda () 
+			  #'(lambda ()
 			      ;; can't use global variables in the wait function.
 			      (let ((port (select-and-accept socket 100)))
 				(if (not (zerop port))
@@ -161,7 +161,7 @@ Modification History (most recent at top)
 ;;; the server process calls this on the stream when the connection is made.
 (defun handle-connection (handler-function)
   (cond ((minusp *connection-port*)
-	 (when (eq boxer::*boxer-send-server-status* :interrupt) 
+	 (when (eq boxer::*boxer-send-server-status* :interrupt)
 	   (close-server)
 	   (format t "<error: connection lost -- killing process>~%")))
 	(t
@@ -183,7 +183,7 @@ Modification History (most recent at top)
   (when (and *connection-port* (plusp *connection-port*))
     (close *connection-port*)
     (setq *connection-port* nil))
-  (when *connection-waiting-process* 
+  (when *connection-waiting-process*
     #+Lucid (lcl::kill-process *connection-waiting-process*)
     #-Lucid (warn "~S undefined in this Lisp" 'kill-process)
     (setq *connection-waiting-process* nil)))
