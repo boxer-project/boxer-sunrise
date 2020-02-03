@@ -27,22 +27,22 @@ Modification History (most recent at top)
  4/19/14 draw-borders-label, border-label-protrusion =>moved label string up 1 pixel
 11/22/12 draw-super-shrunk-box, fine tuned data box case
  8/29/12 multiline2i => multiline2, undo all the special fixnum arithmetic in:
-         border-label-protrusion,  border-name-{width,height,protrusion},  
-         port-name-protrusion, draw-borders-{name,label,closet-info},  draw-port-name,  
-         type-tab-tracking-info,  border-thickness,  
+         border-label-protrusion,  border-name-{width,height,protrusion},
+         port-name-protrusion, draw-borders-{name,label,closet-info},  draw-port-name,
+         type-tab-tracking-info,  border-thickness,
          plain-borders-{minimum-size-1,widths-1,draw-1,name-tab-values}
          port-borders-{widths,minimum-size}
          port-frame-widths,  box-top-y,
          draw-{round-corners,slant-corners,super-shrunk-box,port-frame}, port-borders-draw,
-         visible-corner-size, {tl,tr,bl,br}-corner-tracking-info,  name-tab-tracking-info, 
-         box-borders-name-tab-position, get-position-in-border, 
-         draw-mouse-{shrink,expand,toggle,resize}-corner, 
+         visible-corner-size, {tl,tr,bl,br}-corner-tracking-info,  name-tab-tracking-info,
+         box-borders-name-tab-position, get-position-in-border,
+         draw-mouse-{shrink,expand,toggle,resize}-corner,
          All of the mouse border handlers because screen-obj x,y,wid,hei can now be floats
 
  8/11/12 handle string-wid float returned value: border-{label,name}-width
  6/23/23 handle string-wid float returned value: plain-borders-minimum-size-1,
                                                  draw-borders-name, draw-borders-label
- 3/ 7/11 #+opengl version of default-character-height & tuned 
+ 3/ 7/11 #+opengl version of default-character-height & tuned
          outline in draw-supershrunk-box
 12/ 5/10 popup doc support added to repaint-mouse-docs
 11/28/09 draw-borders-closet-info added
@@ -110,7 +110,7 @@ Modification History (most recent at top)
       (string-hei *border-label-font*)
     0))
 
-;; "protrusion" describes the extension beyond where the border would 
+;; "protrusion" describes the extension beyond where the border would
 ;; otherwise be
 (defun border-label-protrusion (box-type)
   (declare (ignore box-type))
@@ -137,7 +137,7 @@ Modification History (most recent at top)
                ;(*& *border-name-padding* 2)
                ))))
 
-;; "protrusion" describes the extension beyond where the border would 
+;; "protrusion" describes the extension beyond where the border would
 ;; otherwise be
 (defun border-name-protrusion (name)
   (cond ((null name) *noname-extension*)
@@ -152,7 +152,7 @@ Modification History (most recent at top)
                (* *border-name-padding* 2)
                ;; name is inset by this amount...
                (- *port-box-gap*)))))
-                                           
+
 ;;;; Minimum Size
 
 ;;; stub version => 40,25 or 52,37 for ports
@@ -169,7 +169,7 @@ Modification History (most recent at top)
 
 (defun plain-borders-minimum-size (screen-box)
   (let ((box (screen-obj-actual-obj screen-box)))
-    (plain-borders-minimum-size-1 (name-string-or-null box) 
+    (plain-borders-minimum-size-1 (name-string-or-null box)
                                   (class-name (class-of box))
                                   (display-style-border-style (display-style-list
                                                                screen-box)))))
@@ -201,7 +201,7 @@ Modification History (most recent at top)
         (cond ((null target) (values 0 0))
               (t (plain-borders-minimum-size-1 (name-string-or-null target)
                                                (class-name (class-of target))
-                                               (display-style-border-style 
+                                               (display-style-border-style
                                                 (display-style-list target)))))
       (values (max *minimum-box-wid*
                    (+ t-min-wid
@@ -209,10 +209,10 @@ Modification History (most recent at top)
                               p-border-thickness))))
               (max *minimum-box-hei*
                    (+ t-min-hei
-                      (+ *border-outside-space* 
+                      (+ *border-outside-space*
                          (border-name-protrusion (name-string-or-null port))
                          p-border-thickness *port-box-gap*)
-                      (+ *border-outside-space* 
+                      (+ *border-outside-space*
                          (border-label-protrusion 'port-box)
                          *port-box-gap*)))))))
 
@@ -233,17 +233,17 @@ Modification History (most recent at top)
 (defun plain-borders-widths (screen-box)
   (let ((box (screen-obj-actual-obj screen-box)))
     (plain-borders-widths-1 (name-string-or-null box) (class-name (class-of box))
-                            (display-style-border-style (display-style-list 
+                            (display-style-border-style (display-style-list
                                                          screen-box)))))
 
 ;; values left, top, right bottom
 (defun plain-borders-widths-1 (name type border-style)
   (let* ((border-thickness (border-thickness border-style))
-         (vert-width (+ *border-outside-space* *border-inside-space* 
+         (vert-width (+ *border-outside-space* *border-inside-space*
                         border-thickness)))
     (values vert-width ; left
             (+ *border-outside-space* (border-name-protrusion name) ; top
-               border-thickness *border-inside-space*) 
+               border-thickness *border-inside-space*)
             vert-width ; right
             (+ *border-outside-space* (border-label-protrusion type)
                border-thickness *border-inside-space*))))
@@ -257,10 +257,10 @@ Modification History (most recent at top)
         (cond ((null target) (values 0 0 0 0))
               (t (plain-borders-widths-1 (name-string-or-null target)
                                          (class-name (class-of target))
-                                         (display-style-border-style 
+                                         (display-style-border-style
                                           (display-style-list target)))))
       (values (+ t-lef *port-box-gap* p-border-thickness *border-outside-space*)
-              (+ t-top *port-box-gap* (port-name-protrusion 
+              (+ t-top *port-box-gap* (port-name-protrusion
                                        (name-string-or-null port))
                  p-border-thickness *border-outside-space*)
               (+ t-rig *port-box-gap* p-border-thickness *border-outside-space*)
@@ -282,7 +282,7 @@ Modification History (most recent at top)
 ;;;; Box Borders Draw
 ;;; this is now just a plain drawing of the entire border - no more box borders
 ;;; caching
-;;; we will also draw the scroll info here (perhaps &optional scrollpos args to 
+;;; we will also draw the scroll info here (perhaps &optional scrollpos args to
 ;;; handle interactive mouse scrolling ?)
 ;;; Drawing Borders are divided into:
 ;;;  1) walls (thick, thin, dashed, colored?)
@@ -314,7 +314,7 @@ Modification History (most recent at top)
                         (screen-obj-hei screen-box)))
 
 (defun box-top-y (name y)
-  (if (null name) 
+  (if (null name)
       (+ y *border-outside-space* *noname-extension*)
     (+ y (border-name-protrusion name) *border-outside-space*)))
 
@@ -356,7 +356,7 @@ Modification History (most recent at top)
                             inner-top box-right inner-right box-bottom inner-bottom)
       )))
 
-(defun draw-borders-closet-info (actual-obj name-end-x inner-right 
+(defun draw-borders-closet-info (actual-obj name-end-x inner-right
                                             box-top inner-top border-thickness)
   ;; should adjust if there is a visible closet-row
   (let ((cr (slot-value actual-obj 'closets))
@@ -371,14 +371,14 @@ Modification History (most recent at top)
         (inside-name-width (if (null name)
                                *noname-blank-width*
                              (string-wid *border-name-font* name)))
-        (lower-slant-y (+ name-mid-y *border-inside-space*)))    
+        (lower-slant-y (+ name-mid-y *border-inside-space*)))
     (let ((end-x (+ current-x *border-name-slant-offset*)))
       ;; the left "<" of the name
       (draw-line current-x name-mid-y end-x name-top-y alu-seta t)
       (draw-line current-x name-mid-y end-x lower-slant-y alu-seta t)
       (setq current-x end-x))
     (let ((end-x (+ current-x inside-name-width (* *border-name-padding* 2))))
-      ;; the name string itself  
+      ;; the name string itself
       (unless (null name)
         (draw-string alu-seta *border-name-font* name current-x
                      (+ name-top-y *border-name-padding* *basic-border-width*)))
@@ -397,8 +397,8 @@ Modification History (most recent at top)
          inner-left)
         (t
          (let ((label (border-type-label box-type)))
-           (draw-string alu-seta *border-label-font* label 
-                        inner-left (- box-bottom 
+           (draw-string alu-seta *border-label-font* label
+                        inner-left (- box-bottom
                                        (1+ (ffloor (string-hei *border-label-font*) 2))))
            (+ inner-left (string-wid *border-label-font* label))))))
 
@@ -412,16 +412,16 @@ Modification History (most recent at top)
            (with-line-stippling (*transparent-border-stipple-pattern*
                                  *transparent-border-stipple-factor*)
              (draw-borders-walls-1 box-left box-right inner-top inner-bottom
-                                   box-top box-bottom name-end-x label-end-x 
+                                   box-top box-bottom name-end-x label-end-x
                                    inner-right)))
           (t
            (draw-borders-walls-1 box-left box-right inner-top inner-bottom box-top
                                  box-bottom name-end-x label-end-x inner-right)))))
-     
+
 ;; basic wall drawing function, thickness and stippling are handled via
-;; various "with-" macros 
+;; various "with-" macros
 (defun draw-borders-walls-1 (box-left box-right inner-top inner-bottom ; 4 vert sides
-                                      box-top box-bottom name-end-x label-end-x 
+                                      box-top box-bottom name-end-x label-end-x
                                       inner-right)
   ;; left
   (draw-line box-left inner-top box-left inner-bottom alu-seta t)
@@ -432,20 +432,20 @@ Modification History (most recent at top)
   ;; bottom
   (draw-line label-end-x box-bottom inner-right box-bottom alu-seta t))
 
-(defun draw-borders-corners (box-type border-thickness 
-                                      box-left inner-left box-top inner-top 
+(defun draw-borders-corners (box-type border-thickness
+                                      box-left inner-left box-top inner-top
                                       box-right inner-right box-bottom inner-bottom)
   (ecase box-type
-    (doit-box (draw-square-corners box-left inner-left box-top inner-top 
+    (doit-box (draw-square-corners box-left inner-left box-top inner-top
                                    box-right inner-right box-bottom inner-bottom
                                    border-thickness))
-    (data-box (draw-round-corners box-left inner-left box-top inner-top 
+    (data-box (draw-round-corners box-left inner-left box-top inner-top
                                   box-right inner-right box-bottom inner-bottom
                                   border-thickness))))
 
 ;; all of the corner drawing routines should return 4 values to help
 ;; port drawing routines to connect the struts...
-(defun draw-square-corners (box-left inner-left box-top inner-top 
+(defun draw-square-corners (box-left inner-left box-top inner-top
                                      box-right inner-right box-bottom inner-bottom
                                      border-thickness)
   (with-pen-size (border-thickness)
@@ -456,23 +456,23 @@ Modification History (most recent at top)
   (values box-left box-top box-right box-bottom))
 
 ;;; we approximate quarter round with 3 line segments...
-(defun draw-round-corners (box-left inner-left box-top inner-top 
+(defun draw-round-corners (box-left inner-left box-top inner-top
                                     box-right inner-right box-bottom inner-bottom
                                     border-thickness)
-  (let ((bl+2 (+ box-left 2))   (il-3 (- inner-left 3)) 
+  (let ((bl+2 (+ box-left 2))   (il-3 (- inner-left 3))
         (bt+2 (+ box-top 2))    (it-3 (- inner-top 3))
         (br-2 (- box-right 2))  (ir+3 (+ inner-right 3))
         (bb-2 (- box-bottom 2)) (ib+3 (+ inner-bottom 3)))
     (with-pen-size (border-thickness)
       (multiline2 box-left inner-top bl+2 it-3 il-3 bt+2 inner-left box-top) ; TL
       (multiline2 inner-right box-top ir+3 bt+2 br-2 it-3 box-right inner-top) ;TR
-      (multiline2 inner-right box-bottom 
+      (multiline2 inner-right box-bottom
                   ir+3 bb-2 br-2 ib+3 box-right inner-bottom) ; Bottom Right
-      (multiline2 box-left inner-bottom 
+      (multiline2 box-left inner-bottom
                   bl+2 ib+3 il-3 bb-2 inner-left box-bottom))) ; Bottom Left
   (values (+ box-left 3) (+ box-top 3) (- box-right 3) (- box-bottom 3)))
 
-(defun draw-slant-corners (box-left inner-left box-top inner-top 
+(defun draw-slant-corners (box-left inner-left box-top inner-top
                                     box-right inner-right box-bottom inner-bottom
                                     border-thickness)
   (with-pen-size (border-thickness)
@@ -498,7 +498,7 @@ Modification History (most recent at top)
         (draw-port-frame port px py pw ph
                          i-strut-left i-strut-top i-strut-right i-strut-bottom)))))
 
-(defun draw-port-frame (port x y wid hei 
+(defun draw-port-frame (port x y wid hei
                              i-strut-left i-strut-top i-strut-right i-strut-bottom)
   (let* ((name (name-string-or-null port))
          (border-style (display-style-border-style (display-style-list port)))
@@ -506,7 +506,7 @@ Modification History (most recent at top)
          ;; important info that is not in an instance var
          (name-top (+ y *border-outside-space*))
          ;; where the name tab begins vertically
-         (box-top (if (null name) 
+         (box-top (if (null name)
                       (+ name-top *noname-extension*)
                     (+ y (port-name-protrusion name) *border-outside-space*)))
          ;; where the box walls begins vertically
@@ -517,7 +517,7 @@ Modification History (most recent at top)
          (name-end-x 0)) ; this will get set later
     (with-border-drawing-styles (port)
       ;; name
-      (setq name-end-x 
+      (setq name-end-x
             (draw-port-name name name-start-x box-top name-top))
       ;; walls
       (with-pen-size (border-thickness)
@@ -537,14 +537,14 @@ Modification History (most recent at top)
         (inside-name-width (if (null name)
                                *noname-blank-width*
                              (string-wid *border-name-font* name)))
-        (lower-slant-y (+ name-mid-y *border-inside-space*)))    
+        (lower-slant-y (+ name-mid-y *border-inside-space*)))
     (let ((end-x (+ current-x *border-name-slant-offset*)))
       ;; the left "<" of the name
       (draw-line current-x name-mid-y end-x name-top-y alu-seta t)
       (draw-line current-x name-mid-y end-x lower-slant-y alu-seta t)
       (setq current-x end-x))
     (let ((end-x (+ current-x inside-name-width (* *border-name-padding* 2))))
-      ;; the name string itself  
+      ;; the name string itself
       (unless (null name)
         (draw-string alu-seta *border-name-font* name current-x
                      (+ name-top-y *border-name-padding* *basic-border-width*)))
@@ -563,7 +563,7 @@ Modification History (most recent at top)
 ;; liberal in the values returned...
 ;; returns (values n-min-x n-min-y n-max-x n-max-y is-there-a-name?)
 (defun box-borders-name-tab-values (box-type screen-box)
-  (case box-type 
+  (case box-type
     (port-box (plain-borders-name-tab-values screen-box)) ; close enuff for now...
     (t (plain-borders-name-tab-values screen-box))))
 
@@ -571,17 +571,17 @@ Modification History (most recent at top)
   (let* ((actual-obj (screen-obj-actual-obj screen-box))
          (border-style (display-style-border-style (display-style-list actual-obj)))
          (border-thickness (border-thickness border-style))
-         (vert-width (+ *border-outside-space* *border-inside-space* 
+         (vert-width (+ *border-outside-space* *border-inside-space*
                         border-thickness))
          (name (name-string-or-null actual-obj))
          (name-width (border-name-width name)))
-    (values vert-width 
-            *border-outside-space* 
-            (+ vert-width name-width) 
+    (values vert-width
+            *border-outside-space*
+            (+ vert-width name-width)
             (+ *border-outside-space* (border-name-height name))
             name)))
 
-;; odds and ends used in mouse-corner-tracking in coms-mouse.lisp & 
+;; odds and ends used in mouse-corner-tracking in coms-mouse.lisp &
 (defun box-borders-offsets (box-type screen-box)
   (declare (ignore box-type screen-box))
   (values *border-outside-space* *border-outside-space*))
@@ -597,7 +597,7 @@ Modification History (most recent at top)
 ;; there should be a tracking-info function for every mouseable part of a box's borders
 
 (defun tl-corner-tracking-info (screen-box)
-  (let* ((actual-obj (screen-obj-actual-obj screen-box)) 
+  (let* ((actual-obj (screen-obj-actual-obj screen-box))
          (name (name-string-or-null actual-obj))
          (border-style (display-style-border-style (display-style-list actual-obj)))
          (border-thickness (border-thickness border-style))
@@ -612,7 +612,7 @@ Modification History (most recent at top)
     (values box-left box-top corner-size corner-size)))
 
 (defun tr-corner-tracking-info (screen-box)
-  (let* ((actual-obj (screen-obj-actual-obj screen-box)) 
+  (let* ((actual-obj (screen-obj-actual-obj screen-box))
          (name (name-string-or-null actual-obj))
          (border-style (display-style-border-style (display-style-list actual-obj)))
          (border-thickness (border-thickness border-style))
@@ -677,7 +677,7 @@ Modification History (most recent at top)
          (corner-size (+ border-thickness *border-inside-space*))
          (inner-left (+ *border-outside-space* corner-size)))
     (values inner-left *border-outside-space*
-            (+ *noname-blank-width* (* 2 *border-name-slant-offset*) 
+            (+ *noname-blank-width* (* 2 *border-name-slant-offset*)
                (* 2 *basic-border-width*))
             (+ corner-size *noname-extension*))))
 
@@ -745,7 +745,7 @@ Modification History (most recent at top)
 #-opengl
 (defun default-character-height ()
   (with-drawing-port *boxer-pane*
-    (with-font-map-bound (*boxer-pane*) 
+    (with-font-map-bound (*boxer-pane*)
       (rebind-font-info (#+(or lispworks mcl) *default-font* #-(or lispworks mcl) 0)
         (cha-hei)))))
 
@@ -761,11 +761,11 @@ Modification History (most recent at top)
   (multiple-value-bind (wid hei)
       (super-shrunk-size)
     (let ((startx (+ x 1)) (starty (+ y 1))(endx (+ x wid -1)) (endy (+ y hei -2)))
-      (flet ((outer-box () (multiline2 startx starty endx starty endx endy 
+      (flet ((outer-box () (multiline2 startx starty endx starty endx endy
                                        startx endy startx starty)))
         (ecase box-type
           (doit-box (outer-box)
-                    (let ((insx (+ startx 2)) (insy (+ starty 2)) 
+                    (let ((insx (+ startx 2)) (insy (+ starty 2))
                           (inex (- endx 2)) (iney (- endy 2)))
                       (multiline2 insx insy inex insy inex iney insx iney insx insy)))
           (data-box (outer-box)
@@ -788,7 +788,7 @@ Modification History (most recent at top)
                    *border-name-slant-offset* *basic-border-width*)))
     (rebind-font-info (*border-name-font*)
       (dotimes (i cha-no) (incf x-pos (cha-wid (char name i)))))
-    (values x-pos 
+    (values x-pos
             (+ y *border-outside-space* *border-name-padding* *basic-border-width*))))
 
 ;;; stub...
@@ -818,7 +818,7 @@ Modification History (most recent at top)
      (unless (member ',name *mouse-border-areas*)
        (push ',name *mouse-border-areas*))
      (setf (get ',name 'mouse-bp-values-handler) ,bp-values-handler)))
-     
+
 
 ;; mouse clicks on empty file boxes use this to trigger a read of the box
 (defun insure-box-contents-for-click (box)
@@ -832,7 +832,7 @@ Modification History (most recent at top)
         ((and (not (port-box? box)) (null (slot-value box 'first-inferior-row)))
          ;; fill the vanilla box
          (fill-box-from-server box))))
-    
+
 
 ;;; mouse-bp-values-handlers
 
@@ -885,7 +885,7 @@ Modification History (most recent at top)
                 (box-first-bp-values actual-obj)))))))
 
 ;; if the *point* is already in the box being moused, return *point*'s
-;; values otherwise, the begining of the box			
+;; values otherwise, the begining of the box
 (defun mouse-box-values (mouse-box mouse-screen-box)
   (if (and (eq mouse-screen-box (point-screen-box)) (eq mouse-box (point-box)))
       (bp-values *point*)
@@ -926,26 +926,26 @@ Modification History (most recent at top)
         (declare (ignore y))
         ;;(insure-box-contents-for-click actual-obj)
         (let ((nr (name-row actual-obj)))
-          (values nr 
+          (values nr
                   (get-cha-no-in-name-row
                    (- x (box-borders-name-tab-values (box-type screen-box)
                                                       screen-box))
                    (chas nr))))))
 
 ;;; in OpenGL, the name "handles" refer to concrete space
-(define-border-mouse-handler :name-handle 
+(define-border-mouse-handler :name-handle
   #'(lambda (actual-obj &rest ignore)
       (declare (ignore ignore))
       (insure-box-contents-for-click actual-obj)
       (box-first-bp-values actual-obj)))
 
-(define-border-mouse-handler :port-target-name 
+(define-border-mouse-handler :port-target-name
   #'(lambda (actual-obj &rest ignore)
       (declare (ignore ignore))
       (insure-box-contents-for-click actual-obj)
       (box-first-bp-values (ports actual-obj))))
 
-(define-border-mouse-handler :port-target-type 
+(define-border-mouse-handler :port-target-type
   #'(lambda (actual-obj &rest ignore)
       (declare(ignore ignore))
       (insure-box-contents-for-click actual-obj)
@@ -957,7 +957,7 @@ Modification History (most recent at top)
 	(values (or (scroll-to-actual-row screen-box)
 		    (first-inferior-row actual-obj))
 		0)))
-					     
+
 
 ;; this is called when the mouse code determines that the x,y position
 ;; is NOT within the inferiors of the box.  It should return either NIL,
@@ -1000,7 +1000,7 @@ Modification History (most recent at top)
                        ((< y (- hei *border-retry-margin*)) :try-again)
                        (t ':inside)))
                 ;; This tracks both the (possible) vertical & horizontal scroll bars
-                ;; more fine grained tracking is done in the editor command, this is done 
+                ;; more fine grained tracking is done in the editor command, this is done
                 ;; avoid a proliferation of mouse scrolll tracking command names
                 ;; e.g. mouse-click-on-HORIZONTAL-scroll-bar-LEFT-BUTTON
                 ((and (> x inner-right)
@@ -1038,7 +1038,7 @@ Modification History (most recent at top)
 ;;;; used in various border GUI's & popup docs
 ;; these bitmaps are used to save *small* pieces of the screen before displaying
 ;; popup menus or other GUI items
-;; we use an PDL allocation mechanism to prepare for a future which may include 
+;; we use an PDL allocation mechanism to prepare for a future which may include
 ;; recursive walking menus
 
 (defvar *bitmap-backing-store* nil)
@@ -1054,7 +1054,7 @@ Modification History (most recent at top)
            ;; the one bitmap will grow big enough to handle all situations
            (make-offscreen-bitmap *boxer-pane* w h))
           (t existing))))
-  
+
 (defun deallocate-backing-store (bm)
   (push bm *bitmap-backing-store*))
 
@@ -1103,7 +1103,7 @@ Modification History (most recent at top)
       (draw-poly alu-seta (list (cons full-x y) (cons full-x full-y)
                                 (cons half-x half-y) (cons full-x y)))
       (force-graphics-output))))
-                   
+
 #|
 ;; old style
 (defun draw-mouse-expand-corner (x y)
@@ -1146,7 +1146,7 @@ Modification History (most recent at top)
     ;; top arrow
     (multiline2 (+ x 1) y
                  (- (+ x *mouse-corner-highlight-size*) 2) y
-                 (- (+ x *mouse-corner-highlight-size*) 2) 
+                 (- (+ x *mouse-corner-highlight-size*) 2)
                  (- (+ y *mouse-corner-highlight-size*) 3))
     ;; bottom arrow
     (multiline2 (+ x 1) (+ y 2)
@@ -1156,7 +1156,7 @@ Modification History (most recent at top)
     ;; bottom arrow head
     (draw-line x (+ y 4) (+ x 3) (+ y 4) alu-seta t)
     ;; top arrow head
-    (draw-line (+ x *mouse-corner-highlight-size*) 
+    (draw-line (+ x *mouse-corner-highlight-size*)
                (- (+ y *mouse-corner-highlight-size*) 4)
                (- (+ x *mouse-corner-highlight-size*) 3)
                (- (+ y *mouse-corner-highlight-size*) 4)
