@@ -49,7 +49,7 @@ Modification History (most recent at the top)
          erase-chas-to-eol, erase-screen-chas, still-inside-rdp1-info
          erase-and-queue-for-deallocation-screen-rows-from
          fixed-size (screen-box), window-{xy,x,y}-position (screen-obj)
-         outermost-screen-box-size, bp-coordinates{-via-editor}, 
+         outermost-screen-box-size, bp-coordinates{-via-editor},
          screen-obj-absolute-coordinates-1
  8/26/12 removed functions which are no longer being used...
          move-screen-{rows,chas,obj,graphics-sheet}, slide-screen-chas,
@@ -58,11 +58,11 @@ Modification History (most recent at the top)
  6/08/09 bp-coordinates takes into account unseen chars when calculating x position in row
  2/11/09 removed usage of cached-border-info from (de-allocate-init (screen-box))
  2/ 9/09 removed screen-object-new-{width, height}
- 6/01/05 boxtop handles possible graphics in xref 
+ 6/01/05 boxtop handles possible graphics in xref
 10/18/04 added fixed-size-1 method for graphics-screen-boxes because the
          containing box always adjusts its size to he contained sheet
 10/17/04 set-fixed-size (box): don't resize the graphics-sheet for gboxes
-         when we fix the size of the text view of the box 
+         when we fix the size of the text view of the box
  7/08/02 boxtop now handles possible VC in 'bu::boxtop lookup
  2/14/01 merged current LW and MCL files
 10/08/00 added :file clause to boxtop function
@@ -140,7 +140,7 @@ Modification History (most recent at the top)
 
 
 ;;; MAKE-INSTANCE calls INITIALIZE.
-;;; ALLOCATE-SCREEN-OBJ-* calls RE-INIT on an old object that it's 
+;;; ALLOCATE-SCREEN-OBJ-* calls RE-INIT on an old object that it's
 ;;; about to re-use.
 ;;; These methods might go away at some point, since most of the
 ;;; functionality has been moved to DE-ALLOCATE-INIT.
@@ -179,7 +179,7 @@ Modification History (most recent at the top)
 	(bps self) nil
 	(slot-value self 'name) nil))
 
-  
+
 ;;; screen rows
 
 (defmethod re-init ((self screen-box) new-actual-obj)
@@ -198,7 +198,7 @@ Modification History (most recent at the top)
 ;;; the flag.
 
 (defmethod re-init ((self graphics-screen-box) new-actual-obj)
-  (declare (ignore new-actual-obj)) 
+  (declare (ignore new-actual-obj))
   (call-next-method)
   (setf (slot-value self 'force-redisplay-infs?) t))
 
@@ -212,7 +212,7 @@ Modification History (most recent at the top)
   (setf (screen-obj-force-redisplay-infs? self) #+3600 t #-3600 nil
         (slot-value self 'baseline) 0
 	(slot-value self 'screen-box) nil))
-  
+
 
 
 ;;;; HIGH-LEVEL SCREEN-OBJ allocation/deallocation code.
@@ -222,7 +222,7 @@ Modification History (most recent at the top)
 ;;; of the display code, so it is probably a good idea to understand how it
 ;;; works. So, listen carefully... This code is based on the following basic
 ;;; assumptions:
-;;;  
+;;;
 ;;;   No actual object can be displayed more than once at any
 ;;;    "level". For example, the same box cannot be displayed
 ;;;    right next to itself. On the other hand a port to a box
@@ -301,7 +301,7 @@ Modification History (most recent at the top)
 								*point*)))
   (let ((actual-superior-box (screen-structure-actual-superior-box
 			      screen-box)))
-    (allocate-screen-obj-for-use-in					
+    (allocate-screen-obj-for-use-in
 	  self
 	  (if actual-superior-box
 	      (allocate-outermost-screen-box-for-use-in
@@ -313,9 +313,9 @@ Modification History (most recent at the top)
   (mapcar #'cdr (actual-obj-screen-objs self)))
 
 ;;; Whenever any section of code is done with a screen-obj which they got by
-;;; calling Allocate-Screen-Obj-For-Use-In they should deallocate that 
-;;; screen-obj by sending it a deallocate-self message. If there are no more 
-;;; users of that screen-obj, it will be returned to the pool of free 
+;;; calling Allocate-Screen-Obj-For-Use-In they should deallocate that
+;;; screen-obj by sending it a deallocate-self message. If there are no more
+;;; users of that screen-obj, it will be returned to the pool of free
 ;;; screen-objs of that type.
 
 (defmethod deallocate-self ((self screen-row))
@@ -346,7 +346,7 @@ Modification History (most recent at the top)
 (defmethod deallocate-self ((self sprite-screen-box))
   (delete-screen-obj (screen-obj-actual-obj self) self)
   (deallocate-sprite-screen-box-internal self))
-						
+
 (defmethod deallocate-inferiors ((self screen-box))
   (when (storage-vector? (slot-value self 'screen-rows))
     ;; check because it could be a box ellipsis
@@ -366,7 +366,7 @@ Modification History (most recent at the top)
 
 (defmethod delete-screen-obj ((self actual-obj-subclass) screen-obj)
   (setf (actual-obj-screen-objs self)
-	(delete (rassoc screen-obj (actual-obj-screen-objs self)) 
+	(delete (rassoc screen-obj (actual-obj-screen-objs self))
 		(actual-obj-screen-objs self))))
 
 (defun queue-screen-obj-for-deallocation (screen-obj)
@@ -483,7 +483,7 @@ Modification History (most recent at the top)
 ;;; HOWEVER, any boxes will still have valid offsets and widths so
 ;;; we use the boxes to delimit regions to erase.
 ;;; If there are no boxes, we simply erase to the end of the row
-;;; This may actually turn out to be faster (especially in the X 
+;;; This may actually turn out to be faster (especially in the X
 ;;; implementation) because of fewer graphics commands
 
 (defun erase-chas-to-eol (cha-no screen-chas x-offset y-offset row-width
@@ -561,7 +561,7 @@ Modification History (most recent at the top)
 
 ;;;; Utilities for Handling the screen-row-rdp1-info
 
-;;; informs pass-2 that pass-1 erased all the characters from the 
+;;; informs pass-2 that pass-1 erased all the characters from the
 ;;; optional cha-no arg to the end of the line
 (defun set-rdp1-info-to-erase-to-eol (info &optional cha-no offset)
   (unless (eq (sr-rdp1-info-no-of-chas info) 'to-eol)
@@ -614,11 +614,11 @@ Modification History (most recent at the top)
 ;	  (INCF (SCREEN-OBJ-X-OFFSET SCREEN-OBJ) DELTA-X)
 ;	  (INCF (SCREEN-OBJ-Y-OFFSET SCREEN-OBJ) DELTA-Y))))))
 
-;;; this cycles through the contents of the storage vector 
+;;; this cycles through the contents of the storage vector
 ;;; starting from FROM and erases them an queues them for deallocation
 ;;; returns the difference in offsets of any objects that would come
 ;;; after th eobjects which have been erased
-(defun erase-and-queue-for-deallocation-screen-rows-from (sv from 
+(defun erase-and-queue-for-deallocation-screen-rows-from (sv from
                                                              &optional to
                                                              no-erase?)
   (declare (values delta-x-offset delta-y-offset))
@@ -678,11 +678,11 @@ Modification History (most recent at the top)
 	  (incf (screen-obj-y-offset screen-cha) delta-y)))
       ;; finally do the actual moving
       (bitblt-move-region wid hei x-offset y-offset delta-x delta-y))))
-	  
+
 ;;; this is used in pass-2 to blit inferiors over to make room for character
 ;;; insertions, we can't use move-screen-chas because the chas we want to move
-;;; no longer correspond to the cha-nos because the screen structure has been 
-;;; patched up in pass-1.  We iterate ONLY to look for screen-boxes so that 
+;;; no longer correspond to the cha-nos because the screen structure has been
+;;; patched up in pass-1.  We iterate ONLY to look for screen-boxes so that
 ;;; their offsets can be updated
 (defun slide-screen-chas (sv from-cha-no delta-cha-no
 			  wid hei x-offset y-offset delta-x delta-y
@@ -766,7 +766,7 @@ Modification History (most recent at the top)
        (t
 	(barf "Don't know how to move inferior screen object(s), ~S"
 	      inferiors))))
-	 
+
 (DEFUN GRAY-SIZE-AND-OFFSETS (SCREEN-BOX)
   (let ((box-type (slot-value screen-box 'box-type)))
     (MULTIPLE-VALUE-BIND (OUTER-WID OUTER-HEI)
@@ -831,9 +831,9 @@ Modification History (most recent at the top)
 (defmethod set-fixed-size ((self box) new-fixed-wid new-fixed-hei)
   (let ((display-style (slot-value self 'display-style-list)))
     (unless (display-style-graphics-mode? display-style)
-      ;; Special case:  if we were in graphics mode 
+      ;; Special case:  if we were in graphics mode
       ;; then we want to leave the box in a shrink wrapping
-      ;; state since the intent was probably to just resize the graphics 
+      ;; state since the intent was probably to just resize the graphics
       ;; area and not to fix the size of the text view.
       (setf (display-style-fixed-wid display-style) new-fixed-wid)
       (setf (display-style-fixed-hei display-style) new-fixed-hei))
@@ -845,7 +845,7 @@ Modification History (most recent at the top)
                              ;; graphics sheets need integer dimensions
 			     (round new-fixed-wid) (round new-fixed-hei)))
     ;; removed 6/26/95, no longer seems neccessary (except for gboxes)
-    ;; A crock to get characters that were clipped to be redisplayed. 
+    ;; A crock to get characters that were clipped to be redisplayed.
 ; removed totally, 1/24/12, shouldn't be neccessary when opengl repaints everything
 ;    (dolist (sbox (screen-objs self))
 ;      (when (graphics-screen-box? sbox) (set-force-redisplay-infs? sbox)))
@@ -909,7 +909,7 @@ Modification History (most recent at the top)
 
 ;; graphics-box's never have a fixed size, they shrink to fit the
 ;; contained graphics sheet
-(defmethod fixed-size-1 ((self graphics-screen-box)) 
+(defmethod fixed-size-1 ((self graphics-screen-box))
   (values nil nil))
 
 ;; same for sprites
@@ -981,7 +981,7 @@ Modification History (most recent at the top)
 
 
 ;;;stuff for BOXTOPS
-;; boxtop is supposed to return something to draw, 
+;; boxtop is supposed to return something to draw,
 ;; a graphics-sheet for :standard, and :named-graphic
 ;; a string for :folder and :name-only
 ;; a null boxtop means to just use the usual shrunken box appearance
@@ -1000,10 +1000,10 @@ Modification History (most recent at the top)
                (eq boxtop-prop :framed))
            (let* ((target (box-or-port-target editor-box))
                   (bt-box (cond ((box? target)
-                                 (eval::lookup-static-variable-in-box-only 
+                                 (eval::lookup-static-variable-in-box-only
                                   target 'bu::boxtop))
                                 ((virtual-copy? target)
-                                 (lookup-variable-in-virtual-copy target 
+                                 (lookup-variable-in-virtual-copy target
                                                                   'bu::boxtop)))))
              (cond ((box? bt-box) (graphics-sheet bt-box))
 	           ((virtual-copy? bt-box)
@@ -1020,14 +1020,14 @@ Modification History (most recent at the top)
 	           ((virtual-copy? bt-box)
 	            (graphics-info-graphics-sheet (vc-graphics bt-box)))
 	           (t nil))))
-          ((eq boxtop-prop :xref) 
+          ((eq boxtop-prop :xref)
            ;; allow xrefs to have user boxtops
            (let* ((target (box-or-port-target editor-box))
                   (bt-box (cond ((box? target)
-                                 (eval::lookup-static-variable-in-box-only 
+                                 (eval::lookup-static-variable-in-box-only
                                   target 'bu::boxtop))
                                 ((virtual-copy? target)
-                                 (lookup-variable-in-virtual-copy target 
+                                 (lookup-variable-in-virtual-copy target
                                                                   'bu::boxtop)))))
              (cond ((box? bt-box) (graphics-sheet bt-box))
 	           ((virtual-copy? bt-box)
@@ -1090,7 +1090,7 @@ Modification History (most recent at the top)
 (defun box-border-zoom-in (new-screen-box window)
   (unless (null *zoom-step-pause-time*)
     (drawing-on-window (window)
-      (when (when (not-null new-screen-box)(visible? new-screen-box)) 
+      (when (when (not-null new-screen-box)(visible? new-screen-box))
 	(multiple-value-bind (new-screen-box-wid new-screen-box-hei)
 	    (screen-obj-size new-screen-box)
 	  (multiple-value-bind (new-screen-box-x new-screen-box-y)
@@ -1100,7 +1100,7 @@ Modification History (most recent at the top)
 		(outermost-screen-box-size)
 	      (multiple-value-bind (outermost-screen-box-x
 				    outermost-screen-box-y)
-		  (outermost-screen-box-position)	
+		  (outermost-screen-box-position)
 		(box-borders-zoom
 		 (class-name (class-of (screen-obj-actual-obj new-screen-box)))
 		 new-screen-box
@@ -1113,7 +1113,7 @@ Modification History (most recent at the top)
 (defun box-border-zoom-out (old-screen-box window)
   (unless (null *zoom-step-pause-time*)
     (drawing-on-window (window)
-      (when (when (not-null old-screen-box)(visible? old-screen-box)) 
+      (when (when (not-null old-screen-box)(visible? old-screen-box))
 	(multiple-value-bind (old-screen-box-wid old-screen-box-hei)
 	    (screen-obj-size old-screen-box)
 	  (multiple-value-bind (old-screen-box-x old-screen-box-y)
@@ -1123,7 +1123,7 @@ Modification History (most recent at the top)
 		(outermost-screen-box-size)
 	      (multiple-value-bind (outermost-screen-box-x
 				    outermost-screen-box-y)
-		  (outermost-screen-box-position)	
+		  (outermost-screen-box-position)
 		(box-borders-zoom
 		 (class-name (class-of (screen-obj-actual-obj old-screen-box)))
 		 old-screen-box
@@ -1180,14 +1180,14 @@ Modification History (most recent at the top)
 #-lispworks6
 (DEFUN SET-OUTERMOST-SCREEN-BOX (NEW-OUTERMOST-SCREEN-BOX
 				 &OPTIONAL (WINDOW *BOXER-PANE*))
-  (WITHOUT-INTERRUPTS		      ;keep the mouse process from looking at 
+  (WITHOUT-INTERRUPTS		      ;keep the mouse process from looking at
     (REDISPLAYING-WINDOW (WINDOW)     ;the screen when it is in a munged state
       (UNLESS (EQ NEW-OUTERMOST-SCREEN-BOX *OUTERMOST-SCREEN-BOX*)
 	(DECONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX *OUTERMOST-SCREEN-BOX*
 						    WINDOW)
 	(CONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX NEW-OUTERMOST-SCREEN-BOX
 						  WINDOW)
-	(ERASE-SCREEN-OBJ *OUTERMOST-SCREEN-BOX*) 
+	(ERASE-SCREEN-OBJ *OUTERMOST-SCREEN-BOX*)
 	(SETQ *OUTERMOST-SCREEN-BOX* NEW-OUTERMOST-SCREEN-BOX)))
     (SETQ *OUTERMOST-SCREEN-BOX* (OUTERMOST-SCREEN-BOX)) ; why ??
     (LET ((*COMPLETE-REDISPLAY-IN-PROGRESS?* T)
@@ -1204,13 +1204,13 @@ Modification History (most recent at the top)
 #+lispworks6
 (DEFUN SET-OUTERMOST-SCREEN-BOX (NEW-OUTERMOST-SCREEN-BOX
 				 &OPTIONAL (WINDOW *BOXER-PANE*))
-  (REDISPLAYING-WINDOW (WINDOW) 
+  (REDISPLAYING-WINDOW (WINDOW)
     (UNLESS (EQ NEW-OUTERMOST-SCREEN-BOX *OUTERMOST-SCREEN-BOX*)
       (DECONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX *OUTERMOST-SCREEN-BOX*
                                                   WINDOW)
       (CONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX NEW-OUTERMOST-SCREEN-BOX
                                                 WINDOW)
-      (ERASE-SCREEN-OBJ *OUTERMOST-SCREEN-BOX*) 
+      (ERASE-SCREEN-OBJ *OUTERMOST-SCREEN-BOX*)
       (SETQ *OUTERMOST-SCREEN-BOX* NEW-OUTERMOST-SCREEN-BOX)))
   (SETQ *OUTERMOST-SCREEN-BOX* (OUTERMOST-SCREEN-BOX)) ; why ??
   (LET ((*COMPLETE-REDISPLAY-IN-PROGRESS?* T)
@@ -1232,7 +1232,7 @@ Modification History (most recent at the top)
     (MULTIPLE-VALUE-BIND (X-OFFSET Y-OFFSET)
 	(OUTERMOST-SCREEN-BOX-POSITION WINDOW)
       (SET-DISPLAY-STYLE SCREEN-BOX ':NORMAL)
-      (SET-FIXED-SIZE SCREEN-BOX MAX-WID MAX-HEI)      
+      (SET-FIXED-SIZE SCREEN-BOX MAX-WID MAX-HEI)
       (SET-OFFSETS SCREEN-BOX X-OFFSET Y-OFFSET))))
 
 (defun deconfigure-screen-box-to-be-outermost-box (screen-box &optional ignore)
@@ -1285,7 +1285,7 @@ Modification History (most recent at the top)
     (multiple-value-bind (superior-x-off superior-y-off)
       (cond ((null superior) (values 0 0))
 	    (t (xy-position superior)))
-    (values (+ superior-x-off (screen-obj-x-offset self) 
+    (values (+ superior-x-off (screen-obj-x-offset self)
                (slot-value superior 'scroll-x-offset))
 	    (+ superior-y-off (screen-obj-y-offset self)
                (slot-value superior 'scroll-y-offset))))))
@@ -1318,7 +1318,7 @@ Modification History (most recent at the top)
 	(t (+ (slot-value self 'y-offset)
               (window-y-position (superior self))))))
 
- 
+
 (DEFMETHOD NEXT-SCREEN-CHA-POSITION ((SELF SCREEN-CHAR-SUBCLASS))
   (MULTIPLE-VALUE-BIND (X Y)
       (XY-POSITION SELF)
@@ -1367,9 +1367,9 @@ Modification History (most recent at the top)
 ;;; In the simple case, we can just walk up the screen hierarchy
 ;;; summing local offsets.  What complicates this is that it is
 ;;; possible for the cursor to no longer be in the screen hierarchy.
-;;; Some examples are pressing the MAKE-AND-ENTER-BOX key while 
+;;; Some examples are pressing the MAKE-AND-ENTER-BOX key while
 ;;; inside a graphics box or resizing the boxer window to clip off
-;;; the row where the cursor is. 
+;;; the row where the cursor is.
 ;;;
 
 (defun bp-coordinates (bp)
@@ -1404,7 +1404,7 @@ Modification History (most recent at the top)
 				      (sc (slot-value screen-row
 						      'screen-chas)
 					  :index-var-name cha-pos)
-				    (cond ((= cha-no cha-pos) 
+				    (cond ((= cha-no cha-pos)
                                            (setq last-screen-cha-no cha-pos)
                                            (return x-offset))
                                           (t (incf x-offset (screen-object-width sc))
@@ -1421,7 +1421,7 @@ Modification History (most recent at the top)
                                         (check-and-handle-font-changes rest-cha-no)
                                         (incf x-offset (if (screen-cha? rest-cha)
                                                            (cha-wid rest-cha)
-                                                         ;; just guess for a box since we dont want to 
+                                                         ;; just guess for a box since we dont want to
                                                          ;; have to recurse for unseen boxes
                                                          (unseen-box-width rest-cha))))))
 				  x-offset))
@@ -1438,7 +1438,7 @@ Modification History (most recent at the top)
 		    ;; looks like the screen-box has been deallocated
                     (let* ((bp-box (bp-box bp))
                            (other-sbs (displayed-screen-objs bp-box))
-                           (matching-sb 
+                           (matching-sb
                             (dolist (sb other-sbs)
                               (when (and (eq (screen-obj-actual-obj sb)
                                              bp-box)
@@ -1473,12 +1473,12 @@ Modification History (most recent at the top)
 	(bp-coordinates-via-editor (screen-obj-actual-obj screen-box))
 	(multiple-value-bind (tab-x tab-y)
 	    (box-borders-name-tab-position screen-box x y cha-no)
-	  (values tab-x tab-y ':name)))))  
+	  (values tab-x tab-y ':name)))))
 
 ;;; This checks to see if the editor row is part of the screen-box but doesn't
 ;;; happen to have screen structure because of either scrolling or clipping
 ;;; of the box.  Returns a keyword (:end or :beginning) indicating where in
-;;; the box it can be found.  
+;;; the box it can be found.
 (defun editor-row-location-in-screen-box (editor-row screen-box)
   (cond ((eq (superior-box editor-row) (screen-obj-actual-obj screen-box))
 	 ;; sanity check, make sure that the editor row is part of the
@@ -1520,8 +1520,8 @@ Modification History (most recent at the top)
 				     (- (+ y (screen-obj-hei sb))
 					 bottom)
                                      sb)))))))))))
-	  
-  
+
+
 ;;; Note: We can't use the XY-POSITION method because it assumes an unbroken
 ;;; chain of screen objects all the way up to the outermost screen box.
 
@@ -1584,7 +1584,7 @@ Modification History (most recent at the top)
 	  (box-borders-tab-position (slot-value screen-box 'box-type)
 				    screen-box x y cha-no)
         (cons tab-x tab-y)))))
-        
+
 (DEFUN ROW-POINT-POSITION (SCREEN-ROW &optional screen-box)
   (LET* ((ROW (SCREEN-OBJ-ACTUAL-OBJ SCREEN-ROW))
 	 (LENGTH-IN-CHAS (LENGTH-IN-CHAS ROW))
@@ -1592,7 +1592,7 @@ Modification History (most recent at the top)
     (COND ((NULL (BP-SCREEN-BOX *POINT*))
 	   (BARF NIL "Lost the current Screen Box"))
 	  ((>= CHA-NO LENGTH-IN-CHAS)
-	   (END-OF-ROW-POINT-LOCATION SCREEN-ROW)) 
+	   (END-OF-ROW-POINT-LOCATION SCREEN-ROW))
 	  (T (INSIDE-OF-ROW-POINT-LOCATION SCREEN-ROW CHA-NO)))))
 
 (DEFUN END-OF-ROW-POINT-LOCATION (SCREEN-ROW)
@@ -1615,7 +1615,7 @@ Modification History (most recent at the top)
 |#
 
 (defmethod cha-no->x-coord ((row screen-row) cha-no)
-  (with-summation 
+  (with-summation
     (do-vector-contents (cha (slot-value row 'screen-chas) :stop cha-no)
       (sum (screen-object-width cha)))))
 
