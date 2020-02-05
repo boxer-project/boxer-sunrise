@@ -24,7 +24,7 @@ Enhancements and Modifications Copyright 1999 - 2013 Pyxisystems LLC
                                        +-------+
 
 
- Graphics Object Definitions 
+ Graphics Object Definitions
  Coordinate Transformation and Drawing Utilities
  Also mouse-sensitivity code.
 
@@ -66,7 +66,7 @@ Modification History (most recent at top)
 
 ;;; The actual def-redisplay-initialization moved to gdispl.lisp
 ;;; for ordering reasons
-#| 
+#|
 ;;; This has to be a redisplay init because make-turtle-shape
 ;;; depends upon the runtime value of *foreground-color* which
 ;;; is not defined until AFTER the windows are created for some
@@ -109,13 +109,13 @@ Modification History (most recent at top)
 ;;;; The Basic Abstract Graphics Object
 ;;;
 ;;; Contains slots necessary to implement basic graphics functionality
-;;; 
+;;;
 ;;; . A position (in a graphics box)
 ;;;
 ;;; . Pointers to the Box representation, and to the containing graphics box
 ;;;
 ;;; . Slots to implement nesting in the Boxer hierarchy
-;;; 
+;;;
 
 (defclass graphics-object
     ()
@@ -196,7 +196,7 @@ Modification History (most recent at top)
   (bitmap nil)
   (middle 0)
   (size))
-  
+
 
 (deftype-checking-macros graphics-object "A Graphics Object")
 (deftype-checking-macros button "A Graphics Button")
@@ -229,16 +229,16 @@ Modification History (most recent at top)
           ((graphics-object? gi)
            (remove-subturtle gi old-object)))))
 
-  
+
 ;;; coordinate transformations.
 ;;;
 ;;; ARRAY coordinates are referenced to the indices of the bit-array
 ;;; of the graphics box. Therefore in ARRAY coordinates, (0, 0) is in
 ;;;  the upper-left hand corner whereas...
-;;; ...in USER coordinates, which refer to the coordinates in which the 
-;;; user talks to the object, (0, 0) will be more or less in the middle 
+;;; ...in USER coordinates, which refer to the coordinates in which the
+;;; user talks to the object, (0, 0) will be more or less in the middle
 ;;; of the box.
-  
+
 ;;; USER ==> ARRAY
 
 (defun fix-array-coordinate-x (user-x)
@@ -290,14 +290,14 @@ Modification History (most recent at top)
 
 
 ;;; normalize coordinates to the on screen position
-  
+
 (defun wrap-object-coords (object)
   (setf (slot-value object 'x-position)
 	(wrap-x-coordinate (slot-value object 'x-position)))
   (setf (slot-value object 'y-position)
 	(wrap-y-coordinate (slot-value object 'y-position))))
 
-;;; Lucid (lcl3.0) specific versions try are written to 
+;;; Lucid (lcl3.0) specific versions try are written to
 ;;; minimize floating point CONSing
 
 #-lcl3.0
@@ -307,7 +307,7 @@ Modification History (most recent at top)
 
 
 ;;; We go through these contortions in order to reduce
-;;; the floating point CONSing.  Using this version seems to 
+;;; the floating point CONSing.  Using this version seems to
 ;;; reduce the FP consing from about 8 DP-FP numbers per call to 2
 #+lcl3.0
 (defun wrap-x-coordinate (user-x)
@@ -334,7 +334,7 @@ Modification History (most recent at top)
 				   %drawing-height)))
 
 ;;; We go through these contortions in order to reduce
-;;; the floating point CONSing.  Using this version seems to 
+;;; the floating point CONSing.  Using this version seems to
 ;;; reduce the FP consing from about 8 DP-FP numbers per call to 2
 #+lcl3.0
 (defun wrap-y-coordinate (user-y)
