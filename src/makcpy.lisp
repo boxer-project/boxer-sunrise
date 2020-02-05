@@ -101,11 +101,11 @@ Modification History (most recent at top)
     ;; these flags always get unset
     (setq flags (set-box-flag-fake-file-box
 		 (set-box-flag-build-template? flags nil) nil))
-    (when (and (box-flag-storage-chunk? flags) (null fir) 
+    (when (and (box-flag-storage-chunk? flags) (null fir)
                (not (box-flag-read-only-box? flags)))
       (setq flags (set-box-flag-copy-file? flags t)))
     ;; remove RO flag if we are copying a box with contents...
-    (when (and (not (eq copy-top-level-attributes? T)) 
+    (when (and (not (eq copy-top-level-attributes? T))
                ;; copy-top-level-attributes? can be various keywords which we aren't
                ;; interested in here but which means we can't just check for nil
                (box-flag-read-only-box? flags))
@@ -131,7 +131,7 @@ Modification History (most recent at top)
                  (not (null copy-top-level-attributes?))
                  ;(eq copy-top-level-attributes? t)
                  ;; fix to bug where copy-thing (comsa.lisp) copies with top-level
-                 ;; attributes flag set to :name and pathnames of unfilled file 
+                 ;; attributes flag set to :name and pathnames of unfilled file
                  ;; boxes are not copied
                  )
         ;; if the box is READ Only or hasn't been filled, then we copy filling
@@ -164,7 +164,7 @@ Modification History (most recent at top)
                         (t (copy-graphics-object gi)))))
              (setf (graphics-info to-box) new-graphics-object)
              (set-sprite-box new-graphics-object to-box)))))
-  (when (not (null (av-info from-box))) 
+  (when (not (null (av-info from-box)))
     (putprop to-box (copy-av-info (av-info from-box)) 'av-info))
   ;; other special properties...
   (dolist (pfun *copy-special-box-properties-hook*) (funcall pfun from-box to-box))
@@ -211,7 +211,7 @@ Modification History (most recent at top)
 	 (to-current-row (if (null from-current-row)
 			     (make-row '())
 			     (copy-row from-current-row nil to-box))))
-    ;;Copy the various parameters.      
+    ;;Copy the various parameters.
     (unless (null from-closets)
       (add-closet-row to-box (copy-row from-closets nil to-box)))
     (unless (null first-apparent-row)
@@ -227,7 +227,7 @@ Modification History (most recent at top)
 	     from-previous-row from-current-row)
        ;; Get the next row to copy.  If it's not there,
        ;; then we're done making new rows.
-       ;; Otherwise, make a new row and make that be the current row.  
+       ;; Otherwise, make a new row and make that be the current row.
        (setq from-current-row (unless (null from-previous-row)
 				(next-row from-previous-row)))
        (if (null from-current-row) (return))
@@ -282,7 +282,7 @@ Modification History (most recent at top)
 	       (append-row to-box row)))))))
 
 
-(DEFUN COPY-ROW (FROM-ROW &OPTIONAL NEW-PREVIOUS-ROW NEW-SUPERIOR-BOX 
+(DEFUN COPY-ROW (FROM-ROW &OPTIONAL NEW-PREVIOUS-ROW NEW-SUPERIOR-BOX
                           (copy-box-args nil c-b-a-supplied?))
   (LET ((NEW-ROW (MAKE-UNINITIALIZED-ROW)))
     (setf (actual-obj-tick new-row) -1)
@@ -294,11 +294,11 @@ Modification History (most recent at top)
             (copy-chas-array (chas-array from-row) new-row)))
     NEW-ROW))
 
-;; this is rebound inside of the VC printer because deep inferiors of 
+;; this is rebound inside of the VC printer because deep inferiors of
 ;; editor boxes may need to render their contents using the VC access mechanism
 (defvar *recursive-copy-box-function* #'copy-box)
 
-(defun copy-chas-array (from-chas new-row &optional (copy-box-args 
+(defun copy-chas-array (from-chas new-row &optional (copy-box-args
                                                      nil copy-box-arg-supplied?))
   (with-fast-chas-array-manipulation (from-chas fast-from-chas)
     (flet ((make-length-n-chas-array (n)
@@ -334,7 +334,7 @@ Modification History (most recent at top)
 
 ;;;;MAKE-mumble functions
 ;;; these should ONLY BE USED to CONS NEW STRUCTURE !!!
-;;; in particular, if you pass a box that is already in the editor 
+;;; in particular, if you pass a box that is already in the editor
 ;;; hierarchy to any of the make-mumble functions, you will lose
 ;;; horribly (maybe not right away but eventually it WILL catch up with you)
 
@@ -363,7 +363,7 @@ Modification History (most recent at top)
 	       (let ((tab-spaces (-& 8 (mod ca-idx 8))))
 		 (incf& al (1-& tab-spaces))  (chas-array-assure-room ca al)
 		 (dotimes& (i tab-spaces)
-		   (setf (aref (chas-array-chas ca) ca-idx) #\space) 
+		   (setf (aref (chas-array-chas ca) ca-idx) #\space)
                    (incf& ca-idx))))
 	      ((or (char= cha #\return) (char= cha #\newline))
 	       ;; ignore CR's and NL's
@@ -447,7 +447,7 @@ Modification History (most recent at top)
 
 
 #|
-;; Yuck, this is an example of how NOT to do this, it iterates over 
+;; Yuck, this is an example of how NOT to do this, it iterates over
 ;; the characters at least 4 (!) times
 (defmethod text-string ((row row))
   (let* ((chas (chas row))
