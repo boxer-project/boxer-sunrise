@@ -29,7 +29,7 @@ Modification History (most recent at top)
  1/ 7/12 added xref scoping (get-xref)
 12/20/11 finished porting edit-mac-file-ref to edit-xref-file-ref
 12/09/11 added active-info slot to mac-file-ref's
- 6/06/05 #+lispworks fill-icon-cache had wrong args 
+ 6/06/05 #+lispworks fill-icon-cache had wrong args
  7/07/04 fixed typo in fill-icon-cache
  4/05/04 make-xfile-box, fill-icon-cache updated for OSX
  5/21/01 set-xref-boxtop-info fill-icon-cache
@@ -85,11 +85,11 @@ Modification History (most recent at top)
 ;; a mouse-click boxes to launch or edit the file
 ;; NOTE: pathname can point to a boxer box, which needs to be handled specially
 (defun make-xfile-box (pathname &optional mime-info)
-  (let* ((box (make-box (if *terse-xfile-doc* 
+  (let* ((box (make-box (if *terse-xfile-doc*
                           *terse-xfile-makebox-doc*
                           *verbose-xfile-makebox-doc*)
                         'data-box))
-         
+
          (xref (make-xref :pathname pathname)))
     (cond ((null mime-info)
            ;; look for an icon
@@ -110,7 +110,7 @@ Modification History (most recent at top)
     (shrink box)
     box))
 
-;; stubs, real version should eventually go into cocoa.lisp 
+;; stubs, real version should eventually go into cocoa.lisp
 (defun get-iconref-from-file (pathname)
   (declare (ignore pathname))
   nil)
@@ -160,10 +160,10 @@ Modification History (most recent at top)
            ;; dependent pathnames in them
            (setf (mac-file-ref-icon-cache xref)
                  #-carbon-compat
-                 (ccl::file-icon (or creator 
+                 (ccl::file-icon (or creator
                                      (when path
                                        (ccl::mac-file-creator path)))
-                                 (or ftype 
+                                 (or ftype
                                      (when path
                                        (ccl::mac-file-type  path))))
                  #+carbon-compat
@@ -173,7 +173,7 @@ Modification History (most recent at top)
                               )))
                    (when (iconref? icr) icr))
                  ))
-          (t 
+          (t
            ;; should probably try and do somethign reasable here
            ;; If the containing box and the xref has been moved via the
            ;; Finder, then the pathname in the boxer file will be
@@ -188,9 +188,9 @@ Modification History (most recent at top)
                (setf (mac-file-ref-pathname xref) retry-path)
                (setf (mac-file-ref-icon-cache xref)
                      #-carbon-compat
-                     (ccl::file-icon (or creator 
+                     (ccl::file-icon (or creator
                                          (ccl::mac-file-creator retry-path))
-                                     (or ftype 
+                                     (or ftype
                                          (ccl::mac-file-type  retry-path)))
                      #+carbon-compat
                      (let ((icr (if (and creator ftype)
@@ -205,12 +205,12 @@ Modification History (most recent at top)
 ;; NOTE: reverse order of search between sup-path and *autoloading-namestring* ?
 (defun find-xref-retry-path (xref-path sup-path)
   (let ((retry-path (merge-pathnames (file-namestring xref-path) sup-path)))
-    (when (probe-file retry-path) (return-from find-xref-retry-path retry-path)))  
+    (when (probe-file retry-path) (return-from find-xref-retry-path retry-path)))
   ;; possible subdirectory wins
   (do* ((subdirs (reverse (cdr (pathname-directory xref-path)))
                  (cdr subdirs))
         (subdir (car subdirs) (car subdirs))
-        (newsubdirs (list :relative subdir) 
+        (newsubdirs (list :relative subdir)
                     (list* :relative subdir (cdr newsubdirs))))
        ((null subdir) nil)
     (let ((retry-path (merge-pathnames
@@ -219,13 +219,13 @@ Modification History (most recent at top)
                                       :type (or (pathname-type xref-path) :unspecific))
                        sup-path)))
       (when (probe-file retry-path) (return retry-path)))))
-  
+
 
 ;; come here when single clicked on a file link
 ;; check to see if the file is a box
 #+mcl
 (defun edit-mac-file-ref (box &optional (xref (getprop box :xref)))
-  (when (null xref) 
+  (when (null xref)
     (let ((new-xref (make-mac-file-ref)))
       (putprop box new-xref :xref)  (setq xref new-xref)))
   (case (mac-file-ref-dialog (mac-file-ref-pathname xref))
@@ -250,7 +250,7 @@ Modification History (most recent at top)
               (set-xref-boxtop-info box)))
        (modified box)))
     (:move
-     (let ((newpath (ccl::choose-new-file-dialog 
+     (let ((newpath (ccl::choose-new-file-dialog
                      :directory (mac-file-ref-pathname xref))))
        (rename-file (mac-file-ref-pathname xref) newpath)
        (setf (mac-file-ref-pathname xref) newpath)))
@@ -260,7 +260,7 @@ Modification History (most recent at top)
 ;; ==> Single click
 #+lispworks
 (defun edit-xref (box &optional (xref (getprop box :xref)))
-  (when (null xref) 
+  (when (null xref)
     (let ((new-xref (make-xref)))
       (putprop box new-xref :xref)  (setq xref new-xref)))
   (case (open-xref-dialog (xref-pathname xref))
@@ -282,7 +282,7 @@ Modification History (most recent at top)
               (remove-xfile-props box)
               (mark-box-as-file box newpath))
              (t
-              (applescript-new-path-for-xref xref newpath)              
+              (applescript-new-path-for-xref xref newpath)
               (set-xref-boxtop-info box)))
        (modified box)))
     (:move
@@ -297,14 +297,14 @@ Modification History (most recent at top)
   (removeprop box :xref)
   (setf (slot-value box 'first-inferior-row) nil)
   (let ((mcb  (eval::lookup-static-variable-in-box-only box 'bu::mouse-click))
-        (mdcb (eval::lookup-static-variable-in-box-only box 
+        (mdcb (eval::lookup-static-variable-in-box-only box
                                                         'bu::mouse-double-click)))
     (delete-cha (superior-row mcb)  mcb)
     (delete-cha (superior-row mdcb) mdcb)))
 
 ;;;; Hooks
 
-(defun xref-dump-plist-length (box) 
+(defun xref-dump-plist-length (box)
   (let ((xref (getf (plist box) :xref)))
     (if (null xref) 0 2)))
 
@@ -315,16 +315,16 @@ Modification History (most recent at top)
           ((null mime-vals)
            (dump-boxer-thing :xref stream)
            (dump-boxer-thing (namestring (xref-pathname xref)) stream))
-          (t 
+          (t
            (dump-boxer-thing :xref stream)
            ; fake a dump-list
            (dump-list-preamble 2 stream)
            (dump-boxer-thing (namestring (xref-pathname xref)) stream)
            (dump-boxer-thing mime-vals stream)))))
-  
+
 (defun copy-xref-special-property (from-box to-box)
   (let ((xref (getf (plist from-box) :xref)))
-    (unless (null xref) 
+    (unless (null xref)
       (putprop to-box (copy-xref xref) :xref)
       (putprop to-box :xref :boxtop))))
 
@@ -340,12 +340,12 @@ Modification History (most recent at top)
 
 (defun print-vc-xref-hook (vc eb)
   (let ((xref (getf (vc-graphics vc) 'xref)))
-    (unless (null xref) 
+    (unless (null xref)
       (putprop eb xref :xref)
       (putprop eb :xref :boxtop))))
 
 (eval-when (load)
-  ;; no need for load-module because xref's are handled explicitly in 
+  ;; no need for load-module because xref's are handled explicitly in
   ;; the partial-initialize method
 
   ;; Copying hooks
