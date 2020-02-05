@@ -39,11 +39,11 @@ Modification History (most recent at the top)
  7/31/11 new *update-bitmap?* special var for use in resize-graphics-sheet
          #+opengl cases added for bitmaps in resize-graphics-sheet
  2/02/11 change-graphics-font now handles (possible) unfilled font parameters
- 4/20/10 circle, filled-circle, 
+ 4/20/10 circle, filled-circle,
 10/03/08 draw-text-boxtop
  7/22/07 reallocate-pixel-color
  3/03/07 alpha channel support: canonicalize-pixel-color, reallocate-pixel-color
-10/11/05 added more alternatives for draw-file-boxtop for #+lwwin 
+10/11/05 added more alternatives for draw-file-boxtop for #+lwwin
 10/04/05 update-graphics-state checks for possible new penerase colors
  6/01/05 boxtop-size, draw-boxtop handles possible graphics in xref
 10/22/04 draw-xref-boxtop, centered icon above text for OSX case
@@ -57,18 +57,18 @@ Modification History (most recent at the top)
  2/15/03 merged current LW and MCL files
 11/06/01 switched from floating to generic arithmetic in boxer extents form
          for wedge, arc, (filled-)circle. Fixnum radius arg seg faults in LWW
- 2/26/01 removed invalid floating point arithmetic in centered-bitmap 
+ 2/26/01 removed invalid floating point arithmetic in centered-bitmap
          boxer command extents handler
  2/15/01 merged current LW and MCL files
 10/07/00 added :file handlers for boxtop-size and draw-boxtop for LW version
  8/22/00 reallocate-pixel-color bug with save->read->save blowout for sprite shapes
 12/15/99 *boxtop-text-font*: (%make-font-number-internal 0 10 :bold) for lwwin
          reallocate-pixel-color: added #+LWWIN integer clause to handle old code
-10/15/99 draw-file-boxtop, file-boxtop-size use *file-boxtop-name-margin* 
+10/15/99 draw-file-boxtop, file-boxtop-size use *file-boxtop-name-margin*
          to offset the name
-8/19/99 with-graphics-state, canonicalize-graphics-state, 
+8/19/99 with-graphics-state, canonicalize-graphics-state,
         modularized to use color= for color comparisons instead of = (LW change)
- 5/10/99 changed draw-boxtop & boxtop-size to give defined boxtops precedence 
+ 5/10/99 changed draw-boxtop & boxtop-size to give defined boxtops precedence
          over :file
  5/01/99 fixed typo in arc graphics command
  4/25/99 added support for :file boxtops
@@ -77,7 +77,7 @@ Modification History (most recent at the top)
 1/01/99 changed *initial-graphics-state-current-font-no* to a var instead of
         a constant because in some implementations, the value won't be known until
         AFTER the boxer window has been instantiated (LW change)
-7/10/98 walk-body-for-args searches for mutators and 
+7/10/98 walk-body-for-args searches for mutators and
         with-graphics-command-slots-bound uses that info
 7/09/98 added support for post processing for copy and boxer->window allocators
         in defgraphics-command
@@ -98,18 +98,18 @@ Modification History (most recent at the top)
 
 
 ;;;; Graphics Command Lists
-;;; The result of a series of graphics commands can be captured 
+;;; The result of a series of graphics commands can be captured
 ;;; using a graphics command lists.  This is just a list of
 ;;; various types of graphics commands.  There are two basic
 ;;; types of graphics command elements:
 ;;;
 ;;;   o A particular command to perform some type of graphical
-;;;     output, such as a line or a rectangle, along with 
+;;;     output, such as a line or a rectangle, along with
 ;;;     arguments to the command such as coordinates, width, etc
 ;;;
 ;;;   o A command describing some sort of state change
 ;;;     such as the current-color or drawing-function
-;;; 
+;;;
 ;;;   o There are 2 flavors of commands for the graphics commands
 ;;;     that draw.  They are distinguished by the type and meaning of
 ;;;     their arguments (slots). The 2 types are:
@@ -118,7 +118,7 @@ Modification History (most recent at the top)
 ;;;         as an offset from the upper-left corner of the containing
 ;;;         screen object.  The type of these offsets and args (such
 ;;;         as width or height) will be INTEGERS. The idea is that
-;;;         these commands can be fed directly to window system 
+;;;         these commands can be fed directly to window system
 ;;;         functions without conversion or coercion.
 ;;;
 ;;;       o Commands in BOXER GRAPHICS BOX coordinate space where (0,0)
@@ -127,19 +127,19 @@ Modification History (most recent at the top)
 ;;;         will be FLOATING POINT numbers to retain precision independent
 ;;;         of the granularity of the coordinate system
 ;;;
-;;;; These are the graphics commands stored in the 
-;;;; *GRAPHICS-COMMAND-DESCRIPTOR-TABLE* 
+;;;; These are the graphics commands stored in the
+;;;; *GRAPHICS-COMMAND-DESCRIPTOR-TABLE*
 ;;;; The floating point ops have are 32 and above. The fixnums are
 ;;;; 31 and below.
-;;;; 
+;;;;
 ;;;;
 ;;;; Here is the code to make the table:
 ;;;; (dotimes (d 64)
 ;;;;   (let ((thunk (aref *graphics-command-descriptor-table* d)))
-;;;;    (if thunk 
-;;;;	(format t "~A ~5T~A  ~50T~A~%" 
-;;;;		d 
-;;;;		(graphics-command-descriptor-name thunk) 
+;;;;    (if thunk
+;;;;	(format t "~A ~5T~A  ~50T~A~%"
+;;;;		d
+;;;;		(graphics-command-descriptor-name thunk)
 ;;;;		(graphics-command-descriptor-slots thunk))
 ;;;;	(format t "~A~%" d))))
 
@@ -222,8 +222,8 @@ Modification History (most recent at the top)
 
 (defvar *initial-graphics-command-dispatch-table-size* 32.
   "This is the expected maximum number of DIFFERENT graphics commands.
-   The actual table sizes will be twice this number with the bottom 
-   half for window coordinate based commands and the top half for 
+   The actual table sizes will be twice this number with the bottom
+   half for window coordinate based commands and the top half for
    boxer coodinate based commands.")
 
 (defvar *boxer-graphics-command-mask* 32.) ;
@@ -261,7 +261,7 @@ Modification History (most recent at the top)
               :initial-element nil))
 
 (defvar *graphics-command-translation-table*
-  (make-array *initial-graphics-command-dispatch-table-size* 
+  (make-array *initial-graphics-command-dispatch-table-size*
               :initial-element nil))
 
 (defvar *graphics-command-translation-and-scaling-table*
@@ -290,8 +290,8 @@ Modification History (most recent at the top)
 
 
 
-;;; store information about the graphics-command that 
-;;; might be useful for other macros 
+;;; store information about the graphics-command that
+;;; might be useful for other macros
 (defstruct graphics-command-descriptor
   name
   slots
@@ -439,7 +439,7 @@ Modification History (most recent at the top)
   (funcall (svref& *graphics-command-deallocation-table*
 		   (svref& graphics-command 0))
 	   graphics-command))
-    
+
 
 
 
@@ -449,7 +449,7 @@ Modification History (most recent at the top)
 
 (defconstant *initial-graphics-state-current-alu* alu-seta)
 (defconstant *initial-graphics-state-current-pen-width* 1)
-;; in some implementations, these can't be known until AFTER the 
+;; in some implementations, these can't be known until AFTER the
 ;; boxer window is instantiated
 (defvar *initial-graphics-state-current-font-no* *sprite-type-font-no*)
 (defvar *initial-graphics-state-current-pen-color* *foreground-color*)
@@ -466,8 +466,8 @@ Modification History (most recent at the top)
   (green 0)
   (blue  0))
 
-;;; color tables map color indices (internal fixnums) to boxer 
-;;; color structures.  For each window system, there should be 
+;;; color tables map color indices (internal fixnums) to boxer
+;;; color structures.  For each window system, there should be
 ;;; a way to obtain an index from a color description.
 ;;; The index returned will be a suitable value for the turtle's pen-color
 
@@ -476,7 +476,7 @@ Modification History (most recent at the top)
 
 
 ;;;; Graphics Command Lists
-;;; these are built out of storage vectors but they also contain 
+;;; these are built out of storage vectors but they also contain
 ;;; state about the value(s) of various drawing variables
 ;;; such as the ALU, PEN-WIDTH, (PEN-COLOR), etc
 ;;;
@@ -539,7 +539,7 @@ Modification History (most recent at the top)
   max-graphics-x-extent
   min-graphics-y-extent
   max-graphics-y-extent)
-  
+
 (defsubst turtle-window-shape? (thing)
   (simple-vector-p thing))
 
@@ -560,7 +560,7 @@ Modification History (most recent at the top)
 ;;; from/to boxer-graphics-floating-command.
 ;;; template-actions can be:
 ;;;
-;;;      :X-TRANSFORM - transform the coordinates and do the 
+;;;      :X-TRANSFORM - transform the coordinates and do the
 ;;;                     appropriate type coercion
 ;;;      :Y-TRANSFORM - transform the coordinates and do the
 ;;;                     appropriate type coercion
@@ -603,7 +603,7 @@ Modification History (most recent at the top)
              (push body found))
            (when (and (member body mutators) (not (member body mutators-found)))
              (push body mutators-found)))
-          ((listp body)           
+          ((listp body)
            (dolist (thing body)
              (cond ((symbolp thing)
                     (when (and (member thing args) (not (member thing found)))
@@ -617,17 +617,17 @@ Modification History (most recent at the top)
                             mutators-found (union mutators-found m))))))))
     (values found mutators-found)))
 
-(defmacro with-graphics-command-slots-bound (gc-arg args body)  
+(defmacro with-graphics-command-slots-bound (gc-arg args body)
   (multiple-value-bind (args-used mutators-used)
                        (walk-body-for-args args body)
     (cond ((and (null args-used) (null mutators-used)) `,body)
           (T
-           (let ((mutators (mapcar #'(lambda (s) 
+           (let ((mutators (mapcar #'(lambda (s)
                                        (intern (symbol-format nil "SET-~A" s)))
                                    args)))
              ;; easier than passing a list of mutators
-             `(let ,(mapcar #'(lambda (arg) 
-                                (list arg `(svref& ,gc-arg 
+             `(let ,(mapcar #'(lambda (arg)
+                                (list arg `(svref& ,gc-arg
                                                    ,(1+ (position arg args)))))
                             args-used)
                 (flet ,(mapcar #'(lambda (mut)
@@ -644,7 +644,7 @@ Modification History (most recent at the top)
 			       args
 			       extents-form boxer-extents-form
 			       dump-args dump-form
-			       load-args load-form 
+			       load-args load-form
                                deallocate-args deallocate-form
 			       sprite-command
 			       transform-template
@@ -668,8 +668,8 @@ Modification History (most recent at the top)
 	   (wcopy-name
 	    (intern (symbol-format nil "COPY-WINDOW-GRAPHICS-COMMAND-~A" name)))
            (wcopy-struct-name (if (null copy-post-processing) wcopy-name
-                                  (intern 
-                                   (symbol-format 
+                                  (intern
+                                   (symbol-format
                                     nil "%COPY-WINDOW-GRAPHICS-COMMAND-~A" name))))
 	   (bstruct-name
 	    (intern (symbol-format nil "BOXER-GRAPHICS-COMMAND-~A" name)))
@@ -678,8 +678,8 @@ Modification History (most recent at the top)
 	   (bcopy-name
 	    (intern (symbol-format nil "COPY-BOXER-GRAPHICS-COMMAND-~A" name)))
            (bcopy-struct-name (if (null copy-post-processing) bcopy-name
-                                  (intern 
-                                   (symbol-format 
+                                  (intern
+                                   (symbol-format
                                     nil "%COPY-BOXER-GRAPHICS-COMMAND-~A" name))))
 	   (window->boxer-name
 	    (intern (symbol-format nil "GRAPHICS-WINDOW->BOXER-~A-ALLOCATOR" name)))
@@ -820,7 +820,7 @@ Modification History (most recent at the top)
 						 ',transform-template))
          ;; needed for decoding during further macroexpansion
          #+lispworks
-         ,(progn (setf (svref& *graphics-command-descriptor-table* 
+         ,(progn (setf (svref& *graphics-command-descriptor-table*
                                boxer-command-opcode)
 	               (make-graphics-command-descriptor :name boxer-command-name
 						         :slots args
@@ -842,7 +842,7 @@ Modification History (most recent at the top)
                   *graphics-command-name-opcode-alist*)
             nil)
 
-	 ;; the default handlers for drawing the 
+	 ;; the default handlers for drawing the
 	 ;; objects directly into the graphics box
 	 (defun ,process-function (graphics-command)
            (with-graphics-command-slots-bound graphics-command ,args
@@ -870,7 +870,7 @@ Modification History (most recent at the top)
 	 ;; the benefit of various defgraphics-handlers to use
 	 (defmacro ,window-binding-values-macro (graphics-command &body body)
 	   `(let ((.graphics-command. ,graphics-command))
-	      (let 
+	      (let
 		  ,',(let ((idx 0))
 		       (mapcar #'(lambda (arg)
 				   (incf idx)
@@ -890,7 +890,7 @@ Modification History (most recent at the top)
 
 	 (defmacro ,boxer-binding-values-macro (graphics-command &body body)
 	   `(let ((.graphics-command. ,graphics-command))
-	      (let 
+	      (let
 		  ,',(let ((idx 0))
 		       (mapcar #'(lambda (arg)
 				   (incf idx)
@@ -976,7 +976,7 @@ Modification History (most recent at the top)
 	   ,dump-form)
 	 (setf (svref& *graphics-command-dumper-dispatch-table* ,opcode)
 	       ',dump-function-name
-               (svref& *graphics-command-dumper-dispatch-table* 
+               (svref& *graphics-command-dumper-dispatch-table*
                        ,boxer-command-opcode)
 	       ',dump-function-name)
 	 (defun ,load-function-name ,load-args
@@ -984,7 +984,7 @@ Modification History (most recent at the top)
 	   ,load-form)
 	 (setf (svref& *graphics-command-loader-dispatch-table* ,opcode)
 	       ',load-function-name
-               (svref& *graphics-command-loader-dispatch-table* 
+               (svref& *graphics-command-loader-dispatch-table*
                        ,boxer-command-opcode)
 	       ',load-function-name)
 
@@ -1076,12 +1076,12 @@ Modification History (most recent at the top)
 
 ;;; Used to define arbitrary transformations between the boxer/floating
 ;;; representations and the window/fixnum representations
-;;; translation clauses should be a list of forms. 
+;;; translation clauses should be a list of forms.
 ;;; The CAR of each form should be the name of a slot in the graphics command
 ;;; and the CADR of each form should be a form to be called which translates
 ;;; the slot.  The translating form is called in an environment where the
 ;;; slots of the originating form as well as the EXTRA-ARGS are bound
-;;; 
+;;;
 ;;; This tries to be smart and use info from the transformation-template
 ;;; when none is provided
 ;;;
@@ -1134,24 +1134,24 @@ Modification History (most recent at the top)
 				      slot template-action direction))))))))))
        (setf (svref& ,table ,handler-opcode) ',handler-name)
        ',handler-name)))
-			 
+
 
 
 
 ;;; Putting it all together...
 ;;;
 ;;; Note that we are using the standard Boxer trick of spending memory to
-;;; increase speed.  The Instantiations of shapes are cached in 
+;;; increase speed.  The Instantiations of shapes are cached in
 ;;; turtle-window-shapes and are draw from here.  It is perfectly reasonable
 ;;; (and the old implementation did this) to draw the turtle's shape
 ;;; directly from its shape without indirecting through a cache.  To do
 ;;; this, you will need to define a graphic-handler for drawing sprites
 ;;; and change the DRAW method of turtles to use it.
-;;; 
+;;;
 ;;; The current tradeoff (using the cache strategy) is based on the following
 ;;; influences:
 ;;;
-;;;   o calculating the rotated, scaled, translated shape 
+;;;   o calculating the rotated, scaled, translated shape
 ;;;     it floating point intensive
 ;;;
 ;;;   o Shapes are usually drawn at least twice in the same place in the
@@ -1192,7 +1192,7 @@ Modification History (most recent at the top)
      (defgraphics-command (,name ,opcode)
 	 ,command-args
        ,extents-form ,boxer-extents-form
-       ,dump-args ,dump-form ,load-args ,load-form 
+       ,dump-args ,dump-form ,load-args ,load-form
        ,deallocate-args ,deallocate-form
        ,sprite-command
        ,transformation-template ,copy-post-processing
@@ -1212,7 +1212,7 @@ Modification History (most recent at the top)
 
 ;;; for now, on a monochrome monitor, we only need to record
 ;;; the drawing-function (alu) and the pen-width
-;;; we may later want to add things like the current stipple 
+;;; we may later want to add things like the current stipple
 ;;; pattern or the color
 
 (defvar *graphics-state-current-alu* *initial-graphics-state-current-alu*)
@@ -1259,7 +1259,7 @@ Modification History (most recent at the top)
 	     (- *turtle-half-base*) (- (/ *turtle-height* 3.0)))
 	    %graphics-list)))
 
-;;; puts a graphics list into the initial state by issuing 
+;;; puts a graphics list into the initial state by issuing
 ;;; state changing commands when neccessary
 ;;; actually this could probably use a peephole optimizer at some point....
 
@@ -1318,7 +1318,7 @@ Modification History (most recent at the top)
 		     `(setq *graphics-state-current-alu*
 			    (graphics-command-list-alu ,gcl)
 			    *graphics-state-current-font-no*
-			    (or (graphics-command-list-font-no ,gcl) 
+			    (or (graphics-command-list-font-no ,gcl)
 				*graphics-state-current-font-no*)
 			    *graphics-state-current-pen-width*
 			    (or (graphics-command-list-pen-width ,gcl)
@@ -1341,7 +1341,7 @@ Modification History (most recent at the top)
 		 *graphics-state-current-pen-width*)
 	   (setf (graphics-command-list-pen-color ,gcl)
 		 *graphics-state-current-pen-color*)
-	   ;; restore any state variables that 
+	   ;; restore any state variables that
 	   ;; might have been bashed in the body
            ,old-font-no ; placeholder and to supress warnings
 	   (when (not (=& ,old-pen-width *graphics-state-current-pen-width*))
@@ -1372,7 +1372,7 @@ Modification History (most recent at the top)
 	   (error "%graphics-list, ~A, is not bound to a Graphics Command List"
 		  %graphics-list))
 	  ((eq agent (graphics-command-list-agent %graphics-list))
-	   ;; if the agent is the same, then we do nothing, except 
+	   ;; if the agent is the same, then we do nothing, except
            ;; updating the penerase color if neccessary
            (let ((bgc nil)) ;; stack allocation
              (when (and (eq pen 'bu::erase)
@@ -1381,11 +1381,11 @@ Modification History (most recent at the top)
 	       (record-boxer-graphics-command-change-graphics-color bgc)
                (setf (graphics-command-list-pen-color %graphics-list) bgc)
 	       (change-graphics-color bgc))))
-	  ((eq pen 'bu::up)) ; the agent might do a PD 
+	  ((eq pen 'bu::up)) ; the agent might do a PD
 	  ;; if the agent is not drawing, do nothing
 	  ;; also need a clause here for agents that do not use pens
 	  (t
-	   ;; otherwise, we need to update the graphics 
+	   ;; otherwise, we need to update the graphics
 	   ;; state from the values of the agent
 	   (setf (graphics-command-list-agent %graphics-list) agent)
 	   (synchronize-graphics-state agent)))))
@@ -1448,7 +1448,7 @@ Modification History (most recent at the top)
     (do-vector-contents (gc shape)
 	(sv-append tws (allocate-boxer->window-command gc)))
     tws))
-    
+
 
 (defun translate-graphics-command-list (gl trans-x trans-y)
   (do-vector-contents (graphics-command gl)
@@ -1491,14 +1491,14 @@ Modification History (most recent at the top)
 	     (with-pen-color ((or (graphics-sheet-background sheet) *background-color*))
 		 (draw-rectangle alu-seta new-wid new-hei 0 0)))
           #+opengl
-          (clear-offscreen-bitmap new-bitmap (or (graphics-sheet-background sheet) 
+          (clear-offscreen-bitmap new-bitmap (or (graphics-sheet-background sheet)
                                                  *background-color*))
           )
         ;; now move the old contents into the new bitmap
         #-opengl
         (drawing-on-bitmap (new-bitmap)
           (case *boxer-graphics-box-bit-gravity*
-            (:top-right (bitblt-to-screen alu-seta 
+            (:top-right (bitblt-to-screen alu-seta
                                           (min& old-wid new-wid)
                                           (min& old-hei new-hei)
                                           old-bitmap 0 0 0 0))
@@ -1513,14 +1513,14 @@ Modification History (most recent at the top)
         #+opengl
         (case *boxer-graphics-box-bit-gravity*
           (:top-right
-           (copy-offscreen-bitmap 
+           (copy-offscreen-bitmap
             alu-seta (min& old-wid new-wid) (min& old-hei new-hei)
             old-bitmap 0 0 new-bitmap 0 0))
           (:center
            (copy-offscreen-bitmap
             alu-seta (min& old-wid new-wid) (min& old-hei new-hei)
-            old-bitmap 
-            (max& 0 (round (-& old-wid new-wid) 2)) 
+            old-bitmap
+            (max& 0 (round (-& old-wid new-wid) 2))
             (max& 0 (round (-& old-hei new-hei) 2))
             new-bitmap
             (max& 0 (round (-& new-wid old-wid) 2))
@@ -1553,7 +1553,7 @@ Modification History (most recent at the top)
 		 (round new-wid 2) (round new-hei 2)
 		 wid-scale hei-scale))))))
     (when (not (null (graphics-sheet-object-list sheet)))
-      ;; (maybe) move sprites to a new position      
+      ;; (maybe) move sprites to a new position
       ;; don't move if there are no sprites or if the box is in :clip mode
       (ecase *boxer-graphics-box-bit-gravity*
 	(:top-right)
@@ -1564,7 +1564,7 @@ Modification History (most recent at the top)
 		  ;; would be clipped, in which case send them
 		  ;; home unless the sheet is in :clip mode
 		  (when (and (or (>= (abs (x-position obj)) (/ new-wid 2))
-			         (>= (abs (y-position obj)) (/ new-hei 2)))                         
+			         (>= (abs (y-position obj)) (/ new-hei 2)))
                              (not (eq (graphics-sheet-draw-mode sheet) ':clip)))
 		    (let ((%drawing-width new-wid) (%drawing-height new-hei)
 			  (%drawing-half-width (/ new-wid 2.0))
@@ -1663,7 +1663,7 @@ Modification History (most recent at the top)
 
 (defgraphics-translator (change-alu) (trans-x trans-y cos-scale sin-scale
 					      scale)
-  ())  
+  ())
 
 
 (defgraphics-state-change (change-pen-width 1) (new-width)
@@ -1712,13 +1712,13 @@ Modification History (most recent at the top)
                     (dump-font (svref& command 1) stream))
                    (t (dump-boxer-thing command stream)))
   :load-form (when (>=& *version-number* 12)
-               (setf (svref& command 1) 
+               (setf (svref& command 1)
                      (make-font-from-file-value (svref& command 1))))
   :sprite-command
   (list 'bu::set-type-font new-font-no)
   :body
   (unless (=& new-font-no *graphics-state-current-font-no*)
-    ;; have to check for possible font 
+    ;; have to check for possible font
 ;    #+glut
     (bw::ensure-oglfont-parameters (find-cached-font new-font-no))
 ;    #-glut
@@ -1793,7 +1793,7 @@ Modification History (most recent at the top)
 
 ;;; Lines
 
-;;; temporary fix to keep Window systems from blowing out when 
+;;; temporary fix to keep Window systems from blowing out when
 ;;; some kid types FORWARD 239823094230923490
 ;;;
 ;;; In theory, this should get captured at a higher level
@@ -1817,14 +1817,14 @@ Modification History (most recent at the top)
     :COMMAND-ARGS (x0 y0 x1 y1)
     :EXTENTS-FORM
     (let ((delta #-mcl (ceiling *graphics-state-current-pen-width* 2)
-                 ;; this has to stay until the non centered thick line bug in 
+                 ;; this has to stay until the non centered thick line bug in
                  ;; the mac implementation gets fixed
                  #+mcl *graphics-state-current-pen-width*))
       (values (-& (min& x0 x1) delta) (-& (min& y0 y1) delta)
               (+& (max& x0 x1) delta) (+& (max& y0 y1) delta)))
     :BOXER-EXTENTS-FORM
     (let ((delta #-mcl (ceiling *graphics-state-current-pen-width* 2)
-                 ;; this has to stay until the non centered thick line bug in 
+                 ;; this has to stay until the non centered thick line bug in
                  ;; the mac implementation gets fixed
                  #+mcl *graphics-state-current-pen-width*))
       (values (- (min x0 x1) delta) (- (min y0 y1) delta)
@@ -1879,7 +1879,7 @@ Modification History (most recent at the top)
     ;; the theory here is to use pre-allocated stack space to prevent
     ;; floating point consing.  The lucid compiler is smart enough
     ;; to take advantage of this.
-    #+lucid	
+    #+lucid
     ((x0 (let ((temp 0.0))
 	   (declare (type boxer-float temp))
 	   (setq temp (float-times cos-scale x0))
@@ -2015,7 +2015,7 @@ Modification History (most recent at the top)
 		    (ensure-legal-window-coordinate (scale-y wy))))
     :SPRITE-COMMAND
     (cond ((and (= x last-x) (= y last-y))
-	   (list 'bu::type (make-box (list (list (coerce string 
+	   (list 'bu::type (make-box (list (list (coerce string
                                                          'simple-string))))))
 	  (t
 	   (setq last-x x last-y y)
@@ -2075,7 +2075,7 @@ Modification History (most recent at the top)
 			      (string-hei *graphics-state-current-font-no*))))))
     :SPRITE-COMMAND
     (cond ((and (= x last-x) (= y last-y))
-	   (list 'bu::ltype (make-box (list (list (coerce string 
+	   (list 'bu::ltype (make-box (list (list (coerce string
                                                          'simple-string))))))
 	  (t
 	   (setq last-x x last-y y)
@@ -2140,7 +2140,7 @@ Modification History (most recent at the top)
 				   *graphics-state-current-font-no*)))))))
     :SPRITE-COMMAND
     (cond ((and (= x last-x) (= y last-y))
-	   (list 'bu::rtype (make-box (list (list (coerce string 
+	   (list 'bu::rtype (make-box (list (list (coerce string
                                                          'simple-string))))))
 	  (t
 	   (setq last-x x last-y y)
@@ -2238,7 +2238,7 @@ Modification History (most recent at the top)
 (defstandard-graphics-handlers (dot 11)
     :COMMAND-ARGS (x y)
     :EXTENTS-FORM
-    (multiple-value-bind (half-size fudge) 
+    (multiple-value-bind (half-size fudge)
         (truncate *graphics-state-current-pen-width* 2)
       (values (-& x half-size) (-& y half-size)
 	      (+& x half-size fudge) (+& y half-size fudge)))
@@ -2325,7 +2325,7 @@ Modification History (most recent at the top)
         (cond ((or (>=& (*& thick 2) wid)
                    (>=& (*& thick 2) hei))
                ;; degenerate cases where walls touch
-               (%draw-rectangle wid hei xxx yyy 
+               (%draw-rectangle wid hei xxx yyy
                                 *graphics-state-current-alu* %drawing-array))
               (t
                ;; left wall
@@ -2435,7 +2435,7 @@ Modification History (most recent at the top)
 ;; the default copy functions only copy slots. For bitmaps, we need
 ;; a separate copy of the bitmap as well
 (defun copy-window-graphics-command-centered-bitmap (command)
-  (make-window-graphics-command-centered-bitmap 
+  (make-window-graphics-command-centered-bitmap
    (new-offscreen-copy (window-graphics-command-centered-bitmap-bitmap command))
    (window-graphics-command-centered-bitmap-x command)
    (window-graphics-command-centered-bitmap-y command)
@@ -2443,7 +2443,7 @@ Modification History (most recent at the top)
    (window-graphics-command-centered-bitmap-height command)))
 
 (defun copy-boxer-graphics-command-centered-bitmap (command)
-  (make-boxer-graphics-command-centered-bitmap 
+  (make-boxer-graphics-command-centered-bitmap
    (new-offscreen-copy (boxer-graphics-command-centered-bitmap-bitmap command))
    (boxer-graphics-command-centered-bitmap-x command)
    (boxer-graphics-command-centered-bitmap-y command)
@@ -2488,8 +2488,8 @@ Modification History (most recent at the top)
 			   (scale-x (-& x fix-radius)))
 			  (ensure-legal-window-coordinate
 			   (scale-y (-& y fix-radius)))
-			  diameter diameter 
-			  start-angle sweep-angle))      
+			  diameter diameter
+			  start-angle sweep-angle))
       )
     :TRANSLATION-ARGS
     ;; translation
@@ -2710,7 +2710,7 @@ Modification History (most recent at the top)
 			   (scale-x (-& x fix-radius)))
 			  (ensure-legal-window-coordinate
 			   (scale-y (-& y fix-radius)))
-			  diameter diameter 
+			  diameter diameter
 			  0 360))
       )
     :TRANSLATION-ARGS
@@ -2805,13 +2805,13 @@ Modification History (most recent at the top)
     ;; and then any sprites
     (let ((sprites (graphics-sheet-object-list gs)))
       (dolist (sprite sprites)
-        (when (turtle? sprite) 
+        (when (turtle? sprite)
           (let ((pgl (slot-value sprite 'private-gl)))
             (unless (graphics-command-list-hidden pgl) (playback-graphics-list-internal pgl)))))
       (dolist (sprite sprites)
         (unless (null (shown? sprite))
           (draw sprite))))))
-  
+
 
 (defmacro playback-graphics-list-internal (gl &rest args)
   `(with-graphics-state (,gl t)
@@ -2825,7 +2825,7 @@ Modification History (most recent at the top)
 				  (to-gl %graphics-list)
 				  (action ':append))
   (ecase action
-    (:append 
+    (:append
      ;; first, set the drawing parameters to the basic state
      (canonicalize-graphics-state to-gl)
      ;; now dub the contents
@@ -2849,12 +2849,12 @@ Modification History (most recent at the top)
 
 
 
-;;;; Boxtops 
+;;;; Boxtops
 ;; should probably go somewhere else
 ;; maybe a late display file after gdispl is loaded...
 
-;; moved to boxdef.lisp (for the DEFVAR) and 
-;(defvar *boxtop-text-font* #+mcl   (make-boxer-font '("Courier" 10 :bold)) 
+;; moved to boxdef.lisp (for the DEFVAR) and
+;(defvar *boxtop-text-font* #+mcl   (make-boxer-font '("Courier" 10 :bold))
 ;                           #+lwwin (%make-font-number-internal 0 10 :bold)
 ;                           #-(or mcl lwwin) 1)
 
@@ -2865,7 +2865,7 @@ Modification History (most recent at the top)
           ((eq bp :framed)    (graphics-boxtop-size boxtop t))
           ((graphics-sheet? boxtop) (graphics-boxtop-size boxtop))
           ((eq bp :xref)      (xref-boxtop-size boxtop))
-          ;; Note: we can find :FILE inside mac files.  It means to 
+          ;; Note: we can find :FILE inside mac files.  It means to
           ;; draw the boxer file icon
           ((eq bp :file)      (file-boxtop-size boxtop))
           (t (Error "Don't know how to handle boxtop ~A using ~S" boxtop bp)))))
@@ -2873,19 +2873,19 @@ Modification History (most recent at the top)
 
 (defun graphics-boxtop-size (gs &optional framed?)
   (if framed?
-    (values (+& (graphics-sheet-draw-wid gs) 2) 
+    (values (+& (graphics-sheet-draw-wid gs) 2)
             (+& (graphics-sheet-draw-hei gs) 2))
     (values (graphics-sheet-draw-wid gs) (graphics-sheet-draw-hei gs))))
 
 (defun text-boxtop-size (text &optional framed?)
-  (let ((textwid (if (listp text) 
+  (let ((textwid (if (listp text)
                      (reduce #'(lambda (a b)
                                  (max (string-wid *boxtop-text-font* a)
                                       (string-wid *boxtop-text-font* b)))
                              text)
                      (string-wid *boxtop-text-font* text)))
         (texthei (if (listp text)
-                     ;(reduce #'(lambda (a b) (+& (string-hei *boxtop-text-font*) 
+                     ;(reduce #'(lambda (a b) (+& (string-hei *boxtop-text-font*)
                      ;                            (string-hei *boxtop-text-font*)))
                      ;        text)
                      (*& (string-hei *boxtop-text-font*) (length text))
@@ -2893,7 +2893,7 @@ Modification History (most recent at the top)
     (if framed?
         (values (+ (ceiling textwid) 4) (+ texthei 4))
         (values (ceiling textwid) texthei))))
-                       
+
 (defvar *folder-graphic-width* 30)
 (defvar *folder-graphic-height* 20)
 (defvar *folder-graphic-tab-height* 5)
@@ -2914,7 +2914,7 @@ Modification History (most recent at the top)
   (let* ((pathname (xref-pathname xref))
          (name (unless (null pathname) (pathname-name pathname))))
     (values (max 32 (ceiling (string-wid *boxtop-text-font* name)))
-            (+ 32   (string-hei *boxtop-text-font*)))))    
+            (+ 32   (string-hei *boxtop-text-font*)))))
 
 (defvar *file-boxtop-margin* 3)
 
@@ -2926,10 +2926,10 @@ Modification History (most recent at the top)
 
 (defun draw-folder-graphic (x y)
   ;; the tab
-  (draw-line x (+ y *folder-graphic-tab-height*) 
+  (draw-line x (+ y *folder-graphic-tab-height*)
              (+ x *folder-graphic-tab-delta*) y alu-seta nil)
   (draw-line (+ x *folder-graphic-tab-delta*) y
-             (+ x *folder-graphic-tab-delta* *folder-graphic-tab-width*) y 
+             (+ x *folder-graphic-tab-delta* *folder-graphic-tab-width*) y
              alu-seta nil)
   (draw-line (+ x *folder-graphic-tab-delta* *folder-graphic-tab-width*) y
              (+ x (*& 2 *folder-graphic-tab-delta*) *folder-graphic-tab-width*)
@@ -2937,12 +2937,12 @@ Modification History (most recent at the top)
   ;; the main rectangle (l,t,r,b)
   (draw-rectangle alu-seta 1 *folder-graphic-height*
                   x (+ y *folder-graphic-tab-height*))
-  (draw-rectangle alu-seta *folder-graphic-width* 1 
+  (draw-rectangle alu-seta *folder-graphic-width* 1
                   x (+ y *folder-graphic-tab-height*))
-  (draw-rectangle alu-seta 1 *folder-graphic-height* 
+  (draw-rectangle alu-seta 1 *folder-graphic-height*
                   (+ x *folder-graphic-width* -1)
                   (+ y *folder-graphic-tab-height*))
-  (draw-rectangle alu-seta *folder-graphic-width* 1 
+  (draw-rectangle alu-seta *folder-graphic-width* 1
                   x (+ y *folder-graphic-tab-height* *folder-graphic-height*)))
 
 ;; Note that the clipping, and origin has already been setup inside the redisplay
@@ -2953,7 +2953,7 @@ Modification History (most recent at the top)
           ((eq bp :framed) (draw-graphics-boxtop boxtop x y wid hei t))
           ((graphics-sheet? boxtop) (draw-graphics-boxtop boxtop x y wid hei))
           ((eq bp :xref)   (draw-xref-boxtop boxtop x y wid))
-          ;; Note: we can find :FILE inside mac files.  It means to 
+          ;; Note: we can find :FILE inside mac files.  It means to
           ;; draw the boxer file icon
           ((eq bp :file)      (draw-file-boxtop boxtop x y wid))
           (t (Error "Don't know how to handle boxtop ~A using ~S" boxtop bp)))))
@@ -2965,12 +2965,12 @@ Modification History (most recent at the top)
   (draw-rectangle alu-seta 1 hei (+ x wid -1) y) ; right
   (draw-rectangle alu-seta wid 1 x (+ y hei -2)) ; bottom ( -2 ?)
   (draw-string alu-seta *boxtop-text-font* text (+ x 2) (+ y 2)))
-  
+
 (defun draw-folder-boxtop (text x y)
   (let* ((stringw (ceiling (String-wid *boxtop-text-font* text)))
          (wdiff (- stringw (folder-graphics-wid))))
     (draw-folder-graphic (if (plusp wdiff) (+ x (/ wdiff 2)) x) y)
-    (draw-string alu-seta *boxtop-text-font* text 
+    (draw-string alu-seta *boxtop-text-font* text
                  x (+ y (folder-graphics-hei)))))
 
 ;;
@@ -3008,7 +3008,7 @@ Modification History (most recent at the top)
          ;; then move the origin over before graphics
          (with-drawing-inside-region (1 1 (- wid 2) (- hei 2))
            (draw-graphics-boxtop-internal boxtop x y (- wid 2) (- hei 2))))))
-        
+
 (defun draw-graphics-boxtop-internal (boxtop x y wid hei)
   (unless (null (graphics-sheet-background boxtop))
     (with-pen-color ((graphics-sheet-background boxtop))
@@ -3031,7 +3031,7 @@ Modification History (most recent at the top)
            (%bitblt-to-screen alu-seta 32 32 ic 0 0 (+& x horiz-fudge) y))
           (t (draw-rectangle alu-seta 32 32 (+& x horiz-fudge) y)))
     ;; and now, the name
-    (draw-string alu-seta *boxtop-text-font* boxtop 
+    (draw-string alu-seta *boxtop-text-font* boxtop
                  (+& x *file-boxtop-name-margin*) (+& y 32))))
 
 #+(and mcl carbon-compat)
@@ -3124,4 +3124,4 @@ Modification History (most recent at the top)
 			   (centered-string x (+ y 40) "Alien")))))
 |#
 
-			   
+
