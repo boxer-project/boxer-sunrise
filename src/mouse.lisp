@@ -85,11 +85,11 @@ Modification History (most recent at top)
 	      (incf cha-no)
 	      (when (>= acc-wid (+ x (/ current-width 2)))
 	        (return (1-& cha-no))))))
-	;; either we find it inside the row or else 
+	;; either we find it inside the row or else
 	;; we assume it's beyond the last character in the row
 	(storage-vector-active-length screen-chas))))
 
-(defmethod find-bp-values ((self screen-row) superior-x superior-y 
+(defmethod find-bp-values ((self screen-row) superior-x superior-y
 			   &optional (window *boxer-pane*))
   (declare (ignore window))
   (with-slots (x-offset y-offset hei actual-obj screen-chas screen-box)
@@ -99,9 +99,9 @@ Modification History (most recent at top)
 	   (within-box (find-inf-screen-box-in-sup-screen-row
 			x y screen-chas)))
       (if (null within-box)
-	  (values actual-obj (if (> y hei) 
-                               ;; hack the below last row case, if below, 
-                               ;; return last cha-no 
+	  (values actual-obj (if (> y hei)
+                               ;; hack the below last row case, if below,
+                               ;; return last cha-no
                                (screen-chas-length self)
                                (get-cha-no x screen-chas (row-fds actual-obj)))
 		  screen-box superior-x superior-y)
@@ -110,7 +110,7 @@ Modification History (most recent at top)
 ;; this should either return a screen-row or else a symbol
 ;; we define bp-values handlers on these symbols
 (defmethod get-area-of-box ((self screen-box) x y)
-  "Returns the part of the box which (X, Y) is pointing to which can 
+  "Returns the part of the box which (X, Y) is pointing to which can
    be a SCREEN-ROW, or one of the following keywords :NAME, :UNDERNAME,
    :LAST or NIL if (X, Y) is not inside a portion of the box. "
   (with-slots (wid hei screen-rows) self
@@ -131,7 +131,7 @@ Modification History (most recent at top)
 	     ;; pointing to main area of box (where the screen rows are)
 	     (if (and (storage-vector? (slot-value self 'screen-rows))
 		      (not (zerop (storage-vector-active-length screen-rows))))
-	       (find-inf-screen-row-in-sup-screen-box 
+	       (find-inf-screen-row-in-sup-screen-box
                 (- x (slot-value self 'scroll-x-offset))
                 (- y (slot-value self 'scroll-y-offset)) screen-rows)
 	       ':inside))
@@ -139,7 +139,7 @@ Modification History (most recent at top)
 	         (if (eq border-area :try-again)
 		   ;; no reasonable border area was found so try
 		   ;; for screen-rows again
-		   (or (find-inf-screen-row-in-sup-screen-box 
+		   (or (find-inf-screen-row-in-sup-screen-box
                         (- x (slot-value self 'scroll-x-offset))
                         (- y (slot-value self 'scroll-y-offset))
                         screen-rows nil)
@@ -271,7 +271,7 @@ Modification History (most recent at top)
 (defun mouse-position-values (x y &optional (window *boxer-pane*))
   ;; returns a mouse-bp, local-x, local-y and, optionally, an area
   (declare (values mouse-bp local-x local-y))
-  (let ((screen-obj (outermost-screen-box window)))    
+  (let ((screen-obj (outermost-screen-box window)))
     (check-screen-obj-arg screen-obj)
     (with-font-map-bound (*boxer-pane*)
       (multiple-value-bind (mouse-row mouse-cha-no mouse-screen-box
@@ -287,19 +287,19 @@ Modification History (most recent at top)
 
 
 ;;; Tracking for mouse documentation
-;; should be simpler than normal tracking 
+;; should be simpler than normal tracking
 (defun mouse-documentation-area (x y &optional (window *boxer-pane*))
   (let ((screen-obj (outermost-screen-box window)))
     (check-screen-obj-arg screen-obj)
     (with-font-map-bound (window)
-      (mouse-doc-place screen-obj 
+      (mouse-doc-place screen-obj
                        (- x (screen-obj-x-offset screen-obj))
                        (- y (screen-obj-y-offset screen-obj))))))
 
 (defmethod mouse-doc-place ((self screen-box) x y)
   (let ((area (get-area-of-box self x y)))
     (cond ((screen-row? area)
-           (mouse-doc-place area 
+           (mouse-doc-place area
                             (- x (slot-value self 'scroll-x-offset))
                             (- y (slot-value self 'scroll-y-offset))))
           (t (values area self)))))
@@ -313,13 +313,13 @@ Modification History (most recent at top)
 			x y screen-chas)))
       (if (null within-box)
           (values :inside (screen-box self))
-          (mouse-doc-place within-box 
+          (mouse-doc-place within-box
                            (- x (screen-obj-x-offset within-box))
                            (- y (screen-obj-y-offset within-box)))))))
 
 (defmethod mouse-doc-place ((self graphics-screen-box) x y)
   (let ((raw-area (get-area-of-box self x y)))
-    (cond ((typep raw-area 'graphics-object) 
+    (cond ((typep raw-area 'graphics-object)
            (values :sprite (slot-value raw-area 'sprite-box)))
           ((fast-memq raw-area '(:inside :outside :scroll-bar))
            (values :graphics self))
@@ -329,7 +329,7 @@ Modification History (most recent at top)
 ;;; the X,Y coordinates passed to these procedures will be
 ;;; in LOCAL coordinates
 
-;; should this return the box if it is 
+;; should this return the box if it is
 ;; not obviously on any row ?
 (defmethod screen-obj-at ((self screen-box) x y &optional (recurse? t))
   (let* ((local-x (- x (slot-value self 'x-offset)))
@@ -396,17 +396,17 @@ Modification History (most recent at top)
 	   ;; must be a screen box
 	   (values (screen-row so) local-offset position)))))
 
-#| 
-;;; **** this is now hacked in boxwin-mcl by modifying the coords 
+#|
+;;; **** this is now hacked in boxwin-mcl by modifying the coords
 ;;; **** of the mouse blip
 ;; make sure the returned value will be a row
-;;; +++ I made these account for getting their coordinates in the window frame, parallel to 
+;;; +++ I made these account for getting their coordinates in the window frame, parallel to
 ;;; mouse-position-values, above.  This is necessary to make tracking work right on the Mac
 ;;; version.  I have no idea what effect it will have on the Sun version. -- mt
 #+mcl
 (defun mouse-position-screen-row-values (global-x global-y)
   (multiple-value-bind (so local-offset position)
-      (screen-obj-at (outermost-screen-box) 
+      (screen-obj-at (outermost-screen-box)
                      (- global-x (sheet-inside-left *boxer-pane*))
                      (- global-y (sheet-inside-top *boxer-pane*)))
     (cond ((screen-row? so)
@@ -472,8 +472,8 @@ Modification History (most recent at top)
 ;;; This shouldn't be consing up a BP every time ....
 ;(defmacro with-mouse-bp-bound ((x y window) &body body)
 ;  "This macro sets up an environment where MOUSE-BP is bound to a BP which
-;   indicates where in the actual structure the mouse is pointing to.  
-;   MOUSE-SCREEN-BOX is also bound to the screen box which the mouse is 
+;   indicates where in the actual structure the mouse is pointing to.
+;   MOUSE-SCREEN-BOX is also bound to the screen box which the mouse is
 ;   pointing to. "
 ;  `(let ((mouse-bp (make-bp ':fixed)))
 ;     (multiple-value-bind (mouse-row mouse-cha-no mouse-screen-box)
