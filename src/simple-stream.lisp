@@ -27,7 +27,7 @@
 
 
 
-  A simple Implementation of a Boxer stream for the chunker.  
+  A simple Implementation of a Boxer stream for the chunker.
 
   Each Boxer stream MUST support:
 
@@ -82,8 +82,8 @@ Modification History (most recent at top)
 (defmethod print-object ((self basic-boxer-stream) stream)
   (format stream "#< ~A (~A) >"
 	  (class-name (class-of self)) (stream-position self)))
-	  
-  
+
+
 
 
 
@@ -250,7 +250,7 @@ Modification History (most recent at top)
   ((array :initform nil :accessor test-stream-array)
    (ptr :initform 0 :accessor test-stream-ptr))
   )
-  
+
 
 (defun %make-simple-test-stream (array)
   (let ((st (make-instance 'simple-test-stream)))
