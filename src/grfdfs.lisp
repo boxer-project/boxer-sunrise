@@ -86,13 +86,13 @@ Modification History (most recent at top)
 
 (defvar %drawing-half-height 100.0)
 
-;; This is bound by the erase/redraw pass in With-Sprite-Primitive-Environment 
-;; to the active sprite.  The possibility of the moving sprite being a 
+;; This is bound by the erase/redraw pass in With-Sprite-Primitive-Environment
+;; to the active sprite.  The possibility of the moving sprite being a
 ;; subsprite make the old method (checking for EQ inside of the erase all
 ;; other sprites loop) unworkable.  The eq check now has to be made inside
 ;; of the erase method (since it can be recursively invoked by superior
 ;; sprites)
-;; 
+;;
 
 (defvar *currently-moving-sprite* nil)
 
@@ -104,8 +104,8 @@ Modification History (most recent at top)
 
 (defmacro no-graphics? () '(eq %graphics-box :no-graphics))
 
-;;; if drawing with more than one sprite becomes common, it may be worthwhile 
-;;; to optimize the macrolet'd with-sprites-hidden to only hide all the 
+;;; if drawing with more than one sprite becomes common, it may be worthwhile
+;;; to optimize the macrolet'd with-sprites-hidden to only hide all the
 ;;; sprites once per graphics-box instead of once per turtle...
 
 (defun graphics-sheet-from-box (box)
@@ -115,7 +115,7 @@ Modification History (most recent at top)
 
 (defmacro with-graphics-vars-bound ((to-box &optional (gr-sheet (gensym)))
 				    &body body)
-  "This macro sets up an environment where commonly used 
+  "This macro sets up an environment where commonly used
 parameters of the graphics box are bound. "
   `(let ((,gr-sheet (graphics-sheet-from-box ,to-box))
 	 ;; sometimes it is convenient to be able to access the box
@@ -142,7 +142,7 @@ parameters of the graphics box are bound. "
                     ;; mostly a stub, we might want to use the command-can-draw?
                     ;; arg in the future as a hint to propagate MODIFIED info
                     `(progn
-                       (when ,draw-p (queue-modified-graphics-box 
+                       (when ,draw-p (queue-modified-graphics-box
                                       (graphics-sheet-superior-box ,',gr-sheet)))
                        (progn . ,body))))
 ;		    (declare (ignore draw-p))
@@ -155,7 +155,7 @@ parameters of the graphics box are bound. "
 ;		       ;; All the turtles' save-unders
 ;		       ;; have to updated since the moving turtle may
 ;		       ;; have drawn on the portion of the screen
-;		       ;; where they are. 
+;		       ;; where they are.
 ;		       (dolist (ttl (graphics-sheet-object-list ,',gr-sheet))
 ;			 (save-under-turtle ttl))
 ;		       (dolist (ttl (graphics-sheet-object-list ,',gr-sheet))
@@ -205,7 +205,7 @@ parameters of the graphics box are bound. "
 ;;; this should use the pos-cache....
 (defmacro with-turtle-slate-origins (screen-box &body body)
   ;; this macro sets x and y coordinates of top left of turtle array
-  ;; not that the a SCREEN-SHEET may NOT have been allocated if this has 
+  ;; not that the a SCREEN-SHEET may NOT have been allocated if this has
   ;; been called BEFORE Redisplay has had a chance to run
   `(let* ((screen-sheet (when ,screen-box (screen-sheet ,screen-box)))
 	  (gs (graphics-screen-sheet-actual-obj screen-sheet)))
@@ -318,7 +318,7 @@ parameters of the graphics box are bound. "
 
 ;;; This is like the With-Graphics-Screen-Parameters Except that
 ;;; the body is only executed once (or not at all) on the "most
-;;; acceptable screen-box". "Most appropriate" is defined as 
+;;; acceptable screen-box". "Most appropriate" is defined as
 ;;; not clipped or if they are ALL clipped, the largest.
 
 (defmacro with-graphics-screen-parameters-once (&body body)
@@ -384,7 +384,7 @@ parameters of the graphics box are bound. "
     #+gl
     (setf (graphics-sheet-draw-mode new-gs) ':window)
     new-gs))
-							  
+
 
 (defun make-graphics-sheet-with-bitmap (wid hei &optional box)
   (%make-graphics-sheet-with-bitmap wid hei
@@ -394,11 +394,11 @@ parameters of the graphics box are bound. "
 (defun make-graphics-screen-sheet (actual-obj
 				   &optional (x-offset 0.) (y-offset 0.))
   (%make-g-screen-sheet actual-obj x-offset y-offset))
- 
+
 (defun graphics-screen-sheet-offsets (graphics-screen-sheet)
   (values (graphics-screen-sheet-x-offset graphics-screen-sheet)
 	  (graphics-screen-sheet-y-offset graphics-screen-sheet)))
-  
+
 (defun set-graphics-screen-sheet-x-offset (graphics-screen-sheet new-x-offset)
   (setf (graphics-screen-sheet-x-offset graphics-screen-sheet) new-x-offset))
 
@@ -457,8 +457,8 @@ parameters of the graphics box are bound. "
 ;; returns a list of all the graphics views of the graphics-box
 
 ;;; desperately needs to cache but have to figure out a good time to flush
-;;; the cache (modified won't work since graphics commands need to call 
-;;; modified on the graphics-box) 
+;;; the cache (modified won't work since graphics commands need to call
+;;; modified on the graphics-box)
 ;(defun get-visible-screen-objs (graphics-box)
 ;  (or (getprop graphics-box 'cached-vis-objs)
 ;      (let ((sbs nil))
@@ -474,17 +474,17 @@ parameters of the graphics box are bound. "
 ;	(putprop graphics-box sbs 'cached-vis-objs)
 ;	sbs)))
 
-;; it will be OK to decache on modified now that I am going to implement 
+;; it will be OK to decache on modified now that I am going to implement
 ;; the queueing implementation for modified
 
 ;;
 ;; 6/30/98 decaching on modified loses when a screen box is obscured by
 ;; shrinking or graphics toggling a superior box.  No way to flush possible
 ;; visible objects without a map over all inferiors.
-;; For now, modify the caching scheme to only persist for the suration of an 
+;; For now, modify the caching scheme to only persist for the suration of an
 ;; evaluation.  Even this will lose when people start programmatically shrinking
-;; or toggling superiors, perhaps prims which affect the state of the screen 
-;; should also flush the vis-obj caches.  
+;; or toggling superiors, perhaps prims which affect the state of the screen
+;; should also flush the vis-obj caches.
 (defun decache-visible-screen-objs (box)
   (unless (null (getprop box 'cached-vis-objs))
     (putprop box nil 'cached-vis-objs)))
@@ -528,7 +528,7 @@ parameters of the graphics box are bound. "
 	;; now erase stuff on the screen...
 	(dolist (screen-box (get-visible-screen-objs  self))
 	  (unless (eq ':shrunk (display-style screen-box))
-	    (drawing-on-turtle-slate screen-box 
+	    (drawing-on-turtle-slate screen-box
                #-gl
 	       (cond ((or (null bg) bitmap-p)
 		      (erase-rectangle gswid gshei 0 0))
@@ -681,7 +681,7 @@ parameters of the graphics box are bound. "
 	       (draw-wrap-line x-intercept (1- %drawing-height)
 			       to-x to-y alu)))
 	(cond ((point-in-array? from-x from-y)
-	       ;; check for the simple cases instead of falling 
+	       ;; check for the simple cases instead of falling
 	       ;; to optimize the common case
 	       (cond ((point-in-array? to-x to-y)
 		      ;; the simple, simple case
@@ -788,7 +788,7 @@ parameters of the graphics box are bound. "
       (declare (inline wrap-y-coord-top wrap-y-coord-bottom
 		       wrap-x-coord-right wrap-x-coord-left
 		       beyond-top? beyond-bottom? beyond-right? beyond-left?))
-      (drawing-body 
+      (drawing-body
         (flet ((line-right-then-continue (y-intercept)
 	         (%draw-line (scale-x from-x) (scale-y from-y)
 			     (scale-x (1-& %drawing-width))
@@ -836,7 +836,7 @@ parameters of the graphics box are bound. "
 	         (draw-wrap-line x-intercept (1-& %drawing-height)
 			         to-x to-y alu)))
 	  (cond ((point-in-array? from-x from-y)
-	         ;; check for the simple cases instead of falling 
+	         ;; check for the simple cases instead of falling
 	         ;; to optimize the common case
 	         (cond ((point-in-array? to-x to-y)
 		        ;; the simple, simple case
@@ -955,7 +955,7 @@ parameters of the graphics box are bound. "
   (cond ((fast-memq thing '(:up :erase :down :xor))
 	 (warn "~%The ALU, ~A, is not a valid alu, use symbols in the BOXER package" thing)
 	 t)
-	(t 
+	(t
 	 (fast-memq thing *allowed-alus*))))
 
 
@@ -990,7 +990,7 @@ parameters of the graphics box are bound. "
                                             (-& %drawing-height boty) sub
                                             rigx boty lefx topy))
                       (save-horiz-wrap (lefx rigx)
-                        (let* ((cminy (max& miny 0)) 
+                        (let* ((cminy (max& miny 0))
                                (cmaxy (min& maxy %drawing-height))
                                (hei (-& cmaxy cminy)))
                           (bitblt-from-screen alu-seta lefx hei sub 0 cminy 0 0)
@@ -1013,12 +1013,12 @@ parameters of the graphics box are bound. "
                  ;; top-left, top-right, top
                  ;; bottom-left, bottom-right, bottom
                  ;; left, then right
-                 ;; also remember that some sprites can be larger than 
+                 ;; also remember that some sprites can be larger than
                  ;; the graphics box itself
                  (cond ((eq mode :clip)
                         (unless (or (<=& maxx 0) (>=& minx %drawing-width)
                                     (<=& maxy 0) (>=& miny %drawing-height))
-                          ;; unless completely off the graphics box 
+                          ;; unless completely off the graphics box
                           ;; just draw what's visible
                           (let* ((cminx (max& minx 0)) (cminy (max& miny 0))
                                  (cmaxx (min& maxx %drawing-width))
@@ -1046,7 +1046,7 @@ parameters of the graphics box are bound. "
                                  (save-vert-wrap topy boty)))))
                        ((>& maxy %drawing-height)
                         ;; bottom wrap, bind useful vars and check for corners
-                        (let ((topy (min& (-& maxy %drawing-height) 
+                        (let ((topy (min& (-& maxy %drawing-height)
                                           %drawing-height))
                               (boty (max& miny 0)))
                           (cond ((minusp& minx)
@@ -1072,13 +1072,13 @@ parameters of the graphics box are bound. "
                                                %drawing-width)
                                          (max& minx 0)))
                        (t ;; vanilla case
-                        (bitblt-from-screen alu-seta 
-                                            (-& (min& maxx %drawing-width) 
+                        (bitblt-from-screen alu-seta
+                                            (-& (min& maxx %drawing-width)
                                                 (max& minx 0))
                                             (-& (min& maxy %drawing-height)
                                                 (max& miny 0))
                                             sub
-                                            (max& minx 0) (max& miny 0) 
+                                            (max& minx 0) (max& miny 0)
                                             0 0))))))))))
 
 (defun restore-under-turtle (turtle)
@@ -1104,7 +1104,7 @@ parameters of the graphics box are bound. "
                                             (-& %drawing-height boty) sub
                                             lefx topy rigx boty))
                       (restore-horiz-wrap (lefx rigx)
-                        (let* ((cminy (max& miny 0)) 
+                        (let* ((cminy (max& miny 0))
                                (cmaxy (min& maxy %drawing-height))
                                (hei (-& cmaxy cminy)))
                           (bitblt-to-screen alu-seta lefx hei sub 0 0 0 cminy)
@@ -1127,12 +1127,12 @@ parameters of the graphics box are bound. "
                  ;; top-left, top-right, top
                  ;; bottom-left, bottom-right, bottom
                  ;; left, then right
-                 ;; also remember that some sprites can be larger than 
+                 ;; also remember that some sprites can be larger than
                  ;; the graphics box itself
                  (cond ((eq mode :clip)
                         (unless (or (<=& maxx 0) (>=& minx %drawing-width)
                                     (<=& maxy 0) (>=& miny %drawing-height))
-                          ;; unless completely off the graphics box 
+                          ;; unless completely off the graphics box
                           ;; just draw what's visible
                           (let* ((cminx (max& minx 0)) (cminy (max& miny 0))
                                  (cmaxx (min& maxx %drawing-width))
@@ -1160,7 +1160,7 @@ parameters of the graphics box are bound. "
                                  (restore-vert-wrap topy boty)))))
                        ((>& maxy %drawing-height)
                         ;; bottom wrap, bind useful vars and check for corners
-                        (let ((topy (min& (-& maxy %drawing-height) 
+                        (let ((topy (min& (-& maxy %drawing-height)
                                           %drawing-height))
                               (boty (max& miny 0)))
                           (cond ((minusp& minx)
@@ -1186,8 +1186,8 @@ parameters of the graphics box are bound. "
                                                %drawing-width)
                                          (max& minx 0)))
                        (t ;; vanilla case
-                        (bitblt-to-screen alu-seta 
-                                            (-& (min& maxx %drawing-width) 
+                        (bitblt-to-screen alu-seta
+                                            (-& (min& maxx %drawing-width)
                                                 (max& minx 0))
                                             (-& (min& maxy %drawing-height)
                                                 (max& miny 0))
@@ -1199,8 +1199,8 @@ parameters of the graphics box are bound. "
 
 ;;;; Sprite Access
 
-;;; this is the sprite scoping function.  Basically, we walk up the static 
-;;; hierarchy looking for either a sprite box or a sprite-cache (see how 
+;;; this is the sprite scoping function.  Basically, we walk up the static
+;;; hierarchy looking for either a sprite box or a sprite-cache (see how
 ;;; TALK-TO works to understand sprite caches)
 
 ;; this is dependent on the evaluator internals
@@ -1210,7 +1210,7 @@ parameters of the graphics box are bound. "
 ;; defined in vars.lisp
 ;; (defvar *current-sprite* nil)
 
-;;; No more WHO mechanism. 
+;;; No more WHO mechanism.
 (defun get-sprites ()
   (or *current-sprite*
       (do ((box (static-root) (when (box? box) (superior-box box))))
@@ -1235,7 +1235,7 @@ parameters of the graphics box are bound. "
 ;  (putprop box sprites 'active-sprites))
 
 ;;; should cache the sprite info in the WHO box to avoid having to
-;;; walk throught the the box everytime.  Need to figure out a 
+;;; walk throught the the box everytime.  Need to figure out a
 ;;; fast way to flush the cache (that doesn't slow down ALL boxes)
 
 #| no longer used since WHO mechanism got flushed
@@ -1283,7 +1283,7 @@ parameters of the graphics box are bound. "
 	  ((null gb) ':no-graphics)
 	  (t (error "Can't get a Graphics Box out of ~S" sb)))))
 
-;;; this is used by prims that implicitly apply to either sprites or 
+;;; this is used by prims that implicitly apply to either sprites or
 ;;; graphics boxes such as CS or GRAPHICS-MODE
 (defun get-relevant-graphics-box ()
   (if (not (null *current-sprite*))
@@ -1298,10 +1298,10 @@ parameters of the graphics box are bound. "
 	      (t (let ((as (get-active-sprite box)))
 		   (unless (null as)
 		     (return (values (get-graphics-box-from-sprite-box as) as)))))))))
-	
 
-;;; ALL TURTLE functions are assumed to be called in an environment where the 
-;;; various turtle state variables as well as GRAPHICS vars (like BIT-ARRAY) 
+
+;;; ALL TURTLE functions are assumed to be called in an environment where the
+;;; various turtle state variables as well as GRAPHICS vars (like BIT-ARRAY)
 ;;; are BOUND. This is what the macro WITH-GRAPHICS-VARS-BOUND is used for.
 ;;; The top level interface is DEFSPRITE-FUNCTION which dispatches the sprite
 ;;; function to the appropriate sprite(s).  The body of the function can assume
@@ -1320,7 +1320,7 @@ parameters of the graphics box are bound. "
      (with-sprite-primitive-environment (,sprite-var ,turtle-var t)
 	. ,body)))
 
-;; used to avoid redundant erases and draws of subsprites 
+;; used to avoid redundant erases and draws of subsprites
 ;; which happen to be the current active sprite
 (defvar *current-active-sprite* nil)
 
@@ -1328,9 +1328,9 @@ parameters of the graphics box are bound. "
 
 (defvar *prepared-graphics-box* nil)
 
-;;; Cocoa drawing: sprites dont draw onto the screen, they just update the graphics 
-;;; list and periodically, the GB box space, on the screen is cleared, the 
-;;; graphics list is blasted out and then the sprites are redrawn (any existing 
+;;; Cocoa drawing: sprites dont draw onto the screen, they just update the graphics
+;;; list and periodically, the GB box space, on the screen is cleared, the
+;;; graphics list is blasted out and then the sprites are redrawn (any existing
 ;;; background can also be draw first)
 (defmacro with-sprite-primitive-environment ((sprite-var turtle-var
 							 &optional
@@ -1366,7 +1366,7 @@ parameters of the graphics box are bound. "
 (defmacro defsprite-update-function (name-descriptor arglist
 				     (sprite-var turtle-var slot-name)
 				     &body body)
-  `(progn     
+  `(progn
      (when (and (symbolp ',name-descriptor)
 		(not (fast-memq ',name-descriptor *sprite-update-functions*)))
        (push ',name-descriptor *sprite-update-functions*))
@@ -1395,7 +1395,7 @@ parameters of the graphics box are bound. "
 ;;; to be done here is to put the boxes inthe right place
 ;;; At this time, that means the x-position, y-position and
 ;;; heading boxes are in the box proper and all the other slots
-;;; live in the closet of the sprite-box.  
+;;; live in the closet of the sprite-box.
 
 (defvar *initially-visible-sprite-instance-slots*
 	'(x-position y-position heading))
@@ -1410,10 +1410,10 @@ parameters of the graphics box are bound. "
 
 
 (defvar %mouse-usurped nil "Used in move-to to prevent changing boxes")
-(defvar %new-shape nil "The new shape vectors are collected here when doing a set-shape") 
+(defvar %new-shape nil "The new shape vectors are collected here when doing a set-shape")
 
 ;; defined in vars.lisp
 ;; (defvar %learning-shape? nil "This is t when doing a set-shape")
-;; (defvar %turtle-state nil 
+;; (defvar %turtle-state nil
 ;;         "where to save a turtle's position, pen, and heading. ")
 
