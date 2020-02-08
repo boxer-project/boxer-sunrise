@@ -27,7 +27,7 @@
                                          +-------+
 
 
-	  This file contains the interface between Boxer Editor Structure and 
+	  This file contains the interface between Boxer Editor Structure and
 	  the Virtual copy mechanism.  The file contains the code for
 	  converting Editor structure to Virtual Copy Structure (referred to
 	  as the CHUNKER).
@@ -60,38 +60,38 @@ Modification History (most recent at top)
 
 ;;;; TO DO:
 
-;;; The 2 things that we can bum for speed in this file are 
+;;; The 2 things that we can bum for speed in this file are
 ;;; READ-FORMATTING-INFO and CHUNK. The best thing to do for
 ;;; READ-FORMATTING-INFO is to get rid of all the type conversions we need to
 ;;; do in order to keep the Lisp READER happy.  The better solution is to fix
-;;; CHUNK to call READ directly but we need to teach the READER about 
+;;; CHUNK to call READ directly but we need to teach the READER about
 ;;; SIMPLE-STREAMs which is going to be quite implementation specific
 
 ;;;; The   CHUNKER
 
-;; The Chunker is responsible for converting Boxer Editor Structure into the 
-;; Structures used by the Virtual Copy Mechanism.  The Chunker should do all 
+;; The Chunker is responsible for converting Boxer Editor Structure into the
+;; Structures used by the Virtual Copy Mechanism.  The Chunker should do all
 ;; of the following:
-;;  1) Characters need to be chunked into Objects which are meaningful to 
+;;  1) Characters need to be chunked into Objects which are meaningful to
 ;;     the Evaluator and the Data Manipulators
-;;  2) Formatting information such as CaSE and   Spacing needs to be preserved 
+;;  2) Formatting information such as CaSE and   Spacing needs to be preserved
 ;;  3) Additional Information used by either the Evaluator or the Data
 ;;     Manipulators alone, needs to be associated with the Objects.  These
 ;;     are things like !'s, @'s and LABEL's
 ;;  4) Build up several Types of Data Structure in Parallel (??)
-;;  5) Ideally, the internal representation should closely follow the 
+;;  5) Ideally, the internal representation should closely follow the
 ;;     external representation for efficiency reasons
 ;;
-;; The difference between the BOXER CHUNKER, and a Lisp READER, is that the 
-;; Lisp READER is oriented towards providing objects for the evaluator (that 
+;; The difference between the BOXER CHUNKER, and a Lisp READER, is that the
+;; Lisp READER is oriented towards providing objects for the evaluator (that
 ;; is, program structure) and suppressing all other details (such as
-;; formatting) while the BOXER CHUNKER is oriented towards providing objects 
+;; formatting) while the BOXER CHUNKER is oriented towards providing objects
 ;; for the Data Manipulators AS WELL AS the evaluator (that is, data structure
 ;; AND program structure).  In particular, the CHUNKER has to be tolerant of
 ;; all sorts of syntactic horors because we are chunking arbitrary
-;; datastructure which is NOT guaranteed to have any semantics and therefore 
+;; datastructure which is NOT guaranteed to have any semantics and therefore
 ;; is not constrained to be syntactically correct.
-;; We are NOT using the Lisp READER because it is too difficult to get it to 
+;; We are NOT using the Lisp READER because it is too difficult to get it to
 ;; preserve the formatting information correctly, it puts too much of a
 ;; constraint on the format of the objects, it doesn't allow us to build up
 ;; several different structures in parallel, it has too many "LISPy" things
@@ -205,7 +205,7 @@ Modification History (most recent at top)
     (cond ((not (null pretty-name))
 	   (car pretty-name))
 	  (t raw-symbol))))
-    
+
 ;; AppGen lossage with complex form of defsetf...
 
 #+mcl
@@ -245,7 +245,7 @@ Modification History (most recent at top)
 		  (if (null defined-handler)
 		      ,ns
 		      defined-handler))))))
-  
+
 
 (defun set-chunking-syntax-from-char (for-char from-char
 				       &optional
@@ -263,7 +263,7 @@ Oldness and Oldossity.....
 
 
 ;;;; Types of Characters
-;;  The CHUNKER understands several different types of characters.  These 
+;;  The CHUNKER understands several different types of characters.  These
 ;;  characters are contained in mutually exclusive lists in a
 ;;  CHARACTER-TYPE-TABLE organized by the different syntax of each character
 ;;  type.  A WITH-CHARACTER-TYPES is a Macro which binds the value
@@ -280,28 +280,28 @@ Oldness and Oldossity.....
 ;;  Constituent-     symbols and numbers are made of these
 ;;  Comment-         if we have fat chars AND we select a FONT to be a comment
 ;;                   font, then characters of that font will be of this type
-;;  Start Comment-   like ";" or font change characters for the comment font 
+;;  Start Comment-   like ";" or font change characters for the comment font
 ;;                   in an editor implementation that doesn't use fat chars
-;;  End Comment-     change font character when the previous font is the 
+;;  End Comment-     change font character when the previous font is the
 ;;                   comment font (non fat char implementation only)
 ;;  Whitespace-      Spaces and anything else that doesn't have a meaning
 ;;  Evaluator Macro- characters that are treated specially by the
 ;;                   evaluator (like unbox)
 ;;  Label Marker-    character used to delineate labels
-;;  Box Specific-    depending on how we implement our streams, this can be 
+;;  Box Specific-    depending on how we implement our streams, this can be
 ;;                   either a box or characters like *STRT-BOX-CHARACTER*
-;;  Macro-           A user defined handler.  We pass it the stream and let it 
+;;  Macro-           A user defined handler.  We pass it the stream and let it
 ;;                   do what it wants. Character macros are supposed to side
 ;;                   effect the STREAM and the value of CURRENT-STRING before
 ;;                   returning.  See the COMMENT-HANDLER macro for an example
 ;;                   Character Macros assume an arglist of:
-;;                  (STREAM STUFF-RFP? LFP PNAME CHUNK RFP LABEL EVAL-PROPERTIES). 
+;;                  (STREAM STUFF-RFP? LFP PNAME CHUNK RFP LABEL EVAL-PROPERTIES).
 ;;                   The actual macro character is left in the stream.
 ;;
-;;  The tables should probably support font/style attributes as well but for 
+;;  The tables should probably support font/style attributes as well but for
 ;;  now, we handle them with global variables
 ;;
-;; NOTE: we really ought to make the syntax types be small fixnums and use 
+;; NOTE: we really ought to make the syntax types be small fixnums and use
 ;; them as an index into a table of handlers for CHUNK to use (instead of
 ;; the COND which it is using now) but I need to decide on a standard calling
 ;; sequence for handlers first...
@@ -342,7 +342,7 @@ Oldness and Oldossity.....
   `(progn
      (unless (member ,ns
 		     (character-type-table-legal-character-types
-		      ,chunking-table))       
+		      ,chunking-table))
        (warn "Setting the syntax for ~C to ~A" ,char ,ns))
      (setf (aref (character-type-table-syntax ,chunking-table)
 		 (char-code ,char)) ,ns)))
@@ -399,9 +399,9 @@ Oldness and Oldossity.....
 
 
 ;;;; READER Stuff
-;;  We use the Lisp Reader to chunk symbols and numbers for us (and nothing 
-;;  else) Everything is Alphabetic and Numbers are interpreted as being in 
-;;  Decimal. We leave the syntax for .'s alone to be able to handle 
+;;  We use the Lisp Reader to chunk symbols and numbers for us (and nothing
+;;  else) Everything is Alphabetic and Numbers are interpreted as being in
+;;  Decimal. We leave the syntax for .'s alone to be able to handle
 ;;  floating point
 
 ;;; Make Everything Alphabetic
@@ -436,7 +436,7 @@ Oldness and Oldossity.....
   (let ((*read-base* 10.)
 	(*readtable* *chunker-readtable*)
 	(*package* (find-package :bu)))
-    (read-chunk-string 
+    (read-chunk-string
      #-symbolics
      (let* ((stop (fi-stop fi))
 	    (start (fi-start fi))
@@ -483,8 +483,8 @@ Oldness and Oldossity.....
 
 
 
-;;;; Top Level Chunking 
-;;;  The main entry point into the chunker is CHUNK-ROW.  
+;;;; Top Level Chunking
+;;;  The main entry point into the chunker is CHUNK-ROW.
 
 (defun chunk-row (row &optional pointers-only?)
   (declare (values pointers eval-objects))
@@ -499,17 +499,17 @@ Oldness and Oldossity.....
     (declare (ignore chunks))
     evalchunks))
 
-;;;  CHUNK-ROW relies directly upon CHUNK-TOP-LEVEL which wants a simple 
+;;;  CHUNK-ROW relies directly upon CHUNK-TOP-LEVEL which wants a simple
 ;;   stream as an arg.  At the moment, the simple row stream is based on the
 ;;   full fledged streams defined in STREAMS.  They should probably have
 ;;   their own representation....
 ;;
-;;   Calling this function on a stream returns two values, a list representing 
+;;   Calling this function on a stream returns two values, a list representing
 ;;   the chunked Data structure and a list that the EVALUATOR can use
-;;   Its main job is to coordinate 
-;;   chunks since they are supposed to share adjacent formatting 
+;;   Its main job is to coordinate
+;;   chunks since they are supposed to share adjacent formatting
 ;;   properties (i.e. one chunk's ceiling is another chunk's floor)
-;;   For now, adjacent chunk's common formatting property will be EQ.  This 
+;;   For now, adjacent chunk's common formatting property will be EQ.  This
 ;;   may not be the right thing but we are doing enough Consing as it is...
 ;;
 
@@ -572,8 +572,8 @@ Oldness and Oldossity.....
 ;;;
 ;;; The chunk string is what gets passed to INTERN (or perhaps BOXER-INTERN
 ;;; if we have our own symbols).  We need to be careful with the different
-;;; implementations of INTERN (including our own).  The string we are passing 
-;;; Must Be Copied.  Lucid 3.0 and ExCl 3.0 both have this behaviour 
+;;; implementations of INTERN (including our own).  The string we are passing
+;;; Must Be Copied.  Lucid 3.0 and ExCl 3.0 both have this behaviour
 ;;; inside INTERN.
 ;;;
 (defvar *default-chunk-string-length* 16.)
@@ -634,7 +634,7 @@ Oldness and Oldossity.....
 		      (digit-char-p (aref string (+& start 2)))))))))
 
 ;; this should be smarter about actually returning reasonable values for
-;; common cases like 223e2323 +> 
+;; common cases like 223e2323 +>
 
 #+lcl3.0
 (defmacro ignoring-number-read-errors (&body body)
@@ -645,36 +645,36 @@ Oldness and Oldossity.....
 #+ccl
 (defmacro ignoring-number-read-errors (&body body)
   `(catch 'chunk-read-error
-     (ccl::handler-bind ((ccl::error 
-                          #'(lambda (c) 
+     (ccl::handler-bind ((ccl::error
+                          #'(lambda (c)
                               (let ((s (if (typep c 'ccl::simple-error)
                                          (slot-value c 'ccl::format-string)
                                          "")))
                                 (cond ((string= s "Exponent overflow.")
                                        ;; not quite right, could be negative...
-                                       (throw 'chunk-read-error 
+                                       (throw 'chunk-read-error
                                               most-positive-long-float))
                                       ((String= s "Exponent underflow.")
                                        (throw 'chunk-read-error 0))
-                                      (t (throw 'chunk-read-error 
+                                      (t (throw 'chunk-read-error
                                                 'chunking-error-value)))))))
        . ,body)))
 
 #+lispworks
 (defmacro ignoring-number-read-errors (&body body)
   `(catch 'chunk-read-error
-     (handler-bind ((error 
-                          #'(lambda (c) 
+     (handler-bind ((error
+                          #'(lambda (c)
                               (let ((s (if (typep c 'simple-error)
                                          (slot-value c 'hcl::format-string)
                                          "")))
                                 (cond ((string= s "Exponent overflow.")
                                        ;; not quite right, could be negative...
-                                       (throw 'chunk-read-error 
+                                       (throw 'chunk-read-error
                                               most-positive-long-float))
                                       ((String= s "Exponent underflow.")
                                        (throw 'chunk-read-error 0))
-                                      (t (throw 'chunk-read-error 
+                                      (t (throw 'chunk-read-error
                                                 'chunking-error-value)))))))
        . ,body)))
 
@@ -759,7 +759,7 @@ Oldness and Oldossity.....
 		    (t
 		     (error "Unchunkable thing, ~A is not a character or a box"
 			    current-char))))))))))
-      
+
 
 
 
@@ -826,7 +826,7 @@ Oldness and Oldossity.....
 		      (stream-position stream)))
 		 label eval-properties nil t))
 	((null stuff-rfp?)
-	 ;; and now the simple cases, either the char goes 
+	 ;; and now the simple cases, either the char goes
 	 ;; into the RFP or the LFP
 	 (values (update-fp lfp stream) pname chunk
 		 rfp label eval-properties nil stuff-rfp?))
@@ -858,7 +858,7 @@ Oldness and Oldossity.....
 		(throw 'end-of-chunk
 		  (values lfp pname pname rfp label eval-properties)))
 	       (t
-		;; pname must have eval-properties or labels 
+		;; pname must have eval-properties or labels
 		;; in it so make the chunk from the box
 		(let ((box (simple-read-char stream)))
 		  (values lfp box box rfp label eval-properties nil t)))))
@@ -876,18 +876,18 @@ Oldness and Oldossity.....
 ;;  standard comment handler is an example of a Terminating macro.  The label
 ;;  character macro is an example of a non-terminating type of macro.  There
 ;;  is more of the chunk to accumalate AFTER the macro is finished with its
-;;  processing.  The eval property macros (UNBOX and EVAL) are somewhere in 
+;;  processing.  The eval property macros (UNBOX and EVAL) are somewhere in
 ;;  between since they either signal the end of a chunk (without appending
 ;;  the char) or else they add themselves to the LFP and return depending upon
 ;;  the value of STUFF-RFP?.  These macros are called with an arglist of:
 ;;  (STREAM STUFF-RFP? LFP PNAME CHUNK RFP LABEL EVAL-PROPERTIES) and with
-;;  the macro char still in the stream.  
-;;  There are 2 ways to return from a character macro call, the initial call 
+;;  the macro char still in the stream.
+;;  There are 2 ways to return from a character macro call, the initial call
 ;;  is from within a MULTIPLE-VALUE-SETQ which is waiting to
-;;  SETQ (LFP PNAME CHUNK RFP LABEL EVAL-PROPERTIES TERMINATE? STUFF-RFP?).  
+;;  SETQ (LFP PNAME CHUNK RFP LABEL EVAL-PROPERTIES TERMINATE? STUFF-RFP?).
 ;;  The other method used primarily for EOF handling or terminating Macros
 ;;  is to (THROW 'END-OF-CHUNK
-;;               (VALUES LFP PNAME CHUNK RFP LABEL EVAL-PROPERTIES)) 
+;;               (VALUES LFP PNAME CHUNK RFP LABEL EVAL-PROPERTIES))
 
 ;; This comment handler is for font-encoded
 ;; characters (and NOT for font change chars)
@@ -934,7 +934,7 @@ Oldness and Oldossity.....
 		   rfp label eval-properties)))))
 
 ;;; Eval Properties
-;; there are 2 possibilities for handling these props, either there is 
+;; there are 2 possibilities for handling these props, either there is
 ;; whitespace after the character or else there isn't.  If there is
 ;; whitespace, then the character needs to be chunked by itself.  If there
 ;; is a constituent character (or box) after the macro character, then the
@@ -946,7 +946,7 @@ Oldness and Oldossity.....
 				     lfp pname chunk rfp
 				     label eval-properties)
   (cond ((not (null stuff-rfp?))
-	 ;; if we are in the process of making the RFP, then we should 
+	 ;; if we are in the process of making the RFP, then we should
 	 ;; terminate the chunk leaving the macro char for the next chunk
 	 (throw 'END-OF-CHUNK
 	   (values lfp pname (or chunk
@@ -969,7 +969,7 @@ Oldness and Oldossity.....
 				     (read-chunk-string chunk-string)))
 		   rfp label eval-properties)))
 	(t
-	 ;; this means that we are in the process of making 
+	 ;; this means that we are in the process of making
 	 ;; an LFP and we should start making a PNAME
 	 (when (null pname)
 	   (setq pname (make-local-formatting-info (stream-position stream))))
@@ -982,7 +982,7 @@ Oldness and Oldossity.....
 				       lfp pname chunk rfp
 				       label eval-properties)
   (cond ((not (null stuff-rfp?))
-	 ;; if we are in the process of making the RFP, then we should 
+	 ;; if we are in the process of making the RFP, then we should
 	 ;; terminate the chunk leaving the macro char for the next chunk
 	 (throw 'END-OF-CHUNK
 	   (values lfp pname (or chunk
@@ -1005,7 +1005,7 @@ Oldness and Oldossity.....
 				     (read-chunk-string chunk-string)))
 		   rfp label eval-properties)))
 	(t
-	 ;; this means that we are in the process of making 
+	 ;; this means that we are in the process of making
 	 ;; an LFP and we should start making a PNAME
 	 (when (null pname)
 	   (setq pname (make-local-formatting-info (stream-position stream))))
@@ -1021,7 +1021,7 @@ Oldness and Oldossity.....
 				       lfp pname chunk rfp
 				       label eval-properties)
   (cond ((not (null stuff-rfp?))
-	 ;; if we are in the process of making the RFP, then we should 
+	 ;; if we are in the process of making the RFP, then we should
 	 ;; terminate the chunk leaving the macro char for the next chunk
 	 (throw 'END-OF-CHUNK
 	   (values lfp pname (or chunk
@@ -1040,7 +1040,7 @@ Oldness and Oldossity.....
 				     (read-chunk-string chunk-string)))
 		   rfp label eval-properties)))
 	(t
-	 ;; this means that we are in the process of making 
+	 ;; this means that we are in the process of making
 	 ;; an LFP and we should start making a PNAME
 	 (when (null pname)
 	   (setq pname (make-local-formatting-info (stream-position stream))))
@@ -1135,7 +1135,7 @@ Oldness and Oldossity.....
 					      (format nil "~A" label))
 					     (t (string label)))
 				       chunk-string))))
-	 ;; clear the chunk-string 
+	 ;; clear the chunk-string
 	 (chunk-string-clear chunk-string)
 	 (simple-read-char stream)	;read the label char out
 	 ;; now we need to concatenate the label and the already existing LFP
@@ -1164,7 +1164,7 @@ Oldness and Oldossity.....
 
 (defvar *inhibit-chunker-style-warnings?* nil)
 
-;;; this might want to be both more informative to the user and 
+;;; this might want to be both more informative to the user and
 ;;; print somewhere where it can be seen (like the status line)
 ;;; this is for things like "!@" which is probably NOT what anyone wants
 ;;; as opposed to "@!" which is perfectly reasonable (I think)
@@ -1175,7 +1175,7 @@ Oldness and Oldossity.....
 (defun get-dots-values (symbol)
   (flet ((substring (string start &optional (stop (length string)))
 	   (declare (fixnum start stop))
-	   ;; have to be careful and see if this will 
+	   ;; have to be careful and see if this will
 	   ;; work in every implementation
            #-ccl-3
 	   (make-array (-& stop start)
@@ -1212,7 +1212,7 @@ Oldness and Oldossity.....
 	       (nreverse values-list)))))))
 
 (defvar *eval-props-to-ignore* '(bu::starting-dot))
-	       
+
 ;;; this is also used inside of build
 (defun handle-eval-props (eval-props value &optional (excl-prop? nil))
   (cond ((null eval-props)
@@ -1344,27 +1344,27 @@ Oldness and Oldossity.....
 
 ;;;; Messages to EDITOR OBJECTS about Virtual Copy Structure
 ;;
-;;   Virtual Copy Structures in the editor are arranged in a 2 level cache.  
+;;   Virtual Copy Structures in the editor are arranged in a 2 level cache.
 ;;   The first level occurs at the level of EDITOR-ROWS and caches the results
 ;;   of calling the CHUNKER on the editor row.  The CHUNKER generates 2
-;;   representations of a row.  One is a data structure representation which 
+;;   representations of a row.  One is a data structure representation which
 ;;   contains all the information (whitespace, CasE, comments, etc) needed to
-;;   reconstruct the visual representation of the row.  The other 
+;;   reconstruct the visual representation of the row.  The other
 ;;   representation is a semantic representation which contains ONLY the
 ;;   information in the row neccessary for the Evaluator (and also arithmetic)
 ;;   to process the row. These are flushed whenever the EDITOR-ROW is modified.
 ;;
-;;   The second level of caching occurs at the level of Boxes (both 
+;;   The second level of caching occurs at the level of Boxes (both
 ;;   EDITOR-BOX's and Virtual Copies).  An EDITOR-BOX retains a cache of the
 ;;   different versions of its inferior EVROWs. The diferent versions are
-;;   indexed by timestamp and the entire cache can be flushed when 
+;;   indexed by timestamp and the entire cache can be flushed when
 ;;   the EDITOR-BOX is modified, but ONLY when we know that we are NOT in the
 ;;   Middle of an Evaluation (because there may be outstanding virtual copies
 ;;   to either the Box itself or its superiors during an Evaluation).  When a
 ;;   Virtual Copy is made of a box, the Virtual Copy caches the semantic
 ;;   representation of the inferior rows.  This info is cached at the
-;;   Box (Virtual Copy) level because only at this level are we guaranteed 
-;;   Uniqueness of the immediate inferiors.  This cache is flushed whenever 
+;;   Box (Virtual Copy) level because only at this level are we guaranteed
+;;   Uniqueness of the immediate inferiors.  This cache is flushed whenever
 ;;   the Virtual Copy is Modified [Perhaps the cache should be fixed in some
 ;;   cases--needs more analysis of the time tradeoffs involved here (speeding
 ;;   up all matrix arithmetic and RUN versus slowing down every
@@ -1375,19 +1375,19 @@ Oldness and Oldossity.....
 ;;
 ;; what about funs that let you edit live structure in the middle of an EVAL
 ;; (concrete IO) ?
-;; --EXIT or ACTIVATE or whatever, needs to call CHANGE-VC-ROWS and we can't 
-;; use the MODIFIED message to flush the cache anymore because we may have 
+;; --EXIT or ACTIVATE or whatever, needs to call CHANGE-VC-ROWS and we can't
+;; use the MODIFIED message to flush the cache anymore because we may have
 ;; active VC's in the middle
 ;; of an edit which sends lots of MODIFIED's
 ;;
 ;; what about REDISPLAY in the middle of an EVAL
 ;;
-;; The top level Evaluation process needs to BIND the variable 
+;; The top level Evaluation process needs to BIND the variable
 ;; *EVAL-IN-PROGRESS* in order to flush obsolete copies.
-;; the MODIFIED method also flushes but we need to patch the editor structure 
-;; mutation methods to prevent the cache from being flushed IF we turn 
-;; *MUTATE-EDITOR-BOXES-DURING-EVAL?* on.  For now, 
-;; *MUTATE-EDITOR-BOXES-DURING-EVAL?* will be T because so we don't have 
+;; the MODIFIED method also flushes but we need to patch the editor structure
+;; mutation methods to prevent the cache from being flushed IF we turn
+;; *MUTATE-EDITOR-BOXES-DURING-EVAL?* on.  For now,
+;; *MUTATE-EDITOR-BOXES-DURING-EVAL?* will be T because so we don't have
 ;; to worry about this.
 ;;
 
@@ -1427,7 +1427,7 @@ Oldness and Oldossity.....
 (defmethod eval-objs ((row row))
   (if (eq (slot-value row 'cached?) 'all)
       (slot-value row 'cached-eval-objs)
-      (progn 
+      (progn
        (cache-chunk-result row)
        (slot-value row 'cached-eval-objs))))
 
@@ -1436,7 +1436,7 @@ Oldness and Oldossity.....
 
 
 ;;;; Tests
-;;   A standardized set of simple tests for the chunker so we can easily 
+;;   A standardized set of simple tests for the chunker so we can easily
 ;;   check out modifications.  A Neccessary but insufficient set...
 
 (defvar *print-chunker-test-times-only?* nil)
