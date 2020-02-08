@@ -20,7 +20,7 @@
   editor box which corresponds to the creation time of the virtual copy in
   order to render the correct structure.
 
-  The problem with this approach is that unneeded versions can accumalate 
+  The problem with this approach is that unneeded versions can accumalate
   and use up available memory.  The canonical bad behavior is demonstrated
   by the program:  repeat 1000000000 [... change x x + 1 ...]
   which, by the end of an evaluation will have 1000000000 versions of the
@@ -35,12 +35,12 @@
       run through all the versions in every currently modified editor box
       and removed unneeded versions.
 
-  Method 1 has the advantage that the extra work is spread out. 
+  Method 1 has the advantage that the extra work is spread out.
 
-  Both methods require that we have a list of all currently active virtual 
+  Both methods require that we have a list of all currently active virtual
   copies. Including changed editor rows
 
-  Method 2 requires also needs us to keep track of all the modified editor 
+  Method 2 requires also needs us to keep track of all the modified editor
   boxes fortunately we already keep track of modified editor objects in
   *editor-objects-to-be-modified*
 
@@ -51,7 +51,7 @@ Modification History (most recent at top)
          doesn't preserve the attributes of the original arg (the fill-pointer in this case)
  2/15/03 merged current LW and MCL files
  4/20/02 global-vcgc-required-printing-times: better consistency checking
-11/19/01 vcgc checks for *editor-objects-to-be-modified* bound in case it is 
+11/19/01 vcgc checks for *editor-objects-to-be-modified* bound in case it is
          called from another process (like LWW net file loaders)
  8/23/01 handle possible box interfaces in xxx-required-printing-times and vcgc
  8/20/01 finished initial implementation
@@ -99,7 +99,7 @@ Modification History (most recent at top)
             ((>= ,stack-idx eval::*dynamic-variables-top*))
          (when (or (virtual-copy? ,vc-var) (virtual-port? ,vc-var))
            . ,body)))))
-         
+
 
 
 
@@ -181,14 +181,14 @@ Modification History (most recent at top)
           (vcgc-metering-local-ctime-min vector)
           (vcgc-metering-local-ctime-max vector)
           (vcgc-metering-rows-libbed vector)
-          (/ (vcgc-metering-rows-libbed vector) 
+          (/ (vcgc-metering-rows-libbed vector)
              (let ((x (vcgc-metering-boxes vector)))
                (if (zerop x) 1 (float x))))
           (vcgc-metering-rows-min vector)
           (vcgc-metering-rows-max vector)))
 
 ;; metering recording functions
-(defun record-vcgc () 
+(defun record-vcgc ()
   (incf& (vcgc-metering-vcgcs *vcgc-recording-vector*)))
 
 (defun record-vcgc-time (time)
@@ -232,21 +232,21 @@ Modification History (most recent at top)
 
 ;;; Simulation utilities
 ;; we add these utilities to VC/print/chunker code using the vcgc-debugging
-;; macro.  When we are in VCGC sim mode, instead of actually removing vc 
-;; rows entries, we keep track of them.  Later, during print time, we can see 
+;; macro.  When we are in VCGC sim mode, instead of actually removing vc
+;; rows entries, we keep track of them.  Later, during print time, we can see
 ;; if we would have lost by comparing with the list of stored vc rows entries.
 (defvar *simulate-vcgc?* nil)
 
 (defvar *initial-sim-vcgc-array-size* 200)
 
-(defvar *sim-vcgc-array* 
+(defvar *sim-vcgc-array*
   (if *include-vcgc-debugging?*
       ;; no need to CONs up this big array if we aren't debugging
       (make-array *initial-sim-vcgc-array-size* :adjustable t :fill-pointer 0)
     nil))
 
 (defun clear-sim-vcgc-array ()
-  (when *sim-vcgc-array* 
+  (when *sim-vcgc-array*
     (dotimes (i (fill-pointer *sim-vcgc-array*))
       (setf (aref *sim-vcgc-array* i) nil))
     (setf (fill-pointer *sim-vcgc-array*) 0)))
@@ -255,7 +255,7 @@ Modification History (most recent at top)
   (when *sim-vcgc-array* (vector-push-extend vcre *sim-vcgc-array*)))
 
 (defun sim-vcgc-member (vcre)
-  (when *sim-vcgc-array* 
+  (when *sim-vcgc-array*
     (dotimes (i (fill-pointer *sim-vcgc-array*))
       (when (eq (aref *sim-vcgc-array* i) vcre) (return t)))))
 
@@ -265,20 +265,20 @@ Modification History (most recent at top)
 
 #|
   The algorithm:
-  
+
   For each modified editor box, either in a batch or incrementally for
   each box at modification time:
 
 Notes:
 The important data structure is the vcgc creation time vector which is
-used to compare against the mod times of the editor rows in order to 
+used to compare against the mod times of the editor rows in order to
 eliminate unneeded row mods.
 
 actually there are 2 possible algorthms for building a vcgc-ctime-vector
   1) Use a single global vector for all modified editor boxes
      we can just loop through all the ROOTs once, accumalating ctimes
      advantages:    can build it fast, time will be of Order # ROOTs
-     disadvantages: extra row mods may be kept because of ctimes for 
+     disadvantages: extra row mods may be kept because of ctimes for
         VC's which are not superiors of the mod-ed-box
   2) Use a specialized vector for each mod-ed-box
      for each mod-ed-box, loop through the ROOTs, 1st checking for
@@ -288,7 +288,7 @@ actually there are 2 possible algorthms for building a vcgc-ctime-vector
      disadvantages: possibly slow, since time will be of Order
                     # mod-ed-boxes * # ROOTs
 
-    loop through the ROOTS[existing VC's and newest VC rows entries in 
+    loop through the ROOTS[existing VC's and newest VC rows entries in
                            modified editor boxes]
       IF the modified editor box is an inferior of a ROOT (indicating the
          possibility that the modified editor box will be required to articulate
@@ -298,8 +298,8 @@ actually there are 2 possible algorthms for building a vcgc-ctime-vector
          A vc rows entry can be safely removed
             IF there is another vc rows which is newer than it but older
                or the same age as the ROOTs
-             
-               note that since modified editor boxes are already ROOTs, 
+
+               note that since modified editor boxes are already ROOTs,
                the newest vc rows entry should always be kept
 
 
@@ -361,9 +361,9 @@ actually there are 2 possible algorthms for building a vcgc-ctime-vector
 ;; is the editor box an inferior of a creator of the VC
 (defun vc-eb-inferior? (edbox vc)
   (or (null (vc-progenitor vc))
-      ;; NIL means it has been consed and therefore can possibly 
+      ;; NIL means it has been consed and therefore can possibly
       ;; contain any arbitrary editor structure
-      (and (box? (vc-progenitor vc)) 
+      (and (box? (vc-progenitor vc))
            (or (eq edbox (vc-progenitor vc))
                (superior? edbox (vc-progenitor vc))))
       ;; the VC's creator is a superior of the editor box?
@@ -402,12 +402,12 @@ actually there are 2 possible algorthms for building a vcgc-ctime-vector
     (flet ((my-delete-duplicates (vector)
              ;; lisp::delete-duplicates is not guaranteed to retain the vector attributes of the original
              ;; arg.  Since we know we will be feeding it a sorted 1 dimensional array of fixnum elements
-             ;; with a fill pointer, we  won't bother covering the general cases. 
+             ;; with a fill pointer, we  won't bother covering the general cases.
              (let ((last-entry 0)
                    (return-vector (make-array (fill-pointer vector) :fill-pointer 0 :adjustable t)))
                (dotimes (i (fill-pointer vector))
                  (let ((current-entry (aref vector i)))
-                   (cond ((zerop i) 
+                   (cond ((zerop i)
                           (setq last-entry current-entry)
                           (vector-push current-entry return-vector))
                          ((= current-entry last-entry))
@@ -441,24 +441,24 @@ actually there are 2 possible algorthms for building a vcgc-ctime-vector
 ;;; ordered backward in time
 (defmethod vcgc-liberate-rows ((box box) times-vector)
   (vcgc-debugging (format t "~&Liberating Rows for ~A using ~A" box times-vector))
-  (let ((row-count 0) 
+  (let ((row-count 0)
         ;; we always need to keep the newest set of rows
         (rows-to-keep (list (car (slot-value box 'virtual-copy-rows))))
         (ctime-idx 0) (ctime (aref times-vector 0)))
     (flet ((next-ctime ()
                        (incf& ctime-idx)
-                       (setq ctime (cond ((>= ctime-idx 
+                       (setq ctime (cond ((>= ctime-idx
                                               (fill-pointer times-vector))
                                           nil)
-                                         (t (let ((c (aref times-vector 
+                                         (t (let ((c (aref times-vector
                                                            ctime-idx)))
                                               (if (= -1 c) nil c)))))))
-      (dolist (vcrows (cdr (slot-value box 'virtual-copy-rows)))        
+      (dolist (vcrows (cdr (slot-value box 'virtual-copy-rows)))
         (cond ((null ctime)
                ;; no more ctimes so prune all but the last remaing vcrows
                (vcgc-debugging (format t "~&Null ctime pruning rows, timestamps:"))
                (do* ((remaining-rows (fast-memq vcrows
-                                                (slot-value box 
+                                                (slot-value box
                                                             'virtual-copy-rows))
                                      (cdr remaining-rows))
                      (rows (car remaining-rows) (car remaining-rows)))
@@ -529,6 +529,6 @@ actually there are 2 possible algorthms for building a vcgc-ctime-vector
       (vcgc))))
 
 
-  
+
 
 
