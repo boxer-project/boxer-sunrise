@@ -23,10 +23,10 @@
                                           +-------+
 
     This file contains procedures that manipulate editor datastructure for the
-    benefit of the virtual copy mechanism.  The General flavor of these 
-    functions are various caching strategies to speed up virtual copy.  See 
-    the files chunker.lisp and printer.lisp for more info on the 
-    evaluator/editor datastructure interface.			       
+    benefit of the virtual copy mechanism.  The General flavor of these
+    functions are various caching strategies to speed up virtual copy.  See
+    the files chunker.lisp and printer.lisp for more info on the
+    evaluator/editor datastructure interface.
 
 
 Modification History (most recent at top)
@@ -34,10 +34,10 @@ Modification History (most recent at top)
          no more :associated-turtle slot, use graphics-info instead
  3/20/02 virtual-copy-rows
  1/07/01 merged with Mac release
- 6/10/99 virtual-copy-editor-box check for modified rentry BEFORE synthesising 
+ 6/10/99 virtual-copy-editor-box check for modified rentry BEFORE synthesising
          a default pedigree
- 3/19/99 virtual-copy-editor-box fix bug where pedigree of the new VC was 
-         using the row-entry creation time instead of (now).  
+ 3/19/99 virtual-copy-editor-box fix bug where pedigree of the new VC was
+         using the row-entry creation time instead of (now).
  8/23/98 virtual-copy-editor-box changed to grab new VC creation time from
          the rows entry instead of (now) in order to capture the correct
          rows version of deep inferior mods made between rows entry creation and
@@ -58,7 +58,7 @@ Modification History (most recent at top)
 
             PORT LINK CACHING (these comments are semi-obsolete)
 
-The current theory on virtual copy demands that we copy the part of the 
+The current theory on virtual copy demands that we copy the part of the
 subtree that contains port links in order to assure that every port that
 is suppose to, has a unique target.  Since it would be prohibitively slow
 to walk the entire (potentially huge) tree of a boxes inferiors at copy
@@ -67,11 +67,11 @@ relevant portion of the subtree.
 
 In particular, at any given level of the hierarchy, we have a list of (which is
 a subset of all) the inferiors that may contain portions of the tree that need
-to be articulated at copy time.  This list is constructed by walking up the 
+to be articulated at copy time.  This list is constructed by walking up the
 tree at port/target insertion time.  This specifies at any level, all of the
 inferiors that contain either ports or port targets.
 
-However, reliance on just this information may result in copying branches of 
+However, reliance on just this information may result in copying branches of
 the tree that don't actually NEED to be copied.  Consider the following:
 
              Example 1             Example 2
@@ -79,13 +79,13 @@ the tree that don't actually NEED to be copied.  Consider the following:
                 A                     A         E
                / \                   / \       / \
               /   \                 /   \     F   G
-             B     C               B     C 
-            / \    |             / \     | 
+             B     C               B     C
+            / \    |             / \     |
            /   \   |            /   \    |
           D    pD  pD          D    pD  pE
 
 "pX" refers to a node which is a port to the second letter.  That is,
-"pD" is a port to node "D".  What we want to do is to copy A in both 
+"pD" is a port to node "D".  What we want to do is to copy A in both
 cases.  Relying solely on inferior port/target information will cause
 the entire subtree of A to be copied in both cases.  However, in
 Example 2, this would result in the unneccessary copying of the "C"
@@ -102,7 +102,7 @@ is neccessary to articulate a particular branch.
 
 It may turn out that straight copying based on inferiors is sufficient
 and that the smarter link based copying is not worth the extra effort.
-We need to evaluate the tradeoffs between size/complexity of the 
+We need to evaluate the tradeoffs between size/complexity of the
 average datastructure.
 
 |#
@@ -338,7 +338,7 @@ average datastructure.
     (cond ((not (null common-node))
 	   ;; cache inferior-links starting from the common node
 	   (cache-link common-node (make-link 'inferior-link box ports))
-	   ;; then cache 'port-branch-links starting from the port 
+	   ;; then cache 'port-branch-links starting from the port
 	   ;; this should terminate when it reaches the common superior
 	   (cache-link box (make-link 'port-branch-link box ports))
 	   ;; finally cache 'target-branch-links starting from the target
@@ -347,7 +347,7 @@ average datastructure.
 	  ((not (null superior))
 	   ;; save the port for possible future action
 	   (putprop superior (list box) 'saved-inferior-ports)))))
-	   
+
 
 #|
 (defmethod insert-self-action ((box virtual-copy-subclass) &optional superior)
@@ -376,7 +376,7 @@ average datastructure.
 	     (unless (null common-node)
 	       ;; cache inferior-links starting from the common node
 	       (cache-link common-node (make-link 'inferior-link box ports))
-	       ;; then cache 'port-branch-links starting from the port 
+	       ;; then cache 'port-branch-links starting from the port
 	       ;; this should terminate when it reaches the common superior
 	       (cache-link box (make-link 'port-branch-link box ports))
 	       ;; finally cache 'target-branch-links starting from the target
@@ -389,7 +389,7 @@ average datastructure.
 	(cache-link superior il)))
 
     ;; now handle any saved ports or targets
-    ;; they need to be relinked 
+    ;; they need to be relinked
     (dolist (p saved-inferior-ports)
       (let* ((targ (ports p))
 	     (common-node (find-lowest-common-superior-box p targ)))
@@ -444,7 +444,7 @@ average datastructure.
     (dolist (il (contained-links box))
       (unless (null superior) (remove-link superior il)))
     ;; now handle branches
-    ;; all if the links in which this box was a branch, are no longer valid 
+    ;; all if the links in which this box was a branch, are no longer valid
     ;; and we have to remove them from all the caches that they are a member of
     ;; we also have to preserve inferior port/target info in case we want to
     ;; insert this box back into the hierarchy.  Stuff this info onto the PLIST
@@ -529,7 +529,7 @@ average datastructure.
 	(remove-link superior il)))
 
     ;; now handle branches
-    ;; all if the links in which this box was a branch, are no longer valid 
+    ;; all if the links in which this box was a branch, are no longer valid
     ;; and we have to remove them from all the caches that they are a member of
     ;; we also have to preserve inferior port/target info in case we want to
     ;; insert this box back into the hierarchy.  Stuff this info onto the PLIST
@@ -550,7 +550,7 @@ average datastructure.
 	       (remove-link (link-port bl) bl)
 	       ;; and the target side...
 	       (remove-link (link-target bl) bl)
-	       ;; inform the ports that the target is going away in case we 
+	       ;; inform the ports that the target is going away in case we
 	       ;; want to mark them broken or whatever
 	       (dolist (p (ports (link-target bl)))
 		 (inform-port-that-target-is-going-away p))
@@ -595,9 +595,9 @@ average datastructure.
 		      :test #'link-equal))
 	(when (row? superior-row)
 	  (remove-link superior-row link)))
-      (when (or (member link (slot-value box 'branch-links) 
+      (when (or (member link (slot-value box 'branch-links)
 			:test #'link-equal)
-		(member link (slot-value box 'contained-links) 
+		(member link (slot-value box 'contained-links)
 			:test #'link-equal))
 	(setf (slot-value box 'branch-links)
 	      (delete link (slot-value box 'branch-links) :test #'link-equal))
@@ -630,14 +630,14 @@ average datastructure.
 
 ;;;; Functions that virtual copy will call
 
-;;; This is the main conversion routine from EDITOR to VC at the row level.  
+;;; This is the main conversion routine from EDITOR to VC at the row level.
 ;;  Note that the EDITOR-ROW has already (or will) cache the results of
-;;  calling the CHUNKER. 
+;;  calling the CHUNKER.
 
-;;; There are two possibilities for converting the chunks of an Editor row to 
-;;; an evrow.  These are based on the value of *links-to-be-copied*.  If 
+;;; There are two possibilities for converting the chunks of an Editor row to
+;;; an evrow.  These are based on the value of *links-to-be-copied*.  If
 ;;; a branch of a link that needs to be copied exists within the row, then the
-;;; appropriate chunks that contain them need to be bashed to point to VC's 
+;;; appropriate chunks that contain them need to be bashed to point to VC's
 ;;; instead of the boxes. Otherwise, the cached chunking information is valid
 ;;;  and we can just use it.
 
@@ -661,7 +661,7 @@ average datastructure.
 	     ;; 1: The minimal work version is to copy any sub-box with non NIL
 	     ;;    links.  This will result in some number of unneccessary
 	     ;;    copies being created but MAY be faster
-	     ;; 2: Check to see if the sub-boxes links are a member of the 
+	     ;; 2: Check to see if the sub-boxes links are a member of the
 	     ;;    top level link list of the box being copied.  This may be
 	     ;;    slow since we need to check the (possibly long) top level
 	     ;;    link list for each node with non NIL links
@@ -736,7 +736,7 @@ average datastructure.
 				        (get-pointer-value (car chunks) nil)
 					:original-row row))))
 	  ((and cv? (null (slot-value row 'inferior-links)))
-	   (or evrow? 
+	   (or evrow?
 	       (cache-evrow (make-evrow :pointers chunks :original-row row))))
 	  (t
 	   (let ((chunk-was-bashed nil))
@@ -923,7 +923,7 @@ average datastructure.
 ;		      :pedigree (list `(,eb . ,now))
 		      :progenitor eb
 		      :closets (slot-value eb 'closets)
-		      ;; THIS is the place where we should handle relevant 
+		      ;; THIS is the place where we should handle relevant
 		      ;; graphics properties such as graphics-sheets or turtles
 		      :graphics (get-graphics-info-for-newvc eb for-cache?)
 		      :exports (and top-level? (not (null (exports eb))))))
@@ -931,11 +931,11 @@ average datastructure.
 	;; now we figure out the inlinks? and the evrows
 	(multiple-value-bind (evrws links? new? rentry)
 	    (virtual-copy-rows eb nil newvc)
-	  (let* ((vcp (vc-rows-entry-pedigree rentry))	
+	  (let* ((vcp (vc-rows-entry-pedigree rentry))
 		 (now (now))
                  ;; the creation time of the new VC should match the creation
                  ;; time of the rows entry so that mods of deep inferior rows
-                 ;; made between the rows entry and the current copy 
+                 ;; made between the rows entry and the current copy
                  ;; are properly ignored
                  (ctime (if (null rentry) now (vcis-creation-time rentry))))
 	    (setq inlinks? links?)
@@ -944,7 +944,7 @@ average datastructure.
 	      (dolist (er evrws)
 		(update-evrow-for-new-vc er rentry newvc links?)))
 	    ;; now setup the pedigree and the creation time
-            ;; 
+            ;;
 	    (setf (vc-creation-time newvc) ctime)
 	    (setf (vc-pedigree newvc)
 		  ;; the pedigree is used unless there isn't one
@@ -971,7 +971,7 @@ average datastructure.
 ;;;;; Cache and Mash...
 
 ;;; Various results are cached on editor objects because they are more
-;;; permanent (relativley speaking) than VC's.  However, many  times we 
+;;; permanent (relativley speaking) than VC's.  However, many  times we
 ;;; want to access those caches via a VC (or chain of VC's).  For that
 ;;; purpose, we retain a backpointer to the editor object in the form of
 ;;; a vc-progenitor slot in the VC's.  The slot is cleared if the VC is
@@ -979,16 +979,16 @@ average datastructure.
 ;;; the result in an editor-box cache.  This is allowable only if the
 ;;; editor-box has the same structure as the VC, that is, no modifications
 ;;; have occurred during the chain of virtual copying from the original
-;;; editor box AND no modification have been MADE to the editor box since 
-;;; the beginnin of the chain of virtual copies.  Modification of any member 
-;;; of the virtual copy chain is handled by clearing the backpointer.  
+;;; editor box AND no modification have been MADE to the editor box since
+;;; the beginnin of the chain of virtual copies.  Modification of any member
+;;; of the virtual copy chain is handled by clearing the backpointer.
 ;;; Whether or not the editor box has changed is handled by:
 
 (defmethod editor-box-cacheable? ((editor-box box) creation-time)
   (or (minusp (the fixnum creation-time))
       (let ((vcrs (slot-value editor-box 'virtual-copy-rows)))
 	(cond ((null vcrs) t)
-	      (t 
+	      (t
 	       ;; all we have to check is the newest version and that one
 	       ;; will be the first one since new versions are PUSH'd on
 	       (>= creation-time (vc-rows-entry-time (car vcrs))))))))
@@ -1026,19 +1026,19 @@ average datastructure.
 ;;;; Caching (and DeCaching) evaluator objects on Editor objects
 
 ;;; The basic problem is that I/O can potentially call modified during
-;;; an evaluation.  Therefore, we can't use calls to modified for decaching 
+;;; an evaluation.  Therefore, we can't use calls to modified for decaching
 ;;; evaluator related caches.  We would also like to preserve as much eval
 ;;; structure as possible cause its SO EXPENSIVE to build it.  On the other
 ;;; hand, it is important to keep multipointers short and avoid having to
 ;;; search through invalid multipointer slots left over from previous
 ;;; evaluations.
 ;;;
-;;; The current scheme involves a global deallocation queue which is bound 
+;;; The current scheme involves a global deallocation queue which is bound
 ;;; around invocations of DOIT.  Mutations or calls which
 ;;; expand multipointers cause the containing row to be placed on the
-;;; de-allocation queue IF the multipointer is increased beyond a 
-;;; pre-determined length.  The tradeoff to be determined is the cost of 
-;;; searching through extra garbage vs the cost of building an evrow 
+;;; de-allocation queue IF the multipointer is increased beyond a
+;;; pre-determined length.  The tradeoff to be determined is the cost of
+;;; searching through extra garbage vs the cost of building an evrow
 ;;; from scratch
 ;;;
 ;;; Note that there is actually two levels of decaching possible here.  One
@@ -1046,23 +1046,23 @@ average datastructure.
 ;;; rendering ALL of the evaluator related caches invalid.  In this case, the
 ;;; mutator will have consed up a new row and the owning box will have several
 ;;; versions of its inferior rows based on timestamp.This means that we have to
-;;; flush ALL of the editor row's caches as well as those of its superior box 
-;;; AFTER the evaluation is completed.  However, the modified method for rows 
-;;; will flush all of the appropriate caches in this case and what we need to 
-;;; do is to make sure that the superior box gets its vc-rows flushed AFTER 
+;;; flush ALL of the editor row's caches as well as those of its superior box
+;;; AFTER the evaluation is completed.  However, the modified method for rows
+;;; will flush all of the appropriate caches in this case and what we need to
+;;; do is to make sure that the superior box gets its vc-rows flushed AFTER
 ;;; the eval is done.
 ;;;
-;;; The other case is less severe in that the formatting info of the row 
+;;; The other case is less severe in that the formatting info of the row
 ;;; is still the same and what has happened is that the multi-pointers have
 ;;; got too long.  This means that the chunking information is still valid and
 ;;; we can win by flushing just the evrow cache (retaining the cached-chunks)
-;;; This situation is most likely to arise through either articulation of 
-;;; port/target containing subtrees or as a result of symeval having to 
+;;; This situation is most likely to arise through either articulation of
+;;; port/target containing subtrees or as a result of symeval having to
 ;;; return something unique (in case we want to port to it)
 ;;;
 
 ;;; we can make this a constant later so the compiler will fold it in instead
-;;; of having to do a special variable reference EVERY time we want to extend 
+;;; of having to do a special variable reference EVERY time we want to extend
 ;;; a multipointer
 (defvar *maximum-desired-multipointer-length* 10.)
 
@@ -1127,8 +1127,8 @@ average datastructure.
 
 
 ;;; we want to avoid multiply updating the same box. The alternative to
-;;; checking is to have some sort of unique ID stuffed on the box 
-;;; this ought to be faster IF the queue remains relatively short 
+;;; checking is to have some sort of unique ID stuffed on the box
+;;; this ought to be faster IF the queue remains relatively short
 (defun queue-editor-object-for-mutation (box)
   (unless (or (not (boundp '*editor-objects-to-be-modified*))
               (fast-memq box *editor-objects-to-be-modified*))
@@ -1136,8 +1136,8 @@ average datastructure.
 
 ;;; note that this CAN be called when *evaluation-in-progress?* is T
 ;;; by the redisplay in order to set up the editor for redisplay
-;;; this might be faster if we could mutate the rows instead of bashing them 
-;;; then replacing them.  Unfortunately,we have to get the port targets 
+;;; this might be faster if we could mutate the rows instead of bashing them
+;;; then replacing them.  Unfortunately,we have to get the port targets
 ;;; relinked correctly which makes it harder than simply iterating down
 ;;; the evrows
 
@@ -1177,7 +1177,7 @@ average datastructure.
   (flet ((reset-screen-box-for-new-contents (sb)
            (setf (slot-value sb 'scroll-x-offset) 0
                  (slot-value sb 'scroll-y-offset) 0)))
-    (dolist (screen-box (screen-objs box)) 
+    (dolist (screen-box (screen-objs box))
       (reset-screen-box-for-new-contents screen-box))
     (modified box)))
 
@@ -1233,7 +1233,7 @@ average datastructure.
   ;; remember that this can lose or be Cancelled by the user
   (when (and (null (slot-value self 'first-inferior-row))
 	     (storage-chunk? self))
-    (boxnet::fill-box-from-server self)) 
+    (boxnet::fill-box-from-server self))
   (flet ((assnv (item list)
 	   ;; sort of like assoc but the items will be vc-rows-entries
 	   ;; and the comparision will be numeric (specifically #'>=)
@@ -1306,7 +1306,7 @@ average datastructure.
       (setq pedigree (if (vcis-modified? old-vcrs)
 			 (acons old-vcrs (now) (vcis-pedigree old-vcrs))
 			 (vcis-pedigree old-vcrs))))
-    (when (eq inlinks? :dont-touch) 
+    (when (eq inlinks? :dont-touch)
       (setq inlinks? (vcis-inlinks? old-vcrs)))
     (setf (slot-value self 'virtual-copy-rows)
 	  (push (let ((new-entry (make-vc-rows-entry (now) new-rows
@@ -1336,7 +1336,7 @@ average datastructure.
 ;;; (based on frequency of multiple variable lookup) will be substantially
 ;;; different for editor boxes which have been CHANGEd vs virtual copies
 ;;;
-;;; The current strategy is to loop through EVERYTHING and generate a 
+;;; The current strategy is to loop through EVERYTHING and generate a
 ;;; completely valid cache.  A cache miss can then be taken to mean
 ;;; that the variable is not in the box
 ;;;
@@ -1356,14 +1356,14 @@ average datastructure.
 	  (let ((sup-box (superior-box sup)))
 	    (unless (null sup-box)
 	      (eval::lookup-static-variable-internal sup-box variable)))))))
-	    
+
 
 (defun lookup-variable-in-vc-rows-entry-1 (vc-rows-entry
 					   variable
 					   &optional
 					   editor-box
 					   (exact-inferior-required? t))
-  (declare (ignore exact-inferior-required?)) ; no longer used 
+  (declare (ignore exact-inferior-required?)) ; no longer used
   (record-vcre-var-lookup)
   (cond ((eq (vc-rows-entry-cached-binding-alist vc-rows-entry) *no-names-in-vc-marker*)
 	 (record-vcre-var-lookup-cache-hit) nil)
@@ -1394,7 +1394,7 @@ average datastructure.
 					 (vc-rows-entry-cached-binding-alist
 					  vc-rows-entry)))
 				  (t
-				   ;; we dont have an exact 
+				   ;; we dont have an exact
 				   ;; match but we want one
 				   (let* ((newval (virtual-copy val :top-level? t))
 					  (svar
@@ -1416,7 +1416,7 @@ average datastructure.
 			  (let ((name (vp-name val)))
 			    (cond ((null name))
 				  (t
-				   ;; box has a name so cache 
+				   ;; box has a name so cache
 				   ;; the name and the value
 				   (let ((svar
 					  (eval::make-static-variable
@@ -1429,7 +1429,7 @@ average datastructure.
 			    (cond ((null name))
 				  (t
 				   ;; box has a name so cache the name and
-				   ;; a virtual copy of the value.  
+				   ;; a virtual copy of the value.
 				   (let* ((new-val (virtual-copy val :top-level? t))
 					  (svar
 					   (eval::make-static-variable
@@ -1452,12 +1452,12 @@ average datastructure.
 	   ;; closet as well since closets aren't supposed to
 	   ;; affected by CHANGE
 	   ;;
-	   ;; Still need to think about whether it will be faster to 
+	   ;; Still need to think about whether it will be faster to
 	   ;; go through the box's alist and then check to see if
 	   ;; the result is in the closet or to iterate through the
 	   ;; items in the closet
 	   (let ((closet (slot-value editor-box 'closets)))
-	     (labels ((in-closet? (value) 
+	     (labels ((in-closet? (value)
                         (when (box? value)
 			  (or (eq (superior-row value) closet)
 			      (let ((superior-box (superior-box value)))
@@ -1474,8 +1474,8 @@ average datastructure.
 			    vc-rows-entry)))))))
 	   ;; the cache is now as filled as it ever will be
 	   ;;
-	   ;; If there are no bindings pushed onto the cached binding list, 
-	   ;; then set the marker so we don't loop through the box again. 
+	   ;; If there are no bindings pushed onto the cached binding list,
+	   ;; then set the marker so we don't loop through the box again.
 	   (when (null (vc-rows-entry-cached-binding-alist vc-rows-entry))
 	     (setf (vc-rows-entry-cached-binding-alist vc-rows-entry)
 		   *no-names-in-vc-marker*)
@@ -1509,7 +1509,7 @@ average datastructure.
 ;;;  are checking as we cdr down the rows list of pointers
 ;;;  The default test is #'eq
 ;;;
-;;;  The optional whitespace? arg specifies whether to include the 
+;;;  The optional whitespace? arg specifies whether to include the
 ;;;  surrounding whitspace as part of the chunk.
 ;;;  For example:
 ;;;    foo   bar  baz []
