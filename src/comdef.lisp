@@ -39,7 +39,7 @@
                                           +-------+
 
 
- This file contains Macros and Variable Declarations for BOXER Editor Commands 
+ This file contains Macros and Variable Declarations for BOXER Editor Commands
 
 
 Modification History (most recent at top)
@@ -56,11 +56,11 @@ Modification History (most recent at top)
  7/25/05 final debug of new box properties stuff
  7/12/05 finished 1st cut of new box properties stuff
  7/01/05 started new box properties stuff (comdef.lisp)
-10/25/03 removed force-graphics-output from track-mouse-area, the call to 
+10/25/03 removed force-graphics-output from track-mouse-area, the call to
          force-graphics-putput now occurs at a lower level in with-mouse-tracking
 10/15/03 changed #+  for flushing graphics to generic force-graphics-output
          in track-mouse-area
-         changed display-force-output to force-graphics-output in 
+         changed display-force-output to force-graphics-output in
          animate-{scrolling,cursor-move}
  9/02/03 #+carbon-compat (flush-port-buffer) added to track-mouse-area
  2/15/03 merged current LW and MCL files
@@ -68,7 +68,7 @@ Modification History (most recent at top)
          so no need to excise it for "clean" reimplementation
 11/02/01 lwwin mouse names added to defbasic-mode region-mode
 10/15/01 *popup-doc-on?* added
- 4/14/01 *popup-doc-color* changed to be redisplay-init for #+lwwin 
+ 4/14/01 *popup-doc-color* changed to be redisplay-init for #+lwwin
  4/10/01 added popup doc vars & defs
  3/01/01 add calls to enter to move-to-bp so binding root gets set
  2/12/01 merged with current MCL file
@@ -176,7 +176,7 @@ Modification History (most recent at top)
 (DEFUN SCREEN-BOX-POINT-IS-IN ()	  ;returns the screen box the *point* is in
   (POINT-SCREEN-BOX))
 
-(DEFUN BOX-SCREEN-POINT-IS-IN ()	  ;returns the box that the screen part of 
+(DEFUN BOX-SCREEN-POINT-IS-IN ()	  ;returns the box that the screen part of
   (SCREEN-OBJ-ACTUAL-OBJ (POINT-SCREEN-BOX)))	;*point* refers to
 
 
@@ -271,7 +271,7 @@ Modification History (most recent at top)
 					;gets incremented in loop above
 					;immediately
 			     (1+ (LENGTH-IN-CHAS NEXT-OR-PREVIOUS-ROW)))))
-	   (T . ,BODY)))) 
+	   (T . ,BODY))))
 
 
 
@@ -347,7 +347,7 @@ Modification History (most recent at top)
 (defvar *cursor-animate-growth-quantum* 3)
 
 (defun animate-cursor-move (dest-screen-box dest-row dest-cha-no)
-  (unless (null *zoom-step-pause-time*)	
+  (unless (null *zoom-step-pause-time*)
     (drawing-on-window (*boxer-pane*)
       (with-temporary-bp (dest-bp(values dest-row dest-cha-no dest-screen-box))
 	(multiple-value-bind (to-x to-y)
@@ -401,7 +401,7 @@ Modification History (most recent at top)
 (defun animate-scrolling (screen-box)
   (unless (null *zoom-step-pause-time*)
     (drawing-on-window (*boxer-pane*)
-      (multiple-value-bind (box-x box-y) 
+      (multiple-value-bind (box-x box-y)
 	  (xy-position screen-box)
 	(multiple-value-bind (left top right bottom)
 	    (box-borders-widths (box-type screen-box) screen-box)
@@ -429,7 +429,7 @@ Modification History (most recent at top)
 	   (downward-move-to-bp bp moving-bp)))
     (enter (bp-box moving-bp))))
 
-;; basically like MOVE-BP (and MOVE-POINT) except it will change the 
+;; basically like MOVE-BP (and MOVE-POINT) except it will change the
 ;; state of the display (zooming in/out, scrolling) if it has to
 ;; CAREFUL: this does not do the checking to insure that the destination
 ;; is part of the boxer hierarchy.  You have to do this before or it will
@@ -442,7 +442,7 @@ Modification History (most recent at top)
        (move-to-bp ,temp-bp ,bp))))
 
 ;;; Move upward until we reach a place where BP is in some inferior
-;;; of (POINT-BOX). We have to march up the screen structure rather than 
+;;; of (POINT-BOX). We have to march up the screen structure rather than
 ;;; the actual structure because we might be inside of a port
 
 (defun upward-move-to-common-box (bp &optional (moving-bp *point*))
@@ -489,7 +489,7 @@ Modification History (most recent at top)
 				 (bp-box moving-bp)))
 		   ((null new-box)
 		    ;; the downward chain of boxes is not visible probably
-		    ;; because we are scrolled to the wrong place in the 
+		    ;; because we are scrolled to the wrong place in the
 		    ;; current screen box so we scroll to the correct
 		    ;; row, then try again
 		    (move-bp moving-bp (box-self-bp-values (car path)))
@@ -500,7 +500,7 @@ Modification History (most recent at top)
 							      old-row)
 						       1 -1))
 		      (animate-scrolling (bp-screen-box moving-bp))
-		      ;; explicit call to redisplay to make sure screen 
+		      ;; explicit call to redisplay to make sure screen
 		      ;; structure gets created before more processing occurs
 		      (repaint))
 		    ;; check to see if the new-box is visible now, if it
@@ -560,13 +560,13 @@ Modification History (most recent at top)
 
 (defvar *border-tab-hysteresis* 5)
 
-;;; handles tracking of the mouse. 
+;;; handles tracking of the mouse.
 ;;; we may have to pass screen-box into restore-fun (getting the port strut right)
 #-opengl
 (defun track-mouse-area (hilight-fun &key x y width height)
   (let ((backing-store (allocate-backing-store width height)))
     (drawing-on-window (*boxer-pane*)
-      (let ((min-x (-& x *border-tab-hysteresis*)) 
+      (let ((min-x (-& x *border-tab-hysteresis*))
             (min-y (-& y *border-tab-hysteresis*))
             (max-x (+& x width *border-tab-hysteresis*))
             (max-y (+& y height *border-tab-hysteresis*))
@@ -595,7 +595,7 @@ Modification History (most recent at top)
                          (icon-on))
                         ((and icon-on?
                               ;; if the icon is on and we move out
-                              (or (not (<& min-x mouse-x max-x)) 
+                              (or (not (<& min-x mouse-x max-x))
                                   (not (<& min-y mouse-y max-y))))
                          ;; then turn off the visual indicator
                          (icon-off)))))
@@ -610,13 +610,13 @@ Modification History (most recent at top)
   ;; inputs may be floats now...
   (setq x (floor x) y (floor y)
         width (ceiling width) height (ceiling height))
-  (let ((min-x (-& x *border-tab-hysteresis*)) 
+  (let ((min-x (-& x *border-tab-hysteresis*))
          (min-y (-& y *border-tab-hysteresis*))
          (max-x (+& x width *border-tab-hysteresis*))
          (max-y (+& y height *border-tab-hysteresis*))
          (icon-on? t))
     (flet ((icon-on ()
-             (drawing-on-window (*boxer-pane*) 
+             (drawing-on-window (*boxer-pane*)
                (erase-rectangle width height x y)
                (funcall hilight-fun x y width height))
              (force-graphics-output)
@@ -635,7 +635,7 @@ Modification History (most recent at top)
                      (icon-on))
                     ((and icon-on?
                           ;; if the icon is on and we move out
-                          (or (not (<& min-x mouse-x max-x)) 
+                          (or (not (<& min-x mouse-x max-x))
                               (not (<& min-y mouse-y max-y))))
                      ;; then turn off the visual indicator
                      (icon-off)))))
@@ -666,21 +666,21 @@ Modification History (most recent at top)
 
 #|
 ;;; leave it here until we manage to flush old code
-;;; utilities for temporarily rebinding keys (like for 
+;;; utilities for temporarily rebinding keys (like for
 ;;; copying/moving regions)
 
 (defvar *saved-key-functions* nil)
 
 ;;; Note, this is saving and rebinding TOP LEVEL bindings
-;;; shadowed bindings will remain unaffected 
-(defun save-and-rebind-key (key-name new-function) 
+;;; shadowed bindings will remain unaffected
+(defun save-and-rebind-key (key-name new-function)
   (let ((existing (if (boundp key-name) (caddr (symbol-value key-name)) ':unbound))
 	(entry (fast-assq key-name *saved-key-functions*)))
     ;; record the old version
     (cond ((null entry) (push (cons key-name existing) *saved-key-functions*))
 	  (t (setf (cdr entry) existing)))
     ;; now set it to the new version
-    (eval::boxer-toplevel-set-nocache 
+    (eval::boxer-toplevel-set-nocache
      key-name
      (eval::make-compiled-boxer-function
       :arglist nil :precedence 0 :infix-p nil :object new-function))))
@@ -716,7 +716,7 @@ Modification History (most recent at top)
 (defbasic-mode retarget-port-mode
   (#+(or apple win32) bu::mouse-click #-(or apple win32) bu::mouse-middle
                     com-redirect-generic-port)
-  (#+(or apple win32) bu::mouse-click-on-graphics 
+  (#+(or apple win32) bu::mouse-click-on-graphics
    #-(or apple win32) bu::graphics-mouse-middle
    com-redirect-generic-port)
   (#+(or apple win32) bu::mouse-click-on-sprite
@@ -749,15 +749,15 @@ Modification History (most recent at top)
 	     (set-mouse-cursor :retarget)
 	     (save-and-rebind-key (current-mouse-click-name #+mcl 0 #-mcl 1 0)
 				  #'com-redirect-generic-port)
-	     (save-and-rebind-key (current-mouse-click-name #+mcl 0 #-mcl 1 
+	     (save-and-rebind-key (current-mouse-click-name #+mcl 0 #-mcl 1
                                                             0 :graphics)
 				  #'com-redirect-generic-port)
-	     (save-and-rebind-key (current-mouse-click-name #+mcl 0 #-mcl 1 
+	     (save-and-rebind-key (current-mouse-click-name #+mcl 0 #-mcl 1
                                                             0 :sprite)
 				  #'com-redirect-generic-port)
 	     (add-redisplay-clue (point-row) ':insert)
 	     eval::*novalue*)
-      (progn 
+      (progn
 	(boxer-editor-error "Use the generic port you have made.")
 	eval::*novalue*)))
 |#
@@ -786,7 +786,7 @@ Modification History (most recent at top)
 ;;;;; get the box the mouse points to.
 (defun get-box-under-mouse ()
   (drawing-on-window (*boxer-pane*)
-    ;; need to get the offsets set up so the mouse coords 
+    ;; need to get the offsets set up so the mouse coords
     ;; are returned relative to the *boxer-pane* rather than
     ;; the *boxer-frame*
     ;; This also binds the font map
@@ -809,9 +809,9 @@ Modification History (most recent at top)
   (reset-mouse-cursor)
   ;;; rebind the mouse-middle
   (restore-saved-function (current-mouse-click-name #+mcl 0 #-mcl 1 0))
-  (restore-saved-function (current-mouse-click-name #+mcl 0 #-mcl 1 
+  (restore-saved-function (current-mouse-click-name #+mcl 0 #-mcl 1
                                                     0 :graphics))
-  (restore-saved-function (current-mouse-click-name #+mcl 0 #-mcl 1 
+  (restore-saved-function (current-mouse-click-name #+mcl 0 #-mcl 1
                                                     0 :sprite))
   (setq *generic-port* nil))
 |#
@@ -824,7 +824,7 @@ Modification History (most recent at top)
    #+win32          bu::alt-mouse-click
    #-(or apple win32) bu::mouse-left
    com-suck-region)
-  (#+apple            bu::option-mouse-click-on-graphics 
+  (#+apple            bu::option-mouse-click-on-graphics
    #+win32            bu::alt-mouse-click-on-graphics
    #-(or apple win32) bu::graphics-mouse-left
    com-suck-region)
@@ -851,7 +851,7 @@ Modification History (most recent at top)
   (#+(or apple win32) bu::mouse-click
    #-(or apple win32) bu::mouse-middle
    com-bring-back-region)
-  (#+(or apple win32) bu::mouse-click-on-graphics 
+  (#+(or apple win32) bu::mouse-click-on-graphics
    #-(or apple win32) bu::graphics-mouse-middle
    com-bring-back-region)
   (#+(or apple win32) bu::mouse-click-on-sprite
@@ -917,14 +917,14 @@ Modification History (most recent at top)
 ;  (reset-mouse-cursor)
 ;  (setq *suitcase-mode* nil))
 
-(defvar *editor-abort-chars* 
+(defvar *editor-abort-chars*
   #-mcl (list (make-char #\g 1) (make-char #\. 1)
               ;; 200. is the STOP key on Suns
               #+sun (make-char (code-char 200))
               #+sun (make-char (code-char 200) 1))
   ;; MCL can't encode shift bits in character objects
   #+mcl (list #\Bell))
-  
+
 #+mcl
 (defvar *unshifted-mac-editor-abort-chars* (list #\g #\.))
 
@@ -947,7 +947,7 @@ Modification History (most recent at top)
 
 
 (defmacro define-input-devices (platform shift-list mouse-string special-keys)
-  `(progn 
+  `(progn
     (unless (member ',platform *defined-input-device-platforms*)
       (push ',platform *defined-input-device-platforms*))
     (setf (get ',platform :shift-list)   ',shift-list
@@ -979,7 +979,7 @@ Modification History (most recent at top)
 
 (defvar *popup-docs* nil)
 
-(defvar *popup-doc-font* 
+(defvar *popup-doc-font*
   #+lispworks (%make-font-number-internal 0 0)
   #+mcl (make-boxer-font '("Geneva" 10)))
 
@@ -1026,7 +1026,7 @@ Modification History (most recent at top)
 
 (defvar *box-properties* nil)
 
-(defmacro define-box-property ((name boxer-name) 
+(defmacro define-box-property ((name boxer-name)
                                init-args new-box-init-form ; should take 2 (prop box)
                                new-prop-arg set-new-prop-form ; 2 arg (prop value)
                                make-prop-box-form ; 0 args
@@ -1035,7 +1035,7 @@ Modification History (most recent at top)
         (set-prop-function-name (intern (format nil "SET-NEW-BOX-PROP-~A" name)))
         (make-prop-name  (intern (format nil "MAKE-NEW-BOX-PROP-~A" name))))
     ;; we could use gensyms for these since they get put on a plist
-    ;; but then they would be a pain to debug when they blow out    
+    ;; but then they would be a pain to debug when they blow out
     `(progn
        (unless (member ',name *box-properties*) (push ',name *box-properties*))
        (setf (get ,name :boxer-name) ',boxer-name)
@@ -1048,7 +1048,7 @@ Modification History (most recent at top)
        (defun ,make-prop-name ()
          ,make-prop-box-form)
        (setf (get ,name :make-prop-box) ',make-prop-name))))
-                               
+
 
 ;; display properties
 (define-box-property (:always-zoom bu::always-zoom)
@@ -1065,7 +1065,7 @@ Modification History (most recent at top)
   (make-box '(("False")) 'data-box 'bu::shrink-on-exit))
 
 (define-box-property (:manual-size bu::manual-sizing)
-  (prop box) (when (eval::true? prop) 
+  (prop box) (when (eval::true? prop)
                (set-bottom-right-hotspot-active? box t))
   (prop new-value) (change prop (eval::boxer-boolean new-value))
   (make-box '(("False")) 'data-box 'bu::manual-sizing))
@@ -1134,7 +1134,7 @@ Modification History (most recent at top)
                                           (props (eval::boxer-symeval
                                                   'bu::new-box-properties)))
   (dolist (property *box-properties*)
-    (funcall (get property :new-box-init) 
+    (funcall (get property :new-box-init)
              (get-prop-from-props-box property props) box)))
 
 (defun make-new-box-properties-box ()
@@ -1142,16 +1142,16 @@ Modification History (most recent at top)
                         (list (funcall (get property :make-prop-box))))
                     *box-properties*)))
 
-(defun set-new-box-property (property new-value 
+(defun set-new-box-property (property new-value
                                       &optional
-                                      (props (eval::boxer-symeval 
+                                      (props (eval::boxer-symeval
                                               'bu::new-box-properties)))
-  (funcall (get property :set-new-prop) 
+  (funcall (get property :set-new-prop)
            (get-prop-from-props-box property props) new-value))
 
 ;; helps to get the wording right in dialogs
-(defun top-level-props? () 
+(defun top-level-props? ()
   (eq (eval::boxer-symeval 'bu::new-box-properties)
-      (eval::static-variable-value 
+      (eval::static-variable-value
        (symbol-value 'bu::new-box-properties))))
-                               
+
