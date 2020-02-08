@@ -122,7 +122,7 @@ Modification History (most recent at top)
             (dolist (keyfunpair keydefs)
               (collect `(defboxer-mode-key ,(car keyfunpair) (,mode-name)
                           ,(cadr keyfunpair))))))))
-                             
 
-          
-       
+
+
+
