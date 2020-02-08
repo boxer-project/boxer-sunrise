@@ -184,7 +184,7 @@ Modification History (most recent at top)
 	    (t
 	     ;; looks like there is no match so return nil
 	     (return nil))))))
-    
+
 
 ;;; this is a hook to (eventually) get more complicated
 ;;; Note that the args are asymetric, the row object arg comes before
@@ -219,7 +219,7 @@ Modification History (most recent at top)
   ((current-position :initform nil) ; NOT the same as the *point*
    (bp-stack :initform nil)
    (stop-box :initform nil)
-   (pattern  :initform (make-storage-vector))   
+   (pattern  :initform (make-storage-vector))
    (box-pattern :initform nil)
    (direction :initform 1))
   (:metaclass block-compile-class))
@@ -345,7 +345,7 @@ Modification History (most recent at top)
       (search-from (slot-value mode 'pattern)
 		   (or from (slot-value mode 'current-position) *point*)
 		   (slot-value mode 'stop-box))))
-      
+
 
 (defvar *search-mode* (make-instance 'search-mode))
 
