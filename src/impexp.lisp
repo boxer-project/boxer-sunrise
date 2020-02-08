@@ -55,11 +55,11 @@ Modification History (most recent at top)
 (defvar *foreign-file-filters* '("All Files" "*.*"))
 
 (defmacro def-export-type (type pretty-name file-filter &rest prefs)
-  `(let* ((new (make-instance ',type 
+  `(let* ((new (make-instance ',type
                               :pretty-name ,pretty-name
                               :file-filter ,file-filter
                               :prefs ',prefs))
-          (old (car (member new *foreign-file-class-exports* 
+          (old (car (member new *foreign-file-class-exports*
                             :test #'(lambda (a b) (eq (class-of a) (class-of b)))))))
      (if (null old)
          (push new *foreign-file-class-exports*)
@@ -69,12 +69,12 @@ Modification History (most recent at top)
             )
            (t (push ,file-filter *foreign-file-filters*)
               (push ,pretty-name *foreign-file-filters*)))))
-       
+
 
 ;;; Foreign File Types
 
 ;;; each type gets added to *export-types* & *import-types*
-;;; each type (can) handle(s) special handling lookup, 
+;;; each type (can) handle(s) special handling lookup,
 ;;; type prefs-persistence, reading/writing
 
 (defclass foreign-file-class
@@ -100,7 +100,7 @@ Modification History (most recent at top)
 
 ;(defmethod initialize-instance ((self foreign-file-class) &rest init-plist)
 ;  (shared-initialize self t)
-  
+
 
 ;; OPML (see opml.lisp)
 
@@ -131,16 +131,16 @@ writing-foreign-file (stream-var ffc filename)
 
 
 (defmacro writing-foreign-file ((stream-var ffc filename) &body body)
-  `(with-open-file (,stream-var ,filename 
-                                :direction ':output 
+  `(with-open-file (,stream-var ,filename
+                                :direction ':output
                                 :element-type (foreign-file-element-type ,ffc))
      . ,body))
 
 #|
 ;; unicode version
 (defmacro writing-foreign-file ((stream-var ffc filename) &body body)
-  `(with-open-file (,stream-var ,filename 
-                                :direction ':output 
+  `(with-open-file (,stream-var ,filename
+                                :direction ':output
                                 :external-format :utf-8
                                 :element-type :default)
      . ,body))
@@ -159,7 +159,7 @@ writing-foreign-file (stream-var ffc filename)
 (defun get-export-format-properties (box)
   (let* ((props-box (eval::static-variable-value
                      (eval::lookup-static-variable box 'bu::export-properties)))
-         (bindings (when (box? props-box) 
+         (bindings (when (box? props-box)
                      (slot-value props-box 'eval::static-variables-alist))))
     (cond ((null bindings) nil)
           (t (with-collection
@@ -181,37 +181,37 @@ writing-foreign-file (stream-var ffc filename)
                  (indicator (car props) (car props))
                  (value     (cadr props)(cadr props)))
                 ((null props) old-props)
-             (setf (getf old-props indicator) value)))))             
+             (setf (getf old-props indicator) value)))))
 
 ;;; Default methods
 
 (defmethod foreign-file-element-type ((ffc foreign-file-class)) 'character)
 
-(defmethod begin-foreign-stream ((ffc foreign-file-class) 
+(defmethod begin-foreign-stream ((ffc foreign-file-class)
                                  &optional (stream *standard-output*))
   ;; file format info like <html> for html files
   (declare (ignore stream))
   )
 
-(defmethod write-foreign-file-header ((ffc foreign-file-class) box 
+(defmethod write-foreign-file-header ((ffc foreign-file-class) box
                                       &optional (stream *standard-output*))
   ;; file level header info like date, author etc belong here....
   (declare (ignore box stream))
   )
 
-(defmethod begin-foreign-body ((ffc foreign-file-class) 
+(defmethod begin-foreign-body ((ffc foreign-file-class)
                                  &optional (stream *standard-output*))
   ;; file format info like <body> for html files
   (declare (ignore stream))
   )
 
-(defmethod end-foreign-body ((ffc foreign-file-class) 
+(defmethod end-foreign-body ((ffc foreign-file-class)
                                  &optional (stream *standard-output*))
   ;; file format info like </body> for html files
   (declare (ignore stream))
   )
 
-(defmethod end-foreign-stream ((ffc foreign-file-class) 
+(defmethod end-foreign-stream ((ffc foreign-file-class)
                                &optional (stream *standard-output*))
   ;; file format info like </html> for html files
   (declare (ignore stream))
@@ -226,7 +226,7 @@ writing-foreign-file (stream-var ffc filename)
     ;; typically will include constants as well as info from the class's prefs
 
 |#
-  
+
 
 
 ;;; Box & Row writing methods must be specific to formats so no defaults for those...
@@ -238,7 +238,7 @@ writing-foreign-file (stream-var ffc filename)
   ;; 1st check for any  special handling....
   ;; handle box's name...
   (let* ((*ffc-depth* (1+ *ffc-depth*)) ;; support for indenters
-         (*export-properties* (merge-export-properties 
+         (*export-properties* (merge-export-properties
                                *export-properties*
                                (get-export-format-properties box)))
          (nr (name-row box))
@@ -248,7 +248,7 @@ writing-foreign-file (stream-var ffc filename)
          ;; we check for indent info @ the box level because we may want a
          ;; box level way to change it (inside export-info)
          (*current-indent* (make-string (* (max 0 (1- *ffc-depth*))
-                                           indent-factor) 
+                                           indent-factor)
                                         :initial-element #\space)))
     (terpri stream)
     (unless (null nr)
@@ -267,7 +267,7 @@ writing-foreign-file (stream-var ffc filename)
   (format stream "~A" *current-indent*)
   (let ((box-handled? nil))
     (do-row-chas ((cha row))
-      (cond ((box? cha) 
+      (cond ((box? cha)
              ;; CR's around boxes ?
              (if (and (graphics-box? cha)
                       (let ((ds (display-style-list cha)))
@@ -312,7 +312,7 @@ writing-foreign-file (stream-var ffc filename)
 
 (defmethod write-foreign-file-box ((ffc html-file-class) box stream)
   (let* ((*ffc-depth* (min 6 (1+ *ffc-depth*))) ;; maximum header depth is 6
-         (*export-properties* (merge-export-properties 
+         (*export-properties* (merge-export-properties
                                *export-properties*
                                (get-export-format-properties box)))
          (nr (name-row box))
@@ -320,7 +320,7 @@ writing-foreign-file (stream-var ffc filename)
                                                   :respect-line-breaks
                                                   :not-specified)))
                                  (cond ((eq local :not-specified)
-                                        (getf (slot-value ffc 'prefs) 
+                                        (getf (slot-value ffc 'prefs)
                                               :respect-line-breaks))
                                        (t local)))))
     (cond ((null nr)
@@ -347,7 +347,7 @@ writing-foreign-file (stream-var ffc filename)
   (let ((cha-written? nil)
         (empty? t))
     (do-row-chas ((cha row))
-      (cond ((box? cha) 
+      (cond ((box? cha)
              ;; if chas have been written, finish
              (when cha-written? (format stream "<BR>~%"))
              ;; CR's around boxes ?
@@ -390,12 +390,12 @@ writing-foreign-file (stream-var ffc filename)
   ()
   )
 
-(defmethod begin-foreign-stream ((ffc opml-file-class) 
+(defmethod begin-foreign-stream ((ffc opml-file-class)
                                 &optional (stream *standard-output*))
   (format stream "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>~%~
                   <opml version=\"2.0\">~%"))
 
-(defmethod write-foreign-file-header ((ffc opml-file-class) box 
+(defmethod write-foreign-file-header ((ffc opml-file-class) box
                                       &optional (stream *standard-output*))
   (format stream "   <head>~%")
   (let ((nr (name-row box)))
@@ -410,8 +410,8 @@ writing-foreign-file (stream-var ffc filename)
   ;<ownerName>Dave Winer</ownerName>
   (format stream "    <ownerEmail>~A</ownerEmail>~%" boxnet::*user-mail-address*)
   (format stream "   </head>~%"))
-  
-(defmethod begin-foreign-body ((ffc opml-file-class) 
+
+(defmethod begin-foreign-body ((ffc opml-file-class)
                                  &optional (stream *standard-output*))
   ;; file format info like <html> for html files
   (format stream "  <body>~%"))
@@ -420,7 +420,7 @@ writing-foreign-file (stream-var ffc filename)
   (let ((*ffc-depth* (1+ *ffc-depth*)) ;; support for indenters
         (nr (name-row box))
         (1st-row (first-inferior-row box))
-        (*current-indent* (make-string (* *ffc-depth* *xml-indent-factor*) 
+        (*current-indent* (make-string (* *ffc-depth* *xml-indent-factor*)
                                        :initial-element #\space)))
     ;; box's 1st text attribute
     (format stream "~A<outline text=\"~A\">~%"
@@ -452,7 +452,7 @@ writing-foreign-file (stream-var ffc filename)
 (defmethod write-foreign-file-row ((ffc opml-file-class) row stream)
   (let ((cha-written? nil))
     (do-row-chas ((cha row))
-      (cond ((box? cha) 
+      (cond ((box? cha)
              ;; if chas have been written, finish
              (when cha-written? (format stream "\"/>~%"))
              ;; CR's around boxes ?
@@ -469,7 +469,7 @@ writing-foreign-file (stream-var ffc filename)
     (when cha-written? (format stream "\"/>~%"))))
 
 
-(defmethod end-foreign-body ((ffc opml-file-class) 
+(defmethod end-foreign-body ((ffc opml-file-class)
                                  &optional (stream *standard-output*))
   ;; file format info like <html> for html files
   (format stream "   </body>~%"))
@@ -516,9 +516,9 @@ writing-foreign-file (stream-var ffc filename)
       (com-export-box-as ffc))))
 
 #+mcl
-(progn 
+(progn
 
-(setq *export-file-menu* 
+(setq *export-file-menu*
   (make-instance 'ccl::menu :menu-item-title "Export"
                  :menu-items
                  (mapcar #'(lambda (ffc)
