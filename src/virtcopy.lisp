@@ -31,7 +31,7 @@
 
 Modification History (most recent at top)
 
- 4/02/05 UPDATE-EVROW-FOR-NEW-VC now handles possible string values for 
+ 4/02/05 UPDATE-EVROW-FOR-NEW-VC now handles possible string values for
          evrow-items.  They can arise from user prompting prims
  7/11/02 smarter showmp
  5/19/01 port-to-item added simple-vector-p check before using fast-eval-port-box?
@@ -54,7 +54,7 @@ Modification History (most recent at top)
 
 
 
-;;;; Predicates 
+;;;; Predicates
 
 #|see the file eval/ev-int.lisp for the real defs
 (DEFUN EVAL-BOX? (THING)
@@ -196,11 +196,11 @@ Modification History (most recent at top)
 
 ;;;; Copying functions
 
-;;; The file edvc.lisp contains the functions which make evaluator 
+;;; The file edvc.lisp contains the functions which make evaluator
 ;;; objects from editor objects
 
-;;; copying various kinds of boxes 
-;; A copy of a copy needs to record the same inferiors and type and a new 
+;;; copying various kinds of boxes
+;; A copy of a copy needs to record the same inferiors and type and a new
 ;; creation time we make the simple optimization that copying an unchanged
 ;; box is the same thing as a copying that unchanged box's immediate ancestor.
 ;; We don't have to worry about the caches because they are supposed to be
@@ -241,14 +241,14 @@ Modification History (most recent at top)
 
 
 
-;;; this is only called if it appears that we may have to check 
+;;; this is only called if it appears that we may have to check
 ;;; for and handle port links.  If so, it extends the relevant
 ;;; pointers.  Returns non-NIL only if it had to extend a multipointer
 (defun update-evrow-for-new-vc (evrow old-sup-vc new-sup-vc links?)
   (let ((had-to-extend? nil))
     (dolist (ptr (evrow-pointers evrow))
       (setq had-to-extend?
-	    (or 
+	    (or
 	      (let* ((raw-chunk (get-pointer-value ptr old-sup-vc))
 		     (chunk-p (chunk-p raw-chunk))
 		     (value (if chunk-p (chunk-chunk raw-chunk)
@@ -303,7 +303,7 @@ Modification History (most recent at top)
 		      (t (error "~S is an unexpected evrow item" value))))
 	      had-to-extend?)))
     had-to-extend?))
-	     
+
 ;;; this should do the same job as update-evrow-for-new-vc except that
 ;;; instead of extending the multipointers, it conses up a new
 ;;; evrow with single pointers
@@ -323,7 +323,7 @@ Modification History (most recent at top)
 		 :progenitor (vc-progenitor vc)
 		 :closets (vc-closets vc)
 		 :graphics (vc-graphics vc)
-		 :exports (when top-level? (vc-exports vc))))	   
+		 :exports (when top-level? (vc-exports vc))))
 	 (inlinks? (vc-inlinks? vc)))
     ;; adjust the pedigree and progenitor if we have to
     (when (vc-modified? vc)
@@ -334,11 +334,11 @@ Modification History (most recent at top)
       ;;
       ;; put this back in, some other prims (like RUN) were using this to access
       ;; no longer valid cached data via the editor box
-      (setf (vc-progenitor newvc) nil) 
+      (setf (vc-progenitor newvc) nil)
       )
     ;; now we figure out the inlinks? and the evrows
     (cond ((and (null inlinks?) (null (vc-modified? vc)))
-	   ;; The simple fast case where there are NO 
+	   ;; The simple fast case where there are NO
 	   ;; inlinks to articulate
 	   (setf (vc-rows newvc) (vc-rows vc)))
 	  (t
@@ -469,7 +469,7 @@ Modification History (most recent at top)
 ;;    that was made by the QUERENT or an ancestor of the QUERENT THAT ALSO has
 ;;    a time-of-change that is OLDER than the QUERENT's time-of-creation.
 ;;    (Remember that the MPS's are ordered in time)
-;;    
+;;
 
 ;;; still need to think thru what happens when with-respect-to
 ;;; is NIL or an editor box
@@ -489,7 +489,7 @@ Modification History (most recent at top)
 					 ':default)))
 	;; If we come up empty, return the original value of the Multi-Pointer
 	(when (eq with-respect-to (%mps-who slot))
-	  ;; The QUERENT itself made the change so there is no 
+	  ;; The QUERENT itself made the change so there is no
 	  ;; need to compare times. We immediately RETURN the slot value
 	  (trace-vc "Exact MP match:" (%mps-value slot) (%mps-who slot))
 	  (return  (values (%mps-value slot) t)))
@@ -579,7 +579,7 @@ Modification History (most recent at top)
       thing))
 |#
 ;;; If the inferior is already a virtual copy, then we return a port to it
-;;; otherwise, we will have to virtual copy the inferior first in order to 
+;;; otherwise, we will have to virtual copy the inferior first in order to
 ;;; assure that multiple ports to the same inferior point to the same(EQ) thing
 
 (defun port-to-item (ptr superior &optional keep-chunk)
@@ -644,7 +644,7 @@ Modification History (most recent at top)
 
 
 
-;;;; Evaluator Interface. 
+;;;; Evaluator Interface.
 
 (defun LOOKUP-VARIABLE-IN-BOX-ONLY (box var &optional (exact-inferior-required? t))
   (if (box? box)
@@ -653,24 +653,24 @@ Modification History (most recent at top)
 
 ;;; symeval support
 
-;; the basic idea is to loop through all of the inferiors of the box looking 
-;; for the name and then if we find it, cache it in case we are asked again. 
-;; If we dont find ANY names, then record that too so wee don't have to 
-;; loop through ALL of the inferiors again.  
+;; the basic idea is to loop through all of the inferiors of the box looking
+;; for the name and then if we find it, cache it in case we are asked again.
+;; If we dont find ANY names, then record that too so wee don't have to
+;; loop through ALL of the inferiors again.
 ;;
 ;; If we DO find a name, then we have to VC it cause we may want to port to it
-;; We can optimize this step out if we can KNOW at symeval time whether or 
+;; We can optimize this step out if we can KNOW at symeval time whether or
 ;; not we are actually going to have to port to it
 
 (defvar *no-names-in-vc-marker* 'no-names-in-here-bub)
 
-;;; The caller of this function can use the optional arg 
-;;; exact-inferior-required? if they know how the returned value will be 
+;;; The caller of this function can use the optional arg
+;;; exact-inferior-required? if they know how the returned value will be
 ;;; flavorized.  Port-to flavored inputs required EXACT copies in order to
 ;;; maintain consistency between multiple ports to the same
-;;; target.  On the other hand, if you know that you are just going to 
-;;; (virtual) copy the result, then any (equal) result will do and that can be 
-;;; potentially faster since it isn't obligated to CONS an exact inferior if 
+;;; target.  On the other hand, if you know that you are just going to
+;;; (virtual) copy the result, then any (equal) result will do and that can be
+;;; potentially faster since it isn't obligated to CONS an exact inferior if
 ;;; none is available
 
 ;;; if the variable isn't present in the virtual copy, we should return nil.
@@ -693,19 +693,19 @@ Modification History (most recent at top)
 			(eval::lookup-static-variable superior-box
 						      variable)))))))
 	      ((virtual-copy? sup)
-	       (lookup-variable-in-virtual-copy sup 
+	       (lookup-variable-in-virtual-copy sup
 						variable
 						exact-inferior-required?))
 	      (t
 	       (cerror "Ignore the thing" "The thing, ~A, was not a virtual copy structure"
 		       sup)
 	       nil)))))
-	       
+
 
 (defun lookup-variable-in-virtual-copy-1 (vc variable
 					   &optional
 					   (exact-inferior-required? t))
-  (declare (ignore exact-inferior-required?)) ; no longer used 
+  (declare (ignore exact-inferior-required?)) ; no longer used
   (record-vc-var-lookup)
   (cond ((eq (vc-cached-binding-alist vc)
 	     *no-names-in-vc-marker*)
@@ -738,7 +738,7 @@ Modification History (most recent at top)
 				   (push (eval::make-static-variable name val)
 					 (vc-cached-binding-alist vc)))
 				  (t
-				   ;; we dont have an exact 
+				   ;; we dont have an exact
 				   ;; match but we want one
 				   (let* ((newval (virtual-copy val
 								:top-level?
@@ -774,7 +774,7 @@ Modification History (most recent at top)
 			  (let ((name (vp-name val)))
 			    (cond ((null name))
 				  (t
-				   ;; box has a name so cache 
+				   ;; box has a name so cache
 				   ;; the name and the value
 				   (let ((svar
 					  (eval::make-static-variable name val)))
@@ -788,7 +788,7 @@ Modification History (most recent at top)
 			    (cond ((null name))
 				  (t
 				   ;; box has a name so cache the name and
-				   ;; a virtual copy of the value.  
+				   ;; a virtual copy of the value.
 				   (let* ((new-val (virtual-copy val
 								 :top-level?
 								 t))
@@ -822,7 +822,7 @@ Modification History (most recent at top)
                                        (push binding (vc-cached-binding-alist vc))))))
                           ))))))
 	   ;; check in the closet...
-	   ;; Still need to think about whether it will be faster to 
+	   ;; Still need to think about whether it will be faster to
 	   ;; go through the box's alist and then check to see if
 	   ;; the result is in the closet or to iterate through the
 	   ;; items in the closet
@@ -841,7 +841,7 @@ Modification History (most recent at top)
 				   (cond ((null name))
 					 (t
 					  ;; box has a name so cache the name and
-					  ;; a virtual copy of the value.  
+					  ;; a virtual copy of the value.
 					  (let* ((new-val (virtual-copy
 							   cha :top-level?
 							   t))
@@ -855,8 +855,8 @@ Modification History (most recent at top)
 		 (handle-row closet))))
 	   ;; the cache is now as filled as it ever will be
 	   ;;
-	   ;; If there are no bindings pushed onto the cached binding list, 
-	   ;; then set the marker so we don't loop through the box again. 
+	   ;; If there are no bindings pushed onto the cached binding list,
+	   ;; then set the marker so we don't loop through the box again.
 	   (when (null (vc-cached-binding-alist vc))
 	     (setf (vc-cached-binding-alist vc)
 		   *no-names-in-vc-marker*)
@@ -876,7 +876,7 @@ Modification History (most recent at top)
 
 
 ;;; This used to massage new items for mutators and constructors
-;;; and for RUN although the arithmetic should be using these 
+;;; and for RUN although the arithmetic should be using these
 
 ;;; Doit Boxes should cached the parsed rows on their Plist and we
 ;;; should check for a cache Hit on the doit box here
@@ -888,9 +888,9 @@ Modification History (most recent at top)
 
 ;;; the $ 64K question is "do we need to bother caching the elements on VC's ?"
 ;;; let's not for now.  The only situation where a cache might win would be
-;;; constant use of THE SAME COPY.  Right now, that loks like it might only 
+;;; constant use of THE SAME COPY.  Right now, that loks like it might only
 ;;; happen (frequently and naturally) in some sort of object oriented type
-;;; of programming where an instance gets created on the fly 
+;;; of programming where an instance gets created on the fly
 
 (defun handle-pointer-for-unboxing (p superior
 				      &optional
@@ -914,7 +914,7 @@ Modification History (most recent at top)
 	       (port-to-item p superior (not unformatted?)))
 	      (t (let ((copy (virtual-copy value :top-level? t)))
 		   ;; set the creation time to be the same as the
-		   ;; superior box (the default is NOW) 
+		   ;; superior box (the default is NOW)
 		   (setf (vc-creation-time copy) (vcis-creation-time superior))
 		   (cond ((or (not (null unformatted?)) (not chunk-p))
 			  copy)
@@ -1014,7 +1014,7 @@ Modification History (most recent at top)
 
 
 ;;;; Things that count
-;;   It might be useful in the future to cache some of these values.  
+;;   It might be useful in the future to cache some of these values.
 ;;   We need to do some more metering to decide what to cache
 
 ;;;  Counting by evaluator tokens
@@ -1036,14 +1036,14 @@ Modification History (most recent at top)
       (setq mlength (max mlength (evrow-length-in-elements r))))))
 
 ;;; Counting by characters
-;;  The length of a row = (+ (+ (LENGTH LFP1) (LENGTH PNAME1)) 
+;;  The length of a row = (+ (+ (LENGTH LFP1) (LENGTH PNAME1))
 ;;                           (+ (LENGTH LFP2) (LENGTH PNAME2))
 ;;                           ...
 ;;                           (+ (LENGTH LFPn) (LENGTH PNAMEn) (LENGTH RFPn)))
-;; 
-;;  The reason for emphasizing the LFP's is that most of the important objects 
+;;
+;;  The reason for emphasizing the LFP's is that most of the important objects
 ;;  of a CHUNK are to be found to the Left of the CHUNK.
-;; 
+;;
 
 (defun evrow-length-in-chas (evrow superior)
   (let ((entries (evrow-pointers evrow)))
@@ -1065,7 +1065,7 @@ Modification History (most recent at top)
 	     (error "Tried to find the Length of an EVROW without ENTRIES of FORMATTING."))
 	    (t (formatting-info-length (evrow-row-format evrow)))))))
 
-;; This is used by JOIN-RIGHT among other things to set up the 
+;; This is used by JOIN-RIGHT among other things to set up the
 ;; correct number of spaces
 (defun box-max-width-in-chas (box)
   (let ((mwidth 0))
@@ -1075,12 +1075,12 @@ Modification History (most recent at top)
 
 
 ;;;; Stringifying
-;;   These routines are mainly for passing strings to various lisp utilities 
+;;   These routines are mainly for passing strings to various lisp utilities
 ;;   that we need to Interface with.  An example is the file system which
 ;;   calls FS:PARSE-PATHNAME (or to be more Common Lispy, #P) on a string.
 ;;   Boxes appear in the string as "[]" As in the counting routines, we
 ;;   accumalate left formatting properties and Pnames until we reach the end
-;;   at which time we add on the right formatting property.  
+;;   at which time we add on the right formatting property.
 
 (defun evrow-text-string (row superior
 			      &optional (return-string
@@ -1089,7 +1089,7 @@ Modification History (most recent at top)
 						     :fill-pointer 0
 						     :adjustable t))
 			      (start-box-cha #\[) (stop-box-cha #\]))
-			      
+
   (let ((entries (evrow-pointers row)))
     (flet ((chunk-handler (chunk space? &optional last?)
              (when (and space? (formatting-info? (chunk-pname chunk)))
@@ -1123,8 +1123,8 @@ Modification History (most recent at top)
 	     (do* ((ptrs entries (cdr ptrs))
 		   (p (car ptrs) (car ptrs))
                    (last-ptr-was-box? nil)
-                   (already-space? 
-                    t 
+                   (already-space?
+                    t
                     ;; is the last char some sort of whitespace ?
                     (member (char return-string (1-& (length return-string)))
                             '(#\space #\newline #\tab)
@@ -1137,13 +1137,13 @@ Modification History (most recent at top)
                                                     (not last-ptr-was-box?))
                                          (null (cdr ptrs)))
                           (setq last-ptr-was-box?
-                                (not (formatting-info? (chunk-pname chunk))))))		       
-		       (t 
-                        (prog1 
+                                (not (formatting-info? (chunk-pname chunk))))))
+		       (t
+                        (prog1
                           (value-handler chunk (and (not already-space?)
                                                     (not last-ptr-was-box?)))
                           (setq last-ptr-was-box?
-                                (not (or (symbolp chunk) 
+                                (not (or (symbolp chunk)
                                          (stringp chunk) (numberp chunk))))))))))
 	    ((null (evrow-row-format row)))
 	    (t (let ((format-chunk (evrow-row-format row)))
@@ -1160,7 +1160,7 @@ Modification History (most recent at top)
 
 (defun box-text-string (box)
   (cond ((numberp box) (convert-number-to-string box))
-	(t 
+	(t
 	 (let ((return-string (make-array 64 :element-type 'standard-char
 					  :fill-pointer 0 :adjustable t)))
 	   (multiple-value-bind (boxrows inlinks? new? vc-rows-entry)
@@ -1243,7 +1243,7 @@ Modification History (most recent at top)
 
 (defun box-text-string (box)
   (cond ((numberp box) (format nil "~A" box))
-	(t 
+	(t
 	 (let ((return-string (make-string 0)))
 	   (dolist (r (get-box-rows box) (string-right-trim '(#\newline)
 							    return-string))
@@ -1259,7 +1259,7 @@ Modification History (most recent at top)
 
 
 ;;;; Data Manipulator Support for Manipulating Row Elements
-;;   These functions manipulate items in EVROWs returning lists of items 
+;;   These functions manipulate items in EVROWs returning lists of items
 ;;   which are then run through another function which does the appropriate
 ;;   porting or virtual-copying
 ;;   to the items before they are wrapped up into a new EVROW.
@@ -1326,7 +1326,7 @@ Modification History (most recent at top)
       (nconc (subseq entries 0 n)
 	     (list new-element)
 	     (subseq entries n)))))
-  
+
 (defun insert-first-element-into-evrow (evrow new-element)
   (with-type-checking (evrow evrow new-element pointer)
     (list* new-element (evrow-pointers evrow))))
@@ -1335,33 +1335,33 @@ Modification History (most recent at top)
   (with-type-checking (evrow evrow new-element pointer)
     (append (evrow-pointers evrow) (list new-element))))
 
-;;  CHANGE--These are for new boxes, port-flavored versions are handled by the 
-;;  calling functions 
+;;  CHANGE--These are for new boxes, port-flavored versions are handled by the
+;;  calling functions
 
 (defun change-nth-element-in-evrow (evrow n new-element)
-  (with-type-checking (evrow evrow new-element pointer) 
+  (with-type-checking (evrow evrow new-element pointer)
     (let ((entries (evrow-pointers evrow)))
       (nconc (subseq entries 0 n)
 	     (list* new-element (subseq entries (1+ n)))))))
 
 (defun change-first-element-in-evrow (evrow new-element)
-  (with-type-checking (evrow evrow new-element pointer) 
+  (with-type-checking (evrow evrow new-element pointer)
     (list* new-element (cdr (evrow-pointers evrow)))))
 
 (defun change-last-element-in-evrow (evrow new-element)
-  (with-type-checking (evrow evrow new-element pointer) 
+  (with-type-checking (evrow evrow new-element pointer)
     (append (butlast (evrow-pointers evrow)) (list new-element))))
 
 
 
 ;;; Row constructor support
-;;  returns a list of items to be bundled up into a new row by the 
+;;  returns a list of items to be bundled up into a new row by the
 ;;  EVROW-CONSTRUCTOR.  note that All MP's must be disambiguated since the
 ;;  new row will NOT be in the same box as the original row and since multiple
 ;;  rows will be joined in some fashion, we won't be
 ;;  able to extend the pedigree due to the mutiple parents.
 ;;  if the row is free of MP's, then we can avoid consing up a new evrow
-;;  We don't have to handle PORTing to inferiors here cause the 
+;;  We don't have to handle PORTing to inferiors here cause the
 ;;  EVROW-CONSTRUCTOR does that.
 ;;  This has to handle passing the PROGENITOR and OUTLINKS...
 
@@ -1472,8 +1472,8 @@ Modification History (most recent at top)
 ;;  DELETE, INSERT, CHANGE.
 ;;  These MODIFY
 
-;;  These CREATE and return a new set of rows.  Note that in most cases, we 
-;;  are merely CONSing up a new top level list.  Many of the rows in the 
+;;  These CREATE and return a new set of rows.  Note that in most cases, we
+;;  are merely CONSing up a new top level list.  Many of the rows in the
 ;;  list will be the same
 
 (defun delete-first-row-in-box (box)
@@ -1498,13 +1498,13 @@ Modification History (most recent at top)
       (nconc (subseq rows 0 n) (list new-row) (subseq rows n)))))
 
 
-#| 
+#|
 ;seems to be unused as of 4/28/92
 
 ;;;; How to Make new Evrows
 ;; EVROW-CONSTRUCTOR is the established way of making new EVROWS used by the
 ;; data manipulators. If we are making an EVROW for use in a constructor e.g.
-;; JOIN-RIGHT then All MP's must be disambiguated since the new row will NOT 
+;; JOIN-RIGHT then All MP's must be disambiguated since the new row will NOT
 ;; be in the a box which is ONLY a direct ancestor of the original row because
 ;; multiple rows will be joined in some fashion which means we won't be able
 ;; to just extend the pedigree due to the mutiple parents
@@ -1545,7 +1545,7 @@ Modification History (most recent at top)
 
 ;;; Coordinate conversion
 (defun get-row-and-col-number (n box)
-  "Converts 1-based GET-NTH coordinates into 0-based GET-RC coordinates.  
+  "Converts 1-based GET-NTH coordinates into 0-based GET-RC coordinates.
 Values returned are row number and column number.  Returns NIL if there
 aren't enough elements, 2nd value in the NIL case will be length in elements"
   (declare (values row-no index))
@@ -1579,7 +1579,7 @@ aren't enough elements, 2nd value in the NIL case will be length in elements"
 	 ;; we will be making a brand new box to stuff all the sub-ports into
 	 nil)
         ((vc-modified? thing) ; what about (vc-inlinks? thing))
-	 (acons thing (now) ; changed from (vc-creation-time thing) 
+	 (acons thing (now) ; changed from (vc-creation-time thing)
 		(vc-pedigree thing)))
 	(t (vc-pedigree thing))))
 
@@ -1598,7 +1598,7 @@ aren't enough elements, 2nd value in the NIL case will be length in elements"
 		     :rows (or rows (list (make-empty-evrow)))
 		     :name name))
 
-;;  Make a Virtual copy with a different row structure than the previous one 
+;;  Make a Virtual copy with a different row structure than the previous one
 ;;  but preserving everything else.  Selectors do this all the time.
 (defun new-vc-rows (old-vc new-rows)
   (let ((newvc (%copy-vc old-vc)))
@@ -1610,7 +1610,7 @@ aren't enough elements, 2nd value in the NIL case will be length in elements"
     (setf (vc-rows newvc) new-rows)
     newvc))
 
-;; now that selectors can be passed editor boxes (as a result of 
+;; now that selectors can be passed editor boxes (as a result of
 ;; the eval::dont-copy flavor), we have to handle editor boxes
 ;; otherwise, this is pretty much the same as new-vc-rows
 
@@ -1714,7 +1714,7 @@ aren't enough elements, 2nd value in the NIL case will be length in elements"
   (NUMBER 0)
   (ANALYZER NIL))
 
-(DEFVAR *MONITORING-VARS* NIL) 
+(DEFVAR *MONITORING-VARS* NIL)
 
 (DEFMACRO DEFINE-MONITOR-RESET-FUNCTION (NAME) )
 
