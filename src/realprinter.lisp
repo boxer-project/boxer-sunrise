@@ -29,10 +29,10 @@ ToDO:make-editor-box-from-vc doesn't hack turtles correctly yet....
  4/16/99 names are capitized in make-editor-box-from-vc (instead of all upper)
 10/16/98 scrolling info for port screen boxes is now reset during retarget-port
  8/24/98 record-port-printing now checks to see if the port has already been
-         recorded to avoid multiple entries in the retargetting list which 
+         recorded to avoid multiple entries in the retargetting list which
          cause blowouts
- 8/19/98 make the closet rendering part of make-editor-box-from-vc use 
-         #'make-editor-box-for-printing in order to capture the correct 
+ 8/19/98 make the closet rendering part of make-editor-box-from-vc use
+         #'make-editor-box-for-printing in order to capture the correct
          version of boxes in the closet
  8/19/98 started logging changes: source = boxer version 2.3beta
 
@@ -118,7 +118,7 @@ ToDO:make-editor-box-from-vc doesn't hack turtles correctly yet....
 	  (remove-link port (make-link 'port-branch-link port old-target))
 	  ;; remove 'target-branch-links starting from the target
 	  ;; branch.  This should also terminate at the common-node
-	  (remove-link old-target 
+	  (remove-link old-target
                        (make-link 'target-branch-link port old-target))))))
   (set-port-to-box port newbox)
   (insert-self-link-action newbox)
@@ -253,7 +253,7 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
 	   (cond ((cha? cha)
 		  (fast-chas-array-append-cha chas-array cha))
 		 (t
-		  ;; must be a box. 
+		  ;; must be a box.
                   (let ((cb (copy-box cha)))
 		    (fast-chas-array-append-cha chas-array cb)
 		    (set-superior-row cb row))))))))
@@ -415,18 +415,18 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
 	 (format nil "~D" number))
 	((floatp number)
 	 (format nil *boxer-float-print-string*
-		 #+lcl3.0 (case (lcl::extreme-float-p number) 
+		 #+lcl3.0 (case (lcl::extreme-float-p number)
 			    (:minus-infinity most-negative-long-float)
 			    (:plus-infinity most-positive-long-float)
 			    (t number))
 		 #-lcl3.0 number))
 	((and (null *print-rationals*) (rationalp number))
-	 (format nil *boxer-float-print-string* number))	
+	 (format nil *boxer-float-print-string* number))
 	(t (format nil "~D" number))))
 
 #|
- ;; this is for printing fractions > 1 as 1&2/3 but we need to 
- ;; make the chunker understand this notation BEFORE we can 
+ ;; this is for printing fractions > 1 as 1&2/3 but we need to
+ ;; make the chunker understand this notation BEFORE we can
  ;; have the printer produce it....
 	 (if (< (abs number) 1)
 	     number
@@ -460,10 +460,10 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
 ;; In general, only a pointer to the closet in the original box is retained
 ;; this can be a problem when an item in the closet is symeval'd and then
 ;; CHANGEd because the variable lookup code only produces a copy of an
-;; item on the cached-bind-alist.  Copy-Closet-Row-Checking-For-Changes 
-;; compares the items in the closet row against items in the 
+;; item on the cached-bind-alist.  Copy-Closet-Row-Checking-For-Changes
+;; compares the items in the closet row against items in the
 ;; cached-binding-alist to see if they have been CHANGEd.  It is basically
-;; a version of copy-row with a check inserted in the loop.  
+;; a version of copy-row with a check inserted in the loop.
 ;;
 ;; At some point we may want to change this scheme to actually COPYing the
 ;; closet at virtual copy time.  This doesn't look like a good tradeoff
@@ -576,8 +576,8 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
     ;; if the box is an unchanged copy, then look for a closet to copy
     ;; NoNoNo, preserve closets even for changed boxes....
     (let ((closet (vc-closets vc)))
-      (unless (null closet) ; (null original) ;flushed on changed 
-	;; Note: closet can be an evrow (usually inside of build templates) 
+      (unless (null closet) ; (null original) ;flushed on changed
+	;; Note: closet can be an evrow (usually inside of build templates)
 	(when (evrow? closet) (setq closet (make-row-from-evrow closet vc)))
 	(add-closet-row box
 			(let ((alist (vc-cached-binding-alist vc))
@@ -637,7 +637,7 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
   ;; available values in the box
   (let ((alist (static-variables-alist box)))
     (dolist (slot-name (all-interface-slots go))
-      (let ((existing (member slot-name alist 
+      (let ((existing (member slot-name alist
                               :test #'(lambda (slot binding)
                                         (string= slot (car binding))))))
         (unless (null existing)
@@ -654,21 +654,21 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
 (defun set-slot-value-from-binding (slot binding)
   (let ((box (eval::static-variable-value binding)))
     (case (box-interface-slot-name slot)
-      ((heading x-position y-position) (setf (box-interface-value slot) 
+      ((heading x-position y-position) (setf (box-interface-value slot)
                                              (check-and-get-number-arg box)))
-      (shown? (setf (box-interface-value slot) 
+      (shown? (setf (box-interface-value slot)
                     (check-and-get-hide-arg box slot)))
-      (pen (setf (box-interface-value slot) 
+      (pen (setf (box-interface-value slot)
                  (check-and-get-pen-arg box)))
-      (pen-width (setf (box-interface-value slot) 
+      (pen-width (setf (box-interface-value slot)
                        (check-and-get-pen-width-arg box)))
-      (type-font (setf (box-interface-value slot) 
+      (type-font (setf (box-interface-value slot)
                        (check-and-get-type-font-arg box)))
       (pen-color (let ((nc (graphics-sheet-background (graphics-sheet box))))
                    (when (color? nc) (setf (box-interface-value slot) nc))))
-      (sprite-size (setf (box-interface-value slot) 
+      (sprite-size (setf (box-interface-value slot)
                          (check-and-get-size-arg box)))
-      (home-position (setf (box-interface-value slot) 
+      (home-position (setf (box-interface-value slot)
                            (check-and-get-number-args box)))
       ;; does NOT hack recursive eval since we are trying to phase that out
       ;; only do something if we detect graphics in the box
@@ -682,7 +682,7 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
 	             (sv-append shape (allocate-window->boxer-command
 				       graphics-command))))))))))
 
-;; this is used by PROCESS-EDITOR-OBJECT-MUTATION-QUEUE 
+;; this is used by PROCESS-EDITOR-OBJECT-MUTATION-QUEUE
 (defun make-editor-rows-from-evrows (evrows vc-rows-entry
 					    creation-time editor-box)
   (let ((*creation-time-for-printing-vc* creation-time)
@@ -814,7 +814,7 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
 					(copy-row original-closet))))))
 			;; attach the 1st row
 			(append-row box prev-row)
-			;; now loop through the remaining rows 
+			;; now loop through the remaining rows
 			(do* ((vrs (cdr vrows) (cdr vrs))
 			      (vr (car vrs) (car vrs)))
 			     ((null vrs) )
@@ -850,9 +850,9 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
                   (let ((this-chunk-is-box? (or (virtual-copy? value)
                                                 (virtual-port? value)
 			                        (box? value))))
-		    (prog1 
+		    (prog1
                       (or
-		       ;; don't need to insert spaces if 
+		       ;; don't need to insert spaces if
 		       ;; the previous or current chunk is a box...
 		       last-chunk-was-box? this-chunk-is-box?
 		       ;; or this chunk has a leading
@@ -950,7 +950,7 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
 	 (ca (chas-array new-row))
 	 (idx 0))
     (dolist (item list)
-      (cond ((numberp item) (fast-string-into-chas-array 
+      (cond ((numberp item) (fast-string-into-chas-array
 			     (convert-number-to-string item) ca))
 	    ((stringp item) (fast-string-into-chas-array item ca))
 	    ((symbolp item) (fast-string-into-chas-array (symbol-name item) ca))
