@@ -27,14 +27,14 @@
 
 
 
-         This file contains primitives for altering 
+         This file contains primitives for altering
          system level parameters for the Boxer System
 
 
 Modification History (most recent at the top)
 
  4/10/14 com-show-font-info, bu::show-font-info
- 2/17/12 added bu::name-link-boxes 
+ 2/17/12 added bu::name-link-boxes
  1/11/10 added bu::report-crash
  1/03/10 added bu::boxer-window-{width,height}
 11/17/08 added bu::update-display-during-eval, defboxer-preference now handles keyword option correctly
@@ -74,7 +74,7 @@ Modification History (most recent at the top)
 ;;; INITIAL-VALUE is a list composed of a LISP part (the CAR) and
 ;;;               a BOXER part (the CADR)
 ;;; DOCUMENTATION is also broken into 2 parts.  The CAR is a type keyword
-;;; and the CDR should be acceptable to make-box (a list of lists) 
+;;; and the CDR should be acceptable to make-box (a list of lists)
 
 (defvar *boxer-preferences-list* nil)
 
@@ -108,13 +108,13 @@ Modification History (most recent at the top)
        (let ((existing-r-entry (assoc ',name *preference-read-handlers*))
              (existing-w-entry (assoc ',name *preference-write-handlers*)))
 	 (if (null existing-r-entry)
-	     (push (list ',name ',file-reader-name ',value-type) 
+	     (push (list ',name ',file-reader-name ',value-type)
                    *preference-read-handlers*)
 	     ;; just bash the slots in the existing entry
 	     (setf (cadr existing-r-entry)  ',file-reader-name
 		   (caddr existing-r-entry) ',value-type))
          (if (null existing-w-entry)
-	     (push (list ',name ',file-writer-name ',value-type) 
+	     (push (list ',name ',file-writer-name ',value-type)
                    *preference-write-handlers*)
 	     ;; just bash the slots in the existing entry
 	     (setf (cadr existing-w-entry)  ',file-writer-name
@@ -124,7 +124,7 @@ Modification History (most recent at the top)
 	 (let ((new-value (coerce-config-value value-string ,value-type)))
 	   (unless (or (null *site-initialization-verbosity*)
                        (member :mcl-appgen *features*))
-	     (format t "~%Initializing System Variable ~A to ~A" 
+	     (format t "~%Initializing System Variable ~A to ~A"
                      ',variable new-value))
 	   (setq ,variable new-value)))
        (defun ,file-writer-name (filestream)
@@ -152,7 +152,7 @@ Modification History (most recent at the top)
                          (:boolean '(ccl::check-box-checked-p di))
                          (:number '(let ((ns (ccl::dialog-item-text di)))
                                      (when (numberstring? ns)
-                                       (ignoring-number-read-errors 
+                                       (ignoring-number-read-errors
                                          (read-from-string ns nil nil)))))
                          (:string '(ccl::dialog-item-text di))
                          (:keyword '(ccl::dialog-item-text di))))
@@ -161,7 +161,7 @@ Modification History (most recent at the top)
                          (:boolean '(capi:button-selected di))
                          (:number '(let ((ns (capi:text-input-pane-text di)))
                                      (when (numberstring? ns)
-                                       (ignoring-number-read-errors 
+                                       (ignoring-number-read-errors
                                          (read-from-string ns nil nil)))))
                          (:string  '(capi:text-input-pane-text di))
                          (:keyword '(capi:text-input-pane-text di))))
@@ -175,7 +175,7 @@ Modification History (most recent at the top)
          #+mcl (declare (ignore di))
          #+mcl
          (ccl::set-dialog-item-text *current-documentation-dialog-item*
-                                    ,(flatten-documentation 
+                                    ,(flatten-documentation
                                       (cdr documentation)))
          #+lispworks
          (unless (eq di *preference-dialog-last-doc-item*)
@@ -187,7 +187,7 @@ Modification History (most recent at the top)
        (setf (get ',name 'system-parameter-pref-dialog-info)
              (list ',variable ',(car documentation) ',value-type
                    ',dialog-item-action-name ',dialog-item-doc-name))
-       (defboxer-primitive ,name ,args 
+       (defboxer-primitive ,name ,args
          ;; sort of flaky but don't want to have to specify separate args
          ;; for the function and the body
          (let ((,(pref-arg-name args)
@@ -197,7 +197,7 @@ Modification History (most recent at the top)
                      (:string `(box-text-string ,(pref-arg-name args)))
                      (:keyword `(intern-keyword (box-text-string ,(pref-arg-name args)))))))
            . ,body)))))
-     
+
 (defun pref-arg-name (arglist)
   (let ((guess (car arglist))) (cond ((listp guess) (cadr guess)) (t guess))))
 
@@ -227,8 +227,8 @@ Modification History (most recent at the top)
     (loop
       (multiple-value-bind (valid? eof? keyword value)
 	  (read-config-line s *keyword-buffer* *value-buffer*)
-        (cond (eof? (return)) 
-              (valid? (handle-preference-initialization 
+        (cond (eof? (return))
+              (valid? (handle-preference-initialization
                        (intern-in-bu-package keyword) value)))
         (buffer-clear *keyword-buffer*)
         (buffer-clear *value-buffer*)))))
@@ -240,13 +240,13 @@ Modification History (most recent at the top)
 	(funcall (cadr handler-entry) value))))
 
 ;;; Writing out Preferences Files
-(defun write-preferences (&optional (file #+(and unix (not lispworks)) "~/.boxerrc" 
+(defun write-preferences (&optional (file #+(and unix (not lispworks)) "~/.boxerrc"
                                           #+mcl
                                           (default-mac-pref-file-name)
                                           #+lispworks
                                           (default-lw-pref-file-name)))
   (with-open-file (fs file :direction :output :if-exists :supersede)
-    (format fs "# Boxer Preferences File Created on ~A~%" 
+    (format fs "# Boxer Preferences File Created on ~A~%"
             (boxnet::rfc822-date-time))
     (dolist (pref *boxer-preferences-list*)
       (let ((write-handler (assoc pref *preference-write-handlers*)))
@@ -288,7 +288,7 @@ Modification History (most recent at the top)
    ("fractions (1/2), rather than decimals (0.5) ?"))
   (setq *print-rationals* true-or-false)
   eval::*novalue*)
-  
+
 
 (defboxer-preference bu::preserve-empty-lines-in-build (true-or-false)
   ((*interpolate-empty-rows-too?* :boolean
@@ -374,7 +374,7 @@ Modification History (most recent at the top)
   eval::*novalue*)
 
 (defboxer-preference bu::make-diet-sprites (true-or-false)
-  ((*new-sprites-should-be-diet-sprites?* :boolean 
+  ((*new-sprites-should-be-diet-sprites?* :boolean
     (eval::boxer-boolean *new-sprites-should-be-diet-sprites?*))
    #+capi graphics #-capi graphics-settings
    ("Should newly made sprite boxes include fewer")
@@ -403,7 +403,7 @@ Modification History (most recent at the top)
 ;; no longer needed, perhaps replace with interrupt poll count value
 ;#+carbon-compat
 ;(defboxer-preference bu::immediate-sprite-drawing (true-or-false)
-;  ((*sprite-drawing-flush?* :boolean 
+;  ((*sprite-drawing-flush?* :boolean
 ;                            (eval::boxer-boolean *sprite-drawing-flush?*))
 ;   #+lwwin graphics #-lwwin graphics-settings
 ;   ("Should sprite graphics draw immediately with every command")
@@ -416,7 +416,7 @@ Modification History (most recent at the top)
 
 ;; obsolete
 ;(defboxer-preference bu::enable-box-type-toggling-with-mouse (true-or-false)
-;  ((*enable-mouse-toggle-box-type?* :boolean 
+;  ((*enable-mouse-toggle-box-type?* :boolean
 ;    (eval::boxer-boolean *enable-mouse-toggle-box-type?*))
 ;   #+lwwin editor #-lwwin editor-settings
 ;   ("Should the mouse be able to toggle the box")
@@ -427,7 +427,7 @@ Modification History (most recent at the top)
 ;; removed 5/12/99 this is never encountered in practice now that we have menus
 ;; on the mouse corners
 ;(defboxer-preference bu::warn-about-disabled-commands (true-or-false)
-;  ((*warn-about-disabled-commands* :boolean 
+;  ((*warn-about-disabled-commands* :boolean
 ;    (eval::boxer-boolean *warn-about-disabled-commands*))
 ;   #+lwwin editor #-lwwin editor-settings
 ;   ("Should the user be informed when trying a disabled command.  ")
@@ -435,9 +435,9 @@ Modification History (most recent at the top)
 ;  (setq *warn-about-disabled-commands* true-or-false)
 ;  eval::*novalue*)
 
-;; removed 5/24/01: no one is ever going to know what to do with this, 
+;; removed 5/24/01: no one is ever going to know what to do with this,
 ;; we should eventually replace it with an "animation speed" slider which also
-;; controls things like speed of popup mouse doc unscrolling and move-to-bp 
+;; controls things like speed of popup mouse doc unscrolling and move-to-bp
 ;(defboxer-preference bu::zoom-pause ((eval::numberize seconds))
 ;  ((*move-bp-zoom-pause-time* :number *move-bp-zoom-pause-time*)
 ;   #+lwwin editor #-lwwin editor-settings
@@ -505,7 +505,7 @@ Modification History (most recent at the top)
   eval::*novalue*)
 
 (defboxer-preference bu::global-hotspot-controls (true-or-false)
-  ((*global-hotspot-control?* :boolean 
+  ((*global-hotspot-control?* :boolean
                         (eval::boxer-boolean *global-hotspot-control?*))
    #+capi editor #-capi editor-settings
    ("Should turning a hotspot off or on affect all hotspots ?"))
@@ -513,8 +513,8 @@ Modification History (most recent at the top)
   eval::*novalue*)
 
 (defboxer-preference bu::input-device-names (machine-type)
-  ((*current-input-device-platform* :keyword 
-                                    (make-box 
+  ((*current-input-device-platform* :keyword
+                                    (make-box
                                      `((,*current-input-device-platform*))))
    #+capi editor #-capi editor-settings
    ("Which set of names should be used to refer to ")
@@ -531,7 +531,7 @@ Modification History (most recent at the top)
 
 #| ;; removed 9/08/02
 (defboxer-preference bu::fullscreen-window (true-or-false)
-  ((bw::*fullscreen-window-p* :boolean 
+  ((bw::*fullscreen-window-p* :boolean
                               (eval::boxer-boolean bw::*fullscreen-window-p*))
    #+lwwin editor #-lwwin editor-settings
    ("Should the boxer window occupy the entire screen ?"))
@@ -541,7 +541,7 @@ Modification History (most recent at the top)
 
 ;; added 9/08/02
 (defboxer-preference bu::maximize-window (true-or-false)
-  ((bw::*fullscreen-window-p* :boolean 
+  ((bw::*fullscreen-window-p* :boolean
                               (eval::boxer-boolean bw::*fullscreen-window-p*))
    #+capi editor #-capi editor-settings
    ("Should the boxer window occupy the entire screen ?"))
@@ -566,13 +566,13 @@ Modification History (most recent at the top)
 #+(and (not opengl) capi) ; dont offer until it works...
 (defboxer-preference bu::popup-mouse-documentation (true-or-false)
     ((*popup-mouse-documentation?* :boolean
-                                   (eval::boxer-boolean 
+                                   (eval::boxer-boolean
                                     *popup-mouse-documentation?*))
      #+capi editor #-capi editor-settings
      ("Should mouse documentation popup after a short delay ?"))
   (setq *popup-mouse-documentation* true-or-false)
   eval::*novalue*)
-                                   
+
 
 ;; removed 5/12/99 at andy's suggestion
 ;(defboxer-preference bu::enable-egc (true-or-false)
@@ -638,7 +638,7 @@ Modification History (most recent at the top)
 
 #+(and unix (not macosx))
 (defboxer-preference bu::newline-after-serial-writes (true-or-false)
-  ((*add-newline-to-serial-writes* :boolean 
+  ((*add-newline-to-serial-writes* :boolean
     (eval::boxer-boolean *add-newline-to-serial-writes*))
    #+capi communication #-capi communication-settings
    ("Should extra Carriage Returns be added")
@@ -659,7 +659,7 @@ Modification History (most recent at the top)
 ;; File system prefs
 
 (defboxer-preference bu::terse-file-status (true-or-false)
-  ((*terse-file-status* :boolean 
+  ((*terse-file-status* :boolean
     (eval::boxer-boolean *terse-file-status*))
    #+capi Files #-capi File-System-Settings
    ("Should file names use abbreviated form (as opposed to ")
@@ -676,7 +676,7 @@ Modification History (most recent at the top)
   eval::*novalue*)
 
 (defboxer-preference bu::name-link-boxes (true-or-false)
-  ((*name-link-boxes* :boolean 
+  ((*name-link-boxes* :boolean
     (eval::boxer-boolean *name-link-boxes*))
    #+capi Files #-capi File-System-Settings
    ("Should box links to non boxer files be created with the same name as the file"))
@@ -688,7 +688,7 @@ Modification History (most recent at the top)
 ;; removed 5/12/99 at andy's suggestion
 ;#+mcl
 ;(defboxer-preference bu::use-fast-bitmap-loaders (true-or-false)
-;  ((*use-mac-fast-bitmap-loaders* :boolean 
+;  ((*use-mac-fast-bitmap-loaders* :boolean
 ;                                  (eval::boxer-boolean
 ;                                   *use-mac-fast-bitmap-loaders*))
 ;   File-System-Settings
@@ -697,7 +697,7 @@ Modification History (most recent at the top)
 ;  eval::*novalue*)
 
 (defboxer-preference bu::warn-about-outlink-ports (true-or-false)
-  ((*warn-about-outlink-ports* :boolean 
+  ((*warn-about-outlink-ports* :boolean
     (eval::boxer-boolean *warn-about-outlink-ports*))
    #+capi Files #-capi File-System-Settings
    ("Should you receive a warning when trying to save a ")
@@ -717,7 +717,7 @@ Modification History (most recent at the top)
     ;; need some sort of consistency checking on the name here
     (if (null @pos)
         (eval::primitive-signal-error :preferences-error
-                                      newname 
+                                      newname
                                       " Does not look like a valid address")
         (let ((user (subseq newname 0 @pos)) (host (subseq newname (1+ @pos))))
           (setq boxnet::*user-mail-address* newname
@@ -738,7 +738,7 @@ Modification History (most recent at the top)
 ;; should have a hook to access the MIME type dialog
 
 (defboxer-preference bu::query-for-unkown-mime-type (true-or-false)
-  ((boxnet::*query-for-unknown-mime-type* :boolean 
+  ((boxnet::*query-for-unknown-mime-type* :boolean
     (eval::boxer-boolean boxnet::*query-for-unknown-mime-type*))
    #+capi network #-capi network-settings
    ("Should a dialog popup if an unknown")
@@ -749,7 +749,7 @@ Modification History (most recent at the top)
 ;; not currently use
 #|
 (defboxer-preference bu::max-viewable-message-size ((eval::numberize length))
-  ((boxnet::*max-viewable-message-length* 
+  ((boxnet::*max-viewable-message-length*
     :number boxnet::*max-viewable-message-length*)
    #+lwwin network #-lwwin network-settings
    ("What is the maximum size mail message that will appear in Boxer ?"))
@@ -785,7 +785,7 @@ Modification History (most recent at the top)
 ;;;; Putting it all together....
 
 ;;; we may want to structure this by conceptual grouping later...
-;;; for now, we make box for each entry, the box contains the 
+;;; for now, we make box for each entry, the box contains the
 ;;; documentation box (if there is one) and a line to execute
 ;;; under it
 
