@@ -31,13 +31,13 @@ Modification History (most recent at top)
  1/09/04 added com-hardcopy-lw-window for lispworks ctrl-P
 10/20/04 removed escape key binding (com-christmas-tree)
  4/21/03 merged current LW and MCL files
- 9/02/02 changed ctrl-~ binding from com-unmodify-document to 
+ 9/02/02 changed ctrl-~ binding from com-unmodify-document to
          com-toggle-modified-flag
  5/22/01 added backspace equivalents for {cmd, opt}-delete and search mode delete
  2/15/01 merged current LW and MCL files
 12/20/00 added com-fill-box on c-m-f-key
-11/04/00 added com-follow-mouse to mouse-click-on-sprite for LWWIN 
-         com-mouse-br-pop-up to mouse-click-on-bottom-right 
+11/04/00 added com-follow-mouse to mouse-click-on-sprite for LWWIN
+         com-mouse-br-pop-up to mouse-click-on-bottom-right
  7/06/00 added LWWIN mouse-double-click binding, other double click tuning
  3/26/00 more PC binding fine tuning
 12/05/99 added PC mouse bindings, reorganized mice bindings into functional groups
@@ -63,7 +63,7 @@ Modification History (most recent at top)
 ;;; Defines all the "normal" (no ctrl- or meta- or super- or...) keys
 ;;; to be self inserting
 #-excl
-(let ((vanilla-key-codes-not-to-define 
+(let ((vanilla-key-codes-not-to-define
        '#.(mapcar #'char-code '(#\| #\[ #\] #\{ #\} #\return #\tab #\delete))))
   (dotimes (key-code #o177)
     (let ((char-to-insert (code-char key-code)))
@@ -71,10 +71,10 @@ Modification History (most recent at top)
 	(let ((key-name (lookup-key-name key-code 0)))
 	  (when (null key-name)
 	    (error "Key name for key ~D was not found" key-code))
-	  (eval::defboxer-key-internal 
-	   key-name 
+	  (eval::defboxer-key-internal
+	   key-name
 	   #'(lambda ()
-               ;(reset-region) 
+               ;(reset-region)
                ;; mac behavior instead...
                (let ((r (or *region-being-defined* (get-current-region))))
                  (unless (null r) (editor-kill-region r)))
@@ -83,8 +83,8 @@ Modification History (most recent at top)
 		 (insert-cha *point* char-to-insert :moving))
                (mark-file-box-dirty (point-row))
                eval::*novalue*))
-	  (boxer-command-define 
-	   key-name 
+	  (boxer-command-define
+	   key-name
 	   (format nil
 		   "Inserts the ~C character at the cursor."
 		   char-to-insert)))))))
@@ -92,7 +92,7 @@ Modification History (most recent at top)
 ;;; there is a bug in the excl 3.0 compiler which causes multiple LET's to
 ;;; not get their own bindings so we have to use lambda
 #+excl
-(let ((vanilla-key-codes-not-to-define 
+(let ((vanilla-key-codes-not-to-define
        '#.(mapcar #'char-code '(#\| #\[ #\]))))
   (dotimes (key-code #o177)
     (funcall
@@ -101,10 +101,10 @@ Modification History (most recent at top)
 	   (let ((key-name (lookup-key-name key-code 0)))
 	     (when (null key-name)
 	       (error "Key name for key ~d was not found" key-code))
-	     (eval::defboxer-key-internal 
-	      key-name 
+	     (eval::defboxer-key-internal
+	      key-name
 	      #'(lambda ()
-		  ;(reset-region) 
+		  ;(reset-region)
                   ;; mac behavior instead...
                   (let ((r (or *region-being-defined* (get-current-region))))
                     (unless (null r) (editor-kill-region r)))
@@ -113,8 +113,8 @@ Modification History (most recent at top)
 		    (insert-cha *point* char-to-insert :moving))
                   (mark-file-box-dirty (point-row))
                   eval::*novalue*))
-	     (boxer-command-define 
-	      key-name 
+	     (boxer-command-define
+	      key-name
 	      (format nil
 		      "Insert the ~C character at the cursor."
 		      char-to-insert)))))
@@ -329,12 +329,12 @@ Modification History (most recent at top)
 (defboxer-key (bu::Right-Arrow-key 2) com-end-of-row)
 
 ;; Box Scroll
-(defboxer-key (bu::up-arrow-key 1) com-scroll-up-one-screen-box) 
+(defboxer-key (bu::up-arrow-key 1) com-scroll-up-one-screen-box)
 (defboxer-key (bu::down-arrow-key 1) com-scroll-dn-one-screen-box)
 #+apple (defboxer-key bu::page-up-key com-scroll-up-one-screen-box)
-#+apple (defboxer-key bu::page-down-key com-scroll-dn-one-screen-box) 
+#+apple (defboxer-key bu::page-down-key com-scroll-dn-one-screen-box)
 #+lispworks (defboxer-key bu::page-up-key com-scroll-up-one-screen-box)
-#+lispworks (defboxer-key bu::page-down-key com-scroll-dn-one-screen-box) 
+#+lispworks (defboxer-key bu::page-down-key com-scroll-dn-one-screen-box)
 #+sun (defboxer-key bu::R9-key com-scroll-up-one-screen-box)   ; PgUp
 #+sun (defboxer-key bu::R15-key com-scroll-dn-one-screen-box)  ; PgDn
 ;; for now....
@@ -432,7 +432,7 @@ Modification History (most recent at top)
     (let ((key-name (lookup-key-name key-code (1+ control-bits))))
       (when (null key-name)
 	(error "Key name for key ~d was not found" key-code))
-      (eval::defboxer-key-internal 
+      (eval::defboxer-key-internal
 	  key-name
 	  (intern (symbol-format nil "COM-INCREMENT-NUMERIC-ARG-BY-~D"
 			  (- key-code #o60)))))))
@@ -565,7 +565,7 @@ Modification History (most recent at top)
   (defboxer-key bu::ctrl-bottom-right-mouse-right
                 com-mouse-br-corner-set-outermost-box)
   (defboxer-key bu::meta-bottom-right-mouse-middle com-mouse-resize-box)
-  (defboxer-key bu::meta-bottom-right-mouse-left 
+  (defboxer-key bu::meta-bottom-right-mouse-left
                 com-mouse-br-corner-super-shrink-box)
   (defboxer-key bu::meta-bottom-right-mouse-right
                 com-mouse-br-corner-set-outermost-box)
@@ -649,7 +649,7 @@ Modification History (most recent at top)
   )
 
 #+apple
-(progn 
+(progn
   (defboxer-key bu::mouse-click-on-bottom-left com-mouse-bl-corner-toggle-box-view)
   (defboxer-key bu::command-mouse-click-on-bottom-left com-mouse-bl-pop-up)
   )
@@ -698,7 +698,7 @@ Modification History (most recent at top)
   )
 
 #+apple
-(progn 
+(progn
   (defboxer-key bu::mouse-click-on-type   com-mouse-border-toggle-type)
   (defboxer-key bu::command-mouse-click-on-type   com-mouse-type-tag-pop-up)
   )
