@@ -29,7 +29,7 @@ Modification History (most recent at top)
          binhex-decode-sub and binhex-stream-reader method for comm::socket-stream
          had to comment out #+mcl set-finder-flags
 12/01/98 finised conversion from the original byte based to char based reading
-11/23/98 changed some constant names (by adding "binhex-") to avoid conflicts 
+11/23/98 changed some constant names (by adding "binhex-") to avoid conflicts
 11/20/98 crib the basic binhex decoding/encoding utilities from MCL's
          CCL:Examples:BinHex:binhex.lisp
 11/18/98 Started file by copying base64.lisp
@@ -119,10 +119,10 @@ Modification History (most recent at top)
 
 (defun bx-byte (reader readarg)
   (declare (special bits-left count last-nibble last-byte istream))
-  (declare (type (unsigned-byte 8) bits-left last-nibble))  
+  (declare (type (unsigned-byte 8) bits-left last-nibble))
   (declare (fixnum count))
   (declare (optimize (speed 3)(safety 0)))
-  (flet 
+  (flet
     ((bx-error ()
        (error (make-condition 'file-error
                               :pathname (cond ((typep istream 'file-stream)
@@ -138,9 +138,9 @@ Modification History (most recent at top)
          `(let ((c (funcall reader readarg)))
             (cond
              (c (locally (declare (type (unsigned-byte 8) c))
-                  ;(when (eq c colon-code)(binhex-error "premature colon in ~A" istream))                   
+                  ;(when (eq c colon-code)(binhex-error "premature colon in ~A" istream))
                   (setq c (svref table c))
-                  (when (eq c #xFF) 
+                  (when (eq c #xFF)
                     (binhex-error "~A contains an illegal character" istream))
                   (loop (when (neq c return-code)(return))
                         (setq c (svref table (funcall reader readarg))))
@@ -159,13 +159,13 @@ Modification History (most recent at top)
                (logior (logand #xf0 (ash last-nibble 4))
                        (ash (setq last-nibble c1) -2)))
               (t (setq bits-left 0)
-                 (logand #xff (logior (ash last-nibble 6) c1)))))))    
+                 (logand #xff (logior (ash last-nibble 6) c1)))))))
       (let ((table decode-table))
         (declare (type (simple-array fixnum 256) table))
         (cond ((> count 0)
                (setq count (1- count)))
               (t (let ((byte (bx-byte-sub)))
-                   (cond 
+                   (cond
                     ((and (eq  byte #x90)(neq 0 (setq count (bx-byte-sub))))
                      (setq count (- count 2)))
                     (t (setq last-byte byte))))))
@@ -180,7 +180,7 @@ Modification History (most recent at top)
     (declare (fixnum count))
     (multiple-value-bind (reader readarg)(binhex-stream-reader istream)
         (macrolet
-          ((bx-long ()            
+          ((bx-long ()
              `(let ((c1 (bx-byte reader readarg))(c2 (bx-byte reader readarg))
                     (c3 (bx-byte reader readarg))(c4 (bx-byte reader readarg)))
                 (setq crc (crc-byte (crc-byte (crc-byte (crc-byte crc c1) c2) c3) c4))
@@ -194,7 +194,7 @@ Modification History (most recent at top)
             (when (not (find-binhex-header istream))
               (binhex-error "~A does not have a binhex header" infile))
             ; skip to return
-            (loop 
+            (loop
               (setq c (byte-from-char-stream istream))
               (unless (eq c (char-code #\space))
                 (when (eq (aref decode-table c) return-code)
@@ -217,7 +217,7 @@ Modification History (most recent at top)
               (dotimes (i namelength)
                 (declare (fixnum i))
                 (let ((c (bx-byte reader readarg)))
-                  (setq crc (crc-byte crc c)) 
+                  (setq crc (crc-byte crc c))
                   (setf (aref name i)(code-char c))))
               ; skip a 0 byte
               (when (neq 0 (bx-byte reader readarg))(binhex-error "Error reading file name in header of ~A" infile))
@@ -233,28 +233,28 @@ Modification History (most recent at top)
                     (capi:prompt-for-file "File for binhex data"
                                           :filter bw::*boxer-file-filters*
                                           :pathname name
-                                          :operation :open 
+                                          :operation :open
                                           :owner bw::*boxer-frame*)
-                  (if (null success?) 
+                  (if (null success?)
                       (return-from binhex-decode-stream nil)
                     (setq outfile path))))
               #-(or mcl lispworks)
-              (progn (warn "prompting for binhex data not defined for ~A" 
+              (progn (warn "prompting for binhex data not defined for ~A"
                            (lisp-implementation-type))
                 (return-from binhex-decode-stream nil))
-                  ;; 
+                  ;;
               (bw::with-mouse-cursor (:wait)  ; have to do this after the modal dialog
                 ; get mac type and creator
                 (dotimes (i 4)
                   (declare (fixnum i))
                   (let ((c (bx-byte reader readarg)))
-                    (setq crc (crc-byte crc c))            
+                    (setq crc (crc-byte crc c))
                     (setf (aref type i) (code-char c))))
                 (setq type (intern type (find-package :keyword)))
                 (dotimes (i 4)
-                  (declare (fixnum i))            
+                  (declare (fixnum i))
                   (let ((c (bx-byte reader readarg)))
-                    (setq crc (crc-byte crc c))              
+                    (setq crc (crc-byte crc c))
                     (setf (aref creator i)(code-char c))))
                 (setq creator (intern creator (find-package :keyword)))
                 ; finder flags
@@ -266,7 +266,7 @@ Modification History (most recent at top)
                 (setq rlen (bx-long))
                 (setq crc (crc-byte (crc-byte crc 0) 0))
                 (setq hdr-crc (logior (ash (bx-byte reader readarg) 8)(bx-byte reader readarg)))
-                (when (neq crc hdr-crc) 
+                (when (neq crc hdr-crc)
                   (binhex-error "crc failure in header of ~A" infile))
                 (binhex-decode-sub outfile reader readarg type creator dlen :data)
                 (binhex-decode-sub outfile reader readarg type creator rlen :resource)
@@ -329,7 +329,7 @@ Modification History (most recent at top)
                            :mac-file-creator creator
                            :fork fork
                            :element-type '(unsigned-byte 8))
-    (multiple-value-bind (writer writearg)(ccl::stream-writer ostream)      
+    (multiple-value-bind (writer writearg)(ccl::stream-writer ostream)
       (let ((crc 0))
         (do ((i dlen (1- i)))
             ((<= i 0))
@@ -362,7 +362,7 @@ Modification History (most recent at top)
             (binhex-error "crc failure in ~A" istream))))
     ;; empty out the bytes but don't write them anywhere for resource forks
     (let ((crc 0))
-      (dotimes (i dlen) 
+      (dotimes (i dlen)
         (setq crc (crc-byte crc (bx-byte reader readarg))))
        ; account for 2 crc bytes as if zero
       (setq crc (crc-byte crc 0))(setq crc (crc-byte crc 0))
@@ -402,7 +402,7 @@ Modification History (most recent at top)
   )
 
 ;; instream should be (:element-type (unsigned-byte 8)) and
-;; outstream should be (:element-type 'character) 
+;; outstream should be (:element-type 'character)
 
 
 
