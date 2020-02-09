@@ -28,7 +28,7 @@ Modification History (most recent at top)
 (in-package :boxnet)
 
 ;;; http-url methods for
-;;;   + INITIALIZE-INSTANCE 
+;;;   + INITIALIZE-INSTANCE
 ;;;   + COPY-URL
 ;;;   + FILL-BOX-USING-URL is the main interface function
 ;;;   + DUMP-PLIST-INTERNAL and DUMP-PLIST-LENGTH for file system interface
@@ -44,15 +44,15 @@ Modification History (most recent at top)
 
 (defmethod initialize-instance ((url http-url) &rest initargs)
   (call-next-method)
-  ;; now set up default values for user, port and password if they 
+  ;; now set up default values for user, port and password if they
   ;; haven't been filled by the net-url method
-  (when (null (slot-value url 'port)) 
+  (when (null (slot-value url 'port))
     (setf (slot-value url 'port) *default-url-port*))
   (let* ((path (slot-value url 'path))
          (suffix (path-suffix path))
          (supplied-doc-type (getf initargs :doc-type)))
     (if (not (null supplied-doc-type))
-        ;; if the doc-type is in the initargs, go with it (the slot will 
+        ;; if the doc-type is in the initargs, go with it (the slot will
         ;; already have been set by shared-initialize in an earlier method)
         (setf (slot-value url 'doc-type) supplied-doc-type)
         (setf (slot-value url 'doc-type)
@@ -100,7 +100,7 @@ Modification History (most recent at top)
   ((stream http-binary-input-stream))
   (let* ((eof-value (list 'eof))
          (char (read-char (slot-value stream 'charstream) nil eof-value)))
-    (cond ((or (slot-value stream 'close-p) 
+    (cond ((or (slot-value stream 'close-p)
                (>= (slot-value stream 'position) (slot-value stream 'length))
                (eq char eof-value)) nil)
           (t (incf (slot-value stream 'position))
@@ -131,7 +131,7 @@ Modification History (most recent at top)
 
 
 
-;;;; Boxer implementation of a simple version of the GET method as 
+;;;; Boxer implementation of a simple version of the GET method as
 ;;;; defined in RFC 2616 (all page numbers reference that RFC)
 
 #|
@@ -139,7 +139,7 @@ request headers (pg 38)
 
  defaults OK for now...
 Accept (pg 100), Accept-Charset (pg 102)
-Accept-Encoding (pg 102): identity;q=1.0   identity only (no compress or gzip) 
+Accept-Encoding (pg 102): identity;q=1.0   identity only (no compress or gzip)
                           chunked for text OK
 Accept-Language(pg 104) we'll take whatever we get...
 Authorization
@@ -158,7 +158,7 @@ User-Agent: Boxer/PC-2.5
 |#
 
 ;; eventually, we will want to reuse HTTP stream which remain open for a short
-;; time (~5-10 secs) rather than opening and closing the stream for each 
+;; time (~5-10 secs) rather than opening and closing the stream for each
 ;; transaction.  Re-use will involve resourcing, and checking to see if the stream
 ;; is still open, etc
 (defmacro with-http-stream ((stream-var host port) &body body)
@@ -174,7 +174,7 @@ User-Agent: Boxer/PC-2.5
       (multiple-value-bind (status encoding plist header-lines)
           (handle-http-reply stream)
         (declare (ignore header-lines)) ; we might use these later for error text
-        ;; note that even for error, we may have to empty out the 
+        ;; note that even for error, we may have to empty out the
         ;; rest of the message
         (string-case status
           ("200"
@@ -189,8 +189,8 @@ User-Agent: Boxer/PC-2.5
                      (set-url-flags box)))
               ((or :binary :text)
                ;; a bit of a crock....
-               (save-net-data (make-http-binary-input-stream 
-                               stream (getf plist :content-length)) 
+               (save-net-data (make-http-binary-input-stream
+                               stream (getf plist :content-length))
                               box
                               :binary))))
           (("301" "307") ;; redirects...
@@ -237,21 +237,21 @@ User-Agent: Boxer/PC-2.5
 
 ;;;; Responses (pg 39)
 ;;    status-line = HTTP-Version <SP> Status-Code <SP> Reason-Phrase <CRLF>
-;;                    |-------------------^  
-;;                 1xx Informational, 2xx Success, 3xx Redirection, 
+;;                    |-------------------^
+;;                 1xx Informational, 2xx Success, 3xx Redirection,
 ;;                 4xx Client Error, 5xx Server Error
 ;;                  details:
 ;;                  100 Continue, 101 Switching Protocols
 ;;                  200 OK, 201 Created, 202 Accepted, 203 Non-Authoritative Info,
 ;;                  204 No Content, 205 Reset Content, 206 Partial Content
 ;;                  300 Multiple Choices, 301 Moved Permanently, 302 Found,
-;;                  303 See Other, 304 Not Modified, 305 Use Proxy, 
+;;                  303 See Other, 304 Not Modified, 305 Use Proxy,
 ;;                  307 Temporary Redirect
 ;;                  400 Bad Request, 401 Unauthorized, 402 Payment Required,
 ;;                  403 Forbidden, 404 Not Found, 405 Method Not Allowed
 ;;                  406 Not Acceptable, 407 Proxy Authentication Required,
-;;                  408 Request Timeout, 409 Conflict, 410 Gone, 
-;;                  411 Length Required, 412 Precondition failed, 
+;;                  408 Request Timeout, 409 Conflict, 410 Gone,
+;;                  411 Length Required, 412 Precondition failed,
 ;;                  413 Request Entity Too Large, 414 Request-URI Too Large,
 ;;                  415 Unsupported Media Type,416 Requested range not satisfiable,
 ;;                  417 Expectation Failed
@@ -279,18 +279,18 @@ User-Agent: Boxer/PC-2.5
   (let* ((status-line (net-read-line stream t))
          (header-lines nil))
     (surf-message "  Handling HTTP reply header ~A" status-line)
-    (cond ((null status-line) ) 
+    (cond ((null status-line) )
           (t (let* ((1st-space (position #\space status-line))
                     (http-version (subseq status-line 0 1st-space))
-                    (status-code  (subseq status-line 
+                    (status-code  (subseq status-line
                                           (1+ 1st-space) (+ 1st-space 4)))
                     (reason-phrase (subseq status-line (+ 1st-space 5)))
-                    (encoding :identity) 
-                    (plist (list :http-version http-version 
+                    (encoding :identity)
+                    (plist (list :http-version http-version
                                  :reason-phrase reason-phrase)))
                ;; now empty out the rest of the header....
                (do ((line (net-read-line stream) (net-read-line stream)))
-                   ((string= line "") 
+                   ((string= line "")
                     (values status-code encoding plist (nreverse header-lines)))
                  (push line header-lines)
                  (multiple-value-bind (field-name colon-pos)
@@ -304,22 +304,22 @@ User-Agent: Boxer/PC-2.5
                           (string-case value-string
                             ("Indentity" ) ; do nothing
                             ("Chunked" (setq encoding :chunked))
-                            (t (error "Unhandled content encoding: ~A" 
+                            (t (error "Unhandled content encoding: ~A"
                                       value-string))))
                          (("Etag" "Last-Modified" "Location")
-                          ;; this is the common case where we just want a string 
+                          ;; this is the common case where we just want a string
                           ;; value in the plist, with the field-name as the key
                           (setq plist (nconc plist
                                              (list (intern-keyword field-name)
                                                    value-string))))
-                         ("Content-Length" 
+                         ("Content-Length"
                           (let ((number (read-from-string line nil nil
                                                           :start (1+ colon-pos))))
                             (when (numberp number)
-                              (setq plist 
+                              (setq plist
                                     (nconc plist (list :content-length
                                                        number))))))))))))))))
-               
+
 
 
 
@@ -342,7 +342,7 @@ User-Agent: Boxer/PC-2.5
                       (read-from-string chunk-size-line nil nil))))
        ((not (numberp chunk-size))
         (when errorp (error "Bad chunk size: ~A" chunk-size)))
-    (cond ((zerop chunk-size) 
+    (cond ((zerop chunk-size)
            ;; the end, read one more line, then return
            (read-line stream nil nil)
            (return))
