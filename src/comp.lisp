@@ -76,7 +76,7 @@ Modification History (most recent at top)
        (format *trace-output* "~%  Pushing stack Ref to ~A" value))
      (push value *build-stack*)))
 
-;; transfer args from boxer to build stack 
+;; transfer args from boxer to build stack
 (defun push-args-onto-stack (number-of-args)
   (let ((tmp nil))
     (dotimes (i number-of-args)
@@ -89,7 +89,7 @@ Modification History (most recent at top)
 
 ;; these hack the evaluator's *vpdl* stack
 
-(defmacro cbos-pop () 
+(defmacro cbos-pop ()
   `(let ((value (eval::vpdl-pop)))
      (when *debug-stack-machine*
        (format *trace-output* "~%  Popping ~A" value))
@@ -133,7 +133,7 @@ Modification History (most recent at top)
 
 ;;; there are 2 flavors of instructions distinguished by
 ;;; whether they require further arguments in the instruction
-;;; stream or not.  All instructions 
+;;; stream or not.  All instructions
 ;;; will pop all of its arguments off the stack
 ;;; and leave the result back on the stack.
 ;;;
@@ -243,7 +243,7 @@ Modification History (most recent at top)
 	(cbos-pop)
       ;; then pop the formal args
       (dotimes (i number-of-args) (cbos-pop)))))
-  
+
 ;;; the 0 args case is handled specially (to avoid recursive eval)
 (defun funcall-0-arg-compiled-boxer-function (object)
   ;; this willleave the returned value on the top of the stack
@@ -253,7 +253,7 @@ Modification History (most recent at top)
   (cbos-pop))
 
 ;; this loops through the instructions in the code-vector
-;; It assumes that any args have already been pushed onto the 
+;; It assumes that any args have already been pushed onto the
 ;; (alternative) stack.
 
 (defun execute-compiled-boxer-function-internal (code)
@@ -280,8 +280,8 @@ Modification History (most recent at top)
 		     (format *trace-output* "~%Executing ~A on ~A"
 			     instruction-function args))
 		   (apply instruction-function args)))))))))
-      
-    
+
+
 
 
 ;;; Common Instructions
