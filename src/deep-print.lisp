@@ -17,7 +17,7 @@
 
 
     Deep Printing (as opposed to surface, screen shots)
-    
+
 
 
 Modification History (most recent at the top)
@@ -35,7 +35,7 @@ Modification History (most recent at the top)
 ;;;;     we want to do a tree walk of boxer structure issuing print commands
 ;;;;   for each element of boxer structure.
 ;;;;     The tree walking framework should remain constant but specific print
-;;;;   commands can be issued for various printing types.  We start with a 
+;;;;   commands can be issued for various printing types.  We start with a
 ;;;;   "text" type (ASCII, no fonts) but we should be able to add things
 ;;;;   like RTF, PDF etc at a later date
 ;;;;
@@ -43,7 +43,7 @@ Modification History (most recent at the top)
 ;;;;   0) selecting a box to be printed (not covered in this file)
 ;;;;   1) make an instance of a particular hardcopy class
 ;;;;   2) initialize that instance, for text files, this would be opening
-;;;;      a filestream (perhaps prompting for a filename.  For actual 
+;;;;      a filestream (perhaps prompting for a filename.  For actual
 ;;;;      printing, a print dialog for selecting a printer and/or printing
 ;;;;      options
 ;;;;   3) tree walk boxer structure
@@ -81,7 +81,7 @@ Modification History (most recent at the top)
 ;; which does much of the same work but has too much boxerish stuff in it
 (defun new-file-dialog ()
   #+mcl
-  (ccl::catch-cancel 
+  (ccl::catch-cancel
     (ccl::choose-new-file-dialog :prompt "Convert box to text file:"))
   #+pc
   (capi:prompt-for-file "Convert box to text file:"
@@ -100,7 +100,7 @@ Modification History (most recent at the top)
     (when (or (box? hint) (virtual-copy? hint))
       (string-case (box-text-string hint)
         ("noprint" (terpri output-stream))))))
-    
+
 
 (defmethod deep-hardcopy-box ((hc plain-text-hardcopy) box &optional (depth 0))
   (with-slots (output-stream) hc
@@ -128,9 +128,9 @@ Modification History (most recent at the top)
                 ((not (null box?)) (indent) (format output-stream "~C" cha))
                 (t (format output-stream "~C" cha))))
         (terpri output-stream)))))
-    
-  
- 
+
+
+
 ;;;; HTML methods
 
 ;; these should be format strings
@@ -142,7 +142,7 @@ Modification History (most recent at the top)
   (with-slots (output-stream) hc
     (format output-stream "<html>~&")
     (format output-stream "   <head>~&~A~&    <title>~A</title>~&   <head>"
-            *html-deep-print-meta-info* (if (box? box) 
+            *html-deep-print-meta-info* (if (box? box)
                                           (name-string box)
                                           "Boxer HTML conversion"))
     (format output-stream "<body>~&")))
