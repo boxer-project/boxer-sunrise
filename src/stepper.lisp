@@ -65,7 +65,7 @@ Modification History (most recent at top)
 (defun initial-stepping-print ()
   (boxer::com-beginning-of-row)
   (boxer::doit-print-returned-value *novalue*)
-  (let ((stepping-box 
+  (let ((stepping-box
 	 (boxer::make-box (list nil) 'boxer::doit-box)))
     (boxer::insert-row-at-row-no stepping-box
 				 (boxer::copy-row (boxer::point-row))
@@ -107,13 +107,13 @@ Modification History (most recent at top)
   (decf *stepper-item-no*)
   (move-point-to-item-no *stepper-item-no*))
 
-(defun step-insert-token (new-token &optional 
+(defun step-insert-token (new-token &optional
 				    (START-CHA-NO
 				     (safe-beginning-of-nth-chunk-cha-no
 				      (boxer::point-row)
 				      *stepper-item-no*)))
-  (flet ((insert-string 
-	  (s) 
+  (flet ((insert-string
+	  (s)
 	  (map nil
 	       #'(lambda (cha) (boxer::insert-cha boxer::*point* cha :moving))
 	       s)))
@@ -127,21 +127,21 @@ Modification History (most recent at top)
 		 ((eq new-token *novalue*)
 		  (boxer::insert-cha boxer::*point* (boxer::make-box '(()) 'boxer::doit-box)))
 		 ((symbolp new-token) (insert-string (string new-token)))
-		 ((special-token? new-token)	       
+		 ((special-token? new-token)
 		  (if (squid-token? new-token)
 		      (step-insert-token (boxer::make-box
-					  (mapcar 
+					  (mapcar
 					   #'(lambda (row)
 					       (mapcan #'canonicalize-weird-object row))
 					   (special-token-item new-token))
 					  'boxer::doit-box)))
-		  (progn 
-		    (insert-string (symbol-name 
+		  (progn
+		    (insert-string (symbol-name
 				    (cdr (assoc
 					  (special-token-type new-token)
 					  *special-token-type-symbol-alist-for-error*))))
 		    (step-insert-token (special-token-item new-token))))
-		 (t (boxer::insert-cha boxer::*point* 
+		 (t (boxer::insert-cha boxer::*point*
 				       (top-level-print-eval-object new-token)
 				       :moving)))))))
 
@@ -154,7 +154,7 @@ Modification History (most recent at top)
 
 ;returns start-cha-no of old token
 (defun step-delete-token (item-no)
-  (let ((start-cha-no 
+  (let ((start-cha-no
 	 (safe-beginning-of-nth-chunk-cha-no
 	  (boxer::point-row)
 	  item-no)))
@@ -179,8 +179,8 @@ Modification History (most recent at top)
 
 (defun step-replace-token (item-no new-token)
   (when-debugging (format t "~%Step replace token, item no ~D, new token ~S, old token ~S"
-			  item-no new-token 
-			  (boxer::cha-at-cha-no (boxer::point-row) *stepper-item-no*)))	  
+			  item-no new-token
+			  (boxer::cha-at-cha-no (boxer::point-row) *stepper-item-no*)))
   (if (boxer::virtual-copy? new-token)
       (setq new-token (top-level-print-eval-object new-token)))
   (let ((start-cha-no (step-delete-token item-no)))
@@ -236,16 +236,16 @@ Modification History (most recent at top)
 ;; call this when all the args have been evaluated.
 (defun step-finish-eval-args (final-arg-position)
   (when-debugging
-   (format t 
+   (format t
 	   "~%step finish eval args, final arg position ~d, current+1 ~d"
 	   final-arg-position
 	   (1+& *stepper-item-no*)))
   (let ((begin-pos
-	 (safe-end-of-nth-chunk-cha-no 
+	 (safe-end-of-nth-chunk-cha-no
 	  (boxer::point-row)
 	  *stepper-item-no*))
-	(end-pos 
-	 (safe-end-of-nth-chunk-cha-no 
+	(end-pos
+	 (safe-end-of-nth-chunk-cha-no
 	  (boxer::point-row)
 	  (1-& final-arg-position))))
     (boxer::move-point (values (boxer::point-row) begin-pos))
@@ -281,8 +281,8 @@ Modification History (most recent at top)
   (step-replace-token *stepper-item-no* box))
 
 (defun make-primitive-box (boxer-function)
-  (let ((arglist 
-	 (mapcan #'(lambda (u) 
+  (let ((arglist
+	 (mapcan #'(lambda (u)
 		     (if (consp u)
 			 (if (eq (symbol-package (car u))
 				 boxer::pkg-bu-package)
@@ -344,7 +344,7 @@ Modification History (most recent at top)
       (if (numberp value)
 	  (setq value (boxer::data-boxify value)))
       (boxer-set-internal
-       name 
+       name
        (setq value
 	     (top-level-print-eval-object value)))
       (step-insert-token value)
