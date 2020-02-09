@@ -32,7 +32,7 @@
 
                 Selectors
 
-FIRST               FIRST-ROW         FIRST-COLUMN         RC 
+FIRST               FIRST-ROW         FIRST-COLUMN         RC
 BUTFIRST            BUTFIRST-ROW      BUTFIRST-COLUMN
 LAST                LAST-ROW          LAST-COLUMN
 BUTLAST             BUTLAST-ROW       BUTLAST-COLUMN
@@ -70,16 +70,16 @@ BUILD    (see the newbuild.lisp file)
 CHANGE
 
 DELETE-LAST-ITEM    DELETE-LAST-ROW   DELETE-LAST-COLUMN  DELETE-RC
-DELETE-ITEM         DELETE-ROW        DELETE-COLUMN 
+DELETE-ITEM         DELETE-ROW        DELETE-COLUMN
 DELETE-ITEMS        DELETE-ROWS       DELETE-COLUMNS
 
 INSERT-RC
-INSERT-ITEM         INSERT-ROW        INSERT-COLUMN 
+INSERT-ITEM         INSERT-ROW        INSERT-COLUMN
 
-APPEND-ITEM         APPEND-ROW        APPEND-COLUMN 
+APPEND-ITEM         APPEND-ROW        APPEND-COLUMN
 
 CHANGE-LAST-ITEM    CHANGE-LAST-ROW   CHANGE-LAST-COLUMN  CHANGE-RC
-CHANGE-ITEM         CHANGE-ROW        CHANGE-COLUMN 
+CHANGE-ITEM         CHANGE-ROW        CHANGE-COLUMN
 
 
                 Other
@@ -100,7 +100,7 @@ Modification History (most recent at top)
 10/29/99 added bu::redirect as a synonym for bu::retarget
  6/02/99 box-equal-internal now hacks possible circular structures
  1/08/99 retarget hacks the case where the point is in the port
- 7/05/98 *replace-when-adding-rows-to-empty-box* (default T) added to 
+ 7/05/98 *replace-when-adding-rows-to-empty-box* (default T) added to
          customize behavior of row mutators, append/insert-row
  7/05/98 started logging changes: source = Boxer version 2.3alpha
 
@@ -113,15 +113,15 @@ Modification History (most recent at top)
 
 
 ;;;; Top level Accessors
-;;  Accessors should include the following phases: 
+;;  Accessors should include the following phases:
 ;;  1) type check--port or box.  Very different behavior for each....
-;;  2) prepare active row(s) [only item operations need to do this].  
+;;  2) prepare active row(s) [only item operations need to do this].
 ;;     Neccessary mostly for ports. See PREPARE-ROW-FOR-SUB-PORTS.
-;;  3) operate on active row(s) to return list(s) of items [only item 
+;;  3) operate on active row(s) to return list(s) of items [only item
 ;;     operations do this]
 ;;  4) bundle up returned list(s) of items into new (a) row(s).  This is the
 ;;     job of PORT-FLAVORED-ROW-CONSTRUCTOR and COPY-FLAVORED-ROW-CONSTRUCTOR.
-;;  5) Process all the other rows for selector [see 
+;;  5) Process all the other rows for selector [see
 ;;     RETURN-UNTOUCHED-ROW-FOR-PORT-SELECTOR
 ;;     and RETURN-UNTOUCHED-ROW-FOR-COPY-SELECTOR].
 ;;  6) Bundle up rows into a box to be returned [What NEW-VC-ROWS does]
@@ -157,7 +157,7 @@ Modification History (most recent at top)
        "inputs row" (car index)
        "and column" (cdr index)
        "are outside the range of the box" (port-to box))
-      (eval::primitive-signal-error 
+      (eval::primitive-signal-error
        :data-mutator
        type "input" index "is out of the range of the box" (port-to box))))
 
@@ -167,7 +167,7 @@ Modification History (most recent at top)
        :data-selector
        "inputs row" (car index) "and column" (cdr index)
        "are outside of the range of the box" box)
-      (eval::primitive-signal-error 
+      (eval::primitive-signal-error
        :data-selector
        type
        index
@@ -179,7 +179,7 @@ Modification History (most recent at top)
        :data-selector
        "inputs row" (car index) "and column" (cdr index)
        "are outside of the range of the box" box)
-      (eval::primitive-signal-error 
+      (eval::primitive-signal-error
        :data-selector
        type
        index
@@ -214,7 +214,7 @@ Modification History (most recent at top)
       (mapcar #'(lambda (er)
 		  (make-evrow-from-port-with-pointers (evrow-pointers er)
 						      target-superior))
-	      evrows)))  
+	      evrows)))
 
 (defun butstart (box)
   (with-data-prim-number-handling (box) (make-empty-vc)
@@ -231,7 +231,7 @@ Modification History (most recent at top)
 				       (get-butfirst-element-in-evrow row)
 				       target)
 				      (map-construct-evrow-from-evrow
-				       (cdr (fast-memq row rows)) target)))))) 
+				       (cdr (fast-memq row rows)) target))))))
 			(list (make-empty-evrow)))))))
 
 
@@ -273,7 +273,7 @@ Modification History (most recent at top)
 (defun item (n box)
   (with-data-prim-number-handling (box)
     (if (= 1 n)	box (out-of-range-access-result n box))
-    (if (< n 1) 
+    (if (< n 1)
 	(out-of-range-access-result n box)
 	(multiple-value-bind (row col)
 	    (get-row-and-col-number n box)
@@ -281,7 +281,7 @@ Modification History (most recent at top)
 	      (out-of-range-access-result n box)
 	      (multiple-value-bind (active-row vc-rows-entry)
 		  (get-nth-row-in-box row box)
-		(make-new-box 
+		(make-new-box
 		 box
 		 (list
 		  (construct-evrow-from-pointer
@@ -334,10 +334,10 @@ Modification History (most recent at top)
 				    (get-elements-in-evrow (nth stop-row rows)
 							   0 (1+& stop-col))
 				    target))))))))))))))
-  
+
 
 (defun butitem (n box)
-  (with-data-prim-number-handling (box) 
+  (with-data-prim-number-handling (box)
     (if (= 1 n)
 	(make-empty-vc)
 	(out-of-range-filter-result n box))
@@ -346,14 +346,14 @@ Modification History (most recent at top)
 	   (out-of-range-filter-result n box))
 	  (t (multiple-value-bind (row-no col)
 	       (get-row-and-col-number n box)
-	       (if (null row-no) 
+	       (if (null row-no)
 		   (out-of-range-filter-result n box)
 		   (multiple-value-bind (rows inlinks? new? vc-rows-entry)
 		       (get-box-rows box)
 		     (declare (ignore inlinks? new?))
 		     (let ((active-row (nth row-no rows)))
 		       (make-new-box
-			box 
+			box
 			(let ((target (when (fast-eval-port-box? box)
 					(or vc-rows-entry (vp-target box)))))
 			  (nconc (map-construct-evrow-from-evrow
@@ -370,7 +370,7 @@ Modification History (most recent at top)
 ;;;; UNBOX
 
 ;;; UNBOX is different from @.  UNBOX requires a box with exactly one
-;;; box in it, and returns (a copy of) the box.  
+;;; box in it, and returns (a copy of) the box.
 ;;; Gives an error if the resulting box is a DOIT box.
 ;;; Returns raw numbers if given numbers or if inside box is a number.
 ;;; Removes name, if present.  Produces a port if given a port.
@@ -387,12 +387,12 @@ Modification History (most recent at top)
 		   (and entries (null (cdr entries)))))
 	(eval::primitive-signal-error
 	 :BOX-CONTENTS "expected a box containing one element"))
-      (let ((item (access-evrow-element 
+      (let ((item (access-evrow-element
 		   (or vc-rows-entry (box-or-port-target box))
 		   (get-first-element-in-evrow (car rows))
 		   t)))
 	(cond ((numberp item) item)
-	      ((symbolp item) 
+	      ((symbolp item)
 	       (eval::primitive-signal-error
 		:BOX-CONTENTS "expected a box containing one box or number"))
 	      ((and (virtual-copy? item)
@@ -423,7 +423,7 @@ Modification History (most recent at top)
 		    (and entries (null (cdr entries)))))
 	     nil)
 	    (t
-	     (let ((item (access-evrow-element 
+	     (let ((item (access-evrow-element
 			  (or vc-rows-entry (box-or-port-target box))
 			  (get-first-element-in-evrow (car rows)))))
 	       (cond ((numberp item) t)
@@ -449,14 +449,14 @@ Modification History (most recent at top)
 		    (and entries (null (cdr entries)))))
 	     nil)
 	    (t
-	     (let ((item (access-evrow-element 
+	     (let ((item (access-evrow-element
 			  (or vc-rows-entry (box-or-port-target box))
 			  (get-first-element-in-evrow (car rows)))))
 	       (or (numberp item) (symbolp item))))))))
 
 
 
-;;;; Row Accessors 
+;;;; Row Accessors
 
 (defun last-row (box)
   (with-data-prim-number-handling (box) (make-empty-vc)
@@ -485,7 +485,7 @@ Modification History (most recent at top)
 ;; Note that 1-based boxer user coords <==> 0-based Common Lisp prims
 
 (defun nth-row (n box)
-  (with-data-prim-number-handling (box) 
+  (with-data-prim-number-handling (box)
     (if (= 1 n) box (out-of-range-access-result n box "row"))
     (if (<= 1 n (number-of-rows box))
 	(make-new-box box
@@ -509,7 +509,7 @@ Modification History (most recent at top)
 	     (multiple-value-bind (rows inlinks? new? vc-rows-entry)
 		 (get-box-rows box)
 	       (declare (ignore inlinks? new?))
-	       (make-new-box box				 
+	       (make-new-box box
 			     (or (map-construct-evrow-from-evrow
 				  (subseq rows (1-& start) stop)
 				  (when (fast-eval-port-box? box)
@@ -535,7 +535,7 @@ Modification History (most recent at top)
 
 
 
-;;;; Column accessors 
+;;;; Column accessors
 
 (defun butfirst-column (box)
   (with-data-prim-number-handling (box) (make-empty-vc)
@@ -590,7 +590,7 @@ Modification History (most recent at top)
 ;; remember to convert 1-based Boxer-User coordinates to 0-based Lisp
 
 (defun nth-column (n box)
-  (with-data-prim-number-handling (box) 
+  (with-data-prim-number-handling (box)
     (if (= n 1) box (out-of-range-access-result n box "column"))
     (multiple-value-bind (rows inlinks? new? vc-rows-entry)
 	(get-box-rows box)
@@ -609,7 +609,7 @@ Modification History (most recent at top)
 	  (out-of-range-access-result n box "column")))))
 
 (defun butnth-column (n box)
-  (with-data-prim-number-handling (box) 
+  (with-data-prim-number-handling (box)
     (if (= n 1)
 	(make-empty-vc)
 	(out-of-range-filter-result
@@ -635,7 +635,7 @@ Modification History (most recent at top)
         (out-of-range-filter-result n box "column"))))
 
 (defun nth-columns (start stop box)
-  (with-data-prim-number-handling (box) 
+  (with-data-prim-number-handling (box)
     (if (= start stop 1) box (out-of-range-filter-result start box "column"))
     (cond ((not (<= 1 start (max-length-in-elements box)))
 	   (out-of-range-filter-result start box "column"))
@@ -665,7 +665,7 @@ Modification History (most recent at top)
 ;;  primitive coordinates
 
 (defun row-col-of-box (row col box)
-  (with-data-prim-number-handling (box) 
+  (with-data-prim-number-handling (box)
     (if (and (= 1 row)
 	     (= 1 col))
 	(boxify-number box)
@@ -723,7 +723,7 @@ Modification History (most recent at top)
 	(t (error "~A should be either a virtual-copy or box" box))))
 
 ;;; these next 2 functions are used to process new-item args for mutators.
-;;; if you need more than a single item or row, then use 
+;;; if you need more than a single item or row, then use
 ;;; formatted-unboxed-items
 
 (defun get-new-row-entries (box &optional (row 0))
@@ -775,7 +775,7 @@ Modification History (most recent at top)
 	 (modify-editor-structure box))))
 
 ;;; what do we do when the second arg to change is a port ?
-;;; 1) text copy of target  or 
+;;; 1) text copy of target  or
 ;;; 2) port-to inferiors as in butfirst port
 
 ;;; Still need to put triggers into virtual copies
@@ -959,7 +959,7 @@ Modification History (most recent at top)
 				   (make-evrow-from-pointers
 				    (delete-elements-in-evrow r (1-& start)
 							   stop)))))
-			(get-box-rows box))))))) 
+			(get-box-rows box)))))))
 
 
 
@@ -1006,7 +1006,7 @@ Modification History (most recent at top)
 (defun insert-item (n box new-box)
   (multiple-value-bind (row col)
       (get-row-and-col-number n box)
-    (cond ((null row) 
+    (cond ((null row)
 	   (if (=& col (1-& n))
 	       ;; special case inserting just beyond number of items (like append-item)
 	       (append-item box new-box)
@@ -1111,7 +1111,7 @@ Modification History (most recent at top)
 				(mapcar #'make-evrow-from-entries
 					(formatted-unboxed-items new-box))
 				(subseq rows n))))
-      (out-of-range-mutator-action n box "row"))) 
+      (out-of-range-mutator-action n box "row")))
 
 
 ;; range checks have been made and coords should be 0-based
@@ -1163,7 +1163,7 @@ Modification History (most recent at top)
 	       (change-rc-internal (1-& row) (1-& col) box new-box
 				   old-rows inrow)
 	       (out-of-range-mutator-action col box "col"))))
-	(t 
+	(t
 	 (out-of-range-mutator-action row box "row"))))
 
 ;; 1-based
@@ -1239,12 +1239,12 @@ Modification History (most recent at top)
 
 
 ;;;; Top Level Constructors
-;;  These differ from accessors in that the newly CONSed VC has NO pedigree 
+;;  These differ from accessors in that the newly CONSed VC has NO pedigree
 ;;  but all the sub items need to have been disambiguated BEFORE being
 ;;  bundled up into a box.  This is due to the fact that accessors essentially
 ;;  move inferior items from ONLY one box to another
-;;  box and so we can win by extending the PEDIGREE.  On the other hand, 
-;;  constructors can move inferior items from several boxes and the new 
+;;  box and so we can win by extending the PEDIGREE.  On the other hand,
+;;  constructors can move inferior items from several boxes and the new
 ;;  containing box cannot properly represent all the different PEDIGREES.
 
 (defun join-bottom (b1 b2)
@@ -1270,7 +1270,7 @@ Modification History (most recent at top)
 
 
 
-;;;; Quick Hack # 107 
+;;;; Quick Hack # 107
 (defboxer-primitive bu::equal? ((eval::dont-copy b1) (eval::dont-copy b2))
   (eval::boxer-boolean (box-equal-internal b1 b2)))
 
@@ -1325,7 +1325,7 @@ Modification History (most recent at top)
 	 (item-counter 1) (row-counter 1) (col-counter 1)
 	 (items nil) (rows nil) (cols nil))
     (when (or (null test-items) (not (null (cdr item-contents))))
-      (eval::primitive-signal-error 
+      (eval::primitive-signal-error
        :data-primitive "The pattern item should have" "only one non-empty row"))
     (catch 'found
       (dolist (row-items box-items)
@@ -1516,7 +1516,7 @@ Modification History (most recent at top)
 				   (new-pointer formatting-array
 						idx))))))))))))))
 
-			   
+
 (defvar *formatting-array-length-for-implode* 32)
 
 (defun implode-row-items (items)
@@ -1581,7 +1581,7 @@ Modification History (most recent at top)
 				     (virtual-port? value)
 				     (box? value))
 				 ;; either there is a fi being made or there
-				 ;; isn't if there is, then we return the fi 
+				 ;; isn't if there is, then we return the fi
 				 ;; then the box otherwise, just return the box
 				 (cond ((=& idx start)
 					(collect (make-pointer item)))
@@ -1608,7 +1608,7 @@ Modification History (most recent at top)
 				     (array-append (aref string i))))))))))))))))
 
 
-	 
+
 
 ;;;; Boxer Function Definitions
 
@@ -1680,7 +1680,7 @@ Modification History (most recent at top)
 				rows cols)))))))
 
 (defboxer-primitive bu::member? ((eval::dont-copy item) (eval::dont-copy box))
-  (eval::boxer-boolean (rc-position (box-or-port-target item) 
+  (eval::boxer-boolean (rc-position (box-or-port-target item)
                                     (box-or-port-target box))))
 
 ;; old keyword based primitive
@@ -1753,7 +1753,7 @@ Modification History (most recent at top)
 
 ;;; unbox
 (defboxer-primitive bu::unbox (box) (%unbox box))
-(defboxer-primitive bu::unboxable? ((eval::dont-copy box)) 
+(defboxer-primitive bu::unboxable? ((eval::dont-copy box))
   (eval::boxer-boolean (%unboxable? box)))
 (defboxer-primitive bu::word? ((eval::dont-copy box))
   (eval::boxer-boolean (%word? box)))
@@ -1771,7 +1771,7 @@ Modification History (most recent at top)
 				    ", should be a positive integer")))
 
 (defboxer-primitive bu::butcolumn ((eval::numberize n) box)
-  (if (and (integerp n) (plusp& n))      
+  (if (and (integerp n) (plusp& n))
       (butnth-column n box)
       (eval::primitive-signal-error :data-primitive
 				    "The index, " n
@@ -1809,7 +1809,7 @@ Modification History (most recent at top)
 ;;; Delete Mutators
 
 (defboxer-primitive bu::delete-item ((eval::numberize n) (bu::port-to box))
-  (if (and (integerp n) (plusp& n))      
+  (if (and (integerp n) (plusp& n))
       (delete-item n (box-or-port-target box))
       (eval::primitive-signal-error :data-primitive
 				    "The index, " n
@@ -1852,7 +1852,7 @@ Modification History (most recent at top)
 	   eval::*novalue*)))
 
 (defboxer-primitive bu::delete-row  ((eval::numberize n) (bu::port-to box))
-  (if (and (integerp n) (plusp& n))      
+  (if (and (integerp n) (plusp& n))
       (delete-rows n (box-or-port-target box))
       (eval::primitive-signal-error :data-primitive
 				    "The index, " n
@@ -1923,7 +1923,7 @@ Modification History (most recent at top)
 
 (defboxer-primitive bu::insert-item (new (bu::port-to in)
 					 (eval::numberize at))
-  (if (and (integerp at) (plusp& at))      
+  (if (and (integerp at) (plusp& at))
       (insert-item at (box-or-port-target in) new)
       (eval::primitive-signal-error :data-primitive
 				    "The index, " at
@@ -1935,7 +1935,7 @@ Modification History (most recent at top)
   eval::*novalue*)
 
 (defboxer-primitive bu::insert-row (new (bu::port-to in) (eval::numberize at))
-  (if (and (integerp at) (plusp& at))      
+  (if (and (integerp at) (plusp& at))
       (insert-nth-row at (box-or-port-target in) new)
       (eval::primitive-signal-error :data-primitive
 				    "The index, " at
@@ -1947,7 +1947,7 @@ Modification History (most recent at top)
   eval::*novalue*)
 
 (defboxer-primitive bu::insert-column (new(bu::port-to in)(eval::numberize at))
-  (if (and (integerp at) (plusp& at))      
+  (if (and (integerp at) (plusp& at))
       (insert-column at (box-or-port-target in) new)
       (eval::primitive-signal-error :data-primitive
 				    "The index, " at
@@ -2000,7 +2000,7 @@ Modification History (most recent at top)
   eval::*novalue*)
 
 (defboxer-primitive bu::change-column ((eval::numberize n)(bu::port-to box)new)
-  (if (and (integerp n) (plusp& n)) 
+  (if (and (integerp n) (plusp& n))
       (change-column n (box-or-port-target box) new)
       (eval::primitive-signal-error :data-primitive
 				    "The index, " n
@@ -2088,7 +2088,7 @@ Modification History (most recent at top)
   (let ((port-screen-box (or (car (member (point-screen-box) (screen-objs port)
                                           :test #'superior?))
                              (car (screen-objs port))))
-        (new-row (first-inferior-row port)))        
+        (new-row (first-inferior-row port)))
     (move-point-1 new-row 0 port-screen-box)
     (setf (process-doit-cursor-position-box vector) (ports port))
     (setf (process-doit-cursor-position-row vector) new-row)
