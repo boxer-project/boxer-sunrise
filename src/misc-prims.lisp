@@ -37,7 +37,7 @@
          Shrink-Box
          Expand-Box
          Mouse Primitives (for now)
-         
+
 
 
 Modification History (most recent at top)
@@ -46,12 +46,12 @@ Modification History (most recent at top)
  2/ 3/12 launch-internal-xref bug: mac-file-ref-pathname => xref-pathname
 12/30/11 launch-internal-xref, edit-internal-xref from {launch,edit}-internal-mac-file
 12/13/11 choose-file, choose-new-file, choose-file-info
-11/06/11 avoid calls to redisplay for special case of 0 arg in SLEEP 
+11/06/11 avoid calls to redisplay for special case of 0 arg in SLEEP
  1/12/10 Changed bu::redisplay to use repaint-window, shouldn't be using it at all but compat with old code
          and all...  Also temporarily added bu::lisp-error t debug crash reporter
 11/20/09 mouse-window-coords, sleep force redisplay
 11/19/09 restored redislay prim for OpenGL
- 7/17/07 removed many duplicate defs - probably from an errant paste, 
+ 7/17/07 removed many duplicate defs - probably from an errant paste,
          calls to (redisplay) => (repaint)
 10/14/06 call to name changed to call to name-string in transform-inputs-row
  5/19/05 bug report variables moved to comsa.lisp
@@ -91,7 +91,7 @@ Modification History (most recent at top)
 
 
 
-;;;;; Totally Random 
+;;;;; Totally Random
 ;;; if there are enough of these, we might want to fork off a misc-prims file
 
 ;;; NOTE: many of these need the equivalent of make-box for virtual copies
@@ -159,7 +159,7 @@ Modification History (most recent at top)
 	 ;; we preserve the illusion that this is a data-box
 	 "Data Box")
 	(t (format nil "~A" thing))))
-	       
+
 
 (defboxer-primitive bu::last-unprintable-error-box ()
   (eval::primitive-signal-error :obsolete-function
@@ -210,12 +210,12 @@ Modification History (most recent at top)
                  ;(format t "D~D " start)
                  (let ((name (name-string item)))
                    (cond ((port-box? item)
-                          ;; special handling for ports derived from 
+                          ;; special handling for ports derived from
                           ;; port-flavored inputs
                           (insert-string-at-cha-no editor-row "port-to " start)
                           (setq chunk-no (1+& chunk-no))
                           (insert-string-at-cha-no editor-row name
-                                                   (+ start 
+                                                   (+ start
                                                       #.(length "port-to "))))
                          (t (insert-string-at-cha-no editor-row name start))))
                  ;; add the name
@@ -232,7 +232,7 @@ Modification History (most recent at top)
                                                             chunk-no)
                                    (1-& start)))
                      (delete-cha-at-cha-no editor-row (1-& start)))
-		   ;; now that a token has been removed, decrement the 
+		   ;; now that a token has been removed, decrement the
 		   ;; chunk-no so we keep track of where we are
 		   (setq chunk-no (1-& chunk-no))))
 		(t
@@ -257,23 +257,23 @@ Modification History (most recent at top)
 	      (eq 'bu::input
 		  (car (eval-objs (first-inferior-row
 				   eval::*lexical-variables-root*))))
-              (equal (remove-if 
-                           #'(lambda (x) 
+              (equal (remove-if
+                           #'(lambda (x)
                                (eq x 'eval::*ignoring-definition-object*)) args)
-                     (remove-if 
-                      #'(lambda (x) 
+                     (remove-if
+                      #'(lambda (x)
                           (eq x 'eval::*ignoring-definition-object*))
                       (cdr (eval-objs (first-inferior-row
                                        eval::*lexical-variables-root*))))))
-         ;; make sure that we are on the 1st line of the box 
+         ;; make sure that we are on the 1st line of the box
          ;; and that box's INPUT line matches
          (transform-inputs-row
           (first-inferior-row eval::*lexical-variables-root*))
          (modified eval::*lexical-variables-root*)
          eval::*novalue*)
-        (t 
+        (t
          ;; otherwise error out, seeing the INPUT line anywhere else is an error
-         (eval::primitive-signal-error 
+         (eval::primitive-signal-error
           :bad-input "The INPUT line  should be the 1st line of a box"))))
 
 
@@ -327,7 +327,7 @@ Modification History (most recent at top)
   :after
   )
 |#
-  
+
 (defboxer-primitive bu::status-line-y-or-n? (prompt)
   (eval::boxer-boolean (status-line-y-or-n-p (box-text-string prompt))))
 
@@ -338,7 +338,7 @@ Modification History (most recent at top)
 (defboxer-primitive bu::status-line-get-box (prompt-message)
   (multiple-value-bind (string cancelled?)
       (get-string-from-status-line (box-text-string prompt-message))
-    (cond ((not (null cancelled?)) 
+    (cond ((not (null cancelled?))
            (eval::primitive-signal-error :cancelled "Cancelled by user"))
           (t (make-vc (list string))))))
 
@@ -369,7 +369,7 @@ Modification History (most recent at top)
 (defboxer-primitive bu::redisplay ()
   ;(eval::reset-poll-count)
   (process-editor-mutation-queue-within-eval)
-  (let ((*evaluation-in-progress?* nil)) 
+  (let ((*evaluation-in-progress?* nil))
     ;; This is checked by CLX clipping, needs to be NIL for redisplay
     (repaint-window *boxer-pane*))
   (invalidate-absolute-position-caches)
@@ -394,7 +394,7 @@ Modification History (most recent at top)
 (defun ut-month (month-number &optional (verbose *verbose-date-and-time*))
   (if verbose
       (case month-number
-        (1 "January") (2 "February") (3 "March") (4 "April") 
+        (1 "January") (2 "February") (3 "March") (4 "April")
         (5 "May") (6 "June") (7 "July") (8 "August") (9 "September")
         (10 "October") (11 "November") (12 "December"))
       (case month-number
@@ -405,7 +405,7 @@ Modification History (most recent at top)
   (case tz
     (-11 "-1100") (-10 "-1000") (-9 "-0900") (-8 "-0800") (-7 "-0700")
     (-6 "-0600") (-5 "-0500") (-4 "-0400") (-3 "-0300") (-2 "-0200")
-    (-1 "-0100") (0 "+0000") (1 "+0100") (2 "+0200") (3 "+0300") (4 "+0400") 
+    (-1 "-0100") (0 "+0000") (1 "+0100") (2 "+0200") (3 "+0300") (4 "+0400")
     (5 (if daylight-savings-p "EDT" "EST"))
     (6 (if daylight-savings-p "CDT" "CST"))
     (7 (if daylight-savings-p "MDT" "MST"))
@@ -436,7 +436,7 @@ Modification History (most recent at top)
 
 
 (defboxer-primitive bu::set-text-size ((bu::port-to box)
-                                       (eval::numberize width) 
+                                       (eval::numberize width)
                                        (eval::numberize height))
   (cond ((not (null *uc-copyright-free*))
          (eval::primitive-signal-error :copyright
@@ -446,11 +446,11 @@ Modification History (most recent at top)
         (t
          (let ((realbox (box-or-port-target box)))
            (when (box? realbox)
-             (let ((*current-font-descriptor* (closest-bfd 
+             (let ((*current-font-descriptor* (closest-bfd
                                                (first-inferior-row realbox) 0)))
                (multiple-value-bind (font-cha-wid font-cha-hei)
                    (current-font-values)
-                 (set-fixed-size realbox 
+                 (set-fixed-size realbox
                                  (* width font-cha-wid) (* height font-cha-hei))
                  ;; allow further mousing
                  (unless (bottom-right-hotspot-active? realbox)
@@ -459,14 +459,14 @@ Modification History (most recent at top)
   eval::*novalue*)
 
 (defboxer-primitive bu::set-text-dimensions ((bu::port-to box)
-                                             (eval::numberize width) 
+                                             (eval::numberize width)
                                              (eval::numberize height))
   (let ((realbox (box-or-port-target box)))
     (when (box? realbox)
       (let ((*current-font-descriptor* (closest-bfd (first-inferior-row realbox) 0)))
         (multiple-value-bind (font-cha-wid font-cha-hei)
             (current-font-values)
-          (set-fixed-size realbox 
+          (set-fixed-size realbox
                           (* width font-cha-wid) (* height font-cha-hei))
           ;; allow further mousing
           (unless (bottom-right-hotspot-active? realbox)
@@ -475,20 +475,20 @@ Modification History (most recent at top)
   eval::*novalue*)
 
 (defboxer-primitive bu::set-port-text-size ((eval::dont-copy port)
-                                            (eval::numberize width) 
+                                            (eval::numberize width)
                                             (eval::numberize height))
   (cond ((not (null *uc-copyright-free*))
          (eval::primitive-signal-error :copyright
                                        'bu::set-port-text-size
                                        " is no longer available, use "
-                                       'bu::set-port-text-dimensions 
+                                       'bu::set-port-text-dimensions
                                        " instead"))
         (t
          (let ((realbox (box-or-port-target port)))
            (when (virtual-port? port)
              (setq port (vp-editor-port-backpointer port)))
            (when (and (box? realbox) (port-box? port))
-             (let ((*current-font-descriptor* (closest-bfd 
+             (let ((*current-font-descriptor* (closest-bfd
                                                (first-inferior-row realbox) 0)))
                (multiple-value-bind (font-cha-wid font-cha-hei)
                    (current-font-values)
@@ -501,13 +501,13 @@ Modification History (most recent at top)
   eval::*novalue*)
 
 (defboxer-primitive bu::set-port-text-dimensions ((eval::dont-copy port)
-                                                  (eval::numberize width) 
+                                                  (eval::numberize width)
                                                   (eval::numberize height))
   (let ((realbox (box-or-port-target port)))
     (when (virtual-port? port)
       (setq port (vp-editor-port-backpointer port)))
     (when (and (box? realbox) (port-box? port))
-      (let ((*current-font-descriptor* (closest-bfd 
+      (let ((*current-font-descriptor* (closest-bfd
                                         (first-inferior-row realbox) 0)))
         (multiple-value-bind (font-cha-wid font-cha-hei)
             (current-font-values)
@@ -626,7 +626,7 @@ Modification History (most recent at top)
 ;		     (superior-box target) t)))
 ;	   (fill-doit-cursor-position-vector
 ;	    eval::*process-doit-cursor-position*))
-	  ((box? target) 
+	  ((box? target)
            (unless (eq (display-style target) ':normal)(unshrink target)))
 	  (t (eval::primitive-signal-error
 	 :resize-error "You Can only Expand Editor boxes")))
@@ -696,7 +696,7 @@ Modification History (most recent at top)
 
 (defboxer-primitive bu::box-display ((bu::port-to editor-box))
   (let ((target (box-or-port-target editor-box)))
-    (cond ((not (box? target)) 
+    (cond ((not (box? target))
            (eval::primitive-signal-error :bad-arg target " is not an editor box"))
           ((eq target (outermost-box))
            (make-vc (list 'bu::fullscreen)))
@@ -711,7 +711,7 @@ Modification History (most recent at top)
                    ((port-box? port)
                     (if (superior? port *initial-box*) port (ports port)))
                    (t (box-or-port-target port)))))
-    (cond ((not (box? box)) 
+    (cond ((not (box? box))
            (eval::primitive-signal-error :bad-arg box " is not an editor box"))
           ((eq box (outermost-box))
            (make-vc (list 'bu::fullscreen)))
@@ -727,7 +727,7 @@ Modification History (most recent at top)
 	     :move-cursor-error "Row and Cha-no should be positive integers"))
 	   ((and (box? target) (superior? target *initial-box*))
 	    ;; need to make sure screen structure is up to date
-	    (process-editor-mutation-queue-within-eval) 
+	    (process-editor-mutation-queue-within-eval)
             #+opengl (repaint)
             #-opengl (redisplay)
 	    ;; might want to Bind *move-bp-zoom-pause-time* here for effect
@@ -804,7 +804,7 @@ Modification History (most recent at top)
           (t
            (eval::primitive-signal-error
             :scrolling-error "You can only scroll editor boxes")))))
-	     
+
 ;;; get/set-scroll-x/y-position
 
 #|
@@ -815,7 +815,7 @@ Modification History (most recent at top)
 (defboxer-primitive bu::set-scroll-x-position ((bu::port-to box)
                                                (eval::numberize new-pos))
 
-(defboxer-primitive bu::set-scroll-y-position ((bu::port-to box) 
+(defboxer-primitive bu::set-scroll-y-position ((bu::port-to box)
                                                (eval::numberize new-pos))
 
 |#
@@ -873,7 +873,7 @@ Modification History (most recent at top)
 
 (defboxer-primitive bu::name? ((eval::dont-copy name))
   (let ((symbol (car (boxer::flat-box-items name))))
-    (eval::boxer-boolean 
+    (eval::boxer-boolean
      (when (and (symbolp symbol) (not (null symbol)))
        (not (eq eval::*novalue* (eval::boxer-symeval symbol)))))))
 
@@ -895,7 +895,7 @@ Modification History (most recent at top)
 	  (global (when (boundp symbol)
 		    (eval::static-variable-value (symbol-value symbol)))))
       (values (unless (eq local eval::*novalue*) local) global))))
-	    
+
 (defboxer-primitive bu::top-level-name? ((eval::dont-copy name))
   (multiple-value-bind (local global)
       (bound-values (caar (raw-unboxed-items name)))
@@ -924,7 +924,7 @@ Modification History (most recent at top)
 (defvar *unique-symbol-counter* 0)
 
 (defboxer-primitive bu::unique-symbol ()
-  (make-vc 
+  (make-vc
    (list (make-evrow-from-entry
 	  (intern-in-bu-package
 	   (format nil "UNIQUE-SYMBOL-~D" (incf *unique-symbol-counter*)))))))
@@ -947,10 +947,10 @@ Modification History (most recent at top)
   eval::*novalue*)
 
 (defboxer-primitive bu::dribble-pause () (record-pause-state))
-  
+
 
 ;(defboxer-primitive bu::dribble-grab-mouse-state ()   )
-  
+
 (defboxer-primitive bu::choose-file ()
   (let ((name nil)
         (cancel-flag t))
@@ -985,7 +985,7 @@ Modification History (most recent at top)
 (defboxer-primitive bu::launch-xref-file ((eval::dont-copy filename))
   (let ((pathname (box-text-string (box-or-port-target filename))))
     (cond ((not (probe-file pathname))
-           (eval::primitive-signal-error :mac-interface 
+           (eval::primitive-signal-error :mac-interface
                                          "File not Found" pathname))
           (t (applescript-open-xref pathname)))
     eval::*novalue*))
@@ -1012,8 +1012,8 @@ Modification History (most recent at top)
   eval::*novalue*)
 
 
-    
-    
+
+
 (defboxer-primitive bu::show-key-name ()
   (status-line-display 'show-key-name "Press a key or click the mouse...")
   (let* ((input (get-boxer-input *boxer-pane*))
@@ -1124,10 +1124,10 @@ Modification History (most recent at top)
 ;;; ports.  On the other hand, there probably isn't a really good
 ;;; heuristic for selecting the best box out of multiple view.
 ;;; other possibilities are, location (farthest right/left/top/bottom)
-;;; or unclipped over clipped.... 
+;;; or unclipped over clipped....
 
 (defun get-screen-box-for-mouse (box)
-  (car (displayed-screen-objs box)))  
+  (car (displayed-screen-objs box)))
 
 (defun xy-inside-box (screen-box)
   (multiple-value-bind (left top right bottom)
@@ -1347,7 +1347,7 @@ Modification History (most recent at top)
 	(eval::primitive-signal-error :mouse-error "Graphics Box is not visible")
 	(do* ((sbs screen-boxes (cdr sbs))
 	      (sb (car sbs) (car sbs)))
-	     ((null (cdr sbs))		
+	     ((null (cdr sbs))
 	      (multiple-value-bind (bx by)
 		  (xy-inside-box sb)
 		(multiple-value-bind (sx sy)
@@ -1369,24 +1369,24 @@ Modification History (most recent at top)
   (multiple-value-bind (x y) (mouse-window-coords-for-prims) (mouse-x-coord x y)))
 
 (defboxer-primitive bu::mouse-x-position-on-release ()
-  (multiple-value-bind (x y) 
+  (multiple-value-bind (x y)
       (mouse-window-coords-for-prims :up)
     (mouse-x-coord x y)))
 
-(defboxer-primitive bu::mouse-x-position-on-click () 
+(defboxer-primitive bu::mouse-x-position-on-click ()
   (multiple-value-bind (x y)
       (mouse-window-coords-for-prims :down)
     (mouse-x-coord x y)))
-	    
-(defboxer-primitive bu::mouse-y-position () 
+
+(defboxer-primitive bu::mouse-y-position ()
   (multiple-value-bind (x y) (mouse-window-coords-for-prims) (mouse-y-coord x y)))
 
-(defboxer-primitive bu::mouse-y-position-on-release () 
-  (multiple-value-bind (x y) 
+(defboxer-primitive bu::mouse-y-position-on-release ()
+  (multiple-value-bind (x y)
       (mouse-window-coords-for-prims :up)
     (mouse-y-coord x y)))
 
-(defboxer-primitive bu::mouse-y-position-on-click () 
+(defboxer-primitive bu::mouse-y-position-on-click ()
   (multiple-value-bind (x y)
       (mouse-window-coords-for-prims :down)
     (mouse-y-coord x y)))
@@ -1394,12 +1394,12 @@ Modification History (most recent at top)
 (defboxer-primitive bu::mouse-position ()
   (multiple-value-bind (x y) (mouse-window-coords-for-prims) (mouse-coords x y)))
 
-(defboxer-primitive bu::mouse-position-on-release () 
+(defboxer-primitive bu::mouse-position-on-release ()
   (multiple-value-bind (x y)
       (mouse-window-coords-for-prims :up)
     (mouse-coords x y)))
 
-(defboxer-primitive bu::mouse-position-on-click () 
+(defboxer-primitive bu::mouse-position-on-click ()
   (multiple-value-bind (x y)
       (mouse-window-coords-for-prims :down)
     (mouse-coords x y)))
@@ -1416,7 +1416,7 @@ Modification History (most recent at top)
 ;; Note: on mac, we could make it OR of command and control keys
 (defboxer-primitive bu::control-key? () (eval::boxer-boolean (bw::control-key?)))
 
-(defboxer-primitive bu::command-key? () 
+(defboxer-primitive bu::command-key? ()
   (eval::boxer-boolean #+mcl   (bw::command-key?)
                        #+lwwin (bw::control-key?)))
 
