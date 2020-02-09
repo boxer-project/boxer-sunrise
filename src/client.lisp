@@ -27,7 +27,7 @@ Modification History (most recent at top)
 
 10/18/05 filename-for-file: use enough-namestring ONLY for sorting
          directory structure, get the name and type from the filename
- 8/31/05 in addition to filename, we dump out dirs,name,type in 
+ 8/31/05 in addition to filename, we dump out dirs,name,type in
          storage-chunk-plist-half-length & dump-storage-chunk-plist-items
  2/16/03 merged current LW and MCL file, no diffs, copyright updated
  2/12/01 merged with current MCL file
@@ -112,7 +112,7 @@ Modification History (most recent at top)
 
 ;;;; Dump-Hierarchical-Box-Prepass and friends...
 
-;; returns the lowest superior box which is marked 
+;; returns the lowest superior box which is marked
 ;; as a storage chunk (or NIL)
 (defun superior-storage-box (box &optional (skip-initial-box? nil))
   (do ((sb (if skip-initial-box? (superior-box box) box)
@@ -140,7 +140,7 @@ Modification History (most recent at top)
 	      (sbi-bid info)))
 	(bsui-top-box-id *box-server-user*))))
 
-;; forwarding tables 
+;; forwarding tables
 (defun find-bid (bid table)
   (do* ((remaining-pairs table (cddr remaining-pairs))
 	(current-bid (car remaining-pairs) (car remaining-pairs)))
@@ -157,7 +157,7 @@ Modification History (most recent at top)
 		  (new-id (unless (null table) (find-bid id table))))
 	     (cond ((null new-id)
 		    (validate-server-box-id (superior-box box) id))
-		   (t new-id))))))  
+		   (t new-id))))))
 
 
 
@@ -170,13 +170,13 @@ Modification History (most recent at top)
 ;;;    o Boxer Server Boxes: distinguished by numeric ID's in the :server-box-id
 ;;;      plist property for the most part, these are obsolete
 ;;;    o URL boxes: look for URL (Universal Resource Locator) Structs in the
-;;;      plist property. 
+;;;      plist property.
 ;;;    o File boxes: look for pathname (or string) in the :associated-file
-;;;      property in the plist 
+;;;      property in the plist
 ;;;
 
 ;; the dumper walks through all the inferiors of the box being dumped.  If an
-;; inferior box meets this test, then only its top level characteristics are 
+;; inferior box meets this test, then only its top level characteristics are
 ;; dumped but we do not recurse through the inferior box's inferiors
 (defun no-inferiors-for-file? (box)
   (let ((plist (plist box)))
@@ -198,12 +198,12 @@ Modification History (most recent at top)
            (getprop box :url))
        (or (in-bfs-environment?) (read-only-box? box))))
 |#
-       
+
 ;; sub box relocation table, branch file links, inf file links
 (defun storage-chunk-plist-half-length (box)
-  (let* ((half-length 0) 
+  (let* ((half-length 0)
          (boxtop-prop (getprop box :boxtop))
-         (boxtop (cond ((or (null boxtop-prop) 
+         (boxtop (cond ((or (null boxtop-prop)
                             (eq boxtop-prop :standard)
                             (eq boxtop-prop :framed))
                         (boxer::boxtop box))
@@ -243,7 +243,7 @@ Modification History (most recent at top)
       ;; if we are dumping out as a black box, check for boxtop...
       (when boxtop (incf& half-length)))
      ((url-box? box) (incf& half-length) (when boxtop (incf& half-length)))
-     ((boxer::file-box? box) 
+     ((boxer::file-box? box)
       ;(incf& half-length)
       ;; 8/31/05 in addition to filename, we dump out dirs,name,type
       (incf& half-length 4)
@@ -252,16 +252,16 @@ Modification History (most recent at top)
 
 (defmethod dump-storage-chunk-plist-items ((self boxer::box) stream)
   (let* ((boxtop-prop (getprop self :boxtop))
-         (boxtop (cond ((or (null boxtop-prop) 
+         (boxtop (cond ((or (null boxtop-prop)
                             (eq boxtop-prop :standard)
                             (eq boxtop-prop :framed))
                         (boxer::boxtop self))
                        ((eq boxtop-prop :file)
                         (let ((bt (boxer::boxtop self)))
                           (when (boxer::graphics-sheet? bt) bt))))))
-    (cond 
+    (cond
      ((in-bfs-environment?)
-      (when (and (storage-chunk? self) 
+      (when (and (storage-chunk? self)
 	         (or (getprop self :server-box-id)
 		     (box-bid self)))
         (dump-boxer-thing :server-box-id stream)
@@ -278,8 +278,8 @@ Modification History (most recent at top)
 	  (debugging-message "~&Dumping cross file contained links ~A in box ~A"
 			     contained-links-to-dump self)
 	  (dump-boxer-thing :cross-file-contained-links stream)
-	  (dump-list-preamble (length contained-links-to-dump) stream)      
-	  (dolist (cl contained-links-to-dump)	
+	  (dump-list-preamble (length contained-links-to-dump) stream)
+	  (dolist (cl contained-links-to-dump)
 	    (if (%cross-file-link? contained-links-to-dump)
 	      (dump-boxer-thing (cross-file-link-id cl) stream)
 	      ;; must be an editor link
@@ -331,12 +331,12 @@ Modification History (most recent at top)
 			     terminating-target-links self)
 	  (dump-boxer-thing :cross-file-target-ends stream)
 	  (dump-boxer-thing terminating-target-links stream)))
-      (when boxtop 
+      (when boxtop
         (dump-boxer-thing :cached-boxtop stream) (dump-boxer-thing boxtop stream)))
      ((url-box? self)
       (dump-boxer-thing :url stream)
       (dump-box-url self stream)
-      (when boxtop 
+      (when boxtop
         (dump-boxer-thing :cached-boxtop stream) (dump-boxer-thing boxtop stream)))
      ((boxer::file-box? self)
       (let* ((file (filename-for-file self))
@@ -352,7 +352,7 @@ Modification History (most recent at top)
         (dump-boxer-thing name stream)
         (dump-boxer-thing :associated-file-type stream)
         (dump-boxer-thing type stream))
-      (when boxtop 
+      (when boxtop
         (dump-boxer-thing :cached-boxtop stream) (dump-boxer-thing boxtop stream)))
      )))
 
@@ -371,9 +371,9 @@ Modification History (most recent at top)
         (let* ((sup-file-box (boxer::current-file-box (superior-box box)))
                (sup-file (getprop sup-file-box :associated-file)))
           (cond ((null sup-file) ; save as absolute
-                 (if relative? 
-                     (namestring (boxer::boxer-new-file-dialog 
-                                  :prompt 
+                 (if relative?
+                     (namestring (boxer::boxer-new-file-dialog
+                                  :prompt
                                   "The Box has no superior filename to merge"
                                   :directory filename
                                   :box box))
@@ -383,7 +383,7 @@ Modification History (most recent at top)
                  ;; use enough-namestring only for sorting directory
                  ;; structure otherwise type info can get lost
                  (namestring
-                  (make-pathname :directory (pathname-directory 
+                  (make-pathname :directory (pathname-directory
                                              (enough-namestring filename
                                                                 sup-file))
                                  :name (pathname-name filename)
@@ -492,7 +492,7 @@ Modification History (most recent at top)
     (delete-cross-file-contained-link top-box inferior-link)))
 
 ;;; reads in boxes on the target side and then relinks them
-;;; still needs some bullet proofing especially when faced 
+;;; still needs some bullet proofing especially when faced
 ;;; with (possible) port crackness
 (defun articulate-target-branch (plink)
   (let* ((il (file-branch-link-inferior-link plink))
@@ -560,7 +560,7 @@ Modification History (most recent at top)
 	  (if port-branch?
 	      (delete-cross-file-port-branch-link   box link)
 	      (delete-cross-file-target-branch-link box link))))))
-  
+
 (defun break-file-links (from-box link &optional (port-branch? t))
   (do ((box from-box (superior-box box)))
       ((not (box? box)))
@@ -569,7 +569,7 @@ Modification History (most recent at top)
 	   (match (link-match link blinks)))
       (if (null match)
 	  (return)
-	  (setf (file-branch-link-broken match) t)))))    
+	  (setf (file-branch-link-broken match) t)))))
 
 (defmethod cross-file-link-insert-self-action ((self boxer::box) superior)
   (let ((sup-cl (cross-file-contained-links superior))
@@ -660,7 +660,7 @@ Modification History (most recent at top)
 ;;;
 ;;; then mark as "broken" the lowest box in the other branch
 ;;; so that (possible) future inserts will have an existing
-;;; link to connect to but immediate uses of FILE will not be 
+;;; link to connect to but immediate uses of FILE will not be
 ;;; confused and try to file this particular link
 ;;;
 ;;; superiors of the other branch should then be removed as well
@@ -712,7 +712,7 @@ Modification History (most recent at top)
 	  (t existing-entry))))
 
 ;;; this attribute needs to be saved away in the top level
-;;; world (during logout) and restored on login to insure 
+;;; world (during logout) and restored on login to insure
 ;;; continuing uniqueness
 (defun initialize-cross-file-link-id (id)
   (setq *cross-file-link-id-counter* id))
@@ -836,9 +836,9 @@ Modification History (most recent at top)
 	  (putprop box new :cross-file-target-branch-links)))))
 
 
-;; a port is a cross file port if the port and the target have 
+;; a port is a cross file port if the port and the target have
 ;; are inside (or in the case of the target, is) different file
-;; boxes.  
+;; boxes.
 
 ;; just walk up the hierarchy until we get to the containing
 ;; storage-chunk box, then check to see if the port is on a
@@ -890,7 +890,7 @@ Modification History (most recent at top)
 						 table
 						 (get-pttt-uid)
 						 target)))))))
-		
+
 ;;; the existing arg means to use whatever pttt-table is already there
 ;;; a NIL existing arg means to calculate the current table
 (defun cross-file-port-target-reference (port-box &optional (existing nil))
@@ -907,7 +907,7 @@ Modification History (most recent at top)
 	(setq port-uid (find-target-uid target table))))
     (unless (null port-uid)
       (let ((return-reference (list port-uid)))
-	;; now walk upward Pushing successive BID's 
+	;; now walk upward Pushing successive BID's
 	(setq return-reference (nconc return-reference (bid-path target)))
 	return-reference))))
 
@@ -929,7 +929,7 @@ Modification History (most recent at top)
 ;;; this checks to see if the dumped out link info is still valid.
 ;;; if it is, then we don't have to dump out the inferiors.  If the link
 ;;; info HAS changed (e.g. some intermediate file boxes have either
-;;; been filed or unfiled -- changing the BID path), then this is 
+;;; been filed or unfiled -- changing the BID path), then this is
 ;;; supposed to detect it
 (defun obsolete-link-info? (box)
   (let ((checked-pttts nil))
@@ -950,7 +950,7 @@ Modification History (most recent at top)
 	 (let ((sup (superior-storage-box (box::link-target bl))))
 	   (unless (box::fast-memq sup checked-pttts)
 	     (when (check-pttt-table sup) (return t))
-	     (push sup checked-pttts))))))))       
+	     (push sup checked-pttts))))))))
 
 |#
 
@@ -963,7 +963,7 @@ Modification History (most recent at top)
 ;;;  . A list of inferior file boxes which need to be copied
 ;;;  . A list of inferior file boxes whose superiors need to be set
 ;;;  . A list of cross file ports, in the process, updating the
-;;;    Port Target Translation Tables to include the targets of 
+;;;    Port Target Translation Tables to include the targets of
 ;;;    the cross file ports
 
 (defun dump-hierarchical-box-prepass (box)
@@ -1010,7 +1010,7 @@ Modification History (most recent at top)
 					       *box-server-user*)))
 				    ;; must be a local copy
 				    (push b new-superiors)
-				    ;; should local copies be 
+				    ;; should local copies be
 				    ;; written out separately ??
 				    ))
 				(setf (boxer::copy-file? b) nil))
@@ -1037,7 +1037,7 @@ Modification History (most recent at top)
 			    (setf (boxer::copy-file? b) nil)
 					;(box::removeprop b :server-box-id)
 			    (push b new-superiors)
-			    (push b rw-inferiors))))		     
+			    (push b rw-inferiors))))
 		     ((and (not (null (slot-value b 'box::first-inferior-row)))
 			   (or (null info)
 			       (> (slot-value b 'box::tick)
@@ -1067,7 +1067,7 @@ Modification History (most recent at top)
 
 
 ;;; Allocates an info struct for a NEW file box.
-;;; Fills whatever slots it can an then returns it.  
+;;; Fills whatever slots it can an then returns it.
 ;;; NOTE: It does NOT write through to the server.  It assumes that
 ;;; the caller will write out the slots to the server in some
 ;;; bundled way.  Usually with Set-Box-And-Info
@@ -1181,9 +1181,9 @@ Modification History (most recent at top)
 		   (setf (sbi-superior-box-bid existing-info) bid)
 		   (set-bid-superior-box-bid (sbi-bid existing-info) bid))))))
     ;; we dump the inferiors before the top level box because some
-    ;; of them may need to generate boxID's which should be recorded 
+    ;; of them may need to generate boxID's which should be recorded
     ;; before the higher level box is dumped out
-    (dolist (inf rw-inferiors)	
+    (dolist (inf rw-inferiors)
       (let* ((info (or (box-server-info inf) (allocate-new-box-info inf)))
 	     (bid (sbi-bid info)))
 	;; maybe this should be a recursive call to dump-hierarchial-box ?
@@ -1215,7 +1215,7 @@ Modification History (most recent at top)
 		    (format nil "Loading Box ID ~D  ~~D (~~D %)" bid)))
 	       (unless (null boxer::*file-system-verbosity*)
 		 (box::status-line-display
-		  'box::loading-box 
+		  'box::loading-box
 		  (format nil "Loading ~D bytes from ~A for Box ~D"
 			  box::*current-file-length*
 			  (server-loading-string server)
@@ -1269,7 +1269,7 @@ Modification History (most recent at top)
     (unless (null sup-file-box)
       (boxer::fake-file-box sup-file-box))))
 
-(defun queue-for-server-deletion (box)  
+(defun queue-for-server-deletion (box)
   (let* ((info (box-server-info box nil))
 	 (bid (if (null info)
 		  (box::getprop box :server-box-id)
@@ -1310,7 +1310,7 @@ Modification History (most recent at top)
 
 
 
-;;;; Box Server Primary Interface Functions 
+;;;; Box Server Primary Interface Functions
 ;;;; to be used by Primitives and Editor Commands
 
 (defun mark-box-flags-as-file (box &optional
@@ -1337,7 +1337,7 @@ Modification History (most recent at top)
 				      name)))
     (box::add-closet-row interface-box (box::make-row `(,trigger)))
     interface-box))
-    
+
 
 (defun install-file-control-boxes (box)
   (let ((closet (box::closet-row box nil)))
@@ -1366,7 +1366,7 @@ Modification History (most recent at top)
     (when (box::box? int-box)
       ;; if there is an interface box then set it to the new value
       (box::bash-box-to-single-value int-box value))))
-      
+
 (defun file-box (box)
   (let* ((info (or (box-server-info box nil) ; for boxes which have been filed
 		   (allocate-new-box-info box)))
@@ -1400,7 +1400,7 @@ Modification History (most recent at top)
     ;; finally, update the write date and other info
     (refresh-box-bookkeeping box info)))
 
-;;; this must read in the box if the immediate inferiors are not 
+;;; this must read in the box if the immediate inferiors are not
 ;;; there yet...
 (defun unfile-box (box)
   ;; read in the inferiors
@@ -1437,7 +1437,7 @@ Modification History (most recent at top)
 	   (if (null id)
 	       '(("Box is marked for Storage"))
 	       `(("Box is marked for Storage")
-		 (,(format nil "Box ID: ~D (#x~x)" id id))))))	   
+		 (,(format nil "Box ID: ~D (#x~x)" id id))))))
 	(t
 	 (list
 	  (if (null (sbi-write-date info))
