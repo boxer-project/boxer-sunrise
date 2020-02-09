@@ -57,7 +57,7 @@ Modification History
 
 (defconstant *exporting-all-variables-marker* '.export-all-variables.)
 
-;; returns NIL if it is ok to export the list of bindings and the name of 
+;; returns NIL if it is ok to export the list of bindings and the name of
 ;; the conflicting variable if it is not ok
 (defmethod prescan-exported-bindings ((self boxer::box)
 				      &optional (bindings-to-be-exported
@@ -68,11 +68,11 @@ Modification History
       (let ((sup-alist (slot-value sup 'static-variables-alist)))
 	(dolist (binding bindings-to-be-exported)
 	  (when (fast-assq (car binding) sup-alist) (return (car binding))))))))
-	
+
 
 ;;; When a binding is inserted into a transparent box, the binding pair should
 ;;; be propagated upward--depending upon the value of the exports slots--and
-;;; spliced into the superior box's binding alist.  
+;;; spliced into the superior box's binding alist.
 
 (defmethod propagate-exported-binding ((box boxer::box) variable value)
   (let ((exports (slot-value box 'boxer::exports)))
@@ -155,7 +155,7 @@ Modification History
 
 ;;; Here is the interface to transparent boxes
 ;;; Call this function whenever you want to change the exports of a box
-;;; Need to be careful about setting slot for EXPORTS.  
+;;; Need to be careful about setting slot for EXPORTS.
 ;;; remove-all-exported-bindings needs to know what the value WAS and
 ;;; propagate-all-exported-bindings needs to know what the value WILL BE
 (defmethod set-exports ((self boxer::box)
@@ -168,7 +168,7 @@ Modification History
 	       (equal old-exports new-exports)))
 	  ((null old-exports)
 	   (setf (slot-value self 'boxer::exports) new-exports)
-	   (unless (null superior-box)	     
+	   (unless (null superior-box)
 	     (propagate-all-exported-bindings self superior-box)
 	     (export-inferior-properties self superior-box)))
 	  ((null new-exports)
@@ -249,7 +249,7 @@ Modification History
 	(export-inferior-properties superior (box::superior-box superior))))))
 
 
-(defmethod unexport-inferior-properties ((self boxer::box) superior 
+(defmethod unexport-inferior-properties ((self boxer::box) superior
                                          &optional (inf-active-sprite :start))
   (let* ((plist (slot-value self 'boxer::plist))
 	 (inf-sprites (getf plist 'boxer::inferior-sprites))
@@ -284,9 +284,9 @@ Modification History
 ;;; so it can call REMOVE-STATIC-VARIABLE?
 
 ;;; It can be fixed NOW since I put in the flat exports scheme but I'm leaving
-;;; it the way it is now cause I don't understand how the variable caching 
-;;; stuff is supposed to work (specifically, when do I have to flush the 
-;;; caches explicitly) Right now, it seems that we have to do a tree walk if 
+;;; it the way it is now cause I don't understand how the variable caching
+;;; stuff is supposed to work (specifically, when do I have to flush the
+;;; caches explicitly) Right now, it seems that we have to do a tree walk if
 ;;; we delete a variable (ugghh) -EhL 7/26/87
 
 ;;; We don't need this function any more because exports don't work with shared
