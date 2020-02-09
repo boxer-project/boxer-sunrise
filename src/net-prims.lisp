@@ -26,7 +26,7 @@
 
 
 
-   This file contains all of the boxer functions which use the 
+   This file contains all of the boxer functions which use the
    file system.
 
 
@@ -60,7 +60,7 @@ Modification History (most recent at top)
 ;;; use the same mechanism.
 ;;;
 ;;; But we need the polling to happen more often at toplevel.
-;;; 
+;;;
 ;;; Also, we need some error trapping around the receive thing.
 
 ;;; NIL means off.
@@ -91,7 +91,7 @@ Modification History (most recent at top)
   (boxnet::disable-polling)
   (boxnet::close-server)
   (setq *boxer-send-server-status* nil))
-  
+
 (defboxer-primitive bu::enable-boxer-send-interrupts ()
   (enable-boxer-send-interrupts)
   eval::*novalue*)
