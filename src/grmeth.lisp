@@ -77,7 +77,7 @@ Modification History (most recent at top)
     ;; so themselves (window is usually bound around calls to top-level-doit)
     (when (not-null (slot-value self 'assoc-graphics-box))
       (with-graphics-vars-bound ((slot-value self 'assoc-graphics-box))
-	(with-graphics-screen-parameters 
+	(with-graphics-screen-parameters
 	    (erase self))))
     (set-assoc-graphics-box-instance-var self new-box)
     (when (and (not-null new-box)
@@ -98,7 +98,7 @@ Modification History (most recent at top)
 	  (draw self)))))
   )
 
-;;; Hierarchical Graphics Objects (which mirror (possible) 
+;;; Hierarchical Graphics Objects (which mirror (possible)
 ;;; hierarchical boxer structure)
 
 (defmethod add-subturtle ((self graphics-object) subturtle)
@@ -134,7 +134,7 @@ Modification History (most recent at top)
 	 (eval::remove-static-variable sprite-box box-name)
 	 (eval::add-static-variable-pair sprite-box box-name
 					 (box-interface-box interface)))))
-      
+
 (defmethod all-interface-slots ((self graphics-object))
   (list 'x-position 'y-position))
 
@@ -345,7 +345,7 @@ Modification History (most recent at top)
 
 ;;;; utilities for updating BOX values
 
-;;; we can't use change cause we DON'T want to give 
+;;; we can't use change cause we DON'T want to give
 ;;; Modifed-triggers a chance to run
 ;;; we need to take a little care in case the closet-row is around
 
@@ -441,7 +441,7 @@ Modification History (most recent at top)
 	(list (x-position self) (y-position self)))
   (set-x-position self 0.0)
   (set-y-position self 0.0))
- 
+
 (defmethod restore-state ((self graphics-object))
   (set-x-position self (first %turtle-state))
   (set-y-position self (second %turtle-state)))
@@ -495,7 +495,7 @@ Modification History (most recent at top)
 	  (turtle-window-shape-max-graphics-x-extent window-shape) max-x
 	  (turtle-window-shape-max-graphics-y-extent window-shape) max-y)
     (values min-x min-y max-x max-y)))
-			
+
 (defmethod touching? ((self graphics-object) other-turtle)
   (multiple-value-bind (left1 top1 right1 bottom1)
       (enclosing-rectangle self)
@@ -794,7 +794,7 @@ CLOSED for renovations until I fix the string/font situation
 ;;; Note that we deliberately allocate a backing store large enough
 ;;; to support any possible rotation of the sprite to avoid having to
 ;;; continually reallocate a backing store (slow !) for any rotation
-;;; of the sprite.  
+;;; of the sprite.
 ;;;
 ;;; Need to put in support for overlay planes
 ;;;
@@ -807,7 +807,7 @@ CLOSED for renovations until I fix the string/font situation
     (let ((size 0)
 	  (non-xor-graphics-occurred? nil)
 	  (in-xor? nil))
-      (with-graphics-state-bound 
+      (with-graphics-state-bound
         (do-vector-contents (com shape)
 	  ;; there really ought to be a more modular way to handle this...
 	  (when (and (not non-xor-graphics-occurred?)
@@ -850,10 +850,10 @@ CLOSED for renovations until I fix the string/font situation
 				    (floor size 2)
 				    size)))
 	    (t
-	     ;; at this point, we know we both have and want a bitmap backing 
-	     ;; store now check sizes to see if what we already have is big 
-	     ;; enough we may want to put in a shrinking bitmap clause but 
-	     ;; for now, we just leave big bitmaps in place trying to 
+	     ;; at this point, we know we both have and want a bitmap backing
+	     ;; store now check sizes to see if what we already have is big
+	     ;; enough we may want to put in a shrinking bitmap clause but
+	     ;; for now, we just leave big bitmaps in place trying to
 	     ;; minimize more reallocation of bitmaps--trading space (extra
 	     ;; bitmap size) for speed (no need to
 	     ;; reallocate bitmaps in grow/shrink/grow cases)
@@ -1028,7 +1028,7 @@ CLOSED for renovations until I fix the string/font situation
 ;;;
 ;;; This should actually be called slow-erase
 ;;; Anyways, this just blanks the overlay plane
-;;; at some point, a finer grained version of this 
+;;; at some point, a finer grained version of this
 ;;; ought to be written.  ALternatively, rewrite the
 ;;; various macros (like with-sprite-primitive-environment
 ;;; in grfdfs.lisp to just blank the overlay plane
@@ -1050,7 +1050,7 @@ CLOSED for renovations until I fix the string/font situation
 ;; hide-turtle is called from inside a with-sprites-hidden macro
 ;; because hiding a PD sprite can obscure (parts of) other sprites
 ;; so they must all hide so they can be redrawn.
-;; therefore, it needs to suppress the explicit erasing 
+;; therefore, it needs to suppress the explicit erasing
 (defmethod hide-turtle ((self button))
   (set-shown? self nil nil nil))
 
@@ -1070,7 +1070,7 @@ CLOSED for renovations until I fix the string/font situation
 ;;; how fast they wil be.  The alternative is to use a cache
 ;;; like the generic version and cycle through the transformed
 ;;; shape except that the cache can be
-;;; a lot smaller since it doesn't have to hold the window 
+;;; a lot smaller since it doesn't have to hold the window
 ;;; coordinate version of the sprite's shape.
 ;;;
 ;;; ****************   NOTE   ****************
