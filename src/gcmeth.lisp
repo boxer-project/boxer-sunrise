@@ -26,7 +26,7 @@
 
 
 
-  This file contains basic methods for graphics cursor objects 
+  This file contains basic methods for graphics cursor objects
 
 
 Modification History (most recent at top)
@@ -36,7 +36,7 @@ Modification History (most recent at top)
          handled #-opengl compilation warnings in set-shown?
  4/20/10 restored calls to drawing commands in arc, wedge, circle and hollow-circle
  1/02/10 removed explict calls to draw & erase via #-OpenGL in SET-SHOWN?
-11/14/09 background-graphics-color does pixel to color conversion 
+11/14/09 background-graphics-color does pixel to color conversion
 11/05/09 fixed stamp method
  1/26/08 #-opengl all actual drawing commands since opengl only uses the display lists
  3/02/07 parse-color-box:alpha channel support
@@ -44,11 +44,11 @@ Modification History (most recent at top)
          the value of *check-bit-array-color*
  2/16/03 merged current LW and MCL files
  2/15/01 merged current LW and MCL files
- 8/19/99 changed set-pen-color, synchronize-graphics-state to use color= instead 
-         of eql 
+ 8/19/99 changed set-pen-color, synchronize-graphics-state to use color= instead
+         of eql
  4/09/99 stamp-wedge and stamp-arc implemented
 10/10/98 numeric RGB clause in get-color-from-color-box now uses %make-color
-         instead of make-color-internal (which returned a box (how did this 
+         instead of make-color-internal (which returned a box (how did this
          EVER work ????))
  7/06/98 add support for background bitmaps in graphics boxes to set-shape
  6/24/98 changed get-color-from-color-box to also check for RGB triple
@@ -115,7 +115,7 @@ Modification History (most recent at top)
 
 (defun graphics-list-extent (gl)
   (let ((min-x 0) (min-y 0) (max-x 0) (max-y 0))
-    (with-graphics-state-bound 
+    (with-graphics-state-bound
       (do-vector-contents (gc gl)
         (multiple-value-bind (gc-min-x gc-min-y gc-max-x gc-max-y
 				       state-change?)
@@ -134,7 +134,7 @@ Modification History (most recent at top)
     ;; don't worry about the size, we'll be adjusting it...
     (when (null (graphics-info box))
       (setf (graphics-info box) (make-graphics-sheet 0 0 box)))
-    ;; now that we are sure there is a graphics sheet, 
+    ;; now that we are sure there is a graphics sheet,
     ;; figure out the size it is supposed to be
     (let ((gs (graphics-info box)))
       (multiple-value-bind (width height)
@@ -210,10 +210,10 @@ Modification History (most recent at top)
 
 
 
-;;; once again, need to figure out what we are doing here and flush all this 
+;;; once again, need to figure out what we are doing here and flush all this
 ;;; multi-package symbol lossage
 ;;; the explicit arg is used to specify whether we need to draw/erase
-;;; in the function or if it is already being taken care of (like inside 
+;;; in the function or if it is already being taken care of (like inside
 ;;; a with-sprites-hidden macro)
 
 (defmethod set-shown? ((self graphics-cursor) new-value
@@ -239,7 +239,7 @@ Modification History (most recent at top)
       (setf (box-interface-value slot) value)
       #-opengl
       (unless (or (not explicit) (eq old-value value))
-	;; if the shown? values are different, then we need to redraw 
+	;; if the shown? values are different, then we need to redraw
 	(with-graphics-screen-parameters
 	    (when (shown? top-guy) (draw top-guy)))))))
 
@@ -297,7 +297,7 @@ Modification History (most recent at top)
 (defvar *check-bit-array-color* t)
 
 (defmethod background-graphics-color ((self graphics-cursor))
-  (or 
+  (or
    (let ((gb (slot-value self 'assoc-graphics-box)))
      (unless (null gb)
        (let ((gs (graphics-info gb)))
@@ -332,9 +332,9 @@ Modification History (most recent at top)
 			   (background-graphics-color self))))
 	(cond ((eq self (graphics-command-list-agent %graphics-list))
 	       ;; if the current sprite is still the "owner" then just
-	       ;; record the change in alu with special handling for 
+	       ;; record the change in alu with special handling for
 	       ;; erasing in a graphics box which has a background
-	       (cond (erase-color 
+	       (cond (erase-color
 		      (unless (eql *graphics-state-current-alu* alu-seta)
 			(record-boxer-graphics-command-change-alu alu-seta)
 			(change-alu alu-seta))
@@ -350,7 +350,7 @@ Modification History (most recent at top)
 		      ;; check the validity of the color since it may
 		      ;; have been changed by a previous erase command, note
 		      ;; that we can't check the current value of the alu
-		      ;; for 'bu::erase because there may have been 
+		      ;; for 'bu::erase because there may have been
 		      ;; an intervening PENUP command
 
 			;; always record when learning shape because we
@@ -392,9 +392,9 @@ Modification History (most recent at top)
 	;; if the current sprite is still the "owner" then just
 	;; record the change in pen-width
 	(unless (eql *graphics-state-current-pen-width* new-value)
-	  (record-boxer-graphics-command-change-pen-width new-value))	
+	  (record-boxer-graphics-command-change-pen-width new-value))
 	;; otherwise, we need to set a new "owner"
-	(progn	
+	(progn
 	  (synchronize-graphics-state self t)
 	  (setf (graphics-command-list-agent %graphics-list) self)))
     ;; finally, change the global value
@@ -411,7 +411,7 @@ Modification History (most recent at top)
 
 (defun get-color-from-color-box (box)
   (let ((gs (get-graphics-sheet box)))
-    (cond ((null gs) 
+    (cond ((null gs)
            ;; no graphics, check for 3 numbers...
            (let* ((entries (car (raw-unboxed-items box)))
                   (red (car entries)) (green (cadr entries))
@@ -436,7 +436,7 @@ Modification History (most recent at top)
 
 (defun pen-color-box-updater (bi)
   (let ((value (box-interface-value bi)) (box (box-interface-box bi)))
-    ;; first make sure there is a graphics sheet	 
+    ;; first make sure there is a graphics sheet
     (when (null (graphics-info box))
       (setf (graphics-info box)
 	    (%make-simple-graphics-sheet *pen-color-graphics-size*
@@ -469,7 +469,7 @@ Modification History (most recent at top)
 	(unless (color= *graphics-state-current-pen-color* new-value)
 	  (record-boxer-graphics-command-change-graphics-color new-value))
 	;; otherwise, we need to set a new "owner"
-	(progn	
+	(progn
 	  (synchronize-graphics-state self t)
 	  (setf (graphics-command-list-agent %graphics-list) self)))
     ;; finally, change the global value
@@ -505,7 +505,7 @@ Modification History (most recent at top)
 	(unless (eql *graphics-state-current-font-no* new-value)
 	  (record-boxer-graphics-command-change-graphics-font new-value))
 	;; otherwise, we need to set a new "owner"
-	(progn	
+	(progn
 	  (synchronize-graphics-state self t)
 	  (setf (graphics-command-list-agent %graphics-list) self)))
     ;; finally, change the global value
@@ -513,9 +513,9 @@ Modification History (most recent at top)
 
 
 
-;;; this is called BEFORE any drawing or recording of graphics commands 
+;;; this is called BEFORE any drawing or recording of graphics commands
 ;;; It makes sure that the turtle's graphics state agrees with the
-;;; currently bound graphics state and if it doesn't agree, 
+;;; currently bound graphics state and if it doesn't agree,
 ;;; the recording list is changed as well as the currently bound variables
 ;;; that describe the current graphics state
 
@@ -551,9 +551,9 @@ Modification History (most recent at top)
         (setf (graphics-command-list-font-no %graphics-list) font)
 	(change-graphics-font font)))))
 
-;; similiar to synchronize-graphics-state except we synch to erasing 
+;; similiar to synchronize-graphics-state except we synch to erasing
 ;; values instead of the intrinsic values of the sprite
-(defmethod synchronize-graphics-state-for-erase ((agent graphics-cursor) 
+(defmethod synchronize-graphics-state-for-erase ((agent graphics-cursor)
 						 erase-color)
   (let* ((pw (box-interface-value (slot-value agent 'pen-width)))
 	 (font (box-interface-value (slot-value agent 'type-font)))
@@ -572,7 +572,7 @@ Modification History (most recent at top)
     (unless (eql *graphics-state-current-font-no* font)
       (record-boxer-graphics-command-change-graphics-font font)
       (change-graphics-font font))))
-  
+
 ;; this is like synchronize-graphics-state EXCEPT that it
 ;; ONLY puts entries in the beginning of its graphics-command-list
 ;; and DOESN'T try to side effect any bindings
@@ -619,12 +619,12 @@ Modification History (most recent at top)
     (setf (graphics-command-list-alu graphics-command-list)
 	  (initial-shape-alu))
     (record-boxer-graphics-command-change-alu (initial-shape-alu))
-    ;; need to side effect the pen state of the turtle because the optimized 
+    ;; need to side effect the pen state of the turtle because the optimized
     ;; graphics command recording mechanism will not record if the turtle's
     ;; pen state is BU::UP which it will be if we are changing shapes while
-    ;; the turtle's pen is up even though the canonical initial state for 
+    ;; the turtle's pen is up even though the canonical initial state for
     ;; drawing is XOR
-    (setf (box-interface-value (slot-value agent 'pen)) 
+    (setf (box-interface-value (slot-value agent 'pen))
           (initial-shape-pen-symbol))
     ;; the current pen-width of the turtle
     (setf (graphics-command-list-pen-width graphics-command-list)
@@ -709,7 +709,7 @@ Modification History (most recent at top)
 ;;; ****************   NOTE   ****************
 ;;;
 ;;; The SGI version stamps the rectangle in turtle coordinates
-;;; NOT array/window coordinates 
+;;; NOT array/window coordinates
 ;;;
 ;;; ****************   NOTE   ****************
 ;;;
@@ -777,7 +777,7 @@ Modification History (most recent at top)
 
 (defmethod stamp-circle ((self graphics-cursor) radius)
   (let ((alu (get-alu-from-pen
-	      (box-interface-value (slot-value self 'pen))))) 
+	      (box-interface-value (slot-value self 'pen)))))
     (cond ((null alu))
 	  ((not (null %learning-shape?))
 	   (record-boxer-graphics-command-filled-circle
@@ -806,7 +806,7 @@ Modification History (most recent at top)
 
 (defmethod stamp-wedge ((self graphics-cursor) radius sweep-angle)
   (let ((alu (get-alu-from-pen
-	      (box-interface-value (slot-value self 'pen))))) 
+	      (box-interface-value (slot-value self 'pen)))))
     (cond ((null alu))
 	  ((not (null %learning-shape?))
 	   (record-boxer-graphics-command-wedge
@@ -823,7 +823,7 @@ Modification History (most recent at top)
 
 (defmethod stamp-arc ((self graphics-cursor) radius sweep-angle)
   (let ((alu (get-alu-from-pen
-	      (box-interface-value (slot-value self 'pen))))) 
+	      (box-interface-value (slot-value self 'pen)))))
     (cond ((null alu))
 	  ((not (null %learning-shape?))
 	   (record-boxer-graphics-command-arc
@@ -906,7 +906,7 @@ Modification History (most recent at top)
 
 
 (defmethod stamp ((self graphics-cursor))
-  (let ((pen-mode (get-alu-from-pen (pen self))))    
+  (let ((pen-mode (get-alu-from-pen (pen self))))
     (when (and pen-mode (not (no-graphics?)))
       #-opengl
       (with-graphics-screen-parameters
