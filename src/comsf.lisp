@@ -40,9 +40,9 @@
                                          +-------+
 
 
-	  This file contains top level definitions for 
+	  This file contains top level definitions for
 	  BOXER Editor Commands that deal with Fonts and
-          character styles 
+          character styles
 
 
 
@@ -53,14 +53,14 @@ Modification History (most recent at top)
 10/06/07 #-opengl all references to add-redisplay-clue
  4/21/03 merged current LW and MCL files
 1/22/02 change-region-font-internal rewritten to preserve the font info which is
-        not the subject of the change.  Also changed 
+        not the subject of the change.  Also changed
         change-region-font,style,size, color to use new -internal function
 4/09/01 *supported-font-sizes, com-nutri-system, com-fat, com-bloat for lwwin
 2/03/00 added normal-font?
-9/09/99 change-region-font-internal grab last-bfd values at the beginning 
+9/09/99 change-region-font-internal grab last-bfd values at the beginning
         since those values can be side-effected if the last-bfd coincides
         with a row or region boundary
-4/30/99 change-region-font-internal changed to NOT insert the trailing BFD if 
+4/30/99 change-region-font-internal changed to NOT insert the trailing BFD if
         we are at the end of the row
 3/29/99 finalized font LW font functions
 1/04/99 added LW specific font functions
@@ -116,7 +116,7 @@ Modification History (most recent at top)
   (defun normal-font? (boxer-font)
     (zerop& (font-style boxer-font)))
 
-  (defun bold-font? (boxer-font) 
+  (defun bold-font? (boxer-font)
     (not (zerop& (logand& (font-style boxer-font) 1))))
 
   (defun italic-font? (boxer-font)
@@ -142,10 +142,10 @@ Modification History (most recent at top)
     (cond ((or (null style) (eq style :plain))
            (zerop& (font-style boxer-font)))
           (t
-           (not (zerop& (logand& (font-style boxer-font) 
+           (not (zerop& (logand& (font-style boxer-font)
                                  (case style
                                    (:bold 1) (:italic 2) (:underline 4)
-                                   (:outline 8) (:shadow 16) 
+                                   (:outline 8) (:shadow 16)
                                    (:condense 32) (:extend 64))))))))
 
   (defun font-styles (boxer-font)
@@ -158,26 +158,26 @@ Modification History (most recent at top)
           ((null style))
         (unless (zerop& (logand& style-byte pos)) (push style return-styles)))
       (nreverse return-styles)))
-          
+
 
   (defun set-font-style (boxer-font style to-on?)
     (cond ((or (null style) (eq style :plain))
            (%set-font-style boxer-font 0))
           (t (let* ((current-style (font-style boxer-font))
                     (new-style (case style
-                                   (:bold (dpb& (if to-on? 1 0) 
+                                   (:bold (dpb& (if to-on? 1 0)
                                                 '#.(byte 1 0) current-style))
-                                   (:italic (dpb& (if to-on? 1 0) 
+                                   (:italic (dpb& (if to-on? 1 0)
                                                   '#.(byte 1 1) current-style))
-                                   (:underline (dpb& (if to-on? 1 0) 
+                                   (:underline (dpb& (if to-on? 1 0)
                                                      '#.(byte 1 2) current-style))
-                                   (:outline (dpb& (if to-on? 1 0) 
+                                   (:outline (dpb& (if to-on? 1 0)
                                                    '#.(byte 1 3) current-style))
-                                   (:shadow (dpb& (if to-on? 1 0) 
-                                                  '#.(byte 1 4) current-style)) 
-                                   (:condense (dpb& (if to-on? 1 0) 
+                                   (:shadow (dpb& (if to-on? 1 0)
+                                                  '#.(byte 1 4) current-style))
+                                   (:condense (dpb& (if to-on? 1 0)
                                                     '#.(byte 1 5) current-style))
-                                   (:extend (dpb& (if to-on? 1 0) 
+                                   (:extend (dpb& (if to-on? 1 0)
                                                   '#.(byte 1 6) current-style)))))
                (%set-font-style boxer-font new-style)))))
   )
@@ -187,7 +187,7 @@ Modification History (most recent at top)
   (defun normal-font? (boxer-font)
     (zerop& (font-style boxer-font)))
 
-  (defun bold-font? (boxer-font) 
+  (defun bold-font? (boxer-font)
     (not (zerop& (logand& (font-style boxer-font) 1))))
 
   (defun italic-font? (boxer-font)
@@ -209,7 +209,7 @@ Modification History (most recent at top)
     (cond ((or (null style) (eq style :plain))
            (zerop& (font-style boxer-font)))
           (t
-           (not (zerop& (logand& (font-style boxer-font) 
+           (not (zerop& (logand& (font-style boxer-font)
                                  (case style
                                    (:bold 1) (:italic 2) (:underline 4))))))))
 
@@ -223,18 +223,18 @@ Modification History (most recent at top)
           ((null style))
         (unless (zerop& (logand& style-byte pos)) (push style return-styles)))
       (nreverse return-styles)))
-          
+
 
   (defun set-font-style (boxer-font style to-on?)
     (cond ((or (null style) (eq style :plain))
            (%set-font-style boxer-font 0))
           (t (let* ((current-style (font-style boxer-font))
                     (new-style (case style
-                                   (:bold (dpb& (if to-on? 1 0) 
+                                   (:bold (dpb& (if to-on? 1 0)
                                                 '#.(byte 1 0) current-style))
-                                   (:italic (dpb& (if to-on? 1 0) 
+                                   (:italic (dpb& (if to-on? 1 0)
                                                   '#.(byte 1 1) current-style))
-                                   (:underline (dpb& (if to-on? 1 0) 
+                                   (:underline (dpb& (if to-on? 1 0)
                                                      '#.(byte 1 2) current-style)))))
                (%set-font-style boxer-font new-style)))))
   )
@@ -259,7 +259,7 @@ Modification History (most recent at top)
       (cond ((>=& cha-no (bfd-cha-no fd)) (setq cfd fd))
             (t (return (values cfd fd)))))))
 
-             
+
 ;; font manipulation across regions...
 
 ;; keep the original sizes and styles unless overridden by newfont
@@ -308,8 +308,8 @@ Modification History (most recent at top)
                           (cond ((eq attribute :color)
                                  (setf (bfd-color fd) color))
                                 (t
-                                 (setf (bfd-font-no fd) 
-                                       (setq prevfont 
+                                 (setf (bfd-font-no fd)
+                                       (setq prevfont
                                              (new-font-value (bfd-font-no fd)
                                                              attribute
                                                              newvalue)))))
@@ -322,17 +322,17 @@ Modification History (most recent at top)
                             (cond ((eq attribute :color)
                                    (setf (bfd-color fd) color))
                                   (t
-                                   (setf (bfd-font-no fd) 
-                                         (setq prevfont 
+                                   (setf (bfd-font-no fd)
+                                         (setq prevfont
                                                (new-font-value (bfd-font-no fd)
                                                                attribute
                                                                newvalue)))))))))
-                 ;; 
+                 ;;
                (when (not existing-start-bfd?)
                  ;;  no FD at the beginning
                  (insert-bfd row (make-cfd start newfont color)))
                ;; now remove any redundant FD's
-               (set-fds row (delete-if #'(lambda (rfd) 
+               (set-fds row (delete-if #'(lambda (rfd)
                                            (fast-memq rfd redundant-fds))
                                        (row-fds row))))
             ;; clue in the redisplay...
@@ -352,16 +352,16 @@ Modification History (most recent at top)
                (process-row-fds row))
              ;; now handle the last row specially-any BFD's after the stop-cha-no
              ;; need to be LEFT ALONE
-             ;; Also, insert the correct BFD at the beginning of the row and make 
+             ;; Also, insert the correct BFD at the beginning of the row and make
              ;; sure (possibly inserting) that there is a BFD at the end of the
              ;; region which switches back to the original font
              (process-row-fds stop-row 0 stop-cha-no)
              ;; now make sure we have a final BFD
              ;; unless we are at the end of a row, then leave it off so CR's
              ;; won't push the reverting BFD into the next row
-             (unless (or last-bfd-exact? 
+             (unless (or last-bfd-exact?
                          (= stop-cha-no (length-in-chas stop-row)))
-               (insert-bfd stop-row 
+               (insert-bfd stop-row
                            (make-cfd stop-cha-no last-font last-color))))))))
 
 (defun change-region-font (region newfontname)
@@ -435,7 +435,7 @@ Modification History (most recent at top)
 			   (return))))
 		   ((>& bfd-cha-no (bfd-cha-no current-fd))
 		    (cond ((null next-fd)
-			   
+
 			   (setf (cdr fds) (list bfd))
 			   (return))
 			  ((<& bfd-cha-no (bfd-cha-no next-fd))
@@ -449,9 +449,9 @@ Modification History (most recent at top)
 		   (t
 		    ;; record the last-font-no
 		    (setq last-font-no (bfd-font-no current-fd))))))
-	  
-	     
-  
+
+
+
 
 
 
@@ -463,10 +463,10 @@ Modification History (most recent at top)
     (dolist (bfd (remaining-bfds row start-cha-no))
       (cond ((>& (bfd-cha-no bfd) stop-cha-no)
 	     ;; there are still subsequent FD's down the row so we need
-	     ;; to add a FD which 
-  
-							  
-|#					
+	     ;; to add a FD which
+
+
+|#
 
 
 
@@ -539,25 +539,25 @@ Modification History (most recent at top)
       (char-downcase cha)
       cha))
 
-(defun uppercase-region (&optional (region (or *region-being-defined* 
+(defun uppercase-region (&optional (region (or *region-being-defined*
                                                (get-current-region))))
   (with-region-top-level-bps (region)
     (do-region-chas (cha region) (change-cha (boxer-char-upcase cha)))
     (do-region-rows (row region) (modified row)))
   (reset-region))
 
-(defun lowercase-region (&optional (region (or *region-being-defined* 
+(defun lowercase-region (&optional (region (or *region-being-defined*
                                                (get-current-region))))
   (with-region-top-level-bps (region)
     (do-region-chas (cha region) (change-cha (boxer-char-downcase cha)))
     (do-region-rows (row region) (modified row)))
   (reset-region))
 
-(defun capitalize-region (&optional (region (or *region-being-defined* 
+(defun capitalize-region (&optional (region (or *region-being-defined*
                                                (get-current-region))))
     (with-region-top-level-bps (region)
       (let ((next-cap? t))
-        (do-region-chas (cha region) 
+        (do-region-chas (cha region)
           (cond ((or (box? cha) (char-member cha *word-delimiters*))
                  (setq next-cap? t))
                 ((and (characterp cha) next-cap?)
@@ -661,7 +661,7 @@ If started in the middle of a word, capitalizes the current letter."
                                      (do* ((where (cdr here) (cdr where))
                                            (size (car where) (car where)))
                                           ((eq where here) prev)
-                                       (when (= size *current-macl-font-size*) 
+                                       (when (= size *current-macl-font-size*)
                                          (return prev))
                                        (setq prev size)))))
         :plain))
@@ -669,7 +669,7 @@ If started in the middle of a word, capitalizes the current letter."
 #+mcl
 (defun max-font-spec ()
   (list *macl-typeface* (setq *current-macl-font-size*
-                              (let ((max 0) 
+                              (let ((max 0)
                                     (here *macl-standard-font-sizes*))
                                 (do* ((where (cdr here) (cdr where))
                                       (size (car where) (car where)))
@@ -677,28 +677,28 @@ If started in the middle of a word, capitalizes the current letter."
                                   (when (> size max) (setq max size)))))
         :plain))
 
-(defvar *supported-font-sizes* 
+(defvar *supported-font-sizes*
   #+mcl '(9 10 12 14 18 24) #+lwwin '(6 8 10 12 14 16 18 24))
 
 
 (defboxer-command COM-NUTRI-SYSTEM ()
   "shrink the fonts"
   #+clx
-  (bw::reinitialize-font-map (bw::sheet-font-map *boxer-pane*) 
+  (bw::reinitialize-font-map (bw::sheet-font-map *boxer-pane*)
 			     BOXER-WINDOW::*ADOBE-COURIER-FONTS*)
   ;; mac version just resets *default-font-descriptor*
   #+(or lwwin mcl)
   (let* ((main-font (bfd-font-no *default-font-descriptor*))
          (current-size (font-size main-font))
          ;; this CONS's, oh well, write the non consing loop out later
-         (new-size (cadr (member current-size 
+         (new-size (cadr (member current-size
                                  (reverse *supported-font-sizes*)))))
     (cond ((null new-size)
-           (boxer-editor-warning "~A is the smallest supported font size" 
+           (boxer-editor-warning "~A is the smallest supported font size"
                                  (car *supported-font-sizes*)))
           (t
            (setf (bfd-font-no *default-font-descriptor*)
-                 (make-boxer-font (list #+mcl "Courier" 
+                 (make-boxer-font (list #+mcl "Courier"
                                         #+lwwin "Courier New"
                                         new-size)))
            #-opengl(add-redisplay-clue (outermost-box) :clear-screen))))
@@ -713,7 +713,7 @@ If started in the middle of a word, capitalizes the current letter."
          ;; this CONS's, oh well, write the non consing loop out later
          (new-size (cadr (member current-size *supported-font-sizes*))))
     (cond ((null new-size)
-           (boxer-editor-warning "~A is the largest supported font size" 
+           (boxer-editor-warning "~A is the largest supported font size"
                                  (car (last *supported-font-sizes*))))
           (t
            (setf (bfd-font-no *default-font-descriptor*)
@@ -722,7 +722,7 @@ If started in the middle of a word, capitalizes the current letter."
                                         new-size)))
            #-opengl(add-redisplay-clue (outermost-box) :clear-screen))))
   #+clx
-  (bw::reinitialize-font-map (bw::sheet-font-map *boxer-pane*) 
+  (bw::reinitialize-font-map (bw::sheet-font-map *boxer-pane*)
 			     BOXER-WINDOW::*BIG-ADOBE-COURIER-FONTS*)
   eval::*novalue*)
 
@@ -734,7 +734,7 @@ If started in the middle of a word, capitalizes the current letter."
          ;; this CONS's, oh well, write the non consing loop out later
          (new-size (cadr (member current-size *supported-font-sizes*))))
     (cond ((null new-size)
-           (boxer-editor-warning "~A is the largest supported font size" 
+           (boxer-editor-warning "~A is the largest supported font size"
                                  (car (last *supported-font-sizes*))))
           (t
            (setf (bfd-font-no *default-font-descriptor*)
@@ -743,7 +743,7 @@ If started in the middle of a word, capitalizes the current letter."
                                         new-size)))
            #-opengl(add-redisplay-clue (outermost-box) :clear-screen))))
   #+clx
-  (bw::reinitialize-font-map (bw::sheet-font-map *boxer-pane*) 
+  (bw::reinitialize-font-map (bw::sheet-font-map *boxer-pane*)
 			     BOXER-WINDOW::*GIANT-ADOBE-COURIER-FONTS*)
   eval::*novalue*)
 
@@ -765,10 +765,10 @@ If started in the middle of a word, capitalizes the current letter."
 	   (setq *font-size-state-var* 1)
 	   (com-fat)))
 	((eql *font-size-state-var* 1)
-	 (progn 
+	 (progn
 	   (setq *font-size-state-var* 2)
 	   (com-bloat)))
-	(t 
+	(t
 	 (progn (setq *font-size-state-var* 0)
 		(com-nutri-system))))
   eval::*novalue*)
