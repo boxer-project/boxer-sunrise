@@ -35,7 +35,7 @@
 
 
 
-   This file contains boxer functions which use the 
+   This file contains boxer functions which use the
    graphics subsystem.
 
    Mostly leftovers, graphics commands which don't use sprites...
@@ -69,7 +69,7 @@ Modification History (most recent at top)
   (let ((pathname (merge-pathnames (box-text-string filename)
 				   (make-pathname :defaults
 						  *boxer-pathname-default*
-						  ;; *boxer-pathname-default* 
+						  ;; *boxer-pathname-default*
 						  ;; has a type of "box"
 						  :type nil))))
     (unless (probe-file pathname)
@@ -92,7 +92,7 @@ Modification History (most recent at top)
 		     :x 0 :y 0 :width i-width :height i-height :bitmap-p t)
       gbox)))
 
-;;; currently only works on the bitmap representation, 
+;;; currently only works on the bitmap representation,
 ;;; for display list style turtle graphics, we should make it
 ;;; grab the appropriate section of the screen
 #+clx
@@ -101,7 +101,7 @@ Modification History (most recent at top)
   (let ((pathname (merge-pathnames (box-text-string filename)
 				   (make-pathname :defaults
 						  *boxer-pathname-default*
-						  ;; *boxer-pathname-default* 
+						  ;; *boxer-pathname-default*
 						  ;; has a type of "box"
 						  :type nil))))
     (let ((graphics-sheet (graphics-info (box-or-port-target graphics-box))))
@@ -149,7 +149,7 @@ Modification History (most recent at top)
 	  (t (let* ((box (box-or-port-target graphics-box))
 		    (old-gs (get-graphics-sheet box)))
 	       (cond ((and (box? box) (null old-gs))
-                      (setf (graphics-info box) 
+                      (setf (graphics-info box)
                             (copy-graphics-sheet new-gs box))
 		      (modified-graphics box))
 		     ((box? box)
@@ -160,16 +160,16 @@ Modification History (most recent at top)
                       (let ((gs (copy-graphics-sheet new-gs box))
                             (old-objs (graphics-sheet-object-list old-gs)))
                         (setf (graphics-sheet-object-list gs) old-objs)
-                        ;; The window shape caches will need to be recalculated 
+                        ;; The window shape caches will need to be recalculated
                         ;; using the dimensions of the new graphics sheet
-                        (dolist (turtle old-objs) 
+                        (dolist (turtle old-objs)
                           (flush-window-shape-cache turtle))
 		        (setf (graphics-info box) gs))
                       (clearscreen box :none)
 		      (modified-graphics box))
 		     (t
 		      ;; must be a VC, we can just bash the value but 1st,
-                      ;; record the sheet for later deallocation in 
+                      ;; record the sheet for later deallocation in
                       ;; case it contains a bitmap.  Note that if the VC
                       ;; ALREADY has a sheet with a bitmap, it will have been
                       ;; recorded
@@ -222,12 +222,12 @@ Modification History (most recent at top)
 	   (eval::primitive-signal-error :graphics-error
 					 "No Graphics Box found"))
 	  ((or (< width  1) (< height 1))
-	   (eval::primitive-signal-error 
+	   (eval::primitive-signal-error
             :graphics-error "Both graphics box dimensions should be at least " 1))
 	  (t
 	   (let ((gs (get-graphics-sheet gb)))
 	     (unless (null gs)
-	       (resize-graphics-sheet 
+	       (resize-graphics-sheet
                 gs (values (round width)) (values (round height)))))
 	   (when (box? gb)
 	     (modified gb)
@@ -275,7 +275,7 @@ Modification History (most recent at top)
 	 (graphics-sheet (%make-simple-graphics-sheet
 			  *pen-color-graphics-width*
 			  *pen-color-graphics-size* box)))
-    (putprop box (list (cons pixel (if (null alpha) 
+    (putprop box (list (cons pixel (if (null alpha)
                                        (list red green blue)
                                      (list red green blue alpha))))
              :color-definition)
@@ -322,7 +322,7 @@ Modification History (most recent at top)
         (unless (<= 0 red 100)
           (let ((newred (if (< red 0) 0 100)))
 	    (sprite-update-warning
-             "The Red Component, ~A, was not between 0 and 100, new color will use red = ~D" 
+             "The Red Component, ~A, was not between 0 and 100, new color will use red = ~D"
 	     red newred)
 	    (setq red newred)))
         (unless (<= 0 green 100)
@@ -339,7 +339,7 @@ Modification History (most recent at top)
 	    (setq blue newblue)))
         (cond ((null alpha) (setq alpha 100))
               ((not (<= 0 alpha 100))
-               (sprite-update-warning 
+               (sprite-update-warning
                 "Opacity, ~A, was not between 0 and 100, new color will use blue = ~D"
                 alpha 100)
                (setq alpha 100)))
@@ -362,7 +362,7 @@ Modification History (most recent at top)
                                  (graphics-sheet-background graphics-sheet))))
         (when current-pixel
           (bash-box-to-list-value box (pixel-rgb-values current-pixel)))
-        (eval::primitive-signal-error 
+        (eval::primitive-signal-error
          :graphics "Can't make a color from the new values in the color box: "
          box))))
 
@@ -371,13 +371,13 @@ Modification History (most recent at top)
 ;; Numbers from X11 rgb.txt, feel free to change per implementation
 (defvar *standard-colors* '(("Red" 100 0 0) ("Green" 0 100 0) ("Blue" 0 0 100)
                             ("Yellow" 100 100 0) ("Cyan" 0 100 100)
-                            ("Magenta" 100 0 100) ("Black" 0 0 0) 
+                            ("Magenta" 100 0 100) ("Black" 0 0 0)
                             ("White" 100 100 100) ("Orange" 100 65 0)
                             ("Purple" 63 13 94) ("Gray" 50 50 50)))
 
 ;; have to do this so they get defined dynamically after the display
 ;; is up and running (probably matters most for X)
-(def-redisplay-initialization 
+(def-redisplay-initialization
   ;; set up some standard colors for sprites
   (dolist (color *standard-colors*)
       (let ((colorbox (boxer::make-color-internal
@@ -452,22 +452,22 @@ Modification History (most recent at top)
                    (drawing-on-bitmap (new-bm)
                      ;; first, initialize the bitmap in the background color
                      ;; in case pieces of it will get snipped from OUTSIDE
-                     ;; the original 
+                     ;; the original
                      (with-pen-color ((or (graphics-sheet-background graphics-sheet)
                                           *background-color*))
                        (draw-rectangle alu-seta width height 0 0))
-                     (unless (or (>=& orig-x %drawing-width) 
+                     (unless (or (>=& orig-x %drawing-width)
                                  (>=& orig-y %drawing-height))
-                       (bitblt-to-screen alu-seta 
+                       (bitblt-to-screen alu-seta
                                          (if (minusp& orig-x)
                                              (max& 0
-                                                   (min& %drawing-width 
+                                                   (min& %drawing-width
                                                          (-& width (-& orig-x))))
                                              (min& width
                                                    (-& %drawing-width orig-x)))
                                          (if (minusp& orig-y)
                                              (max& 0
-                                                   (min& %drawing-height 
+                                                   (min& %drawing-height
                                                          (-& height (-& orig-y))))
                                              (min& height
                                                    (-& %drawing-height orig-y)))
@@ -496,7 +496,7 @@ Modification History (most recent at top)
   (let ((gb (get-relevant-graphics-box)))
     (if (or (null gb) (eq gb :no-graphics))
 	(eval::primitive-signal-error :graphics "No graphics to FREEZE")
-	(let* ((graphics-sheet 
+	(let* ((graphics-sheet
 		(if (box? gb)
 		    (graphics-info gb)
 		    (graphics-info-graphics-sheet (vc-graphics gb))))
@@ -525,18 +525,18 @@ Modification History (most recent at top)
 	  eval::*novalue*))))
 
 
-;;; this should play the GB's graphics list into an auxiliary OpenGL buffer and then 
+;;; this should play the GB's graphics list into an auxiliary OpenGL buffer and then
 ;;; grab the pixels from it instead of using the main screen...
 #+opengl-for-complete-correctness
-(defboxer-primitive bu::freeze () 
+(defboxer-primitive bu::freeze ()
   (eval::primitive-signal-error :graphics "Freeze does not work yet."))
 
 #+opengl
 (defboxer-primitive bu::freeze ()
   (let ((gb (get-relevant-graphics-box)))
     (if (or (null gb) (eq gb :no-graphics))
-	(eval::primitive-signal-error :graphics "No graphics to FREEZE")     
-      (let* ((graphics-sheet 
+	(eval::primitive-signal-error :graphics "No graphics to FREEZE")
+      (let* ((graphics-sheet
               (if (box? gb)
                   (graphics-info gb)
                 (graphics-info-graphics-sheet (vc-graphics gb))))
@@ -567,7 +567,7 @@ Modification History (most recent at top)
         (setf (graphics-sheet-bit-array-dirty? graphics-sheet) t)
         (modified-graphics gb)
         eval::*novalue*))))
-  
+
 (defun make-color-editor-box-from-pixel (pix)
   (let* ((rgb-values (pixel-rgb-values pix))
 	 (box (make-color-box (car rgb-values) (cadr rgb-values)
@@ -669,13 +669,13 @@ Modification History (most recent at top)
 					(or background *background-color*)))))
 			(eval::primitive-signal-error
 			 :graphics
-			 "Pixel at " x "," y "is not visible"))))))))))) 
+			 "Pixel at " x "," y "is not visible")))))))))))
 
 (defun color-from-box (box)
   (let ((gs (if (box? box)
 		(graphics-info box)
 		(graphics-info-graphics-sheet (vc-graphics box)))))
-    (unless (null gs) (graphics-sheet-background gs))))      
+    (unless (null gs) (graphics-sheet-background gs))))
 
 ;;; Like COLOR= <color> COLOR-AT <x> <y>
 ;;; except no color box consing
