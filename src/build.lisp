@@ -51,9 +51,9 @@ would generate the function:
 
 There are several parts to this file.
 
- o stack manipulation macros. 
+ o stack manipulation macros.
    For now, we use a separate set.  At some point in the future,
-   we may want to use the boxer stack primitives.  We avoid it 
+   we may want to use the boxer stack primitives.  We avoid it
    for now so that lossage is localized and also until we have
    a chance to think through the ramifications of having non
    boxer objects pushed onto the boxer stack (especially if a
@@ -105,7 +105,7 @@ There are several parts to this file.
 		     (dolist (value (nreverse value-form))
 		       (push value flattened-forms))))
 	       flattened-forms))))
-		   
+
 
 (defstruct (build-function-arg (:predicate build-function-arg?))
   (argpos 0))
@@ -123,7 +123,7 @@ There are several parts to this file.
 
 (defun make-build-fun+args (fun &rest args)
   (%make-build-fun+args :function fun :args args))
-  
+
 
 (defun new-build-arg ()
   (let ((newarg (make-build-function-arg :argpos
@@ -166,7 +166,7 @@ There are several parts to this file.
 		:infix-p nil
 		:object object)
 	       forms-to-be-evaled)))
-      object)))	      
+      object)))
 
 (defun execute-compiled-build-function (cbf)
   (cond ((null (cbo-args cbf))
@@ -174,11 +174,11 @@ There are several parts to this file.
 	(t
 	 (eval::recursive-eval-setup-append (cbo-eval-list cbf)))))
 
-    
+
 
 
 
-;;;; Build support 
+;;;; Build support
 
 (defvar *interpolate-empty-rows-too?* t)
 
@@ -238,7 +238,7 @@ There are several parts to this file.
 |#
 
 
-(define-instruction (interpolate-n-unbox-results 34) (n)  
+(define-instruction (interpolate-n-unbox-results 34) (n)
   (let ((row-items (collect-n-list-from-stack n))
 	(extra-rows-items nil)
 	(items nil))
@@ -268,7 +268,7 @@ There are several parts to this file.
     (cbos-push
      (cond ((null extra-rows-items)
 	    ;; don't make empty rows -- just return nil.
-	    (if (null items) 
+	    (if (null items)
 		nil
 		(make-evrow-from-entries items)))
 	   (t (cons (make-evrow-from-entries items)
@@ -278,12 +278,12 @@ There are several parts to this file.
   (when (or (symbolp value) (numberp value))
     (let ((string (format nil "~A" value)))
       (make-formatting-info :chas string :start 0 :stop (length string)))))
-    
+
 (define-instruction (stack-chunk 35) ()
   (let ((lfp (cbos-pop)) (value (cbos-pop)) (rfp (cbos-pop)))
     (cbos-push (make-chunk lfp (pname-from-value value) value rfp))))
 
-;; because coallescing of token may fail (e.g. when one token turns 
+;; because coallescing of token may fail (e.g. when one token turns
 ;; out to be a box), a value MAY be a list of several other values
 (define-instruction (evrow-from-n-entries 36) (n)
   (let ((ptrs nil))
@@ -320,7 +320,7 @@ There are several parts to this file.
       (setf (vc-closets vc) closet) (setf (vc-progenitor vc) :new))
     (cbos-push vc)))
 
-;; same as vc-for-build except that it expects the name to be on 
+;; same as vc-for-build except that it expects the name to be on
 ;; the stack instead of in the arglist
 (define-instruction (named-vc-for-build 39) (n-rows type closet-p)
   (let* ((name (intern-in-bu-package
@@ -346,7 +346,7 @@ There are several parts to this file.
 ;; named ports, name from stack, target as immediate arg
 (define-instruction (named-port-for-build 40) (target)
   (cbos-push (make-virtual-port :name (intern-in-bu-package
-		                       (string-upcase 
+		                       (string-upcase
                                         (box-text-string (cbos-pop))))
                                 :target target)))
 
@@ -357,7 +357,7 @@ There are several parts to this file.
 
 ;;; these return 2 values: the result of the walk and a flag indicating
 ;;; whether or not imbedded atsigns or excls were encountered
-;;; A row-form can have two possible representations:  In the simple case 
+;;; A row-form can have two possible representations:  In the simple case
 ;;; when there are no unbox's, then a row form will be somthing like...
 ;;; (make-evrow-from-pointers (list <thing> <box-form> <thing> ...))
 
@@ -419,7 +419,7 @@ There are several parts to this file.
                                        (setq constant-p port-constant-p))
                                      (cond ((or (null chunk-p) port-constant-p)
                                             form)
-                                           (t 
+                                           (t
                                             `(,(chunk-right-format raw-chunk)
                                               ,form
                                               ,(chunk-left-format raw-chunk)
@@ -481,7 +481,7 @@ There are several parts to this file.
 			   t))
 		  ((null unbox-in-row?)
 		   (values (let ((l (length row-args)))
-			     (append row-args				     
+			     (append row-args
 				     (list (make-build-fun+args
 					    'evrow-from-n-entries l))))
 			   nil))
@@ -528,7 +528,7 @@ There are several parts to this file.
       (cond ((char= (char (symbol-name box-name) 0) #\@)
 	     ;; should check to see if the rest of the symbol
 	     ;; is valid (no more ev prop chars)
-	     (values 
+	     (values
 	      (append row-forms
 		      (list (get-build-arg
 			     (list (intern-in-bu-package
@@ -552,18 +552,18 @@ There are several parts to this file.
 		     t))))))
 
 (defun walk-build-port (port raw-chunk)
-  (let ((name (if (virtual-port? port) 
+  (let ((name (if (virtual-port? port)
                   (vp-name port)
                   (editor-box-name-symbol port))))
     (cond ((char= (char (symbol-name name) 0) #\@)
-           (values 
+           (values
             (list (get-build-arg
                    (list
                     (intern-in-bu-package
                      (subseq (symbol-name name)
-                             (1+ (position #\@ (symbol-name name) 
+                             (1+ (position #\@ (symbol-name name)
                                            :test #'char=))))))
-                  (make-build-fun+args 'named-port-for-build 
+                  (make-build-fun+args 'named-port-for-build
                                        (if (virtual-port? port)
                                            (vp-target port)
                                            (ports port))))
@@ -586,7 +586,7 @@ There are several parts to this file.
 ;;; Caching compiled-build-objects onto editor structure
 
 ;;; the build cache needs to be immediately flushed on modified
-;;; rather than waiting for the eval to finish (see the modified 
+;;; rather than waiting for the eval to finish (see the modified
 ;;; function in editor.lisp)
 (defun get-cached-build-function (box)
   (getprop box 'cached-build-function))
