@@ -27,7 +27,7 @@
 
 
 
-   This file contains all of the boxer functions which use the 
+   This file contains all of the boxer functions which use the
    file system.
 
 
@@ -52,7 +52,7 @@ Modification History (most recent at top)
  2/01/03 changed make-file-storage-info-box to make empty boxes for fields
          which are either null or :unspecific
 10/20/02 RECORD-FILE-BOX-PLACE & RECORD-URL-BOX-PLACE stubbified and removed from
-         READ-INTERNAL & FILL-BOX-FROM-LOCAL-FILE in preparation for "UC clean" 
+         READ-INTERNAL & FILL-BOX-FROM-LOCAL-FILE in preparation for "UC clean"
          reimplementation
  9/02/02 UC free version of MARK-FOR-SAVING, added TOGGLE-MODIFIED-FLAG
  8/27/02 make-file-storage-info-box, VC names must be BU symbols instead of strings
@@ -61,7 +61,7 @@ Modification History (most recent at top)
  8/ 5/02 added bu::storage-name and bu::storage-info
 10/ 7/01 status-line-save-format-string for use in save-internal
  3/ 8/01 fill-box-from-local-file: relative pathname check should check for
-         null dirs as well as :relative 
+         null dirs as well as :relative
  2/14/01 merged current LW and MCL files
  1/15/01 lispworks version for check-valid-filename-for-primitive
 10/16/00 make-backup-if-necessary now checks for 31 char pathnames
@@ -84,7 +84,7 @@ Modification History (most recent at top)
  4/25/99 {un}mark-box-as-file now adds/removes :file :boxtop property
  4/14/99 use new calling conventions for write-boxer-file-info
  3/26/99 bu::mark-for-saving added
- 2/12/99 save-generic error messages use OPEN as the name of the prim 
+ 2/12/99 save-generic error messages use OPEN as the name of the prim
          instead of READ
  2/11/99 (defboxer-primitive bu::unfile-box
  2/10/99 added unmark-box-as-file
@@ -94,7 +94,7 @@ Modification History (most recent at top)
  9/29/98 save-generic sets read-only? flag both ways instead of only to T
  9/13/98 OPEN changed to bash name slot of world boxes
  5/27/98 added autoloading case to fill-box-from-local-file for relative paths
-         changed read-internal-1 to give lisp error (which should be handled) 
+         changed read-internal-1 to give lisp error (which should be handled)
          for missing autoload
  5/27/98 Started Logging Changes: source = boxer version 2.3alphaR1
 
@@ -125,14 +125,14 @@ Modification History (most recent at top)
   eval::*novalue*)
 |#
 
-(defboxer-primitive bu::save () 
+(defboxer-primitive bu::save ()
   ;; make sure the editor structure is up to date
   (process-editor-mutation-queue-within-eval)
   (cond ((box? eval::*lexical-variables-root*)
          (com-save-document))
         (t (eval::primitive-signal-error :file "You can only SAVE editor boxes"))))
 
-(defboxer-primitive bu::quietly-save () 
+(defboxer-primitive bu::quietly-save ()
   ;; make sure the editor structure is up to date
   (process-editor-mutation-queue-within-eval)
   (cond ((box? eval::*lexical-variables-root*)
@@ -176,11 +176,11 @@ Modification History (most recent at top)
                         :associated-file)))
         (com-box-save-as nil eval::*lexical-variables-root*)))
   eval::*novalue*)
-  
+
 ;; use TELL to direct
 (defboxer-primitive bu::unfile-box () (com-unfile-document))
 
-;; Returns TRUE, or a box with a defined reason or else FALSE, 
+;; Returns TRUE, or a box with a defined reason or else FALSE,
 ;; meaning "some other reason"
 (defboxer-primitive bu::safe-to-save? ()
   (let* ((box (current-file-box))
@@ -191,7 +191,7 @@ Modification History (most recent at top)
                                        :absolute)
                                    raw-filename)
                                   (t ; must be relative
-                                   (let* ((sup-file-box (current-file-box 
+                                   (let* ((sup-file-box (current-file-box
                                                          (superior-box box)))
                                           (sup-filename (getprop
                                                          sup-file-box
@@ -206,12 +206,12 @@ Modification History (most recent at top)
           ((null (probe-file (make-pathname
                               :directory (pathname-directory existing-filename))))
            (make-vc '((bu::no-directory))))
-          #+mcl ;; on the mac, you can "lock" files...    
+          #+mcl ;; on the mac, you can "lock" files...
           ((and (probe-file existing-filename)
                 (ccl::file-locked-p existing-filename))
            (make-vc '((bu::file-locked))))
           ;; make sure we were the last person to actually write it out and
-          ;; that there isn't a conflict with another box pointing to the 
+          ;; that there isn't a conflict with another box pointing to the
           ;; same pathname
           ((and (not (null fps))
                 (not (null (file-write-date existing-filename)))
@@ -236,11 +236,11 @@ Modification History (most recent at top)
 
 ;; this is used to catch pathnames which won't even parse
 #+lucid
-(defun check-valid-filename-for-primitive (filename &optional 
+(defun check-valid-filename-for-primitive (filename &optional
                                                     defaults allow-wild)
   (declare (ignore allow-wild))
   (let ((checked-pathname
-	 (catch 'bad-name 
+	 (catch 'bad-name
 	   (lcl::handler-bind ((lcl::file-error #'(lambda (c)
 						    (throw 'bad-name c))))
 			      (if (null defaults)
@@ -253,7 +253,7 @@ Modification History (most recent at top)
 
 (defun quote-wild-char (string quote-char)
   (let* ((slength (length string))
-         (return-string (make-array (1+ slength) 
+         (return-string (make-array (1+ slength)
                                     :element-type 'character :adjustable t
                                     :fill-pointer 0)))
     (dotimes (i slength)
@@ -262,19 +262,19 @@ Modification History (most recent at top)
         (vector-push-extend char return-string)))
     return-string))
 
-#+mcl 
-(defun check-valid-filename-for-primitive (filename &optional 
+#+mcl
+(defun check-valid-filename-for-primitive (filename &optional
                                                     defaults allow-wild)
-  (cond ((pathnamep filename) 
+  (cond ((pathnamep filename)
          ;; If it is already a pathname leave it alone (this can happen if
          ;; the pathname has been returned from ccl::choose-file-dialog)
          filename)
         (t
          (ignore-errors
            (when (and (not allow-wild) (find #\* filename :test #'char=))
-             (setq filename (quote-wild-char filename #\¶)))
-           (let ((basic (if (null defaults) 
-                            (pathname filename) 
+             (setq filename (quote-wild-char filename #\ï¿½)))
+           (let ((basic (if (null defaults)
+                            (pathname filename)
                           (merge-pathnames filename defaults))))
              (if (null (pathname-type basic))
                  ;; probe-file seems to care about the diference between a
@@ -283,14 +283,14 @@ Modification History (most recent at top)
                basic))))))
 
 #+lispworks
-(defun check-valid-filename-for-primitive (filename &optional 
+(defun check-valid-filename-for-primitive (filename &optional
                                                     defaults allow-wild)
   (declare (ignore allow-wild))
-  (cond ((pathnamep filename) 
+  (cond ((pathnamep filename)
          ;; If it is already a pathname leave it alone (this can happen if
          ;; the pathname has been returned from boxer-open-file-dialog)
          filename)
-        (t (ignore-errors 
+        (t (ignore-errors
              (if (null defaults)
                  (pathname filename)
                (merge-pathnames filename defaults))))))
@@ -317,24 +317,24 @@ Modification History (most recent at top)
     ;; then save THAT out but it seems to be too much work for a very
     ;; LIMITED set of circumstances
     (unless (box? box)
-      (eval::primitive-signal-error 
+      (eval::primitive-signal-error
        :file-error "Sorry, you can only save out top level boxes"))
     ;; then make sure the directory exists
     #-mcl ;; MACL probe-file loses on directories
-    (unless (probe-file (make-pathname :directory 
+    (unless (probe-file (make-pathname :directory
                                        (pathname-directory dest-pathname)))
       (eval::primitive-signal-error :file-error
-                                    "The directory, " 
+                                    "The directory, "
                                     (namestring dest-pathname)
                                     ", does not exist"))
-    ;; on the mac, you can "lock" files...    
+    ;; on the mac, you can "lock" files...
     #+mcl
     (when (and (probe-file dest-pathname) (ccl::file-locked-p dest-pathname))
-      (eval::primitive-signal-error :file-error 
+      (eval::primitive-signal-error :file-error
                                     "The file, " (namestring dest-pathname)
                                     ", is locked"))
     ;; make sure we were the last person to actually write it out and
-    ;; that there isn't a conflict with another box pointing to the 
+    ;; that there isn't a conflict with another box pointing to the
     ;; same pathname
     (when (and (null always-save?) (not (null fps)))
       (cond ((and (not (null (file-write-date dest-pathname)))
@@ -342,7 +342,7 @@ Modification History (most recent at top)
                           (file-write-date dest-pathname)))
                   (not (file-overwrite-ok
                         (format nil "~A, has been changed since last ~A.  Save Anyway ?"
-                                (namestring dest-pathname) 
+                                (namestring dest-pathname)
                                 #+mcl "Open" #-mcl "READ"))))
              (throw 'cancel-boxer-file-dialog nil)
              ;; if we are going to query, then don't error out
@@ -369,7 +369,7 @@ Modification History (most recent at top)
                #|
 		 (eval::primitive-signal-error
 		  :file-overwrite-warning
-		  "The filename, " (namestring dest-pathname) 
+		  "The filename, " (namestring dest-pathname)
 		  ", is associated with a different box")|#
                ))))
     (setf (read-only-box? box) read-only?)
@@ -415,11 +415,11 @@ Modification History (most recent at top)
     newstring))
 
 (defun save-internal (box dest-pathname)
-  (let* ((tmp-file-string (symbol-name (gensym)))	 	 
+  (let* ((tmp-file-string (symbol-name (gensym)))
 	 (tmp-dest (merge-pathnames tmp-file-string
 				    dest-pathname)))
    (unwind-protect
-	 (let ((*status-line-saving-format-string* 
+	 (let ((*status-line-saving-format-string*
                 (status-line-save-format-string dest-pathname)))
            ;; feedback
            (status-line-display 'saving-box
@@ -450,7 +450,7 @@ Modification History (most recent at top)
 		(make-pathname :directory (pathname-directory dest-pathname)
 			       :defaults *boxer-pathname-default*))))
     (when *automatic-file-compression-on*
-      ;; Compress the file only if it's greater than 
+      ;; Compress the file only if it's greater than
       ;; *file-compress-minimum-length*.  Otherwise the time
       ;; it takes won't be worth it.
       (let ((length (with-open-file (stream dest-pathname :direction :input)
@@ -472,14 +472,14 @@ Modification History (most recent at top)
                  (let ((old-name (file-namestring dest-pathname)))
                    ;; have to check for possible 31 char length
                    (cond ((>= (length old-name) 31)
-                          (merge-pathnames 
-                           (concatenate 'string 
+                          (merge-pathnames
+                           (concatenate 'string
                                         (subseq old-name 0 30)
                                         *file-backup-suffix*)
                            dest-pathname))
                          (t
 		          (concatenate 'string
-			               (namestring dest-pathname) 
+			               (namestring dest-pathname)
                                        *file-backup-suffix*))))
                  #-(or mcl win32)
 		 (concatenate 'string
@@ -498,7 +498,7 @@ Modification History (most recent at top)
                 (boxer-file-info filename)) ;; looks in resource fork
         #-mcl (values nil nil)
         (declare (ignore ro?))
-        (when (or world-box? 
+        (when (or world-box?
                   (and (stringp (slot-value box 'name))
                        (string= (slot-value box 'name) "WORLD")))
           (setf (slot-value box 'name) nil)))
@@ -518,21 +518,21 @@ Modification History (most recent at top)
   (if (url-string? name)
       (read-internal-url name)
     ;; can still be a bad filename here (bad URL spelling) (e.g. "htTtp://foo.bar")
-      (let* ((pathname (check-valid-filename-for-primitive 
+      (let* ((pathname (check-valid-filename-for-primitive
                         name *boxer-pathname-default*))
              ;; note, we resolve the full pathname here instead of letting
              ;; read-internal-1 do the work so that we can have a complete
              ;; pathname available for the bookeeping operations which follow
              ;; a successful read-internal-1
              (box (unless (null pathname) (read-internal-1 name pathname))))
-        ;; now do the box/file bookkeeping, 
+        ;; now do the box/file bookkeeping,
         ;; NOTE: It has to be here AFTER the initialize-box-from-box
         (cond ((box? box)
                ;(boxnet::read-box-postamble box) ;(Boxer Server stuff) no longer used
                (mark-box-as-file box pathname)
                ; (record-file-box-place box) ; removed for UC "clean" version
                (mark-file-box-clean box)
-               ;; keep track of the file properties so that we can check          
+               ;; keep track of the file properties so that we can check
                (record-boxer-file-properties pathname
                                              (file-write-date pathname)
                                              (file-author pathname) box)
@@ -558,7 +558,7 @@ Modification History (most recent at top)
 ;; read-internal-1 to initialize another box in the editor.  It is that
 ;; other box in the editor that the bookeeping operations need to keep
 ;; track of and it is in those higher up functions where the bookeeping must occur
-(defun read-internal-1 (filename &optional 
+(defun read-internal-1 (filename &optional
                                  (pathname (check-valid-filename-for-primitive
 		                            filename *boxer-pathname-default*)))
   (when (null (probe-file pathname)) (maybe-uncompress-file pathname))
@@ -566,7 +566,7 @@ Modification History (most recent at top)
     (if *in-autoload-environment*
         (error "Autoload File not found: ~A" (namestring pathname))
         (eval::primitive-signal-error :file-or-directory-not-found (namestring pathname))))
-  (prog1 
+  (prog1
     (let* ((ftype (file-type pathname))
            ;; dispatch to special readers when appropriate
            ;; ALL special reader take a filename arg and return a box
@@ -578,7 +578,7 @@ Modification History (most recent at top)
                                 (eval::primitive-signal-error
                                  :unknown-file-type
                                  "Don't know how to load a " ftype "file"))
-                               ((not (status-line-y-or-n-p 
+                               ((not (status-line-y-or-n-p
                                       (format nil "Unknown file type, ~A, load as Text ?"
                                               ftype)))
                                 (eval::primitive-signal-error
@@ -588,9 +588,9 @@ Modification History (most recent at top)
                                 (read-text-file-internal pathname))))
                         (t
                          (funcall special-file-reader-function pathname))))))
-      #+mcl 
+      #+mcl
       (when (ccl::file-locked-p pathname)
-        (boxer-editor-warning 
+        (boxer-editor-warning
          "The file, ~A, is locked.  You must unlock it to save changes"
          (pathname-name pathname)))
       box)
@@ -638,7 +638,7 @@ Modification History (most recent at top)
 ;;;  DIRECTORY
 
 (defboxer-primitive bu::directory ((eval::dont-copy file-pattern))
-  (make-vc (or (mapcar #'(lambda (p) 
+  (make-vc (or (mapcar #'(lambda (p)
 			   (make-evrow-from-entry (intern-in-bu-package
 						   (namestring p))))
 		       (directory-internal (box-text-string file-pattern)))
@@ -661,10 +661,10 @@ Modification History (most recent at top)
      (make-pathname :name (pathname-name pattern-pathname)
 		    :type (pathname-type pattern-pathname))
      (directory directory-name))))
-					
+
 
 ;; returns a list of pattern specs for file-pattern-match?
-;; expects the pattern string to already have the directory 
+;; expects the pattern string to already have the directory
 ;; components stripped off
 ;; a pattern-spec is a CONS composed of a keyword type as the CAR
 ;; and a string as the CDR
@@ -688,7 +688,7 @@ Modification History (most recent at top)
 		       (push (cons :whole pattern) return-specs)
 		       (return))
 		      ((null new-wild-place)
-		       ;; no more wild cards, but some have 
+		       ;; no more wild cards, but some have
 		       ;; already been processed
 		       (push (cons :end (subseq pattern wild-place))
 			     return-specs)
@@ -759,11 +759,11 @@ Modification History (most recent at top)
 			  (setq pattern-match? nil) (return))
 			 (t
 			  (setq start (+ (length (cdr spec)) start))))))))
-    ;; if the pattern-match? flag is still true after all of 
+    ;; if the pattern-match? flag is still true after all of
     ;; the pattern-specs have run, push the file onto the return list
     pattern-match?))
-	
-  
+
+
 (defboxer-primitive bu::delete-file ((eval::dont-copy filename))
   (let* ((filestring (box-text-string filename))
 	 (pathname (check-valid-filename-for-primitive
@@ -783,7 +783,7 @@ Modification History (most recent at top)
 ;;; connect with the outside world.  These may turn out to be useful
 ;;; for a longer period of time than the actual boxer file operations
 ;;;
-;;; These should eventually be rewritten to use a string buffer for 
+;;; These should eventually be rewritten to use a string buffer for
 ;;; read-line and write-line so they don't keep CONSing string
 ;;;
 
@@ -800,7 +800,7 @@ Modification History (most recent at top)
     (unless (probe-file pathname)
       (eval::primitive-signal-error :file-or-directory-not-found
 				    (namestring pathname)))
-    (prog1 
+    (prog1
 	(read-text-file-internal pathname)
       ;; now handle file stickyness if we want to
     (unless (null *sticky-file-defaulting?*)
@@ -934,7 +934,7 @@ Modification History (most recent at top)
           (t (write-char cha fs))))
   (terpri fs))
 
- 
+
 
 
 ;;; all of this is being replaced by the box server
@@ -1002,7 +1002,7 @@ Modification History (most recent at top)
 (defmethod unmark-box-as-file ((box box))
   (setf (storage-chunk? box) nil)
   (let ((filename (getprop box :associated-file)))
-    ;; save away the filename in case we change our mine and 
+    ;; save away the filename in case we change our mine and
     ;; want to make it a file box again
     (unless (null filename) (putprop box filename :old-associated-file))
     (removeprop box :associated-file)
@@ -1018,13 +1018,13 @@ Modification History (most recent at top)
   (cond ((not (box? where)) nil)
         ((eq where *initial-box*) where)
         ((storage-chunk? where) where)
-        (t (let ((sup (superior-box where))) 
+        (t (let ((sup (superior-box where)))
              (when (box? sup) (current-file-box sup))))))
 
 (defvar *max-file-pathname-length* 20)
 
 (defun pretty-file-box-name (filename)
-  (let* ((name (pathname-name filename)) 
+  (let* ((name (pathname-name filename))
          (type (pathname-type filename))
          (dirs (pathname-directory filename))
          (rawhost (pathname-host filename))
@@ -1053,7 +1053,7 @@ Modification History (most recent at top)
           ((not (null included-dirs))
            (format nil #+mcl "~A {~{~A:~}~A}" #-mcl "~A {~{~A/~}~A}"
                    name included-dirs ellipsis))
-          (t ; no type, no dirs 
+          (t ; no type, no dirs
            (format nil "~A" name)))))
 
 ;; placeholder, should put in trimming to *max-file-pathname-length*
@@ -1073,13 +1073,13 @@ Modification History (most recent at top)
 (defvar *initial-file-status-string-length* 70)
 
 (defvar *file-status-string* (make-array *initial-file-status-string-length*
-                                         :element-type 'character                                         
+                                         :element-type 'character
                                          :fill-pointer 0))
 
 (defun add-string-to-file-status (string)
   (let ((l (length string))
         (max (-& (array-total-size *file-status-string*) 3))) ; room for "..."
-    (dotimes (i l l) 
+    (dotimes (i l l)
       (if (=& (fill-pointer *file-status-string*) max)
           (dotimes (i 3 (return t)) (vector-push #\. *file-status-string*))
           (vector-push (char string i) *file-status-string*)))))
@@ -1117,12 +1117,12 @@ Modification History (most recent at top)
 #| ;; this is now handled (as it should be) in the menu-update
       #+mcl ;; dynamically adjust the file menu...
       (let ((save-item (find "Save" (slot-value *boxer-file-menu* 'ccl::item-list)
-                             :test #'(lambda (a b) 
+                             :test #'(lambda (a b)
                                        (string-equal a (ccl::menu-item-title b)))))
             ;(save-box-as-item (find "Save Box As..." (slot-value *boxer-file-menu*
             ;                                                     'ccl::item-list)
-            ;                        :test #'(lambda (a b) 
-            ;                                  (string-equal 
+            ;                        :test #'(lambda (a b)
+            ;                                  (string-equal
             ;                                   a (ccl::menu-item-title b)))))
             )
         ;; grey out File menu items if they are redundant or not applicable
@@ -1146,11 +1146,11 @@ Modification History (most recent at top)
                    (when (eq result t) (throw 'status-string-end nil)))))
           ;; first (maybe) indicate file modified  status
           (when (and (not vanilla?) fmodified?)
-            (add-string #+mcl "  " #-mcl "* "))
+            (add-string #+mcl "ï¿½ " #-mcl "* "))
           ;;; print +mcl the box name...
           (add-string "File Box: ")
           (add-string box-name)
-          (add-string  #+mcl " ¥ " #-mcl " | ")
+          (add-string  #+mcl " ï¿½ " #-mcl " | ")
           ;; now add info about the where the box came from...
           (add-string "From: ")
           (unless (and (null pathname) (not (eq origin-type :network)))
@@ -1160,12 +1160,12 @@ Modification History (most recent at top)
                 (add-string (if *terse-file-status* "(RO) " "Read Only "))
                 (setq adjectives t))
               (case origin-type
-                (:network (if *terse-file-status* 
+                (:network (if *terse-file-status*
                               (add-string "(net) ")
                               (add-string "Network "))
                           (setq adjectives t))
                 (:disk (when *terse-file-status* (add-string "(disk) "))))
-              (unless (eq file-format :box) 
+              (unless (eq file-format :box)
                 (add-string (string-capitalize file-format))
                 (add-string " ")
                 (setq adjectives t))
@@ -1221,12 +1221,12 @@ Modification History (most recent at top)
                  (incf idx))))
            (add-ellipsis ()
              (dotimes (i 3) (setf (char return-string idx) #\.) (incf idx))))
-      (when (eq (car dirs) :relative)  (add-char))      
+      (when (eq (car dirs) :relative)  (add-char))
       (catch 'dir-exit
         (unless (zerop dirstop)
           (dolist (dir (cdr dirs) (setq ellipsis? nil))
             (add-string dir) (add-char))))
-      (unless (null ellipsis?) 
+      (unless (null ellipsis?)
         (add-ellipsis))
       (cond ((zerop dirstop)
              ;; this means the name.type is already longer than the alloted space
@@ -1256,7 +1256,7 @@ Modification History (most recent at top)
     (if (< idx *max-filename-length*)
         (subseq return-string 0 idx)
         return-string)))
-       
+
 ;; walk up (backwards up the list) the path looking for a match in the
 ;; superior dirs
 ;; NOTE: not quite right, we should modify the sup-pathname as well to prune lower level
@@ -1270,7 +1270,7 @@ Modification History (most recent at top)
       (if (member dir sup-dirs :test #'string-equal)
           (return (append '(:relative) merged-dirs))
           (push dir merged-dirs)))))
-    
+
 ;; see if the file exists.
 ;; when not being strict check for ".box" or no "".box"
 (defun probe-search-file (pathname)
@@ -1296,17 +1296,17 @@ Modification History (most recent at top)
            (sup-box (superior-box box))
            (sup-file-box (current-file-box sup-box))
            (sup-pathname (getprop sup-file-box :associated-file))
-           (pathname (cond ((and (eq (car raw-dirs) :absolute) 
+           (pathname (cond ((and (eq (car raw-dirs) :absolute)
                                  (probe-search-file raw-pathname)))
-                           ((and (or (eq (car raw-dirs) :relative) 
-                                     ;; if the relative path is just a name, 
+                           ((and (or (eq (car raw-dirs) :relative)
+                                     ;; if the relative path is just a name,
                                      ;; raw-dirs will be null
                                      (null raw-dirs))
                                  (or *autoloading-namestring* sup-pathname)
                                  (let ((merged-pathname (merge-pathnames
                                                          (make-pathname
                                                           :directory raw-dirs
-                                                          :name (pathname-name 
+                                                          :name (pathname-name
                                                                  raw-pathname)
                                                           :type (or (pathname-type
                                                                      raw-pathname)
@@ -1316,7 +1316,7 @@ Modification History (most recent at top)
                                    (probe-search-file merged-pathname))))
                            ;; now try various simple guesses
                            ((let ((merged-pathname (unless (null sup-pathname)
-                                                    (merge-pathnames 
+                                                    (merge-pathnames
                                                      (make-pathname
                                                       :name (pathname-name
                                                              raw-pathname)
@@ -1324,11 +1324,11 @@ Modification History (most recent at top)
                                                                  raw-pathname)
                                                                 :unspecific))
                                                      sup-pathname))))
-                              (and merged-pathname 
+                              (and merged-pathname
                                    (probe-search-file merged-pathname))))
-                           ((let ((autoload-pathname 
+                           ((let ((autoload-pathname
                                   (unless (null *autoloading-namestring*)
-                                    (merge-pathnames 
+                                    (merge-pathnames
                                      (make-pathname :name (pathname-name
                                                            raw-pathname)
                                                     :type (or (pathname-type
@@ -1341,21 +1341,21 @@ Modification History (most recent at top)
                            ((let ((dmerged-pathname (unless (null sup-pathname)
                                                       (merge-pathnames
                                                        (make-pathname
-                                                        :directory 
-                                                        (dmerge-dirs raw-pathname 
+                                                        :directory
+                                                        (dmerge-dirs raw-pathname
                                                                      sup-pathname)
                                                         :name (pathname-name
                                                                raw-pathname)
                                                         :type (pathname-type
                                                                raw-pathname))
                                                        sup-pathname))))
-                              (and dmerged-pathname 
+                              (and dmerged-pathname
                                    (probe-search-file dmerged-pathname))))
                            ((let ((admerged-pathname (unless (null *autoloading-namestring*)
                                                        (merge-pathnames
                                                         (make-pathname
-                                                         :directory 
-                                                         (dmerge-dirs raw-pathname 
+                                                         :directory
+                                                         (dmerge-dirs raw-pathname
                                                                       *autoloading-namestring*)
                                                          :name (pathname-name
                                                                 raw-pathname)
@@ -1363,17 +1363,17 @@ Modification History (most recent at top)
                                                                     raw-pathname)
                                                                    :unspecific))
                                                         *autoloading-namestring*))))
-                              (and admerged-pathname 
+                              (and admerged-pathname
                                    (probe-search-file admerged-pathname))))
                            ;; guesses are all wrong, so ask the user
-                           ((and *prompt-for-server-file-not-found*                                   
+                           ((and *prompt-for-server-file-not-found*
                                  (not (null *autoloading-namestring*)))
                               (boxer-open-lost-file-dialog
                                :prompt "(While Autoloading) Can't find"
                                :directory raw-pathname))
-                           (*prompt-for-server-file-not-found*                                   
-                            (boxer-open-lost-file-dialog 
-                             :prompt "Can't find" 
+                           (*prompt-for-server-file-not-found*
+                            (boxer-open-lost-file-dialog
+                             :prompt "Can't find"
                              :directory raw-pathname))
                            ;; nothing works, return the original pathname for error message
                            (t raw-pathname)))
@@ -1397,7 +1397,7 @@ Modification History (most recent at top)
           (unless (null superior-box)
             (eval::propagate-all-exported-bindings box superior-box)
             (eval::export-inferior-properties box superior-box))))
-      ;; if there is a cached boxtop, remove it in favor of the one being 
+      ;; if there is a cached boxtop, remove it in favor of the one being
       ;; read in from the file
       (let ((cb (getprop box :cached-boxtop)))
         (unless (null cb)
@@ -1407,13 +1407,13 @@ Modification History (most recent at top)
           (removeprop box :cached-boxtop)))
       ;; this the old style boxtop caching.... (convert to new style)
       (let ((bp (getprop box :boxtop)))
-        (cond ((graphics-sheet? bp) 
+        (cond ((graphics-sheet? bp)
                (putprop box :standard :boxtop))
               ((null bp)
-               ;; add :file boxtop here when converting from old style.  THis 
+               ;; add :file boxtop here when converting from old style.  THis
                ;; seems more economical than hairing up dump or load
                (putprop box :file :boxtop))))
-      ;; now do the box/file bookkeeping, 
+      ;; now do the box/file bookkeeping,
       ;; NOTE: It has to be here AFTER the initialize-box-from-box
       (when (box? box)
         ;(boxnet::read-box-postamble box) ;(part of the Boxer Server) no longer used
@@ -1429,12 +1429,12 @@ Modification History (most recent at top)
           (mark-file-box-clean box)))
       ;; record in place menu ?
          ; removed for UC "clean" implementation
-      ;; keep track of the file properties so that we can check          
+      ;; keep track of the file properties so that we can check
       (record-boxer-file-properties pathname
                                     (file-write-date pathname)
                                     (file-author pathname) box)
       box)))
-    
+
 
 
 
@@ -1475,16 +1475,16 @@ Modification History (most recent at top)
                  (url  (getprop target :url))
                  (xref (getprop target :xref)))
              (cond ((not (null file))
-                    (make-vc (list (make-evrow-from-string 
+                    (make-vc (list (make-evrow-from-string
                                     (namestring file)))))
                    ((not (null url))
-                    (make-vc (list (make-evrow-from-string 
+                    (make-vc (list (make-evrow-from-string
                                     (boxnet::urlstring url)))))
                    ((not (null xref))
                     (let ((path #+mcl (mac-file-ref-pathname xref)
                                 #-mcl nil))
                       (cond ((null path) (make-empty-vc))
-                            (t (make-vc (list (make-evrow-from-string 
+                            (t (make-vc (list (make-evrow-from-string
                                                (namestring path))))))))
                    (t (make-empty-vc)))))
           (t (make-empty-vc)))))
@@ -1520,12 +1520,12 @@ Modification History (most recent at top)
 (defun make-file-storage-info-box (pathname)
   (multiple-value-bind (host device directory name type)
       (destructure-pathname pathname)
-    (make-file-storage-info-box-internal host device 
+    (make-file-storage-info-box-internal host device
                                          (car directory) (cdr directory)
-                                         name type)))     
+                                         name type)))
 
 (defun make-file-storage-info-box-internal (host device dir-type dir name type)
-    (make-vc (list (make-vc (unless (or (null host) (eq host :unspecific)) 
+    (make-vc (list (make-vc (unless (or (null host) (eq host :unspecific))
                               (list (make-evrow-from-string host)))
                             'data-box 'bu::Host)
                    (make-vc (unless (or (null device) (eq device :unspecific))
@@ -1537,7 +1537,7 @@ Modification History (most recent at top)
                                         (make-evrow-from-string d))
                                     dir)
                             'data-box 'bu::directory)
-                   (make-vc (unless (null name) 
+                   (make-vc (unless (null name)
                               (list (make-evrow-from-string name)))
                             'data-box 'bu::name)
                    (make-vc (unless (or (null type) (eq type :unspecific))
@@ -1552,7 +1552,7 @@ Modification History (most recent at top)
                    (value (cadr value-pairs) (cadr value-pairs)))
                   ((null value-pairs))
                (push (make-vc (list (make-evrow-from-string value))
-                              'data-box (intern-in-bu-package 
+                              'data-box (intern-in-bu-package
                                          (string-upcase name)))
                      url-info-sub-boxes))
              (nreverse url-info-sub-boxes))))
@@ -1586,7 +1586,7 @@ Modification History (most recent at top)
                                                :directory (list* dir-type dir)
                                                :name name
                                                :type type))))
-             'data-box)))             
+             'data-box)))
 
 (defboxer-primitive bu::file-to-file-info (filename)
   (let ((pathname-string (box-text-string filename)))
@@ -1597,7 +1597,7 @@ Modification History (most recent at top)
       (destructure-file-info-box info1)
     (multiple-value-bind (host2 dev2 dir-type2 dir2 name2 type2)
         (destructure-file-info-box info2)
-      (make-file-storage-info-box-internal 
+      (make-file-storage-info-box-internal
        (if (or (null host1) (eq host1 :unspecific)) host2 host1)
        (if (or (null dev1)  (eq dev1  :unspecific)) dev2  dev1)
        (if (or (eq dir-type1 :absolute) (eq dir-type2 :absolute))
@@ -1607,10 +1607,10 @@ Modification History (most recent at top)
              (t (append dir2 dir1)))
        (if (null name1) name2 name1)
        (if (or (null type1) (eq type1 :unspecific)) type2 type1)))))
-      
 
 
-    
+
+
 
 #|
 (defboxer-primitive bu::mail ((eval::dont-copy to) (eval::dont-copy text))
@@ -1624,7 +1624,7 @@ Modification History (most recent at top)
       (unwind-protect
 	  (progn
 	    (with-open-file (stream mail-in-file :direction :output
-				    :if-exists :error) 
+				    :if-exists :error)
 	      (and subject (format stream "~~s ~a~%" subject))
 	      (write-string message stream))
 	    #+Lucid (lcl::run-unix-program "/usr/ucb/mail"
@@ -1664,7 +1664,7 @@ Modification History (most recent at top)
 
 ;;; The user can call COMPRESS-FILE.  READ will try to uncompress a file
 ;;; if it doesn't exist.
-  
+
 (defun compress-file (pathname)
   #+Unix (progn
 	   (make-backup-if-necessary (concatenate 'string (namestring pathname) ".Z"))
@@ -1708,9 +1708,9 @@ Modification History (most recent at top)
 ;;; Didn't do anything about stdout, though.
 (defun boxer-run-unix-program (program-name arguments)
   #+Unix (let ((error-result
-		#+Lucid (multiple-value-bind 
+		#+Lucid (multiple-value-bind
 			      (stream error-output-stream exit-status process-id)
-			    ;; We can't do both :error-output :stream 
+			    ;; We can't do both :error-output :stream
 			    ;; and :wait t, so we have to assume that the process
 			    ;; is finished when when we find out that the error-output-stream
 			    ;; is done.
@@ -1721,10 +1721,10 @@ Modification History (most recent at top)
 						 :error-output :stream)
 			  (declare (ignore stream process-id))
 			  (if error-output-stream
-			      (prog1 (do* ((string (read-line error-output-stream 
+			      (prog1 (do* ((string (read-line error-output-stream
 							      nil
 							      nil)
-						   (read-line error-output-stream 
+						   (read-line error-output-stream
 							      nil
 							      nil))
 					   (result nil))
@@ -1788,17 +1788,17 @@ Modification History (most recent at top)
 (defboxer-primitive bu::show-file-info ()
   (let* ((pathname (boxer-open-file-dialog :prompt "Show File Information for:"))
          (2nd-word nil)
-         (1st-word (with-open-file (s pathname :direction :input 
+         (1st-word (with-open-file (s pathname :direction :input
                                       :element-type '(unsigned-byte 8.))
                      (read-file-word-from-stream s)
                      (setq 2nd-word (read-file-word-from-stream s)))))
     (make-box (list (list (namestring pathname))
-                    (list (format nil "Finder File Type is: ~S" 
+                    (list (format nil "Finder File Type is: ~S"
                                   (ccl::mac-file-type pathname)))
                     (list (format nil "File Creator is: ~S"
                                   (ccl::mac-file-creator pathname)))
                     (list (format nil "Boxer File type is: ~A" (file-type pathname)))
-                    (list 
+                    (list
                      (cond ((=& 1st-word bin-op-format-version)
                             (format nil "1st word is BOFV (~X), 2nd is ~D"
                                     1st-word 2nd-word))
@@ -1808,7 +1808,7 @@ Modification History (most recent at top)
                            (t (format nil "1st word is ~4X(~D), 2nd is ~4X(~D)"
                                       1st-word 1st-word 2nd-word 2nd-word))))))))
 
-                    
+
 #+mcl
 (defboxer-primitive bu::set-boxer-file-info ()
   (let ((pathname (boxer-open-file-dialog :prompt "Set Boxer File Info for:")))
