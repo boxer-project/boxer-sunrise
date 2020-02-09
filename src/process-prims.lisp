@@ -48,7 +48,7 @@ Modification History (most recent at top)
 ;;; *current-process*.  Return a function to be funcalled
 ;;; once the vector has been filled.
 ;;; That function should return T if it changes the contents of the
-;;; vector or the value of the variable.  
+;;; vector or the value of the variable.
 ;;; If it doesn't change it, it should return nil,
 ;;; set *sfun-continuation* to  *std-sfun-continuation*,
 ;;; and set *returned-value* to whatever the primitive should return.
@@ -112,7 +112,7 @@ Modification History (most recent at top)
 		 ((fast-memq process *boxer-processes*))
 		 (t
 		  (nconc (last *boxer-processes*) (list process))))
-	   *novalue*))))  
+	   *novalue*))))
 
 (defun box-process (box)
   (cond ((box::box? box)
@@ -182,7 +182,7 @@ Modification History (most recent at top)
       t))
 
 ;;; bu::edit-box sets up bu::return-key (by calling enter-io-box) to call
-;;; this function in the box you want to edit.  You could associate this 
+;;; this function in the box you want to edit.  You could associate this
 ;;; function with a special tab in an editable box and make that code
 (defboxer-primitive bu::process-finish ()
   (cond ((null *boxer-processes*)
@@ -192,7 +192,7 @@ Modification History (most recent at top)
 	   #'(lambda ()
 	       ;; We must process the editor mutation queue now, in preparation
 	       ;; for returning to top level.  If we wait and let the automatic
-	       ;; mechanism take care of it on return to top level, it will 
+	       ;; mechanism take care of it on return to top level, it will
 	       ;; flush valuable information  because it thinks we will no
 	       ;; longer need it.
 	       (boxer::process-editor-mutation-queue-within-eval)
@@ -205,7 +205,7 @@ Modification History (most recent at top)
 		 ;; simply languish.
 		 ;; clear *current-process* so it won't get put in the queue.
 		 (setq *current-process* nil)
-		 ;; If a process is in pause waiting for this process, run 
+		 ;; If a process is in pause waiting for this process, run
 		 ;; that one. Otherwise get the next process that's in :RUN.
 		 ;; Otherwise, use the process in :TOPLEVEL.
 		 (process-display (cdr *boxer-processes*))
@@ -220,7 +220,7 @@ Modification History (most recent at top)
 		t)
 	       t))))
 
-  
+
 (defboxer-primitive bu::process-allow-schedule ()
   (cond ((null *boxer-processes*) *novalue*)
 	(t (setq *sfun-continuation*
@@ -232,7 +232,7 @@ Modification History (most recent at top)
 		     *novalue*)
 	       (let ((next-process (next-runnable-process)))
 		 ;; if there's no other runnable process, just return.
-		 (cond ((null next-process) 
+		 (cond ((null next-process)
 			(setq *returned-value* *novalue*)
 			(setq *sfun-continuation* '*std-sfun-continuation*)
 			NIL)
@@ -248,7 +248,7 @@ Modification History (most recent at top)
 ;			(setf (process-variable *current-process*
 ;						*sfun-continuation*)
 ;			      '*std-sfun-continuation*)
-			(setf (process-variable *current-process* *sfun-continuation*) 
+			(setf (process-variable *current-process* *sfun-continuation*)
 		     '*eval-loop-sfun-continuation*)
 			(setf (process-variable *current-process*
 						*returned-value*)
@@ -282,12 +282,12 @@ Modification History (most recent at top)
 	      :RUN)
       (return *current-process*))))
 
-;; like next-runnable-process EXCEPT that it doesn't 
+;; like next-runnable-process EXCEPT that it doesn't
 ;; side effect *current-process*
 (defun next-restartable-process (&optional (queue-current-process? t))
   (let ((torun nil))
     (dotimes (i (length (the list *boxer-processes*)))
-      (setq torun (pop *boxer-processes*)) 
+      (setq torun (pop *boxer-processes*))
       (when (eq (process-variable torun *process-state*) :RUN)
 	(when queue-current-process? (queue-process *current-process*))
 	(return torun))
@@ -296,7 +296,7 @@ Modification History (most recent at top)
 	  (nconc (last *boxer-processes*) (list torun))))))
 
 (defun next-toplevel-process ()
-  ;; return first process in :TOPLEVEL, or NIL if none.  
+  ;; return first process in :TOPLEVEL, or NIL if none.
   (dotimes (i (length (the list *boxer-processes*)))
     (unless (null *current-process*)
       (nconc (last *boxer-processes*) (list *current-process*)))
@@ -411,7 +411,7 @@ If the box was not entered with EDIT-BOX, just insert a return."
 	 (mouse-p (not (boxer::key-event? input))))
     (multiple-value-bind (name mouse-bp)
 	(if (not mouse-p)
-	    (boxer::lookup-key-name (boxer::input-code input) 
+	    (boxer::lookup-key-name (boxer::input-code input)
                                     (boxer::input-bits input))
 	    (boxer::get-mouse-click-name input))
       (let ((value (let ((*lexical-variables-root* (if mouse-bp
@@ -431,7 +431,7 @@ If the box was not entered with EDIT-BOX, just insert a return."
 			mouse-bp
 			(eq (boxer::mouse-event-type input)
 			    ':mouse-click)))
-	      ((or (boxer-function? value)	       
+	      ((or (boxer-function? value)
 		   (and (port-box? value) (doit-box? (boxer::ports value)))
 		   (and (simple-vector-p value)
 			;; there must be a proper (eval) macro for this
@@ -466,12 +466,12 @@ If the box was not entered with EDIT-BOX, just insert a return."
 	 (mouse-p (boxer::key-event? input)))
     (multiple-value-bind (name mouse-bp)
 	(if (not mouse-p)
-	    (boxer::lookup-key-name (boxer::input-code input) 
+	    (boxer::lookup-key-name (boxer::input-code input)
                                     (boxer::input-bits input))
 	    (boxer::get-mouse-click-name input))
       (let ((value (eval::boxer-symeval name)))
 	(cond ((eq value *novalue*) *novalue*)
-	      ((or (boxer-function? value)	       
+	      ((or (boxer-function? value)
 		   (and (port-box? value) (doit-box? (boxer::ports value)))
 		   (and (simple-vector-p value)
 			;; there must be a proper (eval) macro for this
@@ -521,7 +521,7 @@ If the box was not entered with EDIT-BOX, just insert a return."
 		nil)
 	       (setq *recursive-doit?* t)
 	       (push *current-process* *keyboard-owner*)
-	       (recursive-eval-invoke exit-state))))))    
+	       (recursive-eval-invoke exit-state))))))
   :after
   (cond ((not (null *recursive-doit?*))
 	 (boxer::print-returned-value-when-possible *returned-value*)
@@ -544,7 +544,7 @@ If the box was not entered with EDIT-BOX, just insert a return."
 	 (boxer::restore-point-position *process-doit-cursor-position*)
 	 (pop *keyboard-owner*)
 	 (setq *returned-value* *novalue*)
-	 nil))  
+	 nil))
   :unwind-protect-form
   (progn (restore-state-variables)
 	 (boxer::restore-point-position *process-doit-cursor-position*)
@@ -554,8 +554,8 @@ If the box was not entered with EDIT-BOX, just insert a return."
 (defvar *keyboard-owner* nil)
 
 (defun keyboard-owning-process () *keyboard-owner*)
-  
-  
+
+
 
 ;;;
 ;;; display junk
@@ -563,7 +563,7 @@ If the box was not entered with EDIT-BOX, just insert a return."
 (defun process-display (processes)
   (if (null processes)
       (boxer::status-line-undisplay '*boxer-processes*)
-      (boxer::status-line-display 
+      (boxer::status-line-display
        '*boxer-processes*
        (format nil "~{[~*] ~}" processes))))
 
