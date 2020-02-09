@@ -24,7 +24,7 @@ Primitives:
  o Extension-Info       lists current, and available but not loaded extensions
  o Add-Extension <x>    adds extension to the extension map (what loads at startup)
  o Remove-Extension <x> removes extension from the extension map
- o Load-Extension <x>   loads extension immediately but don't (?) add 
+ o Load-Extension <x>   loads extension immediately but don't (?) add
                         it to the startup list
  o Describe-Extension <x>
 
@@ -36,7 +36,7 @@ Modification History (most recent at top)
  6/20/05 catch 'abort-extension wrapped around load-extension so that individual
          extensions or patches can check criteria the abort the load if neccessary
          predicates can check (sm::system-properties (find-system-named 'boxer))
-         and then use abort-extension (which does a (throw 'abort-extension)) 
+         and then use abort-extension (which does a (throw 'abort-extension))
  4/21/03 merged current LW and MCL files
 11/04/02 load-boxer-extensions changed to use boxer-editor-message instead of
          boxer-editor-warning to avoid annoying beeps
@@ -62,11 +62,11 @@ Modification History (most recent at top)
 
 ;; this should appear in the module file being loaded
 ;; for mac extensions, this will be redundant with the version info returned from
-;; xten-info, for other file systems without resource forks, this will be the 
+;; xten-info, for other file systems without resource forks, this will be the
 ;; primary method for storing extension info
 (defun declare-boxer-extension (name &key (version 0.1) comments)
   (unless (member name *boxer-extensions*
-                  :test #'(lambda (a b) 
+                  :test #'(lambda (a b)
                             (string-equal a (boxer-extension-pretty-name b))))
     (push (make-boxer-extension
            :pretty-name name :version version :comments comments)
@@ -82,7 +82,7 @@ Modification History (most recent at top)
 (defun starting-directory ()
   #+ccl
   (ccl::mac-default-directory)
-  #+lispworks 
+  #+lispworks
   *starting-directory-pathname*
   #-(or ccl lispworks)
   *default-pathname-defaults*)
@@ -93,7 +93,7 @@ Modification History (most recent at top)
 (defun dxdir ()
   (append (pathname-directory (starting-directory)) '("Extensions(off)")))
 
-;; xtension info that's available to the OS, on the mac, this 
+;; xtension info that's available to the OS, on the mac, this
 ;; stuff can be found in the resource fork
 ;; returns major, minor, patch-level, version-string and version-info
 (defun xten-info (pathname)
@@ -102,7 +102,7 @@ Modification History (most recent at top)
     (ccl::with-open-resource-file (x pathname)
       (let ((vv (ccl::get-resource "vers" 1)))
         (unless (null vv)
-          (let* ((vp (ccl::%get-ptr vv)) 
+          (let* ((vp (ccl::%get-ptr vv))
                  (major (ccl::%get-byte vp)) (minor (ccl::%get-byte vp 1)))
             (values (+ (* 10 (ldb #.(byte 4 4) major)) (ldb #.(byte 4 0) major))
                     (ldb (byte 4 4) minor)
@@ -117,10 +117,10 @@ Modification History (most recent at top)
   (dolist (x (get-xtns)) (load-extension x)))
 
 (defun get-xtns (&optional (dir (xdir)))
-  (remove-duplicates 
+  (remove-duplicates
    (mapcar #'pathname-name
-           (directory (make-pathname :directory dir :name "*" 
-                                     :type #+(and mcl powerpc) "PPC" 
+           (directory (make-pathname :directory dir :name "*"
+                                     :type #+(and mcl powerpc) "PPC"
                                            #+(and mcl M68K)    "68K"
                                            #+win32             "bxe"
                                            #+(and lispworks mac) "BXPPC"
@@ -151,25 +151,25 @@ Modification History (most recent at top)
                 (load (namestring (truename xpath))))
               #-(or ccl lispworks)
               (load (namestring (truename xpath)))
-              (cond ((null good?) 
+              (cond ((null good?)
                      #+ccl
                      (when (null bw::*boxer-bootstrap-status*) (ccl::%err-disp err))
                      )
                     (t
                      (boxer-editor-message "Loading ~A Extension" x)
                      (unless (member x *boxer-extensions*
-                                     :test #'(lambda (a b) 
+                                     :test #'(lambda (a b)
                                                (string-equal
                                                 a (boxer-extension-pretty-name b))))
                        (push (if (null major)
                                (make-boxer-extension :pretty-name x)
                                (make-boxer-extension :pretty-name x ; version-string ??
-                                                     :version (format nil "~D.~D.~D" 
+                                                     :version (format nil "~D.~D.~D"
                                                                       major minor patch)
                                                      :comments version-info))
                              *boxer-extensions*))))))))))
 
-;; individual patches/extensions can test 
+;; individual patches/extensions can test
 ;; (sm::system-properties (find-system-named 'boxer))
 ;; :major/minor-version-number
 (defun abort-extension-load () (throw 'abort-extension nil))
@@ -181,7 +181,7 @@ Modification History (most recent at top)
       (loop
         (let ((line (read-line s nil nil)))
           (if (null line) (return)
-              (setq xtns 
+              (setq xtns
                     (nconc xtns
                            (list (string-trim '(#\space #\tab #\newline)
                                               line))))))))
@@ -190,7 +190,7 @@ Modification History (most recent at top)
 (defun insure-extension-dirs ()
   (let ((xdir  (make-pathname :directory (xdir)))
         (dxdir (make-pathname :directory (dxdir))))
-    (when (null (probe-file xdir)) 
+    (when (null (probe-file xdir))
       #+ccl       (ccl::create-directory  xdir)
       #+lispworks (system::make-directory xdir)
       #-(or ccl lispworks) (error "Don't know how to make directories in ~A"
@@ -204,7 +204,7 @@ Modification History (most recent at top)
 
 
 ;;; Primitives
-;; returns 3 boxes, currently loaded extensions, the startup list and the list 
+;; returns 3 boxes, currently loaded extensions, the startup list and the list
 ;; of available extensions
 
 (defboxer-primitive bu::extension-info ()
@@ -212,7 +212,7 @@ Modification History (most recent at top)
   (let* ((current (mapcar #'boxer-extension-pretty-name *boxer-extensions*))
          (available (append (get-xtns (xdir)) (get-xtns (dxdir))))
          (startup (get-xtns)))
-    (crock-make-vc 
+    (crock-make-vc
      (list (make-row (list "Current:" (make-box (mapcar #'row-entry-from-xtstring
                                                         current))))
            (make-row (list "Startup:" (make-box (mapcar #'row-entry-from-xtstring
@@ -221,10 +221,10 @@ Modification History (most recent at top)
                                                           available))))
            (make-row (list (make-xten-doc-box)))))))
 
-;; remember to get rid of possible ¶'s
-(defun row-entry-from-xtstring (xs) (list (remove #\¶ xs)))
+;; remember to get rid of possible ï¿½'s
+(defun row-entry-from-xtstring (xs) (list (remove #\ï¿½ xs)))
 
-(defun make-xten-doc-box () 
+(defun make-xten-doc-box ()
   (let ((box (make-box `(("Load-Extension" ,(make-box '(("<extension>")) 'data-box)
                           ":" "loads the <extension>")
                          ("Add-Extension" ,(make-box '(("<extension>")) 'data-box)
@@ -232,7 +232,7 @@ Modification History (most recent at top)
                          ("              loaded when the Boxer application is opened")
                          ("Remove-Extension" ,(make-box '(("<extension>")) 'data-box)
                           ":" "removes the <extension> from the list of Extensions")
-                         ("                 to be loaded when the Boxer application is opened"))            
+                         ("                 to be loaded when the Boxer application is opened"))
                        'data-box
                        "Extension Primitives")))
     (shrink box)
@@ -264,11 +264,11 @@ Modification History (most recent at top)
   (let ((xstring (xname-from-box x))
         (current (get-xtns)))
     (when (member xstring current :test #'string-equal)
-      ;; should we error if we can't find it ?      
+      ;; should we error if we can't find it ?
       (rename-file (xpath xstring (xdir))
                    (xpath xstring (dxdir))))
     eval::*novalue*))
-                   
+
 
 #| old style xmapfile based prims....
 (defboxer-primitive bu::add-extension (x)
@@ -276,7 +276,7 @@ Modification History (most recent at top)
          (xmapfile (make-pathname :directory (xdir) :name "extension" :type "map"))
          (xmapback (make-pathname :directory (xdir) :name "extension" :type "bak"))
          (xtns (when (probe-file xmapfile) (read-extension-map xmapfile)))
-         (tmpmap (make-pathname :directory (xdir) 
+         (tmpmap (make-pathname :directory (xdir)
                                 :name (format nil "~A" (gensym)) :type "tmp")))
     (cond ((member xstring xtns :test #'string-equal)
            ;; do nothing, it's already there....
@@ -284,7 +284,7 @@ Modification History (most recent at top)
           (t
            (setq xtns (nconc xtns (list xstring)))
            ;; write out new map file
-           (with-open-file (out tmpmap :direction :output 
+           (with-open-file (out tmpmap :direction :output
                                 :if-exists :supersede :if-does-not-exist :create)
              (dolist (x xtns) (write-line x out)))
            (when (probe-file xmapfile)
@@ -297,12 +297,12 @@ Modification History (most recent at top)
          (xmapfile (make-pathname :directory (xdir) :name "extension" :type "map"))
          (xmapback (make-pathname :directory (xdir) :name "extension" :type "bak"))
          (xtns (when (probe-file xmapfile) (read-extension-map xmapfile)))
-         (tmpmap (make-pathname :directory (xdir) 
+         (tmpmap (make-pathname :directory (xdir)
                                 :name (format nil "~A" (gensym)) :type "tmp")))
     (cond ((member xstring xtns :test #'string-equal)
            (setq xtns (delete xstring xtns :test #'string-equal))
            ;; write out new map file
-           (with-open-file (out tmpmap :direction :output 
+           (with-open-file (out tmpmap :direction :output
                                 :if-exists :supersede :if-does-not-exist :create)
              (dolist (x xtns) (write-line x out)))
            (when (probe-file xmapfile)
@@ -332,7 +332,7 @@ Modification History (most recent at top)
             (xten-info path)
           (crock-make-vc (list (list (format nil "version ~D.~D.~D"
                                              major minor patch))
-                               (list vs) 
+                               (list vs)
                                (list vi)))))))
 
 
@@ -347,7 +347,7 @@ Modification History (most recent at top)
     (format t "~&Making mac extension, ~A, for ~A" xten-name xtype)
     (cond ((null (cdr files)) ; one file...
            (with-open-file (out xtenpath
-                                :direction :output 
+                                :direction :output
                                 :element-type '(unsigned-byte 8))
              (with-open-file (in (car files) :element-type '(unsigned-byte 8))
                (loop (let ((byte (read-byte in nil eof-value)))
@@ -390,18 +390,18 @@ Modification History (most recent at top)
 
 #+ccl
 (defun ccl-file->xten (pathname &optional
-                                (major (read-from-string 
+                                (major (read-from-string
                                         (line-prompt "Major Release Number")))
-                                (minor (read-from-string 
+                                (minor (read-from-string
                                         (line-prompt "Minor Release Number")))
-                                (patch-level 
+                                (patch-level
                                  (read-from-string (line-prompt "Patch Number")))
                                 (version-string (line-prompt "Version String"))
-                                (version-info 
+                                (version-info
                                  (line-prompt "Version (in Get) Info")))
   (ccl::set-mac-file-type pathname :BOXE)
   (ccl::set-mac-file-creator pathname :BOXR)
-  (ccl-set-xten-info-internal pathname major minor patch-level 
+  (ccl-set-xten-info-internal pathname major minor patch-level
                               version-string version-info))
 
 ;; prompt for major, minor, patch numbers
@@ -427,7 +427,7 @@ Modification History (most recent at top)
         (ccl::%put-byte vp major)
         ;; minor and patch levels
         (ccl::%put-byte vp (dpb minor #.(byte 4 4) patch-level) 1)
-        ;; set the dev stage, pre-release rev code and 
+        ;; set the dev stage, pre-release rev code and
         ;; region codes to reasonable defaults (maybe prompt for them later)
         (ccl::%put-byte vp #x80 2) ; dev #x20=pre-alpha, #x40=alpha, #x60=beta, #x80=release
         (ccl::%put-byte vp 0 3) ; pre-release revision level
