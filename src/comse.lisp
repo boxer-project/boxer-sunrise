@@ -64,8 +64,8 @@ Modification History (most recent at the top)
          COM-DOIT because it is unused and calls nonexistent com-mark-row
          added "RO" to ignore declares in make-file-box
  4/07/00 added clear-editor-message to com-link-to-mac-file
-10/29/99 doit-print-returned-value binds *current-font-descriptor* to 
-         *default-font-descriptor* so the returned value isn't influenced 
+10/29/99 doit-print-returned-value binds *current-font-descriptor* to
+         *default-font-descriptor* so the returned value isn't influenced
          by the font of the line being eval'd
  6/04/99 box-file? changed to handle files shorter than 4 bytes
  5/19/99 box-file? now peeks at 1st 4 bytes of file
@@ -94,8 +94,8 @@ current region.  If there is no
 current region, marks the current
 row instead. "
   (let ((region (or *region-being-defined* (get-current-region))))
-    (cond ((not-null region)  
-	   (doit-internal))	
+    (cond ((not-null region)
+	   (doit-internal))
 	  (t
 	   (com-mark-row))))
   eval::*novalue*)
@@ -121,7 +121,7 @@ row instead. "
 #|
 (defvar *inside-doit-crock* nil)
 (defun doit-internal ()
-  (if *inside-doit-crock* 
+  (if *inside-doit-crock*
       (boxer-editor-error "Already inside COM-DOIT")
       (let ((*inside-doit-crock* t))
 	(unwind-protect
@@ -168,7 +168,7 @@ row instead. "
     (unwind-protect
 	 (progn
 	   (cond ((not-null existing-vertical-bar-cha-no)
-		  (dolist (bp (bps row)) 
+		  (dolist (bp (bps row))
 		    (setf (bp-cha-no bp)
 			  (min existing-vertical-bar-cha-no
 			       (bp-cha-no bp))))
@@ -177,7 +177,7 @@ row instead. "
 				(if (not (null processed-returned-value))
 				    1
 				    0)))
-		  (queue-editor-objs-for-deallocation 
+		  (queue-editor-objs-for-deallocation
                    (delete-chas-to-end-of-row bp ':fixed)))
 		 ((not (null processed-returned-value))
 		  (move-bp bp (row-last-bp-values row))
@@ -221,7 +221,7 @@ row instead. "
              (dolist (sr (screen-objs closet-row))
                (set-force-redisplay-infs? sr))))
           (t
-           ;; we must be partially scrolled, so insert the 
+           ;; we must be partially scrolled, so insert the
            ;; closet-row as the 1st VISISBLE row
            (insert-row-at-row-no (box-point-is-in)
                                  closet-row
@@ -282,9 +282,9 @@ row instead. "
 ;;; the one where screen-boxes are NEVER deallocated...)
 
 (defboxer-command com-toggle-closets (&optional (box (box-point-is-in))
-                                                (screen-box 
+                                                (screen-box
                                                  (screen-box-point-is-in)))
-  "Open the closet if it is closed and 
+  "Open the closet if it is closed and
    close the closet if it is open."
   (reset-region)
   (let ((closet-row (slot-value box 'closets)))
@@ -320,9 +320,9 @@ row instead. "
                      ;; don't need to set this if there were not any
                      ;; screen objs BEFORE the explicit call to redisplay
                      (dolist (sr (screen-objs closet-row))
-                       (set-force-redisplay-infs? sr))))) 
+                       (set-force-redisplay-infs? sr)))))
                 (t
-                 ;; we must be partially scrolled, so insert the 
+                 ;; we must be partially scrolled, so insert the
                  ;; closet-row as the 1st VISISBLE row
                  (insert-row-at-row-no box closet-row
                                        (row-row-no
@@ -423,7 +423,7 @@ row instead. "
 
 
 (defun prompter-chunk-before-point ()
-  (let ((cha-no (if (zerop& (bp-cha-no *point*)) 
+  (let ((cha-no (if (zerop& (bp-cha-no *point*))
 		    0
 		    (1-& (bp-cha-no *point*)))))
     (chunk-at-cha-no (point-row) cha-no T)))
@@ -547,13 +547,13 @@ row instead. "
   (if (name-row? (point-row))
       (boxer-editor-error "Can't insert help box while on a name")
       (insert-cha *point*
-                  (let ((*current-font-descriptor* 
+                  (let ((*current-font-descriptor*
                          (or *help-font-descriptor* *default-font-descriptor*)))
                     (make-box '(("To see inputs for a function")
                                 #-mcl(" press ctrl-<help> or ctrl-? after the name of the function.")
                               ;#+mcl(" press cmd-<help> or cmd-? after the name of the function.")
                                 ;; option-shift-K is the apple glyph
-                                #+mcl(" press ð-<help> or ð-? after the name of the function.")
+                                #+mcl(" press ï¿½-<help> or ï¿½-? after the name of the function.")
                                 ()
                                 ("To get help on a key stroke or mouse action")
                                 #-mcl(" press meta-<help> or meta-?")
@@ -596,7 +596,7 @@ followed by a return."
   (com-return)
   eval::*novalue*)
 
-    
+
 
 #+mcl
 (defboxer-command com-link-to-mac-file ()
@@ -621,7 +621,7 @@ followed by a return."
           (setq f0 (read-byte s nil nil) f1 (read-byte s nil nil)
                 f2 (read-byte s nil nil) f3 (read-byte s nil nil)))
         (unless (or (null f0) (null f1) (null f2) (null f3))
-          (or 
+          (or
            (and (= b0 f0) (= b1 f1) (= f2 *version-number*) (= f3 0))
            ;; byte swapping version...
            (and (= b0 f1) (= b1 f0) (= f3 *version-number*) (= f2 0)))))))
