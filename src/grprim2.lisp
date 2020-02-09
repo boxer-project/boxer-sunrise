@@ -34,7 +34,7 @@
 
 
 
-   This file contains boxer functions which use the 
+   This file contains boxer functions which use the
    graphics subsystem via sprites
 
 
@@ -323,7 +323,7 @@ Modification History (most recent at the top)
 			   (graphics-sheet-draw-wid graphics-sheet)
 			   (graphics-sheet-draw-hei graphics-sheet))))))
   eval::*novalue*)
-    
+
 ;(defsprite-function bu::stamp-partial-bitmap ((bu::port-to graphics-box)
 ;					      (eval::numberize src-x)
 ;					      (eval::numberize src-y)
@@ -333,8 +333,8 @@ Modification History (most recent at the top)
 ;  (with-sprites-hidden t
 ;    (stamp-partial-bitmap-for-turtle ...))
 ;  eval::*novalue*)
-  
-  
+
+
 
 (defsprite-function bu::stamp-self () (sprite turtle)
   (with-sprites-hidden t
@@ -357,20 +357,20 @@ Modification History (most recent at the top)
     (canonicalize-graphics-state %graphics-list)
     ;(reset-graphics-list-values %graphics-list)
     ;; handle bitmaps and backgrounds here....
-    ;; note that the canonicalized state means OP=alu-seta and 
+    ;; note that the canonicalized state means OP=alu-seta and
     ;; pen-color=*foreground-color*
     (cond ((not (null ba))
-           (record-boxer-graphics-command-centered-bitmap 
-            (new-offscreen-copy ba) x y 
+           (record-boxer-graphics-command-centered-bitmap
+            (new-offscreen-copy ba) x y
             (offscreen-bitmap-width ba) (offscreen-bitmap-height ba)))
           ((not (null (graphics-sheet-background gs)))
            ;; setup the color
-           (record-boxer-graphics-command-change-graphics-color 
+           (record-boxer-graphics-command-change-graphics-color
             (graphics-sheet-background gs))
-           (record-boxer-graphics-command-centered-rectangle 
+           (record-boxer-graphics-command-centered-rectangle
             x y (graphics-sheet-draw-wid gs) (graphics-sheet-draw-hei gs))
            ;; restore the canonical color
-           (record-boxer-graphics-command-change-graphics-color 
+           (record-boxer-graphics-command-change-graphics-color
             *initial-graphics-state-current-pen-color*)))
     (do-vector-contents (gc gl)
       (let ((new-command (copy-graphics-command gc)))
@@ -390,12 +390,12 @@ Modification History (most recent at the top)
           (graphics-command-list-font-no gl)
 	  (graphics-command-list-pen-color %graphics-list)
           (graphics-command-list-pen-color gl))
-    ;; do we need to frob the global values ??? 
+    ;; do we need to frob the global values ???
     (setq *graphics-state-current-alu*
           (graphics-command-list-alu %graphics-list)
 	  *graphics-state-current-pen-width*
           (graphics-command-list-pen-width %graphics-list)
-	  *graphics-state-current-font-no* 
+	  *graphics-state-current-font-no*
           (graphics-command-list-font-no %graphics-list)
 	*graphics-state-current-pen-color*
         (graphics-command-list-pen-color %graphics-list))))
@@ -411,7 +411,7 @@ Modification History (most recent at the top)
                ;(tgs (unless (null turtle-graphics-box)
                ;       (graphics-sheet turtle-graphics-box)))
                ;(tba (when tgs (graphics-sheet-bit-array tgs)))
-               (turtle-array-x (fix-array-coordinate-x 
+               (turtle-array-x (fix-array-coordinate-x
                                 (absolute-x-position turtle)))
                (turtle-array-y (fix-array-coordinate-y
                                 (absolute-y-position turtle))))
@@ -430,7 +430,7 @@ Modification History (most recent at the top)
                             (min-y (-& turtle-array-y gs-half-hei))
                             (max-y (+& turtle-array-y gs-half-hei)))
                        (drawing-on-bitmap (tba)
-                         (bitblt-to-screen alu-seta 
+                         (bitblt-to-screen alu-seta
                                            (-& (min& %drawing-width max-x)
                                                (max& 0 min-x))
                                            (-& (min& %drawing-height max-y)
@@ -440,7 +440,7 @@ Modification History (most recent at the top)
                                            (if (plusp& min-y) 0 (-& min-y))
                                            (max& 0 min-x) (max& 0 min-y)))
                        (with-graphics-screen-parameters
-                         (bitblt-to-screen alu-seta 
+                         (bitblt-to-screen alu-seta
                                            (-& (min& %drawing-width max-x)
                                                (max& 0 min-x))
                                            (-& (min& %drawing-height max-y)
@@ -463,9 +463,9 @@ Modification History (most recent at the top)
 ;;;; mousing around...
 #-opengl
 (defsprite-function bu::follow-mouse () (sprite turtle)
-  (let ((screen-box (or (car (fast-memq (bp-screen-box *mouse-bp*) 
+  (let ((screen-box (or (car (fast-memq (bp-screen-box *mouse-bp*)
                                         ;; is *mouse-bp* valid ?
-                                        (get-visible-screen-objs 
+                                        (get-visible-screen-objs
                                          (slot-value turtle 'assoc-graphics-box))))
                         (car (displayed-screen-objs
 			      ;; this is wrong but ignore ports for the moment
@@ -477,12 +477,12 @@ Modification History (most recent at the top)
 	(let* ((min-x (+& window-x-offset left))
 	       (min-y (+& window-y-offset top))
                (superior-turtle (superior-turtle turtle))
-               (sup-x (if (null superior-turtle) 0 
+               (sup-x (if (null superior-turtle) 0
                           (absolute-x-position superior-turtle)))
-               (sup-y (if (null superior-turtle) 0 
+               (sup-y (if (null superior-turtle) 0
                           (absolute-y-position superior-turtle))))
 	  (flet ((translate-x (window-x)
-			      (- (user-coordinate-x (-& window-x min-x)) 
+			      (- (user-coordinate-x (-& window-x min-x))
                                  sup-x))
 		 (translate-y (window-y)
 			      (- (user-coordinate-y (-& window-y min-y))
@@ -519,9 +519,9 @@ Modification History (most recent at the top)
 ;;; add throttling, i.e. dont record movement if there hasn't been any (or enough)
 #+opengl
 (defsprite-function bu::follow-mouse () (sprite turtle)
-  (let ((screen-box (or (car (fast-memq (bp-screen-box *mouse-bp*) 
+  (let ((screen-box (or (car (fast-memq (bp-screen-box *mouse-bp*)
                                         ;; is *mouse-bp* valid ?
-                                        (get-visible-screen-objs 
+                                        (get-visible-screen-objs
                                          (slot-value turtle 'assoc-graphics-box))))
                         (car (displayed-screen-objs
 			      ;; this is wrong but ignore ports for the moment
@@ -533,9 +533,9 @@ Modification History (most recent at the top)
 	(let* ((min-x (+& window-x-offset left))
 	       (min-y (+& window-y-offset top))
                (superior-turtle (superior-turtle turtle))
-               (sup-x (if (null superior-turtle) 0 
+               (sup-x (if (null superior-turtle) 0
                           (absolute-x-position superior-turtle)))
-               (sup-y (if (null superior-turtle) 0 
+               (sup-y (if (null superior-turtle) 0
                           (absolute-y-position superior-turtle))))
 	  (flet ((translate-x (window-x)
                    (- (user-coordinate-x (-& window-x min-x)) sup-x))
@@ -559,9 +559,9 @@ Modification History (most recent at the top)
 					       #+MCL :view #+MCL *boxer-pane*)
                     (let ((new-x (translate-x mouse-x)) (new-y (translate-y mouse-y))
                           (turtle-x (x-position turtle)) (turtle-y (y-position turtle)))
-                      (when (or (> (abs (- new-x turtle-x)) 
+                      (when (or (> (abs (- new-x turtle-x))
                                    *follow-mouse-movement-threshold*)
-                                (> (abs (- new-y turtle-y)) 
+                                (> (abs (- new-y turtle-y))
                                    *follow-mouse-movement-threshold*))
                         (with-sprites-hidden t (move-to turtle new-x new-y))
                         (repaint)))))
@@ -622,8 +622,8 @@ Modification History (most recent at the top)
 
 ;;; Color
 
-(defun screen-color-from-turtle (turtle) 
-  (opengl::pixel->color 
+(defun screen-color-from-turtle (turtle)
+  (opengl::pixel->color
    (screen-pixel-from-turtle turtle)))
 
 (defun screen-pixel-from-turtle (turtle)
@@ -679,12 +679,12 @@ Modification History (most recent at the top)
 
 (defsprite-function bu::color-under () (sprite turtle)
   (with-sprites-hidden :change-shape ; not NIL because we need to FORCE all the
-                                     ; other sprites to erase 
+                                     ; other sprites to erase
     (make-color-box-from-pixel (screen-color-from-turtle turtle))))
 
 (defsprite-function bu::bg-color-under () (sprite turtle)
   (make-color-box-from-pixel (background-color-from-turtle turtle)))
-		    
+
 (defsprite-function bu::bg-color-under? () (sprite turtle)
   (with-sprites-hidden nil
     (eval::boxer-boolean
@@ -726,7 +726,7 @@ Modification History (most recent at the top)
       (let ((gs (graphics-sheet gb)))
         (when (fast-memq turtle (graphics-sheet-object-list gs))
           (setf (graphics-sheet-object-list gs)
-                (cons turtle 
+                (cons turtle
                       (fast-delq turtle (graphics-sheet-object-list gs)))))))
     eval::*novalue*))
-                    
+
