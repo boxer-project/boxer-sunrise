@@ -25,7 +25,7 @@
  Hooks for other common URL types
 
 ToDo:
- Hack platform specific read-array and write-array for speed 
+ Hack platform specific read-array and write-array for speed
  instead of doing it byte by byte
 
 
@@ -45,14 +45,14 @@ Modification History (most recent at top)
  5/22/03 recommented (require "comm") for lispworks (done in fildfs.lisp now)
  5/21/03 uncommented (require "comm") for lispworks (needed for recompile-boxer)
  3/28/03 string->number added for use in mail.lisp
- 2/16/03 merged current LW and MCL files 
+ 2/16/03 merged current LW and MCL files
 10/20/02 removed RECORD-URL-BOX-PLACE from FILL-BOX-FROM-URL in preparation for
          "UC clean" reimplementation
  8/07/02 added url-values method for net-url & ftp-url
  4/06/02 changed decode-net-url to use &optional start-path-with-slash
          added decode-net-url-for-url method to allow for specialized url parsing
  4/04/02 changed moved and the class def for http-url to http.lisp
- 3/23/02 save-box-via-ftp-stor, lw-write-box-data-to-handle, and 
+ 3/23/02 save-box-via-ftp-stor, lw-write-box-data-to-handle, and
          lw-write-box-text-to-handle for lispworks
  3/19/02 fill-box-from-server checks to see if we've tried to fill the box already
          for the current event
@@ -74,7 +74,7 @@ Modification History (most recent at top)
          connections
 12/21/99 (defun ftp-local-data-port () 1747)
  6/25/99 added record-url-box-place to fill-box-from-url
- 9/23/98 check for read-only removed from url-box? so it behaves like file-box? 
+ 9/23/98 check for read-only removed from url-box? so it behaves like file-box?
  9/23/98 Started Logging changes: source = boxer version 2.3beta+
 
 
@@ -117,7 +117,7 @@ Modification History (most recent at top)
 ;;; OPEN-TCP-STREAM, NET-READ-LINE and NET-WRITE-LINE
 ;;; NIL host means to open a port for listening...
 
-(defun open-tcp-stream (host port 
+(defun open-tcp-stream (host port
                              &key (element-type #+mcl 'base-character
                                                 #+lispworks 'base-char)
                              (timeout 30))
@@ -132,8 +132,8 @@ Modification History (most recent at top)
     (if (null host)
         (surf-message "Opening Data Connection")
         (surf-message "Opening Connection to ~A..." unresolved-host))
-    (prog1 
-      (ccl::open-tcp-stream host port :element-type element-type 
+    (prog1
+      (ccl::open-tcp-stream host port :element-type element-type
                             #+carbon-compat :connect-timeout
                             #-carbon-compat :commandtimeout timeout)
       (unless (null host)
@@ -147,7 +147,7 @@ Modification History (most recent at top)
 ;               ((or (eq element-type 'unsigned-byte)
 ;                    (equal element-type '(unsigned-byte)))
 ;                (start-binary-server-stream port))
-;               (t 
+;               (t
 ;               (error "Unhandled network stream element-type: ~S" element-type))))
         (t
          (surf-message "Opening Connection to ~A" host)
@@ -172,7 +172,7 @@ Modification History (most recent at top)
 
   (defun start-char-server-stream (port)
     (comm::start-up-server :function 'make-server-char-stream :service port)
-    (mp::process-wait-with-timeout "Net Wait" 10 
+    (mp::process-wait-with-timeout "Net Wait" 10
                                    #'(lambda () (not (null *return-tcp-stream*))))
     (prog1 *return-tcp-stream*
       (setq *return-tcp-stream* nil)))
@@ -245,7 +245,7 @@ Modification History (most recent at top)
     `(let ((,string-arg ,string)
            ,@rest-args)
        (debugging-message ,string-arg . ,(mapcar #'car rest-args))
-       #+mcl (ccl::telnet-write-line ,stream 
+       #+mcl (ccl::telnet-write-line ,stream
                                      ,string-arg . ,(mapcar #'car rest-args))
        #-mcl (net-write-line ,stream ,string-arg . ,(mapcar #'car rest-args))
        )))
@@ -298,7 +298,7 @@ Modification History (most recent at top)
             (incf& count)))))
     ))
 
-;; 4/12/00 - this doesn't seem to be called by anyone? 
+;; 4/12/00 - this doesn't seem to be called by anyone?
 ;; removed 10/13/03, leave source until next system release just in case
 ;(defun tcp-stream-local-port (s)
 ;  #+mcl
@@ -358,7 +358,7 @@ Modification History (most recent at top)
 (defclass ftp-url
   (net-url)
   (;; this can be :text, :binary, :box, :directory or some other boxer
-   ;; document type as defined in the boxer generic file system 
+   ;; document type as defined in the boxer generic file system
    ;; see the boxer::*special-file-readers* variable
    (doc-type :initform ':text :accessor ftp-url-doc-type :initarg :doc-type))
   (:metaclass block-compile-class))
@@ -407,7 +407,7 @@ Modification History (most recent at top)
            ;; the generalized box filling hook
            (let ((fill-call (getf plist :fill-call)))
              (apply (car fill-call) (cdr fill-call))))
-          ((getf plist :box-server-id) 
+          ((getf plist :box-server-id)
            ;; this is the "old style" box server (make it last)
            (fill-box-from-bfs-server box))
           (t (error "Don't know how to fill the box ~A" box)))
@@ -444,7 +444,7 @@ Modification History (most recent at top)
   (dump-plist-internal url stream))
 
 ;; this is just like other boxer object dump methods
-;; with more specialized versions for particular url's 
+;; with more specialized versions for particular url's
 ;; note that the other methods should (call-next-method) first
 ;; so that the type symbol comes up first
 (defmethod dump-plist-internal ((self url) stream)
@@ -467,10 +467,10 @@ Modification History (most recent at top)
     (if (null pos) rawtype (subseq rawtype 0 pos))))
 
 (defmethod urlstring ((url url))
-  (concatenate 'string (protocol-string url) ":" 
+  (concatenate 'string (protocol-string url) ":"
                (slot-value url 'scheme-string)))
 
-  
+
 
 (defmethod set-url-flags ((box boxer::box))
   (setf (slot-value box 'boxer::flags)
@@ -485,15 +485,15 @@ Modification History (most recent at top)
     (shared-initialize box t)
     ;; fix up various attributes of the box
     (unless (null name)
-      (boxer::set-name box (boxer::make-name-row 
-                            (list (if (and (typep name 'string) 
+      (boxer::set-name box (boxer::make-name-row
+                            (list (if (and (typep name 'string)
                                            (not (typep name 'simple-string)))
                                       ;; adjustable strings blow out make-name-row
                                       (copy-seq name)
                                       name)))))
     (shrink box)
     (set-url-flags box)
-    (putprop box url :url)    
+    (putprop box url :url)
     (boxer::set-border-style box (if (not (null (boxer::exports box)))
                                    :thick-dashed
                                    :thick))
@@ -504,20 +504,20 @@ Modification History (most recent at top)
   (let* ((place (position #\: string))
          (type (subseq string 0 place))
          (scheme-string (subseq string (1+& place)))
-         (class (find-class (intern 
-                             (boxer::symbol-format nil "~A-URL" 
+         (class (find-class (intern
+                             (boxer::symbol-format nil "~A-URL"
                                                    (string-upcase type))
                             (find-package "BOXNET")))))
     (if (null class)
         (error "Don't know how to make a ~A url" type)
-        (make-instance class 
-                       :scheme-string (if no-decode 
+        (make-instance class
+                       :scheme-string (if no-decode
                                           scheme-string
                                           (decode-url-string scheme-string))))))
 
 (defmethod fill-box-from-url ((box boxer::box))
   (let ((url (getf (slot-value box 'plist) :url)))
-    (unless (null url) 
+    (unless (null url)
       (fill-box-using-url url box)
       ;; if there is a cached boxtop, remove it
       (let ((cb (getprop box :cached-boxtop)))
@@ -526,7 +526,7 @@ Modification History (most recent at top)
             (let ((bm (box::graphics-sheet-bit-array cb)))
               (unless (null bm) (box::deallocate-bitmap bm))))
           (removeprop box :cached-boxtop)))
-      (dolist (sb (boxer::screen-objs box)) 
+      (dolist (sb (boxer::screen-objs box))
         (boxer::set-force-redisplay-infs? sb t))
       (boxer::modified box)
       ;; removed boxer::record-url-box-place
@@ -535,7 +535,7 @@ Modification History (most recent at top)
 ;;; Basic required methods for all URL's
 ;;;
 ;;; ALL URL's should explicitly support the following methods:
-;;;   + INITIALIZE-INSTANCE 
+;;;   + INITIALIZE-INSTANCE
 ;;;   + COPY-URL
 ;;;   + FILL-BOX-USING-URL is the main interface function
 ;;;   + DUMP-PLIST-INTERNAL and DUMP-PLIST-LENGTH for file system interface
@@ -559,7 +559,7 @@ Modification History (most recent at top)
   (flet ((char->number (char)
            (case char
              (#\0 0) (#\1 1) (#\2 2) (#\3 3) (#\4 4) (#\5 5) (#\6 6) (#\7 7)
-             (#\8 8) (#\9 9) ((#\a #\A) 10.) ((#\b #\B) 11.) ((#\c #\C 12.)) 
+             (#\8 8) (#\9 9) ((#\a #\A) 10.) ((#\b #\B) 11.) ((#\c #\C 12.))
              ((#\d #\D) 13.) ((#\e #\E) 14.) ((#\f #\F) 15.)
              (otherwise (error "% in url's should be encoded as %25")))))
     (+& (*& 16. (char->number char1)) (char->number char2))))
@@ -568,7 +568,7 @@ Modification History (most recent at top)
 ;; look for "%" character encodings and convert them to characters
 (defun decode-url-string (string)
   (let* ((slength (length string))
-         (decoded-string (make-array slength 
+         (decoded-string (make-array slength
                                      :element-type #+mcl 'base-character
                                                    #+lispworks 'base-char
                                                    #-(or mcl lispworks) 'character
@@ -599,7 +599,7 @@ Modification History (most recent at top)
   (call-next-method) ;; this initializes scheme-string
   (setf (slot-value url 'pathname)
         (let ((slash-pos (search "//" (slot-value url 'scheme-string))))
-          (if (and slash-pos (zerop slash-pos)) 
+          (if (and slash-pos (zerop slash-pos))
               (subseq (slot-value url 'scheme-string) 2)
               (slot-value url 'scheme-string))))
   (setf (slot-value url 'host-type)
@@ -613,14 +613,14 @@ Modification History (most recent at top)
 (defmethod fill-box-using-url ((url local-url) box)
   (let ((filebox (boxer::read-internal-1 (slot-value url 'pathname))))
     (initialize-box-from-net-box box filebox)
-    ;; now do the box/file bookkeeping, 
+    ;; now do the box/file bookkeeping,
     ;; NOTE: It has to be here AFTER the initialize-box-from-box
     (when (box? box)
       ;(boxnet::read-box-postamble box) ;(part of the Boxer Server) no longer used
       (boxer::mark-box-as-file box (slot-value url 'pathname))
       (boxer::mark-file-box-clean box))
-    ;; keep track of the file properties so that we can check          
-    (boxer::record-boxer-file-properties 
+    ;; keep track of the file properties so that we can check
+    (boxer::record-boxer-file-properties
      (slot-value url 'pathname)
      (file-write-date (slot-value url 'pathname))
      (file-author (slot-value url 'pathname)) box)
@@ -639,12 +639,12 @@ Modification History (most recent at top)
 ;;; Mailto
 
 (defmethod initialize-instance ((url mailto-url) &rest initargs)
-  (call-next-method) 
+  (call-next-method)
   (setf (slot-value url 'address)
         ;; should do some reality checking here
         (slot-value url 'scheme-string)))
 
-(defvar *mail-instruction-box* 
+(defvar *mail-instruction-box*
         (make-box '(("Edit your message in this box")
                     ("Exit the box to send the mail"))
                   'boxer::Data-box
@@ -671,12 +671,12 @@ Modification History (most recent at top)
 (defmethod fill-box-using-url ((url mailto-url) box)
   (append-row box (make-row (make-message-box *user-mail-address*
                                               (mailto-url-address url)))))
-  
+
 
 
 
 ;;; as defined in RFC 1738, URL's which involve the direct use of
-;;; an IP-based protocol to a specific host on the internet use a 
+;;; an IP-based protocol to a specific host on the internet use a
 ;;; common syntax for the scheme-specific data
 ;;; The syntax is:     //<user>:<password>@<host>:<port>/<url-path>
 ;;; where "<user>:<password>@", ":<password>", ":<port>" and "/<url-path>"
@@ -746,17 +746,17 @@ Modification History (most recent at top)
             (host (subseq string (if @place (1+& @place) 2)
                           (or next-colon 1st-slash)))
             (port (unless (null next-colon)
-                    (string->number string 
+                    (string->number string
                                     :start (1+& next-colon) :stop 1st-slash)))
             (path (unless (null 1st-slash)
-                    (let ((path-string (subseq string 
+                    (let ((path-string (subseq string
                                                (if start-path-with-slash
                                                    1st-slash
                                                    (1+& 1st-slash)))))
                       (if (every #'(lambda (c) (char= c #\/)) path-string)
                           (progn (setq fixed-scheme-string
                                        (subseq string 0
-                                               (1+& (position #\/ string 
+                                               (1+& (position #\/ string
                                                               :test-not #'char=
                                                               :from-end t))))
                                  nil)
@@ -772,9 +772,9 @@ Modification History (most recent at top)
 
 (defmethod initialize-instance ((url ftp-url) &rest initargs)
   (call-next-method)
-  ;; now set up default values for user, port and password if they 
+  ;; now set up default values for user, port and password if they
   ;; haven't been filled by the net-url method
-  (when (null (slot-value url 'port))    
+  (when (null (slot-value url 'port))
     (setf (slot-value url 'port) 21))
   (when (null (slot-value url 'user))
     (setf (slot-value url 'user) "anonymous"))
@@ -788,12 +788,12 @@ Modification History (most recent at top)
          (declared-type (declared-ftp-type path)))
     ;; if there is a type declaration in the path, we need to remove it
     (unless (null declared-type)
-      (setf (slot-value url 'path) 
+      (setf (slot-value url 'path)
             (subseq path 0 (position #\; path :from-end t))))
-    ;; this is a best guess, it may get changed later when 
+    ;; this is a best guess, it may get changed later when
     ;; we actually try to access the data
     (if (not (null supplied-doc-type))
-        ;; if the doc-type is in the initargs, go with it (the slot will 
+        ;; if the doc-type is in the initargs, go with it (the slot will
         ;; already have been set by shared-initialize in an earlier method)
         (setf (slot-value url 'doc-type) supplied-doc-type)
         (setf (slot-value url 'doc-type)
@@ -819,17 +819,17 @@ Modification History (most recent at top)
            (call-next-method))
           (t (append (call-next-method) (list "Document-Type" dt))))))
 
-;; use the suffix to try an infer some information about the content of the file                
+;; use the suffix to try an infer some information about the content of the file
 (defun path-suffix (path)
   (unless (null path)
     (let ((last-dot (position #\. path :from-end t))
           (semi (position #\; path :from-end t)))
       (when last-dot
-        (subseq path (1+& last-dot) semi)))))    
+        (subseq path (1+& last-dot) semi)))))
 
 (defun declared-ftp-type (scheme-string)
   (let* ((semi (position #\; scheme-string))
-         (type? (when semi (search "type=" scheme-string 
+         (type? (when semi (search "type=" scheme-string
                                    :start2 semi :test #'char-equal))))
     (when type?
       (char scheme-string (+& semi 6)))))
@@ -865,7 +865,7 @@ Modification History (most recent at top)
       (debugging-message response)
       (cond ((char= #\- (char response 3)) ; multi-line?
              ;; just pull out any extra lines in a multi line reply...
-             (do ((next-line (net-read-line control-stream wait?) 
+             (do ((next-line (net-read-line control-stream wait?)
                              (net-read-line control-stream wait?)))
                  ((and (search code next-line) (char= #\space (char next-line 3))))
                (debugging-message next-line)))
@@ -880,7 +880,7 @@ Modification History (most recent at top)
             ))))
 
 ;; windows has some services on ports scattered below 2200 (see C:\windows\services)
-(defvar *ftp-port-value* #-win32 1025 #+win32 2200) 
+(defvar *ftp-port-value* #-win32 1025 #+win32 2200)
 
 (defun new-ftp-local-data-port ()
   (incf *ftp-port-value*))
@@ -891,7 +891,7 @@ Modification History (most recent at top)
 
 (defmethod get-password ((url ftp-url))
   (let ((url-pass (slot-value url 'password)))
-    (if (null url-pass) 
+    (if (null url-pass)
       ;; prompt for password here
       (boxer::get-string-from-status-line
        (format nil "Password for ~A:" (slot-value url 'user)) nil)
@@ -910,7 +910,7 @@ Modification History (most recent at top)
   ;; now we should be logged in (or else have been error'd out)
   (dolist (dir dirs)
     (net-write-control-line control "CWD ~A" dir) (handle-tcp-response control))
-  ;; now put the server in the right mode 
+  ;; now put the server in the right mode
   (when (member (slot-value url 'doc-type) '(:binary :box))
     (net-write-control-line control "TYPE I") (handle-tcp-response control))
   ;; explicitly set the PORT (eventually check *explicit-ftp-port?*)
@@ -938,7 +938,7 @@ Modification History (most recent at top)
           (progn
             (login-and-cd url control dirs)
             ;; now we are where we want to be
-            (cond ((eq (slot-value url 'doc-type) ':directory) 
+            (cond ((eq (slot-value url 'doc-type) ':directory)
                    (fill-box-from-ftp-nlst url control name box))
                   ((string= name "")
                    (setf (slot-value url 'doc-type) ':directory)
@@ -989,7 +989,7 @@ Modification History (most recent at top)
 
 (defun print-ftp-write-status (tcp-stream)
   #+mcl
-  (surf-message "Writing ~D bytes of data" 
+  (surf-message "Writing ~D bytes of data"
                 (writing-stream-position tcp-stream))
   #-mcl
   (surf-message "Writing TCP data ~A"
@@ -1026,7 +1026,7 @@ Modification History (most recent at top)
 #-lispworks
 (defmethod fill-box-from-ftp-retr ((url ftp-url) control-stream name box)
   (let ((data-stream (open-tcp-stream nil (ftp-local-data-port) ;(tcp-stream-local-port control-stream)
-                                      :element-type 
+                                      :element-type
                                       (if (member (slot-value url 'doc-type)
                                                   '(:box :binary))
                                           '(unsigned-byte 8.)
@@ -1044,11 +1044,11 @@ Modification History (most recent at top)
               (handle-tcp-response control-stream)
               (setq accepted-retr-command? t)))
           ;; see if he RETR command was accepted
-          (cond 
+          (cond
            ((null accepted-retr-command?)
             ;; if not, try NLST instead of RETR
             (fill-box-from-ftp-nlst-1 url control-stream name box data-stream)
-            ;; if succesful, change the url 
+            ;; if succesful, change the url
             (setf (slot-value url 'doc-type) :directory)
             (return-from fill-box-from-ftp-retr box))
            (t (case (slot-value url 'doc-type)
@@ -1059,11 +1059,11 @@ Modification History (most recent at top)
                                   data-stream))))
                         (initialize-box-from-net-box box b)
                         (set-url-flags box)))
-                (:binary 
+                (:binary
                  ;; no good model for what to do with random binary data
                  ;; so grab the beginning and at least check to see if
                  ;; it might be a boxer file
-                 (let ((1st-word 
+                 (let ((1st-word
                         (boxer::read-file-word-from-stream data-stream)))
                    (when (or (=& 1st-word
                                  boxer::bin-op-format-version)
@@ -1086,7 +1086,7 @@ Modification History (most recent at top)
                ;; fix the URL since it was confused (but only if we get pass nlst
                (setf (slot-value url 'doc-type) :directory))
               ((eq try-again ':binary-is-box)
-               ;; looks like it's box data so set the doc-type of the url 
+               ;; looks like it's box data so set the doc-type of the url
                ;; so the next try will get it right
                (setf (slot-value url 'doc-type) ':box)
                (fill-box-from-ftp-retr url control-stream name box)))))
@@ -1108,7 +1108,7 @@ Modification History (most recent at top)
       `(catch 'data-fill
          (handler-bind
 	     ((error
-	       #'(lambda (c) 
+	       #'(lambda (c)
                    (setq *net-filling-status* c) (throw 'data-fill nil))))
            ;; catch lisp errors and send the condition object to the boxer
            ;; process
@@ -1116,7 +1116,7 @@ Modification History (most recent at top)
                  (eval::*error-type* nil)
                  (eval::*error-sfun* nil)
                  (eval::*exception-args* nil)
-                 ;; these are vars that eval:signal-error will frob, so we bind 
+                 ;; these are vars that eval:signal-error will frob, so we bind
                  ;; them in this process and then return them to the boxer process
                  ;; interrupt handling works by signalling a boxer error which
                  ;; will be caught by this scheme and handled generically
@@ -1127,7 +1127,7 @@ Modification History (most recent at top)
              (catch 'eval::boxer-primitive-error-signal
                (let ((,normal-result
                       (mp:with-lock (*net-filling-lock*) . ,body)))
-                 (cond ((null eval::*exception-signalled*) 
+                 (cond ((null eval::*exception-signalled*)
                         (setq *net-filling-status* nil)
                         ,normal-result)
                        (t (setq *net-filling-status* (eval::encapsulate-error))
@@ -1150,7 +1150,7 @@ Modification History (most recent at top)
     "Returns T if the data process grabs the lock"
     (debugging-message "Waiting for Net Data Activation")
     (mp:process-wait-with-timeout
-     "waiting for lock" 30 
+     "waiting for lock" 30
      #'(lambda () (not (null (mp:lock-owner *net-filling-lock*)))))
     (cond ((null (mp:lock-owner *net-filling-lock*))
            (debugging-message "Data Process didn't grab lock")
@@ -1198,7 +1198,7 @@ Modification History (most recent at top)
           (t
            ;; do nothing ?  what about warn or error ?
            ;; for now, make sure the box has an empty line
-           (when (null (box::first-inferior-row box)) 
+           (when (null (box::first-inferior-row box))
              (append-row box (make-row nil)))))
        (release-net-fill-box)
        (debugging-message  "Killing Data Process")
@@ -1219,12 +1219,12 @@ Modification History (most recent at top)
 ;;; ftp RETR data loading functions
 #+lispworks
 (defun lw-save-binary-data (handle)
-  (let ((stream (make-instance 'comm:socket-stream :socket handle :direction :io 
+  (let ((stream (make-instance 'comm:socket-stream :socket handle :direction :io
                                :element-type 'unsigned-byte)))
-    (unwind-protect 
+    (unwind-protect
         (with-data-filling
 ;; needs to do the binary-is-box hack
-;          (let ((1st-word 
+;          (let ((1st-word
 ;                        (boxer::read-file-word-from-stream data-stream)))
 ;                   (when (or (=& 1st-word
 ;                                 boxer::bin-op-format-version)
@@ -1235,7 +1235,7 @@ Modification History (most recent at top)
 
 #+lispworks
 (defun lw-fill-box-from-handle (handle)
-  (let ((stream (make-instance 'comm:socket-stream :socket handle :direction :io 
+  (let ((stream (make-instance 'comm:socket-stream :socket handle :direction :io
                                :element-type 'unsigned-byte)))
     (unwind-protect
         (with-data-filling
@@ -1249,13 +1249,13 @@ Modification History (most recent at top)
 
 #+lispworks
 (defun lw-fill-box-from-text (handle)
-  (let ((stream (make-instance 'comm:socket-stream :socket handle :direction :io 
+  (let ((stream (make-instance 'comm:socket-stream :socket handle :direction :io
                                :element-type 'base-char)))
-    (unwind-protect 
+    (unwind-protect
         (with-data-filling
           (cond ((eq *net-filling-status* :use-nlst)
                  (lw-fill-box-from-ftp-nlst-2 stream))
-                (t 
+                (t
                  (fill-box-from-text-stream stream *net-filling-box*))))
     (close stream))))
 
@@ -1280,7 +1280,7 @@ Modification History (most recent at top)
   (let ((data-stream (open-tcp-stream nil (ftp-local-data-port) ;(tcp-stream-local-port control-stream)
                                       :timeout 300000)))
     (fill-box-from-ftp-nlst-1 url control-stream dir box data-stream)))
-  
+
 (defmethod fill-box-from-ftp-nlst-1 ((url ftp-url) control-stream dir box
                                      data-stream)
   (unwind-protect
@@ -1289,7 +1289,7 @@ Modification History (most recent at top)
              (handle-tcp-response control-stream))
            (net-write-control-line control-stream "NLST")
            (handle-tcp-response control-stream)
-           (do ((new-url-path-prefix 
+           (do ((new-url-path-prefix
                  (let* ((ss (slot-value url 'scheme-string))
                         (type (search ";type=" ss :from-end t))
                         (last-pos (1-& (or type (length ss))))
@@ -1297,18 +1297,18 @@ Modification History (most recent at top)
                    (cond ((not (null last-slash)) (subseq ss 0 last-pos))
                          ((not (null type)) (subseq ss 0 type))
                          (t ss))))
-                (data-line (net-read-line data-stream) 
+                (data-line (net-read-line data-stream)
                            (net-read-line data-stream)))
                ((null data-line)
                 ;; make sure the box has at least 1 empty row...
                 (when (null (boxer::first-inferior-row box))
                   (append-row box (make-row nil))))
              (debugging-message "FTP dir box from: ~s" data-line)
-             (append-row 
+             (append-row
               box
               (make-row
                (list
-                (make-box-from-url 
+                (make-box-from-url
                  (concatenate 'string "ftp:" new-url-path-prefix "/" data-line)
                  'boxer::data-box data-line
                  ;; we can trust the string is already decoded
@@ -1338,7 +1338,7 @@ Modification History (most recent at top)
                  (t
                   ;; do nothing ?  what about warn or error ?
                   ;; for now, make sure the box has an empty line
-                  (when (null (box::first-inferior-row box)) 
+                  (when (null (box::first-inferior-row box))
                     (append-row box (make-row nil))))))
        (release-net-fill-box)
        (debugging-message  "Killing Data Process")
@@ -1363,7 +1363,7 @@ Modification History (most recent at top)
 
 #+lispworks
 (defun lw-fill-box-from-ftp-nlst-2 (data-stream)
-  (do ((new-url-path-prefix 
+  (do ((new-url-path-prefix
         (let* ((ss (slot-value *net-filling-url* 'scheme-string))
                (type (search ";type=" ss :from-end t))
                (last-pos (1-& (or type (length ss))))
@@ -1371,18 +1371,18 @@ Modification History (most recent at top)
           (cond ((not (null last-slash)) (subseq ss 0 last-pos))
                 ((not (null type)) (subseq ss 0 type))
                 (t ss))))
-       (data-line (net-read-line data-stream) 
+       (data-line (net-read-line data-stream)
                   (net-read-line data-stream)))
       ((null data-line)
        ;; make sure the box has at least 1 empty row...
        (when (null (boxer::first-inferior-row *net-filling-box*))
          (append-row *net-filling-box* (make-row nil))))
     (debugging-message "FTP dir box from: ~s" data-line)
-    (append-row 
+    (append-row
      *net-filling-box*
      (make-row
       (list
-       (make-box-from-url 
+       (make-box-from-url
         (concatenate 'string "ftp:" new-url-path-prefix "/" data-line)
         'boxer::data-box data-line
         ;; we can trust the string is already decoded
@@ -1393,8 +1393,8 @@ Modification History (most recent at top)
 
 
 ;;; Note: this doesn't hack the difference between /foo/bar and %2Ffoo/bar
-;;; because the string has already been converted.  If this becomes a problem 
-;;; we will need to fix it in the initialize-url-from-string method for 
+;;; because the string has already been converted.  If this becomes a problem
+;;; we will need to fix it in the initialize-url-from-string method for
 ;;; basic url's first
 
 (defun destructure-path (path)
@@ -1410,7 +1410,7 @@ Modification History (most recent at top)
 
 ;;; FTP FS methods
 
-;; we dump the doc type because that is not neccessarily 
+;; we dump the doc type because that is not neccessarily
 ;; inferred from the scheme-string
 (defmethod dump-plist-internal ((self ftp-url) stream)
   (call-next-method)
@@ -1481,18 +1481,18 @@ Modification History (most recent at top)
 #-lispworks
 (defmethod save-box-via-ftp-stor ((url ftp-url) control-stream name box)
   (let ((data-stream (open-tcp-stream nil (ftp-local-data-port) ;(tcp-stream-local-port control-stream)
-                                      :element-type 
+                                      :element-type
                                       (if (member (slot-value url 'doc-type)
                                                   '(:box :binary))
                                           #-lispworks '(unsigned-byte 8.)
                                           #+lispworks 'unsigned-byte
 
-                                          #+mcl 'base-character 
+                                          #+mcl 'base-character
                                           #+lispworks 'base-char
                                           #-(or mcl lispworks) 'character)
                                       :timeout *ftp-data-listen-timeout*)))
     (unwind-protect
-      (progn 
+      (progn
         (net-write-control-line control-stream "STOR ~A" name)
         (handle-tcp-response control-stream)
         (case (slot-value url 'doc-type)
@@ -1502,7 +1502,7 @@ Modification History (most recent at top)
                    (format data-stream "~A" (boxer::text-string row))
                    (write-char #\CR data-stream)
                    (write-char #\LF data-stream))
-                 ;; in theory, moving the force-output out of the loop 
+                 ;; in theory, moving the force-output out of the loop
                  ;; should increase performance
                  ;; NOTE: for a 80K file between ultrix and mac via ethernet
                  ;; difference was 7.2 secs vs. 1 sec
@@ -1515,11 +1515,11 @@ Modification History (most recent at top)
   (let* ((port (ftp-local-data-port))
          (data-process (case (slot-value url 'doc-type)
                          ((:box :binary)
-                          (comm::start-up-server :function 
+                          (comm::start-up-server :function
                                                  'lw-write-box-data-to-handle
                                                  :service port))
                          (otherwise
-                          (comm::start-up-server :function 
+                          (comm::start-up-server :function
                                                  'lw-write-box-text-to-handle
                                                  :service port)))))
     (net-write-control-line control-stream "STOR ~A" name)
@@ -1547,25 +1547,25 @@ Modification History (most recent at top)
 
 #+lispworks
 (defun lw-write-box-data-to-handle (handle)
-  (let ((stream (make-instance 'comm:socket-stream :socket handle :direction :io 
+  (let ((stream (make-instance 'comm:socket-stream :socket handle :direction :io
                                :element-type 'unsigned-byte)))
     (unwind-protect
-        (with-data-filling 
+        (with-data-filling
           (boxer::dump-top-level-box-to-stream *net-filling-box* stream))
       (close stream))))
 
 #+lispworks
 (defun lw-write-box-text-to-handle (handle)
-  (let ((stream (make-instance 'comm:socket-stream :socket handle :direction :io 
+  (let ((stream (make-instance 'comm:socket-stream :socket handle :direction :io
                                :element-type 'base-char)))
-    (unwind-protect 
+    (unwind-protect
         (with-data-filling
           (boxer::do-box-rows ((row *net-filling-box*))
             ;(net-write-line data-stream (boxer::text-string row))
             (format stream "~A" (boxer::text-string row))
             (write-char #\CR stream)
             (write-char #\LF stream))
-          ;; in theory, moving the force-output out of the loop 
+          ;; in theory, moving the force-output out of the loop
           ;; should increase performance
           ;; NOTE: for a 80K file between ultrix and mac via ethernet
           ;; difference was 7.2 secs vs. 1 sec
@@ -1576,14 +1576,14 @@ Modification History (most recent at top)
 
 ;;;; Gopher
 
-;; From RFC 1738 pg 9-10: 
+;; From RFC 1738 pg 9-10:
 ;; Gopher URL takes the form:
 ;;    gopher://<host>:<port>/<gopher-path>
 ;; where <gopher-path> is one of
 ;;    <gophertype><selector>
 ;;    <gophertype><selector>%09<search>
 ;;    <gophertype><selector>%09<search>%09<gopher+_string>
-;; if :<port> is ommitted, the port defaults to 70.  <gophertype> is a 
+;; if :<port> is ommitted, the port defaults to 70.  <gophertype> is a
 ;; single-character field to denote the gopher type of the resource to
 ;; which the URL refers.  The entire <gopher-path> may also be empty, in
 ;; which case the delimiting "/" is also optional and the <gophertype>
@@ -1618,7 +1618,7 @@ Modification History (most recent at top)
 ;; and set the doc-type accordingly
 (defmethod initialize-instance ((url gopher-url) &rest initargs)
   (call-next-method)
-  (when (null (slot-value url 'port))    
+  (when (null (slot-value url 'port))
     (setf (slot-value url 'port) 70))
   ;; we should be able to infer the data type from the gopher path
   (let ((path (slot-value url 'path)))
@@ -1634,7 +1634,7 @@ Modification History (most recent at top)
     (#\0 :text) (#\1 :directory) (#\2 :cso-phone-server)
     (#\3 :error) (#\4 :binhex) (#\5 :dosbin) (#\6 :uuencode)
     (#\7 :index-search) (#\8 :telnet) (#\9 :binary)
-    (#\+ :redundant-server) (#\T :tn3270) 
+    (#\+ :redundant-server) (#\T :tn3270)
     (#\g :gif) (#\I :image)
     (otherwise :unknown)))
 
@@ -1653,7 +1653,7 @@ Modification History (most recent at top)
                                       #-lispworks '(unsigned-byte 8)
                                       #+lispworks 'unsigned-byte
 
-                                      #+mcl 'base-character 
+                                      #+mcl 'base-character
                                       #+lispworks 'base-char
                                       #-(or mcl lispworks) 'character))))
       (unwind-protect
@@ -1668,18 +1668,18 @@ Modification History (most recent at top)
                                                     (slot-value url 'port))))
                     (append-row box (make-row (list (slot-value url 'path)))))
             (:index-search (cond ((find #\tab (slot-value url 'path))
-                                  ;; this is a search path with a search 
+                                  ;; this is a search path with a search
                                   ;; string already provided
                                   (net-write-line stream (slot-value url 'path))
                                   (read-gopher-directory stream box))
                                  (t
                                   ;; no search string specified so setup
                                   ;; a way for the user to type one in...
-                                  (make-index-search-box (slot-value url 'host) 
+                                  (make-index-search-box (slot-value url 'host)
                                                          (slot-value url 'port)
                                                          (slot-value url 'path)
                                                          box))))
-            ((:uuencode :binhex) 
+            ((:uuencode :binhex)
              (net-write-line stream (slot-value url 'path))
              (save-net-data stream box doc-type))
             ((:image :gif)
@@ -1687,7 +1687,7 @@ Modification History (most recent at top)
              (let ((path (temp-pathname doc-type)))
                (save-net-data stream box doc-type nil path)
                (start-graphics-viewer path)))
-            ((:dosbin :binary) 
+            ((:dosbin :binary)
              (net-write-line-to-binary-stream stream (slot-value url 'path))
              (save-net-data stream box doc-type))
             (otherwise (fill-unhandled-gopher-type url box))))
@@ -1735,7 +1735,7 @@ Modification History (most recent at top)
 
 ;; special types
 
-;; for the terminal emulation types, we should should launch the 
+;; for the terminal emulation types, we should should launch the
 ;; appropriate application
 (defun make-terminal-box (host)
   (make-box `(("Entering this box will start a telnet session to:")
@@ -1746,7 +1746,7 @@ Modification History (most recent at top)
 ;; not quite right yet.  NCSA telnet doesn't open the connection right away
 (defboxer-primitive bu::telnet (host)
   #+mcl
-  (let ((ncsa-pathname (make-pathname :host "home" 
+  (let ((ncsa-pathname (make-pathname :host "home"
                                       :name "NCSA-telnet-temp")))
     (unwind-protect
         (progn (make-NCSA-telnet-doc ncsa-pathname (box-text-string host))
@@ -1772,7 +1772,7 @@ Modification History (most recent at top)
 (defun make-index-search-box (host port select-string &optional box)
   (let ((fun (make-box (list '(input "Search-String")
                              (list 'gopher-search (make-box `((,host))) port
-                                   (make-box `((,select-string))) 
+                                   (make-box `((,select-string)))
                                    "Search-String"))
                        'boxer::doit-box
                        "Query-Gopher-Server")))
@@ -1780,9 +1780,9 @@ Modification History (most recent at top)
     (if (null box)
         (make-box `((,fun)
                     ("Query-Gopher-Server" "Search-String:" ,(make-box '(())))))
-        (progn 
+        (progn
           (append-row box (make-row (list fun)))
-          (append-row box (make-row `("Query-Gopher-Server" "Search-String:" 
+          (append-row box (make-row `("Query-Gopher-Server" "Search-String:"
                                       ,(make-box '(())))))))))
 
 
@@ -1790,14 +1790,14 @@ Modification History (most recent at top)
                                             select-string search-string)
   (let* ((realhost (box-text-string host))
          (real-select-string (box-text-string select-string))
-         (real-search-string (box-text-string search-string))        
+         (real-search-string (box-text-string search-string))
          (stream (open-tcp-stream realhost port)))
-    (unwind-protect 
+    (unwind-protect
         (let ((return-box (boxer::make-uninitialized-box 'boxer::data-box)))
           (shared-initialize return-box t)
           (if (or (null select-string) (string= "" real-select-string))
               (net-write-line stream "~A" real-search-string)
-              (net-write-line stream "~A~C~A" 
+              (net-write-line stream "~A~C~A"
                               real-select-string #\tab real-search-string))
           (read-gopher-directory stream return-box)
           return-box)
@@ -1809,9 +1809,9 @@ Modification History (most recent at top)
         (display nil)
         (select nil)
         (host nil))
-    (setq display (subseq string idx 
+    (setq display (subseq string idx
                           (setq idx (position #\tab string
-                                              :test #'char=))))    
+                                              :test #'char=))))
     (incf idx) ; move the idx past the #\tab
     (setq select (subseq string idx
                          (setq idx (position #\tab string
@@ -1821,7 +1821,7 @@ Modification History (most recent at top)
                          (setq idx (position #\tab string
                                              :test #'char= :start idx))))
     (incf idx)
-    (when (string= "" display) 
+    (when (string= "" display)
       ;; perhaps we should try and make something out of the select-string ??
       (setq display nil))
     (values type display select host (string->number (subseq string idx)))))
@@ -1834,17 +1834,17 @@ Modification History (most recent at top)
     (eval::check-for-interrupt :interrupt "Stopped by User !"))
 |#
 
-(defun save-net-data (stream box doc-type 
+(defun save-net-data (stream box doc-type
                              &optional
-                             (text-data? (member doc-type 
+                             (text-data? (member doc-type
                                                  '(:text :binhex :uuencode)))
                              pathname)
   (let ((file (or pathname
                   #+mcl
-                  (ccl::choose-new-file-dialog 
+                  (ccl::choose-new-file-dialog
                    :prompt (format nil "Save ~A data in:" doc-type))
                   #+lispworks
-                  (capi:prompt-for-file 
+                  (capi:prompt-for-file
                    "save MIME data in file:"
                    :filter bw::*boxer-file-filters*
                    :operation :save :if-does-not-exist :ok
@@ -1855,9 +1855,9 @@ Modification History (most recent at top)
           (do ((line (net-read-line stream) (net-read-line stream)))
               ((or (null line) (string= line ".")))
             (write-line line outstream)))
-        (with-open-file (outstream file :direction :output 
+        (with-open-file (outstream file :direction :output
                                    :element-type '(unsigned-byte 8))
-          (do ((byte (read-byte stream nil eof-value) 
+          (do ((byte (read-byte stream nil eof-value)
                      (read-byte stream nil eof-value)))
               ((eq byte eof-value))
             (write-byte byte outstream))))
@@ -1897,7 +1897,7 @@ Modification History (most recent at top)
                            (ldb (byte 8 0) port))))
     (net-write-control-line cs "PORT ~D,~D" addr-str port-str)
     (format t "PORT ~D" port))
-  (when binary? 
+  (when binary?
     (net-write-line cs "TYPE I")
     (format t "TYPE I") (print (net-read-line cs t)))
   (print (net-read-line cs t)))
@@ -1908,14 +1908,14 @@ Modification History (most recent at top)
 
 (net-read-line cs t)
 
-(defun ftp-dtest ()  
+(defun ftp-dtest ()
   (format t "~&DS: ~A" ds)
   (when (listen ds)
     (loop (multiple-value-bind (line eof? bytes)
-              (net-read-line ds)            
+              (net-read-line ds)
             (cond ((or eof? (null line)) (return))
                   (t (format t "~&~D EOF[~A] ~A" bytes eof? line)))))))
-            
+
 (defvar *zzz* nil)
 
 (defun ftp-test (filename &optional binary?)
@@ -1923,13 +1923,13 @@ Modification History (most recent at top)
   (mp:release-lock *tl*)
   (let ((data-process
          (if binary?
-             (comm::start-up-server :function 'ftp-test-grab-box 
+             (comm::start-up-server :function 'ftp-test-grab-box
                                     :service (ftp-local-data-port))
-           (comm::start-up-server :function 'ftp-test-print-file 
+           (comm::start-up-server :function 'ftp-test-print-file
                                   :service (ftp-local-data-port)))))
     (net-write-line cs "RETR ~A" filename)
     (format t "~&Waiting for lock to be grabbed")
-    (mp:process-wait-with-timeout "waiting for lock" 30 
+    (mp:process-wait-with-timeout "waiting for lock" 30
                                   #'(lambda () (not (null (mp:lock-owner *tl*)))))
     (when (null (mp:lock-owner *tl*)) (warn "Lock wasn't grabbed"))
     (format t "~&Blocking until lock is released")
@@ -1969,7 +1969,7 @@ Modification History (most recent at top)
 (defun ftp-bar (stream)
   (setq *test-box* (box::load-binary-box-from-stream-internal stream)))
 
-;; try 
+;; try
 (setq *tl* (mp:make-lock :name "Net Lock")
       *lines* nil)
 
