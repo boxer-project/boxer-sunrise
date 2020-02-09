@@ -43,7 +43,7 @@
 
 (defrecursive-funcall-primitive bu::update-shape ()
   :STACK-FRAME-ALLOCATION (1 1 1 1) ;; nested update-shapes?
-  :STATE-VARIABLES (boxer::%learning-shape? boxer::%turtle-state 
+  :STATE-VARIABLES (boxer::%learning-shape? boxer::%turtle-state
                     boxer::%learning-shape-graphics-list
 		    boxer::*graphics-command-recording-mode*
 		    boxer::*current-sprite*)
@@ -61,7 +61,7 @@
 	   ;; do SET-AND-SAVE-STATE-VARIABLES or RECURSIVE-FUNCALL-INVOKE.
 	   (signal-error :sprite-error "Don't have a Sprite to Talk to"))
           ((not (boxer::inside-sprite? sprites))
-           ;; do nothing if the trigger has been invoked 
+           ;; do nothing if the trigger has been invoked
            ;; outside of the sprite box
            )
           ((and (not (null (boxer::graphics-sheet shape-box)))
@@ -81,7 +81,7 @@
                    (dolist (ttl (boxer::graphics-sheet-object-list gr-sheet))
                      (cond ((eq ttl turtle))
                            ((boxer::shown? ttl)
-                            (if (eq (boxer::turtle-save-under ttl) 
+                            (if (eq (boxer::turtle-save-under ttl)
                                     'boxer::xor-redraw)
                               (push ttl xor-sprites)
                               (push ttl opaque-sprites)))))
@@ -105,9 +105,9 @@
                 (boxer::new-shape-preamble turtle new-graphics-list)
                 (setf (boxer::box-interface-value shape-slot) new-graphics-list)
                 (unless (null shape-box)
-                  (recursive-funcall-invoke 
+                  (recursive-funcall-invoke
                    (convert-data-to-function shape-box)))))))))
-  :AFTER 
+  :AFTER
   ;; we will make it in error to do TELL JOE... inside shapes.
   (let* ((sprites (boxer::get-sprites))
 	 (turtle (slot-value sprites 'boxer::graphics-info)) ;'boxer::associated-turtle))
@@ -115,7 +115,7 @@
     ;; no need to check for a null sprite since we did it in the :BEFORE clause
     (setq boxer::%learning-shape-graphics-list nil)
     (unwind-protect
-	 ;; this protects against aborting out of errors 
+	 ;; this protects against aborting out of errors
 	 ;; inside of Update-Save-Under
 	 (progn (setq boxer::%learning-shape? nil)
            #-opengl (boxer::update-save-under turtle))
@@ -135,7 +135,7 @@
                 (dolist (ttl (boxer::graphics-sheet-object-list gr-sheet))
                   (cond ((eq ttl turtle))
                         ((boxer::shown? ttl)
-                         (if (eq (boxer::turtle-save-under ttl) 
+                         (if (eq (boxer::turtle-save-under ttl)
                                  'boxer::xor-redraw)
                              (push ttl xor-sprites)
                              (push ttl opaque-sprites)))))
@@ -174,7 +174,7 @@
             (dolist (ttl (boxer::graphics-sheet-object-list gr-sheet))
               (cond ((eq ttl turtle))
                     ((boxer::shown? ttl)
-                     (if (eq (boxer::turtle-save-under ttl) 
+                     (if (eq (boxer::turtle-save-under ttl)
                              'boxer::xor-redraw)
                        (push ttl xor-sprites)
                        (push ttl opaque-sprites)))))
@@ -216,14 +216,14 @@
 	      (unless (eq (boxer::turtle-save-under turtle)
 			  'boxer::xor-redraw)
 		(boxer::save-under-turtle turtle)))
-	  (boxer::with-graphics-screen-parameters 
+	  (boxer::with-graphics-screen-parameters
 	      (when (boxer::absolute-shown? turtle)
 		(boxer::erase turtle)
 		(boxer::restore-turtle-state turtle boxer::%turtle-state)
 		(boxer::draw turtle))))))
     (restore-state-variables)
     nil)
-  :UNWIND-PROTECT-FORM 
+  :UNWIND-PROTECT-FORM
   (let* ((turtle (slot-value boxer::*current-sprite*
 			     'boxer::graphics-info)) ;'boxer::associated-turtle))
 	 (assoc-graphics-box (slot-value turtle 'boxer::assoc-graphics-box)))
@@ -235,7 +235,7 @@
 	      (unless (eq (boxer::turtle-save-under turtle)
 			  'boxer::xor-redraw)
 		(boxer::save-under-turtle turtle)))
-	  (boxer::with-graphics-screen-parameters 
+	  (boxer::with-graphics-screen-parameters
 	      (when (boxer::absolute-shown? turtle)
 		(boxer::erase turtle)
 		(boxer::restore-turtle-state turtle boxer::%turtle-state)
@@ -245,11 +245,11 @@
 
 ;;; private drawing
 (defrecursive-funcall-primitive bu::draw-private ((list-rest what))
-  :STACK-FRAME-ALLOCATION (1 1 1 1)                                
+  :STACK-FRAME-ALLOCATION (1 1 1 1)
   :STATE-VARIABLES (boxer::%private-graphics-list)
   :BEFORE (let* ((sprites (boxer::get-sprites))
                  (turtle (slot-value sprites 'boxer::graphics-info))
-                 (private-list 
+                 (private-list
                   (when (boxer::turtle? turtle)
                     (or (slot-value turtle 'boxer::private-gl)
                         (let ((newpgl (boxer::make-graphics-command-list)))
@@ -258,7 +258,7 @@
             (cond ((null private-list))
                   (t
                    (set-and-save-state-variables private-list)
-                   (recursive-funcall-invoke 
+                   (recursive-funcall-invoke
                     (make-interpreted-procedure-from-list (list what))))))
   :AFTER (progn (restore-state-variables) nil))
 
@@ -276,13 +276,13 @@
                                                          (list-rest what))
   :stack-frame-allocation (10 5 10 10)
   :state-variables (boxer::*prepared-graphics-box* boxer::*sprites-hidden*)
-  :before (let ((gs (boxer::graphics-sheet 
+  :before (let ((gs (boxer::graphics-sheet
                      (boxer::box-or-port-target graphics-box))))
             (if (null gs)
               (primitive-signal-error :with-sprites-hidden
                                       "No graphics in" graphics-box)
               (progn
-                (set-and-save-state-variables 
+                (set-and-save-state-variables
                  (boxer::box-or-port-target graphics-box)
                  (boxer::graphics-sheet-prepared-flag gs))
                 (boxer::with-graphics-vars-bound ((boxer::box-or-port-target
@@ -303,7 +303,7 @@
                  (make-interpreted-procedure-from-list (list what))))))
   :after (let ((gr-sheet (boxer::graphics-sheet boxer::*prepared-graphics-box*)))
            (boxer::with-graphics-vars-bound (boxer::*prepared-graphics-box*)
-             ;; recalculate these lists because they may 
+             ;; recalculate these lists because they may
              ;; have changed during the body
              (let ((xor-sprites nil) (opaque-sprites nil))
                (dolist (ttl (boxer::graphics-sheet-object-list gr-sheet))
@@ -317,7 +317,7 @@
 	        (boxer::with-graphics-screen-parameters
                   (dolist (os opaque-sprites) (boxer::draw os))
                   (dolist (xs xor-sprites) (boxer::draw xs)))))
-           (setf (boxer::graphics-sheet-prepared-flag gr-sheet) 
+           (setf (boxer::graphics-sheet-prepared-flag gr-sheet)
                  boxer::*sprites-hidden*)
            (restore-state-variables)
            nil)
@@ -325,7 +325,7 @@
   (let ((gr-sheet (boxer::graphics-sheet boxer::*prepared-graphics-box*)))
     (when (boxer::graphics-sheet-prepared-flag gr-sheet)
       (boxer::with-graphics-vars-bound (boxer::*prepared-graphics-box*)
-        ;; recalculate these lists because they may 
+        ;; recalculate these lists because they may
         ;; have changed during the body
         (let ((xor-sprites nil) (opaque-sprites nil))
           (dolist (ttl (boxer::graphics-sheet-object-list gr-sheet))
@@ -339,7 +339,7 @@
           (boxer::with-graphics-screen-parameters
             (dolist (os opaque-sprites) (boxer::draw os))
             (dolist (xs xor-sprites) (boxer::draw xs)))))
-           (setf (boxer::graphics-sheet-prepared-flag gr-sheet) 
+           (setf (boxer::graphics-sheet-prepared-flag gr-sheet)
                  boxer::*sprites-hidden*)
            (restore-state-variables)
            nil)))
