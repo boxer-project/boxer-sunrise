@@ -40,11 +40,11 @@ Modification History (most recent at top)
 (defvar *printing-a-string* nil)
 
 ;;;; dump out the char, putting entering the right
-;;;; state. 
+;;;; state.
 ;;;;     Strings are printed in PS by putting them in parenthesis
-;;;; If one is in the middle of printing a string, just append to 
+;;;; If one is in the middle of printing a string, just append to
 ;;;; the file.
-;;;;     This also takes care of certain special characters that 
+;;;;     This also takes care of certain special characters that
 ;;;; must be prefaced with a backslash
 (defmacro ps-dump-char (cha s)
   `(progn
@@ -71,7 +71,7 @@ Modification History (most recent at top)
 
 ;;;; Slots 3 and 4 of the PS table are for ports and graphics boxes.
 ;;;; they are used internally. The others show how Boxer boxes map
-;;;; to the PS types of boxes. 
+;;;; to the PS types of boxes.
 
 (defvar *data-box-type-constant* 0)
 (defvar *do-box-type-constant* 2)
@@ -91,7 +91,7 @@ Modification History (most recent at top)
 
 ;;;; convert the Boxer box to the PostScript type number for that box
 (defmethod ps-b-typ ((box box))
-    (cond ((and (data-box? box)    
+    (cond ((and (data-box? box)
 		(eq (display-style-border-style (display-style-list box))
 		    :dashed))
 	   *trans-box-type-constant*)
@@ -101,7 +101,7 @@ Modification History (most recent at top)
 
 
 
-;;;; this controls the mapping of Boxer distances to PostScript 
+;;;; this controls the mapping of Boxer distances to PostScript
 ;;;; distances
 (defvar *point-per-pixel* 1.03)
 (setq   *point-per-pixel* 1.03)
@@ -126,18 +126,18 @@ Modification History (most recent at top)
 	(delete-file fname))
 #|
     #+lucid  (lcl::run-unix-program
-	      "/bin/cat" 
+	      "/bin/cat"
 	      :input
 	      *ps-header-file*
 	      :output filename
 	      :wait t)
-    #+excl(excl::run-shell-command 
-	   "/bin/cat" 
+    #+excl(excl::run-shell-command
+	   "/bin/cat"
 	   :input
 	   *ps-header-file*
 	   :output filename
 	   :wait t)
-    #-(or lucid excl) (error "shell commands not supported in ~A" 
+    #-(or lucid excl) (error "shell commands not supported in ~A"
 			     (lisp-implementation-type))
 |#
     (with-open-file (ps-stream filename
@@ -165,23 +165,23 @@ Modification History (most recent at top)
       (ps-print-out-box box ps-stream need-to-move )
       (if (null fname)
 
-	    (with-open-stream (csh 
+	    (with-open-stream (csh
 			       #+lucid  (lcl::run-unix-program
 					 "csh"
 					 :input :stream
 					 :output :stream
 					 :wait nil)
-			       #+excl(excl::run-shell-command 
-				      "csh" 
+			       #+excl(excl::run-shell-command
+				      "csh"
 				      :input :stream
 				      :output :stream
-				      :wait nil) 
-			       #-(or lucid excl) 
-			       (error 
-				"shell commands not supported in ~A" 
+				      :wait nil)
+			       #-(or lucid excl)
+			       (error
+				"shell commands not supported in ~A"
 				(lisp-implementation-type)))
-	      (format csh 
-		      (format 
+	      (format csh
+		      (format
 		       nil
 		       "cat ~A | rsh ~A lpr -h -P~A ~% /bin/rm -f ~A~%"
 		       filename
@@ -196,7 +196,7 @@ Modification History (most recent at top)
 
 
 
-;;; indentation 
+;;; indentation
 
 ;;;; indent level determines how many tabs
 (defvar *indent-level* 0)
@@ -204,7 +204,7 @@ Modification History (most recent at top)
 ;;;; how many spaces per tab
 (defvar *space-per-indent* 4)
 (defun ps-indent (s)
-  (if *ps-debug* 
+  (if *ps-debug*
       (dotimes (dummy *indent-level*)
 	(dotimes (d *space-per-indent*)
 	  (format s " ")))))
@@ -248,7 +248,7 @@ Modification History (most recent at top)
 						       page-wid))
 		  (format s "~A dup scale~%"(float scale-factor)))
 	   (progn
-	     (setq scale-factor (get-scale-factor boxwid 
+	     (setq scale-factor (get-scale-factor boxwid
 						  boxhei
 						  page-wid
 						  page-hei))
@@ -259,34 +259,34 @@ Modification History (most recent at top)
 
 
 ;;;; brute force method. I don't see the way to figure out the maximum scaling
-;;;; in a clean way. 
+;;;; in a clean way.
 ;;;; get-scale factor takes the pixel values for bh and bw and has
 ;;;; to make sure everything will fit. Hence it does the funny stuff with
 ;;;; the point-per-pixel.
 (defun get-scale-factor (bw bh pw ph)
-  (let ((factor-a (* 
+  (let ((factor-a (*
 		   1
 		   (/ 1 *point-per-pixel*)
 		   (/ ph bh)))
-	(factor-b (* 
+	(factor-b (*
 		   1
 		   (/ 1 *point-per-pixel*)
 		   (/ pw bw))))
     (cond
       ((check-scale-factor (max factor-a factor-b) bw bh pw ph)
-       (progn 
+       (progn
 	 (if *ps-debug* (print "by max"))
 	 (max factor-a factor-b)))
       ((check-scale-factor (min factor-a factor-b) bw bh pw ph)
-       (progn 
+       (progn
 	 (if *ps-debug* (print "by min"))
 	 (min factor-a factor-b)))
-      (t (progn 
+      (t (progn
 	   (format t "problems with scaling: box might not fit on page~%")
 	   factor-a)))))
 
 (defun check-scale-factor (factor bw bh pw ph)
-  (and  (>= (+ 20 ph) (pi-to-po(* factor bh))) 
+  (and  (>= (+ 20 ph) (pi-to-po(* factor bh)))
 	(>= (+ 20 pw) (pi-to-po(* factor bw)))))
 
 
@@ -303,8 +303,8 @@ Modification History (most recent at top)
 	      (let ((scale-factor (get-scale-factor bw bh pw ph)))
 		(if (not (check-scale-factor  scale-factor bw bh pw ph))
 		    (format t ": ~A ~A~%" bw bh)))))))))
-	    
-	      
+
+
 
 
 
@@ -312,9 +312,9 @@ Modification History (most recent at top)
 ;;;; cutting down the hypothetically available space on a page.
 ;;;; This variable is an attempt to incorporate that limitation.
 (defvar *ps-margin* 40)
-	
+
 ;;;; this function is used to print out the outermost box.
-;;;; It dumps out some PS code to initialize some box margin constants 
+;;;; It dumps out some PS code to initialize some box margin constants
 ;;;; (called xsp & ysp), does some translations, initializes the fonts
 ;;;; and linewidth.
 
@@ -327,46 +327,46 @@ Modification History (most recent at top)
   (format s "%%BoundingBox: 0 0 ~A ~A~%" (* 72 8.5)(* 72 11.0))
   (format s "/xsp ~A  def ~%"                 ;;;; defs for some margins
 	  (pi-to-po *outside-space-x*))
-  (format s "/ysp  ~A  def ~%" 
+  (format s "/ysp  ~A  def ~%"
 	  (pi-to-po *outside-space-y*))
   (format s "reverse-coord~%")    ;;;; set up +vertical going down page
-  
+
     ;;;; given that the real page has margins about 20 pixels wide on
     ;;;; every side, we want to make the virtual page smaller and do the
-    ;;;; scaling in a clean way. 
+    ;;;; scaling in a clean way.
   (let* ((page-wid (* 72 8.5))   ;;;; 72 points per inch X 8.5 inches
 	 (page-hei (* 72 11.0))    ;;;; 72 points per inch X 11 inches
 	 (new-page-wid (- page-wid (* 2 *ps-margin*)))
 	 (new-page-hei (* page-hei (/ new-page-wid page-wid))))
-    (if *ps-debug* 
+    (if *ps-debug*
 	(progn (format t "new-page-wid: ~A~%new-page-hei:~A~%"
 		       new-page-wid
 		       new-page-hei)))
     (format s "~A ~A translate~%"
-	    *ps-margin* 
+	    *ps-margin*
 	    (/ (- page-hei new-page-hei) 2))
     (format s "~A ~A scale~%"       ;;; scale the page to the new size
 	    (/ new-page-wid page-wid)
 	    (/ new-page-hei page-hei))
-    
+
     (let ((scale-factor (ps-scale (slot-value screen-box 'wid)
 				  (slot-value screen-box 'hei)
 				  page-wid
 				  page-hei
 				  s)))
       ))
-  
-  (format s "0 text_font_size translate ~%")  
-      ;;; make sure there is room for 
+
+  (format s "0 text_font_size translate ~%")
+      ;;; make sure there is room for
       ;;; the outermost box.
-      ;;; remember, boxer is from u.l. 
+      ;;; remember, boxer is from u.l.
       ;;; while PS is l.l. corner
   (format s    "0 0 ~%")   ;;;; the ref for the outside box
-  (format s    "newpath 0 0 moveto~%") ;;;; initialize path 
+  (format s    "newpath 0 0 moveto~%") ;;;; initialize path
   (format s    ".5 setlinewidth~%" )   ;;;; ps linewidth = 1/2 x linewidth
   ;;; set all the font sizes based on what the screen is set to
   ;;;; the font_size is determined from one parameter of the font
-  (let ((font_size 
+  (let ((font_size
 	 (bw::font-descent (aref (bw::sheet-font-map *boxer-pane*) 0)))
 	(tfont_size nil)
 	(lfont_size nil))
@@ -380,8 +380,8 @@ Modification History (most recent at top)
 	   (setq tfont_size 24)
 	   (setq lfont_size 10)))
     ;;; got the sizes, set the sizes
-    (format 
-     s 
+    (format
+     s
      "/text_font_size ~A def /name_font_size ~A def /label_font_size ~A def~%"
      tfont_size
      tfont_size
@@ -389,11 +389,11 @@ Modification History (most recent at top)
      ))
   (format s    "text_font ~%")         ;;;; switch to text font
   (format s "%%%% outermost box starts here~%~%~%~%")
-  (setq *printing-a-string* nil)            
-  (ps-dump-box 
+  (setq *printing-a-string* nil)
+  (ps-dump-box
    (slot-value screen-box 'actual-obj)
    screen-box need-to-move s )
-  
+
   (format s "showpage ~%")
   (force-output s)
   (setq *printing-a-string* nil)
@@ -410,19 +410,19 @@ Modification History (most recent at top)
 ;;;; It is expected that the reference point for the box is on the PS stack
 ;;;; usually this means that the coordinate of the next highest object is
 ;;;; on the stack. This is this way so that the ps-dump-box can dump out
-;;;; position independent code. MAKE SURE THAT THE REF. COORD IS ON THE 
+;;;; position independent code. MAKE SURE THAT THE REF. COORD IS ON THE
 ;;;; STACK.
 
-(defmethod ps-dump-box ((act-box box) screen-box need-to-move s 
+(defmethod ps-dump-box ((act-box box) screen-box need-to-move s
 			&optional (need-to-correct t))
-  (if (and (graphics-sheet act-box) 
+  (if (and (graphics-sheet act-box)
 	   (display-style-graphics-mode?
 		 (display-style-list  act-box)))
-      (ps-dump-graphics-box act-box screen-box need-to-move s need-to-correct) 
+      (ps-dump-graphics-box act-box screen-box need-to-move s need-to-correct)
       (ps-dump-others-box act-box screen-box need-to-move s need-to-correct)))
 
-;;;; Takes care of moving to the right spot if necessary, and then moving 
-;;;; up from the baseline. PUTS ON THE STACK THE REF FOR THE ROWS OR 
+;;;; Takes care of moving to the right spot if necessary, and then moving
+;;;; up from the baseline. PUTS ON THE STACK THE REF FOR THE ROWS OR
 ;;;; GRAPH-COMS.
 ;;;; stack: x y (reference point)
 
@@ -431,10 +431,10 @@ Modification History (most recent at top)
       (ps-infor s "copytop exch ~A add exch ~A add moveto~%"
 		(pi-to-po(screen-obj-x-offset box))
 		(pi-to-po(screen-obj-y-offset box))))
-  ;; give the box some margins 
-  (ps-infor s "xsp ysp rmoveto~%") 
-  ;; put the point on ps stack for the sub-rows move above 
-  ;; the baseline. The text draws from the bottom of the line, 
+  ;; give the box some margins
+  (ps-infor s "xsp ysp rmoveto~%")
+  ;; put the point on ps stack for the sub-rows move above
+  ;; the baseline. The text draws from the bottom of the line,
   ;; boxes from the top of the line.
   (ps-infor s "currentpoint~%")
   (ps-infor s "0 text_font_size neg rmoveto ~%"))
@@ -464,33 +464,33 @@ Modification History (most recent at top)
     (if (and (> wid 0) (> hei 0))
 	(progn
 	  (ps-box-header nil screen-box s)         ;;;; deactivate positioning
-	  (if (or *print-outermost-box* 
+	  (if (or *print-outermost-box*
 		  (not (eql act-box (screen-obj-actual-obj
 				     (outermost-screen-box)))))
 
-	      (print-a-box 
+	      (print-a-box
            ;;; hack the outermostbox
-	       (if (eql *initial-box* act-box) "" (name-string act-box))   
+	       (if (eql *initial-box* act-box) "" (name-string act-box))
 	       (ps-b-typ act-box)
 	       wid
 	       hei
-	       (screen-box-shrunkp screen-box) 
+	       (screen-box-shrunkp screen-box)
 	       s))
 	  (unless (screen-box-shrunkp screen-box)
-	    (ps-inc-indent) 
+	    (ps-inc-indent)
 	    (ps-dump-rows screen-box s)
 	    (ps-dec-indent))
 	  (ps-box-prolog need-to-correct wid s)
 	  (if *ps-debug*  (ps-infor s "% exit ps-dump-box~%"))))))
 
 ;;;; need-to-move means thing is not positioned already
-;;;; This is used to dump out port-boxes.  
+;;;; This is used to dump out port-boxes.
 ;;;; First it checks if the wid and hei are "real"
 ;;;; It dumps out position independent code for the box.
 ;;;; It recursively dumps out the sub-objects.
 ;;;; It then cleans up with the prolog
 
-(defmethod  ps-dump-box ((act-pbox port-box) screen-box need-to-move s 
+(defmethod  ps-dump-box ((act-pbox port-box) screen-box need-to-move s
 			 &optional (need-to-correct t))
   (if *ps-debug* (ps-infor s "% enter dump-port~%"))
   (let ((box (ports act-pbox))
@@ -505,7 +505,7 @@ Modification History (most recent at top)
 	   nameP (name-string box) (ps-b-typ box) wid hei
 	   (screen-box-shrunkp screen-box) s)
 	  (unless (screen-box-shrunkp screen-box)
-	    (cond ((and (graphics-sheet act-pbox) 
+	    (cond ((and (graphics-sheet act-pbox)
 			(display-style-graphics-mode?
 			 (display-style-list  act-pbox)))
 		   ;(ps-indent s)
@@ -514,7 +514,7 @@ Modification History (most recent at top)
 		     (ps-dump-rows screen-box s)
 		     (ps-dec-indent))))
 	  (ps-box-prolog need-to-correct wid s))))
-  (if *ps-debug* 
+  (if *ps-debug*
       (ps-infor s "% exit dump-port~%")))
 
 ;;;; need-to-move means thing is not positioned already.
@@ -523,7 +523,7 @@ Modification History (most recent at top)
 ;;;; It recursively dumps out the sub-objects.
 ;;;; It then cleans up with the prolog
 
-(defun ps-dump-graphics-box (act-box screen-box need-to-move s 
+(defun ps-dump-graphics-box (act-box screen-box need-to-move s
 				     &optional (need-to-correct t))
   (let ((wid (screen-obj-wid screen-box))
 	(hei (screen-obj-hei screen-box)))
@@ -545,17 +545,17 @@ Modification History (most recent at top)
   (cond ((characterp cha)
 	 (ps-dump-char cha s ))
 	((screen-box? cha)
-	 (progn 
+	 (progn
 	   (terminate-string s)
 	   (ps-dump-box (slot-value cha 'actual-obj) cha t s
 			(and need-to-correct *ps-allow-optimizations*))))))
 
-;;;; row iteration. 
+;;;; row iteration.
 ;;;; make the movement to the point for the row, dump out the ref for
-;;;; the chas in the row, and then iterate through the chas, dumping 
-;;;; them out. 
-;;;; *****HACK****** I unrolled  the do macro -row-chas so that I could 
-;;;; do some 
+;;;; the chas in the row, and then iterate through the chas, dumping
+;;;; them out.
+;;;; *****HACK****** I unrolled  the do macro -row-chas so that I could
+;;;; do some
 ;;;; optimization on the final cha. It ammounts to not dumping out code
 ;;;; to advance the point horizonatlly when you have dumped out the last
 ;;;; cha (one is going to return, so it doesn't matter where you are).
@@ -565,7 +565,7 @@ Modification History (most recent at top)
 
 (defun ps-dump-row (row s )
   (if *ps-debug* (ps-infor s "% enter ps-dump-row~%"))
-  (implicit-move 
+  (implicit-move
    ;; hack to make things look right
    ( - (screen-obj-x-offset row) 4.5 )
    ;; hack to make things look right
@@ -590,10 +590,10 @@ Modification History (most recent at top)
 ;;;; dump out the rows for the box. It doesn't have to do positioning
 ;;;; because the individual rows will handle their own positioning.
 (defun ps-dump-rows (sbox s)
-  (if *ps-debug* (ps-infor s "% enter ps-dump-rows~%"))  
+  (if *ps-debug* (ps-infor s "% enter ps-dump-rows~%"))
   (let ((count (aref (slot-value sbox 'screen-rows) 1)))
     (dotimes (index count)
-      (ps-dump-row (aref (aref (slot-value sbox 'screen-rows) 0) index) 
+      (ps-dump-row (aref (aref (slot-value sbox 'screen-rows) 0) index)
 		   s)))
   (if *ps-debug* (ps-infor s "% exit ps-dump-rows~%" )))
 
@@ -610,7 +610,7 @@ Modification History (most recent at top)
 ;;;; the code for the graphics box has just been dumped out, so these are
 ;;;; tacked on after the drawing commands. This all takes place within
 ;;;; a clip, so the sprites cannot draw on anything else
-;;;; This function just does some setup and then dumps out the top 
+;;;; This function just does some setup and then dumps out the top
 ;;;; level-sprites, and their subsprites.
 (defun do-the-sprite-thing (screen-box stream)
   (if *ps-debug* (format stream " %enter do the sprite thing~%"))
@@ -621,7 +621,7 @@ Modification History (most recent at top)
 			   (box-or-port-target
 			    (screen-obj-actual-obj screen-box)))))
     (let ((shown-state (shown? top-level-tur)))
-      (if (or shown-state 
+      (if (or shown-state
 	      (eql shown-state :subsprites))
 	  (progn
 	    (ps-infor  stream "gsave~%")
@@ -635,7 +635,7 @@ Modification History (most recent at top)
   (ps-infor stream "grestore~%")
   (if *ps-debug* (format stream " %exit do the sprite thing~%")))
 
-;;;; recursively output the ps code for the sub-sprites on the stream. 
+;;;; recursively output the ps code for the sub-sprites on the stream.
 ;;;; it has to set up the coord matrix for the subsprites based on the
 ;;;; position of the tur
 (defun dump-sub-turtles (tur stream)
@@ -643,7 +643,7 @@ Modification History (most recent at top)
   (ps-infor stream "gsave~%")
   (dolist (sub-tur (slot-value tur 'subsprites))
     (let ((shown-state (shown? sub-tur)))
-      (if (or shown-state 
+      (if (or shown-state
 	      (eql shown-state :subsprites))
 	  (progn
 	    (ps-infor  stream "~%gsave~%")
@@ -668,10 +668,10 @@ Modification History (most recent at top)
 	      (absolute-x-position turtle)
 	      (absolute-y-position turtle)
 	      )
-  (if *ps-debug* (format stream " %exit center-coord-about-sprite~%"))  
+  (if *ps-debug* (format stream " %exit center-coord-about-sprite~%"))
   )
 
-;;;; output the code to change the translation matrix so that the 
+;;;; output the code to change the translation matrix so that the
 ;;;; coordinate origin is the center of the box. This is where sprite's
 ;;;; have their origin. Move to the origin
 (defun set-up-sprite-offsets (screen-box stream)
@@ -687,7 +687,7 @@ Modification History (most recent at top)
 ;;;; First it does the translation for the sprite draw commands relative
 ;;;; to the sprite coord system.
 ;;;; ****hack****
-;;;; d-vecs has to take the sprite's heading as the sprite may have some 
+;;;; d-vecs has to take the sprite's heading as the sprite may have some
 ;;;; text. PostScript can print text at an agle, whereas X cannot. Hence,
 ;;;; just dumping stuff out will result in text being at the wrong angle.
 ;;;; The angle is passed along so that the text can be drawn at a corrected
@@ -697,18 +697,18 @@ Modification History (most recent at top)
 (defun dump-turtle (turtle stream)
   (if *ps-debug* (format stream " %enter dump-turtle~%"))
   (let ((s (shape turtle)))
-    (ps-infor stream "~A ~A neg translate ~A rotate~%" 
+    (ps-infor stream "~A ~A neg translate ~A rotate~%"
 	      (absolute-x-position turtle)
 	      (absolute-y-position turtle)
 	      (absolute-heading turtle))
     ;; new as of Mon Mar 11 20:22:37 PST 1991 Josh
     (let ((*turtle-size*  (aref (slot-value turtle 'sprite-size) 1)))
       (ps-infor stream "currentlinewidth ~A div setlinewidth ~A dup scale ~%"
-		*turtle-size* 
+		*turtle-size*
 		*turtle-size*)
       (d-vecs s stream (absolute-heading turtle))))
   (if *ps-debug* (format stream " %exit dump-turtle~%")))
-    
+
 ;;;; This command was created before d-vecs
 ;;;; Take the graphics box and dump out its drawing commands
 ;;;; after that dump out the sprites of the g-box
@@ -722,7 +722,7 @@ Modification History (most recent at top)
     (do-the-sprite-thing screen-box stream)))
 
 ;;;; d-vecs dumps out the list of sprite drawing commands.
-;;;; **** HACK **** 
+;;;; **** HACK ****
 ;;;; note that the sprite-angle has to get passed on
 ;;;; this is due to the fact that PostScript can print text at angles
 ;;;; and X cannot. see the definition of dvec for a description.
@@ -737,13 +737,13 @@ Modification History (most recent at top)
   (format stream "stroke~%")
   (if *ps-debug* (format stream " %exit d-vecs~%")))
 
-    
-		   
+
+
 ;;;; Take the drawing commmand and dump out the ps code on the stream
 ;;;; the first conditions are for the screen structures, the ones that
 ;;;; can only have fixnum arguments.
-;;;; The ones after 31 are the floating point opcodes. Those are for 
-;;;; sprites. 
+;;;; The ones after 31 are the floating point opcodes. Those are for
+;;;; sprites.
 
 ;;;; NOTE THAT FOR The sprite OPCODES ALL OF THE Y COORDINATES ARE NEGATED!!
 ;;;; This is because in sprite-space, a positive y goes up the screen,
@@ -767,7 +767,7 @@ Modification History (most recent at top)
        )
 
       ;;;; CHANGE-PEN-WIDTH
-      ((eql opcode 1) 
+      ((eql opcode 1)
        (format s "stroke ~a 2 div setlinewidth~%"
 	       (aref vec 1)))
 
@@ -783,10 +783,10 @@ Modification History (most recent at top)
 	     (x1 (aref vec 3))
 	     (y1 (aref vec 4)))
 	     ;;; (ps-indent s)
-	 (format s "~a ~a moveto ~a ~a lineto~%" 
+	 (format s "~a ~a moveto ~a ~a lineto~%"
 		 x0 y0
 		 x1 y1)))
-      
+
       ;;;; CENTERED-STRING
       ((eql opcode 7)
        (let ((x (aref vec 1))
@@ -798,10 +798,10 @@ Modification History (most recent at top)
 	 (format s "cent_string~%")
 	 ))
       ;;;; LEFT-STRING
-      ((eql opcode 8) 
+      ((eql opcode 8)
        (format *error-output* "dvec: left-string not supported~%"))
       ;;;; RIGHT-STRING
-      ((eql opcode 9) 
+      ((eql opcode 9)
        (format *error-output* "dvec: right-string not supported~%"))
 
       ;;;; CENTERED-RECTANGLE
@@ -813,7 +813,7 @@ Modification History (most recent at top)
 	 (format s "~A ~A moveto ~A ~A fill_cent_rect ~%"
 		 x y width height)))
 
-      
+
       ;;;; DOT
       ((eql opcode 11)
        (let ((x (aref vec 1))
@@ -823,7 +823,7 @@ Modification History (most recent at top)
 		 x y rad)
 	 ))
       ;;;; CENTERED-BITMAP
-      ((eql opcode 15) 
+      ((eql opcode 15)
        (format *error-output* "dvec: centered-bitmap not supported~%"))
 
       ;;;; FILLED-ELLIPSE
@@ -835,7 +835,7 @@ Modification History (most recent at top)
 	 (format s "true ~A ~A moveto ~A ~A ellipse ~%"
 		 x y width height)
 	 ))
-      
+
       ;;;; ELLIPSE
       ((eql opcode 29)
        (let ((x (aref vec 1))
@@ -845,7 +845,7 @@ Modification History (most recent at top)
 	 (format s "false ~A ~A moveto ~A ~A ellipse ~%"
 		 x y width height )
 	 ))
-      
+
       ;;;; FILLED-CIRCLE
       ((eql opcode 30)
        (let ((x (aref vec 1))
@@ -854,7 +854,7 @@ Modification History (most recent at top)
 	 (format s "~A ~A moveto ~A f_grcircle ~%"
 		 x y  rad)
 	 ))
-      
+
       ;;;; CIRCLE
       ((eql opcode 31)
        (let ((x (aref vec 1))
@@ -864,16 +864,16 @@ Modification History (most recent at top)
 		 x y rad)
 	 ))
       ;;;; BOXER-CHANGE-ALU
-      ((eql opcode 32) 
+      ((eql opcode 32)
        ;(format *error-output* "dvec: boxer-change-alu not supported~%"))
        )
       ;;;; BOXER-CHANGE-PEN-WIDTH
-      ((eql opcode 33) 
+      ((eql opcode 33)
        (format s "stroke ~a 2 div setlinewidth~%"
 	       (float (/ (aref vec 1) *turtle-size*))))
 
       ;;;; BOXER-CHANGE-GRAPHICS-FONT
-      ((eql opcode 34) 
+      ((eql opcode 34)
        (let ((font-no (aref vec 1)))
 	 (format s "~A g-set-font~%" font-no)))
 
@@ -883,7 +883,7 @@ Modification History (most recent at top)
 	     (y0 (aref vec 2))
 	     (x1 (aref vec 3))
 	     (y1 (aref vec 4)))
-	 (format s "~a ~a moveto ~a ~a lineto~%" 
+	 (format s "~a ~a moveto ~a ~a lineto~%"
 		 x0 (- y0)
 		 x1 (- y1))))
 
@@ -899,11 +899,11 @@ Modification History (most recent at top)
 	     )
 	 (ps-infor s "~A ~A  moveto ~A  rotate " x (- y) (- sprite-angle))
 	 (name-format s string)
-	
+
 	 (format s "cent_string ~A rotate~%" sprite-angle)
 	 ))
       ;;;; BOXER-LEFT-STRING
-      ((eql opcode 40) 
+      ((eql opcode 40)
        (format *error-output* "dvec: left-string not supported~%"))
       ;;;; BOXER-RIGHT-STRING
       ((eql opcode 41)
@@ -958,7 +958,7 @@ Modification History (most recent at top)
 	     (rad (aref vec 3)))
 	 (format s "~A ~A moveto ~A grcircle ~%"
 		 x (- y) rad))))))
-	 
+
 ;;; low-level PostScript generation
 
 ;;;; make a circle at the current point. For debugging the codegen.
@@ -1044,7 +1044,7 @@ Modification History (most recent at top)
 		      (eql (aref name (1+ index)) #\newline))))))
   (format s ") ")
   )
-	 
+
 ;;;; ACCESSORS & TRANSLATORS
 ;;;; convert pixels to points
 (defun pi-to-po (x)
@@ -1057,10 +1057,10 @@ Modification History (most recent at top)
 
 ;;;; is the given screen box shrunk?
 (defun screen-box-shrunkp (box)
-  (if (eql (outermost-screen-box) box)  
+  (if (eql (outermost-screen-box) box)
       nil
     (eql :shrunk
-	 (display-style-style(display-style-list 
+	 (display-style-style(display-style-list
 			      (slot-value box 'actual-obj))))))
 
 
