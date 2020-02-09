@@ -13,7 +13,7 @@
 
 
 
- Copyright 1984, 1985 Massachusetts Institute of Technology 
+ Copyright 1984, 1985 Massachusetts Institute of Technology
 
  Permission to use, copy, modify, distribute, and sell this software
  and its documentation for any purpose is hereby granted without fee,
@@ -48,8 +48,8 @@ Modification History (most recent at the top)
  4/01/09 constants for UTF-8 codec utilities
  9/06/05 platform specific network REQUIRE's moved here from dumper
  8/23/05 added *strict-box-paths*
-10/27/03 with-hilited-box added 
-10/07/03 added 4 x #\Null to *possible-boxer-file-mac-types* so file-type can 
+10/27/03 with-hilited-box added
+10/07/03 added 4 x #\Null to *possible-boxer-file-mac-types* so file-type can
          detect boxer files on OSX since the null type seems to be OSX default
          also check for pathname-type = "box" since that is the accepted OSX
          paradigm
@@ -59,7 +59,7 @@ Modification History (most recent at the top)
  4/20/99 added *warn-about-outlink-ports*
  5/27/98 with-post-load-autoloading ignores errors in autoloading sub boxes so
          that, at least the superior box will get loaded
- 5/26/98 added *dumping-font-alist* to writing-bin-stream to support font 
+ 5/26/98 added *dumping-font-alist* to writing-bin-stream to support font
          spec dumping
  5/18/98 Start logging changes: source = boxer version 2.2r4
 
@@ -118,7 +118,7 @@ Modification History (most recent at the top)
 	           (funcall (get name 'resource-maker))))
             (i (get name 'initializer)))
         (unless (null i) (funcall i r))
-        r) 
+        r)
       (error "~S is not a defined resource" name)))
 
 (defsubst deallocate-resource (name old-resource)
@@ -164,11 +164,11 @@ Modification History (most recent at the top)
 (defvar *file-properties-table* (make-hash-table :test #'equal))
 
 ;;; BINARY file format...
-;;; Commands are in the form of 16. bit numbers 
-;;; The top four bits in a command make up a limited number of immediate 
+;;; Commands are in the form of 16. bit numbers
+;;; The top four bits in a command make up a limited number of immediate
 ;;; op-codes in which the next 12. bits make up an immediate argument for
 ;;; that 16 bit word. The four bit command code can escape to a more specific
-;;; box commands and another four bit sequence escapes to general commands 
+;;; box commands and another four bit sequence escapes to general commands
 ;;; in the next word
 
 ;******************************************************************************
@@ -207,7 +207,7 @@ Modification History (most recent at the top)
 (defconstant %utf-8-2byte-id-value (ldb %utf-8-2byte-id-bytespec %utf-8-2byte-start))
 (defconstant %utf-8-3byte-id-value (ldb %utf-8-3byte-id-bytespec %utf-8-3byte-start))
 (defconstant %utf-8-4byte-id-value (ldb %utf-8-4byte-id-bytespec %utf-8-4byte-start))
-(defconstant %utf-8-more-byte-id-value (ldb %utf-8-more-byte-id-bytespec 
+(defconstant %utf-8-more-byte-id-value (ldb %utf-8-more-byte-id-bytespec
                                             %utf-8-more-bytes))
 
 ;;; Opcode definitions
@@ -277,7 +277,7 @@ Modification History (most recent at the top)
 (defvar *bin-op-command-name-table* (make-bin-op-dispatch-table))
 
 (defmacro define-bin-op (name value index)
-  `(progn 
+  `(progn
      (defconstant ,name ,value)
      (setf (bin-op-dispatch *bin-op-command-name-table* ,index) ',name)))
 
@@ -286,7 +286,7 @@ Modification History (most recent at the top)
 
 
 
-;;; immediate commands.  The meaning of the 16 bit arg is 
+;;; immediate commands.  The meaning of the 16 bit arg is
 ;;; specified in the comment
 (defmacro define-immediate-bin-op (name value)
   `(define-bin-op ,name ,value ,value))
@@ -426,7 +426,7 @@ Modification History (most recent at the top)
       (error "~A while trying to dump the box, ~A"
              (or reason "An error occurred") *current-dumping-box*)
       (eval::primitive-signal-error
-	:file (format nil "~A trying to dump the box" 
+	:file (format nil "~A trying to dump the box"
                       (or reason "An error occurred"))
 	*current-dumping-box*)))
 
@@ -469,7 +469,7 @@ Modification History (most recent at the top)
          (*autoloading-namestring* (when (typep ,fs 'file-stream)
                                      (namestring ,fs))))
      (prog1 (progn . ,body)
-       (with-lisp-error-reporting 
+       (with-lisp-error-reporting
          (dolist (ab *autoload-list*)
            (when (null (first-inferior-row ab)) (fill-box-from-server ab)))))))
 
@@ -588,7 +588,7 @@ Modification History (most recent at the top)
     `(progn
        (defun ,name (,value-arg) ,@body)
        (setf (get ',keyword 'file-property-list-handler) ',name))))
-  
+
 
 (defun handle-file-property-list (plist)
   (do* ((remaining plist (cddr remaining))
@@ -602,7 +602,7 @@ Modification History (most recent at the top)
 		   (funcall handler value)))))))
 
 ;; try and cut down on unneccessary string CONSing by using a buffer
-;; especially now, (= *file-bin-version* 12), that we use strings as part 
+;; especially now, (= *file-bin-version* 12), that we use strings as part
 ;; of every row
 (defvar *load-string-buffer* (make-array 80 :element-type 'character
                                          :fill-pointer 0 :adjustable t))
@@ -626,16 +626,16 @@ Modification History (most recent at the top)
 ;;; when dealing with UNIX (bytes only filesystems)
 ;;; In particular, Lucid packs them high-byte first, while Symbolics machines
 ;;; stores 16-bit words low-byte first.  While they conform to CLtL, within the
-;;; implementation, it is not possible to share binary files between 
+;;; implementation, it is not possible to share binary files between
 ;;; implementations because of this difference IF we stick to the CL functions
 ;;; READ-BYTE and WRITE-BYTE.  Therefore, we use these functions to pre-swap
 ;;; high and low bytes for certain implementations.
 ;;;
-;;; We will arbitrarily decide that low-byte 1st is preferred because it makes 
+;;; We will arbitrarily decide that low-byte 1st is preferred because it makes
 ;;; it easy to read strings (given the way strings are currently dumped out)
 ;;;
 ;;; The easiest way of testing a given implementation is to use test-dump
-;;; to dump a few strings and then use EMACS (or some other editor that 
+;;; to dump a few strings and then use EMACS (or some other editor that
 ;;; doesn't barf on binaries) to look at the file.  The strings should be
 ;;; readable.
 ;;;
@@ -697,7 +697,7 @@ Modification History (most recent at the top)
   :normal-form
   (let ((low (read-byte fs eof-errorp eof-value))
         (hi  (read-byte fs eof-errorp eof-value)))
-    (cond ((and (not eof-errorp) 
+    (cond ((and (not eof-errorp)
                 (or (eq low eof-value) (eq hi eof-value)))
            eof-value)
           (t
@@ -705,7 +705,7 @@ Modification History (most recent at the top)
   :swapping-form
   (let ((hi  (read-byte fs eof-errorp eof-value))
         (low (read-byte fs eof-errorp eof-value)))
-    (cond ((and (not eof-errorp) 
+    (cond ((and (not eof-errorp)
                 (or (eq low eof-value) (eq hi eof-value)))
            eof-value)
           (t
@@ -746,8 +746,8 @@ Modification History (most recent at the top)
   `(funcall *file-word-writer-function* ,word . ,args))
 
 
-;; this is (potentially) forgiving about ".box" 
-(defvar *strict-box-paths* nil 
+;; this is (potentially) forgiving about ".box"
+(defvar *strict-box-paths* nil
   "Whether to be forgiving about files ending with \".box\"")
 
 
@@ -767,8 +767,8 @@ Modification History (most recent at the top)
 #+mcl
 (defvar *possible-boxer-file-mac-types* (list :text :???? :****
                                               ;; OSX default for unknown
-                                              (intern 
-                                               (make-string 
+                                              (intern
+                                               (make-string
                                                 4 :initial-element #\Null)
                                                (find-package "KEYWORD"))))
 
@@ -832,11 +832,11 @@ Modification History (most recent at the top)
         (screen-box-wid (gensym)) (screen-box-hei (gensym)))
     `(drawing-on-window (*boxer-pane*)
        (let* ((,screen-box (or (car (displayed-screen-objs ,box))
-                               (when (superior? (outermost-box) ,box) 
+                               (when (superior? (outermost-box) ,box)
                                  (outermost-screen-box))))
               ,screen-box-wid ,screen-box-hei)
          (multiple-value-bind (,screen-box-x ,screen-box-y)
-             (when (screen-box? ,screen-box) 
+             (when (screen-box? ,screen-box)
                (setq ,screen-box-wid (screen-obj-wid ,screen-box)
                      ,screen-box-hei (screen-obj-hei ,screen-box))
                (xy-position ,screen-box))
@@ -847,10 +847,10 @@ Modification History (most recent at the top)
                  (with-pen-color (bw::*blinker-color*)
                    (box::with-blending-on
                      (draw-rectangle alu-seta
-                                     ,screen-box-wid ,screen-box-hei 
+                                     ,screen-box-wid ,screen-box-hei
                                      ,screen-box-x ,screen-box-y)))
                  #-opengl
-                 (draw-rectangle alu-xor ,screen-box-wid ,screen-box-hei 
+                 (draw-rectangle alu-xor ,screen-box-wid ,screen-box-hei
                                  ,screen-box-x ,screen-box-y)
                  (force-graphics-output))
                . ,body)
