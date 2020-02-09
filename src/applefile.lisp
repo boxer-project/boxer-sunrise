@@ -26,7 +26,7 @@
 Modification History (most recent at top)
 
 12/30/11 get-mime-applefile-box, get-mime-appledouble changed calls to xxx-mac-file-ref-xxx to xxx-xref-xxx
- 1/29/01 conditionalize resource fork handler for #+/-mcl in initial lispworks 
+ 1/29/01 conditionalize resource fork handler for #+/-mcl in initial lispworks
          version
  6/04/99 added realname (filename) dumping to send-mime-applesingle-data-internal
          because some base64 decoders need it to work.
@@ -212,7 +212,7 @@ Modification History (most recent at top)
 
 (defun print-applefile-entry (entry stream depth)
   (declare (ignore depth))
-  (format stream "#<~A Applefile Entry ~D ~D>" 
+  (format stream "#<~A Applefile Entry ~D ~D>"
           (applefile-entry-name (applefile-entry-id entry))
           (applefile-entry-offset entry) (applefile-entry-length entry)))
 
@@ -240,11 +240,11 @@ Modification History (most recent at top)
 ;; be synchronized to the same file
 ;; ??? How to use filename entry info ???
 
-(defvar *applefile-entry-handlers* 
+(defvar *applefile-entry-handlers*
   (make-array 16 :initial-element 'applefile-ignore-entry))
 
 (defmacro def-applefile-handler ((name idx) arglist &body body)
-  (let ((handler-name (intern (format nil "APPLEFILE-~A-ENTRY-HANDLER" name))))        
+  (let ((handler-name (intern (format nil "APPLEFILE-~A-ENTRY-HANDLER" name))))
     `(progn
        (defun ,handler-name ,arglist
          ,@body)
@@ -260,7 +260,7 @@ Modification History (most recent at top)
     (cond ((typep stream 'file-stream)
            (funcall handler stream pathname (applefile-entry-length entry)
                     (applefile-entry-offset entry)))
-          (t 
+          (t
            (funcall handler stream pathname (applefile-entry-length entry))))))
 
 ;; generic, used to empty out bytes for entries which we want to ignore
@@ -278,7 +278,7 @@ Modification History (most recent at top)
 ;; 0 unused
 (def-applefile-handler (data 1) (stream filename length &optional offset)
   (cond ((null offset)
-         ;; netstream, assume we are in the right place, checking 
+         ;; netstream, assume we are in the right place, checking
          ;; should happen at a higher level
          )
         ((typep stream 'file-stream)
@@ -287,8 +287,8 @@ Modification History (most recent at top)
         (t (error "Offset provided for a non file stream, ~A" stream)))
   ;; we are in the right place now, so do the work
   (with-open-file (outstream filename :direction :output
-                             :element-type '(unsigned-byte 8) 
-                             #+mcl :fork #+mcl :data 
+                             :element-type '(unsigned-byte 8)
+                             #+mcl :fork #+mcl :data
                              :if-exists :supersede :if-does-not-exist :create)
     (dotimes (i length) (write-byte (read-byte stream) outstream))))
 
@@ -296,7 +296,7 @@ Modification History (most recent at top)
 #+mcl
 (def-applefile-handler (resource 2) (stream filename length &optional offset)
   (cond ((null offset)
-         ;; netstream, assume we are in the right place, checking 
+         ;; netstream, assume we are in the right place, checking
          ;; should happen at a higher level
          )
         ((typep stream 'file-stream)
@@ -356,7 +356,7 @@ Modification History (most recent at top)
   (declare (special mac-creator mac-type))
   (let ((tstring "1234") (cstring "1234"))
     (cond ((null offset)
-         ;; netstream, assume we are in the right place, checking 
+         ;; netstream, assume we are in the right place, checking
          ;; should happen at a higher level
          )
         ((typep stream 'file-stream)
@@ -378,13 +378,13 @@ Modification History (most recent at top)
 ;; (afpinfo  14) ignore for now
 ;; (directoryid 15) ignore for now
 
-    
+
 
 
 ;; Top level interface (called from append-pop-message-body in mail.lisp)
 (defun get-mime-appledouble (message stream boundary mime-values bytes-read)
   (let ((name (getf mime-values :name))
-        (*mime-multipart-boundary-value* boundary) 
+        (*mime-multipart-boundary-value* boundary)
         (*mime-multipart-boundary-encountered* nil)
         (apathname nil))
     (loop (let* ((line (unless *mime-multipart-boundary-encountered*
@@ -418,16 +418,16 @@ Modification History (most recent at top)
                             (cond ((null apathname) ; no file created
                                    ;; fill in the usual way
                                    (append-pop-message-body header-box stream
-                                                            amime-type 
+                                                            amime-type
                                                             amime-values
                                                             header-size)
                                    ;; and append the sub box
-                                   (append-row message 
+                                   (append-row message
                                                (make-row (list header-box))))
                                   (t ;; we just want to add to the data fork
                                    ;; of the already created file...
                                    (get-mime64-binary-data message stream
-                                                           bytes-read 
+                                                           bytes-read
                                                            apathname))))))))))))
 
 
@@ -469,7 +469,7 @@ Modification History (most recent at top)
     ;(shrink message)
     (multiple-value-bind (path mac-creator mac-type)
         (if (eq encoding :base64)
-          (with-base64-stream (byte-stream stream) 
+          (with-base64-stream (byte-stream stream)
             (get-mime-applefile byte-stream pathname))
           (with-char-byte-stream (byte-stream stream)
             (get-mime-applefile byte-stream pathname)))
@@ -478,8 +478,8 @@ Modification History (most recent at top)
     message))
 
 ;; this expects a byte stream
-(defun get-mime-applefile (stream pathname)  
-  (let* ((entries (parse-applefile-header stream))         
+(defun get-mime-applefile (stream pathname)
+  (let* ((entries (parse-applefile-header stream))
          (mac-creator :BOXR)
          (mac-type    :TEXT))
     (declare (special mac-creator mac-type))
@@ -513,14 +513,14 @@ Modification History (most recent at top)
 (defun send-mime-appledouble-data (box file mailstream)
   (let ((bv (mime-separator-value)))
     ;; first, a simple header,
-    (net-write-smtp-data-line 
-     mailstream 
-     (format nil "Content-Type: multipart/appledouble;boundary=\"~A\"; name=\"~A~A\"" 
+    (net-write-smtp-data-line
+     mailstream
+     (format nil "Content-Type: multipart/appledouble;boundary=\"~A\"; name=\"~A~A\""
              bv (pathname-name file)
              (let ((type (pathname-type file)))
                (if (stringp type) (format nil ".~A" type) ""))))
     (net-write-smtp-data-line mailstream "Content-Transfer-Encoding: 7bit")
-    (net-write-smtp-data-line mailstream 
+    (net-write-smtp-data-line mailstream
                               (format nil "Content-Description: ~A"
                                       (namestring file)))
     (net-terpri mailstream)
@@ -531,11 +531,11 @@ Modification History (most recent at top)
 (defun send-appledouble-box-data (box smtp-stream bv pathname)
   ;; in theory, box can be used to get an xref with a pathname which should
   ;; match with the supplied pathname...
-  (declare (ignore box)) 
+  (declare (ignore box))
   ;; skip the prologue message cause we may come here recursively as part
   ;; of a MIME multipart (if we are attaching to a non null message
   (write-mime-boundary smtp-stream bv)
-  ;; now the resource and finderinfo as an applesingle 
+  ;; now the resource and finderinfo as an applesingle
   (send-mime-applesingle-data pathname smtp-stream T)
   (write-mime-boundary smtp-stream bv)
   ;; now the data fork
@@ -547,15 +547,15 @@ Modification History (most recent at top)
 ;; called from mail
 ;; this writes out the header, then uses send-applesingle-box-data
 (defun send-mime-applesingle-data (file mailstream &optional double?)
-  (net-write-smtp-data-line mailstream 
-                            (format nil "Content-type: application/applefile ; name=\"~A~A\"" 
+  (net-write-smtp-data-line mailstream
+                            (format nil "Content-type: application/applefile ; name=\"~A~A\""
                                     (pathname-name file)
                                     (let ((type (pathname-type file)))
                                       (if (stringp type)
                                         (format nil ".~A" type)
                                         ""))))
   (net-write-smtp-data-line mailstream "Content-Transfer-Encoding: base64")
-  (net-write-smtp-data-line mailstream 
+  (net-write-smtp-data-line mailstream
                             (format nil "Content-Description: ~A" (namestring file)))
   (net-terpri mailstream)
   (send-mime-applesingle-data-internal file mailstream double?))
@@ -564,18 +564,18 @@ Modification History (most recent at top)
 ;;
 (defun send-mime-applesingle-data-internal (pathname smtp-stream double?)
   ;; 1st figure out sizes...
-  (let* ((rsize 0) (dsize 0) 
+  (let* ((rsize 0) (dsize 0)
          (ftype *default-applefile-type*)
          (creator *default-applefile-creator*)
          (filename (file-namestring pathname))
          (flength (length filename))
-        ;; where the data starts, = magic(4) + version(4) + # entries (2) + 
+        ;; where the data starts, = magic(4) + version(4) + # entries (2) +
         ;; filler(16) + 12/entry (3 entries if double? otherwise 4)
         (header-offset (if double? 62 74)))
     (when (probe-file pathname)
       #+mcl
       (setq rsize (with-open-file (rs pathname :fork :resource
-                                      :element-type '(unsigned-byte 8)) 
+                                      :element-type '(unsigned-byte 8))
                     (file-length rs)))
       (setq dsize (with-open-file (ds pathname #+mcl :fork #+mcl :data
                                       :element-type '(unsigned-byte 8))
@@ -583,11 +583,11 @@ Modification History (most recent at top)
       #+mcl
       (setq ftype (ccl::mac-file-type pathname)
             creator (ccl::mac-file-creator pathname))
-      ;; now we can assemble the applefile entries 
+      ;; now we can assemble the applefile entries
       ;; we only use filename, resource, data and finderinfo entries
       (with-base64-stream (byte-stream smtp-stream :direction :output)
         ;; the prologue
-        (write-32bit 
+        (write-32bit
          (if double? *appledouble-magic-number* *applesingle-magic-number*)
          byte-stream)
         (write-32bit *applefile-supported-version* byte-stream)
@@ -604,7 +604,7 @@ Modification History (most recent at top)
           (write-32bit (+ header-offset flength) byte-stream)
           (write-32bit 32 byte-stream))
         ;; now the resource fork
-        (progn 
+        (progn
           (write-32bit 2 byte-stream) ; Resource Entry ID
           (write-32bit (+ header-offset flength 32) byte-stream)
           (write-32bit rsize byte-stream))
@@ -619,7 +619,7 @@ Modification History (most recent at top)
         (write-applefile-finderinfo ftype creator byte-stream)
         ;; the resource fork...
         (unless (zerop rsize)
-          (with-open-file (rs pathname :fork :resource 
+          (with-open-file (rs pathname :fork :resource
                               :element-type '(unsigned-byte 8))
             (loop (let ((byte (read-byte rs nil nil)))
                     (cond ((null byte) (return))
@@ -632,14 +632,14 @@ Modification History (most recent at top)
                     (cond ((null byte) (return))
                           (t (write-byte byte byte-stream)))))))))))
 
-(defun write-applefile-filler (stream) 
+(defun write-applefile-filler (stream)
   (dotimes (i 16) (write-byte 0 stream)))
 
 (defun write-applefile-finderinfo (type creator stream)
   ;; write out the type and creator
-  (let ((typestring (symbol-name type))) 
+  (let ((typestring (symbol-name type)))
     (dotimes (i 4) (write-byte (char-code (char typestring i)) stream)))
-  (let ((creatstring (symbol-name creator))) 
+  (let ((creatstring (symbol-name creator)))
     (dotimes (i 4) (write-byte (char-code (char creatstring i)) stream)))
   ;; pad out 8 bytes for the rest of the FInfo
   (dotimes (i 8) (write-byte 0 stream))
