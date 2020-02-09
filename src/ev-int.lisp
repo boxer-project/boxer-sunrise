@@ -34,7 +34,7 @@ Modification History (most recent at top)
 
 11/09/10 don't force-graphics-output in top-level-eval-wrapper for opengl
 11/23/09 top-level-eval-wrapper
- 3/02/07 added with-screen-box-modification-tracking to top-level-eval-wrapper 
+ 3/02/07 added with-screen-box-modification-tracking to top-level-eval-wrapper
 11/15/03 fill-doit-cursor-position-vector changed to take &optional bp arg so we
          can use it to record mouse-bp's as well as the *point*
          fixes to restore-point-position to make it more general purpose
@@ -50,12 +50,12 @@ Modification History (most recent at top)
          reimplementation of platform independent key/click handling
          Saved version of this file as ev-int-10-7-2002.lisp as a stubbified
          reference and ev-int-original.lisp
- 1/18/02 handle-boxer-{key,mouse-click} changed to pass a VC of the doit box 
+ 1/18/02 handle-boxer-{key,mouse-click} changed to pass a VC of the doit box
          instead of the NAME of the doit box when handling doit boxes
  1/06/02 convert-doit-result-for-printing binds font to default
 10/29/01 fixed handle-boxer-mouse-click to recognized shifted mouse clicks
- 3/04/01 changed the search order to check for alternate name binding BEFORE 
-         regular click name.  This was put in to cover the case of mouse bindings 
+ 3/04/01 changed the search order to check for alternate name binding BEFORE
+         regular click name.  This was put in to cover the case of mouse bindings
          in mac worlds being ignored because of useless (beeping) defaults
  2/14/01 merged current LW and MCL files
 10/17/02 ALTERNATE-PLATFORM-CLICK-NAMES for mouse, HANDLE-BOXER-MOUSE-CLICK uses it
@@ -65,15 +65,15 @@ Modification History (most recent at top)
          reimplementation of platform independent key/click handling
          Saved version of this file as ev-int-10-7-2002.lisp as a stubbified
          reference and ev-int-original.lisp
- 1/18/02 handle-boxer-{key,mouse-click} changed to pass a VC of the doit box 
+ 1/18/02 handle-boxer-{key,mouse-click} changed to pass a VC of the doit box
          instead of the NAME of the doit box when handling doit boxes
  1/06/02 convert-doit-result-for-printing binds font to default
 10/29/01 fixed handle-boxer-mouse-click to recognized shifted mouse clicks
- 3/04/01 changed the search order to check for alternate name binding BEFORE 
-         regular click name.  This was put in to cover the case of mouse bindings 
+ 3/04/01 changed the search order to check for alternate name binding BEFORE
+         regular click name.  This was put in to cover the case of mouse bindings
          in mac worlds being ignored because of useless (beeping) defaults
  2/14/01 merged current LW and MCL files
-11/17/00 made fill-doit-cursor-position-vector more robust for possible 
+11/17/00 made fill-doit-cursor-position-vector more robust for possible
          null (point-box)
  7/03/00 eval wrappers for lispworks now explicitly setq *EVALUATION-IN-PROGRESS*
          instead of LET binding it
@@ -96,14 +96,14 @@ Modification History (most recent at top)
 
 ;;; NUMBERIZE
 (defun numberize-or-nil (x)
-  (if (numberp x) 
+  (if (numberp x)
       x
       (let ((box-rows (get-box-rows x)))
 	(when (null (cdr box-rows))
 	  (let ((entries (evrow-pointers (car (get-box-rows x)))))
 	    (when (and entries (null (cdr entries)))
 	      (let ((object (access-evrow-element x (car entries))))
-		(when (numberp object) 
+		(when (numberp object)
 		  object))))))))
 
 (defun numberize-or-error (x)
@@ -113,7 +113,7 @@ Modification History (most recent at top)
 	    (let ((entries (evrow-pointers (car (get-box-rows x)))))
 	      (if (and entries (null (cdr entries)))
 		  (let ((object (access-evrow-element x (car entries))))
-		    (if (numberp object) 
+		    (if (numberp object)
 			object
 			(eval::primitive-signal-error :number-expected x)))
 		  (eval::primitive-signal-error :number-expected x)))
@@ -140,7 +140,7 @@ Modification History (most recent at top)
 ;;; to our current position by a series of row numbers and character
 ;;; numbers but changes larger than one level of box are likely to
 ;;; be sufficiently radical that it is better to punt gracefully and
-;;; move to the beginning of the last box that was known to be part of 
+;;; move to the beginning of the last box that was known to be part of
 ;;; the original hierarchy.
 
 ;;; Note: we can't use a stack of screen-box's because of the possibility
@@ -157,7 +157,7 @@ Modification History (most recent at top)
   screen-box)
 
 ;; the box has to be in the editor hierarchy but NOT in a hidden
-;; closet.  This means we have to be more careful as we walk up the 
+;; closet.  This means we have to be more careful as we walk up the
 ;; hierarchy because the superior pointers are MAINTAINED in the
 ;; closet rows so as we walk upwards, we have to look back downwards
 ;; to make sure we are not in a hidden closet
@@ -201,12 +201,12 @@ Modification History (most recent at top)
                     ;; so we don't need to do anything, unless we're
                     ;; supposed to move:
                     (when force-cursor-move?
-                      (move-point (values original-row original-cha-no 
+                      (move-point (values original-row original-cha-no
                                           (car (screen-objs
                                                 original-box))))
                       ;(move-to-bp-values
                       ; *point*
-                      ; (values original-row original-cha-no 
+                      ; (values original-row original-cha-no
                       ;   (car (screen-objs original-box))))
                       ))
                    ((and (eq new-superior-box original-box)
@@ -217,7 +217,7 @@ Modification History (most recent at top)
                     (setf (bp-cha-no *point*)
                           (length-in-chas original-row)))
                    (t
-                    ;; at this point, we know that the original row is 
+                    ;; at this point, we know that the original row is
                     ;; no longer in the original box
                     (let* ((new-length-in-rows
                             (length-in-rows original-box))
@@ -238,7 +238,7 @@ Modification History (most recent at top)
                                          ;; remain in the equivalent
                                          ;; place
                                          original-cha-no
-                                         ;; there isn't room so move to 
+                                         ;; there isn't room so move to
                                          ;; the end of the row
                                          new-length-in-chas)))
                       (set-bp-row *point* new-row)
@@ -286,7 +286,7 @@ Modification History (most recent at top)
 ;                      ;; now stop
 ;                      (return nil)))))
            )
-	  (t 
+	  (t
 	   ;; uh oh, looks like the original box we were in is no longer
 	   ;; part of the hierarchy so move upwards until we reach
 	   ;; familiar territory
@@ -301,26 +301,26 @@ Modification History (most recent at top)
 	       ;; Solution probably involves walking up the stack of
 	       ;; screen-boxes to decide on a reasonable outermost
 	       ;; screen box and then making sure the new point-screen-box
-	       ;; is part of the new outermost-screen-box.  
+	       ;; is part of the new outermost-screen-box.
                (let ((old-screen-box (car (displayed-screen-objs old-box))))
                  (cond ((not (null old-screen-box))
                         ;; box was visible so we can just set
 	                (setf (bp-screen-box *point*) old-screen-box)
                         (enter old-box))
-                       (t 
+                       (t
                         ;; box is not visible, this can mean that the box was
                         ;; in some previous outermost box
                         (let ((found-sb nil))
                           (loop
                             (let ((nob (pop *outermost-screen-box-stack*)))
                               (cond ((null nob) (return nil))
-                                    (t (set-outermost-box 
+                                    (t (set-outermost-box
                                         (screen-obj-actual-obj nob) nob))))
                             #-opengl (redisplay)
                             (when (not (null (car (displayed-screen-objs old-box))))
                               (setq found-sb t)
                               (return nil)))
-                          (cond (found-sb 
+                          (cond (found-sb
                                  (move-point (box-first-bp-values old-box))
                                  (setf (bp-screen-box *point*)
                                        (car (displayed-screen-objs old-box)))
@@ -365,7 +365,7 @@ Modification History (most recent at top)
 (defvar *mouse-cursor-change-during-eval?* t)
 
 ;;; this can eventually update the mouse cursor periodically
-;;; during the polling function 
+;;; during the polling function
 (defmacro with-mouse-cursor-on (&body body)
   `(unwind-protect
 	(progn
@@ -388,7 +388,7 @@ Modification History (most recent at top)
   `(progn . ,body))
 
 ;;; Lots of things want to be queued during and eval and processed afterwards
-;;; This has to be wrapped around the OUTERMOST invocation.  
+;;; This has to be wrapped around the OUTERMOST invocation.
 ;;; Specifically, printing of returned values has to take place BEFORE the
 ;;; cleanup forms inside of with-editor-mutation-queueing.
 ;;; NOTE: #+lispworks explicit setq with unwind-protect because interrupt handlers
@@ -418,7 +418,7 @@ Modification History (most recent at top)
                                  . ,body)))))
                      #+lispworks (setq *evaluation-in-progress?* nil)))))))))
      (unless (null *post-eval-hook*)
-       (if (listp *post-eval-hook*) 
+       (if (listp *post-eval-hook*)
            (dolist (f *post-eval-hook*) (funcall f))
            (funcall *post-eval-hook*)))))
 
@@ -475,7 +475,7 @@ Modification History (most recent at top)
   (setq *last-unprintable-returned-value* value)
   (unprintable-sound)
   (status-line-display
-   'boxer-editor-error 
+   'boxer-editor-error
    "Can't print returned value, Invisible-Value returns it"))
 
 (defun unprintable-error-box-warning (error)
@@ -493,7 +493,7 @@ Modification History (most recent at top)
 	(t (unprintable-returned-value-warning result))))
 
 (defun doit-internal (&optional list-to-eval)
-  (if *evaluation-in-progress?* 
+  (if *evaluation-in-progress?*
       (boxer-editor-error "Can't do COM-DOIT inide COM-DOIT")
       (unwind-protect
 	   (let ((row (point-row))
@@ -518,7 +518,7 @@ Modification History (most recent at top)
 		  (print-returned-value-when-possible result error?)
 		  (unless (or *doit-restore-cursor-position*
 			      (eq process eval::*current-process*))
-		    (restore-point-position 
+		    (restore-point-position
 		     (eval::process-variable
 		      process
 		      eval::*process-doit-cursor-position*) t))))))
@@ -528,7 +528,7 @@ Modification History (most recent at top)
 ;; flush?
 (defun exit-edit-box-internal ()
   (doit-internal '(bu::process-finish)))
-    
+
 
 ;;;
 ;;; *** The main Editor/Evaluator functions. ***
@@ -574,8 +574,8 @@ Modification History (most recent at top)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; we fall through to these functions if a click or key name is not 
-;; found.  The theory is that there might be an existing binding for 
+;; we fall through to these functions if a click or key name is not
+;; found.  The theory is that there might be an existing binding for
 ;; the mac version, so try that name before giving up
 ;; For example, a microworld from the mac might have OPTION-MOUSE-CLICK
 ;; bound.  The corresponding input on the PC would generate an ALT-MOUSE-CLICK
@@ -600,7 +600,7 @@ Modification History (most recent at top)
 ;; We don't want to precons all the possible alternate input names, but we will
 ;; use a lookup array as a cache of alternate names
 ;; Note: We also look for alternative names HERE, instead of producing the entire
-;; list of possible names for handle-boxer-input in order to limit the check 
+;; list of possible names for handle-boxer-input in order to limit the check
 ;; for alternatives to the case where an existing binding is missing
 
 (defun alternate-platform-input-names (code bits)
@@ -608,11 +608,11 @@ Modification History (most recent at top)
     (cond ((eq existing :no-alternates) nil)
           ((not (null existing)) ; cached alternates...
            existing)
-          (t 
-           ;; calculate and cache 
-           (let ((handled-shifts 
+          (t
+           ;; calculate and cache
+           (let ((handled-shifts
                   (unless (zerop& bits)
-                    (list (nth (1-& bits) (input-device-shift-list 
+                    (list (nth (1-& bits) (input-device-shift-list
                                            *current-input-device-platform*)))))
                  (alternates nil))
              (dolist (platform *defined-input-device-platforms*)
@@ -627,10 +627,10 @@ Modification History (most recent at top)
                           (concatenate 'string
                                        other-shift "-"
                                        ;; get the plain (unshifted) key name
-                                       (string (lookup-key-name code 0)))) 
+                                       (string (lookup-key-name code 0))))
                          alternates))))
              (cond ((null alternates)
-                    (setf (aref *alternate-key-names* code bits) 
+                    (setf (aref *alternate-key-names* code bits)
                           :no-alternates)
                     nil)
                    (t (setf (aref *alternate-key-names* code bits)
@@ -645,7 +645,7 @@ Modification History (most recent at top)
 ;;; These two functions can't be called from inside the evaluator
 ;;; because of the trigger check and possible call to eval.
 (defun handle-boxer-key (name keycode shift-bits)
-  (let ((value (or (mode-key name) 
+  (let ((value (or (mode-key name)
                    (let ((key-value (eval::boxer-symeval name)))
                      (unless (eq key-value eval::*novalue*)
                        key-value))
@@ -694,11 +694,11 @@ Modification History (most recent at top)
     (cond ((eq existing :no-alternates) nil)
           ((not (null existing)) ; cached alternates...
            existing)
-          (t 
-           ;; calculate and cache 
-           (let ((handled-shifts 
+          (t
+           ;; calculate and cache
+           (let ((handled-shifts
                   (unless (zerop& bits)
-                    (list (nth (1-& bits) (input-device-shift-list 
+                    (list (nth (1-& bits) (input-device-shift-list
                                            *current-input-device-platform*)))))
                  (alternates nil))
              (dolist (platform *defined-input-device-platforms*)
@@ -712,9 +712,9 @@ Modification History (most recent at top)
                    (push (intern-in-bu-package
                           (concatenate 'string
                                        other-shift "-"
-                                       (string (lookup-click-name click 0 area)))) 
-                         alternates))))             
-             (cond ((null alternates) 
+                                       (string (lookup-click-name click 0 area))))
+                         alternates))))
+             (cond ((null alternates)
                     (setf (aref lookup-table click bits) :no-alternates)
                     nil)
                    (t (setf (aref lookup-table click bits) alternates))))))))
@@ -738,9 +738,9 @@ Modification History (most recent at top)
                                       click bits area)
   (unless (null (bp-row mouse-bp))
     (let ((value (let ((eval::*lexical-variables-root* (bp-box mouse-bp)))
-		   (or (mode-key name) 
+		   (or (mode-key name)
                        (when *try-alternate-platform-names*
-                         (dolist (altname (alternate-platform-click-names 
+                         (dolist (altname (alternate-platform-click-names
                                            click bits area))
                            (let ((altvalue (eval::boxer-symeval altname)))
                              (unless (eq altvalue eval::*novalue*)
@@ -769,7 +769,7 @@ Modification History (most recent at top)
 	     t)
 	    ((doit-box? value)
 	     (com-mouse-move-point window x y mouse-bp clicked? t)
-	     (handle-boxer-key-doit-box (virtual-copy value)) 
+	     (handle-boxer-key-doit-box (virtual-copy value))
 	     t)
 	    (t nil)))))
 
@@ -802,8 +802,8 @@ Modification History (most recent at top)
 			   (t (unprintable-returned-value-warning result)))
 		    (unless *doit-restore-cursor-position*
 		      (restore-point-position
-		       (eval::process-variable 
-			process 
+		       (eval::process-variable
+			process
 			eval::*process-doit-cursor-position*)))))))
 	(maybe-handle-trigger-in-editor))))
 
@@ -824,7 +824,7 @@ Modification History (most recent at top)
 	  ((fast-eval-port-box? result)
 	   (top-level-print-vp result))
 	  (t (error "Unknown object ~S in HANDLE-BOXER-KEY" result)))))
-  
+
 ;; We must check for returned-value, which might
 ;; be an error.  We ignore other returned value.
 ;; BOXER-EVAL returns T as a second value if there was
@@ -846,7 +846,7 @@ Modification History (most recent at top)
 	  (cond ((or (numberp object) (data-box? object)) nil)
 		((eq object eval::*novalue*)
 		 (boxer-editor-error "No Box with this name"))
-		((symbolp object) 
+		((symbolp object)
 		 (arglist-for-prompter (eval::boxer-symeval object)))
 		((and (eval::possible-eval-object? object)
                       (eval::compiled-boxer-function? object))
