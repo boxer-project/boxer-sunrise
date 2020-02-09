@@ -16,7 +16,7 @@
 
 
 
- Copyright 1984, 1985 Massachusetts Institute of Technology 
+ Copyright 1984, 1985 Massachusetts Institute of Technology
 
 
  Permission to use, copy, modify, distribute, and sell this software
@@ -42,15 +42,15 @@
                                     +-------+
 
 
-      This is a machine independent binary loader for the BOXER system 
+      This is a machine independent binary loader for the BOXER system
       It is meant to convert a binary format for storing boxes in files
       (see dumper.lisp for details) back into box structure.
 
 
-Modification History (most recent at the top) 
+Modification History (most recent at the top)
 
 12/31/11 partial-initialize (box) changed calls to xxx-mac-file-ref-xxx to xxx-xref-xxx
- 8/24/11 #+opengl versions for load-true-color-run-length-encoded-pixmap & 
+ 8/24/11 #+opengl versions for load-true-color-run-length-encoded-pixmap &
          load-8-bit-run-length-encoded-pixmap
          stub for old-style-put-picture-byte to suppress warnings for clean compile
 11/02/09 utf-8-string-for-load: fixed bugs
@@ -67,21 +67,21 @@ Modification History (most recent at the top)
          sheet's dirty? flag
  1/09/02 red and blue byte order is reversed for PC in
          load-true-color-run-length-encoded-pixmap
-11/12/01 load-box makes sure file-position returns a number before using in status 
+11/12/01 load-box makes sure file-position returns a number before using in status
  2/15/01 merged current LW and MCL files
          returned fast-mac-load-8-bit-run-length-encoded-pixmap because #_ mac
          traps have been removed to the draw-low-mcl file
- 8/22/00 partial-initialize method of graphics-cursor now uses 
-         reallocate-pixel-color to handle the pen-color value 
- 5/03/00 code-char-value to hack CR vs LF lossage in converting strings 
+ 8/22/00 partial-initialize method of graphics-cursor now uses
+         reallocate-pixel-color to handle the pen-color value
+ 5/03/00 code-char-value to hack CR vs LF lossage in converting strings
          in files on PC.  Used in buffered-string-for-load and cons-string-for-load
 10/08/99 flags-for-file-init changed to prefer some original flags
  3/22/99 initialize-box-from-box explicitly sets the cached-name of possible
          name-rows. It is usually done via insert-self-action which won't be
          called for boxes already in the hierarchy
  2/15/99 fast-mac-load-8-bit-run-length-encoded-pixmap moved to draw-low-mcl
- 6/24/98 (:method partial-initialize graphics-cursor) now uses font loading 
-         mechanism for type-font.  
+ 6/24/98 (:method partial-initialize graphics-cursor) now uses font loading
+         mechanism for type-font.
          Also use font loading in post-load-process-graphics-list
  4/26/98 change font dumper to check dumping font-map
  4/20/98 Changes to handle fonts:
@@ -141,8 +141,8 @@ Modification History (most recent at the top)
 
 #|
 ;;; this is used for debugging
-;;; when we are only executing SOME of the load commands, then the table will 
-;;; get out of sync from the dumped indexes because some table-stores are 
+;;; when we are only executing SOME of the load commands, then the table will
+;;; get out of sync from the dumped indexes because some table-stores are
 ;;; being ignored, this lets us hand patch it to a certain extent
 (define-load-command bin-op-table-fetch-immediate (ignore idx)
   (declare (ignore ignore))
@@ -298,7 +298,7 @@ Modification History (most recent at the top)
 ;; In multi byte encodings, if we get illegal bytes, we'll write out any
 ;; accumalated bytes as separate chars using the theory that the original
 ;; bytestream probably wasn't UTF-8 encoded (like old boxer files)
-(defun utf-8-string-for-load (stream length) 
+(defun utf-8-string-for-load (stream length)
   (let ((return-string (make-array length ;length will always be <= encoded bytes
                                    :initial-element #\o
                                    :element-type 'character
@@ -372,11 +372,11 @@ Modification History (most recent at the top)
                              ((and (utf-8-more-byte-char? byte1)
                                    (utf-8-more-byte-char? byte2))
                               ;;what SHOULD happen
-                              (vector-push 
+                              (vector-push
                                (code-char (dpb& (ldb& %utf-8-3byte-1stbyte-dst-bytespec ubyte1)
                                                 %utf-8-3byte-1stbyte-src-bytespec
                                                 (dpb&
-                                                 (ldb& %utf-8-last-byte-bytespec 
+                                                 (ldb& %utf-8-last-byte-bytespec
                                                        byte1)
                                                  %utf-8-3byte-2ndbyte-src-bytespec
                                                  (ldb& %utf-8-last-byte-bytespec
@@ -396,11 +396,11 @@ Modification History (most recent at the top)
                               (vector-push (code-char ubyte2) return-string))
                              ((utf-8-more-byte-char? byte1)
                               ;; what SHOULD happen
-                              (vector-push 
+                              (vector-push
                                (code-char (dpb& (ldb& %utf-8-3byte-1stbyte-dst-bytespec ubyte1)
                                                 %utf-8-3byte-1stbyte-src-bytespec
                                                 (dpb&
-                                                 (ldb& %utf-8-last-byte-bytespec 
+                                                 (ldb& %utf-8-last-byte-bytespec
                                                        ubyte2)
                                                  %utf-8-3byte-2ndbyte-src-bytespec
                                                  (ldb& %utf-8-last-byte-bytespec
@@ -419,14 +419,14 @@ Modification History (most recent at the top)
                 (vector-push (code-char byte1) return-string)
                 (shift-input-bytes)
                 )
-               (t 
+               (t
                 ;; unexpected input, just make a char out of it
                 (vector-push (code-char byte1) return-string)
                 (shift-input-bytes))))))))
 
 (defun cons-string-for-load (stream length)
   (let* ((string (make-string length))
-         (fits? (evenp length)) 
+         (fits? (evenp length))
          (dolength (if fits? length (1-& length))))
     (do ((i 0 (+& i 2)))
         ((=& i dolength))
@@ -452,7 +452,7 @@ Modification History (most recent at the top)
         (vector-push-extend (code-char-value (ldb& %%bin-op-top-half word))
                             *load-string-buffer*)))
     (when (null fits?)
-      (vector-push-extend (code-char-value (bin-next-byte stream)) 
+      (vector-push-extend (code-char-value (bin-next-byte stream))
                           *load-string-buffer*))
     *load-string-buffer*))
 
@@ -462,7 +462,7 @@ Modification History (most recent at the top)
   (cond ((= length 1) (bin-next-byte stream))
 	(t (let ((number 0))
 	     (dotimes (i length)
-	       ;; this should not use DPB& because we might load a 
+	       ;; this should not use DPB& because we might load a
 	       ;; bignum, even thoush this function is called
 	       ;; load-fixnum.  Or am i wrong?
 	       (setq number (dpb (bin-next-byte stream)
@@ -571,14 +571,14 @@ Modification History (most recent at the top)
   (shared-initialize row t)
   (setf (slot-value row 'tick) -1
 	(slot-value row 'chas-array) chas-array))
-  
+
 
 ;; check for version, version 12 uses new row format with font info expected
 (defun load-row (stream &optional (length (bin-next-value stream)))
   (let ((chas-array  (make-chas-array length))
 	(new-row (allocate-instance (find-class 'row))))
     (file-initialize new-row chas-array)
-    ;; this is an abstraction violation but it's fast    
+    ;; this is an abstraction violation but it's fast
     (with-fast-chas-array-manipulation (chas-array chas-array-chas)
       (cond ((< *file-bin-version* 12)
              ;; old style
@@ -608,7 +608,7 @@ Modification History (most recent at the top)
                           (when (>=& idx length) (return nil))))))
               ;; get font info
                 (let ((fds (bin-next-value stream)))
-                  (dolist (file-fd fds) 
+                  (dolist (file-fd fds)
                     (insert-bfd new-row (make-bfd-from-file file-fd)))
                 ))))
     (setf (chas-array-active-length chas-array) length)
@@ -668,7 +668,7 @@ should ignore it.")
 
 (define-load-command bin-op-data-box (stream)
   (load-box (or (top-level-box-to-load-into)
-		(make-uninitialized-box 'data-box)) 
+		(make-uninitialized-box 'data-box))
 	    stream))
 
 (define-load-command bin-op-port-box (stream)
@@ -689,7 +689,7 @@ should ignore it.")
            ;; print out status reports to keep everybody happy....
            (let ((fp (file-position stream)))
              (when (numberp fp)
-               (status-line-display 'loading-box 
+               (status-line-display 'loading-box
 			            (format nil *status-line-loading-format-string*
 				            fp (floor (* 100 fp)
 					              *current-file-length*))))))))
@@ -739,15 +739,15 @@ should ignore it.")
 ;; some flags should be inherited by from the framing context
 ;; and not overridden by freshly filled values
 ;; Note, could be faster if we directly slam the bits
-;; but since this isn't called often, better to preserve abstraction 
+;; but since this isn't called often, better to preserve abstraction
 (defmethod flags-for-file-init ((box box) (from-box box))
   (let ((raw-flags (slot-value box 'flags))
         (new-flags (slot-value from-box 'flags)))
     (setf (slot-value box 'flags)
-          (set-box-flag-read-only-box? 
-           (set-box-flag-autoload-file? 
-            (set-box-flag-relative-filename? 
-             new-flags 
+          (set-box-flag-read-only-box?
+           (set-box-flag-autoload-file?
+            (set-box-flag-relative-filename?
+             new-flags
              (box-flag-relative-filename? raw-flags))
             (box-flag-autoload-file? raw-flags))
            (box-flag-read-only-box? raw-flags)))))
@@ -792,7 +792,7 @@ should ignore it.")
     ;; only worth copying for now...
     (let ((as (getf from-plist 'active-sprite)))
       (unless (null as) (putprop box as 'active-sprite)))))
-      
+
 
 (defvar *subclass-file-init-keywords*
   '(:port-target :circular-port-reference :cracked-port :cross-file-link-id
@@ -816,7 +816,7 @@ should ignore it.")
 	      (when (row? value)
 		(setf (superior-box value) self)
 		(do-row-chas ((obj value))
-		  (unless (cha? obj) 
+		  (unless (cha? obj)
 		    (set-superior-row obj value)
 		    (insert-self-action obj))))
 	      t)
@@ -881,7 +881,7 @@ should ignore it.")
                                  value) t)
     (:associated-file-name (setf (getf (slot-value self 'plist) :associated-file-name)
                                  value) t)
-    (:associated-file-type 
+    (:associated-file-type
      ;; at this point all the pieces should be loaded so we should try and reassemble
      ;; the full filename from the components
      (let ((dirs (getf (slot-value self 'plist) :associated-file-dirs :novalue))
@@ -1025,7 +1025,7 @@ should ignore it.")
     (unless (null closets)
       (setf (superior-box closets) box)
       (do-row-chas ((obj closets))
-	(unless (cha? obj) 
+	(unless (cha? obj)
 	  (set-superior-row obj closets)
 	  (insert-self-action obj)))))
   (dolist (var (slot-value box 'static-variables-alist))
@@ -1096,7 +1096,7 @@ should ignore it.")
 
 
 ;; used to test whether to load the picture since there might be
-;; color vs B&W lossage as well as other problems that could prevent a 
+;; color vs B&W lossage as well as other problems that could prevent a
 ;; successful restoration of a dumped out bitmap
 (defun load-picture? (&rest args)
   (declare (ignore args))
@@ -1128,7 +1128,7 @@ should ignore it.")
 (define-load-command-for-value bin-op-graphics-sheet (stream)
   (if (< *file-bin-version* 11.)
       (old-style-load-graphics-sheet stream)
-      (let* ((plist (bin-next-value stream))	     
+      (let* ((plist (bin-next-value stream))
 	     ;; plist values
 	     (background (getf plist :background))
 	     (graphics-list (getf plist :graphics-list))
@@ -1153,14 +1153,14 @@ should ignore it.")
 (define-load-command-for-value bin-op-pixmap (stream)
   (let ((dump-type (bin-next-value stream)))
     (case dump-type
-      (8-bit-run-length-encoded 
+      (8-bit-run-length-encoded
        #-mcl (load-8-bit-run-length-encoded-pixmap stream)
        #+mcl (if *use-mac-fast-bitmap-loaders*
                (fast-mac-load-8-bit-run-length-encoded-pixmap stream)
                (load-8-bit-run-length-encoded-pixmap-by-strips stream))
        )
       (1-bit-run-length-encoded (load-1-bit-run-length-encoded-pixmap stream))
-      (true-color-run-length-encoded 
+      (true-color-run-length-encoded
        #-mcl (load-true-color-run-length-encoded-pixmap stream)
        #+mcl (if *use-mac-fast-bitmap-loaders*
                (fast-mac-load-true-color-run-length-encoded-pixmap stream)
@@ -1218,7 +1218,7 @@ should ignore it.")
          (gworld (make-offscreen-bitmap *boxer-pane* width height))
          (depth (offscreen-bitmap-depth gworld))
          (setpixfun (ecase depth
-                      (1 #'%set-1pixel) (8 #'%set-8pixel) 
+                      (1 #'%set-1pixel) (8 #'%set-8pixel)
                       (16 #'%set-16pixel) (32 #'%set-32pixel)))
          (rgbpixfun (ecase depth
                       (1 #'mcl-rgb->1pixel) (8 #'mcl-rgb->8pixel)
@@ -1236,8 +1236,8 @@ should ignore it.")
           ;; now process the colormap to get a pixel remap
           (dotimes& (i (length colormap))
             (setf (aref colormap i)
-                  ;; we could use the list of rgb values directly (a la 
-                  ;; boxer-rgb-values->pixel) but go through 
+                  ;; we could use the list of rgb values directly (a la
+                  ;; boxer-rgb-values->pixel) but go through
                   ;; reallocate-pixel-color to hack fixnum values from old files
                   (funcall rgbpixfun (reallocate-pixel-color (aref colormap i)))))
           ;; now render the data
@@ -1258,20 +1258,20 @@ should ignore it.")
 	        (when (>=& y height) (return)))))
           gworld))))
 
-;; all the optional args are for the possibility that we come here via the 
+;; all the optional args are for the possibility that we come here via the
 ;; fast-mac-load-xxx functions when all those parameters have already been
 ;; computed
 
 (defun load-8-bit-run-length-encoded-pixmap-by-strips (stream
                                                        &optional
                                                        (width
-                                                        (bin-next-value stream)) 
+                                                        (bin-next-value stream))
                                                        (height
                                                         (bin-next-value stream))
-                                                       (colormap 
+                                                       (colormap
                                                         (bin-next-value stream))
-                                                       (pixmap 
-                                                        (make-offscreen-bitmap 
+                                                       (pixmap
+                                                        (make-offscreen-bitmap
                                                          *boxer-pane*
                                                          width height)))
   ;; now process the colormap to get a pixel remap
@@ -1285,11 +1285,11 @@ should ignore it.")
                (count (ldb& %%bin-op-top-half word))
                (pixel (aref colormap (ldb& %%bin-op-low-half word)))
                (draw-wid (min& count (-& width x))))
-          (loop 
+          (loop
             (with-pen-color (pixel)
               (draw-rectangle alu-seta draw-wid 1 x y))
             (setq count (-& count draw-wid)
-                  x (let ((newx (+& x draw-wid))) 
+                  x (let ((newx (+& x draw-wid)))
                       (cond ((>=& newx width) (setq y (1+& y)) 0)
                             (t newx)))
                   draw-wid (min& count (-& width x)))
@@ -1361,7 +1361,7 @@ should ignore it.")
                       (1 #'%set-1pixel) (8 #'%set-8pixel)
                       (16 #'%set-16pixel) (32 #'%set-32pixel)))
          (boxpixfun (ecase depth
-                      (1  #'byte-rgb-values->1pixel) 
+                      (1  #'byte-rgb-values->1pixel)
                       (8  #'byte-rgb-values->8pixel)
                       (16 #'byte-rgb-values->16pixel)
                       (32 #'byte-rgb-values->32pixel)))
@@ -1398,13 +1398,13 @@ should ignore it.")
 (defun load-true-color-run-length-encoded-pixmap-by-strips (stream
                                                             &optional
                                                             (width (bin-next-value
-                                                                    stream)) 
+                                                                    stream))
                                                             (height (bin-next-value
                                                                      stream))
                                                             (pixmap
                                                              (make-offscreen-bitmap
                                                               *boxer-pane*
-                                                              width height)))                                                            
+                                                              width height)))
   (let ((pixdata (offscreen-bitmap-image pixmap))
         (true-color? (>= (offscreen-bitmap-depth pixmap) 16.))
         (x 0) (y 0))
@@ -1422,11 +1422,11 @@ should ignore it.")
                         ;; we should stack cons this list...
                         (reallocate-pixel-color (list red green blue))))
                (draw-wid (min& count (-& width x))))
-            (loop 
+            (loop
               (with-pen-color (pixel)
                 (draw-rectangle alu-seta draw-wid 1 x y))
                 (setq count (-& count draw-wid)
-                      x (let ((newx (+& x draw-wid))) 
+                      x (let ((newx (+& x draw-wid)))
                           (cond ((>=& newx width) (setq y (1+& y)) 0)
                                 (t newx)))
                       draw-wid (min& count (-& width x)))
@@ -1465,7 +1465,7 @@ should ignore it.")
 		       (t
 			;; must be a repeat
 			(setq rep-count top current-byte low)))))
-		 
+
 	     (get-count-data-word ()
 	       (let* ((word (bin-next-byte stream))
 		      (top (ldb& %%bin-op-top-half word))
@@ -1477,7 +1477,7 @@ should ignore it.")
 	       (if (null extra-data-p)
 		   (get-count-data-word)
 		   (progn (setq extra-data-p nil) other-half)))
-		       
+
 	     (get-bits ()
 	       (cond ((=& 1 data-count)
 		      (decf& data-count)
@@ -1636,13 +1636,13 @@ should ignore it.")
 			 current-x current-y))
 		       (otherwise
 			(error "Don't know how to handle ~S" com)))))))))
-    (when *boxer-system-hacker* 
+    (when *boxer-system-hacker*
       (format t "~%Converted ~A to:" shape)
       (show-graphics-list new-shape))
     new-shape))
 
 (defun convert-turtle-instance-slot-box-name (box new-name)
-  (let ((new-name-row (make-name-row (list new-name)))) 
+  (let ((new-name-row (make-name-row (list new-name))))
     (setf (superior-box new-name-row) box)
     (setf (slot-value box 'name) new-name-row))
   box)
@@ -1661,7 +1661,7 @@ should ignore it.")
 	(%make-iv-box-interface *sprite-type-font-no* 'type-font))
   (setf (slot-value turtle 'pen-color)
 	(%make-iv-box-interface *foreground-color* 'pen-color))
-  ;; a hack to convert the values of the graphics commands to 
+  ;; a hack to convert the values of the graphics commands to
   (do-vector-contents (gc (shape turtle))
     (unless (>= (svref gc 0) 32.)
       (setf (svref gc 0) (+ (svref gc 0) 32)))
@@ -1729,7 +1729,7 @@ should ignore it.")
       ;; try and handle it here...
       (case keyword
 	(shape (setf (slot-value self 'shape)
-                     (%make-sv-box-interface 
+                     (%make-sv-box-interface
                       (post-load-process-graphics-list value) 'shape nil 'shape-box-updater))
 	       ;; now that we have (or should have) a shape, fill in
 	       ;; the auxiliary data structures
@@ -1761,7 +1761,7 @@ should ignore it.")
 	(pen (setf (slot-value self 'pen) (%make-iv-box-interface value 'pen)))
 	(pen-width (setf (slot-value self 'pen-width)
 			 (%make-vv-box-interface value 'pen-width)))
-        ;; as of 8/22/00 in the PC version, these values will have been 
+        ;; as of 8/22/00 in the PC version, these values will have been
         ;; canonicalized (list of 3 RGB floats).  (mac) Files made earlier may have
         ;; a 24 bit RGB fixnum here instead. fortunately, reallocate-pixel-color
         ;; is smart enough to deal with both
@@ -1771,8 +1771,8 @@ should ignore it.")
                                        nil 'pen-color-box-updater)))
 	(type-font (setf (slot-value self 'type-font)
 			(%make-iv-box-interface
-                         (if (>=& *version-number* 12) 
-                             (make-font-from-file-value value) 
+                         (if (>=& *version-number* 12)
+                             (make-font-from-file-value value)
                              value)
                          'type-font)))
 	;; compatibility blues...
@@ -1818,7 +1818,7 @@ should ignore it.")
 		  *initial-graphics-state-current-font-no*)
 	    (setf (slot-value new 'pen-color)
 		  *initial-graphics-state-current-pen-color*)
-	    new)))    
+	    new)))
     (do* ((list plist (cddr list))
 	  (slot (car list) (car list))
 	  (value (cadr list) (cadr list)))
@@ -1864,7 +1864,7 @@ should ignore it.")
 	    ((fast-memq slot '(pen pen-color home-position))
 	     (setf (slot-value turtle slot)
 		   (%make-iv-box-interface (car value) slot)))
-	    (t 
+	    (t
 	     (setf (slot-value turtle slot) value))))
     ;; now that the slots have been filled from the file, handle
     ;; the remaining slots that were not dumped out but still need valid
@@ -1943,7 +1943,7 @@ should ignore it.")
 			    ;; must be a repeat
 			    (setq rep-count    top
 				  current-byte low)))))
-		 
+
 		 (get-count-data-word ()
 		   (let* ((word (bin-next-byte stream))
 			  (top (ldb& %%bin-op-top-half word))
@@ -1957,7 +1957,7 @@ should ignore it.")
 		       (get-count-data-word)
 		       (progn (setq extra-data-p nil)
 			      other-half)))
-		       
+
 		 (get-bits ()
 		   (cond ((=& 1 data-count)
 			  (decf& data-count)
@@ -2034,7 +2034,7 @@ should ignore it.")
 ;; call cycle-boxer-file-boxes if the entry is bad
 
 ;; nononono, cycle bad entries to the back and return 1st good one
-(defun boxer-file-box (file-prop) 
+(defun boxer-file-box (file-prop)
   (let* ((1st (car (svref& file-prop 2)))
          (current nil))
     ;; check the 1st entry
@@ -2049,12 +2049,12 @@ should ignore it.")
                           (setq current (car (svref& file-prop 2))))))))))
 
 (defun cycle-boxer-file-boxes (file-prop)
-  (setf (svref& file-prop 2) (nconc (cdr (svref& file-prop 2)) 
+  (setf (svref& file-prop 2) (nconc (cdr (svref& file-prop 2))
                                     (list (car (svref& file-prop 2))))))
 
 (defun member-boxer-file-box (box file-prop) (fast-memq box (svref& file-prop 2)))
 
-;; make sure that there are no duplicates, new-box gets 
+;; make sure that there are no duplicates, new-box gets
 ;; pushed onto the head of the box lsit so the list becomes time ordered
 (defun set-boxer-file-box (file-prop new-box)
   (let* ((boxes (svref& file-prop 2))
@@ -2077,7 +2077,7 @@ should ignore it.")
 	   (set-boxer-file-author existing-props author)
            (set-boxer-file-box existing-props box)))))
 
-    
+
 
 
 ;;; Top level interface
@@ -2091,7 +2091,7 @@ should ignore it.")
 	       (let ((*status-line-loading-format-string*
 		      (format nil "Reading ~A ~~D (~~D %)"
 			      (filename-for-format-string filestream))))
-		 (status-line-display 'loading-box 
+		 (status-line-display 'loading-box
 				      (format nil
 					      "Loading Box from ~A"
 					      pathname))
@@ -2103,7 +2103,7 @@ should ignore it.")
 
 (defun filename-for-format-string (filestream)
   (let* ((raw-name (truename filestream))
-         (name (if *verbose-filename-for-format-string* 
+         (name (if *verbose-filename-for-format-string*
                    (namestring raw-name)
                    (let ((type (pathname-type raw-name)))
                      (if (or (null type) (eq type :unspecific))
@@ -2137,7 +2137,7 @@ should ignore it.")
 	;; if we've used the initial word up, set it back to nil
 	(setq initial-word nil))))
   ;; presumably, the only thing left after the file's
-  ;; plist will be the top level box 
+  ;; plist will be the top level box
   (catch 'bin-load-done
     (setq box-to-return (bin-next-value stream initial-word))  ;top level box
     (loop (bin-next-command stream)))
@@ -2175,7 +2175,7 @@ should ignore it.")
 (defun bin-next-byte (stream)
   (read-file-word stream t))
 
-;; The optional arg is used when the file stream doesn't support either 
+;; The optional arg is used when the file stream doesn't support either
 ;; peek or bidirectionality.
 
 (defun bin-load-next-command (stream &optional word)
