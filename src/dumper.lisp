@@ -15,7 +15,7 @@
 
 
 
- Copyright 1984, 1985 Massachusetts Institute of Technology 
+ Copyright 1984, 1985 Massachusetts Institute of Technology
 
  Permission to use, copy, modify, distribute, and sell this software
  and its documentation for any purpose is hereby granted without fee,
@@ -38,8 +38,8 @@
                                          +-------+
 
 
-      This is a machine independent binary dumper for the BOXER system 
-      It is meant to convert box structure into a binary format for 
+      This is a machine independent binary dumper for the BOXER system
+      It is meant to convert box structure into a binary format for
       storing in files
 
 Modification History (most recent at the top)
@@ -54,24 +54,24 @@ Modification History (most recent at the top)
  2/16/03 merged current LW and MCl files
  9/20/02 dump-true-color-pixmap changed pixel compare to color= to fix expanding
          file size bug when moving mac files to PC
- 2/17/02 use pixel-dump-value-internal in dump-true-color-pixmap for 
+ 2/17/02 use pixel-dump-value-internal in dump-true-color-pixmap for
          platform independence
  2/11/02 dump-graphics-sheet-plist now checks dirty? flag before dumping pixmaps
  2/14/01 merged current LW and MCL files
- 8/22/00 canonicalize-pixel-color in dump-plist-internal method for 
+ 8/22/00 canonicalize-pixel-color in dump-plist-internal method for
          graphics-cursors
  7/14/00 array-bits-per-element for lispworks
- 5/12/00 new file-stream-position used in dump-box for stream independent position 
+ 5/12/00 new file-stream-position used in dump-box for stream independent position
          information
- 4/13/99 dump-plist-length fixed to match cross file port changes in 
+ 4/13/99 dump-plist-length fixed to match cross file port changes in
          dump-plist-internal
  3/23/99 dump-plist-internal method for ports changed to dump out a cracked-port
          property for any cross file port
  2/15/99 fast-mac-dump-8-bit-pixmap changed to remove mac trap calls
  1/23/99 added xtension file hooks
- 6/24/98 make (:method dump-plist-internal graphics-cursor) use font dumping 
+ 6/24/98 make (:method dump-plist-internal graphics-cursor) use font dumping
          mechanism also changed dump-graphics-list for same reason
- 4/26/98 check dumping font-map in dump-font to avoid duplicate dumping of font 
+ 4/26/98 check dumping font-map in dump-font to avoid duplicate dumping of font
          specs change (dump-plist-internal (box)) and (dump-plist-length (box))
          to check for standard-display-style
  4/24/98 change in color dump format from list of 3 floats to single fixnums
@@ -82,7 +82,7 @@ Modification History (most recent at the top)
          includes all simple ops without any compound data
  4/20/98 Changes to handle fonts:
            o toggle-font-dumping
-           o changed (dump-self row) to dump chas as string segments and 
+           o changed (dump-self row) to dump chas as string segments and
              font descriptors when (> *version-number* 12)
            o added dump-string-preamble to support open coded string dumping
              dump-row-chas-as-string
@@ -104,18 +104,18 @@ Modification History (most recent at the top)
 ;;;
 ;;; CHARACTERS are dumped out as themselves, that is, fixnums
 ;;;
-;;; ROWS are essentially arrays of characters and are dumped out as such 
+;;; ROWS are essentially arrays of characters and are dumped out as such
 ;;; keeping in mind that some of the characters may be BOXES
 ;;;
 ;;; BOXES come in three major types.  Regular, Port and Graphics.
 ;;;    ALL boxes have to preserve their display info (i.e. desired size),
 ;;;    their name, the superior row
 ;;;
-;;;    GRAPHICS boxes have to dump out their bit-arrays (although in the 
+;;;    GRAPHICS boxes have to dump out their bit-arrays (although in the
 ;;;    case of turtle boxes it may be optional)
 ;;;
 ;;;    REGULAR boxes will have to keep track of their inferior rows,
-;;;    and Any pointers to PORTS 
+;;;    and Any pointers to PORTS
 ;;;
 ;;;    PORTS only have to keep track of the ported to box
 
@@ -307,8 +307,8 @@ Modification History (most recent at the top)
           (t 4))))
 
 (defun utf-8-length (string)
-  (with-summation 
-    (dotimes (i (length string)) 
+  (with-summation
+    (dotimes (i (length string))
       (sum (utf-8-size (char string i))))))
 
 (defun utf-8-length-from-row-chas (row from to)
@@ -319,7 +319,7 @@ Modification History (most recent at the top)
 ;; values byte1, byte2, byte3, byte4 anything other than byte1 can be NIL
 (defun encode-utf-8 (code)
   (cond ((<& code 128)  code)
-        ((<& code 2048) 
+        ((<& code 2048)
          (values (dpb& (ldb& %utf-8-2byte-1stbyte-src-bytespec code)
                        %utf-8-2byte-1stbyte-dst-bytespec
                        %utf-8-2byte-start)
@@ -336,7 +336,7 @@ Modification History (most recent at the top)
                  (dpb& (ldb& %utf-8-last-byte-bytespec code)
                        %utf-8-last-byte-bytespec
                        %utf-8-more-bytes)))
-        (t 
+        (t
          (values (dpb& (ldb& %utf-8-4byte-1stbyte-src-bytespec code)
                        %utf-8-4byte-1stbyte-dst-bytespec
                        %utf-8-4byte-start)
@@ -350,9 +350,9 @@ Modification History (most recent at the top)
                        %utf-8-last-byte-bytespec
                        %utf-8-more-bytes)))))
 
-;; extend dump-string to use UTF-8 encoding for 
+;; extend dump-string to use UTF-8 encoding for
 ;; unicode chars with char-codes > 128
-(defun dump-string (string stream)  
+(defun dump-string (string stream)
   (let* ((ulength (utf-8-length string))
          (slength (length string))
          (prev-byte nil))
@@ -543,7 +543,7 @@ Modification History (most recent at the top)
 (defun decode-array (array &aux dimensions options)
   (declare (values dimensions array-options))
   (setq dimensions (if (= (array-rank array) 1) (length array)
-		       (array-dimensions array)))	
+		       (array-dimensions array)))
   (let ((type (array-element-type array)))
     (or (eq type t)
 	(setq options `(:element-type ,type . ,options))))
@@ -630,11 +630,11 @@ Modification History (most recent at the top)
 	   (write-file-word bin-op-row stream)
 	   (dump-boxer-thing length stream)))
     (cond ((null *dump-all-rows-using-fonts*)
-           ;; old style row format with NO fonts and fat fluffy chars           
+           ;; old style row format with NO fonts and fat fluffy chars
            (do-row-chas ((cha self))
              (cond ((or (cha? cha) (box? cha))
 	            (dump-boxer-thing cha stream))
-	           (t (internal-dumping-error 
+	           (t (internal-dumping-error
                        "Non box or char encountered in row")))))
           (t ;; new style row format WITH fonts
            ;; do look ahead to collapse as many pairs
@@ -645,7 +645,7 @@ Modification History (most recent at the top)
                (cond ((box? cha)
                       ;; dump out a string if we've gone past some chars
                       (unless (=& current-pos last-dumped-pos)
-                        (dump-row-chas-as-string self stream 
+                        (dump-row-chas-as-string self stream
                                                  last-dumped-pos current-pos))
                       (dump-boxer-thing cha stream)
                       (incf& current-pos)
@@ -723,7 +723,7 @@ Modification History (most recent at the top)
 ;; 1. a name (string)
 ;; 2. a size (fixnum)
 ;; 3. optional series of style keywords (symbols)
- 
+
 (defvar *dump-relative-font-sizes?* t)
 
 (defun dump-font (font stream)
@@ -762,7 +762,7 @@ Modification History (most recent at the top)
 
 ;;; boxes
 
-;; not quite right in TCP case, need to figure out direction of the stream at a 
+;; not quite right in TCP case, need to figure out direction of the stream at a
 ;; higher level to know whether to use bytes-received or bytes-transmitted slots.
 ;; For now, assume output because that is the only current possibility
 #+mcl
@@ -855,10 +855,10 @@ Modification History (most recent at the top)
     (dolist (hook *dump-plist-internal-hook*) (funcall hook self stream))
     (cond ((no-inferiors-for-file? self)
            ;; Must make sure the display style gets dumped out
-           (dump-boxer-thing :display-style-list stream)    
+           (dump-boxer-thing :display-style-list stream)
            (dump-canonicalized-display-style self stream))
-          (t 
-           (unless (standard-display-style? dsl) 
+          (t
+           (unless (standard-display-style? dsl)
              (dump-boxer-thing :display-style-list stream)
              (dump-canonicalized-display-style self stream))
            (dump-boxer-thing :closets stream)
@@ -872,11 +872,11 @@ Modification History (most recent at the top)
   (set-box-flag-file-modified? flags nil))
 
 #|
-  (if (or (eq box *outermost-dumping-box*) (in-bfs-environment?) 
+  (if (or (eq box *outermost-dumping-box*) (in-bfs-environment?)
           (box-flag-read-only-box? flags))
 |#
-      
-      
+
+
 
 (defmethod dump-plist-internal ((self port-box) stream)
   (cond ((and (in-bfs-environment?) (cross-file-port? self))
@@ -927,7 +927,7 @@ Modification History (most recent at the top)
            (decf& plist-half-length)))
     (+& (*& plist-half-length 2)
         ;; add in any items from loaded modules...
-        (with-summation 
+        (with-summation
           (dolist (hook *dump-plist-length-hook*)
             (sum (funcall hook self)))))))
 
@@ -965,14 +965,14 @@ Modification History (most recent at the top)
 				      (not (eq (display-style-style ds)
 					       ':supershrunk)))
 			       ':shrunk
-                               (display-style-style ds)) 
+                               (display-style-style ds))
                              stream)
 	   (dump-boxer-thing (display-style-fixed-wid ds) stream)
 	   (dump-boxer-thing (display-style-fixed-hei ds) stream)
 	   (dump-boxer-thing (display-style-graphics-mode? ds) stream)
            (dump-boxer-thing (display-style-border-style ds) stream)))))
 
-;; Obsolete, use dump-canonicalized-display-style 
+;; Obsolete, use dump-canonicalized-display-style
 ;(defun canonicalize-display-style (ds)
 ;  (cond ((and (null (display-style-graphics-mode? ds))
 ;	      (null (display-style-border-style ds)))
@@ -1123,7 +1123,7 @@ Modification History (most recent at the top)
   (null (graphics-sheet-bit-array sheet)))
 
 (defun dump-graphics-sheet (sheet stream)
-  ;; no need to make the table bigger since graphics 
+  ;; no need to make the table bigger since graphics
   ;; sheets should NOT be appearing in more than one place
   ;; the (enter-table sheet) should be removed in the next version
   ;; along with the corresponding table store in loader.lisp
@@ -1132,7 +1132,7 @@ Modification History (most recent at the top)
   (dump-graphics-sheet-plist sheet stream)
   ;;
   ;; Pictures are now dumped in the plist
-  ;; leave this here so we know how things used to work if there 
+  ;; leave this here so we know how things used to work if there
   ;; are problems with the loading of old files
 ;  (unless (dont-dump-picture? sheet)
 ;    (dump-picture #+lispm (graphics-sheet-bit-array sheet)
@@ -1201,7 +1201,7 @@ Modification History (most recent at the top)
 	 (length (length gl))
 	 (contents (%sv-contents gl))
 	 (dump-length (min& (max& 8 (expt 2 (integer-length fp)))
-			    (length contents))))    
+			    (length contents))))
     (enter-table gl)
     (multiple-value-bind (dims options)
 	(decode-array gl)
@@ -1304,7 +1304,7 @@ Modification History (most recent at the top)
 		   (write-file-word (dpb current-count %%bin-op-top-half
 					 (caddr (assoc current-byte colormap)))
 				    stream)
-		   (setq current-byte pix current-count 1))		  
+		   (setq current-byte pix current-count 1))
 		  ((=& pix current-byte) (incf& current-count))
 		  (t (error "Bad case in dumping bitmap (byte = ~D, count = ~D"
 			    current-byte current-count))))))
@@ -1364,7 +1364,7 @@ Modification History (most recent at the top)
 		   (write-file-word (dpb current-count %%bin-op-top-half
 					 (caddr (assoc current-byte colormap)))
 				    stream)
-		   (setq current-byte pix current-count 1))		  
+		   (setq current-byte pix current-count 1))
 		  ((=& pix current-byte) (incf& current-count))
 		  (t (error "Bad case in dumping bitmap (byte = ~D, count = ~D"
 			    current-byte current-count))))))
@@ -1373,7 +1373,7 @@ Modification History (most recent at the top)
 			    (caddr (assoc current-byte colormap)))
 		       stream))))
 
-;; sort of flaky, underlying 24 bit pixel format assumed even though 
+;; sort of flaky, underlying 24 bit pixel format assumed even though
 ;; it is supposed to handle 16 and 32 bit pixels as well...
 (defun dump-true-color-pixmap (pixmap stream)
   (dump-boxer-thing 'true-color-run-length-encoded stream)
@@ -1386,7 +1386,7 @@ Modification History (most recent at the top)
     ;; well to support the future possibility of the underlying bitarray
     ;; to be larger (to allow for smooth scrolling)
     (dump-boxer-thing width stream) (dump-boxer-thing height stream)
-    ;; now dump out the pix data as 
+    ;; now dump out the pix data as
     (let ((current-pixel (pixel-dump-value-internal (image-pixel 0 0 pixdata)))
           (current-count 0))
       (declare (fixnum current-pixel current-count))
@@ -1404,7 +1404,7 @@ Modification History (most recent at the top)
                    ;; update the vars
                    (setq current-pixel pix current-count 1))
                   (#+opengl (opengl::pixel= pix current-pixel)
-                   #-opengl (color= pix current-pixel) 
+                   #-opengl (color= pix current-pixel)
                    (incf& current-count))
 		  (t (error "Bad case in dumping bitmap (pixel = ~X, count = ~D"
 			    current-pixel current-count))))))
@@ -1419,7 +1419,7 @@ Modification History (most recent at the top)
 ;; if the high byte = #x80, then the low byte will be a count
 ;; specifying the next <count> bytes (high AND low) as pure data
 ;; words
-;; This is superficially similiar to the run length encoding found in 
+;; This is superficially similiar to the run length encoding found in
 ;; MacPaint files although byte ordering differences may make the files
 ;; incompatible
 ;;
@@ -1492,7 +1492,7 @@ Modification History (most recent at the top)
 		 (cond ((=& byte current-byte)
 		     ;; we have another byte of the same so, if we
 		     ;; are building the count list, then it's time
-		     ;; to send it out or else we incf 
+		     ;; to send it out or else we incf
 		     ;; the repeat counter unless it is maxed out
 		     (cond ((not (zerop& (storage-vector-active-length
 					  current-data)))
@@ -1582,12 +1582,12 @@ Modification History (most recent at the top)
     (push 'xref-dump-plist-internal *dump-plist-internal-hook*))
   )
 
-;;; Leave this here in case we have to debug loading of bitmaps in 
+;;; Leave this here in case we have to debug loading of bitmaps in
 ;;; pre file version 11 files
 
 #|
 (defun dump-picture (pic width height stream)
-  (write-file-word bin-op-picture stream) 
+  (write-file-word bin-op-picture stream)
   (let ((current-byte 0)
 	(rep-count 0)
 	(data-count 0)
@@ -1636,7 +1636,7 @@ Modification History (most recent at the top)
 		 (cond ((=& byte current-byte)
 		     ;; we have another byte of the same so, if we
 		     ;; are building the count list, then it's time
-		     ;; to send it out or else we incf 
+		     ;; to send it out or else we incf
 		     ;; the repeat counter unless it is maxed out
 		     (cond ((not (zerop& (storage-vector-active-length
 					  current-data)))
@@ -1715,7 +1715,7 @@ Modification History (most recent at the top)
 	    (do-leftovers))))
     (free-storage-vector current-data)))
 |#
-			    
+
 
 
 
@@ -1777,7 +1777,7 @@ Modification History (most recent at the top)
     ,bin-op-package-symbol ,bin-op-string ,bin-op-string-immediate
     ,bin-op-cha-immediate ,bin-op-table-fetch-immediate))
 
-(defvar *simple-ops* 
+(defvar *simple-ops*
   `(,bin-op-number-immediate
     ,bin-op-positive-fixnum ,bin-op-negative-fixnum
     ,bin-op-positive-float ,bin-op-negative-float
