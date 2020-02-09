@@ -22,7 +22,7 @@
   files.  That is, all box oriented commands will be built
   out of vanilla common lisp functions which manipulate files.
 
-  This file contains support for access and 
+  This file contains support for access and
   modification of other server worlds.
 
 
@@ -57,7 +57,7 @@ Modification History (most recent at top)
 
 ;; returns 2 values specifying people and files
 ;; the first value can either be the keyword :ALL or a list of usernames
-;; the 2nd value can either be the keyword :ALL or a list of box 
+;; the 2nd value can either be the keyword :ALL or a list of box
 ;; specifiers.  A box specifier is a list whose CAR is a BId and whose
 ;; CDR, (possibly NULL) is a plist acceptable to make-box-from-server-spec
 ;; The 1st value can be NIL if the line is empty or a comment line
@@ -139,7 +139,7 @@ Modification History (most recent at top)
 		  (buffer-clear buffer))
 		 (t (buffer-clear buffer))))
       (t (vector-push-extend char buffer)))))
-	
+
 
 (defun read-exports-file-box-plist (filestream &optional
 					       (buffer *string-buffer*))
@@ -158,7 +158,7 @@ Modification History (most recent at top)
       (#\: (unless (zerop& (fill-pointer buffer))
 	     (push (intern (string-upcase buffer) keyword-package) plist)
 	     (buffer-clear buffer)))
-      (t (vector-push-extend char buffer)))))  
+      (t (vector-push-extend char buffer)))))
 
 
 (defmacro do-export-file-lines ((people-spec-var box-spec-var filestream)
@@ -283,4 +283,4 @@ Modification History (most recent at top)
   (boxer::set-foreign-server box t)
   (unless (slot-value server 'shared?) (boxer::set-read-only-box? box t))
   (boxer::putprop box server 'bfs-server))
-	     
+
