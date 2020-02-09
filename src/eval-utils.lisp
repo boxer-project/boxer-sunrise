@@ -15,7 +15,7 @@
 
 
 
-  Copyright 1985, 1986 Massachusetts Institute of Technology 
+  Copyright 1985, 1986 Massachusetts Institute of Technology
 
  Permission to use, copy, modify, distribute, and sell this software
  and its documentation for any purpose is hereby granted without fee,
@@ -77,7 +77,7 @@ Modification History (most recent at top)
 (defun arrange-for-list-to-be-run (list)
   (if (null *trigger-list-to-run*)
     (setq *trigger-list-to-run* list)
-    (setq *trigger-list-to-run* (append *trigger-list-to-run* list))))                                           
+    (setq *trigger-list-to-run* (append *trigger-list-to-run* list))))
 
 
 ;;this function is kind of crocked up.  the value stuff is all wrong.
@@ -110,7 +110,7 @@ Modification History (most recent at top)
       (error "Unknown sfun continuation type"))))
 
 (defun make-doit-vc-from-list (list)
-  (boxer::make-vc 
+  (boxer::make-vc
    (list
     (boxer::make-evrow-from-pointers
      (mapcar #'boxer::make-pointer list)))
