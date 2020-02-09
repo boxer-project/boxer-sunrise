@@ -83,7 +83,7 @@ Modification History (most recent at top)
 		 (break))))
 	(terpri *client-debug-stream*))
     (force-output *client-debug-stream*)))
-		       
+
 
 (defmacro debugging-message (format-string . format-args)
   (when *include-debugging-code*
@@ -115,7 +115,7 @@ Modification History (most recent at top)
 			    (:predicate server-box-info?)
 			    (:constructor %make-server-box-info))
   (bid 1)
-  (box nil)  
+  (box nil)
   (owner nil)
   (read-date 0)
   (write-date 0)
@@ -213,7 +213,7 @@ Modification History (most recent at top)
 
 #|
 
-;; a port UID of 0 in the port target reference means 
+;; a port UID of 0 in the port target reference means
 ;; that the last box in the chain is the target
 
 (defmacro do-pttt-entries ((var table) &body body)
@@ -301,9 +301,9 @@ Modification History (most recent at top)
 (defmacro with-forwarding-table-bound ((bid server-info) &body body)
   `(let* ((*current-forwarding-table* (unless (null ,server-info)
 					(sbi-forwarding-table ,server-info)))
-	  (*new-forwarding-inferiors* nil))     
+	  (*new-forwarding-inferiors* nil))
      (prog1 (progn . ,body)
-       ;; if the body finishes without error, then the forwarding 
+       ;; if the body finishes without error, then the forwarding
        ;; table needs to be pushed down to the next level of
        ;; inferiors and we can reset the forwarding table for this
        ;; particular box
@@ -372,7 +372,7 @@ Modification History (most recent at top)
 (defun in-bfs-environment? () (not *dump-out-file-box-inferiors?*))
 
 ;;; Accessor and mutator generating macro for server-box-info's
-;;; remember that that the info structs are supposed to be 
+;;; remember that that the info structs are supposed to be
 ;;; write through caches of information on the server
 
 (defmacro defsbi-info-slot (slot-name)
