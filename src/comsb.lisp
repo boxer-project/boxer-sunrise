@@ -40,11 +40,11 @@
                                          +-------+
 
 
-	  This file contains top level definitions for 
+	  This file contains top level definitions for
 	  BOXER Editor Commands that deal with Boxes
 
 Box Commands:
-  COM-MAKE-BOX COM-TOGGLE-BOX-TYPE COM-MAKE-DATA-BOX 
+  COM-MAKE-BOX COM-TOGGLE-BOX-TYPE COM-MAKE-DATA-BOX
   COM-ENTER-BOX COM-MAKE-AND-ENTER-BOX
   COM-MAKE-AND-ENTER-DATA-BOX COM-EXIT-BOX
 Shrinking and Expanding:
@@ -63,7 +63,7 @@ Modification History (most recent at top)
  8/28/07 toggle-view-internal checks to make sure that we really have a graphics-sheet
          in the graphics-info slot to prevent (for now) toggling of sprite boxes
  1/15/07 make-turtle-box-internal, (redisplay)'s => (repaint)'s
- 7/28/05 com-make-box should supply 'doit-box type arg for 
+ 7/28/05 com-make-box should supply 'doit-box type arg for
          make-initialized-box-for-editor
  7/02/05 new function for making new boxes which use new-box-properties
          make-initialized-box-for-editor
@@ -125,11 +125,11 @@ region into a box. "
 ;    (let* ((bp-1 (make-bp :moving))
 ;	   (bp-2 (make-bp :moving))
 ;	   (doomed-region (make-editor-region bp-1  bp-2)))
-;      
+;
 ;    ;;; bracket the box
-;      (move-bp bp-1 
+;      (move-bp bp-1
 ;	       (BOX-FIRST-BP-VALUES (superior-box (bp-row *point*))))
-;      (move-bp bp-2 
+;      (move-bp bp-2
 ;	       (BOX-LAST-BP-VALUES (superior-box (bp-row *point*))))
 ;      (setf (interval-box doomed-region) (point-box))
 ;      ;;; kill region ,exit,rubout box ,yank stuff
@@ -148,7 +148,7 @@ region into a box. "
 ;      (delete-bp (bp-row bp-2) bp-2)
 ;      (delete-bp (bp-row bp-1) bp-1)
 ;      (reset-editor-numeric-arg)
-;      
+;
 ;    )))
 ;  eval::*novalue*)
 ;
@@ -175,9 +175,9 @@ region into a box. "
 ;	(let* ((bp-1 (make-bp :moving))
 ;	       (bp-2 (make-bp :moving))
 ;	       (doomed-region (make-editor-region bp-1  bp-2)))
-;	  (move-bp bp-1 
+;	  (move-bp bp-1
 ;		   (BOX-FIRST-BP-VALUES (superior-box (bp-row *point*))))
-;	  (move-bp bp-2 
+;	  (move-bp bp-2
 ;		   (BOX-LAST-BP-VALUES (superior-box (bp-row *point*))))
 ;	  (setf (interval-box doomed-region) (point-box))
 ;	  (kill-region doomed-region)
@@ -198,18 +198,18 @@ region into a box. "
     (com-exit-box)
     (unbox-box box)))
 
-			  
+
 ;;;; given that the point is below or on the box, return the screen-row
 ;;;; that the point should have based on the new box (box)
-(defun walk-out-screen-box (box sbox) 
-  (cond 
+(defun walk-out-screen-box (box sbox)
+  (cond
     ((and (port-box? box) (eq (slot-value sbox 'actual-obj) (ports box)))
      sbox)
     ((and (not (port-box? box))(eq (slot-value sbox 'actual-obj) box))
      sbox)
     (t (walk-out-screen-box box (superior-screen-box sbox)))))
 ;;;; is the character a box, not a port, and without any ports?
-(defun ok-to-unbox (box) 
+(defun ok-to-unbox (box)
   (and (box? box) (not (port-box? box))))
 
 (defun com-unboxify-region (&optional (region nil))
@@ -221,18 +221,18 @@ region into a box. "
 			      :stop-bp-name stop-bp)
 
     ;;;; move the point to a safe spot. must manage the screen-box
-    (move-bp-1 *point* 
-	       (bp-row stop-bp) 
+    (move-bp-1 *point*
+	       (bp-row stop-bp)
 	       (bp-cha-no stop-bp)
 	       (walk-out-screen-box (bp-box stop-bp) (point-screen-box))
 	       )
-    
-    
+
+
     (let ((list-of-boxes nil))
       (do ((row (bp-row start-bp) (next-row row)))
 	  ((eql row (next-row(bp-row stop-bp))))
 
-	;;;; need to iterate on the row chas. 
+	;;;; need to iterate on the row chas.
 	;;;; need stops and starts for the start and end, and a
 	;;;; special case for one row regions
 
@@ -245,14 +245,14 @@ region into a box. "
 		 ))
 	      ((eql row (bp-row start-bp))
 	       (do-row-chas ((cha row :start (bp-cha-no start-bp)))
-		 (if (ok-to-unbox cha) 
+		 (if (ok-to-unbox cha)
 		     (setq list-of-boxes (cons cha list-of-boxes)))))
 	      ((eql row (bp-row stop-bp))
 	       (do-row-chas ((cha row :stop (bp-cha-no stop-bp)))
-		 (if (ok-to-unbox cha) 
+		 (if (ok-to-unbox cha)
 		     (setq list-of-boxes (cons cha list-of-boxes)))))
 	      (t (do-row-chas ((cha row))
-		   (if (and (box? cha) (not (port-box? cha))) 
+		   (if (and (box? cha) (not (port-box? cha)))
 		       (setq list-of-boxes (cons cha list-of-boxes)))))))
       (dolist (b list-of-boxes)
 	(unbox-box b))
@@ -263,7 +263,7 @@ region into a box. "
   "given a box, find its index in its superior-row"
   (let ((index 0))
     (do-row-chas ((cha (superior-row box)))
-      (if (eq box cha) 
+      (if (eq box cha)
 	  (return index)
 	  (setq index (1+ index))))))
 
@@ -298,37 +298,37 @@ region into a box. "
 ;;;; the boxes if necessary. It makes a copy of the row first.
 (defun prepare-row-inside-port (row replacep)
   (if (null replacep) row
-      (progn 
+      (progn
 	(setq row (make-row-with-same-chas-array row)
 					;(copy-row row)
 )
 	(do* ((index 0 (1+ index))
 	      (cha (cha-at-cha-no row index)(cha-at-cha-no row index)))
-	     ((eql index (length-in-chas row))) 
+	     ((eql index (length-in-chas row)))
 	  (if (box? cha)
 	      (progn
 		(delete-cha-at-cha-no row index)
-		(insert-cha-at-cha-no 
-		 row 
+		(insert-cha-at-cha-no
+		 row
 		 (port-to-internal cha)
 		 index))))))
   row)
-  
 
 
 
-;;;; Unbox the given box. 
+
+;;;; Unbox the given box.
 ;;;; Algorithm: delete the character. Tack the first row of the box onto
-;;;; the row's end, copy out the middle rows, and tack on the final row. 
+;;;; the row's end, copy out the middle rows, and tack on the final row.
 ;;;; For one row boxes, the first condition just splices in the characters.
 ;;;; For 2+ row boxes, the chas after the box get inserted between srow and
-;;;; its next row. Then the first row of the box gets tacked onto srow. 
+;;;; its next row. Then the first row of the box gets tacked onto srow.
 ;;;;     This is all somewhat complicated by the fact that one must move
 ;;;; the *point* in the case of the first row of a 2+ row box. In order
 ;;;; to handle this eventuality, there is a check that looks to see if
 ;;;; the point is on the same row as the box being unboxed. When the
 ;;;; chas after the box being unboxed are moved, the point gets moved
-;;;; also to the new row.  
+;;;; also to the new row.
 ;;;;
 ;;;; if the box being unboxed is a port, we have to replace all of its sub
 ;;;; boxes with ports to those boxes
@@ -342,15 +342,15 @@ region into a box. "
     ;;;; replace the box with a copy
     ;;;; of itself, and then ubox it, otherwise we trash the ports' rows
     (cond ((port-box? box))
-	  ((ports box) 
-	   (progn 
+	  ((ports box)
+	   (progn
 	     (print "found a box with ports")
 	     (dolist (d (ports box))
 	       (INFORM-PORT-THAT-TARGET-IS-GOING-AWAY d))
 	     (setq box (copy-box box))
 	     )))
 
-    ;;;; iteration sets the insert row no. The insert-row  is where the rows get 
+    ;;;; iteration sets the insert row no. The insert-row  is where the rows get
     ;;;; put after being pulled out of the unboxed box.
     (let* ((sbox (superior-box srow)))
       (do* ((r (first-inferior-row box) nr)
@@ -359,12 +359,12 @@ region into a box. "
 	   ((null r))
 	(cond ((and (eq (previous-row r) nil)
 		    (eq (next-row r) nil))
-             ;;;; case for a one row box. 
+             ;;;; case for a one row box.
 	     ;;;; We splice in the chas
-	       (insert-row-chas-at-cha-no 
-		(row-at-row-no sbox insert-row-no) 
+	       (insert-row-chas-at-cha-no
+		(row-at-row-no sbox insert-row-no)
 	        ; filter boxes to ports if necessary
-		(prepare-row-inside-port r unboxing-a-port-box)  
+		(prepare-row-inside-port r unboxing-a-port-box)
 		index))
 
             ;;;; Case for boxes with 2+ rows.
@@ -374,48 +374,48 @@ region into a box. "
 	       (progn
 		 (if (eq srow (point-row))
 		     (let ((p-cha-n (point-cha-no)))
-		       (insert-row-at-row-no 
-			sbox 
+		       (insert-row-at-row-no
+			sbox
 			(delete-chas-between-cha-nos srow
 						     index
 						     (length-in-chas srow))
 			(1+ insert-row-no))
 		       (set-bp-row *point*
 				   (row-at-row-no sbox (1+ insert-row-no)))
-		       (setf (bp-cha-no *point*) 
+		       (setf (bp-cha-no *point*)
 			     (- p-cha-n index)))
-		     (insert-row-at-row-no 
-		      sbox 
+		     (insert-row-at-row-no
+		      sbox
 		      (delete-chas-between-cha-nos srow
 						   index
 						   (length-in-chas srow))
 		      (1+ insert-row-no)))
-		 (insert-row-chas-at-cha-no 
-		  srow 
+		 (insert-row-chas-at-cha-no
+		  srow
 		  ; filter boxes to ports if necessary
-		  (prepare-row-inside-port r unboxing-a-port-box)  
+		  (prepare-row-inside-port r unboxing-a-port-box)
 		  (length-in-chas srow))))
 	    ;;;; Case for the final row of the box
 	    ;;;; insert the final row of the box ahead of the chas
 	    ;;;; that appeared after the box in the original setup
 	      ((eq (next-row r) nil)
-	       (insert-row-chas-at-cha-no 
+	       (insert-row-chas-at-cha-no
 		(row-at-row-no sbox insert-row-no)
-		 ; filter boxes to ports if necessary 
-		(prepare-row-inside-port r unboxing-a-port-box)  
+		 ; filter boxes to ports if necessary
+		(prepare-row-inside-port r unboxing-a-port-box)
 		0))
 
 	    ;;;; Case for the middle rows of a 3+ row box
 	    ;;;; just move the rows into the row heirarchy of the big
 	    ;;;; box.
-	      (t (insert-row-at-row-no 
-		  sbox 
+	      (t (insert-row-at-row-no
+		  sbox
 		  (prepare-row-inside-port r unboxing-a-port-box)
 					; filter boxes to ports
 					; if necessary
 		  insert-row-no))
 	      )
-      
+
 	))))
 
 (DEFBOXER-COMMAND COM-MAKE-BOX ()
@@ -436,8 +436,8 @@ region into a box. "
 
 
 (DEFBOXER-COMMAND COM-TOGGLE-BOX-TYPE ()
-  "toggles the type of the box that the 
-cursor is in.  Data  Doit or Graphics 
+  "toggles the type of the box that the
+cursor is in.  Data  Doit or Graphics
 Graphics-Data.  Ports toggle their targets. "
   (reset-region)
   (reset-editor-numeric-arg)
@@ -483,7 +483,7 @@ is shrunken."
 		   (enter box)
 		   (unless (null (move-point (all-bp-values
 					      (box-first-bp-values box)
-					      screen-box)))		 
+					      screen-box)))
 		     (when (eq :before before-or-after)
 		       (com-end-of-row)))
 		     (if (shrunken? box) (com-expand-box))))
@@ -494,7 +494,7 @@ is shrunken."
 (defboxer-command COM-MOVE-TO-NEXT-BOX ()
   "moves to the next box"
   ;; if there is a region, get rid of it
-  (reset-region)  
+  (reset-region)
   (let ((next-box (point-next-box)))
     (cond ((null *editor-numeric-argument*)
 	   (unless (or (null next-box) (cha? next-box))
@@ -554,13 +554,13 @@ the box if it is shrunken."
 		 (enter box)
 		 (unless (null (move-point (all-bp-values
 					    (box-first-bp-values box)
-					    screen-box)))		 
+					    screen-box)))
 		   (com-end-of-row))
 		 (when (shrunken? box) (com-expand-box))))))
 	(t (with-multiple-execution
 	       (com-enter-previous-box))))
   eval::*novalue*)
-    
+
 
 (defboxer-command COM-MAKE-AND-ENTER-BOX ()
   "Makes a DOIT box where the cursor
@@ -570,7 +570,7 @@ is and places the cursor inside. "
       (with-multiple-execution
 	  (com-make-box)
 	(com-enter-box))
-      (com-boxify-region 'doit-box))      
+      (com-boxify-region 'doit-box))
   eval::*novalue*)
 
 (defboxer-command COM-MAKE-AND-ENTER-DATA-BOX ()
@@ -710,7 +710,7 @@ then it is shrunken first. "
 	       (eq box *initial-box*)))
 	  ((or (eq box-display-style ':normal) (always-zoom? box))
 	   ;;store away the old outermost screen box
-	   (push *outermost-screen-box* *outermost-screen-box-stack*)	   
+	   (push *outermost-screen-box* *outermost-screen-box-stack*)
 	   (set-outermost-box box screen-box)
 	   (set-point-screen-box screen-box))
           ((eq box-display-style ':supershrunk)
@@ -870,7 +870,7 @@ current height and width. "
   (mark-file-box-dirty (point-box))
   (modified (point-box))
   eval::*novalue*)
- 
+
 (defboxer-command com-make-toolbox ()
   "Makes a Tool Box at the cursor location."
   (reset-region)
@@ -1164,7 +1164,7 @@ Does Nothing if There is No Defined BoxTop"
   (if (eq box *outermost-screen-box*)
       (boxer-editor-error "You can't toggle the view of the Outermost Box")
       ;; It's always OK to toggle into a screen-box
-      ;; but there had better be a graphics-sheet if we 
+      ;; but there had better be a graphics-sheet if we
       ;; want to toggle into a graphics-screen-box
       (toggle-view-internal box))
   eval::*novalue*)
@@ -1231,20 +1231,20 @@ Does Nothing if There is No Defined BoxTop"
 (defboxer-command com-fill-rows (&optional (region nil) trust-screen?)
   "fill the region"
   (let* ((region-to-fill (if region region
-			     (or *region-being-defined* 
+			     (or *region-being-defined*
 				 (get-current-region)))))
     (unless (null region-to-fill)
       (let ((sbp (interval-start-bp region-to-fill))
 	    (ebp (interval-stop-bp region-to-fill)))
-	(cond 
+	(cond
 	  ((eql (superior-box (bp-row sbp))
 		(superior-box (bp-row ebp)))
 	   (let ((box (superior-box (bp-row ebp))))
 	     (if (bp-< sbp ebp)
-                 (fill-rows (bp-row sbp) (bp-row ebp) 
+                 (fill-rows (bp-row sbp) (bp-row ebp)
                             (display-style-fixed-wid (display-style-list box))
                             (car (screen-objs box)) trust-screen?)
-                 (fill-rows (bp-row ebp) (bp-row sbp) 
+                 (fill-rows (bp-row ebp) (bp-row sbp)
                             (display-style-fixed-wid (display-style-list box))
                             (car (screen-objs box)) trust-screen?))))
 	  (t (boxer-editor-error "Endpoints for fill must be in the same box"))))))
@@ -1256,7 +1256,7 @@ Does Nothing if There is No Defined BoxTop"
   "Reformats the box's contents"
   (reset-region)
   (when (display-style-fixed-wid (display-style-list box))
-    (fill-rows (first-inferior-row box) (last-inferior-row box) 
+    (fill-rows (first-inferior-row box) (last-inferior-row box)
                (display-style-fixed-wid (display-style-list box))
                (point-screen-box) trust-screen?)
     (mark-file-box-dirty (first-inferior-row box)))
@@ -1287,23 +1287,23 @@ Does Nothing if There is No Defined BoxTop"
               (too-big?
                ;; break the row at the specified cha-no
                (let* ((*boxes-being-temporarily-deleted* t)
-                      (temp-row (kill-chas-at-cha-no row 
+                      (temp-row (kill-chas-at-cha-no row
                                                      (1+ lb-cha-no-or-extra-space)))
                       (next-row (let ((actual-next-row (next-row row)))
                                   (if (or (null actual-next-row)
                                           (blank-row? actual-next-row))
                                     ;; we can be at the end of the box
                                     (let ((newrow (make-initialized-row)))
-                                      (insert-row-at-row-no 
+                                      (insert-row-at-row-no
                                        (superior-box start-row) newrow
                                        (1+ (row-row-no (superior-box row) row)))
                                       newrow)
                                     actual-next-row))))
                  ;; make sure we separate the 2 pieces
-                 (append-space-if-needed temp-row 
+                 (append-space-if-needed temp-row
                                          (let ((1stcha (cha-at-cha-no next-row 0)))
                                            (or (null 1stcha)
-                                               (box? 1stcha) 
+                                               (box? 1stcha)
                                                (char= #\space 1stcha))))
                  (insert-row-chas-at-cha-no next-row temp-row 0)))
               ((not (null (next-row row)))
@@ -1315,17 +1315,17 @@ Does Nothing if There is No Defined BoxTop"
                         (let ((*boxes-being-temporarily-deleted* t)
                               (box (superior-box row))
                               (next-row (next-row row)))
-                          (delete-row-at-row-no 
+                          (delete-row-at-row-no
                            box (row-row-no box next-row))
                           ;; make sure we separate the 2 pieces
                           (append-space-if-needed row leading-space?)
-                          (insert-row-chas-at-cha-no row next-row 
+                          (insert-row-chas-at-cha-no row next-row
                                                      (length-in-chas row))
                           (setq again? t)))
                        ((null cha-no)) ; means we can't grab
                        (t
                         (let* ((*boxes-being-temporarily-deleted* t)
-                               (temp-row (delete-chas-between-cha-nos 
+                               (temp-row (delete-chas-between-cha-nos
                                           (next-row row) 0 cha-no)))
                           ;; make sure we separate the 2 pieces
                           (append-space-if-needed row leading-space?)
@@ -1339,25 +1339,25 @@ Does Nothing if There is No Defined BoxTop"
 
 (defmethod blank-row? ((row row))
   (not (do-row-chas ((cha row))
-         (when (or (box? cha) 
+         (when (or (box? cha)
                    (not (member cha '(#\space #\tab) :test #'char=)))
            (return t)))))
 
 
-;; leave out #\\, #\/, #\?, #\,, #\. and  #\- because it's hard to get it 
+;; leave out #\\, #\/, #\?, #\,, #\. and  #\- because it's hard to get it
 ;; merged with the space adder in fill-rows
 (defvar *autofill-linebreak-chas* '(#\space #\tab ))
 
 (defun linebreak-cha? (cha) (member cha *autofill-linebreak-chas*))
 
 ;; check screen structure first because it is faster (all the widths will have
-;; already been calculated) but be careful about the validity of the screen 
+;; already been calculated) but be careful about the validity of the screen
 ;; structure (basically is screen-box's x-got-clipped? then we can't use it)
 ;;
 ;; each row is analysed as follows
 ;;
 ;; if the row is too big, we need the last-break-cha (nil if there isn't one)
-;; if the row is too small, we need the amount of space left and 
+;; if the row is too small, we need the amount of space left and
 ;;    whether there is a trailing space
 ;;    sure, the 2nd value is confusing but do we really want to iterate over the
 ;;    row chas more than we have to ??
@@ -1374,9 +1374,9 @@ Does Nothing if There is No Defined BoxTop"
                     (declare (ignore ignore-wid))
                     (values T break-cha-no)))
                  (t ;; row is too small
-                  (values nil 
+                  (values nil
                           (-& fill-width (screen-obj-wid screen-row))
-                          (let ((lastcha (cha-at-cha-no 
+                          (let ((lastcha (cha-at-cha-no
                                           row (1-& (length-in-chas row)))))
                             (unless (box? lastcha) (char= #\space lastcha)))))))
           (t ;; do it the hard way by looping through the row chas
@@ -1384,9 +1384,9 @@ Does Nothing if There is No Defined BoxTop"
                (row-fill-info-1 row fill-width screen-box)
              (cond (too-big? (values T break-cha-no))
                    (t (values nil (-& fill-width row-wid)
-                              (let ((lastcha (cha-at-cha-no 
+                              (let ((lastcha (cha-at-cha-no
                                           row (1-& (length-in-chas row)))))
-                                (unless (box? lastcha) 
+                                (unless (box? lastcha)
                                   (char= #\space lastcha)))))))))))
 
 ;; calculate the width of the row and the position of the last space
@@ -1398,7 +1398,7 @@ Does Nothing if There is No Defined BoxTop"
         (when (linebreak-cha? cha) (setq last-break-cha-no idx))
         (check-and-handle-font-changes idx)
         (incf acc (cond ((box? cha)
-                         (let ((existing-screen-box 
+                         (let ((existing-screen-box
                                 (cdr (fast-assq screen-box
                                                 (slot-value cha 'screen-objs)))))
                            (cond ((not (null existing-screen-box))
@@ -1411,7 +1411,7 @@ Does Nothing if There is No Defined BoxTop"
 ;; given an available width, returns cha-no of the place in the row where
 ;; it can be broken, the beginning piece joined to the previous row
 (defun first-fill-chunk (row available-width screen-box)
-  (let ((acc 0) (idx 0) (break-cha-no nil) (leading-space nil) 
+  (let ((acc 0) (idx 0) (break-cha-no nil) (leading-space nil)
         (allspace? t) (entire-row? nil) (last-cha-was-box? nil))
     (catch 'midrow
       (with-font-hacking ((row-fds row))
@@ -1420,7 +1420,7 @@ Does Nothing if There is No Defined BoxTop"
           (check-and-handle-font-changes idx)
           (cond ((box? cha)
                  (incf acc
-                       (let ((existing-screen-box 
+                       (let ((existing-screen-box
                               (cdr (fast-assq screen-box
                                               (slot-value cha 'screen-objs)))))
                          (cond ((not (null existing-screen-box))
@@ -1432,7 +1432,7 @@ Does Nothing if There is No Defined BoxTop"
                 (t ;; character, check for space
                  (let ((spacechar (char= cha #\space)))
                    (incf acc (cha-wid cha))
-                   (cond (allspace? 
+                   (cond (allspace?
                           (if spacechar (setq leading-space t) (setq allspace? nil)))
                          (spacechar (setq break-cha-no (1+ idx)))
                          (last-cha-was-box?
@@ -1457,7 +1457,7 @@ Does Nothing if There is No Defined BoxTop"
         (when (>=& idx cha-no) (return acc))
         (check-and-handle-font-changes idx)
         (incf acc (cond ((box? cha)
-                         (let ((existing-screen-box 
+                         (let ((existing-screen-box
                                 (cdr (fast-assq psb
                                                 (slot-value cha 'screen-objs)))))
                            (cond ((not (null existing-screen-box))
@@ -1466,7 +1466,7 @@ Does Nothing if There is No Defined BoxTop"
                         (t (cha-wid cha))))
         (incf& idx)))
     acc))
-  
+
 ;; cribbed from estimate-box-height in scroll.lisp + stubs
 
 ;; quick version to estimate contribution to the width of
@@ -1489,12 +1489,12 @@ Does Nothing if There is No Defined BoxTop"
 	     (progn
 	       (record-circular-port box)
 	       (+& (vertical-border-width box)
-		   (with-summation 
+		   (with-summation
 		       (dolist (row (rows box))
 			 (sum (estimate-row-width row))))))))
 	(t
 	 (+& (vertical-border-width box)
-	     (with-summation 
+	     (with-summation
 		 (dolist (row (rows box)) (sum (estimate-row-width row))))))))
 
 (defun estimate-row-width (row)
@@ -1518,12 +1518,12 @@ Does Nothing if There is No Defined BoxTop"
 (defboxer-command com-fill-rows (&optional (region nil))
   "fill the region"
   (let* ((region-to-fill (if region region
-			     (or *region-being-defined* 
+			     (or *region-being-defined*
 				 (get-current-region)))))
     (unless (null region-to-fill)
       (let ((sbp (interval-start-bp region-to-fill))
 	    (ebp (interval-stop-bp region-to-fill)))
-	(cond 
+	(cond
 	  ((eql (superior-box (bp-row sbp))
 		(superior-box (bp-row ebp)))
 	   (progn
@@ -1547,9 +1547,9 @@ Does Nothing if There is No Defined BoxTop"
   (let* ((bp-1 (make-bp :moving))
 	 (bp-2 (make-bp :moving))
 	 (region (make-editor-region bp-1  bp-2)))
-    (move-bp bp-1 
+    (move-bp bp-1
 	     (box-first-bp-values (superior-box (bp-row *point*))))
-    (move-bp bp-2 
+    (move-bp bp-2
 	     (box-last-bp-values (superior-box (bp-row *point*))))
     (setf (interval-box region) (point-box))
     (com-fill-rows region)
@@ -1567,14 +1567,14 @@ Does Nothing if There is No Defined BoxTop"
       (multiple-value-bind (stop-row stop-cha-no)
           (box-last-bp-values box)
         (let ((start-bp (make-bp ':fixed)) (stop-bp  (make-bp ':fixed))
-              (*auto-fill-margin* (display-style-fixed-wid 
+              (*auto-fill-margin* (display-style-fixed-wid
                                    (display-style-list box))))
           (setf (bp-row start-bp) start-row (bp-cha-no start-bp) start-cha-no
                 (bp-row stop-bp) stop-row (bp-cha-no stop-bp) stop-cha-no)
           (fill-stuff start-bp stop-bp)
           (mark-file-box-dirty (first-inferior-row box))))))
   eval::*novalue*)
-          
+
 
 
 ;;;; various functions needed by the fill-rows routine
@@ -1587,14 +1587,14 @@ Does Nothing if There is No Defined BoxTop"
 
 (defun set-a-fill-margin (box)
   (let ((sbox (car(screen-objs box))))
-    (if sbox 
-	(setq *auto-fill-margin* 
+    (if sbox
+	(setq *auto-fill-margin*
               (- (screen-obj-wid sbox) (vertical-border-width box))))))
 
 
 ;;;; WIDTHS OF CHARACTER/BOXES in pixels
 ;;;; the width of a thing (box, char)
-(defun thing-wid (x) 
+(defun thing-wid (x)
   (cond ((null x) 0)
 	((box? x) (box-wid-in-pixels x))
 	(t (cha-wid x))))
@@ -1612,7 +1612,7 @@ Does Nothing if There is No Defined BoxTop"
 	  ((null (next-row r))))
     (if (car (screen-objs box))
 	(multiple-value-bind (l-bord-wid top r-bord-wid bottom)
-	    (box-borders-widths 
+	    (box-borders-widths
 	     (box-type (car (screen-objs box)))
 	     (car (screen-objs box)))
 	  (declare (ignore top bottom))
@@ -1634,11 +1634,11 @@ Does Nothing if There is No Defined BoxTop"
 	      pc))))
 
 (defun diagnose (row)
-  (if (null row) 
+  (if (null row)
       nil
       (let ((ps (pix-sum row))
 	    (am (auto-margin)))
-	(cond 
+	(cond
 	  ((and
 	    (< ps am)
 	    (eql *end-row* row))
@@ -1655,12 +1655,12 @@ Does Nothing if There is No Defined BoxTop"
 	   :too-big)
 	  ((eql ps am)
 	   :just-right)))))
-  
-  
+
+
 ;;;; fill the specified row, return t if changes any rows, else nil
 (defun fill-row (row)
       (let ((d (diagnose row)))
-	(cond 
+	(cond
 	  ((null d)  (progn
 			(setq *end-row* nil)
 			nil))
@@ -1670,7 +1670,7 @@ Does Nothing if There is No Defined BoxTop"
 		(eql d :too-small-leave-alone))
 	    nil)
 
-	  ((eql d :too-small) 
+	  ((eql d :too-small)
 	   (progn
 	     (if (and (not (eql (next-row row) *end-row*))
 		      (blank-row(next-row row)))
@@ -1678,15 +1678,15 @@ Does Nothing if There is No Defined BoxTop"
 	     (add-space-if-necessary row)
 	     (let ((numup (where-to-break
 			   (next-row row)
-			   (bounded-length 
+			   (bounded-length
 			    (next-row row)
 			    (- (auto-margin) (pix-sum row))))))
-	       (if (numberp numup) 
-		   (progn 
+	       (if (numberp numup)
+		   (progn
 		     (pull-up-chas row numup)
 		     (fill-row row)
 		     t)
-		   nil		   
+		   nil
 		   ))))
 	  ((eql d :too-big)
 	   (let ((numstaying (where-to-break
@@ -1706,7 +1706,7 @@ Does Nothing if There is No Defined BoxTop"
 			      (bounded-length row (auto-margin)))))
 	     (add-space-if-necessary row)
 	     (if (numberp numstaying)
-		 (progn 
+		 (progn
 		   (split-rows
 		    row
 		    numstaying)
@@ -1714,7 +1714,7 @@ Does Nothing if There is No Defined BoxTop"
 		   t)
 		 nil)
 	     )
-	   )))  
+	   )))
       )
 
 
@@ -1727,7 +1727,7 @@ Does Nothing if There is No Defined BoxTop"
   (if (< (length-in-chas row) num) (break "push-down-chas-called with num too big"))
   (if (> num  0)
       (insert-row-chas-at-cha-no (next-row row)
-				 (delete-chas-between-cha-nos 
+				 (delete-chas-between-cha-nos
 				  row
 				  (- (length-in-chas row) num)
 				  (length-in-chas row))
@@ -1737,7 +1737,7 @@ Does Nothing if There is No Defined BoxTop"
 
 
 ;;;; pull up chas from the row's next row.
-;;;; 
+;;;;
 (defun pull-up-chas (row num)
   (if (>= (length-in-chas(next-row row)) num)
       (if (> num 0)
@@ -1770,7 +1770,7 @@ Does Nothing if There is No Defined BoxTop"
 		     #\-))))
       (progn
 	(add-redisplay-clue row ':insert)
-	(chas-array-insert-cha 
+	(chas-array-insert-cha
 	 (chas-array row)
 	 (length-in-chas row)
 	 #\space))))
@@ -1804,7 +1804,7 @@ Does Nothing if There is No Defined BoxTop"
 		     (eql cha #\-)
 		     (eql cha nil)
 		     (eql index 0))
-		 (cond 
+		 (cond
 		   ((null cha) (progn  (print "special") cha-num))
 		   ((box? cha) (1+ index))
 		   ((> index 0) (1+ index))
@@ -1813,12 +1813,12 @@ Does Nothing if There is No Defined BoxTop"
 ;;;; what is the greatest upper bound of the length of the row
 ;;;; that has a pixel count less than pcount
 ;;;; i.e. (bounded-length (row infinity)) is the length of the row.
-;;;; (bounded-length (row 7)) should return 1 if the row's first cha is a 
+;;;; (bounded-length (row 7)) should return 1 if the row's first cha is a
 ;;;; character
 
 
 (defun bounded-length (row pcount)
-  (if (null row) 
+  (if (null row)
       0
       (do* ((index 0 (1+ index))
 	    (c (cha-at-cha-no row index)
@@ -1832,14 +1832,14 @@ Does Nothing if There is No Defined BoxTop"
 
 
 
-  
+
 ;;;; split the row into two, with n-left-on chars in the top row
 (defun split-rows (row n-left-on)
   (let ((drow (kill-chas-at-cha-no row n-left-on)))
-    (insert-row-at-row-no 
+    (insert-row-at-row-no
      (superior-box row)
-     drow 
-     (1+ (row-row-no 
+     drow
+     (1+ (row-row-no
 	  (superior-box row)
 	  row))
      )))
@@ -1856,7 +1856,7 @@ Does Nothing if There is No Defined BoxTop"
   (setq *end-row* end)
   (fill-all-but-last-rows start)
   (fill-last-row))
-	
+
 (defun fill-all-but-last-rows (row)
   (if (or (null row) (eql row *end-row*))
       nil
@@ -1876,20 +1876,20 @@ Does Nothing if There is No Defined BoxTop"
 ;;; stuff to strip out spaces in a region
 
 ;;; kill spaces between two bp's args: start stop
-(defun space-killer-iterator (bp1 bp2) 
+(defun space-killer-iterator (bp1 bp2)
   (do ((row (bp-row bp1) (next-row row)))
       ((eql row (bp-row bp2))  (space-killer row))
     (space-killer row))
   )
 
-(defun SPACE-KILLER (row) 
+(defun SPACE-KILLER (row)
   "kill xtra spaces on the given row"
   (let ((space-mode t))
     (do* ((index 0 (1+ index))
           (cha (cha-at-cha-no row index) (cha-at-cha-no row index)))
          ((eql index (length-in-chas row)))
       (cond ((eql cha #\Space)
-             (if space-mode 
+             (if space-mode
                (progn
                  (delete-cha-at-cha-no row index)
                  (setq index (1- index)))
@@ -1901,9 +1901,9 @@ Does Nothing if There is No Defined BoxTop"
     (space-killer-iterator bp1 bp2)
     (fill-rows srow erow)))
 
-; (defboxer-command com-fill-rows (&optional 
+; (defboxer-command com-fill-rows (&optional
 ;				  (region
-;				   (or 
+;				   (or
 ;				    *region-being-defined*
 ;				    (get-current-region))
 ;				   ))
@@ -1912,7 +1912,7 @@ Does Nothing if There is No Defined BoxTop"
 ;   (unless (null region)
 ;     (let ((sbp (interval-start-bp region))
 ;	   (ebp (interval-stop-bp region)))
-;       (cond 
+;       (cond
 ;	 ((eql (superior-box (bp-row sbp))
 ;	       (superior-box (bp-row ebp)))
 ;	  (progn
@@ -1920,7 +1920,7 @@ Does Nothing if There is No Defined BoxTop"
 ;	    (if (bp-< sbp ebp)
 ;		(fill-stuff sbp ebp)
 ;		(fill-stuff ebp sbp))))
-;	 (t 
+;	 (t
 ;	  (boxer-editor-error "Endpoints for fill must be in the same box")))
 ;       )
 ;     )
