@@ -10,15 +10,15 @@
 ;;;Initial revision
 ;;;
 
+    Boxer
+    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
 
+    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
 
+    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
 
-
-
-
-       Copyright 1989 - 1998 Regents of the University of California
-
-     Enhancements and Modifications Copyright 1999 - 2012 Pyxisystems LLC
+    https://opensource.org/licenses/BSD-3-Clause
 
 
                                           +-Data--+
@@ -96,7 +96,7 @@ Modification History (most recent at top)
                   (do-region-chas ((cha-var region) &body body)
                     (declare (ignore region))
                     (let ((starting-row (gensym))
-                          (terminating-row (gensym))                          
+                          (terminating-row (gensym))
                           (row-var (gensym))
                           (last-row-flag (gensym)))
                       `(let ((,starting-row (bp-row ,',real-start-bp-name))
@@ -105,20 +105,20 @@ Modification History (most recent at top)
                          (do ((,row-var ,starting-row (next-row ,row-var)))
                              ((or (null ,row-var)
                                   (not (null ,last-row-flag))))
-                           (when (eq ,row-var ,terminating-row) 
+                           (when (eq ,row-var ,terminating-row)
                              (setq ,last-row-flag t))
-                           (do-row-chas ((,cha-var ,row-var 
+                           (do-row-chas ((,cha-var ,row-var
                                                    :start
-                                                   (if (eq ,row-var 
+                                                   (if (eq ,row-var
                                                            ,starting-row)
                                                        (bp-cha-no ,',real-start-bp-name)
                                                        0)
                                                    :stop
-                                                   (when (eq ,row-var 
+                                                   (when (eq ,row-var
                                                              ,terminating-row)
                                                      (bp-cha-no ,',real-stop-bp-name))))
                              ,@body))))))
-                                                       
+
 	 (unwind-protect
 	     (progn . ,body)
 	   (deallocate-bp ,real-start-bp-name)
@@ -157,18 +157,18 @@ Modification History (most recent at top)
                      ;; copy some/all FD's
                      (let ((copied-fds nil))
                        (dolist (fd (row-fds row))
-                         (when (and (>=& (bfd-cha-no fd) start) 
+                         (when (and (>=& (bfd-cha-no fd) start)
                                     (<&  (bfd-cha-no fd) stop))
                            (push (make-cfd (-& (bfd-cha-no fd) start)
                                            (bfd-font-no fd)
                                            (bfd-color   fd))
                                  copied-fds)))
-                       (setf (chas-array-fds new-chas-array) 
+                       (setf (chas-array-fds new-chas-array)
                              (nreverse copied-fds)))
 		     new-row)))
 	    (cond ((eq (bp-row start-bp) (bp-row stop-bp))
 		   ;; there is only one (or part of one) row in the region
-		   ;; so copy the row (or part of it) 
+		   ;; so copy the row (or part of it)
 		   (let ((new-region-row (copy-partial-row
 					  (bp-row start-bp)
 					  :start (bp-cha-no start-bp)
@@ -208,7 +208,7 @@ Modification History (most recent at top)
 				(setf (bp-row new-stop-bp) new-row)
 				(setf (bp-cha-no new-stop-bp)
 				      (length-in-chas new-row))))
-					
+
 			     (t
 			      ;; otherwise append existing to rows
 			      (let ((new-row (if c-b-a-supplied?
@@ -247,7 +247,7 @@ Modification History (most recent at top)
   (setf (region self) new-region)
   (modified self))
 
-;; Use this one from the outside since at some point in the future, we 
+;; Use this one from the outside since at some point in the future, we
 ;; may allow more than one region in a BOX or ONLY one region in ALL of BOXER
 ;; No matter what, this is guaranteed to get you whatever the most appropriate
 ;; region is if it exists
@@ -307,7 +307,7 @@ Modification History (most recent at top)
 	   (setf (interval-start-bp region) (copy-bp *point*)))
 	  ((eq *point* (interval-stop-bp region))
 	   (setf (interval-stop-bp region) (copy-bp *point*))))
-    ;; if the *point* is in the region being killed, 
+    ;; if the *point* is in the region being killed,
     ;; we need to get it out of there
     (let* ((first-row (bp-row region-start-bp))
 	   (last-row (bp-row region-stop-bp))
@@ -410,7 +410,7 @@ Modification History (most recent at top)
 	      ;; then add the remainder of the original row back
 	      (unless (null remains)
 		(insert-row-chas-at-cha-no row remains (length-in-chas row)))
-	      ;; move the interval-stop-bp as well as 
+	      ;; move the interval-stop-bp as well as
 	      ;; the bp from the arglist (usually
 	      ;; the *point*) here
 	      (set-bp-row (interval-stop-bp region) row)
@@ -435,7 +435,7 @@ Modification History (most recent at top)
 				     (unless (null remains)
 				       (insert-row-chas-at-cha-no
 					rr remains (length-in-chas rr)))
-				     ;; move the interval-stop-bp as well as 
+				     ;; move the interval-stop-bp as well as
 				     ;; the bp from the arglist (usually
 				     ;; the *point*) here
 				     (set-bp-row (interval-stop-bp region) rr)
@@ -455,7 +455,7 @@ Modification History (most recent at top)
 ;;;                           Redisplay  of  REGIONS                        ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Regions are displayed as one or more blinkers.  With Each blinker 
+;;; Regions are displayed as one or more blinkers.  With Each blinker
 ;;; corresponding to screen representation(s) for the rows which make
 ;;; up the region
 
@@ -552,7 +552,7 @@ Modification History (most recent at top)
 
 
 
-;;; We provide two different messages for redisplay of regions.  One of them 
+;;; We provide two different messages for redisplay of regions.  One of them
 ;;; will just mark the screen rows corresponding to the region in
 ;;; the *CURRENT-SCREEN-BOX* while the other one will mark *ALL* the screen
 ;;; rows of the region.
@@ -561,7 +561,7 @@ Modification History (most recent at top)
   (setf (bw::sheet-blinker-list *boxer-pane*)
 	(fast-delq row-blinker (bw::sheet-blinker-list *boxer-pane*))))
 
-;; Blinkers positions are with respect to the window WITH THE BORDERS INCLUDED 
+;; Blinkers positions are with respect to the window WITH THE BORDERS INCLUDED
 ;(DEFMACRO FIXUP-COORDINATES-FOR-BLINKER (X Y BL)
 ;  `(LET ((SHEET (SEND ,BL :SHEET)))
 ;     (SETF ,X (+ ,X (SEND SHEET :LEFT-MARGIN-SIZE)))
@@ -582,7 +582,7 @@ Modification History (most recent at top)
 		(not (= hei (region-row-blinker-hei region-row-blinker)))
 		(not (= x   (region-row-blinker-x   region-row-blinker)))
 		(not (= y   (region-row-blinker-y   region-row-blinker))))
-	;; might be better to use timestamps (we might 
+	;; might be better to use timestamps (we might
 	;; have to use timestamps in addition anyway)
 	(with-open-blinker (region-row-blinker)
 	  (setf (region-row-blinker-wid region-row-blinker)
@@ -724,7 +724,7 @@ Modification History (most recent at top)
                                             :stop-bp-name region-stop-bp)
            ;; First we do "allocation" that is, make sure that there
            ;; is a blinker for every screen row and vice versa.  Note
-           ;; that blinker list will be ordered from top to bottom 
+           ;; that blinker list will be ordered from top to bottom
            (setf (interval-blinker-list region)
                  (update-row-blinker-list
                   (interval-blinker-list region)
@@ -742,10 +742,10 @@ Modification History (most recent at top)
                  (stopping-cha-no (bp-cha-no region-stop-bp)))
              (dolist (blinker (interval-blinker-list region))
                (let* ((blinker-row (region-row-blinker-uid blinker))
-                      (editor-row (screen-obj-actual-obj blinker-row))) 
+                      (editor-row (screen-obj-actual-obj blinker-row)))
                  (cond ((and (eq starting-row editor-row)
                              (eq stopping-row editor-row))
-                        ;; the row is both the first and last one in a 
+                        ;; the row is both the first and last one in a
                         ;; region so we should trim both ends of it
                         (both-ends-blinker-trim blinker starting-cha-no
                                                 stopping-cha-no))
@@ -797,10 +797,10 @@ Modification History (most recent at top)
                  (stopping-cha-no (bp-cha-no region-stop-bp)))
              (dolist (blinker (interval-blinker-list region))
                (let* ((blinker-row (region-row-blinker-uid blinker))
-                      (editor-row (screen-obj-actual-obj blinker-row))) 
+                      (editor-row (screen-obj-actual-obj blinker-row)))
                  (cond ((and (eq starting-row editor-row)
                              (eq stopping-row editor-row))
-                        ;; the row is both the first and last one in a 
+                        ;; the row is both the first and last one in a
                         ;; region so we should trim both ends of it
                         (both-ends-blinker-trim blinker starting-cha-no
                                                 stopping-cha-no))
@@ -851,7 +851,7 @@ Modification History (most recent at top)
 				   (slot-value screen-box 'screen-rows)
 				   start-row)
       (let ((blinker (or (car remaining-blinkers)
-			 ;; if we have run out, add them onto the 
+			 ;; if we have run out, add them onto the
 			 ;; end of the return-blinkers list
 			 (let ((new (allocate-region-row-blinker screen-row)))
 			   (nconc return-blinkers (list new))
@@ -908,14 +908,14 @@ Modification History (most recent at top)
 	      (= y (region-row-blinker-y blinker))
 	      (= hei (region-row-blinker-hei blinker))
 	      (or (not (= x (region-row-blinker-x blinker)))
-		  (not (= wid (region-row-blinker-wid blinker)))))	 
-	 ;; check for and optimize the common case of moving 
+		  (not (= wid (region-row-blinker-wid blinker)))))
+	 ;; check for and optimize the common case of moving
 	 ;; back and forth along the same row
 	 #+clx
 	 ;; this stuff really belongs in boxwin-xxx
 	 (progn
 	   ;; we know that either the wid or x or both have changed
-	   (unless (= (region-row-blinker-x blinker) x)	     
+	   (unless (= (region-row-blinker-x blinker) x)
 	     (%draw-rectangle (abs (- (bw::blinker-x blinker) x))
 			      (bw::blinker-height blinker)
 			      (min x (bw::blinker-x blinker))
@@ -923,7 +923,7 @@ Modification History (most recent at top)
 			      alu-xor (bw::blinker-window blinker)))
 	   (let ((new-right (+ x wid))
 		 (old-right (+ (bw::blinker-x blinker)
-				(bw::blinker-width blinker))))	     
+				(bw::blinker-width blinker))))
 	     (unless (= new-right old-right)
 	       (%draw-rectangle (abs (- new-right old-right))
 				(bw::blinker-height blinker)
@@ -953,13 +953,13 @@ Modification History (most recent at top)
 		  (region-row-blinker-hei blinker) hei)))))
 |#
 
-;;;; mousy stuff 
+;;;; mousy stuff
 
 ;;;; this function tells if the mouse is on top of the current region.
 
 
 (defun mouse-on-region-being-defined-p ()
-  (if (null boxer::*region-being-defined*) 
+  (if (null boxer::*region-being-defined*)
       nil
       (let ((blinker-list (boxer::interval-blinker-list boxer::*region-being-defined*)))
 	(multiple-value-bind (m-x m-y) (bw::mouse-window-coords)
@@ -972,12 +972,12 @@ Modification History (most recent at top)
   (let* ((x-low (region-row-blinker-x b-row))
 	 (x-high (+ (region-row-blinker-x b-row)
 		    (bw::region-row-blinker-width b-row)))
-	 
+
 	 (y-low (region-row-blinker-y b-row))
   	 (y-high (+ (region-row-blinker-y b-row)
 		    (bw::region-row-blinker-height b-row))))
     (and (and (< m-x x-high) (> m-x x-low))
 	 (and (< m-y y-high) (> m-y y-low)))))
-	
-	    
+
+
 
