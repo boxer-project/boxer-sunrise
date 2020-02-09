@@ -33,7 +33,7 @@ Modification History (most recent at top)
          NOTE: receiving mailers were messing this up by converting multiple adjacent
          borders into 1 border followed by blank lines
  3/01/05 simplified write-mime-boundary
- 7/21/04 generalized WITH-POP-SERVER-QUEUED-DELETION to handle message 
+ 7/21/04 generalized WITH-POP-SERVER-QUEUED-DELETION to handle message
          numbers as well as boxes
  4/05/04 removed icon caching using explicit ccl::file-icon from
          get-mime-{plain-text,binary-box}, should already be done by the calls to
@@ -46,15 +46,15 @@ Modification History (most recent at top)
  4/19/03 merged current LW and MCL files
  4/07/03 rfc822-date-time changed "(mod year 100)" to just "year", non 4 digit
          years seemed to confuse some mail readers...
- 3/29/03 moved "Reading.." message from POP-MSG-SIZE to GET-MESSAGE because 
+ 3/29/03 moved "Reading.." message from POP-MSG-SIZE to GET-MESSAGE because
          pop-msg-size is used by the delete-msg routine as well
          delete-message-no: changed when => cond, function was searching for
          match even after it deleted the message !
-11/11/02 added EOF handling to (fill-box-using-url (mail-message-body)), 
-         get-mime-multipart. 
+11/11/02 added EOF handling to (fill-box-using-url (mail-message-body)),
+         get-mime-multipart.
  8/30/02 filter-smtp-data-string added and used by send-smtp-data-line to fix
          bug with ~'s in outgoing mail text
- 5/30/02 mime-header-line-value: handle parens as plain char inside quote 
+ 5/30/02 mime-header-line-value: handle parens as plain char inside quote
          parameter value strings
  5/01/02 debugging tools
  4/11/02 added make-string-buffer and used it various places
@@ -65,7 +65,7 @@ Modification History (most recent at top)
  2/15/01 merged current LW and MCL files
                 INITIAL LW port changes
  1/29/01 mail-eol?
- 1/28/01 lispworks element-type, 
+ 1/28/01 lispworks element-type,
          net-write-line => net-write-control-line in POP commands
          net-mail-read-line
  2/15/99 unique-mime-path changed to comply with LW version of DO*
@@ -75,13 +75,13 @@ Modification History (most recent at top)
  9/11/00 mime mapping editing functions
  9/10/00 mime mapping utilities
  9/06/00 print-smtp-write-status, bound in smtp-send-box
-         added interrupt polling to smtp-send-box and also rearranged 
+         added interrupt polling to smtp-send-box and also rearranged
          unwind-protect forms for cleaner behavior if abort occurs in DATA
          operation
  5/25/00 get-mime-uu-binary-data
  6/21/99 make sure unique-mime-path checks for valid pathname everywhere
  6/14/99 better "'s handling in mime-header-line-value
-         newpath-for-mime was using original name instead of the corrected 
+         newpath-for-mime was using original name instead of the corrected
          rawpath name.  Note:max mac file length is 31 ! (not 32)
  4/26/99 send/get-mime-box now handle link property
          *max-viewable-message-length* + other support mostly get-mime-plain-text
@@ -92,7 +92,7 @@ Modification History (most recent at top)
  3/04/99 ensure-valid-filename checks for 32 char length and trims if neccessary
  1/21/99 smtp-do-hello transmits domain info now (some SMTP servers require this)
                 Mod list before LW port
-12/15/98 the MAIL primitive now precesses the editor mutation queue to 
+12/15/98 the MAIL primitive now precesses the editor mutation queue to
          insure that editor structure is up to date
 12/13/98 added stream based mail-eol? methods for end of line checking in
          net-mail-read-line
@@ -108,7 +108,7 @@ Modification History (most recent at top)
          GET-MIME-PMULTIPART (stubbed)
          GET-MIME-APPLEDOUBLE  done 12/03/98
 
-11/21/98 functions which send file attachments, send-mime-text-data and 
+11/21/98 functions which send file attachments, send-mime-text-data and
          send-mime-binary-data, now add a name parameter to Content-Type
 11/20/98 unique-mime-path now takes &optional supplied-name get-mime-binary-box
          and append-pop-message-body changed (possibly) supply that arg
@@ -163,7 +163,7 @@ Modification History (most recent at top)
   (multiple-value-bind (sec min hou day mon yea dow dst time-zone)
       (decode-universal-time time)
     (format nil "~a, ~a ~a ~a ~2,'0d:~2,'0d:~2,'0d ~a"
-            (ut-day dow nil) day (ut-month mon nil) yea ;(mod yea 100) 
+            (ut-day dow nil) day (ut-month mon nil) yea ;(mod yea 100)
             hou min sec (ut-tz  time-zone dst))))
 
 (defun message-id (&optional (time (get-universal-time)))
@@ -186,10 +186,10 @@ Modification History (most recent at top)
    ;; handle specific content types here
    (case smtp-type
      (:text (net-write-line stream "Content-Type: text/plain; charset=\"us-ascii\""))
-     (:multipart (net-write-line stream 
+     (:multipart (net-write-line stream
                                  "Content-Type: Multipart/mixed; boundary=\"~A\""
                                  boundary-value))
-     (:appledouble (net-write-line stream 
+     (:appledouble (net-write-line stream
                                  "Content-Type: Multipart/appledouble; boundary=\"~A\"; name=\"~A~A\""
                                  boundary-value (pathname-name filename)
                                  (let ((type (pathname-type filename)))
@@ -224,10 +224,10 @@ Modification History (most recent at top)
 
 ;; info for use by the smtp-send-header and smtp-send-box-xxx functions
 ;; if there are any sub boxes, assume :multipart for now
-;; the one important case is if the box is a refrence to a foreign file, 
-;; then we should use appledouble, rather than the generic :multipart 
+;; the one important case is if the box is a refrence to a foreign file,
+;; then we should use appledouble, rather than the generic :multipart
 
-(defun box-smtp-type (box) 
+(defun box-smtp-type (box)
   (if (not (null (getprop box :xref)))
       :appledouble
       (let ((type :text))
@@ -235,7 +235,7 @@ Modification History (most recent at top)
           (boxer::do-row-chas ((c r))
             (when (box? c) (setq type :multipart) (return))))
         type)))
-        
+
 (defun print-smtp-write-status (stream)
   (surf-message "Sending ~D bytes" (writing-stream-position stream)))
 
@@ -249,11 +249,11 @@ Modification History (most recent at top)
       (let ((smtp-type (box-smtp-type box)))
         ;; get the initial connect messages
         (handle-tcp-response smtp-stream)
-        ;; 
+        ;;
         (smtp-do-hello smtp-stream)
         (smtp-do-reset smtp-stream)
         ;; now send the mail....
-        ;; who from (should we put in VRFY's here ?)        
+        ;; who from (should we put in VRFY's here ?)
         (smtp-do-mail-from smtp-stream from)
         ;; who to (should we put in VRFY's here ?)
         (if (listp to)
@@ -263,10 +263,10 @@ Modification History (most recent at top)
         ;; Last chance to poll for interrupt, after the DATA op starts
         ;; we are committed to sending something...
         (eval::check-for-interrupt :interrupt "Mail Cancelled !")
-        (smtp-do-data smtp-stream)        
+        (smtp-do-data smtp-stream)
         ;; committed, so set the flag
         (setq mail-sent-flag t)
-        ;; followed by the body of the message 
+        ;; followed by the body of the message
         (case smtp-type
           (:text
            ;; consisting of the header info
@@ -310,13 +310,13 @@ Modification History (most recent at top)
           (multiple-value-setq (response myText) (smtp-do-reset stream))
           )
         (unless response (RETURN-FROM smtp-send-a-mail))
-        
+
         ;--- messaging stuff
         (when (multiple-value-setq (response myText) (smtp-do-verify stream from))
           (when (multiple-value-setq (response myText) (smtp-do-verify stream to))
             (multiple-value-setq (response myText) (smtp-do-mail-from stream from))
             (multiple-value-setq (response myText) (smtp-do-recipient-to stream to))
-            (multiple-value-setq (response myText) 
+            (multiple-value-setq (response myText)
               (smtp-send-data stream (smtp-create-mail-head from to subject) text))
             ))
 
@@ -348,11 +348,11 @@ Modification History (most recent at top)
                                          #-(or mcl lispworks) 'character
                            :adjustable t :fill-pointer 0))
 
-;; preceeded by "--" for boundaries, last boundary also has trailing  "--" 
+;; preceeded by "--" for boundaries, last boundary also has trailing  "--"
 ;; the == makes sure it doesn;t look like quoted printable representation
 (defun mime-separator-value ()
   (format nil "==~D~C~C~C~C~C~C~C~C~C~C" (get-universal-time) (random-alpha-char)
-          (random-alpha-char) (random-alpha-char) (random-alpha-char) 
+          (random-alpha-char) (random-alpha-char) (random-alpha-char)
           (random-alpha-char) (random-alpha-char) (random-alpha-char)
           (random-alpha-char) (random-alpha-char) (random-alpha-char)))
 
@@ -364,7 +364,7 @@ Modification History (most recent at top)
   ;(format t "~&boundary ~A written @  ~D" boundary-value (writing-stream-position stream))
   )
 
-(defvar *mime-prologue-message* 
+(defvar *mime-prologue-message*
   "This is a message in the MIME (Multipurpose Internet Mail Extensions) Format")
 
 ;; sub boxes are considered to be a separate type of data
@@ -402,8 +402,8 @@ Modification History (most recent at top)
 (defun row-mail-values (row)
   (let* ((values nil)
          (full-length (boxer::length-in-chas row))
-         (current-string (make-array full-length 
-                                     :element-type 
+         (current-string (make-array full-length
+                                     :element-type
                                      #+lispworks 'base-char
                                      #+(or mcl symbolics) 'character
                                      #-(or mcl symbolics lispworks) 'string-char
@@ -416,7 +416,7 @@ Modification History (most recent at top)
                                               :element-type
                                               #+lispworks 'base-char
                                               #+(or mcl symbolics) 'character
-                                              #-(or mcl symbolics lispworks) 
+                                              #-(or mcl symbolics lispworks)
                                               'string-char
                                               :fill-pointer 0)))
             ((box? cha)
@@ -427,7 +427,7 @@ Modification History (most recent at top)
     (cond ((and (zerop& (fill-pointer current-string)) (null values)) '(""))
           ((zerop& (fill-pointer current-string)) values)
           (t (nconc values (list current-string))))))
-          
+
 
 ;; This just does the default thing--which is  "Content-type: application/prs.boxer"
 ;; eventually move to application/vnd.boxer see RFC
@@ -443,7 +443,7 @@ Modification History (most recent at top)
            (ecase *mac-mime-file-encoding*
              ;(:binhex (send-mime-binhex-data (box::mac-file-ref-pathname xref)
              ;                               stream)
-             (:appledouble 
+             (:appledouble
               (send-mime-appledouble-data  box (box::xref-pathname xref)
                                            stream))
              (:applesingle
@@ -456,12 +456,12 @@ Modification History (most recent at top)
 ;             (if (eq mtype :text)
 ;                 (send-mime-text-data
 ;                  mtype subtype (box::mac-file-ref-pathname xref) stream)
-;                 (send-mime-binary-data 
+;                 (send-mime-binary-data
 ;                  mtype subtype (box::mac-file-ref-pathname xref) stream))))
           )))
 
 ;; ones we know for sure...
-;; use a dialog for user to add more types.  Should use same dialog for 
+;; use a dialog for user to add more types.  Should use same dialog for
 ;; both directions.
 ;; this is a temporary crock (especially so in the case of the PC)
 (defvar boxnet::*mac-file-mime-types*
@@ -507,7 +507,7 @@ Modification History (most recent at top)
            (add-new-mime-type :mime-type mime-type))
           (t (values :???? :????)))))
 
-#| ;; old version 
+#| ;; old version
 
 (defun mime-values->mac-file-values (mime-type)
   (cond ((string-equal mime-type "image/jpeg") (values :gkon :jpeg))
@@ -520,7 +520,7 @@ Modification History (most recent at top)
 ;; Mime to mac mapping utilities
 ;; SAVE, READ and EDIT
 
-(defun save-mime-mapping (&optional (pathname 
+(defun save-mime-mapping (&optional (pathname
                                      #+mcl (merge-pathnames
                                             "Mime-Map"
                                             (boxer::Default-mac-pref-file-name))
@@ -528,17 +528,17 @@ Modification History (most recent at top)
   (with-open-file (s pathname :direction :output :if-exists :supersede)
     (dolist (entry *mime-mac-file-types*)
       (format s "~A ~A ~A~&" (car entry) (cadr entry) (caddr entry)))))
-  
-(defun read-mime-mapping (&optional (pathname 
+
+(defun read-mime-mapping (&optional (pathname
                                      #+mcl (merge-pathnames
                                             "Mime-Map"
                                             (boxer::Default-mac-pref-file-name))
                                      #-mcl "~/.mime-map"))
   (let ((entries nil) (eof-value (list 'eof)) (finished? nil))
     (when (probe-file pathname)
-      (ignore-errors 
+      (ignore-errors
        (with-open-file (s pathname :direction :input)
-         (loop 
+         (loop
            (let ((line (read-line s nil eof-value)))
              (cond ((or (eq line eof-value) (string= line ""))
                     (setq finished? t)
@@ -547,14 +547,14 @@ Modification History (most recent at top)
                     ;; remember that the last 2 items must be 4 chars long
                     ;; even if some of those chars are spaces
                     (let ((1stspace (position #\space line)))
-                      (push 
+                      (push
                        (list (subseq line 0 1stspace)
                              (intern (subseq line (+ 1stspace 1) (+ 1stspace 5))
                                      (find-package "KEYWORD"))
                              (intern (subseq line (+ 1stspace 6) (+ 1stspace 10))
                                      (find-package "KEYWORD")))
                        entries))))))))
-      (unless (null finished?) 
+      (unless (null finished?)
         (setq *mime-mac-file-types* entries)))))
 
 
@@ -567,14 +567,14 @@ Modification History (most recent at top)
                    (caddr entry) (caddr new-values))))))
 
 (defun add-new-mime-type (&key mime-type app-sig file-type)
-  (let ((new-values (boxer::mime-type-dialog (string mime-type) 
+  (let ((new-values (boxer::mime-type-dialog (string mime-type)
                                              (when app-sig (string app-sig))
                                              (when file-type (string file-type)))))
     (cond ((null new-values))
           (t (push new-values *mime-mac-file-types*)))))
 
 ;; NOTE:mime-type-dialog & edit-mime-mapping are defined in the xxx-menu.lisp files
-                  
+
 
 
 ;; check to see if the box is a link and, if so, include the link tag
@@ -584,7 +584,7 @@ Modification History (most recent at top)
   (let ((file (getprop box :associated-file)))
     (if (null file)
       (net-write-smtp-data-line stream "Content-Type: application/prs.boxer")
-      (net-write-smtp-data-line stream 
+      (net-write-smtp-data-line stream
                                 "Content-Type: application/prs.boxer ; link=\"T\""))
     (net-write-smtp-data-line stream "Content-Transfer-Encoding: base64")
     ;(net-write-smtp-data-line stream "Content-Description: A Boxer Box ~A" (box::name box))
@@ -599,9 +599,9 @@ Modification History (most recent at top)
 ;; this is the hook for using quoted-printable representation
 ;; just writes out the lines for now....
 (defun send-mime-text-data (mtype subtype file mailstream)
-  (net-write-smtp-data-line mailstream 
-                            (format nil "Content-Type: ~A/~A ; name=\"~A~A\"" 
-                                    (string-downcase mtype) 
+  (net-write-smtp-data-line mailstream
+                            (format nil "Content-Type: ~A/~A ; name=\"~A~A\""
+                                    (string-downcase mtype)
                                     (string-downcase subtype)
                                     (pathname-name file)
                                     (let ((type (pathname-type file)))
@@ -609,7 +609,7 @@ Modification History (most recent at top)
                                         (format nil ".~A" type)
                                         ""))))
   ;(net-write-smtp-data-line mailstream "Content-Transfer-Encoding: quoted-printable")
-  (net-write-smtp-data-line mailstream 
+  (net-write-smtp-data-line mailstream
                             (format nil "Content-Description: ~A" (namestring file)))
   (net-terpri mailstream)
   (with-open-file (s file)
@@ -618,9 +618,9 @@ Modification History (most recent at top)
                 (net-write-smtp-data-line mailstream line))))))
 
 (defun send-mime-binary-data (mtype subtype file mailstream)
-  (net-write-smtp-data-line mailstream 
-                            (format nil "Content-Type: ~A/~A ; name=\"~A~A\"" 
-                                    (string-downcase mtype) 
+  (net-write-smtp-data-line mailstream
+                            (format nil "Content-Type: ~A/~A ; name=\"~A~A\""
+                                    (string-downcase mtype)
                                     (string-downcase subtype)
                                     (pathname-name file)
                                     (let ((type (pathname-type file)))
@@ -628,7 +628,7 @@ Modification History (most recent at top)
                                         (format nil ".~A" type)
                                         ""))))
   (net-write-smtp-data-line mailstream "Content-Transfer-Encoding: base64")
-  (net-write-smtp-data-line mailstream 
+  (net-write-smtp-data-line mailstream
                             (format nil "Content-Description: ~A" (namestring file)))
   (net-terpri mailstream)
   (send-mime-binary-data-internal file mailstream))
@@ -642,9 +642,9 @@ Modification History (most recent at top)
               (if (null byte) (return) (write-byte byte binstream)))))))
 
 (defboxer-primitive bu::mail ((eval::dont-copy address) (bu::port-to message))
-  ;; make sure we have up to date editor structure    
+  ;; make sure we have up to date editor structure
   (boxer::process-editor-mutation-queue-within-eval)
-  (let ((to (with-collection 
+  (let ((to (with-collection
               (dolist (er (boxer::get-box-rows address))
                 (collect (boxer::evrow-text-string er address))))))
     (when (null (cdr to)) (setq to (car to)))
@@ -663,7 +663,7 @@ Modification History (most recent at top)
   (if (not (box? eval::*lexical-variables-root*))
       (eval::primitive-signal-error :file "You can only MAIL editor boxes")
       (let* ((mailbox (boxer::current-file-box))
-             (to (with-collection 
+             (to (with-collection
                    (dolist (er (boxer::get-box-rows address))
                      (collect (boxer::evrow-text-string er address)))))
              (subject (boxer::lookup-variable-in-box-only mailbox 'bu::subject nil)))
@@ -698,7 +698,7 @@ Modification History (most recent at top)
 ;;  Pop classes are an extension of URL's to support a black box mechanism
 ;; for use with the POP reader
 
-;; for messages which are longer than *max-immediate-message-length*, the 
+;; for messages which are longer than *max-immediate-message-length*, the
 ;; message body is a black box with a URL of mail-message-body
 ;; Note: this will only work if the POP3 server supports the TOP command
 ;; see get-pop-status
@@ -735,7 +735,7 @@ Modification History (most recent at top)
    (session-id :initform nil :accessor pop-session-id))
   (:metaclass block-compile-class))
 
-;; substantially the same as net-read-line except 
+;; substantially the same as net-read-line except
 ;; we reuse the same vector to reduce CONSing because we know
 ;; that the line will immediately be passed to make-net-row
 ;; also "." hacking is handled transparently here, "." only lines return NIL
@@ -805,12 +805,12 @@ Modification History (most recent at top)
                      (mail-eol? stream char))
                  (unless period? (values *mail-line-buffer* i)))
               (cond ((and (char= char #\.) (=& i 0)) (setq period? t))
-                    (t 
+                    (t
                      (unless (null period?) (setq period? nil))
                      (vector-push-extend char *mail-line-buffer*)))))))
     )))
 
-;; stream based checks for end of line, 
+;; stream based checks for end of line,
 #-mcl
 (defmethod mail-eol? ((stream stream) char)
   (when (and (eq char #\CR) (eq (peek-char nil stream nil nil) #\LF))
@@ -839,12 +839,12 @@ Modification History (most recent at top)
     (boxer::with-fast-chas-array-manipulation (chas-array chas)
       (dotimes& (i (fill-pointer char-array))
         (setf (aref chas i) (aref char-array i)))
-      (setf (boxer::chas-array-active-length chas-array) 
+      (setf (boxer::chas-array-active-length chas-array)
             (fill-pointer char-array)))
     (boxer::make-initialized-row :chas-array chas-array)))
 
 
-;;; these 5 methods are meant to be inherited by mail-message-body 
+;;; these 5 methods are meant to be inherited by mail-message-body
 
 (defmethod initialize-instance ((url mail-message) &rest initargs)
   (call-next-method)
@@ -876,19 +876,19 @@ Modification History (most recent at top)
 (defmethod fill-box-using-url ((url mail-message) box)
   (multiple-value-bind (mail-box pop-url)
       (get-message-mail-box box)
-    (cond ((null mail-box) 
-           (eval::primitive-signal-error :net-error "Message " 
+    (cond ((null mail-box)
+           (eval::primitive-signal-error :net-error "Message "
                                          (slot-value url 'message-number)
                                          " not in a mail box"))
           (t (insure-pop-stream pop-url)
-             (get-message-internal (pop-stream pop-url) 
+             (get-message-internal (pop-stream pop-url)
                                    (slot-value url 'message-number) box)))))
 
 (defmethod fill-box-using-url ((url mail-message-body) box)
   (multiple-value-bind (mail-box pop-url)
       (get-message-mail-box box)
-    (cond ((null mail-box) 
-           (eval::primitive-signal-error :net-error "Message " 
+    (cond ((null mail-box)
+           (eval::primitive-signal-error :net-error "Message "
                                          (slot-value url 'message-number)
                                          " not in a mail box"))
           (t (insure-pop-stream pop-url)
@@ -935,15 +935,15 @@ Modification History (most recent at top)
   (let* ((response (net-read-line stream t))
          (indicator (char response 0)))
     (unless (null response) (debugging-message response))
-    (when (char= #\- indicator) 
+    (when (char= #\- indicator)
       (signal-tcp-error (subseq response 0 3) response))
     response))
-  
+
 ;; Quicky version of signal-tcp-error, no checking for bound error handlers
 (defun signal-pop-error (string)
   (eval::primitive-signal-error :pop-error (copy-seq string)))
 
-;; messages to be deleted from the server 
+;; messages to be deleted from the server
 (defvar *pop-server-deletion-queue* :toplevel)
 
 ;; queued objects can be either boxes or message numbers....
@@ -961,16 +961,16 @@ Modification History (most recent at top)
 
 ;; this is supposed to return a stream ready for the POP TRANSACTION state
 (defmethod open-pop-stream ((self pop-url))
-  (let ((stream (open-tcp-stream (slot-value self 'host) 
+  (let ((stream (open-tcp-stream (slot-value self 'host)
                                  (slot-value self 'port))))
-    ;; look for the greeting 
+    ;; look for the greeting
     (handle-pop-response stream)
     ;; login
     (net-write-line stream "USER ~A" (slot-value self 'user))
     (handle-pop-response stream)
     ;; password (add multiple attempts using *correct-password-retries* later)
     (net-write-line stream "PASS ~A" (or (slot-value self 'password)
-                                         (boxer::get-string-from-status-line 
+                                         (boxer::get-string-from-status-line
                                           "Enter password:" nil)))
     (handle-pop-response stream)
     ;; if we've got this far, it is safe to set the stream
@@ -978,7 +978,7 @@ Modification History (most recent at top)
     ;; check to see if TOP is supported here ?
     stream))
 
-;; Make sure the stream is still active since POP allows servers to close 
+;; Make sure the stream is still active since POP allows servers to close
 ;; idle connections after a certain timeout
 (defun valid-pop-stream? (stream)
   (and (not (null stream))
@@ -989,13 +989,13 @@ Modification History (most recent at top)
 ;; stubware for now, we need to store user/host in some pop object so
 ;; we have the info to relogin if there has been an idle timeout disconnect
 (defmethod insure-pop-stream ((url pop-url))
-  (unless (valid-pop-stream? (slot-value url 'stream)) 
+  (unless (valid-pop-stream? (slot-value url 'stream))
     ;; do we need to make sure the old value is handled ?
     (setf (slot-value url 'stream) (open-pop-stream url))))
 
 (defmethod fill-box-using-url ((url pop-url) box)
   (insure-pop-stream url)
-  (unwind-protect 
+  (unwind-protect
       (multiple-value-bind (nmsgs nbytes)
           (get-pop-status (slot-value url 'stream))
         (debugging-message "POP STAT ~A ~A" nmsgs nbytes)
@@ -1003,8 +1003,8 @@ Modification History (most recent at top)
         (setf (slot-value url 'session-id) (cons nmsgs nbytes))
         (with-pop-server-queued-deletion (slot-value url 'stream)
           (dotimes (i nmsgs)
-            (append-row box (make-row 
-                             (list (get-message (slot-value url 'stream) 
+            (append-row box (make-row
+                             (list (get-message (slot-value url 'stream)
                                                 (1+ i))))))))
     (close-pop-stream (slot-value url 'stream))
     ;; make sure any messages are erased
@@ -1020,7 +1020,7 @@ Modification History (most recent at top)
 (defmethod make-vc-using-url ((url pop-url))
   (insure-pop-stream url)
   (let ((vc-rows nil))
-    (unwind-protect 
+    (unwind-protect
         (multiple-value-bind (nmsgs nbytes)
             (get-pop-status (slot-value url 'stream))
           (debugging-message "POP STAT ~A ~A" nmsgs nbytes)
@@ -1052,12 +1052,12 @@ Modification History (most recent at top)
          (indicator (char response 0)))
     (cond ((char= indicator #\-) (signal-pop-error response))
           (t (let* ((1space (position #\space response :test #'char=))
-                    (2space (position #\space response 
+                    (2space (position #\space response
                                       :test #'char= :start (1+ 1space)))
-                    (3space (position #\space response 
+                    (3space (position #\space response
                                       :test #'char= :start (1+ 2space))))
                (values (string->number response :start (1+ 1space) :stop 2space)
-                       (string->number response 
+                       (string->number response
                                        :start (1+ 2space) :stop 3space)))))))
 
 
@@ -1067,9 +1067,9 @@ Modification History (most recent at top)
          (indicator (char response 0)))
     (cond ((char= indicator #\-) (signal-pop-error response))
           (t (let* ((1space (position #\space response :test #'char=))
-                    (2space (position #\space response 
+                    (2space (position #\space response
                                       :test #'char= :start (1+ 1space)))
-                    (3space (position #\space response 
+                    (3space (position #\space response
                                       :test #'char= :start (1+ 2space))))
                (string->number response :start (1+ 2space) :stop 3space))))))
 
@@ -1080,7 +1080,7 @@ Modification History (most recent at top)
     (when (char= (char response 0) #\-) (signal-pop-error response))))
 
 (defun close-pop-stream (pop-stream &optional reset?)
-  (when reset? 
+  (when reset?
     (net-write-control-line pop-stream "RSET") (handle-pop-response pop-stream))
   (net-write-control-line pop-stream "QUIT")
   (handle-pop-response pop-stream)
@@ -1089,12 +1089,12 @@ Modification History (most recent at top)
 
 (defun pop-top-unsupported () (throw 'no-top nil))
 
-;; For now, message boxes consist of a header box and a message box.  Multipart 
+;; For now, message boxes consist of a header box and a message box.  Multipart
 ;; MIME mail may have several boxes following the header box.  Overly large boxes
-;; will use the TOP command to only read in the header.  The message box will 
+;; will use the TOP command to only read in the header.  The message box will
 ;; then consist of an open header box and a closed (black box) message box
-;; with a MAIL-MESSAGE-BODY url.  Note that this may conflict with the a 
-;; multipart MIME header.  If the top command is unsupported (since it is 
+;; with a MAIL-MESSAGE-BODY url.  Note that this may conflict with the a
+;; multipart MIME header.  If the top command is unsupported (since it is
 ;; listed as optional in RFC1725), then the entire message box is left black
 ;; with a MAIL-MESSAGE url
 
@@ -1114,25 +1114,25 @@ Modification History (most recent at top)
            ;; check to see if ID's match before sending the DELE
            (pop-dele-msg pop-stream message-number))
           (t
-           ;; if the ID's don't match, loop to the beginning looking for an ID 
-           ;; match because the message may have drifted toward the beginning of 
-           ;; the mailbox because of intervening access of the mailbox with 
+           ;; if the ID's don't match, loop to the beginning looking for an ID
+           ;; match because the message may have drifted toward the beginning of
+           ;; the mailbox because of intervening access of the mailbox with
            ;; selecting message deletes because of the nature of mail(new messages
-           ;; appending), the message can only move toward the beginning of 
+           ;; appending), the message can only move toward the beginning of
            ;; the mailbox
            (do ((msg (1-& message-number) (1-& msg)))
                ((zerop& msg))
              (let ((msize (pop-msg-size pop-stream msg)))
                (when (and (= msize uid)
-                          (boxer::status-line-y-or-n-p 
-                           (format 
+                          (boxer::status-line-y-or-n-p
+                           (format
                             nil "Message ~D matches server msg ~D. Delete ~D from server ?"
                             message-number msg msg)))
                  (pop-dele-msg pop-stream msg))))))))
 
 (defun get-message (stream message-number)
   (let* ((msize (pop-msg-size stream message-number))
-         (url (make-instance 'mail-message 
+         (url (make-instance 'mail-message
                 :message-number message-number :uid msize))
          (*report-pop-message-reading-progress?* nil))
     ;; don't bother since many server don't support UIDL yet
@@ -1140,7 +1140,7 @@ Modification History (most recent at top)
     ;(setf (slot-value url 'uid) (net-read-line stream))
     ;; if the message size is too big, don't read it in right away
     ;; WARNING: deferred messages are not fully supported as of 6/22/96
-    ;; Don't change *defer-long-messages?* to T until you figure out 
+    ;; Don't change *defer-long-messages?* to T until you figure out
     ;; how to access a deferred message which has been moved out of the
     ;; mail box into a random place in the boxer world an unspecified
     ;; (possibly long) time ago
@@ -1158,14 +1158,14 @@ Modification History (most recent at top)
                (setq header-ok? t))
              ;; if we got the header, then make a
              (if header-ok?
-               (let ((header-box (make-header-box-from-stream 
+               (let ((header-box (make-header-box-from-stream
                                   stream t)))
-                 (make-delayed-pop-message message-number 
+                 (make-delayed-pop-message message-number
                                            header-box))
-               (make-delayed-pop-message message-number))))                       
+               (make-delayed-pop-message message-number))))
           (t ;; make an entire message box
            (let ((msg-box (get-message-1 stream message-number
-                                         (> msize 
+                                         (> msize
                                             *max-viewable-message-length*))))
              ;; if we're here, we know we've got a box without blowing out
              (putprop msg-box url :url)
@@ -1191,13 +1191,13 @@ Modification History (most recent at top)
 ;; It works by first, pulling out the header and returning a box with
 ;; header info in it.  We do it in 2 parts because the header can determine
 ;; how to process the body of the message.  In particular, certain MIME
-;; types will require radically different types of processing.  
+;; types will require radically different types of processing.
 ;; the MAKE-HEADER-BOX-FROM-STREAM function returns a box, typically with
 ;; textual header info already at the top.  It may also contain some
-;; header info as boxer structure in the closet to facilitate writing 
-;; mail filters in boxer.  If there is a MIME type, it is returned as 
+;; header info as boxer structure in the closet to facilitate writing
+;; mail filters in boxer.  If there is a MIME type, it is returned as
 ;; the 2nd value.  Additional MIME info is returned as a keyword list in
-;; the 3rd value.  The most important possibilities being 
+;; the 3rd value.  The most important possibilities being
 ;; Content-Transfer-Encoding (:base64 or :qp) and multipart boundary values
 ;; for multipart MIME types.  Note that make-header-box-from-stream MAY be
 ;; called recursively in the case of multipart messages.
@@ -1212,12 +1212,12 @@ Modification History (most recent at top)
     ;; how we should process the rest of the message
     ;; in particular, MIME information will appear in the
     ;; header
-    (prog1 
-      (append-pop-message-body header-box stream mime-type mime-values 
+    (prog1
+      (append-pop-message-body header-box stream mime-type mime-values
                                header-size save-to-file?)
       ;; some of the append sub functions (especially the binary ones) can leave
       ;; unprocessed lines in the stream since they exit as soon as the binary
-      ;; data ends 
+      ;; data ends
       (when (listen stream)
         (loop (let ((xtraline (net-mail-read-line stream nil)))
                 (when (null xtraline) (return))))))))
@@ -1237,7 +1237,7 @@ Modification History (most recent at top)
 
 ;; header fields which get their own box in the closet, should eventually
 ;; be user selectable and the boxes should be lightweight variables
-(defvar *box-worthy-pop-msg-header-fields* 
+(defvar *box-worthy-pop-msg-header-fields*
   '("Sender" "Reply-to" "From" "To" "Subject" "Date" "cc"))
 
 (defun header-field-has-machine-part? (field-name)
@@ -1245,9 +1245,9 @@ Modification History (most recent at top)
 
 ;; extracts the part of the line between "<" and ">"
 ;; expects the line to be unfolded, that is, after the "<" there better be a ">"
-(defun header-line-machine-field (line &optional 
+(defun header-line-machine-field (line &optional
                                        (return-field (make-string-buffer 50)))
-  (let ((start (do* ((i 0 (1+ i)) 
+  (let ((start (do* ((i 0 (1+ i))
                      (stop (1-(length line)))
                      (char (aref line i) (aref line i)))
                     ((or (= i stop) (char= char #\<)) (unless (= i stop) (1+ i))))))
@@ -1263,8 +1263,8 @@ Modification History (most recent at top)
 ;; this also removes leading whitespace and ignores comments between ()'s
 (defun header-line-value (line &optional
                                (return-field (make-string-buffer 50))
-                               (value-start (do* ((i 0 (1+ i)) 
-                                                  (char (aref line i) 
+                               (value-start (do* ((i 0 (1+ i))
+                                                  (char (aref line i)
                                                         (aref line i)))
                                                  ((char= char #\:) (+ i 1)))))
   (do* ((j value-start (1+ j))
@@ -1280,13 +1280,13 @@ Modification History (most recent at top)
              ;; ignore material inside parens
              (when (char= char #\)) (setq in-comment? nil)))
             ((char= char #\() (setq in-comment? t))
-            (t 
+            (t
              (when start? (setq start? nil))
              (vector-push-extend char return-field))))))
 
 ;; MIME fields can have additional parameters, delineated by ";" and
 ;; separated by "="
-;; any parameter values will be returned as an additional value in a keyword list 
+;; any parameter values will be returned as an additional value in a keyword list
 ;; NOTE: careful, parameter values sometimes are "..." quoted
 (defun mime-header-line-value (line &optional
                                (return-field (make-string-buffer 50)))
@@ -1300,9 +1300,9 @@ Modification History (most recent at top)
         (parameters nil)
         (in-quote? nil)
         (in-comment? nil))
-       ((>= j stop) 
+       ((>= j stop)
         (when (and (eq in-parameter? :parvalue) (not (null parameter-string)))
-          (setq parameters 
+          (setq parameters
                 (append parameters (list (copy-seq parameter-string)))))
         (values (intern (string-upcase return-field) (find-package "KEYWORD"))
                 parameters))
@@ -1315,22 +1315,22 @@ Modification History (most recent at top)
             (in-comment?
              ;; ignore material inside parens
              (when (char= char #\)) (setq in-comment? nil)))
-            ((char= char #\() 
+            ((char= char #\()
              (if (and (eq in-parameter? :parvalue) in-quote?)
                  (vector-push-extend #\( parameter-string)
                (setq in-comment? t)))
-            ((char= char #\;) 
+            ((char= char #\;)
              (cond ((null parameter-string)
                     (setq parameter-string (make-string-buffer 30)))
                    (t ; must be a 2nd+ parameter
-                    (setq parameters 
+                    (setq parameters
                           (append parameters
                                   (list (copy-seq parameter-string))))
                     (setf (fill-pointer parameter-string) 0)))
              (setq in-parameter? :parname))
             ((and (eq in-parameter? :parname) (char= char #\=))
-             (setq parameters 
-                   (append parameters (list (intern (string-upcase 
+             (setq parameters
+                   (append parameters (list (intern (string-upcase
                                                      parameter-string)
                                                     (find-package "KEYWORD")))))
              (setf (fill-pointer parameter-string) 0)
@@ -1338,7 +1338,7 @@ Modification History (most recent at top)
             ((char= char #\")
              (cond ((not in-quote?) (setq in-quote? T))
                    (t               (setq in-quote? nil))))
-            (t 
+            (t
              (when start? (setq start? nil))
              (vector-push-extend char (if (null in-parameter?)
                                           return-field
@@ -1346,7 +1346,7 @@ Modification History (most recent at top)
 
 ;;; make this more robust since it is being used in other contexts
 ;;; like http.lisp
-(defun header-line-field-name (line &optional 
+(defun header-line-field-name (line &optional
                                     (return-name (make-string-buffer 16)))
   (do ((maxlength (length line))
        (i 0 (1+& i)))
@@ -1358,7 +1358,7 @@ Modification History (most recent at top)
 
 ;; look for either an empty line (according to RFC822, an empty line separates
 ;; header from body) or perhaps a "." which can occur in response to
-;; a  "TOP <n> 0" command 
+;; a  "TOP <n> 0" command
 ;;
 ;; NOTE: flush TOP support if we decide to flush deferred message loading
 ;; should return a box, mime-type, mime-values (may be NIL) and bytes-read
@@ -1376,7 +1376,7 @@ Modification History (most recent at top)
     (boxer::set-name header (boxer::make-name-row '("Header")))
     (loop (multiple-value-bind (line llength)
               (get-header-line stream) ; counts bytes and unfolds lines
-            (cond ((or (null line) 
+            (cond ((or (null line)
                        (and (not read-to-terminator?) (string= line "")))
                    ;; add one more empty row to the header
                    (nconc visible-header-rows (list (boxer::make-row '())))
@@ -1385,13 +1385,13 @@ Modification History (most recent at top)
                    (incf bytes-read llength)
                    ;; make sure the pre-made arrays are reset
                    (setf (fill-pointer field-name) 0 (fill-pointer value-field) 0)
-                   (let ((header-field-name (header-line-field-name line 
+                   (let ((header-field-name (header-line-field-name line
                                                                     field-name)))
                      (multiple-value-bind (header-row visible-row closet-box
                                                       mtype mvalues)
                          (header-field-dispatch header-field-name line value-field)
                        (unless (null visible-row)
-                         (setq visible-header-rows 
+                         (setq visible-header-rows
                                (nconc visible-header-rows (list visible-row))))
                        (unless (null closet-box) (push closet-box closet-boxes))
                        (unless (null mtype)   (setq mime-type mtype))
@@ -1400,7 +1400,7 @@ Modification History (most recent at top)
                        (unless (null header-row)
                          (append-row header header-row))))))))
     (let ((return-header (make-box visible-header-rows)))
-      (unless (null closet-boxes) 
+      (unless (null closet-boxes)
         (boxer::add-closet-row return-header (make-row closet-boxes)))
       (values return-header mime-type mime-values bytes-read))))
 
@@ -1419,7 +1419,7 @@ Modification History (most recent at top)
     (cond ((not (null desired-field))
            (setq visible-row (make-net-row line))
            (setq closet-box
-                 (make-box (list (make-net-row 
+                 (make-box (list (make-net-row
                                   (if (header-field-has-machine-part? desired-field)
                                     (header-line-machine-field line value-field)
                                     (header-line-value line value-field))))
@@ -1441,10 +1441,10 @@ Modification History (most recent at top)
              (setq mime-values (list :encoding encoding))))
           (t nil))
     (values header-row visible-row closet-box mime-type mime-values)))
-        
+
 
 ;; NOTE: some mailers violate the spec by sending only a type
-;; given a MIME type/subtype symbol,returns keyword MIME type and subtype values 
+;; given a MIME type/subtype symbol,returns keyword MIME type and subtype values
 (defun mime-type-values (mime-type)
   (let* ((typestring (symbol-name mime-type))
          (slashpos (position #\/ typestring)))
@@ -1453,12 +1453,12 @@ Modification History (most recent at top)
            (values (intern typestring (find-package "KEYWORD"))
                    :default)
            )
-          (t (values (intern (subseq typestring 0 slashpos) 
+          (t (values (intern (subseq typestring 0 slashpos)
                              (find-package "KEYWORD"))
                      (intern (subseq typestring (1+& slashpos))
                              (find-package "KEYWORD")))))))
 
-;; this is the central MIME mail reading function.  It is 
+;; this is the central MIME mail reading function.  It is
 ;; passed the pop-stream AFTER the header has been read out of it
 ;; use header information to handle MIME bodies
 ;; it may be called recursively for multipart messages, in which case
@@ -1467,7 +1467,7 @@ Modification History (most recent at top)
 ;;
 ;; need to hack "application/mac-binhex40", application/applefile and
 ;; multipart/appledouble in addition to general mechanism for associated MIME
-;; types with mac types (see mime-values->mac-file-values for how the 
+;; types with mac types (see mime-values->mac-file-values for how the
 ;; associations are created/modified
 ;;
 ;; First, specific type/subtype pairs are searched, then general types are
@@ -1476,23 +1476,23 @@ Modification History (most recent at top)
 ;; NOTE: a lot of the cases end up calling the same functions, they are separated
 ;;       out to help sketch out the likely set of near term possibilities
 ;;      SHould also change this to be more data driven (def-mime-handler)
-(defun append-pop-message-body (message stream mime-type mime-values 
+(defun append-pop-message-body (message stream mime-type mime-values
                                         &optional (bytes-read 0) save-to-file?)
-  ;; the "message" should already have the header info, and the stream should 
+  ;; the "message" should already have the header info, and the stream should
   ;; be positioned to start making the body
   (multiple-value-bind (main-type subtype)
       (mime-type-values mime-type)
     ;; first, dispatch on main type, then look for specific subtype handlers
     (case main-type
-      (:text 
+      (:text
        (case subtype
          (:plain (get-mime-plain-text message stream bytes-read save-to-file?))
-         (otherwise (get-mime-plain-text message stream 
+         (otherwise (get-mime-plain-text message stream
                                          bytes-read save-to-file?))))
       (:multipart
        (let* ((boundary (getf mime-values :boundary)))
          (if (null boundary)
-             (get-mime-plain-text message stream 
+             (get-mime-plain-text message stream
                                   bytes-read save-to-file?) ; escape clause
              (case subtype
                ((:mixed :digest)
@@ -1500,7 +1500,7 @@ Modification History (most recent at top)
                 (:appledouble
                  (get-mime-appledouble message stream boundary mime-values
                                        bytes-read))
-                (:parallel 
+                (:parallel
                  (get-mime-pmultipart message stream boundary bytes-read))
                 (otherwise
                  (get-mime-multipart message stream boundary bytes-read))))))
@@ -1513,11 +1513,11 @@ Modification History (most recent at top)
                                (getf mime-values :name)))
          (:applefile
           (get-mime-applefile-box message stream bytes-read
-                                  (getf mime-values :name) 
+                                  (getf mime-values :name)
                                   (getf mime-values :encoding)))
-         (otherwise 
+         (otherwise
           (get-mime-binary-box mime-type message stream bytes-read
-                               (getf mime-values :name) 
+                               (getf mime-values :name)
                                (getf mime-values :encoding)))))
       (:message
        (case subtype
@@ -1550,7 +1550,7 @@ Modification History (most recent at top)
              (box (boxer::load-binary-box-from-stream-internal in64)))
         ;; now we need to transfer the vitals (contents, closet, name, type(?),
         ;;  etc) of the return box into the message
-        ;; very much like BOXER::INITIALIZE-BOX-FROM-BOX (loader.lisp) except we  
+        ;; very much like BOXER::INITIALIZE-BOX-FROM-BOX (loader.lisp) except we
         ;; need to merge with (possible) existing header info
         ;; name
         (let ((name (box::name-row box)))
@@ -1572,7 +1572,7 @@ Modification History (most recent at top)
         (box::move-box-internals box message)
         message))))
 
-;; pull out the rest of a message, 
+;; pull out the rest of a message,
 (defun empty-out-mail-message (stream)
   (do ((line (net-mail-read-line stream) (net-mail-read-line stream)))
       ((null line))
@@ -1586,9 +1586,9 @@ Modification History (most recent at top)
   (let ((stop (length string)) (blength (length boundary)))
     (and (>& stop 2) (char= (char string 0) #\-) (char= (char string 1) #\-) ;leading "--"
          (do ((s 2 (1+& s)) (b 0 (1+& b)))
-             ((>=& b blength) 
+             ((>=& b blength)
               ;; made it to the end, now check for trailing "--" to decide what to return
-              (if (and (>=& stop (+& blength 4)) 
+              (if (and (>=& stop (+& blength 4))
                        (char= (char string s) #\-) (char= (char string (1+& s)) #\-))
                   :end
                   T))
@@ -1601,7 +1601,7 @@ Modification History (most recent at top)
 
 (defun get-mime-multipart (message stream boundary &optional (bytes-read 0))
   (declare (ignore bytes-read))
-  (let ((*mime-multipart-boundary-value* boundary) 
+  (let ((*mime-multipart-boundary-value* boundary)
         (*mime-multipart-boundary-encountered* nil))
     (loop (let* ((line (or *mime-multipart-boundary-encountered*
                            (net-mail-read-line stream)))
@@ -1613,34 +1613,34 @@ Modification History (most recent at top)
                    ;(empty-out-mail-message stream)
                    (return))
                   (boundary? ;; we hit a boundary, call someone else to
-                   ;; similiar to get-message-1 but we handle text/plain 
-                   ;; specially and of course, we don't need to issue & handle 
+                   ;; similiar to get-message-1 but we handle text/plain
+                   ;; specially and of course, we don't need to issue & handle
                    ;; the POP commands
                    (setq *mime-multipart-boundary-encountered* nil)
-                   (multiple-value-bind (header-box mime-type 
+                   (multiple-value-bind (header-box mime-type
                                                     mime-values header-size)
                        (make-header-box-from-stream stream)
                      ;; we grab the header first because it might tell us
                      ;; how we should process the rest of the message in
                      ;; particular, MIME information will appear in the header
                      (cond ((eq mime-type :text/plain)
-                            ;; for plain text we append the rows to the 
+                            ;; for plain text we append the rows to the
                             ;; existing box
                             (boxer::do-box-rows ((header-row header-box))
                               (append-row message header-row))
                             (append-pop-message-body message stream
-                                                     mime-type mime-values 
+                                                     mime-type mime-values
                                                      header-size))
                            (t ; for all other types, we want a box
                             (append-pop-message-body header-box stream
-                                                     mime-type mime-values 
+                                                     mime-type mime-values
                                                      header-size)
                             (append-row message (make-row (list header-box)))))))
                   (t ; we can only come here if there is some junk, so do nothing
                    nil))))))
 
 (defvar *default-text-file-creator* :MSWD)
-                 
+
 ;; the generic text reading handler
 (defun get-mime-plain-text (message stream &optional (bytes-read 0) in-file?)
   (if in-file?
@@ -1660,7 +1660,7 @@ Modification History (most recent at top)
             (let ((boundary-value nil))
               (cond ((null line) (return nil))
                     ((and *mime-multipart-boundary-value*
-                          (setq boundary-value 
+                          (setq boundary-value
                                 (mime-boundary-= line
                                                  *mime-multipart-boundary-value*)))
                      (setq *mime-multipart-boundary-encountered* boundary-value)
@@ -1679,17 +1679,17 @@ Modification History (most recent at top)
         (let ((boundary-value nil))
           (cond ((null line) (return nil))
                 ((and *mime-multipart-boundary-value*
-                      (setq boundary-value 
+                      (setq boundary-value
                             (mime-boundary-= line *mime-multipart-boundary-value*)))
                  (setq *mime-multipart-boundary-encountered* boundary-value)
                  (return nil))
                 (t
                  (append-row message (make-net-row line))
                  (when *report-pop-message-reading-progress?*
-                   (surf-message "   ~D bytes read" 
+                   (surf-message "   ~D bytes read"
                                  (incf bytes-read llength))))))))))
 
-(defun get-mime-binhex-box (message stream 
+(defun get-mime-binhex-box (message stream
                                     &optional (bytes-read 0) supplied-name)
 
   (declare (ignore bytes-read))
@@ -1705,7 +1705,7 @@ Modification History (most recent at top)
       (boxer::set-xref-boxtop-info message creator ftype)
       message)))
 
-(defun mime-attachment-dir () 
+(defun mime-attachment-dir ()
   #+mcl (append (pathname-directory (ccl::mac-default-directory)) '("Mail Files"))
   #-mcl '())
 
@@ -1758,10 +1758,10 @@ Modification History (most recent at top)
     ;; note that either name or type can be NIL depending "." placement
     (cond ((> total max-length) ; bad, have to frob
            (cond ((null name)
-                  (make-pathname :type (subseq type 0 (1- max-length)) 
+                  (make-pathname :type (subseq type 0 (1- max-length))
                                  :defaults pathname))
                  ((null type)
-                  (make-pathname :name (subseq name 0 (1- max-length)) 
+                  (make-pathname :name (subseq name 0 (1- max-length))
                                  :defaults pathname))
                  (t
                   ;; prefer to trim name
@@ -1773,13 +1773,13 @@ Modification History (most recent at top)
                                           :defaults pathname))
                           ((< trim-amount tlength)
                            (make-pathname :name name
-                                          :type (subseq type 0 
+                                          :type (subseq type 0
                                                         (- tlength trim-amount))
                                           :defaults pathname))
-                          (t 
+                          (t
                            ;; got to trim from both, prefer name since type will
                            ;; be getting messed up anyway
-                           (make-pathname :name (subseq name 0 (1- max-length)) 
+                           (make-pathname :name (subseq name 0 (1- max-length))
                                           :defaults pathname)))))))
           (t pathname))))
 
@@ -1794,8 +1794,8 @@ Modification History (most recent at top)
                    :defaults rawpath)))
 
 ;; generic file saving
-(defun get-mime-binary-box (mime-type message stream bytes-read 
-                                      &optional supplied-name 
+(defun get-mime-binary-box (mime-type message stream bytes-read
+                                      &optional supplied-name
                                       (binary-encoding :base64))
   (let* ((pathname (unique-mime-path supplied-name))
          (xref (boxer::make-xref :pathname pathname :mime-type mime-type)))
@@ -1825,16 +1825,16 @@ Modification History (most recent at top)
     (setf (slot-value message 'box::first-inferior-row) nil)
     message))
 
-;; this basically just empties the text out, but 
+;; this basically just empties the text out, but
 ;; DOES check for a mime boundary to avoid hanging
 (defun get-mime-uu-binary-data (message stream
-                                        &optional (bytes-read 0) 
+                                        &optional (bytes-read 0)
                                         (pathname
                                          #+mcl (ccl::choose-new-file-dialog
                                                 :prompt
                                                 "save MIME data in file:")
                                          #+lispworks
-                                         (capi:prompt-for-file 
+                                         (capi:prompt-for-file
                                           "save MIME data in file:"
                                           :filter bw::*boxer-file-filters*
                                           :operation :save :if-does-not-exist :ok
@@ -1848,7 +1848,7 @@ Modification History (most recent at top)
         (let ((boundary-value nil))
           (cond ((null line) (return nil))
                 ((and *mime-multipart-boundary-value*
-                      (setq boundary-value 
+                      (setq boundary-value
                             (mime-boundary-= line *mime-multipart-boundary-value*)))
                  (setq *mime-multipart-boundary-encountered* boundary-value)
                  (return nil))
@@ -1859,17 +1859,17 @@ Modification History (most recent at top)
                                 (incf bytes-read llength))))))))))
 
 
-;; If the message is in 8bit, then we just have to hack conversion from 
+;; If the message is in 8bit, then we just have to hack conversion from
 ;; char stream back to bytes
 ;; NOTE: need to hack EOF properly for multipart sections
 (defun get-mime-8bit-binary-data (message stream
-                                          &optional (bytes-read 0) 
+                                          &optional (bytes-read 0)
                                           (pathname
                                            #+mcl (ccl::choose-new-file-dialog
                                                   :prompt
                                                   "save MIME data in file:")
                                            #+lispworks
-                                           (capi:prompt-for-file 
+                                           (capi:prompt-for-file
                                             "save MIME data in file:"
                                             :filter bw::*boxer-file-filters*
                                             :operation :save :if-does-not-exist :ok
@@ -1888,13 +1888,13 @@ Modification History (most recent at top)
                 (cond ((eq b eof-value) (return nil))
                       (t (write-byte (char-code b) s)))))))))
 
-(defun get-mime64-binary-data (message stream 
-                                       &optional (bytes-read 0) 
+(defun get-mime64-binary-data (message stream
+                                       &optional (bytes-read 0)
                                        (pathname
                                         #+mcl (ccl::choose-new-file-dialog
                                                :prompt "save MIME data in file:")
                                         #+lispworks
-                                        (capi:prompt-for-file 
+                                        (capi:prompt-for-file
                                          "save MIME data in file:"
                                          :filter bw::*boxer-file-filters*
                                          :operation :save :if-does-not-exist :ok
@@ -1930,7 +1930,7 @@ Modification History (most recent at top)
 ;; then we have to make a black box with a MAIL-MESSAGE url
 (defun make-delayed-pop-message (number &optional header)
   (let ((message (boxer::make-uninitialized-box 'boxer::data-box)))
-    (shared-initialize message t) 
+    (shared-initialize message t)
     (cond ((null header) ;
            (putprop message (make-instance 'mail-message :message-number number)
                     :url)
@@ -1956,10 +1956,10 @@ Modification History (most recent at top)
 (defboxer-primitive bu::get-mail ((eval::dont-copy mailbox) delete-messages?)
   (let ((*delete-loaded-messages?* (eval::true? delete-messages?))
         (mailbox (box-text-string mailbox)))
-    (make-vc-using-url (make-instance 'pop-url 
+    (make-vc-using-url (make-instance 'pop-url
                          :scheme-string (concatenate 'string "//" mailbox)))))
 
-    
+
 
 (defboxer-primitive bu::delete-message ((bu::port-to message))
   message eval::*novalue*
@@ -2000,8 +2000,8 @@ Modification History (most recent at top)
                    raw-text))
          (user (if @pos (subseq raw-text 0 @pos) "")))
     (finger host user)))
-                   
-                        
+
+
  ;;; For Debugging.....
 
 #|
