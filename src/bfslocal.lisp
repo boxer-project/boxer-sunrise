@@ -118,7 +118,7 @@ Modification History (most recent at top)
 	      ((separator-byte? byte) (return))
 	      ((comment-byte? byte)
 	       ;; check to see it this is the end of header comment
-	       ;; flush the rest of the line and return	       
+	       ;; flush the rest of the line and return
 	       (return-from read-bfs-header-line
 		 (when (end-of-header? filestream) 'end-of-header)))
 	      (t
@@ -167,7 +167,7 @@ Modification History (most recent at top)
 ;;; which are :element-type '(unsigned-byte 8))
 
 ;;; a BID line consists of 1 or more BID's layed out as
-;;; high 32bit value followed by low 32bit value separated 
+;;; high 32bit value followed by low 32bit value separated
 ;;; by whitespace.  If there is more than one BId, then they
 ;;; should be comma separated.  BId's with only one value will
 ;;; be assumed to have a high 32bit value of 0.
@@ -186,7 +186,7 @@ Modification History (most recent at top)
 		     ;; numlist needs another value and we have the last piece
 		     (push (make-bid top number) numlist))
 		    ((null number)
-		     ;; numlist is incomplete but we don't have any 
+		     ;; numlist is incomplete but we don't have any
 		     ;; more pieces so use what we have(assuming top is bottom)
 		     (debugging-message "Incomplete BId: using ~D as low 32"
 					top)
@@ -196,7 +196,7 @@ Modification History (most recent at top)
 		     ;; add it to.  Use what we get as the entire BId
 		     (debugging-message "Incomplete BId: using ~D as low 32"
 					number)
-		     (push number numlist)))		     
+		     (push number numlist)))
 	      ;; finally return
 	      (if (null (cdr numlist)) ; only one entry
 		  (return (car numlist))
@@ -231,7 +231,7 @@ Modification History (most recent at top)
 		     ((null num) (setq num x))
 		     (t (setq num (+& (*& num 10) x))))))))))
 
-;;; reads one or more strings, multiple strings are delineated by 
+;;; reads one or more strings, multiple strings are delineated by
 ;;;  either comma or whitespace
 ;;; leading whitespace is ignored
 
@@ -314,7 +314,7 @@ Modification History (most recent at top)
   (setf (sbi-write-date info) (file-write-date stream))
   info)
 
-;;; grab the 1st to byte of an '(unsigned-byte 8) stream 
+;;; grab the 1st to byte of an '(unsigned-byte 8) stream
 ;;; and make sure they are the beginning of a header
 (defun header-start? (s)
   (and (=& (read-byte s) (ldb boxer::%%bin-op-top-half
@@ -382,7 +382,7 @@ Modification History (most recent at top)
   (with-open-file (s (merge-pathnames "userfile" *local-server-directory*)
 		     :direction :input)
     (catch 'eof
-      (loop 
+      (loop
        (multiple-value-bind (account password pretty-name directory
 				     uid top-box-id)
 	   (user-line-values s)
@@ -399,7 +399,7 @@ Modification History (most recent at top)
 		     :direction :input)
     (let ((max-id 0))
       (catch 'eof
-	(loop 
+	(loop
 	 (multiple-value-bind (account password pretty-name directory
 				       uid top-box-id)
 	     (user-line-values s)
@@ -513,7 +513,7 @@ Modification History (most recent at top)
 ;;; this MUST not return until we are sure that the incremented
 ;;; file count has been written back
 ;;; This is to prevent possible duplication of allocated Box ID's
-;;; in case of a crash while writing. 
+;;; in case of a crash while writing.
 
 (defun increment-counter-file (counter-file)
   (when (null (probe-file counter-file))
@@ -535,7 +535,7 @@ Modification History (most recent at top)
 
 ;;; these are for locking individual files
 ;;; for groups, see with-single-transaction
-;;; these should use gensyms or something to be able 
+;;; these should use gensyms or something to be able
 ;;; to recognize who set the lock
 
 (defmacro with-write-lock ((file lock-string) &body body)
@@ -561,7 +561,7 @@ Modification History (most recent at top)
 
 
 
-;;; records all file activity so that it can be processed in 
+;;; records all file activity so that it can be processed in
 ;;; one chunk.  Any errors in the body should leave the state
 ;;; of the file system untouched.
 
@@ -576,7 +576,7 @@ Modification History (most recent at top)
 ;;;     Phase 2 transaction play through the *current-transactions*
 ;;;     list and are handled in Finalize-transactions
 ;;;   o If phase 1 and 2 complete, then the temp directory is cleared
-;;;     if we are losing, then we try and undo any transactions which 
+;;;     if we are losing, then we try and undo any transactions which
 ;;;     have affected the main directory.  Phase 3 transaction run in
 ;;;     an unwind-protect as Undo-Transactions and Clear-Transactions
 ;;;
@@ -594,7 +594,7 @@ Modification History (most recent at top)
 (defvar *phase-2-transactions* nil)
 
 ;; the last step of finalize-transactions should set this to T
-(defvar *transaction-complete* nil) 
+(defvar *transaction-complete* nil)
 
 (defun record-bfs-transaction (trans-type &rest args)
   (if *inside-transaction-body*
@@ -620,7 +620,7 @@ Modification History (most recent at top)
 		     ;; check for an existing file and back it up if there is
 		     (rename-file (caddr trans)
 				  (backup-pathname (caddr trans))))
-		   (rename-file (cadr trans) (caddr trans))) 
+		   (rename-file (cadr trans) (caddr trans)))
 		  (new-copy
 		   ;; there should NOT be an existing file
 		   ; (when (probe-file (caddr trans)) (error "..."))
@@ -878,7 +878,7 @@ Modification History (most recent at top)
 	    (sbi-forwarding-table temp-info) (combine-forwarding-tables
 					      (sbi-forwarding-table temp-info)
 					      new-forwarding-table))
-      ;; now write the new header out 
+      ;; now write the new header out
       (with-open-file (out tmp-pathname :direction :output)
 	(write-box-server-info out temp-info))
       ;; now copy the data over
@@ -974,8 +974,8 @@ Modification History (most recent at top)
 ;;;; Ring out the old, ring in the new....
 ;;; Only useful for converting old Sun Files so...
 
-#+sun 
-(progn 
+#+sun
+(progn
 
   (defvar *old-file-system-directory* "/usr/emstsun/boxer/user/bin/FILES/")
 
@@ -1018,12 +1018,12 @@ Modification History (most recent at top)
 	     (format t "~%Data or Header file missing for ~16,'0X" bid)
 	     nil))))
 
-  ;; you have to first, 
+  ;; you have to first,
   ;; (1) make the new directory
   ;; (2) convert the top level box by hand and place it in the new directory
-  
+
   ;; this uses internal functions in order to avoid having an active server
-  
+
   (defun convert-user-files (top-bid &optional (new-dir (lcl::pwd))(level 0))
     (let ((info (%make-server-box-info)))
       ;; read the info
@@ -1055,4 +1055,4 @@ Modification History (most recent at top)
 	       (let ((id (box::getprop b :server-box-id)))
 		 (unless (null id) (push id infs))))))
     infs))
-     
+
