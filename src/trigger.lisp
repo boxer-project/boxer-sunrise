@@ -89,7 +89,7 @@ Modification History (most recent at top)
 (defvar *optimize-trigger-procedures?* t)
 
 ;; this is a hook to be able to adaptively optimize certain
-;; trigger procs automagically.  Right now, what is does is 
+;; trigger procs automagically.  Right now, what is does is
 ;; analyze proc and if it is just a single symbol inside of a doit
 ;; box, and that symbol is a compiled-boxer-function, then we
 ;; essentially skip a level of doit box funcall.
@@ -202,7 +202,7 @@ Modification History (most recent at top)
 
 ;;; This is the beginning of a "Magic Names" interface for the editor
 ;;; Basically, the naming code should check for either a MAGIC-NAME-INSERT
-;;; or a MAGIC-NAME-DELETE property on each symbol and if there is one, 
+;;; or a MAGIC-NAME-DELETE property on each symbol and if there is one,
 ;;; funcall it with the (named) box and it's superior as args
 
 (defun find-trigger-holder (in-box &optional trigger-type)
@@ -231,7 +231,7 @@ Modification History (most recent at top)
 			      (eq (trigger-cache-type tc)
 				  trigger-type))
 			  cs)
-	       ;; there is an old trigger here so we 
+	       ;; there is an old trigger here so we
 	       ;; need to remove it first
 	       (setf (slot-value superior-box 'trigger-cache)
 		     (delete-if #'(lambda (tc)
@@ -312,8 +312,8 @@ Modification History (most recent at top)
 
 
 
-;;; These assume that the existence of the appropriate trigger has 
-;;; already been checked for.  That is, it is not safe to call them 
+;;; These assume that the existence of the appropriate trigger has
+;;; already been checked for.  That is, it is not safe to call them
 ;;; without having called has-<mumble>-trigger? first.
 
 (defun trigger-enabled? (box trigger-type)
@@ -350,7 +350,7 @@ Modification History (most recent at top)
   (let ((cache (find type (slot-value box 'trigger-cache)
 		     :key #'trigger-cache-type)))
     (when (eq type 'bu::modified-trigger)
-      ;; modified triggers differ from the standard by recording 
+      ;; modified triggers differ from the standard by recording
       ;; the "version" (timestamp) of the box so that if the box
       ;; is modified (by the editor), we can compare "versions" on
       ;; box exit to decide if the modified-trigger needs to be run
@@ -369,10 +369,10 @@ Modification History (most recent at top)
 	     (trigger-enabled? box trigger-type))
     ;; at this point, the cache will be filled
     (run-trigger box trigger-type)))
-			  
+
 ;; This is used in situations where is is not feasible to
 ;; call maybe-run-trigger explicitly.  The common case
-;; is when the box is being incrementally changed by the 
+;; is when the box is being incrementally changed by the
 ;; editor and then at some point the editing changes are
 ;; temporily finished (usually on box exit)
 ;; the concept of "modified" is based on recording timestamps
