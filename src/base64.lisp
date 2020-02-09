@@ -28,13 +28,13 @@ Modification History (most recent at top)
  2/14/05 #+mcl get-line mothod for net streams changed to ccl::basic-tcp-stream
          from ccl::tcp-stream
 10/15/04 changed #+mcl put-line method for network streams to apply
-         to ccl::basic-tcp-stream instead of ccl::tcp-stream because 
+         to ccl::basic-tcp-stream instead of ccl::tcp-stream because
          we switched to using OpenTransport streams which are between
          basic-tcp-streams and tcp-streams in the class hierarchy
  2/21/01 added #+lispworks stream methods
  2/12/01 merged into lispworks port
  9/06/00 added reading/writing-stream-position methods
-12/12/98 fill-24word now hacks empty lines (usually at the end of a block of 
+12/12/98 fill-24word now hacks empty lines (usually at the end of a block of
          data before a boundary marker is encountered)
 12/07/98 added specialized methods for stream-element-type
 12/07/98 started logging changes version = boxer 2.3beta
@@ -57,16 +57,16 @@ Modification History (most recent at top)
     (#\R 17) (#\S 18) (#\T 19) (#\U 20) (#\V 21) (#\W 22) (#\X 23) (#\Y 24) (#\Z 25)
     (#\a 26) (#\b 27) (#\c 28) (#\d 29) (#\e 30) (#\f 31) (#\g 32) (#\h 33) (#\i 34)
     (#\j 35) (#\k 36) (#\l 37) (#\m 38) (#\n 39) (#\o 40) (#\p 41) (#\q 42)
-    (#\r 43) (#\s 44) (#\t 45) (#\u 46) (#\v 47) (#\w 48) (#\x 49) (#\y 50) 
+    (#\r 43) (#\s 44) (#\t 45) (#\u 46) (#\v 47) (#\w 48) (#\x 49) (#\y 50)
     (#\z 51) (#\0 52) (#\1 53) (#\2 54) (#\3 55) (#\4 56) (#\5 57) (#\6 58) (#\7 59)
     (#\8 60) (#\9 61) (#\+ 62) (#\/ 63) (#\= nil)))
 
 (defparameter *base64-chars*
   (make-array 64 :element-type 'character
-              :initial-contents '(#\A #\B #\C #\D #\E #\F #\G #\H #\I #\J #\K 
+              :initial-contents '(#\A #\B #\C #\D #\E #\F #\G #\H #\I #\J #\K
                                   #\L #\M #\N #\O #\P #\Q #\R #\S #\T #\U #\V
-                                  #\W #\X #\Y #\Z #\a #\b #\c #\d #\e #\f #\g 
-                                  #\h #\i #\j #\k #\l #\m #\n #\o #\p #\q #\r 
+                                  #\W #\X #\Y #\Z #\a #\b #\c #\d #\e #\f #\g
+                                  #\h #\i #\j #\k #\l #\m #\n #\o #\p #\q #\r
                                   #\s #\t #\u #\v #\w #\x #\y #\z #\0 #\1 #\2
                                   #\3 #\4 #\5 #\6 #\7 #\8 #\9 #\+ #\/)))
 
@@ -77,7 +77,7 @@ Modification History (most recent at top)
         #-(or mcl lispworks) *base64-chars*
         6bit-number))
 
-;; instream should be (:element-type 'character) and 
+;; instream should be (:element-type 'character) and
 ;; outstream should be (:element-type (unsigned-byte 8))
 (defun decode64 (instream outstream)
   (do* ((eofvalue (list 'foo))
@@ -85,7 +85,7 @@ Modification History (most recent at top)
               (read-line instream nil eofvalue)))
       ((eq line eofvalue))
     (let ((idx 0) (acc 0) (max (length line)) (last 0))
-      (loop 
+      (loop
         (cond ((>= idx max) (return))
               (t
                (dotimes (i 4 (incf idx 4))
@@ -112,7 +112,7 @@ Modification History (most recent at top)
   #+mcl (stream) ;; maybe ccl::output-stream ?
   #+lispworks (stream::fundamental-stream)  ;; maybe stream::stdobj-stream ?
   ((char-stream :initarg :char-stream)
-   (line-buffer :initform (make-array 80 :element-type 'character 
+   (line-buffer :initform (make-array 80 :element-type 'character
                                       :fill-pointer 0 :adjustable t))
    (index :initform 0)
    (byte0 :initform 0)
@@ -125,7 +125,7 @@ Modification History (most recent at top)
   #+mcl (stream) ;; maybe ccl::output-stream ?
   #+lispworks (stream::fundamental-stream)  ;; maybe stream::stdobj-stream ?
   ((char-stream :initarg :char-stream)
-   (line-buffer :initform (make-array 80 :element-type 'character 
+   (line-buffer :initform (make-array 80 :element-type 'character
                                       :fill-pointer 0 :adjustable t))
    (word :initform 0)
    (byte-pos :initform 0))
@@ -180,15 +180,15 @@ Modification History (most recent at top)
           (t (return))))
   (let ((mime-boundary-value nil)) ; boundary comparison can return either T or :END
     (cond  ((null (slot-value stream 'line-buffer)) ; used to be 'char-stream, WHY???
-            (setf (slot-value stream 'byte0) nil 
+            (setf (slot-value stream 'byte0) nil
                   (slot-value stream 'byte1) nil
                   (slot-value stream 'byte2) nil))
-           ((and *mime-multipart-boundary-value* 
+           ((and *mime-multipart-boundary-value*
                  (setq mime-boundary-value
                        (mime-boundary-= (slot-value stream 'line-buffer)
                                         *mime-multipart-boundary-value*)))
             (setq *mime-multipart-boundary-encountered* mime-boundary-value)
-            (setf (slot-value stream 'byte0) nil 
+            (setf (slot-value stream 'byte0) nil
                   (slot-value stream 'byte1) nil
                   (slot-value stream 'byte2) nil))
            (t
@@ -212,7 +212,7 @@ Modification History (most recent at top)
 (defmethod #+mcl ccl::stream-read-byte #+lispworks stream::stream-read-byte
   ((stream base64-input-stream))
   (case (slot-value stream 'byte-pos)
-    (0 ;; first we get the value of the 24 bit word, if the line 
+    (0 ;; first we get the value of the 24 bit word, if the line
        (fill-24word stream)
        (incf&  (slot-value stream 'byte-pos)) (slot-value stream 'byte0))
     (1 (incf&  (slot-value stream 'byte-pos)) (slot-value stream 'byte1))
@@ -220,18 +220,18 @@ Modification History (most recent at top)
 
 #+mcl
 (defmethod ccl::stream-eofp ((stream base64-input-stream))
-  (or (null (case (slot-value stream 'byte-pos) 
+  (or (null (case (slot-value stream 'byte-pos)
               (0 (slot-value stream 'byte0))
               (1 (slot-value stream 'byte1))
               (2 (slot-value stream 'byte2))))
-      (and (>=& (slot-value stream 'index) 
+      (and (>=& (slot-value stream 'index)
                 (length (the (array (character *)) (slot-value stream 'line-buffer))))
            ;; should we check for multipart boundary here ??
            (ccl::stream-eofp (slot-value stream 'char-stream)))))
 
 (defmethod #+mcl ccl::stream-listen #+lispworks stream::stream-listen
   ((stream base64-input-stream))
-  (not (null (case (slot-value stream 'byte-pos) 
+  (not (null (case (slot-value stream 'byte-pos)
                ;; check for multipart boundary ?
                (0 (listen (slot-value stream 'char-stream)))
                (1 (slot-value stream 'byte1))
@@ -257,7 +257,7 @@ Modification History (most recent at top)
 ;; from the MIME spec
 (defvar *max-base64-output-line-length* 76)
 
-;; the basic version gathers characters together until the line buffer 
+;; the basic version gathers characters together until the line buffer
 ;; is filled than uses put-line to write it out
 
 (defmethod #+mcl ccl::stream-write-byte #+lispworks stream::stream-write-byte
@@ -266,7 +266,7 @@ Modification History (most recent at top)
     (case byte-pos
       (0 (setq word (ash byte 16)) (incf& byte-pos))
       (1 (setq word (dpb byte '#.(byte 8 8) word)) (incf& byte-pos))
-      (2 
+      (2
        (setq byte-pos 0)
        (setq word (dpb byte '#.(byte 8 0) word))
        (decode-24-word word line-buffer)
@@ -302,7 +302,7 @@ Modification History (most recent at top)
       (setf (slot-value stream 'byte-pos) 0) ; is this really neccessary ?
       ;; make sure the char-stream does what we've asked the byte stream to do
       (stream::stream-finish-output char-stream))))
-  
+
 #+mcl
 (defmethod ccl::stream-force-output ((stream base64-output-stream))
   (with-slots (char-stream line-buffer) stream
@@ -332,7 +332,7 @@ Modification History (most recent at top)
       (1 ; one byte of data in top 8 bits of word...
        (vector-push (64->char (boxer::ldb& '#.(byte 6 18) word)) line-buffer)
        (vector-push (64->char (boxer::ldb& '#.(byte 6 12) word)) line-buffer)
-       (dotimes (i 2) (vector-push #\= line-buffer)))       
+       (dotimes (i 2) (vector-push #\= line-buffer)))
       (2 ; two bytes of data in top 16 bits of word...
        (vector-push (64->char (boxer::ldb& '#.(byte 6 18) word)) line-buffer)
        (vector-push (64->char (boxer::ldb& '#.(byte 6 12) word)) line-buffer)
@@ -358,13 +358,13 @@ Modification History (most recent at top)
 (defmethod stream-element-type ((stream base64-output-stream)) '(unsigned-byte 8))
 
 ;; should do some reality checking on the char-stream
-(defmacro with-base64-stream ((stream-var char-stream &key (direction :input)) 
+(defmacro with-base64-stream ((stream-var char-stream &key (direction :input))
                               &body body)
-  (ecase direction 
+  (ecase direction
     (:output
      `(let ((,stream-var (make-instance 'base64-output-stream
                                :char-stream ,char-stream)))
-        (unwind-protect 
+        (unwind-protect
           (progn . ,body)
           (close ,stream-var))))
      (:input
@@ -385,7 +385,7 @@ Modification History (most recent at top)
 
 
 ;; instream should be (:element-type (unsigned-byte 8)) and
-;; outstream should be (:element-type 'character) 
+;; outstream should be (:element-type 'character)
 
 (defun encode64 (instream outstream)
   (with-base64-stream (byte-stream outstream :direction :output)
