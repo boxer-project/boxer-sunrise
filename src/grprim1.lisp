@@ -38,24 +38,24 @@
 
 
 
-   This file contains boxer functions which use the 
+   This file contains boxer functions which use the
    graphics subsystem via sprites
 
 
 Modification History (most recent at top)
 
- 6/15/10 *signal-error-for-sprite-pen-XOR* for PX, PR, PENXOR, PENREVERSE to signal 
+ 6/15/10 *signal-error-for-sprite-pen-XOR* for PX, PR, PENXOR, PENREVERSE to signal
          an error
  1/01/10 clearscreen-internal, clean-internal changed to handle private graphics
 10/06/07 Opengl changes to set-background
- 7/16/04 Fixed Copyright error message in CLEAR-GRAPHICS, CLEARGRAPHICS, CG 
+ 7/16/04 Fixed Copyright error message in CLEAR-GRAPHICS, CLEARGRAPHICS, CG
  4/19/03 merged current LW and MCL sources
  9/03/02 UC free version of CLEAR-GRAPHICS, CLEARGRAPHICS & CG
  2/27/02 font-from-box allows uninstalled font families for lwwin because of
          the possiblility of being passed mac font names, need a better more
          general mechanism (eventually)
  2/26/02 font-from-box now allows a box for 1st item to handle fonts which have
-         space characters in their names 
+         space characters in their names
  2/12/02 added bitmap dirty? handling to set-background
  3/26/00 font-from-box fixes for LW
 
@@ -73,10 +73,10 @@ Modification History (most recent at top)
 ;;; Graphics functions for graphics boxes
 
 
-;;; ALL TURTLE functions are assumed to be called in an environment where the 
-;;; various turtle state variables as well as GRAPHICS vars (like BIT-ARRAY) 
+;;; ALL TURTLE functions are assumed to be called in an environment where the
+;;; various turtle state variables as well as GRAPHICS vars (like BIT-ARRAY)
 ;;; are BOUND. This is what the macro WITH-GRAPHICS-VARS-BOUND is used for.
-;;; Except in unusual cases, though, you should use the top level interface, 
+;;; Except in unusual cases, though, you should use the top level interface,
 ;;; WITH-SPRITE-PRIMITIVE-ENVIRONMENT or the convenience macro
 ;;; DEFSPRITE-FUNCTION.
 
@@ -102,7 +102,7 @@ Modification History (most recent at top)
 
 ;;;; Update Functions
 
-;; we need this because extract-number-from-box ONLY works 
+;; we need this because extract-number-from-box ONLY works
 ;; on virtual copies (as it should).  Returns NIL if the box was empty.
 (defun extract-item-from-editor-box (box)
   (let ((vcrs (car (slot-value box 'virtual-copy-rows))))
@@ -111,7 +111,7 @@ Modification History (most recent at top)
 		    (car (evrow-pointers (car (vc-rows-entry-rows vcrs)))))))
       (and item (access-evrow-element nil item)))))
 #|
-;; we need this because extract-number-from-box ONLY works 
+;; we need this because extract-number-from-box ONLY works
 ;; on virtual copies (as it should)
 (defun extract-item-from-editor-box (box)
   (let ((vcrs (car (slot-value box 'virtual-copy-rows))))
@@ -160,7 +160,7 @@ Modification History (most recent at top)
   eval::*novalue*)
 
 ;;; Old versions....
-#|  
+#|
 
 (defun clean-internal (&optional (surface :foreground))
   (let* ((sb (get-sprites))
@@ -202,15 +202,15 @@ Modification History (most recent at top)
 
 |#
 
-(defboxer-primitive bu::cs () 
+(defboxer-primitive bu::cs ()
   (clearscreen-internal)
   eval::*novalue*)
 
-(defboxer-primitive bu::clearscreen () 
+(defboxer-primitive bu::clearscreen ()
   (clearscreen-internal)
   eval::*novalue*)
 
-(defboxer-primitive bu::clear-graphics () 
+(defboxer-primitive bu::clear-graphics ()
   (cond ((not (null *uc-copyright-free*))
          (eval::primitive-signal-error :copyright
                                        'bu::clear-graphics
@@ -218,17 +218,17 @@ Modification History (most recent at top)
         (t
          (clearscreen-internal))))
 
-(defboxer-primitive bu::cleargraphics () 
+(defboxer-primitive bu::cleargraphics ()
   (cond ((not (null *uc-copyright-free*))
          (eval::primitive-signal-error :copyright
-                                       'bu::cleargraphics 
+                                       'bu::cleargraphics
                                        " is no longer available"))
         (t
          (clearscreen-internal))))
 
-(defboxer-primitive bu::cg () 
+(defboxer-primitive bu::cg ()
   (cond ((not (null *uc-copyright-free*))
-         (eval::primitive-signal-error :copyright 
+         (eval::primitive-signal-error :copyright
                                        'bu::cg
                                        " is no longer available"))
         (t
@@ -338,7 +338,7 @@ Modification History (most recent at top)
 	   (steps-arg-check (car n))
 	   (steps-arg-check (cadr n))
 	   (values (car n) (cadr n)))
-	  (t (eval::primitive-signal-error 
+	  (t (eval::primitive-signal-error
               :sprite-error box " should be a box with 2 numbers")))))
 
 (defsprite-function bu::position ()
@@ -460,7 +460,7 @@ Modification History (most recent at top)
 (defsprite-function bu::px ()
   (sprite turtle)
   (if *signal-error-for-sprite-pen-XOR*
-      (eval::primitive-signal-error :obsolete 
+      (eval::primitive-signal-error :obsolete
                                     "XOR pens are no longer supported")
     (set-pen turtle 'bu::reverse))
   eval::*novalue*)
@@ -468,7 +468,7 @@ Modification History (most recent at top)
 (defsprite-function bu::penxor ()
   (sprite turtle)
   (if *signal-error-for-sprite-pen-XOR*
-      (eval::primitive-signal-error :obsolete 
+      (eval::primitive-signal-error :obsolete
                                     "XOR pens are no longer supported")
     (set-pen turtle 'bu::reverse))
   eval::*novalue*)
@@ -476,7 +476,7 @@ Modification History (most recent at top)
 (defsprite-function bu::penreverse ()
   (sprite turtle)
     (if *signal-error-for-sprite-pen-XOR*
-      (eval::primitive-signal-error :obsolete 
+      (eval::primitive-signal-error :obsolete
                                     "XOR pens are no longer supported")
       (set-pen turtle 'bu::reverse))
   eval::*novalue*)
@@ -484,7 +484,7 @@ Modification History (most recent at top)
 (defsprite-function bu::pr ()
   (sprite turtle)
     (if *signal-error-for-sprite-pen-XOR*
-      (eval::primitive-signal-error :obsolete 
+      (eval::primitive-signal-error :obsolete
                                     "XOR pens are no longer supported")
       (set-pen turtle 'bu::reverse))
   eval::*novalue*)
@@ -513,7 +513,7 @@ Modification History (most recent at top)
   (let* ((items (car (raw-unboxed-items box)))
          (old-style? (when (integerp (car items)) (car items)))
          ;; old-style? supports previous font-map implementation
-         (font (cond ((and old-style? (< old-style? 4)) 
+         (font (cond ((and old-style? (< old-style? 4))
                       #+mcl "Courier" #-mcl *default-font-family*)
                      (old-style? #+mcl "Geneva" #-mcl *default-font-family*)
                      ((or (virtual-copy? (car items)) (box? (car items)))
@@ -532,7 +532,7 @@ Modification History (most recent at top)
                    (cddr items))))
     ;; reality checking
     (cond #-lwwin ;; can be passed other platform fonts, rethink this
-          ((not (member font 
+          ((not (member font
                         #-mcl *font-families*
                         #+mcl ccl::*font-list*
                         :test #'string-equal))
@@ -542,13 +542,13 @@ Modification History (most recent at top)
           ;; size check
           ((not (numberp size))
            (unless no-errorp
-             (eval::primitive-signal-error 
+             (eval::primitive-signal-error
               :sprite-font "The 2nd item should be a font size")))
           ((and (not #+mcl (member size *supported-font-sizes*)
                      #-mcl (find size *font-sizes*))
                 (not (= size 7))) ; for compatibility
            (unless no-errorp
-             (eval::primitive-signal-error 
+             (eval::primitive-signal-error
               :sprite-font size " is an usupported font size")))
           ;; styles check
           (t
@@ -561,7 +561,7 @@ Modification History (most recent at top)
                                                      (find-package "KEYWORD"))))
                                         (if (fast-memq canonical-style
                                                        '(:plain :bold :italic
-                                                         :underline :outline 
+                                                         :underline :outline
                                                          :shadow :condense
                                                          :extend))
                                           canonical-style
