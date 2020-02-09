@@ -27,7 +27,7 @@ Modification History (most recent at the top)
  2/01/05 fixed pc-file->mcl-file after discovering that the meaning of
          #\NewLine is platform dependent (duh!)
  1/17/04 Converted Source file utilities for PC->mcl. Dspecs for lispworks 4.3
-12/10/04 update-pc-files uses *special-source-files* var to capture non lisp source files 
+12/10/04 update-pc-files uses *special-source-files* var to capture non lisp source files
          when transferring to/from PC
  4/18/04 mc-file->pc-file, update-pc-files utilities for source sharing
  8/03/03 doc-self-inserting: ignore-errors is now part of common lisp
@@ -37,7 +37,7 @@ Modification History (most recent at the top)
  2/14/02 added #+lispworks support for finding boxer def forms
  8/29/01 added boundp check to add-def-type
  2/24/01 conditionized for general (lispworks) use
-         new modification list hacking capabilities, 
+         new modification list hacking capabilities,
  2/16/01 merged current LW and MCL files
 11/20/00 fixed bug in mod-history-date-line? that ignored 2 digit months
 11/09/00 added modification history file header line utilities
@@ -135,10 +135,10 @@ Modification History (most recent at the top)
   (add-def-type 'box::defboxer-command 'function)
   )
 
-#| 
+#|
 ;; this was for pre 4.3 LWW
 #+lispworks
-(progn 
+(progn
   (editor:define-top-level-form-parser eval::defboxer-primitive
        editor::section-parse-name-only)
   (editor:define-top-level-form-parser eval::defrecursive-funcall-primitive
@@ -154,11 +154,11 @@ Modification History (most recent at the top)
   (editor:define-top-level-form-parser defmethod
       EDITOR::SECTION-PARSE-DEFMETHOD-TLF)
 )
-|# 
+|#
 
 #+lispworks
 (progn
- 
+
 (dspec:define-form-parser (eval::defboxer-primitive (:alias defun)))
 (dspec:define-form-parser (eval::defrecursive-funcall-primitive (:alias defun)))
 (dspec:define-form-parser (eval::defrecursive-eval-primitive (:alias defun)))
@@ -174,9 +174,9 @@ Modification History (most recent at the top)
         ccl::*autoload-traps* t
         ccl::*paste-with-styles* nil)
   )
-        
 
-;; file header parsing 
+
+;; file header parsing
 (defun mod-history-start-line? (string)
   (search "Modification History" string :test #'string-equal))
 
@@ -191,7 +191,7 @@ Modification History (most recent at the top)
       (let ((char (char string i)))
         (cond ((char= char #\space))
               ((digit-char-p char)
-               (if (null 1st-char) 
+               (if (null 1st-char)
                  (setq 1st-char (digit-char-p char))
                  (case field
                    (:month (setq month (+ (* 1st-char 10) (digit-char-p char))
@@ -204,7 +204,7 @@ Modification History (most recent at the top)
               ((char= char #\/)
                (case field
                  (:month (cond ((and (null 1st-char) (null month)) (return nil))
-                               ((null month) 
+                               ((null month)
                                 (setq month 1st-char field :date))
                                (t (setq field :date))))
                  (:date (when (null date) (setq date 1st-char))
@@ -213,16 +213,16 @@ Modification History (most recent at the top)
               ((eq field :month) (return nil)))))))
 
 ;; try and capture multiline entries which don't all start with a date...
-(defun get-mod-history-lines (file &optional 
+(defun get-mod-history-lines (file &optional
                                    (outstream *standard-output*)
                                    (show-filename? t))
   (let ((eof-value (list 'eof))
         (date-line? nil) (start? nil) (count 0))
     (with-open-file (in file)
-      (loop 
+      (loop
        (let ((line (read-line in nil eof-value)))
          (cond ((eq line eof-value) (return nil))
-               ((null start?) 
+               ((null start?)
                 (when (mod-history-start-line? line) (setq start? t)))
                ((mod-history-end-line? line) (return count))
                ((mod-history-date-line? line)
@@ -235,8 +235,8 @@ Modification History (most recent at the top)
                     (format outstream "~&~A: ~A" (file-namestring  file) line)
                   (format outstream "~&~A" line)))))))))
 
-(defun get-mod-history-lines-after (file month date year 
-                                         &optional 
+(defun get-mod-history-lines-after (file month date year
+                                         &optional
                                          (outstream *standard-output*)
                                          (show-filename? t))
   (let ((eof-value (list 'eof))
@@ -244,10 +244,10 @@ Modification History (most recent at the top)
         (date-line? nil)
         (count 0))
     (with-open-file (in file)
-      (loop 
+      (loop
        (let ((line (read-line in nil eof-value)))
          (cond ((eq line eof-value) (return nil))
-               ((null start?) 
+               ((null start?)
                 (when (mod-history-start-line? line) (setq start? t)))
                ((mod-history-end-line? line) (return count))
                ((multiple-value-bind (is-date-line? lmonth ldate lyear)
@@ -295,10 +295,10 @@ Modification History (most recent at the top)
 (dolist (file (sm::system-source-files (sm::find-system-named 'boxer)))
   (let ((eof-value (list 'eof))
         (start? nil))
-    (with-open-file (in file)(loop 
+    (with-open-file (in file)(loop
         (let ((line (read-line in nil eof-value)))
           (cond ((eq line eof-value) (return nil))
-                ((null start?) 
+                ((null start?)
                  (when (mod-history-start-line? line) (setq start? t)))
                 ((mod-history-end-line? line) (return nil))
                 ((multiple-value-bind (date-line? lmonth ldate lyear)
@@ -345,11 +345,11 @@ Modification History (most recent at the top)
 	      "Ohm-mani-padme-hum"
 	      (doc-pretty-function-doc (cdr key-pair) (- *page-width* 42))))))
 
-    
+
 (defun doc-pretty-key-name (name)
   (let ((string (symbol-name name)))
     (string-capitalize
-     (substitute #\space #\- 
+     (substitute #\space #\-
 		 (remove-mouse-and-key string)))))
 
 (defun remove-mouse-and-key (string)
@@ -364,8 +364,8 @@ Modification History (most recent at the top)
 
 (defun doc-pretty-key-function-name (name obj)
   (declare (ignore name))
-  (cond ((symbolp obj) 
-	 (if (eq obj 'ignore) 
+  (cond ((symbolp obj)
+	 (if (eq obj 'ignore)
 	     "Undefined"
 	   (string-capitalize
 	    (substitute #\space #\-
@@ -373,16 +373,16 @@ Modification History (most recent at the top)
 			 (length "COM-"))))))
 	(t "???")))
 
-				
+
 (defun doc-pretty-function-doc (obj &optional maximum-length)
-  (flet ((split-if-necessary 
+  (flet ((split-if-necessary
 	  (string)
 	  (if (and maximum-length (> (length string) maximum-length))
 	      (split-string-at-n string maximum-length)
 	    string)))
 	(let ((doc (documentation obj 'function)))
 	  (if (null doc) ""
-	    (let ((segments (split-if-necessary (string-capitalize 
+	    (let ((segments (split-if-necessary (string-capitalize
 						 doc
 						 :end 2))))
 
@@ -394,31 +394,31 @@ Modification History (most recent at the top)
 
 (defun split-string-at-n (string n &optional (start 0))
   (if (> (+ start n) (length string))
-      (cons (substitute #\space #\newline 
+      (cons (substitute #\space #\newline
 			(string-trim " " (subseq string start))) nil)
-    (let ((likely-place (or (position #\space string 
+    (let ((likely-place (or (position #\space string
 				      :from-end t
 				      :start start
 				      :end (+ start n))
 			    (+ start n))))
-      (cons (substitute #\space #\newline 
+      (cons (substitute #\space #\newline
 			(string-trim " " (subseq string start likely-place)))
 	    (split-string-at-n string n likely-place)))))
-	     
+
 (defun doc-self-inserting? (name function-obj)
   (and (not (symbolp function-obj))
        (let ((string (symbol-name name)))
 	 (or (or (< (position #\- string) 2)
 		 (search "CAPITAL-" string))
 	     (let ((try (ignore-errors
-			 (progn (read-from-string 
+			 (progn (read-from-string
 				 (concatenate
 				  'string
 				  "#\\"
 				  (subseq string 0 (position #\- string))))
 				:no-read-error))))
 	       (eq (car try) :no-read-error))))))
-				
+
 
 (defun doc-key-undefined? (name obj)
   (declare (ignore name))
@@ -440,7 +440,7 @@ Modification History (most recent at the top)
 		      (cadr arg)
 		      arg))
 	      arglist)))
-			    
+
 
 (defun print-boxer-primitives (&optional (stream *standard-output*))
   (do-symbols (s (find-package 'bu))
@@ -525,7 +525,7 @@ Modification History (most recent at the top)
     (format stream "~%~A~%~%" subject-string)
     (process-manual-box box stream)
     (format stream "~%~A~%" #\page)))
-  
+
 
 ;; look for entries
 ;; An entry is characterized by having  "Description" and "Command" sub boxes
@@ -546,7 +546,7 @@ Modification History (most recent at the top)
       (do-row-chas ((cha row))
 	(format stream "~A" cha))
       (format stream "~&"))))
-  
+
 
 ;; otherwise, print the sub heading and recurse
 (defun process-manual-box (box stream &optional (indent-level 0))
@@ -590,7 +590,7 @@ Modification History (most recent at the top)
   )
 
 ;; lines in MCL files are only CR terminated
-;; lines in PC lisp are LF terminated, NOTE: meaning of #\NewLine is platform 
+;; lines in PC lisp are LF terminated, NOTE: meaning of #\NewLine is platform
 ;; dependent !!!!
 (defun pc-file->mcl-file (pc-file-in mac-file-out)
   (with-open-file (in pc-file-in)
@@ -619,10 +619,10 @@ Modification History (most recent at the top)
                 (cond ((eq c eof-value) (return nil))
                       (t (write-char c out)))))))))
 
-;; need special handling for  "boxer.rsrc" 
+;; need special handling for  "boxer.rsrc"
 (defvar *special-source-files* '("devlog" "plst.txt" "deliver-boxer.sh"))
 
-(defun update-source-files (synchfile dest-dir 
+(defun update-source-files (synchfile dest-dir
                                     &optional (file-conversion #'no-convert)
                                     (system (sm::find-system-named 'boxer)))
   (let* ((start-utime (cond ((listp synchfile)
@@ -633,26 +633,26 @@ Modification History (most recent at the top)
                              (file-write-date synchfile))))
          (source-dir (getf (sm::system-properties system) :pathname-default))
          (all-source-files (append (directory (merge-pathnames "*.lisp" source-dir))
-                                   (with-collection 
+                                   (with-collection
                                      (dolist (sf *special-source-files*)
                                        (collect (merge-pathnames sf source-dir))))))
-         (source-files (remove-if #'(lambda (f) 
+         (source-files (remove-if #'(lambda (f)
                                       (let ((fwd (file-write-date f)))
                                         (cond ((numberp fwd) (<= fwd start-utime))
                                               (t (error "No write date for ~A" f)))))
                                   all-source-files)))
     (multiple-value-bind (sec min hou date month year)
         (decode-universal-time start-utime)
-      (format t "~%Files changed since ~D:~D:~D on ~D/~D/~D" 
+      (format t "~%Files changed since ~D:~D:~D on ~D/~D/~D"
               hou min sec month date year))
-    (format t "~%Selected ~D of ~D files.  " 
+    (format t "~%Selected ~D of ~D files.  "
             (length source-files) (length all-source-files))
     (when (y-or-n-p "List ? ")
       (dolist (f source-files) (print f)))
     (when (y-or-n-p "Update changed files to ~S ?"
                     (merge-pathnames "*.lisp" dest-dir))
       (dolist (f source-files)
-        (let ((newpath (merge-pathnames (make-pathname :name (pathname-name f) 
+        (let ((newpath (merge-pathnames (make-pathname :name (pathname-name f)
                                                        :type (pathname-type f))
                                         dest-dir)))
           (format t "~%Updating ~S to ~S" f newpath)
