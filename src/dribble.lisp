@@ -74,7 +74,7 @@ Modification History (most recent at top)
      `(progn
         (setf (aref *dribble-handler-names* ,opcode) ',name)
         (defun ,reader-function ,read-args  ,read-form)
-        (defun ,writer-function ,write-args 
+        (defun ,writer-function ,write-args
           (write-byte *dribble-handler-prefix* ,(car write-args))
           (write-byte ,opcode ,(car write-args))
           ,write-form)
@@ -130,20 +130,20 @@ Modification History (most recent at top)
                      (mouse-event-click me) (read-byte stream)
                      (bw::mouse-event-number-of-clicks me) (read-byte stream)
                      (mouse-event-x-pos me) (dpb& (read-byte stream)
-                                                  %%bin-op-top-half 
+                                                  %%bin-op-top-half
                                                   (read-byte stream))
                      (mouse-event-y-pos me) (dpb& (read-byte stream)
-                                                  %%bin-op-top-half 
+                                                  %%bin-op-top-half
                                                   (read-byte stream)))
                (handle-boxer-input me)
                (redisplay))
   :print-args (stream)
   :print-form (let ((type (if (zerop& (read-byte stream)) ':mouse-click ':mouse-hold))
-                    (name (let ((bits (read-byte stream)) 
+                    (name (let ((bits (read-byte stream))
                                 (click (read-byte stream)))
                             (lookup-click-name click bits)))
                     (num-click (read-byte stream))
-                    (x (dpb& (read-byte stream) 
+                    (x (dpb& (read-byte stream)
                              %%bin-op-top-half (read-byte stream)))
                     (y (dpb& (read-byte stream)
                              %%bin-op-top-half (read-byte stream))))
@@ -168,7 +168,7 @@ Modification History (most recent at top)
 (def-dribble-handlers (mouse-state 2)
   :read-args (stream)
   :read-form (let ((buttons (read-byte stream))
-		    (x (dpb& (read-byte stream) 
+		    (x (dpb& (read-byte stream)
                              %%bin-op-top-half (read-byte stream)))
                     (y (dpb& (read-byte stream)
                              %%bin-op-top-half (read-byte stream))))
@@ -177,7 +177,7 @@ Modification History (most recent at top)
 		     (svref *current-mouse-state* 2) y))
   :print-args (stream)
   :print-form (let ((buttons (read-byte stream))
-		    (x (dpb& (read-byte stream) 
+		    (x (dpb& (read-byte stream)
                              %%bin-op-top-half (read-byte stream)))
                     (y (dpb& (read-byte stream)
                              %%bin-op-top-half (read-byte stream))))
@@ -200,7 +200,7 @@ Modification History (most recent at top)
   (when (and *dribble-playback* (streamp *dribble-playback-stream*))
     (let ((byte1 (read-byte *dribble-playback-stream*)))
       (if (not (=& byte1 *dribble-handler-prefix*))
-          (warn "Bad byte(~D) read in mouse state update (should be ~D)" 
+          (warn "Bad byte(~D) read in mouse state update (should be ~D)"
                  byte1 *dribble-handler-prefix*)
           (let ((byte2 (read-byte *dribble-playback-stream*)))
             (if (not (=& byte2 2))
@@ -210,23 +210,23 @@ Modification History (most recent at top)
                        ;; the state vector should be filled now
                        (when *mouse-track-pause-during-playback*
                          (sleep *dribble-explicit-pause-time*))
-                       (warp-pointer *boxer-pane* 
-                                     (dribble-mouse-state-x) 
+                       (warp-pointer *boxer-pane*
+                                     (dribble-mouse-state-x)
                                      (dribble-mouse-state-y)))))))))
 
 ;; substs would be best but mcl doesn't currently support them
 ;; these are meant to be called after the vector has been filled
-(defun dribble-mouse-state-buttons () 
+(defun dribble-mouse-state-buttons ()
   (aref (the (simple-vector 3) *current-mouse-state*) 0))
 
-(defun dribble-mouse-state-x () 
+(defun dribble-mouse-state-x ()
   (aref (the (simple-vector 3) *current-mouse-state*) 1))
 
-(defun dribble-mouse-state-y () 
+(defun dribble-mouse-state-y ()
   (aref (the (simple-vector 3) *current-mouse-state*) 2))
 
-(def-dribble-handlers (extended-char 3) 
-  :read-args (stream) 
+(def-dribble-handlers (extended-char 3)
+  :read-args (stream)
   :read-form (let ((input (+ 256 (read-byte stream))))
                (declare (special dribble-playback-bits))
                (handle-boxer-input input dribble-playback-bits)
@@ -249,9 +249,9 @@ Modification History (most recent at top)
 ;; store some info about the environment
 (def-dribble-handlers (dribble-preamble 4)
   :read-args (stream)
-  :read-form (let ((ww (dpb& (read-byte stream) 
+  :read-form (let ((ww (dpb& (read-byte stream)
                               %%bin-op-top-half (read-byte stream)))
-                   (wh (dpb& (read-byte stream) 
+                   (wh (dpb& (read-byte stream)
                              %%bin-op-top-half (read-byte stream))))
                (multiple-value-bind (cww cwh)
                    (window-inside-size *boxer-pane*)
@@ -259,9 +259,9 @@ Modification History (most recent at top)
                    (boxer-editor-warning "Dribble file window size (~D,~D) not = to current size (~D, ~D)"
                          ww wh cww cwh))))
   :print-args (stream)
-  :print-form (let ((ww (dpb& (read-byte stream) 
+  :print-form (let ((ww (dpb& (read-byte stream)
                               %%bin-op-top-half (read-byte stream)))
-                    (wh (dpb& (read-byte stream) 
+                    (wh (dpb& (read-byte stream)
                               %%bin-op-top-half (read-byte stream))))
                 (format t "~&Dribble File Window Size was (~D, ~D)~&" ww wh)
                 0)
@@ -308,7 +308,7 @@ Modification History (most recent at top)
 	      #+lcl (output-stream-p *dribble-file-stream*))
          (let ((code (if (numberp char) char (char-code char)))
                (bits (or bits (char-bits char))))
-           (cond #+mcl 
+           (cond #+mcl
                  ((and (=& code 270) (=& bits 3))
                   ;; on the mac, 270 is the F15 (Pause) key
                   (dribble-write dribble-pause *dribble-file-stream*))
@@ -322,8 +322,8 @@ Modification History (most recent at top)
                     (dribble-write-char code *dribble-file-stream*)))))
         (t (push char *boxer-keystroke-history*))))
 
-(defboxer-command com-noop (&rest ignore) 
-  "Nothing Nothing Nothing" 
+(defboxer-command com-noop (&rest ignore)
+  "Nothing Nothing Nothing"
   ignore eval::*novalue*)
 
 (defun record-mouse-input (mouse-event)
@@ -421,7 +421,7 @@ Modification History (most recent at top)
     (playback-dribble-stream s)))
 
 (defun playback-dribble-stream (s)
-  (let ((eof-value (list 'eof)) 
+  (let ((eof-value (list 'eof))
         (*dribble-playback* t)
         (*dribble-playback-stream* s)
         (set-bits nil)
@@ -443,7 +443,7 @@ Modification History (most recent at top)
             ((not (null dribble-playback-bits))
              (setq set-bits t))))))
 
-#+mcl 
+#+mcl
 (deffile-type-reader :boxd playback-dribble-file)
 
 (defun decode-input-for-printing (input &optional (stream nil))
