@@ -26,7 +26,7 @@
 
 
   This File contains the Definition of Sprite boxes, the
-  part of the graphics subsystem which is directly imbedded 
+  part of the graphics subsystem which is directly imbedded
   in the boxer editor hierarchy
 
 Modification History (most recent at top)
@@ -47,7 +47,7 @@ Modification History (most recent at top)
 ;; unused ??
 ;;(defvar *tvl-element-sprite-command-alist* '((up . penup) (down . pendown)))
 
-;;; The relationship between the slot value of the turtle 
+;;; The relationship between the slot value of the turtle
 ;;; and the box is defined by:
 (defun sprite-instance-make-box-arg-from-slot-value (value)
   (etypecase value
@@ -61,7 +61,7 @@ Modification History (most recent at top)
 	((eq value nil) 'bu::false)
 	(t value)))
 
-(defun convert-graphics-list-to-make-box-format (value) 
+(defun convert-graphics-list-to-make-box-format (value)
   (let ((last-x 0) (last-y 0) (box-rows nil))
     (declare (Special last-x last-y))
     (do-vector-contents (c value)
@@ -94,7 +94,7 @@ Modification History (most recent at top)
 		  'data-box slot-name)))))
     (add-closet-row varbox closet-row)
     varbox))
-	
+
 
 (defun make-sprite-box (&optional (graphics-obj
 				   (make-instance
@@ -174,7 +174,7 @@ Modification History (most recent at top)
 
 ;;; Make Interface Box Utilities
 
-;; these are called by the evaluator 
+;; these are called by the evaluator
 
 (defun connect-and-imbed-interface-slot (bi)
   (let ((new-box (make-sprite-instance-var bi))
