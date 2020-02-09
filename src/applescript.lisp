@@ -37,7 +37,7 @@ close-movie
 (defvar *apple-script-response-max-wait-time* 5
   "Maximum amount of time (in seconds) to wait for an answer from a script")
 
-(defvar *apple-script-response-poll-period* 0.1) 
+(defvar *apple-script-response-poll-period* 0.1)
 
 (defvar *applescript-log* nil)
 
@@ -46,7 +46,7 @@ close-movie
 (defun log-applescript-text (string &optional (query? t))
   (when (>= (length *applescript-log*) *applescript-log-length*)
     (setq *applescript-log* (cdr *applescript-log*)))
-  (setq *applescript-log* (nconc *applescript-log* 
+  (setq *applescript-log* (nconc *applescript-log*
                                  (list (format nil "~A ~A" (if query? "<== " "==> ") string)))))
 
 
@@ -55,7 +55,7 @@ close-movie
   (setq *applescript-stream*  (sys:open-pipe nil :direction :io)
         *applescript-running?* T))
 
-(defun stop-applescript () 
+(defun stop-applescript ()
   (close *applescript-stream*)
   (setq *applescript-running?* nil
         *applescript-stream* nil))
@@ -67,7 +67,7 @@ close-movie
 (defun applescript-close-xref (xref)
   (unless (null (xref-active-info xref))
     (applescript-command :string (format nil "tell ~A" (xref-active-info xref)) "close" "end tell")
-    (setf (xref-active-info xref) nil)))  
+    (setf (xref-active-info xref) nil)))
 
 (defun as-quote (string)
   (format nil "\\\"~A\\\"" string))
@@ -78,20 +78,20 @@ close-movie
     (unless *applescript-running?* (startup-applescript))
     (let* ((applescript-app (get-applescript-app (xref-pathname xref)))
            (quoted-app-name (as-quote applescript-app))
-           (ai (applescript-command :string 
+           (ai (applescript-command :string
                                     (format nil "tell application ~A" quoted-app-name)
                                     (format nil "open ~A" (as-quote (namestring (xref-pathname xref))))
                                     "end tell")))
       (cond ((search "document " ai)
              (setf (xref-active-info xref)
-                   (format nil "~A of application ~A" 
+                   (format nil "~A of application ~A"
                            (as-quote (subseq ai #.(length "document "))) quoted-app-name)))
             (t ;; signal an error?
                nil)))))
-                           
+
 
 ;; hook for when the pathname of an xref gets changed, minimally,
-;; should CLOSE the original pathname if active 
+;; should CLOSE the original pathname if active
 (defun applescript-new-path-for-xref (xref newpath)
   (unless (null (xref-active-info xref))
     ;; xref is opened in the app
@@ -124,7 +124,7 @@ close-movie
     (force-output *applescript-stream*))
   (cond ((null rtype) eval::*novalue*)
         (t
-         (mp:process-wait-local-with-timeout-and-periodic-checks "Applescript Response" 
+         (mp:process-wait-local-with-timeout-and-periodic-checks "Applescript Response"
                                                                  *apple-script-response-max-wait-time*
                                                                  *apple-script-response-poll-period*
                                                                  #'(lambda () (listen *applescript-stream*)))
@@ -149,12 +149,12 @@ close-movie
         (last-comma 0))
     (do ((commapos (position #\, string :start last-comma)
                    (position #\, string :start last-comma)))
-        ((null commapos) 
+        ((null commapos)
          (push (subseq string last-comma) items)
          (nreverse items))
       (push (subseq string last-comma commapos) items)
       (setq last-comma (+ commapos 2)))))  ; +2 because output items are separated by COMMA,SPACE
-                           
+
 ;; other valid entries would be :all or nil
 (defvar *as-activate-window-action* :default)
 
@@ -166,13 +166,13 @@ close-movie
     (:all  T)
     (t nil)))
 
-;; now we 
+;; now we
 ;; activate option
 (defun quicktime-command (rtype command &rest command-args)
   (let ((xref (get-xref)))
     (cond ((null xref))
           (t
-           (applescript-open-xref xref) 
+           (applescript-open-xref xref)
            (when (applescript-active-command? command)
              (applescript-command nil
                                   (format nil "tell window named ~A" (xref-active-info xref))
@@ -189,14 +189,14 @@ close-movie
                ((nil) raw-value)
                ((:integer :float) raw-value)
                (:boolean (eval::boxer-boolean raw-value))
-               (:list (make-vc (list raw-value)))              
+               (:list (make-vc (list raw-value)))
                (t (make-vc (list (list raw-value))))))))))
 
 (defun applescript-activate ()
   (let ((xref (get-xref)))
     (cond ((null xref))
           (t
-           (applescript-open-xref xref) 
+           (applescript-open-xref xref)
            (applescript-command nil
                                 (format nil "tell window named ~A" (xref-active-info xref))
                                 "activate"
@@ -272,7 +272,7 @@ close-movie
 
 (eval::defboxer-primitive bu::qt-trim ((eval::numberize from) (eval::numberize to))
   (let ((tfrom (round from)) (tto (round to)))
-    (quicktime-command nil "trim" "from" tfrom "to" tto) 
+    (quicktime-command nil "trim" "from" tfrom "to" tto)
     eval::*novalue*))
 
 (eval::defboxer-primitive bu::qt-present () (quicktime-command nil "present") eval::*novalue*)
