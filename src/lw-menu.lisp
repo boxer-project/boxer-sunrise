@@ -22,11 +22,11 @@ Modification History (most recent at top)
 12/29/11 boxer::open-xref-dialog, xref-missing-file-ref-dialog, xref-existing-file-ref-dialog
 12/09/11 added open-xref, menu-open-xref, handled various compiler warnings
  6/17/10 menu-find checks to see if we may already be in a mode
- 1/05/10 boxer::default-lw-pref-file-name now uses sys:get-folder-path 
+ 1/05/10 boxer::default-lw-pref-file-name now uses sys:get-folder-path
  9/08/09 added *.box~ and *.box# to *boxer-file-filters* as possible "Boxer Files"
  8/04/08 make-preferences-dialog now calculates dialog size instead of using fixed constants
  8/07/08 make-box-props-dialog rewritten to be more dynamicly stretchy
-10/28/07 box-properties rewritten 
+10/28/07 box-properties rewritten
 10/26/07 make-box-props-dialog: #+cocoa sizes and offsets because mac menus are
          fatter
 12/20/05 added menu-clipboard-paste, menu-paste-graphics
@@ -37,12 +37,12 @@ Modification History (most recent at top)
  1/09/05 added com-hardcopy-lw-window for lispworks ctrl-P
 12/21/04 menu-enter-license-key added
  3/27/03 lw-quit now offers to quit without reviewing unsaved boxes
-11/19/02 boxer-{open, open-lost, new}-file-dialog uses *boxer-pathname-default* to 
+11/19/02 boxer-{open, open-lost, new}-file-dialog uses *boxer-pathname-default* to
          generate initial value (mostly for ".box")
-10/22/02 code review: no need to make changes in Places menu code because the 
+10/22/02 code review: no need to make changes in Places menu code because the
          mechanism for articulating the menu predates the introduction of the
          place menu enhancements.
- 4/03/02 link-text-callback checks *link-radio-panel* 
+ 4/03/02 link-text-callback checks *link-radio-panel*
  3/20/02 make-display-props-cluster and boxer::com-edit-box-properties now
          handles shrink-on-exit? too
  3/15/02 make-display-props-cluster and boxer::com-edit-box-properties now
@@ -54,7 +54,7 @@ Modification History (most recent at top)
  1/10/02 added redisplay to menu-box-properties because there are now some menu
          items in the properties dialog which can alter the screen
 10/14/01 added redisplays to close-file-box and save-document
- 5/11/01 changed prompt for menu-name-spelling-help to 
+ 5/11/01 changed prompt for menu-name-spelling-help to
          "List Boxes or Primitives whose name contains:"
  5/05/01 tuned make-preferences-dialog, make-{boolean,string,number}-pref
  5/03/01 fixed catch tag which was in the incorrect package in lw-quit
@@ -65,7 +65,7 @@ Modification History (most recent at top)
  1/15/01 added :owner args to capi:display-dialog calls
 10/14/00 added enabled and print functions for menus
 10/10/00 fixed blowout in menu-box-properties
-10/08/00 added :operation args to all capi:prompt-for-file calls to get correct 
+10/08/00 added :operation args to all capi:prompt-for-file calls to get correct
          button text
 10/05/00 fixed bad throw tag in boxer-open-file-dialog
          added :owner args to capi:prompt calls so dialog appears in correct place
@@ -98,8 +98,8 @@ Modification History (most recent at top)
 
 (defun boxer::boxer-open-file-dialog (&key (prompt "Open File:") directory)
   (multiple-value-bind (path success?)
-      (capi:prompt-for-file prompt :filters *boxer-file-filters* 
-                            :pathname (merge-pathnames 
+      (capi:prompt-for-file prompt :filters *boxer-file-filters*
+                            :pathname (merge-pathnames
                                          (or directory "")
                                          boxer::*boxer-pathname-default*)
                             :operation :open :owner *boxer-frame*)
@@ -108,14 +108,14 @@ Modification History (most recent at top)
       path)))
 
 (defun boxer::boxer-open-lost-file-dialog (&key (prompt "Can't find") directory)
-  (let ((missing-text (or (and directory 
+  (let ((missing-text (or (and directory
                                (format nil "~A ~A. Please locate file:"
                                        prompt (file-namestring directory)))
                           (format nil "~A box file. Please locate file:" prompt))))
     (multiple-value-bind (path success?)
-        (capi:prompt-for-file missing-text :filters *boxer-file-filters* 
+        (capi:prompt-for-file missing-text :filters *boxer-file-filters*
                               :operation :open
-                              :pathname (merge-pathnames 
+                              :pathname (merge-pathnames
                                          (or directory "")
                                          boxer::*boxer-pathname-default*)
                               :owner *boxer-frame*)
@@ -123,7 +123,7 @@ Modification History (most recent at top)
           (throw 'boxer::cancel-boxer-file-dialog nil)
           path))))
 
-;; on the mac, *save-file-format* and *dialog-ro* can be side-effected by the 
+;; on the mac, *save-file-format* and *dialog-ro* can be side-effected by the
 ;; custom dialog
 (defun boxer::boxer-new-file-dialog (&key (prompt "Save As") directory box
                                    no-read-only?)
@@ -134,8 +134,8 @@ Modification History (most recent at top)
                           1 0)))
   (multiple-value-bind (path success?)
         (capi:prompt-for-file prompt
-                              :filters *boxer-file-filters* 
-                              :pathname (merge-pathnames 
+                              :filters *boxer-file-filters*
+                              :pathname (merge-pathnames
                                          (or directory "")
                                          boxer::*boxer-pathname-default*)
                               :operation :save
@@ -147,7 +147,7 @@ Modification History (most recent at top)
 (defun boxer::open-xref-file-dialog (&key (prompt "Link to file ") directory)
   (multiple-value-bind (path success?)
       (capi:prompt-for-file prompt :filters '("All Files" "*.*")
-                            :pathname (merge-pathnames 
+                            :pathname (merge-pathnames
                                        (or directory "")
                                        boxer::*boxer-pathname-default*)
                             :operation :open :owner *boxer-frame*)
@@ -159,15 +159,15 @@ Modification History (most recent at top)
 
 ;;; Save-Modified-Box-Dialog
 
-(defun boxer::save-modified-box-dialog (box &key (prompt-start "The box,") 
+(defun boxer::save-modified-box-dialog (box &key (prompt-start "The box,")
                                      no-zoom-offered?)
   (let* ((box-file (boxer::getprop box :associated-file))
          (dialog (capi:make-container
-                  (list (make-instance 'capi:title-pane :x 20 :y 20 
+                  (list (make-instance 'capi:title-pane :x 20 :y 20
                                        :width 330 :height 60
                                        :text
-                                       (format nil "~A ~A has been modified" 
-                                               prompt-start 
+                                       (format nil "~A ~A has been modified"
+                                               prompt-start
                                                (boxer::current-file-status box t)))
                            (make-instance 'capi:push-button :x 20 :y 70
                                           :width 75 :height 20 :text "Save"
@@ -178,7 +178,7 @@ Modification History (most recent at top)
                                           :width 75 :height 20 :text "Don't Save"
                                           :callback #'(lambda (data int)
                                                         (declare (ignore data int))
-                                                        (capi:exit-dialog 
+                                                        (capi:exit-dialog
                                                          :dont-save)))
                            (make-instance 'capi:push-button :x 125 :y 90
                                           :width 75 :height 20 :text "Zoom To"
@@ -194,14 +194,14 @@ Modification History (most recent at top)
                      :visible-border t))
          (action (capi:display-dialog dialog :owner *boxer-frame*)))
     (case action
-      ;; do we want to wrap the save-generic with 
+      ;; do we want to wrap the save-generic with
       ;; a (catch 'cancel-boxer-file-dialog)
       ;; this will allow cancels out of the individual file op, if not, a cancel
       ;; out of the file op will cancel the top level quit operation
       (:save (boxer::save-generic
               box (or box-file
                       (boxer::boxer-new-file-dialog
-                       :prompt (format nil "Save ~A box into file:" 
+                       :prompt (format nil "Save ~A box into file:"
                                        (boxer::box-save-name box))
                        :box box))))
       (:dont-save (boxer::mark-file-box-clean box))
@@ -268,7 +268,7 @@ Modification History (most recent at top)
                         open-button
                         (make-instance 'capi:title-pane
                                        :x 20 :y 95 :width 160 :height 50 :text app-text)
-                        (make-instance 'capi:push-button 
+                        (make-instance 'capi:push-button
                                        :x 70 :y 155 :width 75 :height 20 :text "Choose"
                                        :callback #'(lambda (data int)
                                                      (declare (ignore data int))
@@ -288,7 +288,7 @@ Modification History (most recent at top)
   (let* ((start-text (format nil "This Box is a Link to the file ~A.  You can..." current-file))
           (app-text (format nil "the file, using its own application"))
           (dialog (capi:make-container
-                   (list 
+                   (list
                     (make-instance 'capi:column-layout
                                    :description
                                    (list
@@ -297,7 +297,7 @@ Modification History (most recent at top)
                                                    :description
                                                    (list (make-instance 'capi:push-button
                                                                         :text "Edit the Box"
-                                                                        :callback 
+                                                                        :callback
                                                                         #'(lambda (data int)
                                                                             (declare (ignore data int))
                                                                             (capi:exit-dialog :edit)))))
@@ -305,27 +305,27 @@ Modification History (most recent at top)
                                                    :description
                                                    (list (make-instance 'capi:push-button
                                                                         :text "Open"
-                                                                        :callback 
+                                                                        :callback
                                                                         #'(lambda (data int)
                                                                             (declare (ignore data int))
                                                                             (capi:exit-dialog :open)))
                                                          (make-instance 'capi:title-pane :text app-text)))
                                     (make-instance 'capi:row-layout
                                                    :description
-                                                   (list (make-instance 'capi:push-button 
+                                                   (list (make-instance 'capi:push-button
                                                                         :text "Change"
-                                                                        :callback 
+                                                                        :callback
                                                                         #'(lambda (data int)
                                                                             (declare (ignore data int))
                                                                             (capi:exit-dialog :change)))
-                                                         (make-instance 'capi:title-pane 
-                                                                        :text 
+                                                         (make-instance 'capi:title-pane
+                                                                        :text
                                                                         "the link to a different file or")))
                                     (make-instance 'capi:row-layout
                                                    :description
-                                                   (list (make-instance 'capi:push-button 
+                                                   (list (make-instance 'capi:push-button
                                                                          :text "Move"
-                                                                         :callback 
+                                                                         :callback
                                                                          #'(lambda (data int)
                                                                              (declare (ignore data int))
                                                                              (capi:exit-dialog :move)))
@@ -344,7 +344,7 @@ Modification History (most recent at top)
                   (list (make-instance
                          'capi:title-pane :x 20 :y 20 :width 330 :height 60
                          :text
-                         (format 
+                         (format
                           nil
                           "The Read Only Box: ~A does not have an associated file"
                           (boxer::current-file-status box)))
@@ -357,7 +357,7 @@ Modification History (most recent at top)
                                        :width 75 :height 20 :text "Don't Save"
                                        :callback #'(lambda (data int)
                                                      (declare (ignore data int))
-                                                     (capi:exit-dialog 
+                                                     (capi:exit-dialog
                                                       :dont-save)))
                         (make-instance 'capi:push-button :x 190 :y 70
                                        :width 75 :height 20 :text "Zoom To"
@@ -381,7 +381,7 @@ Modification History (most recent at top)
         (otherwise (throw 'boxer::cancel-boxer-file-dialog nil)))))
 
 
-;; On the mac, these read/wrote into the a file's resource fork 
+;; On the mac, these read/wrote into the a file's resource fork
 (defun boxer::write-boxer-file-info (pathname &key read-only? world-box? flags)
   (declare (ignore pathname read-only? world-box? flags))
   nil)
@@ -418,7 +418,7 @@ Modification History (most recent at top)
   (declare (ignore data interface))
   (let ((spb (safe-point-box)))
     (cond ((null spb))
-          ((box::storage-chunk? spb) 
+          ((box::storage-chunk? spb)
            (boxer::mark-file-box-clean spb)
            (boxer::unmark-box-as-file spb)
            (boxer::modified spb))
@@ -448,9 +448,9 @@ Modification History (most recent at top)
   ;; "Save" is not applicable if there is not an existing filename
   ;; or if the file box has not been modified...
   (let ((filebox (boxer::current-file-box)))
-    (not (or (boxer::read-only-box? filebox) 
+    (not (or (boxer::read-only-box? filebox)
              (not (boxer::file-modified? filebox))
-             (and (null (boxer::getprop filebox :associated-file)) 
+             (and (null (boxer::getprop filebox :associated-file))
                   (null (boxer::getprop filebox :url)))))))
 
 (defun save-document-as (data interface)
@@ -483,12 +483,12 @@ Modification History (most recent at top)
                (capi:prompt-for-confirmation "Warning: Some Boxes may not have been saved.  Do you want to review unsaved boxes before quitting?" :owner *boxer-frame*)
                )
       (boxer::close-box-prescan boxer::*initial-box*)
-      (when (boxer::file-modified? boxer::*initial-box*) 
+      (when (boxer::file-modified? boxer::*initial-box*)
         (boxer::save-modified-box-dialog boxer::*initial-box*
-                                  :prompt-start "The World box," 
+                                  :prompt-start "The World box,"
                                   :no-zoom-offered? t :no-unstore-offered? t))))
     #-lispworks6 (lispworks::quit)
-    #+lispworks6 (capi:destroy interface)  
+    #+lispworks6 (capi:destroy interface)
   eval::*novalue*)
 
 (boxer::defboxer-command com-LW-quit ()
@@ -502,8 +502,8 @@ Modification History (most recent at top)
   (catch 'unsaved
     (boxer::do-dirty-file-boxes (fb)
       (when (and (not (eq fb boxer::*initial-box*))   ; not the top
-                 (boxer::superior? fb boxer::*initial-box*)  ; is still connected 
-                 (or (not (boxer::read-only-box? fb)) ; 
+                 (boxer::superior? fb boxer::*initial-box*)  ; is still connected
+                 (or (not (boxer::read-only-box? fb)) ;
                      (and (null (boxer::getprop fb :associated-file))
                           (null (boxer::getprop fb :url)))))
         (throw 'unsaved t)))
@@ -590,42 +590,42 @@ Modification History (most recent at top)
 
 (defun menu-data-box (data interface)
   (declare (ignore data interface))
-  (boxer::com-make-and-enter-data-box) 
+  (boxer::com-make-and-enter-data-box)
   #-opengl (boxer::redisplay)
   #+opengl (boxer::repaint))
 
 (defun menu-doit-box (data interface)
   (declare (ignore data interface))
-  (boxer::com-make-and-enter-box) 
+  (boxer::com-make-and-enter-box)
   #-opengl (boxer::redisplay)
   #+opengl (boxer::repaint))
 
 (defun menu-turtle-box (data interface)
   (declare (ignore data interface))
-  (boxer::com-make-turtle-box) 
+  (boxer::com-make-turtle-box)
   #-opengl (boxer::redisplay)
   #+opengl (boxer::repaint))
 
 (defun menu-graphics-box (data interface)
   (declare (ignore data interface))
-  (boxer::com-make-graphics-box) 
+  (boxer::com-make-graphics-box)
   #-opengl (boxer::redisplay)
   #+opengl (boxer::repaint))
 
 (defun menu-sprite-box (data interface)
   (declare (ignore data interface))
-  (boxer::com-make-sprite-box) 
+  (boxer::com-make-sprite-box)
   #-opengl (boxer::redisplay)
   #+opengl (boxer::repaint))
 
 (defun menu-port (data interface)
   (declare (ignore data interface))
-  (boxer::com-place-port) 
+  (boxer::com-place-port)
   #-opengl (boxer::redisplay)
   #+opengl (boxer::repaint))
 
 (defun menu-unbox (data interface)
-  (declare (ignore data interface))  
+  (declare (ignore data interface))
   (boxer::com-unboxify)
   #-opengl (boxer::redisplay)
   #+opengl (boxer::repaint))
@@ -663,7 +663,7 @@ Modification History (most recent at top)
                        (setf (capi::collection-items menu) boxer::*font-families*)
                        (position font-name (capi::collection-items menu)
                                  :test #'(lambda (fn it)
-                                           (string-equal fn 
+                                           (string-equal fn
                                                          (capi::menu-item-data it)))))))
     (when (numberp select-idx)
       (setf (capi::choice-selection menu) select-idx))))
@@ -679,11 +679,11 @@ Modification History (most recent at top)
            #+opengl (boxer::repaint))
           (t
            (setf (boxer::bfd-font-no boxer::*current-font-descriptor*)
-                 (boxer::%set-font (boxer::bfd-font-no 
+                 (boxer::%set-font (boxer::bfd-font-no
                                     boxer::*current-font-descriptor*)
                                    data))))))
 
-;; support for displaying current (because of Zoom) absolute font sizes 
+;; support for displaying current (because of Zoom) absolute font sizes
 ;; should be in this function
 (defun set-font-size-menu-selection (menu)
   (let* ((current-font (boxer::bfd-font-no (get-current-font)))
@@ -709,7 +709,7 @@ Modification History (most recent at top)
            #+opengl (boxer::repaint))
           (t
            (setf (boxer::bfd-font-no boxer::*current-font-descriptor*)
-                 (boxer::%set-font-size (boxer::bfd-font-no 
+                 (boxer::%set-font-size (boxer::bfd-font-no
                                          boxer::*current-font-descriptor*)
                                         data))))))
 
@@ -742,7 +742,7 @@ Modification History (most recent at top)
            #+opengl (boxer::repaint))
           (t
            (setf (boxer::bfd-font-no boxer::*current-font-descriptor*)
-                 (boxer::set-font-style (boxer::bfd-font-no 
+                 (boxer::set-font-style (boxer::bfd-font-no
                                          boxer::*current-font-descriptor*)
                                         data (not attribute-on?)))))))
 
@@ -799,7 +799,7 @@ Modification History (most recent at top)
 
 ;; Popup callback functions
 
-;; these need to be better armored, so be paranoid because if there is an error 
+;; these need to be better armored, so be paranoid because if there is an error
 ;; it will lose for every event poll
 (defun safe-point-box ()
   (when (boxer::bp? boxer::*point*)
@@ -835,7 +835,7 @@ Modification History (most recent at top)
 (defun graphics-menu-item-print (mi)
   (declare (ignore mi))
   (let ((spb (safe-point-box)))
-    (cond ((boxer::display-style-graphics-mode? 
+    (cond ((boxer::display-style-graphics-mode?
             (boxer::display-style-list spb))
            "Flip to Text")
           (t  "Flip to Graphics"))))
@@ -886,7 +886,7 @@ Modification History (most recent at top)
           ((null (boxer::exports spb)) "Export Names")
           (t "Contain Names"))))
 
-;; 
+;;
 (defun menu-box-properties (data interface)
   (declare (ignore data interface))
   (let ((spb (safe-point-box)))
@@ -937,7 +937,7 @@ Modification History (most recent at top)
   (queue-event 'menu-remember-place))
 
 ;; The 1st 3 items are standard and should always appear, additional
-;; items are calculated from boxer::*recorded-place-alist* 
+;; items are calculated from boxer::*recorded-place-alist*
 (defun calculate-places (menu)
   (when (eq menu *boxer-frame*) (setq menu (slot-value *boxer-frame* 'place-menu)))
   (let* ((current-items (capi::menu-items menu))
@@ -945,7 +945,7 @@ Modification History (most recent at top)
     ;; reconcile the place registers and the actual items in the menu
     ;; first, make sure all the items already there are valid
     (dolist (item current-place-items)
-      (unless (member item boxer::*recorded-place-alist* 
+      (unless (member item boxer::*recorded-place-alist*
                       :test #'(lambda (item place-pair)
                                 (string-equal (capi::menu-item-data item)
                                               (car place-pair))))
@@ -954,12 +954,12 @@ Modification History (most recent at top)
     (dolist (pair boxer::*recorded-place-alist*)
       (unless (member pair current-place-items
                       :test #'(lambda (pair item)
-                                (string-equal (car pair) 
+                                (string-equal (car pair)
                                             (capi::menu-item-data item))))
         (setq current-place-items
               (append current-place-items
                       (list (make-instance 'capi::menu-item
-                                           :data (car pair) 
+                                           :data (car pair)
                                            :title (place-register-string
                                                    (car pair) (cdr pair))
                                            :callback 'place-menu-item-action))))))
@@ -980,12 +980,12 @@ Modification History (most recent at top)
                           :test #'string-equal))
          (status (if (null register) :error (boxer::move-to-place (cdr register)))))
     (cond ((eq status ':error)
-           (setq boxer::*recorded-place-alist* 
+           (setq boxer::*recorded-place-alist*
                  (delete register boxer::*recorded-place-alist*))
            (boxer::boxer-editor-warning "Place ~C is no longer in the editor" data))
           (t #-opengl (redisplay)
              #+opengl (boxer::repaint)))))
-  
+
 
 ;;; **** Help Menu ****
 
@@ -1005,8 +1005,8 @@ Modification History (most recent at top)
   (declare (ignore data interface))
   (boxer::insert-cha boxer::*point*
                      (boxer::convert-doit-result-for-printing
-                      (boxer::name-help-internal 
-                       (string-upcase 
+                      (boxer::name-help-internal
+                       (string-upcase
                         (capi::prompt-for-string
                          "List Boxes or Primitives whose name contains:"
                          :initial-value (near-string))))))
@@ -1027,7 +1027,7 @@ Modification History (most recent at top)
   (cond ((boxer::valid-boxer-license?)
          (capi:display-message "This Boxer is already Licensed"))
         (t
-         (do ((keystring (boxer::boxer-license-dialog) 
+         (do ((keystring (boxer::boxer-license-dialog)
                          (boxer::boxer-license-dialog)))
              ((when (not (null keystring))
                 (let ((ln (read-from-string keystring nil nil)))
@@ -1106,7 +1106,7 @@ Modification History (most recent at top)
            (box::putprop spb 'bu::boxtop :boxtop))
           ;; doen't work yet...
           ((eq data :named-graphics)
-           (box::putprop spb 
+           (box::putprop spb
                          (multiple-value-bind (string cancelled?)
                              (box::get-string-from-status-line "Graphics Named: ")
                            (if cancelled?
@@ -1138,8 +1138,8 @@ Modification History (most recent at top)
 
 
 
-;; called inside the save modified box dialog. We can't just turn off the 
-;; flags, we also have to be careful that the superior is marked modified 
+;; called inside the save modified box dialog. We can't just turn off the
+;; flags, we also have to be careful that the superior is marked modified
 ;; so that it will get saved.  We need to do this even if it has already been
 ;; saved since it needs to be saved again to get the infs of the box we are
 ;; unstoring.  This requires checking the current value of *dirty-file-boxes* and
@@ -1148,20 +1148,20 @@ Modification History (most recent at top)
 (defun unstore-box (box)
   (setf (boxer::storage-chunk? box) nil)
   (boxer::mark-file-box-clean box)
-  (setf (boxer::display-style-border-style (boxer::display-style-list box)) 
+  (setf (boxer::display-style-border-style (boxer::display-style-list box))
         (when (boxer::exports box) :dashed))
   ;; now make sure the superior is marked and that the it is already (or gets
   ;; placed) in *dirty-file-boxes* AFTER the box
   (let* ((remaining-fbs (boxer::fast-memq box boxer::*dirty-file-boxes*))
          (superior-box (boxer::superior-box box))
-         (superior-file-box (when (boxer::box? superior-box) 
+         (superior-file-box (when (boxer::box? superior-box)
                               (boxer::current-file-box superior-box))))
     (unless (null superior-file-box)
       (cond ((boxer::fast-memq superior-file-box remaining-fbs)
              ;; the superior is already dirty and will get processed eventually
              ;; so we do nothing
              )
-            (t 
+            (t
              ;; we have to mark the superior and place it on the end of the queue
              ;; we dont use mark-file-box-dirty because that will frob the queue
              ;; in the wrong way
@@ -1171,8 +1171,8 @@ Modification History (most recent at top)
 ;;; Box Properties...
 ;; the properties dialog has a popup in the upper left corner to select the
 ;; general category of the properties.  The props come in several categories
-;; and selecting each category will update the dialog window to include dialog 
-;; items which correspond to the selected category (The seems to be an emergent 
+;; and selecting each category will update the dialog window to include dialog
+;; items which correspond to the selected category (The seems to be an emergent
 ;; style in many mac applications which have to manage a plethora of prefs/props)
 ;;
 ;; For the PC port, we will use a tab layout instead
@@ -1213,7 +1213,7 @@ Modification History (most recent at top)
 
 ;; getting items from the dialog
 (defun box-props-dialog-tabs (dialog)
-  (slot-value (car (capi:layout-description (car (slot-value (slot-value dialog 'capi:layout) 
+  (slot-value (car (capi:layout-description (car (slot-value (slot-value dialog 'capi:layout)
                                                              'capi::description)))) ; gets the TAB Layout
               'capi::items-representation))
 
@@ -1230,21 +1230,21 @@ Modification History (most recent at top)
               :test #'(lambda (i si) (string-equal i (car si))))))
 
 (defun link-prop-text-input-item (dialog)
-  (find-if #'(lambda (x) (typep x 'capi:text-input-pane)) 
+  (find-if #'(lambda (x) (typep x 'capi:text-input-pane))
            (slot-value (bw::box-props-dialog-links-tab dialog)
                        'capi::description)))
 
 (defun link-prop-file-props (dialog)
-  (find-if #'(lambda (x) (typep x 'capi::check-button-panel)) 
+  (find-if #'(lambda (x) (typep x 'capi::check-button-panel))
            (slot-value (bw::box-props-dialog-links-tab dialog)
                        'capi::description)))
 
 (defun link-prop-radio-buttons (dialog)
-  (find-if #'(lambda (x) (typep x 'capi::radio-button-panel)) 
+  (find-if #'(lambda (x) (typep x 'capi::radio-button-panel))
            (slot-value (bw::box-props-dialog-links-tab dialog)
                        'capi::description)))
 
-;; there are 3 sub layouts, 
+;; there are 3 sub layouts,
 ;; 1. links:
 (defun file-prop-select (data)
   (queue-box-prop-change (list (cadr data) t)))
@@ -1252,7 +1252,7 @@ Modification History (most recent at top)
 (defun file-prop-retract (data)
   (queue-box-prop-change (list (cadr data) nil)))
 
-(defun set-link-file-props (text-input-item file-props 
+(defun set-link-file-props (text-input-item file-props
                                             t-or-nil &optional (new-text ""))
   (dolist (fp (capi::button-group-buttons file-props))
     (setf (capi:button-enabled fp) t-or-nil))
@@ -1266,29 +1266,29 @@ Modification History (most recent at top)
   (let ((text-input-item (link-prop-text-input-item interface))
         (file-props (link-prop-file-props interface)))
     (cond ((eq data :nolink)
-           (set-link-file-props text-input-item file-props nil)           
+           (set-link-file-props text-input-item file-props nil)
            (queue-box-prop-change (list :link data)))
           ((eq data :file)
-           (set-link-file-props 
-            text-input-item file-props 
+           (set-link-file-props
+            text-input-item file-props
             t (namestring (merge-pathnames "NewFile.box"
                                            boxer::*boxer-pathname-default*)))
-           (queue-box-prop-change 
+           (queue-box-prop-change
             (list :link data (capi:text-input-pane-text text-input-item))))
           ((eq data :url)
-           (set-link-file-props 
-            text-input-item file-props 
+           (set-link-file-props
+            text-input-item file-props
             t (format nil "ftp://~A/~A"
                       ;; not right, need better parameter than this host
                       ;; *pop-host* might be more appropriate
                       boxnet::*smtp-relay-host*
                       "NewFile.box"))
-           (queue-box-prop-change 
+           (queue-box-prop-change
             (list :link data (capi:text-input-pane-text text-input-item)))))))
 
 (defun link-text-callback (text interface)
   (let ((radio-mode (capi:item-data
-                     (capi:choice-selected-item 
+                     (capi:choice-selected-item
                       (link-prop-radio-buttons interface)))))
     (when (or (eq radio-mode :file) (eq radio-mode :url))
       (queue-box-prop-change (list :link radio-mode text)))))
@@ -1307,19 +1307,19 @@ Modification History (most recent at top)
                           (make-instance 'capi:radio-button
                                          :data :nolink
                                          :text "No Link"
-                                         :selection-callback 
+                                         :selection-callback
                                          'link-radio-button-callback)
                           (make-instance 'capi:radio-button
                                          :data :file
                                          :text "Link to File"
-                                         :selection-callback 
+                                         :selection-callback
                                          'link-radio-button-callback)
                           (make-instance 'capi:radio-button
                                          :data :url
                                          :text "Link to URL"
-                                         :selection-callback 
+                                         :selection-callback
                                          'link-radio-button-callback))))
-         (link-file-props 
+         (link-file-props
           (make-instance 'capi:check-button-panel
                          :layout-class 'capi:column-layout
                          :callback-type :data
@@ -1350,13 +1350,13 @@ Modification History (most recent at top)
                          :description
                          (list
                           (make-instance 'capi:title-pane
-                                         :text 
+                                         :text
                                          "Long term storage controls for this box")
                           link-radio-panel
                           link-file-props
                           (make-instance 'capi:title-pane :text "Link/File:")
                           link-prop-text-input))))
-    (when (not (boxer::storage-chunk? box)) 
+    (when (not (boxer::storage-chunk? box))
       (set-link-file-props link-prop-text-input link-file-props nil))
     link-props-cluster))
 
@@ -1386,7 +1386,7 @@ Modification History (most recent at top)
                                        :selection-callback 'display-prop-select
                                        :retract-callback 'display-prop-retract
                                        :print-function 'car
-                                       :selection 
+                                       :selection
                                        (let ((selections nil))
                                          (when (boxer::always-zoom? box)
                                            (push 0 selections))
@@ -1410,7 +1410,7 @@ Modification History (most recent at top)
 ;; 3. boxtop properties
 
 (defun boxtop-props-text-input-item (dialog)
-  (find-if #'(lambda (x) (typep x 'capi:text-input-pane)) 
+  (find-if #'(lambda (x) (typep x 'capi:text-input-pane))
            (slot-value (bw::box-props-dialog-boxtops-tab dialog)
                        'capi::description)))
 
@@ -1420,35 +1420,35 @@ Modification History (most recent at top)
   (let ((text-input (boxtop-props-text-input-item interface)))
     (unless (null text-input) (setf (capi:text-input-pane-enabled text-input) nil))
     (queue-box-prop-change (list :boxtop data))))
-  
+
 (defun boxtop-named-graphic-prop-select (data interface)
   (declare (ignore data))
   (let ((text-input (boxtop-props-text-input-item interface)))
     (unless (null text-input) (setf (capi:text-input-pane-enabled text-input) T))
-    (queue-box-prop-change (list :boxtop :named-graphic 
+    (queue-box-prop-change (list :boxtop :named-graphic
                                  (boxer::intern-in-bu-package
-                                  (string-upcase 
+                                  (string-upcase
                                    (capi:text-input-pane-text text-input)))))))
 
 (defun boxtop-named-graphic-name-select (text)
-  (queue-box-prop-change (list :boxtop :named-graphic 
+  (queue-box-prop-change (list :boxtop :named-graphic
                                (boxer::intern-in-bu-package (string-upcase text)))))
 
 ;; note: should diable text-input on init when named graphics is not selection
 (defun make-boxtop-props-cluster (box)
   (make-instance 'capi:pinboard-layout
-                 :min-width (- *box-props-dialog-width* 20) 
+                 :min-width (- *box-props-dialog-width* 20)
                  :min-height (- *box-props-dialog-height* 70)
                  :description
-                 (list 
-                  (make-instance 
+                 (list
+                  (make-instance
                    'capi:title-pane :x 0 :y 0 ;:min-width 150 :min-height 30
                    :text "Icon for shrunken box")
                   (make-instance 'capi::radio-button-panel :x 0 :y 40
                                  :layout-class 'capi::column-layout
                                  :callback-type :data-interface
                                  :selection-callback 'boxtop-basic-prop-select
-                                 :selection 
+                                 :selection
                                  (let ((current-boxtop (boxer::getprop box :boxtop)))
                                    (cond ((eq current-boxtop ':framed) 1)
                                          ((eq (symbol-package current-boxtop)
@@ -1459,27 +1459,27 @@ Modification History (most recent at top)
                                  :items
                                  (list
                                   (make-instance 'capi:radio-button
-                                                 :data :standard 
+                                                 :data :standard
                                                  :text "Standard Boxtop")
                                   (make-instance 'capi:radio-button
-                                                 :data :framed 
+                                                 :data :framed
                                                  :text "Framed Boxtop")
                                   (make-instance 'capi:radio-button
-                                                 :data :named-graphics 
+                                                 :data :named-graphics
                                                  :text "Graphic Named"
-                                                 :selection-callback 
+                                                 :selection-callback
                                                  'boxtop-named-graphic-prop-select)
                                   (make-instance 'capi:radio-button
-                                                 :data :folder 
+                                                 :data :folder
                                                  :text "Folder Picture")
                                   (make-instance 'capi:radio-button
                                                  :data :name-only
                                                  :text "Name Only")))
-                  (make-instance 'capi:text-input-pane 
+                  (make-instance 'capi:text-input-pane
                                  :x #+cocoa 110 #-cocoa 100
                                  :y #+cocoa 90 #-cocoa 70 :text "Boxtop"
                                  :change-callback-type :data
-                                 :change-callback 
+                                 :change-callback
                                  'boxtop-named-graphic-name-select))))
 
 
@@ -1490,14 +1490,14 @@ Modification History (most recent at top)
         (display-props-cluster (make-display-props-cluster box))
         (boxtop-props-cluster (make-boxtop-props-cluster box)))
     (capi:make-container
-     (make-instance 
-      'capi:column-layout 
+     (make-instance
+      'capi:column-layout
       :adjust :center
       :description
-      (list 
+      (list
        (make-instance 'capi:tab-layout
                       :print-function 'car :visible-child-function 'cadr
-                      :items (list 
+                      :items (list
                               (list "Links"   link-props-cluster)
                               (list "Sizing"  display-props-cluster) ; "Display"
                               (list "Boxtops" boxtop-props-cluster)))
@@ -1505,32 +1505,32 @@ Modification History (most recent at top)
                       :adjust :center
                       :description
                       (list
-                       (make-instance 'capi:push-button :x 10 :y 10 
+                       (make-instance 'capi:push-button :x 10 :y 10
                                       :width 75 :height 20
                                       :text "Cancel"
                                       :selection-callback 'capi:abort-dialog)
                        (make-instance 'capi:push-button :x 120 :y 10
                                       :width 75 :height 20
                                       :text "OK"
-                                      :selection-callback 
+                                      :selection-callback
                                       #'(lambda (&rest ignore)
                                           (declare (ignore ignore))
-                                          (capi:exit-dialog 
+                                          (capi:exit-dialog
                                            *box-properties-change-list*)))))
        nil)))))
 
-(boxer::defboxer-command boxer::com-edit-box-properties (&optional 
+(boxer::defboxer-command boxer::com-edit-box-properties (&optional
                                                   (box boxer::*hotspot-mouse-box*))
   "Edit properties of a box"
-  (unwind-protect 
+  (unwind-protect
       (let ((ok? (capi:display-dialog (make-box-props-dialog box)
                                       :owner *boxer-pane*)))
         ;; *box-properties-change-list* is now returned by display dialog
         ;; because (on the mac) it is bound in the pane process
-        (when ok? 
+        (when ok?
           (dolist (change *box-properties-change-list*)
             (case (car change)
-              (:link 
+              (:link
                (ecase (cadr change)
                  ((:file :url)
                   (unless (boxer::storage-chunk? box)
@@ -1547,10 +1547,10 @@ Modification History (most recent at top)
                          (boxer::removeprop box :url)
                          (boxer::putprop
                           box (pathname (caddr change)) :associated-file))))
-                 (:nolink 
+                 (:nolink
                   (unless (null (boxer::storage-chunk? box))
                     ;; need some cleanup action.  Note: it is possible to get here
-                    ;; with an originally non storage box if the user clicks on 
+                    ;; with an originally non storage box if the user clicks on
                     ;; "file" or "url" then clicks back to "no link"
                     (boxer::mark-file-box-clean box)
                     (boxer::unmark-box-as-file box)
@@ -1567,7 +1567,7 @@ Modification History (most recent at top)
               (:autofill (boxer::set-auto-fill? box (cadr change))
                          (when (and (boxer::data-box? box)
                                     ;; is it ever the right thing to fill doit boxe?
-                                    (boxer::display-style-fixed-wid 
+                                    (boxer::display-style-fixed-wid
                                      (boxer::display-style-list box)))
                            (boxer::com-fill-box box)))
               (:shrink-proof (boxer::set-shrink-proof? box (cadr change)))
@@ -1578,7 +1578,7 @@ Modification History (most recent at top)
               (:boxtop (cond ((eq (cadr change) :named-graphic)
                               (boxer::putprop box (let ((string (caddr change)))
                                              (if (null string) 'bu::boxtop
-                                                 (boxer::intern-in-bu-package 
+                                                 (boxer::intern-in-bu-package
                                                   (string-upcase string))))
                                              :boxtop))
                              (t (boxer::putprop box (cadr change) :boxtop))))))))
@@ -1592,7 +1592,7 @@ Modification History (most recent at top)
 
 ;; this should find a reasonable directory
 ;; for now use "~"
-(defun boxer::default-lw-pref-file-name () 
+(defun boxer::default-lw-pref-file-name ()
   (merge-pathnames "Boxer.prf" (sys:get-folder-path #+win32 :appdata #+macosx :my-preferences)))
 
 ;; see sysprims for when this is used....
@@ -1606,7 +1606,7 @@ Modification History (most recent at top)
 ;; this is smarter than the mac version. it does a prepass so we no longer have
 ; to rely on the prefs being well ordered in the source
 (defun make-preferences-dialog ()
-  (let ((groups nil) (tab-layout-groups nil) 
+  (let ((groups nil) (tab-layout-groups nil)
         ;; dialog box claculated parameters
         (tl-min-width #-apple 400 #+apple 600) (tl-min-height 100)
         ;; dialog box constants
@@ -1627,25 +1627,25 @@ Modification History (most recent at top)
      ;; when we are done, then tab-layout-groups will be a list of
      ;; title strings and layout instances suitable as :items for a capi:tab-layout
      (let ((tl-acc-height 20))
-       (setq tab-layout-groups 
+       (setq tab-layout-groups
              (nconc tab-layout-groups
-                    (list 
+                    (list
                      (list
                       (string-capitalize (car group))
-                      (make-instance 
+                      (make-instance
                        'capi:column-layout
                        :description
                        (boxer::with-collection
                          (dolist (pref (cdr group))
-                           (let* ((di-info 
-                                   (get pref 
+                           (let* ((di-info
+                                   (get pref
                                         'boxer::system-parameter-pref-dialog-info))
                                   (value (car di-info)) (value-type (caddr di-info))
                                   (ac-fun (cadddr di-info)) (doc-fun (nth 4 di-info)))
                              (collect (case value-type
-                                        (:boolean                                         
+                                        (:boolean
                                          (make-boolean-pref
-                                                   pref (symbol-value value) 
+                                                   pref (symbol-value value)
                                                    ac-fun doc-fun))
                                         (:number
                                          (make-number-pref
@@ -1653,17 +1653,17 @@ Modification History (most recent at top)
                                                   ac-fun doc-fun))
                                         ((:string :keyword)
                                          (make-string-pref
-                                          pref (symbol-value value) 
+                                          pref (symbol-value value)
                                           ac-fun doc-fun)))))
                            (incf tl-acc-height tl-item-height))))))))
        (setq tl-min-height (max tl-min-height tl-acc-height))))
    ;; shoud recalculate tl-min-width here based on group names...
    ;; and now the main dialog
    (capi:make-container
-    (make-instance 
+    (make-instance
      'capi:pinboard-layout :min-width tl-min-width :min-height (+ tl-min-height doc-height (* 3 padding))
      :description
-     (list 
+     (list
       ;; here are the pieces of the prefs dialog
       (make-instance 'capi:tab-layout  :x 0 :y 10 :width tl-min-width :height tl-min-height
                      :min-width tl-min-width :min-height tl-min-height
@@ -1683,7 +1683,7 @@ Modification History (most recent at top)
                                                          (declare (ignore ignore))
                                                          (capi:exit-dialog t)))
       (make-instance 'capi:push-button :x 280 :y (+ tl-min-height doc-height padding) :width 80 :height 20
-                     :text "Set & Save" 
+                     :text "Set & Save"
                      :selection-callback #'(lambda (&rest ignore)
                                              (declare (ignore ignore))
                                              (capi:exit-dialog :save))))))))
@@ -1697,15 +1697,15 @@ Modification History (most recent at top)
                  (list
                   (make-instance 'capi:check-button :text "" :selected value
                                  :callback-type :item
-                                 :selection-callback #'(lambda (item) 
+                                 :selection-callback #'(lambda (item)
                                                          (funcall doc-function item)
                                                          (funcall action-function
                                                                   item))
-                                 :retract-callback #'(lambda (item) 
+                                 :retract-callback #'(lambda (item)
                                                        (funcall doc-function item)
                                                        (funcall action-function
                                                                 item)))
-                  (make-instance 'capi:push-button 
+                  (make-instance 'capi:push-button
                                  :visible-border nil
                                  :text (string-capitalize name)
                                  :callback-type :item
@@ -1738,11 +1738,11 @@ Modification History (most recent at top)
                                  :max-width 150
                                  ; :best-width 150
                                  :change-callback-type :item
-                                 :change-callback 
+                                 :change-callback
                                  #'(lambda (item)
                                      (funcall doc-function item)
                                      (funcall action-function item)))
-                  (make-instance 'capi:push-button 
+                  (make-instance 'capi:push-button
                                  :visible-border nil
                                  :text (string-capitalize name)
                                  :callback-type :item
@@ -1754,10 +1754,10 @@ Modification History (most recent at top)
 
 (boxer::defboxer-command boxer::com-boxer-preferences ()
   "Open the Preferences Dialog"
-  (let ((dialog (make-preferences-dialog)))        
+  (let ((dialog (make-preferences-dialog)))
     (unwind-protect
       (let ((ok? (capi:display-dialog dialog :modal t :owner *boxer-frame*)))
-        (when ok? 
+        (when ok?
           (dolist (change boxer::*preference-dialog-change-list*)
             (funcall (car change) (cdr change))))
         (when (eq ok? :save) (boxer::write-preferences)))
@@ -1783,12 +1783,12 @@ Modification History (most recent at top)
   (let ((entries-dialog-item
          (make-instance 'ccl::sequence-dialog-item
            :view-position #@(30 30) :view-size #@(350 100)
-           :table-sequence *mime-mac-file-types* 
+           :table-sequence *mime-mac-file-types*
            :visible-dimensions #@(1 8)
            :table-vscrollp t
            :table-print-function #'(lambda (entry stream)
-                                     (format stream "~30A ~6A ~A" 
-                                             (car entry) (cadr entry) 
+                                     (format stream "~30A ~6A ~A"
+                                             (car entry) (cadr entry)
                                              (caddr entry))))))
     (flet ((selected-entry ()
              (let ((idx (ccl::selected-cells entries-dialog-item)))
@@ -1802,10 +1802,10 @@ Modification History (most recent at top)
                                                #@(10 200) #@(50 20) "New"
                                                #'(lambda (di) (declare (ignore di))
                                                   (add-new-mime-type)
-                                                  (ccl:set-table-sequence 
+                                                  (ccl:set-table-sequence
                                                    entries-dialog-item
                                                    *mime-mac-file-types*))))
-             (copy-button (ccl:make-dialog-item 
+             (copy-button (ccl:make-dialog-item
                            'ccl:button-dialog-item #@(80 200) #@(50 20) "Copy"
                            #'(lambda (di) (declare (ignore di))
                               (let ((entry (selected-entry)))
@@ -1814,17 +1814,17 @@ Modification History (most recent at top)
                                           :mime-type (car entry)
                                           :app-sig (cadr entry)
                                           :file-type (caddr entry))
-                                         (ccl:set-table-sequence 
+                                         (ccl:set-table-sequence
                                           entries-dialog-item
                                           *mime-mac-file-types*)))))))
-             (edit-button (ccl:make-dialog-item 
+             (edit-button (ccl:make-dialog-item
                            'ccl:button-dialog-item #@(150 200) #@(50 20) "Edit"
                            #'(lambda (di) (declare (ignore di))
                               (let ((entry (selected-entry)))
                                 (cond ((null entry) (boxer::beep))
                                       (t (edit-mime-entry entry)
-                                         (ccl:set-table-sequence 
-                                          entries-dialog-item 
+                                         (ccl:set-table-sequence
+                                          entries-dialog-item
                                           *mime-mac-file-types*)))))))
              (delete-button (ccl:make-dialog-item
                              'ccl:button-dialog-item #@(220 200) #@(50 20) "Delete"
@@ -1832,16 +1832,16 @@ Modification History (most recent at top)
                                 (let ((entry (selected-entry)))
                                   (cond ((null entry) (boxer::beep))
                                         (t (setq *mime-mac-file-types*
-                                                 (delete entry 
+                                                 (delete entry
                                                          *mime-mac-file-types*))
-                                           (ccl:set-table-sequence 
+                                           (ccl:set-table-sequence
                                             entries-dialog-item
                                             *mime-mac-file-types*)))))))
              (save-button (ccl:make-dialog-item
                            'ccl:button-dialog-item #@(290 200) #@(50 20) "Save"
                              #'(lambda (di) (declare (ignore di))
                                 (save-mime-mapping))))
-             (ok-button (ccl:make-dialog-item 
+             (ok-button (ccl:make-dialog-item
                          'ccl:button-dialog-item #@(360 200) #@(50 20) "Done"
                                           #'(lambda (di) (declare (ignore di))
                                              (ccl::return-from-modal-dialog t))))
@@ -1859,38 +1859,38 @@ Modification History (most recent at top)
                                            #@(10 10) #@(150 20) "Mail Type"))
          (mime-di (ccl:make-dialog-item 'ccl:editable-text-dialog-item
                                         #@(10 30) #@(150 20) (or mime-type "")))
-         (app-label (ccl:make-dialog-item 'ccl:static-text-dialog-item 
+         (app-label (ccl:make-dialog-item 'ccl:static-text-dialog-item
                                           #@(170 10) #@(100 20)
                                           "Application"))
          (app-di  (ccl:make-dialog-item 'ccl:editable-text-dialog-item
                                         #@(170 30) #@(60 20) (or app-sig "????")))
-         (file-label (ccl:make-dialog-item 'ccl:static-text-dialog-item 
+         (file-label (ccl:make-dialog-item 'ccl:static-text-dialog-item
                                           #@(290 10) #@(100 20)
                                           "File Type"))
          (file-di (ccl:make-dialog-item 'ccl:editable-text-dialog-item
                                         #@(290 30) #@(60 20) (or file-type "????")))
          (doc-box (ccl::make-dialog-item 'ccl:static-text-dialog-item
                                         #@(10 60) #@(300 20) "")))
-    (let* ((like-button (ccl:make-dialog-item 
+    (let* ((like-button (ccl:make-dialog-item
                          'ccl:button-dialog-item #@(10 90) #@(100 20) "Example..."
-                         #'(lambda (di) 
+                         #'(lambda (di)
                              (declare (ignore di))
                              (let ((file (ccl:choose-file-dialog)))
-                               (ccl:set-dialog-item-text 
+                               (ccl:set-dialog-item-text
                                 app-di (String (ccl:mac-file-creator file)))
-                               (ccl:set-dialog-item-text 
+                               (ccl:set-dialog-item-text
                                 file-di (string (ccl:mac-file-type file)))))))
-           (ok-button (ccl:make-dialog-item 
+           (ok-button (ccl:make-dialog-item
                        'ccl:button-dialog-item #@(170 90) #@(50 20) "OK"
-                       #'(lambda (di) 
+                       #'(lambda (di)
                            (declare (ignore di))
                            (cond ((not (= (length (ccl:dialog-item-text app-di)) 4))
                                   (boxer::beep)
-                                  (ccl:set-dialog-item-text 
+                                  (ccl:set-dialog-item-text
                                    doc-box "App must be 4 chars long"))
                                  ((not (= (length (ccl:dialog-item-text file-di)) 4))
                                   (boxer::beep)
-                                  (ccl:set-dialog-item-text 
+                                  (ccl:set-dialog-item-text
                                    doc-box "File Types must be 4 chars long"))
                                  (t
                                   (ccl:return-from-modal-dialog
@@ -1898,7 +1898,7 @@ Modification History (most recent at top)
                                                  (ccl:dialog-item-text app-di)
                                                  (ccl:dialog-item-text file-di))
                                            t)))))))
-             (cancel-button (ccl:make-dialog-item 
+             (cancel-button (ccl:make-dialog-item
                              'ccl:button-dialog-item #@(240 90) #@(50 20) "Cancel"
                              #'(lambda (di) (declare (ignore di))
                                 (ccl:return-from-modal-dialog (values nil nil)))))
