@@ -56,7 +56,7 @@ Modification History (most recent at top)
 ;;; These update functions need to do something intelligent even
 ;;; if they happen to be passed a bad arg
 
-(defun check-and-get-number-arg (box &optional (slot-name-for-bad-arg-warning 
+(defun check-and-get-number-arg (box &optional (slot-name-for-bad-arg-warning
                                                 'sprite-variable))
   (let ((n (extract-item-from-editor-box box)))
     (cond ((numberp n) n)
@@ -67,13 +67,13 @@ Modification History (most recent at top)
 
 ;;; +++ interesting fact: compiling this calls genysm no fewer than 40 times (MCL2.0f3c2)
 (defsprite-trigger-function bu::update-x-position () (sprite turtle)
-  (when (inside-sprite? sprite)			    
+  (when (inside-sprite? sprite)
     (let* ((slot (slot-value turtle 'x-position))
 	   (box (box-interface-box slot)))
       (if (null box)
           (no-interface-box-error 'X-POSITION turtle)
           (multiple-value-bind (new-x fix?)
-              (check-and-get-number-arg box 'X-POSITION¬)
+              (check-and-get-number-arg box 'X-POSITIONï¿½)
             (with-sprites-hidden t
               (move-to turtle new-x (y-position turtle) (not fix?)))))))
   eval::*novalue*)
@@ -88,7 +88,7 @@ Modification History (most recent at top)
       (if (null box)
           (no-interface-box-error 'Y-POSITION turtle)
           (multiple-value-bind (new-y fix?)
-              (check-and-get-number-arg box 'Y-POSITION¬)
+              (check-and-get-number-arg box 'Y-POSITIONï¿½)
             (with-sprites-hidden t
               (move-to turtle (x-position turtle) new-y (not fix?)))))))
   eval::*novalue*)
@@ -211,7 +211,7 @@ Modification History (most recent at top)
   eval::*novalue*)
 
 (add-sprite-update-function type-font bu::update-type-font)
-	  
+
 
 ;; this must also act like the bu::update-color-box trigger
 
@@ -254,7 +254,7 @@ Modification History (most recent at top)
   (let ((n (subseq (flat-box-items box) 0 2)))
     (cond ((every #'numberp n) n)
           (t (sprite-update-warning
-              "Didn't Get numbers for ~A. Will change it to ~A" 
+              "Didn't Get numbers for ~A. Will change it to ~A"
               'HOME-POSITION '(0 0))
              (values '(0 0) t)))))
 
