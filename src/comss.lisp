@@ -186,7 +186,7 @@ Modification History (most recent at top)
 	   (car (displayed-screen-objs (point-box))))
     (when (superior? screen-box (point-screen-box))
       (return screen-box))))
-  
+
 
 (defboxer-command COM-DELETE-SEARCH-CHAR ()
   "Removes the last character from the search pattern"
@@ -377,7 +377,7 @@ Modification History (most recent at top)
   "Displays search mode key bindings in the status line"
   (status-line-display 'search *status-line-search-help*)
   eval::*novalue*)
-		       
+
 
 (defmacro defsearch-mode-key (key-name function)
   `(defboxer-mode-key ,key-name (search-mode) ,function))
