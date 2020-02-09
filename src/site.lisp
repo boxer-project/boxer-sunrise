@@ -70,7 +70,7 @@ Modification History (most recent at the top)
                     (or (string-equal value-string "T")
 		        (string-equal value-string "True")))))
     (:number (if (numberstring? value-string)
-                 (ignoring-number-read-errors 
+                 (ignoring-number-read-errors
                    (read-from-string value-string nil nil))
                  (progn (warn "Bad Number value for ~A, using 0" value-string)
                         0))
@@ -162,7 +162,7 @@ Modification History (most recent at the top)
 	      (t
 	       ;; must be a valid character
 	       (vector-push-extend char current-buffer)))))))
-	    
+
 
 (defun handle-site-initializations (&optional
 				    (site-file
@@ -191,7 +191,7 @@ Modification History (most recent at the top)
 	(warn "~%No handler was found for the keyword: ~A" keyword)
 	(funcall (cadr handler-entry) value))))
 
-    
+
 ;;;;; Actual Site Inits
 
 (def-site-var "Site-Initialization-Verbosity" :boolean
