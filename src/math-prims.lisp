@@ -24,7 +24,7 @@ Modification History (most recent at top)
 
  3/11/05 added =/= and <> as infix prims for not equal
  4/19/03 merged current LW and MCL sources
- 3/06/02 can't use integer sqrt when arg is negative sqrt 
+ 3/06/02 can't use integer sqrt when arg is negative sqrt
  1/24/02 sqrt changed to try extra hard to preserve integerness for non mac
  9/19/01 RANDOM changed back to allow flonum values
  2/05/01 random utility prims
@@ -130,7 +130,7 @@ Modification History (most recent at top)
 (DEFBOXER-PRIMITIVE bu::greater-or-equal? ((NUMBERIZE A) (NUMBERIZE B))
   (BOXER-BOOLEAN (>= A B)))
 
-;;; 
+;;;
 
 (defboxer-primitive bu::=? ((dont-copy b1) (dont-copy b2))
   (boxer-boolean (boxer::box-equal-internal b1 b2)))
@@ -206,7 +206,7 @@ Modification History (most recent at top)
 
 ;;;
 ;;; Good-old math functions
-;;; 
+;;;
 
 (DEFBOXER-PRIMITIVE BU::REMAINDER ((NUMBERIZE NUMBER) (NUMBERIZE MODULUS))
   (if (zerop modulus)
