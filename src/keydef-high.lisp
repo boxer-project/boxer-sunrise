@@ -31,18 +31,18 @@
 Modification History (most recent at top)
 
  7/14/06 all #+lwwin changed to #+lispworks for opengl port
- 8/20/03 added :initial-element nil to make-mouse-click-name-translation-table, 
+ 8/20/03 added :initial-element nil to make-mouse-click-name-translation-table,
          initialize-lookup-arrays
  4/21/03 merged current LW and MCL files
 10/18/02 INITIALIZE-INPUT-LOOKUP-ARRAYS *INITIAL-PLATFORM*
-         *KEY-NAMES* *ALTERNATE-KEY-NAMES* 
-         *ALTERNATE-MOUSE-CLICK-NAME-TRANSLATION-TABLE* 
+         *KEY-NAMES* *ALTERNATE-KEY-NAMES*
+         *ALTERNATE-MOUSE-CLICK-NAME-TRANSLATION-TABLE*
          HANDLE-BOXER-INPUT changed to pass keycode and bits to specific functions
          so that alternate-key/click name handling works faster and conses less
          MOUSE-CLICK-BOXER-INPUT-HANDLER passes CLICK BITS AREA for the same reason
 10/09/02 code review: existing platform specific input device functions predate
          initial PC port so no need to excise specific functions before rewrite
- 3/19/02 *boxer-event-id*, boxer-event-id, next-boxer-event 
+ 3/19/02 *boxer-event-id*, boxer-event-id, next-boxer-event
          used in handle-boxer-event
  7/12/00 *key-name-lookup-array-size* changed to 230 to handle full range of F keys
  1/03/00 mouse names changed to maximize compatibility with mac code
@@ -120,7 +120,7 @@ Modification History (most recent at top)
 
 (defun define-key-name (key-name key-code &optional (bits 0))
   (cond ((numberp key-code)
-	 (if (<& key-code (car (array-dimensions *key-names*)))     
+	 (if (<& key-code (car (array-dimensions *key-names*)))
 	     (setf (aref *key-names* key-code bits) key-name)
 	     (when *key-name-out-of-range-warning?*
 	       (warn
@@ -165,7 +165,7 @@ Modification History (most recent at top)
   (if (and (< key-code char-code-limit)
 	   (upper-case-p (code-char key-code))
 	   #+MCL (not (>= key-code *mcl-special-char-start*)))
-      ;; for some reason MCL considers some undefined chars to be uppercase 
+      ;; for some reason MCL considers some undefined chars to be uppercase
       (define-key-name (intern-in-bu-package (symbol-format nil "CAPITAL-~A"
 							    key-name))
 	  key-code)
@@ -195,7 +195,7 @@ Modification History (most recent at top)
 
 ;;; Special Keys for each type of machine
 (defvar *keyboard-special-keys*
-	#+3600 '((BU::SPACE-KEY        #\SPACE)   
+	#+3600 '((BU::SPACE-KEY        #\SPACE)
 		 (BU::RETURN-KEY       #\RETURN)
 		 (BU::DELETE-KEY       #\RUBOUT)
 		 (BU::BREAK-KEY        #\BREAK)
@@ -210,7 +210,7 @@ Modification History (most recent at top)
 		 (BU::SCROLL-KEY       #\SCROLL)
 		 (BU::CIRCLE-KEY       #\CIRCLE)
 		 (BU::TRIANGLE-KEY     #\TRIANGLE))
-	#+TI   '((BU::SPACE-KEY        #\SPACE)   
+	#+TI   '((BU::SPACE-KEY        #\SPACE)
 		 (BU::RETURN-KEY       #\RETURN)
 		 (BU::DELETE-KEY       #\RUBOUT)
 		 (BU::BREAK-KEY        #\BREAK)
@@ -245,23 +245,23 @@ Modification History (most recent at top)
 		 (BU::HAND-UP-KEY      #\HAND-UP)
 		 (BU::HAND-LEFT-KEY    #\HAND-LEFT)
 		 (BU::HAND-RIGHT-KEY   #\HAND-RIGHT))
-	#+lucid  '((BU::SPACE-KEY        #\SPACE)     
+	#+lucid  '((BU::SPACE-KEY        #\SPACE)
 		   (BU::RETURN-KEY       #\RETURN)
 		   (BU::LINE-KEY         #\NEWLINE)
 		   (BU::DELETE-KEY       #\DELETE)
 		   (BU::ESCAPE-KEY     #\ESC))
-        ;;; +++ temp 
-	#+excl '((BU::SPACE-KEY        #\SPACE)     
+        ;;; +++ temp
+	#+excl '((BU::SPACE-KEY        #\SPACE)
 		 (BU::RETURN-KEY       #\RETURN)
 		 (BU::LINE-KEY         #\NEWLINE)
 		 (BU::DELETE-KEY       #\DELETE)
 		 (BU::ESCAPE-KEY       #\ESC))
-	#+mcl '((BU::SPACE-KEY        #\SPACE)     
+	#+mcl '((BU::SPACE-KEY        #\SPACE)
                 (BU::RETURN-KEY       #\RETURN)
                 (BU::DELETE-KEY       #\DELETE)
                 (BU::ESCAPE-KEY       #\ESC)
                 (BU::TAB-KEY          #\TAB))
-        #+lispworks '((BU::SPACE-KEY        #\SPACE)     
+        #+lispworks '((BU::SPACE-KEY        #\SPACE)
                   (BU::RETURN-KEY       #\RETURN)
                   (BU::DELETE-KEY       #\DELETE)
                   (BU::ESCAPE-KEY       #\ESC)
@@ -269,8 +269,8 @@ Modification History (most recent at top)
 
 
 
-;;; This is for specific window systems and keyboards that don't neccessarily 
-;;; have obvious char codes for particular names of keys.  
+;;; This is for specific window systems and keyboards that don't neccessarily
+;;; have obvious char codes for particular names of keys.
 
 (defvar *sun-keyboard-key-name-code-alist*
   '((bu::F1-key 190.) (bu::F2-key 191.) (bu::F3-key 192.)
@@ -281,7 +281,7 @@ Modification History (most recent at top)
     (bu::L1-key 200.) (bu::L2-key 201.) (bu::L3-key 202.)
     (bu::L4-key 203.) (bu::L5-key 204.) (bu::L6-key 205.)
     (bu::L7-key 206.) (bu::L8-key 207.) (bu::L9-key 208.)
-    (bu::L10-key 209.) 
+    (bu::L10-key 209.)
 
     (bu::R1-key 210) (bu::R2-key 211) (bu::R3-key 212)
     (bu::R4-key 213) (bu::R5-key 214) (bu::R6-key 215)
@@ -302,7 +302,7 @@ Modification History (most recent at top)
     (bu::STOP-key 200.) (bu::AGAIN-key 201.) (bu::PROPS-key 202.)
     (bu::UNDO-key 203.) (bu::FRONT-key 204.) (bu::COPY-key 205.)
     (bu::OPEN-key 206.) (bu::PASTE-key 207.) (bu::FIND-key 208.)
-    (bu::CUT-key 209.) 
+    (bu::CUT-key 209.)
 
     (bu::R1-key 210) (bu::R2-key 211) (bu::R3-key 212)
     (bu::R4-key 213) (bu::enter-key 214) (bu::R6-key 215)
@@ -330,7 +330,7 @@ Modification History (most recent at top)
 
     (bu::Prev-Screen-key 215) (bu::Next-Screen-key 216)
 
-    (bu::UP-ARROW-key 217) 
+    (bu::UP-ARROW-key 217)
     (bu::Find-key 218)
     (bu::LEFT-ARROW-key 219)
     (bu::Insert-Here-key 220)
@@ -353,7 +353,7 @@ Modification History (most recent at top)
 
     (bu::Prev-Screen-key 215) (bu::Next-Screen-key 216)
 
-    (bu::UP-ARROW-key 217) 
+    (bu::UP-ARROW-key 217)
     (bu::LEFT-ARROW-key 219)
     (bu::RIGHT-ARROW-key 221)
     (bu::DOWN-ARROW-key 223))
@@ -453,7 +453,7 @@ Modification History (most recent at top)
     ("COMMAND" "OPTION" "COMMAND-OPTION")
     ("CLICK" "DOUBLE-CLICK")
     *lwm-keyboard-key-name-alist*)
- 
+
 ;  (define-input-devices :ibm-pc
 ;    ("CTRL" "ALT" "CTRL-ALT")
 ;    ("LEFT" "MIDDLE" "RIGHT" "LEFT-TWICE" "MIDDLE-TWICE" "RIGHT-TWICE")
@@ -480,11 +480,11 @@ Modification History (most recent at top)
   ;; defined as a shift key.
   (do* ((key-code #o101 (1+ key-code))
 	(key-name (intern-in-bu-package
-		   (format nil "~A-KEY" (string-upcase 
+		   (format nil "~A-KEY" (string-upcase
 					 (format nil "~:@C"
 						 (code-char key-code)))))
 		  (intern-in-bu-package
-		   (format nil "~A-KEY" (string-upcase 
+		   (format nil "~A-KEY" (string-upcase
 					 (format nil "~:@C"
 						 (code-char key-code)))))))
        ((= key-code #o133))
@@ -501,7 +501,7 @@ Modification History (most recent at top)
 		(and (>= key-code #o141) (<= key-code #o172)))
       (define-key-and-all-its-shifted-key-names
 	  (intern-in-bu-package
-	   (format nil "~A-KEY" (string-upcase 
+	   (format nil "~A-KEY" (string-upcase
 				 (format nil "~:@C" (code-char key-code)))))
 	  key-code platform)))
 
@@ -526,11 +526,11 @@ Modification History (most recent at top)
 	(car  key-that-format-~c-loses-on)
 	(char-code (cadr key-that-format-~c-loses-on)) platform))
   )
-  
+
 ;;; This is different from define-basic-keys in that we want to loop through
 ;;; the existing array looking for possible translations rather than making
 ;;; and filling a new array, because the size of the array is determined by the
-;;; capabilities of the window system 
+;;; capabilities of the window system
 (defun reset-keys (platform)
   (let ((new-shifts (input-device-shift-list platform)))
     (dotimes (i (array-dimension *key-names* 0))
@@ -541,24 +541,24 @@ Modification History (most recent at top)
                 (shift-name (car shifts) (car shifts))
                 (bit 1 (1+ bit))
                 ;; get rid of possible "CAPITAL-" in the shifted names
-                (vanilla-name (if (search "CAPITAL-" 
+                (vanilla-name (if (search "CAPITAL-"
                                           (symbol-name unshifted-name))
                                 (subseq (symbol-name unshifted-name) 8)
                                unshifted-name)))
                ((null shifts))
             (let ((new-name (intern-in-bu-package
-			     (symbol-format nil "~A-~A" 
+			     (symbol-format nil "~A-~A"
                                             shift-name vanilla-name))))
               (check-key-rebinding (aref *key-names* i bit) new-name)
               (setf (aref *key-names* i bit) new-name))))))))
-              
+
 
 ;; this exists as a separate function because it may have to called
 ;; at startup time (e.g. for the X-Windows implementation, the particulars
 ;; of the keyboard are not generally known until then)
 
 (defun configure-for-keyboard (platform)
-  ;; finally, handle any machine/window system specific stuff 
+  ;; finally, handle any machine/window system specific stuff
   ;; that doesn't fit very well into common lisp chars
   (dolist (special-key (input-device-special-keys platform))
     (define-key-and-all-its-shifted-key-names
@@ -569,14 +569,14 @@ Modification History (most recent at top)
 
 (defmacro defself-inserting-key (key-name char)
   `(progn
-     (eval::defboxer-key-internal ',key-name 
+     (eval::defboxer-key-internal ',key-name
 	 #'(lambda ()
 	     (with-multiple-execution
 		 #-opengl (add-redisplay-clue (point-row) ':insert)
 	       (insert-cha *point* ,char :moving))
              (mark-file-box-dirty (point-row))
              eval::*novalue*))
-     (boxer-command-define ',key-name 
+     (boxer-command-define ',key-name
       (format nil "Insert the ~C character at the cursor." ,char))))
 
 
@@ -584,7 +584,7 @@ Modification History (most recent at top)
 ;;;; Mice
 
 
-;;;; Click ==> name translation 
+;;;; Click ==> name translation
 (defvar *default-mouse-click-name-translation-table*)
 
 (defvar *alternate-mouse-click-name-translation-table*)
@@ -617,12 +617,12 @@ Modification History (most recent at top)
 (defun current-mouse-click-name (button shift &optional place)
   (let ((button-names (input-device-mouse-string
                        *current-input-device-platform*))
-        (shift-names (input-device-shift-list 
+        (shift-names (input-device-shift-list
                       *current-input-device-platform*)))
     (unless (or (>= button (length button-names))
                 (> shift (length shift-names)))
-      (mouse-click-name-string (nth button button-names) 
-                               (if (zerop& shift) nil 
+      (mouse-click-name-string (nth button button-names)
+                               (if (zerop& shift) nil
                                    (nth (1-& shift) shift-names))
                                place *current-input-device-platform*))))
 
@@ -664,7 +664,7 @@ Modification History (most recent at top)
     (setq *default-mouse-click-name-translation-table* table)
     (setf (get place-name 'click-translation-table) table)))
 
-;; the fundamental between setup-mouse-translation-table and 
+;; the fundamental between setup-mouse-translation-table and
 ;; reset-mouse-translation-table is that the reset version tries to
 ;; use the existing translation arrays because the initial translation arrays
 ;; will be hardware dependent.  Rather than allocating a new array which may
@@ -688,7 +688,7 @@ Modification History (most recent at top)
   ;; more checking
   (let ((current-buttons (array-dimension table 0))
         (old-names (input-device-mouse-string *current-input-device-platform*)))
-    ;; this loses when switching back, we do need some sort of reality 
+    ;; this loses when switching back, we do need some sort of reality
     ;; check here eventually
 ;    (when (not (= current-buttons (length old-names)))
 ;      (error "Mismatch between array size and..."))
@@ -720,7 +720,7 @@ Modification History (most recent at top)
 ;; plus the double click versions
 (defun unshifted-click-translation (current-name new-platform)
   (case new-platform
-    (:mac (cond ((eq current-name (mouse-click-name-string "MIDDLE" nil 
+    (:mac (cond ((eq current-name (mouse-click-name-string "MIDDLE" nil
                                                            nil :default))
                  "CLICK")
                 ((eq current-name (mouse-click-name-string "MIDDLE-TWICE" nil
@@ -731,7 +731,7 @@ Modification History (most recent at top)
                  "MIDDLE")
                 ((eq current-name (mouse-click-name-string "DOUBLE-CLICK" nil
                                                            nil :mac))
-                 "MIDDLE-TWICE")))))  
+                 "MIDDLE-TWICE")))))
 
 (defun lookup-click-name (click bits &optional border-area)
   (cond ((>& click  (maximum-mouse-button-encoding)) 'bu::mouse-lots-o-clicks)
@@ -775,14 +775,14 @@ Modification History (most recent at top)
 
 ;; initialize these based on the value of the current platform
 (defun initialize-input-lookup-arrays ()
-  (setq *key-names* 
+  (setq *key-names*
         (make-array (list *key-name-lookup-array-size*
-                          (1+ (length (input-device-shift-list 
+                          (1+ (length (input-device-shift-list
                                        *initial-platform*))))
                     :initial-element nil)
-        *alternate-key-names* 
+        *alternate-key-names*
         (make-array (list *key-name-lookup-array-size*
-                          (1+ (length (input-device-shift-list 
+                          (1+ (length (input-device-shift-list
                                        *initial-platform*))))
                     :initial-element nil))
   ;; for the moment, no need to translate unshifted keys
@@ -795,7 +795,7 @@ Modification History (most recent at top)
   (dolist (name (defined-mouse-border-areas))
     (setf (get name 'alternate-click-name-table)
           (make-mouse-click-name-translation-table *initial-platform*))))
-  
+
 ;
 ;;; initial setup
 (eval-when (eval load)
@@ -811,15 +811,15 @@ Modification History (most recent at top)
 ;;; Hacked up to handle MCL's crippled character system
 (defun handle-boxer-input (input &optional bits)
   ;;;	(increment-key-tick)		;for use with multiple-kill hack
-  #-mcl 
+  #-mcl
   (status-line-undisplay 'boxer-editor-error)
-  #+mcl 
-  ;; mac version of status-line-redraw tries to undo things back to 
+  #+mcl
+  ;; mac version of status-line-redraw tries to undo things back to
   ;; the environment set up by drawing-on-window
   (drawing-on-window (*boxer-pane*) (status-line-undisplay 'boxer-editor-error))
   ;; increment the event counter
   (next-boxer-event)
-  (eval::report-eval-errors-in-editor 
+  (eval::report-eval-errors-in-editor
     ;; net prims in particular may signal eval errors as a response to
     ;; an editor command, catch it at this level so the entire command
     ;; gets aborted rather than just the net loading piece.
@@ -827,7 +827,7 @@ Modification History (most recent at top)
            ;; Some sort of  key code. Try to lookup a name for it. If it
            ;; has a name call eval:handle-boxer-key with the name.
            (let ((key-name (lookup-key-name #+(or lispworks mcl)
-                                            (if (numberp input) 
+                                            (if (numberp input)
                                               input
                                               (char-code input))
                                             #-(or lispworks mcl)
@@ -835,9 +835,9 @@ Modification History (most recent at top)
                                             (or bits (input-bits input)))))
              (record-key-input input (or bits (input-bits input)))
              (if (or (null key-name)
-                     (not (handle-boxer-key key-name 
+                     (not (handle-boxer-key key-name
                                             #+(or lispworks mcl)
-                                            (if (numberp input) input 
+                                            (if (numberp input) input
                                               (char-code input))
                                             #-(or lispworks mcl)
                                             (char-code input)
@@ -886,7 +886,7 @@ Modification History (most recent at top)
 			       (mouse-event-bits blip)
 			       area)
 	    mouse-bp local-x local-y)))
-  
+
 
 (setf (get :mouse-click :boxer-input) 'mouse-click-boxer-input-handler)
 (setf (get :mouse-hold  :boxer-input) 'mouse-click-boxer-input-handler)
@@ -909,7 +909,7 @@ Modification History (most recent at top)
 		  *boxer-command-key-alist*)))
   (push (cons key-name command-name) *boxer-command-key-alist*))
 
-;; note that while there might be several keys for one command, 
+;; note that while there might be several keys for one command,
 ;; there can only be one command for each key (at top level)
 
 (defun get-command-for-key (key-name)
