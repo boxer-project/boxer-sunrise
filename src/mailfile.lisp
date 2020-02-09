@@ -22,7 +22,7 @@ Modification History (most recent at top)
 
  7/23/05 added open-mail prim, also read-line-smart can handled lines
          in files separated by LF's (mac) as well as CR's
- 7/22/05 added "From" to ">From" filtering in pop-append-message-internal         
+ 7/22/05 added "From" to ">From" filtering in pop-append-message-internal
  5/01/05 mailfile-eom? changed to eliminate false positives
  7/29/04 added open-inbox, removed extra <CR> at the end of each message in
          pop-append-message-internal.
@@ -49,7 +49,7 @@ Modification History (most recent at top)
 ;; this needs to do "From" -> ">From" filtering....
 (defmethod pop-fill-inbox ((url pop-url) &optional (mailfile *inbox-pathname*))
   (insure-pop-stream url)
-  (unwind-protect 
+  (unwind-protect
       (multiple-value-bind (nmsgs nbytes)
           (get-pop-status (slot-value url 'stream))
         (debugging-message "POP STAT ~A ~A" nmsgs nbytes)
@@ -111,7 +111,7 @@ Modification History (most recent at top)
 (defun insert-mailfile-msg-separator (stream)
   (format stream "From - ~A~&" (rfc822-date-time)))
 
-(defun mailfile-eom? (rawline) 
+(defun mailfile-eom? (rawline)
   (let ((place (search "From " rawline)))
     (and place (zerop place))))
 
@@ -119,7 +119,7 @@ Modification History (most recent at top)
 (defun append-message-box (msgbox mailfile)
   )
 
-;;; for handling lines which can be delineated by CR's or LF's 
+;;; for handling lines which can be delineated by CR's or LF's
 (defmethod read-line-smart ((input-stream t) eof-error-p eof-value)
     "A faster way to do read-line-raw than that in streams.lisp. The speedup
      comes from avoiding with-output-to-string. Conses less too."
@@ -183,10 +183,10 @@ Modification History (most recent at top)
     ;; how we should process the rest of the message
     ;; in particular, MIME information will appear in the
     ;; header
-    (prog1 
-      (append-pop-message-body header-box stream mime-type mime-values 
+    (prog1
+      (append-pop-message-body header-box stream mime-type mime-values
                                header-size))))
-  
+
 ;; The inverse, when we have better connections from/to other types of files
 (defun save-mailbox-file (box)
   )
@@ -199,7 +199,7 @@ Modification History (most recent at top)
   (let ((*delete-loaded-messages?* (eval::true? delete-messages?))
         (mailbox (box-text-string mailbox)))
     ;; 1st, get mail into the inbox...
-    (pop-fill-inbox (make-instance 'pop-url 
+    (pop-fill-inbox (make-instance 'pop-url
                                    :scheme-string
                                    (concatenate 'string "//" mailbox)))
     ;; now get a box from the inbox
@@ -220,7 +220,7 @@ Modification History (most recent at top)
 (let ((*delete-loaded-messages?* nil))
   (pop-fill-inbox (make-instance 'pop-url :scheme-string "//bug-boxer@earthlink.net")
                   (capi::prompt-for-file "Inbox file:"
-                                         :if-exists :append 
+                                         :if-exists :append
                                          :if-does-not-exist :create)))
 
 |#
