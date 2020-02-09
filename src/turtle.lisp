@@ -158,7 +158,7 @@ Modification History (most recent at top)
 	      (save-under-middle su) (round new-size 2))
         (free-offscreen-bitmap (save-under-bitmap su))
 	(setf (save-under-bitmap su)
-	      (make-offscreen-bitmap *boxer-pane* 
+	      (make-offscreen-bitmap *boxer-pane*
 				     new-size new-size))))))
 
 (defmethod set-sprite-size ((self turtle) new-size &optional dont-update-box)
@@ -266,7 +266,7 @@ Modification History (most recent at top)
   (set-x-position self 0.0)
   (set-y-position self 0.0)
   (set-heading self 0))
- 
+
 (defmethod restore-state ((self turtle))
   (set-x-position self (first %turtle-state))
   (set-y-position self (second %turtle-state))
