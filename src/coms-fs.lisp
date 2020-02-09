@@ -26,30 +26,30 @@ Modification History (most recent at top)
 11/07/13 com-export-box-as added :if-does-not-exist :ok
  2/17/12 *name-link-boxes* controls whether com-open-link-file creates boxes with same name as file
  2/ 1/12 com-export-box-as moved here from impexp.lisp so system can recompile cleanly
-12/29/11 change com-open-link-file to use open-xref-file-dialog 
+12/29/11 change com-open-link-file to use open-xref-file-dialog
 12/12/11 com-open-link-file
  5/31/08 no more drawing-on-port in com-open-box-file (leads to deadlock in opengl)
- 9/14/05 com-save-document & com-box-save-as: read-only flag was being 
-         improperly reset 
+ 9/14/05 com-save-document & com-box-save-as: read-only flag was being
+         improperly reset
  8/20/05 changed file-overwrite-ok to use my-y-or-n-dialog which is smarter about
          spacing around the button text
  8/08/05 added set-file-box-properties to com-box-save-as
  7/17/05 set-file-box-properties added as a hook for initializing new file
          boxes, for now, just sets always-zoom? to T
  6/27/04 moved the with-hilited-box to be around calls to save because
-         OSX file dialog messed it up when there was only the single use 
+         OSX file dialog messed it up when there was only the single use
          wrapped around multiple save calls as well as the file dialog
 10/28/03 com-box-save-as, com-save-document changed to use with-hilited-box
  4/21/03 merged current LW and MCL files
  9/02/02 added com-toggle-modified-flag
  2/13/01 merged current LW and MCL files
  1/19/00 Lispworks changes-mostly removing defaults for new functions
- 4/20/99 com-box-save-as, com-save-document, close-box-prescan, com-close-box 
+ 4/20/99 com-box-save-as, com-save-document, close-box-prescan, com-close-box
          check for outlink ports
  2/23/99 added no filename warning to quiet option of com-save-document
  2/11/99 com-unfile-document
  2/10/99 com-save-document supports nowarnings? option
- 9/29/98 com-save-document will suppress read-only flag when asking for an 
+ 9/29/98 com-save-document will suppress read-only flag when asking for an
          explicit filename
  9/13/98 com-open-box-file will bash the NAME slot to nil if the box looks
          like it was a saved top level world
@@ -84,7 +84,7 @@ Modification History (most recent at top)
 
 ;; prompts for a new filename
 #-(or mcl lispworks)
-(defun boxer-new-file-dialog (&key (prompt "New Filename") 
+(defun boxer-new-file-dialog (&key (prompt "New Filename")
                                    (directory *boxer-pathname-default*) box)
   (declare (ignore box))
   (merge-pathnames (get-string-from-status-line prompt)
@@ -92,7 +92,7 @@ Modification History (most recent at top)
 
 #-(or mcl lispworks)
 (defun save-modified-box-dialog (box)
-  (when (status-line-y-or-n-p 
+  (when (status-line-y-or-n-p
          (format nil "The Box, ~A, has been modified, Save it ?"
                  (box-save-name box)))
     (let ((existing-pathname (getprop box :associated-file)))
@@ -101,7 +101,7 @@ Modification History (most recent at top)
 
 #-(or mcl lispworks)
 (defun add-path-to-ro-box-dialog (box)
-  (when (status-line-y-or-n-p 
+  (when (status-line-y-or-n-p
          "The Read Only box, ~A, does not have a pathname. Add one  ?"
          (box-save-name box))
     (let ((newpath (boxer-open-file-dialog)))
@@ -112,7 +112,7 @@ Modification History (most recent at top)
   (declare (ignore box nports))
   (boxer-editor-warning "~D ports have targets outside of the box"))
 
-;; use this if it looks like you might be overwriting a 
+;; use this if it looks like you might be overwriting a
 ;; file and want to  know if it is ok
 (defun file-overwrite-ok (reason)
   #+mcl
@@ -144,18 +144,18 @@ Modification History (most recent at top)
   "Saves the current box into a file"
   (catch 'cancel-boxer-file-dialog
     (eval::report-eval-errors-in-editor
-      (let ((what (or box (box-point-is-in))))           
+      (let ((what (or box (box-point-is-in))))
         (check-for-outlink-ports what)
         (with-hilited-box (what)
           (let ((existing-filename (getprop what :associated-file)))
             (multiple-value-bind (filename format read-only?)
                 (if (or always-ask-for-filename? (null existing-filename))
-                  (boxer-new-file-dialog 
-                   :prompt (format nil "Save ~A box into file:" 
+                  (boxer-new-file-dialog
+                   :prompt (format nil "Save ~A box into file:"
                                    (box-save-name what))
                    ;; need to check for dir to avoid blowouts
                    :directory (let ((existing-dir (unless (null existing-filename)
-                                                    (make-pathname 
+                                                    (make-pathname
                                                      :directory
                                                      (pathname-directory
                                                       existing-filename)))))
@@ -166,11 +166,11 @@ Modification History (most recent at top)
                                        (directory-namestring existing-filename))
                                       (t existing-filename)))
                    :box what)
-                  (values existing-filename 
+                  (values existing-filename
                           (or (getprop what :preferred-file-format) :boxer)
                           (read-only-box? box)))
               (when (not (null (getprop what :url)))
-                ;; if there is a URL, we must remove it BEFORE saving as 
+                ;; if there is a URL, we must remove it BEFORE saving as
                 ;; a file or else dump-box will black box it
                 (removeprop what :url))
               (save-generic what filename
@@ -193,7 +193,7 @@ Modification History (most recent at top)
 
 ;; a "document" is whatever the (current-file-box) is
 ;; 6/27/04 moved the with-hilited-box to be around calls to save because
-;; OSX file dialog messed it up when there was only the single use wrapped around 
+;; OSX file dialog messed it up when there was only the single use wrapped around
 ;; multiple save calls as well as the file dialog
 (defboxer-command com-save-document (&optional always-ask-for-filename? nowarnings?)
   "Saves the current file box"
@@ -201,7 +201,7 @@ Modification History (most recent at top)
     (eval::report-eval-errors-in-editor
       (let* ((box (current-file-box))
              (raw-filename (getprop box :associated-file))
-             (dialog-prompt (format nil "Save ~A box into file:" 
+             (dialog-prompt (format nil "Save ~A box into file:"
                                     (box-save-name box)))
              ;; careful, the filename might be relative
              (existing-filename (cond ((null raw-filename) nil)
@@ -209,7 +209,7 @@ Modification History (most recent at top)
                                            :absolute)
                                        raw-filename)
                                       (t ; must be relative
-                                       (let* ((sup-file-box (current-file-box 
+                                       (let* ((sup-file-box (current-file-box
                                                              (superior-box box)))
                                               (sup-filename (getprop
                                                              sup-file-box
@@ -229,13 +229,13 @@ Modification History (most recent at top)
                (with-hilited-box (box)
                  (boxnet::save-box-using-url existing-url box)))
               ((and nowarnings? (null existing-filename))
-               ;; At least give a warning, error seems inappropriate 
+               ;; At least give a warning, error seems inappropriate
                ;; from inside a quietly-save
                (boxer-editor-warning
                 "Box has no filename. Box not saved"))
               (nowarnings?
                (when (not (null existing-url))
-                 ;; if there is a URL, we must remove it BEFORE 
+                 ;; if there is a URL, we must remove it BEFORE
                  ;; saving as a file or else dump-box will black box it
                  (removeprop box :url))
                (with-hilited-box (box)
@@ -247,30 +247,30 @@ Modification History (most recent at top)
               (t
                (multiple-value-bind (filename format read-only?)
                    (if (or always-ask-for-filename? (null existing-filename))
-                     (boxer-new-file-dialog 
+                     (boxer-new-file-dialog
                       :prompt dialog-prompt
-                      ;; need to check for the dir to avoid 
+                      ;; need to check for the dir to avoid
                       ;; blowouts on the Mac (and maybe others)
-                      :directory 
-                      (let ((existing-dir (unless (null 
+                      :directory
+                      (let ((existing-dir (unless (null
                                                    existing-filename)
-                                            (make-pathname 
+                                            (make-pathname
                                              :directory
                                              (pathname-directory
                                               existing-filename)))))
-                        (when (and existing-dir 
+                        (when (and existing-dir
                                    (probe-file existing-dir))
                           existing-filename))
-                      ;; suppress read only if we are explicitly 
+                      ;; suppress read only if we are explicitly
                       ;; asking for a new filename
-                      :box box 
+                      :box box
                       :no-read-only? always-ask-for-filename?)
-                     (values existing-filename 
+                     (values existing-filename
                              (or (getprop box :preferred-file-format) :boxer)
                              (read-only-box? box)))
                  (when (not (null existing-url))
                    ;; if there is a URL, we must remove it BEFORE
-                   ;; saving as a file or else 
+                   ;; saving as a file or else
                    ;; dump-box will black box it
                    (removeprop box :url))
                  (with-hilited-box (box)
@@ -278,15 +278,15 @@ Modification History (most recent at top)
                                  :format format :read-only? read-only?))
                  ;; update the preferred file format and
                  ;; read only properties
-                 (let ((existing-ff (getprop box 
+                 (let ((existing-ff (getprop box
                                              :preferred-file-format)))
                    (when (and (neq existing-ff format)
-                              (not (and (eq format :boxer) 
+                              (not (and (eq format :boxer)
                                         (null existing-ff))))
                      (putprop box format :preferred-file-format))
                    (when (neq read-only? (read-only-box? box))
                      (setf (read-only-box? box) read-only?)))
-                 (unless (eq existing-filename filename) 
+                 (unless (eq existing-filename filename)
                    (putprop box filename :associated-file)))))
         (mark-file-box-clean box))))
   eval::*novalue*)
@@ -295,20 +295,20 @@ Modification History (most recent at top)
   "Inserts the contents of a Boxer file"
   (if (name-row? (point-row))
     (boxer-editor-error "Can't insert a (file) box while in a name")
-    (progn 
+    (progn
       (catch 'cancel-boxer-file-dialog
         (eval::report-eval-errors-in-editor
           ;; (with-drawing-port *boxer-pane*
           (let* ((filename (boxer-open-file-dialog))
                  (box (read-internal filename)))
-            (when (box? box)        
-              ;; if this was previously, a saved world box, we need to 
+            (when (box? box)
+              ;; if this was previously, a saved world box, we need to
               ;; fix up the name slot
               (multiple-value-bind (ro? world-box?)
                   #+mcl (boxer-file-info filename) ;; looks in resource fork
                 #-mcl (values nil nil)
                 (declare (ignore ro?))
-                (when (or world-box? 
+                (when (or world-box?
                           (and (stringp (slot-value box 'name))
                                (string= (slot-value box 'name) "WORLD")))
                   (setf (slot-value box 'name) nil)))
@@ -321,7 +321,7 @@ Modification History (most recent at top)
 ;; the default should set always-zoom,
 ;; hook for something more elaborate, later
 ;; should we keep this separate or fold it into mark-box-as-file ?
-;; for now, leave separate since we'll want to make it interact with 
+;; for now, leave separate since we'll want to make it interact with
 ;; initialize-new-box-properties
 (defun set-file-box-properties (box)
   (set-always-zoom? box t))
@@ -423,13 +423,13 @@ Modification History (most recent at top)
       ;; first check all the inferiors....
       (close-box-prescan box)
       ;; now check for modification of the box and offer to save if so
-      (when (file-modified? box) 
+      (when (file-modified? box)
         (check-for-outlink-ports box)
-        (save-modified-box-dialog box :prompt-start "The main box," 
+        (save-modified-box-dialog box :prompt-start "The main box,"
                                   :no-zoom-offered? t))
       (cond ((eq box *initial-box*)
              ;; forbid this for now, later we might want to kil the window
-             ;; first need to hack OPEN to possibly create a window 
+             ;; first need to hack OPEN to possibly create a window
              (boxer-editor-warning "Sorry, Can't Close the Top Level Box"))
             (t
              ;; now exit the file box
@@ -440,7 +440,7 @@ Modification History (most recent at top)
                        (com-exit-box)))
              ;; now one more exit
              (com-exit-box)
-             ;;we should now be at the next higher level, next to the file box      
+             ;;we should now be at the next higher level, next to the file box
              ;; now close the box (deallocating infs)
              (when (eq (point-box) destination)
                ;; make sure we are really where we think we are before removing stuff
@@ -456,7 +456,7 @@ Modification History (most recent at top)
 (defboxer-command com-export-box-as (&optional (ffc *default-ffc*))
   "Write the contents of a box out in a different format"
   (catch 'cancel-boxer-file-dialog
-    (let ((filename (capi:prompt-for-file "Export box to..." 
+    (let ((filename (capi:prompt-for-file "Export box to..."
                                           :filter (ffc-file-filter ffc)
                                           :filters *foreign-file-filters*
                                           :operation :save
@@ -476,7 +476,7 @@ Modification History (most recent at top)
       (let ((new-bt (copy-graphics-sheet boxtop box)))
         ;; use a new graphic sheet because the old one is going to get deallocated
         (putprop box new-bt :cached-boxtop)))))
-      
+
 (defboxer-command com-toggle-modified-flag ()
   "Toggles the file modified status of the current document"
   (cond ((file-box-dirty? (point-box))
@@ -484,7 +484,7 @@ Modification History (most recent at top)
         (t (mark-file-box-dirty (point-box))))
   (modified (point-box))
   eval::*novalue*)
-    
+
 (defboxer-command com-unmodify-document ()
   "Clears the file modified status of the current document"
   (mark-file-box-clean (point-box))
@@ -559,12 +559,12 @@ Modification History (most recent at top)
   "Inserts the contents of a Boxer file"
   (if (name-row? (point-row))
     (boxer-editor-error "Can't insert a (file) box while in a name")
-    (progn 
+    (progn
       (catch 'cancel-boxer-file-dialog
         (eval::report-eval-errors-in-editor
           ;; (with-drawing-port *boxer-pane*
           (let* ((filename (open-xref-file-dialog))
-                 (xbox (make-xfile-box filename))) 
+                 (xbox (make-xfile-box filename)))
             (when *name-link-boxes*
               (set-name xbox (make-name-row (list (pathname-name filename)))))
             (insert-cha *point* xbox)
