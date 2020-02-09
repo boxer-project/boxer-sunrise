@@ -5,7 +5,7 @@
  $Header: coms-mouse.lisp,v 1.0 90/01/24 22:08:41 boxer Exp $
 
 
- 
+
  $Log:	coms-mouse.lisp,v $
 ;;;Revision 1.0  90/01/24  22:08:41  boxer
 ;;;Initial revision
@@ -26,20 +26,20 @@
                                          +-------+
 
 
-	   This file contains top level definitions for 
+	   This file contains top level definitions for
 	   the set of BOXER Editor Mouse Commands.
-	  
+
 
 Modification History (most recent at top)
 
- 9/24/12 removed fixnum assumptions in: com-mouse-define-region, com-mouse-resize-box, 
+ 9/24/12 removed fixnum assumptions in: com-mouse-define-region, com-mouse-resize-box,
             mouse-corner-tracking, com-mouse-border-toggle-type
             com-mouse-scroll-box, com-mouse-page-scroll, com-mouse-limit-scroll-box,
             mouse-smooth-scroll-internal, mouse-in-v-scroll-bar-internal
  8/18/11 removed drawing-on-window from com-mouse-resize-box (apparently opengl::rendering-on is
          not, or has troubles with being, reentrant)
  8/11/11 com-mouse-resize-box
- 5/20/09 scroll-bar commands 
+ 5/20/09 scroll-bar commands
  2/27/07 border coms changed to use new track mouse paradigm
          (redisplay-cursor) => (repaint-cursor), (redisplay) => (repaint)
          remove all (add-redisplay-clue 's
@@ -47,24 +47,24 @@ Modification History (most recent at top)
          munging of the destination
 10/29/03 removed flush-port-buffer from com-mouse-define-region, graphics flush
          now occurs as part of the with-mouse-tracking macro
-         #+ graphics-flush changed to (force-graphics-output) in 
+         #+ graphics-flush changed to (force-graphics-output) in
          mouse-{smooth-scroll,line-scroll,in-scroll-bar}-internal
-10/15/03 display-force-output changed to force-graphics-output in 
+10/15/03 display-force-output changed to force-graphics-output in
          com-mouse-resize-box & com-christmas-tree
 10/26/03 flush-port-buffer added to mouse-smooth-scroll-internal and
          mouse-in-scroll-bar-internal
  4/21/03 merged current LW and MCL files
- 1/15/02 changed com-mouse-define-region to default all args so that calling it 
+ 1/15/02 changed com-mouse-define-region to default all args so that calling it
          from boxer code will no longer blow out.  Instead, it behaves as if
          the mouse were clicked in it's current position
  5/15/01 *smooth-scroll-pause-time* changed to 0.005 for smoother scrolling of more
          complicated rows (like with boxes)
  5/11/01 mouse-smooth-scroll-internal fixed to provide useful time for timed-body
-         *smooth-scroll-pause-time* changed from .01 to .001 
+         *smooth-scroll-pause-time* changed from .01 to .001
  2/13/01 merged current LW and MCL files
  4/11/00 calls to ENTER by mouse coms now check to see if we are entering a box
          from below and pass the arg to suppress entry triggers
-10/27/98 com-mouse-limit-scroll-box uses last-page-top-row instead of 
+10/27/98 com-mouse-limit-scroll-box uses last-page-top-row instead of
          last-inferior-row
 10/26/98 refinements to mouse-in-scroll-bar-internal so that lowest scroll position
          will include a full box of text
@@ -95,7 +95,7 @@ Modification History (most recent at top)
   "make the one step smaller"
   ;; Note that this is designed to be called in the Boxer process,
   ;; not in the Mouse Process -- This is important!!!
-  window x y click-only?    ;  (declare (ignore window x y click-only?)) 
+  window x y click-only?    ;  (declare (ignore window x y click-only?))
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let ((new-box (bp-box mouse-bp))
@@ -115,12 +115,12 @@ Modification History (most recent at top)
   ;; not in the Mouse Process -- This is important!!!
   window x y click-only? ; (declare (ignore window x y click-only?))
   ;; first, if there already is an existing region, flush it
-  (reset-region)  
+  (reset-region)
   (let ((new-box (bp-box mouse-bp))
 	(new-row (bp-row mouse-bp))
 	(mouse-screen-box (bp-screen-box mouse-bp))
 	(new-cha-no (bp-cha-no mouse-bp)))
-    (when (and (not-null new-row) 
+    (when (and (not-null new-row)
 	       (box? new-box))
       (send-exit-messages new-box mouse-screen-box)
       (move-point-1 new-row new-cha-no mouse-screen-box)
@@ -133,12 +133,12 @@ Modification History (most recent at top)
   ;; not in the Mouse Process -- This is important!!!
   window x y click-only? ; (declare (ignore window x y click-only?))
   ;; first, if there already is an existing region, flush it
-  (reset-region)  
+  (reset-region)
   (let ((new-box (bp-box mouse-bp))
 	(new-row (bp-row mouse-bp))
 	(mouse-screen-box (bp-screen-box mouse-bp))
 	(new-cha-no (bp-cha-no mouse-bp)))
-    (when (and (not-null new-row) 
+    (when (and (not-null new-row)
 	       (box? new-box))
       (unless (and (not (eq mouse-screen-box (outermost-screen-box)))
 		   mouse-screen-box
@@ -218,7 +218,7 @@ Modification History (most recent at top)
 (defboxer-command com-mouse-define-region (&optional (window *boxer-pane*)
                                                      (x (bw::boxer-pane-mouse-x))
                                                      (y (bw::boxer-pane-mouse-y))
-                                                     (mouse-bp 
+                                                     (mouse-bp
                                                       (mouse-position-values x y))
                                                      (click-only? t)
                                                      (shift?
@@ -233,13 +233,13 @@ Modification History (most recent at top)
         ;; should probably eventually make this a global var...
         (mouse-position (fill-doit-cursor-position-vector
                          (make-process-doit-cursor-position) mouse-bp)))
-    (when (and (not shift?) 
+    (when (and (not shift?)
                ;; if the shift key is pressed, don't move the point...
                (not-null new-row) (not-null new-cha-no) (not-null new-box))
       (unless (eq old-box new-box)
         (send-exit-messages new-box mouse-screen-box t )
         (enter new-box (not (superior? old-box new-box))))
-      ;; enter method needs to be called 1st because we may need to fill 
+      ;; enter method needs to be called 1st because we may need to fill
       ;; a boxes contents before moving
       (cond ((or (null (superior-box new-row))
                  (not (superior? (superior-box new-row) *initial-box*)))
@@ -278,18 +278,18 @@ Modification History (most recent at top)
           ;; (screen-obj-x-offset <>) + context-x = window x-coordinate
           (let ((current-screen-box original-screen-box)
                 (osb (outermost-screen-box))
-                (mouse-screen-row original-screen-row) 
+                (mouse-screen-row original-screen-row)
                 (mark-screen-row original-screen-row)
                 (mouse-x original-x) (mark-x original-x) (mark-screen-box nil)
                 (context-x original-context-x)(context-y original-context-y))
             (when shift?
-              (multiple-value-setq (mouse-screen-row mouse-x) 
+              (multiple-value-setq (mouse-screen-row mouse-x)
                   (mouse-position-screen-row-values x y)))
             (catch 'mouse-confusion
-              (unwind-protect 
+              (unwind-protect
                   ;; the inner mouse tracking loop...
                   (with-mouse-tracking ((raw-mouse-x x) (raw-mouse-y y))
-                    ;; first check to make sure that the mouse is still 
+                    ;; first check to make sure that the mouse is still
                     ;; inside of the current-screen-box
                     ;; if it isn't, then reset the current-screen-box
                     ;; and all the other variables associated with it, then
@@ -297,10 +297,10 @@ Modification History (most recent at top)
                     ;;
                     ;; Find the box by walking upward from the original
                     (catch 'mouse-tracking-body
-                      ;; this DO loop updates current-screen-box, 
+                      ;; this DO loop updates current-screen-box,
                       ;; mark-screen-row and mark-screen-box
                       (do* ((new-box original-screen-box (superior-screen-box new-box))
-                            ;; these are updated at the bottom of the loop 
+                            ;; these are updated at the bottom of the loop
                             (new-context-x original-context-x
                                            (- new-context-x
                                               (screen-obj-x-offset new-box)
@@ -314,7 +314,7 @@ Modification History (most recent at top)
                            ((or (eq new-box osb) (eq (superior-screen-box new-box) osb))
                             ;; if we get this far, then we are either on the
                             ;; box or else use the outermost box
-                            (cond 
+                            (cond
                              ((in-screen-box? new-box
                                               (- raw-mouse-x new-context-x)
                                               (- raw-mouse-y new-context-y))
@@ -350,7 +350,7 @@ Modification History (most recent at top)
                             ;; inferior boxes should ALWAYS be included)
                             (setq mark-screen-box new-mark-box
                                   mark-screen-row
-                                  (if (null new-mark-box) 
+                                  (if (null new-mark-box)
                                       original-screen-row
                                     (screen-row new-mark-box))))
                           (return))
@@ -358,7 +358,7 @@ Modification History (most recent at top)
                         (setq new-mark-box new-box
                               sup-row (screen-row new-box)))
                       ;; DO loop ends
-                      
+
                       ;; At this point, we know that current-screen-box,
                       ;; mark-screen-row and mark-screen-box are all valid
                       ;; we now want to update mark-x, mouse-screen-row and
@@ -366,10 +366,10 @@ Modification History (most recent at top)
                       ;; of the mouse and the mark
                       (multiple-value-bind (new-screen-obj offset position near-row)
                           (screen-obj-at current-screen-box
-                                         (- raw-mouse-x context-x ) 
+                                         (- raw-mouse-x context-x )
                                          (- raw-mouse-y context-y ) nil)
                         (cond ((screen-row? new-screen-obj)
-                               (setq mouse-screen-row new-screen-obj) 
+                               (setq mouse-screen-row new-screen-obj)
                                ;; compare relative positions of mouse and mark
                                ;; to generate correct mark-x and mouse-x
                                (cond ((eq new-screen-obj mark-screen-row)
@@ -379,26 +379,26 @@ Modification History (most recent at top)
                                                    (if (or (not (screen-box? position))
                                                            (< offset mark-x))
                                                        offset
-                                                     (+ offset 
+                                                     (+ offset
                                                         (screen-obj-wid position)))))
                                             ((< (screen-obj-x-offset mark-screen-box)
                                                 offset)
-                                             (setq mark-x 
+                                             (setq mark-x
                                                    (screen-obj-x-offset mark-screen-box)
                                                    mouse-x
                                                    (if (screen-box? position)
-                                                       (+ offset 
+                                                       (+ offset
                                                           (screen-obj-wid position))
                                                      offset)))
                                             (t
                                              (setq mark-x
-                                                   (+ (screen-obj-x-offset 
+                                                   (+ (screen-obj-x-offset
                                                        mark-screen-box)
                                                       (screen-obj-wid mark-screen-box))
                                                    mouse-x offset))))
                                      ((< (screen-obj-y-offset mark-screen-row)
                                          (screen-obj-y-offset new-screen-obj))
-                                      ;; mouse is behind the mark 
+                                      ;; mouse is behind the mark
                                       (setq mouse-x
                                             (if (screen-box? position)
                                                 (+ offset (screen-obj-wid position))
@@ -420,7 +420,7 @@ Modification History (most recent at top)
                                (setq mouse-screen-row near-row mouse-x 0)
                                ;; mouse should be in front of the mark
                                (setq mark-x
-                                     (if (null mark-screen-box) 
+                                     (if (null mark-screen-box)
                                          original-x
                                        (+ (screen-obj-x-offset mark-screen-box)
                                           (screen-obj-wid mark-screen-box)))))
@@ -433,18 +433,18 @@ Modification History (most recent at top)
                                          original-x
                                        (screen-obj-x-offset mark-screen-box))))
                               ((eq position :top)
-                               (setq mouse-screen-row (first-screen-row 
+                               (setq mouse-screen-row (first-screen-row
                                                        current-screen-box)
                                      mouse-x 0)
                                ;; the mouse must be in front of the mark
                                (setq mark-x
-                                     (if (null mark-screen-box) 
+                                     (if (null mark-screen-box)
                                          original-x
                                        (+
                                         (screen-obj-x-offset mark-screen-box)
                                         (screen-obj-wid mark-screen-box)))))
                               ((eq position :bottom)
-                               (setq mouse-screen-row (last-screen-row 
+                               (setq mouse-screen-row (last-screen-row
                                                        current-screen-box)
                                      mouse-x (screen-obj-wid mouse-screen-row))
                                ;; mouse must be after the mark
@@ -454,7 +454,7 @@ Modification History (most recent at top)
                                        (screen-obj-x-offset mark-screen-box))))
                               (t
                                ;; we should be here....
-                               (warn "Can't find mouse for ~A, ~D, ~A" 
+                               (warn "Can't find mouse for ~A, ~D, ~A"
                                      new-screen-obj offset position)
                                (setq mouse-screen-row
                                      (first-screen-row current-screen-box)
@@ -477,16 +477,16 @@ Modification History (most recent at top)
                       (let ((mark-row (screen-obj-actual-obj mark-screen-row))
                             (mouse-row (screen-obj-actual-obj mouse-screen-row))
                             (mark-cha-no (screen-offset->cha-no mark-screen-row mark-x))
-                            (mouse-cha-no (screen-offset->cha-no mouse-screen-row 
+                            (mouse-cha-no (screen-offset->cha-no mouse-screen-row
                                                                  mouse-x)))
                         (flet ((same-pos? (mouse-1st?)
                                  (let ((bp1 (if mouse-1st?
-                                                (interval-start-bp 
+                                                (interval-start-bp
                                                  *region-being-defined*)
                                               (interval-stop-bp *region-being-defined*)))
                                        (bp2 (if mouse-1st?
                                                 (interval-stop-bp *region-being-defined*)
-                                              (interval-start-bp 
+                                              (interval-start-bp
                                                *region-being-defined*))))
                                    (and (eq mouse-row (bp-row bp1))
                                         (= mouse-cha-no (bp-cha-no bp1))
@@ -495,7 +495,7 @@ Modification History (most recent at top)
                           (cond ((null *region-being-defined*)
                                  (let ((mark-bp (make-bp ':fixed))
                                        (mouse-bp (make-bp ':fixed)))
-                                   (setf (bp-row mark-bp) mark-row 
+                                   (setf (bp-row mark-bp) mark-row
                                          (bp-row mouse-bp) mouse-row
                                          (bp-cha-no mark-bp) mark-cha-no
                                          (bp-cha-no mouse-bp) mouse-cha-no)
@@ -514,9 +514,9 @@ Modification History (most recent at top)
                                  (cond ((same-pos? t)
                                         ;; mouse hasn't moved, so do nothing
                                         )
-                                       (t (let ((bp1 (interval-start-bp 
+                                       (t (let ((bp1 (interval-start-bp
                                                       *region-being-defined*))
-                                                (bp2 (interval-stop-bp 
+                                                (bp2 (interval-stop-bp
                                                       *region-being-defined*)))
                                             (setf (bp-row bp1) mouse-row
                                                   (bp-cha-no bp1) mouse-cha-no
@@ -525,9 +525,9 @@ Modification History (most recent at top)
                                           (repaint))))
                                 (t ; mark is in front of mouse...
                                  (cond ((same-pos? nil))
-                                       (t (let ((bp1 (interval-start-bp 
+                                       (t (let ((bp1 (interval-start-bp
                                                       *region-being-defined*))
-                                                (bp2 (interval-stop-bp 
+                                                (bp2 (interval-stop-bp
                                                       *region-being-defined*)))
                                             (setf (bp-row bp1) mark-row
                                                   (bp-cha-no bp1) mark-cha-no
@@ -538,11 +538,11 @@ Modification History (most recent at top)
                 ;; unwind-protect forms...
                 (let ((mark-cha-no (screen-offset->cha-no mark-screen-row mark-x))
                       (mouse-cha-no (screen-offset->cha-no mouse-screen-row mouse-x)))
-                  (cond ((and (eq mark-screen-row mouse-screen-row) 
+                  (cond ((and (eq mark-screen-row mouse-screen-row)
                               (=& mark-cha-no mouse-cha-no))
                          ;; no region to define so make sure we clean up the blinkers
                          (unless (null *region-being-defined*)
-                           (setq *region-list* 
+                           (setq *region-list*
                                  (fast-delq *region-being-defined* *region-list*)
                                  *region-being-defined*
                                  nil)
@@ -558,7 +558,7 @@ Modification History (most recent at top)
 (defun reconcile-region-blinker-list (region blinker-list)
   (let ((existing-blinkers (interval-blinker-list region)))
     (cond ((not (null existing-blinkers))
-           (when *boxer-system-hacker* 
+           (when *boxer-system-hacker*
              (error "Region, ~A, already has blinkers" region))
            (dolist (bl blinker-list) (remove-region-row-blinker bl)))
           (t
@@ -566,13 +566,13 @@ Modification History (most recent at top)
            ;; handle the rest-see update-row-blinker-list called by
            ;; interval-update-redisplay-all-rows (region.lisp)
            (setf (interval-blinker-list region) blinker-list)
-           ;; we do have to hack the visibility flag because we know 
+           ;; we do have to hack the visibility flag because we know
            ;; that the blinkers are already visible
            (setf (interval-visibility region) t)))))
 |#
-             
-	
-	
+
+
+
 #|
 ;;; Multi-purpose box size changer.
 ;;; Lets you get by with just one button for changing size.
@@ -602,9 +602,9 @@ Modification History (most recent at top)
 		 (declare (ignore row cha-no screen-box rel-y))
 		 (send-exit-messages new-box mouse-screen-box)
 		 (move-point-1 new-row new-cha-no mouse-screen-box)
-		 (if (< (* rel-x 2) 
+		 (if (< (* rel-x 2)
 			(screen-object-width mouse-screen-box))
-		     (com-collapse-box) 
+		     (com-collapse-box)
 		     (com-shrink-box))))
 	      ((shrunken? actual-obj)
 	       (send-exit-messages
@@ -619,11 +619,11 @@ Modification History (most recent at top)
 		 row cha-no screen-box rel-y
 		 (send-exit-messages new-box mouse-screen-box)
 		 (move-point-1 new-row new-cha-no mouse-screen-box)
-		 (cond ((< (* rel-x 2) 
+		 (cond ((< (* rel-x 2)
 			   (screen-object-width mouse-screen-box))
 			(enter new-box)
 			(com-expand-box))
-		       (t 
+		       (t
 			(com-collapse-box)))))))))
   eval::*novalue*)
 
@@ -636,7 +636,7 @@ Modification History (most recent at top)
   (let* ((screen-box (bp-screen-box mouse-bp))
 	 (actual-box (screen-obj-actual-obj screen-box)))
     (cond ((null actual-box))
-          ((and (shrunken? actual-box) 
+          ((and (shrunken? actual-box)
                 (not (eq screen-box (outermost-screen-box))))
            ;; might as well open it
            (com-mouse-set-outermost-box window x y mouse-bp click-only?))
@@ -678,7 +678,7 @@ Modification History (most recent at top)
 	 (unless (null *suitcase-mode*) (cleanup-suitcase))
 	 (boxer-editor-error "No region to kill."))))
 
-;;; 
+;;;
 #| ;; old, use modes now
 (defun entering-suitcase-bindings ()
   (save-and-rebind-key (current-mouse-click-name #+mcl 0 #-mcl 1 0)
@@ -725,11 +725,11 @@ Modification History (most recent at top)
   (RESET-EDITOR-NUMERIC-ARG)
   eval::*novalue*)
 
-;;; suck the region up into a suitcase, without destroying the text sucked 
+;;; suck the region up into a suitcase, without destroying the text sucked
 (defun suck-copy-region ()
     (setq *suitcase-region*
 	  (or *region-being-defined* (get-current-region)))
-    (cond (*suitcase-region* (setq *suitcase-region* 
+    (cond (*suitcase-region* (setq *suitcase-region*
 				   (copy-interval *suitcase-region*)))
 	  (t
 	   ;; just in case...
@@ -741,7 +741,7 @@ Modification History (most recent at top)
   (unless (null *suitcase-mode*)
     (unless (null *old-region-location*)
       (move-to-bp *old-region-location*)
-      (unless (null *suitcase-region*) 
+      (unless (null *suitcase-region*)
 	(yank-region *point* *suitcase-region*)
       (setq *old-region-location* nil)))
     (unless (null *suitcase-region*) (deallocate-region *suitcase-region*))
@@ -769,7 +769,7 @@ Modification History (most recent at top)
 
 
 
-;;;; Commands for Mouse border Areas.... 
+;;;; Commands for Mouse border Areas....
 
 (defvar *warn-about-disabled-commands* t)
 (defvar *only-shrink-wrap-text-boxes* nil)
@@ -792,12 +792,12 @@ Modification History (most recent at top)
 	   (set-fixed-size actual-box nil nil))
           ((and *only-shrink-wrap-text-boxes* (null (graphics-sheet actual-box)))
            (when *warn-about-disabled-commands*
-             (boxer-editor-warning 
+             (boxer-editor-warning
               "Resizing Text Boxes is disabled, see the Preferences menu")))
 	  ((eq screen-box (outermost-screen-box))
-           (boxer-editor-warning 
+           (boxer-editor-warning
             "Can't Resize the Outermost Box. Resize the Window instead."))
-	  (t 
+	  (t
            ;; mouse grab, interactive loop
            (multiple-value-bind (box-window-x box-window-y)
 	       (xy-position screen-box)
@@ -814,14 +814,14 @@ Modification History (most recent at top)
                        (box-borders-name-tab-values box-type screen-box)
                      (declare (ignore n-min-x))
                      (setq minimum-track-wid (max& n-max-x minimum-track-wid)
-                           minimum-track-hei (+ minimum-track-hei 
+                           minimum-track-hei (+ minimum-track-hei
                                                 (- n-max-y n-min-y)))))
                  (multiple-value-bind (final-x final-y moved-p)
                      (with-mouse-tracking ((mouse-x x) (mouse-y y)
                                            :action :resize)
                        (let ((new-wid (max& minimum-track-wid
                                             (- mouse-x box-window-x)))
-                             (new-hei (max& minimum-track-hei 
+                             (new-hei (max& minimum-track-hei
                                             (- mouse-y box-window-y)))
                              (last-wid (screen-obj-wid screen-box))
                              (last-hei (screen-obj-hei screen-box)))
@@ -831,13 +831,13 @@ Modification History (most recent at top)
                                ((and (= new-wid last-wid) (= new-hei last-hei))
                                 ;; same place, so do nothing...
                                 )
-                               (t 
+                               (t
                                 (when (null first-movement-flag)
                                   (setq first-movement-flag t))
-                                (status-line-size-report screen-box 
+                                (status-line-size-report screen-box
                                                          new-wid new-hei)
                                 (let ((*update-bitmap?* nil))
-                                  ;; suppress allocation of multiple different 
+                                  ;; suppress allocation of multiple different
                                   ;; sized bitmaps inside of loop
                                   (set-fixed-size actual-box
                                                   (- new-wid left right)
@@ -877,7 +877,7 @@ Modification History (most recent at top)
     (let ((reporting-wid (- wid lef rig))
           (reporting-hei (- hei top bot)))
       (status-line-display 'boxer-editor-error
-                           (if (graphics-screen-box? screen-box) 
+                           (if (graphics-screen-box? screen-box)
                                (format nil "New Size will be: ~D x ~D"
                                        reporting-wid reporting-hei)
                                (multiple-value-bind (cwid chei)
@@ -887,7 +887,7 @@ Modification History (most recent at top)
                                          (floor (+ 2 reporting-hei) chei))))))))
 
 (defmacro mouse-corner-tracking ((corner) hilite-fun screen-box)
-  (let ((delta-x (gensym)) (delta-y (gensym)) 
+  (let ((delta-x (gensym)) (delta-y (gensym))
         (box-window-x (gensym)) (box-window-y (gensym))
         (width (gensym)) (height (gensym)))
     (ecase corner
@@ -915,7 +915,7 @@ Modification History (most recent at top)
           (multiple-value-bind (,delta-x ,delta-y ,width ,height)
               (bl-corner-tracking-info ,screen-box)
             (track-mouse-area ,hilite-fun
-                              :x (+ ,box-window-x ,delta-x) 
+                              :x (+ ,box-window-x ,delta-x)
                               :y (+ ,box-window-y ,delta-y)
                               :width ,width :height ,height))))
       (:bottom-right
@@ -923,7 +923,7 @@ Modification History (most recent at top)
             (xy-position ,screen-box)
           (multiple-value-bind (,delta-x ,delta-y ,width ,height)
               (br-corner-tracking-info ,screen-box)
-            (track-mouse-area ,hilite-fun 
+            (track-mouse-area ,hilite-fun
                               :x (+ ,box-window-x ,delta-x)
                               :y (+ ,box-window-y ,delta-y)
                               :width ,width :height ,height)))))))
@@ -940,7 +940,7 @@ Modification History (most recent at top)
       (let ((new-box (bp-box mouse-bp))
 	    (new-row (bp-row mouse-bp))
 	    (new-cha-no (bp-cha-no mouse-bp)))
-	(when (and (not-null new-row) 
+	(when (and (not-null new-row)
 		   (box? new-box))
 	  (unless (and (not (eq screen-box (outermost-screen-box)))
 		       (and screen-box
@@ -962,7 +962,7 @@ Modification History (most recent at top)
       (let ((new-box (bp-box mouse-bp))
 	    (new-row (bp-row mouse-bp))
 	    (new-cha-no (bp-cha-no mouse-bp)))
-	(when (and (not-null new-row) 
+	(when (and (not-null new-row)
 		   (box? new-box))
           (let* ((edbox (and screen-box (screen-obj-actual-obj screen-box)))
                  (ds (and edbox (display-style edbox))))
@@ -989,7 +989,7 @@ Modification History (most recent at top)
       (let ((new-box (bp-box mouse-bp))
 	    (new-row (bp-row mouse-bp))
 	    (new-cha-no (bp-cha-no mouse-bp)))
-	(when (and (not-null new-row) 
+	(when (and (not-null new-row)
 		   (box? new-box))
           (let* ((edbox (and screen-box (screen-obj-actual-obj screen-box)))
                  (ds (and edbox (display-style edbox))))
@@ -1016,7 +1016,7 @@ Modification History (most recent at top)
       (let ((new-box (bp-box mouse-bp))
 	    (new-row (bp-row mouse-bp))
 	    (new-cha-no (bp-cha-no mouse-bp)))
-	(when (and (not-null new-row) 
+	(when (and (not-null new-row)
 		   (box? new-box))
 	  (unless (and (not (eq screen-box (outermost-screen-box)))
 		       screen-box
@@ -1098,7 +1098,7 @@ Modification History (most recent at top)
 
 (defboxer-command com-mouse-tr-corner-toggle-closet (window x y
 							 mouse-bp click-only?)
-  "Open the closet if it is closed and 
+  "Open the closet if it is closed and
    close the closet if it is open."
   window x y click-only?;  (declare (ignore window x y click-only?))
   ;; first, if there already is an existing region, flush it
@@ -1124,7 +1124,7 @@ Modification History (most recent at top)
 
 (defboxer-command com-mouse-tl-corner-toggle-closet (window x y
 							 mouse-bp click-only?)
-  "Open the closet if it is closed and 
+  "Open the closet if it is closed and
    close the closet if it is open."
   window x y click-only?;  (declare (ignore window x y click-only?))
   ;; first, if there already is an existing region, flush it
@@ -1174,7 +1174,7 @@ Modification History (most recent at top)
                       ;; if the user has clicked, but not waited long enough,
                       ;; maybe warn about how to win
                       (when (and (null waited?) *warn-about-disabled-commands*)
-                        (boxer-editor-warning 
+                        (boxer-editor-warning
                          "You have to hold the mouse down for ~A seconds to confirm"
                          *mouse-action-pause-time*))
                       waited?)
@@ -1187,7 +1187,7 @@ Modification History (most recent at top)
 	   (if (display-style-graphics-mode? display-style)
 	       (setf (display-style-graphics-mode? display-style) nil)
 	       (setf (display-style-graphics-mode? display-style) t))
-	   ;; then handle changes to the screen boxes 
+	   ;; then handle changes to the screen boxes
 	   (dolist (sb screen-objs)
 	     (toggle-type sb) (set-force-redisplay-infs? sb t))
 	   (modified (box-screen-point-is-in)))))
@@ -1245,7 +1245,7 @@ Modification History (most recent at top)
                                                   :width width
                                                   :height height)
                                 (> (- (get-internal-real-time) start-time)
-                                   (* *mouse-action-pause-time* 
+                                   (* *mouse-action-pause-time*
                                       INTERNAL-TIME-UNITS-PER-SECOND)))))))
             (toggle-type (bp-box mouse-bp))
             (mark-file-box-dirty (bp-box mouse-bp)))
@@ -1256,8 +1256,8 @@ Modification History (most recent at top)
 
 ;;; Note: These scroll bar commands can now be triggerd by action in the horizontal
 ;;; as well as the (usual) vertical scroll bar
-;;; The com-mouse-?-scroll commands dispatch to more specific action depending upon what 
-;;; scroll area was initially moused 
+;;; The com-mouse-?-scroll commands dispatch to more specific action depending upon what
+;;; scroll area was initially moused
 
 (defvar *only-scroll-current-box?* nil)
 (defvar *smooth-scrolling?* nil)  ; for now...
@@ -1270,7 +1270,7 @@ Modification History (most recent at top)
   (let* ((screen-box (bp-screen-box mouse-bp))
          (edbox (screen-obj-actual-obj screen-box))
 	 (box-type (box-type screen-box))
-	 (fixed? (not (null (display-style-fixed-wid 
+	 (fixed? (not (null (display-style-fixed-wid
                              (display-style-list edbox))))))
     (unless (and *only-scroll-current-box?* (neq screen-box (point-screen-box)))
       (unless fixed? ; fix the box size during scrolling
@@ -1318,7 +1318,7 @@ Modification History (most recent at top)
 	 (fixed? (not (null (display-style-fixed-wid
 			     (display-style-list (screen-obj-actual-obj
 						  screen-box)))))))
-    (unless (and *only-scroll-current-box?* (neq screen-box (point-screen-box)))    
+    (unless (and *only-scroll-current-box?* (neq screen-box (point-screen-box)))
       (unless fixed? ; fix the box size during scrolling
         (multiple-value-bind (wid hei)
 	    (screen-obj-size screen-box)
@@ -1367,13 +1367,13 @@ Modification History (most recent at top)
           (declare (ignore wid))
           (case (get-scroll-position x y screen-box box-type)
             (:v-up-button   (set-scroll-to-actual-row screen-box (first-inferior-row edbox)))
-            (:v-down-button (set-scroll-to-actual-row screen-box 
+            (:v-down-button (set-scroll-to-actual-row screen-box
                                                       (last-page-top-row edbox (- hei top bottom))))
             (:h-left-button  (h-scroll-screen-box screen-box 100000)) ; any large number will do...
             (:h-right-button (h-scroll-screen-box screen-box -100000))
             (:v-bar (mouse-in-v-scroll-bar-internal screen-box x y click-only?))
             (:h-bar (mouse-in-h-scroll-bar-internal screen-box x y)))))))
-  eval::*novalue*) 
+  eval::*novalue*)
 
 (defun last-page-top-row (box hei)
   (do ((row (last-inferior-row box) (previous-row row))
@@ -1395,7 +1395,7 @@ Modification History (most recent at top)
   (previous-row (previous-row (last-inferior-row editor-box))))
 
 (defun mouse-line-scroll-internal (screen-box direction)
-  (if (eq direction :up) 
+  (if (eq direction :up)
       (com-scroll-up-row screen-box)
     (com-scroll-dn-row screen-box))
   ;; do one thing, show it, then pause...
@@ -1411,7 +1411,7 @@ Modification History (most recent at top)
                                                      last-edrow)))
             ;; stop if the mouse is up or we hit one end or the other...
             (return))
-          (if (eq direction :up) 
+          (if (eq direction :up)
               (com-scroll-up-row screen-box)
             (com-scroll-dn-row screen-box))
           (repaint)
@@ -1437,7 +1437,7 @@ Modification History (most recent at top)
         (multiple-value-bind (initial-mx initial-my) (mouse-window-coords)
           (declare (ignore initial-mx))
           (flet ((get-velocity ()
-                   (let ((ydiff (- initial-my 
+                   (let ((ydiff (- initial-my
                                     (multiple-value-bind (mx my) (mouse-window-coords)
                                       (declare (ignore mx)) my)))
                          (tdiff (- (get-internal-real-time) slow-start-time)))
@@ -1445,14 +1445,14 @@ Modification History (most recent at top)
                          (cond ((or (> ydiff 10)
                                     (> tdiff (* 2 internal-time-units-per-second)))
                                 *smooth-scroll-max-speed*)
-                               ((or (> ydiff 5) 
+                               ((or (> ydiff 5)
                                     (> tdiff internal-time-units-per-second))
                                 *smooth-scroll-med-speed*)
                                (t *smooth-scroll-min-speed*))
                          (cond ((or (< ydiff -10)
                                     (> tdiff (* 2 internal-time-units-per-second)))
                                 (- *smooth-scroll-max-speed*))
-                               ((or (< ydiff -5) 
+                               ((or (< ydiff -5)
                                     (> tdiff internal-time-units-per-second))
                                 (- *smooth-scroll-med-speed*))
                                (t (- *smooth-scroll-min-speed*)))))))
@@ -1485,7 +1485,7 @@ Modification History (most recent at top)
                   ;; now maybe move the point so it is still visible after scrolling...
                   (let ((scroll-row (scroll-to-actual-row screen-box)))
                     (cond ((null scroll-row)
-                           (move-point-1 (first-inferior-row 
+                           (move-point-1 (first-inferior-row
                                           (screen-obj-actual-obj screen-box))
                                          0 screen-box))
                           ((and (not (zerop (slot-value screen-box 'scroll-y-offset)))
@@ -1523,7 +1523,7 @@ Modification History (most recent at top)
 (defvar *scroll-grid-width* 10)
 
 (defun mouse-in-v-scroll-bar-internal (screen-box x y click-only?)
-  (let ((start-row (or (scroll-to-actual-row screen-box) 
+  (let ((start-row (or (scroll-to-actual-row screen-box)
                        (first-inferior-row (screen-obj-actual-obj screen-box)))))
     (multiple-value-bind (v-min-y v-max-y)
         (v-scroll-info screen-box)
@@ -1542,15 +1542,15 @@ Modification History (most recent at top)
               ;; of the tracking loop
               (with-mouse-tracking ((mouse-x x) (mouse-y y))
                 (declare (ignore mouse-x))
-                (set-v-scroll-row screen-box 
+                (set-v-scroll-row screen-box
                                   (min (/ (max 0 (- mouse-y y-offset)) v-working-height) 1)
                                   eb
                                   no-of-rows)
                 (repaint t)))))))
-    (maybe-move-point-after-scrolling screen-box 
-                                      (if (row-> start-row 
-                                                 (or (scroll-to-actual-row screen-box) 
-                                                     (first-inferior-row (screen-obj-actual-obj 
+    (maybe-move-point-after-scrolling screen-box
+                                      (if (row-> start-row
+                                                 (or (scroll-to-actual-row screen-box)
+                                                     (first-inferior-row (screen-obj-actual-obj
                                                                           screen-box))))
                                           :left
                                         :right))))
@@ -1558,7 +1558,7 @@ Modification History (most recent at top)
 (defun set-v-scroll-row (screen-box fraction
                                     &optional (ed-box (screen-obj-actual-obj screen-box))
                                     (no-of-rows (length-in-rows ed-box)))
-  (set-scroll-to-actual-row screen-box 
+  (set-scroll-to-actual-row screen-box
                             (new-elevator-scrolled-row ed-box
                                                        (floor (* fraction (1-& no-of-rows))))))
 
@@ -1598,7 +1598,7 @@ Modification History (most recent at top)
                ;; scrolling down to the last row makes it hard to use
                ;; the scrolling buttons on the resulting 1 row high box
                (let ((raw-row (round (* (/ (min& (max& 0 (-& y shaft-y)) shaft-height)
-			                   shaft-height) 
+			                   shaft-height)
 			                (1-& norows)))))
                  (cond ((null maxrow)
                         (let ((end (ending-row-no raw-row)))
@@ -1623,7 +1623,7 @@ Modification History (most recent at top)
 		       (t entry))))
 	     (draw-scroll-grid ()
                ;; erase the box border
-               (erase-rectangle *scroll-grid-width* shaft-height 
+               (erase-rectangle *scroll-grid-width* shaft-height
                                 x-offset shaft-y)
                (let* ((single-incr (/ shaft-height norows))
                       (draw-singles? (< *min-scroll-grid-increment*
@@ -1633,22 +1633,22 @@ Modification History (most recent at top)
                    (dotimes (i norows)
                      (let ((y-offset (+& (floor (* i single-incr)) shaft-y)))
                        (cond ((zerop& (mod i 10))
-                              (draw-rectangle alu-seta 
+                              (draw-rectangle alu-seta
                                               (-& *scroll-grid-width* 2) 2
                                               x-offset y-offset))
                              ((zerop& (mod i 5))
-                              (draw-rectangle alu-seta 
+                              (draw-rectangle alu-seta
                                               (-& *scroll-grid-width* 4) 2
                                               (+& x-offset 2) y-offset))
                              ((not (null draw-singles?))
-                              (draw-rectangle alu-seta 
+                              (draw-rectangle alu-seta
                                               (-& *scroll-grid-width* 6) 1
                                               (+& x-offset 3)
                                               y-offset))))))))
 	     (ending-row-no (starting-row)
 	       (do* ((last-row (length row-heights)) (height 0)
 		     (row starting-row (1+& row)))
-		    ((>=& row last-row) 
+		    ((>=& row last-row)
                      (setq maxrow starting-row) ;; fill the maxrow cache
                      row)
 		 ;; need to do this AFTER last-row check
@@ -1661,15 +1661,15 @@ Modification History (most recent at top)
                (draw-string alu-seta *box-border-label-font-no*
                             (elevator-row-string (1+ current-row-no))
                             x-offset (-& shaft-y 10))
-               (erase-rectangle *scroll-grid-width* 10 
+               (erase-rectangle *scroll-grid-width* 10
                                 x-offset (+& shaft-y shaft-height))
                (draw-string alu-seta *box-border-label-font-no*
                             (elevator-row-string
                              (1+ (ending-row-no current-row-no)))
                             x-offset (+& shaft-y shaft-height)))
 	     (draw-temp-elevator ()
-	       (draw-rectangle alu-xor 
-                               (-& *scroll-grid-width* 2) 
+	       (draw-rectangle alu-xor
+                               (-& *scroll-grid-width* 2)
                                (+& *scroll-button-height* 2)
 			       x-offset (1-& elevator-y)))
 	     (erase-temp-elevator ()
@@ -1681,7 +1681,7 @@ Modification History (most recent at top)
 	  ;; don't have to do tracking, just figure out the row
 	  (set-scroll-to-actual-row screen-box
 				    (row-at-row-no ed-box (new-row-no y)))
-	  ;; draw the grid and track 
+	  ;; draw the grid and track
 	  (drawing-on-window (*boxer-pane*)
             (with-clipping-inside (x-offset (- shaft-y 10)
                                             *scroll-grid-width* (+ 20 shaft-height))
@@ -1703,7 +1703,7 @@ Modification History (most recent at top)
               (erase-rectangle *scroll-grid-width* shaft-height x-offset shaft-y))
             (force-graphics-output)
 	    ;; actually make the change
-	    (set-scroll-to-actual-row screen-box 
+	    (set-scroll-to-actual-row screen-box
                                       (new-elevator-scrolled-row ed-box
                                                                  current-row-no))
 	    (set-force-redisplay-infs? screen-box))))))
@@ -1830,5 +1830,5 @@ Modification History (most recent at top)
 			      toggle-type-backing-store)))
   eval::*novalue*)
 |#
-	    
-	  
+
+
