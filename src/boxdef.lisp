@@ -99,6 +99,7 @@ Modification History (most recent at top)
   ((counter :initform 0)))
 
 ;; https://stackoverflow.com/questions/19446174/sbcl-clos-why-do-i-have-to-add-a-validate-superclass-method-here
+#+sbcl
 (defmethod sb-mop:validate-superclass ((class block-compile-class)
                                                  (super standard-class))
             t)

@@ -836,13 +836,13 @@ Modification History (most recent at top)
 #-(or mcl lispworks)
 (defun input-bits (key-event) (char-bits key-event))
 
-#+lispworks
-(defun input-bits (key-event) (lispworks:char-bits key-event))
+;; #+lispworks
+;; (defun input-bits (key-event) (lispworks:char-bits key-event))
 
-#+lispworks
-(defun make-char (char &optional (bits 0) font)
-  (declare (ignore font))
-  (lispworks:make-char char bits))
+;; #+lispworks
+;; (defun make-char (char &optional (bits 0) font)
+;;   (declare (ignore font))
+;;   (lispworks:make-char char bits))
 
 ;;; lisp error handling
 
