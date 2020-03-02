@@ -16,14 +16,14 @@ There are 4 layers of representation of characters
 1) capi - draw-character onto a capi:output-pane and utilities to read the pixels from it
 2) internal interchange layer - ogl-char structures and arrays of them to make a font
                                no explicit OpenGL data structures although the glyph bitmap
-                               data should be in a form acceptable to GLBitmap (either as a 
+                               data should be in a form acceptable to GLBitmap (either as a
                                foreign byte array or ready for the FLI to convert it)
                                (list of bytes allows for inclusion in dump, ffi array may
                                be needed if persitence bitmap data is required)
                                CAPOGI (CAPI - OpenGL interchange) layer
                                (9/23/13:prefer ffi array to speed up GPU caching, allow both,
                                disksave with lists, switch to FFI when converting to OpenGL)
-3) OpenGL layer - interchange layer is converted to an OpenGL display list a la 
+3) OpenGL layer - interchange layer is converted to an OpenGL display list a la
                   Chapter 8 of the Red Book
 4) files - ability to read/write from interchange layer to/from files
            use pieces of boxer fasl dumper to allow for future imbedding of fonts in boxer files
@@ -31,7 +31,7 @@ There are 4 layers of representation of characters
 
  Capogi fonts interface with boxer as the "Native Font" in the Opengl-font structs
 
-Modification History (most recent at the top) 
+Modification History (most recent at the top)
 
  4/ 7/14  {save}-capogi-fonts-info, fill-capogi-font-cache can now save info
  4/ 2/14  *white-enuff* set to 2.0s0 after some experimentation
@@ -98,7 +98,7 @@ Modification History (most recent at the top)
 
 (define-interface glyph-slate ()
     ()
-  (:panes 
+  (:panes
    (glyph-pane output-pane
                :drawing-mode :compatible
               :input-model '(((:button-1 :press) show-current-font)
@@ -112,7 +112,7 @@ Modification History (most recent at the top)
                       (:component)
                       ("Quit" :callback 'capi:destroy))))
   (:menu-bar  file-menu)
-  (:default-initargs :title "Glyph Drawing Surface" 
+  (:default-initargs :title "Glyph Drawing Surface"
    :width *glyph-slate-wid* :height *glyph-slate-hei*))
 
 (defvar *glyph-window*)
@@ -124,18 +124,18 @@ Modification History (most recent at the top)
   (capi:display *glyph-window*))
 
 
-;; array of 
+;; array of
 (defun make-glyph-array (length) (vector length))
 
 (defvar *snap-to-font-name* nil)
 
 (defun open-capi-font (family size styles)
-  (set-glyph-pane-font 
+  (set-glyph-pane-font
    (gp:find-best-font *glyph-pane*
                       (gp:make-font-description :family family
                                                 :size size
                                                 :weight (if (member :bold styles)
-                                                            :bold 
+                                                            :bold
                                                           :normal)
                                                 :slant (if (member :italic styles)
                                                            :italic
@@ -160,7 +160,7 @@ Modification History (most recent at the top)
 (defun show-current-font (&rest ignore)
   (declare (ignore ignore))
   (gp:with-graphics-state (*glyph-pane*)
-      (let* ((pretty-name (font-pretty-name 
+      (let* ((pretty-name (font-pretty-name
                            (gp::graphics-state-font (gp::get-graphics-state *glyph-pane*))))
              (height (gp:get-font-height *glyph-pane*)))
         (gp:draw-string *glyph-pane* pretty-name 0 height))))
@@ -169,15 +169,15 @@ Modification History (most recent at the top)
   (let* ((fdesc (gp:font-description gpfont))
          (attr (unless (null fdesc) (gp:font-description-attributes fdesc))))
     (unless (null attr)
-      (format stream "~A ~A ~A ~D" 
+      (format stream "~A ~A ~A ~D"
               (getf attr :family) (getf attr :weight) (getf attr :slant) (getf attr :size)))))
 
 
 
-(defun make-capogi-font (&optional (pane *glyph-pane*) 
+(defun make-capogi-font (&optional (pane *glyph-pane*)
                                    (font (gp:graphics-state-font (gp::get-graphics-state pane))))
   (let* ((data-array (make-array *capogi-char-count*))
-         (capogi-font (%make-capogi-font :capi-font font 
+         (capogi-font (%make-capogi-font :capi-font font
                                          :height (gp:get-font-height pane font)
                                          :ascent (gp:get-font-ascent pane font)
                                          :fixed-width (when (gp:font-fixed-width-p pane font)
@@ -186,7 +186,7 @@ Modification History (most recent at the top)
     (gp:with-graphics-state (pane :operation alu-seta)
       ;; set font
       (dotimes (i *capogi-char-count*)
-        (setf (aref data-array i) 
+        (setf (aref data-array i)
               (new-capogi-char (code-char i))))
       (dolist (tpair *unicode-window-1252*)
         (let ((charcode (car tpair)) (glindex (cadr tpair)))
@@ -194,7 +194,7 @@ Modification History (most recent at the top)
             (setf (aref data-array glindex)
                   (new-capogi-char (code-char charcode)))))))
     capogi-font))
-      
+
 
 ;; window should be made and font already setup...
 ;; character is drawn with the upper left corner at (cx,cy)
@@ -216,7 +216,7 @@ Modification History (most recent at the top)
         ;; now draw the char
         (gp:draw-character pane char (- cx left) (- cy top))
         ;; now we translate the screen data to a list of bytes in left->right,
-        ;; bottom->top order. 
+        ;; bottom->top order.
         ;; actually the loops are backward cause we push each byte as we calculate them
         (do ((y 0 (1+ y)))
             ((>= y hei) (setf (capogi-char-data new-char) bytes))
@@ -233,7 +233,7 @@ Modification History (most recent at the top)
       (let* ((wid (abs (- left right))) (hei (abs (- top bottom)))
              (new-char (make-capogi-char :char char :wid wid :hei hei))
              (hor-bytes (ceiling wid 8))
-             (maxx (floor wid))             
+             (maxx (floor wid))
              (bytes nil))
         ;; erase
         (gp::draw-rectangle pane cx cy (+ wid 1) hei
@@ -242,7 +242,7 @@ Modification History (most recent at the top)
         ;; now draw the char
         (gp:draw-character pane char (- cx left) (- cy top))
         ;; now we translate the screen data to a list of bytes in left->right,
-        ;; bottom->top order. 
+        ;; bottom->top order.
         ;; actually the loops are backward cause we push each byte as we calculate them
         (let* ((image (gp:make-image-from-port pane cx cy (+ wid 1) hei))
                (imax  (gp:make-image-access pane image)))
@@ -262,7 +262,7 @@ Modification History (most recent at the top)
 ;; looking for black
 
 (defvar *white-enuff* 2.0s0)
-;; get-point returns a simple vector with #(:RGB Red Blue Green) 
+;; get-point returns a simple vector with #(:RGB Red Blue Green)
 (defun white-point? (point)
 ;  ;; just checking the blue component which seems like it might be enough
 ;  (= (svref point 3) 1.0s0)
@@ -290,7 +290,7 @@ Modification History (most recent at the top)
     (dotimes (i 8)
       (let* ((gx (+ x i))
              (point (gp:get-point pane gx y))
-             ;; get-point returns a simple vector with #(:RGB Red Blue Green) 
+             ;; get-point returns a simple vector with #(:RGB Red Blue Green)
              (white? (= (svref point 3) 1.0s0))
              ;; just checking the blue component which seems like it might be enough
              )
@@ -309,7 +309,7 @@ Modification History (most recent at the top)
       (gp::draw-character pane charcode (- x left) (- y top))
       (values (abs (- left right)) (abs (- top bottom))))))
 
-;; useful for debugging 
+;; useful for debugging
 (defun show-capogi-char-data (char)
   (let* ((w (capogi-char-wid char))
          (h (capogi-char-hei char))
@@ -324,13 +324,13 @@ Modification History (most recent at the top)
 ;      (terpri)
 ;      (dotimes (j hbytes) (format t "~8,'0B  " (nth (+ (* i hbytes) j)  data))))
     ))
-      
+
 
 
 
 ;;; converting to OpenGL
 (defun make-opengl-font-from-capogi-font (cfont)
-  (let ((oglfont (register-opengl-font-from-native-font cfont))        
+  (let ((oglfont (register-opengl-font-from-native-font cfont))
         (cfw (capogi-font-fixed-width cfont)))
     (setf (opengl-font-height oglfont) (capogi-font-height cfont)
           (opengl-font-ascent oglfont) (capogi-font-ascent cfont)
@@ -362,7 +362,7 @@ Modification History (most recent at the top)
              (cwid (capogi-char-wid char))
              (raw-data (capogi-char-data char))
              (ffi-data (cond ((typep raw-data 'fli::pointer) raw-data)
-                             ((listp raw-data) 
+                             ((listp raw-data)
                               (fli:allocate-foreign-object :type '(:unsigned :byte)
                                                            :initial-contents raw-data))
                              (t (error "Bad char data ~A" raw-data)))))
@@ -391,7 +391,7 @@ Modification History (most recent at the top)
 ;; we can put the fonts into the bundle in the location <bundle directory>/Contents/Resources/Fonts
 (defun font-directory-search ()
   (let ((testfile "Arial10.cfnt")
-        (searchlist (list #P"/Boxer/Fonts/" 
+        (searchlist (list #P"/Boxer/Fonts/"
                           #+macosx
                           (make-pathname :directory
                                          (append (butlast (pathname-directory (lw:lisp-image-name)))
@@ -400,7 +400,7 @@ Modification History (most recent at the top)
                                          (append (pathname-directory (lw:lisp-image-name))
                                                  '("Fonts"))))))
     (dolist (folder-key '(:appdata :local-appdata :common-appdata))
-      (push (make-pathname :directory (append (pathname-directory 
+      (push (make-pathname :directory (append (pathname-directory
                                                (sys::get-folder-path folder-key))
                                               '("Boxer" "Fonts")))
             searchlist))
@@ -437,7 +437,7 @@ Modification History (most recent at the top)
 ;; we assume that all available fonts are either already in the cache as capogi fonts or
 ;; loadable from files
 
-(defun capogi-fam-idx (fam-name) 
+(defun capogi-fam-idx (fam-name)
   (position fam-name *capogi-font-families* :test #'string-equal))
 
 ;; smarter, closest match instead of only exact....
@@ -454,7 +454,7 @@ Modification History (most recent at the top)
 ;; should warn when exact match is not found ?
 (defun boxer-font-spec->capogi-font (fontspec)
   (let* ((fam-idx (capogi-fam-idx (car fontspec)))
-         (fam (if (null fam-idx) 
+         (fam (if (null fam-idx)
                   (svref *capogi-font-cache* 0)
                 (svref *capogi-font-cache* fam-idx))))
     (cond ((null fam) (error "Unable to get capogi font for ~A" fontspec))
@@ -467,21 +467,21 @@ Modification History (most recent at the top)
   (with-capogi-font-stream (s (merge-pathnames (cfont-filename font) (capogi-font-directory))
                               :output)
     (dump-capogi-font-internal font s)))
-  
 
-;; clean byte stream version...  
-(defun dump-capogi-font-internal (font stream) 
+
+;; clean byte stream version...
+(defun dump-capogi-font-internal (font stream)
   (let ((font-values (capi-font-values (capogi-font-capi-font font)))
         (chars (capogi-font-chars font)))
     ;; capogi-font "magic" number: 2 bytes #xF0, #x3D corresponds to boxer dumper bin-op
-    (write-byte #xF0 stream) (write-byte #x3D stream) 
+    (write-byte #xF0 stream) (write-byte #x3D stream)
     ;; 1 byte for version number
     (write-byte *capogi-font-file-version* stream)
-    ;; name string, 
+    ;; name string,
     (dump-simple-string (car font-values) stream)
     ;; 1 byte for size, 1 byte for styles
     ;; on mac, size is float but we are only interested in integer sizes, so this is safe
-    (write-byte (round (cadr font-values)) stream) 
+    (write-byte (round (cadr font-values)) stream)
     (write-byte (font-styles-byte (cddr font-values)) stream)
     ;; 1 byte for height, qbyte for ascent, 1 byte for fixed-width (0 means no fixed width)
     (write-byte (capogi-font-height font) stream)
@@ -490,7 +490,7 @@ Modification History (most recent at the top)
       (write-byte (if (null fw) 0 (ceiling fw)) stream))
     ;; now the chars...
     (let ((ccount (capogi-font-count font)))
-      (when (> ccount 255) 
+      (when (> ccount 255)
         (error "~D chars is larger than the current file format supports" ccount))
       (write-byte ccount stream)
       (dotimes (i ccount) (dump-capogi-char (svref chars i) stream)))))
@@ -536,7 +536,7 @@ Modification History (most recent at the top)
 ;; limitation that string < 255 chars
 (defun dump-simple-string (string stream)
   (let ((count (length string)))
-    (if (> count 255) 
+    (if (> count 255)
         (error "~D exceeds capability for DUMP-SIMPLE-STRING" count)
       (write-byte count stream))
     (dotimes (i count) (write-byte (char-code (char string i)) stream))))
@@ -547,13 +547,13 @@ Modification History (most recent at the top)
         ((member :bold styles) 1)
         ((member :italic styles) 2)
         (t 0)))
-  
+
 ;; might want to pack the char data
 ;; doesn't hack data which has already been converted to FFI
 ;; each char will dump 4 bytes of charcode (to allow future possibility for unicode)
 ;; 1 byte for char width(any chars larger than 255 ?), and then the data, 2 bytes length + bytes
 
-(defun dump-capogi-char (glyph stream) 
+(defun dump-capogi-char (glyph stream)
   (let* ((data (capogi-char-data glyph))
          (dlength (if (listp data) (length data) (car (fli:foreign-array-dimensions data))))
          (charcode (char-code (capogi-char-char glyph))))
@@ -576,7 +576,7 @@ Modification History (most recent at the top)
           (write-byte (fli:foreign-aref data i) stream))))))
 
 #|
-(defun dump-capogi-char (glyph stream) 
+(defun dump-capogi-char (glyph stream)
   (let* ((data (capogi-char-data glyph))
          (ldata (when (listp data) (length data))))
     (cond ((null ldata) (error "FFI char data conversion not yet implemented, ~A" glyph))
@@ -595,11 +595,11 @@ Modification History (most recent at the top)
          (family-name (read-simple-string stream))
          (size (read-byte stream))
          (style-byte (read-byte stream))
-         (cfont (%make-capogi-font 
+         (cfont (%make-capogi-font
                  :capi-font (list* family-name size (styles-from-byte style-byte))
                  :height (read-byte stream)
                  :ascent (read-byte stream)
-                 :fixed-width (let ((fwbyte (read-byte stream))) 
+                 :fixed-width (let ((fwbyte (read-byte stream)))
                                 (if (zerop fwbyte) nil fwbyte))))
          (ccount (read-byte stream))
          (chars (make-array ccount)))
@@ -696,7 +696,7 @@ Modification History (most recent at the top)
 (defun load-capogi-font-cache (&optional verbose?)
   (when (null *capogi-font-cache*)
     (setq *capogi-font-cache* (init-capogi-font-cache)))
-  (when (or (null *capogi-font-families*) 
+  (when (or (null *capogi-font-families*)
             (not (= (length *capogi-font-families*) (length boxer::*font-families*))))
     (setq *capogi-font-families* (make-array (length boxer::*font-families*)
                                              :initial-contents boxer::*font-families*)))
@@ -712,8 +712,8 @@ Modification History (most recent at the top)
       (let ((size (svref boxer::*font-sizes* j))
             (k 0))
         (dolist (style '(nil (:bold) (:italic) (:bold :italic)))
-          (when verbose? 
-            (format t "~%Loading ~A ~D ~A => (~D,~D,~D)" 
+          (when verbose?
+            (format t "~%Loading ~A ~D ~A => (~D,~D,~D)"
                     fam size (if (null style) "" style) i j k))
           (with-capogi-font-stream (stream (merge-pathnames (make-cfont-filename fam
                                                                                  size
@@ -746,7 +746,7 @@ Modification History (most recent at the top)
       (do* ((fams boxer::*font-families* (cdr fams))
             (fam (car fams) (car fams)))
            ((null fam) (terpri s))
-        (write-string fam s) 
+        (write-string fam s)
         (unless (null (cdr fams)) (write-char #\, s) (write-char #\space s)))
       (format s "Sizes: ")
       (dotimes (i (length boxer::*font-sizes*))
