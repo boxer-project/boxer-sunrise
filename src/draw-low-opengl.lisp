@@ -23,19 +23,19 @@ Modification History (most recent at top)
  3/20/14 changed *font-families*: moved "arial" to the default and added "verdana"
 11/09/13 added ("Helvetica" . "Arial") to *font-family-aliases*
 10/16/13 make-boxer-font-{ogl,capogi}
- 9/25/13 fontspec->font-values, 
+ 9/25/13 fontspec->font-values,
  8/02/13 removed warnings
  7/26/13 Relative Font size utilities: *font-size-baseline*, *bfd-font-size-names*,
          bfd-font-size-name, %font-size-to-idx, *font-sizes*,  font-size-to-idx,
          %font-size-idx-to-size, find-cached-font, cache-font, font-size,
          init-bootstrapping-font-vars, fill-bootstrapped-font-caches
  1/23/13 functions which use pixblt must convert to fixnums before calling
-11/21/12 find-filled-font = find-cached-font + bw::ensure-oglfont-parameters 
+11/21/12 find-filled-font = find-cached-font + bw::ensure-oglfont-parameters
          used by string-{wid,hei}
  9/15/12 my-clip-rect now has to coerce its args to fixnums
  8/27/12 functions with explicit calls to opengl prims now refer to another layer of prims
          in opengl-utils.lisp which can (optionally) type check and/or coerce
-         %draw-line, %draw-rect, %set-pen-size, 
+         %draw-line, %draw-rect, %set-pen-size,
  3/ 6/11 added *boxtop-text-font* init to init-bootstrapping-font-vars
  2/28/11 changed with-system-dependent-bitmap-drawing to use the back buffer instead of an aux buffer
  2/15/11 fill-bootstrapped-font-caches fills for ALL glut fonts
@@ -63,16 +63,16 @@ Modification History (most recent at top)
  3/01/02 fixed bug in %draw-xor-string
  2/22/02 font aliasing
  2/19/02 %font-name-to-idx, fontspec->font-no, make-boxer-font
- 2/17/02 added pixel-dump-value-internal used by dump-true-color-pixmap for 
+ 2/17/02 added pixel-dump-value-internal used by dump-true-color-pixmap for
          platform independence of pixels in offscreen pixmaps
- 2/16/02 %draw-xor-string makes sure we have plusp wid & hei before blitting 
+ 2/16/02 %draw-xor-string makes sure we have plusp wid & hei before blitting
  1/12/02 %draw-xor-string now hacks clipping
 10/10/01 %draw-string window arg changed to %drawing-array to handle bitmap binding
 10/06/01 pixel-dump-value now swaps Red and Blue bytes
  9/06/01 %set-image-pixel no longer needs to coerce to a colorref
- 5/08/01 %draw-rectangle checks clipping state for unusual cases which don't seem 
+ 5/08/01 %draw-rectangle checks clipping state for unusual cases which don't seem
          to be handled by the window system
- 4/30/01 %bitblt functions now do clipping in software because pixblt doe'sn't 
+ 4/30/01 %bitblt functions now do clipping in software because pixblt doe'sn't
          pay attention to the mask
  2/26/01 %draw-point, %draw-poly XOR case :foreground changed to #xffffff
  2/20/01 fixed %draw-arc & %draw-filled-arc
@@ -84,19 +84,19 @@ Modification History (most recent at top)
 10/04/00 changed image-pixel to return a fixnum instead of a win32::colorref
          because that is what the dumping functions expect
          %set-image-pixel also changed
- 8/22/00 added %make-color-from-bytes/100s 
+ 8/22/00 added %make-color-from-bytes/100s
  7/09/00 defined %get-pixel using gp:get-point and ported pixel handling functions
          :foreground #xffffff for XOR ops (was #xffff) 5/31/00 relaxed %font-size-to-idx to handle values (like 1) actually found in files
  5/08/00 fixed deferred my-clip-rect
  5/03/00 fixed X/Y reversal in boxer-points->window-system-points
- 3/24/00 make-boxer-font changed to return encoded numeric value instead of 
+ 3/24/00 make-boxer-font changed to return encoded numeric value instead of
          internal system font
  2/02/00 added full font caching to fill-bootstrapped-font-caches
 12/15/99 added 7 to %font-size-to-idx to support loadingof old mac files
 11/29/99 fixed string-wid & string-hei: documentation for gp:get-string-extent had
          the order of returned values wrong (pg 136)
 11/16/99 %erase-rectangle changed to use gp::draw-rectangle because gp::clear-rectangle
-         ignores the offset state of the graphics state's transform which causes it to 
+         ignores the offset state of the graphics state's transform which causes it to
          lose for inferior boxes during redisplay
  3/29/99 new fonts finished ??
 11/02/98 Copied from draw-low-mcl.lisp and reduced to function & args stubs
@@ -133,8 +133,8 @@ notes:: check points arg on draw-poly
 
 ;;;; Constants and Variables
 
-;; These specify how to combine bits already there with the drawing bits 
-;; The common lisp boole-xxx constants are the right thing 
+;; These specify how to combine bits already there with the drawing bits
+;; The common lisp boole-xxx constants are the right thing
 ;; (see LispWorks User Guide 15.3, pg 126)
 
 (defconstant alu-andca boole-andc1   "Erase")
@@ -176,7 +176,7 @@ notes:: check points arg on draw-poly
 (defvar *closet-color*)
 
 ;; color variables that boxer uses
-(defvar *default-border-color*) ; 
+(defvar *default-border-color*) ;
 (defvar *border-gui-color*)  ; color of temporary interface elements when mouse is held
 
 
@@ -191,7 +191,7 @@ notes:: check points arg on draw-poly
         *magenta* (bw::ogl-convert-color (color::get-color-spec :magenta))
         *cyan*    (bw::ogl-convert-color (color::get-color-spec :cyan))
         *orange*  (bw::ogl-convert-color (color::get-color-spec :orange))
-        *purple*  (bw::ogl-convert-color (color::get-color-spec :purple)) 
+        *purple*  (bw::ogl-convert-color (color::get-color-spec :purple))
         *gray*    (bw::ogl-convert-color (color::get-color-spec :gray)))
   (setq *foreground-color* *black*
         *background-color* *white*
@@ -209,12 +209,12 @@ notes:: check points arg on draw-poly
 (defun sheet-inside-width  (window) (gp:port-width  window))
 
 ;; yuck !!!
-(defun window-depth (window) 
+(defun window-depth (window)
   (declare (ignore window)) (capi:screen-depth (car (capi::screens))))
 
 ;;; why doesn't this work ?  It's a documented function
 ; (gp:port-depth window))
-       
+
 
 ;;; &&&& stub
 ;;; **** returns pixel value(window system dependent) at windw coords (x,y)
@@ -249,8 +249,8 @@ notes:: check points arg on draw-poly
        (bw::ogl-reshape (sheet-inside-width ,view) (sheet-inside-height ,view))
        (bw::gl-scissor 0 0 (sheet-inside-width ,view) (sheet-inside-height ,view))
      . ,body)))
-  
-(defmacro current-graphics-state () 
+
+(defmacro current-graphics-state ()
   '(or %graphics-state (gp:get-graphics-state (or %drawing-array *boxer-pane*))))
 
 ;; **** added WITH-PORT
@@ -264,13 +264,13 @@ notes:: check points arg on draw-poly
 (defun update-window-system-state () )
 
 ;; gl-scissor uses OpenGL coords (0,0) = bottom,left
-;; 1/13/2008 - fine tuned X  (- lef 1) => lef  &  
-;; Y   (- (sheet-inside-height box::%drawing-array) bot) =>  
-(defun my-clip-rect (lef top rig bot) 
+;; 1/13/2008 - fine tuned X  (- lef 1) => lef  &
+;; Y   (- (sheet-inside-height box::%drawing-array) bot) =>
+(defun my-clip-rect (lef top rig bot)
 ;  (format t "~&SCissor ~D, ~D, ~D ~D" lef (- (sheet-inside-height box::%drawing-array)
 ;                         box::%origin-y-offset)
 ;          (-& rig lef) (-& bot top))
-  (bw::gl-scissor (floor lef) 
+  (bw::gl-scissor (floor lef)
                   (floor (1+ (- (sheet-inside-height box::%drawing-array) bot)))
                   (ceiling (- rig (- lef 1)))
                   (ceiling (- bot top))))
@@ -298,7 +298,7 @@ notes:: check points arg on draw-poly
          (my-clip-rect %clip-lef %clip-top %clip-rig %clip-bot)
          . ,body)
      ;; reset the old clip region
-     (my-clip-rect %clip-lef %clip-top 
+     (my-clip-rect %clip-lef %clip-top
                    %clip-rig %clip-bot)))
 
 (defun sheet-screen-array (window) window)
@@ -307,7 +307,7 @@ notes:: check points arg on draw-poly
 (defun window-inside-size (w)
   (values (sheet-inside-width  w) (sheet-inside-height w)))
 
-(defun clear-window (w)  
+(defun clear-window (w)
   (bw::rendering-on (w)
     ;; sets the clearing color
     ;; shouldn't need to do this EVERY time
@@ -326,7 +326,7 @@ notes:: check points arg on draw-poly
     ;; *GL-stencil-BUFFER-BIT*
     (bw::gl-clear bw::*gl-color-buffer-bit*)))
 
-;;; used by repaint-in-eval 
+;;; used by repaint-in-eval
 (defvar *last-eval-repaint* 0)
 
 (defvar *eval-repaint-quantum* 50
@@ -371,7 +371,7 @@ notes:: check points arg on draw-poly
 ;(defvar *font-codes* (make-array '(8)))
 
 ;;; ???
-;(defun sheet-font-map (w) 
+;(defun sheet-font-map (w)
 ;  (declare (ignore w))
 ;  *font-map*)
 
@@ -383,7 +383,7 @@ notes:: check points arg on draw-poly
 (defun set-font-info (x)
   (let ((system-font (find-cached-font x)))
     (bw::ogl-set-font system-font)
-    (multiple-value-bind (ascent height widmax leading) 
+    (multiple-value-bind (ascent height widmax leading)
         (bw::ogl-font-info system-font)
       (setq %drawing-font x
             %drawing-font-cha-wid widmax ;; originally (- widmax 3)
@@ -402,11 +402,11 @@ notes:: check points arg on draw-poly
 ;;    1) There are lots of font dependencies in the bootstrapping
 ;;       process and in LWWin, fonts can't be defined until AFTER
 ;;       the boxer window has been created. The indirection lets
-;;       us refer to a font before it is actually defined. 
-;;    2) We need font= to be a fast operation, using fixnums makes 
+;;       us refer to a font before it is actually defined.
+;;    2) We need font= to be a fast operation, using fixnums makes
 ;;       this so.  Using LW fonts would be a field by field comparison
 ;;       at best.
-;;    3) At some point, perhaps for speed, we might want to move to 
+;;    3) At some point, perhaps for speed, we might want to move to
 ;;       using native Windoze fonts directly.  This makes it easy to
 ;;       change.
 ;;
@@ -422,18 +422,18 @@ notes:: check points arg on draw-poly
 ;;     use an array of font family names, with the number being the index into
 ;;     the array.
 ;;
-;;   o the style is in the next 4.  Together, the font and the face 
+;;   o the style is in the next 4.  Together, the font and the face
 ;;     correspond to the MCL concept of the font/face code.
 ;;
 ;;   o the low 12 bits are used as a size index.  NOT the size.
-;;  
+;;
 ;;   NOTE: we can juggle the various field sizes as needed.  In particular,
 ;;         the face field can go down to 3 bits to support BOLD, ITALICS and
 ;;         UNDERLINE.  The size field needs only be able to cover the allowed
 ;;         (by the interface) sizes.
 ;;
 ;;  The Structure of the Font Cache
-;;  
+;;
 ;;   o an array of size %%font-family-size(8)
 ;;     each element of the array will point to a size array
 ;;
@@ -443,8 +443,8 @@ notes:: check points arg on draw-poly
 ;;
 ;;   o each entry in the size array points to an array of specific face styles
 ;;     for each font, for now, it will be length 4 to support all the possible
-;;     combinations of BOLD, ITALICS 
-;;   
+;;     combinations of BOLD, ITALICS
+;;
 ;;   o this leaves an extra 4 more bits, either for more sizes or families
 ;;
 ;;   Boxer Font Number
@@ -615,7 +615,7 @@ notes:: check points arg on draw-poly
 
 (defun get-size-menu-names ()
   (svref *font-size-menu-names* *font-size-baseline*))
-    
+
 (defun font-size-menu-item-name (data)
   (nth (1- data) (svref *font-size-menu-names* *font-size-baseline*)))
 
@@ -642,7 +642,7 @@ notes:: check points arg on draw-poly
       (when (null size-cache)
         (setq size-cache (%make-font-size-cache))
         (setf (svref& *font-cache* fam) size-cache))
-      (let ((face-cache (svref& size-cache (if translate-size 
+      (let ((face-cache (svref& size-cache (if translate-size
                                                (font-size-to-idx size)
                                              size))))
         (when (null face-cache)
@@ -663,7 +663,7 @@ notes:: check points arg on draw-poly
 (defun fontspec->font-values (fontspec)
   (let ((fambits (%font-name-to-idx (or (car fontspec) *default-font-family*))))
     (unless (null fambits)
-      (values fambits 
+      (values fambits
               (%font-size-to-idx (cadr fontspec))
               (%font-face-to-idx (or (cddr fontspec) *default-font-face*))))))
 
@@ -674,7 +674,7 @@ notes:: check points arg on draw-poly
 
 ;; use an alist for now, we may have to get more complicated if it looks like
 ;; the number of "foreign" fonts will be large
-(defvar *font-family-aliases* 
+(defvar *font-family-aliases*
   '(("Geneva" . "Arial") ("Courier" . "Courier New") ("Times" . "Times New Roman") ("Helvetica" . "Arial"))
   "Initialize this variable if you want explicit font translations")
 
@@ -687,9 +687,9 @@ notes:: check points arg on draw-poly
            (push (cons family-name local-name) *font-family-aliases*))
           ((string= local-name (cadr existing)))
           (t (if *boxer-system-hacker*
-                 (error "Trying to CHANGE an alias for ~S from ~S to ~S" 
+                 (error "Trying to CHANGE an alias for ~S from ~S to ~S"
                         family-name (cadr existing) local-name)
-               (warn "Trying to CHANGE an alias for ~S from ~S to ~S" 
+               (warn "Trying to CHANGE an alias for ~S from ~S to ~S"
                         family-name (cadr existing) local-name))))))
 
 #|
@@ -758,19 +758,19 @@ notes:: check points arg on draw-poly
          (font-no (fontspec->font-no fontspec)))
     (cond ((null font-no)
            ;; no cached font, we have to be careful here because a possible
-           ;; scenario is that we are translating a mac font which could come out 
+           ;; scenario is that we are translating a mac font which could come out
            ;; as an existing PC font
-           ;; wait until we have a solid native font before converting to an 
+           ;; wait until we have a solid native font before converting to an
            ;; opengl font
            (let* ((oglfont  (if (null calculate-parameters?)
                                 (bw::register-opengl-font-from-native-font sysfont)
                               (bw::make-opengl-font-from-native-font sysfont)))
                   (localname (unless (null oglfont)
-                               (gp:font-description-attribute-value 
+                               (gp:font-description-attribute-value
                                 (gp:font-description sysfont) :family)))
                   (newfontspec (list* localname (cdr fontspec)))
                   (new-font-no (fontspec->font-no newfontspec T)))
-             (unless (null localname) 
+             (unless (null localname)
                (set-font-family-alias (car rawfontspec) localname)
                (unless (member localname *font-families* :test #'string-equal)
                  (nconc *font-families* (list localname))))
@@ -778,7 +778,7 @@ notes:: check points arg on draw-poly
                  (cache-font oglfont new-font-no nil))
              new-font-no))
           (t
-           (or (find-cached-font font-no nil) 
+           (or (find-cached-font font-no nil)
                (let ((font (if (null calculate-parameters?)
                                (bw::register-opengl-font-from-native-font
                                 (boxer-font-spec->lw-font fontspec))
@@ -796,7 +796,7 @@ notes:: check points arg on draw-poly
                        (gp:make-font-description :family family
                                                  :size size
                                                  :weight (if (member :bold styles)
-                                                             :bold 
+                                                             :bold
                                                            :normal)
                                                  :slant (if (member :italic styles)
                                                             :italic
@@ -813,7 +813,7 @@ notes:: check points arg on draw-poly
 ;; returns absolute font size
 (defun font-size (font-no)
   (%font-size-idx-to-size (font-size-to-idx (%font-size-idx font-no))))
-    
+
 (defun font-name (font-no)
   (let* ((idx (%font-family-idx font-no)))
     (when (< idx (length *font-family-names*))
@@ -824,14 +824,14 @@ notes:: check points arg on draw-poly
   (let ((new-idx (%font-name-to-idx new-fname)))
     (dpb new-idx (byte %%font-family-bit-length %%font-family-bit-pos) boxer-font)))
 
-;(defun %set-font-size (boxer-font new-size) 
+;(defun %set-font-size (boxer-font new-size)
 ;  (let ((new-idx (%font-size-to-idx new-size)))
 ;    (dpb new-idx (byte %%font-size-bit-length   %%font-size-bit-pos) boxer-font)))
 
-(defun %set-font-size (boxer-font new-size) 
+(defun %set-font-size (boxer-font new-size)
   (dpb new-size (byte %%font-size-bit-length   %%font-size-bit-pos) boxer-font))
 
-(defun %set-font-style (boxer-font new-style-byte) 
+(defun %set-font-style (boxer-font new-style-byte)
   (dpb new-style-byte (byte %%font-face-bit-length   %%font-face-bit-pos)
        boxer-font))
 
@@ -882,11 +882,11 @@ notes:: check points arg on draw-poly
 ;; note that "Courier New" must be the 1st family cached
 ;  (make-boxer-font '("Courier New" 10)) ; this should fill family=0, size=10
 ;  ;; now fill the rest of the family=0, size=10 slots
-;  (make-boxer-font '("Courier New" 10 :bold)) 
+;  (make-boxer-font '("Courier New" 10 :bold))
 ;  (make-boxer-font '("Courier New" 10 :italic))
 ;  (make-boxer-font '("Courier New" 10 :bold :italic))
 ;  (make-boxer-font '("Courier New" 6)
-  
+
 
 ;; THIS is safe to do
 (eval-when (load)  (init-bootstrapping-font-vars))
@@ -909,7 +909,7 @@ notes:: check points arg on draw-poly
                  bw::*current-opengl-font-base-addr* ,fba-var))))))
 
 ;; proportional fonts
-(defun cha-wid (char) 
+(defun cha-wid (char)
   (bw::ogl-char-width char))
 
 (defun cha-ascent () %drawing-font-cha-ascent)
@@ -936,7 +936,7 @@ notes:: check points arg on draw-poly
 ;;; this takes a set of boxer points and converts them into a form that
 ;;; the window system desires.  The x/y-function args will be funcalled
 ;;; on the coordinate as it is converted.
-;;; 
+;;;
 ;;; OpenGL expects a list of X Y pairs
 (defmacro boxer-points->window-system-points (boxer-point-list (x-arg x-form)
 							       (y-arg y-form))
@@ -973,7 +973,7 @@ notes:: check points arg on draw-poly
     `(let ((,oldpsvar (bw::get-opengl-state bw::*gl-line-width* :float))
            (,newsizevar (float ,newsize))
            (,nochangevar nil))
-       (unwind-protect 
+       (unwind-protect
            (progn
              (cond ((= ,newsizevar ,oldpsvar) (setq ,nochangevar t))
                    (t (%set-pen-size ,newsize)))
@@ -995,7 +995,7 @@ notes:: check points arg on draw-poly
 
 ;;;; COLOR (incomplete)
 
-;; Boxer represents colors as RGB triples where each component is 
+;; Boxer represents colors as RGB triples where each component is
 ;; between 0 and 100 inclusively.
 
 ;;
@@ -1069,7 +1069,7 @@ notes:: check points arg on draw-poly
 
 (defun pixel-rgb-values (pixel)
   (list (* (color-red pixel)   100)
-	(* (color-green pixel) 100) 
+	(* (color-green pixel) 100)
 	(* (color-blue pixel)  100)
         (* (color-alpha pixel) 100)))
 
@@ -1087,7 +1087,7 @@ notes:: check points arg on draw-poly
 (defconstant *blue-byte-position* (byte 8 0))
 
 ;; need to deal with possible alpha values...
-(defun pixel-dump-value (pixel) 
+(defun pixel-dump-value (pixel)
   (let ((alpha (color-alpha pixel)))
     (cond ((< alpha 1.0)
            ;; a transparent color, so return a list with the alpha value since the
@@ -1101,7 +1101,7 @@ notes:: check points arg on draw-poly
                    (dpb& greenbyte *green-byte-position*
                          bluebyte)))))))
 
-;; we need to shave off the alpha value because higher level code 
+;; we need to shave off the alpha value because higher level code
 ;; (dump-true-color-pixmap: dumper.lisp) assumes fixnum pixels
 (defun pixel-dump-value-internal (winpixel)
   (let* ((returnpixel (logand winpixel #xff00))
@@ -1138,7 +1138,7 @@ notes:: check points arg on draw-poly
 
 ;;; These take topleft coordinates
 ;; the angle args are like CLX, start at 3 oclock and positive sweep is
-;; counterclockwise.  Need to convert to boxer sense where we start at 
+;; counterclockwise.  Need to convert to boxer sense where we start at
 ;; 12oclock and positive sweep is clockwise and in degrees
 
 (defun %draw-circle (x y radius &optional filled?)
@@ -1196,7 +1196,7 @@ notes:: check points arg on draw-poly
 (defmacro clip-y (scaled-y) `(max& %clip-top (min& ,scaled-y %clip-bot)))
 (defmacro sign-of-no (x) `(if (plusp& ,x) 1 -1))
 
-;; bw::gl-draw-pixels (w h 
+;; bw::gl-draw-pixels (w h
 ;; remember that  we are drawing from the lower left....
 (defun %bitblt-to-screen (alu wid hei from-array fx fy tx ty)
   (declare (ignore alu))
@@ -1220,7 +1220,7 @@ notes:: check points arg on draw-poly
 			  (max& 0 (-& +hei top-overrun bot-overrun)))))
     (or (zerop& clipped-wid)
         (zerop& clipped-hei)
-        (gp:pixblt %drawing-array alu from-array clipped-to-x clipped-to-y 
+        (gp:pixblt %drawing-array alu from-array clipped-to-x clipped-to-y
                    clipped-wid clipped-hei fx fy))))
 |#
 
@@ -1237,7 +1237,7 @@ notes:: check points arg on draw-poly
 (defun %bitblt-from-screen (alu wid hei to-array fx fy tx ty)
   (let* ((scaled-from-x (+& %origin-x-offset fx))
          (scaled-from-y (+& %origin-y-offset fy))
-         (clipped-from-x (clip-x scaled-from-x)) 
+         (clipped-from-x (clip-x scaled-from-x))
          (clipped-from-y (clip-y scaled-from-y))
          (+wid (abs& wid))
 	 (+hei (abs& hei))
@@ -1251,29 +1251,29 @@ notes:: check points arg on draw-poly
 	 (clipped-hei (*& (sign-of-no hei) (max& 0 (-& +hei top-overrun bot-overrun)))))
     (or (zerop& clipped-wid)
         (zerop& clipped-hei)
-        (gp:pixblt to-array alu %drawing-array tx ty 
+        (gp:pixblt to-array alu %drawing-array tx ty
                    clipped-wid clipped-hei clipped-from-x clipped-from-y))))
 |#
 
 (defun %bitblt-in-screen (alu wid hei array fx fy tx ty)
   (declare (ignore alu array))
-  (opengl::%pixblt-in-screen (round wid) (round hei) 
+  (opengl::%pixblt-in-screen (round wid) (round hei)
                              (round fx) (round fy) (round tx) (round ty)))
 
 #|
 (defun %bitblt-in-screen (alu wid hei array fx fy tx ty)
-  (let* ((scaled-from-x (+& %origin-x-offset fx)) 
+  (let* ((scaled-from-x (+& %origin-x-offset fx))
          (scaled-from-y (+& %origin-y-offset fy))
          (scaled-to-x   (+& %origin-x-offset tx))
          (scaled-to-y   (+& %origin-y-offset ty))
-         (clipped-from-x (clip-x scaled-from-x)) 
+         (clipped-from-x (clip-x scaled-from-x))
          (clipped-from-y (clip-y scaled-from-y))
 	 (clipped-to-x (clip-x scaled-to-x))
 	 (clipped-to-y (clip-y scaled-to-y))
 	 (+wid (abs& wid))
 	 (+hei (abs& hei))
-	 (lef-overrun (max& 0 
-                            (-& scaled-from-x clipped-from-x) 
+	 (lef-overrun (max& 0
+                            (-& scaled-from-x clipped-from-x)
                             (-& scaled-to-x clipped-to-x)))
 	 (top-overrun (max& 0
 			    (-& scaled-from-y clipped-from-y)
@@ -1284,7 +1284,7 @@ notes:: check points arg on draw-poly
 			    (-& (+& clipped-to-x +wid)
 				(clip-x (+& clipped-to-x +wid)))))
 	 (bot-overrun (max& 0
-			    (-& (+& clipped-from-y +hei) 
+			    (-& (+& clipped-from-y +hei)
                                 (clip-y (+& clipped-from-y +hei)))
 			    (-& (+& clipped-to-y +hei)
 				(clip-y (+& clipped-to-y +hei)))))
@@ -1317,18 +1317,18 @@ notes:: check points arg on draw-poly
 
 ;; check for the existence of auxiliary buffer so we can signal
 ;; an error at the right level
-(defun auxiliary-buffer-count () 
+(defun auxiliary-buffer-count ()
   (bw::get-opengl-state opengl::*gl-aux-buffers* :signed-32))
 
 (defun auxiliary-buffer-exists? ()
   (not (zerop (auxiliary-buffer-count))))
 
-;; this could draws into an auxiliary buffer and then 
+;; this could draws into an auxiliary buffer and then
 ;; transfers the bits from that buffer into an ogl-pixmap
 #|
 (defmacro with-system-dependent-bitmap-drawing ((bitmap &optional
                                                         bitmap-width bitmap-height)
-					        &body body)  
+					        &body body)
   (declare (ignore bitmap-width bitmap-height))
   `(bw::rendering-on (*boxer-pane*)
      (unwind-protect
@@ -1336,7 +1336,7 @@ notes:: check points arg on draw-poly
            (bw::gl-draw-buffer bw::*gl-aux1*)
            (progn . ,body)
            (bw::gl-flush)
-           (opengl::%pixblt-from-screen ,bitmap 0 0 
+           (opengl::%pixblt-from-screen ,bitmap 0 0
                                         (opengl::ogl-pixmap-width  ,bitmap)
                                         (opengl::ogl-pixmap-height ,bitmap)
                                         0 0 bw::*gl-aux1*))
@@ -1347,13 +1347,13 @@ notes:: check points arg on draw-poly
 ;; buffer on different platforms...
 (defmacro with-system-dependent-bitmap-drawing ((bitmap &optional
                                                         bitmap-width bitmap-height)
-					        &body body)  
+					        &body body)
   (declare (ignore bitmap-width bitmap-height))
   `(bw::rendering-on (*boxer-pane*)
      (bw::gl-draw-buffer bw::*gl-aux1*)
      (progn . ,body)
      (bw::gl-flush)
-     (opengl::%pixblt-from-screen ,bitmap 0 (- (sheet-inside-height *boxer-pane*) 
+     (opengl::%pixblt-from-screen ,bitmap 0 (- (sheet-inside-height *boxer-pane*)
                                                (opengl::ogl-pixmap-height ,bitmap))
                                   (opengl::ogl-pixmap-width  ,bitmap)
                                   (opengl::ogl-pixmap-height ,bitmap)
@@ -1374,7 +1374,7 @@ notes:: check points arg on draw-poly
   `(let ((,bitmap-name (make-offscreen-bitmap ,drawable ,bit-width ,bit-height)))
      (drawing-on-bitmap (,bitmap-name)
        (progn
-         (%erase-rectangle ,bit-width ,bit-height 0 0 ,bitmap-name) 
+         (%erase-rectangle ,bit-width ,bit-height 0 0 ,bitmap-name)
          ,@body))
      ,bitmap-name))
 |#
@@ -1386,9 +1386,9 @@ notes:: check points arg on draw-poly
 
 (defun free-offscreen-bitmap (bitmap) (opengl::ogl-free-pixmap bitmap))
 
-;; also yuck, but it might actually be correct 
+;; also yuck, but it might actually be correct
 ;; see window-depth for real yuck
-(defun offscreen-bitmap-depth (bitmap) 
+(defun offscreen-bitmap-depth (bitmap)
   (opengl::ogl-pixmap-depth bitmap))
 
 ;;; See Inside Mac V-53
@@ -1416,7 +1416,7 @@ notes:: check points arg on draw-poly
 ;; used to grab a pixel value from the screen
 (defvar *screen-pixel-buffer*)
 (def-redisplay-initialization (setq *screen-pixel-buffer* (make-offscreen-bitmap *boxer-pane* 1 1)))
-  
+
 (defun %get-pixel (port x y)
   (declare (ignore port))
   (%bitblt-from-screen alu-seta 1 1 *screen-pixel-buffer* x y 0 0)
@@ -1425,7 +1425,7 @@ notes:: check points arg on draw-poly
 ;; **** Look here !!! ****
 ;; this is supposed to return an object that you can use offscreen-pixel
 ;; with.  In the clx implementation, it actually brings the data over to
-;; the client side in an array.  In other implementations, 
+;; the client side in an array.  In other implementations,
 ;; offscreen-bitmap-image might just get the actual image data out from
 ;; behind any containing structures
 ;;
@@ -1452,7 +1452,7 @@ notes:: check points arg on draw-poly
 ;; THIS should be SETFable
 ;; Image-Pixel and the SETF is supposed to work in conjuction with offscreen-bitmap-image's
 
-(defmacro image-pixel (x y pixmap) 
+(defmacro image-pixel (x y pixmap)
   `(offscreen-pixel ,x ,y ,pixmap))
 
 ;;;
@@ -1462,10 +1462,10 @@ notes:: check points arg on draw-poly
 (defsetf image-pixel %set-image-pixel)
 
 
-(defun offscreen-pixel (x y pixmap) 
+(defun offscreen-pixel (x y pixmap)
    (opengl::pixmap-pixel pixmap x y))
 
-(defun offscreen-pixel-color (x y pixmap) 
+(defun offscreen-pixel-color (x y pixmap)
   (opengl::pixel->color (opengl::pixmap-pixel pixmap x y)))
 
 ;;; capi:clipboard returns IMAGES
@@ -1479,7 +1479,7 @@ notes:: check points arg on draw-poly
             (dotimes (x w)
               (setf (fli:dereference bdata :index (+ x (* (- h y 1) w)))
                     (uncolor->pixel
-                     (color:unconvert-color *boxer-pane* (gp:image-access-pixel ia x y)))))))              
+                     (color:unconvert-color *boxer-pane* (gp:image-access-pixel ia x y)))))))
       (gp:free-image-access ia))))
 
 ;; uncolor = result of color:unconvert-color which is a simple-vector with components of
@@ -1497,7 +1497,7 @@ notes:: check points arg on draw-poly
   (let ((current-blend-var (gensym)))
     `(let ((,current-blend-var (bw::gl-enabled? bw::*gl-blend*)))
        (unwind-protect
-           (progn 
+           (progn
              (bw::gl-blend-func bw::*gl-src-alpha* bw::*gl-one-minus-src-alpha*)
              (bw::gl-enable bw::*gl-blend*)
              . ,body)
