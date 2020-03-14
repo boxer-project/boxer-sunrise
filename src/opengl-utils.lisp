@@ -63,7 +63,7 @@ Modification History (most recent at the top)
                                        (fli::pointerp ,return-vector))
                                   ,return-vector)
                                  (t
-                                  (make-gl-vector ,(canonicalize-type
+                                  (opengl:make-gl-vector ,(canonicalize-type
                                                     (if (listp type) (car type) type))
                                                   ,(if (listp type) (cadr type) 1))))))
          (unwind-protect
@@ -92,7 +92,9 @@ Modification History (most recent at the top)
              (opengl::free-gl-vector ,gl-vect-var)))))))
 
 ;; for debugging
-(defvar *include-opengl-debugging?* t)
+(eval-when (compile)
+  (defvar *include-opengl-debugging?* t)
+)
 
 (defmacro debug-opengl-print (format-string &rest args)
   (when *include-opengl-debugging?*
@@ -103,7 +105,9 @@ Modification History (most recent at the top)
 (defun gl-enabled? (flag) (if (zerop (gl-is-enabled flag)) nil t))
 
 ;;;;
-(defvar *opengl-type-checking-included?* t)
+(eval-when (compile)
+  (defvar *opengl-type-checking-included?* t)
+)
 
 (defvar *opengl-type-checking-action* :coerce)
 
@@ -465,7 +469,10 @@ Modification History (most recent at the top)
 
 (defvar *cached-fonts* nil)
 
-(defvar *include-font-debugging* nil)
+(eval-when (compile)
+  (defvar *include-font-debugging* nil)
+)
+
 (defvar *debug-font-caching* nil)
 
 (defmacro ogl-debug (&body forms)
@@ -582,11 +589,11 @@ Modification History (most recent at the top)
                                (coerce g 'single-float)
                                (coerce b 'single-float)
                                (coerce alpha 'single-float))
-    (make-gl-vector :float 4 :contents color)))
+    (opengl:make-gl-vector :float 4 :contents color)))
 
 (defun %make-ogl-color ()
   (incf *ogl-color-counter*)
-  (make-gl-vector :float 4))
+  (opengl:make-gl-vector :float 4))
 
 (defun free-ogl-color (color)
   (incf *ogl-color-freed*)

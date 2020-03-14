@@ -39,7 +39,7 @@ Modification History (most recent at the top)
 ;;;
 
 ;; sgithens (in-package :eval)
-(in-package :boxer)
+(in-package :boxer-eval)
 
 ;;; Preamble
 
@@ -64,7 +64,9 @@ Modification History (most recent at the top)
 (defvar *novalue* (list '*novalue*))
 
 ;;; VPDL
+(eval-when (compile load eval)
 (define-eval-var *vpdl-grow-length* :global *default-vpdl-grow-length*)
+)
 (define-eval-var *vpdl-index*       :global 0)
 (define-eval-var *vpdl*             :global (make-vpdl))
 (define-eval-var *vpdl-size*        :global *default-vpdl-size*)

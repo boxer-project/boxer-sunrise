@@ -11,7 +11,9 @@
                "prove")
   :components ((:module "tests"
                 :components
-                ((:test-file "boxer-sunrise2"))))
+                ((:test-file "boxer-sunrise2")
+                 (:test-file "boxdef-tests")
+                 (:test-file "stacks-tests"))))
   :description "Test system for boxer-sunrise2"
 
   :perform (test-op (op c) (symbol-call :prove-asdf :run-test-system c)))

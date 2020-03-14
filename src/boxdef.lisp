@@ -50,6 +50,8 @@ Modification History (most recent at top)
 
 (in-package :boxer)
 
+(defun boxer::valid-boxer-license? () t)
+
 ; DEFSUBST (some implementation have it and others don't)
 ; https://lisp-hug.lispworks.narkive.com/xK5EMsyd/defsubst
 (defmacro defsubst (name args &body body)
@@ -399,6 +401,7 @@ Modification History (most recent at top)
    (graphics-info :initform nil :accessor graphics-info)
    (flags :initform 0 :accessor box-flags))
   (:metaclass block-compile-class))
+(defgeneric box? (x) (:method (x) nil) (:method ((x box)) t))
 
 (defclass doit-box
 	  (box)

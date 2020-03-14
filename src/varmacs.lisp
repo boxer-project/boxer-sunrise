@@ -33,7 +33,7 @@ Modification History (most recent at the top)
 |#
 
 ;; sgithens (in-package :eval)
-(in-package :boxer)
+(in-package :boxer-eval)
 
 (defvar *number-of-eval-state-vars* 0)
 (defvar *eval-state-vars* nil)
@@ -123,6 +123,7 @@ Modification History (most recent at the top)
 (defun eval-var-defined? (variable-name)
   (find variable-name *eval-state-vars* :key #'evsi-variable-name))
 
+(eval-when (compile load eval)
 (defmacro define-eval-var (name &key
 				(local nil local-specified-p)
 				(global nil global-specified-p))
@@ -135,6 +136,7 @@ Modification History (most recent at the top)
 	  ;; because the initializer might not be defined at this point.
 	  `(defvar ,name))
      (record-eval-var ',name ',local-specified-p ',local ',global-specified-p ',global)))
+)
 
 ;; this is yukky.  maybe we should do it as a macro,
 ;; but then we'd have to recompile it every time we
@@ -168,7 +170,7 @@ Modification History (most recent at the top)
 
 (defvar boxer::*sprite-update-functions* nil)
 
-(defsubst boxer::sprite-update-function? (symbol)
+(boxer::defsubst boxer::sprite-update-function? (symbol)
   (fast-memq symbol boxer::*sprite-update-functions*))
 
 (defmacro boxer::add-sprite-update-function (slot-name name-descriptor)

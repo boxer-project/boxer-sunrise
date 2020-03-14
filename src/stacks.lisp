@@ -34,8 +34,7 @@ Modification History (most recent at the top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'eval)
-#+(or lispworks mcl)       (in-package :eval)
+(in-package :boxer-eval)
 
 ;;; This file deals with
 ;;;    the VPDL,
@@ -77,13 +76,16 @@ Modification History (most recent at the top)
 ;;; compile time variables used to generate offsets for special stack frame
 ;;; caches in the special stack frame vector
 
+(eval-when (compile load eval)
 (defvar *stack-frame-name-offset-alist* nil)
 (defvar *max-special-stack-frame-offset* 0)
+)
 
 (defun reset-stack-frame-allocation-offsets ()
   (setq *stack-frame-name-offset-alist* nil
 	*max-special-stack-frame-offset* 0))
 
+(eval-when (compile load eval)
 (defun special-stack-frame-offset (frame-name)
   (let ((entry (fast-assq frame-name *stack-frame-name-offset-alist*)))
     (cond ((null entry)
@@ -92,6 +94,7 @@ Modification History (most recent at the top)
 	   (prog1 *max-special-stack-frame-offset*
 	     (incf *max-special-stack-frame-offset*)))
 	  (t (cdr entry)))))
+)
 
 (defmacro special-frame-source (frame-name)
   `(svref& *special-eval-frames* ,(special-stack-frame-offset frame-name)))
@@ -347,7 +350,7 @@ Modification History (most recent at the top)
 
 (defun make-n-stack-frames (n name size)
   (let* ((stack (make-stack-frame-cache n))
-	 (contents-vector (stack-frame-cache-contents stack)))
+		 (contents-vector (stack-frame-cache-contents stack)))
     (dotimes (i n)
       (setf (svref contents-vector i) (make-stack-frame name size)))
     stack))

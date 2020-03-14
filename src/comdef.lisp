@@ -64,10 +64,7 @@ Modification History (most recent at top)
 
 |#
 
-
-#-(or mcl lispm lispworks) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or mcl lispworks)       (in-package :boxer)
-
+(in-package :boxer)
 
 (DEFVAR *BOXER-EDITOR-COMMANDS* NIL
   "A list of all the commands used in the editor. ")
@@ -548,48 +545,48 @@ Modification History (most recent at top)
 
 ;;; handles tracking of the mouse.
 ;;; we may have to pass screen-box into restore-fun (getting the port strut right)
-#-opengl
-(defun track-mouse-area (hilight-fun &key x y width height)
-  (let ((backing-store (allocate-backing-store width height)))
-    (drawing-on-window (*boxer-pane*)
-      (let ((min-x (-& x *border-tab-hysteresis*))
-            (min-y (-& y *border-tab-hysteresis*))
-            (max-x (+& x width *border-tab-hysteresis*))
-            (max-y (+& y height *border-tab-hysteresis*))
-            (icon-on? t))
-        (flet ((icon-on ()
-                 (erase-rectangle width height x y)
-                 (funcall hilight-fun x y width height)
-                 (force-graphics-output)
-                 (setq icon-on? T))
-               (icon-off ()
-                 (repaint) ; gak !!
-                 ;(bitblt-to-screen alu-seta width height backing-store 0 0 x y)
-                 ;(force-graphics-output)
-                 (setq icon-on? nil)))
-          ;; 1st grab what's on the screen...
-          (bitblt-from-screen alu-seta width height backing-store x y 0 0)
-          ;; initially turn the icon on since that is how we got here in the 1st place
-          (icon-on)
-          (multiple-value-bind (final-x final-y)
-              (with-mouse-tracking ((mouse-x x) (mouse-y y))
-                (progn
-                  (cond ((and (null icon-on?)
-                              ;; if the icon is off, and we move back in
-                              (<& min-x mouse-x max-x) (<& min-y mouse-y max-y))
-                         ;; then turn the icon back on
-                         (icon-on))
-                        ((and icon-on?
-                              ;; if the icon is on and we move out
-                              (or (not (<& min-x mouse-x max-x))
-                                  (not (<& min-y mouse-y max-y))))
-                         ;; then turn off the visual indicator
-                         (icon-off)))))
-            ;; first turn the icon off if it is on...
-            (unless (null icon-on?) (icon-off))
-            (deallocate-backing-store backing-store)
-            ;; now return whether we are still on...
-            (and (<& min-x final-x max-x) (<& min-y final-y max-y))))))))
+;; #-opengl
+;; (defun track-mouse-area (hilight-fun &key x y width height)
+;;   (let ((backing-store (allocate-backing-store width height)))
+;;     (drawing-on-window (*boxer-pane*)
+;;       (let ((min-x (-& x *border-tab-hysteresis*))
+;;             (min-y (-& y *border-tab-hysteresis*))
+;;             (max-x (+& x width *border-tab-hysteresis*))
+;;             (max-y (+& y height *border-tab-hysteresis*))
+;;             (icon-on? t))
+;;         (flet ((icon-on ()
+;;                  (erase-rectangle width height x y)
+;;                  (funcall hilight-fun x y width height)
+;;                  (force-graphics-output)
+;;                  (setq icon-on? T))
+;;                (icon-off ()
+;;                  (repaint) ; gak !!
+;;                  ;(bitblt-to-screen alu-seta width height backing-store 0 0 x y)
+;;                  ;(force-graphics-output)
+;;                  (setq icon-on? nil)))
+;;           ;; 1st grab what's on the screen...
+;;           (bitblt-from-screen alu-seta width height backing-store x y 0 0)
+;;           ;; initially turn the icon on since that is how we got here in the 1st place
+;;           (icon-on)
+;;           (multiple-value-bind (final-x final-y)
+;;               (with-mouse-tracking ((mouse-x x) (mouse-y y))
+;;                 (progn
+;;                   (cond ((and (null icon-on?)
+;;                               ;; if the icon is off, and we move back in
+;;                               (<& min-x mouse-x max-x) (<& min-y mouse-y max-y))
+;;                          ;; then turn the icon back on
+;;                          (icon-on))
+;;                         ((and icon-on?
+;;                               ;; if the icon is on and we move out
+;;                               (or (not (<& min-x mouse-x max-x))
+;;                                   (not (<& min-y mouse-y max-y))))
+;;                          ;; then turn off the visual indicator
+;;                          (icon-off)))))
+;;             ;; first turn the icon off if it is on...
+;;             (unless (null icon-on?) (icon-off))
+;;             (deallocate-backing-store backing-store)
+;;             ;; now return whether we are still on...
+;;             (and (<& min-x final-x max-x) (<& min-y final-y max-y))))))))
 
 #+opengl
 (defun track-mouse-area (hilight-fun &key x y width height)
@@ -612,7 +609,7 @@ Modification History (most recent at top)
              (setq icon-on? nil)))
       (icon-on)
       (multiple-value-bind (final-x final-y)
-          (with-mouse-tracking ((mouse-x x) (mouse-y y))
+          (boxer-window::with-mouse-tracking ((mouse-x x) (mouse-y y))
             (progn
               (cond ((and (null icon-on?)
                           ;; if the icon is off, and we move back in
@@ -666,9 +663,9 @@ Modification History (most recent at top)
     (cond ((null entry) (push (cons key-name existing) *saved-key-functions*))
 	  (t (setf (cdr entry) existing)))
     ;; now set it to the new version
-    (eval::boxer-toplevel-set-nocache
+    (boxer-eval::boxer-toplevel-set-nocache
      key-name
-     (eval::make-compiled-boxer-function
+     (boxer-eval::make-compiled-boxer-function
       :arglist nil :precedence 0 :infix-p nil :object new-function))))
 
 ;; key should look like 'bu::crap
@@ -678,27 +675,28 @@ Modification History (most recent at top)
     (cond ((null entry)
 	   (cond ((null vanilla)
                  ;(warn "No saved function for ~A, Unbinding the key" key-name)
-		  (eval::boxer-toplevel-nocache-unset key-name))
+		  (boxer-eval::boxer-toplevel-nocache-unset key-name))
 		 (t
 		  (warn "No saved function for ~A, setting to top level value" key-name)
-		  (eval::boxer-toplevel-set-nocache key-name vanilla))))
-	  ((or (eq entry ':unbound) (eq entry eval::*novalue*))
-	   (eval::boxer-toplevel-nocache-unset key-name))
-	  ((eval::compiled-boxer-function? entry)
-	   (eval::boxer-toplevel-set-nocache key-name entry))
+		  (boxer-eval::boxer-toplevel-set-nocache key-name vanilla))))
+	  ((or (eq entry ':unbound) (eq entry boxer-eval::*novalue*))
+	   (boxer-eval::boxer-toplevel-nocache-unset key-name))
+	  ((boxer-eval::compiled-boxer-function? entry)
+	   (boxer-eval::boxer-toplevel-set-nocache key-name entry))
 	  (t
 	   ;; probably means the previous binding for the key was
 	   ;; to a box, right thing for now is to unbind the key
 	   (if (null vanilla)
-	       (eval::boxer-toplevel-nocache-unset key-name)
+	       (boxer-eval::boxer-toplevel-nocache-unset key-name)
 	       (progn
 		 (warn "No saved function for ~A, setting to top level value" key-name)
-		 (eval::boxer-toplevel-set-nocache key-name vanilla)))))))
+		 (boxer-eval::boxer-toplevel-set-nocache key-name vanilla)))))))
 |#
 
 
 ;;; mouse mode utilities
 
+(eval-when (load eval)
 (defbasic-mode retarget-port-mode
   (#+(or apple win32) bu::mouse-click #-(or apple win32) bu::mouse-middle
                     com-redirect-generic-port)
@@ -708,6 +706,7 @@ Modification History (most recent at top)
   (#+(or apple win32) bu::mouse-click-on-sprite
    #-(or apple win32) bu::sprite-mouse-middle
    com-redirect-generic-port))
+)
 
 ;;; make a generic port, toggle the middle mouse cursor
 
@@ -722,7 +721,7 @@ Modification History (most recent at top)
              (add-mode (retarget-port-mode))
              #-opengl (add-redisplay-clue (point-row) ':insert))
       (boxer-editor-error "Use the generic port you have made."))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 #|
 (defun make-generic-port (&rest foo)
@@ -742,10 +741,10 @@ Modification History (most recent at top)
                                                             0 :sprite)
 				  #'com-redirect-generic-port)
 	     (add-redisplay-clue (point-row) ':insert)
-	     eval::*novalue*)
+	     boxer-eval::*novalue*)
       (progn
 	(boxer-editor-error "Use the generic port you have made.")
-	eval::*novalue*)))
+	boxer-eval::*novalue*)))
 |#
 
 (defvar *previous-port-target* nil)
@@ -767,7 +766,7 @@ Modification History (most recent at top)
         (unless (eq target :unspecified) (retarget-port *generic-port* target))
 	(modified *generic-port*)
 	(clean-mouse-port-state)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;;;;; get the box the mouse points to.
 (defun get-box-under-mouse ()
@@ -903,13 +902,13 @@ Modification History (most recent at top)
 ;  (reset-mouse-cursor)
 ;  (setq *suitcase-mode* nil))
 
-(defvar *editor-abort-chars*
-  #-mcl (list (make-char #\g 1) (make-char #\. 1)
-              ;; 200. is the STOP key on Suns
-              #+sun (make-char (code-char 200))
-              #+sun (make-char (code-char 200) 1))
-  ;; MCL can't encode shift bits in character objects
-  #+mcl (list #\Bell))
+(defvar *editor-abort-chars* #\c) ; sgithens TODO March 7, 2020
+  ;; #-mcl (list (make-char #\g 1) (make-char #\. 1)
+  ;;             ;; 200. is the STOP key on Suns
+  ;;             #+sun (make-char (code-char 200))
+  ;;             #+sun (make-char (code-char 200) 1))
+  ;; ;; MCL can't encode shift bits in character objects
+  ;; #+mcl (list #\Bell))
 
 #+mcl
 (defvar *unshifted-mac-editor-abort-chars* (list #\g #\.))
@@ -1039,47 +1038,47 @@ Modification History (most recent at top)
 ;; display properties
 (define-box-property (:always-zoom bu::always-zoom)
   ;; init
-  (prop box) (set-always-zoom? box (eval::true? prop))
+  (prop box) (set-always-zoom? box (boxer-eval::true? prop))
   ;; set prop
-  (prop new-value) (change prop (eval::boxer-boolean new-value))
+  (prop new-value) (change prop (boxer-eval::boxer-boolean new-value))
   ;; make
   (make-box '(("False")) 'data-box 'bu::always-zoom))
 
 (define-box-property (:shrink-on-exit bu::shrink-on-exit)
-  (prop box) (set-shrink-on-exit? box (eval::true? prop))
-  (prop new-value) (change prop (eval::boxer-boolean new-value))
+  (prop box) (set-shrink-on-exit? box (boxer-eval::true? prop))
+  (prop new-value) (change prop (boxer-eval::boxer-boolean new-value))
   (make-box '(("False")) 'data-box 'bu::shrink-on-exit))
 
 (define-box-property (:manual-size bu::manual-sizing)
-  (prop box) (when (eval::true? prop)
+  (prop box) (when (boxer-eval::true? prop)
                (set-bottom-right-hotspot-active? box t))
-  (prop new-value) (change prop (eval::boxer-boolean new-value))
+  (prop new-value) (change prop (boxer-eval::boxer-boolean new-value))
   (make-box '(("False")) 'data-box 'bu::manual-sizing))
 
 (define-box-property (:autofill bu::autofill)
-  (prop box) (set-auto-fill? box (eval::true? prop))
-  (prop new-value) (change prop (eval::boxer-boolean new-value))
+  (prop box) (set-auto-fill? box (boxer-eval::true? prop))
+  (prop new-value) (change prop (boxer-eval::boxer-boolean new-value))
   (make-box '(("False")) 'data-box 'bu::autofill))
 
 (define-box-property (:shrink-proof? bu::shrink-proof)
-  (prop box) (set-shrink-proof? box (eval::true? prop))
-  (prop new-value) (change prop (eval::boxer-boolean new-value))
+  (prop box) (set-shrink-proof? box (boxer-eval::true? prop))
+  (prop new-value) (change prop (boxer-eval::boxer-boolean new-value))
   (make-box '(("False")) 'data-box 'bu::shrink-proof))
 
 ;; link/file properties
 (define-box-property (:read-only bu::read-only)
-  (prop box) (set-read-only-box? box (eval::true? prop))
-  (prop new-value) (change prop (eval::boxer-boolean new-value))
+  (prop box) (set-read-only-box? box (boxer-eval::true? prop))
+  (prop new-value) (change prop (boxer-eval::boxer-boolean new-value))
   (make-box '(("False")) 'data-box 'bu::read-only))
 
 (define-box-property (:relative-filename bu::relative-filename)
-  (prop box) (set-relative-filename? box (eval::true? prop))
-  (prop new-value) (change prop (eval::boxer-boolean new-value))
+  (prop box) (set-relative-filename? box (boxer-eval::true? prop))
+  (prop new-value) (change prop (boxer-eval::boxer-boolean new-value))
   (make-box '(("False")) 'data-box 'bu::relative-filename))
 
 (define-box-property (:auto-load bu::auto-load)
-  (prop box) (set-autoload-file? box (eval::true? prop))
-  (prop new-value) (change prop (eval::boxer-boolean new-value))
+  (prop box) (set-autoload-file? box (boxer-eval::true? prop))
+  (prop new-value) (change prop (boxer-eval::boxer-boolean new-value))
   (make-box '(("False")) 'data-box 'bu::auto-load))
 
 ;; boxtops
@@ -1103,12 +1102,12 @@ Modification History (most recent at top)
 (defun get-prop-from-props-box (property-name props-box)
   (let ((local-prop (lookup-variable-in-box-only
                      props-box (get property-name :boxer-name)))
-        (tl-prop (eval::static-variable-value (symbol-value 'bu::new-box-properties))))
+        (tl-prop (boxer-eval::static-variable-value (symbol-value 'bu::new-box-properties))))
     (cond ((and (null local-prop) (eq local-prop tl-prop)) nil)
           ((null local-prop)
            ;; try recursing upwards
            (get-prop-from-props-box property-name
-                                    (eval::lookup-static-variable
+                                    (boxer-eval::lookup-static-variable
                                      (superior-box (superior-box props-box))
                                      ;; just 1 superior-box will only get us to the box
                                      ;; where the props-box is already living
@@ -1117,7 +1116,7 @@ Modification History (most recent at top)
 
 ;; main properties interface
 (defun initialize-new-box-properties (box &optional
-                                          (props (eval::boxer-symeval
+                                          (props (boxer-eval::boxer-symeval
                                                   'bu::new-box-properties)))
   (dolist (property *box-properties*)
     (funcall (get property :new-box-init)
@@ -1130,14 +1129,14 @@ Modification History (most recent at top)
 
 (defun set-new-box-property (property new-value
                                       &optional
-                                      (props (eval::boxer-symeval
+                                      (props (boxer-eval::boxer-symeval
                                               'bu::new-box-properties)))
   (funcall (get property :set-new-prop)
            (get-prop-from-props-box property props) new-value))
 
 ;; helps to get the wording right in dialogs
 (defun top-level-props? ()
-  (eq (eval::boxer-symeval 'bu::new-box-properties)
-      (eval::static-variable-value
+  (eq (boxer-eval::boxer-symeval 'bu::new-box-properties)
+      (boxer-eval::static-variable-value
        (symbol-value 'bu::new-box-properties))))
 

@@ -15,6 +15,7 @@
   :components ((:module "src"
                 :components
                 ((:file "boxer-sunrise2")
+                 ;; Beginning of `DEFINITIONS` module
                  (:file "macros")
                  (:file "boxdef")
                  (:file "storage")
@@ -23,7 +24,10 @@
                  ;; boxer, when I get a chance to split this up in to modules.
                  (:file "disdcl")
                  ;; Beginning of `DRAW` module
-                ;;  (:file "opengl-utils")
+                 (:file "opengl-utils")
+                 (:file "capogi")
+                ;;  (:file "opengl-utils-glut")
+                 (:file "draw-low-opengl")
                  (:file "draw-low-stubs")
                  (:file "draw-high-common")
                  (:file "draw-high-hardware-clip")
@@ -35,19 +39,19 @@
                  (:file "infsup")
                  ;; Beginning of `evalvars` module
                  ;; "Definitions necessary for describing evaluator state variables"
-                ;;  (:file "varmacs")
-                ;;  (:file "vars")
+                 (:file "varmacs")
+                 (:file "vars")
 
 
 
                  ;; Beginning of `EVALDEFS` module
                  ;; "Basic Defs and Macros used by the evaluator including how variables work."
-                 ;; (:file "evalmacs")
-                 ;; (:file "fdeval"))))
-                 ;;(:file "bind")
-                 ;;(:file "funs")
-                 ;;(:file "stacks")
-                 ;;(:file "eval")
+                 (:file "evalmacs")
+                 (:file "fdeval")
+                 (:file "bind")
+                 (:file "funs")
+                 (:file "stacks")
+                ;;  (:file "eval")
                  ;; Beginning of `EVALPRIMS` module
                  ;; "Evaluator Primitives"
                  ;;(:file "prims")
@@ -57,7 +61,7 @@
                  ;; Beginning of `BOXWIN` module
                  ;; "The interface between the Boxer Editor and the window system"
                  ;; these are also window system specific
-                 ;; (:file "boxwin-opengl")
+                 #+lispworks (:file "boxwin-opengl")
                  ;; (:file "hardcopy-lw")
                  ;; (:file "mousedoc")
                  ;; (:file "oglmacreg")
@@ -87,9 +91,9 @@
                  ;; (:file  "xfile")
                  ;; (:file "region")
                  ;; (:file "oglscroll")
-                 ;; (:file "mode")
+                 (:file "mode")
                  ;; (:file "search")
-                 ;; (:file "comdef")
+                 (:file "comdef")
                  ;; Beginning of `IMPEXP` module
                  ;; "This imports and exports boxer structure to/from other common file types"
                  ;; (:file "impexp")
@@ -202,7 +206,7 @@
                  ;; (:file "xten")
                  ;; Beginning of `menu` module
                  ;;    "Menus for Harlequin Lispworks on the PC"
-                 ;; (:file "lw-menu")
+                 (:file "lw-menu")
                  ;; Beginning of `SYSPRIMS` module
                  ;; 	   "Primitives to tweak default system parameters"
                  ;; (:file "sysprims")

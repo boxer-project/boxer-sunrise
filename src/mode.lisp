@@ -31,10 +31,7 @@ Modification History (most recent at top)
 
 |#
 
-
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
-
+(in-package :boxer)
 
 (defvar *active-modes* nil)
 
@@ -67,7 +64,7 @@ Modification History (most recent at top)
    (comtab :initform (make-comtab)))
   (:metaclass block-compile-class))
 
-(block-compile-epilogue basic-mode)
+;; (block-compile-epilogue basic-mode)
 
 ;; more specific behaviors for other mode
 ;; for example, search mode should splice itself out of
@@ -84,7 +81,7 @@ Modification History (most recent at top)
     (if (null vanilla-comtab)
 	(warn "The Vanilla comtab is not defined yet")
 	(setf (gethash name vanilla-comtab)
-	      (eval::encapsulate-key-function fun)))))
+	      (boxer-eval::encapsulate-key-function fun)))))
 
 (defmacro defboxer-mode-key (key-spec mode function)
   (let* ((shift-bits (if (listp key-spec) (cadr key-spec) 0))
@@ -98,11 +95,11 @@ Modification History (most recent at top)
     `(if (not (typep ,mode 'basic-mode))
       (error "~S is not a defined editor mode" ,mode)
       (setf (gethash ',key-name (slot-value ,mode 'comtab))
-       (eval::encapsulate-key-function ',function)))))
+       (boxer-eval::encapsulate-key-function ',function)))))
 
 (defun defboxer-mode-key-internal (key-name mode function)
   (setf (gethash key-name (slot-value mode 'comtab))
-	(eval::encapsulate-key-function function)))
+	(boxer-eval::encapsulate-key-function function)))
 
 ;; loop through the list of current modes looking for key-name
 ;; return NIL
@@ -121,7 +118,7 @@ Modification History (most recent at top)
          (basic-mode)
          ()
          (:metaclass block-compile-class))
-       (block-compile-epilogue ,mode-name)
+      ;;  (block-compile-epilogue ,mode-name)
        (defvar ,mode-var (make-instance ',mode-name))
        (defun ,mode-name () ,mode-var)
        . ,(with-collection

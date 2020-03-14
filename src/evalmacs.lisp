@@ -80,8 +80,9 @@ Modification History (most recent at top)
 (defvar *last-timing-figure*)
 (defvar *compile-with-debugging* t)
 
-(defun debug ()
-  (setq *debugging* t))
+;; sgithens March 7, 2020
+;; (defun debug ()
+  ;; (setq *debugging* t))
 
 (defun nodebug ()
   (setq *debugging* nil))
@@ -249,7 +250,7 @@ Modification History (most recent at top)
 ;;;
 ;;; tail recursion
 ;;;
-(defsubst tail-recurse-p ()
+(boxer::defsubst tail-recurse-p ()
   nil)
 
 
