@@ -32,9 +32,7 @@ Modification History (most recent at top)
 
 |#
 
-
-#-(or mcl lispm) (in-package 'eval)
-#+mcl            (in-package :eval)
+(in-package :boxer-eval)
 
 ;;; This file needs to be loaded after all the eval vars are defined,
 ;;; including those defined in recursive primitives.

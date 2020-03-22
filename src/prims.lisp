@@ -45,8 +45,7 @@ Modification History (most recent at the top)
 
 ;;;
 
-#-(or lispworks mcl lispm) (in-package 'eval)
-#+(or lispworks mcl)       (in-package :eval)
+(in-package :boxer-eval)
 
 ;;; This file contains really fundamental primitives and support for those
 ;;; primitives.
@@ -79,7 +78,7 @@ Modification History (most recent at the top)
   *true*)
 
 (defboxer-primitive %novalue-internal ()
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 (DEFBOXER-PRIMITIVE BU::PORT-TO ((BU::PORT-TO ARG))
@@ -186,11 +185,11 @@ Modification History (most recent at the top)
 			   ((null code) nil)
 			 (if (null line) (pop code) (return (pop code))))))
          (if (null 1stline)
-             eval::*novalue*
+             boxer-eval::*novalue*
              (progn
                (set-and-save-state-variables code)
 	       (recursive-eval-invoke
-                (list* 'eval::%ifs-internal-1 1stline)))))))
+                (list* 'boxer-eval::%ifs-internal-1 1stline)))))))
   :after (cond ((null *ifs-list*)
 		(restore-state-variables) nil)
 	       (t (let ((nextline (do ((line (car *ifs-list*)
@@ -201,10 +200,10 @@ Modification History (most recent at the top)
 		    (cond ((null nextline)
 			   (restore-state-variables) nil)
 			  (t
-			   (cons 'eval::%ifs-internal-1 nextline)))))))
+			   (cons 'boxer-eval::%ifs-internal-1 nextline)))))))
 
 
-(defboxer-primitive eval::%ifs-internal-1 ((dont-copy predicate)
+(defboxer-primitive boxer-eval::%ifs-internal-1 ((dont-copy predicate)
 					 (list-rest consequent))
   (cond ((false? predicate) *novalue*)
 	((true? predicate)
@@ -260,7 +259,7 @@ Modification History (most recent at the top)
   :state-variables (*boolean-clauses*)
   :before
   (cond ((not (null boxer::*uc-copyright-free*))
-         (eval::primitive-signal-error :copyright
+         (boxer-eval::primitive-signal-error :copyright
                                        'bu::any-of " is no longer available, use "
                                        'bu::some " instead"))
         (t
@@ -283,7 +282,7 @@ Modification History (most recent at the top)
                       (progn
                         (set-and-save-state-variables code)
                         (recursive-eval-invoke
-                         (list* 'eval::any-of 1stline)))))))))
+                         (list* 'boxer-eval::any-of 1stline)))))))))
   :after (cond ((null *boolean-clauses*)
                 (restore-state-variables) nil)
                (t (let ((nextline (do ((line (car *boolean-clauses*)
@@ -294,11 +293,11 @@ Modification History (most recent at the top)
 		    (cond ((null nextline)
 			   (restore-state-variables) nil)
 			  (t
-			   (cons 'eval::any-of nextline)))))))
+			   (cons 'boxer-eval::any-of nextline)))))))
 
 ;; give helper function same name in eval package is a crock to make
 ;; the error message come out right
-(defboxer-primitive eval::any-of ((dont-copy clause) (list-rest ignore))
+(defboxer-primitive boxer-eval::any-of ((dont-copy clause) (list-rest ignore))
   ignore ; bound but not used blah blah...
   (cond ((true? clause)
          (setq *boolean-clauses* nil) *true*)
@@ -328,7 +327,7 @@ Modification History (most recent at the top)
                (progn
                  (set-and-save-state-variables code)
                  (recursive-eval-invoke
-                  (list* 'eval::some-of 1stline)))))))
+                  (list* 'boxer-eval::some-of 1stline)))))))
   :after (cond ((null *boolean-clauses*)
                 (restore-state-variables) nil)
                (t (let ((nextline (do ((line (car *boolean-clauses*)
@@ -339,11 +338,11 @@ Modification History (most recent at the top)
 		    (cond ((null nextline)
 			   (restore-state-variables) nil)
 			  (t
-			   (cons 'eval::some-of nextline)))))))
+			   (cons 'boxer-eval::some-of nextline)))))))
 
 ;; give helper function same name in eval package is a crock to make
 ;; the error message come out right
-(defboxer-primitive eval::some-of ((dont-copy clause) (list-rest ignore))
+(defboxer-primitive boxer-eval::some-of ((dont-copy clause) (list-rest ignore))
   ignore ; bound but not used blah blah...
   (cond ((true? clause)
          (setq *boolean-clauses* nil) *true*)
@@ -355,7 +354,7 @@ Modification History (most recent at the top)
   :state-variables (*boolean-clauses*)
   :before
   (cond ((not (null boxer::*uc-copyright-free*))
-         (eval::primitive-signal-error :copyright
+         (boxer-eval::primitive-signal-error :copyright
                                        'bu::all-of " is no longer available, use "
                                        'bu::every " instead"))
         (t
@@ -378,7 +377,7 @@ Modification History (most recent at the top)
                       (progn
                         (set-and-save-state-variables code)
                         (recursive-eval-invoke
-                         (list* 'eval::all-of 1stline)))))))))
+                         (list* 'boxer-eval::all-of 1stline)))))))))
   :after (cond ((null *boolean-clauses*)
                 (restore-state-variables) nil)
                (t (let ((nextline (do ((line (car *boolean-clauses*)
@@ -389,9 +388,9 @@ Modification History (most recent at the top)
 		    (cond ((null nextline)
 			   (restore-state-variables) nil)
 			  (t
-			   (cons 'eval::all-of nextline)))))))
+			   (cons 'boxer-eval::all-of nextline)))))))
 
-(defboxer-primitive eval::all-of ((dont-copy clause) (list-rest ignore))
+(defboxer-primitive boxer-eval::all-of ((dont-copy clause) (list-rest ignore))
   ignore
   (cond ((true? clause) *true*)
         ((false? clause) (setq *boolean-clauses* nil) *false*)
@@ -416,7 +415,7 @@ Modification History (most recent at the top)
              (if (null 1stline) *true*
                  (progn
                    (set-and-save-state-variables code)
-                   (recursive-eval-invoke (list* 'eval::every-1 1stline)))))))
+                   (recursive-eval-invoke (list* 'boxer-eval::every-1 1stline)))))))
   :after (cond ((null *boolean-clauses*)
                 (restore-state-variables) nil)
                (t (let ((nextline (do ((line (car *boolean-clauses*)
@@ -427,10 +426,10 @@ Modification History (most recent at the top)
 		    (cond ((null nextline)
 			   (restore-state-variables) nil)
 			  (t
-			   (cons 'eval::every-1 nextline)))))))
+			   (cons 'boxer-eval::every-1 nextline)))))))
 
 ;; Can't use the same name because of conflict with lisp:every
-(defboxer-primitive eval::every-1 ((dont-copy clause) (list-rest ignore))
+(defboxer-primitive boxer-eval::every-1 ((dont-copy clause) (list-rest ignore))
   ignore
   (cond ((true? clause) *true*)
         ((false? clause) (setq *boolean-clauses* nil) *false*)
@@ -514,7 +513,7 @@ Modification History (most recent at the top)
 		  ((minusp times)
 		   (signal-error :IMPROPER-ARGUMENT
 				 "expected a positive number"))
-		  ((zerop (SETQ times (floor (+ times .5)))) eval::*novalue*)
+		  ((zerop (SETQ times (floor (+ times .5)))) boxer-eval::*novalue*)
 		  (t (set-and-save-state-variables what (1- times))
 		     (recursive-eval-invoke what))))
   :after  (cond ((zerop *repeat-count*)

@@ -477,10 +477,11 @@ Modification History (most recent at top)
 
 ;;; for ctrl-P
 
-(boxer::defboxer-command boxer::com-hardcopy-lw-window ()
-   "Print the Boxer screen on the currently selected printer"
-   (window-hardcopy *boxer-frame*)
-   eval::*novalue*)
+;; sgithens March 7, 2020
+;; (boxer::defboxer-command boxer::com-hardcopy-lw-window ()
+;;    "Print the Boxer screen on the currently selected printer"
+;;    (window-hardcopy *boxer-frame*)
+;;    boxer-eval::*novalue*)
 
 (defun lw-quit (data interface)
   (declare (ignore data))
@@ -495,14 +496,14 @@ Modification History (most recent at top)
                                   :no-zoom-offered? t :no-unstore-offered? t))))
     #-lispworks6 (lispworks::quit)
     #+lispworks6 (capi:destroy interface)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (boxer::defboxer-command com-LW-quit ()
   "Quit Out of Boxer"
   (lw-quit nil *boxer-pane*)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(eval::defboxer-key (bu::q-key 1) com-lw-quit)
+;; (boxer-eval::defboxer-key (bu::q-key 1) com-lw-quit) sgithens TODO March 7, 2020
 
 (defun unsaved-boxes? ()
   (catch 'unsaved
@@ -544,12 +545,12 @@ Modification History (most recent at top)
 (defun menu-clipboard-paste (d i)
   (declare (ignore d i))
   (bw::paste *boxer-frame*)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defun menu-paste-graphics (d i)
   (declare (ignore d i))
   (bw::paste-pict)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defun menu-select-box-contents (data interface)
   (declare (ignore data interface))
@@ -564,8 +565,8 @@ Modification History (most recent at top)
 (defun menu-find (data interface)
   (declare (ignore data interface))
   (let* ((insearch (boxer::mode-key 'bu::CTRL-F-KEY))
-         (fun (when (eval::boxer-function? insearch)
-                (eval::compiled-boxer-function-object insearch))))
+         (fun (when (boxer-eval::boxer-function? insearch)
+                (boxer-eval::compiled-boxer-function-object insearch))))
     (if (null fun)
         (boxer::com-search-forward)
       (funcall fun)))
@@ -1590,7 +1591,7 @@ Modification History (most recent at top)
                              (t (boxer::putprop box (cadr change) :boxtop))))))))
     (setq *box-properties-change-list* nil))
   (clear-props-cluster-vars)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -1770,7 +1771,7 @@ Modification History (most recent at top)
       (setq boxer::*preference-dialog-change-list*     nil
             boxer::*current-documentation-dialog-item* nil
             boxer::*preference-dialog-last-doc-item*   nil))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 
 

@@ -380,9 +380,9 @@ Modification History (most recent at top)
     (let ((doc nil))
       (ignore-errors
        (setq doc
-             (let* ((eval::*lexical-variables-root* sprite-box)
-                    (docbox (eval::boxer-symeval 'bu::sprite-mouse-documentation)))
-               (unless (eq docbox eval::*novalue*)
+             (let* ((boxer-eval::*lexical-variables-root* sprite-box)
+                    (docbox (boxer-eval::boxer-symeval 'bu::sprite-mouse-documentation)))
+               (unless (eq docbox boxer-eval::*novalue*)
                  (boxer::box-text-string docbox)))))
       doc)))
 

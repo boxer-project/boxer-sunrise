@@ -48,9 +48,29 @@ Modification History (most recent at top)
 
 |#
 
-(defpackage :bu)
-(defpackage :boxer-eval)
-(defpackage :boxer (:use :common-lisp) (:nicknames :box))
+(defpackage :boxer-user
+  (:use)
+  (:nicknames :bu :boxer-users :pkg-bu-package :pkg-boxer-user-package))
+
+(defpackage :boxer
+  (:use :common-lisp)
+  (:nicknames :box)
+  (:export :symbol-format
+           :with-collection
+           :collect
+           :svref&
+           :fast-assq))
+
+(defpackage :boxer-eval (:use :common-lisp) (:use :boxer)
+  (:export :LOOKUP-STATIC-VARIABLE-IN-BOX-ONLY
+           :REMOVE-STATIC-VARIABLE
+           :ADD-STATIC-VARIABLE-PAIR
+           :LOOKUP-STATIC-VARIABLE-IN-BOX-ONLY
+           :REMOVE-STATIC-VARIABLE
+           :*LEXICAL-VARIABLES-ROOT*)
+)
+
+(defpackage :boxnet (:use :common-lisp :boxer-eval))
 (defpackage :boxer-window (:use :common-lisp) (:nicknames :bw))
 
 (in-package :box)

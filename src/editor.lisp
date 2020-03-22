@@ -62,12 +62,7 @@ Modification History (most recent at top)
 
 |#
 
-
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
-
-
-
+(in-package :boxer)
 
 ;;;;INIT methods.
 
@@ -202,7 +197,7 @@ Modification History (most recent at top)
   (when (and (null (slot-value self 'first-inferior-row))
 	     (storage-chunk? self))
     (fill-box-from-server self))
-  (setq eval:*lexical-variables-root* self)
+  (setq boxer-eval:*lexical-variables-root* self)
   (when (not (null moved-p?))
     (maybe-run-trigger self 'bu::entry-trigger)))
 
@@ -211,7 +206,7 @@ Modification History (most recent at top)
   (when (and (null (slot-value self 'ports))
 	     (not (null (cross-file-port-branch-links self))))
     (articulate-target-branch (car (cross-file-port-branch-links self))))
-  (setq eval::*lexical-variables-root* (ports self))
+  (setq boxer-eval::*lexical-variables-root* (ports self))
   ;; is this appropriate ?
   (when (not (null moved-p?))
     (maybe-run-trigger self 'bu::entry-trigger)))
@@ -866,11 +861,11 @@ higher level copy operation. ")
       (when (sprite-box? self) (remove-inferior-sprite superior-box self))
       (with-mouse-cursor (:wait)
         ;; this does a tree walk so it can take a while
-        (eval::evaluator-delete-self-action self superior-box))
+        (boxer-eval::evaluator-delete-self-action self superior-box))
       (boxnet::storage-chunk-delete-self-action self)
       (when (not-null (exports self))
-	(eval::remove-all-exported-bindings self superior-box)
-	(eval::unexport-inferior-properties self superior-box)))))
+	(boxer-eval::remove-all-exported-bindings self superior-box)
+	(boxer-eval::unexport-inferior-properties self superior-box)))))
 
 (defmethod delete-self-action ((self port-box) &optional superior-box)
   (unless *boxes-being-temporarily-deleted*
@@ -880,7 +875,7 @@ higher level copy operation. ")
     (delete-self-link-action self superior-box)
     ;; update the namespace
     (when (not-null superior-box)
-      (eval::evaluator-delete-self-action self superior-box))
+      (boxer-eval::evaluator-delete-self-action self superior-box))
     ;; Do this in the deallocate self method so that port (un)cracking
     ;; works correctly when target is killed/yanked at the same time
     ;; as the port
@@ -901,8 +896,8 @@ higher level copy operation. ")
     (when (not (null (slot-value self 'exports)))
       (when (not-null superior)
 	(boxnet::storage-chunk-insert-self-action self)
-	(eval::propagate-all-exported-bindings self superior)
-	(eval::export-inferior-properties self superior)))
+	(boxer-eval::propagate-all-exported-bindings self superior)
+	(boxer-eval::export-inferior-properties self superior)))
     (when (and (sprite-box? self) (not-null superior))
       (add-inferior-sprite superior self))))
 
@@ -1593,13 +1588,13 @@ points to the Box which contains the lower BP,then the superior BP is returned"
 	   (unless (null environment)
 	     (unless (or (null cached-name)
 			 (not (eq superior-box
-				  (eval:lookup-static-variable-in-box-only
+				  (boxer-eval:lookup-static-variable-in-box-only
 				    environment cached-name))))
-	       (eval:remove-static-variable environment cached-name)
+	       (boxer-eval:remove-static-variable environment cached-name)
 	       ;; and then run any magic name deletion code
 	       (unless (null magic-name-delete-handler)
 		 (funcall magic-name-delete-handler superior-box environment)))
-	     (eval:add-static-variable-pair environment new-name superior-box)
+	     (boxer-eval:add-static-variable-pair environment new-name superior-box)
 	     ;; and run any magic name insert code
 	     (unless (null magic-name-insert-handler)
 	       (funcall magic-name-insert-handler superior-box environment)))
@@ -1611,9 +1606,9 @@ points to the Box which contains the lower BP,then the superior BP is returned"
 	   (unless (or (null environment)
 		       (null cached-name)
 		       (not (eq superior-box
-				(eval:lookup-static-variable-in-box-only
+				(boxer-eval:lookup-static-variable-in-box-only
 				  environment cached-name))))
-	     (eval:remove-static-variable environment cached-name)
+	     (boxer-eval:remove-static-variable environment cached-name)
 	     ;; and then run any magic name deletion code
 	     (unless (null magic-name-delete-handler)
 	       (funcall magic-name-delete-handler superior-box environment)))
@@ -1674,9 +1669,9 @@ points to the Box which contains the lower BP,then the superior BP is returned"
       (unless (null name-row)
         (setf (slot-value new-box 'name) nil)
         (unless (or (null sup)
-		    (not (eq (eval::lookup-static-variable-in-box-only sup name)
+		    (not (eq (boxer-eval::lookup-static-variable-in-box-only sup name)
                              new-box)))
-	  (eval::remove-static-variable-pair sup name new-box))
+	  (boxer-eval::remove-static-variable-pair sup name new-box))
         (boxer-editor-warning "There already is a box named ~A"
 			      (text-string name-row))
         (modified new-box)))))
@@ -1740,7 +1735,7 @@ points to the Box which contains the lower BP,then the superior BP is returned"
 					  "__________")
 				    NIL))))
 	     (set-superior-box cr box)
-	     (eval::set-box-transparency exporting-box t)
+	     (boxer-eval::set-box-transparency exporting-box t)
 	     (set-name exporting-box (make-name-row '(bu::closet)))
 	     (setf (slot-value box 'closets) cr)
 	     (do-row-chas ((cha cr))

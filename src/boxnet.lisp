@@ -33,10 +33,7 @@ Modification History (most recent at top)
 
 |#
 
-
-
-#-mcl (in-package 'boxnet)
-#+mcl (in-package :boxnet)
+(in-package :boxnet)
 
 ;;; Call setup-server.
 ;;; Then call either SETUP-CONNECTION-WAITING-PROCESS
@@ -223,7 +220,7 @@ Modification History (most recent at top)
   `(with-open-stream
        (,stream-var (let ((fd (socket-open-and-connect ,hostname)))
 		      (when (minusp fd)
-			(eval::primitive-signal-error
+			(boxer-eval::primitive-signal-error
 			 "Couldn't connect to host:" ,hostname))
 		      #+Lucid (lcl:make-lisp-stream :input-handle fd
 						:output-handle fd

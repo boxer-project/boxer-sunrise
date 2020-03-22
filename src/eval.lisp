@@ -38,8 +38,7 @@ Modification History (most recent at top)
 ;;;;  The Explicit Control Evaluator
 ;;;;
 
-#-(or mcl lispworks LISPM) (in-package 'eval :use '(lisp sm))
-#+(or lispworks mcl) (in-package :eval)
+(in-package :boxer-eval)
 
 (defmacro evaluator-body (iline-name process-state)
   `(with-evaluator-state-variables-and-unwind-protect #|()|#
@@ -762,7 +761,7 @@ Modification History (most recent at top)
 	    (step-handle-run-list-continuation *returned-value*)
 	    (step-redisplay))
 	   (setq *executing-pointer* *returned-value*)
-	   (setq *returned-value* eval::*novalue*)
+	   (setq *returned-value* boxer-eval::*novalue*)
 	   (go eval-loop))
 	  (*access-evaluator-state-sfun-continuation*
 	   (setq *pc* :sfuncall-continuation-dispatch)

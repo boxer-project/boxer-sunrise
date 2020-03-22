@@ -382,7 +382,7 @@ Modification History (most recent at the top)
 
 ;;; random useful structs and stuff
 
-(defstruct (display-style (:predicate display-style?))
+(defstruct (display-style (:predicate display-style?)) ;; TODO sgithens add docstring for this
   (style :normal)
   (fixed-wid nil)
   (fixed-hei nil)
