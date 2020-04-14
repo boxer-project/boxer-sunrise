@@ -69,8 +69,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or mcl lispm lispworks) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or mcl lispworks)       (in-package :boxer)
+(in-package :boxer)
 
 
 ;;; minimal implementation, see mac-menu for more complete ones...
@@ -149,7 +148,7 @@ Modification History (most recent at top)
 (defboxer-command com-box-save-as (&optional always-ask-for-filename? box)
   "Saves the current box into a file"
   (catch 'cancel-boxer-file-dialog
-    (eval::report-eval-errors-in-editor
+    (boxer-eval::report-eval-errors-in-editor
       (let ((what (or box (box-point-is-in))))
         (check-for-outlink-ports what)
         (with-hilited-box (what)
@@ -194,7 +193,7 @@ Modification History (most recent at top)
               (mark-box-as-file what filename)
               (mark-file-box-clean what)
               (modified what)))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 ;; a "document" is whatever the (current-file-box) is
@@ -204,7 +203,7 @@ Modification History (most recent at top)
 (defboxer-command com-save-document (&optional always-ask-for-filename? nowarnings?)
   "Saves the current file box"
   (catch 'cancel-boxer-file-dialog
-    (eval::report-eval-errors-in-editor
+    (boxer-eval::report-eval-errors-in-editor
       (let* ((box (current-file-box))
              (raw-filename (getprop box :associated-file))
              (dialog-prompt (format nil "Save ~A box into file:"
@@ -295,7 +294,7 @@ Modification History (most recent at top)
                  (unless (eq existing-filename filename)
                    (putprop box filename :associated-file)))))
         (mark-file-box-clean box))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-open-box-file (&optional explicit-redisplay)
   "Inserts the contents of a Boxer file"
@@ -303,7 +302,7 @@ Modification History (most recent at top)
     (boxer-editor-error "Can't insert a (file) box while in a name")
     (progn
       (catch 'cancel-boxer-file-dialog
-        (eval::report-eval-errors-in-editor
+        (boxer-eval::report-eval-errors-in-editor
           ;; (with-drawing-port *boxer-pane*
           (let* ((filename (boxer-open-file-dialog))
                  (box (read-internal filename)))
@@ -322,7 +321,7 @@ Modification History (most recent at top)
               (when explicit-redisplay #+opengl (repaint) #-opengl (redisplay))))))
       ;; this marks the box superior to the box being loaded
       (mark-file-box-dirty (point-row))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;; the default should set always-zoom,
 ;; hook for something more elaborate, later
@@ -362,7 +361,7 @@ Modification History (most recent at top)
              (mark-file-box-dirty (point-row))
              (com-enter-box)))))
   (when explicit-redisplay #+opengl (repaint) #-opengl (redisplay))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 #| ;; the outermost box based version...
 (defboxer-command com-new-file-box (&optional explicit-redisplay)
@@ -397,7 +396,7 @@ Modification History (most recent at top)
              (push *outermost-screen-box* *outermost-screen-box-stack*)
              (set-outermost-box box)))))
   (when explicit-redisplay (redisplay))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 |#
 
 ;; rewrite this to CONS less later....
@@ -455,7 +454,7 @@ Modification History (most recent at top)
                (let ((rows (rows box)))
                  (kill-box-contents box)
                  (queue-editor-objs-for-deallocation rows))))))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 ;; this should be installed in the file menu as "Export..."
 
@@ -489,7 +488,7 @@ Modification History (most recent at top)
          (mark-file-box-clean (point-box)))
         (t (mark-file-box-dirty (point-box))))
   (modified (point-box))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-unmodify-document ()
   "Clears the file modified status of the current document"
@@ -497,17 +496,17 @@ Modification History (most recent at top)
   ;; not neccessary now that only the title bar indicated mod status but will
   ;; be needed if we ever have visual indicators on the box border
   (modified (point-box))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-unfile-document ()
   "Removes the file status of the current document"
-  (let ((where (if (box? eval::*lexical-variables-root*)
-                   eval::*lexical-variables-root*
+  (let ((where (if (box? boxer-eval::*lexical-variables-root*)
+                   boxer-eval::*lexical-variables-root*
                    (point-box))))
     (mark-file-box-clean where)
     (unmark-box-as-file (current-file-box where))
     (modified where)
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 
 
@@ -518,7 +517,7 @@ Modification History (most recent at top)
   (when (box? box) (toggle-type box))
   (mark-file-box-dirty box)
   (modified box)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-tt-toggle-storage-chunk (&optional (box *hotspot-mouse-box*))
   "Toggle the Storage chunk flag.  Indicated by box border thickness"
@@ -539,7 +538,7 @@ Modification History (most recent at top)
              (set-border-style box (if exports? :thick-dashed :thick))))
       ;; do we need to frob props ? (:url, :assocated-filename and format)
       (modified box)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;; relatively simple because there aren't concrete indicators for these states
 (defboxer-command com-tt-toggle-read-only (&optional (box *hotspot-mouse-box*))
@@ -547,14 +546,14 @@ Modification History (most recent at top)
   (when (box? box)
     (setf (read-only-box? box) (not (read-only-box? box)))
     (mark-file-box-dirty box))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-tt-toggle-autoload-file (&optional (box *hotspot-mouse-box*))
   "Toggle the Auto Load Flag"
   (when (box? box)
     (setf (autoload-file? box) (not (autoload-file? box)))
     (mark-file-box-dirty box))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -567,7 +566,7 @@ Modification History (most recent at top)
     (boxer-editor-error "Can't insert a (file) box while in a name")
     (progn
       (catch 'cancel-boxer-file-dialog
-        (eval::report-eval-errors-in-editor
+        (boxer-eval::report-eval-errors-in-editor
           ;; (with-drawing-port *boxer-pane*
           (let* ((filename (open-xref-file-dialog))
                  (xbox (make-xfile-box filename)))
@@ -577,4 +576,4 @@ Modification History (most recent at top)
             (when explicit-redisplay #+opengl (repaint) #-opengl (redisplay)))))
       ;; this marks the box superior to the box being loaded
       (mark-file-box-dirty (point-row))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)

@@ -34,8 +34,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks  mcl lispm) (in-package 'eval)
-#+(or lispworks mcl)        (in-package :eval)
+(in-package :boxer-eval)
 
 ;;;
 ;;; Triggers

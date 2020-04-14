@@ -123,10 +123,8 @@ Modification History (most recent at top)
 
 |#
 
-
+(in-package :boxnet)
 
-#+(or lispworks mcl) (in-package :boxnet)
-#-(or lispworks mcl) (in-package 'boxnet)
 
 (defvar *smtp-relay-host* "localhost")
 (defvar *smtp-port* 25)
@@ -267,7 +265,7 @@ Modification History (most recent at top)
         ;; SMTP protocol
         ;; Last chance to poll for interrupt, after the DATA op starts
         ;; we are committed to sending something...
-        (eval::check-for-interrupt :interrupt "Mail Cancelled !")
+        (boxer-eval::check-for-interrupt :interrupt "Mail Cancelled !")
         (smtp-do-data smtp-stream)
         ;; committed, so set the flag
         (setq mail-sent-flag t)
@@ -646,7 +644,7 @@ Modification History (most recent at top)
       (loop (let ((byte (read-byte filestream nil nil)))
               (if (null byte) (return) (write-byte byte binstream)))))))
 
-(defboxer-primitive bu::mail ((eval::dont-copy address) (bu::port-to message))
+(defboxer-primitive bu::mail ((boxer-eval::dont-copy address) (bu::port-to message))
   ;; make sure we have up to date editor structure
   (boxer::process-editor-mutation-queue-within-eval)
   (let ((to (with-collection
@@ -659,21 +657,21 @@ Modification History (most recent at top)
       (if (null subject)
           (smtp-send-box to (box-or-port-target message))
           (smtp-send-box to (box-or-port-target message) (box-text-string subject))))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 
-(defboxer-primitive bu::mail-document ((eval::dont-copy address))
+(defboxer-primitive bu::mail-document ((boxer-eval::dont-copy address))
     ;; make sure the editor structure is up to date
   (boxer::process-editor-mutation-queue-within-eval)
-  (if (not (box? eval::*lexical-variables-root*))
-      (eval::primitive-signal-error :file "You can only MAIL editor boxes")
+  (if (not (box? boxer-eval::*lexical-variables-root*))
+      (boxer-eval::primitive-signal-error :file "You can only MAIL editor boxes")
       (let* ((mailbox (boxer::current-file-box))
              (to (with-collection
                    (dolist (er (boxer::get-box-rows address))
                      (collect (boxer::evrow-text-string er address)))))
              (subject (boxer::lookup-variable-in-box-only mailbox 'bu::subject nil)))
         (smtp-send-box to mailbox (unless (null subject) (box-text-string subject)))
-        eval::*novalue*)))
+        boxer-eval::*novalue*)))
 
 
 
@@ -713,12 +711,14 @@ Modification History (most recent at top)
   ((message-number :initarg :message-number :initform 1)
    ;; should be filled either with UIDL or else, SIZE if UIDL is unsupported
    (uid :initarg :uid :initform nil))
-  (:metaclass block-compile-class))
+  ;; (:metaclass block-compile-class)
+  )
 
 (defclass mail-message-body
   (mail-message)
   ()
-  (:metaclass block-compile-class))
+  ;; (:metaclass block-compile-class)
+  )
 
 ;; these are contained in a box with a URL of:
 
@@ -738,7 +738,8 @@ Modification History (most recent at top)
    ;; a slot to distinguish a particular mail session, minimally, a # of messages,
    ;; size in bytes pair
    (session-id :initform nil :accessor pop-session-id))
-  (:metaclass block-compile-class))
+  ;; (:metaclass block-compile-class)
+  )
 
 ;; substantially the same as net-read-line except
 ;; we reuse the same vector to reduce CONSing because we know
@@ -882,7 +883,7 @@ Modification History (most recent at top)
   (multiple-value-bind (mail-box pop-url)
       (get-message-mail-box box)
     (cond ((null mail-box)
-           (eval::primitive-signal-error :net-error "Message "
+           (boxer-eval::primitive-signal-error :net-error "Message "
                                          (slot-value url 'message-number)
                                          " not in a mail box"))
           (t (insure-pop-stream pop-url)
@@ -893,7 +894,7 @@ Modification History (most recent at top)
   (multiple-value-bind (mail-box pop-url)
       (get-message-mail-box box)
     (cond ((null mail-box)
-           (eval::primitive-signal-error :net-error "Message "
+           (boxer-eval::primitive-signal-error :net-error "Message "
                                          (slot-value url 'message-number)
                                          " not in a mail box"))
           (t (insure-pop-stream pop-url)
@@ -946,7 +947,7 @@ Modification History (most recent at top)
 
 ;; Quicky version of signal-tcp-error, no checking for bound error handlers
 (defun signal-pop-error (string)
-  (eval::primitive-signal-error :pop-error (copy-seq string)))
+  (boxer-eval::primitive-signal-error :pop-error (copy-seq string)))
 
 ;; messages to be deleted from the server
 (defvar *pop-server-deletion-queue* :toplevel)
@@ -1570,7 +1571,7 @@ Modification History (most recent at top)
         (let ((gs (box::graphics-sheet box)))
           (unless (null gs) (setf (box::graphics-info message) gs)))
         ;; transparency
-        (unless (null (box::exports box)) (eval::set-box-transparency message t))
+        (unless (null (box::exports box)) (boxer-eval::set-box-transparency message t))
         ;; flags
         (setf (slot-value message 'box::flags) (slot-value box 'box::flags))
         ;; contents & closet
@@ -1958,8 +1959,8 @@ Modification History (most recent at top)
 
 ;;; Primitives
 
-(defboxer-primitive bu::get-mail ((eval::dont-copy mailbox) delete-messages?)
-  (let ((*delete-loaded-messages?* (eval::true? delete-messages?))
+(defboxer-primitive bu::get-mail ((boxer-eval::dont-copy mailbox) delete-messages?)
+  (let ((*delete-loaded-messages?* (boxer-eval::true? delete-messages?))
         (mailbox (box-text-string mailbox)))
     (make-vc-using-url (make-instance 'pop-url
                          :scheme-string (concatenate 'string "//" mailbox)))))
@@ -1967,12 +1968,12 @@ Modification History (most recent at top)
 
 
 (defboxer-primitive bu::delete-message ((bu::port-to message))
-  message eval::*novalue*
+  message boxer-eval::*novalue*
   )
 
 ;; should this be bu::on-server?
 (defboxer-primitive bu::mail-message? ((bu::port-to message))
-  message eval::*novalue*
+  message boxer-eval::*novalue*
   )
 
 

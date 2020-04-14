@@ -27,8 +27,7 @@ Modification History
 
 |#
 
-#-(or lispworks  mcl lispm) (in-package 'eval)
-#+(or lispworks mcl)        (in-package :eval)
+(in-package :boxer-eval)
 
 ;;;
 ;;; Transparent Box Support

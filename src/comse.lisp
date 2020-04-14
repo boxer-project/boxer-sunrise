@@ -62,8 +62,7 @@ Modification History (most recent at the top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
+(in-package :boxer)
 
 
 
@@ -86,24 +85,24 @@ row instead. "
 	   (doit-internal))
 	  (t
 	   (com-mark-row))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 |#
 
 (defboxer-command com-doit-now ()
   "calls the evaluator on the current row"
   (doit-internal)
   (mark-file-box-dirty (point-row))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-recursive-doit ()
   "Calls the evaluator on the current row during a recusive edit"
-  (setq eval::*recursive-doit?* t)
+  (setq boxer-eval::*recursive-doit?* t)
   (throw 'boxer-editor-top-level (eval-objs (point-row))))
 
 (defboxer-command com-exit-edit-box ()
   "Finish a call to the EDIT-BOX function"
   (exit-edit-box-internal)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 #|
@@ -115,7 +114,7 @@ row instead. "
 	(unwind-protect
 	     (unless (name-row? (point-row))
 	       (top-level-eval-wrapper
-		(doit-print-returned-value (eval::eval-point-row))))
+		(doit-print-returned-value (boxer-eval::eval-point-row))))
 	  (reset-editor-numeric-arg)))))
 |#
 
@@ -124,10 +123,10 @@ row instead. "
 ;;; If there is no | and the value is to be printed, then make one.
 ;;; If the value is to be printed, print it.
 (defun doit-print-returned-value (returned-value)
-  (let* ((eval::*primitive-shadow-warning-on?* nil) ; don't warn while printing
+  (let* ((boxer-eval::*primitive-shadow-warning-on?* nil) ; don't warn while printing
          (*current-font-descriptor* *default-font-descriptor*)
 	 (processed-returned-value
-	  (cond ((eq returned-value eval::*novalue*) nil)
+	  (cond ((eq returned-value boxer-eval::*novalue*) nil)
 		(t (cond ((numberp returned-value)
 			  (top-level-print-number returned-value))
 			 ((virtual-copy? returned-value)
@@ -224,7 +223,7 @@ row instead. "
            (unless new?
              (dolist (sr (screen-objs closet-row))
                (set-force-redisplay-infs? sr))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-close-closets ()
   "Close any closets that exist"
@@ -262,7 +261,7 @@ row instead. "
 			(set-scroll-to-actual-row
 			  (screen-box-point-is-in) dest-row)))))
 	     (modified (box-point-is-in))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 ;;; NOTE: The redisplay problem is fixed in a crockish way, this should be
@@ -352,7 +351,7 @@ row instead. "
                ;; should we check for empty spaces as well as NO chars
                (setf (slot-value box 'closets) nil))
              (modified box)))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -374,10 +373,10 @@ row instead. "
 		  (chunk-no 1 (1+& chunk-no)))
 		 ((null arglist))
 	       (when (and (not (eq (car arglist)
-				   'eval::*ignoring-definition-object*))
-			  (not (eval::flavored-input-marker? (car arglist))))
+				   'boxer-eval::*ignoring-definition-object*))
+			  (not (boxer-eval::flavored-input-marker? (car arglist))))
 		 #-opengl (add-redisplay-clue (point-row) ':insert)
-		 (eval::step-replace-token
+		 (boxer-eval::step-replace-token
 		  chunk-no (let ((new-box (make-box '(()))))
 			     (set-name new-box
 				       (make-name-row
@@ -395,7 +394,7 @@ row instead. "
 		       (insert-prompter-arglist
 			arglist
 			(end-of-chunk-cha-no (point-row) chunk)))))))))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 
 (defun insert-prompter-arglist (list function-end-cha-no)
@@ -423,8 +422,8 @@ row instead. "
 ;;;
 (defboxer-command com-step ()
   "Like COM-DOIT except shows a movie of how Boxer evaluates the expression."
-  (eval::step-point-row)
-  eval::*novalue*)
+  (boxer-eval::step-point-row)
+  boxer-eval::*novalue*)
 
 ;;;
 ;;; key documentation crock
@@ -448,19 +447,19 @@ row instead. "
 				            (mouse-position-values x-pos y-pos)
                          (declare (ignore mouse-bp local-x local-y))
                          (lookup-click-name click bits area)))))
-         (value (eval::boxer-symeval key-name))
+         (value (boxer-eval::boxer-symeval key-name))
          (*current-font-descriptor* (or *help-font-descriptor*
                                         *default-font-descriptor*)))
     (insert-cha
      *point*
      (make-box
       (append (list (list key-name))
-              (if (eq value eval::*novalue*)
+              (if (eq value boxer-eval::*novalue*)
                 '((""))
-                (cond ((eval::possible-eval-object? value)
-                       (cond ((eval::compiled-boxer-function? value)
+                (cond ((boxer-eval::possible-eval-object? value)
+                       (cond ((boxer-eval::compiled-boxer-function? value)
                               (let ((fun
-                                     (eval::compiled-boxer-function-object
+                                     (boxer-eval::compiled-boxer-function-object
                                       value)))
                                 (if (symbolp fun)
                                     (let ((doc (justify-editor-doc-string
@@ -501,7 +500,7 @@ row instead. "
                       (t '("")))))))
     (mark-file-box-dirty (point-row))
     (status-line-undisplay 'com-document-key))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defun pretty-edfun-string (x)
   (let* ((raw-string (string x))
@@ -550,7 +549,7 @@ row instead. "
                                 ("To get help on the name or spelling of a command")
                                 ("use \"name-help <string>\", where string is a sequence")
                                 ("of letters in the command."))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;;;
 ;;; key input crock
@@ -582,7 +581,7 @@ followed by a return."
 	(insert-cha *point* (aref key-string i))))
     #-opengl (add-redisplay-clue (point-row) ':insert))
   (com-return)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -597,7 +596,7 @@ followed by a return."
                      (make-xfile-box linkfile))))
       (when (box? xbox) (insert-cha *point* xbox))))
   (clear-editor-message)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defun box-file? (pathname)
   (or #+mcl (eq (ccl:mac-file-type pathname) :BOXR)
@@ -632,4 +631,4 @@ followed by a return."
   (boxer-editor-message "Change the link's file...")
   (ccl::catch-cancel (edit-mac-file-ref (point-box)))
   (when (eq :normal (display-style (point-box))) (com-shrink-box))
-  eval::*novalue*)
+  boxer-eval::*novalue*)

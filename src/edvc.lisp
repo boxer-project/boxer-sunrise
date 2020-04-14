@@ -51,9 +51,7 @@ Modification History (most recent at top)
 
 |#
 
-
-#-(or mcl Lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+mcl            (in-package :boxer)
+(in-package :boxer)
 
 
 
@@ -1206,7 +1204,7 @@ average datastructure.
   ;; make sure that any boxes which have cached variable references
   ;; to this box get their caches invalidated...
   (dolist (entry (slot-value editor-box 'static-variables-alist))
-    (setf (eval::static-variable-uid entry) (eval::make-cached-variable-uid)))
+    (setf (boxer-eval::static-variable-uid entry) (boxer-eval::make-cached-variable-uid)))
   (setf (slot-value editor-box 'static-variable-cache) nil)
   (decache-build-function editor-box))
 
@@ -1358,7 +1356,7 @@ average datastructure.
 	(unless (or (null sup) (not scope))
 	  (let ((sup-box (superior-box sup)))
 	    (unless (null sup-box)
-	      (eval::lookup-static-variable-internal sup-box variable)))))))
+	      (boxer-eval::lookup-static-variable-internal sup-box variable)))))))
 
 
 (defun lookup-variable-in-vc-rows-entry-1 (vc-rows-entry
@@ -1392,8 +1390,8 @@ average datastructure.
 				   ;; can only cache exact matches cause we may
 				   ;; later want to Port-To
 				   ;; the name that we find in the cache
-				   (push (eval::make-static-variable
-					  name val eval::*non-caching-variable-uid*)
+				   (push (boxer-eval::make-static-variable
+					  name val boxer-eval::*non-caching-variable-uid*)
 					 (vc-rows-entry-cached-binding-alist
 					  vc-rows-entry)))
 				  (t
@@ -1401,8 +1399,8 @@ average datastructure.
 				   ;; match but we want one
 				   (let* ((newval (virtual-copy val :top-level? t))
 					  (svar
-					   (eval::make-static-variable
-					    name newval eval::*non-caching-variable-uid*)))
+					   (boxer-eval::make-static-variable
+					    name newval boxer-eval::*non-caching-variable-uid*)))
 				     ;; might as well cache it
 				     (push svar (vc-rows-entry-cached-binding-alist
 						 vc-rows-entry))
@@ -1422,8 +1420,8 @@ average datastructure.
 				   ;; box has a name so cache
 				   ;; the name and the value
 				   (let ((svar
-					  (eval::make-static-variable
-					   name val eval::*non-caching-variable-uid*)))
+					  (boxer-eval::make-static-variable
+					   name val boxer-eval::*non-caching-variable-uid*)))
 				     (push svar
 					   (vc-rows-entry-cached-binding-alist
 					    vc-rows-entry)))))))
@@ -1435,9 +1433,9 @@ average datastructure.
 				   ;; a virtual copy of the value.
 				   (let* ((new-val (virtual-copy val :top-level? t))
 					  (svar
-					   (eval::make-static-variable
+					   (boxer-eval::make-static-variable
 					    name new-val
-					    eval::*non-caching-variable-uid*)))
+					    boxer-eval::*non-caching-variable-uid*)))
 				     ;; instantiate the new value into
 				     ;; the structure
 				     (extend-pointer
@@ -1470,8 +1468,8 @@ average datastructure.
 				     (in-closet? superior-box)))))))
 	       (unless (null closet)
 		 (dolist (item (slot-value editor-box 'static-variables-alist))
-		   (when (or (in-closet? (eval::static-variable-value item))
-                             (eval::boxer-function? (eval::static-variable-value item)))
+		   (when (or (in-closet? (boxer-eval::static-variable-value item))
+                             (boxer-eval::boxer-function? (boxer-eval::static-variable-value item)))
 		     (push item
 			   (vc-rows-entry-cached-binding-alist
 			    vc-rows-entry)))))))

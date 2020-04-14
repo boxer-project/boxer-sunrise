@@ -86,8 +86,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxnet)
-#+(or lispworks mcl)       (in-package :boxnet)
+(in-package :boxnet)
 
 
 
@@ -321,20 +320,22 @@ Modification History (most recent at top)
 (defclass url
   ()
   ((scheme-string :initform nil :accessor scheme-string :initarg :scheme-string))
-  (:metaclass block-compile-class)
-  (:abstract-class t)
+  ;; (:metaclass block-compile-class)
+  ;; (:abstract-class t)
   (:documentation "Bare Bones url class-not meant to be instantiated"))
 
 (defclass mailto-url
   (url)
   ((address :initform *default-mail-address* :accessor mailto-url-address))
-  (:metaclass block-compile-class))
+  ;; (:metaclass block-compile-class)
+  )
 
 ;; this is for URL files possibly relative to some superior URL
 (defclass file-url
   (url)
   ((pathname :initform nil :accessor file-url-pathname))
-  (:metaclass block-compile-class))
+  ;; (:metaclass block-compile-class)
+  )
 
 ;; this is for files on the local host, that is, files which can be accessed
 ;; with the usual file access mechanisms like open-file, so NFS (or Appleshare?)
@@ -344,7 +345,8 @@ Modification History (most recent at top)
   (url)
   ((pathname :initform nil :accessor local-url-pathname)
    (host-type :initform nil :accessor local-url-host-type :initarg :host-type))
-  (:metaclass block-compile-class))
+  ;; (:metaclass block-compile-class)
+  )
 
 ;;; This is for URL's which involve the direct use of
 ;;; an IP-based protocol to a specific host on the internet
@@ -358,7 +360,8 @@ Modification History (most recent at top)
    (host :initform nil :accessor url-host)
    (port :initform nil :accessor url-port)
    (path :initform nil :accessor url-path))
-  (:metaclass block-compile-class))
+  ;; (:metaclass block-compile-class)
+  )
 
 (defclass ftp-url
   (net-url)
@@ -366,14 +369,16 @@ Modification History (most recent at top)
    ;; document type as defined in the boxer generic file system
    ;; see the boxer::*special-file-readers* variable
    (doc-type :initform ':text :accessor ftp-url-doc-type :initarg :doc-type))
-  (:metaclass block-compile-class))
+  ;; (:metaclass block-compile-class)
+  )
 
 (defclass gopher-url
   (net-url)
   (;; This should be a keyword based on the defined gopher types (RFC 1436 pg 10)
    ;; or else :box if we can infer that it is a boxer file
    (doc-type :initform ':text :accessor gopher-url-doc-type :initarg :doc-type))
-  (:metaclass block-compile-class))
+  ;; (:metaclass block-compile-class)
+  )
 
 ;;; These are the main hooks into the rest of boxer.
 
@@ -858,7 +863,7 @@ Modification History (most recent at top)
                               (when (and match? (zerop& match?))
                                 (return (cadr handler)))))))
     (if (null matching-handler)
-        (eval::primitive-signal-error :net-error (copy-seq error-string))
+        (boxer-eval::primitive-signal-error :net-error (copy-seq error-string))
         (funcall matching-handler))))
 
 ;;; should make this more table driven so we can specialize better
@@ -1117,11 +1122,11 @@ Modification History (most recent at top)
                    (setq *net-filling-status* c) (throw 'data-fill nil))))
            ;; catch lisp errors and send the condition object to the boxer
            ;; process
-           (let ((eval::*exception-signalled* nil)
-                 (eval::*error-type* nil)
-                 (eval::*error-sfun* nil)
-                 (eval::*exception-args* nil)
-                 ;; these are vars that eval:signal-error will frob, so we bind
+           (let ((boxer-eval::*exception-signalled* nil)
+                 (boxer-eval::*error-type* nil)
+                 (boxer-eval::*error-sfun* nil)
+                 (boxer-eval::*exception-args* nil)
+                 ;; these are vars that boxer-eval:signal-error will frob, so we bind
                  ;; them in this process and then return them to the boxer process
                  ;; interrupt handling works by signalling a boxer error which
                  ;; will be caught by this scheme and handled generically
@@ -1129,13 +1134,13 @@ Modification History (most recent at top)
                  ;; also need to bind file activity vars that status line
                  ;; reporting uses
                  )
-             (catch 'eval::boxer-primitive-error-signal
+             (catch 'boxer-eval::boxer-primitive-error-signal
                (let ((,normal-result
                       (mp:with-lock (*net-filling-lock*) . ,body)))
-                 (cond ((null eval::*exception-signalled*)
+                 (cond ((null boxer-eval::*exception-signalled*)
                         (setq *net-filling-status* nil)
                         ,normal-result)
-                       (t (setq *net-filling-status* (eval::encapsulate-error))
+                       (t (setq *net-filling-status* (boxer-eval::encapsulate-error))
                           nil)))))))))
 
   (defun prepare-net-fill-box (box &optional url)
@@ -1145,7 +1150,7 @@ Modification History (most recent at top)
     #+(or lispworks5.1 lispworks6)
     (mp:process-unlock *net-filling-lock*)
     #-(or lispworks5.1 lispworks6)
-    (mp:release-lock *net-filling-lock*)
+    ;; (mp:release-lock *net-filling-lock*) sgithens TODO 2020-03-28 this may now be semaphore-release
     (debugging-message "Preparing to fill box:~A" box))
 
   (defun release-net-fill-box ()
@@ -1216,8 +1221,8 @@ Modification History (most recent at top)
               box)
              ((typep *net-filling-status* 'error)
               (signal *net-filling-status*))
-             ((eval::error-state-p *net-filling-status*)
-              (eval::signal-error-from-state *net-filling-status*))
+             ((boxer-eval::error-state-p *net-filling-status*)
+              (boxer-eval::signal-error-from-state *net-filling-status*))
              (t (error "Unknown net filling status:~A" *net-filling-status*))))
   box)
 
@@ -1276,7 +1281,7 @@ Modification History (most recent at top)
                      (when (>& (-& bytes-read last-byte-count) 200)
                        (surf-message "~D bytes read" bytes-read)
                        (setq last-byte-count bytes-read)))))
-          (eval::check-for-interrupt :interrupt "Stopped by User !"))
+          (boxer-eval::check-for-interrupt :interrupt "Stopped by User !"))
     (putprop box :text :preferred-file-format)
     box))
 
@@ -1320,7 +1325,7 @@ Modification History (most recent at top)
                  ;; because it is made up of a decode string
                  ;; plus the result of NLST which isn't url encoded
                  t))))
-             (eval::check-for-interrupt :interrupt "Stopped by User !"))
+             (boxer-eval::check-for-interrupt :interrupt "Stopped by User !"))
            box)
       (close data-stream)))
 
@@ -1352,8 +1357,8 @@ Modification History (most recent at top)
      (cond ((null *net-filling-status*) box)
            ((typep *net-filling-status* 'error)
             (signal *net-filling-status*))
-           ((eval::error-state-p *net-filling-status*)
-            (eval::signal-error-from-state *net-filling-status*))
+           ((boxer-eval::error-state-p *net-filling-status*)
+            (boxer-eval::signal-error-from-state *net-filling-status*))
            (t (error "Unknown net filling status:~A" *net-filling-status*)))))
 
 #+lispworks
@@ -1394,7 +1399,7 @@ Modification History (most recent at top)
         ;; because it is made up of a decode string
         ;; plus the result of NLST which isn't url encoded
         t))))
-    (eval::check-for-interrupt :interrupt "Stopped by User !")))
+    (boxer-eval::check-for-interrupt :interrupt "Stopped by User !")))
 
 
 ;;; Note: this doesn't hack the difference between /foo/bar and %2Ffoo/bar
@@ -1545,8 +1550,8 @@ Modification History (most recent at top)
     (cond ((null *net-filling-status*)) ; success
           ((typep *net-filling-status* 'error)
            (signal *net-filling-status*))
-          ((eval::error-state-p *net-filling-status*)
-           (eval::signal-error-from-state *net-filling-status*))
+          ((boxer-eval::error-state-p *net-filling-status*)
+           (boxer-eval::signal-error-from-state *net-filling-status*))
           (t (error "Unknown net filling status:~A" *net-filling-status*))))
   box)
 
@@ -1749,6 +1754,7 @@ Modification History (most recent at top)
                           'boxer::doit-box "Entry-Trigger")))))
 
 ;; not quite right yet.  NCSA telnet doesn't open the connection right away
+(eval-when (compile load eval)
 (defboxer-primitive bu::telnet (host)
   #+mcl
   (let ((ncsa-pathname (make-pathname :host "home"
@@ -1757,7 +1763,8 @@ Modification History (most recent at top)
         (progn (make-NCSA-telnet-doc ncsa-pathname (box-text-string host))
                (ccl::select-process-with-docs :NCSA ncsa-pathname))
       (delete-file ncsa-pathname)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
+)
 
 (defun make-NCSA-telnet-doc (pathname host)
   (with-open-file (s pathname :direction :output :if-exists :supersede)
@@ -1791,7 +1798,7 @@ Modification History (most recent at top)
                                       ,(make-box '(())))))))))
 
 
-(defboxer-primitive bu::gopher-search (host (eval::numberize port)
+(defboxer-primitive bu::gopher-search (host (boxer-eval::numberize port)
                                             select-string search-string)
   (let* ((realhost (box-text-string host))
          (real-select-string (box-text-string select-string))
@@ -1836,7 +1843,7 @@ Modification History (most recent at top)
   (do ((line (net-read-line stream) (net-read-line stream)))
       ((or (null line) (string= "." line)) box)
     (append-row box (box::make-row-from-string line)) ;; should we check for ".."
-    (eval::check-for-interrupt :interrupt "Stopped by User !"))
+    (boxer-eval::check-for-interrupt :interrupt "Stopped by User !"))
 |#
 
 (defun save-net-data (stream box doc-type
@@ -1925,7 +1932,7 @@ Modification History (most recent at top)
 
 (defun ftp-test (filename &optional binary?)
   (ftp-ctest binary?)
-  (mp:release-lock *tl*)
+  ;; (mp:release-lock *tl*)  sgithens TODO 2020-03-28 this may now be semaphore-release
   (let ((data-process
          (if binary?
              (comm::start-up-server :function 'ftp-test-grab-box

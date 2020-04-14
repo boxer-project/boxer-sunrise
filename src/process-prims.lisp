@@ -30,7 +30,7 @@ Modification History (most recent at top)
 
 |#
 
-(in-package :eval)
+(in-package :boxer-eval)
 
 ;;; depends on processes.lisp
 
@@ -475,7 +475,7 @@ If the box was not entered with EDIT-BOX, just insert a return."
 	    (boxer::lookup-key-name (boxer::input-code input)
                                     (boxer::input-bits input))
 	    (boxer::get-mouse-click-name input))
-      (let ((value (eval::boxer-symeval name)))
+      (let ((value (boxer-eval::boxer-symeval name)))
 	(cond ((eq value *novalue*) *novalue*)
 	      ((or (boxer-function? value)
 		   (and (port-box? value) (doit-box? (boxer::ports value)))

@@ -53,8 +53,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or mcl lispm lispworks) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
+(in-package :boxer)
 
 
 
@@ -123,7 +122,7 @@ Modification History (most recent at top)
 (defun iconref? (thing) (declare (ignore thing)) nil)
 
 (defun add-xref-closet-boxes (box)
-  (let ((eval::*warn-about-primitive-shadowing* nil) ; suppress warnings....
+  (let ((boxer-eval::*warn-about-primitive-shadowing* nil) ; suppress warnings....
         (closet-boxes (list (make-box '(("Edit-Internal-Xref"))
                                       'doit-box
                                       "Mouse-Click")
@@ -235,10 +234,10 @@ Modification History (most recent at top)
       (putprop box new-xref :xref)  (setq xref new-xref)))
   (case (mac-file-ref-dialog (mac-file-ref-pathname xref))
     (:open (cond ((null (mac-file-ref-pathname xref))
-                  (eval::primitive-signal-error :mac-interface
+                  (boxer-eval::primitive-signal-error :mac-interface
                                                 "No file to launch"))
                  ((not (probe-file (mac-file-ref-pathname xref)))
-                  (eval::primitive-signal-error :mac-interface
+                  (boxer-eval::primitive-signal-error :mac-interface
                                                 "File not Found"
                                                 (mac-file-ref-pathname xref)))
                  (t
@@ -271,10 +270,10 @@ Modification History (most recent at top)
   (case (open-xref-dialog (xref-pathname xref))
     (:edit (com-enter-box box (car (displayed-screen-objs box))))
     (:open (cond ((null (xref-pathname xref))
-                  (eval::primitive-signal-error :mac-interface
+                  (boxer-eval::primitive-signal-error :mac-interface
                                                 "No file to launch"))
                  ((not (probe-file (xref-pathname xref)))
-                  (eval::primitive-signal-error :mac-interface
+                  (boxer-eval::primitive-signal-error :mac-interface
                                                 "File not Found"
                                                 (xref-pathname xref)))
                  (t
@@ -301,8 +300,8 @@ Modification History (most recent at top)
 (defun remove-xfile-props (box)
   (removeprop box :xref)
   (setf (slot-value box 'first-inferior-row) nil)
-  (let ((mcb  (eval::lookup-static-variable-in-box-only box 'bu::mouse-click))
-        (mdcb (eval::lookup-static-variable-in-box-only box
+  (let ((mcb  (boxer-eval::lookup-static-variable-in-box-only box 'bu::mouse-click))
+        (mdcb (boxer-eval::lookup-static-variable-in-box-only box
                                                         'bu::mouse-double-click)))
     (delete-cha (superior-row mcb)  mcb)
     (delete-cha (superior-row mdcb) mdcb)))

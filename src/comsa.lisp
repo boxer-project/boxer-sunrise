@@ -87,8 +87,7 @@ Modification History (most recent at the top)
 
 |#
 
-#-(or lispworks  mcl LISPM) (IN-PACKAGE 'BOXER :USE '(LISP) :NICKNAMES '("Box"))
-#+(or lispworks mcl)        (in-package :BOXER)
+(in-package :boxer)
 
 
 
@@ -121,7 +120,7 @@ region. "
      "specifies part of the next command's numeric argument. "
      (DECREMENT-KEY-TICK)
      (SET-EDITOR-NUMERIC-ARG (+ ,n (* 10. (OR *EDITOR-NUMERIC-ARGUMENT* 0))))
-     eval::*novalue*))
+     boxer-eval::*novalue*))
 (def-com-increment-arg 0)
 (def-com-increment-arg 1)
 (def-com-increment-arg 2)
@@ -137,7 +136,7 @@ region. "
   "multiplies the current numeric argument by 4. "
   (decrement-key-tick)
   (SET-EDITOR-NUMERIC-ARG (* (OR *EDITOR-NUMERIC-ARGUMENT* 1) 4))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-quote-self-insert ()
   "inserts any keyboard character.
@@ -154,7 +153,7 @@ many copies of the character. "
 		  :moving)))
   (mark-file-box-dirty (point-row))
   (status-line-undisplay 'com-quote-self-insert)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-space ()
   "dispatch on filling mode"
@@ -175,7 +174,7 @@ argument (n), inserts n spaces. "
       #-opengl(add-redisplay-clue (point-row) ':insert)
       (insert-cha *point* #\space :moving))
   (mark-file-box-dirty (point-row))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 #| ;; old version
 (defboxer-command filling-com-space ()
@@ -249,7 +248,7 @@ box itself. "
   (SETQ *COLUMN* 0)
   (ensure-row-is-displayed (point-row) (point-screen-box) 1)
   (mark-file-box-dirty (point-row))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (DEFBOXER-COMMAND COM-OPEN-LINE ()
   "inserts a blank line after the cursor.
@@ -264,7 +263,7 @@ with a numeric arg (n), inserts n blank lines. "
            (INSERT-ROW *POINT* (MAKE-INITIALIZED-ROW) ':MOVING)
            (MOVE-POINT (BP-BACKWARD-CHA-VALUES *POINT*)))))
   (mark-file-box-dirty (point-row))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -335,7 +334,7 @@ argument (n), rubs out n characters. "
 		 (kill-buffer-push deleted-cha :backward)
 		 (setq *column* (bp-cha-no *point*)))))))
   (mark-file-box-dirty (point-row))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (DEFBOXER-COMMAND COM-DELETE ()
   "deletes one character.  with numeric
@@ -357,7 +356,7 @@ argument (n), delete n characters. "
 		    (RUBOUT-CHA *POINT* ':MOVING)
 		    ':forward)))))))
   (mark-file-box-dirty (point-row))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-FORWARD-CHA ()
   "moves forward one character.  with
@@ -369,7 +368,7 @@ n characters. "
     (with-multiple-execution
       (move-point (bp-forward-cha-values *point*)))
     (unless (eq start-row (point-row)) (ensure-row-is-displayed (point-row) (point-screen-box))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-BACKWARD-CHA ()
   "moves backward one character.  with
@@ -381,7 +380,7 @@ n characters. "
     (with-multiple-execution
       (move-point (bp-backward-cha-values *point*)))
     (unless (eq start-row (point-row)) (ensure-row-is-displayed (point-row) (point-screen-box))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -393,7 +392,7 @@ n characters. "
   (reset-region)
   (reset-editor-numeric-arg)
   (move-point (row-first-bp-values (bp-row *point*)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-END-OF-ROW ()
   "moves to the end of the row. "
@@ -401,7 +400,7 @@ n characters. "
   (reset-region)
   (reset-editor-numeric-arg)
   (move-point (row-last-bp-values (bp-row *point*)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-BEGINNING-OF-BOX ()
   "moves to the beginning of the box. "
@@ -412,7 +411,7 @@ n characters. "
   (dolist (screen-box (screen-objs (box-screen-point-is-in)))
     (set-scroll-to-actual-row screen-box
 			      (first-inferior-row (box-point-is-in))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-END-OF-BOX ()
   "moves to the end of the box. "
@@ -421,7 +420,7 @@ n characters. "
   (reset-editor-numeric-arg)
   (move-point (box-last-bp-values (box-point-is-in)))
   (ensure-row-is-displayed (point-row) (point-screen-box) 1)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-PREVIOUS-ROW ()
   "moves up vertically to the previous
@@ -450,7 +449,7 @@ possible to the original column. "
 	     (move-point-1 previous-row
 			   (min previous-row-length-in-chas *column*))))
       (ensure-row-is-displayed (point-row) (point-screen-box) -1)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 ;; this one goes to the name row if it's there
@@ -482,7 +481,7 @@ possible to the original column. "
 	     (move-point-1 previous-row
 			   (min previous-row-length-in-chas *column*))))
       (ensure-row-is-displayed (point-row) (point-screen-box))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -517,7 +516,7 @@ possible to the original column. "
 	    (t
 	     (move-point-1 next-row (min next-row-length-in-chas *column*))
 	     (ensure-row-is-displayed (point-row) (point-screen-box) 1)))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 (defboxer-command COM-MOVE-TO-PORT-TARGET ()
@@ -541,7 +540,7 @@ possible to the original column. "
 	   (move-point-1 row cha-no)
 	   (ensure-row-is-displayed (point-row) (point-screen-box)))
 	  (t (boxer-editor-error "could not move to ~a" target))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -600,7 +599,7 @@ argument (n), moves forward n words. "
   (reset-region)
   (with-multiple-execution
     (move-point (bp-forward-word-values *point*)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-BACKWARD-WORD ()
   "moves backward one word. with numeric
@@ -609,7 +608,7 @@ argument (n), moves backward n words. "
   (reset-region)
   (with-multiple-execution
     (move-point (bp-backward-word-values *point*)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -770,7 +769,7 @@ argument (n), kills backward n words. "
 	   (with-multiple-execution
 	       (move-point (rubout-word *point*))))))
   (mark-file-box-dirty (point-row))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (DEFUN DELETE-WORD (BP)
   (DELETE-OVER-VALUES BP  *WORD-DELIMITERS*))
@@ -789,7 +788,7 @@ argument (n), kills forward n words. "
 	   (with-multiple-execution
 	       (move-point (delete-word *point*))))))
   (mark-file-box-dirty (point-row))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -817,7 +816,7 @@ argument (n), kills forward n words. "
     (unless (null row-to-move-to)
       (move-point-1 row-to-move-to (min (length-in-chas row-to-move-to)
 					(bp-cha-no *point*)))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-SCROLL-UP-ONE-SCREEN-BOX (&optional
                                                 (screen-boxs
@@ -843,7 +842,7 @@ argument (n), kills forward n words. "
     (when (row? row-to-move-to)
       (move-point-1 row-to-move-to (min (length-in-chas row-to-move-to)
 					(bp-cha-no *point*)))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-SCROLL-DN-ROW (&optional
                                      (screen-box (screen-box-point-is-in)))
@@ -862,7 +861,7 @@ argument (n), kills forward n words. "
       ;; if we have to move make sure we flush the region
       (reset-region)
       (move-point-1 new-scroll-row 0))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 (defboxer-command COM-SCROLL-UP-ROW (&optional
                                      (screen-box (screen-box-point-is-in)))
@@ -880,7 +879,7 @@ argument (n), kills forward n words. "
       ;; if we have to move make sure we flush the region
       (reset-region)
       (move-point-1 new-scroll-row 0))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 
 
@@ -911,7 +910,7 @@ argument, deletes that many lines."
 	       #-opengl(add-redisplay-clue row ':insert)
 	       (kill-buffer-push (rubout-cha *point* :moving) :forward)))))
   (mark-file-box-dirty (point-row))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-delete-line ()
   "Removes the line the point is on"
@@ -934,7 +933,7 @@ argument, deletes that many lines."
 	       (kill-buffer-push delete-row :forward)))))
   (mark-file-box-dirty (point-box))
   (modified (point-box))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-SELECT-BOX-CONTENTS ()
   "Selects the contents of a box as the current region"
@@ -958,7 +957,7 @@ argument, deletes that many lines."
             (push *region-being-defined* *region-list*)
             #-opengl (interval-update-redisplay-all-rows *region-being-defined*)
             (entering-region-mode))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-COPY-REGION ()
   "Copies an existing region to the Kill Buffer"
@@ -966,7 +965,7 @@ argument, deletes that many lines."
   (let ((existing-region (or *region-being-defined* (get-current-region))))
     (cond ((not (null existing-region))
            (kill-buffer-push
-            (let* ((eval::*primitive-shadow-warning-on?* nil) ; don't warn
+            (let* ((boxer-eval::*primitive-shadow-warning-on?* nil) ; don't warn
                    (region (copy-interval existing-region)))
               (write-system-scrap region)
               region)
@@ -978,7 +977,7 @@ argument, deletes that many lines."
 	   (exiting-region-mode))
 	  (t
 	   (boxer-editor-error "There is no region"))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-CUT-REGION ()
   "Delete the region, placing it in the kill buffer"
@@ -992,7 +991,7 @@ argument, deletes that many lines."
       (flush-region existing-region)
       (exiting-region-mode)))
   (mark-file-box-dirty (point-row))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-YANK ()
   "Inserts the last piece of text that was killed
@@ -1006,7 +1005,7 @@ and makes a copy of it for further yanking."
         (unless (null r) (editor-kill-region r)))
       (top-level-insert-things item)))
   (mark-file-box-dirty (point-row))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-YANK-NO-COPY ()
   "Inserts the last piece of text that was killed and
@@ -1018,7 +1017,7 @@ removes it from the kill buffer.  No copy is made."
     (top-level-insert-things item))
   (com-rotate-kill-buffer)
   (mark-file-box-dirty (point-row))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defvar *last-retrieved-region* nil)
 
@@ -1042,7 +1041,7 @@ removes it from the kill buffer.  No copy is made."
       (push *region-being-defined* *region-list*)
       (entering-region-mode))
     (mark-file-box-dirty (point-row))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 
 (defun insert-string-chas (string)
@@ -1141,7 +1140,7 @@ removes it from the kill buffer.  No copy is made."
 		   (>=& rots *kill-buffer-length*))
 	   (return)))))
   (write-system-scrap (car *kill-buffer*))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;;; Called whenever a yank is done.  Is this imposing too much load? Alternatively,
 ;;; we could advise get-internal-scrap to look at the boxer kill buffer.
@@ -1203,7 +1202,7 @@ removes it from the kill buffer.  No copy is made."
 ;This should probably return a PRE-BOX but I can't figure out how they work.
 (defun copy-thing (boxer-thing)
   (bw::with-mouse-cursor (:processing)
-    (let ((eval::*warn-about-primitive-shadowing* nil))
+    (let ((boxer-eval::*warn-about-primitive-shadowing* nil))
       (cond ((box? boxer-thing) (copy-top-level-box boxer-thing :name))
 	    ((row? boxer-thing) (copy-row boxer-thing nil nil :name))
 	    ((cha? boxer-thing) boxer-thing)
@@ -1235,7 +1234,7 @@ removes it from the kill buffer.  No copy is made."
 	   DO (IF (CHAR= CHA #\CR)
 		  (INSERT-ROW *POINT* (MAKE-INITIALIZED-ROW))
 		  (INSERT-CHA *POINT* CHA))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -1248,12 +1247,12 @@ removes it from the kill buffer.  No copy is made."
   (when redraw-status-line? (redraw-status-line))
   #-opengl(force-redisplay)
   #+opengl(force-repaint)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-FORCE-REDISPLAY-ALL ()
   "Clears and then Redisplays the screen including the status line"
   (com-force-redisplay t)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-BREAK ()
   "enters a LISP breakpoint. "
@@ -1262,7 +1261,7 @@ removes it from the kill buffer.  No copy is made."
     #+Symbolics (si:break-internal 'boxer)
     #-Symbolics (break "Boxer"))
   (bw::flush-input)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;; should include boxer-version, extensions loaded , any site info ? & instructions
 ;; sending mechanism (exit, button, ???)
@@ -1303,8 +1302,8 @@ removes it from the kill buffer.  No copy is made."
     (modified template)
     template))
 
-(defboxer-primitive bu::bug-report-template () (make-bug-mail-template))
-(defboxer-primitive bu::boxer-bug-report-template () (make-bug-mail-template))
+(boxer-eval::defboxer-primitive bu::bug-report-template () (make-bug-mail-template))
+(boxer-eval::defboxer-primitive bu::boxer-bug-report-template () (make-bug-mail-template))
 
 ;;; we want to insert the bug-report-box, not just return the value so it can
 ;;; work from menus
@@ -1313,10 +1312,10 @@ removes it from the kill buffer.  No copy is made."
   (reset-region)
   (reset-editor-numeric-arg)
   (multiple-value-bind (result error?)
-      (eval::boxer-eval '(bu::bug-report-template))
+      (boxer-eval::boxer-eval '(bu::bug-report-template))
     (cond ((not (null error?)))
           (t (insert-cha *point* result))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-GOTO-TOP-LEVEL ()
   "moves to the top of the WORLD box. "
@@ -1327,7 +1326,7 @@ removes it from the kill buffer.  No copy is made."
   (setq *outermost-screen-box-stack* nil)
   (set-outermost-box *initial-box* (car (screen-objs *initial-box*)))
   (enter (point-box))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-print-screen ()
   "make a temporary ps file, and spool. Remove the temp file."
@@ -1336,7 +1335,7 @@ removes it from the kill buffer.  No copy is made."
 					*ps-postscript-printer*))
       (status-line-clear)
       (make-ps-file (outermost-screen-box) nil))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 ;; phase out, use numeric arg as above
 (defboxer-command com-print-screen-no-border ()
@@ -1346,7 +1345,7 @@ removes it from the kill buffer.  No copy is made."
 					*ps-postscript-printer*))
       (status-line-clear)
       (make-ps-file (outermost-screen-box) nil))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 (defboxer-command com-print-screen-to-file ()
   "Writes a postscript file from the screen into the file
@@ -1356,7 +1355,7 @@ removes it from the kill buffer.  No copy is made."
 					*ps-file*))
       (status-line-clear)
       (make-ps-file (outermost-screen-box) *ps-file*))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 ;; phase out, use numeric arg as above
 (defboxer-command com-print-screen-to-file-no-border ()
@@ -1367,7 +1366,7 @@ removes it from the kill buffer.  No copy is made."
 					*ps-file*))
       (status-line-clear)
       (make-ps-file (outermost-screen-box) *ps-file*))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 
 
@@ -1383,12 +1382,12 @@ removes it from the kill buffer.  No copy is made."
 	(t
 	 (add-mode *global-top-level-mode*)
 	 (boxer-editor-warning "Entering Top Level Mode")))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-reset-modes ()
   "removes all active modes"
   (reset-modes)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -1493,7 +1492,7 @@ removes it from the kill buffer.  No copy is made."
   "Records the current location on the previous place stack"
   (push (%record-current-place) *previous-place-stack*)
   (status-line-display 'boxer-editor-error "Mark set")
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-goto-previous-place ()
   "Go to the previous recorded place that is still in the editor"
@@ -1502,14 +1501,14 @@ removes it from the kill buffer.  No copy is made."
              (move-to-place tos)
              (setq *previous-place-stack*
                    (nconc *previous-place-stack* (list tos))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-exchange-point-and-mark ()
   "Put the mark where point is now, and point where the mark is now."
   (let ((place (pop *previous-place-stack*)))
     (push (%record-current-place) *previous-place-stack*)
     (move-to-place place)
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 (defboxer-command com-point-to-register ()
   "Store current location of point in a register.
@@ -1531,7 +1530,7 @@ Argument is a character, naming the register."
               'boxer-editor-error
               (format nil "Place ~A changed to this place" string))
 	     (setf (cdr existing) (%record-current-place))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 #| ;; the old character based place naming scheme
   (status-line-display 'boxer-editor-error "Type a character to name place:")
@@ -1575,7 +1574,7 @@ Argument is a character, naming the register."
                        (fast-delq existing *recorded-place-alist*))
                  (boxer-editor-warning "Place ~A is no longer in the editor"
                                        string)))))))
-    eval::*novalue*)
+    boxer-eval::*novalue*)
 
 #|
   (status-line-display 'boxer-editor-error
@@ -1611,7 +1610,7 @@ Argument is a character, naming the register."
              (boxer-editor-warning (format nil "No place named ~A" string)))
             (t (setq *recorded-place-alist*
                      (fast-delq existing *recorded-place-alist*))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defun bp-place= (bp place)
   (and (eq (bp-row bp)    (process-doit-cursor-position-row place))

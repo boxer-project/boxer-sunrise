@@ -65,15 +65,15 @@ Modification History (most recent at top)
 
 |#
 
-
-
 (in-package :boxer)
 
 ; debugging (move to vrtdef ? )
 
 ;; this can also have the value :metering-only
+(eval-when (compile load eval)
 (defvar *include-vcgc-debugging?* t
   "Compile time variable to control the inclusing of extra vcgc code")
+)
 
 (defvar *debug-vcgc?* nil)
 
@@ -94,15 +94,15 @@ Modification History (most recent at top)
   (let ((index-var (gensym)) (stack-idx (gensym)))
     `(progn
        ;; returned values
-       (dotimes (,index-var eval::*vpdl-index*)
-         (let ((,vc-var (svref& eval::*vpdl* ,index-var)))
+       (dotimes (,index-var boxer-eval::*vpdl-index*)
+         (let ((,vc-var (svref& boxer-eval::*vpdl* ,index-var)))
            (when (or (virtual-copy? ,vc-var) (virtual-port? ,vc-var))
              . ,body)))
        ;; stack vars
-       (do* ((,stack-idx eval::*dynamic-variables-bottom* (1+ ,stack-idx))
-             (,vc-var (svref& eval::*dynamic-variables-values-array* ,stack-idx)
-                      (svref& eval::*dynamic-variables-values-array* ,stack-idx)))
-            ((>= ,stack-idx eval::*dynamic-variables-top*))
+       (do* ((,stack-idx boxer-eval::*dynamic-variables-bottom* (1+ ,stack-idx))
+             (,vc-var (svref& boxer-eval::*dynamic-variables-values-array* ,stack-idx)
+                      (svref& boxer-eval::*dynamic-variables-values-array* ,stack-idx)))
+            ((>= ,stack-idx boxer-eval::*dynamic-variables-top*))
          (when (or (virtual-copy? ,vc-var) (virtual-port? ,vc-var))
            . ,body)))))
 
@@ -517,8 +517,8 @@ actually there are 2 possible algorthms for building a vcgc-ctime-vector
         (vcgc-metering (record-vcgc-box)))
       (vcgc-metering (record-vcgc-time (- (get-internal-real-time) start-time))))))
 
-;; this is called from eval::poll-internal which is called periodically
-;; by the evaluator (see eval::*initial-poll-count*)
+;; this is called from boxer-eval::poll-internal which is called periodically
+;; by the evaluator (see boxer-eval::*initial-poll-count*)
 
 ;; for now, we just use a decremeting counter.  Eventually, we may want to
 ;; be smarter about this and check on the state of available memory or something

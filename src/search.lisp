@@ -33,9 +33,7 @@ Modification History (most recent at top)
 
 |#
 
-
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
+(in-package :boxer)
 
 
 (defvar *read-in-files-during-search* nil)
@@ -231,7 +229,7 @@ Modification History (most recent at top)
    (direction :initform 1))
   (:metaclass block-compile-class))
 
-(block-compile-epilogue search-mode)
+;; (block-compile-epilogue search-mode)
 
 ;;; If the key is not in search mode, then we need to exit
 ;;; search mode

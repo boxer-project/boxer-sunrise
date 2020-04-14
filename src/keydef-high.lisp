@@ -54,9 +54,7 @@ Modification History (most recent at top)
 
 |#
 
-
-#-(or mcl LISPM lispworks) (IN-PACKAGE 'BOXER :USE '(LISP) :NICKNAMES '("BOX"))
-#+(or mcl lispworks)       (in-package :BOXER)
+(in-package :boxer)
 
 
 
@@ -184,8 +182,8 @@ Modification History (most recent at top)
 (defun check-key-rebinding (old-name new-name)
   ;; first check the global table
   (when (boundp old-name)
-    (eval::boxer-toplevel-set-nocache new-name
-				      (eval::static-variable-value
+    (boxer-eval::boxer-toplevel-set-nocache new-name
+				      (boxer-eval::static-variable-value
 				       (symbol-value old-name))))
   ;; now check all the comtabs
   (dolist (ct *existing-comtabs*)
@@ -569,13 +567,13 @@ Modification History (most recent at top)
 
 (defmacro defself-inserting-key (key-name char)
   `(progn
-     (eval::defboxer-key-internal ',key-name
+     (boxer-eval::defboxer-key-internal ',key-name
 	 #'(lambda ()
 	     (with-multiple-execution
 		 #-opengl (add-redisplay-clue (point-row) ':insert)
 	       (insert-cha *point* ,char :moving))
              (mark-file-box-dirty (point-row))
-             eval::*novalue*))
+             boxer-eval::*novalue*))
      (boxer-command-define ',key-name
       (format nil "Insert the ~C character at the cursor." ,char))))
 
@@ -819,13 +817,13 @@ Modification History (most recent at top)
   (drawing-on-window (*boxer-pane*) (status-line-undisplay 'boxer-editor-error))
   ;; increment the event counter
   (next-boxer-event)
-  (eval::report-eval-errors-in-editor
+  (boxer-eval::report-eval-errors-in-editor
     ;; net prims in particular may signal eval errors as a response to
     ;; an editor command, catch it at this level so the entire command
     ;; gets aborted rather than just the net loading piece.
     (COND ((key-event? input)
            ;; Some sort of  key code. Try to lookup a name for it. If it
-           ;; has a name call eval:handle-boxer-key with the name.
+           ;; has a name call boxer-eval:handle-boxer-key with the name.
            (let ((key-name (lookup-key-name #+(or lispworks mcl)
                                             (if (numberp input)
                                               input

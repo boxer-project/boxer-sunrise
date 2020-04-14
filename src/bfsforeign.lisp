@@ -34,8 +34,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl) (in-package 'boxnet)
-#+(or lispworks mcl) (in-package :boxnet)
+(in-package :boxnet)
 
 
 

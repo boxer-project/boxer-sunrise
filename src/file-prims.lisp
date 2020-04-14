@@ -98,8 +98,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
+(in-package :boxer)
 
 
 
@@ -110,38 +109,38 @@ Modification History (most recent at top)
 ;;; save now saves to a gensym'd name and then renames if no errors
 ;;; occur.  Also mv's an existing file of the same name to a backup name
 #|
-(defboxer-primitive bu::save ((bu::port-to box) (eval::dont-copy filename))
+(boxer-eval::defboxer-primitive bu::save ((bu::port-to box) (boxer-eval::dont-copy filename))
   (catch 'cancel-boxer-file-dialog
     (save-generic (box-or-port-target box) (box-text-string filename)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::really-save ((bu::port-to box)
-				     (eval::dont-copy filename))
+(boxer-eval::defboxer-primitive bu::really-save ((bu::port-to box)
+				     (boxer-eval::dont-copy filename))
   (catch 'cancel-boxer-file-dialog
     (save-generic (box-or-port-target box) (box-text-string filename)
                   :always-save? t))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 |#
 
-(defboxer-primitive bu::save ()
+(boxer-eval::defboxer-primitive bu::save ()
   ;; make sure the editor structure is up to date
   (process-editor-mutation-queue-within-eval)
-  (cond ((box? eval::*lexical-variables-root*)
+  (cond ((box? boxer-eval::*lexical-variables-root*)
          (com-save-document))
-        (t (eval::primitive-signal-error :file "You can only SAVE editor boxes"))))
+        (t (boxer-eval::primitive-signal-error :file "You can only SAVE editor boxes"))))
 
-(defboxer-primitive bu::quietly-save ()
+(boxer-eval::defboxer-primitive bu::quietly-save ()
   ;; make sure the editor structure is up to date
   (process-editor-mutation-queue-within-eval)
-  (cond ((box? eval::*lexical-variables-root*)
+  (cond ((box? boxer-eval::*lexical-variables-root*)
          (com-save-document nil T))
-        (t (eval::primitive-signal-error :file "You can only SAVE editor boxes"))))
+        (t (boxer-eval::primitive-signal-error :file "You can only SAVE editor boxes"))))
 
-(defboxer-primitive bu::save-as ((eval::dont-copy name))
+(boxer-eval::defboxer-primitive bu::save-as ((boxer-eval::dont-copy name))
   ;; make sure the editor structure is up to date
   (process-editor-mutation-queue-within-eval)
-  (if (not (box? eval::*lexical-variables-root*))
-      (eval::primitive-signal-error :file "You can only SAVE-AS editor boxes")
+  (if (not (box? boxer-eval::*lexical-variables-root*))
+      (boxer-eval::primitive-signal-error :file "You can only SAVE-AS editor boxes")
       (let ((savestring (box-text-string name))
             (filebox (current-file-box)))
         (cond ((url-string? savestring)
@@ -154,15 +153,15 @@ Modification History (most recent at top)
                                  savestring *boxer-pathname-default*)
                         :associated-file)))
         (com-save-document)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::save-box-as ((eval::dont-copy name))
+(boxer-eval::defboxer-primitive bu::save-box-as ((boxer-eval::dont-copy name))
   ;; make sure the editor structure is up to date
   (process-editor-mutation-queue-within-eval)
-  (if (not (box? eval::*lexical-variables-root*))
-      (eval::primitive-signal-error :file "You can only SAVE-AS editor boxes")
+  (if (not (box? boxer-eval::*lexical-variables-root*))
+      (boxer-eval::primitive-signal-error :file "You can only SAVE-AS editor boxes")
       (let ((savestring (box-text-string name))
-            (filebox eval::*lexical-variables-root*))
+            (filebox boxer-eval::*lexical-variables-root*))
         (cond ((url-string? savestring)
                ;; remove possible associated file here
                (removeprop filebox :associated-file)
@@ -172,15 +171,15 @@ Modification History (most recent at top)
                (putprop filebox (check-valid-filename-for-primitive
                                  savestring *boxer-pathname-default*)
                         :associated-file)))
-        (com-box-save-as nil eval::*lexical-variables-root*)))
-  eval::*novalue*)
+        (com-box-save-as nil boxer-eval::*lexical-variables-root*)))
+  boxer-eval::*novalue*)
 
 ;; use TELL to direct
-(defboxer-primitive bu::unfile-box () (com-unfile-document))
+(boxer-eval::defboxer-primitive bu::unfile-box () (com-unfile-document))
 
 ;; Returns TRUE, or a box with a defined reason or else FALSE,
 ;; meaning "some other reason"
-(defboxer-primitive bu::safe-to-save? ()
+(boxer-eval::defboxer-primitive bu::safe-to-save? ()
   (let* ((box (current-file-box))
          (raw-filename (getprop box :associated-file))
          ;; careful, the filename might be relative
@@ -225,7 +224,7 @@ Modification History (most recent at top)
                ;; the distinction between these is that in the 2nd case, the box has
                ;; never been saved to that filename
                (make-vc '((bu::newer-other-box)))))
-          (t eval::*true*))))
+          (t boxer-eval::*true*))))
 
 
 (defvar *automatic-file-compression-on* nil)
@@ -245,7 +244,7 @@ Modification History (most recent at top)
 				  (pathname filename)
 				  (merge-pathnames filename defaults))))))
     (if (pathnamep checked-pathname) checked-pathname
-	(eval::primitive-signal-error :file-error
+	(boxer-eval::primitive-signal-error :file-error
 				      (lucid::file-not-found-error-osi-message
 				       checked-pathname)))))
 
@@ -315,20 +314,20 @@ Modification History (most recent at top)
     ;; then save THAT out but it seems to be too much work for a very
     ;; LIMITED set of circumstances
     (unless (box? box)
-      (eval::primitive-signal-error
+      (boxer-eval::primitive-signal-error
        :file-error "Sorry, you can only save out top level boxes"))
     ;; then make sure the directory exists
     #-mcl ;; MACL probe-file loses on directories
     (unless (probe-file (make-pathname :directory
                                        (pathname-directory dest-pathname)))
-      (eval::primitive-signal-error :file-error
+      (boxer-eval::primitive-signal-error :file-error
                                     "The directory, "
                                     (namestring dest-pathname)
                                     ", does not exist"))
     ;; on the mac, you can "lock" files...
     #+mcl
     (when (and (probe-file dest-pathname) (ccl::file-locked-p dest-pathname))
-      (eval::primitive-signal-error :file-error
+      (boxer-eval::primitive-signal-error :file-error
                                     "The file, " (namestring dest-pathname)
                                     ", is locked"))
     ;; make sure we were the last person to actually write it out and
@@ -345,7 +344,7 @@ Modification History (most recent at top)
              (throw 'cancel-boxer-file-dialog nil)
              ;; if we are going to query, then don't error out
              #|
-	       (eval::primitive-signal-error
+	       (boxer-eval::primitive-signal-error
 		:file-overwrite-warning
 		(make-box `(("The File:")
 			    (,(namestring dest-pathname))
@@ -365,7 +364,7 @@ Modification History (most recent at top)
                ;; dont error out if we bother to ask...
                (throw 'cancel-boxer-file-dialog nil)
                #|
-		 (eval::primitive-signal-error
+		 (boxer-eval::primitive-signal-error
 		  :file-overwrite-warning
 		  "The filename, " (namestring dest-pathname)
 		  ", is associated with a different box")|#
@@ -487,7 +486,7 @@ Modification History (most recent at top)
 
 
 ;; used to be READ
-(defboxer-primitive bu::open ((eval::dont-copy file))
+(boxer-eval::defboxer-primitive bu::open ((boxer-eval::dont-copy file))
   (let* ((filename (box-text-string file))
          (box (read-internal filename)))
     ;; if the box was a world file, need to fix the NAME slot
@@ -502,12 +501,12 @@ Modification History (most recent at top)
           (setf (slot-value box 'name) nil)))
     box))
 
-(defboxer-primitive bu::READ ((eval::dont-copy filename))
+(boxer-eval::defboxer-primitive bu::READ ((boxer-eval::dont-copy filename))
   filename
-  (eval::primitive-signal-error :file "READ is an obsolete function, use OPEN instead"))
+  (boxer-eval::primitive-signal-error :file "READ is an obsolete function, use OPEN instead"))
 
 #|
-(defboxer-primitive bu::read-only ((eval::dont-copy filename))
+(boxer-eval::defboxer-primitive bu::read-only ((boxer-eval::dont-copy filename))
   (boxnet::read-only-internal (box-text-string filename)))
 |#
 
@@ -536,7 +535,7 @@ Modification History (most recent at top)
                                              (file-author pathname) box)
                box)
               (t
-               (eval::primitive-signal-error :file-error "Unable to READ " name))))))
+               (boxer-eval::primitive-signal-error :file-error "Unable to READ " name))))))
 
 ;; stubbified in preparation for "UC clean" reimplentation
 (defun record-file-box-place (box)
@@ -563,7 +562,7 @@ Modification History (most recent at top)
   (unless (probe-file pathname)
     (if *in-autoload-environment*
         (error "Autoload File not found: ~A" (namestring pathname))
-        (eval::primitive-signal-error :file-or-directory-not-found (namestring pathname))))
+        (boxer-eval::primitive-signal-error :file-or-directory-not-found (namestring pathname))))
   (prog1
     (let* ((ftype (file-type pathname))
            ;; dispatch to special readers when appropriate
@@ -573,13 +572,13 @@ Modification History (most recent at top)
                        (get-special-file-reader ftype)))
                   (cond ((null special-file-reader-function)
                          (cond ((not (null *error-on-unknown-file-type*))
-                                (eval::primitive-signal-error
+                                (boxer-eval::primitive-signal-error
                                  :unknown-file-type
                                  "Don't know how to load a " ftype "file"))
                                ((not (status-line-y-or-n-p
                                       (format nil "Unknown file type, ~A, load as Text ?"
                                               ftype)))
-                                (eval::primitive-signal-error
+                                (boxer-eval::primitive-signal-error
                                  :unknown-file-type
                                  "Don't know how to load a " ftype "file"))
                                (t
@@ -608,34 +607,34 @@ Modification History (most recent at top)
               (make-pathname :directory (pathname-directory pathname)
                              :defaults *boxer-pathname-default*))))))
 
-(defboxer-primitive bu::probe-file ((eval::dont-copy filename))
+(boxer-eval::defboxer-primitive bu::probe-file ((boxer-eval::dont-copy filename))
   (let ((pathname (check-valid-filename-for-primitive
 		   (box-text-string filename) *boxer-pathname-default*)))
     (when (null (probe-file pathname)) (maybe-uncompress-file pathname))
-    (eval::boxer-boolean (probe-file pathname))))
+    (boxer-eval::boxer-boolean (probe-file pathname))))
 
-(defboxer-primitive bu::mark-for-saving ()
+(boxer-eval::defboxer-primitive bu::mark-for-saving ()
   (cond ((not (null *uc-copyright-free*))
-         (eval::primitive-signal-error :copyright
+         (boxer-eval::primitive-signal-error :copyright
                                        'bu::mark-for-saving
                                        " is no longer available, use "
                                        'bu::toggle-modified-flag " instead"))
         (t
-         (when (box? eval::*lexical-variables-root*)
-           (mark-file-box-dirty eval::*lexical-variables-root*))
-         eval::*novalue*)))
+         (when (box? boxer-eval::*lexical-variables-root*)
+           (mark-file-box-dirty boxer-eval::*lexical-variables-root*))
+         boxer-eval::*novalue*)))
 
-(defboxer-primitive bu::toggle-modified-flag ()
-  (when (box? eval::*lexical-variables-root*)
-    (cond ((file-box-dirty? eval::*lexical-variables-root*)
-           (mark-file-box-clean eval::*lexical-variables-root*))
-          (t (mark-file-box-dirty eval::*lexical-variables-root*)))
-    (modified eval::*lexical-variables-root*)
-    eval::*novalue*))
+(boxer-eval::defboxer-primitive bu::toggle-modified-flag ()
+  (when (box? boxer-eval::*lexical-variables-root*)
+    (cond ((file-box-dirty? boxer-eval::*lexical-variables-root*)
+           (mark-file-box-clean boxer-eval::*lexical-variables-root*))
+          (t (mark-file-box-dirty boxer-eval::*lexical-variables-root*)))
+    (modified boxer-eval::*lexical-variables-root*)
+    boxer-eval::*novalue*))
 
 ;;;  DIRECTORY
 
-(defboxer-primitive bu::directory ((eval::dont-copy file-pattern))
+(boxer-eval::defboxer-primitive bu::directory ((boxer-eval::dont-copy file-pattern))
   (make-vc (or (mapcar #'(lambda (p)
 			   (make-evrow-from-entry (intern-in-bu-package
 						   (namestring p))))
@@ -762,15 +761,15 @@ Modification History (most recent at top)
     pattern-match?))
 
 
-(defboxer-primitive bu::delete-file ((eval::dont-copy filename))
+(boxer-eval::defboxer-primitive bu::delete-file ((boxer-eval::dont-copy filename))
   (let* ((filestring (box-text-string filename))
 	 (pathname (check-valid-filename-for-primitive
 		    filestring *boxer-pathname-default*)))
     (unless (probe-file pathname)
-      (eval::primitive-signal-error :file-or-directory-not-found
+      (boxer-eval::primitive-signal-error :file-or-directory-not-found
 				    (namestring pathname)))
     (delete-file pathname)
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 
 
@@ -785,7 +784,7 @@ Modification History (most recent at top)
 ;;; read-line and write-line so they don't keep CONSing string
 ;;;
 
-(defboxer-primitive bu::read-text-file ((eval::dont-copy filename))
+(boxer-eval::defboxer-primitive bu::read-text-file ((boxer-eval::dont-copy filename))
   (let* ((filestring (box-text-string filename))
 	 (pathname (make-pathname :directory
 				  (pathname-directory
@@ -796,7 +795,7 @@ Modification History (most recent at top)
 				  filestring))))
     (when (null (probe-file pathname)) (maybe-uncompress-file pathname))
     (unless (probe-file pathname)
-      (eval::primitive-signal-error :file-or-directory-not-found
+      (boxer-eval::primitive-signal-error :file-or-directory-not-found
 				    (namestring pathname)))
     (prog1
 	(read-text-file-internal pathname)
@@ -817,8 +816,8 @@ Modification History (most recent at top)
 			       :defaults *boxer-pathname-default*)))))))
 
 ;;; a useful hack...
-(defboxer-primitive bu::read-text-box-shrink ((dont-copy filename))
-  (eval::vpdl-push filename)
+(boxer-eval::defboxer-primitive bu::read-text-box-shrink ((dont-copy filename))
+  (boxer-eval::vpdl-push filename)
   (let ((result (bu::read-text-file)))
     (shrink result)
     result))
@@ -851,15 +850,15 @@ Modification History (most recent at top)
 (defvar *box-encountered-during-text-file-operation* :interpolate)
 
 
-(defboxer-primitive bu::write-text-file ((bu::port-to box)
-					 (eval::dont-copy filename))
+(boxer-eval::defboxer-primitive bu::write-text-file ((bu::port-to box)
+					 (boxer-eval::dont-copy filename))
   box filename ;; silence bound but not used compiler warnings
-  (eval::primitive-signal-error
+  (boxer-eval::primitive-signal-error
    :obsolete-function
    "WRITE-TEXT-FILE is an obsolete function, use SAVE-TEXT-FILE instead"))
 
-(defboxer-primitive bu::save-text-file ((bu::port-to box)
-					 (eval::dont-copy filename))
+(boxer-eval::defboxer-primitive bu::save-text-file ((bu::port-to box)
+					 (boxer-eval::dont-copy filename))
   (process-editor-mutation-queue-within-eval)
   (save-text-file-internal (box-or-port-target box) (box-text-string filename)))
 
@@ -877,7 +876,7 @@ Modification History (most recent at top)
     (cond ((box? box))
           ((virtual-copy? box)
            (setq box (make-editor-box-from-vc box)))
-          (t (eval::primitive-signal-error :file-error "You can only save boxes")))
+          (t (boxer-eval::primitive-signal-error :file-error "You can only save boxes")))
     ;; actually dump the box
     (write-text-file-internal box tmp-dest)
     ;; now check to see if we need to make a backup
@@ -899,7 +898,7 @@ Modification History (most recent at top)
 	  (setq *boxer-pathname-default*
 		(make-pathname :directory (pathname-directory dest-pathname)
 			       :defaults *boxer-pathname-default*))))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 (defun write-text-file-internal (box pathname)
   (with-open-file (fs pathname :direction ':output)
@@ -916,7 +915,7 @@ Modification History (most recent at top)
           (:interpolate (write-text-stream-for-boxy-row row fs))
           (:warn (warn "Box encountered during text operation, writing \"[]\"")
            (write-line string fs))
-          (:error (eval::primitive-signal-error
+          (:error (boxer-eval::primitive-signal-error
                    :box-encountered-while-writing-text-file
                    pathname-string))
           (t (write-line string fs)))))))
@@ -939,13 +938,13 @@ Modification History (most recent at top)
 ;;; leave here for possible inclusion in configurations
 ;;; where the server is not resident
 
-(defboxer-primitive bu::com-enter-box ()
+(boxer-eval::defboxer-primitive bu::com-enter-box ()
   (com-enter-box))
 
 
 
 ;; maybe we should put some sort of reality checking into this ?
-(defboxer-primitive bu::set-current-directory ((eval::dont-copy directory))
+(boxer-eval::defboxer-primitive bu::set-current-directory ((boxer-eval::dont-copy directory))
   (flet ((directory? (pathname)
 	   (and (probe-file pathname)
 		(string-equal (directory-namestring pathname)
@@ -961,12 +960,12 @@ Modification History (most recent at top)
 	  (setq *boxer-pathname-default*
 		(make-pathname :directory (pathname-directory pathname)
 			       :defaults *boxer-pathname-default*))
-	  (eval::primitive-signal-error :not-a-directory
+	  (boxer-eval::primitive-signal-error :not-a-directory
 					(namestring pathname)))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
-(defboxer-primitive bu::current-directory ()
+(boxer-eval::defboxer-primitive bu::current-directory ()
   (make-vc (list (make-evrow-from-entry
 		  (intern-in-bu-package
 		   (let ((string (namestring *boxer-pathname-default*)))
@@ -974,8 +973,8 @@ Modification History (most recent at top)
 			     (search (pathname-name *boxer-pathname-default*)
 				     string :from-end t))))))))
 
-(defboxer-primitive bu::default-directory ()
-  (eval::primitive-signal-error
+(boxer-eval::defboxer-primitive bu::default-directory ()
+  (boxer-eval::primitive-signal-error
    :obsolete-function
    "DEFAULT-DIRECTORY is an obsolete function, use CURRENT-DIRECTORY instead"))
 
@@ -1009,8 +1008,8 @@ Modification History (most recent at top)
                             :dashed
                             nil))))
 
-(defun current-file-box (&optional (where (if (box? eval::*lexical-variables-root*)
-                                            eval::*lexical-variables-root*
+(defun current-file-box (&optional (where (if (box? boxer-eval::*lexical-variables-root*)
+                                            boxer-eval::*lexical-variables-root*
                                             (point-box))
                                           #|(outermost-box)|#))
   (cond ((not (box? where)) nil)
@@ -1387,14 +1386,14 @@ Modification History (most recent at top)
           (:supershrunk (boxer::supershrink box))))
       ;; if the box is transparent, export it's bindings
       (unless (null (exports box))
-        ;; this is the relevant guts of eval::set-exports without the checks
+        ;; this is the relevant guts of boxer-eval::set-exports without the checks
         ;; and setting of the exports slots (which are already set from the file)
         ;; will break if we ever use a selective exporting mechanism which
         ;; doesn't look too probably at the moment
         (let ((superior-box (superior-box box)))
           (unless (null superior-box)
-            (eval::propagate-all-exported-bindings box superior-box)
-            (eval::export-inferior-properties box superior-box))))
+            (boxer-eval::propagate-all-exported-bindings box superior-box)
+            (boxer-eval::export-inferior-properties box superior-box))))
       ;; if there is a cached boxtop, remove it in favor of the one being
       ;; read in from the file
       (let ((cb (getprop box :cached-boxtop)))
@@ -1466,7 +1465,7 @@ Modification History (most recent at top)
 
 
 ;;;
-(defboxer-primitive bu::storage-name ((bu::port-to box))
+(boxer-eval::defboxer-primitive bu::storage-name ((bu::port-to box))
   (let ((target (box-or-port-target box)))
     (cond ((box? target)
            (let ((file (getprop target :associated-file))
@@ -1487,7 +1486,7 @@ Modification History (most recent at top)
                    (t (make-empty-vc)))))
           (t (make-empty-vc)))))
 
-(defboxer-primitive bu::storage-info ((bu::port-to box))
+(boxer-eval::defboxer-primitive bu::storage-info ((bu::port-to box))
   (let ((target (box-or-port-target box)))
     (cond ((box? target)
            (let ((file (getprop target :associated-file))
@@ -1575,7 +1574,7 @@ Modification History (most recent at top)
             (box-text-string name)
             (if (empty-box? type)   :unspecific (box-text-string type)))))
 
-(defboxer-primitive bu::file-info-to-file (file-info)
+(boxer-eval::defboxer-primitive bu::file-info-to-file (file-info)
   (multiple-value-bind (host device dir-type dir name type)
       (destructure-file-info-box file-info)
     (make-vc (list (make-evrow-from-string
@@ -1586,11 +1585,11 @@ Modification History (most recent at top)
                                                :type type))))
              'data-box)))
 
-(defboxer-primitive bu::file-to-file-info (filename)
+(boxer-eval::defboxer-primitive bu::file-to-file-info (filename)
   (let ((pathname-string (box-text-string filename)))
     (make-file-storage-info-box pathname-string)))
 
-(defboxer-primitive bu::merge-file-info (info1 info2)
+(boxer-eval::defboxer-primitive bu::merge-file-info (info1 info2)
   (multiple-value-bind (host1 dev1 dir-type1 dir1 name1 type1)
       (destructure-file-info-box info1)
     (multiple-value-bind (host2 dev2 dir-type2 dir2 name2 type2)
@@ -1611,7 +1610,7 @@ Modification History (most recent at top)
 
 
 #|
-(defboxer-primitive bu::mail ((eval::dont-copy to) (eval::dont-copy text))
+(boxer-eval::defboxer-primitive bu::mail ((boxer-eval::dont-copy to) (boxer-eval::dont-copy text))
   (let ((to-box-rows (get-box-rows to)))
     (let ((recipient (evrow-text-string (car to-box-rows) to))
 	  (subject (and (cdr to-box-rows)
@@ -1633,7 +1632,7 @@ Modification History (most recent at top)
 				    :if-does-not-exist nil)
 	      (if (or (null stream)
 		      (zerop& (file-length stream)))
-		  eval::*novalue*
+		  boxer-eval::*novalue*
 		  (read-text-stream-internal stream))))
 	(when (probe-file mail-in-file)
 	  (delete-file mail-in-file))
@@ -1650,7 +1649,7 @@ Modification History (most recent at top)
 
 (defun read-box-from-text-stream (stream)
   stream
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 ;;;
@@ -1681,16 +1680,16 @@ Modification History (most recent at top)
   #-Unix (progn pathname nil))
 
 #-mcl
-(defboxer-primitive bu::compress-file ((eval::dont-copy name))
+(boxer-eval::defboxer-primitive bu::compress-file ((boxer-eval::dont-copy name))
   (let ((filename (if (numberp name)
 		      (format nil "~D" name)
 		      (box-text-string name))))
     (if (null (probe-file filename))
-	(eval::signal-error :FILE-NOT-FOUND (eval::copy-thing name))
+	(boxer-eval::signal-error :FILE-NOT-FOUND (boxer-eval::copy-thing name))
 	(let ((error-string (compress-file filename)))
 	  (if (null error-string)
-	      eval::*novalue*
-	      (eval::signal-error :COMPRESS-FILE error-string))))))
+	      boxer-eval::*novalue*
+	      (boxer-eval::signal-error :COMPRESS-FILE error-string))))))
 
 
 
@@ -1733,7 +1732,7 @@ Modification History (most recent at top)
 			      (format nil "Unknown Unix Error ~D" exit-status)))
 		#-Lucid "BOXER-RUN-UNIX-PROGRAM not implemented on this system"))
 	   (if (stringp error-result)
-	       (eval::primitive-signal-error :UNIX-PROGRAM-ERROR error-result)
+	       (boxer-eval::primitive-signal-error :UNIX-PROGRAM-ERROR error-result)
 	       nil))
   #-Unix (progn program-name arguments
                 "BOXER-RUN-UNIX-PROGRAM not implemented on this system"))
@@ -1771,19 +1770,19 @@ Modification History (most recent at top)
     (or (cdr (assoc  old-alu *file-conversion-alu-alist* :test #'=)) 0)
     (or (car (rassoc old-alu *file-conversion-alu-alist* :test #'=)) 5)))
 
-(defboxer-primitive bu::fix-sun-file-graphics ((bu::port-to box))
+(boxer-eval::defboxer-primitive bu::fix-sun-file-graphics ((bu::port-to box))
   (fix-file-alus (box-or-port-target box))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::fix-mac-file-graphics ((bu::port-to box))
+(boxer-eval::defboxer-primitive bu::fix-mac-file-graphics ((bu::port-to box))
   (fix-file-alus (box-or-port-target box) nil)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
 ;;; diagnostic tool
 #+mcl
-(defboxer-primitive bu::show-file-info ()
+(boxer-eval::defboxer-primitive bu::show-file-info ()
   (let* ((pathname (boxer-open-file-dialog :prompt "Show File Information for:"))
          (2nd-word nil)
          (1st-word (with-open-file (s pathname :direction :input
@@ -1808,7 +1807,7 @@ Modification History (most recent at top)
 
 
 #+mcl
-(defboxer-primitive bu::set-boxer-file-info ()
+(boxer-eval::defboxer-primitive bu::set-boxer-file-info ()
   (let ((pathname (boxer-open-file-dialog :prompt "Set Boxer File Info for:")))
     (ccl::set-mac-file-type pathname :boxr)
     (ccl::set-mac-file-creator pathname :boxr)))

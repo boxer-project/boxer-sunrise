@@ -45,15 +45,14 @@ Modification History (most recent at top)
 
 |#
 
-#-(or mcl lispm lispworks) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or mcl lispworks)       (in-package :boxer)
+(in-package :boxer)
 
 
 
 
 ;;; hack for CLX interface ONLY
 #+clx
-(defboxer-primitive bu::read-x11-bitmap-file ((eval::dont-copy filename))
+(boxer-eval::defboxer-primitive bu::read-x11-bitmap-file ((boxer-eval::dont-copy filename))
   (let ((pathname (merge-pathnames (box-text-string filename)
 				   (make-pathname :defaults
 						  *boxer-pathname-default*
@@ -61,7 +60,7 @@ Modification History (most recent at top)
 						  ;; has a type of "box"
 						  :type nil))))
     (unless (probe-file pathname)
-      (eval::primitive-signal-error :file-or-directory-not-found
+      (boxer-eval::primitive-signal-error :file-or-directory-not-found
 				    (namestring pathname)))
     (let* ((image (bw::read-bitmap-file pathname))
 	   (i-width (bw::image-width image))
@@ -84,8 +83,8 @@ Modification History (most recent at top)
 ;;; for display list style turtle graphics, we should make it
 ;;; grab the appropriate section of the screen
 #+clx
-(defboxer-primitive bu::write-x11-bitmap-file ((bu::port-to graphics-box)
-					       (eval::dont-copy filename))
+(boxer-eval::defboxer-primitive bu::write-x11-bitmap-file ((bu::port-to graphics-box)
+					       (boxer-eval::dont-copy filename))
   (let ((pathname (merge-pathnames (box-text-string filename)
 				   (make-pathname :defaults
 						  *boxer-pathname-default*
@@ -94,10 +93,10 @@ Modification History (most recent at top)
 						  :type nil))))
     (let ((graphics-sheet (graphics-info (box-or-port-target graphics-box))))
       (cond ((null graphics-sheet)
-	     (eval::signal-error :graphics "~A is not a graphics box"
+	     (boxer-eval::signal-error :graphics "~A is not a graphics box"
 				 graphics-box))
 	    ((null (graphics-sheet-bit-array graphics-sheet))
-	     (eval::signal-error :graphics "~A does not have a bitmap"
+	     (boxer-eval::signal-error :graphics "~A does not have a bitmap"
 				 graphics-box))
 	    (t
 	     (let ((image (bw::get-image
@@ -106,7 +105,7 @@ Modification History (most recent at top)
 			   :width (graphics-sheet-draw-wid graphics-sheet)
 			   :height (graphics-sheet-draw-hei graphics-sheet))))
 	       (bw::write-bitmap-file pathname image)))))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 ;;; for graphics boxes
 
@@ -127,11 +126,11 @@ Modification History (most recent at top)
 ;;; or should there be a separate clear-graphics primitive ?
 ;;; Error for now....
 
-(defboxer-primitive bu::change-graphics ((bu::port-to graphics-box)
-					 (eval::dont-copy new-graphics))
+(boxer-eval::defboxer-primitive bu::change-graphics ((bu::port-to graphics-box)
+					 (boxer-eval::dont-copy new-graphics))
   (let ((new-gs (get-graphics-sheet (box-or-port-target new-graphics))))
     (cond ((null new-gs)
-	   (eval::primitive-signal-error :graphics-error
+	   (boxer-eval::primitive-signal-error :graphics-error
 					 "No graphics information in"
 					 new-graphics))
 	  (t (let* ((box (box-or-port-target graphics-box))
@@ -165,22 +164,22 @@ Modification History (most recent at top)
                         (queue-non-lisp-structure-for-deallocation sheet)
 		        (setf (getf (vc-graphics box) 'graphics-sheet)
                               sheet)))))))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
-(defboxer-primitive bu::graphics-mode ()
+(boxer-eval::defboxer-primitive bu::graphics-mode ()
   (let ((gb (get-relevant-graphics-box)))
     (cond ((or (null gb) (eq gb :no-graphics))
-	   (eval::primitive-signal-error :graphics-error
+	   (boxer-eval::primitive-signal-error :graphics-error
 					 "No Graphics Box found"))
 	  (t
 	   (make-vc (list (intern-in-bu-package
 			   (graphics-sheet-draw-mode
 			    (get-graphics-sheet gb)))))))))
 
-(defboxer-primitive bu::set-graphics-mode ((eval::dont-copy mode))
+(boxer-eval::defboxer-primitive bu::set-graphics-mode ((boxer-eval::dont-copy mode))
   (let ((gb (get-relevant-graphics-box)))
     (cond ((or (null gb) (eq gb :no-graphics))
-	   (eval::primitive-signal-error :graphics-error
+	   (boxer-eval::primitive-signal-error :graphics-error
 					 "No Graphics Box found"))
 	  (t
 	   (let ((new-mode (caar (raw-unboxed-items mode)))
@@ -188,29 +187,29 @@ Modification History (most recent at top)
 	     (case new-mode
 	       (bu::clip (setf (graphics-sheet-draw-mode gs) :clip))
 	       (bu::wrap (setf (graphics-sheet-draw-mode gs) :wrap))
-	       (otherwise (eval::primitive-signal-error
+	       (otherwise (boxer-eval::primitive-signal-error
 			   :graphics-error new-mode
 			   "is not a valid Graphics Mode"))))))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
-(defboxer-primitive bu::graphics-size ()
+(boxer-eval::defboxer-primitive bu::graphics-size ()
   (let ((gb (get-relevant-graphics-box)))
     (cond ((or (null gb) (eq gb :no-graphics))
-	   (eval::primitive-signal-error :graphics-error
+	   (boxer-eval::primitive-signal-error :graphics-error
 					 "No Graphics Box found"))
 	  (t
 	   (let ((gs (get-graphics-sheet gb)))
 	     (make-vc (list (list (graphics-sheet-draw-wid gs)
 				  (graphics-sheet-draw-hei gs)))))))))
 
-(defboxer-primitive bu::set-graphics-size ((eval::numberize width)
-					   (eval::numberize height))
+(boxer-eval::defboxer-primitive bu::set-graphics-size ((boxer-eval::numberize width)
+					   (boxer-eval::numberize height))
   (let ((gb (get-relevant-graphics-box)))
     (cond ((or (null gb) (eq gb :no-graphics))
-	   (eval::primitive-signal-error :graphics-error
+	   (boxer-eval::primitive-signal-error :graphics-error
 					 "No Graphics Box found"))
 	  ((or (< width  1) (< height 1))
-	   (eval::primitive-signal-error
+	   (boxer-eval::primitive-signal-error
             :graphics-error "Both graphics box dimensions should be at least " 1))
 	  (t
 	   (let ((gs (get-graphics-sheet gb)))
@@ -228,7 +227,7 @@ Modification History (most recent at top)
 	       (let ((poscache (cached-absolute-pos screen-box)))
                  (unless (null poscache)
                    (setf (ab-pos-cache-valid poscache) nil)))))
-	   eval::*novalue*))))
+	   boxer-eval::*novalue*))))
 
 
 
@@ -273,33 +272,33 @@ Modification History (most recent at top)
     box))
 
 ;; leave this for old code
-(defboxer-primitive bu::make-color ((eval::numberize red)
-				    (eval::numberize green)
-				    (eval::numberize blue))
+(boxer-eval::defboxer-primitive bu::make-color ((boxer-eval::numberize red)
+				    (boxer-eval::numberize green)
+				    (boxer-eval::numberize blue))
   (cond ((or (not (<= 0 red 100)) (not (<= 0 green 100)) (not (<= 0 blue 100)))
-	 (eval::primitive-signal-error
+	 (boxer-eval::primitive-signal-error
 	  :graphics "A color component value was not between 0 and 100 (~A, ~A,~A)"
 	  red green blue))
 	(t
 	 (make-color-internal red green blue))))
 
-(defboxer-primitive bu::make-transparent-color ((eval::numberize red)
-                                                (eval::numberize green)
-                                                (eval::numberize blue)
-                                                (eval::numberize opacity))
+(boxer-eval::defboxer-primitive bu::make-transparent-color ((boxer-eval::numberize red)
+                                                (boxer-eval::numberize green)
+                                                (boxer-eval::numberize blue)
+                                                (boxer-eval::numberize opacity))
   (cond ((or (not (<= 0 red 100)) (not (<= 0 green 100)) (not (<= 0 blue 100))
              (not (<= 0 opacity 100)))
-	 (eval::primitive-signal-error
+	 (boxer-eval::primitive-signal-error
 	  :graphics "A color component value was not between 0 and 100 (~A,~A,~A,~A)"
 	  red green blue opacity))
 	(t
 	 (make-color-internal red green blue opacity))))
 
 ;;; hung on the modified trigger of COLOR boxes
-(defboxer-primitive bu::update-color-box ()
+(boxer-eval::defboxer-primitive bu::update-color-box ()
   (let ((box (get-graphics-box)))
     (update-color-box-internal box)
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 
 ;;; probably ought to modify the values in the editor
@@ -350,7 +349,7 @@ Modification History (most recent at top)
                                  (graphics-sheet-background graphics-sheet))))
         (when current-pixel
           (bash-box-to-list-value box (pixel-rgb-values current-pixel)))
-        (eval::primitive-signal-error
+        (boxer-eval::primitive-signal-error
          :graphics "Can't make a color from the new values in the color box: "
          box))))
 
@@ -372,19 +371,19 @@ Modification History (most recent at top)
                        (cadr color) (caddr color) (cadddr color)))
             (variable-name (boxer::intern-in-bu-package
                             (string-upcase (car color)))))
-        (eval::boxer-toplevel-set variable-name colorbox))))
+        (boxer-eval::boxer-toplevel-set variable-name colorbox))))
 
 
 
 
-(defboxer-primitive bu::snap ((bu::Port-to box))
+(boxer-eval::defboxer-primitive bu::snap ((bu::Port-to box))
   (let* ((gb (box-or-port-target box))
 	 (graphics-sheet (if (box? gb)
 			     (graphics-info gb)
 			     (graphics-info-graphics-sheet (vc-graphics gb))))
 	 (newvc (make-empty-vc)))
     (cond ((null graphics-sheet)
-	   (eval::primitive-signal-error :graphics box
+	   (boxer-eval::primitive-signal-error :graphics box
 					 "does not have any graphics"))
 	  (t
            (let ((sheet (copy-graphics-sheet graphics-sheet nil)))
@@ -392,16 +391,16 @@ Modification History (most recent at top)
 	     (setf (vc-graphics newvc) (list 'graphics-sheet sheet))
 	     newvc)))))
 
-(defboxer-primitive bu::snip ((bu::Port-to box)
-			      (eval::numberize x) (eval::numberize y)
-			      (eval::numberize width) (eval::numberize height))
+(boxer-eval::defboxer-primitive bu::snip ((bu::Port-to box)
+			      (boxer-eval::numberize x) (boxer-eval::numberize y)
+			      (boxer-eval::numberize width) (boxer-eval::numberize height))
   ;; some args checking...
   (cond ((or (not (numberp width)) (< width 1))
-         (eval::primitive-signal-error
+         (boxer-eval::primitive-signal-error
           :graphics "Width(" width ") should be a positive integer"))
         ((not (typep width 'fixnum)) (setq width (round width))))
   (cond ((or (not (numberp height)) (< height 1))
-         (eval::primitive-signal-error
+         (boxer-eval::primitive-signal-error
           :graphics "Height(" height ") should be a positive integer"))
         ((not (typep height 'fixnum)) (setq height (round height))))
   ;; check X and Y
@@ -413,7 +412,7 @@ Modification History (most recent at top)
 							 (fixr height)))
 	 (newvc (make-empty-vc)))
     (cond ((null graphics-sheet)
-	   (eval::primitive-signal-error :graphics box
+	   (boxer-eval::primitive-signal-error :graphics box
 					 "does not have any graphics"))
 	  (t
 	   ;; fix up the new graphics sheet
@@ -427,7 +426,7 @@ Modification History (most recent at top)
 		   (orig-y (fix-array-coordinate-y (float (+ y (/ height 2.0))))))
 	       ;(when (not (and (<& -1 orig-x %drawing-width)
                ;                (<& -1 orig-y %drawing-height)))
-	       ; (eval::primitive-signal-error :graphics
+	       ; (boxer-eval::primitive-signal-error :graphics
 	       ;			       "Point is not in graphics box"))
 	       (unless (null (graphics-sheet-bit-array graphics-sheet))
                  ;; NOTE: put this here instead of for ALL new-gs's
@@ -480,10 +479,10 @@ Modification History (most recent at top)
     newvc))
 
 #-opengl
-(defboxer-primitive bu::freeze ()
+(boxer-eval::defboxer-primitive bu::freeze ()
   (let ((gb (get-relevant-graphics-box)))
     (if (or (null gb) (eq gb :no-graphics))
-	(eval::primitive-signal-error :graphics "No graphics to FREEZE")
+	(boxer-eval::primitive-signal-error :graphics "No graphics to FREEZE")
 	(let* ((graphics-sheet
 		(if (box? gb)
 		    (graphics-info gb)
@@ -510,20 +509,20 @@ Modification History (most recent at top)
           ;; mark the dirty? flag
           (setf (graphics-sheet-bit-array-dirty? graphics-sheet) t)
 	  (modified-graphics gb)
-	  eval::*novalue*))))
+	  boxer-eval::*novalue*))))
 
 
 ;;; this should play the GB's graphics list into an auxiliary OpenGL buffer and then
 ;;; grab the pixels from it instead of using the main screen...
 #+opengl-for-complete-correctness
-(defboxer-primitive bu::freeze ()
-  (eval::primitive-signal-error :graphics "Freeze does not work yet."))
+(boxer-eval::defboxer-primitive bu::freeze ()
+  (boxer-eval::primitive-signal-error :graphics "Freeze does not work yet."))
 
 #+opengl
-(defboxer-primitive bu::freeze ()
+(boxer-eval::defboxer-primitive bu::freeze ()
   (let ((gb (get-relevant-graphics-box)))
     (if (or (null gb) (eq gb :no-graphics))
-	(eval::primitive-signal-error :graphics "No graphics to FREEZE")
+	(boxer-eval::primitive-signal-error :graphics "No graphics to FREEZE")
       (let* ((graphics-sheet
               (if (box? gb)
                   (graphics-info gb)
@@ -554,7 +553,7 @@ Modification History (most recent at top)
         ;; mark the dirty? flag
         (setf (graphics-sheet-bit-array-dirty? graphics-sheet) t)
         (modified-graphics gb)
-        eval::*novalue*))))
+        boxer-eval::*novalue*))))
 
 (defun make-color-editor-box-from-pixel (pix)
   (let* ((rgb-values (pixel-rgb-values pix))
@@ -579,13 +578,13 @@ Modification History (most recent at top)
     (setf (vc-graphics box) (list 'graphics-sheet graphics-sheet))
     box))
 
-(defboxer-primitive bu::color-at ((eval::numberize x) (eval::numberize y))
+(boxer-eval::defboxer-primitive bu::color-at ((boxer-eval::numberize x) (boxer-eval::numberize y))
   (let ((gb (get-relevant-graphics-box)))
     (if (or (null gb) (eq gb :no-graphics))
-	(eval::primitive-signal-error :graphics "Can't find a graphics box")
+	(boxer-eval::primitive-signal-error :graphics "Can't find a graphics box")
 	(let ((sb (car (displayed-screen-objs gb))))
 	  (if (null sb)
-	      (eval::primitive-signal-error
+	      (boxer-eval::primitive-signal-error
 	       :graphics "Pixel at " x "," y "is not visible")
 	      (multiple-value-bind (box-x box-y)
 		  (xy-position sb)
@@ -600,14 +599,14 @@ Modification History (most recent at top)
 			  (make-color-box-from-pixel
 			   (window-pixel (+& box-x lef gb-x)
 					 (+& box-y top gb-y)))
-			  (eval::primitive-signal-error
+			  (boxer-eval::primitive-signal-error
 			   :graphics
 			   "Pixel at " x "," y "is not visible")))))))))))
 
-(defboxer-primitive bu::bg-color-at ((eval::numberize x) (eval::numberize y))
+(boxer-eval::defboxer-primitive bu::bg-color-at ((boxer-eval::numberize x) (boxer-eval::numberize y))
   (let ((gb (get-relevant-graphics-box)))
     (if (or (null gb) (eq gb :no-graphics))
-	(eval::primitive-signal-error :graphics "Can't find a graphics box")
+	(boxer-eval::primitive-signal-error :graphics "Can't find a graphics box")
 	(let* ((gs (graphics-info gb))
 	       (bit-array (graphics-sheet-bit-array gs))
 	       (background (graphics-sheet-background gs)))
@@ -622,21 +621,21 @@ Modification History (most recent at top)
 			((not (null background))
 			 (make-color-box-from-pixel background))
 			(t (make-color-box-from-pixel *background-color*)))
-		  (eval::primitive-signal-error
+		  (boxer-eval::primitive-signal-error
 		   :graphics x "," y "is not in the graphics box"))))))))
 
 ;; a faster version (because it doesn't have to CONS color boxes) of
 ;; COLOR= [BG-COLOR-AT x y] [COLOR-AT x y]
-(defboxer-primitive bu::bg-color-at? ((eval::numberize x) (eval::numberize y))
+(boxer-eval::defboxer-primitive bu::bg-color-at? ((boxer-eval::numberize x) (boxer-eval::numberize y))
   (let ((gb (get-relevant-graphics-box)))
     (if (null gb)
-	(eval::primitive-signal-error :graphics "Can't find a graphics box")
+	(boxer-eval::primitive-signal-error :graphics "Can't find a graphics box")
 	(let* ((gs (graphics-info gb))
 	       (sb (car (displayed-screen-objs gb)))
 	       (bit-array (graphics-sheet-bit-array gs))
 	       (background (graphics-sheet-background gs)))
 	  (if (null sb)
-	      (eval::primitive-signal-error
+	      (boxer-eval::primitive-signal-error
 	       :graphics "Pixel at " x "," y "is not visible")
 	  (with-graphics-vars-bound-internal gs
 	    (multiple-value-bind (box-x box-y)
@@ -648,14 +647,14 @@ Modification History (most recent at top)
 			(gb-y (fix-array-coordinate-y (float y))))
 		    (if (and (<& 0 gb-x (screen-obj-wid sb))
 			     (<& 0 gb-y (screen-obj-hei sb)))
-			(eval::boxer-boolean
+			(boxer-eval::boxer-boolean
 			 (color= (window-pixel (+& box-x lef gb-x)
 					       (+& box-y top gb-y))
 				 (cond ((not (null bit-array))
 					(offscreen-pixel gb-x gb-y bit-array))
 				       (t
 					(or background *background-color*)))))
-			(eval::primitive-signal-error
+			(boxer-eval::primitive-signal-error
 			 :graphics
 			 "Pixel at " x "," y "is not visible")))))))))))
 
@@ -667,19 +666,19 @@ Modification History (most recent at top)
 
 ;;; Like COLOR= <color> COLOR-AT <x> <y>
 ;;; except no color box consing
-(defboxer-primitive bu::color-at= ((eval::numberize x) (eval::numberize y)
-				   (eval::dont-copy color))
+(boxer-eval::defboxer-primitive bu::color-at= ((boxer-eval::numberize x) (boxer-eval::numberize y)
+				   (boxer-eval::dont-copy color))
   (let ((gb (get-relevant-graphics-box)) (c (color-from-box color)))
     (cond ((null gb)
-	   (eval::primitive-signal-error :graphics
+	   (boxer-eval::primitive-signal-error :graphics
 					 "Can't find a graphics box"))
 	  ((null c)
-	   (eval::primitive-signal-error :graphics
+	   (boxer-eval::primitive-signal-error :graphics
 					 color "is not a color box"))
 	  (t
 	   (let ((sb (car (displayed-screen-objs gb))))
 	     (if (null sb)
-		 (eval::primitive-signal-error
+		 (boxer-eval::primitive-signal-error
 		  :graphics "Pixel at " x "," y "is not visible")
 		 (multiple-value-bind (box-x box-y)
 		     (xy-position sb)
@@ -691,25 +690,25 @@ Modification History (most recent at top)
 			     (gb-y (fix-array-coordinate-y (float y))))
 			 (if (and (<& 0 gb-x (screen-obj-wid sb))
 				  (<& 0 gb-y (screen-obj-hei sb)))
-			     (eval::boxer-boolean
+			     (boxer-eval::boxer-boolean
 			      (color=
 			       (window-pixel (+& box-x lef gb-x)
 					     (+& box-y top gb-y))
 			       c))
-			     (eval::primitive-signal-error
+			     (boxer-eval::primitive-signal-error
 			      :graphics
 			      "Pixel at " x "," y "is not visible"))))))))))))
 
 ;;; Like COLOR= <color> BG-COLOR-AT <x> <y>
 ;;; except no color box consing
-(defboxer-primitive bu::bg-color-at= ((eval::numberize x) (eval::numberize y)
-				      (eval::dont-copy color))
+(boxer-eval::defboxer-primitive bu::bg-color-at= ((boxer-eval::numberize x) (boxer-eval::numberize y)
+				      (boxer-eval::dont-copy color))
   (let ((gb (get-relevant-graphics-box)) (c (color-from-box color)))
     (cond ((null gb)
-	   (eval::primitive-signal-error :graphics
+	   (boxer-eval::primitive-signal-error :graphics
 					 "Can't find a graphics box"))
 	  ((null c)
-	   (eval::primitive-signal-error :graphics
+	   (boxer-eval::primitive-signal-error :graphics
 					 color "is not a color box"))
 	  (t
 	   (let* ((gs (graphics-info gb))
@@ -720,29 +719,29 @@ Modification History (most recent at top)
 		     (gb-y (fix-array-coordinate-y (float y))))
 		 (if (and (<=& 0 gb-x (graphics-sheet-draw-wid gs))
 			  (<=& 0 gb-y (graphics-sheet-draw-hei gs)))
-		     (eval::boxer-boolean
+		     (boxer-eval::boxer-boolean
 		      (color=
 		       (cond ((not (null bit-array))
 			      (offscreen-pixel gb-x gb-y bit-array))
 			     (t (or background *background-color*)))
 		       c))
-		     (eval::primitive-signal-error
+		     (boxer-eval::primitive-signal-error
 		      :graphics x "," y "is not in the graphics box")))))))))
 
-(defboxer-primitive bu::color= ((eval::dont-copy color1)
-				(eval::dont-copy color2))
+(boxer-eval::defboxer-primitive bu::color= ((boxer-eval::dont-copy color1)
+				(boxer-eval::dont-copy color2))
   (let ((c1 (color-from-box color1)) (c2 (color-from-box color2)))
-    (cond ((null c1) (eval::primitive-signal-error
+    (cond ((null c1) (boxer-eval::primitive-signal-error
 		      :graphics color1 "is not a color box"))
-	  ((null c2) (eval::primitive-signal-error
+	  ((null c2) (boxer-eval::primitive-signal-error
 		      :graphics color2 "is not a color box"))
-	  (t (eval::boxer-boolean (color= c1 c2))))))
+	  (t (boxer-eval::boxer-boolean (color= c1 c2))))))
 
-(defboxer-primitive bu::set-color-at ((eval::numberize x) (eval::numberize y)
-				      (eval::dont-copy color))
+(boxer-eval::defboxer-primitive bu::set-color-at ((boxer-eval::numberize x) (boxer-eval::numberize y)
+				      (boxer-eval::dont-copy color))
   (let ((gb (get-relevant-graphics-box)))
     (if (null gb)
-	(eval::primitive-signal-error :graphics "Can't find a graphics box")
+	(boxer-eval::primitive-signal-error :graphics "Can't find a graphics box")
 	(let* ((gs (graphics-info gb))
 	       (bit-array (graphics-sheet-bit-array gs))
 	       (wid (graphics-sheet-draw-wid gs))
@@ -750,7 +749,7 @@ Modification History (most recent at top)
 	       (sb (car (displayed-screen-objs gb)))
 	       (pixcolor (color-from-box color)))
 	  (when (null pixcolor)
-	    (eval::primitive-signal-error :graphics
+	    (boxer-eval::primitive-signal-error :graphics
 					  color "should be a color box"))
 	  ;; first, make sure there is a backing store
 	  (when (null bit-array)
@@ -782,13 +781,13 @@ Modification History (most recent at top)
 		    (with-pen-color (pixcolor)
 		      (draw-point alu-seta (+& box-x lef gb-x)
 				  (+& box-y top gb-y)))))))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::show-sprite-properties ()
+(boxer-eval::defboxer-primitive bu::show-sprite-properties ()
   (let* ((sprite-box (get-sprites))
 	 (sprite (unless (null sprite-box) (graphics-info sprite-box))))
     (cond ((or (null sprite) (not (turtle? sprite)))
-	   (eval::primitive-signal-error :sprite-error
+	   (boxer-eval::primitive-signal-error :sprite-error
 					 "Can't find a sprite"))
 	  (t
 	   (let ((closet-row (closet-row sprite-box)))
@@ -802,31 +801,31 @@ Modification History (most recent at top)
 					 (box-interface-slot-name slot))
 			 ;      (make-sprite-instance-var slot)
 			       )))))
-	   eval::*novalue*))))
+	   boxer-eval::*novalue*))))
 
-(defboxer-primitive bu::hide-private-graphics ()
+(boxer-eval::defboxer-primitive bu::hide-private-graphics ()
   (let* ((sprite-box (get-sprites))
 	 (sprite (unless (null sprite-box) (graphics-info sprite-box))))
     (cond ((or (null sprite) (not (turtle? sprite)))
-	   (eval::primitive-signal-error :sprite-error
+	   (boxer-eval::primitive-signal-error :sprite-error
 					 "Can't find a sprite"))
 	  (t (let ((pgl (slot-value sprite 'private-gl)))
                (unless (null pgl) (setf (graphics-command-list-hidden pgl) t))
-               eval::*novalue*)))))
+               boxer-eval::*novalue*)))))
 
-(defboxer-primitive bu::show-private-graphics ()
+(boxer-eval::defboxer-primitive bu::show-private-graphics ()
   (let* ((sprite-box (get-sprites))
 	 (sprite (unless (null sprite-box) (graphics-info sprite-box))))
     (cond ((or (null sprite) (not (turtle? sprite)))
-	   (eval::primitive-signal-error :sprite-error
+	   (boxer-eval::primitive-signal-error :sprite-error
 					 "Can't find a sprite"))
 	  (t (let ((pgl (slot-value sprite 'private-gl)))
                (unless (null pgl) (setf (graphics-command-list-hidden pgl) nil))
-               eval::*novalue*)))))
+               boxer-eval::*novalue*)))))
 
 ;;; Stacking Order Prims
 ;;; NOTE: "top" means drawing last & "bottom" means drawing first
-(defboxer-primitive bu::place-on-top ()
+(boxer-eval::defboxer-primitive bu::place-on-top ()
   (let* ((sprite-box (get-sprites))
          (sprite (unless (null sprite-box) (graphics-info sprite-box)))
          (gb (unless (null sprite) (assoc-graphics-box sprite))))
@@ -836,9 +835,9 @@ Modification History (most recent at top)
         (unless (null (cdr oblist)) ; don't have to do anything for list of 1 sprite either
           (setf (graphics-sheet-object-list gs)
                 (append (remove sprite oblist) (list sprite)))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::place-on-bottom ()
+(boxer-eval::defboxer-primitive bu::place-on-bottom ()
   (let* ((sprite-box (get-sprites))
          (sprite (unless (null sprite-box) (graphics-info sprite-box)))
          (gb (unless (null sprite) (assoc-graphics-box sprite))))
@@ -848,5 +847,5 @@ Modification History (most recent at top)
         (unless (null (cdr oblist)) ; don't have to do anything for list of 1 sprite either
           (setf (graphics-sheet-object-list gs)
                 (append (list sprite) (remove sprite oblist)))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 

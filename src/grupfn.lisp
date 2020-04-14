@@ -40,8 +40,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
+(in-package :boxer)
 
 
 
@@ -68,6 +67,7 @@ Modification History (most recent at top)
              (values 0 t)))))
 
 ;;; +++ interesting fact: compiling this calls genysm no fewer than 40 times (MCL2.0f3c2)
+(eval-when (compile load eval)
 (defsprite-trigger-function bu::update-x-position () (sprite turtle)
   (when (inside-sprite? sprite)
     (let* ((slot (slot-value turtle 'x-position))
@@ -78,7 +78,8 @@ Modification History (most recent at top)
               (check-and-get-number-arg box 'X-POSITION�)
             (with-sprites-hidden t
               (move-to turtle new-x (y-position turtle) (not fix?)))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
+)
 
 (add-sprite-update-function x-position bu::update-x-position)
 
@@ -93,7 +94,7 @@ Modification History (most recent at top)
               (check-and-get-number-arg box 'Y-POSITION�)
             (with-sprites-hidden t
               (move-to turtle (x-position turtle) new-y (not fix?)))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (add-sprite-update-function y-position bu::update-y-position)
 
@@ -107,7 +108,7 @@ Modification History (most recent at top)
           (multiple-value-bind (new-h fix?)
               (check-and-get-number-arg box 'HEADING)
             (with-sprites-hidden nil (turn-to turtle new-h (not fix?)))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (add-sprite-update-function heading bu::update-heading)
 
@@ -132,7 +133,7 @@ Modification History (most recent at top)
           (multiple-value-bind (new-shown? fix?)
 	      (check-and-get-hide-arg box slot)
             (set-shown? turtle new-shown? (not fix?))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (add-sprite-update-function shown? bu::update-shown?)
 
@@ -154,7 +155,7 @@ Modification History (most recent at top)
         (no-interface-box-error 'PEN turtle)
         (multiple-value-bind (pen fix?) (check-and-get-pen-arg box)
           (set-pen turtle pen (not fix?))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (add-sprite-update-function pen bu::update-pen)
 
@@ -181,7 +182,7 @@ Modification History (most recent at top)
           (multiple-value-bind (new-pen-width fix?)
 	      (check-and-get-pen-width-arg box)
             (set-pen-width turtle new-pen-width (not fix?))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (add-sprite-update-function pen-width bu::update-pen-width)
 
@@ -210,14 +211,14 @@ Modification History (most recent at top)
           (multiple-value-bind (new-type-font fix?)
               (check-and-get-type-font-arg box)
             (set-type-font turtle new-type-font (not fix?))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (add-sprite-update-function type-font bu::update-type-font)
 
 
 ;; this must also act like the bu::update-color-box trigger
 
-(defboxer-primitive bu::update-pen-color ()
+(boxer-eval::defboxer-primitive bu::update-pen-color ()
   (update-color-box-internal (get-graphics-box)) ; Should return the right box
   (with-sprite-primitive-environment (sprite turtle t)
     (when (inside-sprite? sprite)
@@ -227,7 +228,7 @@ Modification History (most recent at top)
             (no-interface-box-error 'pen-color turtle)
 	    (set-pen-color turtle (graphics-sheet-background
 				   (graphics-sheet box)) t))
-        eval::*novalue*))))
+        boxer-eval::*novalue*))))
 
 (add-sprite-update-function pen-color bu::update-pen-color)
 
@@ -248,7 +249,7 @@ Modification History (most recent at top)
 	      (check-and-get-size-arg box)
             (with-sprites-hidden nil
               (set-sprite-size turtle new-size (not fix?)))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (add-sprite-update-function sprite-size bu::update-sprite-size)
 
@@ -270,7 +271,7 @@ Modification History (most recent at top)
               (check-and-get-number-args box)
             (set-home-position turtle (car new-home) (cadr new-home)
                                (not fix?))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (add-sprite-update-function home-position bu::update-home-position)
 
@@ -279,13 +280,13 @@ Modification History (most recent at top)
 ;;; recursive-prims.lisp
 
 ;;; this is for people who change their mind after using change shape
-;;; perhaps eval::boxer-toplevel-set-nocache is more appropriate ??
+;;; perhaps boxer-eval::boxer-toplevel-set-nocache is more appropriate ??
 
 ;;; this is a redisplay init because it depends on *default-turtle-shape*
 ;;; which is also a redisplay init
 
 (def-redisplay-initialization ; :bu-turtle-shape
-    (eval::boxer-toplevel-set
+    (boxer-eval::boxer-toplevel-set
      'bu::turtle-shape
      (let ((box (make-box (convert-graphics-list-to-make-box-format
 			   *default-turtle-shape*)))

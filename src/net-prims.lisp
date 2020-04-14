@@ -35,16 +35,15 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
+(in-package :boxer)
 
-(defboxer-primitive bu::send-box ((eval::dont-copy where)(bu::port-to box))
+(boxer-eval::defboxer-primitive bu::send-box ((boxer-eval::dont-copy where)(bu::port-to box))
   (let ((hostname (box-text-string where))
 	(box (get-port-target box)))
     (let ((guaranteed-editor-box (if (box? box) box (top-level-print-vc box))))
       (boxnet::with-open-port-stream (stream hostname)
 	(dump-top-level-box-to-stream guaranteed-editor-box stream)))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 (defvar *net-boxes-to-be-inserted* nil)
 
@@ -72,9 +71,9 @@ Modification History (most recent at top)
 (defun setup-boxer-send ()
   (enable-boxer-send-polling))
 
-(defboxer-primitive bu::enable-boxer-send-polling ()
+(boxer-eval::defboxer-primitive bu::enable-boxer-send-polling ()
   (enable-boxer-send-polling)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defun enable-boxer-send-polling ()
   (when (eq *boxer-send-server-status* :interrupt) (boxnet::close-server))
@@ -82,18 +81,18 @@ Modification History (most recent at top)
   (boxnet::enable-polling 'net-interrupt-function)
   (setq *boxer-send-server-status* :poll))
 
-(defboxer-primitive bu::disable-boxer-send-polling ()
+(boxer-eval::defboxer-primitive bu::disable-boxer-send-polling ()
   (disable-boxer-send-polling)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defun disable-boxer-send-polling ()
   (boxnet::disable-polling)
   (boxnet::close-server)
   (setq *boxer-send-server-status* nil))
 
-(defboxer-primitive bu::enable-boxer-send-interrupts ()
+(boxer-eval::defboxer-primitive bu::enable-boxer-send-interrupts ()
   (enable-boxer-send-interrupts)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defun enable-boxer-send-interrupts ()
   (when (eq *boxer-send-server-status* :poll) (boxnet::disable-polling))
@@ -101,21 +100,21 @@ Modification History (most recent at top)
   (boxnet::setup-connection-waiting-process 'net-interrupt-function)
   (setq *boxer-send-server-status* :interrupt))
 
-(defboxer-primitive bu::disable-boxer-send-interrupts ()
+(boxer-eval::defboxer-primitive bu::disable-boxer-send-interrupts ()
   (disable-boxer-send-interrupts)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defun disable-boxer-send-interrupts ()
   (boxnet::close-server)
   (setq *boxer-send-server-status* nil))
 
-(defboxer-primitive bu::receive-boxer-send ()
+(boxer-eval::defboxer-primitive bu::receive-boxer-send ()
   (receive-boxer-send))
 
 (defun receive-boxer-send ()
   (let ((box (pop *net-boxes-to-be-inserted*)))
     (when (null *net-boxes-to-be-inserted*) (status-line-undisplay 'handle-net-interrupt))
-    (or box eval::*novalue*)))
+    (or box boxer-eval::*novalue*)))
 
 ;;;runs at interrupt time or at poll time, when we first read the message itself
 ;;; from the network.

@@ -45,12 +45,7 @@ Modification History (most recent at top)
 
 |#
 
-
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
-
-
-
+(in-package :boxer)
 
 ;;; setup the defaults
 ;;; ALL boxer streams should be built out of this
@@ -101,8 +96,8 @@ Modification History (most recent at top)
     (setf (row-stream-cha-no ns) cha-no)
     ns))
 
-(deftype-checking-macros simple-row-stream
-    "A Simple Row Stream Used by the CHUNKER.")
+;; (deftype-checking-macros simple-row-stream
+    ;; "A Simple Row Stream Used by the CHUNKER.")
 
 
 (defmethod simple-read-char ((self simple-row-stream)

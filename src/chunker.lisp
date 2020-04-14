@@ -50,8 +50,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
+(in-package :boxer)
 
 
 
@@ -1289,7 +1288,7 @@ Oldness and Oldossity.....
 	     (value (if chunk-p (chunk-chunk value) value)))
 	(cond ((and chunk-p (only-formatting-chunk? value)))
 	      ((and (simple-vector-p value)
-		    (eq (svref value 0) 'EVAL::SPECIAL-EVAL-TOKEN))
+		    (eq (svref value 0) 'boxer-eval::SPECIAL-EVAL-TOKEN))
 	       (push value eval-objs))
 	      ((null chunk-eval-props)
 	       (push (coerce-object-for-evaluator value) eval-objs))
@@ -1312,21 +1311,21 @@ Oldness and Oldossity.....
 ;;; only in places that it decides to)
 (defun coerce-object-for-evaluator (object)
   (cond ((or (symbolp object) (numberp object)) object)
-	((and (eval::eval-object? object)
+	((and (boxer-eval::eval-object? object)
 	      (or (fast-eval-data-box? object)
 		  (fast-eval-doit-box? object)
 		  (fast-eval-port-box? object)))
 	 object)
 ;;	((doit-box? object) (if (null (name-row object))
-;;				(eval::convert-doit-to-eval-object object)
-;;				'eval::*ignoring-definition-object*))
+;;				(boxer-eval::convert-doit-to-eval-object object)
+;;				'boxer-eval::*ignoring-definition-object*))
 ;;	((sprite-box? object) (port-to object)) ; now hacked in the evaluator
 	((port-box? object) (if (null (name-row object))
 				(make-virtual-port-from-editor-port object)
-				'eval::*ignoring-definition-object*))
+				'boxer-eval::*ignoring-definition-object*))
 	((box? object) (if (null (name-row object))
 			   (top-level-virtual-copy-editor-box object nil t)
-			   'eval::*ignoring-definition-object*))
+			   'boxer-eval::*ignoring-definition-object*))
 	(t (error "Don't know how to coerce ~A for the Evaluator" object))))
 
 #| (defun chunk-for-eval (chunk)

@@ -48,11 +48,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
-
-
-
+(in-package :boxer)
 
 ;;; drawing defs
 
@@ -1205,7 +1201,7 @@ parameters of the graphics box are bound. "
 
 ;; this is dependent on the evaluator internals
 (defsubst static-root ()
-  eval::*lexical-variables-root*)
+  boxer-eval::*lexical-variables-root*)
 
 ;; defined in vars.lisp
 ;; (defvar *current-sprite* nil)
@@ -1307,16 +1303,18 @@ parameters of the graphics box are bound. "
 ;;; function to the appropriate sprite(s).  The body of the function can assume
 ;;; that there is a sprite-box bound to sprite-var
 
+(eval-when (compile load eval)
 (defmacro defsprite-function (name-descriptor arglist (sprite-var turtle-var)
 			      &body body)
-  `(defboxer-primitive ,name-descriptor ,arglist
+  `(boxer-eval::defboxer-primitive ,name-descriptor ,arglist
      (with-sprite-primitive-environment (,sprite-var ,turtle-var)
 	. ,body)))
+)
 
 (defmacro defsprite-trigger-function (name-descriptor arglist
 						      (sprite-var turtle-var)
 						      &body body)
-  `(defboxer-primitive ,name-descriptor ,arglist
+  `(boxer-eval::defboxer-primitive ,name-descriptor ,arglist
      (with-sprite-primitive-environment (,sprite-var ,turtle-var t)
 	. ,body)))
 
@@ -1340,8 +1338,8 @@ parameters of the graphics box are bound. "
   `(let ((active-sprites (get-sprites)))
      (cond ((null active-sprites)
 	    ,(if (null no-sprite-error)
-		 '(eval::signal-error :sprite-error "Don't have a Sprite to Talk to")
-		 'eval::*novalue*))
+		 '(boxer-eval::signal-error :sprite-error "Don't have a Sprite to Talk to")
+		 'boxer-eval::*novalue*))
 	   (t
 	    (let* ((,sprite-var active-sprites)
 		   (,turtle-var (get-sprite-turtle ,sprite-var))

@@ -52,8 +52,7 @@ Modification History (most recent at the top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
+(in-package :boxer)
 
 
 
@@ -198,7 +197,9 @@ Modification History (most recent at the top)
                                             %utf-8-more-bytes))
 
 ;;; Opcode definitions
+(eval-when (compile load eval)
 (defconstant %%bin-op-high (byte #o4 #o14))
+)
 (defconstant %%bin-op-low (byte #o14 #o0))
 
 ;;; other useful byte specifiers
@@ -409,10 +410,10 @@ Modification History (most recent at the top)
 
 
 (defun internal-dumping-error (&optional reason)
-  (if eval::*give-lisp-errors*
+  (if boxer-eval::*give-lisp-errors*
       (error "~A while trying to dump the box, ~A"
              (or reason "An error occurred") *current-dumping-box*)
-      (eval::primitive-signal-error
+      (boxer-eval::primitive-signal-error
 	:file (format nil "~A trying to dump the box"
                       (or reason "An error occurred"))
 	*current-dumping-box*)))

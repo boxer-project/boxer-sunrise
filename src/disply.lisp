@@ -77,10 +77,7 @@ Modification History (most recent at the top)
 
 |#
 
-#-(or mcl lispm lispworks) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or mcl lispworks)       (in-package :boxer)
-
-
+(in-package :boxer)
 
 (defun setup-redisplay (&optional (cons-new? nil))
   (when (or cons-new?
@@ -999,7 +996,7 @@ Modification History (most recent at the top)
                (eq boxtop-prop :framed))
            (let* ((target (box-or-port-target editor-box))
                   (bt-box (cond ((box? target)
-                                 (eval::lookup-static-variable-in-box-only
+                                 (boxer-eval::lookup-static-variable-in-box-only
                                   target 'bu::boxtop))
                                 ((virtual-copy? target)
                                  (lookup-variable-in-virtual-copy target
@@ -1013,8 +1010,8 @@ Modification History (most recent at the top)
                             cache))))))
           ((and (symbolp boxtop-prop)
                 (eq (symbol-package boxtop-prop) pkg-bu-package))
-           (let* ((eval::*lexical-variables-root* editor-box)
-                  (bt-box (eval::boxer-symeval boxtop-prop)))
+           (let* ((boxer-eval::*lexical-variables-root* editor-box)
+                  (bt-box (boxer-eval::boxer-symeval boxtop-prop)))
              (cond ((box? bt-box) (graphics-sheet bt-box))
 	           ((virtual-copy? bt-box)
 	            (graphics-info-graphics-sheet (vc-graphics bt-box)))
@@ -1023,7 +1020,7 @@ Modification History (most recent at the top)
            ;; allow xrefs to have user boxtops
            (let* ((target (box-or-port-target editor-box))
                   (bt-box (cond ((box? target)
-                                 (eval::lookup-static-variable-in-box-only
+                                 (boxer-eval::lookup-static-variable-in-box-only
                                   target 'bu::boxtop))
                                 ((virtual-copy? target)
                                  (lookup-variable-in-virtual-copy target
@@ -1176,31 +1173,31 @@ Modification History (most recent at the top)
   (MEMBER SCREEN-OBJ
 	  (DISPLAYED-SCREEN-OBJS (SCREEN-OBJ-ACTUAL-OBJ SCREEN-OBJ))))
 
-#-lispworks6
-(DEFUN SET-OUTERMOST-SCREEN-BOX (NEW-OUTERMOST-SCREEN-BOX
-				 &OPTIONAL (WINDOW *BOXER-PANE*))
-  (WITHOUT-INTERRUPTS		      ;keep the mouse process from looking at
-    (REDISPLAYING-WINDOW (WINDOW)     ;the screen when it is in a munged state
-      (UNLESS (EQ NEW-OUTERMOST-SCREEN-BOX *OUTERMOST-SCREEN-BOX*)
-	(DECONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX *OUTERMOST-SCREEN-BOX*
-						    WINDOW)
-	(CONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX NEW-OUTERMOST-SCREEN-BOX
-						  WINDOW)
-	(ERASE-SCREEN-OBJ *OUTERMOST-SCREEN-BOX*)
-	(SETQ *OUTERMOST-SCREEN-BOX* NEW-OUTERMOST-SCREEN-BOX)))
-    (SETQ *OUTERMOST-SCREEN-BOX* (OUTERMOST-SCREEN-BOX)) ; why ??
-    (LET ((*COMPLETE-REDISPLAY-IN-PROGRESS?* T)
-	  (OLD-SCREEN-ROW (UNLESS (NULL NEW-OUTERMOST-SCREEN-BOX)
-			    (SCREEN-ROW NEW-OUTERMOST-SCREEN-BOX))))
-      (WHEN (SCREEN-ROW? OLD-SCREEN-ROW)
-	;; we need to break up the screen-structure
-	(KILL-SCREEN-CHAS-FROM OLD-SCREEN-ROW 0)
-	(if (fast-memq (superior old-screen-row) *outermost-screen-box-stack*)
-	    (deallocate-inferiors (superior old-screen-row))
-	    (deallocate-self (superior old-screen-row))))
-      (repaint-window window))))
+;; #-lispworks6
+;; (DEFUN SET-OUTERMOST-SCREEN-BOX (NEW-OUTERMOST-SCREEN-BOX
+;; 				 &OPTIONAL (WINDOW *BOXER-PANE*))
+;;   (WITHOUT-INTERRUPTS		      ;keep the mouse process from looking at
+;;     (REDISPLAYING-WINDOW (WINDOW)     ;the screen when it is in a munged state
+;;       (UNLESS (EQ NEW-OUTERMOST-SCREEN-BOX *OUTERMOST-SCREEN-BOX*)
+;; 	(DECONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX *OUTERMOST-SCREEN-BOX*
+;; 						    WINDOW)
+;; 	(CONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX NEW-OUTERMOST-SCREEN-BOX
+;; 						  WINDOW)
+;; 	(ERASE-SCREEN-OBJ *OUTERMOST-SCREEN-BOX*)
+;; 	(SETQ *OUTERMOST-SCREEN-BOX* NEW-OUTERMOST-SCREEN-BOX)))
+;;     (SETQ *OUTERMOST-SCREEN-BOX* (OUTERMOST-SCREEN-BOX)) ; why ??
+;;     (LET ((*COMPLETE-REDISPLAY-IN-PROGRESS?* T)
+;; 	  (OLD-SCREEN-ROW (UNLESS (NULL NEW-OUTERMOST-SCREEN-BOX)
+;; 			    (SCREEN-ROW NEW-OUTERMOST-SCREEN-BOX))))
+;;       (WHEN (SCREEN-ROW? OLD-SCREEN-ROW)
+;; 	;; we need to break up the screen-structure
+;; 	(KILL-SCREEN-CHAS-FROM OLD-SCREEN-ROW 0)
+;; 	(if (fast-memq (superior old-screen-row) *outermost-screen-box-stack*)
+;; 	    (deallocate-inferiors (superior old-screen-row))
+;; 	    (deallocate-self (superior old-screen-row))))
+;;       (repaint-window window))))
 
-#+lispworks6
+;; #+lispworks6
 (DEFUN SET-OUTERMOST-SCREEN-BOX (NEW-OUTERMOST-SCREEN-BOX
 				 &OPTIONAL (WINDOW *BOXER-PANE*))
   (REDISPLAYING-WINDOW (WINDOW)

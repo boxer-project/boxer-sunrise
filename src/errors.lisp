@@ -43,8 +43,7 @@
 
 ;;;
 
-#-(or lispworks mcl lispm) (in-package 'eval :use '(lisp sm))
-#+(or lispworks mcl)       (in-package :eval)
+(in-package :boxer-eval)
 
 ;;;
 ;;; Polling

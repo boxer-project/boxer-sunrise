@@ -31,8 +31,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxnet)
-#+(or lispworks mcl)       (in-package :boxnet)
+(in-package :boxnet)
 
 
 
@@ -170,7 +169,7 @@ Modification History (most recent at top)
 
 (defvar *top-level-bfs-server* nil)
 
-(defun get-server (&optional(box eval::*lexical-variables-root*))
+(defun get-server (&optional(box boxer-eval::*lexical-variables-root*))
   (if (not (box::box? box)) *top-level-bfs-server*
       (or (box::getprop box 'bfs-server)
 	  (get-server (box::superior-box box)))))
@@ -378,11 +377,11 @@ Modification History (most recent at top)
 ;;; write through caches of information on the server
 
 (defmacro defsbi-info-slot (slot-name)
-  (let ((box-accessor-name (intern (symbol-format nil "GET-BOX-~A" slot-name)))
-	(box-mutator-name  (intern (symbol-format nil "SET-BOX-~A" slot-name)))
-	(bid-accessor-name (intern (symbol-format nil "GET-BID-~A" slot-name)))
-	(bid-mutator-name  (intern (symbol-format nil "SET-BID-~A" slot-name)))
-	(slot-accessor-name (intern (symbol-format nil "SBI-~A" slot-name))))
+  (let ((box-accessor-name (intern (boxer:symbol-format nil "GET-BOX-~A" slot-name)))
+	(box-mutator-name  (intern (boxer:symbol-format nil "SET-BOX-~A" slot-name)))
+	(bid-accessor-name (intern (boxer:symbol-format nil "GET-BID-~A" slot-name)))
+	(bid-mutator-name  (intern (boxer:symbol-format nil "SET-BID-~A" slot-name)))
+	(slot-accessor-name (intern (boxer:symbol-format nil "SBI-~A" slot-name))))
     `(progn
        ;; Box designated accessor
        (defun ,box-accessor-name (box &optional (cons-info? nil))
@@ -441,7 +440,7 @@ Modification History (most recent at top)
        . ,body)))
 
 (defun server-error (format-string &rest format-args)
-  (cond ((not (null eval::*give-lisp-errors*))
+  (cond ((not (null boxer-eval::*give-lisp-errors*))
 	 (apply #'error format-string format-args))
 	((or (null box::*evaluation-in-progress?*)
 	     (box::edit-during-eval?))
@@ -452,6 +451,6 @@ Modification History (most recent at top)
 	   (throw 'server-error nil)))
 	(t
 	 ;; looks like we are solidly in the evaluator
-	 (eval::primitive-signal-error
+	 (boxer-eval::primitive-signal-error
 	  :server-error (apply #'format nil format-string format-args)))))
 

@@ -37,9 +37,7 @@ Modification History (most recent at top)
 
 |#
 
-
-#-(or mcl lispworks lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or mcl lispworks)       (in-package :boxer)
+(in-package :boxer)
 
 ;;; these have all been changed to use the new storage substrate,
 ;;; I'm commenting out the ones that aren't currently used so I

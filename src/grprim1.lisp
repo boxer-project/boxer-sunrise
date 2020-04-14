@@ -52,8 +52,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
+(in-package :boxer)
 
 
 
@@ -117,7 +116,7 @@ Modification History (most recent at top)
 (defun clean-internal (&optional (surface :foreground))
   (let ((gb (get-relevant-graphics-box)))
     (cond ((null gb)
-	   (eval::primitive-signal-error :graphics "No Sprite or Graphics Box"))
+	   (boxer-eval::primitive-signal-error :graphics "No Sprite or Graphics Box"))
 	  ((eq gb :no-graphics)
 	   ;; do nothing here since it is ok to give this command
 	   ;; to a sprite even if it is not in a graphics box
@@ -125,13 +124,13 @@ Modification History (most recent at top)
           ((and (eq surface :foreground) (not (null %private-graphics-list)))
            (clear-graphics-list %private-graphics-list))
 	  (t (clearscreen gb surface))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defun clearscreen-internal (&optional (surface :foreground))
   (multiple-value-bind (gb sb)
       (get-relevant-graphics-box)
     (cond ((null gb)
-	   (eval::primitive-signal-error :graphics
+	   (boxer-eval::primitive-signal-error :graphics
 					 "No Sprite or Graphics Box to Clear"))
           ((and (eq surface :foreground) (not (null %private-graphics-list)))
            (clear-graphics-list %private-graphics-list))
@@ -145,7 +144,7 @@ Modification History (most recent at top)
 	   (unless (eq gb :no-graphics) (clearscreen gb surface)))))
   ;; change to (force-graphics-output) here ?
   #+clx (bw::display-force-output bw::*display*)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;;; Old versions....
 #|
@@ -160,14 +159,14 @@ Modification History (most recent at top)
 			 ((null turtle)
 			  (error "The Sprite Box, ~A, has no turtle" sb))
 			 ((null gb)
-			  (eval::primitive-signal-error
+			  (boxer-eval::primitive-signal-error
 			   :sprite-error "Sprite is not in a Graphics Box"))
 			 (t (error
 			     "Can't get a Graphics Box out of ~S" sb)))))))
     (if (null gb)
-	(eval::primitive-signal-error :graphics "No Sprite or Graphics Box")
+	(boxer-eval::primitive-signal-error :graphics "No Sprite or Graphics Box")
 	(clearscreen gb surface)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defun clearscreen-internal (&optional (surface :foreground))
   (let* ((active-sprites (get-sprites))
@@ -177,7 +176,7 @@ Modification History (most recent at top)
 		 (get-graphics-box)
 		 (get-graphics-box-from-sprite-box active-sprites))))
     (cond ((and (null turtle) (null gb))
-	   (eval::primitive-signal-error :graphics
+	   (boxer-eval::primitive-signal-error :graphics
 					 "No Sprite or Graphics Box to Clear"))
 	  (t
 	   (unless (null turtle)
@@ -186,60 +185,60 @@ Modification History (most recent at top)
 	     (setf (box-interface-value (slot-value turtle 'pen)) old-pen))
 	   (unless (eq gb ':no-graphics) (clearscreen gb surface)))))
   #+clx (bw::display-force-output bw::*display*)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 |#
 
-(defboxer-primitive bu::cs ()
+(boxer-eval::defboxer-primitive bu::cs ()
   (clearscreen-internal)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::clearscreen ()
+(boxer-eval::defboxer-primitive bu::clearscreen ()
   (clearscreen-internal)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::clear-graphics ()
+(boxer-eval::defboxer-primitive bu::clear-graphics ()
   (cond ((not (null *uc-copyright-free*))
-         (eval::primitive-signal-error :copyright
+         (boxer-eval::primitive-signal-error :copyright
                                        'bu::clear-graphics
                                        " is no longer available"))
         (t
          (clearscreen-internal))))
 
-(defboxer-primitive bu::cleargraphics ()
+(boxer-eval::defboxer-primitive bu::cleargraphics ()
   (cond ((not (null *uc-copyright-free*))
-         (eval::primitive-signal-error :copyright
+         (boxer-eval::primitive-signal-error :copyright
                                        'bu::cleargraphics
                                        " is no longer available"))
         (t
          (clearscreen-internal))))
 
-(defboxer-primitive bu::cg ()
+(boxer-eval::defboxer-primitive bu::cg ()
   (cond ((not (null *uc-copyright-free*))
-         (eval::primitive-signal-error :copyright
+         (boxer-eval::primitive-signal-error :copyright
                                        'bu::cg
                                        " is no longer available"))
         (t
          (clearscreen-internal))))
 
-(defboxer-primitive bu::cb ()
+(boxer-eval::defboxer-primitive bu::cb ()
   (clearscreen-internal :background))
 
-(defboxer-primitive bu::clearbackground ()
+(boxer-eval::defboxer-primitive bu::clearbackground ()
   (clearscreen-internal :background))
 
-(defboxer-primitive bu::clear-background ()
+(boxer-eval::defboxer-primitive bu::clear-background ()
   (clearscreen-internal :background))
 
-(defboxer-primitive bu::set-background (color)
+(boxer-eval::defboxer-primitive bu::set-background (color)
   (let ((gb (get-relevant-graphics-box)))
     (cond ((or (null gb) (eq gb :no-graphics))
-	   (eval::primitive-signal-error :graphics-error "No Sprite or Graphics Box"))
+	   (boxer-eval::primitive-signal-error :graphics-error "No Sprite or Graphics Box"))
 	  (t
 	   (let ((pix (get-color-from-color-box color))
 		 (gs (get-graphics-sheet gb)))
 	     (cond ((null pix)
-		    (eval::primitive-signal-error :graphics
+		    (boxer-eval::primitive-signal-error :graphics
 						  "No color in: " color))
 		   ((not (null (graphics-sheet-bit-array gs)))
 		    ;; there is already a bitmapped background
@@ -262,13 +261,13 @@ Modification History (most recent at top)
 		    (setf (graphics-sheet-background gs) pix)
 		    ;; then show it (if its on the screen)
 		    (when (box? gb) (clearscreen gb :none)))))))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 ;; clean leave sprites where they are....
 
-(defboxer-primitive bu::clean () (clean-internal))
+(boxer-eval::defboxer-primitive bu::clean () (clean-internal))
 
-(defboxer-primitive bu::clean-background () (clean-internal :background))
+(boxer-eval::defboxer-primitive bu::clean-background () (clean-internal :background))
 
 ;;;; Arg checking...
 
@@ -276,49 +275,51 @@ Modification History (most recent at top)
 (defun steps-arg-check (arg)
   (unless (or (typep arg 'fixnum)
 	      (< (- (max-window-coord) arg (max-window-coord))))
-    (eval::primitive-signal-error :graphics-error
+    (boxer-eval::primitive-signal-error :graphics-error
 				  arg " is Too many turtle steps")))
 
 ;;;; Movement
 
-(defsprite-function bu::fd ((eval::numberize steps)) (sprite turtle)
+(eval-when (eval)
+(defsprite-function bu::fd ((boxer-eval::numberize steps)) (sprite turtle)
   (steps-arg-check steps)
   (with-sprites-hidden t
       (forward turtle steps))
   #+X (xlib::xflush)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defsprite-function bu::forward ((eval::numberize steps))
+(defsprite-function bu::forward ((boxer-eval::numberize steps))
 		    (sprite turtle)
   (steps-arg-check steps)
   (with-sprites-hidden t
       (forward turtle steps))
   #+X (xlib::xflush)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defsprite-function bu::bk ((eval::numberize steps))
+(defsprite-function bu::bk ((boxer-eval::numberize steps))
 		    (sprite turtle)
   (steps-arg-check steps)
   (with-sprites-hidden t
       (forward turtle (- steps)))
   #+X (xlib::xflush)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defsprite-function bu::back ((eval::numberize steps))
+(defsprite-function bu::back ((boxer-eval::numberize steps))
 		    (sprite turtle)
   (steps-arg-check steps)
   (with-sprites-hidden t
       (forward turtle (- steps)))
   #+X (xlib::xflush)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defsprite-function bu::setxy ((eval::numberize x) (eval::numberize y))
+(defsprite-function bu::setxy ((boxer-eval::numberize x) (boxer-eval::numberize y))
 		    (sprite turtle)
   (steps-arg-check x) (steps-arg-check y)
   (with-sprites-hidden t
       (move-to turtle x y))
   #+X (xlib::xflush)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
+)
 
 (defun get-position-values (box)
   (let ((n (flat-box-items box)))
@@ -326,22 +327,25 @@ Modification History (most recent at top)
 	   (steps-arg-check (car n))
 	   (steps-arg-check (cadr n))
 	   (values (car n) (cadr n)))
-	  (t (eval::primitive-signal-error
+	  (t (boxer-eval::primitive-signal-error
               :sprite-error box " should be a box with 2 numbers")))))
 
+(eval-when (eval)
 (defsprite-function bu::position ()
   (sprite turtle)
   (make-vc (list (make-evrow-from-entries (list (x-position turtle)
 						(y-position turtle))))))
 
-(defsprite-function bu::setpos ((eval::dont-copy position))
+
+(defsprite-function bu::setpos ((boxer-eval::dont-copy position))
   (sprite turtle)
   (multiple-value-bind (new-x new-y)
       (get-position-values position)
     (steps-arg-check new-x)  (steps-arg-check new-y)
     (with-sprites-hidden t
       (move-to turtle new-x new-y))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
+)
 
 (defsprite-function bu::setposition (position)
   (sprite turtle)
@@ -349,66 +353,69 @@ Modification History (most recent at top)
       (get-position-values position)
     (with-sprites-hidden t
       (move-to turtle new-x new-y))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
-(defsprite-function bu::set-home-position ((eval::dont-copy position))
+(eval-when (eval)
+(defsprite-function bu::set-home-position ((boxer-eval::dont-copy position))
   (sprite turtle)
   (multiple-value-bind (new-x new-y)
       (get-position-values position)
     (set-home-position turtle new-x new-y))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
+)
 
 (defsprite-function bu::home ()
   (sprite turtle)
   (with-sprites-hidden t
     (go-home turtle))
   #+X (xlib::xflush)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;;;; Turning
 
-(defsprite-function bu::rt ((eval::numberize turns))
+(eval-when (eval)
+(defsprite-function bu::rt ((boxer-eval::numberize turns))
   (sprite turtle)
   (with-sprites-hidden nil
     (right turtle turns))
   #+X (xlib::xflush)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defsprite-function bu::right ((eval::numberize turns))
+(defsprite-function bu::right ((boxer-eval::numberize turns))
   (sprite turtle)
   (with-sprites-hidden nil
     (right turtle turns))
   #+X (xlib::xflush)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defsprite-function bu::lt ((eval::numberize turns))
+(defsprite-function bu::lt ((boxer-eval::numberize turns))
   (sprite turtle)
   (with-sprites-hidden nil
     (right turtle (- turns)))
   #+X (xlib::xflush)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defsprite-function bu::left ((eval::numberize turns))
+(defsprite-function bu::left ((boxer-eval::numberize turns))
   (sprite turtle)
   (with-sprites-hidden nil
     (right turtle (- turns)))
   #+X (xlib::xflush)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defsprite-function bu::seth ((eval::numberize heading))
+(defsprite-function bu::seth ((boxer-eval::numberize heading))
   (sprite turtle)
   (with-sprites-hidden nil
     (set-heading turtle heading))
   #+X (xlib::xflush)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defsprite-function bu::setheading ((eval::numberize heading))
+(defsprite-function bu::setheading ((boxer-eval::numberize heading))
   (sprite turtle)
   (with-sprites-hidden nil
     (set-heading turtle heading))
   #+X (xlib::xflush)
-  eval::*novalue*)
-
+  boxer-eval::*novalue*)
+)
 
 
 ;;;; Pens
@@ -416,84 +423,86 @@ Modification History (most recent at top)
 (defsprite-function bu::pu ()
   (sprite turtle)
   (set-pen turtle 'bu::up)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defsprite-function bu::penup ()
   (sprite turtle)
   (set-pen turtle 'bu::up)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defsprite-function bu::pd ()
   (sprite turtle)
   (set-pen turtle 'bu::down)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defsprite-function bu::pendown ()
   (sprite turtle)
   (set-pen turtle 'bu::down)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defsprite-function bu::pe ()
   (sprite turtle)
   (set-pen turtle 'bu::erase)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defsprite-function bu::penerase ()
   (sprite turtle)
   (set-pen turtle 'bu::erase)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defvar *signal-error-for-sprite-pen-XOR* t)
 
 (defsprite-function bu::px ()
   (sprite turtle)
   (if *signal-error-for-sprite-pen-XOR*
-      (eval::primitive-signal-error :obsolete
+      (boxer-eval::primitive-signal-error :obsolete
                                     "XOR pens are no longer supported")
     (set-pen turtle 'bu::reverse))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defsprite-function bu::penxor ()
   (sprite turtle)
   (if *signal-error-for-sprite-pen-XOR*
-      (eval::primitive-signal-error :obsolete
+      (boxer-eval::primitive-signal-error :obsolete
                                     "XOR pens are no longer supported")
     (set-pen turtle 'bu::reverse))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defsprite-function bu::penreverse ()
   (sprite turtle)
     (if *signal-error-for-sprite-pen-XOR*
-      (eval::primitive-signal-error :obsolete
+      (boxer-eval::primitive-signal-error :obsolete
                                     "XOR pens are no longer supported")
       (set-pen turtle 'bu::reverse))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defsprite-function bu::pr ()
   (sprite turtle)
     (if *signal-error-for-sprite-pen-XOR*
-      (eval::primitive-signal-error :obsolete
+      (boxer-eval::primitive-signal-error :obsolete
                                     "XOR pens are no longer supported")
       (set-pen turtle 'bu::reverse))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defsprite-function bu::set-pen-width ((eval::numberize width))
+(eval-when (eval)
+(defsprite-function bu::set-pen-width ((boxer-eval::numberize width))
   (sprite turtle)
   (cond ((and (numberp width) (not (minusp width)))
 	 (set-pen-width turtle width)
-	 eval::*novalue*)
-	(t (eval::primitive-signal-error :sprite-error
+	 boxer-eval::*novalue*)
+	(t (boxer-eval::primitive-signal-error :sprite-error
 					 "The Pen Width Argument, " width
 					 ", should be a positive number"))))
 
-(defsprite-function bu::set-pen-color ((eval::dont-copy new-color))
+
+(defsprite-function bu::set-pen-color ((boxer-eval::dont-copy new-color))
   (sprite turtle)
   (let ((color (get-color-from-color-box new-color)))
     (if (null color)
-	(eval::primitive-signal-error :graphics "No color in: " new-color)
+	(boxer-eval::primitive-signal-error :graphics "No color in: " new-color)
 	(set-pen-color turtle color)))
-  eval::*novalue*)
-
+  boxer-eval::*novalue*)
+)
 ;;; temporary hack until we have a better scheme for
 ;;; naming fonts
 
@@ -525,18 +534,18 @@ Modification History (most recent at top)
                         #+mcl ccl::*font-list*
                         :test #'string-equal))
            (unless no-errorp
-             (eval::primitive-signal-error
+             (boxer-eval::primitive-signal-error
               :sprite-font font " is not an installed Font")))
           ;; size check
           ((not (numberp size))
            (unless no-errorp
-             (eval::primitive-signal-error
+             (boxer-eval::primitive-signal-error
               :sprite-font "The 2nd item should be a font size")))
           ((and (not #+mcl (member size *supported-font-sizes*)
                      #-mcl (find size *font-sizes*))
                 (not (= size 7))) ; for compatibility
            (unless no-errorp
-             (eval::primitive-signal-error
+             (boxer-eval::primitive-signal-error
               :sprite-font size " is an usupported font size")))
           ;; styles check
           (t
@@ -555,22 +564,23 @@ Modification History (most recent at top)
                                           canonical-style
                                           (if no-errorp
                                             (throw 'bad-style nil)
-                                            (eval::primitive-signal-error
+                                            (boxer-eval::primitive-signal-error
                                              :sprite-font
                                              s " is not a valid character style")))))
                                      (t (if no-errorp
                                           (throw 'bad-style nil)
-                                          (eval::primitive-signal-error
+                                          (boxer-eval::primitive-signal-error
                                            :sprite-font
                                            s " is not a valid character style")))))
                          styles))
              (make-boxer-font (list* font size styles)))))))
 
-(defsprite-function bu::set-type-font ((eval::dont-copy fontspec))
+(eval-when (eval)
+(defsprite-function bu::set-type-font ((boxer-eval::dont-copy fontspec))
   (sprite turtle)
   (set-type-font turtle (font-from-box fontspec))
-  eval::*novalue*)
-
+  boxer-eval::*novalue*)
+)
 ;;;; Hide and Show
 
 
@@ -579,39 +589,39 @@ Modification History (most recent at top)
   (when (absolute-shown? turtle)
     (with-sprites-hidden nil (hide-turtle turtle)))
   #+X (xlib::xflush)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defsprite-function bu::hide ()
   (sprite turtle)
   (when (absolute-shown? turtle)
     (with-sprites-hidden nil (hide-turtle turtle)))
   #+X (xlib::xflush)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defsprite-function bu::hideturtle ()
   (sprite turtle)
   (when (absolute-shown? turtle)
     (with-sprites-hidden nil (hide-turtle turtle)))
   #+X (xlib::xflush)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defsprite-function bu::st ()
   (sprite turtle)
   (show-turtle turtle)
   #+X (xlib::xflush)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defsprite-function bu::show ()
   (sprite turtle)
   (show-turtle turtle)
   #+X (xlib::xflush)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defsprite-function bu::showturtle ()
   (sprite turtle)
   (show-turtle turtle)
   #+X (xlib::xflush)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;;; hide/show subsprites
 
@@ -619,23 +629,24 @@ Modification History (most recent at top)
   (sprite turtle)
   (set-shown? turtle ':subsprites)
   #+X (xlib::xflush)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defsprite-function bu::hide-subsprites ()
   (sprite turtle)
   (set-shown? turtle ':no-subsprites)
   #+X (xlib::xflush)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;;; other instance vars.
 
-(defsprite-function bu::set-sprite-size ((eval::numberize size))
+(eval-when (eval)
+(defsprite-function bu::set-sprite-size ((boxer-eval::numberize size))
   (sprite turtle)
   (cond ((and (numberp size) (> size 0))
 	 (with-sprites-hidden nil
 	     (set-sprite-size turtle size))
-	 eval::*novalue*)
-	(t (eval::primitive-signal-error :sprite-error
+	 boxer-eval::*novalue*)
+	(t (boxer-eval::primitive-signal-error :sprite-error
 					 "The Sprite Size Argument, " size
 					 ", should be a positive number"))))
 
@@ -648,7 +659,7 @@ Modification History (most recent at top)
 	      (and (virtual-copy? shape-box)
 		   (not (null (vc-graphics shape-box)))))
 	  (set-shape turtle shape-box)
-	  (eval::primitive-signal-error :sprite-error "Can't find a shape in: "
+	  (boxer-eval::primitive-signal-error :sprite-error "Can't find a shape in: "
 					shape))))
-  eval::*novalue*)
-
+  boxer-eval::*novalue*)
+)

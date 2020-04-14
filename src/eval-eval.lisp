@@ -34,8 +34,7 @@ Modification History (most recent at top)
 
 ;;;
 
-#-(or lispworks mcl Lispm) (in-package 'eval)
-#+(or lispworks mcl)       (in-package :eval)
+(in-package :boxer-eval)
 
 (defun boxer-eval (iline &key (process-state nil))
   (evaluator-body iline process-state))

@@ -75,8 +75,7 @@ Modification History (most recent at the top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
+(in-package :boxer)
 
 
 
@@ -678,7 +677,7 @@ should ignore it.")
 				            fp (floor (* 100 fp)
 					              *current-file-length*))))))))
   #+mcl (ccl::update-cursor) ; hack to get moving cursor
-  (eval::check-for-interrupt :interrupt "Stopped by User !")
+  (boxer-eval::check-for-interrupt :interrupt "Stopped by User !")
   ;; now do the real work...
   (catch 'done-with-box
     ;; if debugging, this might be useful intead (lets us look at the plist)
@@ -792,8 +791,8 @@ should ignore it.")
     (:display-style-list (setf (slot-value self 'display-style-list)
 			       (restore-display-style value)))
     (:exports (unless (null value)
-		(eval::set-box-transparency self t)
-		(unless (eq value eval::*exporting-all-variables-marker*)
+		(boxer-eval::set-box-transparency self t)
+		(unless (eq value boxer-eval::*exporting-all-variables-marker*)
 		  (setf (slot-value self 'exports) value)))
 	      t)
     (:closets (setf (slot-value self 'closets) value)
@@ -987,9 +986,9 @@ should ignore it.")
 	(restore-display-style (getf plist :display-style-list)))
   (let ((exports (getf plist :exports)))
     (unless (null exports)
-      (eval::set-box-transparency box t)
+      (boxer-eval::set-box-transparency box t)
       ;; there may be some of these still left?
-      (unless (eq exports eval::*exporting-all-variables-marker*)
+      (unless (eq exports boxer-eval::*exporting-all-variables-marker*)
 	(setf (slot-value box 'exports) exports))))
   (setf (slot-value box 'closets) (getf plist :closets))
   (setf (slot-value box 'graphics-sheet) (getf plist :graphics-sheet))
@@ -1013,9 +1012,9 @@ should ignore it.")
 	  (set-superior-row obj closets)
 	  (insert-self-action obj)))))
   (dolist (var (slot-value box 'static-variables-alist))
-    (let ((handler (get (eval::static-variable-name var) 'magic-name-insert)))
+    (let ((handler (get (boxer-eval::static-variable-name var) 'magic-name-insert)))
       (when (not (null handler))
-	(funcall handler (eval::static-variable-value var) box)))))
+	(funcall handler (boxer-eval::static-variable-value var) box)))))
 
 (defmethod init-box-from-file ((box port-box) plist)
   (call-next-method)
@@ -2107,7 +2106,7 @@ should ignore it.")
   (with-post-load-autoloading (filestream)
     (loading-bin-file (filestream 'bin-load-next-command)
       (let ((*package* (find-package 'boxer))
-	    (eval::*primitive-shadow-warning-on?* nil))
+	    (boxer-eval::*primitive-shadow-warning-on?* nil))
         (bin-load-top-level filestream nil)))))
 
 (defun bin-load-top-level (stream &optional skip-reading-property-list
@@ -2143,7 +2142,7 @@ should ignore it.")
 	          (toggle-reader-byte-swapping)
 	          (setq word bin-op-format-version)
 	          t))
-      (eval::primitive-signal-error :bad-file-arg
+      (boxer-eval::primitive-signal-error :bad-file-arg
                                     (if (typep stream 'file-stream)
                                         (namestring (truename stream))
                                         (type-of stream))
@@ -2203,6 +2202,6 @@ should ignore it.")
   (with-post-load-autoloading (filestream)
     (loading-bin-file (filestream 'interactive-bin-load-next-command)
       (let ((*package* (find-package 'boxer))
-	    (eval::*primitive-shadow-warning-on?* nil))
+	    (boxer-eval::*primitive-shadow-warning-on?* nil))
         (bin-load-top-level filestream nil)))))
 

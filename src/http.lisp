@@ -29,8 +29,6 @@ Modification History (most recent at top)
 
 |#
 
-
-
 (in-package :boxnet)
 
 ;;; http-url methods for
@@ -44,7 +42,8 @@ Modification History (most recent at top)
   (net-url)
   (;; used by boxer
    (doc-type :initform ':text :accessor http-url-doc-type :initarg :doc-type))
-  (:metaclass block-compile-class))
+  ;; (:metaclass block-compile-class)
+  )
 
 (defvar *default-url-port* 80)
 
@@ -182,27 +181,29 @@ User-Agent: Boxer/PC-2.5
         (declare (ignore header-lines)) ; we might use these later for error text
         ;; note that even for error, we may have to empty out the
         ;; rest of the message
-        (string-case status
-          ("200"
-           (case (slot-value url 'doc-type)
-             (:box (let ((b (let ((boxer::*file-system-verbosity* T)
-                                  (boxer::*FILE-STATUS-LINE-UPDATE-FUNCTION*
-                                   'print-ftp-read-status))
-                              (boxer::load-binary-box-from-stream-internal
-                               (make-http-binary-input-stream
-                                stream (getf plist :content-length))))))
-                     (initialize-box-from-net-box box b)
-                     (set-url-flags box)))
-              ((or :binary :text)
-               ;; a bit of a crock....
-               (save-net-data (make-http-binary-input-stream
-                               stream (getf plist :content-length))
-                              box
-                              :binary))))
-          (("301" "307") ;; redirects...
-           ;; there should be a :location property in the plist for redirects
-           )
-          (t (handle-http-error status encoding plist stream)))))
+        ;; sgithens (string-case status
+        ;;   ("200"
+        ;;    (case (slot-value url 'doc-type)
+        ;;      (:box (let ((b (let ((boxer::*file-system-verbosity* T)
+        ;;                           (boxer::*FILE-STATUS-LINE-UPDATE-FUNCTION*
+        ;;                            'print-ftp-read-status))
+        ;;                       (boxer::load-binary-box-from-stream-internal
+        ;;                        (make-http-binary-input-stream
+        ;;                         stream (getf plist :content-length))))))
+        ;;              (initialize-box-from-net-box box b)
+        ;;              (set-url-flags box)))
+        ;;       ((or :binary :text)
+        ;;        ;; a bit of a crock....
+        ;;        (save-net-data (make-http-binary-input-stream
+        ;;                        stream (getf plist :content-length))
+        ;;                       box
+        ;;                       :binary))))
+        ;;   (("301" "307") ;; redirects...
+        ;;    ;; there should be a :location property in the plist for redirects
+        ;;    )
+        ;;   (t (handle-http-error status encoding plist stream))
+        ;;   )
+          ))
     ;; make sure any messages are erased
     #-mcl
     (boxer::status-line-undisplay 'surf-message)
@@ -223,7 +224,7 @@ User-Agent: Boxer/PC-2.5
 
 (defun signal-http-error (code reason)
   (surf-message "HTTP Error detected ~A ~A" code reason)
-  (eval::primitive-signal-error :http code reason))
+  (boxer-eval::primitive-signal-error :http code reason))
 
 (defun make-box-from-http-char-stream (stream)
   )
@@ -233,9 +234,9 @@ User-Agent: Boxer/PC-2.5
   (net-write-control-line stream "GET ~A HTTP/1.1" (slot-value url 'path))
   (net-write-control-line stream "host: ~A" (slot-value url 'host))
  ;(net-write-control-line stream "Accept-Encoding: identity;q=1.0")
-  (let* ((smps (sm::system-properties (find-system-named 'boxer::boxer)))
-         (major (getf smps :major-version-number 2))
-         (minor (getf smps :minor-version-number 5)))
+  (let* (;sgithens(smps (sm::system-properties (find-system-named 'boxer::boxer)))
+         (major 4) ;(getf smps :major-version-number 2))
+         (minor 0)) ;(getf smps :minor-version-number 5)))
     (net-write-control-line stream "User-Agent: Boxer/~D.~D" major minor))
   ;(net-write-control-line stream "From: ~A" *user-mail-address*)
   (net-write-control-line stream "") ; CRLF
@@ -305,26 +306,27 @@ User-Agent: Boxer/PC-2.5
                      (let* ((string-buffer (make-string-buffer 50))
                             (value-string (header-line-value line string-buffer
                                                              (1+ colon-pos))))
-                       (string-case field-name
-                         ("Transfer-Encoding"
-                          (string-case value-string
-                            ("Indentity" ) ; do nothing
-                            ("Chunked" (setq encoding :chunked))
-                            (t (error "Unhandled content encoding: ~A"
-                                      value-string))))
-                         (("Etag" "Last-Modified" "Location")
-                          ;; this is the common case where we just want a string
-                          ;; value in the plist, with the field-name as the key
-                          (setq plist (nconc plist
-                                             (list (intern-keyword field-name)
-                                                   value-string))))
-                         ("Content-Length"
-                          (let ((number (read-from-string line nil nil
-                                                          :start (1+ colon-pos))))
-                            (when (numberp number)
-                              (setq plist
-                                    (nconc plist (list :content-length
-                                                       number))))))))))))))))
+                      ;; sgithens TODO (string-case field-name
+                      ;;    ("Transfer-Encoding"
+                      ;;     (string-case value-string
+                      ;;       ("Indentity" ) ; do nothing
+                      ;;       ("Chunked" (setq encoding :chunked))
+                      ;;       (t (error "Unhandled content encoding: ~A"
+                      ;;                 value-string))))
+                      ;;    (("Etag" "Last-Modified" "Location")
+                      ;;     ;; this is the common case where we just want a string
+                      ;;     ;; value in the plist, with the field-name as the key
+                      ;;     (setq plist (nconc plist
+                      ;;                        (list (intern-keyword field-name)
+                      ;;                              value-string))))
+                      ;;    ("Content-Length"
+                      ;;     (let ((number (read-from-string line nil nil
+                      ;;                                     :start (1+ colon-pos))))
+                      ;;       (when (numberp number)
+                      ;;         (setq plist
+                      ;;               (nconc plist (list :content-length
+                      ;;                                  number)))))))
+                                                       )))))))))
 
 
 

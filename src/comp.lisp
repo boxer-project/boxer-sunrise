@@ -32,8 +32,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm)(in-package 'boxer :nicknames '(box))
-#+(or lispworks mcl)      (in-package :boxer)
+(in-package :boxer)
 
 
 
@@ -84,7 +83,7 @@ Modification History (most recent at top)
 (defun push-args-onto-stack (number-of-args)
   (let ((tmp nil))
     (dotimes (i number-of-args)
-      (push (eval::vpdl-pop) tmp))
+      (push (boxer-eval::vpdl-pop) tmp))
     (dotimes (i number-of-args)
       (format t "~%pushing formal arg ~A" (car tmp))
       (cbos-push (pop tmp)))))
@@ -94,7 +93,7 @@ Modification History (most recent at top)
 ;; these hack the evaluator's *vpdl* stack
 
 (defmacro cbos-pop ()
-  `(let ((value (eval::vpdl-pop)))
+  `(let ((value (boxer-eval::vpdl-pop)))
      (when *debug-stack-machine*
        (format *trace-output* "~%  Popping ~A" value))
      value))
@@ -103,22 +102,22 @@ Modification History (most recent at top)
   `(let ((value ,object))
      (when *debug-stack-machine*
        (format *trace-output* "~%  Pushing ~A" value))
-     (eval::vpdl-push value)))
+     (boxer-eval::vpdl-push value)))
 
-(defmacro cbos-reset () `(eval::reset-vpdl))
+(defmacro cbos-reset () `(boxer-eval::reset-vpdl))
 
 (defmacro cbos-push-stack-ref (index)
-  `(let ((value (svref& eval::*vpdl* (-& eval::*vpdl-index* ,index))))
+  `(let ((value (svref& boxer-eval::*vpdl* (-& boxer-eval::*vpdl-index* ,index))))
      (when *debug-stack-machine*
        (format *trace-output* "~%  Pushing stack Ref to ~A" value))
-     (eval::vpdl-push value)))
+     (boxer-eval::vpdl-push value)))
 
 (defun push-args-onto-stack (number-of-args)
   (when *debug-stack-machine*
     (dotimes (i number-of-args)
       (format *trace-output* "~%  Found formal arg ~A at ~D"
-	      (svref& eval::*vpdl* (-& eval::*vpdl-index* i 1))
-	      (-& eval::*vpdl-index* i 1)))))
+	      (svref& boxer-eval::*vpdl* (-& boxer-eval::*vpdl-index* i 1))
+	      (-& boxer-eval::*vpdl-index* i 1)))))
 
 
 
@@ -296,7 +295,7 @@ Modification History (most recent at top)
   (cbos-push-stack-ref offset))
 
 (define-instruction (push-symbol-value 2) (symbol)
-  (cbos-push (eval::boxer-symeval symbol)))
+  (cbos-push (boxer-eval::boxer-symeval symbol)))
 
 
 
@@ -305,6 +304,6 @@ Modification History (most recent at top)
 
 (define-instruction (test-beep 254) ()
   (dotimes (i (cbos-pop)) (bw::beep))
-  (cbos-push eval::*novalue*))
+  (cbos-push boxer-eval::*novalue*))
 
 |#

@@ -39,8 +39,7 @@ Modification History (most recent at top)
 |#
 ;;;
 
-#-(or lispworks mcl LISPM) (in-package 'eval :use '(lisp sm))
-#+(or lispworks mcl)       (in-package :eval)
+(in-package :boxer-eval)
 
 ;;;
 ;;; Infix arithmetic and numeric relational operators
@@ -330,7 +329,7 @@ Modification History (most recent at top)
 
 
 (eval-when (eval load)
-  (eval::boxer-toplevel-set 'bu::pi pi)
+  (boxer-eval::boxer-toplevel-set 'bu::pi pi)
   )
 
 ;;; sqrt/integer approximation

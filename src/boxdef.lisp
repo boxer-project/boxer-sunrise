@@ -52,13 +52,7 @@ Modification History (most recent at top)
 
 (defun boxer::valid-boxer-license? () t)
 
-; DEFSUBST (some implementation have it and others don't)
-; https://lisp-hug.lispworks.narkive.com/xK5EMsyd/defsubst
-(defmacro defsubst (name args &body body)
-  `(progn
-     (declaim (inline ,name))
-     (defun ,name ,args
-       ,@body)))
+
 
 ;;
 ;; this could be a lot faster, we should be able to do a compile time
@@ -366,11 +360,16 @@ Modification History (most recent at top)
    (inferior-links :initform nil))
   (:metaclass block-compile-class))
 
+(defgeneric row? (x) (:method (x) nil) (:method ((x row)) t))
+
+
 (defclass name-row
     (row)
   ((cached-name :initform nil :accessor cached-name :initarg :cached-name))
   ;; used for environmental info--a symbol in the BU package
   (:metaclass block-compile-class))
+
+(defgeneric name-row? (x) (:method (x) nil) (:method ((x name-row)) t))
 
 (defclass fill-row
     (row)
@@ -401,6 +400,7 @@ Modification History (most recent at top)
    (graphics-info :initform nil :accessor graphics-info)
    (flags :initform 0 :accessor box-flags))
   (:metaclass block-compile-class))
+
 (defgeneric box? (x) (:method (x) nil) (:method ((x box)) t))
 
 (defclass doit-box
@@ -749,3 +749,16 @@ Modification History (most recent at top)
     (setf (box-interface-slot-name bi) slot-name)
     (setf (special-box-interface-update-function bi) update-fun)
     bi))
+
+
+;; sgithens
+(defvar *GLOBAL-HOTSPOT-CONTROL?* nil)
+;; flags for global control, these were previously in popup.lisp
+(defvar *top-left-hotspots-on?*     t)
+(defvar *top-right-hotspots-on?*    t)
+(defvar *bottom-left-hotspots-on?*  t)
+(defvar *bottom-right-hotspots-on?* t)
+
+;;;; Commands for Mouse border Areas.... these were in coms-oglmouse.lisp
+(defvar *warn-about-disabled-commands* t)
+(defvar *only-shrink-wrap-text-boxes* nil)

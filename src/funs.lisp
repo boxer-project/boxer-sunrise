@@ -1,4 +1,4 @@
-;;; -*- Package: EVAL; Mode: LISP; Base: 10; Syntax: Common-lisp -*-
+;;; -*- Package: BOXER-EVAL; Mode: LISP; Base: 10; Syntax: Common-lisp -*-
 ;;;
 ;;; $Header: funs.lisp,v 1.0 90/01/24 22:12:04 boxer Exp $
 ;;;
@@ -40,8 +40,7 @@ Modification History (most recent at top)
 
 ;;;
 
-#-(or mcl lispworks LISPM) (in-package 'eval :use '(lisp sm))
-#+(or mcl lispworks)       (in-package :eval)
+(in-package :boxer-eval)
 
 ;;;; FUNS
 ;;;; Functions and Macros for making and using Boxer functions.
@@ -108,12 +107,12 @@ Modification History (most recent at top)
 	   (compiled-boxer-function? object))))
 
 ;; Use this on a symbol to see if it represents an infix function.
-(defsubst infix-function-symbol-p (symbol)
+(boxer::defsubst infix-function-symbol-p (symbol)
   (fast-memq symbol *infix-symbol-list*))
 
 ;; Use this on a boxer function object to see if it's infix.
-(defsubst infix-function-p (function)
-  (boxer-function-infix-p function))
+;; sgithens TODO (defsubst infix-function-p (function)
+;;   (boxer-function-infix-p function))
 
 ;;; Use this function for the debugger.
 ;; ****************LISTP is wrong here
@@ -201,12 +200,12 @@ Modification History (most recent at top)
 ;;; The main function for defining primitives.
 (defmacro defboxer-primitive (name-descriptor arglist &body body)
   (let* ((name (if (symbolp name-descriptor) name-descriptor
-		   (car name-descriptor)))
-	 (precedence (if (symbolp name-descriptor)
-			 (calculate-default-precedence arglist)
-			 (cadr name-descriptor)))
-	 (infixp (and (consp name-descriptor)
-		      (not (null (member 'infix name-descriptor))))))
+                   (car name-descriptor)))
+	     (precedence (if (symbolp name-descriptor)
+			             (calculate-default-precedence arglist)
+			             (cadr name-descriptor)))
+	     (infixp (and (consp name-descriptor)
+		              (not (null (member 'infix name-descriptor))))))
     `(progn
        (proclaim '(special ,name))
        ,(when infixp
@@ -277,7 +276,7 @@ Modification History (most recent at top)
     (error "Bugs in the implementation of DEFRECURSIVE-EVAL-PRIMITIVE will prevent this from working: ~S ~S" name arglist))
   (let ((FRAME-NAME (intern
 		     (concatenate 'string (symbol-name name) "-SPECIAL-FRAME")
-		     'eval))
+		     'boxer-eval))
 	(USUAL-STATE-VARIABLES '(*RUN-LIST-SFUN-EPILOG-HANDLER*
 				 *EXECUTING-POINTER*)))
     `(progn
@@ -355,11 +354,11 @@ Modification History (most recent at top)
 	&key state-variables stack-frame-allocation
 	before after
 	unwind-protect-form)
-  (let ((*package* (find-package "EVAL")))
+  (let ((*package* (find-package "BOXER-EVAL")))
     (let ((FRAME-NAME (intern
 		       (concatenate 'string (symbol-name name)
 				    "-SPECIAL-FRAME")
-		       'eval))
+		       'boxer-eval))
 	  (USUAL-STATE-VARIABLES '(*UFUNCALL-SFUN-EPILOG-HANDLER*)))
       `(progn
 	 ,.(mapcar #'(lambda (var) (when (not (eval-var-defined? var))
@@ -476,7 +475,7 @@ Modification History (most recent at top)
       ;; used by top level mode
       (boxer::record-vanilla-key ',key-name ',function)
       (boxer-toplevel-set-nocache ',key-name
-       (encapsulate-key-function ',function)))))
+       (boxer-eval::encapsulate-key-function ',function)))))
 
 (defun defboxer-key-internal (key-spec function)
   (let* ((shift-bits (if (listp key-spec) (cadr key-spec) 0))
@@ -496,15 +495,15 @@ Modification History (most recent at top)
     ;; used by top level mode
     (boxer::record-vanilla-key key-name function)
     (boxer-toplevel-set-nocache key-name
-				(encapsulate-key-function function))))
+				(boxer-eval::encapsulate-key-function function))))
 
-
+(eval-when (compile load eval)
 (defun encapsulate-key-function (fun)
   (make-compiled-boxer-function
     :arglist nil
     :precedence *default-precedence*
     :object fun))
-
+)
 ;;;;
 ;;;; Functions for making internal Boxer function objects out of boxes.
 ;;;;

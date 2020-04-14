@@ -26,8 +26,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
+(in-package :boxer)
 
 
 ;; these are hung on the vanilla comtab
@@ -41,7 +40,7 @@ Modification History (most recent at top)
   (setf (slot-value (search-mode) 'direction) 1)
   (add-mode (search-mode))
   (display-pattern-message)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 (defboxer-command COM-SEARCH-BACKWARD ()
@@ -53,7 +52,7 @@ Modification History (most recent at top)
   (setf (slot-value (search-mode) 'direction) -1)
   (add-mode (search-mode))
   (display-pattern-message "Searching backward")
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 ;;; These commands are inside of the search-mode comtab
@@ -73,7 +72,7 @@ Modification History (most recent at top)
 	   ;; handle screen-box
 	   (unless (eq (screen-obj-actual-obj (point-screen-box)) (point-box))
 	     (setf (bp-screen-box *point*) (calculate-new-screen-box))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-SEARCH-NEWLINE ()
   "Adds a carriage return to the search pattern, then searches for the pattern"
@@ -91,7 +90,7 @@ Modification History (most recent at top)
 	   ;; handle screen-box
 	   (unless (eq (screen-obj-actual-obj (point-screen-box)) (point-box))
 	     (setf (bp-screen-box *point*) (calculate-new-screen-box))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-SEARCH-BOX (type)
   "Adds a box of particular type to the search pattern"
@@ -109,7 +108,7 @@ Modification History (most recent at top)
 	   ;; handle screen-box
 	   (unless (eq (screen-obj-actual-obj (point-screen-box)) (point-box))
 	     (setf (bp-screen-box *point*) (calculate-new-screen-box))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-SEARCH-NAMED-BOX ()
   "Add a named box to the search pattern"
@@ -128,7 +127,7 @@ Modification History (most recent at top)
 	   ;; handle screen-box
 	   (unless (eq (screen-obj-actual-obj (point-screen-box)) (point-box))
 	     (setf (bp-screen-box *point*) (calculate-new-screen-box))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 (defboxer-command COM-SEARCH-EXIT-NAMED-BOX ()
@@ -144,7 +143,7 @@ Modification History (most recent at top)
 			  (box-pattern-name pattern-box))))
 	(setf (box-pattern-name pattern-box) nil)))
     (setf (slot-value (search-mode) 'box-pattern) nil))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 (defboxer-command COM-SEARCH-DATA-BOX ()
@@ -236,7 +235,7 @@ Modification History (most recent at top)
 				(point-box))
 		      (setf (bp-screen-box *point*)
 			    (calculate-new-screen-box)))))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 (defboxer-command COM-END-SEARCH ()
@@ -245,7 +244,7 @@ Modification History (most recent at top)
   (save-search-mode (search-mode))
   (reset-search-mode (search-mode))
   (clear-all-pattern-messages)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-ABORT-SEARCH ()
   "Stop searching and return the cursor to its original location"
@@ -259,7 +258,7 @@ Modification History (most recent at top)
   (reset-search-mode (search-mode))
   (clear-all-pattern-messages)
   (boxer-editor-warning "Search Cancelled !")
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-QUOTE-SEARCH-CHAR ()
   "adds the next typed char to the search pattern"
@@ -276,7 +275,7 @@ Modification History (most recent at top)
 	   ;; handle screen-box
 	   (unless (eq (screen-obj-actual-obj (point-screen-box)) (point-box))
 	     (setf (bp-screen-box *point*) (calculate-new-screen-box))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-EXPAND-SEARCH ()
   "Expands the search space to include the superior box"
@@ -305,7 +304,7 @@ Modification History (most recent at top)
 					 (point-box))
 			       (setf (bp-screen-box *point*)
 				     (calculate-new-screen-box))))))))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-SEARCH-FORWARD-AGAIN ()
   "Search forward again using the existing pattern"
@@ -329,7 +328,7 @@ Modification History (most recent at top)
 	   ;; handle screen-box
 	   (unless (eq (screen-obj-actual-obj (point-screen-box)) (point-box))
 	     (setf (bp-screen-box *point*) (calculate-new-screen-box))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-SEARCH-BACKWARD-AGAIN ()
   "Search backward again using the existing pattern"
@@ -368,7 +367,7 @@ Modification History (most recent at top)
 	   ;; handle screen-box
 	   (unless (eq (screen-obj-actual-obj (point-screen-box)) (point-box))
 	     (setf (bp-screen-box *point*) (calculate-new-screen-box))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defvar *status-line-search-help*
   #-mcl
@@ -381,7 +380,7 @@ Modification History (most recent at top)
 (defboxer-command COM-SEARCH-HELP ()
   "Displays search mode key bindings in the status line"
   (status-line-display 'search *status-line-search-help*)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 (defmacro defsearch-mode-key (key-name function)

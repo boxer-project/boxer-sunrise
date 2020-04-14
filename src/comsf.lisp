@@ -60,8 +60,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
+(in-package :boxer)
 
 
 
@@ -479,7 +478,7 @@ Modification History (most recent at top)
   "Changes the next word to be in boldface. "
   (WITH-MULTIPLE-EXECUTION
     (MOVE-POINT (BP-CHANGE-STYLE-FORWARD-WORD-VALUES *POINT* ':BOLD)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (DEFBOXER-COMMAND COM-BOLDFACE-FONT-CHA ()
   "Change the next character to be in boldface. "
@@ -490,13 +489,13 @@ Modification History (most recent at top)
 	    (MAKE-CHAR OLD-CHAR
 		       (CHAR-BITS OLD-CHAR) ':BOLD (CHAR-FONT-FAMILY OLD-CHAR)))
       (MOVE-POINT (BP-FORWARD-CHA-VALUES *POINT*))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (DEFBOXER-COMMAND COM-ITALICS-FONT-WORD ()
   "Changes the next word to be in italics. "
   (WITH-MULTIPLE-EXECUTION
     (MOVE-POINT (BP-CHANGE-STYLE-FORWARD-WORD-VALUES *POINT* :ITALIC)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (DEFBOXER-COMMAND COM-ITALICS-FONT-CHA ()
   "Change the next character to be in italics. "
@@ -507,7 +506,7 @@ Modification History (most recent at top)
 	    (MAKE-CHAR OLD-CHAR
 		       (CHAR-BITS OLD-CHAR) ':ITALIC (CHAR-FONT-FAMILY OLD-CHAR)))
       (MOVE-POINT (BP-FORWARD-CHA-VALUES *POINT*))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 |#
@@ -578,7 +577,7 @@ Modification History (most recent at top)
         (move-point (bp-uppercase-forward-word-values *point*)))
       (uppercase-region))
   (mark-file-box-dirty (point-row))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-LOWERCASE-WORD ()
   "Changes one or more words forward to be in lowercase. "
@@ -587,7 +586,7 @@ Modification History (most recent at top)
         (move-point (bp-lowercase-forward-word-values *point*)))
       (lowercase-region))
   (mark-file-box-dirty (point-row))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-CAPITALIZE-WORD ()
   "Changes one or more words forward to be capitalized on the initial letter.
@@ -597,7 +596,7 @@ If started in the middle of a word, capitalizes the current letter."
         (move-point (bp-capitalize-forward-word-values *point*)))
       (capitalize-region))
   (mark-file-box-dirty (point-row))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 ;;; Network stuff
@@ -689,7 +688,7 @@ If started in the middle of a word, capitalizes the current letter."
                                         #+lwwin "Courier New"
                                         new-size)))
            #-opengl(add-redisplay-clue (outermost-box) :clear-screen))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-FAT ()
   "make-fonts bigger"
@@ -711,7 +710,7 @@ If started in the middle of a word, capitalizes the current letter."
   #+clx
   (bw::reinitialize-font-map (bw::sheet-font-map *boxer-pane*)
 			     BOXER-WINDOW::*BIG-ADOBE-COURIER-FONTS*)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-BLOAT ()
   "bloat the fonts"
@@ -732,7 +731,7 @@ If started in the middle of a word, capitalizes the current letter."
   #+clx
   (bw::reinitialize-font-map (bw::sheet-font-map *boxer-pane*)
 			     BOXER-WINDOW::*GIANT-ADOBE-COURIER-FONTS*)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 #+mcl
@@ -740,7 +739,7 @@ If started in the middle of a word, capitalizes the current letter."
   "Cycles through the available font sizes for the Boxer Window"
   (bw::reinitialize-font-map (bw::sheet-font-map *boxer-pane*)
                              (next-font-spec))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defvar *font-size-state-var* 0)
 
@@ -758,4 +757,4 @@ If started in the middle of a word, capitalizes the current letter."
 	(t
 	 (progn (setq *font-size-state-var* 0)
 		(com-nutri-system))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)

@@ -43,8 +43,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer)
-#+(or lispworks mcl)       (in-package :boxer)
+(in-package :boxer)
 
 (defvar *mouse-bp* (make-bp ':fixed))
 

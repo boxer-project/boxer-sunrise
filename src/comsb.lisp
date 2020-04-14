@@ -66,8 +66,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
+(in-package :boxer)
 
 
 
@@ -102,7 +101,7 @@ region into a box. "
 	   (exiting-region-mode)
 	   (setq region-to-box nil))))
   (reset-editor-numeric-arg)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;(defboxer-COMMAND COM-UNBOXIFY ()
 ;  "unboxes the point-box"
@@ -137,7 +136,7 @@ region into a box. "
 ;      (reset-editor-numeric-arg)
 ;
 ;    )))
-;  eval::*novalue*)
+;  boxer-eval::*novalue*)
 ;
 ;
 ;;;; unboxing regions and the point box
@@ -150,7 +149,7 @@ region into a box. "
   (reset-editor-numeric-arg)
   (reset-region)
   (mark-file-box-dirty (point-row))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 ;;;;;;;;;;;;;;;; THIS HAS BEEN SUPERCEDED BY UNBOX-BOX
 ;;;;;;;;;;;;;;;; To make unbox-region and unbox-point-box things do the same thing
 ;;;; A cheap hack. Kill the box's contents, insert it into the above
@@ -419,7 +418,7 @@ region into a box. "
 		 #-opengl(add-redisplay-clue (point-row) ':insert)
 		 (INSERT-CHA *POINT* BOX ':FIXED)))
            (mark-file-box-dirty (point-row)))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 (DEFBOXER-COMMAND COM-TOGGLE-BOX-TYPE ()
@@ -430,7 +429,7 @@ Graphics-Data.  Ports toggle their targets. "
   (reset-editor-numeric-arg)
   (TOGGLE-TYPE (BOX-POINT-IS-IN))
   (mark-file-box-dirty (box-point-is-in))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (DEFBOXER-COMMAND COM-MAKE-DATA-BOX ()
   "makes a DATA box at the cursor location."
@@ -447,7 +446,7 @@ Graphics-Data.  Ports toggle their targets. "
 		 (set-type box 'data-box)
 		 (insert-cha *point* box ':fixed)))
            (mark-file-box-dirty (point-row)))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 (defboxer-command COM-ENTER-BOX (&optional
@@ -476,7 +475,7 @@ is shrunken."
 		     (if (shrunken? box) (com-expand-box))))
 		(t (with-multiple-execution
 		       (com-enter-box)))))))
-    eval::*novalue*)
+    boxer-eval::*novalue*)
 
 (defboxer-command COM-MOVE-TO-NEXT-BOX ()
   "moves to the next box"
@@ -489,7 +488,7 @@ is shrunken."
 		 (box-self-bp-values next-box)
 	       (move-point-1 row (1+ cha-no)))))
 	  (t (with-multiple-execution (com-move-to-next-box))))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 ;; changed to exit the current box before moving - 1/29/94
 (defboxer-command COM-MOVE-TO-PREVIOUS-BOX ()
@@ -501,7 +500,7 @@ is shrunken."
 	   (unless (or (null prev-box) (cha? prev-box))
 	     (move-point (box-self-bp-values prev-box))))
 	  (t (with-multiple-execution (com-move-to-previous-box))))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 ;; changed to exit the current box before moving - 1/29/94
 (defboxer-command COM-ENTER-NEXT-BOX ()
@@ -522,7 +521,7 @@ the box if it is shrunken."
                (when (shrunken? box) (com-expand-box)))))
 	(t (with-multiple-execution
 	       (com-enter-next-box))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-ENTER-PREVIOUS-BOX ()
   "enters the next box forward. expands
@@ -546,7 +545,7 @@ the box if it is shrunken."
 		 (when (shrunken? box) (com-expand-box))))))
 	(t (with-multiple-execution
 	       (com-enter-previous-box))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 (defboxer-command COM-MAKE-AND-ENTER-BOX ()
@@ -558,7 +557,7 @@ is and places the cursor inside. "
 	  (com-make-box)
 	(com-enter-box))
       (com-boxify-region 'doit-box))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-MAKE-AND-ENTER-DATA-BOX ()
   "Makes a Data box where the cursor
@@ -568,7 +567,7 @@ is and places the cursor inside. "
 	  (com-make-data-box)
 	(com-enter-box))
       (com-boxify-region))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-EXIT-BOX ()
   "exits the box the cursor is in.
@@ -593,7 +592,7 @@ then it is shrunken first. "
 			  (car (displayed-screen-objs
 				(superior-box (point-box))))))
 	      (superior-box box) t))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;;;; Shrinking and Expanding
 
@@ -622,7 +621,7 @@ then it is shrunken first. "
 	     (shrink box)
 	     (com-exit-box)))
       (setq box nil))) ; inform multiple-execution we're done with the box.
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 (defboxer-command COM-SHRINK-BOX (&optional box)
@@ -652,7 +651,7 @@ then it is shrunken first. "
 		(shrink box)
 		(when (eq box (box-screen-point-is-in)) (com-exit-box))))
 	 (setq box nil)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-SUPER-SHRINK-BOX (&optional box)
   "makes the box the cursor is in character sized and then exits. "
@@ -681,7 +680,7 @@ then it is shrunken first. "
 		(when (eq box (box-screen-point-is-in))
 		      (com-exit-box))))
 	 (setq box nil)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;; We don't allow people to be inside shrunken boxes anymore,
 ;; but some system code puts you inside a box and if it's
@@ -707,7 +706,7 @@ then it is shrunken first. "
 	  (t
 	   (unshrink box)
 	   (set-point-screen-box screen-box)))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 (DEFBOXER-COMMAND COM-MAKE-SHRINK-PROOF-SCREEN ()
   "makes the outermost box shrink proof. "
@@ -715,14 +714,14 @@ then it is shrunken first. "
   (SET-SHRINK-PROOF? (OUTERMOST-BOX) T)
   ;; this needs to happen in set-outermost-box, too.
   (update-shrink-proof-display)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (DEFBOXER-COMMAND COM-UNSHRINK-PROOF-SCREEN ()
   "allows the outermost box to be shrunken. "
   (RESET-EDITOR-NUMERIC-ARG)
   (SET-SHRINK-PROOF? (OUTERMOST-BOX) NIL)
   (update-shrink-proof-display)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-SET-OUTERMOST-BOX (&optional
 					 (box (box-screen-point-is-in))
@@ -745,7 +744,7 @@ a graphics-box or a port to one. "
     ;; remove any scrolling... (why why why ?)
     ;(set-scroll-to-actual-row screen-box nil)
     (set-outermost-box box screen-box))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 ;; need to come up with something better later
@@ -779,7 +778,7 @@ creating one if one does not exist. "
 	(move-point-1 (slot-value box-to-name 'name) 0 destination-screen-box)
         (mark-file-box-dirty box-to-name)
 	(modified box-to-name)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -797,7 +796,7 @@ current height and width. "
 			      (screen-box-point-is-in)))
       (SET-FIXED-SIZE (BOX-SCREEN-POINT-IS-IN)
 	    (- CURRENT-WID L-WID R-WID) (- CURRENT-HEI T-WID B-WID))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 (DEFBOXER-COMMAND COM-UNFIX-BOX-SIZE (&optional (box (box-screen-point-is-in)))
@@ -805,7 +804,7 @@ current height and width. "
   (RESET-EDITOR-NUMERIC-ARG)
   (SET-FIXED-SIZE box NIL NIL)
   (MODIFIED box)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -814,9 +813,9 @@ current height and width. "
 (defboxer-command com-export-box-contents ()
   "Don't use this"
   (reset-editor-numeric-arg)
-  (let ((conflict (eval::prescan-exported-bindings (point-box))))
+  (let ((conflict (boxer-eval::prescan-exported-bindings (point-box))))
     (cond ((null conflict)
-	   (eval::set-box-transparency (point-box) t)
+	   (boxer-eval::set-box-transparency (point-box) t)
            ;; we need to mark the "dirty file" bit on both the exporting box
            ;; and the superior in case the exporting box is a file box
            (let ((sup (superior-box (point-box))))
@@ -825,38 +824,38 @@ current height and width. "
 	   (modified (point-box)))
 	  (t
 	   (boxer-editor-error "Name conflict for ~A" conflict))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-embargo-box-contents ()
   "Don't use this"
   (reset-editor-numeric-arg)
-  (eval::set-box-transparency (point-box) nil)
+  (boxer-eval::set-box-transparency (point-box) nil)
   ;; we need to mark the "dirty file" bit on both the exporting box
   ;; and the superior in case the exporting box is a file box
  (let ((sup (superior-box (point-box))))
    (when (box? sup) (mark-file-box-dirty sup)))
  (mark-file-box-dirty (point-box))
  (modified (point-box))
- eval::*novalue*)
+ boxer-eval::*novalue*)
 
 (defboxer-command com-toggle-box-transparency ()
   "Toggle the transparency of a box, letting names leak out or keeping them in"
   (cond ((null (exports (point-box)))
-	 (let ((conflict (eval::prescan-exported-bindings (point-box))))
+	 (let ((conflict (boxer-eval::prescan-exported-bindings (point-box))))
 	   (cond ((null conflict)
-		  (eval::set-box-transparency (point-box) t)
+		  (boxer-eval::set-box-transparency (point-box) t)
 		  (modified (point-box)))
 		 (t
 		  (boxer-editor-error "Name conflict for ~A" conflict)))))
 	(t
-	 (eval::set-box-transparency (point-box) nil)))
+	 (boxer-eval::set-box-transparency (point-box) nil)))
   ;; we need to mark the "dirty file" bit on both the exporting box
   ;; and the superior in case the exporting box is a file box
   (let ((sup (superior-box (point-box))))
     (when (box? sup) (mark-file-box-dirty sup)))
   (mark-file-box-dirty (point-box))
   (modified (point-box))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-make-toolbox ()
   "Makes a Tool Box at the cursor location."
@@ -881,18 +880,18 @@ current height and width. "
 		(sleep 1))
 	      (status-line-undisplay 'com-make-toolbox))
 	    (set-type tool-box 'data-box)
-	    (eval::set-box-transparency tool-box t)
+	    (boxer-eval::set-box-transparency tool-box t)
 	    #-opengl(add-redisplay-clue (point-row) ':insert)
 	    ;; insert the box
 	    (insert-cha *point* tool-box ':fixed))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-make-and-enter-toolbox ()
   "Makes a Tool Box and places the cursor inside it"
   (with-multiple-execution
     (com-make-toolbox)
     (com-enter-box))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -923,7 +922,7 @@ of a port. "
   (reset-region)
   (RESET-EDITOR-NUMERIC-ARG)
   (SETQ *COM-MAKE-PORT-CURRENT-PORT* (PORT-TO-INTERNAL (POINT-BOX)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (DEFBOXER-COMMAND COM-PLACE-PORT ()
   "inserts a port to the (previously)
@@ -937,7 +936,7 @@ specified target. "
 	(SETQ *COM-MAKE-PORT-CURRENT-PORT* NIL))
       (make-generic-port))
   (mark-file-box-dirty (point-row))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -957,7 +956,7 @@ specified target. "
 				    *default-graphics-box-transparency*))
   (let ((box (make-initialized-box :type 'data-box)))
     (unless (null transparent?)
-      (eval::set-box-transparency box t))
+      (boxer-eval::set-box-transparency box t))
     (setf (graphics-info box) (make-graphics-sheet width height box))
     ;; give the box a graphics sheet
     (when (and (not *name-new-sprites?*)
@@ -988,7 +987,7 @@ specified target. "
 	(make-graphics-box-internal)
 	#-opengl(redisplay)
         #+opengl(repaint)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-make-big-graphics-box ()
   "1/4 screen size graphics box"
@@ -999,7 +998,7 @@ specified target. "
 	(make-graphics-box-internal 500. 400.)
 	#-opengl(redisplay)
         #+opengl(repaint)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-make-giant-graphics-box ()
   "1/2 screen size graphics box"
@@ -1010,7 +1009,7 @@ specified target. "
 	(make-graphics-box-internal 900. 500.)
 	#-opengl(redisplay)
         #+opengl(repaint)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 ;;; specific ones
@@ -1026,7 +1025,7 @@ specified target. "
 				    nil)
 	#-opengl(redisplay)
         #+opengl(repaint)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-make-transparent-graphics-box ()
   "Make a data box with a graphics sheet, like the 'ole Square key used to do"
@@ -1039,7 +1038,7 @@ specified target. "
 				    t)
 	#-opengl(redisplay)
         #+opengl(repaint)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -1051,11 +1050,11 @@ specified target. "
 				   (transparent?
 				    *default-graphics-box-transparency*))
   ;; first check to make sure there isn't already a turtle box.
-  (if (and (get-active-sprite eval::*lexical-variables-root*)
+  (if (and (get-active-sprite boxer-eval::*lexical-variables-root*)
            ;; this REALLY wants to check if there is a lexically
 	   ;; apparent transparent sprite that may have conflicting
 	   ;; slot names
-	   (eval::lookup-static-variable-in-box-only (point-box)
+	   (boxer-eval::lookup-static-variable-in-box-only (point-box)
 						     'bu::x-position))
       (boxer-editor-error "There is already an available turtle box")
       (let* ((box (make-initialized-box :type 'data-box))
@@ -1077,8 +1076,8 @@ specified target. "
 	(modified box)
 	(insert-cha *point* box)
         (mark-file-box-dirty (point-row))
-	(eval::set-box-transparency sprite t)
-	(unless (null transparent?) (eval::set-box-transparency box t)))))
+	(boxer-eval::set-box-transparency sprite t)
+	(unless (null transparent?) (boxer-eval::set-box-transparency box t)))))
 
 (defboxer-command com-make-turtle-box ()
   "Make a Graphics Box for Logo style turtles"
@@ -1089,7 +1088,7 @@ specified target. "
 	(make-turtle-box-internal)
 	#-opengl(redisplay)
         #+opengl(repaint)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-make-big-turtle-box ()
   "1/4 screen size graphics box"
@@ -1100,7 +1099,7 @@ specified target. "
 	(make-turtle-box-internal 500. 400.)
 	#-opengl(redisplay)
         #+opengl(repaint)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-make-giant-turtle-box ()
   "1/2 screen size graphics box"
@@ -1126,7 +1125,7 @@ specified target. "
 				  nil)
 	#-opengl(redisplay)
         #+opengl(repaint)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-make-transparent-turtle-box ()
   "Make a data box with a graphics sheet, like the 'ole Square key used to do"
@@ -1139,7 +1138,7 @@ specified target. "
 				  t)
 	#-opengl(redisplay)
         #+opengl(repaint)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -1154,7 +1153,7 @@ Does Nothing if There is No Defined BoxTop"
       ;; but there had better be a graphics-sheet if we
       ;; want to toggle into a graphics-screen-box
       (toggle-view-internal box))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defun toggle-view-internal (&optional (box (box-screen-point-is-in)))
   (let* ((screen-objs (screen-objs box))
@@ -1199,7 +1198,7 @@ Does Nothing if There is No Defined BoxTop"
 	       (com-name-box))
 	      (t (insert-cha *point* (make-sprite-box) ':moving)))
         (mark-file-box-dirty (point-row))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -1237,7 +1236,7 @@ Does Nothing if There is No Defined BoxTop"
 	  (t (boxer-editor-error "Endpoints for fill must be in the same box"))))))
   (mark-file-box-dirty (point-row))
   (reset-region)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-fill-box (&optional (box (point-box)) trust-screen?)
   "Reformats the box's contents"
@@ -1247,7 +1246,7 @@ Does Nothing if There is No Defined BoxTop"
                (display-style-fixed-wid (display-style-list box))
                (point-screen-box) trust-screen?)
     (mark-file-box-dirty (first-inferior-row box)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 ;; a row can be either too big or too small
@@ -1523,7 +1522,7 @@ Does Nothing if There is No Defined BoxTop"
       ))
   (mark-file-box-dirty (point-row))
   (reset-region)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 #| ;; old old version
 (defboxer-command COM-FILL-BOX ()
@@ -1542,7 +1541,7 @@ Does Nothing if There is No Defined BoxTop"
     (com-fill-rows region)
     (delete-bp (bp-row bp-2) bp-2)
     (delete-bp (bp-row bp-1) bp-1)
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 |#
 
 (defboxer-command com-fill-box (&optional (box (point-box)))
@@ -1560,7 +1559,7 @@ Does Nothing if There is No Defined BoxTop"
                 (bp-row stop-bp) stop-row (bp-cha-no stop-bp) stop-cha-no)
           (fill-stuff start-bp stop-bp)
           (mark-file-box-dirty (first-inferior-row box))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -1912,7 +1911,7 @@ Does Nothing if There is No Defined BoxTop"
 ;       )
 ;     )
 ;   (reset-region)
-;   eval::*novalue*)
+;   boxer-eval::*novalue*)
 ;
 
 |#

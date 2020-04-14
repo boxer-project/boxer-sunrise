@@ -33,8 +33,7 @@
 
 ;;;
 
-#-mcl (in-package 'eval)
-#+mcl (in-package :eval)
+(in-package :boxer-eval)
 
 ;;;
 ;;; This file contains defrecursive-*-primitives that should

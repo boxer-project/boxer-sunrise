@@ -31,8 +31,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
+(in-package :boxer)
 
 
 
@@ -164,7 +163,7 @@ There are several parts to this file.
       (unless (null internal-arglist)
 	(setf (cbo-eval-list object)
 	      (list*
-	       (eval::make-compiled-boxer-function
+	       (boxer-eval::make-compiled-boxer-function
 		:arglist pretty-arglist
 		:precedence 0
 		:infix-p nil
@@ -176,7 +175,7 @@ There are several parts to this file.
   (cond ((null (cbo-args cbf))
 	 (funcall-0-arg-compiled-boxer-function cbf))
 	(t
-	 (eval::recursive-eval-setup-append (cbo-eval-list cbf)))))
+	 (boxer-eval::recursive-eval-setup-append (cbo-eval-list cbf)))))
 
 
 
@@ -626,5 +625,5 @@ There are several parts to this file.
 
 ;;;; and into Boxer we go.....
 
-(defboxer-primitive bu::build (template)
+(boxer-eval::defboxer-primitive bu::build (template)
   (if (numberp template) template (build template)))

@@ -32,8 +32,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks  mcl LISPM) (in-package 'eval :use '(lisp sm))
-#+(or lispworks mcl)        (in-package :eval)
+(in-package :boxer-eval)
 
 (defvar *stepping* t)
 

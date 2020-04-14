@@ -28,14 +28,14 @@ Modification History (most recent at top)
 
 |#
 
-
-#-(or lispworks mcl LISPM) (IN-PACKAGE 'BOXER :USE '(LISP) :NICKNAMES '("BOX"))
-#+(or lispworks mcl)       (in-package :BOXER)
+(in-package :boxer)
 
 
 ;;; Dribble File support
 
+(eval-when (compile load eval)
 (defvar *dribble-handler-names* (make-array 10 :initial-element nil))
+)
 (defvar *dribble-write-handlers* (make-array 10 :initial-element nil))
 (defvar *dribble-read-handlers* (make-array 10 :initial-element nil))
 (defvar *dribble-print-handlers* (make-array 10 :initial-element nil))
@@ -329,7 +329,7 @@ Modification History (most recent at top)
 
 (defboxer-command com-noop (&rest ignore)
   "Nothing Nothing Nothing"
-  ignore eval::*novalue*)
+  ignore boxer-eval::*novalue*)
 
 (defun record-mouse-input (mouse-event)
   (cond ((null *record-keystrokes*))
@@ -418,7 +418,7 @@ Modification History (most recent at top)
     (playback-dribble-stream s))
   #+mcl ;; mac version has trouble with recursive edit/redisplay
   (bw::queue-event (list 'playback-dribble-file-1 pathname))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 #+mcl
 (defun playback-dribble-file-1 (pathname)

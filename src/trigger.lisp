@@ -34,9 +34,7 @@ Modification History (most recent at top)
 
 |#
 
-
-#-(or lispworks  mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)        (in-package :boxer)
+(in-package :boxer)
 
 
 
@@ -96,23 +94,23 @@ Modification History (most recent at top)
 
 (defsubst maybe-optimize-trigger-proc (doit)
   (flet ((is-sprite-update-fun? (ip)
-	   (let ((code (eval::interpreted-boxer-function-text ip)))
+	   (let ((code (boxer-eval::interpreted-boxer-function-text ip)))
 	     (and (= 1 (length code))		; there's 1 line
 		  (= 1 (length (car code)))	; with one element
 ;		  (sprite-update-function?
 ;		    (caar code))
 		  ))))		; that's an update function
     (let ((interpreted-proc
-	    (eval::convert-editor-box-to-interpreted-procedure-internal
+	    (boxer-eval::convert-editor-box-to-interpreted-procedure-internal
 	      doit)))
       (cond ((null *optimize-trigger-procedures?*) interpreted-proc)
 	    ((is-sprite-update-fun? interpreted-proc)
 	     (let ((update-fun
-		     (eval::boxer-symeval		; symbol-value instead ?
+		     (boxer-eval::boxer-symeval		; symbol-value instead ?
 		       (caar
-			 (eval::interpreted-boxer-function-text
+			 (boxer-eval::interpreted-boxer-function-text
 			   interpreted-proc)))))
-	       (if (eval::boxer-function? update-fun)
+	       (if (boxer-eval::boxer-function? update-fun)
 		   update-fun
 		   interpreted-proc)))
 	    (t interpreted-proc)))))
@@ -129,17 +127,17 @@ Modification History (most recent at top)
 ;;; box has more than one line, then we just return a list containing
 ;;; the box.  Otherwise we return a list of the first
 ;;; row contents.  I.e., we might return (UPDATE-SPRITE-STUFF).
-;;; We use eval::convert-editor-box-to-interpreted-procedure-internal
+;;; We use boxer-eval::convert-editor-box-to-interpreted-procedure-internal
 ;;; to avoid keeping the cached-code if we decide to cache the innards
 ;;; at this level instead.
 
-  (let ((code (eval::convert-editor-box-to-interpreted-procedure-internal
+  (let ((code (boxer-eval::convert-editor-box-to-interpreted-procedure-internal
 	       doit-box)))
-    (if (or (eval::interpreted-boxer-function-arglist code)
-	    (eval::interpreted-boxer-function-locals code)
-	    (cdr (eval::interpreted-boxer-function-text code)))
+    (if (or (boxer-eval::interpreted-boxer-function-arglist code)
+	    (boxer-eval::interpreted-boxer-function-locals code)
+	    (cdr (boxer-eval::interpreted-boxer-function-text code)))
 	(list (top-level-virtual-copy-editor-box doit-box))
-	(car (eval::interpreted-boxer-function-text code))))
+	(car (boxer-eval::interpreted-boxer-function-text code))))
 |#
 
 ;;; for now, proc should be a doit box.  If it's a data box, then we
@@ -147,7 +145,7 @@ Modification History (most recent at top)
 (defun make-trigger-cache (type doit)
   (if (doit-box? doit)
       (let* ((enabled?-box
-	      (eval::lookup-static-variable-in-box-only doit
+	      (boxer-eval::lookup-static-variable-in-box-only doit
 							'bu::enabled?))
 	     (enabled? (or (null enabled?-box)
 			   ;; this ought to be more modular but I don't
@@ -177,7 +175,7 @@ Modification History (most recent at top)
   (let ((box (trigger-cache-box cache)))
     (if (doit-box? box)
 	(let* ((enabled?-box
-		(eval::lookup-static-variable-in-box-only box
+		(boxer-eval::lookup-static-variable-in-box-only box
 							  'bu::enabled?))
 	       (enabled? (or (null enabled?-box)
 			     ;; this ought to be more modular but I don't
@@ -208,7 +206,7 @@ Modification History (most recent at top)
 (defun find-trigger-holder (in-box &optional trigger-type)
   (do ((b in-box (superior-box b)))
       ((or (null b)
-	   (not (or (eq (exports b) eval::*exporting-all-variables-marker*)
+	   (not (or (eq (exports b) boxer-eval::*exporting-all-variables-marker*)
 		    (fast-memq trigger-type (exports b)))))
 	b)
     ))
@@ -326,7 +324,7 @@ Modification History (most recent at top)
 	   (let ((new-cache
 		  (make-trigger-cache
 		   trigger-type
-		   (eval::lookup-static-variable-in-box-only box
+		   (boxer-eval::lookup-static-variable-in-box-only box
 							     trigger-type))))
 	     (push new-cache (slot-value box 'trigger-cache))
 	     (trigger-cache-enabled? new-cache)))
@@ -355,7 +353,7 @@ Modification History (most recent at top)
       ;; is modified (by the editor), we can compare "versions" on
       ;; box exit to decide if the modified-trigger needs to be run
       (setf (trigger-cache-timestamp cache) (actual-obj-tick box)))
-    (eval::arrange-for-list-to-be-run (trigger-cache-proc cache))))
+    (boxer-eval::arrange-for-list-to-be-run (trigger-cache-proc cache))))
 
 
 ;; standard function to use for most triggers by

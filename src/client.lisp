@@ -43,9 +43,12 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxnet)
-#+(or lispworks mcl)       (in-package :boxnet)
+(in-package :boxnet)
 
+;; sgithens: working around loading issue
+(eval-when (compile load eval)
+(defvar ID nil)
+)
 
 ;;;; Utilities for server box info
 
@@ -719,9 +722,11 @@ Modification History (most recent at top)
 (defun initialize-cross-file-link-id (id)
   (setq *cross-file-link-id-counter* id))
 
+(eval-when (eval)
 (deffile-property-handler :max-cross-file-link-id id
   (debugging-message "Initializing Cross File Link Counter to ~A" id)
   (initialize-cross-file-link-id id))
+)
 
 ;;; print functions
 (defun  %print-file-port-branch-link (obj stream &rest ignore)
@@ -1343,13 +1348,13 @@ Modification History (most recent at top)
 
 (defun install-file-control-boxes (box)
   (let ((closet (box::closet-row box nil)))
-    (unless (eval::lookup-static-variable-in-box-only box 'bu::load-on-login?)
+    (unless (boxer-eval::lookup-static-variable-in-box-only box 'bu::load-on-login?)
       (box::append-cha closet
 		       (make-file-control-box "Load-on-Login?"
 					      (if (box::load-box-on-login? box)
 						  "True" "False")
 					      "Update-Login-Action")))
-    (unless (eval::lookup-static-variable-in-box-only box 'bu::save-changes?)
+    (unless (boxer-eval::lookup-static-variable-in-box-only box 'bu::save-changes?)
       (box::append-cha closet
 		       (make-file-control-box "Save-Changes?"
 					      (if (read-only-box? box)
@@ -1363,7 +1368,7 @@ Modification History (most recent at top)
 
 
 (defun update-file-control-interface (interface-symbol box value)
-  (let ((int-box (eval::lookup-static-variable-in-box-only box
+  (let ((int-box (boxer-eval::lookup-static-variable-in-box-only box
 							   interface-symbol)))
     (when (box::box? int-box)
       ;; if there is an interface box then set it to the new value

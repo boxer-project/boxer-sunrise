@@ -88,8 +88,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer)
-#+(or lispworks mcl)       (in-package :boxer)
+(in-package :boxer)
 
 
 
@@ -117,9 +116,9 @@ Modification History (most recent at top)
 		  (let ((object (access-evrow-element x (car entries))))
 		    (if (numberp object)
 			object
-			(eval::primitive-signal-error :number-expected x)))
-		  (eval::primitive-signal-error :number-expected x)))
-	    (eval::primitive-signal-error :number-expected x)))))
+			(boxer-eval::primitive-signal-error :number-expected x)))
+		  (boxer-eval::primitive-signal-error :number-expected x)))
+	    (boxer-eval::primitive-signal-error :number-expected x)))))
 
 
 ;;; Similarly, this function does the work of DATAFY.
@@ -332,10 +331,10 @@ Modification History (most recent at top)
 
 (defmacro maintaining-point-position (&body body)
   `(progn
-     (fill-doit-cursor-position-vector eval::*process-doit-cursor-position*)
+     (fill-doit-cursor-position-vector boxer-eval::*process-doit-cursor-position*)
      (unwind-protect
 	  (progn . ,body)
-       (restore-point-position eval::*process-doit-cursor-position*))))
+       (restore-point-position boxer-eval::*process-doit-cursor-position*))))
 
 (defun fill-doit-cursor-position-vector (vector &optional (bp *point*))
   (setf (process-doit-cursor-position-box vector) (bp-box bp))
@@ -411,7 +410,7 @@ Modification History (most recent at top)
                  (with-port-retargetting
                    (unwind-protect
                        (let (#-lispworks (*evaluation-in-progress?* t)
-                             (eval::*doit-key-process* eval::*current-process*))
+                             (boxer-eval::*doit-key-process* boxer-eval::*current-process*))
                          #+lispworks (setq *evaluation-in-progress?* t)
                          (with-editor-mutation-queueing
                            (with-floating-point-exceptions-handled
@@ -467,9 +466,9 @@ Modification History (most recent at top)
 			 (display-style-list box)))
 	       (return t))))))
 
-(defvar *last-unprintable-returned-value* eval::*novalue*)
+(defvar *last-unprintable-returned-value* boxer-eval::*novalue*)
 
-(defvar *last-unprintable-error-box* eval::*novalue*)
+(defvar *last-unprintable-error-box* boxer-eval::*novalue*)
 
 (defun unprintable-sound () (beep))
 
@@ -491,7 +490,7 @@ Modification History (most recent at top)
 	 (unprintable-error-box-warning result))
 	((returned-value-printable-place?)
 	 (doit-print-returned-value result))
-	((eq result eval::*novalue*))
+	((eq result boxer-eval::*novalue*))
 	(t (unprintable-returned-value-warning result))))
 
 (defun doit-internal (&optional list-to-eval)
@@ -499,11 +498,11 @@ Modification History (most recent at top)
       (boxer-editor-error "Can't do COM-DOIT inide COM-DOIT")
       (unwind-protect
 	   (let ((row (point-row))
-		 (process eval::*current-process*))
+		 (process boxer-eval::*current-process*))
 	     (unless (name-row? row)
 	       (top-level-eval-wrapper
 		(multiple-value-bind (result error?)
-		    (eval::boxer-eval (or list-to-eval (eval-objs row)))
+		    (boxer-eval::boxer-eval (or list-to-eval (eval-objs row)))
 		  ;; this test not be good enough.  what if
 		  ;; another process moves the cursor, and then
 		  ;; resumes this process?  Well, maybe that's
@@ -514,16 +513,16 @@ Modification History (most recent at top)
 		  ;; maybe we should store the invoking key/function
 		  ;; in the doit-cursor-position, and base it on
 		  ;; who did started it originally?
-		  (unless (eq process eval::*current-process*)
+		  (unless (eq process boxer-eval::*current-process*)
 		    (restore-point-position
-		     eval::*process-doit-cursor-position* t))
+		     boxer-eval::*process-doit-cursor-position* t))
 		  (print-returned-value-when-possible result error?)
 		  (unless (or *doit-restore-cursor-position*
-			      (eq process eval::*current-process*))
+			      (eq process boxer-eval::*current-process*))
 		    (restore-point-position
-		     (eval::process-variable
+		     (boxer-eval::process-variable
 		      process
-		      eval::*process-doit-cursor-position*) t))))))
+		      boxer-eval::*process-doit-cursor-position*) t))))))
 	(reset-editor-numeric-arg))))
 
 
@@ -535,41 +534,41 @@ Modification History (most recent at top)
 ;;;
 ;;; *** The main Editor/Evaluator functions. ***
 ;;;
-(defun eval::eval-point-row ()
-  (eval::boxer-eval (eval-objs (point-row))))
+(defun boxer-eval::eval-point-row ()
+  (boxer-eval::boxer-eval (eval-objs (point-row))))
 
-(defun eval::eval-top-level (form)
+(defun boxer-eval::eval-top-level (form)
   (top-level-eval-wrapper
-   (eval::boxer-eval form)))
+   (boxer-eval::boxer-eval form)))
 
 
-(defun eval::keyboard-idle-background-process-restart ()
-  (let ((bg-process (eval::next-restartable-process)))
+(defun boxer-eval::keyboard-idle-background-process-restart ()
+  (let ((bg-process (boxer-eval::next-restartable-process)))
     (unless (null bg-process)
-      (let ((eval::*initial-poll-count* eval::*background-poll-count*)
-	    (eval::*poll-count* eval::*background-poll-count*))
+      (let ((boxer-eval::*initial-poll-count* boxer-eval::*background-poll-count*)
+	    (boxer-eval::*poll-count* boxer-eval::*background-poll-count*))
 	(background-eval-wrapper
-	 (eval::boxer-eval nil :process-state bg-process))))))
+	 (boxer-eval::boxer-eval nil :process-state bg-process))))))
 
 ;;;
 ;;;Eval with timing for debugging:
 ;;;
-(defun eval::F (&optional exp)
+(defun boxer-eval::F (&optional exp)
   (top-level-eval-wrapper
     (when (null exp) (setq exp (eval-objs (point-row))))
-    (time (eval::boxer-eval exp))))
+    (time (boxer-eval::boxer-eval exp))))
 
 #+symbolics
 (defun Fwc (&optional exp)
   (top-level-eval-wrapper
     (when (null exp) (setq exp (eval-objs (point-row))))
-    (time (eval::boxer-eval exp) t)))
+    (time (boxer-eval::boxer-eval exp) t)))
 
 #+symbolics
 (defun Fwm (&optional exp)
   (top-level-eval-wrapper
     (when (null exp) (setq exp (eval-objs (point-row))))
-    (meter:with-monitoring  t (eval::boxer-eval exp))))
+    (meter:with-monitoring  t (boxer-eval::boxer-eval exp))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; BOXER Editor interface
@@ -648,23 +647,23 @@ Modification History (most recent at top)
 ;;; because of the trigger check and possible call to eval.
 (defun handle-boxer-key (name keycode shift-bits)
   (let ((value (or (mode-key name)
-                   (let ((key-value (eval::boxer-symeval name)))
-                     (unless (eq key-value eval::*novalue*)
+                   (let ((key-value (boxer-eval::boxer-symeval name)))
+                     (unless (eq key-value boxer-eval::*novalue*)
                        key-value))
                    (when *try-alternate-platform-names*
                      (dolist (alt-name (alternate-platform-input-names keycode
                                                                        shift-bits)
-                                       eval::*novalue*)
-                       (let ((alt-value (eval::boxer-symeval alt-name)))
-                         (unless (eq alt-value eval::*novalue*)
+                                       boxer-eval::*novalue*)
+                       (let ((alt-value (boxer-eval::boxer-symeval alt-name)))
+                         (unless (eq alt-value boxer-eval::*novalue*)
                            (return alt-value))))))))
-    (cond ((eq value eval::*novalue*) nil)
-	  ((eval::boxer-function? value)
-	   (cond ((eval::compiled-boxer-function? value)
+    (cond ((eq value boxer-eval::*novalue*) nil)
+	  ((boxer-eval::boxer-function? value)
+	   (cond ((boxer-eval::compiled-boxer-function? value)
 		  (let ((returned-value
-			 (funcall(eval::compiled-boxer-function-object value))))
+			 (funcall(boxer-eval::compiled-boxer-function-object value))))
 		    (unless (or (null returned-value)
-				(eq returned-value eval::*novalue*))
+				(eq returned-value boxer-eval::*novalue*))
 		      (insert-cha *point*
 				  (convert-doit-result-for-printing
 				   returned-value))))
@@ -739,24 +738,24 @@ Modification History (most recent at top)
 (defun handle-boxer-mouse-click (name window x y mouse-bp clicked?
                                       click bits area)
   (unless (null (bp-row mouse-bp))
-    (let ((value (let ((eval::*lexical-variables-root* (bp-box mouse-bp)))
+    (let ((value (let ((boxer-eval::*lexical-variables-root* (bp-box mouse-bp)))
 		   (or (mode-key name)
                        (when *try-alternate-platform-names*
                          (dolist (altname (alternate-platform-click-names
                                            click bits area))
-                           (let ((altvalue (eval::boxer-symeval altname)))
-                             (unless (eq altvalue eval::*novalue*)
+                           (let ((altvalue (boxer-eval::boxer-symeval altname)))
+                             (unless (eq altvalue boxer-eval::*novalue*)
                                (setq name altname)
                                (return altvalue)))))
-                       (eval::boxer-symeval name)))))
-      (cond ((eq value eval::*novalue*) nil)
-	    ((eval::boxer-function? value)
-	     (cond ((eval::compiled-boxer-function? value)
+                       (boxer-eval::boxer-symeval name)))))
+      (cond ((eq value boxer-eval::*novalue*) nil)
+	    ((boxer-eval::boxer-function? value)
+	     (cond ((boxer-eval::compiled-boxer-function? value)
 		    (let ((result
 			   (funcall
-			    (eval::compiled-boxer-function-object value)
+			    (boxer-eval::compiled-boxer-function-object value)
 			    window x y mouse-bp clicked?)))
-		      (unless (or (null result) (eq result eval::*novalue*))
+		      (unless (or (null result) (eq result boxer-eval::*novalue*))
 			(insert-cha
 			 *point* (convert-doit-result-for-printing result))))
 		    (maybe-handle-trigger-in-editor)
@@ -778,39 +777,39 @@ Modification History (most recent at top)
 (defun handle-boxer-key-doit-box (value)
   (if *evaluation-in-progress?*
       (boxer-editor-error "Can't do DOIT keys while evaluating an expression")
-      (let ((process eval::*current-process*))
+      (let ((process boxer-eval::*current-process*))
 	(top-level-eval-wrapper
 	 (multiple-value-bind (result error?)
-	     (eval::boxer-eval (list value))
+	     (boxer-eval::boxer-eval (list value))
 	   ;; this test is wrong -- see doit-print-returned-value above.
-	   (cond ((eq process eval::*current-process*)
+	   (cond ((eq process boxer-eval::*current-process*)
 		  (cond ((not (null error?))
 			 (unprintable-error-box-warning result))
 			((and (returned-value-printable-place?)
 			      (not (or (null result)
-				       (eq result eval::*novalue*))))
+				       (eq result boxer-eval::*novalue*))))
 			 (insert-cha *point*
 				     (convert-doit-result-for-printing
 				      result)))
-			((eq result eval::*novalue*))
+			((eq result boxer-eval::*novalue*))
 			(t (unprintable-returned-value-warning result))))
 		 (t (restore-point-position
-		     eval::*process-doit-cursor-position* t)
+		     boxer-eval::*process-doit-cursor-position* t)
 		     (cond ((and error? (not (error-value-printable-place?)))
 			    (unprintable-error-box-warning result))
 			   ((returned-value-printable-place?)
 			    (doit-print-returned-value result))
-			   ((eq result eval::*novalue*))
+			   ((eq result boxer-eval::*novalue*))
 			   (t (unprintable-returned-value-warning result)))
 		    (unless *doit-restore-cursor-position*
 		      (restore-point-position
-		       (eval::process-variable
+		       (boxer-eval::process-variable
 			process
-			eval::*process-doit-cursor-position*)))))))
+			boxer-eval::*process-doit-cursor-position*)))))))
 	(maybe-handle-trigger-in-editor))))
 
 (defun handle-boxer-key-data-box (value)
-  (let ((eval::*primitive-shadow-warning-on?* nil))
+  (let ((boxer-eval::*primitive-shadow-warning-on?* nil))
     ;; don't warn about shadowing
     (if (name-row? (point-row))
 	(unprintable-returned-value-warning (copy-top-level-box value))
@@ -832,10 +831,10 @@ Modification History (most recent at top)
 ;; BOXER-EVAL returns T as a second value if there was
 ;; an error.
 (defun maybe-handle-trigger-in-editor ()
-  (when (not (null eval::*trigger-list-to-run*))
+  (when (not (null boxer-eval::*trigger-list-to-run*))
     (multiple-value-bind (result errorp)
-	(eval::eval-top-level (prog1 eval::*trigger-list-to-run*
-				(setq eval::*trigger-list-to-run* nil)))
+	(boxer-eval::eval-top-level (prog1 boxer-eval::*trigger-list-to-run*
+				(setq boxer-eval::*trigger-list-to-run* nil)))
       (when (and errorp (box? result)) (insert-cha *point* result)))))
 
 
@@ -846,15 +845,15 @@ Modification History (most recent at top)
   (mapcar #'(lambda (u)
 	      (if (consp u) (cadr u) u))
 	  (cond ((or (numberp object) (data-box? object)) nil)
-		((eq object eval::*novalue*)
+		((eq object boxer-eval::*novalue*)
 		 (boxer-editor-error "No Box with this name"))
 		((symbolp object)
-		 (arglist-for-prompter (eval::boxer-symeval object)))
-		((and (eval::possible-eval-object? object)
-                      (eval::compiled-boxer-function? object))
-		 (eval::boxer-function-arglist object))
+		 (arglist-for-prompter (boxer-eval::boxer-symeval object)))
+		((and (boxer-eval::possible-eval-object? object)
+                      (boxer-eval::compiled-boxer-function? object))
+		 (boxer-eval::boxer-function-arglist object))
 		((doit-box? object)
-		 (eval::boxer-function-arglist (eval::cached-code-editor-box object)))
+		 (boxer-eval::boxer-function-arglist (boxer-eval::cached-code-editor-box object)))
 		((port-box? object)
 		 (arglist-for-prompter (get-port-target object)))
 		(t (boxer-editor-error "Object is not a boxer function")))))
@@ -866,7 +865,7 @@ Modification History (most recent at top)
 
 (defvar *evaluator-helpful* T)
 
-(defun eval::evaluator-helpful-message (message)
+(defun boxer-eval::evaluator-helpful-message (message)
   (when *evaluator-helpful*
     (boxer-editor-warning message)))
 
@@ -875,12 +874,12 @@ Modification History (most recent at top)
 ;;; init
 ;;;
 
-(defun eval::setup-evaluator ()
-  (eval::initialize-special-stack-frame-initializers)
-  (eval::init-global-eval-vars)
-  (setq eval::*false*
+(defun boxer-eval::setup-evaluator ()
+  (boxer-eval::initialize-special-stack-frame-initializers)
+  (boxer-eval::init-global-eval-vars)
+  (setq boxer-eval::*false*
 	(boxer::make-vc (list (boxer::make-evrow-from-entry 'bu::false))))
-  (setq eval::*true*
+  (setq boxer-eval::*true*
 	(boxer::make-vc (list (boxer::make-evrow-from-entry 'bu::true))))
   #+sun (setup-boxer-send)
   nil)

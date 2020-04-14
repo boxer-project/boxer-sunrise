@@ -102,38 +102,38 @@ Modification History (most recent at the top)
 ;; Note: 0,1 and 5 look good 2,3 and 4 could use some tweaking...
 
 (defun initialize-gray-patterns ()
-  (setq *GRAY0* (make-pattern
+  (setq *GRAY0* (boxer-window::make-pattern
 		 '((1 0 0 0 0 1 0 0 0 0)
 		   (0 0 1 0 0 0 0 1 0 0)
 		   (0 0 0 0 1 0 0 0 0 1)
 		   (0 1 0 0 0 0 1 0 0 0)
 		   (0 0 0 1 0 0 0 0 1 0))))
-  (setq *GRAY1* (make-pattern
+  (setq *GRAY1* (boxer-window::make-pattern
 		 '((1 0 0 0 1 0 0 0)
 		   (0 1 0 0 0 1 0 0)
 		   (0 0 0 1 0 0 0 1)
 		   (0 0 1 0 0 0 1 0))))
-  (setq *GRAY2* (make-pattern
+  (setq *GRAY2* (boxer-window::make-pattern
 		 '((1 0 0 0)
 		   (0 0 1 0)
 		   (0 1 0 0))))
-  (setq *GRAY3* (make-pattern
+  (setq *GRAY3* (boxer-window::make-pattern
 		 '((1 0 0 0 1 0 1 0)
 		   (0 1 0 1 0 0 0 1)
 		   (1 0 0 0 1 0 1 0)
 		   (0 1 0 1 0 0 0 1))))
-  (setq *GRAY4* (make-pattern
+  (setq *GRAY4* (boxer-window::make-pattern
 		 '((1 0 1 0 1 0 1 0)
 		   (0 1 0 0 0 1 0 0)
 		   (1 0 1 0 1 0 1 0))))
-  (setq *GRAY5* (make-pattern
+  (setq *GRAY5* (boxer-window::make-pattern
 		 '((1 0 1 0 1 0 1 0)
 		   (0 1 0 1 0 1 0 1)
 		   (1 0 1 0 1 0 1 0)
 		   (0 1 0 1 0 1 0 1))))
   ;; finally set up *gray* to be one of the grays we just defined
   (setq *GRAY* *GRAY0*
-	*filegray* (make-pattern '((1 1) (1 1)))
+	*filegray* (boxer-window::make-pattern '((1 1) (1 1)))
 	*graphicsgray* *gray1*))
 
 ;;; The X implementation requires that the font map stuff be set

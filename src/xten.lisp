@@ -56,8 +56,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
+(in-package :boxer)
 
 (defvar *boxer-extensions* nil)
 
@@ -213,7 +212,7 @@ Modification History (most recent at top)
 ;; returns 3 boxes, currently loaded extensions, the startup list and the list
 ;; of available extensions
 
-(defboxer-primitive bu::extension-info ()
+(boxer-eval::defboxer-primitive bu::extension-info ()
   (insure-extension-dirs)
   (let* ((current (mapcar #'boxer-extension-pretty-name *boxer-extensions*))
          (available (append (get-xtns (xdir)) (get-xtns (dxdir))))
@@ -228,7 +227,7 @@ Modification History (most recent at top)
            (make-row (list (make-xten-doc-box)))))))
 
 ;; remember to get rid of possible �'s
-(defun row-entry-from-xtstring (xs) (list (remove #\� xs)))
+(defun row-entry-from-xtstring (xs) xs) ;; sgithens TODO what character is this? (list (remove #\� xs)))
 
 (defun make-xten-doc-box ()
   (let ((box (make-box `(("Load-Extension" ,(make-box '(("<extension>")) 'data-box)
@@ -247,7 +246,7 @@ Modification History (most recent at top)
 (defun xname-from-box (box)
   (string-trim '(#\space #\tab #\newline) (box-text-string box)))
 
-(defboxer-primitive bu::add-extension (x)
+(boxer-eval::defboxer-primitive bu::add-extension (x)
   (insure-extension-dirs)
   (let ((xstring (xname-from-box x))
         (current (get-xtns))
@@ -258,14 +257,14 @@ Modification History (most recent at top)
           ((member xstring disabled :test #'string-equal)
            (rename-file (xpath xstring (dxdir))
                         (xpath xstring (xdir))))
-          (t (eval::primitive-signal-error :extension
+          (t (boxer-eval::primitive-signal-error :extension
                                            "Can't find the Extension, "
                                            xstring
                                            ", You can add it manually by dropping the file"
                                            "into the \"Extensions\" folder"))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::remove-extension (x)
+(boxer-eval::defboxer-primitive bu::remove-extension (x)
   (insure-extension-dirs)
   (let ((xstring (xname-from-box x))
         (current (get-xtns)))
@@ -273,11 +272,11 @@ Modification History (most recent at top)
       ;; should we error if we can't find it ?
       (rename-file (xpath xstring (xdir))
                    (xpath xstring (dxdir))))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 
 #| old style xmapfile based prims....
-(defboxer-primitive bu::add-extension (x)
+(boxer-eval::defboxer-primitive bu::add-extension (x)
   (let* ((xstring (xname-from-box x))
          (xmapfile (make-pathname :directory (xdir) :name "extension" :type "map"))
          (xmapback (make-pathname :directory (xdir) :name "extension" :type "bak"))
@@ -296,9 +295,9 @@ Modification History (most recent at top)
            (when (probe-file xmapfile)
              (rename-file xmapfile xmapback #+ccl :if-exists #+ccl :supersede))
            (rename-file tmpmap xmapfile))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::remove-extension (x)
+(boxer-eval::defboxer-primitive bu::remove-extension (x)
   (let* ((xstring (xname-from-box x))
          (xmapfile (make-pathname :directory (xdir) :name "extension" :type "map"))
          (xmapback (make-pathname :directory (xdir) :name "extension" :type "bak"))
@@ -316,18 +315,18 @@ Modification History (most recent at top)
            (rename-file tmpmap xmapfile))
           (t ;; not in map so do nothing...
            )))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 |#
 
-(defboxer-primitive bu::load-extension (x)
+(boxer-eval::defboxer-primitive bu::load-extension (x)
   (insure-extension-dirs)
   ;(ccl::eval-enqueue `(load-extension ,(xname-from-box x)))
   (load-extension (xname-from-box x))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 #+ccl
-(defboxer-primitive bu::describe-extension (x)
+(boxer-eval::defboxer-primitive bu::describe-extension (x)
   (extension-info-box (xname-from-box x)))
 
 #+ccl
@@ -394,54 +393,54 @@ Modification History (most recent at top)
 ;; Utilities
 (defun line-prompt (prompt-string) (format t "~&~A: " prompt-string) (read-line))
 
-#+ccl
-(defun ccl-file->xten (pathname &optional
-                                (major (read-from-string
-                                        (line-prompt "Major Release Number")))
-                                (minor (read-from-string
-                                        (line-prompt "Minor Release Number")))
-                                (patch-level
-                                 (read-from-string (line-prompt "Patch Number")))
-                                (version-string (line-prompt "Version String"))
-                                (version-info
-                                 (line-prompt "Version (in Get) Info")))
-  (ccl::set-mac-file-type pathname :BOXE)
-  (ccl::set-mac-file-creator pathname :BOXR)
-  (ccl-set-xten-info-internal pathname major minor patch-level
-                              version-string version-info))
+;; #+ccl
+;; (defun ccl-file->xten (pathname &optional
+;;                                 (major (read-from-string
+;;                                         (line-prompt "Major Release Number")))
+;;                                 (minor (read-from-string
+;;                                         (line-prompt "Minor Release Number")))
+;;                                 (patch-level
+;;                                  (read-from-string (line-prompt "Patch Number")))
+;;                                 (version-string (line-prompt "Version String"))
+;;                                 (version-info
+;;                                  (line-prompt "Version (in Get) Info")))
+;;   (ccl::set-mac-file-type pathname :BOXE)
+;;   (ccl::set-mac-file-creator pathname :BOXR)
+;;   (ccl-set-xten-info-internal pathname major minor patch-level
+;;                               version-string version-info))
 
-;; prompt for major, minor, patch numbers
-;; then version-string and version-info strings
+;; ;; prompt for major, minor, patch numbers
+;; ;; then version-string and version-info strings
 
-#+ccl
-(defun ccl-set-xten-info-internal (pathname major minor patch-level
-                                        version-string version-info)
-  (let ((globalvers (ccl::get-resource "vers" 1)))
-    (ccl::with-open-resource-file (x pathname :if-does-not-exist :create)
-      (let* ((existing (ccl::get-resource "vers" 1))
-             (file-res? (and (not (null existing))
-                             (not (= (ccl::%ptr-to-int existing)
-                                     (ccl::%ptr-to-int globalvers)))))
-             (vershandle (#_NewHandle (+ 6 ; total bytes fro numerical info
-                                           (1+ (length version-string))
-                                           (1+ (length version-info)))))
-             ;; maybe use ccl::%stack-block instead ?
-             (vp (ccl::%get-ptr vershandle)))
-        (when (> major 9)
-          (multiple-value-bind (tens ones) (floor major 10)
-            (setq major (dpb tens #.(byte 4 4) ones))))
-        (ccl::%put-byte vp major)
-        ;; minor and patch levels
-        (ccl::%put-byte vp (dpb minor #.(byte 4 4) patch-level) 1)
-        ;; set the dev stage, pre-release rev code and
-        ;; region codes to reasonable defaults (maybe prompt for them later)
-        (ccl::%put-byte vp #x80 2) ; dev #x20=pre-alpha, #x40=alpha, #x60=beta, #x80=release
-        (ccl::%put-byte vp 0 3) ; pre-release revision level
-        ;(ccl::%put-word vp usregion 4) ; region code (what's US ? see inside mac:text)
-        (ccl::%put-string vp version-string 6)
-        (ccl::%put-string vp version-info (+ 7 (length version-string)))
-        ;; now put it away
-        (when file-res? (ccl::remove-resource existing))
-        (ccl::add-resource vershandle "vers" 1)
-        (ccl::write-resource vershandle)
-        (ccl::release-resource vershandle)))))
+;; #+ccl
+;; (defun ccl-set-xten-info-internal (pathname major minor patch-level
+;;                                         version-string version-info)
+;;   (let ((globalvers (ccl::get-resource "vers" 1)))
+;;     (ccl::with-open-resource-file (x pathname :if-does-not-exist :create)
+;;       (let* ((existing (ccl::get-resource "vers" 1))
+;;              (file-res? (and (not (null existing))
+;;                              (not (= (ccl::%ptr-to-int existing)
+;;                                      (ccl::%ptr-to-int globalvers)))))
+;;              (vershandle (#_NewHandle (+ 6 ; total bytes fro numerical info
+;;                                            (1+ (length version-string))
+;;                                            (1+ (length version-info)))))
+;;              ;; maybe use ccl::%stack-block instead ?
+;;              (vp (ccl::%get-ptr vershandle)))
+;;         (when (> major 9)
+;;           (multiple-value-bind (tens ones) (floor major 10)
+;;             (setq major (dpb tens #.(byte 4 4) ones))))
+;;         (ccl::%put-byte vp major)
+;;         ;; minor and patch levels
+;;         (ccl::%put-byte vp (dpb minor #.(byte 4 4) patch-level) 1)
+;;         ;; set the dev stage, pre-release rev code and
+;;         ;; region codes to reasonable defaults (maybe prompt for them later)
+;;         (ccl::%put-byte vp #x80 2) ; dev #x20=pre-alpha, #x40=alpha, #x60=beta, #x80=release
+;;         (ccl::%put-byte vp 0 3) ; pre-release revision level
+;;         ;(ccl::%put-word vp usregion 4) ; region code (what's US ? see inside mac:text)
+;;         (ccl::%put-string vp version-string 6)
+;;         (ccl::%put-string vp version-info (+ 7 (length version-string)))
+;;         ;; now put it away
+;;         (when file-res? (ccl::remove-resource existing))
+;;         (ccl::add-resource vershandle "vers" 1)
+;;         (ccl::write-resource vershandle)
+;;         (ccl::release-resource vershandle)))))

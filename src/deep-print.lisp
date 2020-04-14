@@ -34,8 +34,6 @@ Modification History (most recent at the top)
 
 |#
 
-
-
 (in-package :boxer)
 
 ;;;; The theory:
@@ -111,7 +109,7 @@ Modification History (most recent at the top)
 
 (defmethod deep-hardcopy-box ((hc plain-text-hardcopy) box &optional (depth 0))
   (with-slots (output-stream) hc
-    (let ((hint (eval::lookup-static-variable-in-box-only box 'bu::print-hint)))
+    (let ((hint (boxer-eval::lookup-static-variable-in-box-only box 'bu::print-hint)))
       (cond ((graphics-box? box)  (format output-stream "Graphics Box~&"))
             ((not (null hint))   (handle-print-hint hc hint box))
             ;; special cases are done, now handle the simple case
@@ -143,7 +141,7 @@ Modification History (most recent at the top)
 ;; these should be format strings
 (defvar *html-deep-print-meta-info*
   (format nil "    <meta name=\"GENERATOR\" content=\"~A HTML Printer v~A\""
-          (system-version 'boxer) *deep-hardcopy-version*))
+          3.2 0));;(system-version 'boxer) *deep-hardcopy-version*)) ;; TODO sgithens: reform how this system version is calculated on load
 
 (defmethod deep-hardcopy-preamble ((hc html-hardcopy) &optional box)
   (with-slots (output-stream) hc
@@ -175,7 +173,7 @@ Modification History (most recent at the top)
 
 (defmethod deep-hardcopy-box ((hc html-hardcopy) box &optional (depth 0))
   (with-slots (output-stream) hc
-    (let ((hint (eval::lookup-static-variable-in-box-only box 'bu::print-hint)))
+    (let ((hint (boxer-eval::lookup-static-variable-in-box-only box 'bu::print-hint)))
       (cond ((graphics-box? box)  (format output-stream "Graphics Box~&"))
             ((not (null hint))   (handle-print-hint hc hint box))
             ;; special cases are done, now handle the simple case
@@ -211,7 +209,7 @@ Modification History (most recent at the top)
         (deep-hardcopy-preamble hc)
         (deep-hardcopy-box hc (point-box))
         (deep-hardcopy-epilog hc))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-deep-hardcopy-as-html ()
   "Render the contents of the current box as plain text"
@@ -221,4 +219,4 @@ Modification History (most recent at the top)
         (deep-hardcopy-preamble hc)
         (deep-hardcopy-box hc (point-box))
         (deep-hardcopy-epilog hc))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)

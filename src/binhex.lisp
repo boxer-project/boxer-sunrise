@@ -41,10 +41,7 @@ Modification History (most recent at top)
 
 |#
 
-
-
-#+(or lispworks mcl) (in-package :boxnet)
-#-(or lispworks mcl) (in-package 'boxnet)
+(in-package :boxnet)
 
 
 ;;;; Low level BinHex functions (cribbed from CCL:Examples:BinHex:binhex.lisp)
@@ -113,7 +110,7 @@ Modification History (most recent at top)
 
 (defun binhex-error (fstring fargs)
   ;(error fstring fargs)
-  (eval::primitive-signal-error :binhex (format nil fstring fargs))
+  (boxer-eval::primitive-signal-error :binhex (format nil fstring fargs))
   )
 
 ; bx-byte reads a byte from the binhex file - gets the 6 bit translation

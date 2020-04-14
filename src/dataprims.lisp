@@ -106,8 +106,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm)(in-package 'boxer :nicknames '(box))
-#+(or lispworks mcl)      (in-package :boxer)
+(in-package :boxer)
 
 
 
@@ -133,7 +132,7 @@ Modification History (most recent at top)
 	  . ,body)))
 
 (defmacro data-primitive-error (format-string &rest format-args)
-  `(eval::primitive-signal-error :data-primitive ,format-string . ,format-args))
+  `(boxer-eval::primitive-signal-error :data-primitive ,format-string . ,format-args))
 
 ;; if there are no new rows, then it makes a single empty row
 (defun make-new-box (old-box new-rows)
@@ -152,22 +151,22 @@ Modification History (most recent at top)
 
 (defun out-of-range-mutator-action (index box &optional (type "items"))
   (if (consp index)
-      (eval::primitive-signal-error
+      (boxer-eval::primitive-signal-error
        :data-mutator
        "inputs row" (car index)
        "and column" (cdr index)
        "are outside the range of the box" (port-to box))
-      (eval::primitive-signal-error
+      (boxer-eval::primitive-signal-error
        :data-mutator
        type "input" index "is out of the range of the box" (port-to box))))
 
 (defun out-of-range-access-result (index box &optional (type "index"))
   (if (consp index)
-      (eval::primitive-signal-error
+      (boxer-eval::primitive-signal-error
        :data-selector
        "inputs row" (car index) "and column" (cdr index)
        "are outside of the range of the box" box)
-      (eval::primitive-signal-error
+      (boxer-eval::primitive-signal-error
        :data-selector
        type
        index
@@ -175,11 +174,11 @@ Modification History (most recent at top)
 
 (defun out-of-range-filter-result (index box &optional (type "index"))
   (if (consp index)
-      (eval::primitive-signal-error
+      (boxer-eval::primitive-signal-error
        :data-selector
        "inputs row" (car index) "and column" (cdr index)
        "are outside of the range of the box" box)
-      (eval::primitive-signal-error
+      (boxer-eval::primitive-signal-error
        :data-selector
        type
        index
@@ -381,11 +380,11 @@ Modification History (most recent at top)
       (declare (ignore inlinks? new?))
       (when (not (null (cdr rows)))
 	(unless (every #'empty-evrow? (cdr rows))
-	  (eval::primitive-signal-error
+	  (boxer-eval::primitive-signal-error
 	   :BOX-CONTENTS "expected a box containing one element")))
       (when (not (let ((entries (evrow-pointers (car rows))))
 		   (and entries (null (cdr entries)))))
-	(eval::primitive-signal-error
+	(boxer-eval::primitive-signal-error
 	 :BOX-CONTENTS "expected a box containing one element"))
       (let ((item (access-evrow-element
 		   (or vc-rows-entry (box-or-port-target box))
@@ -393,7 +392,7 @@ Modification History (most recent at top)
 		   t)))
 	(cond ((numberp item) item)
 	      ((symbolp item)
-	       (eval::primitive-signal-error
+	       (boxer-eval::primitive-signal-error
 		:BOX-CONTENTS "expected a box containing one box or number"))
 	      ((and (virtual-copy? item)
 		    (not (fast-eval-doit-box? item)))
@@ -406,7 +405,7 @@ Modification History (most recent at top)
 	      ((and (box? item) (not (doit-box? item)))
 	       (virtual-copy item))
 	      (t
-	       (eval::primitive-signal-error
+	       (boxer-eval::primitive-signal-error
 		:BOX-CONTENTS
 		"expected a box containing a DATA box, port, or number")))))))
 
@@ -797,7 +796,7 @@ Modification History (most recent at top)
 		           (t		; must be an editor box
 			    (not-null (slot-value new-box 'contained-links))))
 		     nil)))
-    eval::*novalue*)
+    boxer-eval::*novalue*)
 
 #|
 (defun change (box new)
@@ -816,7 +815,7 @@ Modification History (most recent at top)
 		  (cons (cons new-box (tick)) (vc-pedigree new-box))
 		  (vc-pedigree new-box))))
       (setf (vc-modified? box) t)
-      eval::*novalue*)
+      boxer-eval::*novalue*)
      ((box? box)
       ;; first change the VC representation
       ;; note that there is no pedigree for us to extend so we
@@ -842,7 +841,7 @@ Modification History (most recent at top)
 						    'contained-links)))))
       ;; handle the changes to the editor box
       (modify-editor-structure box)
-      eval::*novalue*))))
+      boxer-eval::*novalue*))))
 |#
 
 
@@ -916,7 +915,7 @@ Modification History (most recent at top)
 	  ((not (<= 1 stop nrows))
 	   (out-of-range-mutator-action stop box "row"))
 	  ((> start stop)
-	   (eval::primitive-signal-error :data-mutator
+	   (boxer-eval::primitive-signal-error :data-mutator
 					 "The Start Row," start
 					 ", is > than the Stop Row, " stop))
 	  (t
@@ -1265,14 +1264,14 @@ Modification History (most recent at top)
 	  ((and (null r1) (null r2)) (nreverse rows))
        (push (make-evrow-from-entries (nconc r1 r2)) rows)))))
 
-(defboxer-primitive bu::join-bottom (b1 b2) (join-bottom b1 b2))
-(defboxer-primitive bu::join-right  (b1 b2) (join-right  b1 b2))
+(boxer-eval::defboxer-primitive bu::join-bottom (b1 b2) (join-bottom b1 b2))
+(boxer-eval::defboxer-primitive bu::join-right  (b1 b2) (join-right  b1 b2))
 
 
 
 ;;;; Quick Hack # 107
-(defboxer-primitive bu::equal? ((eval::dont-copy b1) (eval::dont-copy b2))
-  (eval::boxer-boolean (box-equal-internal b1 b2)))
+(boxer-eval::defboxer-primitive bu::equal? ((boxer-eval::dont-copy b1) (boxer-eval::dont-copy b2))
+  (boxer-eval::boxer-boolean (box-equal-internal b1 b2)))
 
 ;; This shouldn't call structured-box-items, since it's been declared
 ;; obsolete, but it works on editor boxes whereas the new functions don't work.
@@ -1325,7 +1324,7 @@ Modification History (most recent at top)
 	 (item-counter 1) (row-counter 1) (col-counter 1)
 	 (items nil) (rows nil) (cols nil))
     (when (or (null test-items) (not (null (cdr item-contents))))
-      (eval::primitive-signal-error
+      (boxer-eval::primitive-signal-error
        :data-primitive "The pattern item should have" "only one non-empty row"))
     (catch 'found
       (dolist (row-items box-items)
@@ -1613,42 +1612,42 @@ Modification History (most recent at top)
 ;;;; Boxer Function Definitions
 
 ;;;;  Info
-(defboxer-primitive bu::empty? ((eval::dont-copy box))
-  (eval:boxer-boolean (unless (numberp box) (empty-box? box))))
+(boxer-eval::defboxer-primitive bu::empty? ((boxer-eval::dont-copy box))
+  (boxer-eval::boxer-boolean (unless (numberp box) (empty-box? box))))
 
-(defboxer-primitive bu::length ((eval::dont-copy box))
+(boxer-eval::defboxer-primitive bu::length ((boxer-eval::dont-copy box))
   (if (numberp box) 1 (box-length-in-elements box)))
 
-(defboxer-primitive bu::count ((eval::dont-copy box))
+(boxer-eval::defboxer-primitive bu::count ((boxer-eval::dont-copy box))
   (if (numberp box) 1 (box-length-in-elements box)))
 
-(defboxer-primitive bu::number-of-items ((eval::dont-copy box))
+(boxer-eval::defboxer-primitive bu::number-of-items ((boxer-eval::dont-copy box))
   (if (numberp box) 1 (box-length-in-elements box)))
 
 
-(defboxer-primitive bu::width  ((eval::dont-copy box))
+(boxer-eval::defboxer-primitive bu::width  ((boxer-eval::dont-copy box))
   (if (numberp box) 1 (max-length-in-elements box)))
 
-(defboxer-primitive bu::number-of-columns ((eval::dont-copy box))
+(boxer-eval::defboxer-primitive bu::number-of-columns ((boxer-eval::dont-copy box))
   (if (numberp box) 1  (max-length-in-elements box)))
 
 
-(defboxer-primitive bu::height ((eval::dont-copy box))
+(boxer-eval::defboxer-primitive bu::height ((boxer-eval::dont-copy box))
   (if (numberp box) 1 (number-of-rows box)))
 
-(defboxer-primitive bu::number-of-rows ((eval::dont-copy box))
+(boxer-eval::defboxer-primitive bu::number-of-rows ((boxer-eval::dont-copy box))
   (if (numberp box) 1 (number-of-rows box)))
 
-(defboxer-primitive bu::item-numbers ((eval::dont-copy item)
-				      (eval::dont-copy box))
+(boxer-eval::defboxer-primitive bu::item-numbers ((boxer-eval::dont-copy item)
+				      (boxer-eval::dont-copy box))
   (let ((items (rc-position (box-or-port-target item)
 			    (box-or-port-target box))))
     (if (null items)
 	(make-empty-vc)
 	(make-vc (list (make-evrow-from-entries items))))))
 
-(defboxer-primitive bu::row-numbers ((eval::dont-copy item)
-				     (eval::dont-copy box))
+(boxer-eval::defboxer-primitive bu::row-numbers ((boxer-eval::dont-copy item)
+				     (boxer-eval::dont-copy box))
   (multiple-value-bind (items rows cols)
       (rc-position (box-or-port-target item) (box-or-port-target box))
     (declare (ignore items cols))
@@ -1657,8 +1656,8 @@ Modification History (most recent at top)
 	(make-vc (list (make-evrow-from-entries
 			(delete-duplicates rows :test #'=)))))))
 
-(defboxer-primitive bu::column-numbers ((eval::dont-copy item)
-					(eval::dont-copy box))
+(boxer-eval::defboxer-primitive bu::column-numbers ((boxer-eval::dont-copy item)
+					(boxer-eval::dont-copy box))
   (multiple-value-bind (items rows cols)
       (rc-position (box-or-port-target item) (box-or-port-target box))
     (declare (ignore items rows))
@@ -1667,7 +1666,7 @@ Modification History (most recent at top)
 	(make-vc (list (make-evrow-from-entries
 			(delete-duplicates cols :test #'=)))))))
 
-(defboxer-primitive bu::rc-numbers ((eval::dont-copy item)(eval::dont-copy box))
+(boxer-eval::defboxer-primitive bu::rc-numbers ((boxer-eval::dont-copy item)(boxer-eval::dont-copy box))
   (multiple-value-bind (items rows cols)
       (rc-position (box-or-port-target item) (box-or-port-target box))
     (declare (ignore items))
@@ -1679,8 +1678,8 @@ Modification History (most recent at top)
 						    (list r c)))))
 				rows cols)))))))
 
-(defboxer-primitive bu::member? ((eval::dont-copy item) (eval::dont-copy box))
-  (eval::boxer-boolean (rc-position (box-or-port-target item)
+(boxer-eval::defboxer-primitive bu::member? ((boxer-eval::dont-copy item) (boxer-eval::dont-copy box))
+  (boxer-eval::boxer-boolean (rc-position (box-or-port-target item)
                                     (box-or-port-target box))))
 
 ;; old keyword based primitive
@@ -1689,327 +1688,327 @@ Modification History (most recent at top)
 ;;;; Accessors
 
 ;;; Items
-(defboxer-primitive bu::first    (box)
+(boxer-eval::defboxer-primitive bu::first    (box)
   (if (empty-box? box) (make-empty-vc) (item 1 box)))
-(defboxer-primitive bu::butfirst (box)  (butstart box))
-(defboxer-primitive bu::last     (box)  (%last box))
-(defboxer-primitive bu::butlast  (box)  (%butlast box))
+(boxer-eval::defboxer-primitive bu::butfirst (box)  (butstart box))
+(boxer-eval::defboxer-primitive bu::last     (box)  (%last box))
+(boxer-eval::defboxer-primitive bu::butlast  (box)  (%butlast box))
 
-(defboxer-primitive bu::item     ((eval::numberize n) box)
+(boxer-eval::defboxer-primitive bu::item     ((boxer-eval::numberize n) box)
   (if (and (integerp n) (plusp& n))
       (item n box)
-      (eval::primitive-signal-error :data-primitive
+      (boxer-eval::primitive-signal-error :data-primitive
 				    "The index, "
 				    n ", should be a positive integer")))
 
-(defboxer-primitive bu::butitem  ((eval::numberize n) box)
+(boxer-eval::defboxer-primitive bu::butitem  ((boxer-eval::numberize n) box)
   (if (and (integerp n) (plusp& n))
       (butitem n box)
-      (eval::primitive-signal-error :data-primitive
+      (boxer-eval::primitive-signal-error :data-primitive
 				    "The index, "
 				    n ", should be a positive integer")))
 
-(defboxer-primitive bu::items ((eval::numberize start)
-			       (eval::numberize stop) box)
+(boxer-eval::defboxer-primitive bu::items ((boxer-eval::numberize start)
+			       (boxer-eval::numberize stop) box)
   (cond ((not (and (integerp start) (plusp& start)))
-	 (eval::primitive-signal-error :data-primitive
+	 (boxer-eval::primitive-signal-error :data-primitive
 				       "The index, " start
 				       ", should be a positive integer"))
 	((not (and (integerp stop) (plusp& stop)))
-	 (eval::primitive-signal-error :data-primitive
+	 (boxer-eval::primitive-signal-error :data-primitive
 				       "The index, " stop
 				       ", should be a positive integer"))
 	(t (items start stop box))))
 
 ;;; rows
-(defboxer-primitive bu::first-row    (box) (nth-row 1 box))
-(defboxer-primitive bu::butfirst-row (box) (butnth-row 1 box))
-(defboxer-primitive bu::last-row     (box) (last-row box))
-(defboxer-primitive bu::butlast-row  (box) (butlast-row box))
-(defboxer-primitive bu::row ((eval::numberize n) box)
+(boxer-eval::defboxer-primitive bu::first-row    (box) (nth-row 1 box))
+(boxer-eval::defboxer-primitive bu::butfirst-row (box) (butnth-row 1 box))
+(boxer-eval::defboxer-primitive bu::last-row     (box) (last-row box))
+(boxer-eval::defboxer-primitive bu::butlast-row  (box) (butlast-row box))
+(boxer-eval::defboxer-primitive bu::row ((boxer-eval::numberize n) box)
   (if (and (integerp n) (plusp& n))
       (nth-row n box)
-      (eval::primitive-signal-error :data-primitive
+      (boxer-eval::primitive-signal-error :data-primitive
 				    "The index, " n
 				    ", should be a positive integer")))
 
-(defboxer-primitive bu::butrow ((eval::numberize n) box)
+(boxer-eval::defboxer-primitive bu::butrow ((boxer-eval::numberize n) box)
   (if (and (integerp n) (plusp& n))
       (butnth-row n box)
-      (eval::primitive-signal-error :data-primitive
+      (boxer-eval::primitive-signal-error :data-primitive
 				    "The index, " n
 				    ", should be a positive integer")))
 
-(defboxer-primitive bu::rows ((eval::numberize start)(eval::numberize stop)box)
+(boxer-eval::defboxer-primitive bu::rows ((boxer-eval::numberize start)(boxer-eval::numberize stop)box)
   (cond ((not (and (integerp start) (plusp& start)))
-	 (eval::primitive-signal-error :data-primitive
+	 (boxer-eval::primitive-signal-error :data-primitive
 				       "The index, " start
 				       ", should be a positive integer"))
 	((not (and (integerp stop) (plusp& stop)))
-	 (eval::primitive-signal-error :data-primitive
+	 (boxer-eval::primitive-signal-error :data-primitive
 				       "The index, " stop
 				       ", should be a positive integer"))
 	(t (nth-rows start stop box))))
 
 ;;; unbox
-(defboxer-primitive bu::unbox (box) (%unbox box))
-(defboxer-primitive bu::unboxable? ((eval::dont-copy box))
-  (eval::boxer-boolean (%unboxable? box)))
-(defboxer-primitive bu::word? ((eval::dont-copy box))
-  (eval::boxer-boolean (%word? box)))
+(boxer-eval::defboxer-primitive bu::unbox (box) (%unbox box))
+(boxer-eval::defboxer-primitive bu::unboxable? ((boxer-eval::dont-copy box))
+  (boxer-eval::boxer-boolean (%unboxable? box)))
+(boxer-eval::defboxer-primitive bu::word? ((boxer-eval::dont-copy box))
+  (boxer-eval::boxer-boolean (%word? box)))
 
 ;;; Columns
-(defboxer-primitive bu::first-column    (box) (nth-column 1 box))
-(defboxer-primitive bu::butfirst-column (box) (butfirst-column box))
-(defboxer-primitive bu::last-column     (box) (last-column box))
-(defboxer-primitive bu::butlast-column  (box) (butlast-column box))
-(defboxer-primitive bu::column ((eval::numberize n) box)
+(boxer-eval::defboxer-primitive bu::first-column    (box) (nth-column 1 box))
+(boxer-eval::defboxer-primitive bu::butfirst-column (box) (butfirst-column box))
+(boxer-eval::defboxer-primitive bu::last-column     (box) (last-column box))
+(boxer-eval::defboxer-primitive bu::butlast-column  (box) (butlast-column box))
+(boxer-eval::defboxer-primitive bu::column ((boxer-eval::numberize n) box)
   (if (and (integerp n) (plusp& n))
       (nth-column n box)
-      (eval::primitive-signal-error :data-primitive
+      (boxer-eval::primitive-signal-error :data-primitive
 				    "The index, " n
 				    ", should be a positive integer")))
 
-(defboxer-primitive bu::butcolumn ((eval::numberize n) box)
+(boxer-eval::defboxer-primitive bu::butcolumn ((boxer-eval::numberize n) box)
   (if (and (integerp n) (plusp& n))
       (butnth-column n box)
-      (eval::primitive-signal-error :data-primitive
+      (boxer-eval::primitive-signal-error :data-primitive
 				    "The index, " n
 				    ", should be a positive integer")))
 
-(defboxer-primitive bu::columns ((eval::numberize start)(eval::numberize stop)
+(boxer-eval::defboxer-primitive bu::columns ((boxer-eval::numberize start)(boxer-eval::numberize stop)
 				 box)
   (cond ((not (and (integerp start) (plusp& start)))
-	 (eval::primitive-signal-error :data-primitive
+	 (boxer-eval::primitive-signal-error :data-primitive
 				       "The index, " start
 				       ", should be a positive integer"))
 	((not (and (integerp stop) (plusp& stop)))
-	 (eval::primitive-signal-error :data-primitive
+	 (boxer-eval::primitive-signal-error :data-primitive
 				       "The index, " stop
 				       ", should be a positive integer"))
 	(t (nth-columns start stop box))))
 
-(defboxer-primitive bu::rc ((eval::numberize row) (eval::numberize col) box)
+(boxer-eval::defboxer-primitive bu::rc ((boxer-eval::numberize row) (boxer-eval::numberize col) box)
   (cond ((not (and (integerp row) (plusp& row)))
-	 (eval::primitive-signal-error :data-primitive
+	 (boxer-eval::primitive-signal-error :data-primitive
 				       "The index, " row
 				       ", should be a positive integer"))
 	((not (and (integerp col) (plusp& col)))
-	 (eval::primitive-signal-error :data-primitive
+	 (boxer-eval::primitive-signal-error :data-primitive
 				       "The index, " col
 				       ", should be a positive integer"))
 	(t (row-col-of-box row col box))))
 
 ;;;;; Mutators
 
-(defboxer-primitive bu::change ((bu::port-to box) to-box)
+(boxer-eval::defboxer-primitive bu::change ((bu::port-to box) to-box)
   (change (get-port-target box) to-box))
 
 
 ;;; Delete Mutators
 
-(defboxer-primitive bu::delete-item ((eval::numberize n) (bu::port-to box))
+(boxer-eval::defboxer-primitive bu::delete-item ((boxer-eval::numberize n) (bu::port-to box))
   (if (and (integerp n) (plusp& n))
       (delete-item n (box-or-port-target box))
-      (eval::primitive-signal-error :data-primitive
+      (boxer-eval::primitive-signal-error :data-primitive
 				    "The index, " n
 				    ", should be a positive integer"))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::delete-last-item ((bu::port-to box))
+(boxer-eval::defboxer-primitive bu::delete-last-item ((bu::port-to box))
   (let ((realbox (box-or-port-target box)))
     (delete-item (box-length-in-elements realbox) realbox)
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
-(defboxer-primitive bu::delete-items ((eval::numberize start)
-				      (eval::numberize stop)
+(boxer-eval::defboxer-primitive bu::delete-items ((boxer-eval::numberize start)
+				      (boxer-eval::numberize stop)
 				      (bu::port-to box))
   (cond ((not (and (integerp start) (plusp& start)))
-	 (eval::primitive-signal-error :data-primitive
+	 (boxer-eval::primitive-signal-error :data-primitive
 				       "The index, " start
 				       ", should be a positive integer"))
 	((not (and (integerp stop) (plusp& stop)))
-	 (eval::primitive-signal-error :data-primitive
+	 (boxer-eval::primitive-signal-error :data-primitive
 				       "The index, " stop
 				       ", should be a positive integer"))
 	(t (delete-items start stop (box-or-port-target box))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::delete-rc ((eval::numberize row) (eval::numberize col)
+(boxer-eval::defboxer-primitive bu::delete-rc ((boxer-eval::numberize row) (boxer-eval::numberize col)
 				   (bu::port-to box))
   (cond ((not (and (integerp row) (plusp& row)))
-	 (eval::primitive-signal-error :data-primitive
+	 (boxer-eval::primitive-signal-error :data-primitive
 				       "The index, " row
 				       ", should be a positive integer"))
 	((not (and (integerp col) (plusp& col)))
-	 (eval::primitive-signal-error :data-primitive
+	 (boxer-eval::primitive-signal-error :data-primitive
 				       "The index, " col
 				       ", should be a positive integer"))
 	(t (let ((realbox (box-or-port-target box)))
 	     (cond ((good-rc-coords? (1-& row) (1-& col) realbox)
 		    (delete-rc-internal (1-& row) (1-& col) realbox))
 		   (t (out-of-range-mutator-action (cons row col) box "rc"))))
-	   eval::*novalue*)))
+	   boxer-eval::*novalue*)))
 
-(defboxer-primitive bu::delete-row  ((eval::numberize n) (bu::port-to box))
+(boxer-eval::defboxer-primitive bu::delete-row  ((boxer-eval::numberize n) (bu::port-to box))
   (if (and (integerp n) (plusp& n))
       (delete-rows n (box-or-port-target box))
-      (eval::primitive-signal-error :data-primitive
+      (boxer-eval::primitive-signal-error :data-primitive
 				    "The index, " n
 				    ", should be a positive integer"))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::delete-last-row  ((bu::port-to box))
+(boxer-eval::defboxer-primitive bu::delete-last-row  ((bu::port-to box))
   (let ((realbox (box-or-port-target box)))
     (delete-rows (number-of-rows realbox) realbox)
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
-(defboxer-primitive bu::delete-rows ((eval::numberize start)
-				     (eval::numberize stop)
+(boxer-eval::defboxer-primitive bu::delete-rows ((boxer-eval::numberize start)
+				     (boxer-eval::numberize stop)
 				     (bu::port-to box))
   (cond ((not (and (integerp start) (plusp& start)))
-	 (eval::primitive-signal-error :data-primitive
+	 (boxer-eval::primitive-signal-error :data-primitive
 				       "The index, " start
 				       ", should be a positive integer"))
 	((not (and (integerp stop) (plusp& stop)))
-	 (eval::primitive-signal-error :data-primitive
+	 (boxer-eval::primitive-signal-error :data-primitive
 				       "The index, " stop
 				       ", should be a positive integer"))
 	(t (delete-rows start (box-or-port-target box) stop)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::delete-column ((eval::numberize col) (bu::port-to box))
+(boxer-eval::defboxer-primitive bu::delete-column ((boxer-eval::numberize col) (bu::port-to box))
   (if (and (integerp col) (plusp& col))
       (delete-nth-column col (box-or-port-target box))
-      (eval::primitive-signal-error :data-primitive
+      (boxer-eval::primitive-signal-error :data-primitive
 				    "The index, " col
 				    ", should be a positive integer"))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::delete-last-column ((bu::port-to box))
+(boxer-eval::defboxer-primitive bu::delete-last-column ((bu::port-to box))
   (delete-last-column (box-or-port-target box))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::delete-columns ((eval::numberize start)
-					(eval::numberize stop)
+(boxer-eval::defboxer-primitive bu::delete-columns ((boxer-eval::numberize start)
+					(boxer-eval::numberize stop)
 					(bu::port-to box))
   (cond ((not (and (integerp start) (plusp& start)))
-	 (eval::primitive-signal-error :data-primitive
+	 (boxer-eval::primitive-signal-error :data-primitive
 				       "The index, " start
 				       ", should be a positive integer"))
 	((not (and (integerp stop) (plusp& stop)))
-	 (eval::primitive-signal-error :data-primitive
+	 (boxer-eval::primitive-signal-error :data-primitive
 				       "The index, " stop
 				       ", should be a positive integer"))
 	(t (delete-columns start (box-or-port-target box) stop)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 ;;; Insert and Append Mutators
 
-(defboxer-primitive bu::insert-rc (new (bu::port-to box)
-				       (eval::numberize row)
-				       (eval::numberize col))
+(boxer-eval::defboxer-primitive bu::insert-rc (new (bu::port-to box)
+				       (boxer-eval::numberize row)
+				       (boxer-eval::numberize col))
   (cond ((not (and (integerp row) (plusp& row)))
-	 (eval::primitive-signal-error :data-primitive
+	 (boxer-eval::primitive-signal-error :data-primitive
 				       "The index, " row
 				       ", should be a positive integer"))
 	((not (and (integerp col) (plusp& col)))
-	 (eval::primitive-signal-error :data-primitive
+	 (boxer-eval::primitive-signal-error :data-primitive
 				       "The index, " col
 				       ", should be a positive integer"))
 	(t (insert-rc row col (box-or-port-target box) new)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::insert-item (new (bu::port-to in)
-					 (eval::numberize at))
+(boxer-eval::defboxer-primitive bu::insert-item (new (bu::port-to in)
+					 (boxer-eval::numberize at))
   (if (and (integerp at) (plusp& at))
       (insert-item at (box-or-port-target in) new)
-      (eval::primitive-signal-error :data-primitive
+      (boxer-eval::primitive-signal-error :data-primitive
 				    "The index, " at
 				    ", should be a positive integer"))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::append-item (new-item (bu::port-to to))
+(boxer-eval::defboxer-primitive bu::append-item (new-item (bu::port-to to))
   (append-item (box-or-port-target to) new-item)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::insert-row (new (bu::port-to in) (eval::numberize at))
+(boxer-eval::defboxer-primitive bu::insert-row (new (bu::port-to in) (boxer-eval::numberize at))
   (if (and (integerp at) (plusp& at))
       (insert-nth-row at (box-or-port-target in) new)
-      (eval::primitive-signal-error :data-primitive
+      (boxer-eval::primitive-signal-error :data-primitive
 				    "The index, " at
 				    ", should be a positive integer"))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::append-row (new (bu::port-to to))
+(boxer-eval::defboxer-primitive bu::append-row (new (bu::port-to to))
   (append-new-row (box-or-port-target to) new)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::insert-column (new(bu::port-to in)(eval::numberize at))
+(boxer-eval::defboxer-primitive bu::insert-column (new(bu::port-to in)(boxer-eval::numberize at))
   (if (and (integerp at) (plusp& at))
       (insert-column at (box-or-port-target in) new)
-      (eval::primitive-signal-error :data-primitive
+      (boxer-eval::primitive-signal-error :data-primitive
 				    "The index, " at
 				    ", should be a positive integer"))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::append-column (new (bu::port-to to))
+(boxer-eval::defboxer-primitive bu::append-column (new (bu::port-to to))
   (append-column (box-or-port-target to) new)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 ;;; Change Mutators
 
-(defboxer-primitive bu::change-item ((eval::numberize n) (bu::port-to box) new)
+(boxer-eval::defboxer-primitive bu::change-item ((boxer-eval::numberize n) (bu::port-to box) new)
   (if (and (integerp n) (plusp& n))
       (change-item n (box-or-port-target box) new)
-      (eval::primitive-signal-error :data-primitive
+      (boxer-eval::primitive-signal-error :data-primitive
 				    "The index, " n
 				    ", should be a positive integer"))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::change-last-item ((bu::port-to box) new)
+(boxer-eval::defboxer-primitive bu::change-last-item ((bu::port-to box) new)
   (let ((realbox (box-or-port-target box)))
     (change-item (box-length-in-elements realbox) realbox new))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::change-rc ((eval::numberize row) (eval::numberize col)
+(boxer-eval::defboxer-primitive bu::change-rc ((boxer-eval::numberize row) (boxer-eval::numberize col)
 				   (bu::port-to box) new)
   (cond ((not (and (integerp row) (plusp& row)))
-	 (eval::primitive-signal-error :data-primitive
+	 (boxer-eval::primitive-signal-error :data-primitive
 				       "The index, " row
 				       ", should be a positive integer"))
 	((not (and (integerp col) (plusp& col)))
-	 (eval::primitive-signal-error :data-primitive
+	 (boxer-eval::primitive-signal-error :data-primitive
 				       "The index, " col
 				       ", should be a positive integer"))
 	(t (change-rc row col (box-or-port-target box) new)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::change-row ((eval::numberize n) (bu::port-to box) new)
+(boxer-eval::defboxer-primitive bu::change-row ((boxer-eval::numberize n) (bu::port-to box) new)
   (if (and (integerp n) (plusp& n))
       (change-nth-row n (box-or-port-target box) new)
-      (eval::primitive-signal-error :data-primitive
+      (boxer-eval::primitive-signal-error :data-primitive
 				    "The index, " n
 				    ", should be a positive integer"))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::change-last-row ((bu::port-to box) new)
+(boxer-eval::defboxer-primitive bu::change-last-row ((bu::port-to box) new)
   (change-nth-row (number-of-rows box) (box-or-port-target box) new)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::change-column ((eval::numberize n)(bu::port-to box)new)
+(boxer-eval::defboxer-primitive bu::change-column ((boxer-eval::numberize n)(bu::port-to box)new)
   (if (and (integerp n) (plusp& n))
       (change-column n (box-or-port-target box) new)
-      (eval::primitive-signal-error :data-primitive
+      (boxer-eval::primitive-signal-error :data-primitive
 				    "The index, " n
 				    ", should be a positive integer"))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::change-last-column ((bu::port-to box) new)
+(boxer-eval::defboxer-primitive bu::change-last-column ((bu::port-to box) new)
   (change-column :last (box-or-port-target box) new)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 ;;;; Explode/Implode
@@ -2027,22 +2026,22 @@ Modification History (most recent at top)
     (make-virtual-copy :rows (mapcar #'implode-row-items
 				     (formatted-unboxed-items box)))))
 
-(defboxer-primitive bu::letters (box)
+(boxer-eval::defboxer-primitive bu::letters (box)
   (explode-box box))
 
-(defboxer-primitive bu::word (box)
+(boxer-eval::defboxer-primitive bu::word (box)
   (implode-box box))
 
 
 ;;;;; Low-level grungy box primitives
-(defboxer-primitive bu::boxify (thing)
+(boxer-eval::defboxer-primitive bu::boxify (thing)
   (boxer::data-boxify thing))
 
 ;; check if cursor is inside of port...
-(defboxer-primitive bu::retarget ((eval::dont-copy port) (bu::port-to target))
+(boxer-eval::defboxer-primitive bu::retarget ((boxer-eval::dont-copy port) (bu::port-to target))
   "retarget the port to the given box"
   (retarget-internal port target)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defun retarget-internal (port target)
   (let ((editor-port (vp-editor-port-backpointer port))
@@ -2056,7 +2055,7 @@ Modification History (most recent at top)
 	   (retarget-port editor-port real-target)
            (when (point-in-port? editor-port)
              ;; have to move the point so it looks right
-             (new-target-cursor-position eval::*process-doit-cursor-position*
+             (new-target-cursor-position boxer-eval::*process-doit-cursor-position*
                                          editor-port))
 	   (modified editor-port))
 	  (t
@@ -2070,14 +2069,14 @@ Modification History (most recent at top)
 		    (record-port-printing editor-port))))
 	   (modified editor-port)))))
 
-(defboxer-primitive bu::redirect ((eval::dont-copy port) (bu::port-to target))
+(boxer-eval::defboxer-primitive bu::redirect ((boxer-eval::dont-copy port) (bu::port-to target))
   "retarget the port to the given box"
   (cond ((not (null *uc-copyright-free*))
-         (eval::primitive-signal-error :copyright
+         (boxer-eval::primitive-signal-error :copyright
                                        'bu::redirect " is no longer available"))
         (t
          (retarget-internal port target)
-         eval::*novalue*)))
+         boxer-eval::*novalue*)))
 
 (defun point-in-port? (editor-port)
   (let ((screen-objs (screen-objs editor-port))
@@ -2113,17 +2112,17 @@ Modification History (most recent at top)
     (setf (process-doit-cursor-position-screen-box vector) port-screen-box))
   vector)
 
-(defboxer-primitive bu::alpha> (box1 box2)
-  (eval::boxer-boolean
+(boxer-eval::defboxer-primitive bu::alpha> (box1 box2)
+  (boxer-eval::boxer-boolean
    (alpha-sort-top-level (box-or-port-target box1)
 			 (box-or-port-target box2) 1)))
 
-(defboxer-primitive bu::alpha< (box1 box2)
-  (eval::boxer-boolean
+(boxer-eval::defboxer-primitive bu::alpha< (box1 box2)
+  (boxer-eval::boxer-boolean
    (alpha-sort-top-level (box-or-port-target box1)
 			 (box-or-port-target box2) -1)))
 
-(defboxer-primitive bu::superior ((bu::port-to box))
+(boxer-eval::defboxer-primitive bu::superior ((bu::port-to box))
   (let ((targ (box-or-port-target box)))
     (let ((sup (if (virtual-copy? targ)
 		   (vc-superior-for-scoping targ)

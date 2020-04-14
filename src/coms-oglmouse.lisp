@@ -84,10 +84,7 @@ Modification History (most recent at top)
 
 |#
 
-
-
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
+(in-package :boxer)
 
 
 ;;;; MOUSE-CLICKS
@@ -108,7 +105,7 @@ Modification History (most recent at top)
       (send-exit-messages new-box mouse-screen-box)
       (move-point-1 new-row new-cha-no mouse-screen-box)
       (com-collapse-box)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-shrink-box (window x y mouse-bp click-only?)
   "make the box tiny"
@@ -126,7 +123,7 @@ Modification History (most recent at top)
       (send-exit-messages new-box mouse-screen-box)
       (move-point-1 new-row new-cha-no mouse-screen-box)
       (com-shrink-box)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-super-shrink-box (window x y mouse-bp click-only?)
   "make the box tiny"
@@ -149,7 +146,7 @@ Modification History (most recent at top)
 	(send-exit-messages new-box mouse-screen-box)
 	(move-point-1 new-row new-cha-no mouse-screen-box)
 	(com-super-shrink-box))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-expand-box (window x y mouse-bp click-only?)
   "make the box one step bigger"
@@ -169,7 +166,7 @@ Modification History (most recent at top)
 	(enter new-box (not (superior? old-box new-box))))
       (move-point-1 new-row new-cha-no mouse-screen-box)
       (com-expand-box)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-set-outermost-box (window x y mouse-bp click-only?)
   "make the box full screen"
@@ -190,7 +187,7 @@ Modification History (most recent at top)
       (if (graphics-box? new-box)
 	  (com-expand-box)
 	  (com-set-outermost-box))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-move-point (window x y mouse-bp click-only? &optional (box-proc nil))
   "Go there"
@@ -214,7 +211,7 @@ Modification History (most recent at top)
 	       (shrunken? (screen-obj-actual-obj (screen-box-point-is-in))))
       (com-expand-box)))
   ;(repaint-cursor)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-define-region (&optional (window *boxer-pane*)
                                                      (x (bw::boxer-pane-mouse-x))
@@ -289,7 +286,7 @@ Modification History (most recent at top)
             (catch 'mouse-confusion
               (unwind-protect
                   ;; the inner mouse tracking loop...
-                  (with-mouse-tracking ((raw-mouse-x x) (raw-mouse-y y))
+                  (boxer-window::with-mouse-tracking ((raw-mouse-x x) (raw-mouse-y y))
                     ;; first check to make sure that the mouse is still
                     ;; inside of the current-screen-box
                     ;; if it isn't, then reset the current-screen-box
@@ -553,7 +550,7 @@ Modification History (most recent at top)
                          ;; region is still there so...
                          (entering-region-mode)))))
               )			; Matches catch 'mouse-confusion
-            eval::*novalue*))))))
+            boxer-eval::*novalue*))))))
 
 #|  ; unused ?
 (defun reconcile-region-blinker-list (region blinker-list)
@@ -626,7 +623,7 @@ Modification History (most recent at top)
 			(com-expand-box))
 		       (t
 			(com-collapse-box)))))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 |#
 
@@ -644,7 +641,7 @@ Modification History (most recent at top)
           (t
            (com-mouse-move-point window x y mouse-bp click-only?)
            (com-doit-now)
-           eval::*novalue*))))
+           boxer-eval::*novalue*))))
 
 ;;;; functions for cut,copy and paste
 ;;; mouse dispatch function
@@ -712,7 +709,7 @@ Modification History (most recent at top)
   (entering-suitcase-bindings)
   (reset-region nil)
   (RESET-EDITOR-NUMERIC-ARG)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;;; mouse-copy, non-destructive
 (defun com-suck-copy-region (&rest arguments)
@@ -724,7 +721,7 @@ Modification History (most recent at top)
   (entering-suitcase-bindings)
   (reset-region nil)
   (RESET-EDITOR-NUMERIC-ARG)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;;; suck the region up into a suitcase, without destroying the text sucked
 (defun suck-copy-region ()
@@ -764,16 +761,16 @@ Modification History (most recent at top)
 	 (cleanup-suitcase)))
   (reset-editor-numeric-arg)
   (reset-region)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
 
 
 ;;;; Commands for Mouse border Areas....
-
-(defvar *warn-about-disabled-commands* t)
-(defvar *only-shrink-wrap-text-boxes* nil)
+;; moving to boxdef.lisp 2020-03-27
+;; (defvar *warn-about-disabled-commands* t)
+;; (defvar *only-shrink-wrap-text-boxes* nil)
 
 (defboxer-command com-mouse-resize-box (window x y mouse-bp click-only?)
   "Resize the box with the mouse.  Just clicking unfixes the box size"
@@ -818,7 +815,7 @@ Modification History (most recent at top)
                            minimum-track-hei (+ minimum-track-hei
                                                 (- n-max-y n-min-y)))))
                  (multiple-value-bind (final-x final-y moved-p)
-                     (with-mouse-tracking ((mouse-x x) (mouse-y y)
+                     (boxer-window::with-mouse-tracking ((mouse-x x) (mouse-y y)
                                            :action :resize)
                        (let ((new-wid (max& minimum-track-wid
                                             (- mouse-x box-window-x)))
@@ -870,7 +867,7 @@ Modification History (most recent at top)
                             (com-fill-box actual-box))
                           (modified actual-box))))))))))
   ;)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defun status-line-size-report (screen-box wid hei)
   (multiple-value-bind (lef top rig bot)
@@ -949,7 +946,7 @@ Modification History (most recent at top)
 	    (send-exit-messages new-box screen-box)
 	    (move-point-1 new-row new-cha-no screen-box)
 	    (com-collapse-box))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-tl-corner-collapse-box (window x y
 							   mouse-bp click-only?)
@@ -976,7 +973,7 @@ Modification History (most recent at top)
 	           (send-exit-messages new-box screen-box)
 	           (move-point-1 new-row new-cha-no screen-box)
 	           (com-collapse-box))))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-br-corner-shrink-box (window x y mouse-bp
 							 click-only?)
@@ -1003,7 +1000,7 @@ Modification History (most recent at top)
 	           (send-exit-messages new-box screen-box)
 	           (move-point-1 new-row new-cha-no screen-box)
 	           (com-shrink-box))))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-tl-corner-super-shrink-box (window x y mouse-bp
 							       click-only?)
@@ -1026,7 +1023,7 @@ Modification History (most recent at top)
 	    (send-exit-messages new-box screen-box)
 	    (move-point-1 new-row new-cha-no screen-box)
 	    (com-super-shrink-box))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-tr-corner-expand-box (window x y mouse-bp
 							 click-only?)
@@ -1048,7 +1045,7 @@ Modification History (most recent at top)
 	    (enter new-box (not (superior? old-box new-box))))
 	  (move-point-1 new-row new-cha-no mouse-screen-box)
 	  (com-expand-box)))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-br-corner-expand-box (window x y mouse-bp
 							 click-only?)
@@ -1070,7 +1067,7 @@ Modification History (most recent at top)
 	    (enter new-box (not (superior? old-box new-box))))
 	  (move-point-1 new-row new-cha-no mouse-screen-box)
 	  (com-expand-box)))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-br-corner-set-outermost-box (window x y mouse-bp
 								click-only?)
@@ -1095,7 +1092,7 @@ Modification History (most recent at top)
 		   (display-style-graphics-mode? (display-style-list new-box)))
 	      (com-expand-box)
 	      (com-set-outermost-box))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-tr-corner-toggle-closet (window x y
 							 mouse-bp click-only?)
@@ -1121,7 +1118,7 @@ Modification History (most recent at top)
 	         (enter new-box (not (superior? old-box new-box))))
 	       (move-point-1 new-row new-cha-no mouse-screen-box)
 	       (com-toggle-closets))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-tl-corner-toggle-closet (window x y
 							 mouse-bp click-only?)
@@ -1147,7 +1144,7 @@ Modification History (most recent at top)
 	         (enter new-box (not (superior? old-box new-box))))
 	       (move-point-1 new-row new-cha-no mouse-screen-box)
 	       (com-toggle-closets))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defvar *slow-graphics-toggle* t)
 
@@ -1192,7 +1189,7 @@ Modification History (most recent at top)
 	   (dolist (sb screen-objs)
 	     (toggle-type sb) (set-force-redisplay-infs? sb t))
 	   (modified (box-screen-point-is-in)))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-border-name-box (window x y mouse-bp click-only?)
   "Bring up a name tab for the box"
@@ -1219,7 +1216,7 @@ Modification History (most recent at top)
           (move-point-1 (slot-value box-to-name 'name)
                         0 (bp-screen-box mouse-bp))
           (modified box-to-name)))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defvar *enable-mouse-toggle-box-type?* t)
 
@@ -1251,7 +1248,7 @@ Modification History (most recent at top)
             (toggle-type (bp-box mouse-bp))
             (mark-file-box-dirty (bp-box mouse-bp)))
         (boxer-editor-error "Toggling of the box type with the mouse is disabled"))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -1308,7 +1305,7 @@ Modification History (most recent at top)
   ;; if the cursor is in the box being scrolled (or some inferior), we
   ;; need to make sure that it gets moved to where it will become visible
   ;; The scroll-to-actual-row of the screen box is a good bet
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-page-scroll-box (window x y mouse-bp click-only?)
   "Scroll box by the page"
@@ -1349,7 +1346,7 @@ Modification History (most recent at top)
   ;; if the cursor is in the box being scrolled (or some inferior), we
   ;; need to make sure that it gets moved to where it will become visible
   ;; The scroll-to-actual-row of the screen box is a good bet
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 (defboxer-command com-mouse-limit-scroll-box (window x y mouse-bp click-only?)
@@ -1374,7 +1371,7 @@ Modification History (most recent at top)
             (:h-right-button (h-scroll-screen-box screen-box -100000))
             (:v-bar (mouse-in-v-scroll-bar-internal screen-box x y click-only?))
             (:h-bar (mouse-in-h-scroll-bar-internal screen-box x y)))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defun last-page-top-row (box hei)
   (do ((row (last-inferior-row box) (previous-row row))
@@ -1541,7 +1538,7 @@ Modification History (most recent at top)
                    (no-of-rows (length-in-rows eb)))
               ;; bind these so we dont have to calculate them for each iteration
               ;; of the tracking loop
-              (with-mouse-tracking ((mouse-x x) (mouse-y y))
+              (boxer-window::with-mouse-tracking ((mouse-x x) (mouse-y y))
                 (declare (ignore mouse-x))
                 (set-v-scroll-row screen-box
                                   (min (/ (max 0 (- mouse-y y-offset)) v-working-height) 1)
@@ -1738,7 +1735,7 @@ Modification History (most recent at top)
           (bu::follow-mouse)
           ;(follow-mouse-internal (sprite-box-associated-turtle box))
         ))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -1829,7 +1826,7 @@ Modification History (most recent at top)
 				  *mouse-doit-toggle-bitmap*
 				  *mouse-data-toggle-bitmap*)
 			      toggle-type-backing-store)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 |#
 
 

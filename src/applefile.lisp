@@ -43,10 +43,8 @@ Modification History (most recent at top)
 
 |#
 
-
+(in-package :boxnet)
 
-#+(or lispworks mcl) (in-package :boxnet)
-#-(or lispworks mcl) (in-package 'boxnet)
 
 (defconstant *applesingle-magic-number* #x00051600)
 (defconstant *appledouble-magic-number* #x00051607)

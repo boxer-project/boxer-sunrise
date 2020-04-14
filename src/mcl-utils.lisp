@@ -52,20 +52,15 @@ Modification History (most recent at the top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
-
-
-
 (in-package :boxer)
 
-(defun cf (f)
-  (let* ((sysprops (sm::system-properties (sm::find-system-named 'boxer)))
-         (sp (getf sysprops :pathname-default))
-         (bp (getf sysprops :binary-pathname-default)))
-  (compile-file (merge-pathnames f sp)
-                :output-file (merge-pathnames (sm::make-binary-pathname f)
-                                              (if (null bp) sp bp)))))
+;; (defun cf (f)
+;;   (let* ((sysprops (sm::system-properties (sm::find-system-named 'boxer)))
+;;          (sp (getf sysprops :pathname-default))
+;;          (bp (getf sysprops :binary-pathname-default)))
+;;   (compile-file (merge-pathnames f sp)
+;;                 :output-file (merge-pathnames (sm::make-binary-pathname f)
+;;                                               (if (null bp) sp bp)))))
 
 (defun compops ()
   (proclaim '(optimize (speed 3) (space 2) (compilation-speed 0)
@@ -134,9 +129,9 @@ Modification History (most recent at the top)
 		 (cdr (assoc type ccl::*define-type-alist*))
              :test #'equal)))
 
-  (add-def-type 'eval::defboxer-primitive 'function)
-  (add-def-type 'eval::defrecursive-funcall-primitive 'function)
-  (add-def-type 'eval::defrecursive-eval-primitive 'function)
+  (add-def-type 'boxer-eval::defboxer-primitive 'function)
+  (add-def-type 'boxer-eval::defrecursive-funcall-primitive 'function)
+  (add-def-type 'boxer-eval::defrecursive-eval-primitive 'function)
   (add-def-type 'box::defsprite-function 'function)
   (add-def-type 'box::defboxer-command 'function)
   )
@@ -145,11 +140,11 @@ Modification History (most recent at the top)
 ;; this was for pre 4.3 LWW
 #+lispworks
 (progn
-  (editor:define-top-level-form-parser eval::defboxer-primitive
+  (editor:define-top-level-form-parser boxer-eval::defboxer-primitive
        editor::section-parse-name-only)
-  (editor:define-top-level-form-parser eval::defrecursive-funcall-primitive
+  (editor:define-top-level-form-parser boxer-eval::defrecursive-funcall-primitive
        editor::section-parse-name-only)
-  (editor:define-top-level-form-parser eval::defrecursive-eval-primitive
+  (editor:define-top-level-form-parser boxer-eval::defrecursive-eval-primitive
        editor::section-parse-name-only)
   (editor:define-top-level-form-parser defsprite-function
        editor::section-parse-name-only)
@@ -165,10 +160,10 @@ Modification History (most recent at the top)
 #+lispworks
 (progn
 
-(dspec:define-form-parser (eval::defboxer-primitive (:alias defun)))
-(dspec:define-form-parser (eval::defrecursive-funcall-primitive (:alias defun)))
-(dspec:define-form-parser (eval::defrecursive-eval-primitive (:alias defun)))
-(dspec:define-form-parser (eval::defsprite-function (:alias defun)))
+(dspec:define-form-parser (boxer-eval::defboxer-primitive (:alias defun)))
+(dspec:define-form-parser (boxer-eval::defrecursive-funcall-primitive (:alias defun)))
+(dspec:define-form-parser (boxer-eval::defrecursive-eval-primitive (:alias defun)))
+(dspec:define-form-parser (boxer-eval::defsprite-function (:alias defun)))
 (dspec:define-form-parser (defboxer-command (:alias defun)))
 (dspec:define-form-parser (defmethod (:alias CLOS::DEFMETHOD)))
 
@@ -279,43 +274,44 @@ Modification History (most recent at the top)
     count))
 
 #|
-(dolist (file (sm::system-source-files (sm::find-system-named 'boxer)))
-  (get-mod-history-lines-after file 9 1 98))
+;; sgithens - no longer using the 'sm' version of package defining
+;; (dolist (file (sm::system-source-files (sm::find-system-named 'boxer)))
+;;   (get-mod-history-lines-after file 9 1 98))
 
-(with-open-file (out "C:\\Boxer\\ChangeLog" :direction :output
-                     :if-exists :supersede :if-does-not-exist :create)
-  (let ((total-changes 0))
-    (dolist (file (sm::system-source-files (sm::find-system-named 'boxer)))
-      (format out "~&     ~A   ~&" (enough-namestring file))
-      (format out "~&     ~D entries~&"
-              (let ((changes (get-mod-history-lines-after file 9 1 98 out nil)))
-                (incf total-changes changes)
-                changes)))
-    (format out "~&~&Total Changes = ~D" total-changes)))
+;; (with-open-file (out "C:\\Boxer\\ChangeLog" :direction :output
+;;                      :if-exists :supersede :if-does-not-exist :create)
+;;   (let ((total-changes 0))
+;;     (dolist (file (sm::system-source-files (sm::find-system-named 'boxer)))
+;;       (format out "~&     ~A   ~&" (enough-namestring file))
+;;       (format out "~&     ~D entries~&"
+;;               (let ((changes (get-mod-history-lines-after file 9 1 98 out nil)))
+;;                 (incf total-changes changes)
+;;                 changes)))
+;;     (format out "~&~&Total Changes = ~D" total-changes)))
 
 ;; a histogram
 
 
 (defvar *modarray* (make-array 50 :initial-element 0))
 
-(dolist (file (sm::system-source-files (sm::find-system-named 'boxer)))
-  (let ((eof-value (list 'eof))
-        (start? nil))
-    (with-open-file (in file)(loop
-        (let ((line (read-line in nil eof-value)))
-          (cond ((eq line eof-value) (return nil))
-                ((null start?)
-                 (when (mod-history-start-line? line) (setq start? t)))
-                ((mod-history-end-line? line) (return nil))
-                ((multiple-value-bind (date-line? lmonth ldate lyear)
-                     (mod-history-date-line? line)
-                   (and date-line?
-                        (incf (aref *modarray*
-                                    (cond ((zerop lyear) (+ lmonth 36))
-                                          ((< lyear 97) 0)
-                                          ((= lyear 97) lmonth)
-                                          ((= lyear 98) (+ lmonth 12))
-                                          ((= lyear 99) (+ lmonth 24))))))))))))))
+;; (dolist (file (sm::system-source-files (sm::find-system-named 'boxer)))
+;;   (let ((eof-value (list 'eof))
+;;         (start? nil))
+;;     (with-open-file (in file)(loop
+;;         (let ((line (read-line in nil eof-value)))
+;;           (cond ((eq line eof-value) (return nil))
+;;                 ((null start?)
+;;                  (when (mod-history-start-line? line) (setq start? t)))
+;;                 ((mod-history-end-line? line) (return nil))
+;;                 ((multiple-value-bind (date-line? lmonth ldate lyear)
+;;                      (mod-history-date-line? line)
+;;                    (and date-line?
+;;                         (incf (aref *modarray*
+;;                                     (cond ((zerop lyear) (+ lmonth 36))
+;;                                           ((< lyear 97) 0)
+;;                                           ((= lyear 97) lmonth)
+;;                                           ((= lyear 98) (+ lmonth 12))
+;;                                           ((= lyear 99) (+ lmonth 24))))))))))))))
 |#
 
 
@@ -435,7 +431,7 @@ Modification History (most recent at the top)
 
 ;;; print out primitives
 
-(defvar *input-flavors-to-ignore* '(eval::dont-copy))
+(defvar *input-flavors-to-ignore* '(boxer-eval::dont-copy))
 
 (defun pretty-print-boxer-function-arglist (arglist)
   (if (null arglist)
@@ -454,13 +450,13 @@ Modification History (most recent at the top)
 	       (not (or (search "-KEY" (symbol-name s))
 			(search "MOUSE" (symbol-name s))))
 	       (consp (symbol-value s))
-	       (eval::compiled-boxer-function?
-		(eval::static-variable-value (symbol-value s))))
-      (let ((fun (eval::static-variable-value (symbol-value s))))
+	       (boxer-eval::compiled-boxer-function?
+		(boxer-eval::static-variable-value (symbol-value s))))
+      (let ((fun (boxer-eval::static-variable-value (symbol-value s))))
 	(format stream "~%~A  ~A"
 		s
 		(pretty-print-boxer-function-arglist
-		 (eval::boxer-function-arglist fun)))))))
+		 (boxer-eval::boxer-function-arglist fun)))))))
 
 ;;; calculating sizes....
 
@@ -536,12 +532,12 @@ Modification History (most recent at the top)
 ;; look for entries
 ;; An entry is characterized by having  "Description" and "Command" sub boxes
 (defun is-entry? (box)
-  (and (eval::lookup-static-variable-internal box 'bu::command)
-       (eval::lookup-static-variable-internal box 'bu::description)))
+  (and (boxer-eval::lookup-static-variable-internal box 'bu::command)
+       (boxer-eval::lookup-static-variable-internal box 'bu::description)))
 
 (defun print-entry (box stream indent-level)
-  (let ((comm (caddr (eval::lookup-static-variable-internal box 'bu::command)))
-	(desc (caddr (eval::lookup-static-variable-internal box 'bu::description))))
+  (let ((comm (caddr (boxer-eval::lookup-static-variable-internal box 'bu::command)))
+	(desc (caddr (boxer-eval::lookup-static-variable-internal box 'bu::description))))
     (do-box-rows ((row comm))
       (dotimes (i indent-level) (format stream " "))
       (do-row-chas ((cha row))
@@ -628,51 +624,51 @@ Modification History (most recent at the top)
 ;; need special handling for  "boxer.rsrc"
 (defvar *special-source-files* '("devlog" "plst.txt" "deliver-boxer.sh"))
 
-(defun update-source-files (synchfile dest-dir
-                                    &optional (file-conversion #'no-convert)
-                                    (system (sm::find-system-named 'boxer)))
-  (let* ((start-utime (cond ((listp synchfile)
-                             (prog1
-                                 (apply #'encode-universal-time (cdr synchfile))
-                               (setq synchfile (car synchfile))))
-                            (t
-                             (file-write-date synchfile))))
-         (source-dir (getf (sm::system-properties system) :pathname-default))
-         (all-source-files (append (directory (merge-pathnames "*.lisp" source-dir))
-                                   (with-collection
-                                     (dolist (sf *special-source-files*)
-                                       (collect (merge-pathnames sf source-dir))))))
-         (source-files (remove-if #'(lambda (f)
-                                      (let ((fwd (file-write-date f)))
-                                        (cond ((numberp fwd) (<= fwd start-utime))
-                                              (t (error "No write date for ~A" f)))))
-                                  all-source-files)))
-    (multiple-value-bind (sec min hou date month year)
-        (decode-universal-time start-utime)
-      (format t "~%Files changed since ~D:~D:~D on ~D/~D/~D"
-              hou min sec month date year))
-    (format t "~%Selected ~D of ~D files.  "
-            (length source-files) (length all-source-files))
-    (when (y-or-n-p "List ? ")
-      (dolist (f source-files) (print f)))
-    (when (y-or-n-p "Update changed files to ~S ?"
-                    (merge-pathnames "*.lisp" dest-dir))
-      (dolist (f source-files)
-        (let ((newpath (merge-pathnames (make-pathname :name (pathname-name f)
-                                                       :type (pathname-type f))
-                                        dest-dir)))
-          (format t "~%Updating ~S to ~S" f newpath)
-          (funcall file-conversion f newpath)))
-      (when (y-or-n-p "Update synch file ?")
-        (with-open-file (sfs synchfile :direction ':output :if-exists ':append)
-          (multiple-value-bind (sec min hou date month year)
-              (decode-universal-time (get-universal-time))
-            (declare (ignore sec min hou))
-            (format sfs "~%~D/~D/~D Synched source files~%" month date year)))
-;        (funcall file-conversion synchfile (make-pathname :name (pathname-name synchfile)
-;                                                          :type (pathname-type synchfile)
-;                                                          :defaults dest-dir))
-        ))))
+;; (defun update-source-files (synchfile dest-dir
+;;                                     &optional (file-conversion #'no-convert)
+;;                                     (system (sm::find-system-named 'boxer)))
+;;   (let* ((start-utime (cond ((listp synchfile)
+;;                              (prog1
+;;                                  (apply #'encode-universal-time (cdr synchfile))
+;;                                (setq synchfile (car synchfile))))
+;;                             (t
+;;                              (file-write-date synchfile))))
+;;          (source-dir (getf (sm::system-properties system) :pathname-default))
+;;          (all-source-files (append (directory (merge-pathnames "*.lisp" source-dir))
+;;                                    (with-collection
+;;                                      (dolist (sf *special-source-files*)
+;;                                        (collect (merge-pathnames sf source-dir))))))
+;;          (source-files (remove-if #'(lambda (f)
+;;                                       (let ((fwd (file-write-date f)))
+;;                                         (cond ((numberp fwd) (<= fwd start-utime))
+;;                                               (t (error "No write date for ~A" f)))))
+;;                                   all-source-files)))
+;;     (multiple-value-bind (sec min hou date month year)
+;;         (decode-universal-time start-utime)
+;;       (format t "~%Files changed since ~D:~D:~D on ~D/~D/~D"
+;;               hou min sec month date year))
+;;     (format t "~%Selected ~D of ~D files.  "
+;;             (length source-files) (length all-source-files))
+;;     (when (y-or-n-p "List ? ")
+;;       (dolist (f source-files) (print f)))
+;;     (when (y-or-n-p "Update changed files to ~S ?"
+;;                     (merge-pathnames "*.lisp" dest-dir))
+;;       (dolist (f source-files)
+;;         (let ((newpath (merge-pathnames (make-pathname :name (pathname-name f)
+;;                                                        :type (pathname-type f))
+;;                                         dest-dir)))
+;;           (format t "~%Updating ~S to ~S" f newpath)
+;;           (funcall file-conversion f newpath)))
+;;       (when (y-or-n-p "Update synch file ?")
+;;         (with-open-file (sfs synchfile :direction ':output :if-exists ':append)
+;;           (multiple-value-bind (sec min hou date month year)
+;;               (decode-universal-time (get-universal-time))
+;;             (declare (ignore sec min hou))
+;;             (format sfs "~%~D/~D/~D Synched source files~%" month date year)))
+;; ;        (funcall file-conversion synchfile (make-pathname :name (pathname-name synchfile)
+;; ;                                                          :type (pathname-type synchfile)
+;; ;                                                          :defaults dest-dir))
+;;         ))))
 
 #|
 

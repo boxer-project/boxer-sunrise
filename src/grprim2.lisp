@@ -51,18 +51,15 @@ Modification History (most recent at the top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
-
-
+(in-package :boxer)
 
 
 
-(defsprite-function bu::towards ((eval::numberize x) (eval::numberize y))
+(defsprite-function bu::towards ((boxer-eval::numberize x) (boxer-eval::numberize y))
   (sprite turtle)
   (towards turtle x y))
 
-(defsprite-function bu::distance ((eval::numberize x) (eval::numberize y))
+(defsprite-function bu::distance ((boxer-eval::numberize x) (boxer-eval::numberize y))
   (sprite turtle)
   (turtle-distance turtle x y))
 
@@ -72,21 +69,21 @@ Modification History (most recent at the top)
 (defsprite-function bu::flash-name ()
 		    (sprite turtle)
   (flash-name turtle)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 |#
 
 (defsprite-function bu::touching? ((bu::port-to other-sprite))
                                   (sprite turtle)
   (let ((ot (graphics-info (box-or-port-target other-sprite))))
     (cond ((turtle? ot)
-           (eval::boxer-boolean (touching? turtle ot)))
-          (t (eval::primitive-signal-error :sprite "No graphics in " other-sprite)))))
+           (boxer-eval::boxer-boolean (touching? turtle ot)))
+          (t (boxer-eval::primitive-signal-error :sprite "No graphics in " other-sprite)))))
 
 (defsprite-function bu::enclosing-rectangle () (sprite turtle)
   (multiple-value-bind (Left top right bottom)
       (enclosing-sprite-coords turtle)
     (if (null left)
-	(eval::primitive-signal-error :sprite-error
+	(boxer-eval::primitive-signal-error :sprite-error
 				      "Sprite is not in a graphics box")
 	(make-virtual-copy :rows
 			   (list (make-evrow :pointers
@@ -98,211 +95,211 @@ Modification History (most recent at the top)
 (defsprite-function bu::no-op () (sprite turtle))
 
 ;;; This only works with single sprites for now
-(defboxer-primitive bu::talk-to ((bu::port-to sprite))
+(boxer-eval::defboxer-primitive bu::talk-to ((bu::port-to sprite))
   ;; first check for a "who" box
-  (let ((who (eval::boxer-symeval 'bu::who)))
-    (if (eq eval::*novalue* who)
-	(eval::primitive-signal-error :sprite "needs a Box called WHO")
+  (let ((who (boxer-eval::boxer-symeval 'bu::who)))
+    (if (eq boxer-eval::*novalue* who)
+	(boxer-eval::primitive-signal-error :sprite "needs a Box called WHO")
 	(let ((raw-sprite (box-or-port-target sprite)))
 	  (cond ((sprite-box? raw-sprite)
 		 (change who (make-vc (list (make-evrow-from-entry sprite)))))
 		(t
 		 ;; assume that it is a box full of ports to sprites
 		 (change who (box-or-port-target sprite)))))))
-	eval::*novalue*)
+	boxer-eval::*novalue*)
 
 (defsprite-function bu::dot () (sprite turtle)
   (with-sprites-hidden t
       (stamp-dot turtle))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defsprite-function bu::stamp-rect ((eval::numberize width)
-				    (eval::numberize height))
+(defsprite-function bu::stamp-rect ((boxer-eval::numberize width)
+				    (boxer-eval::numberize height))
                                     (sprite turtle)
   (if (or (< width 0) (< height 0))
-      (eval::primitive-signal-error :sprite-error
+      (boxer-eval::primitive-signal-error :sprite-error
 				    "The width and the height,"
 				    width "," height
 				    ", should both be 0 or greater")
       (with-sprites-hidden t
 	(turtle-rect turtle (fixr width) (fixr height))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defsprite-function bu::stamp-rectangle ((eval::numberize width)
-					 (eval::numberize height))
+(defsprite-function bu::stamp-rectangle ((boxer-eval::numberize width)
+					 (boxer-eval::numberize height))
                                         (sprite turtle)
   (if (or (< width 0) (< height 0))
-      (eval::primitive-signal-error :sprite-error
+      (boxer-eval::primitive-signal-error :sprite-error
 				    "The width and the height,"
 				    width ","  height
 				    ", should both be 0 or greater")
       (with-sprites-hidden t
 	(turtle-rect turtle (fixr width) (fixr height))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defsprite-function bu::stamp-hollow-rect ((eval::numberize width)
-					   (eval::numberize height))
+(defsprite-function bu::stamp-hollow-rect ((boxer-eval::numberize width)
+					   (boxer-eval::numberize height))
                     (sprite turtle)
   (if (or (< width 0) (< height 0))
-      (eval::primitive-signal-error :sprite-error
+      (boxer-eval::primitive-signal-error :sprite-error
 				    "The width and the height,"
 				    width ","  height
 				    ", should both be 0 or greater")
       (with-sprites-hidden t
 	(hollow-turtle-rect turtle (fixr width) (fixr height))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defsprite-function bu::stamp-hollow-rectangle ((eval::numberize width)
-					 (eval::numberize height))
+(defsprite-function bu::stamp-hollow-rectangle ((boxer-eval::numberize width)
+					 (boxer-eval::numberize height))
                                         (sprite turtle)
   (if (or (< width 0) (< height 0))
-      (eval::primitive-signal-error :sprite-error
+      (boxer-eval::primitive-signal-error :sprite-error
 				    "The width and the height,"
 				    width ","  height
 				    ", should both be 0 or greater")
       (with-sprites-hidden t
 	(hollow-turtle-rect turtle (fixr width) (fixr height))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
-(defsprite-function bu::stamp-ellipse ((eval::numberize width)
-				       (eval::numberize height))
+(defsprite-function bu::stamp-ellipse ((boxer-eval::numberize width)
+				       (boxer-eval::numberize height))
   (sprite turtle)
   (if (or (< width 0) (< height 0))
-      (eval::primitive-signal-error :sprite-error
+      (boxer-eval::primitive-signal-error :sprite-error
 				    "The width and the height,"
 				    width "," height
 				    ", should both be 0 or greater")
       (with-sprites-hidden t
 	(stamp-ellipse turtle (fixr width) (fixr height))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defsprite-function bu::stamp-hollow-ellipse ((eval::numberize width)
-					      (eval::numberize height))
+(defsprite-function bu::stamp-hollow-ellipse ((boxer-eval::numberize width)
+					      (boxer-eval::numberize height))
   (sprite turtle)
   (if (or (< width 0) (< height 0))
-      (eval::primitive-signal-error :sprite-error
+      (boxer-eval::primitive-signal-error :sprite-error
 				    "The width and the height,"
 				    width "," height
 				    ", should both be 0 or greater")
       (with-sprites-hidden t
 	(stamp-hollow-ellipse turtle (fixr width) (fixr height))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defsprite-function bu::stamp-circle ((eval::numberize radius))
+(defsprite-function bu::stamp-circle ((boxer-eval::numberize radius))
                                     (sprite turtle)
   (if (< radius 0)
-      (eval::primitive-signal-error :sprite-error
+      (boxer-eval::primitive-signal-error :sprite-error
 				    "The Radius, "
 				    radius
 				    "Should be 0 or greater")
       (with-sprites-hidden t
 	(stamp-circle turtle radius)))
-      eval::*novalue*)
+      boxer-eval::*novalue*)
 
-(defsprite-function bu::stamp-hollow-circle ((eval::numberize radius))
+(defsprite-function bu::stamp-hollow-circle ((boxer-eval::numberize radius))
                                     (sprite turtle)
   (if (< radius 0)
-      (eval::primitive-signal-error :sprite-error
+      (boxer-eval::primitive-signal-error :sprite-error
 				    "The Radius, "
 				    radius
 				    "Should be a 0 or greater")
       (with-sprites-hidden t
 	(stamp-hollow-circle turtle radius)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defsprite-function bu::stamp-wedge ((eval::numberize radius)
-                                     (eval::numberize sweep-angle))
+(defsprite-function bu::stamp-wedge ((boxer-eval::numberize radius)
+                                     (boxer-eval::numberize sweep-angle))
                     (sprite turtle)
   (cond ((not (null *uc-copyright-free*))
-         (eval::primitive-signal-error :copyright
+         (boxer-eval::primitive-signal-error :copyright
                                        'stamp-wedge " is no longer available, use "
                                        'draw-wedge " instead"))
         (t
          (if (< radius 0)
-             (eval::primitive-signal-error :sprite-error
+             (boxer-eval::primitive-signal-error :sprite-error
 				           "The Radius, "
 				           radius
 				           "Should be 0 or greater")
            (with-sprites-hidden t
 	     (stamp-wedge turtle radius sweep-angle)))))
-      eval::*novalue*)
+      boxer-eval::*novalue*)
 
-(defsprite-function bu::draw-wedge ((eval::numberize radius)
-                                     (eval::numberize sweep-angle))
+(defsprite-function bu::draw-wedge ((boxer-eval::numberize radius)
+                                     (boxer-eval::numberize sweep-angle))
                     (sprite turtle)
   (if (< radius 0)
-      (eval::primitive-signal-error :sprite-error
+      (boxer-eval::primitive-signal-error :sprite-error
 				    "The Radius, "
 				    radius
 				    "Should be 0 or greater")
       (with-sprites-hidden t
 	(stamp-wedge turtle radius sweep-angle)))
-      eval::*novalue*)
+      boxer-eval::*novalue*)
 
 ;; better name courtesy of Andy
-(defsprite-function bu::stamp-pie ((eval::numberize radius)
-                                   (eval::numberize sweep-angle))
+(defsprite-function bu::stamp-pie ((boxer-eval::numberize radius)
+                                   (boxer-eval::numberize sweep-angle))
                     (sprite turtle)
   (if (< radius 0)
-      (eval::primitive-signal-error :sprite-error
+      (boxer-eval::primitive-signal-error :sprite-error
 				    "The Radius, "
 				    radius
 				    "Should be 0 or greater")
       (with-sprites-hidden t
 	(stamp-wedge turtle radius sweep-angle)))
-      eval::*novalue*)
+      boxer-eval::*novalue*)
 
-(defsprite-function bu::stamp-arc ((eval::numberize radius)
-                                   (eval::numberize sweep-angle))
+(defsprite-function bu::stamp-arc ((boxer-eval::numberize radius)
+                                   (boxer-eval::numberize sweep-angle))
                     (sprite turtle)
   (cond ((not (null *uc-copyright-free*))
-         (eval::primitive-signal-error :copyright
+         (boxer-eval::primitive-signal-error :copyright
                                        'stamp-arc " is no longer available, use "
                                        'draw-arc " instead"))
         (t
          (if (< radius 0)
-             (eval::primitive-signal-error :sprite-error
+             (boxer-eval::primitive-signal-error :sprite-error
 				           "The Radius, "
 				           radius
 				           "Should be 0 or greater")
            (with-sprites-hidden t
 	     (stamp-arc turtle radius sweep-angle)))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defsprite-function bu::draw-arc ((eval::numberize radius)
-                                   (eval::numberize sweep-angle))
+(defsprite-function bu::draw-arc ((boxer-eval::numberize radius)
+                                   (boxer-eval::numberize sweep-angle))
                     (sprite turtle)
   (if (< radius 0)
-      (eval::primitive-signal-error :sprite-error
+      (boxer-eval::primitive-signal-error :sprite-error
 				    "The Radius, "
 				    radius
 				    "Should be 0 or greater")
       (with-sprites-hidden t
 	(stamp-arc turtle radius sweep-angle)))
-      eval::*novalue*)
+      boxer-eval::*novalue*)
 
 ;; better name courtesy of Andy...
-(defsprite-function bu::stamp-crust ((eval::numberize radius)
-                                   (eval::numberize sweep-angle))
+(defsprite-function bu::stamp-crust ((boxer-eval::numberize radius)
+                                   (boxer-eval::numberize sweep-angle))
                     (sprite turtle)
   (if (< radius 0)
-      (eval::primitive-signal-error :sprite-error
+      (boxer-eval::primitive-signal-error :sprite-error
 				    "The Radius, "
 				    radius
 				    "Should be 0 or greater")
       (with-sprites-hidden t
 	(stamp-arc turtle radius sweep-angle)))
-      eval::*novalue*)
+      boxer-eval::*novalue*)
 
 (defsprite-function bu::stamp-bitmap ((bu::port-to graphics-box)) (sprite turtle)
   (let ((graphics-sheet (graphics-sheet (box-or-port-target graphics-box))))
     (cond ((null graphics-sheet)
-	   (eval::primitive-signal-error :sprite-error
+	   (boxer-eval::primitive-signal-error :sprite-error
 					 "The Box, " graphics-box
 					 ", does not have any graphics"))
 	  ((null (graphics-sheet-bit-array graphics-sheet))
-	   (eval::primitive-signal-error :sprite-error
+	   (boxer-eval::primitive-signal-error :sprite-error
 					 "The Box, " graphics-box
 					 ", does not have a bitmap"))
 	  (t
@@ -311,17 +308,17 @@ Modification History (most recent at the top)
 			   (graphics-sheet-bit-array graphics-sheet)
 			   (graphics-sheet-draw-wid graphics-sheet)
 			   (graphics-sheet-draw-hei graphics-sheet))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;(defsprite-function bu::stamp-partial-bitmap ((bu::port-to graphics-box)
-;					      (eval::numberize src-x)
-;					      (eval::numberize src-y)
-;					      (eval::numberize width)
-;					      (eval::numberize height))
+;					      (boxer-eval::numberize src-x)
+;					      (boxer-eval::numberize src-y)
+;					      (boxer-eval::numberize width)
+;					      (boxer-eval::numberize height))
 ;  (sprite turtle)
 ;  (with-sprites-hidden t
 ;    (stamp-partial-bitmap-for-turtle ...))
-;  eval::*novalue*)
+;  boxer-eval::*novalue*)
 
 
 
@@ -329,7 +326,7 @@ Modification History (most recent at the top)
   (with-sprites-hidden t
       (stamp turtle))
   #+X (xlib::xflush)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;;; this loops through the graphics list and:
 ;;;   o copy the commands
@@ -389,12 +386,12 @@ Modification History (most recent at the top)
 	*graphics-state-current-pen-color*
         (graphics-command-list-pen-color %graphics-list))))
 
-(defsprite-function bu::stamp ((eval::dont-copy graphicsbox))
+(defsprite-function bu::stamp ((boxer-eval::dont-copy graphicsbox))
   (sprite turtle)
   (let* ((graphics-box (box-or-port-target graphicsbox))
          (gs (get-graphics-sheet graphics-box)))
     (if (null gs)
-        (eval::primitive-signal-error :sprite-error "No graphics in "
+        (boxer-eval::primitive-signal-error :sprite-error "No graphics in "
                                       (port-to-internal graphics-box))
         (let* (;(turtle-graphics-box (slot-value turtle 'assoc-graphics-box))
                ;(tgs (unless (null turtle-graphics-box)
@@ -447,61 +444,61 @@ Modification History (most recent at the top)
              (floor (graphics-sheet-draw-wid gs) 2)
              (floor (graphics-sheet-draw-hei gs) 2)))))
           #+X (xlib::xflush))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;;;; mousing around...
-#-opengl
-(defsprite-function bu::follow-mouse () (sprite turtle)
-  (let ((screen-box (or (car (fast-memq (bp-screen-box *mouse-bp*)
-                                        ;; is *mouse-bp* valid ?
-                                        (get-visible-screen-objs
-                                         (slot-value turtle 'assoc-graphics-box))))
-                        (car (displayed-screen-objs
-			      ;; this is wrong but ignore ports for the moment
-			      (slot-value turtle 'assoc-graphics-box))))))
-    (multiple-value-bind (window-x-offset window-y-offset)
-	(xy-position screen-box)
-      (multiple-value-bind (left top right bottom)
-	  (box-borders-widths (box-type screen-box) screen-box)
-	(let* ((min-x (+& window-x-offset left))
-	       (min-y (+& window-y-offset top))
-               (superior-turtle (superior-turtle turtle))
-               (sup-x (if (null superior-turtle) 0
-                          (absolute-x-position superior-turtle)))
-               (sup-y (if (null superior-turtle) 0
-                          (absolute-y-position superior-turtle))))
-	  (flet ((translate-x (window-x)
-			      (- (user-coordinate-x (-& window-x min-x))
-                                 sup-x))
-		 (translate-y (window-y)
-			      (- (user-coordinate-y (-& window-y min-y))
-                                 sup-y)))
-	    (warp-pointer *boxer-pane*
-			  (+ window-x-offset left (fix-array-coordinate-x
-						   (absolute-x-position turtle)))
-			  (+ window-y-offset top  (fix-array-coordinate-y
-						   (absolute-y-position turtle))))
-	    (multiple-value-bind (final-x final-y moved?)
-		(let ((%mouse-usurped t))
-		  (with-mouse-tracking-inside ((mouse-x min-x) (mouse-y min-y)
-					       min-x min-y
-					       (-& (+& window-x-offset
-						       (screen-obj-wid
-							screen-box))
-						   right 1)
-					       (-& (+& window-y-offset
-						       (screen-obj-hei
-							screen-box))
-						   bottom 1)
-					       #+MCL :view #+MCL *boxer-pane*)
-		  (with-sprites-hidden t
-		    (move-to turtle
-			     (translate-x mouse-x) (translate-y mouse-y)))))
-	      (when moved?
-		(with-sprites-hidden t
-		  (move-to turtle
-			   (translate-x final-x) (translate-y final-y))))))))))
-    eval::*novalue*)
+;; #-opengl
+;; (defsprite-function bu::follow-mouse () (sprite turtle)
+;;   (let ((screen-box (or (car (fast-memq (bp-screen-box *mouse-bp*)
+;;                                         ;; is *mouse-bp* valid ?
+;;                                         (get-visible-screen-objs
+;;                                          (slot-value turtle 'assoc-graphics-box))))
+;;                         (car (displayed-screen-objs
+;; 			      ;; this is wrong but ignore ports for the moment
+;; 			      (slot-value turtle 'assoc-graphics-box))))))
+;;     (multiple-value-bind (window-x-offset window-y-offset)
+;; 	(xy-position screen-box)
+;;       (multiple-value-bind (left top right bottom)
+;; 	  (box-borders-widths (box-type screen-box) screen-box)
+;; 	(let* ((min-x (+& window-x-offset left))
+;; 	       (min-y (+& window-y-offset top))
+;;                (superior-turtle (superior-turtle turtle))
+;;                (sup-x (if (null superior-turtle) 0
+;;                           (absolute-x-position superior-turtle)))
+;;                (sup-y (if (null superior-turtle) 0
+;;                           (absolute-y-position superior-turtle))))
+;; 	  (flet ((translate-x (window-x)
+;; 			      (- (user-coordinate-x (-& window-x min-x))
+;;                                  sup-x))
+;; 		 (translate-y (window-y)
+;; 			      (- (user-coordinate-y (-& window-y min-y))
+;;                                  sup-y)))
+;; 	    (warp-pointer *boxer-pane*
+;; 			  (+ window-x-offset left (fix-array-coordinate-x
+;; 						   (absolute-x-position turtle)))
+;; 			  (+ window-y-offset top  (fix-array-coordinate-y
+;; 						   (absolute-y-position turtle))))
+;; 	    (multiple-value-bind (final-x final-y moved?)
+;; 		(let ((%mouse-usurped t))
+;; 		  (with-mouse-tracking-inside ((mouse-x min-x) (mouse-y min-y)
+;; 					       min-x min-y
+;; 					       (-& (+& window-x-offset
+;; 						       (screen-obj-wid
+;; 							screen-box))
+;; 						   right 1)
+;; 					       (-& (+& window-y-offset
+;; 						       (screen-obj-hei
+;; 							screen-box))
+;; 						   bottom 1)
+;; 					       #+MCL :view #+MCL *boxer-pane*)
+;; 		  (with-sprites-hidden t
+;; 		    (move-to turtle
+;; 			     (translate-x mouse-x) (translate-y mouse-y)))))
+;; 	      (when moved?
+;; 		(with-sprites-hidden t
+;; 		  (move-to turtle
+;; 			   (translate-x final-x) (translate-y final-y))))))))))
+;;     boxer-eval::*novalue*)
 
 (defvar *follow-mouse-movement-threshold* 2)
 
@@ -537,7 +534,7 @@ Modification History (most recent at the top)
 						   (absolute-y-position turtle))))
 	    (multiple-value-bind (final-x final-y moved?)
 		(let ((%mouse-usurped t))
-		  (with-mouse-tracking-inside ((mouse-x min-x) (mouse-y min-y)
+		  (boxer-window::with-mouse-tracking-inside ((mouse-x min-x) (mouse-y min-y)
 					       min-x min-y
 					       (-& (+& window-x-offset
 						       (screen-obj-wid screen-box))
@@ -558,28 +555,28 @@ Modification History (most recent at the top)
 		(with-sprites-hidden t
 		  (move-to turtle
 			   (translate-x final-x) (translate-y final-y))))))))))
-    eval::*novalue*)
+    boxer-eval::*novalue*)
 
 
 (defsprite-function bu::type ((bu::dont-copy box)) (sprite turtle)
   (with-sprites-hidden t
     (type-box turtle box))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defsprite-function bu::ctype ((bu::dont-copy box)) (sprite turtle)
   (with-sprites-hidden t
     (type-box turtle box))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defsprite-function bu::ltype ((bu::dont-copy box)) (sprite turtle)
   (with-sprites-hidden t
     (type-box turtle box :left))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defsprite-function bu::rtype ((bu::dont-copy box)) (sprite turtle)
   (with-sprites-hidden t
     (type-box turtle box :right))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 #|
@@ -618,10 +615,10 @@ Modification History (most recent at the top)
 (defun screen-pixel-from-turtle (turtle)
   (let ((gb (assoc-graphics-box turtle)))
     (if (null gb)
-	(eval::primitive-signal-error :graphics "Can't find a graphics box")
+	(boxer-eval::primitive-signal-error :graphics "Can't find a graphics box")
 	(let ((sb (car (displayed-screen-objs gb))))
 	  (if (null sb)
-	      (eval::primitive-signal-error
+	      (boxer-eval::primitive-signal-error
 	       :graphics "Pixel at sprite location is not visible")
 	      (multiple-value-bind (box-x box-y)
 		  (xy-position sb)
@@ -637,7 +634,7 @@ Modification History (most recent at the top)
 			       (<&  gb-y (screen-obj-hei sb)))
 			  (window-pixel (+& box-x lef gb-x)
                                               (+& box-y top gb-y))
-			  (eval::primitive-signal-error
+			  (boxer-eval::primitive-signal-error
 			   :graphics
 			   "Pixel at sprite location is not visible")))))))))))
 
@@ -648,7 +645,7 @@ Modification History (most recent at the top)
 (defun background-pixel-from-turtle (turtle)
   (let ((gb (assoc-graphics-box turtle)))
     (if (null gb)
-	(eval::primitive-signal-error :graphics "Can't find a graphics box")
+	(boxer-eval::primitive-signal-error :graphics "Can't find a graphics box")
 	(let* ((gs (graphics-sheet gb))
 	       (bit-array (graphics-sheet-bit-array gs))
 	       (background (graphics-sheet-background gs)))
@@ -663,7 +660,7 @@ Modification History (most recent at the top)
 			 (offscreen-pixel gb-x gb-y bit-array))
 			((not (null background)) background)
 			(t (opengl::color->pixel *background-color*)))
-		  (eval::primitive-signal-error
+		  (boxer-eval::primitive-signal-error
 		   :graphics "Pixel is not in the graphics box"))))))))
 
 (defsprite-function bu::color-under () (sprite turtle)
@@ -676,7 +673,7 @@ Modification History (most recent at the top)
 
 (defsprite-function bu::bg-color-under? () (sprite turtle)
   (with-sprites-hidden nil
-    (eval::boxer-boolean
+    (boxer-eval::boxer-boolean
      (opengl::pixel= (screen-pixel-from-turtle turtle)
                      (background-pixel-from-turtle turtle)))))
 
@@ -684,17 +681,17 @@ Modification History (most recent at the top)
   (sprite turtle)
   (let ((c (color-from-box (box-or-port-target color))))
     (if (null c)
-	(eval::primitive-signal-error :graphics color "is not a color box")
+	(boxer-eval::primitive-signal-error :graphics color "is not a color box")
 	(with-sprites-hidden :change-shape
-	  (eval::boxer-boolean
+	  (boxer-eval::boxer-boolean
 	   (color= c (screen-color-from-turtle turtle)))))))
 
 (defsprite-function bu::bg-color-under= ((bu::port-to color))
   (sprite turtle)
   (let ((c (color-from-box (box-or-port-target color))))
     (if (null c)
-	(eval::primitive-signal-error :graphics color "is not a color box")
-	(eval::boxer-boolean
+	(boxer-eval::primitive-signal-error :graphics color "is not a color box")
+	(boxer-eval::boxer-boolean
 	 (color= c (background-color-from-turtle turtle))))))
 
 
@@ -707,7 +704,7 @@ Modification History (most recent at the top)
           (setf (graphics-sheet-object-list gs)
                 (append (fast-delq turtle (graphics-sheet-object-list gs))
                         (list turtle))))))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 (defsprite-function bu::bring-to-front () (sprite turtle)
   (let ((gb (get-graphics-box-from-sprite-box sprite)))
@@ -717,5 +714,5 @@ Modification History (most recent at the top)
           (setf (graphics-sheet-object-list gs)
                 (cons turtle
                       (fast-delq turtle (graphics-sheet-object-list gs)))))))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 

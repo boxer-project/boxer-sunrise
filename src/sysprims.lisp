@@ -65,8 +65,7 @@ Modification History (most recent at the top)
 
 |#
 
-#-(or lispworks mcl) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl) (in-package :boxer)
+(in-package :boxer)
 
 
 
@@ -81,6 +80,7 @@ Modification History (most recent at the top)
 (defvar *preference-read-handlers* nil)
 (defvar *preference-write-handlers* nil)
 
+(eval-when (compile load eval)
 (defmacro defboxer-preference (name args
                                     (initial-value-spec . documentation)
                                     &body body)
@@ -187,16 +187,17 @@ Modification History (most recent at the top)
        (setf (get ',name 'system-parameter-pref-dialog-info)
              (list ',variable ',(car documentation) ',value-type
                    ',dialog-item-action-name ',dialog-item-doc-name))
-       (defboxer-primitive ,name ,args
+       (boxer-eval::defboxer-primitive ,name ,args
          ;; sort of flaky but don't want to have to specify separate args
          ;; for the function and the body
          (let ((,(pref-arg-name args)
                   ,(ecase value-type
-                     (:boolean `(eval::true? ,(pref-arg-name args)))
+                     (:boolean `(boxer-eval::true? ,(pref-arg-name args)))
                      (:number  (pref-arg-name args))
                      (:string `(box-text-string ,(pref-arg-name args)))
                      (:keyword `(intern-keyword (box-text-string ,(pref-arg-name args)))))))
            . ,body)))))
+
 
 (defun pref-arg-name (arglist)
   (let ((guess (car arglist))) (cond ((listp guess) (cadr guess)) (t guess))))
@@ -219,6 +220,8 @@ Modification History (most recent at the top)
   (with-collection
     (dolist (x doc)
       (collect (car x)))))
+
+) ;; eval-when
 
 ;;; Reading in Preferences Files....
 ;; basically the same as handle-site-initialization(s)
@@ -258,9 +261,9 @@ Modification History (most recent at the top)
     (ccl::set-mac-file-creator file :BOXR)
     (ccl::set-mac-file-type file :BOXP)))
 
-(defboxer-primitive bu::save-preferences ()
+(boxer-eval::defboxer-primitive bu::save-preferences ()
   (write-preferences)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -269,7 +272,7 @@ Modification History (most recent at the top)
 
 ;;;; Printer Preferences
 
-(defboxer-preference bu::printing-precision ((eval::numberize new-precision))
+(defboxer-preference bu::printing-precision ((boxer-eval::numberize new-precision))
                      ((*decimal-print-precision* :number *decimal-print-precision*)
                       #+capi results #-capi result-appearance
                       ("How many numerals should appear after")
@@ -278,72 +281,72 @@ Modification History (most recent at the top)
 	      (>=& new-precision 0))
 	 (set-decimal-printing-precision new-precision))
 	(t (set-decimal-printing-precision nil)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 (defboxer-preference bu::print-fractions (true-or-false)
-  ((*print-rationals* :boolean (eval::boxer-boolean *print-rationals*))
+  ((*print-rationals* :boolean (boxer-eval::boxer-boolean *print-rationals*))
    #+capi results #-capi result-appearance
    ("Should fractional numbers (e.g., 1/2) appear as ")
    ("fractions (1/2), rather than decimals (0.5) ?"))
   (setq *print-rationals* true-or-false)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 (defboxer-preference bu::preserve-empty-lines-in-build (true-or-false)
   ((*interpolate-empty-rows-too?* :boolean
-    (eval::boxer-boolean *interpolate-empty-rows-too?*))
+    (boxer-eval::boxer-boolean *interpolate-empty-rows-too?*))
    #+capi results #-capi result-appearance
    ("Should empty lines in boxes referred to via @'s")
    ("in BUILD templates be preserved ? "))
   (setq *interpolate-empty-rows-too?* true-or-false)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;;;; Stepper and Evaluator preferences...
 
 (defboxer-preference bu::step-wait-for-key-press (true-or-false)
-  ((eval::*step-wait-for-key-press* :boolean
-    (eval::boxer-boolean eval::*step-wait-for-key-press*))
+  ((boxer-eval::*step-wait-for-key-press* :boolean
+    (boxer-eval::boxer-boolean boxer-eval::*step-wait-for-key-press*))
    #+capi evaluator #-capi evaluator-settings
    ("Should the Stepper wait for a key press ")
    ("before going on to the next step ?")
    ("(The Stepper shows Boxer execution one step at a time.)"))
-  (setq eval::*step-wait-for-key-press* true-or-false)
-  eval::*novalue*)
+  (setq boxer-eval::*step-wait-for-key-press* true-or-false)
+  boxer-eval::*novalue*)
 
-(defboxer-preference bu::step-time ((eval::numberize seconds))
-  ((eval::*step-sleep-time* :number eval::*step-sleep-time*)
+(defboxer-preference bu::step-time ((boxer-eval::numberize seconds))
+  ((boxer-eval::*step-sleep-time* :number boxer-eval::*step-sleep-time*)
    #+capi evaluator #-capi evaluator-settings
    ("How many seconds should the Stepper pause between steps")
    ("(The Stepper shows Boxer execution one step at a time.)"))
-  (setq eval::*step-sleep-time* seconds)
-  eval::*novalue*)
+  (setq boxer-eval::*step-sleep-time* seconds)
+  boxer-eval::*novalue*)
 
 
 (defboxer-preference bu::evaluator-help (true-or-false)
-  ((*evaluator-helpful* :boolean (eval::boxer-boolean *evaluator-helpful*))
+  ((*evaluator-helpful* :boolean (boxer-eval::boxer-boolean *evaluator-helpful*))
    #+capi evaluator #-capi evaluator-settings
    ("Should the Evaluator print \"helpful\" messages")
    ("when it detects style problems ?")
    ("(E.g., if you port to the output of a primitive)"))
   (setq *evaluator-helpful* true-or-false)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-preference bu::primitive-shadow-warnings (true-or-false)
-  ((eval::*warn-about-primitive-shadowing* :boolean
-    (eval::boxer-boolean eval::*warn-about-primitive-shadowing*))
+  ((boxer-eval::*warn-about-primitive-shadowing* :boolean
+    (boxer-eval::boxer-boolean boxer-eval::*warn-about-primitive-shadowing*))
    #+capi evaluator #-capi evaluator-settings
    ("Should you get a warning if you redefine a Boxer primitive ?"))
-  (setq eval::*warn-about-primitive-shadowing* true-or-false)
-  eval::*novalue*)
+  (setq boxer-eval::*warn-about-primitive-shadowing* true-or-false)
+  boxer-eval::*novalue*)
 
 (defboxer-preference bu::update-display-during-eval (true-or-false)
   ((*repaint-during-eval?* :keyword
-    (eval::boxer-boolean eval::*warn-about-primitive-shadowing*))
+    (boxer-eval::boxer-boolean boxer-eval::*warn-about-primitive-shadowing*))
    #+capi evaluator #-capi evaluator-settings
    ("Should the screen be repainted during eval ? Valid entries are ALWAYS, NEVER and CHANGED-GRAPHICS"))
   (setq *repaint-during-eval?* true-or-false)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -351,31 +354,31 @@ Modification History (most recent at the top)
 
 (defboxer-preference bu::make-transparent-graphics-boxes (true-or-false)
   ((*default-graphics-box-transparency* :boolean
-    (eval::boxer-boolean *default-graphics-box-transparency*))
+    (boxer-eval::boxer-boolean *default-graphics-box-transparency*))
    #+capi graphics #-capi graphics-settings
    ("Should newly made graphics boxes be transparent ?"))
   (setq *default-graphics-box-transparency* true-or-false)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-preference bu::include-sprite-in-new-graphics (true-or-false)
   ((*include-sprite-box-in-new-graphics?* :boolean
-    (eval::boxer-boolean *include-sprite-box-in-new-graphics?*))
+    (boxer-eval::boxer-boolean *include-sprite-box-in-new-graphics?*))
    #+capi graphics #-capi graphics-settings
    ("Should newly made graphics boxes include a sprite ?"))
   (setq *include-sprite-box-in-new-graphics?* true-or-false)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-preference bu::name-new-sprites (true-or-false)
-  ((*name-new-sprites?* :boolean (eval::boxer-boolean *name-new-sprites?*))
+  ((*name-new-sprites?* :boolean (boxer-eval::boxer-boolean *name-new-sprites?*))
    #+capi graphics #-capi graphics-settings
    ("Should the cursor be moved into")
    ("the name row of new sprite boxes ?"))
   (setq *name-new-sprites?* true-or-false)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-preference bu::make-diet-sprites (true-or-false)
   ((*new-sprites-should-be-diet-sprites?* :boolean
-    (eval::boxer-boolean *new-sprites-should-be-diet-sprites?*))
+    (boxer-eval::boxer-boolean *new-sprites-should-be-diet-sprites?*))
    #+capi graphics #-capi graphics-settings
    ("Should newly made sprite boxes include fewer")
    ("visible attributes to save memory ?"))
@@ -390,21 +393,21 @@ Modification History (most recent at the top)
 	       *graphics-interface-boxes-in-closet*
 	       '(shape shown? home-position sprite-size
 		 pen pen-width type-font pen-color))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-preference bu::penerase-color-from-bit-array (true-or-false)
-  ((*check-bit-array-color* :boolean (eval::boxer-boolean *check-bit-array-color*))
+  ((*check-bit-array-color* :boolean (boxer-eval::boxer-boolean *check-bit-array-color*))
    #+capi graphics #-capi graphics-settings
    ("Should the backing store of a frozen box be")
    ("checked for the penerase color if one exists ?"))
   (setq *check-bit-array-color* true-or-false)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;; no longer needed, perhaps replace with interrupt poll count value
 ;#+carbon-compat
 ;(defboxer-preference bu::immediate-sprite-drawing (true-or-false)
 ;  ((*sprite-drawing-flush?* :boolean
-;                            (eval::boxer-boolean *sprite-drawing-flush?*))
+;                            (boxer-eval::boxer-boolean *sprite-drawing-flush?*))
 ;   #+lwwin graphics #-lwwin graphics-settings
 ;   ("Should sprite graphics draw immediately with every command")
 ;   ("Setting this to false speeds up complicated sprite graphics"))
@@ -412,105 +415,105 @@ Modification History (most recent at the top)
 ;	 (setq *sprite-drawing-flush?* t))
 ;	(t
 ;	 (setq *sprite-drawing-flush?* nil)))
-;  eval::*novalue*)
+;  boxer-eval::*novalue*)
 
 ;; obsolete
 ;(defboxer-preference bu::enable-box-type-toggling-with-mouse (true-or-false)
 ;  ((*enable-mouse-toggle-box-type?* :boolean
-;    (eval::boxer-boolean *enable-mouse-toggle-box-type?*))
+;    (boxer-eval::boxer-boolean *enable-mouse-toggle-box-type?*))
 ;   #+lwwin editor #-lwwin editor-settings
 ;   ("Should the mouse be able to toggle the box")
 ;   ("type by clicking on the type label ?"))
 ;  (setq *enable-mouse-toggle-box-type?* true-or-false)
-;  eval::*novalue*)
+;  boxer-eval::*novalue*)
 
 ;; removed 5/12/99 this is never encountered in practice now that we have menus
 ;; on the mouse corners
 ;(defboxer-preference bu::warn-about-disabled-commands (true-or-false)
 ;  ((*warn-about-disabled-commands* :boolean
-;    (eval::boxer-boolean *warn-about-disabled-commands*))
+;    (boxer-eval::boxer-boolean *warn-about-disabled-commands*))
 ;   #+lwwin editor #-lwwin editor-settings
 ;   ("Should the user be informed when trying a disabled command.  ")
 ;   ("or should the action do nothing."))
 ;  (setq *warn-about-disabled-commands* true-or-false)
-;  eval::*novalue*)
+;  boxer-eval::*novalue*)
 
 ;; removed 5/24/01: no one is ever going to know what to do with this,
 ;; we should eventually replace it with an "animation speed" slider which also
 ;; controls things like speed of popup mouse doc unscrolling and move-to-bp
-;(defboxer-preference bu::zoom-pause ((eval::numberize seconds))
+;(defboxer-preference bu::zoom-pause ((boxer-eval::numberize seconds))
 ;  ((*move-bp-zoom-pause-time* :number *move-bp-zoom-pause-time*)
 ;   #+lwwin editor #-lwwin editor-settings
 ;   ("How many seconds pause should there be between steps while")
 ;   ("zooming to a place (e.g., the target of a port)")
 ;   ("Setting to 0 will disable animation."))
 ;  (setq *move-bp-zoom-pause-time* seconds)
-;  eval::*novalue*)
+;  boxer-eval::*novalue*)
 
 (defboxer-preference bu::show-border-type-labels (true-or-false)
-  ((*show-border-type-labels* :boolean (eval::boxer-boolean *show-border-type-labels*))
+  ((*show-border-type-labels* :boolean (boxer-eval::boxer-boolean *show-border-type-labels*))
    #+capi editor #-capi editor-settings
    ("Should the type label (e.g., doit, data) of boxes be shown ?"))
   (setq *show-border-type-labels* true-or-false)
   #-opengl (force-redisplay)
   #+opengl (force-repaint)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ; removed 2/22/97
 ;(defboxer-preference bu::lock-all-closets (true-or-false)
-;  ((*lock-all-closets* :boolean (eval::boxer-boolean *lock-all-closets*))
+;  ((*lock-all-closets* :boolean (boxer-eval::boxer-boolean *lock-all-closets*))
 ;   #+lwwin editor #-lwwin editor-settings
 ;   ("Should all closets start out being locked"))
 ;  (setq *lock-all-closets* true-or-false)
 ;  (force-redisplay)
-;  eval::*novalue*)
+;  boxer-eval::*novalue*)
 
 ;; removed 9/14/98
 ;; used to be only-shrink-wrap-text-boxes
 ;(defboxer-preference bu::disable-box-resizing (true-or-false)
-;  ((*only-shrink-wrap-text-boxes* :boolean (eval::boxer-boolean
+;  ((*only-shrink-wrap-text-boxes* :boolean (boxer-eval::boxer-boolean
 ;                                            *only-shrink-wrap-text-boxes*))
 ;   #+lwwin editor #-lwwin editor-settings
 ;   ("Do not allow the size of text boxes to be fixed. If TRUE,")
 ;   ("boxes will automatically stretch to fit the contents"))
 ;  (setq *only-shrink-wrap-text-boxes* true-or-false)
-;  eval::*novalue*)
+;  boxer-eval::*novalue*)
 
 ;;turned off for now
 ;(defboxer-preference bu::slow-graphics-toggling (true-or-false)
-;  ((*slow-graphics-toggle* :boolean (eval::boxer-boolean *slow-graphics-toggle*))
+;  ((*slow-graphics-toggle* :boolean (boxer-eval::boxer-boolean *slow-graphics-toggle*))
 ;   editor-settings
 ;   ("Require the user to confirm graphics toggling by holding the mouse")
 ;   ("button down for a small interval before the action will take place"))
 ;  (setq *slow-graphics-toggle* true-or-false)
-;  eval::*novalue*)
+;  boxer-eval::*novalue*)
 
 ;; removed 5/12/99 at andy's suggestion
 ;(defboxer-preference bu::only-scroll-current-box (true-or-false)
-;  ((*only-scroll-current-box?* :boolean (eval::boxer-boolean *only-scroll-current-box?*))
+;  ((*only-scroll-current-box?* :boolean (boxer-eval::boxer-boolean *only-scroll-current-box?*))
 ;   editor-settings
 ;   ("Limit the ability to scroll the contents to the current box"))
 ;  (setq *only-scroll-current-box?* true-or-false)
 ;  (force-redisplay)
-;  eval::*novalue*)
+;  boxer-eval::*novalue*)
 
 (defboxer-preference bu::smooth-scrolling (true-or-false)
-  ((*smooth-scrolling?* :boolean (eval::boxer-boolean *smooth-scrolling?*))
+  ((*smooth-scrolling?* :boolean (boxer-eval::boxer-boolean *smooth-scrolling?*))
    #+capi editor #-capi editor-settings
    ("Should scrolling be one pixel at a time ?")
    ("(This may be turned off for slow machines)"))
   (setq *smooth-scrolling?* true-or-false)
   #-opengl (force-redisplay)
   #+opengl (force-repaint)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-preference bu::global-hotspot-controls (true-or-false)
   ((*global-hotspot-control?* :boolean
-                        (eval::boxer-boolean *global-hotspot-control?*))
+                        (boxer-eval::boxer-boolean *global-hotspot-control?*))
    #+capi editor #-capi editor-settings
    ("Should turning a hotspot off or on affect all hotspots ?"))
   (setq *global-hotspot-control?* true-or-false)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-preference bu::input-device-names (machine-type)
   ((*current-input-device-platform* :keyword
@@ -524,59 +527,59 @@ Modification History (most recent at the top)
 				    (find-package 'keyword))))
     (if (fast-memq canonicalized-name *defined-input-device-platforms*)
 	(make-input-devices canonicalized-name)
-	(eval::primitive-signal-error :preference
+	(boxer-eval::primitive-signal-error :preference
 				      "The machine-type, " machine-type
 				      ", does not have a defined set of input devices"))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 #| ;; removed 9/08/02
 (defboxer-preference bu::fullscreen-window (true-or-false)
   ((bw::*fullscreen-window-p* :boolean
-                              (eval::boxer-boolean bw::*fullscreen-window-p*))
+                              (boxer-eval::boxer-boolean bw::*fullscreen-window-p*))
    #+lwwin editor #-lwwin editor-settings
    ("Should the boxer window occupy the entire screen ?"))
   (setq bw::*fullscreen-window-p* true-or-false)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 |#
 
 ;; added 9/08/02
 (defboxer-preference bu::maximize-window (true-or-false)
   ((bw::*fullscreen-window-p* :boolean
-                              (eval::boxer-boolean bw::*fullscreen-window-p*))
+                              (boxer-eval::boxer-boolean bw::*fullscreen-window-p*))
    #+capi editor #-capi editor-settings
    ("Should the boxer window occupy the entire screen ?"))
   (setq bw::*fullscreen-window-p* true-or-false)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-preference bu::boxer-window-width ((eval::numberize w))
+(defboxer-preference bu::boxer-window-width ((boxer-eval::numberize w))
     ((bw::*starting-window-width* :number bw::*starting-window-width*)
      #+capi editor #-capi editor-settings
      ("The initial width of the Boxer window, 0 lets the computer decide"))
   (setq bw::*starting-window-width* w)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-preference bu::boxer-window-height ((eval::numberize w))
+(defboxer-preference bu::boxer-window-height ((boxer-eval::numberize w))
     ((bw::*starting-window-height* :number bw::*starting-window-height*)
      #+capi editor #-capi editor-settings
      ("The initial height of the Boxer window, 0 lets the computer decide"))
   (setq bw::*starting-window-height* w)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;; This should be changed to :choice after the :choice pref is implemented
 #+(and (not opengl) capi) ; dont offer until it works...
 (defboxer-preference bu::popup-mouse-documentation (true-or-false)
     ((*popup-mouse-documentation?* :boolean
-                                   (eval::boxer-boolean
+                                   (boxer-eval::boxer-boolean
                                     *popup-mouse-documentation?*))
      #+capi editor #-capi editor-settings
      ("Should mouse documentation popup after a short delay ?"))
   (setq *popup-mouse-documentation* true-or-false)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 ;; removed 5/12/99 at andy's suggestion
 ;(defboxer-preference bu::enable-egc (true-or-false)
-;   ((*egc-enabled?* :boolean (eval::boxer-boolean *egc-enabled?*))
+;   ((*egc-enabled?* :boolean (boxer-eval::boxer-boolean *egc-enabled?*))
 ;    #+lwwin evaluator #-lwwin evaluator-settings
 ;    ("Should the Ephemeral Garbage Collector be turned on ?"))
 ;  (let ((new-value true-or-false))
@@ -584,16 +587,16 @@ Modification History (most recent at the top)
 ;    #+ccl (ccl::egc new-value)
 ;    #+lucid (if new-value (lcl::egc-on) (lcl::egc-off))
 ;    )
-;  eval::*novalue*)
+;  boxer-eval::*novalue*)
 
 
 (defboxer-preference bu::report-crash (true-or-false)
     ((bw::*report-crash* :boolean
-                         (eval::boxer-boolean bw::*report-crash*))
+                         (boxer-eval::boxer-boolean bw::*report-crash*))
      #+capi editor #-capi editor-settings
      ("Should lisp errors be logged ?"))
   (setq bw::*report-crash* true-or-false)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 
@@ -608,7 +611,7 @@ Modification History (most recent at the top)
   (let ((newname  printer-name))
     ;; need some sort of consistency checking on the name here
     (setq *ps-postscript-printer* newname)
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 #+(and unix (not macosx))
 (defboxer-preference bu::printer-host (machine-name)
@@ -619,7 +622,7 @@ Modification History (most recent at the top)
   (let ((newname machine-name))
     ;; need some sort of consistency checking on the name here
     (setq *ps-postscript-printer-host* newname)
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 #+(and unix (not macosx))
 (defboxer-preference bu::printer-filename (filename)
@@ -630,7 +633,7 @@ Modification History (most recent at the top)
   (let ((newname filename))
     ;; need some sort of consistency checking on the name here
     (setq *ps-file* newname)
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 
 
@@ -639,33 +642,33 @@ Modification History (most recent at the top)
 #+(and unix (not macosx))
 (defboxer-preference bu::newline-after-serial-writes (true-or-false)
   ((*add-newline-to-serial-writes* :boolean
-    (eval::boxer-boolean *add-newline-to-serial-writes*))
+    (boxer-eval::boxer-boolean *add-newline-to-serial-writes*))
    #+capi communication #-capi communication-settings
    ("Should extra Carriage Returns be added")
    ("at the end of each Serial-Write ? "))
   (setq *add-newline-to-serial-writes* true-or-false)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 #+(and unix (not macosx))
-(defboxer-preference bu::serial-read-base ((eval::numberize radix))
+(defboxer-preference bu::serial-read-base ((boxer-eval::numberize radix))
   ((*serial-read-base* :number *serial-read-base*)
    #+capi communication #-capi communication-settings
    ("The radix that the serial line will")
    ("use to read in n (possible) numbers"))
   (setq *serial-read-base* radix)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 
 ;; File system prefs
 
 (defboxer-preference bu::terse-file-status (true-or-false)
   ((*terse-file-status* :boolean
-    (eval::boxer-boolean *terse-file-status*))
+    (boxer-eval::boxer-boolean *terse-file-status*))
    #+capi Files #-capi File-System-Settings
    ("Should file names use abbreviated form (as opposed to ")
    ("full pathnames) in the status line ?"))
   (setq *terse-file-status* true-or-false)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-preference bu::backup-file-suffix (suffix)
   ((*file-backup-suffix* :string (make-box `((,*file-backup-suffix*))))
@@ -673,15 +676,15 @@ Modification History (most recent at the top)
    ("Which character string should be appended to previous ")
    ("file version when Boxer saves ?"))
   (setq *file-backup-suffix* suffix)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-preference bu::name-link-boxes (true-or-false)
   ((*name-link-boxes* :boolean
-    (eval::boxer-boolean *name-link-boxes*))
+    (boxer-eval::boxer-boolean *name-link-boxes*))
    #+capi Files #-capi File-System-Settings
    ("Should box links to non boxer files be created with the same name as the file"))
   (setq *name-link-boxes* true-or-false)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;; what about ALL bitmap ops...
 
@@ -689,21 +692,21 @@ Modification History (most recent at the top)
 ;#+mcl
 ;(defboxer-preference bu::use-fast-bitmap-loaders (true-or-false)
 ;  ((*use-mac-fast-bitmap-loaders* :boolean
-;                                  (eval::boxer-boolean
+;                                  (boxer-eval::boxer-boolean
 ;                                   *use-mac-fast-bitmap-loaders*))
 ;   File-System-Settings
 ;   ("Use the experimental (may crash your machine) fast bitmap operations ?"))
 ;  (setq *use-mac-fast-bitmap-loaders* true-or-false)
-;  eval::*novalue*)
+;  boxer-eval::*novalue*)
 
 (defboxer-preference bu::warn-about-outlink-ports (true-or-false)
   ((*warn-about-outlink-ports* :boolean
-    (eval::boxer-boolean *warn-about-outlink-ports*))
+    (boxer-eval::boxer-boolean *warn-about-outlink-ports*))
    #+capi Files #-capi File-System-Settings
    ("Should you receive a warning when trying to save a ")
    ("file with ports that link outside the file ?"))
   (setq *warn-about-outlink-ports* true-or-false)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;;; Network stuff
 
@@ -716,14 +719,14 @@ Modification History (most recent at the top)
          (@pos (position #\@ newname)))
     ;; need some sort of consistency checking on the name here
     (if (null @pos)
-        (eval::primitive-signal-error :preferences-error
+        (boxer-eval::primitive-signal-error :preferences-error
                                       newname
                                       " Does not look like a valid address")
         (let ((user (subseq newname 0 @pos)) (host (subseq newname (1+ @pos))))
           (setq boxnet::*user-mail-address* newname
                 boxnet::*pop-user* user
                 boxnet::*pop-host* host)))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 (defboxer-preference bu::mail-relay-host (host)
   ((boxnet::*smtp-relay-host* :string (make-box `((,boxnet::*smtp-relay-host*))))
@@ -733,28 +736,28 @@ Modification History (most recent at the top)
   (let ((newname host))
     ;; need some sort of consistency checking on the name here
     (setq boxnet::*smtp-relay-host* newname)
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 ;; should have a hook to access the MIME type dialog
 
 (defboxer-preference bu::query-for-unkown-mime-type (true-or-false)
   ((boxnet::*query-for-unknown-mime-type* :boolean
-    (eval::boxer-boolean boxnet::*query-for-unknown-mime-type*))
+    (boxer-eval::boxer-boolean boxnet::*query-for-unknown-mime-type*))
    #+capi network #-capi network-settings
    ("Should a dialog popup if an unknown")
    ("MIME (mail attachment) type is encountered ?"))
   (setq boxnet::*query-for-unknown-mime-type* true-or-false)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;; not currently use
 #|
-(defboxer-preference bu::max-viewable-message-size ((eval::numberize length))
+(defboxer-preference bu::max-viewable-message-size ((boxer-eval::numberize length))
   ((boxnet::*max-viewable-message-length*
     :number boxnet::*max-viewable-message-length*)
    #+lwwin network #-lwwin network-settings
    ("What is the maximum size mail message that will appear in Boxer ?"))
   (setq boxnet::*max-viewable-message-length* length)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 |#
 
 (defboxer-preference bu::mail-inbox-file (filename)
@@ -764,12 +767,12 @@ Modification History (most recent at the top)
   (let ((newpath filename))
     ;; should reality check here (at least directory should exist)
     (setq boxnet::*inbox-pathname* newpath)
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
 ;;; temporary
 #|
 #+lwwin
-(defboxer-preference bu::draw-icon-options ((eval::numberize new-option))
+(defboxer-preference bu::draw-icon-options ((boxer-eval::numberize new-option))
                      ((*windows-draw-icon-options* :number
                                                    *windows-draw-icon-options*)
                       #+lwwin temporary
@@ -777,7 +780,7 @@ Modification History (most recent at the top)
                       ("Should be an interger between 0 and 15"))
   (when (and (integerp new-option) (<=& 0 new-option 15))
     (setq  *windows-draw-icon-options* new-option))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 |#
 
 
@@ -835,30 +838,30 @@ Modification History (most recent at the top)
   (reset-region)
   (reset-editor-numeric-arg)
   (insert-cha *point* (make-preferences-box))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::system-preferences ()
+(boxer-eval::defboxer-primitive bu::system-preferences ()
   (virtual-copy (make-preferences-box)))
 
 ;;; use this after the site file has been edited
-(defboxer-primitive bu::reconfigure-system ()
+(boxer-eval::defboxer-primitive bu::reconfigure-system ()
   (handle-site-initializations)
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-show-font-info ()
   "Display font information"
   (reset-region)
   (reset-editor-numeric-arg)
   (insert-cha *point* (make-box (mapcar #'list (bw::capogi-fonts-info))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
-(defboxer-primitive bu::show-font-info ()
+(boxer-eval::defboxer-primitive bu::show-font-info ()
   (virtual-copy (make-box (mapcar #'list (bw::capogi-fonts-info)))))
 
 ;;; should specify all available slots, punt for now
 (defun empty-configuration-box () (make-box '(())))
 
-(defboxer-primitive bu::configuration-info ()
+(boxer-eval::defboxer-primitive bu::configuration-info ()
   (let* ((confile (merge-pathnames *default-configuration-file-name*
 				   *default-site-directory*))
 	 (conbox (if (probe-file confile)

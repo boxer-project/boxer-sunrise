@@ -49,9 +49,7 @@ Modification History (most recent at top)
 
 |#
 
-
-#-(or lispm mcl) (in-package 'boxer)
-#+mcl            (in-package :boxer)
+(in-package :boxer)
 
 
 
@@ -523,7 +521,7 @@ Modification History (most recent at top)
 
 ;; what about names ?
 (defun port-to (thing)
-  (cond ((and (eval::possible-eval-object? thing) (fast-eval-port-box? thing))
+  (cond ((and (boxer-eval::possible-eval-object? thing) (fast-eval-port-box? thing))
 	 (make-virtual-port :target (vp-target thing)))
 	;; will this ever happen?
 	((box? thing)
@@ -557,7 +555,7 @@ Modification History (most recent at top)
 	(t (error "~S is not a Port" thing))))
 
 (defun box-or-port-target (thing)
-  (cond ((and (eval::possible-eval-object? thing) (fast-eval-port-box? thing))
+  (cond ((and (boxer-eval::possible-eval-object? thing) (fast-eval-port-box? thing))
 	 (get-port-target thing))
 	((port-box? thing)
 	 (or (getprop thing 'retargetting-vc) (ports thing)))
@@ -649,7 +647,7 @@ Modification History (most recent at top)
 
 (defun LOOKUP-VARIABLE-IN-BOX-ONLY (box var &optional (exact-inferior-required? t))
   (if (box? box)
-      (eval::lookup-static-variable-in-box-only box var)
+      (boxer-eval::lookup-static-variable-in-box-only box var)
       (lookup-variable-in-virtual-copy box var exact-inferior-required?)))
 
 ;;; symeval support
@@ -689,9 +687,9 @@ Modification History (most recent at top)
 			(superior-box
 			 (vc-rows-entry-editor-box-backpointer sup))))
 		   (unless (null superior-box)
-		     (let ((eval::*lexical-variables-root* superior-box))
-		       (eval::static-variable-value
-			(eval::lookup-static-variable superior-box
+		     (let ((boxer-eval::*lexical-variables-root* superior-box))
+		       (boxer-eval::static-variable-value
+			(boxer-eval::lookup-static-variable superior-box
 						      variable)))))))
 	      ((virtual-copy? sup)
 	       (lookup-variable-in-virtual-copy sup
@@ -736,7 +734,7 @@ Modification History (most recent at top)
 				   ;; can only cache exact matches cause we may
 				   ;; later want to Port-To
 				   ;; the name that we find in the cache
-				   (push (eval::make-static-variable name val)
+				   (push (boxer-eval::make-static-variable name val)
 					 (vc-cached-binding-alist vc)))
 				  (t
 				   ;; we dont have an exact
@@ -744,7 +742,7 @@ Modification History (most recent at top)
 				   (let* ((newval (virtual-copy val
 								:top-level?
 								t))
-					  (svar (eval::make-static-variable
+					  (svar (boxer-eval::make-static-variable
 						 name newval)))
 				     ;; might as well cache it
 				     (push svar (vc-cached-binding-alist vc))
@@ -761,7 +759,7 @@ Modification History (most recent at top)
                           ;; check exports
                           (unless (null (vc-exports val))
                             (cond ((eq (vc-exports val)
-                                       eval::*exporting-all-variables-marker*)
+                                       boxer-eval::*exporting-all-variables-marker*)
                                    ;; fill cache here
                                    (setf (vc-cached-binding-alist vc)
                                          (append (vc-cached-binding-alist vc)
@@ -778,7 +776,7 @@ Modification History (most recent at top)
 				   ;; box has a name so cache
 				   ;; the name and the value
 				   (let ((svar
-					  (eval::make-static-variable name val)))
+					  (boxer-eval::make-static-variable name val)))
 				     (push svar
 					   (vc-cached-binding-alist
 					    vc))))))
@@ -793,7 +791,7 @@ Modification History (most recent at top)
 				   (let* ((new-val (virtual-copy val
 								 :top-level?
 								 t))
-					  (svar (eval::make-static-variable
+					  (svar (boxer-eval::make-static-variable
 						 name new-val)))
 				     ;; instantiate the new value into
 				     ;; the structure
@@ -812,7 +810,7 @@ Modification History (most recent at top)
                           ;; exports
                           (unless (null (exports val))
                             (cond ((eq (exports val)
-                                       eval::*exporting-all-variables-marker*)
+                                       boxer-eval::*exporting-all-variables-marker*)
                                    ;; fill cache here
                                    (setf (vc-cached-binding-alist vc)
                                          (append (vc-cached-binding-alist vc)
@@ -847,7 +845,7 @@ Modification History (most recent at top)
 							   cha :top-level?
 							   t))
 						 (svar
-						  (eval::make-static-variable
+						  (boxer-eval::make-static-variable
 						   name new-val)))
 					    (push svar
 						  (vc-cached-binding-alist vc))
@@ -870,7 +868,7 @@ Modification History (most recent at top)
 		    nil)
 		   (t
 		    (record-vc-var-lookup-cache-hit)
-		    (eval::static-variable-value val?))))))))
+		    (boxer-eval::static-variable-value val?))))))))
 
 
 
@@ -1612,7 +1610,7 @@ aren't enough elements, 2nd value in the NIL case will be length in elements"
     newvc))
 
 ;; now that selectors can be passed editor boxes (as a result of
-;; the eval::dont-copy flavor), we have to handle editor boxes
+;; the boxer-eval::dont-copy flavor), we have to handle editor boxes
 ;; otherwise, this is pretty much the same as new-vc-rows
 
 ;; this needs to get info from the vc-rows-entry !!!!

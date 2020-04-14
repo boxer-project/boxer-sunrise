@@ -45,8 +45,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
+(in-package :boxer)
 
 
 
@@ -122,18 +121,18 @@ Modification History (most recent at top)
 (defun install-interface-slot (interface box-name sprite-box)
   (setf (box-interface-sup-box interface) sprite-box)
   (let ((existing-box
-	 (eval::lookup-static-variable-in-box-only sprite-box box-name)))
+	 (boxer-eval::lookup-static-variable-in-box-only sprite-box box-name)))
     (unless (null existing-box)
-      (eval::remove-static-variable sprite-box box-name)
+      (boxer-eval::remove-static-variable sprite-box box-name)
       (when (box? existing-box)
 	(setf (box-interface-box interface) existing-box)))
-    (eval::add-static-variable-pair sprite-box box-name interface)))
+    (boxer-eval::add-static-variable-pair sprite-box box-name interface)))
 
 (defun uninstall-interface-slot (interface box-name sprite-box)
   (setf (box-interface-sup-box interface) nil)
   (cond ((box? (box-interface-box interface))
-	 (eval::remove-static-variable sprite-box box-name)
-	 (eval::add-static-variable-pair sprite-box box-name
+	 (boxer-eval::remove-static-variable sprite-box box-name)
+	 (boxer-eval::add-static-variable-pair sprite-box box-name
 					 (box-interface-box interface)))))
 
 (defmethod all-interface-slots ((self graphics-object))
@@ -184,7 +183,7 @@ Modification History (most recent at top)
 	     (vector )
 	     (list (bash-box-to-list-value box value)))))
     ;; check if a trigger is there/is needed/needs to be installed
-    (unless (eval::lookup-static-variable-in-box-only box
+    (unless (boxer-eval::lookup-static-variable-in-box-only box
 						      'bu::modified-trigger)
       (let ((closet? (slot-value box 'closets)))
 	(if (null closet?)
@@ -815,7 +814,9 @@ CLOSED for renovations until I fix the string/font situation
 		     ;; no need to check if there has already been
 		     ;; graphics drawn in something other than XOR
 		     (=& (svref& com 0)
-		         #.(graphics-command-opcode 'boxer-change-alu)))
+		        ;;  sgithens TODO 2020-03-29 Why was this read operator syntax being used?
+				;; #.(boxer::graphics-command-opcode 'boxer-change-alu)))
+				(boxer::graphics-command-opcode 'boxer-change-alu)))
 	    (setq in-xor? (=& (svref& com 1) alu-xor)))
 	  (multiple-value-bind (lef top rig bot state-change?)
 	      (graphics-command-extents com)
@@ -873,6 +874,7 @@ CLOSED for renovations until I fix the string/font situation
 		       (make-save-under (make-offscreen-bitmap *boxer-pane*
 							       size size)
 					(round size 2) size)))))))))
+
 
 ;;;
 ;;; ****************   NOTE   ****************

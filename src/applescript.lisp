@@ -130,7 +130,7 @@ close-movie
     (log-applescript-text command-string)
     (write-line command-string *applescript-stream*)
     (force-output *applescript-stream*))
-  (cond ((null rtype) eval::*novalue*)
+  (cond ((null rtype) boxer-eval::*novalue*)
         (t
          (mp:process-wait-local-with-timeout-and-periodic-checks "Applescript Response"
                                                                  *apple-script-response-max-wait-time*
@@ -196,7 +196,7 @@ close-movie
              (case rtype
                ((nil) raw-value)
                ((:integer :float) raw-value)
-               (:boolean (eval::boxer-boolean raw-value))
+               (:boolean (boxer-eval::boxer-boolean raw-value))
                (:list (make-vc (list raw-value)))
                (t (make-vc (list (list raw-value))))))))))
 
@@ -227,7 +227,7 @@ close-movie
                       (:boolean (let ((items (flat-box-items new-value)))
                                   (cond ((equal items '(bu::true)) "true")
                                         ((equal items '(bu::false)) "false")
-                                        (t (eval::primitive-signal-error :applescript
+                                        (t (boxer-eval::primitive-signal-error :applescript
                                                                          new-value
                                                                          " should be TRUE or FALSE"))))))))
     (quicktime-command nil (format nil "set ~A to ~A" property new-avalue))))
@@ -236,56 +236,56 @@ close-movie
 
 ;;; The Top Level Interface
 ;; not quite right but close...
-(eval::defboxer-primitive bu::qt-active? () (eval::boxer-boolean *applescript-running?*))
+(boxer-eval::defboxer-primitive bu::qt-active? () (boxer-eval::boxer-boolean *applescript-running?*))
 
-(eval::defboxer-primitive bu::qt-movie-open? ()
+(boxer-eval::defboxer-primitive bu::qt-movie-open? ()
     (let ((xref (get-xref)))
-      (eval::boxer-boolean
+      (boxer-eval::boxer-boolean
        (cond ((null xref) nil)
              (t (not (null (xref-active-info xref))))))))
 
-(eval::defboxer-primitive bu::qt-open-movie ()
+(boxer-eval::defboxer-primitive bu::qt-open-movie ()
   (let ((xref (get-xref)))
     (unless (null xref) (applescript-open-xref xref))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
-(eval::defboxer-primitive bu::qt-close-movie ()
+(boxer-eval::defboxer-primitive bu::qt-close-movie ()
   (let ((xref (get-xref)))
     (unless (null xref) (applescript-close-xref xref))
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
-;; (eval::defboxer-primitive bu::qt-save ()
+;; (boxer-eval::defboxer-primitive bu::qt-save ()
 
-(eval::defboxer-primitive bu::qt-activate () (applescript-activate) eval::*novalue*)
+(boxer-eval::defboxer-primitive bu::qt-activate () (applescript-activate) boxer-eval::*novalue*)
 
-(eval::defboxer-primitive bu::qt-play () (quicktime-command nil "play") eval::*novalue*)
+(boxer-eval::defboxer-primitive bu::qt-play () (quicktime-command nil "play") boxer-eval::*novalue*)
 
-(eval::defboxer-primitive bu::qt-start () (quicktime-command nil "start") eval::*novalue*)
+(boxer-eval::defboxer-primitive bu::qt-start () (quicktime-command nil "start") boxer-eval::*novalue*)
 
-(eval::defboxer-primitive bu::qt-pause () (quicktime-command nil "pause") eval::*novalue*)
+(boxer-eval::defboxer-primitive bu::qt-pause () (quicktime-command nil "pause") boxer-eval::*novalue*)
 
-(eval::defboxer-primitive bu::qt-resume () (quicktime-command nil "resume") eval::*novalue*)
+(boxer-eval::defboxer-primitive bu::qt-resume () (quicktime-command nil "resume") boxer-eval::*novalue*)
 
-(eval::defboxer-primitive bu::qt-stop () (quicktime-command nil "stop") eval::*novalue*)
+(boxer-eval::defboxer-primitive bu::qt-stop () (quicktime-command nil "stop") boxer-eval::*novalue*)
 
-(eval::defboxer-primitive bu::qt-step-backward ((eval::numberize steps))
+(boxer-eval::defboxer-primitive bu::qt-step-backward ((boxer-eval::numberize steps))
   (let ((n (round steps)))
     (quicktime-command nil "step backward by" n)
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
-(eval::defboxer-primitive bu::qt-step-forward ((eval::numberize steps))
+(boxer-eval::defboxer-primitive bu::qt-step-forward ((boxer-eval::numberize steps))
   (let ((n (round steps)))
     (quicktime-command nil "step forward by" n)
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
-(eval::defboxer-primitive bu::qt-trim ((eval::numberize from) (eval::numberize to))
+(boxer-eval::defboxer-primitive bu::qt-trim ((boxer-eval::numberize from) (boxer-eval::numberize to))
   (let ((tfrom (round from)) (tto (round to)))
     (quicktime-command nil "trim" "from" tfrom "to" tto)
-    eval::*novalue*))
+    boxer-eval::*novalue*))
 
-(eval::defboxer-primitive bu::qt-present () (quicktime-command nil "present") eval::*novalue*)
+(boxer-eval::defboxer-primitive bu::qt-present () (quicktime-command nil "present") boxer-eval::*novalue*)
 
-(eval::defboxer-primitive bu::show-applescript-log ()
+(boxer-eval::defboxer-primitive bu::show-applescript-log ()
   (make-vc (mapcar #'list *applescript-log*)))
 
 
@@ -318,12 +318,12 @@ close-movie
          (settable? (get-applescript-settable? property)))
     (cond (settable?
            (set-quicktime-movie-property atype aname new-value))
-          (t (eval::primitive-signal-error :applescript "Cannot SET the property, " property)))))
+          (t (boxer-eval::primitive-signal-error :applescript "Cannot SET the property, " property)))))
 
-(eval::defboxer-primitive bu::qt-get ((bu::datafy property))
+(boxer-eval::defboxer-primitive bu::qt-get ((bu::datafy property))
   (qt-get-internal property))
 
-(eval::defboxer-primitive bu::qt-set ((bu::datafy property) new-value)
+(boxer-eval::defboxer-primitive bu::qt-set ((bu::datafy property) new-value)
   (qt-set-internal property new-value))
 
 ;;; properties from the Standard Suite

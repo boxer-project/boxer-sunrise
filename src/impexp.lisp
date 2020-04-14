@@ -163,10 +163,10 @@ writing-foreign-file (stream-var ffc filename)
 (defvar *export-properties* nil)
 
 (defun get-export-format-properties (box)
-  (let* ((props-box (eval::static-variable-value
-                     (eval::lookup-static-variable box 'bu::export-properties)))
+  (let* ((props-box (boxer-eval::static-variable-value
+                     (boxer-eval::lookup-static-variable box 'bu::export-properties)))
          (bindings (when (box? props-box)
-                     (slot-value props-box 'eval::static-variables-alist))))
+                     (slot-value props-box 'boxer-eval::static-variables-alist))))
     (cond ((null bindings) nil)
           (t (with-collection
                (dolist (binding bindings)
@@ -175,7 +175,7 @@ writing-foreign-file (stream-var ffc filename)
 
 ;; for now, only look for true-false or numbers
 (defun export-format-value (box)
-  (or (numberize-or-nil box) (eval::true? box)))
+  (or (numberize-or-nil box) (boxer-eval::true? box)))
 
 ;; we can't rely on scoping to get the correct properties because a lower
 ;; "export-properties" without a certain property will obscure a higher
@@ -227,7 +227,7 @@ writing-foreign-file (stream-var ffc filename)
 #|
 ;; generic lookup for box specific handling
 (defmethod foreign-file-bindings ((ffc foreign-file-class) box)
-  (let ((eval::lookup-static-variable-in-box-only box 'bu::foreign-file-info))
+  (let ((boxer-eval::lookup-static-variable-in-box-only box 'bu::foreign-file-info))
     ;; returns a list of variable value pairs which are bound in with-foreign-file
     ;; typically will include constants as well as info from the class's prefs
 

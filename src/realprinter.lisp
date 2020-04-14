@@ -44,9 +44,7 @@ ToDO:make-editor-box-from-vc doesn't hack turtles correctly yet....
 
 |#
 
-
-#-(or lispworks mcl) (in-package 'boxer)
-#+(or lispworks mcl) (in-package :boxer)
+(in-package :boxer)
 
 ;;;; Port Printing...
 
@@ -507,7 +505,7 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
 							   name binding-alist))
 					     (alist-value
 					      (unless (null alist-entry)
-						(eval::static-variable-value
+						(boxer-eval::static-variable-value
 						 alist-entry))))
 					(if (or (null alist-value)
 						(not (and (virtual-copy?
@@ -621,7 +619,7 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
       (link-graphics-object-to-box (graphics-info box) box))
     (unless (null (vc-name vc))
       (set-name box (make-name-row (list (canonicalize-vc-name (vc-name vc))))))
-    (when (not (null (vc-exports vc))) (eval::set-box-transparency box T))
+    (when (not (null (vc-exports vc))) (boxer-eval::set-box-transparency box T))
     ;; hooks
     (dolist (hook *print-vc-special-structures-hook*) (funcall hook vc box))
     box))
@@ -658,7 +656,7 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
   (invalidate-window-shape-and-extent-caches go))
 
 (defun set-slot-value-from-binding (slot binding)
-  (let ((box (eval::static-variable-value binding)))
+  (let ((box (boxer-eval::static-variable-value binding)))
     (case (box-interface-slot-name slot)
       ((heading x-position y-position) (setf (box-interface-value slot)
                                              (check-and-get-number-arg box)))

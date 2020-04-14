@@ -74,8 +74,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
+(in-package :boxer)
 
 (defclass menu-item
   ()
@@ -240,7 +239,7 @@ Modification History (most recent at top)
               (force-graphics-output)
               ;; loop
               (let ((current-y 0) (current-height 0))
-                (with-mouse-tracking ((mouse-x real-x) (mouse-y real-y))
+                (boxer-window::with-mouse-tracking ((mouse-x real-x) (mouse-y real-y))
                   (let ((local-x (- mouse-x real-x)) (local-y (- mouse-y real-y)))
                     (if (and (< 0 local-x mwid) (< 0 local-y mhei))
                       ;; this means we are IN the popup
@@ -926,37 +925,38 @@ Modification History (most recent at top)
 (defvar *hotspot-mouse-screen-box* nil)
 
 ;; flags for global control
-(defvar *top-left-hotspots-on?*     t)
-(defvar *top-right-hotspots-on?*    t)
-(defvar *bottom-left-hotspots-on?*  t)
-(defvar *bottom-right-hotspots-on?* t)
+;; sgithens: Moved to boxdef.lisp 2020-03-27
+;; (defvar *top-left-hotspots-on?*     t)
+;; (defvar *top-right-hotspots-on?*    t)
+;; (defvar *bottom-left-hotspots-on?*  t)
+;; (defvar *bottom-right-hotspots-on?* t)
 
 (defboxer-command com-mouse-toggle-tl-hotspot (&optional (box *hotspot-mouse-box*))
   "Enables or Disables the top left Hotspot"
   (if *global-hotspot-control?*
       (setq *top-left-hotspots-on?* (not *top-left-hotspots-on?*))
       (set-top-left-hotspot-active? box (not (top-left-hotspot-active? box))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-toggle-tr-hotspot (&optional (box *hotspot-mouse-box*))
   "Enables or Disables the top right Hotspot"
   (if *global-hotspot-control?*
       (setq *top-right-hotspots-on?* (not *top-right-hotspots-on?*))
       (set-top-right-hotspot-active? box (not (top-right-hotspot-active? box))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-toggle-bl-hotspot (&optional (box *hotspot-mouse-box*))
   "Enables or Disables the bottom left Hotspot"
   (if *global-hotspot-control?*
       (setq *bottom-left-hotspots-on?* (not *bottom-left-hotspots-on?*))
       (set-bottom-left-hotspot-active? box (not (bottom-left-hotspot-active? box))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;; br hotspot ignores global flag
 (defboxer-command com-mouse-toggle-br-hotspot (&optional (box *hotspot-mouse-box*))
   "Enables or Disables the Bottom Right Hotspot"
   (set-bottom-right-hotspot-active? box (not (bottom-right-hotspot-active? box)))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 ;; shrink, expand and toggle closet
 ;; these are different from the vanilla mouse versions because the point is
@@ -1096,7 +1096,7 @@ Modification History (most recent at top)
             (menu-select *tl-popup* (+ abs-x left) (+ abs-y top))))
         ;; for simple clicks we do the action (unless it is disabled)
         (when (top-left-hotspot-on? edbox) (com-hotspot-shrink-box edbox))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defvar *tr-popup* (make-instance 'popup-menu
                      :items (list (make-instance 'menu-item
@@ -1177,7 +1177,7 @@ Modification History (most recent at top)
             (menu-select *tr-popup* (- (+ abs-x swid) right) (+ abs-y top))))
         ;; for simple clicks we do the action (unless it is disabled)
         (when (top-right-hotspot-on? edbox) (com-hotspot-expand-box edbox screen-box))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 
 (defvar *bl-popup* (make-instance 'popup-menu
                      :items (list (make-instance 'menu-item
@@ -1393,5 +1393,5 @@ Modification History (most recent at top)
           (let ((*hotspot-mouse-box* edbox))
             (menu-select *tt-popup*
                          (+ abs-x left) (- (+ abs-y shei) bottom)))))))
-  eval::*novalue*)
+  boxer-eval::*novalue*)
 

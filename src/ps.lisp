@@ -27,8 +27,7 @@ Modification History (most recent at top)
 
 |#
 
-#-mcl (in-package 'boxer)
-#+mcl (in-package :boxer)
+(in-package :boxer)
 
 ;;;; a flag used to (not) print the outermost box.
 
