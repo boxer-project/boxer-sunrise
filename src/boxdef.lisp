@@ -110,6 +110,21 @@ Modification History (most recent at top)
   ((plist :initform nil :accessor plist))
   (:metaclass block-compile-class))
 
+(defmethod getprop ((obj plist-subclass) indicator &optional default)
+    (or (getf (slot-value obj 'plist) indicator) default))
+
+(defmethod removeprop ((obj plist-subclass) indicator)
+  (if (eq (car (slot-value obj 'plist)) indicator)
+      (setf (slot-value obj 'plist) (cddr (slot-value obj 'plist)))
+      (do* ((rest (slot-value obj 'plist) (cddr rest))
+	    (ind (caddr rest) (caddr rest)))
+	   ((null rest))
+	(when (eq ind indicator) (setf (cddr rest) (cddddr rest))))))
+
+;; we really should make SETF win
+(defmethod putprop ((obj plist-subclass) value indicator)
+  (setf (getf (slot-value obj 'plist) indicator) value))
+
 ;;; This has Slots That are used by the Virtual Copy Mechanism.
 
 (defclass virtual-copy-subclass
@@ -408,16 +423,25 @@ Modification History (most recent at top)
      ()
   (:metaclass block-compile-class))
 
+(defgeneric doit-box? (x) (:method (x) nil) (:method ((x doit-box)) t))
+
 (defclass data-box
 	  (box)
      ()
   (:metaclass block-compile-class))
 
+(defgeneric data-box? (x) (:method (x) nil) (:method ((x data-box)) t))
 
 (defclass port-box
 	  (box)
      ()
   (:metaclass block-compile-class))
+
+(defgeneric port-box? (x) (:method (x) nil) (:method ((x port-box)) t))
+
+(defgeneric sprite-box? (x) (:method (x) nil))
+
+(defgeneric graphics-box? (x) (:method (x) nil))
 
 ;; for delineating regions in the editor...
 
@@ -452,6 +476,7 @@ Modification History (most recent at top)
 			   (:constructor make-graphics-sheet-from-file
 			    (draw-wid draw-hei draw-mode))
 			   (:copier nil)
+         (:predicate graphics-sheet?)
 			   (:print-function
 			     (lambda (gs s depth)
 			       (declare (ignore depth))

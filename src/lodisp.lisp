@@ -52,7 +52,9 @@ Modification History (most recent at top)
   (dotimes (i (storage-vector-active-length (slot-value self 'screen-rows)))
     (format t " ~S " (sv-nth i (slot-value self 'screen-rows)))))
 
-
+; sgithens TODO ... this defun doesn't seem to be anywhere, unless it's generated
+; somewhere by a macro
+(defun check-screen-row-arg (screen-row) t)
 
 ;;; LOW-LEVEL methods to handle connection and disconnection of screen-
 ;;; objs. These methods take care of all adding/removal of screen-chas

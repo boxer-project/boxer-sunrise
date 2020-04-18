@@ -940,7 +940,7 @@ higher level copy operation. ")
 
 (DEFUN SET-BP-ROW (BP NEW-ROW)
   (CHECK-BP-ARG BP)
-  (CHECK-ROW-ARG NEW-ROW)
+  ; sgithens TODO (CHECK-ROW-ARG NEW-ROW)
   (LET ((OLD-ROW (BP-ROW BP)))
     (UNLESS (EQ OLD-ROW NEW-ROW)
       (when (eq bp *point*) (new-point-row new-row))
@@ -972,7 +972,7 @@ higher level copy operation. ")
 
 (DEFUN SET-BP-SCREEN-BOX (BP NEW-SCREEN-BOX)
   (CHECK-BP-ARG BP)
-  (OR (NULL NEW-SCREEN-BOX) (CHECK-SCREEN-BOX-ARG NEW-SCREEN-BOX))
+  ; sgithens TODO (OR (NULL NEW-SCREEN-BOX) (CHECK-SCREEN-BOX-ARG NEW-SCREEN-BOX))
   (LET ((OLD-SCREEN-BOX (BP-SCREEN-BOX BP)))
     (UNLESS (EQ OLD-SCREEN-BOX NEW-SCREEN-BOX)
       (SETF (BP-SCREEN-BOX BP) NEW-SCREEN-BOX)
@@ -1294,19 +1294,19 @@ points to the Box which contains the lower BP,then the superior BP is returned"
     (VALUES ROW (+ (CHA-CHA-NO ROW CHA) 1))))
 
 (DEFUN ROW-FIRST-BP-VALUES (ROW)
-  (CHECK-ROW-ARG ROW)
+  ; sgithens TODO (CHECK-ROW-ARG ROW)
   (VALUES ROW 0))
 
 (DEFUN ROW-LAST-BP-VALUES (ROW)
-  (CHECK-ROW-ARG ROW)
+  ; sgithens TODO (CHECK-ROW-ARG ROW)
   (VALUES ROW (LENGTH-IN-CHAS ROW)))
 
 (DEFUN BOX-FIRST-BP-VALUES (BOX)
-  (CHECK-BOX-ARG BOX)
+  ;; sgithens TODO (CHECK-BOX-ARG BOX)
   (VALUES (ROW-AT-ROW-NO BOX 0) 0))
 
 (defun screen-box-first-visible-bp-values (screen-box)
-  (check-screen-box-arg screen-box)
+  ; sgithens TODO (check-screen-box-arg screen-box)
   (values (or (scroll-to-actual-row screen-box)
 	      (row-at-row-no (screen-obj-actual-obj screen-box) 0))
 	  0
@@ -1315,21 +1315,21 @@ points to the Box which contains the lower BP,then the superior BP is returned"
 ;; this should probably be smarter about checking the horizontal scrolling
 ;; to determine the best cha-no
 (defun screen-box-last-visible-bp-values (screen-box)
-  (check-screen-box-arg screen-box)
+  ; sgithens TODO (check-screen-box-arg screen-box)
   (let ((row (screen-obj-actual-obj (last-screen-row screen-box))))
     (values row
             0 ; (1- (length-in-chas row))
             screen-box)))
 
 (DEFUN BOX-LAST-BP-VALUES (BOX)
-  (CHECK-BOX-ARG BOX)
+  ;; sgithens TODO (CHECK-BOX-ARG BOX)
   (LET* ((BOX-LENGTH-IN-ROWS (LENGTH-IN-ROWS BOX))
 	 (LAST-ROW (ROW-AT-ROW-NO BOX (- BOX-LENGTH-IN-ROWS 1)))
 	 (LAST-ROW-LENGTH-IN-CHAS (LENGTH-IN-CHAS LAST-ROW)))
     (VALUES LAST-ROW LAST-ROW-LENGTH-IN-CHAS)))
 
 (DEFUN BOX-SELF-BP-VALUES (BOX)
-  (CHECK-BOX-ARG BOX)
+  ;; sgithens TODO (CHECK-BOX-ARG BOX)
   (LET ((SUPERIOR-ROW (SUPERIOR-ROW BOX)))
     (VALUES SUPERIOR-ROW (CHA-CHA-NO SUPERIOR-ROW BOX))))
 

@@ -35,7 +35,7 @@ Modification History (most recent at top)
 
 (eval-when (compile load eval)
 (defvar *dribble-handler-names* (make-array 10 :initial-element nil))
-)
+
 (defvar *dribble-write-handlers* (make-array 10 :initial-element nil))
 (defvar *dribble-read-handlers* (make-array 10 :initial-element nil))
 (defvar *dribble-print-handlers* (make-array 10 :initial-element nil))
@@ -45,7 +45,7 @@ Modification History (most recent at top)
 (defvar *dribble-file-exists-action* :supersede) ; also could be :append
 
 (defvar *current-mouse-state* (make-array 3 :initial-element 0))
-
+)
 
 (defvar *dribble-playback* nil
   "Bound to T inside playback of dribble files so mouse state functions
@@ -110,6 +110,7 @@ Modification History (most recent at top)
          (error "No handler defined for ~A" ,var)
          (funcall fun ,stream)))))
 
+(eval-when (compile load eval)
 (def-dribble-handlers (shift 0)
   :read-args (stream)
   :read-form (let ((bits (read-byte stream)))
@@ -194,6 +195,8 @@ Modification History (most recent at top)
 		     (write-byte (ldb& %%bin-op-low-half x) stream)
 		     (write-byte (ldb& %%bin-op-top-half y) stream)
 		     (write-byte (ldb& %%bin-op-low-half y) stream)))
+) ; eval-when
+
 
 (defun dribble-encode-mouse-buttons (buttons)
   buttons)
@@ -230,6 +233,7 @@ Modification History (most recent at top)
 (defun dribble-mouse-state-y ()
   (aref (the (simple-vector 3) *current-mouse-state*) 2))
 
+(eval-when (compile load eval)
 (def-dribble-handlers (extended-char 3)
   :read-args (stream)
   :read-form (let ((input (+ 256 (read-byte stream))))
@@ -299,7 +303,7 @@ Modification History (most recent at top)
 		     (write-byte (ldb& %%bin-op-low-half x) stream)
 		     (write-byte (ldb& %%bin-op-top-half y) stream)
 		     (write-byte (ldb& %%bin-op-low-half y) stream)))
-
+)
 (defun dribble-write-char (char-code stream)
   (cond ((<=& 0 char-code 255) (write-byte char-code stream))
         ((<=& 256 char-code 511) (dribble-write extended-char stream char-code))
@@ -308,21 +312,10 @@ Modification History (most recent at top)
 (defun record-key-input (char &optional bits)
   (cond ((null *record-keystrokes*))
         ((and (eq *record-keystrokes* ':dribble)
-              (streamp *dribble-file-stream*)
-              #+mcl (open-stream-p *dribble-file-stream*)
-	      #+lcl (output-stream-p *dribble-file-stream*))
+              (streamp *dribble-file-stream*))
          (let ((code (if (numberp char) char (char-code char)))
                (bits (or bits (char-bits char))))
-           (cond #+mcl
-                 ((and (=& code 270) (=& bits 3))
-                  ;; on the mac, 270 is the F15 (Pause) key
-                  (dribble-write dribble-pause *dribble-file-stream*))
-                 #+mcl
-                 ((and (=& code 269) (=& bits 3))
-                  ;; on the mac, 269 is the F14 (Scroll lock) key
-                  (multiple-value-bind (mx my) (mouse-window-coords)
-                    (dribble-write mouse-move *dribble-file-stream* mx my)))
-                 ((zerop bits) (dribble-write-char code *dribble-file-stream*))
+           (cond ((zerop bits) (dribble-write-char code *dribble-file-stream*))
                  (t (dribble-write shift *dribble-file-stream* bits)
                     (dribble-write-char code *dribble-file-stream*)))))
         (t (push char *boxer-keystroke-history*))))
@@ -334,34 +327,26 @@ Modification History (most recent at top)
 (defun record-mouse-input (mouse-event)
   (cond ((null *record-keystrokes*))
         ((and (eq *record-keystrokes* ':dribble)
-              (streamp *dribble-file-stream*)
-              #+mcl (open-stream-p *dribble-file-stream*)
-	      #+lcl (output-stream-p *dribble-file-stream*))
+              (streamp *dribble-file-stream*))
          (dribble-write mouse *dribble-file-stream* mouse-event))
         (t (push mouse-event *boxer-keystroke-history*))))
 
 (defun record-mouse-state (buttons x y)
   (cond ((or (null *record-keystrokes*) (not (null *dribble-playback*))))
 	((and (eq *record-keystrokes* ':dribble)
-              (streamp *dribble-file-stream*)
-              #+mcl (open-stream-p *dribble-file-stream*)
-	      #+lcl (output-stream-p *dribble-file-stream*))
+              (streamp *dribble-file-stream*))
 	 (dribble-write mouse-state *dribble-file-stream* buttons x y))))
 
 (defun record-pause-state ()
   (cond ((or (null *record-keystrokes*) (not (null *dribble-playback*))))
 	((and (eq *record-keystrokes* ':dribble)
-              (streamp *dribble-file-stream*)
-              #+mcl (open-stream-p *dribble-file-stream*)
-	      #+lcl (output-stream-p *dribble-file-stream*))
+              (streamp *dribble-file-stream*))
 	 (dribble-write dribble-pause *dribble-file-stream*))))
 
 (defun record-mouse-move (x y)
   (cond ((or (null *record-keystrokes*) (not (null *dribble-playback*))))
 	((and (eq *record-keystrokes* ':dribble)
-              (streamp *dribble-file-stream*)
-              #+mcl (open-stream-p *dribble-file-stream*)
-	      #+lcl (output-stream-p *dribble-file-stream*))
+              (streamp *dribble-file-stream*))
 	 (dribble-write mouse-move *dribble-file-stream* x y))))
 
 (defun dribble-on (pathname)
@@ -369,8 +354,6 @@ Modification History (most recent at top)
         (open pathname :direction :output :if-exists *dribble-file-exists-action*
               :if-does-not-exist :create
               :element-type '(unsigned-byte 8.)))
-  #+mcl (ccl::set-mac-file-type pathname :BOXD)
-  #+mcl (ccl::set-mac-file-creator pathname :BOXR)
   (dribble-write dribble-preamble *dribble-file-stream*)
   (setq *record-keystrokes* ':dribble))
 

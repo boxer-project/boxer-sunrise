@@ -91,12 +91,7 @@ Modification History (most recent at the top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
-
-
-
-
+(in-package :boxer)
 
 ;;;; Graphics Command Lists
 ;;; The result of a series of graphics commands can be captured
@@ -211,6 +206,8 @@ Modification History (most recent at the top)
 ;;;; 62   BOXER-FILLED-CIRCLE                          (X Y RADIUS)
 ;;;; 63   BOXER-CIRCLE                                 (X Y RADIUS)
 
+(eval-when (load compile eval)
+
 (defvar *default-graphics-list-initial-length* 16.)
 
 ;; defined in vars.lisp
@@ -227,7 +224,9 @@ Modification History (most recent at the top)
    half for window coordinate based commands and the top half for
    boxer coodinate based commands.")
 
+
 (defvar *boxer-graphics-command-mask* 32.) ;
+
 
 (defvar *graphics-command-descriptor-table*
   (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
@@ -289,14 +288,16 @@ Modification History (most recent at the top)
   (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
               :initial-element nil))
 
-
+) ; eval-when
 
 ;;; store information about the graphics-command that
 ;;; might be useful for other macros
+(eval-when (compile load eval)
 (defstruct graphics-command-descriptor
   name
   slots
   transform-template)
+
 
 (defun get-graphics-command-descriptor (name-or-opcode)
   (etypecase name-or-opcode
@@ -306,6 +307,7 @@ Modification History (most recent at the top)
     (if (null des)
 	(error "No Descriptor found for ~S" name-or-opcode)
 	des)))
+)
 
 (defun graphics-command-descriptor (graphics-command)
   (get-graphics-command-descriptor (svref& graphics-command 0)))
@@ -318,9 +320,11 @@ Modification History (most recent at the top)
   (graphics-command-descriptor-slots
    (get-graphics-command-descriptor (svref& graphics-command 0))))
 
+(eval-when (compile load eval)
 (defun graphics-command-transform-template (graphics-command)
   (graphics-command-descriptor-transform-template
    (get-graphics-command-descriptor (svref& graphics-command 0))))
+
 
 (defun graphics-command-slot-offset (descriptor slot-name)
   (let ((pos (position slot-name
@@ -330,11 +334,15 @@ Modification History (most recent at the top)
 	       slot-name (graphics-command-descriptor-name descriptor))
 	(1+ pos))))
 
+) ; eval-when
+
+(eval-when (compile load eval)
 (defun graphics-command-opcode (command-name)
   (let ((entry (fast-assq command-name *graphics-command-name-opcode-alist*)))
     (if (null entry)
 	(error "No Graphics Command Opcode for ~S" command-name)
 	(cdr entry))))
+)
 
 (defun copy-graphics-command (graphics-command)
   (funcall (svref& *graphics-command-copier-table*
@@ -572,6 +580,7 @@ Modification History (most recent at the top)
 
 (defvar *type-check-during-template-conversion* t)
 
+(eval-when (compile load eval)
 (defun expand-transform-template-item (arg template-action direction)
   (ecase direction
     (:boxer->window (case template-action
@@ -584,7 +593,9 @@ Modification History (most recent at the top)
 		      (:y-transform (list 'user-coordinate-fix-y arg))
 		      (:coerce      (list 'float arg))
 		      (t            arg)))))
+)
 
+(eval-when (compile load eval)
 (defun arglist-argnames (arglist)
   (let ((revargnames nil))
     (dolist (arg arglist)
@@ -617,6 +628,8 @@ Modification History (most recent at the top)
                       (setq found (union found a)
                             mutators-found (union mutators-found m))))))))
     (values found mutators-found)))
+
+) ; eval-when
 
 (defmacro with-graphics-command-slots-bound (gc-arg args body)
   (multiple-value-bind (args-used mutators-used)
@@ -1086,7 +1099,7 @@ Modification History (most recent at the top)
 ;;; This tries to be smart and use info from the transformation-template
 ;;; when none is provided
 ;;;
-
+(eval-when (compile load eval)
 (defmacro defgraphics-translator ((name &optional
 					(table '*turtle-translation-table*)
 					(direction :boxer->window))
@@ -1099,7 +1112,8 @@ Modification History (most recent at the top)
 				*boxer-graphics-command-mask*)))
 	 (command-descriptor (get-graphics-command-descriptor handler-opcode))
 	 (template (graphics-command-descriptor-transform-template
-		    command-descriptor)))
+		    command-descriptor))
+        )
     ;; some of that ole' compile time error checking appeal...
     (cond ((null table)
 	   (error "Need a table to put the handlers in"))
@@ -1136,8 +1150,8 @@ Modification History (most recent at the top)
        (setf (svref& ,table ,handler-opcode) ',handler-name)
        ',handler-name)))
 
+)
 
-
 
 ;;; Putting it all together...
 ;;;

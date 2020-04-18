@@ -42,10 +42,7 @@ Modification History (most recent at top)
 
 |#
 
-#-(or lispworks mcl lispm) (in-package 'boxer :use '(lisp) :nicknames '(box))
-#+(or lispworks mcl)       (in-package :boxer)
-
-
+(in-package :boxer)
 
 (defvar *default-graphics-box-width* 300.)
 
@@ -62,8 +59,14 @@ Modification History (most recent at top)
 
 (defvar *turtle-half-base* 5.0)
 
-(defvar *default-turtle-shape* )
-
+(defvar *default-turtle-shape*
+    #(#(
+        #(32 2)
+        #(33 1)
+        #(35 -5.0 -5.0 5.0 -5.0)
+        #(35 5.0 -5.0 0.0 10.0)
+        #(35 0.0 10.0 -5.0 -5.0) NIL NIL NIL
+       ) 5 NIL 2 1 49 NIL NIL)) ;;#<Pointer to type :LISP-SINGLE-FLOAT = #x007163A0> NIL)
 
 ;;; The actual def-redisplay-initialization moved to gdispl.lisp
 ;;; for ordering reasons
@@ -118,6 +121,7 @@ Modification History (most recent at top)
 ;;; . Slots to implement nesting in the Boxer hierarchy
 ;;;
 
+(eval-when (load compile eval)
 (defclass graphics-object
     ()
   ((x-position         :initform (%make-vv-box-interface 0.0 'x-position))
@@ -127,9 +131,12 @@ Modification History (most recent at top)
    (sprite-box         :initform nil :accessor sprite-box)
    (assoc-graphics-box :initform nil :accessor assoc-graphics-box))
   (:metaclass block-compile-class)
-  (:abstract-class t)
+  ;; (:abstract-class t)
   (:documentation
    "Bare minimum for a graphics object, slots for box interface and position"))
+)
+
+(defgeneric graphics-object? (x) (:method (x) nil) (:method ((x graphics-object)) t))
 
 ;;;; Minimal Instantiable Graphics Object
 ;;;
@@ -174,13 +181,13 @@ Modification History (most recent at top)
 
 ;;;; block compile metaclass epilogue
 
-(block-compile-epilogue graphics-object)
+;; (block-compile-epilogue graphics-object)
 
-(block-compile-epilogue button)
+;; (block-compile-epilogue button)
 
-(block-compile-epilogue graphics-cursor)
+;; (block-compile-epilogue graphics-cursor)
 
-(block-compile-epilogue turtle)
+;; (block-compile-epilogue turtle)
 
 
 
@@ -199,10 +206,11 @@ Modification History (most recent at top)
   (size))
 
 
-(deftype-checking-macros graphics-object "A Graphics Object")
-(deftype-checking-macros button "A Graphics Button")
-(deftype-checking-macros graphics-cursor "A Graphics Cursor")
-(deftype-checking-macros turtle "A Turtle")
+;; sgithens TODO, for some reason this complains that graphics-object is unbound...
+;; (deftype-checking-macros graphics-object "A Graphics Object")
+;; (deftype-checking-macros button "A Graphics Button")
+;; (deftype-checking-macros graphics-cursor "A Graphics Cursor")
+;; (deftype-checking-macros turtle "A Turtle")
 
 ;;; Some useful variables that various types of objects need
 

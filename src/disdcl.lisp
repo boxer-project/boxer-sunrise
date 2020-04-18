@@ -92,6 +92,8 @@ Modification History (most recent at the top)
    (force-redisplay-infs? :initform nil :accessor screen-obj-force-redisplay-infs?))
   (:metaclass block-compile-class))
 
+(defgeneric screen-obj? (x) (:method (x) nil) (:method ((x screen-obj)) t))
+
 ;; These only exist as a mixin for the box flavor
 (defclass SCREEN-CHAR-SUBCLASS
     (screen-obj)
@@ -105,6 +107,8 @@ Modification History (most recent at the top)
 ;   (out-of-synch-mark :initform nil :accessor out-of-synch-mark)
    (baseline :initform 0 :accessor baseline))
   (:metaclass block-compile-class))
+
+(defgeneric screen-row? (x) (:method (x) nil) (:method ((x screen-row)) t))
 
 
 (defclass SCREEN-BOX
@@ -127,6 +131,7 @@ Modification History (most recent at the top)
    (max-scroll-wid  :initform nil))
   (:metaclass block-compile-class))
 
+(defgeneric screen-box? (x) (:method (x) nil) (:method ((x screen-box)) t))
 
 (DEFUN CHECK-SCREEN-CHA-ARG (SCREEN-CHA)
   (OR (CHARACTERP SCREEN-CHA)
@@ -137,6 +142,8 @@ Modification History (most recent at the top)
   ()
   (:metaclass block-compile-class))
 
+(defgeneric graphics-screen-box? (x) (:method (x) nil) (:method ((x graphics-screen-box)) t))
+
 ;;; this is for graphics display of sprite boxes when the containing
 ;;; box is in text mode.  It has to inherit from screen-box so it can be toggled
 ;;; to/from vanilla screen-box's
@@ -145,7 +152,7 @@ Modification History (most recent at the top)
   ()
   (:metaclass block-compile-class))
 
-
+(defgeneric sprite-screen-box? (x) (:method (x) nil) (:method ((x sprite-screen-box)) t))
 
 ;;;; Variable Declarations
 

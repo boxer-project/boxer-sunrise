@@ -100,9 +100,6 @@ Modification History (most recent at top)
 
 (in-package :boxer)
 
-
-
-
 ;;;; the prims
 
 
@@ -1457,10 +1454,10 @@ Modification History (most recent at top)
 
 ;;; spread it around
 (import 'salvage-boxer-world (find-package 'user))
-(import 'salvage-boxer-world (find-package 'bw))
-(import 'salvage-boxer-world (find-package 'eval))
+(import 'salvage-boxer-world (find-package :boxer-window))
+(import 'salvage-boxer-world (find-package :boxer-eval))
 ;; might as well be paranoid...
-(import 'salvage-boxer-world (find-package 'bu))
+(import 'salvage-boxer-world (find-package :boxer-user))
 
 
 

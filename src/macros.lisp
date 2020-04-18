@@ -48,32 +48,15 @@ Modification History (most recent at top)
 
 |#
 
-(defpackage :boxer-user
-  (:use)
-  (:nicknames :bu :boxer-users :pkg-bu-package :pkg-boxer-user-package))
-
-(defpackage :boxer
-  (:use :common-lisp)
-  (:nicknames :box)
-  (:export :symbol-format
-           :with-collection
-           :collect
-           :svref&
-           :fast-assq))
-
-(defpackage :boxer-eval (:use :common-lisp) (:use :boxer)
-  (:export :LOOKUP-STATIC-VARIABLE-IN-BOX-ONLY
-           :REMOVE-STATIC-VARIABLE
-           :ADD-STATIC-VARIABLE-PAIR
-           :LOOKUP-STATIC-VARIABLE-IN-BOX-ONLY
-           :REMOVE-STATIC-VARIABLE
-           :*LEXICAL-VARIABLES-ROOT*)
-)
-
-(defpackage :boxnet (:use :common-lisp :boxer-eval))
-(defpackage :boxer-window (:use :common-lisp) (:nicknames :bw))
-
 (in-package :box)
+
+; DEFSUBST (some implementation have it and others don't)
+; https://lisp-hug.lispworks.narkive.com/xK5EMsyd/defsubst
+(defmacro defsubst (name args &body body)
+  `(progn
+     (declaim (inline ,name))
+     (defun ,name ,args
+       ,@body)))
 
 ;;;; Macros to avoid using Common Lisp declarations
 
@@ -459,7 +442,7 @@ Modification History (most recent at top)
 
 ;;; Random useful macros.
 
-;;(defsubst cha? (cha) (characterp cha))
+(defsubst cha? (cha) (characterp cha))
 
 (DEFMACRO BARF (string . args)
   `(ERROR ,string . ,args))
@@ -651,15 +634,21 @@ Modification History (most recent at top)
   )
 
 
-#+lispworks
-(defmacro without-interrupts (&body body)
-  `(lispworks:without-interrupts ,@body))
+;; #+lispworks
+;; (defmacro without-interrupts (&body body)
+;;   `(lispworks:without-interrupts ,@body))
 
-#+sbcl
-(defmacro without-interrupts (&body body)
-  `(sb-sys:without-interrupts ,@body))
+;; #+sbcl
+;; (defmacro without-interrupts (&body body)
+;;   `(sb-sys:without-interrupts ,@body))
 
-#-(or LISPM MCL lispworks sbcl)
+;; #-(or LISPM MCL lispworks sbcl)
+;; 2020-03-29 sgithens
+;; It appears that without-interrupts is not supported on modern OS version of lispworks...
+;; http://www.lispworks.com/documentation/lw71/LW/html/lw-1106.htm
+;; "without-interrupts is not supported in SMP LispWorks, that is on Microsoft Windows, Mac OS X, Linux,
+;;  FreeBSD, AIX and x86/x64 Solaris platforms."
+;;
 (DEFMACRO WITHOUT-INTERRUPTS (&BODY BODY)
   `(PROGN ,@BODY))
 
@@ -863,6 +852,15 @@ Modification History (most recent at top)
 ;; (defun make-char (char &optional (bits 0) font)
 ;;   (declare (ignore font))
 ;;   (lispworks:make-char char bits))
+
+(defun make-char (cc &optional (bits 0) (font 0))
+  "CC must be a character, BITS and FONT must be non-negative
+integers; the last two are optional with default values of 0.
+Returns a character object which is the same as CC but with the
+attributes given, or NIL if this is not possible."
+  (if (and (zerop bits) (zerop font))
+      cc
+      nil))
 
 ;;; lisp error handling
 

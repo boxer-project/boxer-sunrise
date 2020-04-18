@@ -13,6 +13,7 @@
                 :components
                 ((:test-file "boxer-sunrise2")
                  (:test-file "boxdef-tests")
+                 (:test-file "capogi-tests")
                  (:test-file "stacks-tests"))))
   :description "Test system for boxer-sunrise2"
 

@@ -15,6 +15,10 @@
   :components ((:module "src"
                 :components
                 ((:file "boxer-sunrise2")
+                 (:file "package")
+                ;; Stuff from previous OpenGL/opengl directory that was added by
+                 ;; boxer
+                 (:file "pixmap")
                  ;; Beginning of `DEFINITIONS` module
                  (:file "macros")
                  (:file "boxdef")
@@ -28,7 +32,7 @@
                  (:file "capogi")
                 ;;  (:file "opengl-utils-glut")
                  (:file "draw-low-opengl")
-                 (:file "draw-low-stubs")
+                ;;  (:file "draw-low-stubs")
                  (:file "draw-high-common")
                  (:file "draw-high-hardware-clip")
                  ;; Beginning of `DISPLAYDEFS` module
@@ -51,165 +55,166 @@
                  (:file "bind")
                  (:file "funs")
                  (:file "stacks")
-                ;;  (:file "eval")
+                 (:file "eval")
                  ;; Beginning of `EVALPRIMS` module
                  ;; "Evaluator Primitives"
-                 ;;(:file "prims")
+                 (:file "prims")
                  ;; Beginning of `PROCESSES` module
                  ;; "Macros and functions for creating processes"
-                 ;;(:file "process")
+                 (:file "process")
                  ;; Beginning of `BOXWIN` module
                  ;; "The interface between the Boxer Editor and the window system"
                  ;; these are also window system specific
                  #+lispworks (:file "boxwin-opengl")
-                 ;; (:file "hardcopy-lw")
-                 ;; (:file "mousedoc")
+                 (:file "hardcopy-lw")
+                 (:file "mousedoc")
                  ;; (:file "oglmacreg")
                  ;; (:file "winreg")
                  ;; Beginning of `BOXNET` module
                  ;; operating-system and window-system and lisp-system dependent
-                 ;; (:file "boxnet")
+                 (:file "boxnet")
                  ;; Beginning of `EDITOR` module
                  ;; "The Basic Structure of the Boxer Editor. "
-                 ;; (:file "editor")
+                 (:file "editor")
                  ;; Beginning of `REDISPLAY` module
                  ;; "The redisplay for the Editor"
-                 ;; (:file "lodisp")
-                 ;; (:file "repaint")
-                 ;; (:file "new-borders")
-                 ;; (:file "disply")
+                 (:file "lodisp")
+                 (:file "repaint")
+                 (:file "new-borders")
+                 (:file "disply")
                  ;; Beginning of `GRFDEFS` module
                  ;; "Definitions for Sprite Graphics"
-                 ;; (:file "grobjs")
-                 ;; (:file "grfdfs")
-                 ;; (:file "gdispl")
+                 (:file "grobjs")
+                 (:file "grfdfs")
+                 (:file "gdispl")
                  ;; Beginning of `EDITOR-HIGH` module
                  ;; "Higher level Editor Utilities"
-                 ;; (:file "mouse")
-                 ;; (:file "simple-stream")
-                 ;; (:file "makcpy")
-                 ;; (:file  "xfile")
-                 ;; (:file "region")
-                 ;; (:file "oglscroll")
+                 (:file "mouse")
+                 (:file "simple-stream")
+                 (:file "makcpy")
+                 (:file  "xfile")
+                 (:file "region")
+                 (:file "oglscroll")
                  (:file "mode")
-                 ;; (:file "search")
+                 (:file "search")
                  (:file "comdef")
                  ;; Beginning of `IMPEXP` module
                  ;; "This imports and exports boxer structure to/from other common file types"
-                 ;; (:file "impexp")
+                 (:file "impexp")
                  ;; Beginning of `CHNKPR` module
                  ;; "This is the interface between the Editor and the Evaluator"
-                 ;; (:file "chunker")
-                 ;; (:file "realprinter")
+                 (:file "chunker")
+                 (:file "realprinter")
                  ;; Beginning of `VIRTCOPY` module
                  ;; "The virtual Copy mechanism used by the evaluator"
-                 ;; (:file "edvc")
-                 ;; (:file "virtcopy")
-                 ;; (:file "vcgc")
+                 (:file "edvc")
+                 (:file "virtcopy")
+                 (:file "vcgc")
                  ;; Beginning of `EVALUTILS` module
                  ;; "Utilities for the Evaluator"
-                 ;; (:file "transparent")
-                 ;; (:file "eval-utils")
-                 ;; (:file "errors")
+                 (:file "transparent")
+                 (:file "eval-utils")
+                 (:file "errors")
                  ;; Beginning of `EVALUATOR` module
                  ;; "The Boxer Evaluator"
-                 ;; (:file "eval-eval")
+                 (:file "eval-eval")
                  ;; Beginning of `EVAL-INTERFACE` module
                  ;; "Interface to the evaluator"
-                 ;; (:file "ev-int")
+                 (:file "ev-int")
                  ;; Beginning of `COMPILER` module
                  ;; ""
-                 ;; (:file "comp")
+                 (:file "comp")
                  ;; Beginning of `STEPPER` module
                  ;; "The Movie Stepper"
-                 ;; (:file "stepper")
+                 (:file "stepper")
                  ;; Beginning of `FILESYSTEM` module
                  ;; "Saving and Restoring Boxes To/From Files"
-                 ;; (:file "fildfs")
-                 ;; (:file "dumper")
-                 ;; (:file "loader")
-                 ;; (:file "clientmacros")
-                 ;; (:file "bfslocal")
-                 ;; (:file "bfsforeign")
-                 ;; (:file "client")
-                 ;; (:file "base64")
-                 ;; (:file "binhex")
-                 ;; (:file "applefile")
-                 ;; (:file "surf")
-                 ;; (:file "http")
-                 ;; (:file "mail")
+                 (:file "fildfs")
+                 (:file "dumper")
+                 (:file "loader")
+                 (:file "clientmacros")
+                 (:file "bfslocal")
+                 (:file "bfsforeign")
+                 (:file "client")
+                 (:file "base64")
+                 (:file "binhex")
+                 (:file "applefile")
+                 (:file "surf")
+                 (:file "http")
+                ;;  (:file "mail")
                  ;; (:file "mailfile")
                  ;; Beginning of `TRIGGER` module
                  ;; "Box triggers for Constraint Propagation and Other Fun Stuff"
-                 ;; (:file "trigger")
+                 (:file "trigger")
                  ;; Beginning of `GRAPHICS` module
-                 ;; (:file "grmeth")
-                 ;; (:file "gcmeth")
-                 ;; (:file "turtle")
-                 ;; (:file "sprite")
+                 (:file "grmeth")
+                 (:file "gcmeth")
+                 (:file "turtle")
+                 (:file "sprite")
                  ;; Beginning of `SCRIPT-SUPPORT` module
-                 ;; (:file "applescript")
+                 (:file "applescript")
                  ;; Beginning of `RPRIMS` module
                  ;; 	   "Recursive primititives (only Update-Shape for now)"
-                 ;; (:file "recursive-prims")
+                 (:file "recursive-prims")
                  ;; Beginning of `MATHPRIMS` module
                  ;; "Math primitives"
-                 ;; (:file "math-prims")
+                 (:file "math-prims")
                  ;; Beginning of `GRPRIMS` module
                  ;; "Graphics Primitives"
-                 ;; (:file "grupfn")
-                 ;; (:file "grprim1")
-                 ;; (:file "grprim2")
-                 ;; (:file "grprim3")
+                 (:file "grupfn")
+                 (:file "grprim1")
+                 (:file "grprim2")
+                 (:file "grprim3")
                  ;; Beginning of `FILEPRIMS` module
                  ;; 	    "File System Primitives"
-                 ;; (:file "file-prims")
+                 (:file "file-prims")
                  ;; Beginning of `NETPRIMS` module
                  ;; "Network Primitives"
-                 ;; (:file "net-prims")
+                 (:file "net-prims")
                  ;; Beginning of `PROCESSPRIMS` module
                  ;; "Process Primitives"
-                 ;; (:file "process-prims")
+                 (:file "process-prims")
                  ;; Beginning of `primitives` module
                  ;; "Data Manipulators"
-                 ;; (:file "dataprims")
-                 ;; (:file "build")
-                 ;; (:file "misc-prims")
+                 (:file "dataprims")
+                 (:file "build")
+                 (:file "misc-prims")
                  ;; Beginning of `KEYDEF`
                  ;; "How Boxer handles Input"
-                 ;; (:file "keydef-lwm")
-                 ;; (:file "keydef-high")
-                 ;; (:file "dribble")
+                 (:file "keydef-lwm")
+                 (:file "keydef-high")
+                 (:file "dribble")
                  ;; Beginning of `COMS` module
                  ;; "Editor Commands Definitions"
-                 ;; (:file "comsa")
-                 ;; (:file "comsb")
-                 ;; (:file "comse")
-                 ;; (:file "comsf")
-                 ;; (:file "coms-oglmouse")
-                 ;; (:file "comss")
-                 ;; (:file "coms-fs")
-                 ;; (:file "popup")
+                 (:file "comsa")
+                 (:file "comsb")
+                 (:file "comse")
+                 (:file "comsf")
+                 (:file "coms-oglmouse")
+                 (:file "comss")
+                 (:file "coms-fs")
+                 (:file "popup")
                  ;; Beginning of `keys` module
                  ;; "Install Commands on Specific Keys"
-                 ;; (:file "keys-new")
+                ;;  (:file "keys-new")
                  ;; Beginning of `UTILITIES` module
                  ;; 	   "Various useful tools for Boxer system hacking"
-                 ;; (:file "mcl-utils")
+                 (:file "mcl-utils")
                  ;; Beginning of `printer` module
                  ;; 	   "Utilities for printing out boxes in various ways"
-                 ;; (:file "ps")
-                 ;; (:file "deep-print")
-                 ;; Beginning of `site` module
+                 (:file "ps")
+                 (:file "deep-print")
+                 ;; Beginning of `site` modules
                  ;; 	   "Utilities for Site specific customizations"
-                 ;; (:file "site")
-                 ;; (:file "xten")
+                 (:file "site")
+                 (:file "xten")
                  ;; Beginning of `menu` module
                  ;;    "Menus for Harlequin Lispworks on the PC"
                  (:file "lw-menu")
                  ;; Beginning of `SYSPRIMS` module
                  ;; 	   "Primitives to tweak default system parameters"
-                 ;; (:file "sysprims")
+                 (:file "sysprims")
+
                 )))
   :description ""
   :long-description

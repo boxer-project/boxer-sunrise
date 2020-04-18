@@ -1055,15 +1055,15 @@ Modification History (most recent at the top)
 ;;; Things having to do with a window's outermost screen box.
 
 (DEFUN OUTERMOST-BOX (&OPTIONAL (WINDOW *BOXER-PANE*))
-  (SCREEN-OBJ-ACTUAL-OBJ (OUTERMOST-SCREEN-BOX WINDOW)))
+  (SCREEN-OBJ-ACTUAL-OBJ (boxer-window::outermost-screen-box WINDOW)))
 
 (DEFMETHOD DISPLAYED-SCREEN-OBJS ((SELF ACTUAL-OBJ-SUBCLASS)
 				  &OPTIONAL (WINDOW *BOXER-PANE*))
   (LET ((ALL-SCREEN-OBJS (SCREEN-OBJS SELF))
-	(OUTERMOST-SCREEN-BOX (OUTERMOST-SCREEN-BOX WINDOW)))
+	(boxer-window::outermost-screen-box (boxer-window::outermost-screen-box WINDOW)))
     (WITH-COLLECTION
       (DOLIST (SCREEN-OBJ ALL-SCREEN-OBJS)
-	(IF (SUPERIOR? SCREEN-OBJ OUTERMOST-SCREEN-BOX)
+	(IF (SUPERIOR? SCREEN-OBJ boxer-window::outermost-screen-box)
 	    (COLLECT SCREEN-OBJ))))))
 
 (DEFMETHOD SUPERIOR? ((SELF SCREEN-OBJ) SCREEN-OBJ)
@@ -1134,7 +1134,7 @@ Modification History (most recent at the top)
 				     (car (when (not-null new-outermost-box)
 					    (displayed-screen-objs
 					     new-outermost-box))))
-			  (window *boxer-pane*))
+			  (window boxer-window::*boxer-pane*))
   (let ((old-outermost-screen-box *outermost-screen-box*))
     (cond ((or (and (graphics-box? new-outermost-box)
 		    (display-style-graphics-mode?
@@ -1208,7 +1208,7 @@ Modification History (most recent at the top)
                                                 WINDOW)
       (ERASE-SCREEN-OBJ *OUTERMOST-SCREEN-BOX*)
       (SETQ *OUTERMOST-SCREEN-BOX* NEW-OUTERMOST-SCREEN-BOX)))
-  (SETQ *OUTERMOST-SCREEN-BOX* (OUTERMOST-SCREEN-BOX)) ; why ??
+  (SETQ *OUTERMOST-SCREEN-BOX* (boxer-window::outermost-screen-box)) ; why ??
   (LET ((*COMPLETE-REDISPLAY-IN-PROGRESS?* T)
         (OLD-SCREEN-ROW (UNLESS (NULL NEW-OUTERMOST-SCREEN-BOX)
                           (SCREEN-ROW NEW-OUTERMOST-SCREEN-BOX))))
@@ -1262,7 +1262,7 @@ Modification History (most recent at the top)
 
 (DEFUN OUTERMOST-SCREEN-BOX? (SCREEN-OBJ)
   (AND (SCREEN-BOX? SCREEN-OBJ)
-       (EQ SCREEN-OBJ (OUTERMOST-SCREEN-BOX))))
+       (EQ SCREEN-OBJ (boxer-window::outermost-screen-box))))
 #|
 
 (defmethod xy-position ((self screen-obj))

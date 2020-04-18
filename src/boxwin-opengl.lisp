@@ -126,6 +126,8 @@ Modification History (most recent at top)
 
 (in-package :boxer-window)
 
+;(load (example-file "opengl/examples/load"))
+;(use-package :opengl)
 
 ;; Vars
 
@@ -266,59 +268,76 @@ Modification History (most recent at top)
                                       :callback 'box::file-export-menu-action))))
 
 #+cocoa
-(define-interface cocoa-boxer-interface (capi:cocoa-default-application-interface)
+(capi:define-interface cocoa-boxer-interface (capi:cocoa-default-application-interface)
   ()
   (:menus
    (application-menu "BoxerApp"
-                     ((:component
-                       (("About Boxer"
-                         :callback 'about-boxer-function
-                         :callback-type :none)))
-                      (:component
-                       (("Preferences..." :callback 'menu-prefs)))
-                      (:component
-                       ()
-                       ;; This is a special named component where the CAPI will
-                       ;; attach the standard Services menu.
-                       :name :application-services)
-                      (:component
-                       (("Hide Boxer"
-                         :accelerator "accelerator-h"
-                         :callback-data :hidden)
-                        ("Hide Others"
-                         :accelerator "accelerator-meta-h"
-                         :callback-data :others-hidden)
-                        ("Show All"
-                         :callback-data :all-normal))
-                         :callback #'(setf capi:top-level-interface-display-state)
-                         :callback-type :data-interface)
-                      (:component
-                       (("Quit" :accelerator #\q :callback-type :interface :callback 'capi:destroy)))))
-   (file-menu "File" ((:component
-                       (("New"))))))
+               ((:component
+                 (
+                  ("About Boxer"
+                   :callback 'about-boxer-function
+                   :callback-type :none)
+                 ))
+                (:component
+                 (
+                  ("Preferences..." :callback 'menu-prefs)))
+                (:component
+                 ()
+                 ;; This is a special named component where the CAPI will
+                 ;; attach the standard Services menu.
+                 :name :application-services)
+                (:component
+                 (
+                  ("Hide Boxer"
+                   :accelerator "accelerator-h"
+                   :callback-data :hidden)
+                  ("Hide Others"
+                   :accelerator "accelerator-meta-h"
+                   :callback-data :others-hidden)
+                  ("Show All"
+                   :callback-data :all-normal
+                   :callback #'(setf capi:top-level-interface-display-state)
+                   :callback-type :data-interface)
+                  ))
+                (:component
+                 (
+                  ("Quit"
+                   :accelerator #\q :callback-type :interface :callback 'capi:destroy))
+                 )))
+  (file-menu "File" ((:component
+                      (
+                       ("New"))))))
   (:menu-bar application-menu file-menu)
   (:default-initargs
    :title "Boxer"
-   :application-menu 'application-menu
-   :message-callback 'handle-OSX-events))
+   ;; sgithens TODO -
+   ;;:application-menu 'application-menu
+   ;;:message-callback 'handle-OSX-events
+   ))
 
-(define-interface load-progress-frame ()
-  ()
-  (:panes
-   (loadbar-pane capi::progress-bar)
-   (message-pane capi:display-pane))
-  (:layouts
-   (progree-layout column-layout
-                   '(loadbar-pane message-pane)
-                   :columns 1 :rows 2 :x-uniform-size-p t))
-  (:menus (min-menu "" ((:component
-                         (("Quit" :callback 'capi:destroy))))))
-  ;(:menu-bar min-menu)
-  (:default-initargs
-   :title "Loading Boxer..."
-   :auto-menus nil
-   :best-x 250 :best-y 500 :best-width 500 :best-height 50
-   :window-styles '(:borderless :always-on-top :ignores-keyboard-input)))
+(eval-when (compile load eval)
+  (capi:define-interface load-progress-frame ()
+    ()
+    (:panes
+    (loadbar-pane capi::progress-bar)
+    (message-pane capi:display-pane))
+    (:layouts
+    (progree-layout capi:column-layout
+                    '(loadbar-pane message-pane)
+                    :columns 1 :rows 2 :x-uniform-size-p t))
+  ;  (:menus
+  ;   (min-menu ""
+  ;             ((:component
+  ;               (
+  ;                ("Quit"
+  ;                 :callback 'capi:destroy))))))
+    ;(:menu-bar min-menu)
+    (:default-initargs
+    :title "Loading Boxer..."
+    :auto-menus nil
+    :best-x 250 :best-y 500 :best-width 500 :best-height 50
+    :window-styles '(:borderless :always-on-top :ignores-keyboard-input)))
+)
 
 ;; might have to go to ignore-errors if problems continue
 (defmethod incr-bar ((self load-progress-frame) percentage
@@ -349,10 +368,11 @@ Modification History (most recent at top)
                                    #'(setf capi::display-pane-text)
                                    new-text message-pane))))
 
-(define-interface boxer-frame ()
+(eval-when (compile load eval)
+(capi:define-interface boxer-frame ()
   ()
   (:panes
-   (name-pane title-pane :text "status line"
+   (name-pane capi:title-pane :text "status line"
               :min-width nil :max-width :screen-width
               :visible-min-height *boxer-status-pane-height*
               :visible-max-height *boxer-status-pane-height*)
@@ -452,130 +472,130 @@ Modification History (most recent at top)
                :visible-min-height *boxer-pane-minimum-height*
                ))
   (:layouts
-   (boxer-layout column-layout
+   (boxer-layout capi:column-layout
                  '(name-pane boxer-pane)
                  :columns 1 :rows 2 :y-gap 1 :x-uniform-size-p t))
   ;; menu item actions are defined in lw-menu.lisp
   (:menus
-   (file-menu "File" ((:component
-                       (("New" :callback 'new-file-box)
-                        ("Open" :accelerator #\o :callback 'open-file)
-                        ("Close" :callback 'close-file-box)
-                        ("File Toggle" :callback 'menu-file-toggle
-                                       :title-function 'menu-file-toggle-print)))
-                      (:component
-                       (("Save" :accelerator #\s :callback 'save-document
-                                :enabled-function 'save-menu-item-enabled-function)
-                        ("Save As..." :callback 'save-document-as)
-                        ("Save Box As..." :callback 'save-box-as)))
-                      (:component
-                       (("Link to File" :callback 'open-xref)))
-                      (:component
-                       (("Print" :accelerator #\p :callback 'window-hardcopy
-                                 :callback-type :interface)))
-                      #+win32 ; Macs hang this on the application menu
-                      (:component
-                       (("Quit" :callback 'lw-quit)))))
-   (edit-menu "Edit" ((:component
-                       (("Cut" :accelerator #\x  :callback 'menu-cut-region)
-                        ("Copy" :accelerator #\c  :callback 'menu-copy-region)
-                        ("Paste" :accelerator #\v :callback 'menu-yank)
-                        ("Yank" :accelerator #\y :callback 'menu-retrieve)
-                        ("Paste from Clipboard" :callback 'menu-clipboard-paste)
-                        ("Paste Graphics" :callback 'menu-paste-graphics)
-                        ))
-                      (:component
-                       (("Select Box" :callback 'menu-select-box-contents
-                                      :enabled-function 'box-check-menu-item-enabled?)))
-                      (:component (("Preferences..." :callback 'menu-prefs)))
-                      ("Find" :accelerator #\f :callback 'menu-find)))
-   (make-menu "Make" ((:component
-                       (("Data	{" :callback 'menu-data-box)
-                        ("Doit	[" :callback 'menu-doit-box)))
-                      (:component
-                       (("Turtle" :accelerator #\T
-                                  :callback 'menu-turtle-box)
-                        ("Graphics" ;:accelerator "alt-g"
-                         :callback 'menu-graphics-box)
-                        ("Sprite" ;:accelerator "alt-s"
-                         :callback 'menu-sprite-box)))
-                      (:component
-                       (("Port" ;:accelerator "alt-p"
-                         :callback 'menu-port)))
-                      ("Unbox" :accelerator #\@ :callback 'menu-unbox)))
-   (box-menu "Box" ((:component (("Name	|" :callback 'menu-name
-                                           :enabled-function
-                                           'box-check-menu-item-enabled?)))
-                    (:component
-                     (("Closet" :callback 'menu-closet-flip
-                                :title-function 'closet-menu-item-print
-                                :enabled-function 'box-check-menu-item-enabled?)
-                      ("Graphics" :callback 'menu-graphics-flip
-                                  :title-function 'graphics-menu-item-print
-                                  :enabled-function 'graphics-flip-menu-item-enabled?)
-                      ("Data/Doit" :callback 'menu-data-doit-flip
-                                   :title-function 'type-menu-item-print
+    (file-menu "File" ((:component
+                        (("New" :callback 'new-file-box)
+                         ("Open" :accelerator #\o :callback 'open-file)
+                         ("Close" :callback 'close-file-box)
+                         ("File Toggle" :callback 'menu-file-toggle
+                                        :title-function 'menu-file-toggle-print)))
+                       (:component
+                        (("Save" :accelerator #\s :callback 'save-document
+                                 :enabled-function 'save-menu-item-enabled-function)
+                         ("Save As..." :callback 'save-document-as)
+                         ("Save Box As..." :callback 'save-box-as)))
+                       (:component
+                        (("Link to File" :callback 'open-xref)))
+                       (:component
+                        (("Print" :accelerator #\p :callback 'window-hardcopy
+                                  :callback-type :interface)))
+                       #+win32 ; Macs hang this on the application menu
+                       (:component
+                        (("Quit" :callback 'lw-quit)))))
+    (edit-menu "Edit" ((:component
+                        (("Cut" :accelerator #\x  :callback 'menu-cut-region)
+                         ("Copy" :accelerator #\c  :callback 'menu-copy-region)
+                         ("Paste" :accelerator #\v :callback 'menu-yank)
+                         ("Yank" :accelerator #\y :callback 'menu-retrieve)
+                         ("Paste from Clipboard" :callback 'menu-clipboard-paste)
+                         ("Paste Graphics" :callback 'menu-paste-graphics)
+                         ))
+                       (:component
+                        (("Select Box" :callback 'menu-select-box-contents
+                                       :enabled-function 'box-check-menu-item-enabled?)))
+                       (:component (("Preferences..." :callback 'menu-prefs)))
+                       ("Find" :accelerator #\f :callback 'menu-find)))
+    (make-menu "Make" ((:component
+                        (("Data	{" :callback 'menu-data-box)
+                         ("Doit	[" :callback 'menu-doit-box)))
+                       (:component
+                        (("Turtle" :accelerator #\T
+                                   :callback 'menu-turtle-box)
+                         ("Graphics" ;:accelerator "alt-g"
+                          :callback 'menu-graphics-box)
+                         ("Sprite" ;:accelerator "alt-s"
+                          :callback 'menu-sprite-box)))
+                       (:component
+                        (("Port" ;:accelerator "alt-p"
+                          :callback 'menu-port)))
+                       ("Unbox" :accelerator #\@ :callback 'menu-unbox)))
+    (box-menu "Box" ((:component (("Name	|" :callback 'menu-name
+                                            :enabled-function
+                                            'box-check-menu-item-enabled?)))
+                     (:component
+                      (("Closet" :callback 'menu-closet-flip
+                                 :title-function 'closet-menu-item-print
+                                 :enabled-function 'box-check-menu-item-enabled?)
+                       ("Graphics" :callback 'menu-graphics-flip
+                                   :title-function 'graphics-menu-item-print
+                                   :enabled-function 'graphics-flip-menu-item-enabled?)
+                       ("Data/Doit" :callback 'menu-data-doit-flip
+                                    :title-function 'type-menu-item-print
+                                    :enabled-function
+                                    'type-flip-menu-item-enabled?)
+                       ("Transparency" :callback 'menu-transparency-flip
+                                       :title-function 'trans-menu-item-print
+                                       :enabled-function
+                                       'box-check-menu-item-enabled?)))
+                     display-props-sub-menu
+                     boxtops-sub-menu
+                     #+win32 ; broken on the macs...
+                     (:component (("Box Properties"
+                                   :callback 'menu-box-properties
                                    :enabled-function
-                                   'type-flip-menu-item-enabled?)
-                      ("Transparency" :callback 'menu-transparency-flip
-                                      :title-function 'trans-menu-item-print
-                                      :enabled-function
-                                      'box-check-menu-item-enabled?)))
-                    display-props-sub-menu
-                    boxtops-sub-menu
-                    #+win32 ; broken on the macs...
-                    (:component (("Box Properties"
-                                  :callback 'menu-box-properties
-                                  :enabled-function
-                                  'box-check-menu-item-enabled?)))
-                    ("Key/Mouse Mode	Ctrl-Alt-V"
-                     :callback 'menu-key-mouse-mode
-                     :title-function 'vanilla-menu-item-print)))
-   (do-menu "Do" ((:component (("Do Line" #+cocoa :accelerator #+cocoa #\CR
-                                          :callback 'menu-do-line)))
-                  ;(:component (("Step" :callback 'menu-step)))
-                  (:component (("Stop	Ctrl-." :callback 'menu-stop)))))
-   (font-menu "Font" (("Zoom +" ;:accelerator "alt->"
-                       :callback 'menu-font-bigger)
-                      ("Zoom -"; :accelerator "alt-<"
-                       :callback 'menu-font-smaller)
-                      ;*font-sub-font-menu* *font-sub-size-menu*
-                      ;*font-sub-style-menu* *font-sub-color-menu*
-                      ))
-   (place-menu "Places" ((:component (("Top Level" :callback 'menu-top-level)))
-                         (:component (("Set Mark	Ctrl-Space"
-                                       :callback 'menu-set-mark)
-                                      ("Last Mark" ;:accelerator "Alt-Space"
-                                       :callback 'menu-last-mark)))
-                         (:component (("Zoom to Target" :accelerator #\z
-                                                        :callback 'menu-zoom-to-target)))
-                         (:component (("Remember Here" :accelerator #\/
-                                                       :callback 'menu-remember-here))))
-               :items-function 'calculate-places)
-   (help-menu "Help" ((:component (("Inputs" :callback 'menu-inputs-help)
-                                   ("Find Functions..." :accelerator #\?
-                                                    :callback 'menu-name-spelling-help)
-                                   ("Key/Mouse" ;:accelerator "Alt-?"
-                                    :callback 'menu-key-mouse-help)))
-                      (:component (("Repaint" :accelerator #\r :callback 'menu-redisplay)))
-                      (:component (("License Boxer" :callback 'menu-enter-license-key)))))
-   ;; submenus
-   (display-props-sub-menu "Display Properties..."
-                           (("Zoom Control" :callback 'menu-zoom-toggle
-                                            :title-function 'menu-zoom-print)
-                            ("Shrink Exit"  :callback 'menu-exit-shrink-toggle
-                                            :title-function 'menu-exit-shrink-print)
-                            ("Auto Fill" :callback 'menu-auto-fill-toggle
-                                         :title-function 'menu-auto-fill-print)
-                            ("Shrink Proof" :callback 'menu-shrink-proof-toggle
-                                            :title-function 'menu-shrink-proof-print)))
-   (boxtops-sub-menu "Boxtops..."
-                     (:standard :folder :name-only :graphics-named-boxtop)
-                     :print-function #'string-capitalize
-                     :callback #'menu-boxtop-callback)
-   )
-  (:menu-bar file-menu edit-menu make-menu box-menu do-menu font-menu place-menu help-menu)
-;  (:menu-bar file-menu)
+                                   'box-check-menu-item-enabled?)))
+                     ("Key/Mouse Mode	Ctrl-Alt-V"
+                      :callback 'menu-key-mouse-mode
+                      :title-function 'vanilla-menu-item-print)))
+    (do-menu "Do" ((:component (("Do Line" #+cocoa :accelerator #+cocoa #\CR
+                                           :callback 'menu-do-line)))
+                   ;(:component (("Step" :callback 'menu-step)))
+                   (:component (("Stop	Ctrl-." :callback 'menu-stop)))))
+    (font-menu "Font" (("Zoom +" ;:accelerator "alt->"
+                        :callback 'menu-font-bigger)
+                       ("Zoom -"; :accelerator "alt-<"
+                        :callback 'menu-font-smaller)
+                       ;*font-sub-font-menu* *font-sub-size-menu*
+                       ;*font-sub-style-menu* *font-sub-color-menu*
+                       ))
+    (place-menu "Places" ((:component (("Top Level" :callback 'menu-top-level)))
+                          (:component (("Set Mark	Ctrl-Space"
+                                        :callback 'menu-set-mark)
+                                       ("Last Mark" ;:accelerator "Alt-Space"
+                                        :callback 'menu-last-mark)))
+                          (:component (("Zoom to Target" :accelerator #\z
+                                                         :callback 'menu-zoom-to-target)))
+                          (:component (("Remember Here" :accelerator #\/
+                                                        :callback 'menu-remember-here))))
+                :items-function 'calculate-places)
+    (help-menu "Help" ((:component (("Inputs" :callback 'menu-inputs-help)
+                                    ("Find Functions..." :accelerator #\?
+                                                     :callback 'menu-name-spelling-help)
+                                    ("Key/Mouse" ;:accelerator "Alt-?"
+                                     :callback 'menu-key-mouse-help)))
+                       (:component (("Repaint" :accelerator #\r :callback 'menu-redisplay)))
+                       (:component (("License Boxer" :callback 'menu-enter-license-key)))))
+    ;; submenus
+    (display-props-sub-menu "Display Properties..."
+                            (("Zoom Control" :callback 'menu-zoom-toggle
+                                             :title-function 'menu-zoom-print)
+                             ("Shrink Exit"  :callback 'menu-exit-shrink-toggle
+                                             :title-function 'menu-exit-shrink-print)
+                             ("Auto Fill" :callback 'menu-auto-fill-toggle
+                                          :title-function 'menu-auto-fill-print)
+                             ("Shrink Proof" :callback 'menu-shrink-proof-toggle
+                                             :title-function 'menu-shrink-proof-print)))
+    (boxtops-sub-menu "Boxtops..."
+                      (:standard :folder :name-only :graphics-named-boxtop)
+                      :print-function #'string-capitalize
+                      :callback #'menu-boxtop-callback)
+    )
+   (:menu-bar file-menu edit-menu make-menu box-menu do-menu font-menu place-menu help-menu)
+;;; ;  (:menu-bar file-menu)
   (:default-initargs
    :title "Boxer"
    :width  *boxer-frame-initial-width*
@@ -585,6 +605,7 @@ Modification History (most recent at top)
                          (declare (ignore args ))
                          (user::quit))
    ))
+)
 
 (defvar *osx-events-log* nil)
 (defvar *pending-osx-events* nil)
@@ -761,12 +782,14 @@ Modification History (most recent at top)
         (break "Start Boxer"))
       (when (boxer::box? *old-world*)
         (setf (boxer::slot-value *old-world* 'boxer::screen-objs) nil))
-      (setq eval::*current-process* nil)
+      (setq boxer-eval::*current-process* nil)
       (setq *old-world* boxer::*initial-box*)
       ;; extensions
       (setq boxer::*starting-directory-pathname* (lw:lisp-image-name))
-      (boxer::load-boxer-extensions)
-      (start-boxer-progress "Loaded Extensions ~D" (get-internal-real-time) 20)
+      ;; sgithens TODO - Removing extensions for now March 7, 2020
+      ;; (boxer::load-boxer-extensions)
+      ;; (start-boxer-progress "Loaded Extensions ~D" (get-internal-real-time) 20)
+
       ;; load prefs if they exists
       (let ((pf (boxer::default-lw-pref-file-name)))
         (when (and pf (probe-file pf))
@@ -776,7 +799,7 @@ Modification History (most recent at top)
       ;; maybe set the size of the boxer window...
       ;; check window size prefs, they will be overidden by the following
       ;; fullscreen-window check
-      (let ((screen (convert-to-screen)))
+      (let ((screen (capi:convert-to-screen)))
         (when (> *starting-window-width* 0)
           (set-hint-table *boxer-frame* (list :width *starting-window-width*)))
         (when (> *starting-window-height* 0)
@@ -796,8 +819,9 @@ Modification History (most recent at top)
       (boxer::fill-bootstrapped-font-caches)
       (let ((boxer::%private-graphics-list nil))
         ;; needed by shape-box updater in the redisplay inits but not set until
-        ;; (eval::setup-evaluator) farther down
+        ;; (boxer-eval::setup-evaluator) farther down
         (run-redisplay-inits))
+
       (start-boxer-progress "RDP inits ~D" (get-internal-real-time) 60)
       (fixup-menus)
       ;; move to inits
@@ -814,7 +838,7 @@ Modification History (most recent at top)
       (setup-editor *old-world*)
       (setq *display-bootstrapping-no-boxes-yet* nil)
       (start-boxer-progress "Editor ~D" (get-internal-real-time) 70)
-      (eval::setup-evaluator)
+      (boxer-eval::setup-evaluator)
       (start-boxer-progress "Eval ~D" (get-internal-real-time) 80)
       ;; should handle double clicked files here...
       (multiple-value-bind (start-box as-world?)
@@ -866,7 +890,7 @@ Modification History (most recent at top)
 (defun window-system-specific-start-boxer ()
   (when (boxer::box? *old-world*)
     (setf (boxer::slot-value *old-world* 'boxer::screen-objs) nil))
-  (setq eval::*current-process* nil)
+  (setq boxer-eval::*current-process* nil)
   (setq *old-world* boxer::*initial-box*)
   (capi:display *boxer-frame*)
   (boxer::fill-bootstrapped-font-caches)
@@ -877,7 +901,7 @@ Modification History (most recent at top)
     (setf (gp::graphics-state-foreground gs) boxer::*foreground-color*))
   (setq *expose-window-handler-function* 'expose-window-function)
   (setup-editor *old-world*)
-  (eval::setup-evaluator)
+  (boxer-eval::setup-evaluator)
   (unless boxer::*boxer-version-info*
     (setq boxer::*boxer-version-info*
           (format nil "~:(~A~) Boxer" (machine-instance))))
@@ -1461,9 +1485,9 @@ Modification History (most recent at top)
 
 (defun abort-event? (char)
   (and (characterp char)
-       (or (char= char #\control-\g)
-           (char= char #\escape)
-           (char= char #\control-\.))))
+       (or ;; sgithens TODO (char= char #\control-\g)
+           (char= char #\escape))))
+           ;; sgithens TODO (char= char #\control-\.))))
 
 #+cocoa
 (defun abort-gesture? (g)
@@ -1495,7 +1519,7 @@ Modification History (most recent at top)
   (save-key char)
   (cond ((abort-event? char)
          (if (or boxer::*evaluation-in-progress?*
-                 eval::*enable-interrupt-polling-in-editor*)
+                 boxer-eval::*enable-interrupt-polling-in-editor*)
              (boxer-interrupt)
            (queue-event (input-char->key-event char))))
         (t (queue-event (input-char->key-event char)))))
@@ -1511,7 +1535,7 @@ Modification History (most recent at top)
 ;  (redisplay)
   (cond ((abort-gesture? gesture)
          (if (or boxer::*evaluation-in-progress?*
-                 eval::*enable-interrupt-polling-in-editor*)
+                 boxer-eval::*enable-interrupt-polling-in-editor*)
              (boxer-interrupt)
            (queue-event (input-gesture->key-event gesture))))
         (t (queue-event (input-gesture->key-event gesture))))
@@ -1986,7 +2010,7 @@ Modification History (most recent at top)
 ;;; "About Boxer" window ?
 (defun about-boxer-function ()
   (capi:display-message-on-screen (capi:convert-to-screen nil)
-                                  (sm::system-version 'boxer::boxer)))
+                                  "Boxer-4.0.0")); (sm::system-version 'boxer::boxer)))
 
 
 ;;; System clipboard
@@ -2051,18 +2075,11 @@ Modification History (most recent at top)
 
 (defvar *report-crash* t)
 
-(defun crash-reporting-filename ()
-  (merge-pathnames (let* ((plist (sm::system-properties (sm::find-system-named 'box::boxer)))
-                          (pname (getf plist :pretty-name "Boxer"))
-                          (maj   (getf plist :major-version-number 0))
-                          (min   (getf plist :minor-version-number 0)))
-                     (format nil "~A-~D-~D-log" pname maj min))
-                   #+macosx (sys:get-folder-path :my-logs :create t)
-                   #+win32  (sys:get-folder-path :documents :create t)))
+(defun crash-reporting-filename () "~/boxerlogs.txt")
 
 ;; should add date/time too
 (defun bug-report-header (stream)
-  (let* ((system-string (sm::system-version 'boxer::boxer))
+  (let* ((system-string "Boxer-4.0.0") ;(sm::system-version 'boxer::boxer))
          (xtens (mapcar #'box::boxer-extension-pretty-name box::*boxer-extensions*)))
     (format stream "~A ~
                    ~%  with Extensions: ~A ~
