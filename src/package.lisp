@@ -51,7 +51,10 @@
            :block-compile-class
            :deffile-property-handler))
 
-(defpackage :boxer-eval (:use :common-lisp) (:use :boxer)
+(defpackage :boxer-eval
+  (:use :common-lisp)
+  (:use :boxer)
+  (:nicknames :eval)
   (:export :LOOKUP-STATIC-VARIABLE-IN-BOX-ONLY
            :REMOVE-STATIC-VARIABLE
            :ADD-STATIC-VARIABLE-PAIR
@@ -312,8 +315,8 @@
 	;;   #+clos clos::bcm-class-and-instantiable-superiors-symbol
 	  ;; Boxer/CL fixup
 	  boxer::fast-assq boxer::fast-delq
-	  boxer::fast-del-if boxer::fast-memq)
-        ;;   #+(or lispworks mcl) boxer::compiler-let)
+	  boxer::fast-del-if boxer::fast-memq
+      boxer::compiler-let)
 	(find-package 'boxer-eval))
 
 (import '(boxer::fix boxer::fixr boxer::symbol-format

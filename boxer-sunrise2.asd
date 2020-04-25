@@ -196,7 +196,7 @@
                  (:file "popup")
                  ;; Beginning of `keys` module
                  ;; "Install Commands on Specific Keys"
-                ;;  (:file "keys-new")
+                 (:file "keys-new")
                  ;; Beginning of `UTILITIES` module
                  ;; 	   "Various useful tools for Boxer system hacking"
                  (:file "mcl-utils")
@@ -211,6 +211,9 @@
                  ;; Beginning of `menu` module
                  ;;    "Menus for Harlequin Lispworks on the PC"
                  (:file "lw-menu")
+                 ;; Beginning of `av` module
+                 ;;    "Primitives and support code for controlling VCR's from Mac Boxer"
+                 (:file "av-stubs")
                  ;; Beginning of `SYSPRIMS` module
                  ;; 	   "Primitives to tweak default system parameters"
                  (:file "sysprims")

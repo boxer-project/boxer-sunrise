@@ -322,7 +322,8 @@ Modification History (most recent at top)
   `(zerop (the fixnum ,(simplify-arg arg))))
 
 (defmacro svref& (vector index)
-  `(svref (the simple-vector ,vector) (the fixnum ,index)))
+  `(svref ,vector ,index))
+    ;; sgithens TODO (svref (the simple-vector ,vector) (the fixnum ,index))))
 
 (defmacro svlength (vector)
   `(length (the simple-vector ,vector)))
@@ -842,11 +843,9 @@ Modification History (most recent at top)
   (if (numberp key-event) key-event (char-code key-event)))
 
 ;;; INPUT-BITS should return 1 for :control, 2 for :meta
-#-(or mcl lispworks)
-(defun input-bits (key-event) (char-bits key-event))
-
-;; #+lispworks
-;; (defun input-bits (key-event) (lispworks:char-bits key-event))
+(defun input-bits (key-event)
+  (char-code key-event))
+  ;; sgithens TODO (lispworks:char-bits key-event))
 
 ;; #+lispworks
 ;; (defun make-char (char &optional (bits 0) font)

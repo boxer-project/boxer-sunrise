@@ -270,7 +270,7 @@ Modification History (most recent at top)
   ;; returns a mouse-bp, local-x, local-y and, optionally, an area
   (declare (values mouse-bp local-x local-y))
   (let ((screen-obj (outermost-screen-box window)))
-    (check-screen-obj-arg screen-obj)
+    ;; sgithens TODO (check-screen-obj-arg screen-obj)
     (with-font-map-bound (*boxer-pane*)
       (multiple-value-bind (mouse-row mouse-cha-no mouse-screen-box
 				      local-x local-y border-area)
@@ -288,7 +288,7 @@ Modification History (most recent at top)
 ;; should be simpler than normal tracking
 (defun mouse-documentation-area (x y &optional (window *boxer-pane*))
   (let ((screen-obj (outermost-screen-box window)))
-    (check-screen-obj-arg screen-obj)
+    ;; sgithens TODO (check-screen-obj-arg screen-obj)
     (with-font-map-bound (window)
       (mouse-doc-place screen-obj
                        (- x (screen-obj-x-offset screen-obj))

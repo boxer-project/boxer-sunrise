@@ -153,8 +153,8 @@ Modification History (most recent at top)
 |#
 
 (defun lookup-key-name (key-code key-bits)
-  (and (array-in-bounds-p *key-names* key-code key-bits)
-       (aref *key-names* key-code key-bits)))
+  (and (array-in-bounds-p *key-names* key-code 0);; sgithens TODO key-bits)
+       (aref *key-names* key-code 0 ))) ; sgithens TODO key-bits)))
 
 
 

@@ -144,7 +144,7 @@ Modification History (most recent at the top)
     ;; moved here because FD's need init'd colors
     (setq *default-font-descriptor* (make-bfd -1 *default-font*)
           *current-font-descriptor* (make-bfd -1 *default-font*))
-    (drawing-on-window (*boxer-pane*)
+    (drawing-on-window (boxer-window::*boxer-pane*)
       (set-font-info *normal-font-no*))))
 
 
@@ -461,7 +461,7 @@ Modification History (most recent at the top)
 (defconstant *default-font-no* 0)
 
 ;; Courier is pretty standard and exists on most platforms
-(defvar *default-font* (make-boxer-font '("Courier" 10)))
+(defvar *default-font* 0) ;; sgithens TODO (make-boxer-font '("Courier New" 10)))
                       ;;  #+lispworks (%make-font-number-internal 0 3)
                       ;;  #-lispworks (make-boxer-font '("Courier" 10)))
 
