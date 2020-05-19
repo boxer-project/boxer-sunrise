@@ -2806,6 +2806,12 @@ Modification History (most recent at the top)
 
 ;; this is used by the redisplay...
 
+(defmacro playback-graphics-list-internal (gl &rest args)
+  `(with-graphics-state (,gl t)
+     (with-blending-on
+       (do-vector-contents (command ,gl)
+	 (process-graphics-command-marker command . ,args)))))
+
 (defun redisplay-graphics-sheet (gs graphics-screen-box)
   (with-graphics-vars-bound ((screen-obj-actual-obj graphics-screen-box))
     ;; first the items in the list
@@ -2828,11 +2834,6 @@ Modification History (most recent at the top)
           (draw sprite))))))
 
 
-(defmacro playback-graphics-list-internal (gl &rest args)
-  `(with-graphics-state (,gl t)
-     (with-blending-on
-       (do-vector-contents (command ,gl)
-	 (process-graphics-command-marker command . ,args)))))
 
 ;;; show probably do some type checking about compatibility
 ;;; of the from and to args
