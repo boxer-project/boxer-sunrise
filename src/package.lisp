@@ -114,8 +114,8 @@
 
 ;; Some useful variables and functions for dealing with the BU package
 
-;; (defvar pkg-boxer-user-package (find-package 'boxer-user))
-;; (defvar pkg-bu-package (find-package 'boxer-user))
+(defvar pkg-boxer-user-package (find-package 'boxer-user))
+(defvar pkg-bu-package (find-package 'boxer-user))
 
 
 
