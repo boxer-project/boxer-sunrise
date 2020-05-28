@@ -32,7 +32,6 @@ Modification History (most recent at the top)
 
 |#
 
-;; sgithens (in-package :eval)
 (in-package :boxer-eval)
 
 (defvar *number-of-eval-state-vars* 0)
