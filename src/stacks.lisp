@@ -434,30 +434,6 @@ Modification History (most recent at the top)
      nil))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; The Evaluator PDL frames
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define-stack-frame (eval-args-frame 50 50 50 100 nil)
-    "Making more room for procedure inputs"
-  (progn (do ((list (boxer-function-arglist *current-function*) (cdr list))
-	      (test-list *arglist*))
-	     ((eq list test-list))
-	    (vpdl-pop))
-	 (restore-state-variables))
-  *arglist* *current-function*)
-
-(define-stack-frame (ufun-frame 100 100 200 400 nil)
-    "Making more procedure copies"
-  (progn (dynamically-unbind-variables)
-	 (restore-state-variables))
-  *executing-function* *executing-line* *executing-pointer*
-  *run-list-sfun-epilog-handler* *ufuncall-sfun-epilog-handler*
-  *current-function*)
-
-(define-stack-frame (doit-port-funcall-frame 10 10 10 10 nil)
-    "Making more procedure port copies"
-    nil
-  *lexical-variables-root* *dynamic-variables-bottom*)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; VPDL.  The VPDL is where values from functions and self-evaluating
@@ -505,6 +481,30 @@ Modification History (most recent at the top)
     (setq *vpdl* new-vpdl)))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; The Evaluator PDL frames
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define-stack-frame (eval-args-frame 50 50 50 100 nil)
+    "Making more room for procedure inputs"
+  (progn (do ((list (boxer-function-arglist *current-function*) (cdr list))
+	      (test-list *arglist*))
+	     ((eq list test-list))
+	    (vpdl-pop))
+	 (restore-state-variables))
+  *arglist* *current-function*)
+
+(define-stack-frame (ufun-frame 100 100 200 400 nil)
+    "Making more procedure copies"
+  (progn (dynamically-unbind-variables)
+	 (restore-state-variables))
+  *executing-function* *executing-line* *executing-pointer*
+  *run-list-sfun-epilog-handler* *ufuncall-sfun-epilog-handler*
+  *current-function*)
+
+(define-stack-frame (doit-port-funcall-frame 10 10 10 10 nil)
+    "Making more procedure port copies"
+    nil
+  *lexical-variables-root* *dynamic-variables-bottom*)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

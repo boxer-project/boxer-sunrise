@@ -52,9 +52,9 @@
                  ;; "Basic Defs and Macros used by the evaluator including how variables work."
                  (:file "evalmacs")
                  (:file "fdeval")
+                 (:file "stacks")
                  (:file "bind")
                  (:file "funs")
-                 (:file "stacks")
                  (:file "eval")
                  ;; Beginning of `EVALPRIMS` module
                  ;; "Evaluator Primitives"
@@ -107,8 +107,8 @@
                  (:file "realprinter")
                  ;; Beginning of `VIRTCOPY` module
                  ;; "The virtual Copy mechanism used by the evaluator"
-                 (:file "edvc")
                  (:file "virtcopy")
+                 (:file "edvc")
                  (:file "vcgc")
                  ;; Beginning of `EVALUTILS` module
                  ;; "Utilities for the Evaluator"
