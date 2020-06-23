@@ -1,0 +1,4 @@
+OpenGL CAPI fonts converted on 21:38:6  4/8/2014
+Font Families: Arial, Courier New, Times New Roman, Verdana
+Sizes: 8 9 10 12 14 16 20 24 28 32 40 48 56 64 
+Converted with white defined as unweighted RGB > 2.0

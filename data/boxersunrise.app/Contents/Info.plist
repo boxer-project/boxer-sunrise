@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>box</string>
+				<string>box~</string>
+				<string>box#</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>boxer-file.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>com.pyxisystems.boxer.file</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>BOXR</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+		</dict>
+	</array>
+
+	<key>CFBundleExecutable</key>
+	<string>boxersunrise</string>
+
+	<key>CFBundleIconFile</key>
+	<string>boxer-app.icns</string>
+
+	<key>CFBundleIdentifier</key>
+	<string>org.boxer.BoxerSunrise</string>
+
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+
+	<key>CFBundleGetInfoString</key>
+	<string>3.4  Boxer - Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay</string>
+
+	<key>NSHumanReadableCopyright</key>
+	<string>3.4  Boxer - Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay</string>
+
+	<key>CFBundleName</key>
+	<string>boxersunrise</string>
+
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+
+	<key>CFBundleShortVersionString</key>
+	<string>Boxer 3.4</string>
+
+	<key>CFBundleSignature</key>
+	<string>BOXR</string>
+
+	<key>CFBundleVersion</key>
+	<string>3.4</string>
+
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+</dict>
+</plist>

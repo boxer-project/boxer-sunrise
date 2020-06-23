@@ -19,14 +19,16 @@
                 ;; Stuff from previous OpenGL/opengl directory that was added by
                  ;; boxer
                  (:file "pixmap")
+
                  ;; Beginning of `DEFINITIONS` module
                  (:file "macros")
                  (:file "boxdef")
                  (:file "storage")
                  (:file "vrtdef")
-                 ;; This is the beginning of the redisplay module from original
-                 ;; boxer, when I get a chance to split this up in to modules.
+
+                 ;; Begining of `redisplay` module
                  (:file "disdcl")
+
                  ;; Beginning of `DRAW` module
                  (:file "opengl-utils")
                  (:file "capogi")
@@ -35,18 +37,19 @@
                 ;;  (:file "draw-low-stubs")
                  (:file "draw-high-common")
                  (:file "draw-high-hardware-clip")
+
                  ;; Beginning of `DISPLAYDEFS` module
                  ;; "Some more Definitions for Drawing things"
                  (:file "disdef")
+
                  ;; Beginning of `RELATIONSHIPS` module
                  ;; "The basic underlying structure of the Editor is defined here"
                  (:file "infsup")
+
                  ;; Beginning of `evalvars` module
                  ;; "Definitions necessary for describing evaluator state variables"
                  (:file "varmacs")
                  (:file "vars")
-
-
 
                  ;; Beginning of `EVALDEFS` module
                  ;; "Basic Defs and Macros used by the evaluator including how variables work."
@@ -56,12 +59,15 @@
                  (:file "bind")
                  (:file "funs")
                  (:file "eval")
+
                  ;; Beginning of `EVALPRIMS` module
                  ;; "Evaluator Primitives"
                  (:file "prims")
+
                  ;; Beginning of `PROCESSES` module
                  ;; "Macros and functions for creating processes"
                  (:file "process")
+
                  ;; Beginning of `BOXWIN` module
                  ;; "The interface between the Boxer Editor and the window system"
                  ;; these are also window system specific
@@ -70,23 +76,28 @@
                  (:file "mousedoc")
                  ;; (:file "oglmacreg")
                  ;; (:file "winreg")
+
                  ;; Beginning of `BOXNET` module
                  ;; operating-system and window-system and lisp-system dependent
                  (:file "boxnet")
+
                  ;; Beginning of `EDITOR` module
                  ;; "The Basic Structure of the Boxer Editor. "
                  (:file "editor")
+
                  ;; Beginning of `REDISPLAY` module
                  ;; "The redisplay for the Editor"
                  (:file "lodisp")
                  (:file "repaint")
                  (:file "new-borders")
                  (:file "disply")
+
                  ;; Beginning of `GRFDEFS` module
                  ;; "Definitions for Sprite Graphics"
                  (:file "grobjs")
                  (:file "grfdfs")
                  (:file "gdispl")
+
                  ;; Beginning of `EDITOR-HIGH` module
                  ;; "Higher level Editor Utilities"
                  (:file "mouse")
@@ -217,7 +228,8 @@
                  ;; Beginning of `SYSPRIMS` module
                  ;; 	   "Primitives to tweak default system parameters"
                  (:file "sysprims")
-
+                 ;; Bootstrap methods to startup boxer
+                 (:file "start-boxer")
                 )))
   :description ""
   :long-description
