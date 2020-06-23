@@ -835,10 +835,6 @@ Modification History (most recent at top)
 #+(or opengl lwwin mcl)
 (defun key-event? (event) (or (characterp event) (numberp event)))
 
-#-(or opengl lwwin mcl)
-(defun input-code (key-event) (char-code key-event))
-
-#+(or opengl lwwin)
 (defun input-code (key-event)
   (if (numberp key-event) key-event (char-code key-event)))
 
