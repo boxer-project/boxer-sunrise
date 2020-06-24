@@ -460,10 +460,8 @@ Modification History (most recent at the top)
 
 (defconstant *default-font-no* 0)
 
-;; Courier is pretty standard and exists on most platforms
-(defvar *default-font* 0) ;; sgithens TODO (make-boxer-font '("Courier New" 10)))
-                      ;;  #+lispworks (%make-font-number-internal 0 3)
-                      ;;  #-lispworks (make-boxer-font '("Courier" 10)))
+;; Arial is pretty standard and exists on most platforms
+(defvar *default-font* (%make-font-number-internal 0 3))
 
 (defmacro check-and-handle-font-changes (cha-no)
   (declare (ignore cha-no))
