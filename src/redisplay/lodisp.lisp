@@ -91,32 +91,6 @@ Modification History (most recent at top)
     (when (screen-box? new-screen-cha)
       (setf (screen-row new-screen-cha) self))))
 
-;(DEFMETHOD INSERT-SCREEN-CHA ((SELF SCREEN-ROW) NEW-SCREEN-CHA BEFORE-SCREEN-CHA)
-;  (CHECK-SCREEN-CHA-ARG NEW-SCREEN-CHA)
-;  (COND ((NULL (SCREEN-ROW NEW-SCREEN-CHA))
-;	 (SETF (SCREEN-ROW NEW-SCREEN-CHA) SELF)
-;	 (IF (NOT-NULL BEFORE-SCREEN-CHA)
-;	     (SPLICE-ITEM-INTO-LIST (SCREEN-CHAS SELF) NEW-SCREEN-CHA BEFORE-SCREEN-CHA)
-;	     (SPLICE-ITEM-ONTO-LIST (SCREEN-CHAS SELF) NEW-SCREEN-CHA)))
-;	(T
-;	 ;; Oops..
-;	 (BARF "The screen-cha ~S is already part of ~S"
-;	       NEW-SCREEN-CHA (SCREEN-ROW NEW-SCREEN-CHA)))))
-
-;(DEFMETHOD INSERT-SCREEN-CHAS ((SELF SCREEN-ROW) NEW-SCREEN-CHAS BEFORE-SCREEN-CHA)
-;  (CHECK-SCREEN-CHA-ARG (CAR NEW-SCREEN-CHAS))
-;  (COND ((NULL (SCREEN-ROW (CAR NEW-SCREEN-CHAS)))
-;	 (DOLIST (NEW-SCREEN-CHA NEW-SCREEN-CHAS)
-;	   (SETF (SCREEN-ROW NEW-SCREEN-CHA) SELF))
-;	 (IF (NOT-NULL BEFORE-SCREEN-CHA)
-;	     (SPLICE-LIST-INTO-LIST (SCREEN-CHAS SELF) NEW-SCREEN-CHAS BEFORE-SCREEN-CHA)
-;	     (SPLICE-LIST-ONTO-LIST (SCREEN-CHAS SELF) NEW-SCREEN-CHAS)))
-;	(T
-;	 ;; Oops..
-;	 (BARF "I have only checked the first one, but the screen-chas ~S~%~
-;                seem to already be part of ~S"
-;	       NEW-SCREEN-CHAS (SCREEN-ROW (CAR NEW-SCREEN-CHAS))))))
-
 (defmethod insert-screen-row ((self screen-box) new-screen-row before-screen-row)
   (check-screen-row-arg new-screen-row)
   (cond ((null (screen-box new-screen-row))
@@ -129,71 +103,6 @@ Modification History (most recent at top)
 	 (barf "The screen-row ~S is already part of ~S"
 	       new-screen-row (screen-box new-screen-row)))))
 
-;(DEFMETHOD INSERT-SCREEN-ROWS ((SELF SCREEN-BOX) NEW-SCREEN-ROWS BEFORE-SCREEN-ROW)
-;  (CHECK-SCREEN-ROW-ARG (CAR NEW-SCREEN-ROWS))
-;  (COND ((NULL (SCREEN-BOX (CAR NEW-SCREEN-ROWS)))
-;	 (DOLIST (NEW-SCREEN-ROW NEW-SCREEN-ROWS)
-;	   (SETF (SCREEN-BOX NEW-SCREEN-ROW) SELF))
-;	 (IF (NOT-NULL BEFORE-SCREEN-ROW)
-;	     (SPLICE-LIST-INTO-LIST (SCREEN-ROWS SELF) NEW-SCREEN-ROWS BEFORE-SCREEN-ROW)
-;	     (SPLICE-LIST-ONTO-LIST (SCREEN-ROWS SELF) NEW-SCREEN-ROWS)))
-;	(T
-;	 (BARF "I have only checked the first one, but the screen-rows ~S~%~
-;                seem to already be part of ~S"
-;	       NEW-SCREEN-ROWS (SCREEN-ROW (CAR NEW-SCREEN-ROWS))))))
-
-;;; Alias for the abstract :INSERT-SCREEN-OBJs methods.
-;(DEFMETHOD INSERT-SCREEN-OBJ ((SELF SCREEN-ROW) NEW-SCREEN-CHA BEFORE-SCREEN-CHA)
-;  (CHECK-SCREEN-CHA-ARG NEW-SCREEN-CHA)
-;  (COND ((NULL (SCREEN-ROW NEW-SCREEN-CHA))
-;	 (SETF (SCREEN-ROW NEW-SCREEN-CHA) SELF)
-;	 (IF (NOT-NULL BEFORE-SCREEN-CHA)
-;	     (SPLICE-ITEM-INTO-LIST (SCREEN-CHAS SELF) NEW-SCREEN-CHA BEFORE-SCREEN-CHA)
-;	     (SPLICE-ITEM-ONTO-LIST (SCREEN-CHAS SELF) NEW-SCREEN-CHA)))
-;	(T
-;	 ;; Oops..
-;	 (BARF "The screen-cha ~S is already part of ~S"
-;	       NEW-SCREEN-CHA (SCREEN-ROW NEW-SCREEN-CHA)))))
-
-;(DEFMETHOD INSERT-SCREEN-OBJS ((SELF SCREEN-ROW) NEW-SCREEN-CHAS BEFORE-SCREEN-CHA)
-;  (CHECK-SCREEN-CHA-ARG (CAR NEW-SCREEN-CHAS))
-;  (COND ((NULL (SCREEN-ROW (CAR NEW-SCREEN-CHAS)))
-;	 (DOLIST (NEW-SCREEN-CHA NEW-SCREEN-CHAS)
-;	   (SETF (SCREEN-ROW NEW-SCREEN-CHA) SELF))
-;	 (IF (NOT-NULL BEFORE-SCREEN-CHA)
-;	     (SPLICE-LIST-INTO-LIST (SCREEN-CHAS SELF) NEW-SCREEN-CHAS BEFORE-SCREEN-CHA)
-;	     (SPLICE-LIST-ONTO-LIST (SCREEN-CHAS SELF) NEW-SCREEN-CHAS)))
-;	(T
-;	 ;; Oops..
-;	 (BARF "I have only checked the first one, but the screen-chas ~S~%~
-;                seem to already be part of ~S"
-;	       NEW-SCREEN-CHAS (SCREEN-ROW (CAR NEW-SCREEN-CHAS))))))
-
-;(DEFMETHOD INSERT-SCREEN-OBJ ((SELF SCREEN-BOX) NEW-SCREEN-ROW BEFORE-SCREEN-ROW)
-;  (CHECK-SCREEN-ROW-ARG NEW-SCREEN-ROW)
-;  (COND ((NULL (SCREEN-BOX NEW-SCREEN-ROW))
-;	 (SETF (SCREEN-BOX NEW-SCREEN-ROW) SELF)
-;	 (IF (NOT-NULL BEFORE-SCREEN-ROW)
-;	     (SPLICE-ITEM-INTO-LIST (SCREEN-ROWS SELF) NEW-SCREEN-ROW BEFORE-SCREEN-ROW)
-;	     (SPLICE-ITEM-ONTO-LIST (SCREEN-ROWS SELF) NEW-SCREEN-ROW)))
-;	(T
-;	 (BARF "The screen-row ~S is already part of ~S"
-;	       NEW-SCREEN-ROW (SCREEN-BOX NEW-SCREEN-ROW)))))
-
-;(DEFMETHOD INSERT-SCREEN-OBJS ((SELF SCREEN-BOX) NEW-SCREEN-ROWS BEFORE-SCREEN-ROW)
-;  (CHECK-SCREEN-ROW-ARG (CAR NEW-SCREEN-ROWS))
-;  (COND ((NULL (SCREEN-BOX (CAR NEW-SCREEN-ROWS)))
-;	 (DOLIST (NEW-SCREEN-ROW NEW-SCREEN-ROWS)
-;	   (SETF (SCREEN-BOX NEW-SCREEN-ROW) SELF))
-;	 (IF (NOT-NULL BEFORE-SCREEN-ROW)
-;	     (SPLICE-LIST-INTO-LIST (SCREEN-ROWS SELF) NEW-SCREEN-ROWS BEFORE-SCREEN-ROW)
-;	     (SPLICE-LIST-ONTO-LIST (SCREEN-ROWS SELF) NEW-SCREEN-ROWS)))
-;	(T
-;	 (BARF "I have only checked the first one, but the screen-rows ~S~%~
-;                seem to already be part of ~S"
-;	       NEW-SCREEN-ROWS (SCREEN-BOX (CAR NEW-SCREEN-ROWS))))))
-
-
 
 ;;;   :APPEND-SCREEN-CHA <new-screen-cha>
 ;;;   :APPEND-SCREEN-ROW <new-screen-row>
@@ -210,12 +119,6 @@ Modification History (most recent at top)
   (when (screen-box? new-screen-cha)
     (setf (screen-row new-screen-cha) self)))
 
-;(DEFMETHOD APPEND-SCREEN-CHAS ((SELF SCREEN-ROW) NEW-SCREEN-CHAS)
-;  (SPLICE-LIST-ONTO-LIST (SCREEN-CHAS SELF) NEW-SCREEN-CHAS)
-;  (DOLIST (NEW-SCREEN-CHA NEW-SCREEN-CHAS)
-;    (WHEN (SCREEN-BOX? NEW-SCREEN-CHA)
-;      (SETF (SCREEN-ROW NEW-SCREEN-CHA) SELF))))
-
 (defmethod append-screen-row ((self screen-box) new-screen-row)
   (check-screen-row-arg new-screen-row)
   (cond ((null (screen-box new-screen-row))
@@ -225,53 +128,6 @@ Modification History (most recent at top)
 	 ;; Oops..
 	 (barf "The screen row ~s is already part of ~S"
 	       new-screen-row (screen-box new-screen-row)))))
-
-;(DEFMETHOD APPEND-SCREEN-ROWS ((SELF SCREEN-BOX) NEW-SCREEN-ROWS)
-;  (CHECK-SCREEN-ROW-ARG (CAR NEW-SCREEN-ROWS))
-;  (COND ((NULL (SCREEN-BOX (CAR NEW-SCREEN-ROWS)))
-;	 (DOLIST (NEW-SCREEN-ROW NEW-SCREEN-ROWS)
-;	   (SETF (SCREEN-BOX NEW-SCREEN-ROW) SELF))
-;	 (SPLICE-LIST-ONTO-LIST (SCREEN-ROWS SELF) NEW-SCREEN-ROWS))
-;	(T
-;	 ;; Oops
-;	 (BARF "I have only checked the first one, but the screen-rows ~S~%~
-;                seem to already be part of ~S"
-;	       NEW-SCREEN-ROWS (SCREEN-BOX (CAR NEW-SCREEN-ROWS))))))
-
-;;; Alias for the abstract APPEND-SCREEN-OBJs methods.
-;(DEFMETHOD APPEND-SCREEN-OBJ ((SELF SCREEN-ROW) NEW-SCREEN-CHA)
-;  (SPLICE-ITEM-ONTO-LIST (SCREEN-CHAS SELF) NEW-SCREEN-CHA)
-;  (WHEN (SCREEN-BOX? NEW-SCREEN-CHA)
-;    (SETF (SCREEN-ROW NEW-SCREEN-CHA) SELF)))
-;
-;(DEFMETHOD APPEND-SCREEN-OBJS ((SELF SCREEN-ROW) NEW-SCREEN-CHAS)
-;  (SPLICE-LIST-ONTO-LIST (SCREEN-CHAS SELF) NEW-SCREEN-CHAS)
-;  (DOLIST (NEW-SCREEN-CHA NEW-SCREEN-CHAS)
-;    (WHEN (SCREEN-BOX? NEW-SCREEN-CHA)
-;      (SETF (SCREEN-ROW NEW-SCREEN-CHA) SELF))))
-;
-;(DEFMETHOD APPEND-SCREEN-OBJ ((SELF SCREEN-BOX) NEW-SCREEN-ROW)
-;  (CHECK-SCREEN-ROW-ARG NEW-SCREEN-ROW)
-;  (COND ((NULL (SCREEN-BOX NEW-SCREEN-ROW))
-;	 (SETF (SCREEN-BOX NEW-SCREEN-ROW) SELF)
-;	 (SPLICE-ITEM-ONTO-LIST (SCREEN-ROWS SELF) NEW-SCREEN-ROW))
-;	(T
-;	 ;; Oops..
-;	 (BARF "The screen row ~s is already part of ~S"
-;	       NEW-SCREEN-ROW (SCREEN-BOX NEW-SCREEN-ROW)))))
-;
-;(DEFMETHOD APPEND-SCREEN-OBJS ((SELF SCREEN-BOX) NEW-SCREEN-ROWS)
-;  (CHECK-SCREEN-ROW-ARG (CAR NEW-SCREEN-ROWS))
-;  (COND ((NULL (SCREEN-BOX (CAR NEW-SCREEN-ROWS)))
-;	 (DOLIST (NEW-SCREEN-ROW NEW-SCREEN-ROWS)
-;	   (SETF (SCREEN-BOX NEW-SCREEN-ROW) SELF))
-;	 (SPLICE-LIST-ONTO-LIST (SCREEN-ROWS SELF) NEW-SCREEN-ROWS))
-;	(T
-;	 ;; Oops
-;	 (BARF "I have only checked the first one, but the screen-rows ~S~%~
-;                seem to already be part of ~S"
-;	       NEW-SCREEN-ROWS (SCREEN-BOX (CAR NEW-SCREEN-ROWS))))))
-
 
 
 ;;;   :DELETE-SCREEN-CHA <screen-cha>
@@ -297,30 +153,6 @@ Modification History (most recent at top)
       (setf (screen-row cha-to-delete) nil)))
   (sv-delete-from-to (slot-value self 'screen-chas) from-cha-no to-cha-no))
 
-;(DEFMETHOD DELETE-SCREEN-CHA ((SELF SCREEN-ROW) SCREEN-CHA-TO-DELETE)
-;  (CHECK-SCREEN-CHA-ARG SCREEN-CHA-TO-DELETE)
-;  (COND ((EQ (SCREEN-ROW SCREEN-CHA-TO-DELETE) SELF)
-;	 (SETF (SCREEN-ROW SCREEN-CHA-TO-DELETE) NIL)
-;	 (SPLICE-ITEM-OUT-OF-LIST (SCREEN-CHAS SELF) SCREEN-CHA-TO-DELETE))
-;	(T
-;	 ;; Oops..
-;	 (BARF "The screen-cha ~S is not part of the screen-row ~S"
-;	       SCREEN-CHA-TO-DELETE SELF))))
-
-;(DEFMETHOD DELETE-BETWEEN-SCREEN-CHAS ((SELF SCREEN-ROW) FROM-SCREEN-CHA TO-SCREEN-CHA)
-;  (CHECK-SCREEN-CHA-ARG FROM-SCREEN-CHA)
-;  (CHECK-SCREEN-CHA-ARG TO-SCREEN-CHA)
-;  (COND ((AND (EQ (SCREEN-ROW FROM-SCREEN-CHA) SELF)
-;	      (EQ (SCREEN-ROW TO-SCREEN-CHA) SELF))
-;	 (LET ((DELETED-SCREEN-CHAS (SELF-AND-NEXT-SCREEN-CHAS FROM-SCREEN-CHA)))
-;	   (SPLICE-BETWEEN-ITEMS-OUT-OF-LIST (SCREEN-CHAS SELF) FROM-SCREEN-CHA TO-SCREEN-CHA)
-;	   (DOLIST (DELETED-SCREEN-CHA DELETED-SCREEN-CHAS)
-;	     (SETF (SCREEN-ROW DELETED-SCREEN-CHA) NIL))))
-;	(T
-;	 ;; Oops..
-;	 (BARF "The screen-chas ~S and ~S are not both part of the screen row ~S"
-;	      FROM-SCREEN-CHA TO-SCREEN-CHA SELF))))
-
 (defmethod delete-screen-row ((self screen-box) screen-row-to-delete)
   (check-screen-row-arg screen-row-to-delete)
   (cond ((eq (screen-box screen-row-to-delete) self)
@@ -338,71 +170,6 @@ Modification History (most recent at top)
     (setf (screen-box row-to-delete) nil))
   (sv-delete-from-to (slot-value self 'screen-rows) from-row-no to-row-no))
 
-;(DEFMETHOD DELETE-BETWEEN-SCREEN-ROWS ((SELF SCREEN-BOX) FROM-SCREEN-ROW TO-SCREEN-ROW)
-;  (CHECK-SCREEN-ROW-ARG FROM-SCREEN-ROW)
-;  (CHECK-SCREEN-ROW-ARG TO-SCREEN-ROW)
-;  (COND ((AND (EQ (SCREEN-BOX FROM-SCREEN-ROW) SELF)
-;	      (EQ (SCREEN-BOX TO-SCREEN-ROW) SELF))
-;	 (LET ((DELETED-SCREEN-ROWS (SELF-AND-NEXT-SCREEN-ROWS FROM-SCREEN-ROW)))
-;	   (SPLICE-BETWEEN-ITEMS-OUT-OF-LIST (SCREEN-ROWS SELF) FROM-SCREEN-ROW TO-SCREEN-ROW)
-;	   (DOLIST (DELETED-SCREEN-ROW DELETED-SCREEN-ROWS)
-;	     (SETF (SCREEN-BOX DELETED-SCREEN-ROW) NIL))))
-;	(T
-;	 ;; Oops..
-;	 (BARF "The screen-rows ~S and ~S are not both part of the screen box ~S"
-;	      FROM-SCREEN-ROW TO-SCREEN-ROW SELF))))
-
-;;; Alias for the abstract :DELETE-SCREEN-OBJ methods.
-;(DEFMETHOD DELETE-SCREEN-OBJ ((SELF SCREEN-ROW) SCREEN-CHA-TO-DELETE)
-;  (CHECK-SCREEN-CHA-ARG SCREEN-CHA-TO-DELETE)
-;  (COND ((EQ (SCREEN-ROW SCREEN-CHA-TO-DELETE) SELF)
-;	 (SETF (SCREEN-ROW SCREEN-CHA-TO-DELETE) NIL)
-;	 (SPLICE-ITEM-OUT-OF-LIST (SCREEN-CHAS SELF) SCREEN-CHA-TO-DELETE))
-;	(T
-;	 ;; Oops..
-;	 (BARF "The screen-cha ~S is not part of the screen-row ~S"
-;	       SCREEN-CHA-TO-DELETE SELF))))
-;
-;(DEFMETHOD DELETE-BETWEEN-SCREEN-OBJS ((SELF SCREEN-ROW) FROM-SCREEN-CHA TO-SCREEN-CHA)
-;  (CHECK-SCREEN-CHA-ARG FROM-SCREEN-CHA)
-;  (CHECK-SCREEN-CHA-ARG TO-SCREEN-CHA)
-;  (COND ((AND (EQ (SCREEN-ROW FROM-SCREEN-CHA) SELF)
-;	      (EQ (SCREEN-ROW TO-SCREEN-CHA) SELF))
-;	 (LET ((DELETED-SCREEN-CHAS (SELF-AND-NEXT-SCREEN-CHAS FROM-SCREEN-CHA)))
-;	   (SPLICE-BETWEEN-ITEMS-OUT-OF-LIST (SCREEN-CHAS SELF) FROM-SCREEN-CHA TO-SCREEN-CHA)
-;	   (DOLIST (DELETED-SCREEN-CHA DELETED-SCREEN-CHAS)
-;	     (SETF (SCREEN-ROW DELETED-SCREEN-CHA) NIL))))
-;	(T
-;	 ;; Oops..
-;	 (BARF "The screen-chas ~S and ~S are not both part of the screen row ~S"
-;	      FROM-SCREEN-CHA TO-SCREEN-CHA SELF))))
-;
-;(DEFMETHOD DELETE-SCREEN-OBJ ((SELF SCREEN-BOX) SCREEN-ROW-TO-DELETE)
-;  (CHECK-SCREEN-ROW-ARG SCREEN-ROW-TO-DELETE)
-;  (COND ((EQ (SCREEN-BOX SCREEN-ROW-TO-DELETE) SELF)
-;	 (SETF (SCREEN-BOX SCREEN-ROW-TO-DELETE) NIL)
-;	 (SPLICE-ITEM-OUT-OF-LIST (SCREEN-ROWS SELF) SCREEN-ROW-TO-DELETE))
-;	(T
-;	 ;; Oops..
-;	 (BARF "The screen-row ~S is not part of the screen-box ~S"
-;	       SCREEN-ROW-TO-DELETE SELF))))
-;
-;(DEFMETHOD DELETE-BETWEEN-SCREEN-OBJS ((SELF SCREEN-BOX) FROM-SCREEN-ROW TO-SCREEN-ROW)
-;  (CHECK-SCREEN-ROW-ARG FROM-SCREEN-ROW)
-;  (CHECK-SCREEN-ROW-ARG TO-SCREEN-ROW)
-;  (COND ((AND (EQ (SCREEN-BOX FROM-SCREEN-ROW) SELF)
-;	      (EQ (SCREEN-BOX TO-SCREEN-ROW) SELF))
-;	 (LET ((DELETED-SCREEN-ROWS (SELF-AND-NEXT-SCREEN-ROWS FROM-SCREEN-ROW)))
-;	   (SPLICE-BETWEEN-ITEMS-OUT-OF-LIST (SCREEN-ROWS SELF) FROM-SCREEN-ROW TO-SCREEN-ROW)
-;	   (DOLIST (DELETED-SCREEN-ROW DELETED-SCREEN-ROWS)
-;	     (SETF (SCREEN-BOX DELETED-SCREEN-ROW) NIL))))
-;	(T
-;	 ;; Oops..
-;	 (BARF "The screen-rows ~S and ~S are not both part of the screen box ~S"
-;	      FROM-SCREEN-ROW TO-SCREEN-ROW SELF))))
-
-
-
 
 ;;;   :KILL-SCREEN-CHA <screen-cha>
 ;;;   :KILL-SCREEN-ROW <screen-row>
@@ -472,43 +239,8 @@ Modification History (most recent at top)
 	 (barf "The screen row ~S is not part of the screen box ~S"
 	       screen-row-to-kill self))))
 
-;;; Alias for the abstract :KILL-SCREEN-OBJ methods.
-;(DEFMETHOD KILL-SCREEN-OBJ ((SELF SCREEN-ROW) SCREEN-CHA-TO-KILL)
-;  (CHECK-SCREEN-CHA-ARG SCREEN-CHA-TO-KILL)
-;  (COND ((EQ (SCREEN-ROW SCREEN-CHA-TO-KILL) SELF)
-;	 (LET ((KILLED-SCREEN-CHAS (MEMBER SCREEN-CHA-TO-KILL (SCREEN-CHAS SELF))))
-;	   (DOLIST (KILLED-SCREEN-CHA KILLED-SCREEN-CHAS)
-;	     (WHEN (SCREEN-BOX? KILLED-SCREEN-CHA)
-;	       (SETF (SCREEN-ROW KILLED-SCREEN-CHA) NIL)))
-;	   (SPLICE-ITEM-AND-TAIL-OUT-OF-LIST (SCREEN-CHAS SELF) SCREEN-CHA-TO-KILL)))
-;	(T
-;	 ;; Oops..
-;	 (BARF "The screen cha ~S is not part of the screen row ~S"
-;	       SCREEN-CHA-TO-KILL SELF))))
-;
-;(DEFMETHOD KILL-SCREEN-OBJ ((SELF SCREEN-BOX) SCREEN-ROW-TO-KILL)
-;  (CHECK-SCREEN-ROW-ARG SCREEN-ROW-TO-KILL)
-;  (COND ((EQ (SCREEN-BOX SCREEN-ROW-TO-KILL) SELF)
-;	 (LET ((KILLED-SCREEN-ROWS (MEMBER SCREEN-ROW-TO-KILL (SCREEN-ROWS SELF))))
-;	   (DOLIST (KILLED-SCREEN-ROW KILLED-SCREEN-ROWS)
-;	     (SETF (SCREEN-BOX KILLED-SCREEN-ROW) NIL))
-;	   (SPLICE-ITEM-AND-TAIL-OUT-OF-LIST (SCREEN-ROWS SELF) SCREEN-ROW-TO-KILL)))
-;	(T
-;	 ;; Oops..
-;	 (BARF "The screen row ~S is not part of the screen box ~S"
-;	       SCREEN-ROW-TO-KILL SELF))))
-
 
 ;;; LOW-LEVEL screen-obj accessors. All of these do the obvious thing.
-#+lispm(compiler:make-obsolete SCREEN-OBJS-AT-AND-AFTER
-			       "Screen Object Inferiors are no longer lists !!")
-;(DEFMETHOD SCREEN-OBJS-AT-AND-AFTER ((SELF SCREEN-ROW) NO-OF-FIRST-OBJ)
-;  (NTHCDR NO-OF-FIRST-OBJ (SCREEN-CHAS SELF)))
-
-#+lispm(compiler:make-obsolete SCREEN-OBJS-AFTER
-			       "Screen Object Inferiors are no longer lists !!")
-;(DEFMETHOD SCREEN-OBJS-AFTER ((SELF SCREEN-ROW) NO-OF-FIRST-OBJ)
-;  (NTHCDR (+ 1 NO-OF-FIRST-OBJ) (SCREEN-CHAS SELF)))
 
 (defmethod screen-chas-length ((self screen-row))
   (storage-vector-active-length (slot-value self 'screen-chas)))
@@ -590,69 +322,6 @@ Modification History (most recent at top)
 (defmethod screen-sprite ((self sprite-screen-box))
   (screen-rows self))
 
-
-;;;obselete no one should be calling these;;;;;;;;;;;;;;;;
-#+lispm(compiler:make-obsolete NEXT-SCREEN-CHA
-			       "Screen Object Inferiors are no longer lists !!")
-;(DEFMETHOD NEXT-SCREEN-CHA ((SELF SCREEN-CHAR-SUBCLASS) )
-;  (CADR (SELF-AND-NEXT-SCREEN-CHAS SELF)))
-
-#+lispm(compiler:make-obsolete NEXT-SCREEN-CHAS
-			       "Screen Object Inferiors are no longer lists !!")
-;(DEFMETHOD NEXT-SCREEN-CHAS ((SELF SCREEN-CHAR-SUBCLASS) )
-;  (CDR (SELF-AND-NEXT-SCREEN-CHAS SELF)))
-
-#+lispm(compiler:make-obsolete SELF-AND-NEXT-SCREEN-CHAS
-			       "Screen Object Inferiors are no longer lists !!")
-;(DEFMETHOD SELF-AND-NEXT-SCREEN-CHAS ((SELF SCREEN-CHAR-SUBCLASS) )
-;  (MEMBER SELF (SCREEN-CHAS (SCREEN-ROW SELF))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-#+lispm(compiler:make-obsolete NEXT-SCREEN-OBJ
-			       "Screen Object Inferiors are no longer lists !!")
-;(DEFMETHOD NEXT-SCREEN-OBJ ((SELF SCREEN-CHAR-SUBCLASS))
-;  (CADR (SELF-AND-NEXT-SCREEN-CHAS SELF)))
-
-#+lispm(compiler:make-obsolete NEXT-SCREEN-OBJS
-			       "Screen Object Inferiors are no longer lists !!")
-;(DEFMETHOD NEXT-SCREEN-OBJS ((SELF SCREEN-CHAR-SUBCLASS))
-;  (CDR (SELF-AND-NEXT-SCREEN-CHAS SELF)))
-
-#+lispm(compiler:make-obsolete SELF-AND-NEXT-SCREEN-OBJS
-			       "Screen Object Inferiors are no longer lists !!")
-;(DEFMETHOD SELF-AND-NEXT-SCREEN-OBJS ((SELF SCREEN-CHAR-SUBCLASS))
-;  (MEMBER SELF (SCREEN-CHAS (SCREEN-ROW SELF))))
-
-#+lispm(compiler:make-obsolete NEXT-SCREEN-ROW
-			       "Screen Object Inferiors are no longer lists !!")
-;(DEFMETHOD NEXT-SCREEN-ROW ((SELF SCREEN-ROW))
-;  (CADR (SELF-AND-NEXT-SCREEN-ROWS SELF)))
-
-#+lispm(compiler:make-obsolete NEXT-SCREEN-ROWS
-			       "Screen Object Inferiors are no longer lists !!")
-;(DEFMETHOD NEXT-SCREEN-ROWS ((SELF SCREEN-ROW))
-;  (CDR (SELF-AND-NEXT-SCREEN-ROWS SELF)))
-
-#+lispm(compiler:make-obsolete SELF-AND-NEXT-SCREEN-ROWS
-			       "Screen Object Inferiors are no longer lists !!")
-;(DEFMETHOD SELF-AND-NEXT-SCREEN-ROWS ((SELF SCREEN-ROW) )
-;  (MEMBER SELF (SCREEN-ROWS (SCREEN-BOX SELF))))
-
-#+lispm(compiler:make-obsolete NEXT-SCREEN-OBJ
-			       "Screen Object Inferiors are no longer lists !!")
-;(DEFMETHOD NEXT-SCREEN-OBJ ((SELF SCREEN-ROW))
-;  (CADR (SELF-AND-NEXT-SCREEN-ROWS SELF)))
-
-#+lispm(compiler:make-obsolete NEXT-SCREEN-OBJS
-			       "Screen Object Inferiors are no longer lists !!")
-;(DEFMETHOD NEXT-SCREEN-OBJS ((SELF SCREEN-ROW))
-;  (CDR (SELF-AND-NEXT-SCREEN-ROWS SELF)))
-
-#+lispm(compiler:make-obsolete SELF-AND-NEXT-SCREEN-OBJS
-			       "Screen Object Inferiors are no longer lists !!")
-;(DEFMETHOD SELF-AND-NEXT-SCREEN-OBJS ((SELF SCREEN-ROW) )
-;  (MEMBER SELF (SCREEN-ROWS (SCREEN-BOX SELF))))
-
 (DEFMETHOD INFERIORS ((SCREEN-OBJ SCREEN-ROW))
   (SLOT-VALUE SCREEN-OBJ 'SCREEN-CHAS))
 (DEFMETHOD INFERIORS ((SCREEN-OBJ SCREEN-BOX))
@@ -695,22 +364,6 @@ Modification History (most recent at top)
 (defmethod set-offsets ((self screen-obj) new-x-offset new-y-offset)
   (setf (slot-value self 'x-offset) new-x-offset)
   (setf (slot-value self 'y-offset) new-y-offset))
-
-;;; Changing from/to SCREEN-BOXES and GRAPHICS-SCREEN-BOXES
-
-;(DEFMETHOD (SCREEN-BOX :BEFORE :SET-FLAVOR) (IGNORE)
-;  (DOLIST (SCR-ROW SCREEN-ROWS)
-;    (setf (SCREEN-BOX SCR-ROW) NIL)
-;    (DEALLOCATE-SELF SCR-ROW)
-;    (SETQ SCREEN-ROWS NIL)))
-;
-;(DEFMETHOD (GRAPHICS-SCREEN-BOX :BEFORE :SET-FLAVOR) (IGNORE)
-;  (LET ((GRAPHICS-SHEET (AND SCREEN-ROWS (GRAPHICS-SCREEN-SHEET-ACTUAL-OBJ SCREEN-ROWS))))
-;    (UNLESS (NULL GRAPHICS-SHEET)
-;      (SETF (GRAPHICS-SHEET-SCREEN-OBJS GRAPHICS-SHEET)
-;	    (DELETE (ASSOC SELF (GRAPHICS-SHEET-SCREEN-OBJS GRAPHICS-SHEET))
-;		  (GRAPHICS-SHEET-SCREEN-OBJS GRAPHICS-SHEET))))
-;    (SETQ SCREEN-ROWS NIL)))
 
 ;;; Methods that support the interaction between BP's and SCREEN BOXEs
 
