@@ -56,10 +56,6 @@ Modification History (most recent at top)
 
 (in-package :boxer)
 
-
-
-
-
 ;;;;KEY-NAMES
 
 ;;; This file defines :BOXER-FUNCTION names for the various keystrokes and
@@ -73,23 +69,13 @@ Modification History (most recent at top)
 ;;; BOXER key names, we use an array to look them up in. This is kind
 ;;; of like ZWEI.
 
-(defvar *initial-platform* #+mcl                                :mac
-                           #+(and macosx lispworks)             :lwm
-                           #+(and sun solaris)                  :sun-type-5
-                           #+(and sun (not solaris))            :sun-type-4
-                           #+dec                                :dec
-                           #+sgi                                :sgi
-                           #+lispm                              :lispm
+(defvar *initial-platform* #+(and macosx lispworks)             :lwm
                            #+win32                              :ibm-pc
-                           #-(or lispworks mcl sun dec sgi lispm win32) :default)
+                           #-(or lispworks win32) :default)
 
-(defconstant *key-name-lookup-array-size* #+(or sgi clx (and lispworks win32)) 230.
-	                                  #+TI 190.
-                                          #+MCL (+ 256
-						   (length
-						    *mcl-special-keycodes*))
+(defconstant *key-name-lookup-array-size* #+(and lispworks win32) 230.
                                           #+(and lispworks cocoa) 328
-					  #-(or lispworks sgi clx ti mcl) 170.
+					  #-lispworks 170.
   "For most implementations, this really ought to be based on char-code-limit")
 
 (defvar *key-names* nil
@@ -143,20 +129,10 @@ Modification History (most recent at top)
 	(t
 	 (error "~S is a completely unknown type of Boxer Input." key-code))))
 
-#|  This reverted back from my earlier changes.  Why?  --mt
-(defun lookup-key-name (key-code key-bits)
-  (and (>= key-code 0)
-       (<= key-code #+(or sgi clx) 224.  #+ti 189. #-(or sgi ti clx)  169.)
-       (>= key-bits 0)
-       (<= key-bits 15.)
-       (aref *key-names* key-code key-bits)))
-|#
 
 (defun lookup-key-name (key-code key-bits)
-  (and (array-in-bounds-p *key-names* key-code 0);; sgithens TODO key-bits)
-       (aref *key-names* key-code 0 ))) ; sgithens TODO key-bits)))
-
-
+  (and (array-in-bounds-p *key-names* key-code key-bits)
+       (aref *key-names* key-code key-bits )))
 
 
 (defun define-key-and-all-its-shifted-key-names (key-name key-code platform)
@@ -193,170 +169,16 @@ Modification History (most recent at top)
 
 ;;; Special Keys for each type of machine
 (defvar *keyboard-special-keys*
-	#+3600 '((BU::SPACE-KEY        #\SPACE)
-		 (BU::RETURN-KEY       #\RETURN)
-		 (BU::DELETE-KEY       #\RUBOUT)
-		 (BU::BREAK-KEY        #\BREAK)
-		 (BU::HELP-KEY         #\HELP)
-		 (BU::LINE-KEY         #\LINE)
-		 (BU::END-KEY          #\END)
-		 (BU::CLEAR-INPUT-KEY  #\CLEAR-INPUT)
-		 (BU::COMPLETE-KEY     #\COMPLETE)
-		 (BU::ESCAPE-KEY     #\ESCAPE)
-		 (BU::PAGE-KEY         #\PAGE)
-		 (BU::SQUARE-KEY       #\SQUARE)
-		 (BU::SCROLL-KEY       #\SCROLL)
-		 (BU::CIRCLE-KEY       #\CIRCLE)
-		 (BU::TRIANGLE-KEY     #\TRIANGLE))
-	#+TI   '((BU::SPACE-KEY        #\SPACE)
-		 (BU::RETURN-KEY       #\RETURN)
-		 (BU::DELETE-KEY       #\RUBOUT)
-		 (BU::BREAK-KEY        #\BREAK)
-		 (BU::HELP-KEY         #\HELP)
-		 (BU::LINE-KEY         #\LINE)
-		 (BU::UNDO-KEY         #\UNDO)
-		 (BU::ESCAPE-KEY       #\ESCAPE)
-		 (BU::QUOTE-KEY        #\QUOTE)
-		 (BU::F1-KEY           #\F1)
-		 (BU::F2-KEY           #\F2)
-		 (BU::F3-KEY           #\F3)
-		 (BU::F4-KEY           #\F4)
-		 (BU::STATUS-KEY       #\STATUS)
-		 (BU::CLEAR-SCREEN-KEY #\CLEAR-SCREEN))
-	#+CADR '((BU::SPACE-KEY        #\SPACE)
-		 (BU::RETURN-KEY       #\RETURN)
-		 (BU::DELETE-KEY       #\RUBOUT)
-		 (BU::BREAK-KEY        #\BREAK)
-		 (BU::HELP-KEY         #\HELP)
-		 (BU::LINE-KEY         #\LINE)
-		 (BU::END-KEY          #\END)
-		 (BU::CLEAR-INPUT-KEY  #\CLEAR-INPUT)
-		 (BU::ALTMODE-KEY      #\ALTMODE)
-		 (BU::ROMAN-I-KEY      #\ROMAN-I)
-		 (BU::ROMAN-II-KEY     #\ROMAN-II)
-		 (BU::ROMAN-III-KEY    #\ROMAN-III)
-		 (BU::ROMAN-IV-KEY     #\ROMAN-IV)
-		 (BU::STATUS-KEY       #\STATUS)
-		 (BU::CLEAR-SCREEN-KEY #\CLEAR-SCREEN)
-		 (BU::QUOTE-KEY        #\QUOTE)
-		 (BU::HAND-DOWN-KEY    #\HAND-DOWN)
-		 (BU::HAND-UP-KEY      #\HAND-UP)
-		 (BU::HAND-LEFT-KEY    #\HAND-LEFT)
-		 (BU::HAND-RIGHT-KEY   #\HAND-RIGHT))
-	#+lucid  '((BU::SPACE-KEY        #\SPACE)
-		   (BU::RETURN-KEY       #\RETURN)
-		   (BU::LINE-KEY         #\NEWLINE)
-		   (BU::DELETE-KEY       #\DELETE)
-		   (BU::ESCAPE-KEY     #\ESC))
-        ;;; +++ temp
-	#+excl '((BU::SPACE-KEY        #\SPACE)
-		 (BU::RETURN-KEY       #\RETURN)
-		 (BU::LINE-KEY         #\NEWLINE)
-		 (BU::DELETE-KEY       #\DELETE)
-		 (BU::ESCAPE-KEY       #\ESC))
-	#+mcl '((BU::SPACE-KEY        #\SPACE)
-                (BU::RETURN-KEY       #\RETURN)
-                (BU::DELETE-KEY       #\DELETE)
-                (BU::ESCAPE-KEY       #\ESC)
-                (BU::TAB-KEY          #\TAB))
-        #+lispworks '((BU::SPACE-KEY        #\SPACE)
-                  (BU::RETURN-KEY       #\RETURN)
-                  (BU::DELETE-KEY       #\DELETE)
-                  (BU::ESCAPE-KEY       #\ESC)
-                  (BU::TAB-KEY          #\TAB)))
+  '((BU::SPACE-KEY        #\SPACE)
+    (BU::RETURN-KEY       #\RETURN)
+    (BU::DELETE-KEY       #\DELETE)
+    (BU::ESCAPE-KEY       #\ESC)
+    (BU::TAB-KEY          #\TAB)))
 
 
 
 ;;; This is for specific window systems and keyboards that don't neccessarily
 ;;; have obvious char codes for particular names of keys.
-
-(defvar *sun-keyboard-key-name-code-alist*
-  '((bu::F1-key 190.) (bu::F2-key 191.) (bu::F3-key 192.)
-    (bu::F4-key 193.) (bu::F5-key 194.) (bu::F6-key 195.)
-    (bu::F7-key 196.) (bu::F8-key 197.) (bu::F9-key 198.)
-    (bu::F10-key 199.)
-
-    (bu::L1-key 200.) (bu::L2-key 201.) (bu::L3-key 202.)
-    (bu::L4-key 203.) (bu::L5-key 204.) (bu::L6-key 205.)
-    (bu::L7-key 206.) (bu::L8-key 207.) (bu::L9-key 208.)
-    (bu::L10-key 209.)
-
-    (bu::R1-key 210) (bu::R2-key 211) (bu::R3-key 212)
-    (bu::R4-key 213) (bu::R5-key 214) (bu::R6-key 215)
-    (bu::R7-key 216) (bu::UP-ARROW-key 217) (bu::R9-key 218)
-
-    (bu::LEFT-ARROW-key 219) (bu::R11-key 220) (bu::RIGHT-ARROW-key 221)
-    (bu::R13-key 222) (bu::DOWN-ARROW-key 223) (bu::R15-key 224)
-
-    ;; extra Type 4 keyboard chars
-    (bu::help-key 225.) (bu::INS-key 226) (bu::Compose-key 227)))
-
-(defvar *sun-type-5-keyboard-key-name-code-alist*
-  '((bu::F1-key 190.) (bu::F2-key 191.) (bu::F3-key 192.)
-    (bu::F4-key 193.) (bu::F5-key 194.) (bu::F6-key 195.)
-    (bu::F7-key 196.) (bu::F8-key 197.) (bu::F9-key 198.)
-    (bu::F10-key 199.)
-
-    (bu::STOP-key 200.) (bu::AGAIN-key 201.) (bu::PROPS-key 202.)
-    (bu::UNDO-key 203.) (bu::FRONT-key 204.) (bu::COPY-key 205.)
-    (bu::OPEN-key 206.) (bu::PASTE-key 207.) (bu::FIND-key 208.)
-    (bu::CUT-key 209.)
-
-    (bu::R1-key 210) (bu::R2-key 211) (bu::R3-key 212)
-    (bu::R4-key 213) (bu::enter-key 214) (bu::R6-key 215)
-    (bu::R7-key 216) (bu::UP-ARROW-key 217) (bu::R9-key 218)
-
-    (bu::LEFT-ARROW-key 219) (bu::R11-key 220) (bu::RIGHT-ARROW-key 221)
-    (bu::R13-key 222) (bu::DOWN-ARROW-key 223) (bu::R15-key 224)
-
-    ;; extra Type 4 keyboard chars
-    (bu::help-key 225.) (bu::INS-key 226) (bu::Compose-key 227)))
-
-(defvar *dec-keyboard-key-name-code-alist*
-   '((bu::F1-key 190.) (bu::F2-key 191.) (bu::F3-key 192.)
-    (bu::F4-key 193.) (bu::F5-key 194.) (bu::F6-key 195.)
-    (bu::F7-key 196.) (bu::F8-key 197.) (bu::F9-key 198.)
-    (bu::F10-key 199.)
-
-    (bu::F11-key 200.) (bu::F12-key 201.) (bu::F13-key 202.)
-    (bu::F14-key 203.) (bu::HELP-key 204.) (bu::DO-key 205.)
-    (bu::F17-key 206.) (bu::F18-key 207.) (bu::F19-key 208.)
-    (bu::F20-key 209.)
-
-    (bu::PF1-key 210) (bu::PF2-key 211) (bu::PF3-key 212) (bu::PF4-key 213)
-    (bu::ENTER-key 214)
-
-    (bu::Prev-Screen-key 215) (bu::Next-Screen-key 216)
-
-    (bu::UP-ARROW-key 217)
-    (bu::Find-key 218)
-    (bu::LEFT-ARROW-key 219)
-    (bu::Insert-Here-key 220)
-    (bu::RIGHT-ARROW-key 221)
-    (bu::Select-key 222)
-    (bu::DOWN-ARROW-key 223)
-    (bu::Remove-key 224))
-  )
-
-;;; this is for using the SGI Iris as an X11 server
-(defvar *sgi-clx-keyboard-key-name-code-alist*
-  '((bu::F1-key 190.) (bu::F2-key 191.) (bu::F3-key 192.)
-    (bu::F4-key 193.) (bu::F5-key 194.) (bu::F6-key 195.)
-    (bu::F7-key 196.) (bu::F8-key 197.) (bu::F9-key 198.)
-    (bu::F10-key 199.) (bu::F11-key 200.) (bu::F12-key 201.)
-
-
-    (bu::PF1-key 210) (bu::PF2-key 211) (bu::PF3-key 212) (bu::PF4-key 213)
-    (bu::ENTER-key 214)
-
-    (bu::Prev-Screen-key 215) (bu::Next-Screen-key 216)
-
-    (bu::UP-ARROW-key 217)
-    (bu::LEFT-ARROW-key 219)
-    (bu::RIGHT-ARROW-key 221)
-    (bu::DOWN-ARROW-key 223))
-  )
-
 
 ;; the *mcl-special-keycodes* var is defined in the "keydef-mcl.lisp" file
 (defvar *mac-keyboard-key-name-alist*
@@ -410,37 +232,6 @@ Modification History (most recent at top)
     ("CTRL" "META" "CTRL-META")
     ("LEFT" "MIDDLE" "RIGHT" "LEFT-TWICE" "MIDDLE-TWICE" "RIGHT-TWICE")
     nil)
-
-  (define-input-devices :lispm
-    ("CTRL" "META" "CTRL-META") ; what about Hyper and Super ?
-    ("LEFT" "MIDDLE" "RIGHT" "LEFT-TWICE" "MIDDLE-TWICE" "RIGHT-TWICE")
-    nil)
-
-  (define-input-devices :sun-type-4
-    ("CTRL" "META" "CTRL-META")
-    ("LEFT" "MIDDLE" "RIGHT" "LEFT-TWICE" "MIDDLE-TWICE" "RIGHT-TWICE")
-    *sun-keyboard-key-name-code-alist*)
-
-  (define-input-devices :sun-type-5
-    ("CTRL" "META" "CTRL-META")
-    ("LEFT" "MIDDLE" "RIGHT" "LEFT-TWICE" "MIDDLE-TWICE" "RIGHT-TWICE")
-    *sun-type-5-keyboard-key-name-code-alist*)
-
-  ;; let the default be the same as type-4
-  (define-input-devices :sun
-    ("CTRL" "META" "CTRL-META")
-    ("LEFT" "MIDDLE" "RIGHT" "LEFT-TWICE" "MIDDLE-TWICE" "RIGHT-TWICE")
-    *sun-keyboard-key-name-code-alist*)
-
-  (define-input-devices :dec
-    ("CTRL" "META" "CTRL-META")
-    ("LEFT" "MIDDLE" "RIGHT" "LEFT-TWICE" "MIDDLE-TWICE" "RIGHT-TWICE")
-    *dec-keyboard-key-name-code-alist*)
-
-  (define-input-devices :sgi
-    ("CTRL" "META" "CTRL-META")
-    ("LEFT" "MIDDLE" "RIGHT" "LEFT-TWICE" "MIDDLE-TWICE" "RIGHT-TWICE")
-    *sgi-clx-keyboard-key-name-code-alist*)
 
   (define-input-devices :mac
     ("COMMAND" "OPTION" "COMMAND-OPTION")
@@ -824,21 +615,15 @@ Modification History (most recent at top)
     (COND ((key-event? input)
            ;; Some sort of  key code. Try to lookup a name for it. If it
            ;; has a name call boxer-eval:handle-boxer-key with the name.
-           (let ((key-name (lookup-key-name #+(or lispworks mcl)
-                                            (if (numberp input)
+           (let ((key-name (lookup-key-name (if (numberp input)
                                               input
                                               (char-code input))
-                                            #-(or lispworks mcl)
-                                            (char-code input)
                                             (or bits (input-bits input)))))
              (record-key-input input (or bits (input-bits input)))
              (if (or (null key-name)
                      (not (handle-boxer-key key-name
-                                            #+(or lispworks mcl)
                                             (if (numberp input) input
                                               (char-code input))
-                                            #-(or lispworks mcl)
-                                            (char-code input)
                                             (or bits (input-bits input)))))
                (unhandled-boxer-input key-name))))
           ((mouse-event? input)
