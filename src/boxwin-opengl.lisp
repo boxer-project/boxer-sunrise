@@ -462,10 +462,7 @@ Modification History (most recent at top)
                               ;((:key :press)  boxer-key-handler)
                               ;((#\. :control :press) boxer-abort-handler)
                               ;((#\g :control :press) boxer-abort-handler)
-                              #+cocoa
-                              (:gesture-spec gesture-spec-handler)
-                              #-cocoa
-                              (:character boxer-key-handler))
+                              (:gesture-spec gesture-spec-handler))
                :display-callback 'boxer-expose-window-handler
                :resize-callback 'resize-handler
                :visible-min-width  *boxer-pane-minimum-width*
@@ -744,32 +741,6 @@ Modification History (most recent at top)
     (unless (capi:prompt-for-confirmation "Invalid License Key, Try again ?")
       (lw::quit))))
 
-
-#| ;; old hardcoded expiration
-(defun window-system-specific-start-boxer ()
-  (cond ((not (null *expiration-date*))
-         (if (> (get-universal-time) *expiration-date*)
-             (expired-notification-quit)
-           (window-system-specific-start-boxer-1)))
-        ((boxer::valid-boxer-license?)
-         (window-system-specific-start-boxer-1))
-        ((capi::prompt-for-confirmation
-          "A valid License Key was not found for this machine.  Do you want to enter one now ?")
-         ;; try and get a valid license
-         (do ((keystring (boxer::boxer-license-dialog)
-                         (boxer::boxer-license-dialog)))
-             ((when (not (null keystring))
-                (let ((ln (read-from-string keystring nil nil)))
-                  (and (numberp ln) (boxer::valid-license-number ln))))
-              (boxer::set-boxer-license-key keystring)
-              (window-system-specific-start-boxer-1))
-           ;; bad entry prompt for try more tries
-           (unless (capi:prompt-for-confirmation
-                    "Invalid License Key, Try again ?")
-             (lw::quit :ignore-errors-p T))))
-        (t (lw::quit :ignore-errors-p t))))
-|#
-
 (defun window-system-specific-start-boxer-1 ()
   (let ((boot-start-time (get-internal-real-time))
         (progress-bar (make-instance 'load-progress-frame)))
@@ -886,36 +857,6 @@ Modification History (most recent at top)
                      ("to boxer-init.box"))))
 
 
-#|
-(defun window-system-specific-start-boxer ()
-  (when (boxer::box? *old-world*)
-    (setf (boxer::slot-value *old-world* 'boxer::screen-objs) nil))
-  (setq boxer-eval::*current-process* nil)
-  (setq *old-world* boxer::*initial-box*)
-  (capi:display *boxer-frame*)
-  (boxer::fill-bootstrapped-font-caches)
-  (run-redisplay-inits)
-  (fixup-menus)
-  ;; move to inits
-  (let ((gs (gp::get-graphics-state *boxer-pane*)))
-    (setf (gp::graphics-state-foreground gs) boxer::*foreground-color*))
-  (setq *expose-window-handler-function* 'expose-window-function)
-  (setup-editor *old-world*)
-  (boxer-eval::setup-evaluator)
-  (unless boxer::*boxer-version-info*
-    (setq boxer::*boxer-version-info*
-          (format nil "~:(~A~) Boxer" (machine-instance))))
-  (set-cursor-visibility *point-blinker* t)
-  ;(boxer::load-boxer-extensions)
-    ;; load prefs if they exists
-  (let ((pf (boxer::default-lw-pref-file-name)))
-    (when (and pf (probe-file pf))
-      (boxer::handle-preference-initializations pf)))
-;; wait a sec
-   (boxer-process-top-level-fn *boxer-pane*)
-  )
-|#
-
 ;;; We would like to make the editor somewhat reentrant for things like
 ;;; recursive edit levels this allows us to do things like call the
 ;;; evaluator inside of an INPUT box
@@ -1027,6 +968,16 @@ Modification History (most recent at top)
                  (mp::process-wait "Boxer Input"
                                    #'(lambda ()
                                        (not (null (car *boxer-eval-queue*)))))))
+              ((system:gesture-spec-p input)
+               ;; We are adding this gesture condition in addition to the key-event? because at some point
+               ;; during a lispworks major version change, the ability to encode the modifier keys as part of
+               ;; the reader char seems to have gone away.  By adding an option to push an entire gesture-spec
+               ;; to the *boxer-eval-queue* we can just manually pick out the char-code and input bits.
+               (let* ((data (sys::gesture-spec-data input))
+                      (charcode (input-gesture->char-code input))
+                      (charbits (convert-gesture-spec-modifier input)))
+                     (handle-boxer-input charcode charbits)
+                     (setq just-redisplayed? nil)))
               ((key-event? input)
                (handle-boxer-input (input-code input) (input-bits input))
                (setq just-redisplayed? nil))
@@ -1511,34 +1462,18 @@ Modification History (most recent at top)
 
 ;; the main key handler
 
-(defun boxer-key-handler (w x y char)
-  (declare (ignore w x y))
-  ;; reset any popup docs...
-  (next-event-id)
-  (undocument-mouse)
-  (save-key char)
-  (cond ((abort-event? char)
-         (if (or boxer::*evaluation-in-progress?*
-                 boxer-eval::*enable-interrupt-polling-in-editor*)
-             (boxer-interrupt)
-           (queue-event (input-char->key-event char))))
-        (t (queue-event (input-char->key-event char)))))
-
-#+cocoa
 (defun gesture-spec-handler (w x y gesture)
   (declare (ignore w x y))
   ;; reset any popup docs...
   (next-event-id)
   (undocument-mouse)
   (save-key gesture)
-;  (handle-boxer-input (sys::gesture-spec-data gesture) (gesture-spec-modifier gesture))
-;  (redisplay)
   (cond ((abort-gesture? gesture)
          (if (or boxer::*evaluation-in-progress?*
                  boxer-eval::*enable-interrupt-polling-in-editor*)
              (boxer-interrupt)
-           (queue-event (input-gesture->key-event gesture))))
-        (t (queue-event (input-gesture->key-event gesture))))
+           (queue-event gesture)))
+        (t (queue-event gesture)))
   )
 
 (defun get-boxer-input (&optional (window *boxer-pane*))
@@ -2107,35 +2042,3 @@ Modification History (most recent at top)
             (*standard-output* stream)
             (*debug-io* stream))
         (write-crash-report-internal stream)))))
-
-#|
-;; foofah
-(defun test-button-handler (int x y)
-  (declare (ignore int)) (format t "(~D, ~D)  " x y))
-
-(define-interface TEST ()
-    ()
-  (:panes
-   (test-pane output-pane
-              :input-model '(((:button-1 :press) test-button-handler)
-                             (:character boxer-key-handler))
-              ))
-  (:menus
-   (file-menu "File" ((:component
-                       (("New	Ctrl-N" :callback 'new-file-box)
-                        ("Open	Ctrl-O" :callback 'open-file)
-                        ("Close	Alt-C" :callback 'close-file-box)))
-                      (:component
-                       (("Save" :callback 'save-document
-                                :enabled-function 'save-menu-item-enabled-function)
-                        ("Save As...	Alt-S" :callback 'save-document-as)
-                        ("Save Box As...	Ctrl-Z" :callback 'save-box-as)))
-                      (:component
-                       ("Link to Windows File" "Print"))
-                      ("Quit" :callback 'lw-quit))))
-  (:menu-bar  file-menu)
-  (:default-initargs :title "testing..."
-   :width 300 :height 200))
-
-
-|#
