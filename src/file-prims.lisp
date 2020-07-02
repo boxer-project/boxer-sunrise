@@ -229,21 +229,6 @@ Modification History (most recent at top)
 
 
 ;; this is used to catch pathnames which won't even parse
-#+lucid
-(defun check-valid-filename-for-primitive (filename &optional
-                                                    defaults allow-wild)
-  (declare (ignore allow-wild))
-  (let ((checked-pathname
-	 (catch 'bad-name
-	   (lcl::handler-bind ((lcl::file-error #'(lambda (c)
-						    (throw 'bad-name c))))
-			      (if (null defaults)
-				  (pathname filename)
-				  (merge-pathnames filename defaults))))))
-    (if (pathnamep checked-pathname) checked-pathname
-	(boxer-eval::primitive-signal-error :file-error
-				      (lucid::file-not-found-error-osi-message
-				       checked-pathname)))))
 
 (defun quote-wild-char (string quote-char)
   (let* ((slength (length string))
@@ -256,27 +241,6 @@ Modification History (most recent at top)
         (vector-push-extend char return-string)))
     return-string))
 
-#+mcl
-(defun check-valid-filename-for-primitive (filename &optional
-                                                    defaults allow-wild)
-  (cond ((pathnamep filename)
-         ;; If it is already a pathname leave it alone (this can happen if
-         ;; the pathname has been returned from ccl::choose-file-dialog)
-         filename)
-        (t
-         (ignore-errors
-           (when (and (not allow-wild) (find #\* filename :test #'char=))
-             (setq filename (quote-wild-char filename #\�)))
-           (let ((basic (if (null defaults)
-                            (pathname filename)
-                          (merge-pathnames filename defaults))))
-             (if (null (pathname-type basic))
-                 ;; probe-file seems to care about the diference between a
-                 ;; type of NIL and :unspecific
-                 (make-pathname :defaults basic :type :unspecific)
-               basic))))))
-
-#+lispworks
 (defun check-valid-filename-for-primitive (filename &optional
                                                     defaults allow-wild)
   (declare (ignore allow-wild))
@@ -288,15 +252,6 @@ Modification History (most recent at top)
              (if (null defaults)
                  (pathname filename)
                (merge-pathnames filename defaults))))))
-
-#-(or mcl lucid lispworks)
-(defun check-valid-filename-for-primitive (filename &optional defaults)
-  (if (null defaults) (pathname filename) (merge-pathnames filename defaults)))
-
-;; the mac version blows out if the file is not there
-#+mcl
-(defun boxer::file-write-date (filename)
-  (when (probe-file filename) (lisp::file-write-date filename)))
 
 ;; tries to be smart about file type
 (defun save-generic (box filename &key format read-only? always-save?)
@@ -582,11 +537,6 @@ Modification History (most recent at top)
                                 (read-text-file-internal pathname))))
                         (t
                          (funcall special-file-reader-function pathname))))))
-      #+mcl
-      (when (ccl::file-locked-p pathname)
-        (boxer-editor-warning
-         "The file, ~A, is locked.  You must unlock it to save changes"
-         (pathname-name pathname)))
       box)
     ;; now handle file stickyness if we want to
     (unless (null *sticky-file-defaulting?*)
