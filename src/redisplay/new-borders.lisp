@@ -749,14 +749,6 @@ Modification History (most recent at top)
 ;;; supershrunk stuff
 ;;; just draw the 4 corners & surround with a box?
 
-#-opengl
-(defun default-character-height ()
-  (with-drawing-port *boxer-pane*
-    (with-font-map-bound (*boxer-pane*)
-      (rebind-font-info (#+(or lispworks mcl) *default-font* #-(or lispworks mcl) 0)
-        (cha-hei)))))
-
-#+opengl
 (defun default-character-height ()
   (rebind-font-info (*default-font*) (cha-hei)))
 
