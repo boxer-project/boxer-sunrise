@@ -373,15 +373,6 @@ Modification History (most recent at the top)
   (do-vector-contents (obj sv :start start :stop stop)
     (unless (screen-cha? obj)
       (queue-screen-obj-for-deallocation obj))))
-
-
-#+lispm
-(compiler:make-obsolete QUEUE-SCREEN-OBJS-FOR-DEALLOCATION
-			"Inferiors of Screen Objects are not lists anymore !!")
-;(DEFUN QUEUE-SCREEN-OBJS-FOR-DEALLOCATION (SCREEN-OBJS)
-;  (DECLARE (SPECIAL SCREEN-OBJS-DEALLOCATION-QUEUE))
-;    (SPLICE-LIST-ONTO-LIST SCREEN-OBJS-DEALLOCATION-QUEUE SCREEN-OBJS))
-
 
 (defun screen-obj-offsets (screen-obj)
   (values (screen-obj-x-offset screen-obj)
@@ -395,19 +386,6 @@ Modification History (most recent at the top)
   (values (screen-obj-wid screen-obj)
 	  (screen-obj-hei screen-obj)))
 
-#+lispm(compiler:make-obsolete SCREEN-OBJS-SIZE
-			       "Screen object inferiors are no longer lists !!")
-;(DEFUN SCREEN-OBJS-SIZE (SCREEN-OBJS &AUX (WID 0) (HEI 0))
-;  (COND ((SCREEN-CHA? (CAR SCREEN-OBJS))
-;	 (DOLIST (SCREEN-CHA SCREEN-OBJS)
-;	   (SETQ WID (+ WID (SCREEN-OBJ-WID SCREEN-CHA))
-;		 HEI (MAX HEI (SCREEN-OBJ-HEI SCREEN-CHA)))))
-;	(T
-;	 (DOLIST (SCREEN-ROW SCREEN-OBJS)
-;	   (SETQ WID (MAX WID (SCREEN-OBJ-WID SCREEN-ROW))
-;		 HEI (+ HEI (SCREEN-OBJ-HEI SCREEN-ROW))))))
-;  (VALUES WID HEI))
-
 (DEFUN SCREEN-BOXES-AND-WHITESPACE-SIZE (SCREEN-BOXES &AUX(WID 0) (HEI 0))
   (LET ((FIRST-BOX (CAR SCREEN-BOXES))
 	(LAST-BOX (CAR (LAST SCREEN-BOXES))))
@@ -416,22 +394,6 @@ Modification History (most recent at the top)
     (DOLIST (SCREEN-BOX SCREEN-BOXES)
       (SETQ HEI (MAX (SCREEN-OBJ-HEI SCREEN-BOX) HEI)))
     (VALUES WID HEI)))
-
-#+lispm(compiler:make-obsolete SCREEN-OBJS-WID
-			       "Screen object inferiors are no longer lists !!")
-;(DEFUN SCREEN-OBJS-WID (SCREEN-OBJS)
-;  (SCREEN-OBJS-SIZE SCREEN-OBJS))
-
-#+lispm(compiler:make-obsolete SCREEN-OBJS-HEI
-			       "Screen object inferiors are no longer lists !!")
-;(DEFUN SCREEN-OBJS-HEI (SCREEN-OBJS)
-;  (MULTIPLE-VALUE-BIND (WID HEI) (SCREEN-OBJS-SIZE SCREEN-OBJS) HEI))
-
-;(DEFUN SCREEN-OBJS-NEXT-SCREEN-OBJ-DELTA-OFFSETS-WHEN-ERASED (SCREEN-OBJS)
-;  (IF (SCREEN-CHA? (CAR SCREEN-OBJS))
-;      (VALUES (SCREEN-OBJS-WID SCREEN-OBJS) 0)
-;      (VALUES 0 (SCREEN-OBJS-HEI SCREEN-OBJS))))
-
 
 (DEFUN MAP-OVER-SCREEN-OBJ (SCREEN-OBJ FN)
   (FUNCALL FN SCREEN-OBJ)
@@ -579,36 +541,6 @@ Modification History (most recent at the top)
 	((eq (sr-rdp1-info-no-of-chas  info)
 	     'to-eol))))
 
-
-
-#+lispm(compiler:make-obsolete ERASE-SCREEN-OBJS
-			       "Screen Object Inferiors are no longer lists !!")
-;(DEFUN ERASE-SCREEN-OBJS (SCREEN-OBJS)
-;  (WHEN (NOT-NULL SCREEN-OBJS)
-;    (CHECK-SCREEN-OBJ-ARG (FIRST SCREEN-OBJS))
-;    (MULTIPLE-VALUE-BIND (WID HEI)
-;	(SCREEN-OBJS-SIZE SCREEN-OBJS)
-;      (MULTIPLE-VALUE-BIND (X-OFFSET Y-OFFSET)
-;	  (SCREEN-OBJ-OFFSETS (CAR SCREEN-OBJS))
-;	(DRAW-RECTANGLE ALU-ANDCA WID HEI X-OFFSET Y-OFFSET)
-;	(DOLIST (SCREEN-OBJ SCREEN-OBJS)
-;	  (SCREEN-OBJ-ZERO-SIZE SCREEN-OBJ)
-;	  (SET-NEEDS-REDISPLAY-PASS-2? SCREEN-OBJ T)
-;	  (SET-FORCE-REDISPLAY-INFS? SCREEN-OBJ T))))))
-
-#+lispm(compiler:make-obsolete MOVE-SCREEN-OBJS
-			       "Screen Object Inferiors are no longer lists !!")
-;(DEFUN MOVE-SCREEN-OBJS (SCREEN-OBJS DELTA-X DELTA-Y)
-;  (WHEN (NOT-NULL SCREEN-OBJS)
-;    (CHECK-SCREEN-OBJ-ARG (FIRST SCREEN-OBJS))
-;    (MULTIPLE-VALUE-BIND (WID HEI)
-;	(SCREEN-OBJS-SIZE SCREEN-OBJS)
-;      (MULTIPLE-VALUE-BIND (X-OFFSET Y-OFFSET)
-;	  (SCREEN-OBJ-OFFSETS (CAR SCREEN-OBJS))
-;	(BITBLT-MOVE-REGION WID HEI X-OFFSET Y-OFFSET DELTA-X DELTA-Y)
-;	(DOLIST (SCREEN-OBJ SCREEN-OBJS)
-;	  (INCF (SCREEN-OBJ-X-OFFSET SCREEN-OBJ) DELTA-X)
-;	  (INCF (SCREEN-OBJ-Y-OFFSET SCREEN-OBJ) DELTA-Y))))))
 
 ;;; this cycles through the contents of the storage vector
 ;;; starting from FROM and erases them an queues them for deallocation
@@ -1247,12 +1179,6 @@ Modification History (most recent at the top)
 	(APPLY HANDLER TYPE ARGS)
 	(BARF "~S is an unknown type of redisplay-clue." TYPE))))
 
-#-(or lucid mcl lispworks)
-(defun (:property :clear-screen :redisplay-clue) (&rest ignore)
-  (declare (ignore ignore))
-  (push '(:clear-screen) *redisplay-clues*))
-
-#+(or lucid mcl lispworks)
 (setf (get ':clear-screen ':redisplay-clue)
       #'(lambda (&rest ignore)
 	  (declare (ignore ignore))
