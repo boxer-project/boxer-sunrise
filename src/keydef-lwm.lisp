@@ -24,7 +24,7 @@ implementation specific key event.  This is usually a character object or a
 fixnum with defined fields.
 
 The raw key event is then encoded into an intermediate form by the key event
-handler, usually by calling on functioned defined in this file.  For a properly
+handler, usually by calling on functions defined in this file.  For a properly
 well formed domain of raw key events, no encoding may be neccessary.  This boxer
 specific form has the requirement that we be able to extract a unique character
 code and character bits for each possible key event.  CHARACTERS with shift bits
@@ -199,29 +199,36 @@ Modification History (most recent at top)
 
 ;; the external interface (from boxwin)
 ;; the key-handler in boxwin-lw uses this to generate the correct input event
-(defun input-char->key-event (char)
-  (if (remap-char? char) (remap-char char) char))
 
-;; gesture modifiers are:
-;; 1 = SHIFT, 2 = CONTROL, 4 = META, 8 = HYPER (the apple command key)
 (defun convert-gesture-spec-modifier (gesture)
+  "This takes a gesture-spec, looks at the modifiers field on it and converts them to the
+  internal boxer codes for modifier keys.
+  The gesture-spec modifiers are:
+      1 = SHIFT, 2 = CONTROL, 4 = META, 8 = HYPER (the apple command key)
+  The internal codes we use in boxer are:
+      0 = Plain Key, 1 = COMMAND, 2 = OPTION, 3 = COMMAND-OPTION
+      (translating Command and Option to your modern OS key equivalents. Most likely
+      Ctrl and Alt)
+  "
   (let ((rawgm (sys:gesture-spec-modifiers gesture)))
     ;; effectively ignoring the shift bit, but keeping the hyper bit distinct
     ;(ash rawgm -1)
     ;; we could convert the command key to control here....
-    ;; lookup table is fastest
+    ;; lookup table is fastest, we can bit shift the gesture modifiers since they are
+    ;; specified in powers of two
     (svref #(0 1 2 3 1 1 2 3) (ash rawgm -1))
     ))
 
-(defun input-gesture->key-event (gesture)
+(defun input-gesture->char-code (gesture)
+  "This function takes a gesture-spec structure, looks at it's data field and returns
+  the character code from the data bit.
+  For resolution of the modifiers, see `convert-gesture-spec-modifier` which converts the
+  gesture spec to boxers internal mapping of modifier keys."
   (let ((data (sys::gesture-spec-data gesture)))
     (cond ((numberp data)
-           (boxer::make-char (code-char data) (convert-gesture-spec-modifier gesture)))
-          ((symbolp data)
+           (code-char data))
+          ((symbolp data) ;; TODO sgithens, when does this have a symbol for data and how to handle it in boxer-command-loop-internal
            (let ((ccode (boxer-code-from-gspec-symbol data)))
              (cond ((null ccode) ; gak!
                     (error "Can't convert ~S to input character" data))
-                   (t (boxer::make-char (code-char ccode)
-                                        (convert-gesture-spec-modifier gesture)))))))))
-
-
+                   (t (code-char ccode))))))))
