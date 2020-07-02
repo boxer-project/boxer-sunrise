@@ -829,10 +829,6 @@ Modification History (most recent at top)
 ;; which makes them unsuitable for encoding inut keyboard events
 ;; instead, we slam the event modifier bits into the top word
 ;; of the event message bits
-#-(or opengl lwwin mcl)
-(defun key-event? (event) (characterp event))
-
-#+(or opengl lwwin mcl)
 (defun key-event? (event) (or (characterp event) (numberp event)))
 
 (defun input-code (key-event)
