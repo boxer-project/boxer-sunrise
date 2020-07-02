@@ -463,10 +463,6 @@ Modification History (most recent at the top)
 (defvar *initial-graphics-state-current-font-no* *sprite-type-font-no*)
 (defvar *initial-graphics-state-current-pen-color* *foreground-color*)
 
-#+lwwin
-(def-redisplay-initialization
- (setq *initial-graphics-state-current-pen-color* *foreground-color*))
-
 ;;;; COLOR
 
 (defstruct (boxer-color :named (:type vector)
@@ -3038,45 +3034,6 @@ Modification History (most recent at the top)
       (playback-graphics-list-internal
        (graphics-sheet-graphics-list boxtop)))))
 
-#+(and mcl (not carbon-compat))
-(defun draw-file-boxtop (boxtop x y wid)
-  (let* ((ic (ccl::file-icon :boxr :boxr))
-         (horiz-fudge (floor (-& wid 32) 2)))
-    (cond ((not (null ic))
-           ;; if there is a mac icon, prefer it...
-           (%bitblt-to-screen alu-seta 32 32 ic 0 0 (+& x horiz-fudge) y))
-          (t (draw-rectangle alu-seta 32 32 (+& x horiz-fudge) y)))
-    ;; and now, the name
-    (draw-string alu-seta *boxtop-text-font* boxtop
-                 (+& x *file-boxtop-name-margin*) (+& y 32))))
-
-#+(and mcl carbon-compat)
-(defun draw-file-boxtop (boxtop x y wid)
-  (let ((horiz-offset (floor (- wid 32) 2))
-        (icr (get-iconref :boxr :boxr)))
-    (cond ((iconref? icr)
-           (draw-iconref icr (+ x horiz-offset) y))
-          (t (draw-rectangle alu-seta 32 32 (+ x horiz-offset) y)))
-    ;; now, the name
-    (draw-string alu-seta *boxtop-text-font* boxtop x (+ y 32))))
-
-;; this is supposed to draw a boxer file icon, for now, just do a rect
-#+lwwin
-(defun draw-file-boxtop (boxtop x y wid)
-  (let ((horiz-offset (floor (- wid 32) 2))
-        (iv (icon-value ".box")))
-    (cond ((or (null iv) (zerop *windows-draw-icon-options*))
-           (draw-folder-boxtop boxtop x y))
-          (t
-           (cond ((and (zerop iv) (not (null *boxer-file-icon-image*)))
-                  (draw-file-icon-image (+ x horiz-offset) y))
-                 ((not (zerop iv))
-                  (draw-icon iv (+ x horiz-offset) y))
-                 (t (draw-rectangle alu-seta 32 32 (+ x horiz-offset) y)))
-           ;; now, the name
-           (draw-string alu-seta *boxtop-text-font* boxtop x (+ y 32))))))
-
-#-(or mcl lwwin)
 (defun draw-file-boxtop (boxtop x y wid)
   (let ((horiz-offset (floor (- wid 32) 2)))
     (draw-rectangle alu-seta 32 32 (+ x horiz-offset) y)
