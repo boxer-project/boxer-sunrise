@@ -36,3 +36,4 @@
 (load (merge-pathnames "run-tests.lisp" *boxer-project-dir*))
 (boxer-window::window-system-specific-make-boxer)
 (boxer-window::window-system-specific-start-boxer-1)
+(boxer-window::font-size-menu-action 3 nil)
