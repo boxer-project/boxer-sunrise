@@ -74,49 +74,6 @@ Modification History (most recent at top)
 
 ;;; minimal implementation, see mac-menu for more complete ones...
 
-;; prompts for an existing filename
-#-(or mcl lispworks)
-(defun boxer-open-file-dialog (&rest ignore)
-  (declare (ignore ignore))
-  (merge-pathnames (get-string-from-status-line "Filename")
-                   *boxer-pathname-default*))
-
-#-(or mcl lispworks)
-(defun boxer-open-lost-file-dialog (&rest ignore)
-  (declare (ignore ignore))
-  (merge-pathnames (get-string-from-status-line "Find Lost File")
-                   *boxer-pathname-default*))
-
-;; prompts for a new filename
-#-(or mcl lispworks)
-(defun boxer-new-file-dialog (&key (prompt "New Filename")
-                                   (directory *boxer-pathname-default*) box)
-  (declare (ignore box))
-  (merge-pathnames (get-string-from-status-line prompt)
-                   directory))
-
-#-(or mcl lispworks)
-(defun save-modified-box-dialog (box)
-  (when (status-line-y-or-n-p
-         (format nil "The Box, ~A, has been modified, Save it ?"
-                 (box-save-name box)))
-    (let ((existing-pathname (getprop box :associated-file)))
-      (save-generic box (or existing-pathname
-                            (boxer-new-file-dialog))))))
-
-#-(or mcl lispworks)
-(defun add-path-to-ro-box-dialog (box)
-  (when (status-line-y-or-n-p
-         "The Read Only box, ~A, does not have a pathname. Add one  ?"
-         (box-save-name box))
-    (let ((newpath (boxer-open-file-dialog)))
-      (putprop box newpath :associated-file))))
-
-#-(or mcl lispworks)
-(defun outlink-port-dialog (box &key nports)
-  (declare (ignore box nports))
-  (boxer-editor-warning "~D ports have targets outside of the box"))
-
 ;; use this if it looks like you might be overwriting a
 ;; file and want to  know if it is ok
 (defun file-overwrite-ok (reason)
@@ -362,42 +319,6 @@ Modification History (most recent at top)
              (com-enter-box)))))
   (when explicit-redisplay #+opengl (repaint) #-opengl (redisplay))
   boxer-eval::*novalue*)
-
-#| ;; the outermost box based version...
-(defboxer-command com-new-file-box (&optional explicit-redisplay)
-  "makes a File (data) box at the cursor location."
-  (let ((region-to-box (or *region-being-defined* (get-current-region))))
-    (reset-editor-numeric-arg)
-    (cond ((name-row? (point-row))
-	   (reset-region)
-	   (boxer-editor-error "You cannot make boxes inside a name"))
-	  ((not (null region-to-box))
-           (let ((box (make-initialized-box :type 'data-box)))
-             (mark-box-as-file box)
-             (kill-region region-to-box)
-	     (insert-cha *point* box ':fixed)
-	     (com-enter-box)
-	     (yank-region *point* region-to-box)
-	     (flush-region region-to-box)
-	     (exiting-region-mode)
-             (redisplay)
-             ;;store away the old outermost screen box
-             (push *outermost-screen-box* *outermost-screen-box-stack*)
-             (set-outermost-box box)))
-          (t
-           (let ((box (make-initialized-box :type 'data-box)))
-             (mark-box-as-file box)
-             (add-redisplay-clue (point-row) ':insert)
-             (set-type box 'data-box)
-             (insert-cha *point* box ':fixed)
-             (com-enter-box)
-             (redisplay)
-             ;;store away the old outermost screen box
-             (push *outermost-screen-box* *outermost-screen-box-stack*)
-             (set-outermost-box box)))))
-  (when explicit-redisplay (redisplay))
-  boxer-eval::*novalue*)
-|#
 
 ;; rewrite this to CONS less later....
 (defmethod editor-location-string ((box box))

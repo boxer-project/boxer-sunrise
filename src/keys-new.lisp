@@ -355,16 +355,17 @@ Modification History (most recent at top)
 ;;; Defines all the "control" (ctrl-, meta-, or ctrl-meta- ) number
 ;;; keys to act as a numeric argument
 
-(dotimes (control-bits 3)  ; note the 1+ further down
-  (do ((key-code #o60 (1+ key-code)))
-      ((= key-code #o72))
-    (let ((key-name (lookup-key-name key-code (1+ control-bits))))
-      (when (null key-name)
-	(error "Key name for key ~d was not found" key-code))
-      (boxer-eval::defboxer-key-internal
-	  key-name
-	  (intern (symbol-format nil "COM-INCREMENT-NUMERIC-ARG-BY-~D"
-			  (- key-code #o60)))))))
+;; sgithens TODO Put this back in once the control bits are fixed.
+;; (dotimes (control-bits 3)  ; note the 1+ further down
+;;   (do ((key-code #o60 (1+ key-code)))
+;;       ((= key-code #o72))
+;;     (let ((key-name (lookup-key-name key-code (1+ control-bits))))
+;;       (when (null key-name)
+;; 	(error "Key name for key ~d was not found" key-code))
+;;       (boxer-eval::defboxer-key-internal
+;; 	  key-name
+;; 	  (intern (symbol-format nil "COM-INCREMENT-NUMERIC-ARG-BY-~D"
+;; 			  (- key-code #o60)))))))
 
 (boxer-eval::defboxer-key (bu::?-key 1) com-prompt)
 (boxer-eval::defboxer-key (bu::?-key 2) com-document-key)
