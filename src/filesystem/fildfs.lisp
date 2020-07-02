@@ -760,21 +760,7 @@ Modification History (most recent at the top)
                                                 4 :initial-element #\Null)
                                                (find-package "KEYWORD"))))
 
-#+mcl
-(defun file-type (filename)
-  (let ((raw-type (ccl::mac-file-type filename)))
-    (cond ((eq raw-type :BOXR) :boxer)
-          ((or (fast-memq raw-type *possible-boxer-file-mac-types*)
-               (string-equal (pathname-type filename) "box"))
-           (if (boxer-file-contents? filename) :boxer :text))
-          (t raw-type))))
-
 ;; this should eventually use /etc/magic
-#+unix
-(defun file-type (filename)
-  (if (boxer-file-contents? filename) :boxer :text))
-
-#-(or mcl unix)
 (defun file-type (filename)
   (if (boxer-file-contents? filename) :boxer :text))
 
