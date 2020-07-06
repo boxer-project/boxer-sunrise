@@ -439,9 +439,14 @@ Modification History (most recent at top)
 
 (defgeneric port-box? (x) (:method (x) nil) (:method ((x port-box)) t))
 
-(defgeneric sprite-box? (x) (:method (x) nil))
+(defun sprite-box? (thing)
+  (and (box? thing)
+       (graphics-object? (slot-value thing 'graphics-info))))
 
-(defgeneric graphics-box? (x) (:method (x) nil))
+;; graphics-box? is now defined as a box with a non-null graphics-sheet
+(defun graphics-box? (thing)
+  (and (box? thing)
+       (graphics-sheet? (slot-value thing 'graphics-info))))
 
 ;; for delineating regions in the editor...
 

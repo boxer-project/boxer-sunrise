@@ -298,6 +298,11 @@ Modification History (most recent at the top)
   slots
   transform-template)
 
+(defun graphics-command-opcode (command-name)
+  (let ((entry (fast-assq command-name *graphics-command-name-opcode-alist*)))
+    (if (null entry)
+	(error "No Graphics Command Opcode for ~S" command-name)
+	(cdr entry))))
 
 (defun get-graphics-command-descriptor (name-or-opcode)
   (etypecase name-or-opcode
@@ -336,13 +341,6 @@ Modification History (most recent at the top)
 
 ) ; eval-when
 
-(eval-when (compile load eval)
-(defun graphics-command-opcode (command-name)
-  (let ((entry (fast-assq command-name *graphics-command-name-opcode-alist*)))
-    (if (null entry)
-	(error "No Graphics Command Opcode for ~S" command-name)
-	(cdr entry))))
-)
 
 (defun copy-graphics-command (graphics-command)
   (funcall (svref& *graphics-command-copier-table*
@@ -625,7 +623,7 @@ Modification History (most recent at the top)
                             mutators-found (union mutators-found m))))))))
     (values found mutators-found)))
 
-) ; eval-when
+
 
 (defmacro with-graphics-command-slots-bound (gc-arg args body)
   (multiple-value-bind (args-used mutators-used)
@@ -1015,9 +1013,10 @@ Modification History (most recent at the top)
 	 ;; finally return the name (as opposed to random returned values)
 	 ',name))))
 
-
+) ; eval-when
 
 ;;; this is mostly for readability
+;; (eval (compile load eval)
 (defmacro defgraphics-state-change ((name opcode) args
 				    &key
                                     extents-form boxer-extents-form
@@ -1042,7 +1041,7 @@ Modification History (most recent at the top)
      ,deallocate-args ,deallocate-form
      ,sprite-command
      ,(make-list (length args)) nil ,body))
-
+;; )
 
 (defmacro defgraphics-handler ((name &optional
 				     (table
@@ -1618,6 +1617,7 @@ Modification History (most recent at the top)
 
 ;;; Graphics State Changes
 
+(eval-when (compile load eval)
 (defgraphics-state-change (change-alu 0) (new-alu)
   :dump-form
   (let ((existing-alu (svref& command 1)))
@@ -1637,6 +1637,7 @@ Modification History (most recent at the top)
   :body
   (unless (=& new-alu *graphics-state-current-alu*)
     (setq *graphics-state-current-alu* new-alu)))
+)
 
 ; old (non-caching) implementation
 ;(defgraphics-handler (change-alu *turtle-graphics-handlers*) (trans-x
@@ -1676,7 +1677,7 @@ Modification History (most recent at the top)
 					      scale)
   ())
 
-
+(eval-when (compile load eval)
 (defgraphics-state-change (change-pen-width 1) (new-width)
   :extents-form (progn (setq *graphics-state-current-pen-width* new-width)
                        ;; need to update because other graphics command
@@ -1688,6 +1689,7 @@ Modification History (most recent at the top)
   (unless (=& new-width *graphics-state-current-pen-width*)
     (setq *graphics-state-current-pen-width* new-width)
     (%set-pen-size new-width)))
+)
 
 (defgraphics-translator (change-pen-width) (trans-x trans-y
 						    cos-scale sin-scale
@@ -1709,6 +1711,7 @@ Modification History (most recent at the top)
             (7 '("Geneva" 7 :bold :italic)))))
         (t (make-boxer-font file-font))))
 
+(eval-when (compile load eval)
 (defgraphics-state-change (change-graphics-font 2) (new-font-no)
   :extents-form (progn (setq *graphics-state-current-font-no* new-font-no)
                        ;; need to update because other graphics command
@@ -1735,6 +1738,7 @@ Modification History (most recent at the top)
 ;    #-glut
 ;    (bw::ensure-ttffont-parameters (find-cached-font new-font-no))
     (setq *graphics-state-current-font-no* new-font-no)))
+)
 
 (defgraphics-translator (change-graphics-font) (trans-x trans-y
 							cos-scale sin-scale
@@ -1765,6 +1769,7 @@ Modification History (most recent at the top)
                 (%make-color (car color) (cadr color) (caddr color))))))
 
 ;; should opengl use :deallocate-form to free color memory ?  is color in use elsewhere ?
+(eval-when (compile load eval)
 (defgraphics-state-change (change-graphics-color 4) (new-color)
   :dump-form
   (let ((existing-pixel (svref& command 1)))
@@ -1784,6 +1789,7 @@ Modification History (most recent at the top)
   (unless (color= new-color *graphics-state-current-pen-color*)
     (setq *graphics-state-current-pen-color* new-color)
     (%set-pen-color new-color)))
+)
 
 (defgraphics-translator (change-graphics-color) (trans-x trans-y
 							 cos-scale sin-scale
@@ -1824,6 +1830,7 @@ Modification History (most recent at the top)
 	 #.(max-window-coord))
 	(t n)))
 
+(eval-when (compile load eval)
 (defstandard-graphics-handlers (line-segment 3)
     :COMMAND-ARGS (x0 y0 x1 y1)
     :EXTENTS-FORM
@@ -1917,7 +1924,7 @@ Modification History (most recent at the top)
 	   (fix-array-coordinate-y temp))))
 
     )
-
+) ;eval-when
 
 #|
 ;;; old (non caching) implementation
@@ -1969,7 +1976,7 @@ Modification History (most recent at the top)
 
 ;;; Strings
 
-
+(eval-when (compile load eval)
 (defstandard-graphics-handlers (centered-string 7)
     :COMMAND-ARGS (x y string)
     :EXTENTS-FORM
@@ -2442,6 +2449,7 @@ Modification History (most recent at the top)
      ;; don't scale bitmaps yet.  Easy to do on the mac harder to do on
      ;; other platforms, maybe change this later
      ))
+) ;eval-when for a large block of defstandard-graphics-handlers...
 
 ;; the default copy functions only copy slots. For bitmaps, we need
 ;; a separate copy of the bitmap as well
@@ -2467,6 +2475,7 @@ Modification History (most recent at the top)
 
 ;;; Arcs, Ellipses, and Circles
 
+(eval-when (compile load eval)
 (defstandard-graphics-handlers (wedge 26)
     :COMMAND-ARGS (x y radius start-angle sweep-angle)
     :EXTENTS-FORM ;leave as circle for now, get smarter about this later
@@ -2798,7 +2807,7 @@ Modification History (most recent at the top)
      (y (fix-array-coordinate-y
          (+ trans-y (- (* cos-scale y) (* sin-scale x)))))
      (radius (fixr (* radius scale)))))
-
+) ;eval-when for another large block of defstandard-graphics-handlers...
 
 ;; this is used by the redisplay...
 
