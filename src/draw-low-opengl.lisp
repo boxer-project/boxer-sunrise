@@ -244,7 +244,7 @@ notes:: check points arg on draw-poly
 (defmacro with-drawing-port (view &body body)
   `(let ((%drawing-array ,view)
          (%graphics-state (gp:get-graphics-state ,view)))
-     (bw::rendering-on (,view)
+     (opengl::rendering-on (,view)
        ;; always start by drawing eveywhere
        (bw::ogl-reshape (sheet-inside-width ,view) (sheet-inside-height ,view))
        (bw::gl-scissor 0 0 (sheet-inside-width ,view) (sheet-inside-height ,view))

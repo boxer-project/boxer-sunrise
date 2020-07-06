@@ -96,7 +96,7 @@ Modification History (most recent at the top)
 (defvar *glyph-slate-wid* 200)
 (defvar *glyph-slate-hei* 150)
 
-(define-interface glyph-slate ()
+(capi:define-interface glyph-slate ()
     ()
   (:panes
    (glyph-pane output-pane
@@ -109,8 +109,8 @@ Modification History (most recent at the top)
                        (("Open Font" :accelerator #\o :callback 'menu-open-capi-font)))
                       (:component
                        (("Save" :callback 'save-ogl-bitmap-font)))
-                      (:component)
-                      ("Quit" :callback 'capi:destroy))))
+                      (:component
+                       (("Quit" :callback 'capi:destroy))))))
   (:menu-bar  file-menu)
   (:default-initargs :title "Glyph Drawing Surface"
    :width *glyph-slate-wid* :height *glyph-slate-hei*))
@@ -391,7 +391,7 @@ Modification History (most recent at the top)
 ;; we can put the fonts into the bundle in the location <bundle directory>/Contents/Resources/Fonts
 (defun font-directory-search ()
   (let ((testfile "Arial10.cfnt")
-        (searchlist (list #P"/Boxer/Fonts/"
+        (searchlist (list *capogi-font-directory*
                           #+macosx
                           (make-pathname :directory
                                          (append (butlast (pathname-directory (lw:lisp-image-name)))

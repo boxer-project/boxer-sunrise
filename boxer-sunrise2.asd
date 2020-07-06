@@ -21,13 +21,13 @@
                  (:file "pixmap")
 
                  ;; Beginning of `DEFINITIONS` module
-                 (:file "macros")
-                 (:file "boxdef")
-                 (:file "storage")
-                 (:file "vrtdef")
+                 (:file "definitions/macros")
+                 (:file "definitions/boxdef")
+                 (:file "definitions/storage")
+                 (:file "definitions/vrtdef")
 
                  ;; Begining of `redisplay` module
-                 (:file "disdcl")
+                 (:file "disdcl/disdcl")
 
                  ;; Beginning of `DRAW` module
                  (:file "opengl-utils")
@@ -38,35 +38,36 @@
                  (:file "draw-high-common")
                  (:file "draw-high-hardware-clip")
 
+
                  ;; Beginning of `DISPLAYDEFS` module
                  ;; "Some more Definitions for Drawing things"
-                 (:file "disdef")
+                 (:file "displaydefs/disdef")
 
                  ;; Beginning of `RELATIONSHIPS` module
                  ;; "The basic underlying structure of the Editor is defined here"
-                 (:file "infsup")
+                 (:file "relationships/infsup")
 
                  ;; Beginning of `evalvars` module
                  ;; "Definitions necessary for describing evaluator state variables"
-                 (:file "varmacs")
-                 (:file "vars")
+                 (:file "evalvars/varmacs")
+                 (:file "evalvars/vars")
 
                  ;; Beginning of `EVALDEFS` module
                  ;; "Basic Defs and Macros used by the evaluator including how variables work."
-                 (:file "evalmacs")
-                 (:file "fdeval")
-                 (:file "stacks")
-                 (:file "bind")
-                 (:file "funs")
-                 (:file "eval")
+                 (:file "evaldefs/evalmacs")
+                 (:file "evaldefs/fdeval")
+                 (:file "evaldefs/stacks")
+                 (:file "evaldefs/bind")
+                 (:file "evaldefs/funs")
+                 (:file "evaldefs/eval")
 
                  ;; Beginning of `EVALPRIMS` module
                  ;; "Evaluator Primitives"
-                 (:file "prims")
+                 (:file "evalprims/prims")
 
                  ;; Beginning of `PROCESSES` module
                  ;; "Macros and functions for creating processes"
-                 (:file "process")
+                 (:file "processes/process")
 
                  ;; Beginning of `BOXWIN` module
                  ;; "The interface between the Boxer Editor and the window system"
@@ -87,10 +88,10 @@
 
                  ;; Beginning of `REDISPLAY` module
                  ;; "The redisplay for the Editor"
-                 (:file "lodisp")
-                 (:file "repaint")
-                 (:file "new-borders")
-                 (:file "disply")
+                 (:file "redisplay/lodisp")
+                 (:file "redisplay/repaint")
+                 (:file "redisplay/new-borders")
+                 (:file "redisplay/disply")
 
                  ;; Beginning of `GRFDEFS` module
                  ;; "Definitions for Sprite Graphics"
@@ -100,15 +101,15 @@
 
                  ;; Beginning of `EDITOR-HIGH` module
                  ;; "Higher level Editor Utilities"
-                 (:file "mouse")
-                 (:file "simple-stream")
-                 (:file "makcpy")
-                 (:file  "xfile")
-                 (:file "region")
-                 (:file "oglscroll")
-                 (:file "mode")
-                 (:file "search")
-                 (:file "comdef")
+                 (:file "editor-high/mouse")
+                 (:file "editor-high/simple-stream")
+                 (:file "editor-high/makcpy")
+                 (:file "editor-high/xfile")
+                 (:file "editor-high/region")
+                 (:file "editor-high/oglscroll")
+                 (:file "editor-high/mode")
+                 (:file "editor-high/search")
+                 (:file "editor-high/comdef")
                  ;; Beginning of `IMPEXP` module
                  ;; "This imports and exports boxer structure to/from other common file types"
                  (:file "impexp")
@@ -118,40 +119,40 @@
                  (:file "realprinter")
                  ;; Beginning of `VIRTCOPY` module
                  ;; "The virtual Copy mechanism used by the evaluator"
-                 (:file "virtcopy")
-                 (:file "edvc")
-                 (:file "vcgc")
+                 (:file "virtcopy/virtcopy")
+                 (:file "virtcopy/edvc")
+                 (:file "virtcopy/vcgc")
                  ;; Beginning of `EVALUTILS` module
                  ;; "Utilities for the Evaluator"
-                 (:file "transparent")
-                 (:file "eval-utils")
-                 (:file "errors")
+                 (:file "evalutils/transparent")
+                 (:file "evalutils/eval-utils")
+                 (:file "evalutils/errors")
                  ;; Beginning of `EVALUATOR` module
                  ;; "The Boxer Evaluator"
-                 (:file "eval-eval")
+                 (:file "evaluator/eval-eval")
                  ;; Beginning of `EVAL-INTERFACE` module
                  ;; "Interface to the evaluator"
-                 (:file "ev-int")
+                 (:file "eval-interface/ev-int")
                  ;; Beginning of `COMPILER` module
                  ;; ""
-                 (:file "comp")
+                 (:file "compiler/comp")
                  ;; Beginning of `STEPPER` module
                  ;; "The Movie Stepper"
-                 (:file "stepper")
+                 (:file "stepper/stepper")
                  ;; Beginning of `FILESYSTEM` module
                  ;; "Saving and Restoring Boxes To/From Files"
-                 (:file "fildfs")
-                 (:file "dumper")
-                 (:file "loader")
-                 (:file "clientmacros")
-                 (:file "bfslocal")
-                 (:file "bfsforeign")
-                 (:file "client")
-                 (:file "base64")
-                 (:file "binhex")
-                 (:file "applefile")
-                 (:file "surf")
-                 (:file "http")
+                 (:file "filesystem/fildfs")
+                 (:file "filesystem/dumper")
+                 (:file "filesystem/loader")
+                 (:file "filesystem/clientmacros")
+                 (:file "filesystem/bfslocal")
+                 (:file "filesystem/bfsforeign")
+                 (:file "filesystem/client")
+                 (:file "filesystem/base64")
+                 (:file "filesystem/binhex")
+                 (:file "filesystem/applefile")
+                 (:file "filesystem/surf")
+                 (:file "filesystem/http")
                 ;;  (:file "mail")
                  ;; (:file "mailfile")
                  ;; Beginning of `TRIGGER` module

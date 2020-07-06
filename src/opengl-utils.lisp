@@ -301,7 +301,7 @@ Modification History (most recent at the top)
     (fill-oglfont-parameters oglfont pane)
     oglfont))
 
-(defvar *use-capogi-fonts* T) ; want to allow option for scaleable vector OpenGL fonts in Windows
+(defvar *use-capogi-fonts* t) ; want to allow option for scaleable vector OpenGL fonts in Windows
 
 #+glut
 (defun fill-oglfont-parameters (ofont &optional pane)
@@ -367,39 +367,10 @@ Modification History (most recent at the top)
 ;; should do smarter error handling here
 ;; for now, allow wgl-use-font to signal the error (:errorp t)
 (defun %ogl-cache-font (ofont)
-  (let ((ba #+(and mac glut)
-            (opengl::cache-glut-font (or box::%drawing-array *boxer-pane*)
-                                     :font (opengl-font-glutfont ofont)
-                                     :start *opengl-font-start*
-                                     :count (- *opengl-font-end* *opengl-font-start*)
-                                     :translate *unicode-window-1252*)
-            #+(and mac capogi)
-            (cond ((null box::%drawing-array)
+  (let ((ba (cond ((null box::%drawing-array)
                    (rendering-on (*boxer-pane*) (cache-capogi-font (opengl-font-native-font ofont))))
-                  (t (cache-capogi-font (opengl-font-native-font ofont))))
-            #+win32
-            (cond ((null box::%drawing-array)
-                   ;; this catches the case where we are trying to cache a font
-                   ;; outside of a normal redisplay - commonly for string sizing
-                   ;; during documentation events
-                   (rendering-on (*boxer-pane*)
-                     (if *use-capogi-fonts*
-                         (cache-capogi-font (opengl-font-native-font ofont))
-                       (win32::wgl-use-font *boxer-pane*
-                                            :font (opengl-font-native-font ofont)
-                                            :outlinep *opengl-font-outline-p*
-                                            :start *opengl-font-start*
-                                            :count (- *opengl-font-end*
-                                                      *opengl-font-start*)))))
                   (t
-                   (if *use-capogi-fonts*
-                       (cache-capogi-font (opengl-font-native-font ofont))
-                     (win32::wgl-use-font box::%drawing-array
-                                          :font (opengl-font-native-font ofont)
-                                          :outlinep *opengl-font-outline-p*
-                                          :start *opengl-font-start*
-                                          :count (- *opengl-font-end*
-                                                    *opengl-font-start*)))))))
+                  (cache-capogi-font (opengl-font-native-font ofont))))))
     (setf (opengl-font-dl-base-addr ofont) ba))
   ofont)
 
@@ -548,10 +519,10 @@ Modification History (most recent at the top)
                    *opengl-font-start*)))
     ;; Set up for a string-drawing display list call.
     (opengl:gl-list-base base)
+    ;; sgithens debug (opengl:gl-list-base *current-opengl-font-base-addr*)
     ;; Draw a string using font display lists.
     (fli:with-foreign-string (ptr elts bytes
                                   :external-format :unicode
-                                 ; #+win32 :external-format #+win32 win32:*multibyte-code-page-ef*
                                   :null-terminated-p nil)
         text
       (declare (ignore bytes))
