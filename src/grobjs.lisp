@@ -178,6 +178,7 @@ Modification History (most recent at top)
    )
   (:metaclass block-compile-class))
 
+(defgeneric turtle? (x) (:method (x) nil) (:method ((x turtle)) t))
 
 ;;;; block compile metaclass epilogue
 
