@@ -98,6 +98,7 @@
                  (:file "grobjs")
                  (:file "grfdfs")
                  (:file "gdispl")
+                 (:file "graphics-clear")
 
                  ;; Beginning of `EDITOR-HIGH` module
                  ;; "Higher level Editor Utilities"

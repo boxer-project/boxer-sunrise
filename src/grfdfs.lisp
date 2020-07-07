@@ -501,91 +501,6 @@ parameters of the graphics box are bound. "
 	  (putprop graphics-box sbs 'cached-vis-objs)
 	  sbs))))
 
-(defmethod clear-box ((self box) &key (bitmap-p t) (graphics-list-p t))
-  (let ((graphics-sheet (slot-value self 'graphics-info)))
-    (unless (null graphics-sheet)
-      (let ((graphics-list (graphics-sheet-graphics-list graphics-sheet))
-	    (bit-array (graphics-sheet-bit-array graphics-sheet))
-	    (gswid (graphics-sheet-draw-wid graphics-sheet))
-	    (gshei (graphics-sheet-draw-hei graphics-sheet))
-	    (bg (graphics-sheet-background graphics-sheet)))
-	;; first, clear the storage for each of the drawing surfaces
-	(when (and graphics-list-p (not (null graphics-list)))
-	  (clear-graphics-list graphics-list))
-	(when bitmap-p
-	  (cond ((not (null bit-array))
-                 (clear-offscreen-bitmap bit-array (or bg *background-color*)))
-		((color? bg)
-		 (setf (graphics-sheet-background graphics-sheet) nil))
-		;; tiling pattern code here
-		)
-          ;; mark the dirty? flag
-          (setf (graphics-sheet-bit-array-dirty? graphics-sheet) nil))
-	;; now erase stuff on the screen...
-	(dolist (screen-box (get-visible-screen-objs  self))
-	  (unless (eq ':shrunk (display-style screen-box))
-	    (drawing-on-turtle-slate screen-box
-               #-gl
-	       (cond ((or (null bg) bitmap-p)
-		      (erase-rectangle gswid gshei 0 0))
-		     ((color? bg)
-		      ;; looks like a color so draw a rectangle of that color
-		      (with-pen-color (bg)
-			(draw-rectangle alu-seta gswid gshei 0 0)))
-		     ;; check for tiling pattern here
-		     )
-	       #+gl
-	       (progn
-		 (bw::pushattributes)
-		 (bw::setpattern 0)
-		 (if (numberp bg) (bw::color bg)(bw::color *background-color*))
-		 (bw::rectfi
-		  (- (round gswid 2)) (- (round gshei 2))
-		  (round gswid 2) (- gshei 2))
-		 (bw::popattributes))
-	       ;; now, if only one of the drawing sufaces has been cleared,
-	       ;; we need to regenerate the other surface
-	       (when (and (not graphics-list-p) graphics-list)
-		 ;; regenerate the graphics list
-		 (playback-graphics-list-internal graphics-list))
-	       (when (and (not bitmap-p) graphics-list-p bit-array)
-		 ;; regenerate the background
-		 (bitblt-to-screen alu-seta gswid gshei bit-array
-				   0 0 0 0)))))))))
-
-
-(defmethod clearscreen ((self box)
-			&optional surface)
-  (cond ((eq surface :background)
-	 (clear-box self :bitmap-p t :graphics-list-p nil))
-	((eq surface :foreground)
-	 (clear-box self :bitmap-p nil :graphics-list-p t))
-	((eq surface :none)
-	 (clear-box self :bitmap-p nil :graphics-list-p nil))
-	(t (clear-box self)))
-;  (with-graphics-vars-bound (self sheet)
-;    #-gl
-;    (with-graphics-screen-parameters-once
-;	(dolist (turtle (graphics-sheet-object-list sheet))
-;	  ;; the save-under of the moving turtle has to be filled BEFORE ANY
-;	  ;; turtles are drawn or else it might capture part of another
-;	  ;; turtle's shape
-;	  (save-under-turtle turtle)))
-;    (with-graphics-screen-parameters
-;	#+gl
-;      (bw::clear-overlay-planes)
-;      (dolist (turtle (graphics-sheet-object-list sheet))
-;	(when (shown? turtle)
-;	  (draw turtle)))))
-  )
-
-
-
-#+lispm
-(compiler::make-obsolete make-graphics-box "Graphics Boxes have been flushed")
-
-
-
 
 ;;; Here is the line drawing stuff
 
@@ -1267,8 +1182,8 @@ parameters of the graphics box are bound. "
 ;; this understands virtual copies of sprite boxes
 (defun get-sprite-turtle (sb)
   (cond ((sprite-box? sb) (slot-value sb 'graphics-info))
-	((and (virtual-copy? sb)) ; (eq (vc-type sb) 'sprite-box))
-	 (graphics-info-turtle (vc-graphics sb)))))
+         ((and (virtual-copy? sb)) ; (eq (vc-type sb) 'sprite-box))
+          (graphics-info-turtle (vc-graphics sb)))))
 
 (defun get-graphics-box-from-sprite-box (sb)
   (let* ((turtle (get-sprite-turtle sb))
@@ -1303,13 +1218,11 @@ parameters of the graphics box are bound. "
 ;;; function to the appropriate sprite(s).  The body of the function can assume
 ;;; that there is a sprite-box bound to sprite-var
 
-(eval-when (compile load eval)
 (defmacro defsprite-function (name-descriptor arglist (sprite-var turtle-var)
 			      &body body)
   `(boxer-eval::defboxer-primitive ,name-descriptor ,arglist
      (with-sprite-primitive-environment (,sprite-var ,turtle-var)
 	. ,body)))
-)
 
 (defmacro defsprite-trigger-function (name-descriptor arglist
 						      (sprite-var turtle-var)
