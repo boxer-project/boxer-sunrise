@@ -116,29 +116,6 @@ Modification History (most recent at top)
 
 ;;; Use this function for the debugger.
 ;; ****************LISTP is wrong here
-#+lispm
-(DEFUN COMPILED-BOXER-FUNCTION-NAME (FUNCTION)
-  (let ((function (compiled-boxer-function-object function)))
-    (if (listp function) 'unnamed
-	(si:function-name function))))
-#+Lucid
-(defun compiled-boxer-function-name (function)
-  (let ((function (compiled-boxer-function-object function)))
-    (let ((name (system:procedure-name function)))
-      (if (listp name) 'unnamed
-	  name))))
-
-#+excl
-(defun compiled-boxer-function-name (function)
-  (let ((function (compiled-boxer-function-object function)))
-    (let ((name (excl::fn_symdef function)))
-      (if (symbolp name) name 'unnamed))))
-
-#+mcl
-(defun compiled-boxer-function-name (function)
-  (let ((function (compiled-boxer-function-object function)))
-    (let ((name (ccl:function-name function)))
-      (if (symbolp name) name 'unnamed))))
 
 ;; really only a placeholder
 #+lispworks

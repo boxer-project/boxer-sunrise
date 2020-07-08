@@ -51,7 +51,6 @@ Scrolling:
  COM-SCROLL-DN-ONE-SCREEN-BOX COM-SCROLL-UP-ONE-SCREEN-BOX
 Killing Stuff:
  COM-KILL-TO-END-OF-ROW COM-YANK COM-YANK-NO-COPY COM-ROTATE-KILL-BUFFER
- #+lispm COM-YANK-FROM-LISP
 Random useful things:
  COM-FORCE-REDISPLAY COM-BREAK COM-BUG COM-GOTO-TOP-LEVEL
 
@@ -1221,20 +1220,6 @@ removes it from the kill buffer.  No copy is made."
 ;; that shouldn't be considered to interrupt the kill buffering.
 (DEFUN DECREMENT-KEY-TICK ()
   (DECF *NUMBER-OF-NON-KILL-COMMANDS-EXECUTED*))
-
-
-
-;;; Lispm interface
-#+LISPM
-(DEFBOXER-COMMAND COM-YANK-FROM-LISP ()
-  "Yanks text from the Lisp Machine's Kill Ring. "
-  (ZWEI:WITH-EDITOR-STREAM (S :INTERVAL (SI:SEND ZWEI:*KILL-HISTORY* :YANK) :START :BEGINNING)
-     (LOOP FOR CHA = (SI:SEND S :TYI)
-	   UNTIL (NULL CHA)
-	   DO (IF (CHAR= CHA #\CR)
-		  (INSERT-ROW *POINT* (MAKE-INITIALIZED-ROW))
-		  (INSERT-CHA *POINT* CHA))))
-  boxer-eval::*novalue*)
 
 
 

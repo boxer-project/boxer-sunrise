@@ -1345,11 +1345,6 @@ points to the Box which contains the lower BP,then the superior BP is returned"
      (values new-row new-cha-no ,screen-box)))
 
 
-#+LISPM
-(COMPILER:MAKE-OBSOLETE SET-BP-FROM-BP "Use BP-VALUES with MOVE-BP instead")
-
-
-
 ;;;;CURSOR-TRACKER
 
 ;;Given the fact that there is a variable *POINT* , we can define
@@ -1676,10 +1671,6 @@ points to the Box which contains the lower BP,then the superior BP is returned"
 			      (text-string name-row))
         (modified new-box)))))
 
-#+lispm
-(COMPILER:MAKE-OBSOLETE NAME "Use either NAME-ROW or NAME-STRING instead")
-
-
 
 ;;;; Closets
 

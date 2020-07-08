@@ -119,7 +119,7 @@ Modification History (most recent at top)
       (BARF "Boxer Editor Commands Require a Documentation String. ")))
 
 (DEFMACRO DEFBOXER-COMMAND (COM-NAME ARGS DOC-STRING . BODY)
-  `(PROGN #+LISPM 'COMPILE
+  `(PROGN
      (BOXER-COMMAND-DEFINE ',COM-NAME ',DOC-STRING)
      (DEFUN ,COM-NAME ,ARGS
 	 ,DOC-STRING
@@ -229,8 +229,6 @@ Modification History (most recent at top)
 	   (T
 	    . ,BODY))))
 
-#+LISPM
-(COMPILER:MAKE-OBSOLETE MAP-OVER-CHAS "Use MAP-OVER-CHAS-IN-LINE Instead. ")
 
 (DEFMACRO MAP-OVER-CHAS-IN-LINE ((START-BP DIRECTION) &BODY BODY)
   `(DO* ((ROW (BP-ROW ,START-BP) ROW)
