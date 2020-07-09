@@ -230,13 +230,7 @@ parameters of the graphics box are bound. "
 	       (ab-pos-cache-ih cache) real-hei
 	       (ab-pos-cache-sx cache) sheet-x
 	       (ab-pos-cache-sy cache) sheet-y
-	       (ab-pos-cache-valid cache) t)
-	 #+clx;; make sure the clip-cache is in sync with the new values
-	 (unless (null (ab-pos-cache-clip-cache cache))
-	   (bw::set-clip-state-values (ab-pos-cache-clip-cache cache)
-				      (+& box-x-offset sheet-x)
-				      (+& box-y-offset sheet-y)
-				      real-wid real-hei))))
+	       (ab-pos-cache-valid cache) t)))
   ;; now keep track of the cache so it can be flushed at the proper time
   (unless (or (eq *absolute-position-caches-filled* ':toplevel)
 	      (fast-memq cache *absolute-position-caches-filled*))
@@ -283,8 +277,7 @@ parameters of the graphics box are bound. "
 					 (ab-pos-cache-iw pos-cache)
 					 (ab-pos-cache-ih pos-cache))
 	      (with-turtle-clipping ((ab-pos-cache-iw pos-cache)
-				     (ab-pos-cache-ih pos-cache)
-				     #+clx :cache #+clx pos-cache)
+				     (ab-pos-cache-ih pos-cache))
 		(unwind-protect
 		     (progn . ,body)
 		  (when (eq *absolute-position-caches-filled* ':toplevel)
@@ -549,7 +542,6 @@ parameters of the graphics box are bound. "
 	       (%draw-line (scale-x from-x) (scale-y from-y)
 			   (scale-x (1- %drawing-width))
 			   (scale-y y-intercept) alu t %drawing-array)
-	       #+clx (bw::display-force-output bw::*display*)
 	       ;; now recurse
 	       (draw-wrap-line 0 y-intercept
 			       (wrap-x-coord-right to-x) to-y alu))
@@ -557,21 +549,18 @@ parameters of the graphics box are bound. "
 	       (%draw-line (scale-x from-x) (scale-y from-y)
 			   (scale-x x-intercept) (scale-y 0)
 			   alu t %drawing-array)
-	       #+clx (bw::display-force-output bw::*display*)
 	       (draw-wrap-line x-intercept (1- %drawing-height)
 			       to-x (wrap-y-coord-top to-y) alu))
 	     (line-left-then-continue (y-intercept)
 	       (%draw-line (scale-x from-x) (scale-y from-y)
 			   (scale-x 0) (scale-y y-intercept)
 			   alu t %drawing-array)
-	       #+clx (bw::display-force-output bw::*display*)
 	       (draw-wrap-line (1- %drawing-width) y-intercept
 			       (wrap-x-coord-left to-x) to-y alu))
 	     (line-bottom-then-continue (x-intercept)
 	       (%draw-line (scale-x from-x) (scale-y from-y)
 			   (scale-x x-intercept) (scale-y (1- %drawing-height))
 			   alu t %drawing-array)
-	       #+clx (bw::display-force-output bw::*display*)
 	       (draw-wrap-line x-intercept 0
 			       to-x (wrap-y-coord-bottom to-y) alu))
 	     (break-line-left (y-intercept)
