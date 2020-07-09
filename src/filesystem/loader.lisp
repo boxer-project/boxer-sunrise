@@ -1533,13 +1533,12 @@ should ignore it.")
 	(unless (and (= *file-bin-version* 5)
 		     (null *old-style-restore-bitmaps?*))
 	  (setf (graphics-sheet-bit-array new-sheet) bitmap))
-	(initialize-picture #+lispm (graphics-sheet-bit-array new-sheet)
-			    ;; need to dereference a few more pointers for X
+	(initialize-picture ;; need to dereference a few more pointers for X
 			    #+X (pixrect::mpr_data.md-image
 				    (pixrect::pixrect.pr-data
 				       (graphics-sheet-bit-array new-sheet)))
 			    #+CLX (car (bw::image-xy-bitmap-list image))
-                            #-(or lispm X CLX) bitmap
+                            #-(or X CLX) bitmap
 			    (graphics-sheet-draw-wid  new-sheet)
 			    (graphics-sheet-draw-hei  new-sheet)
 			    stream)
@@ -1875,13 +1874,6 @@ should ignore it.")
 ;	  (value (cadr list) (cadr list)))
 ;	 ((null list) turtle)
 ;      (setf (slot-value turtle slot) value))))
-
-#+lispm
-(defun old-style-put-picture-byte (pic x y byte &optional size)
-  (dotimes (i (or size 8))
-    (setf (tv:raster-aref pic (+ x i) y)
-	  ;; have to swap the bytes, blecchh...
-	  (ldb (byte 1 (- 7 i)) byte))))
 
 #+clx
 (defun old-style-put-picture-byte (pic x y byte &optional size)
