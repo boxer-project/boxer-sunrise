@@ -50,63 +50,6 @@ Modification History (most recent at top)
 
 
 
-;;; hack for CLX interface ONLY
-#+clx
-(boxer-eval::defboxer-primitive bu::read-x11-bitmap-file ((boxer-eval::dont-copy filename))
-  (let ((pathname (merge-pathnames (box-text-string filename)
-				   (make-pathname :defaults
-						  *boxer-pathname-default*
-						  ;; *boxer-pathname-default*
-						  ;; has a type of "box"
-						  :type nil))))
-    (unless (probe-file pathname)
-      (boxer-eval::primitive-signal-error :file-or-directory-not-found
-				    (namestring pathname)))
-    (let* ((image (bw::read-bitmap-file pathname))
-	   (i-width (bw::image-width image))
-	   (i-height (bw::image-height image))
-	   (gbox (make-initialized-box :type 'data-box))
-	   (gsheet (make-graphics-sheet-with-bitmap i-width i-height gbox)))
-      ;; install a graphics sheet...
-      (setf (graphics-info gbox) gsheet)
-      ;; flip the box's view to graphics
-      (setf (display-style-graphics-mode? (display-style-list gbox)) t)
-      ;; ought to do some sort of consistency check here to make sure the
-      ;; pixmap and the image are compatible
-      (bw::put-image (graphics-sheet-bit-array gsheet)
-		     (bw::new-gc-alu bw::*current-gcontext* alu-seta) ; yuck...
-		     image
-		     :x 0 :y 0 :width i-width :height i-height :bitmap-p t)
-      gbox)))
-
-;;; currently only works on the bitmap representation,
-;;; for display list style turtle graphics, we should make it
-;;; grab the appropriate section of the screen
-#+clx
-(boxer-eval::defboxer-primitive bu::write-x11-bitmap-file ((bu::port-to graphics-box)
-					       (boxer-eval::dont-copy filename))
-  (let ((pathname (merge-pathnames (box-text-string filename)
-				   (make-pathname :defaults
-						  *boxer-pathname-default*
-						  ;; *boxer-pathname-default*
-						  ;; has a type of "box"
-						  :type nil))))
-    (let ((graphics-sheet (graphics-info (box-or-port-target graphics-box))))
-      (cond ((null graphics-sheet)
-	     (boxer-eval::signal-error :graphics "~A is not a graphics box"
-				 graphics-box))
-	    ((null (graphics-sheet-bit-array graphics-sheet))
-	     (boxer-eval::signal-error :graphics "~A does not have a bitmap"
-				 graphics-box))
-	    (t
-	     (let ((image (bw::get-image
-			   (graphics-sheet-bit-array graphics-sheet)
-			   :x 0 :y 0
-			   :width (graphics-sheet-draw-wid graphics-sheet)
-			   :height (graphics-sheet-draw-hei graphics-sheet))))
-	       (bw::write-bitmap-file pathname image)))))
-    boxer-eval::*novalue*))
-
 ;;; for graphics boxes
 
 (defun modified-graphics (box)
