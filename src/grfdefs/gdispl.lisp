@@ -1669,8 +1669,6 @@ Modification History (most recent at the top)
     (alu-setz alu-setz)
     ;; handle alus which originate from old sun files
     #+mcl (6 alu-xor) #+mcl (5 alu-seta)
-    ;; handle alus which originate from old mac files
-    #+clx (0 alu-seta) #+clx (2 alu-xor)
     (otherwise alu)))
 
 (defgraphics-translator (change-alu) (trans-x trans-y cos-scale sin-scale
