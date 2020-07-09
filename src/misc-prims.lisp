@@ -280,8 +280,6 @@ Modification History (most recent at top)
 
 (boxer-eval::defboxer-primitive bu::beep ()
   (bw::beep)
-  #+clx (bw::display-force-output bw::*display*)
-  #+x   (xlib::xflush)
   boxer-eval::*novalue*)
 
 (boxer-eval::defboxer-primitive bu::click-sound ()
