@@ -669,9 +669,6 @@ If started in the middle of a word, capitalizes the current letter."
 
 (defboxer-command COM-NUTRI-SYSTEM ()
   "shrink the fonts"
-  #+clx
-  (bw::reinitialize-font-map (bw::sheet-font-map *boxer-pane*)
-			     BOXER-WINDOW::*ADOBE-COURIER-FONTS*)
   ;; mac version just resets *default-font-descriptor*
   #+(or lwwin mcl)
   (let* ((main-font (bfd-font-no *default-font-descriptor*))
@@ -707,9 +704,6 @@ If started in the middle of a word, capitalizes the current letter."
                                         #+lwwin "Courier New"
                                         new-size)))
            #-opengl(add-redisplay-clue (outermost-box) :clear-screen))))
-  #+clx
-  (bw::reinitialize-font-map (bw::sheet-font-map *boxer-pane*)
-			     BOXER-WINDOW::*BIG-ADOBE-COURIER-FONTS*)
   boxer-eval::*novalue*)
 
 (defboxer-command COM-BLOAT ()
@@ -728,9 +722,6 @@ If started in the middle of a word, capitalizes the current letter."
                                         #+lwwin "Courier New"
                                         new-size)))
            #-opengl(add-redisplay-clue (outermost-box) :clear-screen))))
-  #+clx
-  (bw::reinitialize-font-map (bw::sheet-font-map *boxer-pane*)
-			     BOXER-WINDOW::*GIANT-ADOBE-COURIER-FONTS*)
   boxer-eval::*novalue*)
 
 
