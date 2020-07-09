@@ -91,7 +91,7 @@ Modification History (most recent at top)
 (defvar *boxer-keystroke-history* nil
   "A list of all the keys pressed. ")
 
-(defvar *record-keystrokes* #+lispm t #-lispm nil)
+(defvar *record-keystrokes* nil)
 
 (defvar *boxer-command-key-alist* nil
   "An association list of key names and command names. ")
