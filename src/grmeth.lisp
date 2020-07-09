@@ -837,12 +837,6 @@ CLOSED for renovations until I fix the string/font situation
       (cond ((null non-xor-graphics-occurred?)
 	     ;; if ALL the graphics in the shape have been drawn
 	     ;; in XOR, then we can use XOR-REDRAW
-	     #+clx
-	     (unless (or (null save-under)
-			 (not (and (save-under-p save-under)
-				   (bw::pixmap-p (save-under-bitmap
-						  save-under)))))
-	       (bw::free-pixmap (save-under-bitmap save-under)))
 	     (setf (slot-value self 'save-under) 'xor-redraw))
 	    ((or (null save-under) (eq save-under 'xor-redraw))
 	     ;; no existing bitmap save under so allocate a new one
@@ -867,9 +861,6 @@ CLOSED for renovations until I fix the string/font situation
 				  (offscreen-bitmap-width  existing-bitmap))
 			      (>& size
 				  (offscreen-bitmap-height existing-bitmap))))
-		 #+clx
-		 (unless (not (bw::pixmap-p existing-bitmap))
-		   (bw::free-pixmap (save-under-bitmap save-under)))
 		 (setf (slot-value self 'save-under)
 		       (make-save-under (make-offscreen-bitmap *boxer-pane*
 							       size size)
