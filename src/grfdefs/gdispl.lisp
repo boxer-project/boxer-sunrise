@@ -1883,7 +1883,6 @@ Modification History (most recent at the top)
     :TURTLE-TRANSLATOR-ARGS
     (trans-x trans-y cos-scale sin-scale scale)
     :TURTLE-TRANSLATOR-CLAUSES
-    #-lucid
     ((x0 (fix-array-coordinate-x
 	  (+ trans-x (+ (* cos-scale x0) (* sin-scale y0)))))
      (y0 (fix-array-coordinate-y
@@ -1892,35 +1891,6 @@ Modification History (most recent at the top)
 	  (+ trans-x (+ (* cos-scale x1) (* sin-scale y1)))))
      (y1 (fix-array-coordinate-y
 	  (+ trans-y (- (* cos-scale y1) (* sin-scale x1))))))
-    ;; the theory here is to use pre-allocated stack space to prevent
-    ;; floating point consing.  The lucid compiler is smart enough
-    ;; to take advantage of this.
-    #+lucid
-    ((x0 (let ((temp 0.0))
-	   (declare (type boxer-float temp))
-	   (setq temp (float-times cos-scale x0))
-	   (setq temp (float-plus temp (float-times sin-scale y0)))
-	   (setq temp (float-plus trans-x temp))
-	   (fix-array-coordinate-x temp)))
-     (y0 (let ((temp 0.0))
-	   (declare (type boxer-float temp))
-	   (setq temp (float-times cos-scale y0))
-	   (setq temp (float-minus temp (float-times sin-scale x0)))
-	   (setq temp (float-plus trans-y temp))
-	   (fix-array-coordinate-y temp)))
-     (x1 (let ((temp 0.0))
-	   (declare (type boxer-float temp))
-	   (setq temp (float-times cos-scale x1))
-	   (setq temp (float-plus temp (float-times sin-scale y1)))
-	   (setq temp (float-plus trans-x temp))
-	   (fix-array-coordinate-x temp)))
-     (y1 (let ((temp 0.0))
-	   (declare (type boxer-float temp))
-	   (setq temp (float-times cos-scale y1))
-	   (setq temp (float-minus temp (float-times sin-scale x1)))
-	   (setq temp (float-plus trans-y temp))
-	   (fix-array-coordinate-y temp))))
-
     )
 ) ;eval-when
 
