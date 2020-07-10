@@ -137,8 +137,7 @@ Modification History (most recent at top)
 
 (defun define-key-and-all-its-shifted-key-names (key-name key-code platform)
   (if (and (< key-code char-code-limit)
-	   (upper-case-p (code-char key-code))
-	   #+MCL (not (>= key-code *mcl-special-char-start*)))
+	   (upper-case-p (code-char key-code)))
       ;; for some reason MCL considers some undefined chars to be uppercase
       (define-key-name (intern-in-bu-package (symbol-format nil "CAPITAL-~A"
 							    key-name))
@@ -293,16 +292,6 @@ Modification History (most recent at top)
 	   (format nil "~A-KEY" (string-upcase
 				 (format nil "~:@C" (code-char key-code)))))
 	  key-code platform)))
-
-  ;; MCL loses on printing of control keys.  I'm not sure this is right either
-  ;; probably we need to define bits and do control keys that way. +++
-  #+MCL
-  (do* ((key-code 0 (1+ key-code)))
-       ((= key-code 26))
-    (define-key-and-all-its-shifted-key-names
-	(intern-in-bu-package (format nil "CTRL-~C-KEY"
-				      (code-char (+ #o100 key-code))))
-	key-code platform))
 
   ;; Give names to all the keys that we can't use the format ~C directive
   ;; to get a name for. Basically these are keys like SPACE, DELETE etc.
@@ -600,12 +589,7 @@ Modification History (most recent at top)
 ;;; Hacked up to handle MCL's crippled character system
 (defun handle-boxer-input (input &optional bits)
   ;;;	(increment-key-tick)		;for use with multiple-kill hack
-  #-mcl
   (status-line-undisplay 'boxer-editor-error)
-  #+mcl
-  ;; mac version of status-line-redraw tries to undo things back to
-  ;; the environment set up by drawing-on-window
-  (drawing-on-window (*boxer-pane*) (status-line-undisplay 'boxer-editor-error))
   ;; increment the event counter
   (next-boxer-event)
   (boxer-eval::report-eval-errors-in-editor
