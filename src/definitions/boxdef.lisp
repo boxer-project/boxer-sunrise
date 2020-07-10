@@ -253,7 +253,7 @@ Modification History (most recent at top)
 (DEFVAR *BOX-ZOOM-WAITING-TIME* 0.1
   "The amount of time spent waiting between the individual steps when zooming a box. ")
 
-(defvar *egc-enabled?* #+mcl t #+lucid t #-(or mcl lucid) nil)
+(defvar *egc-enabled?* nil)
 
 (DEFVAR *CONTROL-CHARACTER-DISPLAY-PREFIX* #\
   "For display of control characters (all of them until we decide on different prefixes")
