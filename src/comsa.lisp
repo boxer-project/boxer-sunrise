@@ -114,12 +114,13 @@ region. "
 (defun convert-key-code-to-number (kc)
   (ldb (byte 4 0) (char-code kc)))
 
-(defmacro def-com-increment-arg (n)
-  `(DEFBOXER-COMMAND ,(intern (symbol-format nil "COM-INCREMENT-NUMERIC-ARG-BY-~D" n)) ()
-     "specifies part of the next command's numeric argument. "
-     (DECREMENT-KEY-TICK)
-     (SET-EDITOR-NUMERIC-ARG (+ ,n (* 10. (OR *EDITOR-NUMERIC-ARGUMENT* 0))))
-     boxer-eval::*novalue*))
+(defmacro def-com-increment-arg (n) (print "Debugging def-com-increment-arg"))
+;; sgithens TODO debugging (defmacro def-com-increment-arg (n)
+;;   `(DEFBOXER-COMMAND ,(intern (symbol-format nil "COM-INCREMENT-NUMERIC-ARG-BY-~D" n)) ()
+;;      "specifies part of the next command's numeric argument. "
+;;      (DECREMENT-KEY-TICK)
+;;      (SET-EDITOR-NUMERIC-ARG (+ ,n (* 10. (OR *EDITOR-NUMERIC-ARGUMENT* 0))))
+;;      boxer-eval::*novalue*))
 (def-com-increment-arg 0)
 (def-com-increment-arg 1)
 (def-com-increment-arg 2)
