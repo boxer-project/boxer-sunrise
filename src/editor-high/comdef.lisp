@@ -305,7 +305,6 @@ Modification History (most recent at top)
 (defmacro with-temporary-bp ((bp-var bp-values-form) . body)
   (let ((row (gensym)) (cha-no (gensym)) (screen-box (gensym)))
     `(let ((,bp-var (make-bp ':fixed)))
-       #+lucid (declare (lcl::dynamic-extent ,bp-var))
        (multiple-value-bind (,row ,cha-no ,screen-box)
 	   ,bp-values-form
 	 (progn
