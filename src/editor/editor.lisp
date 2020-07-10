@@ -87,7 +87,6 @@ Modification History (most recent at top)
        (color= (bfd-color fd1) (bfd-color fd2))))
 
 (defun make-initialized-row (&rest init-plist)
-  #+lucid (declare (lcl::dynamic-extent init-plist))
   (let ((new-row (apply #'make-instance 'row init-plist)))
     ;; make sure the new row starts with the current font or else
     ;; the font changing mechanism will reset the current font to
@@ -103,11 +102,9 @@ Modification History (most recent at top)
 
 
 (defun make-initialized-box (&rest init-plist)
-  #+lucid (declare (lcl::dynamic-extent init-plist))
   (apply #'make-instance  'box (list* :allow-other-keys t init-plist)))
 
 (defmethod initialize-instance ((self row) &rest init-plist)
-  #+lucid (declare (lcl::dynamic-extent init-plist))
   (shared-initialize self t)
   (with-slots (tick superior-box previous-row next-row chas-array)
 	       self
@@ -119,7 +116,6 @@ Modification History (most recent at top)
 				 (make-chas-array)))))
 
 (defmethod initialize-instance ((self box)  &rest init-plist)
-  #+lucid (declare (lcl::dynamic-extent init-plist))
   (shared-initialize self t)
   (with-slots (superior-row closets first-inferior-row
 			     display-style-list cached-rows)
@@ -151,14 +147,12 @@ Modification History (most recent at top)
 		       (make-initialized-row))))
 
 (defmethod initialize-instance ((self doit-box) &rest init-plist)
-  #+lucid (declare (lcl::dynamic-extent init-plist))
   (unless (or (eq (class-name (class-of self)) 'doit-box)
 	      (getf init-plist ':type))
     (set-type self 'doit-box))
   (call-next-method))
 
 (defmethod initialize-instance ((self data-box) &rest init-plist)
-  #+lucid (declare (lcl::dynamic-extent init-plist))
   (unless (or (eq (class-name (class-of self)) 'data-box)
 	      (getf init-plist ':type))
     (set-type self 'data-box))
@@ -1460,7 +1454,7 @@ points to the Box which contains the lower BP,then the superior BP is returned"
 
 (defvar *no-echo-char* #\*)
 (defvar *no-echo-string* (make-array 10 :element-type
-				     #-lucid 'character #+lucid 'string-char
+				     'character
                                      :initial-element *no-echo-char*
                                      :fill-pointer 0 :adjustable t))
 
@@ -1469,7 +1463,7 @@ points to the Box which contains the lower BP,then the superior BP is returned"
   (setq *boxer-status-string-alist* nil)
   (status-line-display 'boxer-editor-error prompt-string)
   (let ((return-string (make-array 10 :element-type
-				   #-lucid 'character #+lucid 'string-char
+				   'character
                                    :adjustable t :fill-pointer 0))
         ;; this so we can STOP from a menu
         (*input-throw-tag* :get-string)
