@@ -1398,19 +1398,6 @@ Modification History (most recent at top)
     (values (car rows) vc-rows-entry)))
 
 ;; AppGen Lossage for complex version of defsetf
-#+mcl
-(defun %set-first-row-in-box (box-or-port new-row)
-  (let ((box (box-or-port-target box-or-port t)))
-    (etypecase box
-      (virtual-copy (setf (car (vc-rows box)) new-row))
-      (box (change-virtual-copy-rows box (append (list new-row)
-                                                 (cdr (vc-rows box)))))))
-  new-row)
-
-#+mcl
-(defsetf get-first-row-in-box %set-first-row-in-box)
-
-#-mcl
 (defsetf get-first-row-in-box (box-or-port) (new-row)
   `(let ((box (box-or-port-target ,box-or-port t)))
      (etypecase box
@@ -1418,21 +1405,6 @@ Modification History (most recent at top)
        (box (change-virtual-copy-rows box (append (list ,new-row)
 						  (cdr (vc-rows box))))))))
 
-#+mcl
-(defun %set-nth-row-in-box (box-or-port n new-row)
-  (let ((box (box-or-port-target box-or-port t)))
-    (etypecase box
-      (virtual-copy (setf (nth n (vc-rows box)) new-row))
-      (box (change-virtual-copy-rows box (append (subseq (vc-rows box) 0 n)
-					         (list new-row)
-					         (subseq (vc-rows box)
-						         (1+ n)))))))
-  new-row)
-
-#+mcl
-(defsetf get-nth-row-in-box %set-nth-row-in-box)
-
-#-mcl
 (defsetf get-nth-row-in-box (box-or-port n) (new-row)
   `(let ((box (box-or-port-target ,box-or-port t)))
      (etypecase box
