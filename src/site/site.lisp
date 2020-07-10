@@ -40,7 +40,7 @@ Modification History (most recent at the top)
 
 (defvar *default-configuration-file-name* "config.text")
 
-(defvar *site-initialization-verbosity* #+mcl T #-mcl nil)
+(defvar *site-initialization-verbosity* nil)
 
 (defvar *site-initialization-handlers* nil)
 
