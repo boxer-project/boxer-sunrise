@@ -493,59 +493,22 @@ Modification History (most recent at top)
   (bw::region-row-blinker-uid region))
 
 ;;; setf's
-;;; MCL AppGen lossage for macro form of defsetf...
 
-#+mcl
-(defun %set-region-row-blinker-wid (region new-wid)
-  (setf (bw::blinker-width region) new-wid))
-#+mcl(defsetf region-row-blinker-wid %set-region-row-blinker-wid)
-
-#-mcl
 (defsetf region-row-blinker-wid (region) (new-wid)
   `(setf (bw::blinker-width ,region) ,new-wid))
 
-#+mcl
-(defun %set-region-row-blinker-hei (region new-hei)
-  (setf (bw::blinker-height region) new-hei))
-#+mcl (defsetf region-row-blinker-hei %set-region-row-blinker-hei)
-
-#-mcl
 (defsetf region-row-blinker-hei (region) (new-hei)
   `(setf (bw::blinker-height ,region) ,new-hei))
 
-#+mcl
-(defun %set-region-row-blinker-x (region new-x)
-  (setf (bw::blinker-x region) new-x))
-#+mcl (defsetf region-row-blinker-x %set-region-row-blinker-x)
-
-#-mcl
 (defsetf region-row-blinker-x (region) (new-x)
   `(setf (bw::blinker-x ,region) ,new-x))
 
-#+mcl
-(defun %set-region-row-blinker-y (region new-y)
-  (setf (bw::blinker-y region) new-y))
-#+mcl (defsetf region-row-blinker-y %set-region-row-blinker-y)
-
-#-mcl
 (defsetf region-row-blinker-y (region) (new-y)
   `(setf (bw::blinker-y ,region) ,new-y))
 
-#+mcl
-(defun %set-region-row-blinker-visibility (region new-vis)
-  (setf (bw::blinker-visibility region) new-vis))
-#+mcl (defsetf region-row-blinker-visibility %set-region-row-blinker-visibility)
-
-#-mcl
 (defsetf region-row-blinker-visibility (region) (new-vis)
   `(setf (bw::blinker-visibility ,region) ,new-vis))
 
-#+mcl
-(defun %set-region-row-blinker-uid (region new-uid)
-  (setf (bw::region-row-blinker-uid region) new-uid))
-#+mcl (defsetf region-row-blinker-uid %set-region-row-blinker-uid)
-
-#-mcl
 (defsetf region-row-blinker-uid (region) (new-uid)
   `(setf (bw::region-row-blinker-uid ,region) ,new-uid))
 
