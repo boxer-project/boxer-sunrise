@@ -26,4 +26,5 @@
             (append (butlast (pathname-directory (lw:lisp-image-name)))
             '("Resources" "Fonts"))))
     (boxer-window::window-system-specific-make-boxer)
-    (boxer-window::window-system-specific-start-boxer-1))
+    (boxer-window::window-system-specific-start-boxer-1)
+    (boxer-window::font-size-menu-action 3 nil))
