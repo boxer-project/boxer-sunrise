@@ -69,8 +69,8 @@ Modification History (most recent at top)
   `(svref ,x 3))
 
 (defstruct (interpreted-boxer-function
-        :named (:type vector)
-        (:predicate nil))
+            :named (:type vector)
+            (:predicate nil))
   arglist
   precedence
   infix-p
@@ -81,8 +81,8 @@ Modification History (most recent at top)
   reversed-arg-names)
 
 (defstruct (compiled-boxer-function
-        :named (:type vector)
-        (:predicate nil))
+            :named (:type vector)
+            (:predicate nil))
   arglist
   precedence
   infix-p
@@ -104,11 +104,11 @@ Modification History (most recent at top)
 (defun boxer-function? (object)
   (and (possible-eval-object? object)
        (or (interpreted-boxer-function? object)
-       (compiled-boxer-function? object))))
+           (compiled-boxer-function? object))))
 
 ;; Use this on a symbol to see if it represents an infix function.
 (boxer::defsubst infix-function-symbol-p (symbol)
-  (fast-memq symbol *infix-symbol-list*))
+                 (fast-memq symbol *infix-symbol-list*))
 
 ;; Use this on a boxer function object to see if it's infix.
 ;; sgithens TODO (defsubst infix-function-p (function)
@@ -122,23 +122,23 @@ Modification History (most recent at top)
 (defun compiled-boxer-function-name (function)
   (let ((function (compiled-boxer-function-object function)))
     (if #+win32 (system::compiled-code-p function)
-        #+mac   (system::simple-compiled-function-p function)
-        (system::function-dspec function)
+      #+mac   (system::simple-compiled-function-p function)
+      (system::function-dspec function)
       ;; try the common lisp thing
       (multiple-value-bind (exp env name)
-          (function-lambda-expression function)
-        (declare (ignore exp env))
-        name))))
+                           (function-lambda-expression function)
+                           (declare (ignore exp env))
+                           name))))
 
 #-(or lispm lucid excl mcl lispworks)
 (defun compiled-boxer-function-name (function)
- ;  (warn
- ;   "~%The function, Compiled-Boxer-Function-Name, needs to be defined for ~A"
- ;   (lisp-implementation-type))
- (multiple-value-bind (exp env name)
-     (function-lambda-expression function)
-   (declare (ignore exp env))
-   name))
+  ;  (warn
+  ;   "~%The function, Compiled-Boxer-Function-Name, needs to be defined for ~A"
+  ;   (lisp-implementation-type))
+  (multiple-value-bind (exp env name)
+                       (function-lambda-expression function)
+                       (declare (ignore exp env))
+                       name))
 
 
 ;;; BOXER-FUNCTION-NARGS should be called sparingly, since it calls
@@ -169,46 +169,46 @@ Modification History (most recent at top)
 ;;; gets to the flavor.
 (defun canonicalize-arglist-flavors (arglist)
   (mapcar #'(lambda (arg-entry)
-          (cond ((numberize-flavor? arg-entry)
-             (cons 'dont-copy (delete 'numberize arg-entry)))
-            (t arg-entry)))
-      arglist))
+                    (cond ((numberize-flavor? arg-entry)
+                           (cons 'dont-copy (delete 'numberize arg-entry)))
+                      (t arg-entry)))
+          arglist))
 
 ;;; The main function for defining primitives.
 (defmacro defboxer-primitive (name-descriptor arglist &body body)
   (let* ((name (if (symbolp name-descriptor) name-descriptor
-                   (car name-descriptor)))
+                 (car name-descriptor)))
          (precedence (if (symbolp name-descriptor)
-                         (calculate-default-precedence arglist)
-                         (cadr name-descriptor)))
+                       (calculate-default-precedence arglist)
+                       (cadr name-descriptor)))
          (infixp (and (consp name-descriptor)
                       (not (null (member 'infix name-descriptor))))))
     `(progn
-       (proclaim '(special ,name))
-       ,(when infixp
-      `(unless (member ',name *infix-symbol-list*)
-         (push ',name *infix-symbol-list*)))
-       (defun ,name nil
-     (let ,(mapcar #'(lambda (u)
-               `(,(if (symbolp u) u (cadr u))
-                 (vpdl-pop-no-test)))
-        (reverse arglist))
-       ,(when (some #'numberize-flavor? arglist)
-          `(progn . ,(mapcan
-              #'(lambda (var)
-                  (if (numberize-flavor? var)
-                  (list `(setq ,(cadr var)
-                           (boxer::numberize-or-error
-                        ,(cadr var))))
-                  nil))
-              (reverse arglist))))
-       (progn . ,body)))
-       (boxer-toplevel-set ',name
-               (make-compiled-boxer-function
-                :arglist ',(canonicalize-arglist-flavors arglist)
-                :precedence ,precedence
-                :infix-p ',infixp
-                :object #',name)))))
+      (proclaim '(special ,name))
+      ,(when infixp
+         `(unless (member ',name *infix-symbol-list*)
+            (push ',name *infix-symbol-list*)))
+      (defun ,name nil
+        (let ,(mapcar #'(lambda (u)
+                                `(,(if (symbolp u) u (cadr u))
+                                  (vpdl-pop-no-test)))
+                      (reverse arglist))
+          ,(when (some #'numberize-flavor? arglist)
+             `(progn . ,(mapcan
+                         #'(lambda (var)
+                                   (if (numberize-flavor? var)
+                                     (list `(setq ,(cadr var)
+                                                   (boxer::numberize-or-error
+                                                    ,(cadr var))))
+                                     nil))
+                         (reverse arglist))))
+          (progn . ,body)))
+      (boxer-toplevel-set ',name
+                          (make-compiled-boxer-function
+                           :arglist ',(canonicalize-arglist-flavors arglist)
+                           :precedence ,precedence
+                           :infix-p ',infixp
+                           :object #',name)))))
 
 #|				      (list `(progn (setq bad-arg ,(cadr var))
                             (setq ,(cadr var)
@@ -245,52 +245,52 @@ Modification History (most recent at top)
 ;;; nothing other than (RESTORE-STATE-VARIABLES) need be done.
 ;;;
 (defmacro defrecursive-eval-primitive
-    (name arglist
-      &key state-variables stack-frame-allocation
-      before after
-      unwind-protect-form)
+  (name arglist
+        &key state-variables stack-frame-allocation
+        before after
+        unwind-protect-form)
   (unless (eq 'LIST-REST (caar (last arglist)))
     (error "Bugs in the implementation of DEFRECURSIVE-EVAL-PRIMITIVE will prevent this from working: ~S ~S" name arglist))
   (let ((FRAME-NAME (intern
-             (concatenate 'string (symbol-name name) "-SPECIAL-FRAME")
-             'boxer-eval))
-    (USUAL-STATE-VARIABLES '(*RUN-LIST-SFUN-EPILOG-HANDLER*
-                 *EXECUTING-POINTER*)))
+                     (concatenate 'string (symbol-name name) "-SPECIAL-FRAME")
+                     'boxer-eval))
+        (USUAL-STATE-VARIABLES '(*RUN-LIST-SFUN-EPILOG-HANDLER*
+                                 *EXECUTING-POINTER*)))
     `(progn
-       (DEFINE-STACK-FRAME (,frame-name .,(or stack-frame-allocation
-                          '(10 5 10 10)))
-       ,(format nil "Making more room for ~A" name)
-     ,unwind-protect-form
-     ,@usual-state-variables
-     . ,state-variables)
-       (DEFBOXER-PRIMITIVE ,name ,arglist
-     (macrolet ((SET-AND-SAVE-STATE-VARIABLES
-            (&rest values)
-              `(progn (pdl-push-frame
-                   ,',frame-name
-                   ;; +++ this previously contained an illegal
-                   ;; backquote construct, I'm hoping this has
-                   ;; the right effect
-                   . ,',(append usual-state-variables
-                        state-variables))
-                  .,(mapcar #'(lambda (var val)
-                        `(setq ,var ,val))
-                    ',state-variables values)))
-            (RESTORE-STATE-VARIABLES
-            ()
-              `(pdl-pop-frame ,',frame-name
-                                      ;; +++ see above
-                                      . ,',(append usual-state-variables
-                           state-variables)))
-            (RECURSIVE-EVAL-INVOKE
-            (list)
-              `(progn
-             (setq *sfun-continuation*
-                   '*run-list-sfun-continuation*)
-             (setq *run-list-sfun-epilog-handler*
-                   #'(lambda () (progn ,',after)))
-             ,list)))
-       ,before)))))
+      (DEFINE-STACK-FRAME (,frame-name .,(or stack-frame-allocation
+                                             '(10 5 10 10)))
+                          ,(format nil "Making more room for ~A" name)
+                          ,unwind-protect-form
+                          ,@usual-state-variables
+                          . ,state-variables)
+      (DEFBOXER-PRIMITIVE ,name ,arglist
+                           (macrolet ((SET-AND-SAVE-STATE-VARIABLES
+                                       (&rest values)
+                                       `(progn (pdl-push-frame
+                                                ,',frame-name
+                                                 ;; +++ this previously contained an illegal
+                                                 ;; backquote construct, I'm hoping this has
+                                                 ;; the right effect
+                                                 . ,',(append usual-state-variables
+                                                              state-variables))
+                                               .,(mapcar #'(lambda (var val)
+                                                                   `(setq ,var ,val))
+                                                         ',state-variables values)))
+                                      (RESTORE-STATE-VARIABLES
+                                       ()
+                                       `(pdl-pop-frame ,',frame-name
+                                                        ;; +++ see above
+                                                        . ,',(append usual-state-variables
+                                                                     state-variables)))
+                                      (RECURSIVE-EVAL-INVOKE
+                                       (list)
+                                       `(progn
+                                         (setq *sfun-continuation*
+                                               '*run-list-sfun-continuation*)
+                                         (setq *run-list-sfun-epilog-handler*
+                                               #'(lambda () (progn ,',after)))
+                                         ,list)))
+                                     ,before)))))
 
 
 
@@ -328,48 +328,48 @@ Modification History (most recent at top)
 
 (defmacro defrecursive-funcall-primitive
   (name arglist
-    &key state-variables stack-frame-allocation
-    before after
-    unwind-protect-form)
+        &key state-variables stack-frame-allocation
+        before after
+        unwind-protect-form)
   (let ((*package* (find-package "BOXER-EVAL")))
     (let ((FRAME-NAME (intern
-               (concatenate 'string (symbol-name name)
-                    "-SPECIAL-FRAME")
-               'boxer-eval))
-      (USUAL-STATE-VARIABLES '(*UFUNCALL-SFUN-EPILOG-HANDLER*)))
+                       (concatenate 'string (symbol-name name)
+                                    "-SPECIAL-FRAME")
+                       'boxer-eval))
+          (USUAL-STATE-VARIABLES '(*UFUNCALL-SFUN-EPILOG-HANDLER*)))
       `(progn
-     ,.(mapcar #'(lambda (var) (when (not (eval-var-defined? var))
-                     `(define-eval-var ,var :global nil)))
-           state-variables)
-     (DEFINE-STACK-FRAME (,frame-name .,(or stack-frame-allocation
-                        '(10 5 10 10)))
-         ,(format nil "Making more room for ~A" name)
-       ,unwind-protect-form
-       ,@usual-state-variables
-       . ,state-variables)
-     (DEFBOXER-PRIMITIVE ,name ,arglist
-       (macrolet ((SET-AND-SAVE-STATE-VARIABLES
-               (&rest values)
-               `(progn (pdl-push-frame ,',frame-name
-                           ,',@usual-state-variables
-                           . ,',state-variables)
-                   .,(mapcar #'(lambda (var val)
-                         `(setq ,var ,val))
-                     ',state-variables values)))
-              (RESTORE-STATE-VARIABLES
-               ()
-               `(pdl-pop-frame ,',frame-name
-                       ,',@usual-state-variables
-                       . ,',state-variables))
-              (RECURSIVE-FUNCALL-INVOKE
-               (function)
-               `(progn
-              (setq *sfun-continuation*
-                '*ufuncall-sfun-result-sfun-continuation*)
-              (setq *ufuncall-sfun-epilog-handler*
-                #'(lambda () ,',after))
-              ,function)))
-             ,before))))))
+        ,.(mapcar #'(lambda (var) (when (not (eval-var-defined? var))
+                                    `(define-eval-var ,var :global nil)))
+                  state-variables)
+         (DEFINE-STACK-FRAME (,frame-name .,(or stack-frame-allocation
+                                                '(10 5 10 10)))
+                             ,(format nil "Making more room for ~A" name)
+                             ,unwind-protect-form
+                             ,@usual-state-variables
+                             . ,state-variables)
+         (DEFBOXER-PRIMITIVE ,name ,arglist
+                              (macrolet ((SET-AND-SAVE-STATE-VARIABLES
+                                          (&rest values)
+                                          `(progn (pdl-push-frame ,',frame-name
+                                                                   ,',@usual-state-variables
+                                                                   . ,',state-variables)
+                                                  .,(mapcar #'(lambda (var val)
+                                                                      `(setq ,var ,val))
+                                                            ',state-variables values)))
+                                         (RESTORE-STATE-VARIABLES
+                                          ()
+                                          `(pdl-pop-frame ,',frame-name
+                                                           ,',@usual-state-variables
+                                                           . ,',state-variables))
+                                         (RECURSIVE-FUNCALL-INVOKE
+                                          (function)
+                                          `(progn
+                                            (setq *sfun-continuation*
+                                                  '*ufuncall-sfun-result-sfun-continuation*)
+                                            (setq *ufuncall-sfun-epilog-handler*
+                                                  #'(lambda () ,',after))
+                                            ,function)))
+                                        ,before))))))
 
 
 ;;; Use RECURSIVE-EVAL-SETUP-LIST when possible!
@@ -392,11 +392,11 @@ Modification History (most recent at top)
 ;;; And this form is macro which takes multiple args.
 (defmacro recursive-eval-setup-list (&rest args)
   `(progn (setq *sfun-continuation* '*run-list-sfun-continuation*)
-      (list* ,@args *executing-pointer*)))
+          (list* ,@args *executing-pointer*)))
 
 (defmacro recursive-eval-setup-list* (&rest args)
   `(progn (setq *sfun-continuation* '*run-list-sfun-continuation*)
-      (list* ,@args *executing-pointer*)))
+          (list* ,@args *executing-pointer*)))
 
 ;;; And use this when all else fails and you decided to do it yourself.
 (defun recursive-eval-setup-manual (list)
@@ -407,20 +407,20 @@ Modification History (most recent at top)
   (let ((name (gensym)))
     (proclaim `(special ,name))
     (let ((lisp-function-object
-        (compile-lambda-if-possible
-          name
-          `(lambda ()
-         (let ,(mapcar
-             #'(lambda (u) `(,u (vpdl-pop-no-test)))
-             (reverse arglist))
-           . ,code)))))
+           (compile-lambda-if-possible
+            name
+            `(lambda ()
+                     (let ,(mapcar
+                            #'(lambda (u) `(,u (vpdl-pop-no-test)))
+                            (reverse arglist))
+                       . ,code)))))
       (boxer-toplevel-set
-    name
-    (make-compiled-boxer-function
-      :arglist arglist
-      :precedence 0
-      :infix-p nil
-      :object lisp-function-object)))
+       name
+       (make-compiled-boxer-function
+        :arglist arglist
+        :precedence 0
+        :infix-p nil
+        :object lisp-function-object)))
     name))
 
 
@@ -440,47 +440,47 @@ Modification History (most recent at top)
 ;;; lexical environment!)
 (defmacro defboxer-key (key-spec function)
   (let* ((shift-bits (if (listp key-spec) (cadr key-spec) 0))
-     (key-name
-      (if (zerop shift-bits)
-          key-spec
-          (boxer::intern-in-bu-package
-           (symbol-format nil "~A-~A" (boxer::get-shift-names shift-bits)
-                  (car key-spec))))))
+         (key-name
+          (if (zerop shift-bits)
+            key-spec
+            (boxer::intern-in-bu-package
+             (symbol-format nil "~A-~A" (boxer::get-shift-names shift-bits)
+                            (car key-spec))))))
     `(progn
       (proclaim '(special ,key-name))
       (boxer::record-command-key ',key-name ',function)
       ;; used by top level mode
       (boxer::record-vanilla-key ',key-name ',function)
       (boxer-toplevel-set-nocache ',key-name
-       (boxer-eval::encapsulate-key-function ',function)))))
+                                  (boxer-eval::encapsulate-key-function ',function)))))
 
 (defun defboxer-key-internal (key-spec function)
   (let* ((shift-bits (if (listp key-spec) (cadr key-spec) 0))
-     (key-name
-      (if (zerop shift-bits)
-          key-spec
-          (boxer::intern-in-bu-package
-           (symbol-format nil "~A-~A"
-                  (boxer::get-shift-names shift-bits)
-                  (car key-spec))))))
+         (key-name
+          (if (zerop shift-bits)
+            key-spec
+            (boxer::intern-in-bu-package
+             (symbol-format nil "~A-~A"
+                            (boxer::get-shift-names shift-bits)
+                            (car key-spec))))))
     (proclaim `(special ,key-name))
     (boxer::record-command-key-internal key-name function)
-;+++ this is unused  (boxer::record-command-key-internal key-name function)
-;  #+mcl
-;  (when (symbolp function)
-;    (pushnew key-name (get function :on-keys)))       ; this is new +++
+    ;+++ this is unused  (boxer::record-command-key-internal key-name function)
+    ;  #+mcl
+    ;  (when (symbolp function)
+    ;    (pushnew key-name (get function :on-keys)))       ; this is new +++
     ;; used by top level mode
     (boxer::record-vanilla-key key-name function)
     (boxer-toplevel-set-nocache key-name
-                (boxer-eval::encapsulate-key-function function))))
+                                (boxer-eval::encapsulate-key-function function))))
 
 (eval-when (compile load eval)
-(defun encapsulate-key-function (fun)
-  (make-compiled-boxer-function
-    :arglist nil
-    :precedence *default-precedence*
-    :object fun))
-)
+           (defun encapsulate-key-function (fun)
+             (make-compiled-boxer-function
+              :arglist nil
+              :precedence *default-precedence*
+              :object fun))
+           )
 ;;;;
 ;;;; Functions for making internal Boxer function objects out of boxes.
 ;;;;
@@ -489,31 +489,31 @@ Modification History (most recent at top)
 (defmethod cached-code-editor-box ((box boxer::box))
   (or (slot-value box 'cached-code)
       (let ((new-fun (convert-editor-box-to-interpreted-procedure-internal box)))
-    (setf (slot-value box 'cached-code) new-fun)
-    new-fun)))
+        (setf (slot-value box 'cached-code) new-fun)
+        new-fun)))
 
 (defmethod cached-code-editor-port ((port boxer::port-box))
   (let ((box-to-parse (boxer::get-port-target port)))
     (or ;; bypass the cache for now (slot-value box-to-parse 'cached-code)
-    (let ((new-fun (convert-editor-box-to-interpreted-procedure-internal
-            box-to-parse)))
-      (setf (interpreted-boxer-function-lexical-call-p new-fun) t)
-      (setf (slot-value port 'cached-code) new-fun)
-      new-fun))))
+        (let ((new-fun (convert-editor-box-to-interpreted-procedure-internal
+                        box-to-parse)))
+          (setf (interpreted-boxer-function-lexical-call-p new-fun) t)
+          (setf (slot-value port 'cached-code) new-fun)
+          new-fun))))
 
 (defun cached-code-virtual-copy (vc)
   (let ((editor-box (boxer::vc-progenitor vc)))
     (if (null editor-box)
-    (convert-virtual-copy-to-interpreted-procedure-internal vc)
-    (or (slot-value editor-box 'cached-code)
-        (let ((new-fun
-           (convert-editor-box-to-interpreted-procedure-internal
-            editor-box)))
-          (when (boxer::editor-box-cacheable?
-             editor-box
-             (or (boxer::vc-creation-time vc) (boxer::now)))
-        (setf (slot-value editor-box 'cached-code) new-fun))
-          new-fun)))))
+      (convert-virtual-copy-to-interpreted-procedure-internal vc)
+      (or (slot-value editor-box 'cached-code)
+          (let ((new-fun
+                 (convert-editor-box-to-interpreted-procedure-internal
+                  editor-box)))
+            (when (boxer::editor-box-cacheable?
+                   editor-box
+                   (or (boxer::vc-creation-time vc) (boxer::now)))
+              (setf (slot-value editor-box 'cached-code) new-fun))
+            new-fun)))))
 
 ;;; +++ I changed this to expect vp's to point to real data-boxes, rather than vector representations
 ;;; of data-boxes, since that's what it's getting called with.  I added a check to make sure this is
@@ -547,7 +547,7 @@ Modification History (most recent at top)
   (error "cached-code: Call either cached-code-editor-box, cached-code-editor-port, cached-code-virtual-copy or cached-code-virtual-port"))
 
 (defvar *flavored-input-markers* '(bu::datafy bu::port-to bu::dont-port
-                   bu::box-rest))
+                                              bu::box-rest))
 
 (defun flavored-input-marker? (symbol)
   (fast-memq symbol *flavored-input-markers*))
@@ -566,69 +566,69 @@ Modification History (most recent at top)
 
 (defun convert-editor-box-to-interpreted-procedure-internal (box)
   (let* ((list (boxer::get-current-editor-box-items box))
-     (argsp (fast-memq (caar list) boxer::*symbols-for-input-line*))
-     (boxes-in-arglist nil)
-     (arglist nil)
-     (reversed-arg-names nil))
+         (argsp (fast-memq (caar list) boxer::*symbols-for-input-line*))
+         (boxes-in-arglist nil)
+         (arglist nil)
+         (reversed-arg-names nil))
     (catch 'bad
       (unless (null argsp)
         (flet ((process-input-object (chunk symbol)
-             (cond ((eq symbol '*ignoring-definition-object*)
-                        ;; a named box....
-                (let* ((input-box (boxer::chunk-pname
-                                           (boxer::get-pointer-value chunk
-                                                                     box)))
-                               (input-box-name-row-objs
-                                (boxer::eval-objs(boxer::name-row input-box))))
-                          (push input-box boxes-in-arglist)
-                          (values
-                           (if (null (cdr input-box-name-row-objs))
-                             (car input-box-name-row-objs)
-                             (boxer::get-box-name
-                              (boxer::name-row input-box)))
-                           (when (port-box? input-box) t))))
-                       ((symbolp symbol) symbol)
-                       (t
-                        ;; something else, probably an unnamed box
-                        (let ((thing (box::get-pointer-value chunk box)))
-                          (setq argsp nil)
-                          (setq list `((bu::error "Bad Input Object" ,(if (box::chunk-p thing)
-                                                                        (box::chunk-chunk thing)
-                                                                        thing))))
-                          (throw 'bad nil))))))
-      (setq arglist
-            (with-collection
-          (do ((chunks-sublist (cdr (boxer::chunks
-                         (boxer::first-inferior-row box)))
-                       (cdr chunks-sublist))
-               (symbols-sublist (cdr (car list))
-                    (cdr symbols-sublist)))
-              ((null symbols-sublist))
-            (multiple-value-bind (input-symbol port-flavored?)
-                             (process-input-object (car chunks-sublist)
-                                           (car symbols-sublist))
-              (cond ((flavored-input-marker? input-symbol)
-                 (unless (null (cdr symbols-sublist))
-                   (let ((arg-name (process-input-object
-                        (cadr chunks-sublist)
-                        (cadr symbols-sublist))))
-                 (push arg-name reversed-arg-names)
-                 (collect (list input-symbol arg-name))
-                 (setq symbols-sublist (cdr symbols-sublist))
-                 (setq chunks-sublist (cdr chunks-sublist)))))
-                ((not (null port-flavored?))
-                 (push input-symbol reversed-arg-names)
-                 (collect (list 'bu::port-to input-symbol)))
-                (t (push input-symbol reversed-arg-names)
-                   (collect input-symbol))))))))))
+                                     (cond ((eq symbol '*ignoring-definition-object*)
+                                            ;; a named box....
+                                            (let* ((input-box (boxer::chunk-pname
+                                                               (boxer::get-pointer-value chunk
+                                                                                         box)))
+                                                   (input-box-name-row-objs
+                                                    (boxer::eval-objs(boxer::name-row input-box))))
+                                              (push input-box boxes-in-arglist)
+                                              (values
+                                               (if (null (cdr input-box-name-row-objs))
+                                                 (car input-box-name-row-objs)
+                                                 (boxer::get-box-name
+                                                  (boxer::name-row input-box)))
+                                               (when (port-box? input-box) t))))
+                                       ((symbolp symbol) symbol)
+                                       (t
+                                        ;; something else, probably an unnamed box
+                                        (let ((thing (box::get-pointer-value chunk box)))
+                                          (setq argsp nil)
+                                          (setq list `((bu::error "Bad Input Object" ,(if (box::chunk-p thing)
+                                                                                        (box::chunk-chunk thing)
+                                                                                        thing))))
+                                          (throw 'bad nil))))))
+              (setq arglist
+                    (with-collection
+                      (do ((chunks-sublist (cdr (boxer::chunks
+                                                 (boxer::first-inferior-row box)))
+                                           (cdr chunks-sublist))
+                           (symbols-sublist (cdr (car list))
+                                            (cdr symbols-sublist)))
+                        ((null symbols-sublist))
+                        (multiple-value-bind (input-symbol port-flavored?)
+                                             (process-input-object (car chunks-sublist)
+                                                                   (car symbols-sublist))
+                                             (cond ((flavored-input-marker? input-symbol)
+                                                    (unless (null (cdr symbols-sublist))
+                                                      (let ((arg-name (process-input-object
+                                                                       (cadr chunks-sublist)
+                                                                       (cadr symbols-sublist))))
+                                                        (push arg-name reversed-arg-names)
+                                                        (collect (list input-symbol arg-name))
+                                                        (setq symbols-sublist (cdr symbols-sublist))
+                                                        (setq chunks-sublist (cdr chunks-sublist)))))
+                                               ((not (null port-flavored?))
+                                                (push input-symbol reversed-arg-names)
+                                                (collect (list 'bu::port-to input-symbol)))
+                                               (t (push input-symbol reversed-arg-names)
+                                                  (collect input-symbol))))))))))
     (make-interpreted-boxer-function
      :arglist arglist
      :reversed-arg-names reversed-arg-names
      :backpointer box
      :locals (remove-if #'(lambda (local)
-                (fast-memq (static-variable-value local)
-                       boxes-in-arglist))
-            (slot-value box 'static-variables-alist))
+                                  (fast-memq (static-variable-value local)
+                                             boxes-in-arglist))
+                        (slot-value box 'static-variables-alist))
      :precedence (calculate-default-precedence arglist)
      :lexical-call-p nil
      :text (if argsp (cdr list) list))))
@@ -636,21 +636,21 @@ Modification History (most recent at top)
 ;;; This function does hairy calculation too, but we can't cache the result.
 (defun convert-virtual-copy-to-interpreted-procedure-internal (box)
   (let* ((list (boxer::raw-unboxed-items box))
-     (argsp (member (caar list) boxer::*symbols-for-input-line*))
-     (arglist nil)
-     (reversed-arg-names nil))
+         (argsp (member (caar list) boxer::*symbols-for-input-line*))
+         (arglist nil)
+         (reversed-arg-names nil))
     (when argsp
       (with-collection
-      (do* ((sublist (cdr (car list)) (cdr sublist))
-        (symbol (car sublist) (car sublist)))
-           ((null sublist))
-        (cond ((flavored-input-marker? symbol)
-           (unless (null (cdr sublist))
-             (push (cadr sublist) reversed-arg-names)
-             (collect (list symbol (cadr sublist)))
-             (setq sublist (cdr sublist))))
-          (t (push symbol reversed-arg-names)
-             (collect symbol))))))
+        (do* ((sublist (cdr (car list)) (cdr sublist))
+              (symbol (car sublist) (car sublist)))
+          ((null sublist))
+          (cond ((flavored-input-marker? symbol)
+                 (unless (null (cdr sublist))
+                   (push (cadr sublist) reversed-arg-names)
+                   (collect (list symbol (cadr sublist)))
+                   (setq sublist (cdr sublist))))
+            (t (push symbol reversed-arg-names)
+               (collect symbol))))))
     (make-interpreted-boxer-function
      :arglist arglist
      :reversed-arg-names reversed-arg-names
@@ -672,14 +672,14 @@ Modification History (most recent at top)
 ;;; temporary hack to get RUN to work with ports
 (defun convert-data-to-function (box-or-evbox)
   (cond ((numberp box-or-evbox)
-     (make-interpreted-boxer-function
-      :arglist nil
-      :reversed-arg-names nil
-      :backpointer nil
-      :locals nil
-      :precedence (calculate-default-precedence nil)
-      :lexical-call-p nil
-      :text (list (list box-or-evbox))))
+         (make-interpreted-boxer-function
+          :arglist nil
+          :reversed-arg-names nil
+          :backpointer nil
+          :locals nil
+          :precedence (calculate-default-precedence nil)
+          :lexical-call-p nil
+          :text (list (list box-or-evbox))))
     ((fast-eval-data-box? box-or-evbox)
      (cached-code-virtual-copy box-or-evbox))
     ((data-box? box-or-evbox)
@@ -692,7 +692,7 @@ Modification History (most recent at top)
 
 (defun make-interpreted-procedure-from-list (lines)
   (make-interpreted-boxer-function :arglist nil
-                   :text lines))
+                                   :text lines))
 
 #|
 ;; Perhaps this should be like convert-data-to-function ?
