@@ -532,15 +532,15 @@ Modification History (most recent at top)
   ;; when it becomes invalid.)
   ;; We don't have ports to eval doit boxes.
   (if (null (boxer::vp-editor-port-backpointer vp))
-      (let ((new-fun (if (fast-eval-data-box?
-              (boxer::vp-target vp))
-             (convert-virtual-copy-to-interpreted-procedure-internal
-              (boxer::vp-target vp))
-             (convert-editor-box-to-interpreted-procedure-internal
-              (boxer::vp-target vp)))))
-    (setf (interpreted-boxer-function-lexical-call-p new-fun) t)
-    new-fun)
-      (cached-code-editor-port (boxer::vp-editor-port-backpointer vp))))
+    (let ((new-fun (if (fast-eval-data-box?
+                        (boxer::vp-target vp))
+                     (convert-virtual-copy-to-interpreted-procedure-internal
+                      (boxer::vp-target vp))
+                     (convert-editor-box-to-interpreted-procedure-internal
+                      (boxer::vp-target vp)))))
+      (setf (interpreted-boxer-function-lexical-call-p new-fun) t)
+      new-fun)
+    (cached-code-editor-port (boxer::vp-editor-port-backpointer vp))))
 
 (defmethod cached-code ((box boxer::box))
   box
