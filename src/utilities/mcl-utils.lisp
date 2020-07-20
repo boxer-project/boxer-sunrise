@@ -125,8 +125,8 @@ Modification History (most recent at the top)
 (progn
   (defun add-def-type (definer &optional (type 'function))
       (when (boundp 'ccl::*define-type-alist*)
-	(pushnew (string-downcase (subseq (symbol-name definer) 3))
-		 (cdr (assoc type ccl::*define-type-alist*))
+  (pushnew (string-downcase (subseq (symbol-name definer) 3))
+     (cdr (assoc type ccl::*define-type-alist*))
              :test #'equal)))
 
   (add-def-type 'boxer-eval::defboxer-primitive 'function)
@@ -334,92 +334,92 @@ Modification History (most recent at the top)
 (defun print-keys-report-1 (&optional (stream *standard-output*))
   (when (null boxer::*boxer-command-key-alist*)
     (setq boxer::*boxer-command-key-alist*
-	    (sort (copy-seq boxer::*boxer-command-key-alist*)
-		  #'string-lessp
-		  :key #'car)))
+      (sort (copy-seq boxer::*boxer-command-key-alist*)
+      #'string-lessp
+      :key #'car)))
   (dolist (key-pair *sorted-command-key-alist*)
     (unless (or (doc-self-inserting? (car key-pair) (cdr key-pair))
-		(doc-key-undefined? (car key-pair) (cdr key-pair)))
+    (doc-key-undefined? (car key-pair) (cdr key-pair)))
       (format stream
-	      "~A: ~14T~A ~39T~*~{~42T~A~%~}"
-	      (doc-pretty-key-name (car key-pair))
-	      (doc-pretty-key-function-name (car key-pair) (cdr key-pair))
-	      "Ohm-mani-padme-hum"
-	      (doc-pretty-function-doc (cdr key-pair) (- *page-width* 42))))))
+        "~A: ~14T~A ~39T~*~{~42T~A~%~}"
+        (doc-pretty-key-name (car key-pair))
+        (doc-pretty-key-function-name (car key-pair) (cdr key-pair))
+        "Ohm-mani-padme-hum"
+        (doc-pretty-function-doc (cdr key-pair) (- *page-width* 42))))))
 
 
 (defun doc-pretty-key-name (name)
   (let ((string (symbol-name name)))
     (string-capitalize
      (substitute #\space #\-
-		 (remove-mouse-and-key string)))))
+     (remove-mouse-and-key string)))))
 
 (defun remove-mouse-and-key (string)
   (let ((key-pos (search "-KEY" string))
-	(mouse-pos (search "MOUSE-" string)))
+  (mouse-pos (search "MOUSE-" string)))
     (cond ((not (null key-pos)) (subseq string 0 key-pos))
-	  ((not (null mouse-pos))
-	   (concatenate 'string
-			(subseq string 0 mouse-pos)
-			(subseq string (+ mouse-pos (length "MOUSE-")))))
-	  (t string))))
+    ((not (null mouse-pos))
+     (concatenate 'string
+      (subseq string 0 mouse-pos)
+      (subseq string (+ mouse-pos (length "MOUSE-")))))
+    (t string))))
 
 (defun doc-pretty-key-function-name (name obj)
   (declare (ignore name))
   (cond ((symbolp obj)
-	 (if (eq obj 'ignore)
-	     "Undefined"
-	   (string-capitalize
-	    (substitute #\space #\-
-			(subseq (symbol-name obj)
-			 (length "COM-"))))))
-	(t "???")))
+   (if (eq obj 'ignore)
+       "Undefined"
+     (string-capitalize
+      (substitute #\space #\-
+      (subseq (symbol-name obj)
+       (length "COM-"))))))
+  (t "???")))
 
 
 (defun doc-pretty-function-doc (obj &optional maximum-length)
   (flet ((split-if-necessary
-	  (string)
-	  (if (and maximum-length (> (length string) maximum-length))
-	      (split-string-at-n string maximum-length)
-	    string)))
-	(let ((doc (documentation obj 'function)))
-	  (if (null doc) ""
-	    (let ((segments (split-if-necessary (string-capitalize
-						 doc
-						 :end 2))))
+    (string)
+    (if (and maximum-length (> (length string) maximum-length))
+        (split-string-at-n string maximum-length)
+      string)))
+  (let ((doc (documentation obj 'function)))
+    (if (null doc) ""
+      (let ((segments (split-if-necessary (string-capitalize
+             doc
+             :end 2))))
 
-	      (if (consp segments)
-		  (let ((result nil))
-		    (dolist (string segments (nreverse result))
-			    (push string result)))
-		(list segments)))))))
+        (if (consp segments)
+      (let ((result nil))
+        (dolist (string segments (nreverse result))
+          (push string result)))
+    (list segments)))))))
 
 (defun split-string-at-n (string n &optional (start 0))
   (if (> (+ start n) (length string))
       (cons (substitute #\space #\newline
-			(string-trim " " (subseq string start))) nil)
+      (string-trim " " (subseq string start))) nil)
     (let ((likely-place (or (position #\space string
-				      :from-end t
-				      :start start
-				      :end (+ start n))
-			    (+ start n))))
+              :from-end t
+              :start start
+              :end (+ start n))
+          (+ start n))))
       (cons (substitute #\space #\newline
-			(string-trim " " (subseq string start likely-place)))
-	    (split-string-at-n string n likely-place)))))
+      (string-trim " " (subseq string start likely-place)))
+      (split-string-at-n string n likely-place)))))
 
 (defun doc-self-inserting? (name function-obj)
   (and (not (symbolp function-obj))
        (let ((string (symbol-name name)))
-	 (or (or (< (position #\- string) 2)
-		 (search "CAPITAL-" string))
-	     (let ((try (ignore-errors
-			 (progn (read-from-string
-				 (concatenate
-				  'string
-				  "#\\"
-				  (subseq string 0 (position #\- string))))
-				:no-read-error))))
-	       (eq (car try) :no-read-error))))))
+   (or (or (< (position #\- string) 2)
+     (search "CAPITAL-" string))
+       (let ((try (ignore-errors
+       (progn (read-from-string
+         (concatenate
+          'string
+          "#\\"
+          (subseq string 0 (position #\- string))))
+        :no-read-error))))
+         (eq (car try) :no-read-error))))))
 
 
 (defun doc-key-undefined? (name obj)
@@ -437,26 +437,26 @@ Modification History (most recent at the top)
   (if (null arglist)
       "()"
       (mapcar #'(lambda (arg)
-		  (if (and (consp arg)
-			   (fast-memq (car arg) *input-flavors-to-ignore*))
-		      (cadr arg)
-		      arg))
-	      arglist)))
+      (if (and (consp arg)
+         (fast-memq (car arg) *input-flavors-to-ignore*))
+          (cadr arg)
+          arg))
+        arglist)))
 
 
 (defun print-boxer-primitives (&optional (stream *standard-output*))
   (do-symbols (s (find-package 'bu))
     (when (and (boundp s)
-	       (not (or (search "-KEY" (symbol-name s))
-			(search "MOUSE" (symbol-name s))))
-	       (consp (symbol-value s))
-	       (boxer-eval::compiled-boxer-function?
-		(boxer-eval::static-variable-value (symbol-value s))))
+         (not (or (search "-KEY" (symbol-name s))
+      (search "MOUSE" (symbol-name s))))
+         (consp (symbol-value s))
+         (boxer-eval::compiled-boxer-function?
+    (boxer-eval::static-variable-value (symbol-value s))))
       (let ((fun (boxer-eval::static-variable-value (symbol-value s))))
-	(format stream "~%~A  ~A"
-		s
-		(pretty-print-boxer-function-arglist
-		 (boxer-eval::boxer-function-arglist fun)))))))
+  (format stream "~%~A  ~A"
+    s
+    (pretty-print-boxer-function-arglist
+     (boxer-eval::boxer-function-arglist fun)))))))
 
 ;;; calculating sizes....
 
@@ -472,11 +472,11 @@ Modification History (most recent at the top)
 
 (defun clear-size-stats (&optional (stats *size-stats*))
   (setf (size-stat-boxes stats) 0
-	(size-stat-rows  stats) 0
-	(size-stat-chas  stats) 0
-	(size-stat-sprites stats) 0
-	(size-stat-graphics stats) 0
-	(size-stat-ports stats) 0))
+  (size-stat-rows  stats) 0
+  (size-stat-chas  stats) 0
+  (size-stat-sprites stats) 0
+  (size-stat-graphics stats) 0
+  (size-stat-ports stats) 0))
 
 (defun report-size-stats (&optional (stats *size-stats*))
   (format t "~%Number of Boxes:    ~D~
@@ -484,12 +484,12 @@ Modification History (most recent at the top)
              ~%Number of Chas :    ~D~
              ~%Number of Sprites:  ~D~
              ~%Number of Graphics: ~D"
-	  (size-stat-boxes stats)
-	  (size-stat-rows stats)
-	  (size-stat-chas stats)
-	  (size-stat-sprites stats)
-	  (size-stat-graphics stats)
-	  (size-stat-ports stats)))
+    (size-stat-boxes stats)
+    (size-stat-rows stats)
+    (size-stat-chas stats)
+    (size-stat-sprites stats)
+    (size-stat-graphics stats)
+    (size-stat-ports stats)))
 
 (defmethod calculate-size ((box box) &optional (stats *size-stats*))
   (incf (size-stat-boxes stats))
@@ -508,8 +508,8 @@ Modification History (most recent at the top)
   (incf (size-stat-rows stats))
   (do-row-chas ((cha row))
     (if (box? cha)
-	(calculate-size cha stats)
-	(incf (size-stat-chas stats)))))
+  (calculate-size cha stats)
+  (incf (size-stat-chas stats)))))
 
 ;; left out function size calculation because it was very lucid specific
 
@@ -523,7 +523,7 @@ Modification History (most recent at the top)
 
 (defun add-manual-text (box subject-string)
   (with-open-file (stream *manual-text-file*
-			  :direction :output :if-does-not-exist :create :if-exists :append)
+        :direction :output :if-does-not-exist :create :if-exists :append)
     (format stream "~%~A~%~%" subject-string)
     (process-manual-box box stream)
     (format stream "~%~A~%" #\page)))
@@ -537,16 +537,16 @@ Modification History (most recent at the top)
 
 (defun print-entry (box stream indent-level)
   (let ((comm (caddr (boxer-eval::lookup-static-variable-internal box 'bu::command)))
-	(desc (caddr (boxer-eval::lookup-static-variable-internal box 'bu::description))))
+  (desc (caddr (boxer-eval::lookup-static-variable-internal box 'bu::description))))
     (do-box-rows ((row comm))
       (dotimes (i indent-level) (format stream " "))
       (do-row-chas ((cha row))
-	(format stream "~A" cha))
+  (format stream "~A" cha))
       (format stream "~&"))
     (do-box-rows ((row desc))
       (dotimes (i indent-level) (format stream " "))
       (do-row-chas ((cha row))
-	(format stream "~A" cha))
+  (format stream "~A" cha))
       (format stream "~&"))))
 
 
@@ -555,20 +555,20 @@ Modification History (most recent at the top)
   (do-box-rows ((row box))
     (let ((1st-cha (cha-at-cha-no row 0)))
       (when (and (not (box? 1st-cha)) (not (char= 1st-cha #\space)))
-	;; looks like a valid row, so print the text with the current indentation
-	(dotimes (i indent-level) (format stream " "))
-	(do-row-chas ((cha row))
-	  (cond ((cha? cha) (format stream "~A" cha))
-		((is-entry? cha)
-		 (format stream "~%~%")
-		 (print-entry cha stream indent-level)
-		 (format stream "~%")
-		 (return))
-		(t ;; recurse
-		 (format stream "~%~%")
-		 (process-manual-box cha stream (1+ indent-level))
-		 (format stream "~%")
-		 (return))))))))
+  ;; looks like a valid row, so print the text with the current indentation
+  (dotimes (i indent-level) (format stream " "))
+  (do-row-chas ((cha row))
+    (cond ((cha? cha) (format stream "~A" cha))
+    ((is-entry? cha)
+     (format stream "~%~%")
+     (print-entry cha stream indent-level)
+     (format stream "~%")
+     (return))
+    (t ;; recurse
+     (format stream "~%~%")
+     (process-manual-box cha stream (1+ indent-level))
+     (format stream "~%")
+     (return))))))))
 
 
 
