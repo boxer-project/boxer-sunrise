@@ -867,10 +867,10 @@ Modification History (most recent at top)
 
 (defmacro boxer-editor-bindings (recursive-p &body body)
   `(progv '(*region-being-defined* boxer::*editor-numeric-argument*
-	    boxer::*propagate-modified-messages?*)
+      boxer::*propagate-modified-messages?*)
           `(nil nil ,',recursive-p)
      (unwind-protect
-	 (progn . ,body)
+   (progn . ,body)
 ;       (when (not (null *region-being-defined*))
 ;       (flush-region *region-being-defined*))
 )))
@@ -1016,7 +1016,7 @@ Modification History (most recent at top)
 
 ;;; Mouse handling, mostly copied from clx
 (defstruct (mouse-event (:conc-name mouse-event-)
-			(:predicate mouse-event?))
+      (:predicate mouse-event?))
   ;; these are required slots that handle-boxer-input uses
   (type :mouse-click) ;; other option is :mouse-hold
   (window *boxer-pane*)
@@ -1038,80 +1038,80 @@ Modification History (most recent at top)
   (let ((warned-about-error-already-gensym (gensym)))
     `(let ((,warned-about-error-already-gensym nil))
        (restart-bind
-	((BOXER-CONTINUE
-	  #'(lambda () (throw 'system-error-restart-loop nil))
-	  :report-function
-	  #'(lambda (stream)
-	      (unless (or ,warned-about-error-already-gensym
-			  boxer::*boxer-system-hacker*
-			  boxer::*inside-lisp-breakpoint-p*)
-		(beep) (beep) (beep)
-		;; this mechanism is a crock.
-		(setq ,warned-about-error-already-gensym t))
-	      (format stream "--> Return to Boxer <--")))
-	 (BOXER-TOP-LEVEL
-	  #'(lambda () (boxer::com-goto-top-level)
+  ((BOXER-CONTINUE
+    #'(lambda () (throw 'system-error-restart-loop nil))
+    :report-function
+    #'(lambda (stream)
+        (unless (or ,warned-about-error-already-gensym
+        boxer::*boxer-system-hacker*
+        boxer::*inside-lisp-breakpoint-p*)
+    (beep) (beep) (beep)
+    ;; this mechanism is a crock.
+    (setq ,warned-about-error-already-gensym t))
+        (format stream "--> Return to Boxer <--")))
+   (BOXER-TOP-LEVEL
+    #'(lambda () (boxer::com-goto-top-level)
              (throw 'system-error-restart-loop nil))
-	  :report-function
-	  #'(lambda (stream)
-	      (format stream "--> GOTO Top Level then return to Boxer <--"))))
-	(handler-bind
-	 ((error
-	   #'(lambda (c)
-	       (cond ((or ,warned-about-error-already-gensym
-			  (not *automagic-lisp-error-handling*))
-		      (invoke-debugger c))
-		     (t
-		      (dotimes (i 3) (beep))
-		      ;(format t "~%Lisp Error:~A" c)
+    :report-function
+    #'(lambda (stream)
+        (format stream "--> GOTO Top Level then return to Boxer <--"))))
+  (handler-bind
+   ((error
+     #'(lambda (c)
+         (cond ((or ,warned-about-error-already-gensym
+        (not *automagic-lisp-error-handling*))
+          (invoke-debugger c))
+         (t
+          (dotimes (i 3) (beep))
+          ;(format t "~%Lisp Error:~A" c)
                       (when *report-crash* (write-crash-report))
-		      (boxer::boxer-editor-error "Lisp Error:~A" c)
-		      (invoke-restart 'BOXER-CONTINUE))))))
-	  (catch 'system-error-restart-loop
-	    . ,body)
-	  (setq ,warned-about-error-already-gensym nil))))))
+          (boxer::boxer-editor-error "Lisp Error:~A" c)
+          (invoke-restart 'BOXER-CONTINUE))))))
+    (catch 'system-error-restart-loop
+      . ,body)
+    (setq ,warned-about-error-already-gensym nil))))))
 
 (defmacro boxer-system-error-restart-loop (&body body)
   (let ((warned-about-error-already-gensym (gensym)))
     `(let ((,warned-about-error-already-gensym nil))
        (restart-bind
-	 ((BOXER-CONTINUE
-	   #'(lambda () (throw 'system-error-restart-loop nil))
-	   :report-function
-	   #'(lambda (stream)
-	       (unless (or ,warned-about-error-already-gensym
-			   boxer::*boxer-system-hacker*
-			   boxer::*inside-lisp-breakpoint-p*)
-		 (beep) (beep) (beep)
-		 ;; this mechanism is a crock.
-		 (setq ,warned-about-error-already-gensym t))
-	       (format stream "--> Return to Boxer <--")))
-	  (BOXER-TOP-LEVEL
-	   #'(lambda () (boxer::com-goto-top-level)
+   ((BOXER-CONTINUE
+     #'(lambda () (throw 'system-error-restart-loop nil))
+     :report-function
+     #'(lambda (stream)
+         (unless (or ,warned-about-error-already-gensym
+         boxer::*boxer-system-hacker*
+         boxer::*inside-lisp-breakpoint-p*)
+     (beep) (beep) (beep)
+     ;; this mechanism is a crock.
+     (setq ,warned-about-error-already-gensym t))
+         (format stream "--> Return to Boxer <--")))
+    (BOXER-TOP-LEVEL
+     #'(lambda () (boxer::com-goto-top-level)
               (throw 'system-error-restart-loop nil))
-	   :report-function
-	   #'(lambda (stream)
-	       (format stream "--> GOTO Top Level then return to Boxer <--")))
+     :report-function
+     #'(lambda (stream)
+         (format stream "--> GOTO Top Level then return to Boxer <--")))
           (ABORT
            #'(lambda () (boxer::com-abort))
            :report-function
            #'(lambda (stream) (format stream "Aborted"))))
-	 (handler-bind
-	   ((error
-	     #'(lambda (c)
-	         (cond ((or ,warned-about-error-already-gensym
-			    (not *automagic-lisp-error-handling*))
-		        (invoke-debugger c))
-		       (t
-		        (dotimes (i 3) (beep))
-		        ;(format t "~%Lisp Error:~A" c)
+   (handler-bind
+     ((error
+       #'(lambda (c)
+           (cond ((or ,warned-about-error-already-gensym
+          (not *automagic-lisp-error-handling*))
+            (invoke-debugger c))
+           (t
+            (dotimes (i 3) (beep))
+            ;(format t "~%Lisp Error:~A" c)
                         (when *report-crash* (write-crash-report))
-		        (boxer::boxer-editor-error "Lisp Error:~A" c)
-		        (invoke-restart 'BOXER-CONTINUE))))))
-	   (loop (catch 'system-error-restart-loop
+            (boxer::boxer-editor-error "Lisp Error:~A" c)
+            (invoke-restart 'BOXER-CONTINUE))))))
+     (loop (catch 'system-error-restart-loop
                    (progn ,@body)
                    (flush-input)
-	           (setq ,warned-about-error-already-gensym nil))))))))
+             (setq ,warned-about-error-already-gensym nil))))))))
 
 ;; a hook for other stuff, on the mac, this ensures heap size
 (defun boxer-idle-function ()
@@ -1371,11 +1371,11 @@ Modification History (most recent at top)
   `(progn . ,body))
 
 (defmacro with-mouse-tracking (((original-x-variable original-x-value)
-				(original-y-variable original-y-value)
-				&key
+        (original-y-variable original-y-value)
+        &key
                                 event-skip timeout action
                                 (body-function-name (gensym)))
-			       &body body)
+             &body body)
   (declare (ignore event-skip timeout))
   `(let ((,original-x-variable ,original-x-value)
          (,original-y-variable ,original-y-value)
@@ -1571,33 +1571,33 @@ Modification History (most recent at top)
   nil)
 
 (defmacro with-mouse-tracking-inside (((original-x-variable original-x-value)
-				       (original-y-variable original-y-value)
-						  min-x min-y
-						  max-x max-y &rest keys)
-				      &body body)
+               (original-y-variable original-y-value)
+              min-x min-y
+              max-x max-y &rest keys)
+              &body body)
   `(with-mouse-tracking ((,original-x-variable ,original-x-value)
                          (,original-y-variable ,original-y-value) ,@keys)
      ;; if the mouse has strayed,
      ;; then send it back
      (cond
        ((box::<& ,original-x-variable ,min-x)
-	(cond ((box::<& ,original-y-variable ,min-y)
-	       (warp-pointer *boxer-pane* ,min-x ,min-y))
-	      ((box::>& ,original-y-variable ,max-y)
-	       (warp-pointer *boxer-pane* ,min-x ,max-y))
-	      (t
-	       (warp-pointer *boxer-pane* ,min-x ,original-y-variable))))
+  (cond ((box::<& ,original-y-variable ,min-y)
+         (warp-pointer *boxer-pane* ,min-x ,min-y))
+        ((box::>& ,original-y-variable ,max-y)
+         (warp-pointer *boxer-pane* ,min-x ,max-y))
+        (t
+         (warp-pointer *boxer-pane* ,min-x ,original-y-variable))))
        ((box::>& ,original-x-variable ,max-x)
-	(cond ((box::<& ,original-y-variable ,min-y)
-	       (warp-pointer *boxer-pane* ,max-x ,min-y))
-	      ((box::>& ,original-y-variable ,max-y)
-	       (warp-pointer *boxer-pane* ,max-x ,max-y))
-	      (t
-	       (warp-pointer *boxer-pane* ,max-x ,original-y-variable))))
+  (cond ((box::<& ,original-y-variable ,min-y)
+         (warp-pointer *boxer-pane* ,max-x ,min-y))
+        ((box::>& ,original-y-variable ,max-y)
+         (warp-pointer *boxer-pane* ,max-x ,max-y))
+        (t
+         (warp-pointer *boxer-pane* ,max-x ,original-y-variable))))
        ((box::<& ,original-y-variable ,min-y)
-	(warp-pointer *boxer-pane* ,original-x-variable ,min-y))
+  (warp-pointer *boxer-pane* ,original-x-variable ,min-y))
        ((box::>& ,original-y-variable ,max-y)
-	(warp-pointer *boxer-pane* ,original-x-variable ,max-y))
+  (warp-pointer *boxer-pane* ,original-x-variable ,max-y))
        (t (progn . ,body)))))
 
 
@@ -1747,8 +1747,8 @@ Modification History (most recent at top)
 (defun %set-sheet-blinker-list (window new-list)
   (let ((entry (box::fast-assq window *boxer-window-blinker-alist*)))
      (if (null entry)
-	 (push new-list *boxer-window-blinker-alist*)
-	 (setf (cdr entry) new-list)))
+   (push new-list *boxer-window-blinker-alist*)
+   (setf (cdr entry) new-list)))
   new-list)
 
 (defsetf sheet-blinker-list %set-sheet-blinker-list)
@@ -1757,12 +1757,12 @@ Modification History (most recent at top)
 (defsetf sheet-blinker-list (window) (new-list)
   `(let ((entry (box::fast-assq ,window *boxer-window-blinker-alist*)))
      (if (null entry)
-	 (push ,new-list *boxer-window-blinker-alist*)
-	 (setf (cdr entry) ,new-list))))
+   (push ,new-list *boxer-window-blinker-alist*)
+   (setf (cdr entry) ,new-list))))
 |#
 
 (defstruct (blinker (:conc-name blinker-)
-		    (:constructor %make-blinker))
+        (:constructor %make-blinker))
   (x 0)
   (y 0)
   (width 0)
@@ -1772,10 +1772,10 @@ Modification History (most recent at top)
 
 (defun make-blinker (window &rest plist)
   (let ((blinker (apply #'%make-blinker :window window plist))
-	(entry (box::fast-assq window *boxer-window-blinker-alist*)))
+  (entry (box::fast-assq window *boxer-window-blinker-alist*)))
     (if (null entry)
-	(push (list window blinker) *boxer-window-blinker-alist*)
-	(setf (cdr entry) (nconc (list blinker) (cdr entry))))
+  (push (list window blinker) *boxer-window-blinker-alist*)
+  (setf (cdr entry) (nconc (list blinker) (cdr entry))))
     (when (blinker-visibility blinker)
       (draw-blinker blinker))
     blinker))
@@ -1796,16 +1796,16 @@ Modification History (most recent at top)
 
 ;;;; Region Row Blinkers...
 (defstruct (region-row-blinker (:include blinker)
-			       (:predicate region-row-blinker?)
-			       (:constructor %make-region-row-blinker))
+             (:predicate region-row-blinker?)
+             (:constructor %make-region-row-blinker))
   (uid nil))
 
 (defun make-region-row-blinker (window &rest plist)
   (let ((blinker (apply #'%make-region-row-blinker :window window plist))
-	(entry (box::fast-assq window *boxer-window-blinker-alist*)))
+  (entry (box::fast-assq window *boxer-window-blinker-alist*)))
     (if (null entry)
-	(push (list window blinker) *boxer-window-blinker-alist*)
-	(setf (cdr entry) (nconc (list blinker) (cdr entry))))
+  (push (list window blinker) *boxer-window-blinker-alist*)
+  (setf (cdr entry) (nconc (list blinker) (cdr entry))))
     (when (blinker-visibility blinker)
       (draw-region-row-blinker blinker))
     blinker))
@@ -1840,7 +1840,7 @@ Modification History (most recent at top)
          (progn (when (blinker-visibility ,blinker)
                   (box::drawing-on-window-without-prepare-sheet (*boxer-pane*)
                     (box::with-origin-at (0 0) ; invoke the quickdraw scaling
-	 	      (draw-generic-blinker ,blinker))))
+           (draw-generic-blinker ,blinker))))
                 ;; Erase the blinker if it is visible
                 ;; then do whatever you were going to do
                 . ,body)
@@ -1852,31 +1852,31 @@ Modification History (most recent at top)
 
 (defmacro with-open-blinkers (blinker-list &body body)
   `(macrolet ((draw-generic-blinker (blinker)
-	 	`(etypecase ,blinker
-		   (region-row-blinker (draw-region-row-blinker ,blinker))
-		   (blinker (draw-blinker ,blinker)))))
+     `(etypecase ,blinker
+       (region-row-blinker (draw-region-row-blinker ,blinker))
+       (blinker (draw-blinker ,blinker)))))
 ;     (box::drawing-on-window-without-prepare-sheet (*boxer-pane*) ; +++ this is probably not the right thing, fix
 ;; **** Almost, actually this needs to be wrapped around the blinker drawing
 ;; **** but NOT the body since the body will be inside a drawing-on-window
       (unwind-protect
-	 (progn (boxer::without-interrupts
+   (progn (boxer::without-interrupts
                   (boxer::drawing-on-window-without-prepare-sheet (*boxer-pane*)
                     ;; **** this will set the value of the offset to be the
                     ;; **** origin of the *boxer-pane*
                     (boxer::with-origin-at (0 0)
                       ;; **** this will set the offset in the window system
-		      (dolist (b ,blinker-list)
-		        (when (blinker-visibility b)
+          (dolist (b ,blinker-list)
+            (when (blinker-visibility b)
                           (draw-generic-blinker b))))))
-		. ,body)
+    . ,body)
        (boxer::without-interrupts
          (boxer::drawing-on-window-without-prepare-sheet (*boxer-pane*)
            ;; **** this will set the value of the offset to be the
            ;; **** origin of the *boxer-pane*
            (boxer::with-origin-at (0 0)
              ;; **** this will set the offset in the window system
-	     (dolist (b ,blinker-list)
-	       (when (blinker-visibility b)
+       (dolist (b ,blinker-list)
+         (when (blinker-visibility b)
                  (draw-generic-blinker b)))))))))
 
 |#
@@ -1897,9 +1897,9 @@ Modification History (most recent at top)
 
 (defun set-cursor-size (cursor wid hei)
   (when (and (not (null boxer::*boxer-system-hacker*))
-	       (or (< wid 0) (< hei 0)))
+         (or (< wid 0) (< hei 0)))
       (cerror "Set Value to 0"
-	      "Blinker Width or Height is < 0"))
+        "Blinker Width or Height is < 0"))
   (setf (blinker-width  cursor) (max (round wid) 0))
   (setf (blinker-height cursor) (max (round hei) 0)))
 
@@ -1921,7 +1921,7 @@ Modification History (most recent at top)
   (let ((pair (assoc window *redisplayable-window-outermost-box-alist*)))
     (unless (null pair)
       (setq *redisplayable-window-outermost-box-alist*
-	    (delete pair *redisplayable-window-outermost-box-alist*)))))
+      (delete pair *redisplayable-window-outermost-box-alist*)))))
 
 (defun outermost-screen-box (&optional (window *boxer-pane*))
   (cdr (assoc window *redisplayable-window-outermost-box-alist*)))
@@ -1935,9 +1935,9 @@ Modification History (most recent at top)
 (defun set-outermost-screen-box-in-window (window new-outermost-screen-box)
   (let ((pair (assoc window *redisplayable-window-outermost-box-alist*)))
     (if (null pair)
-	(push (cons window new-outermost-screen-box)
+  (push (cons window new-outermost-screen-box)
                *redisplayable-window-outermost-box-alist*)
-	(setf (cdr pair) new-outermost-screen-box))))
+  (setf (cdr pair) new-outermost-screen-box))))
 
 
 
