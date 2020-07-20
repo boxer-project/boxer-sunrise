@@ -322,7 +322,8 @@ Modification History (most recent at top)
   `(zerop (the fixnum ,(simplify-arg arg))))
 
 (defmacro svref& (vector index)
-  `(svref ,vector ,index))
+  ;; `(svref ,vector ,index))
+  `(svref (the simple-vector ,vector) (the fixnum ,index)))
     ;; sgithens TODO (svref (the simple-vector ,vector) (the fixnum ,index))))
 
 (defmacro svlength (vector)

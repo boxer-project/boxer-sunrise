@@ -846,7 +846,7 @@ Modification History (most recent at top)
   `(eq (svref& ,thing 0) 'doit-box))
 
 (defmacro fast-eval-data-box? (thing)
-  `(eq (svref& ,thing 0) 'data-box))
+  `(if (vectorp ,thing) (eq (svref& ,thing 0) 'data-box) nil))
 
 (defmacro fast-eval-sprite-box? (thing)
   (warn "Sprite Boxes are Obsolete !")

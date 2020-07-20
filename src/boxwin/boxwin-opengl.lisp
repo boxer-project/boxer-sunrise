@@ -1365,6 +1365,11 @@ Modification History (most recent at top)
 
 ;;; Mouse tracking
 
+;; stub for now
+(defmacro with-mouse-cursor ((cursor) &body body)
+  cursor
+  `(progn . ,body))
+
 (defmacro with-mouse-tracking (((original-x-variable original-x-value)
 				(original-y-variable original-y-value)
 				&key
@@ -1440,7 +1445,6 @@ Modification History (most recent at top)
            (char= char #\escape))))
            ;; sgithens TODO (char= char #\control-\.))))
 
-#+cocoa
 (defun abort-gesture? (g)
   (and (typep g 'sys::gesture-spec)
        (let ((code (sys::gesture-spec-data g)))
@@ -1727,11 +1731,6 @@ Modification History (most recent at top)
 (defun set-mouse-cursor (cursor) (declare (ignore cursor)) nil)
 (defun set-mouse-cursor-internal (cursor) (declare (ignore cursor)) nil)
 (defun reset-mouse-cursor () nil)
-
-;; stub for now
-(defmacro with-mouse-cursor ((cursor) &body body)
-  cursor
-  `(progn . ,body))
 
 ;;;; Blinkers, mostly copied from clx
 

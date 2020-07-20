@@ -532,8 +532,8 @@ Modification History (most recent at top)
   ;; when it becomes invalid.)
   ;; We don't have ports to eval doit boxes.
   (if (null (boxer::vp-editor-port-backpointer vp))
-    (let ((new-fun (if (fast-eval-data-box?
-                        (boxer::vp-target vp))
+    (let ((new-fun (if (data-box?  ;; sgithens Changing this from fast-eval-data-box? as it always seems to be a box obj
+                                   (boxer::vp-target vp))
                      (convert-virtual-copy-to-interpreted-procedure-internal
                       (boxer::vp-target vp))
                      (convert-editor-box-to-interpreted-procedure-internal
