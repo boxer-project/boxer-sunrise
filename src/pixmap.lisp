@@ -51,8 +51,8 @@ Modification History (most recent at top)
 (defun make-ogl-pixmap (width height)
   (cond ((and (integerp width)  (not (minusp width))
               (integerp height) (not (minusp height)))
-         (%make-ogl-pixmap :width width :height height 
-                           :data (fli:allocate-foreign-object :type :unsigned-long ; :unsigned-integer
+         (%make-ogl-pixmap :width width :height height
+                           :data (fli:allocate-foreign-object :type :unsigned
                                                               :initial-element 0
                                                               :nelems (* width height))))
         (t (error "Pixmap dimensions, (~S, ~S) must be non-negative integers"
@@ -96,7 +96,7 @@ Modification History (most recent at top)
     (gl-pixel-storei *gl-pack-row-length* (if (= wid pwid) 0 pwid))
     (gl-pixel-storei *gl-pack-image-height* (if (= hei phei) 0 phei))
     (gl-pixel-storei *gl-pack-skip-pixels* tx)
-    (gl-pixel-storei *gl-pack-skip-rows* oty)    
+    (gl-pixel-storei *gl-pack-skip-rows* oty)
     ;; read from the (visible) front buffer
     (gl-read-buffer buffer)
     ;; move the pixels....
@@ -152,6 +152,6 @@ Modification History (most recent at top)
            (actual-wid (min wid (- tw to-x) (- fw from-x)))
            (actual-hei (min hei (- th to-y) (- fh from-y))))
       (dotimes (y actual-hei)
-        (dotimes (x actual-wid) 
+        (dotimes (x actual-wid)
           (setf (fli::dereference tdata :index (+ (+ x to-x)   (* (- th (+ y to-y)   1) tw)))
                 (fli::dereference fdata :index (+ (+ x from-x) (* (- fh (+ y from-y) 1) fw)))))))))
