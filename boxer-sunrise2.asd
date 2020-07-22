@@ -34,7 +34,6 @@
                  (:file "draw/capogi")
                 ;;  (:file "opengl-utils-glut")
                  (:file "draw/draw-low-opengl")
-                ;;  (:file "draw-low-stubs")
                  (:file "draw/draw-high-common")
                  (:file "draw/draw-high-hardware-clip")
 
@@ -154,24 +153,24 @@
                  (:file "filesystem/applefile")
                  (:file "filesystem/surf")
                  (:file "filesystem/http")
-                ;;  (:file "mail")
-                 ;; (:file "mailfile")
+                ;;  (:file "filesystem/mail")
+                 ;; (:file "filesystem/mailfile")
                  ;; Beginning of `TRIGGER` module
                  ;; "Box triggers for Constraint Propagation and Other Fun Stuff"
-                 (:file "trigger")
+                 (:file "trigger/trigger")
                  ;; Beginning of `GRAPHICS` module
                  (:file "graphics/grmeth")
                  (:file "graphics/gcmeth")
                  (:file "graphics/turtle")
                  (:file "graphics/sprite")
                  ;; Beginning of `SCRIPT-SUPPORT` module
-                 (:file "applescript")
+                 (:file "script-support/applescript")
                  ;; Beginning of `RPRIMS` module
                  ;; 	   "Recursive primititives (only Update-Shape for now)"
-                 (:file "recursive-prims")
+                 (:file "rprims/recursive-prims")
                  ;; Beginning of `MATHPRIMS` module
                  ;; "Math primitives"
-                 (:file "math-prims")
+                 (:file "mathprims/math-prims")
                  ;; Beginning of `GRPRIMS` module
                  ;; "Graphics Primitives"
                  (:file "grprims/grupfn")
@@ -180,18 +179,18 @@
                  (:file "grprims/grprim3")
                  ;; Beginning of `FILEPRIMS` module
                  ;; 	    "File System Primitives"
-                 (:file "file-prims")
+                 (:file "fileprims/file-prims")
                  ;; Beginning of `NETPRIMS` module
                  ;; "Network Primitives"
-                 (:file "net-prims")
+                 (:file "netprims/net-prims")
                  ;; Beginning of `PROCESSPRIMS` module
                  ;; "Process Primitives"
-                 (:file "process-prims")
+                 (:file "processprims/process-prims")
                  ;; Beginning of `primitives` module
                  ;; "Data Manipulators"
-                 (:file "dataprims")
-                 (:file "build")
-                 (:file "misc-prims")
+                 (:file "primitives/dataprims")
+                 (:file "primitives/build")
+                 (:file "primitives/misc-prims")
                  ;; Beginning of `KEYDEF`
                  ;; "How Boxer handles Input"
                  (:file "keydef/keydef-lwm")
@@ -199,7 +198,7 @@
                  (:file "keydef/dribble")
                  ;; Beginning of `COMS` module
                  ;; "Editor Commands Definitions"
-                 (:file "comsa")
+                 (:file "coms/comsa")
                  (:file "coms/comsb")
                  (:file "coms/comse")
                  (:file "coms/comsf")
@@ -223,7 +222,8 @@
                  (:file "site/xten")
                  ;; Beginning of `menu` module
                  ;;    "Menus for Harlequin Lispworks on the PC"
-                 (:file "lw-menu")
+                 (:file "menu/lw-menu")
+
                  ;; Beginning of `av` module
                  ;;    "Primitives and support code for controlling VCR's from Mac Boxer"
                  (:file "av/av-stubs")
