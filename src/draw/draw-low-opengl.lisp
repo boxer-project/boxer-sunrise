@@ -573,7 +573,7 @@ notes:: check points arg on draw-poly
 ;; available sizes are: 6,8,10,12,14,16,18,24
 ;; NOTE: we an get size 7 when loading old mac boxes...
 (defun %font-size-to-idx (size)
-  (cond ((<=& size  8) 0)
+  (cond ((<=& size  8) size)  ;; sgithens: support for relative size saving, see comments on *dump-relative-font-sizes?* in dumper.lisp
         ((<=& size  9) 1)
         ((<=& size 10) 2)
         ((<=& size 12) 3)

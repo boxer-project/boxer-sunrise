@@ -711,7 +711,27 @@ Modification History (most recent at the top)
 ;; 2. a size (fixnum)
 ;; 3. optional series of style keywords (symbols)
 
-(defvar *dump-relative-font-sizes?* t)
+;; sgithens - July 2020. Notes on fixing loss of font size during file saving.
+;;
+;; Internally boxer keeps an array of font sizes in a zero indexed list:  (vector 8 9 10 12 14 16 20 24 28 32 40 48 56 64)
+;; So, index 3 would be size 12, 4 would be 14, etc.
+;;
+;; Now, in the code there is an option to save fonts using either the “real” font size, or the array location.
+;; So, Arial of size 12, would be “Arial 12” using real sizes, and “Arial 3” would be the same using the relative index
+;; size.  As the code was, when boxer saved a file it was using the internal version “Arial 3”, but when it loaded a saved
+;; file was expecting the real size version “Arial 12”. We dont’have any fonts under size 8 which is why it would always
+;; switch them to a tiny font when you reopened the file.
+;;
+;; To fix this, I’ve done the following. First, I toggled the save format, so that going forward if we save new files,
+;; it will use the real size information. This makes a lot more sense, especially int he future when we’ll have font sizes
+;; in between those of the predefined sizes, espeically since vector based fonts will be able to have in between sizes.
+;; And then, in the opening code, I check to see the size. Since the smallest fonts we have are size 8 anyways, if there
+;; is a number smaller than this, I’m treating it as an array index in to the relative sizes, and if it’s larger then that
+;; then I use the real font size.
+;;
+;; The more correct thing to do will be to bump the version of the boxer file format and use that as a check, which I
+;; should look at. But for now this works pretty well.
+(defvar *dump-relative-font-sizes?* nil)
 
 (defun dump-font (font stream)
   (let ((font-id (assoc font *dumping-font-alist* :test #'=)))
