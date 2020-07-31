@@ -57,39 +57,39 @@ Modification History (most recent at the top)
 (defmacro get-opengl-state (pname type &optional return-vector)
   (let ((gl-vect-var (gensym)))
     (flet ((canonicalize-type (raw-type)
-             (if (eq raw-type :boolean) :unsigned-8 raw-type)))
-      `(let ((,gl-vect-var (cond ((and (not (null ,return-vector))
-                                       (listp ',type)
-                                       (fli::pointerp ,return-vector))
-                                  ,return-vector)
+                              (if (eq raw-type :boolean) :unsigned-8 raw-type)))
+          `(let ((,gl-vect-var (cond ((and (not (null ,return-vector))
+                                           (listp ',type)
+                                           (fli::pointerp ,return-vector))
+                                      ,return-vector)
                                  (t
                                   (opengl:make-gl-vector ,(canonicalize-type
-                                                    (if (listp type) (car type) type))
-                                                  ,(if (listp type) (cadr type) 1))))))
-         (unwind-protect
-             (progn
+                                                           (if (listp type) (car type) type))
+                                                          ,(if (listp type) (cadr type) 1))))))
+             (unwind-protect
+              (progn
                (,(ecase (if (listp type) (car type) type)
-                   (:boolean 'gl-get-booleanv)
-                   ((:signed-32 :integer) 'gl-get-integerv)
-                   (:float 'opengl::gl-get-floatv))
+                        (:boolean 'gl-get-booleanv)
+                        ((:signed-32 :integer) 'gl-get-integerv)
+                        (:float 'opengl::gl-get-floatv))
                 ,pname ,gl-vect-var)
                ,(cond ((and (listp type) (not (null return-vector)))
                        `,gl-vect-var)
-                      ((listp type)
-                       `(values ,@(let ((value-forms nil))
-                                    (dotimes (i (cadr type))
-                                      (push `(gl-vector-aref ,gl-vect-var ,i)
-                                            value-forms))
-                                    (nreverse value-forms))))
-                      ((eq type :boolean)
-                       `(let ((raw (gl-vector-aref ,gl-vect-var 0)))
-                          (cond ((zerop raw) nil)
-                                ((= raw 1) t)
-                                (t (error "~D is not a valid boolean value" raw)))))
-                      (t
-                       `(gl-vector-aref ,gl-vect-var 0))))
-           (when (null ,return-vector)
-             (opengl::free-gl-vector ,gl-vect-var)))))))
+                  ((listp type)
+                   `(values ,@(let ((value-forms nil))
+                                (dotimes (i (cadr type))
+                                  (push `(gl-vector-aref ,gl-vect-var ,i)
+                                        value-forms))
+                                (nreverse value-forms))))
+                  ((eq type :boolean)
+                   `(let ((raw (gl-vector-aref ,gl-vect-var 0)))
+                      (cond ((zerop raw) nil)
+                        ((= raw 1) t)
+                        (t (error "~D is not a valid boolean value" raw)))))
+                  (t
+                   `(gl-vector-aref ,gl-vect-var 0))))
+              (when (null ,return-vector)
+                (opengl::free-gl-vector ,gl-vect-var)))))))
 
 ;; for debugging
 (eval-when (compile)
@@ -113,14 +113,14 @@ Modification History (most recent at the top)
 
 (defmacro ogl-type (arg type)
   (cond ((null *opengl-type-checking-included?*) `,arg)
-        (t
-         `(cond ((eq *opengl-type-checking-action* :error)
-                 (cond ((typep ,arg ,type) ,arg)
-                       (t (error "The arg, ~S, is not of type ~S" ',arg ,type))))
-                ((eq *opengl-type-checking-action* :coerce)
-                 (coerce ,arg ,type))
-                (t (error "*opengl-type-checking-action*,~S, should be :COERCE or :ERROR"
-                          *opengl-type-checking-action*))))))
+    (t
+     `(cond ((eq *opengl-type-checking-action* :error)
+             (cond ((typep ,arg ,type) ,arg)
+               (t (error "The arg, ~S, is not of type ~S" ',arg ,type))))
+        ((eq *opengl-type-checking-action* :coerce)
+         (coerce ,arg ,type))
+        (t (error "*opengl-type-checking-action*,~S, should be :COERCE or :ERROR"
+                  *opengl-type-checking-action*))))))
 
 
 
@@ -153,9 +153,9 @@ Modification History (most recent at the top)
   (do* ((vertices x-and-y-s (cddr vertices))
         (x (car vertices)  (car vertices))
         (y (cadr vertices) (cadr vertices)))
-       ((null y)
-        (unless (null x) ; both run out @ same time
-          (error "Unpaired vertex in ~A" x-and-y-s)))
+    ((null y)
+     (unless (null x) ; both run out @ same time
+       (error "Unpaired vertex in ~A" x-and-y-s)))
     (gl-vertex2-f (ogl-type x 'float) (ogl-type y 'float)))
   (gl-end))
 
@@ -204,8 +204,8 @@ Modification History (most recent at the top)
 (defun charcode->oglfont-index (charcode)
   (cond ((>= charcode *opengl-font-cache-end*) ; instead of *opengl-font-end*
          ;; most likely unicode, see if there is a translation...
-         (unicode->oglfont-index charcode))
-        (t (-& charcode *opengl-font-start*))))
+                                               (unicode->oglfont-index charcode))
+    (t (-& charcode *opengl-font-start*))))
 
 (defvar *unicode-window-1252*
   '((#x20AC 128)  ; euro
@@ -239,11 +239,11 @@ Modification History (most recent at the top)
 (defun unicode->oglfont-index (unicode)
   (let ((trans (cadr (assoc unicode *unicode-window-1252* :test #'=))))
     (cond ((null trans) *default-char-code*)
-          (t (-& trans *opengl-font-start*)))))
+      (t (-& trans *opengl-font-start*)))))
 
 (defmacro do-ofont-chars ((char-code-var &key (end '*opengl-font-end*)) &body body)
   `(do ((,char-code-var *opengl-font-start* (1+& ,char-code-var)))
-       ((>=& ,char-code-var ,end))
+     ((>=& ,char-code-var ,end))
      . ,body))
 
 (defstruct (opengl-font (:constructor %make-opengl-font)
@@ -265,9 +265,9 @@ Modification History (most recent at the top)
          (format stream "#<OGLFont ")
          (print-capogi-font-internal (opengl-font-native-font font) stream)
          (format stream "[~A]>" (opengl-font-dl-base-addr font)))
-        (t
-         (format stream "#<OGLFont ~A [~A]>"
-                 (opengl-font-native-font font) (opengl-font-dl-base-addr font)))))
+    (t
+     (format stream "#<OGLFont ~A [~A]>"
+             (opengl-font-native-font font) (opengl-font-dl-base-addr font)))))
 
 (defstruct (ogl-graphics-state (:constructor %make-ogl-graphics-state))
   (color nil)
@@ -313,20 +313,20 @@ Modification History (most recent at the top)
           (opengl-font-height ofont) (opengl::glut-font-height glutfont))
     (cond ((opengl::glut-fixed-width-font? glutfont)
            (setf (opengl-font-width ofont) (opengl::glut-char-width #\a glutfont)))
-          (t (let ((widths-array (make-array (- *opengl-font-end*
-                                                *opengl-font-start*)
-                                             :element-type 'fixnum))
-                   (maxwid 0))
-               (do-ofont-chars (char-code)
-                 (let* ((move (rassoc char-code *unicode-window-1252* :test #'(lambda (a b) (= a (car b)))))
-                        (trans-idx (-& char-code *opengl-font-start*))
-                        (cw (opengl::glut-char-width (cond ((null move) (code-char char-code))
-                                                           (t (code-char (car move))))
-                                                     glutfont)))
-                   (setf (aref widths-array trans-idx) cw)
-                   (setq maxwid (max maxwid cw))))
-               (setf (opengl-font-width ofont) maxwid)
-               (setf (opengl-font-widths-array ofont) widths-array))))
+      (t (let ((widths-array (make-array (- *opengl-font-end*
+                                            *opengl-font-start*)
+                                         :element-type 'fixnum))
+               (maxwid 0))
+           (do-ofont-chars (char-code)
+             (let* ((move (rassoc char-code *unicode-window-1252* :test #'(lambda (a b) (= a (car b)))))
+                    (trans-idx (-& char-code *opengl-font-start*))
+                    (cw (opengl::glut-char-width (cond ((null move) (code-char char-code))
+                                                   (t (code-char (car move))))
+                                                 glutfont)))
+               (setf (aref widths-array trans-idx) cw)
+               (setq maxwid (max maxwid cw))))
+           (setf (opengl-font-width ofont) maxwid)
+           (setf (opengl-font-widths-array ofont) widths-array))))
     ofont))
 
 ;;; It's taking too long to cache all the fonts on startup so the
@@ -347,20 +347,20 @@ Modification History (most recent at the top)
     (cond ((gp::font-fixed-width-p pane native-font)
            (setf (opengl-font-width ofont)
                  (gp::get-char-width pane #\a native-font)))
-          (t (let ((widths-array (make-array (- *opengl-font-end*
-                                                *opengl-font-start*)
-                                             :element-type 'float
-                                             ; :element-type 'fixnum
-                                             ))
-                   (maxwid 0))
-               (do-ofont-chars (char-code :end *opengl-font-cache-end*)
-                 (let ((trans-idx (-& char-code *opengl-font-start*))
-                       (cw (gp::get-char-width pane (code-char char-code)
-                                               native-font)))
-                   (setf (aref widths-array trans-idx) cw)
-                   (setq maxwid (max maxwid cw))))
-               (setf (opengl-font-width ofont) maxwid)
-               (setf (opengl-font-widths-array ofont) widths-array))))
+      (t (let ((widths-array (make-array (- *opengl-font-end*
+                                            *opengl-font-start*)
+                                         :element-type 'float
+                                         ; :element-type 'fixnum
+                                         ))
+               (maxwid 0))
+           (do-ofont-chars (char-code :end *opengl-font-cache-end*)
+             (let ((trans-idx (-& char-code *opengl-font-start*))
+                   (cw (gp::get-char-width pane (code-char char-code)
+                                           native-font)))
+               (setf (aref widths-array trans-idx) cw)
+               (setq maxwid (max maxwid cw))))
+           (setf (opengl-font-width ofont) maxwid)
+           (setf (opengl-font-widths-array ofont) widths-array))))
     ofont))
 
 
@@ -369,8 +369,8 @@ Modification History (most recent at the top)
 (defun %ogl-cache-font (ofont)
   (let ((ba (cond ((null box::%drawing-array)
                    (rendering-on (*boxer-pane*) (cache-capogi-font (opengl-font-native-font ofont))))
-                  (t
-                  (cache-capogi-font (opengl-font-native-font ofont))))))
+              (t
+               (cache-capogi-font (opengl-font-native-font ofont))))))
     (setf (opengl-font-dl-base-addr ofont) ba))
   ofont)
 
@@ -423,14 +423,14 @@ Modification History (most recent at the top)
   (let ((oldfont (gensym)))
     `(let ((,oldfont *current-opengl-font*))
        (unwind-protect
-           (progn
-             (when (null (opengl-font-dl-base-addr ,font)) (ogl-cache-font ,font))
-             (let ((*current-opengl-font* ,font)
-                   (*current-opengl-font-base-addr*
-                    (opengl-font-dl-base-addr ,font)))
-               . ,body))
-         (when (null (opengl-font-dl-base-addr ,oldfont))
-           (ogl-cache-font ,oldfont))))))
+        (progn
+         (when (null (opengl-font-dl-base-addr ,font)) (ogl-cache-font ,font))
+         (let ((*current-opengl-font* ,font)
+               (*current-opengl-font-base-addr*
+                (opengl-font-dl-base-addr ,font)))
+           . ,body))
+        (when (null (opengl-font-dl-base-addr ,oldfont))
+          (ogl-cache-font ,oldfont))))))
 
 ;;; Font cache is a FIFO list of font structs
 ;;; we should query the OPENGL implemtation and tune some of these numbers
@@ -441,8 +441,8 @@ Modification History (most recent at the top)
 (defvar *cached-fonts* nil)
 
 (eval-when (compile)
-  (defvar *include-font-debugging* nil)
-)
+           (defvar *include-font-debugging* nil)
+           )
 
 (defvar *debug-font-caching* nil)
 
@@ -462,7 +462,7 @@ Modification History (most recent at the top)
          (setq *cached-fonts* (subseq *cached-fonts* 0 (1-& *font-cache-size*)))
          ;; add new
          (push (%ogl-cache-font font-struct) *cached-fonts*))
-        (t (push (%ogl-cache-font font-struct) *cached-fonts*)))
+    (t (push (%ogl-cache-font font-struct) *cached-fonts*)))
   (ogl-debug (format t "~& cache= ~A~&" *cached-fonts*)))
 
 ;; useful during debugging....
@@ -489,8 +489,8 @@ Modification History (most recent at the top)
                                                 (opengl-font-native-font font))))
                       (setf (aref wa (charcode->oglfont-index (char-code cha))) w)
                       w))
-                   (t ccw))))
-          (t (opengl-font-width font)))))
+               (t ccw))))
+      (t (opengl-font-width font)))))
 
 ;; the same for both char,string-height
 (defun ogl-font-height (font) (opengl-font-height font))
@@ -500,10 +500,10 @@ Modification History (most recent at the top)
   (let ((wa (opengl-font-widths-array font)))
     (cond ((not (null wa))
            (let ((acc 0))
-                (dotimes (i (length string))
-                  (incf acc (aref wa (charcode->oglfont-index (char-code (char string i))))))
-                acc))
-          (t (* (opengl-font-width font) (length string))))))
+             (dotimes (i (length string))
+               (incf acc (aref wa (charcode->oglfont-index (char-code (char string i))))))
+             acc))
+      (t (* (opengl-font-width font) (length string))))))
 
 
 (defun ogl-draw-char (char x y)
@@ -524,12 +524,12 @@ Modification History (most recent at the top)
     (fli:with-foreign-string (ptr elts bytes
                                   :external-format :unicode
                                   :null-terminated-p nil)
-        text
-      (declare (ignore bytes))
-      (opengl:gl-call-lists elts
-                            opengl:*gl-unsigned-short* ; to match :unicode
-                            ;opengl:*gl-unsigned-byte*
-                            ptr))))
+                             text
+                             (declare (ignore bytes))
+                             (opengl:gl-call-lists elts
+                                                   opengl:*gl-unsigned-short* ; to match :unicode
+                                                   ;opengl:*gl-unsigned-byte*
+                                                   ptr))))
 
 ;; useful for debugging as in (dolist (f *cached-fonts*) (d-font f))
 (defun d-font (ofont)
@@ -560,7 +560,7 @@ Modification History (most recent at the top)
                                (coerce g 'single-float)
                                (coerce b 'single-float)
                                (coerce alpha 'single-float))
-    (opengl:make-gl-vector :float 4 :contents color)))
+                        (opengl:make-gl-vector :float 4 :contents color)))
 
 (defun %make-ogl-color ()
   (incf *ogl-color-counter*)
@@ -609,10 +609,10 @@ Modification History (most recent at the top)
   (let ((old-color (gensym)))
     `(let ((,old-color (ogl-current-color (allocate-ogl-color))))
        (unwind-protect
-           (progn . ,body)
-         (unless (ogl-color= ,old-color (ogl-current-color))
-           (ogl-set-color ,old-color))
-         (deallocate-ogl-color ,old-color)))))
+        (progn . ,body)
+        (unless (ogl-color= ,old-color (ogl-current-color))
+          (ogl-set-color ,old-color))
+        (deallocate-ogl-color ,old-color)))))
 
 (defun print-color (ogl-color)
   (format t "<OGL-Color R:~3F G:~3F B:~3F alpha:~3F>" (ogl-color-red ogl-color)
