@@ -224,9 +224,9 @@ notes:: check points arg on draw-poly
 
 (defmacro rebind-font-info ((font-no) &body body)
   `(let ((%drawing-font %drawing-font)
-	 (%drawing-font-cha-wid %drawing-font-cha-wid)
-	 (%drawing-font-cha-hei %drawing-font-cha-hei)
-	 (%drawing-font-cha-ascent %drawing-font-cha-ascent))
+   (%drawing-font-cha-wid %drawing-font-cha-wid)
+   (%drawing-font-cha-hei %drawing-font-cha-hei)
+   (%drawing-font-cha-ascent %drawing-font-cha-ascent))
      (unless (null ,font-no)
        (maintaining-drawing-font
          (set-font-info ,font-no)
@@ -939,9 +939,9 @@ notes:: check points arg on draw-poly
 ;;;
 ;;; OpenGL expects a list of X Y pairs
 (defmacro boxer-points->window-system-points (boxer-point-list (x-arg x-form)
-							       (y-arg y-form))
+                     (y-arg y-form))
      `(macrolet ((x-handler (,x-arg) ,x-form)
-		(y-handler (,y-arg) ,y-form))
+    (y-handler (,y-arg) ,y-form))
         (let ((trans nil))
           (dolist (pt ,boxer-point-list (nreverse trans))
             (push (list (x-handler (car pt)) (y-handler (cdr pt))) trans)))))
@@ -1069,8 +1069,8 @@ notes:: check points arg on draw-poly
 
 (defun pixel-rgb-values (pixel)
   (list (* (color-red pixel)   100)
-	(* (color-green pixel) 100)
-	(* (color-blue pixel)  100)
+  (* (color-green pixel) 100)
+  (* (color-blue pixel)  100)
         (* (color-alpha pixel) 100)))
 
 ;; new dumper interface...
@@ -1206,18 +1206,18 @@ notes:: check points arg on draw-poly
 (defun %bitblt-to-screen (alu wid hei from-array fx fy tx ty)
   (let* ((scaled-to-x (+& %origin-x-offset tx)) (scaled-to-y (+& %origin-y-offset ty))
          (clipped-to-x (clip-x scaled-to-x))    (clipped-to-y (clip-y scaled-to-y))
-	 (+wid (abs& wid))
-	 (+hei (abs& hei))
-	 (lef-overrun (max& 0 (-& scaled-to-x clipped-to-x)))
-	 (top-overrun (max& 0 (-& scaled-to-y clipped-to-y)))
-	 (rig-overrun (max& 0 (-& (+& clipped-to-x +wid)
-				  (clip-x (+& clipped-to-x +wid)))))
-	 (bot-overrun (max& 0 (-& (+& clipped-to-y +hei)
-				  (clip-y (+& clipped-to-y +hei)))))
-	 (clipped-wid (*& (sign-of-no wid)
-			  (max& 0 (-& +wid lef-overrun rig-overrun))))
-	 (clipped-hei (*& (sign-of-no hei)
-			  (max& 0 (-& +hei top-overrun bot-overrun)))))
+   (+wid (abs& wid))
+   (+hei (abs& hei))
+   (lef-overrun (max& 0 (-& scaled-to-x clipped-to-x)))
+   (top-overrun (max& 0 (-& scaled-to-y clipped-to-y)))
+   (rig-overrun (max& 0 (-& (+& clipped-to-x +wid)
+          (clip-x (+& clipped-to-x +wid)))))
+   (bot-overrun (max& 0 (-& (+& clipped-to-y +hei)
+          (clip-y (+& clipped-to-y +hei)))))
+   (clipped-wid (*& (sign-of-no wid)
+        (max& 0 (-& +wid lef-overrun rig-overrun))))
+   (clipped-hei (*& (sign-of-no hei)
+        (max& 0 (-& +hei top-overrun bot-overrun)))))
     (or (zerop& clipped-wid)
         (zerop& clipped-hei)
         (gp:pixblt %drawing-array alu from-array clipped-to-x clipped-to-y
@@ -1240,15 +1240,15 @@ notes:: check points arg on draw-poly
          (clipped-from-x (clip-x scaled-from-x))
          (clipped-from-y (clip-y scaled-from-y))
          (+wid (abs& wid))
-	 (+hei (abs& hei))
-	 (lef-overrun (max& 0 (-& scaled-from-x clipped-from-x)))
-	 (top-overrun (max& 0 (-& scaled-from-y clipped-from-y)))
-	 (rig-overrun (max& 0 (-& (+& clipped-from-x +wid)
+   (+hei (abs& hei))
+   (lef-overrun (max& 0 (-& scaled-from-x clipped-from-x)))
+   (top-overrun (max& 0 (-& scaled-from-y clipped-from-y)))
+   (rig-overrun (max& 0 (-& (+& clipped-from-x +wid)
                                   (clip-x (+& clipped-from-x +wid)))))
-	 (bot-overrun (max& 0 (-& (+& clipped-from-y +hei)
+   (bot-overrun (max& 0 (-& (+& clipped-from-y +hei)
                                   (clip-y (+& clipped-from-y +hei)))))
-	 (clipped-wid (*& (sign-of-no wid) (max& 0 (-& +wid lef-overrun rig-overrun))))
-	 (clipped-hei (*& (sign-of-no hei) (max& 0 (-& +hei top-overrun bot-overrun)))))
+   (clipped-wid (*& (sign-of-no wid) (max& 0 (-& +wid lef-overrun rig-overrun))))
+   (clipped-hei (*& (sign-of-no hei) (max& 0 (-& +hei top-overrun bot-overrun)))))
     (or (zerop& clipped-wid)
         (zerop& clipped-hei)
         (gp:pixblt to-array alu %drawing-array tx ty
@@ -1268,28 +1268,28 @@ notes:: check points arg on draw-poly
          (scaled-to-y   (+& %origin-y-offset ty))
          (clipped-from-x (clip-x scaled-from-x))
          (clipped-from-y (clip-y scaled-from-y))
-	 (clipped-to-x (clip-x scaled-to-x))
-	 (clipped-to-y (clip-y scaled-to-y))
-	 (+wid (abs& wid))
-	 (+hei (abs& hei))
-	 (lef-overrun (max& 0
+   (clipped-to-x (clip-x scaled-to-x))
+   (clipped-to-y (clip-y scaled-to-y))
+   (+wid (abs& wid))
+   (+hei (abs& hei))
+   (lef-overrun (max& 0
                             (-& scaled-from-x clipped-from-x)
                             (-& scaled-to-x clipped-to-x)))
-	 (top-overrun (max& 0
-			    (-& scaled-from-y clipped-from-y)
-			    (-& scaled-to-y clipped-to-y)))
-	 (rig-overrun (max& 0
-			    (-& (+& clipped-from-x +wid)
-				(clip-x (+& clipped-from-x +wid)))
-			    (-& (+& clipped-to-x +wid)
-				(clip-x (+& clipped-to-x +wid)))))
-	 (bot-overrun (max& 0
-			    (-& (+& clipped-from-y +hei)
+   (top-overrun (max& 0
+          (-& scaled-from-y clipped-from-y)
+          (-& scaled-to-y clipped-to-y)))
+   (rig-overrun (max& 0
+          (-& (+& clipped-from-x +wid)
+        (clip-x (+& clipped-from-x +wid)))
+          (-& (+& clipped-to-x +wid)
+        (clip-x (+& clipped-to-x +wid)))))
+   (bot-overrun (max& 0
+          (-& (+& clipped-from-y +hei)
                                 (clip-y (+& clipped-from-y +hei)))
-			    (-& (+& clipped-to-y +hei)
-				(clip-y (+& clipped-to-y +hei)))))
-	 (clipped-wid (*& (sign-of-no wid) (max& 0 (-& +wid lef-overrun rig-overrun))))
-	 (clipped-hei (*& (sign-of-no hei) (max& 0 (-& +hei top-overrun bot-overrun)))))
+          (-& (+& clipped-to-y +hei)
+        (clip-y (+& clipped-to-y +hei)))))
+   (clipped-wid (*& (sign-of-no wid) (max& 0 (-& +wid lef-overrun rig-overrun))))
+   (clipped-hei (*& (sign-of-no hei) (max& 0 (-& +hei top-overrun bot-overrun)))))
     (or (zerop& clipped-wid)
         (zerop& clipped-hei)
         (gp:pixblt array alu array clipped-to-x clipped-to-y
@@ -1328,7 +1328,7 @@ notes:: check points arg on draw-poly
 #|
 (defmacro with-system-dependent-bitmap-drawing ((bitmap &optional
                                                         bitmap-width bitmap-height)
-					        &body body)
+                  &body body)
   (declare (ignore bitmap-width bitmap-height))
   `(bw::rendering-on (*boxer-pane*)
      (unwind-protect
@@ -1347,7 +1347,7 @@ notes:: check points arg on draw-poly
 ;; buffer on different platforms...
 (defmacro with-system-dependent-bitmap-drawing ((bitmap &optional
                                                         bitmap-width bitmap-height)
-					        &body body)
+                  &body body)
   (declare (ignore bitmap-width bitmap-height))
   `(bw::rendering-on (*boxer-pane*)
      (bw::gl-draw-buffer bw::*gl-aux1*)
@@ -1367,9 +1367,9 @@ notes:: check points arg on draw-poly
 
 #| ;; no longer used?
 (defmacro with-drawing-into-new-bitmap ((bitmap-name
-					 drawable bit-width bit-height
-					 . window-system-specific-args)
-					&body body)
+           drawable bit-width bit-height
+           . window-system-specific-args)
+          &body body)
   (declare (ignore window-system-specific-args))
   `(let ((,bitmap-name (make-offscreen-bitmap ,drawable ,bit-width ,bit-height)))
      (drawing-on-bitmap (,bitmap-name)
