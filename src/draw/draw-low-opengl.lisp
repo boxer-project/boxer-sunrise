@@ -224,13 +224,13 @@ notes:: check points arg on draw-poly
 
 (defmacro rebind-font-info ((font-no) &body body)
   `(let ((%drawing-font %drawing-font)
-   (%drawing-font-cha-wid %drawing-font-cha-wid)
-   (%drawing-font-cha-hei %drawing-font-cha-hei)
-   (%drawing-font-cha-ascent %drawing-font-cha-ascent))
+         (%drawing-font-cha-wid %drawing-font-cha-wid)
+         (%drawing-font-cha-hei %drawing-font-cha-hei)
+         (%drawing-font-cha-ascent %drawing-font-cha-ascent))
      (unless (null ,font-no)
        (maintaining-drawing-font
-         (set-font-info ,font-no)
-         ,@body))))
+        (set-font-info ,font-no)
+        ,@body))))
 
 ;; this is a stub
 ;; it is used by some window systems(the mac) to insure all graphics
@@ -245,10 +245,10 @@ notes:: check points arg on draw-poly
   `(let ((%drawing-array ,view)
          (%graphics-state (gp:get-graphics-state ,view)))
      (opengl::rendering-on (,view)
-       ;; always start by drawing eveywhere
-       (bw::ogl-reshape (sheet-inside-width ,view) (sheet-inside-height ,view))
-       (bw::gl-scissor 0 0 (sheet-inside-width ,view) (sheet-inside-height ,view))
-     . ,body)))
+                           ;; always start by drawing eveywhere
+                           (bw::ogl-reshape (sheet-inside-width ,view) (sheet-inside-height ,view))
+                           (bw::gl-scissor 0 0 (sheet-inside-width ,view) (sheet-inside-height ,view))
+                           . ,body)))
 
 (defmacro current-graphics-state ()
   '(or %graphics-state (gp:get-graphics-state (or %drawing-array *boxer-pane*))))
@@ -256,7 +256,7 @@ notes:: check points arg on draw-poly
 ;; **** added WITH-PORT
 (defmacro prepare-sheet ((window) &body body)
   `(with-drawing-port ,window
-      ;; make sure things are the way they should be
+     ;; make sure things are the way they should be
      ;(bw::with-open-blinkers (bw::sheet-blinker-list ,window)
      ,@body))
 
@@ -289,17 +289,17 @@ notes:: check points arg on draw-poly
 ;;; **** NEW, used in draw-high-highware-clip
 (defmacro with-window-system-dependent-clipping ((x y wid hei) &body body)
   `(unwind-protect
-       (let ((%clip-lef (max %clip-lef (+ %origin-x-offset ,x)))
-             (%clip-top (max %clip-top (+ %origin-y-offset ,y)))
-             (%clip-rig (min %clip-rig (+ %origin-x-offset ,x ,wid)))
-             (%clip-bot (min %clip-bot (+ %origin-y-offset ,y ,hei))))
-         ;; make sure that the clipping parameters are always at least
-         ;; as restrictive as the previous parameters
-         (my-clip-rect %clip-lef %clip-top %clip-rig %clip-bot)
-         . ,body)
-     ;; reset the old clip region
-     (my-clip-rect %clip-lef %clip-top
-                   %clip-rig %clip-bot)))
+    (let ((%clip-lef (max %clip-lef (+ %origin-x-offset ,x)))
+          (%clip-top (max %clip-top (+ %origin-y-offset ,y)))
+          (%clip-rig (min %clip-rig (+ %origin-x-offset ,x ,wid)))
+          (%clip-bot (min %clip-bot (+ %origin-y-offset ,y ,hei))))
+      ;; make sure that the clipping parameters are always at least
+      ;; as restrictive as the previous parameters
+      (my-clip-rect %clip-lef %clip-top %clip-rig %clip-bot)
+      . ,body)
+    ;; reset the old clip region
+    (my-clip-rect %clip-lef %clip-top
+                  %clip-rig %clip-bot)))
 
 (defun sheet-screen-array (window) window)
 
@@ -344,23 +344,23 @@ notes:: check points arg on draw-poly
 (defun string-wid (font-no string)
   (let ((font (find-filled-font font-no)))
     (if (null font)
-        (error "No cached font for ~X" font-no)
-        (bw::with-ogl-font (font)
-          (bw::ogl-string-width string font)))))
+      (error "No cached font for ~X" font-no)
+      (bw::with-ogl-font (font)
+                         (bw::ogl-string-width string font)))))
 
 (defun string-hei (font-no)
   (let ((font (find-filled-font font-no)))
     (if (null font)
-        (error "No cached font for ~X" font-no)
+      (error "No cached font for ~X" font-no)
       (bw::with-ogl-font  (font)
-          (bw::ogl-font-height font)))))
+                          (bw::ogl-font-height font)))))
 
 (defun string-ascent (font-no)
   (let ((font (find-filled-font font-no)))
     (if (null font)
-        (error "No cached font for ~X" font-no)
+      (error "No cached font for ~X" font-no)
       (bw::with-ogl-font  (font)
-          (bw::ogl-font-ascent font)))))
+                          (bw::ogl-font-ascent font)))))
 
 
 
@@ -384,11 +384,11 @@ notes:: check points arg on draw-poly
   (let ((system-font (find-cached-font x)))
     (bw::ogl-set-font system-font)
     (multiple-value-bind (ascent height widmax leading)
-        (bw::ogl-font-info system-font)
-      (setq %drawing-font x
-            %drawing-font-cha-wid widmax ;; originally (- widmax 3)
-            %drawing-font-cha-ascent ascent
-            %drawing-font-cha-hei (+ height leading)))
+                         (bw::ogl-font-info system-font)
+                         (setq %drawing-font x
+                               %drawing-font-cha-wid widmax ;; originally (- widmax 3)
+                               %drawing-font-cha-ascent ascent
+                               %drawing-font-cha-hei (+ height leading)))
     x))
 
 
@@ -609,7 +609,7 @@ notes:: check points arg on draw-poly
           (let ((size-name (svref *bfd-font-size-names* j)))
             (setf (nth j names)
                   (format nil "~A (~D)" size-name (svref *font-sizes* (+ i j))))))))
-      names-array))
+    names-array))
 
 (defvar *font-size-menu-names* (make-size-menu-names))
 
@@ -622,13 +622,13 @@ notes:: check points arg on draw-poly
 ;; size resolution happens here. The relative size is resolved along with *font-size-baseline*
 (defun find-cached-font (font-no &optional (translate-size t))
   (multiple-value-bind (fam size face)
-      (font-values font-no)
-    (let ((size-cache (svref& *font-cache* fam)))
-      (unless (null size-cache)
-        (let ((face-cache (svref& size-cache (if translate-size
-                                                 (font-size-to-idx size)
-                                               size))))
-          (unless (null face-cache) (svref& face-cache face)))))))
+                       (font-values font-no)
+                       (let ((size-cache (svref& *font-cache* fam)))
+                         (unless (null size-cache)
+                           (let ((face-cache (svref& size-cache (if translate-size
+                                                                  (font-size-to-idx size)
+                                                                  size))))
+                             (unless (null face-cache) (svref& face-cache face)))))))
 
 ;; use when we are bypassing the bw::ogl-set-font mechanism
 (defun find-filled-font (font-no)
@@ -637,18 +637,18 @@ notes:: check points arg on draw-poly
 
 (defun cache-font (font font-no &optional (translate-size t))
   (multiple-value-bind (fam size face)
-      (font-values font-no)
-    (let ((size-cache (svref& *font-cache* fam)))
-      (when (null size-cache)
-        (setq size-cache (%make-font-size-cache))
-        (setf (svref& *font-cache* fam) size-cache))
-      (let ((face-cache (svref& size-cache (if translate-size
-                                               (font-size-to-idx size)
-                                             size))))
-        (when (null face-cache)
-          (setq face-cache (%make-font-face-cache))
-          (setf (svref& size-cache size) face-cache))
-        (setf (svref& face-cache face) font)))))
+                       (font-values font-no)
+                       (let ((size-cache (svref& *font-cache* fam)))
+                         (when (null size-cache)
+                           (setq size-cache (%make-font-size-cache))
+                           (setf (svref& *font-cache* fam) size-cache))
+                         (let ((face-cache (svref& size-cache (if translate-size
+                                                                (font-size-to-idx size)
+                                                                size))))
+                           (when (null face-cache)
+                             (setq face-cache (%make-font-face-cache))
+                             (setf (svref& size-cache size) face-cache))
+                           (setf (svref& face-cache face) font)))))
 
 (defun fontspec->font-no (fontspec &optional create?)
   (let ((fambits (%font-name-to-idx (or (car fontspec) *default-font-family*)
@@ -685,12 +685,12 @@ notes:: check points arg on draw-poly
   (let ((existing (font-family-alias family-name)))
     (cond ((null existing)
            (push (cons family-name local-name) *font-family-aliases*))
-          ((string= local-name (cadr existing)))
-          (t (if *boxer-system-hacker*
-                 (error "Trying to CHANGE an alias for ~S from ~S to ~S"
-                        family-name (cadr existing) local-name)
-               (warn "Trying to CHANGE an alias for ~S from ~S to ~S"
-                        family-name (cadr existing) local-name))))))
+      ((string= local-name (cadr existing)))
+      (t (if *boxer-system-hacker*
+           (error "Trying to CHANGE an alias for ~S from ~S to ~S"
+                  family-name (cadr existing) local-name)
+           (warn "Trying to CHANGE an alias for ~S from ~S to ~S"
+                 family-name (cadr existing) local-name))))))
 
 #|
 ;; make a true type font, and associate it with a font number
@@ -731,7 +731,7 @@ notes:: check points arg on draw-poly
 
 (defun make-boxer-font (rawfontspec &optional (calculate-parameters? T))
   (if bw::*use-capogi-fonts*
-      (make-boxer-font-capogi rawfontspec)
+    (make-boxer-font-capogi rawfontspec)
     (make-boxer-font-ogl rawfontspec calculate-parameters?)))
 
 ;; always "calculate parameters" because they are already available in the capogi font structure
@@ -746,10 +746,10 @@ notes:: check points arg on draw-poly
              (or (find-cached-font new-font-no nil)
                  (cache-font oglfont new-font-no nil))
              new-font-no))
-          (t
-           (or (find-cached-font font-no nil)
-               (cache-font (bw::make-opengl-font-from-capogi-font cfont) font-no nil))
-           font-no))))
+      (t
+       (or (find-cached-font font-no nil)
+           (cache-font (bw::make-opengl-font-from-capogi-font cfont) font-no nil))
+       font-no))))
 
 (defun make-boxer-font-ogl (rawfontspec calculate-parameters?)
   (let* ((alias (font-family-alias (car rawfontspec)))
@@ -763,7 +763,7 @@ notes:: check points arg on draw-poly
            ;; wait until we have a solid native font before converting to an
            ;; opengl font
            (let* ((oglfont  (if (null calculate-parameters?)
-                                (bw::register-opengl-font-from-native-font sysfont)
+                              (bw::register-opengl-font-from-native-font sysfont)
                               (bw::make-opengl-font-from-native-font sysfont)))
                   (localname (unless (null oglfont)
                                (gp:font-description-attribute-value
@@ -777,14 +777,14 @@ notes:: check points arg on draw-poly
              (or (find-cached-font new-font-no nil)
                  (cache-font oglfont new-font-no nil))
              new-font-no))
-          (t
-           (or (find-cached-font font-no nil)
-               (let ((font (if (null calculate-parameters?)
-                               (bw::register-opengl-font-from-native-font
-                                (boxer-font-spec->lw-font fontspec))
-                             (bw::make-opengl-font-from-native-font sysfont))))
-                 (cache-font font font-no nil)))
-           font-no))))
+      (t
+       (or (find-cached-font font-no nil)
+           (let ((font (if (null calculate-parameters?)
+                         (bw::register-opengl-font-from-native-font
+                          (boxer-font-spec->lw-font fontspec))
+                         (bw::make-opengl-font-from-native-font sysfont))))
+             (cache-font font font-no nil)))
+       font-no))))
 
 ;; the LW font internals looks like it supports :underline, but leave out for
 ;; now because it isn't documented
@@ -796,10 +796,10 @@ notes:: check points arg on draw-poly
                        (gp:make-font-description :family family
                                                  :size size
                                                  :weight (if (member :bold styles)
-                                                             :bold
+                                                           :bold
                                                            :normal)
                                                  :slant (if (member :italic styles)
-                                                            :italic
+                                                          :italic
                                                           :roman)
                                                  :underline
                                                  (not (null (member :underline
@@ -894,7 +894,7 @@ notes:: check points arg on draw-poly
 (defun set-font (boxer-font)
   (let ((system-font (find-cached-font boxer-font)))
     (if (null system-font)
-        (error "No cached font for ~X" boxer-font)
+      (error "No cached font for ~X" boxer-font)
       (bw::ogl-set-font system-font))))
 
 (defmacro maintaining-drawing-font (&body body)
@@ -902,11 +902,11 @@ notes:: check points arg on draw-poly
     `(let ((,font-var bw::*current-opengl-font*)
            (,fba-var bw::*current-opengl-font-base-addr*))
        (unwind-protect
-           (progn . ,body)
-         ;; NOTE: fonts aren't necessarily EQ
-         (unless (eql bw::*current-opengl-font* ,font-var)
-           (setq bw::*current-opengl-font* ,font-var
-                 bw::*current-opengl-font-base-addr* ,fba-var))))))
+        (progn . ,body)
+        ;; NOTE: fonts aren't necessarily EQ
+        (unless (eql bw::*current-opengl-font* ,font-var)
+          (setq bw::*current-opengl-font* ,font-var
+                bw::*current-opengl-font-base-addr* ,fba-var))))))
 
 ;; proportional fonts
 (defun cha-wid (char)
@@ -928,9 +928,9 @@ notes:: check points arg on draw-poly
   (declare (ignore alu window))
   (let ((system-font (find-cached-font font)))
     (if (null system-font)
-        (error "Can't find cached font for ~X" font)
+      (error "Can't find cached font for ~X" font)
       (bw::with-ogl-font (system-font)
-        (bw::ogl-draw-string string x y)))))
+                         (bw::ogl-draw-string string x y)))))
 
 
 ;;; this takes a set of boxer points and converts them into a form that
@@ -939,12 +939,12 @@ notes:: check points arg on draw-poly
 ;;;
 ;;; OpenGL expects a list of X Y pairs
 (defmacro boxer-points->window-system-points (boxer-point-list (x-arg x-form)
-                     (y-arg y-form))
-     `(macrolet ((x-handler (,x-arg) ,x-form)
-    (y-handler (,y-arg) ,y-form))
-        (let ((trans nil))
-          (dolist (pt ,boxer-point-list (nreverse trans))
-            (push (list (x-handler (car pt)) (y-handler (cdr pt))) trans)))))
+                                                               (y-arg y-form))
+  `(macrolet ((x-handler (,x-arg) ,x-form)
+              (y-handler (,y-arg) ,y-form))
+             (let ((trans nil))
+               (dolist (pt ,boxer-point-list (nreverse trans))
+                 (push (list (x-handler (car pt)) (y-handler (cdr pt))) trans)))))
 
 ;;; Real Primitives
 
@@ -974,21 +974,21 @@ notes:: check points arg on draw-poly
            (,newsizevar (float ,newsize))
            (,nochangevar nil))
        (unwind-protect
-           (progn
-             (cond ((= ,newsizevar ,oldpsvar) (setq ,nochangevar t))
-                   (t (%set-pen-size ,newsize)))
-             . ,body)
-         (unless ,nochangevar (%set-pen-size ,oldpsvar))))))
+        (progn
+         (cond ((= ,newsizevar ,oldpsvar) (setq ,nochangevar t))
+           (t (%set-pen-size ,newsize)))
+         . ,body)
+        (unless ,nochangevar (%set-pen-size ,oldpsvar))))))
 
 (defmacro with-line-stippling ((pattern factor) &body body)
   (let ((stipplevar (gensym)))
     `(let ((,stipplevar (bw::get-opengl-state bw::*gl-line-stipple* :boolean)))
        (unwind-protect
-           (progn
-             (opengl::gl-line-stipple ,factor ,pattern)
-             (opengl::gl-enable bw::*gl-line-stipple*)
-             . ,body)
-         (unless ,stipplevar (opengl::gl-disable bw::*gl-line-stipple*))))))
+        (progn
+         (opengl::gl-line-stipple ,factor ,pattern)
+         (opengl::gl-enable bw::*gl-line-stipple*)
+         . ,body)
+        (unless ,stipplevar (opengl::gl-disable bw::*gl-line-stipple*))))))
 
 
 
@@ -1055,8 +1055,8 @@ notes:: check points arg on draw-poly
 ;;; How's this?
 (defmacro with-pen-color ((color) &body body)
   `(bw::maintaining-ogl-color
-     (bw::ogl-set-color ,color)
-     . ,body))
+    (bw::ogl-set-color ,color)
+    . ,body))
 
 ;; figure out if we are using this for convert-color specs or not
 (defun normalize-color-component (value) (/ value 100.0))
@@ -1069,8 +1069,8 @@ notes:: check points arg on draw-poly
 
 (defun pixel-rgb-values (pixel)
   (list (* (color-red pixel)   100)
-  (* (color-green pixel) 100)
-  (* (color-blue pixel)  100)
+        (* (color-green pixel) 100)
+        (* (color-blue pixel)  100)
         (* (color-alpha pixel) 100)))
 
 ;; new dumper interface...
@@ -1093,13 +1093,13 @@ notes:: check points arg on draw-poly
            ;; a transparent color, so return a list with the alpha value since the
            ;; dumper would be unhappy with a non fixnum pixel
            (pixel-rgb-values pixel))
-          (t ; pack a fixnum (in the right order)
-           (let* ((redbyte (round (* (color-red pixel) 255)))
-                  (greenbyte (round (* (color-green pixel) 255)))
-                  (bluebyte (round (* (color-blue pixel) 255))))
-             (dpb& redbyte *red-byte-position*
-                   (dpb& greenbyte *green-byte-position*
-                         bluebyte)))))))
+      (t ; pack a fixnum (in the right order)
+         (let* ((redbyte (round (* (color-red pixel) 255)))
+                (greenbyte (round (* (color-green pixel) 255)))
+                (bluebyte (round (* (color-blue pixel) 255))))
+           (dpb& redbyte *red-byte-position*
+                 (dpb& greenbyte *green-byte-position*
+                       bluebyte)))))))
 
 ;; we need to shave off the alpha value because higher level code
 ;; (dump-true-color-pixmap: dumper.lisp) assumes fixnum pixels
@@ -1108,8 +1108,8 @@ notes:: check points arg on draw-poly
          (redbyte (ldb (byte 8 0) winpixel))
          (bluebyte (ldb (byte 8 16) winpixel)))
     (dpb redbyte (byte 8 16)       ; move red to high position
-          (dpb bluebyte (byte 8 0)   ; move blue to low byte
-                returnpixel))))
+         (dpb bluebyte (byte 8 0)   ; move blue to low byte
+              returnpixel))))
 
 (defun %draw-poly (points alu array)
   (declare (ignore alu array))
@@ -1149,15 +1149,15 @@ notes:: check points arg on draw-poly
 ;; also, opengl-draw-arc expects positive angle args
 (defun %draw-c-arc (x y radius start-angle sweep-angle &optional filled?)
   (if (minusp sweep-angle)
-      ;; change the start so that we can use ABS sweep
-      (bw::opengl-draw-arc x y radius
-                       (* *degs->rads* (mod (- (+ start-angle sweep-angle) 90) 360))
-                       (* *degs->rads* (abs sweep-angle))
-                       filled?)
+    ;; change the start so that we can use ABS sweep
     (bw::opengl-draw-arc x y radius
-                     (* *degs->rads* (mod (- start-angle 90) 360))
-                     (* *degs->rads* sweep-angle)
-                     filled?)))
+                         (* *degs->rads* (mod (- (+ start-angle sweep-angle) 90) 360))
+                         (* *degs->rads* (abs sweep-angle))
+                         filled?)
+    (bw::opengl-draw-arc x y radius
+                         (* *degs->rads* (mod (- start-angle 90) 360))
+                         (* *degs->rads* sweep-angle)
+                         filled?)))
 
 
 ;; not currently used, leave here to document calling convention
@@ -1347,17 +1347,17 @@ notes:: check points arg on draw-poly
 ;; buffer on different platforms...
 (defmacro with-system-dependent-bitmap-drawing ((bitmap &optional
                                                         bitmap-width bitmap-height)
-                  &body body)
+                                                &body body)
   (declare (ignore bitmap-width bitmap-height))
   `(bw::rendering-on (*boxer-pane*)
-     (bw::gl-draw-buffer bw::*gl-aux1*)
-     (progn . ,body)
-     (bw::gl-flush)
-     (opengl::%pixblt-from-screen ,bitmap 0 (- (sheet-inside-height *boxer-pane*)
-                                               (opengl::ogl-pixmap-height ,bitmap))
-                                  (opengl::ogl-pixmap-width  ,bitmap)
-                                  (opengl::ogl-pixmap-height ,bitmap)
-                                  0 0 bw::*gl-back*)))
+                     (bw::gl-draw-buffer bw::*gl-aux1*)
+                     (progn . ,body)
+                     (bw::gl-flush)
+                     (opengl::%pixblt-from-screen ,bitmap 0 (- (sheet-inside-height *boxer-pane*)
+                                                               (opengl::ogl-pixmap-height ,bitmap))
+                                                   (opengl::ogl-pixmap-width  ,bitmap)
+                                                   (opengl::ogl-pixmap-height ,bitmap)
+                                                   0 0 bw::*gl-back*)))
 
 (defun clear-offscreen-bitmap (bm &optional (clear-color *background-color*))
   (opengl::clear-ogl-pixmap bm (opengl::make-offscreen-pixel
@@ -1473,32 +1473,32 @@ notes:: check points arg on draw-poly
   (let ((ia (gp:make-image-access *boxer-pane* image))
         (bdata (opengl::ogl-pixmap-data bm)))
     (unwind-protect
-        (progn
-          (gp::image-access-transfer-from-image ia)
-          (dotimes (y h)
-            (dotimes (x w)
-              (setf (fli:dereference bdata :index (+ x (* (- h y 1) w)))
-                    (uncolor->pixel
-                     (color:unconvert-color *boxer-pane* (gp:image-access-pixel ia x y)))))))
-      (gp:free-image-access ia))))
+     (progn
+      (gp::image-access-transfer-from-image ia)
+      (dotimes (y h)
+        (dotimes (x w)
+          (setf (fli:dereference bdata :index (+ x (* (- h y 1) w)))
+                (uncolor->pixel
+                  (color:unconvert-color *boxer-pane* (gp:image-access-pixel ia x y)))))))
+     (gp:free-image-access ia))))
 
 ;; uncolor = result of color:unconvert-color which is a simple-vector with components of
 ;; :RGB, red, green, blue & alpha in 0->1.0 floa format
 (defun uncolor->pixel (uncolor)
   (flet ((convert-color-component (cc)
-           (floor (* cc 255))))
-    (opengl::make-offscreen-pixel (convert-color-component (svref uncolor 1))
-                                  (convert-color-component (svref uncolor 2))
-                                  (convert-color-component (svref uncolor 3))
-                                  (convert-color-component (svref uncolor 4)))))
+                                  (floor (* cc 255))))
+        (opengl::make-offscreen-pixel (convert-color-component (svref uncolor 1))
+                                      (convert-color-component (svref uncolor 2))
+                                      (convert-color-component (svref uncolor 3))
+                                      (convert-color-component (svref uncolor 4)))))
 
 ;;; should we pass blend functions in ? ((src-blend-func dst-blend-func) &body body)
 (defmacro with-blending-on (&body body)
   (let ((current-blend-var (gensym)))
     `(let ((,current-blend-var (bw::gl-enabled? bw::*gl-blend*)))
        (unwind-protect
-           (progn
-             (bw::gl-blend-func bw::*gl-src-alpha* bw::*gl-one-minus-src-alpha*)
-             (bw::gl-enable bw::*gl-blend*)
-             . ,body)
-         (unless ,current-blend-var (bw::gl-disable bw::*gl-blend*))))))
+        (progn
+         (bw::gl-blend-func bw::*gl-src-alpha* bw::*gl-one-minus-src-alpha*)
+         (bw::gl-enable bw::*gl-blend*)
+         . ,body)
+        (unless ,current-blend-var (bw::gl-disable bw::*gl-blend*))))))
