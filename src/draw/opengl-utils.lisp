@@ -671,7 +671,7 @@ Modification History (most recent at the top)
 ;;; lisp crib of http://slabode.exofire.net/circle_draw.shtml
 ;;; should be moved to opengl directory
 
-(defun num-slices (radius) (round (* 10 (sqrt radius))))
+(defun num-slices (radius) (round (* 500 (sqrt radius))))
 
 (defun opengl-draw-circle (cx cy radius &optional filled?)
   (let* ((num-slices (num-slices radius))

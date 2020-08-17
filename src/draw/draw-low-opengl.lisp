@@ -1498,7 +1498,10 @@ notes:: check points arg on draw-poly
     `(let ((,current-blend-var (bw::gl-enabled? bw::*gl-blend*)))
        (unwind-protect
         (progn
-         (bw::gl-blend-func bw::*gl-src-alpha* bw::*gl-one-minus-src-alpha*)
+         (bw::gl-enable bw::*gl-line-smooth*)
+         (bw::gl-enable bw::*gl-polygon-smooth*)
          (bw::gl-enable bw::*gl-blend*)
+         (bw::gl-blend-func bw::*gl-src-alpha* bw::*gl-one-minus-src-alpha*)
+         (bw::gl-hint bw::*gl-line-smooth-hint* bw::*gl-nicest*)
          . ,body)
         (unless ,current-blend-var (bw::gl-disable bw::*gl-blend*))))))
