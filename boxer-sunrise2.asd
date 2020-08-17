@@ -74,8 +74,6 @@
                  #+lispworks (:file "boxwin/boxwin-opengl")
                  (:file "boxwin/hardcopy-lw")
                  (:file "boxwin/mousedoc")
-                 ;; (:file "oglmacreg")
-                 ;; (:file "winreg")
 
                  ;; Beginning of `BOXNET` module
                  ;; operating-system and window-system and lisp-system dependent
