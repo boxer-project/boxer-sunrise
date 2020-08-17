@@ -1731,10 +1731,7 @@ Modification History (most recent at the top)
   :body
   (unless (=& new-font-no *graphics-state-current-font-no*)
     ;; have to check for possible font
-;    #+glut
     (bw::ensure-oglfont-parameters (find-cached-font new-font-no))
-;    #-glut
-;    (bw::ensure-ttffont-parameters (find-cached-font new-font-no))
     (setq *graphics-state-current-font-no* new-font-no)))
 )
 

@@ -256,7 +256,6 @@ Modification History (most recent at the top)
   ;; parameter to have available...
   (ascent 0)
   (widths-array nil)
-  #+GLUT (glutfont nil)
   )
 
 (defun %print-opengl-font (font stream level)
@@ -281,17 +280,12 @@ Modification History (most recent at the top)
 ;; 3) calculate height & width info for the font using the native font
 ;;    we could have opengl do it but then we have to convert formats & work
 ;;    in floating point
-;; 3a) For GLUT fonts, we fill the tables from the GLUT font since the values
-;;     will differ from whatever the native font says since we short circuit the
-;;     font translation to the limited set of GLUT fonts
 ;;
 ;; 4) use win32::wgl-use-font to cache local font in GPU
 ;; *) font caching mechanism uses the DL-base-addr slot in opengl font struct
 ;; *) Note that the :start arg to wgl-use-font should be the same offset used
 ;;    when drawing chars, that's what *opengl-starting-char-index* is for
 
-;;; separate versions because GLUT font metric prims need to work on the
-;;; acual GLUT font since it can be substantially different from the native font
 (defun register-opengl-font-from-native-font (native-font &optional (pane *boxer-pane*))
   (declare (ignore pane))
   (%make-opengl-font :native-font native-font))
@@ -303,32 +297,6 @@ Modification History (most recent at the top)
 
 (defvar *use-capogi-fonts* t) ; want to allow option for scaleable vector OpenGL fonts in Windows
 
-#+glut
-(defun fill-oglfont-parameters (ofont &optional pane)
-  (declare (ignore pane))
-  (let* ((native-font (opengl-font-native-font ofont))
-         (glutfont (opengl::native-font->glut-font native-font)))
-    (setf (opengl-font-ascent ofont) (opengl::glut-font-ascent glutfont)
-          (opengl-font-glutfont ofont) glutfont
-          (opengl-font-height ofont) (opengl::glut-font-height glutfont))
-    (cond ((opengl::glut-fixed-width-font? glutfont)
-           (setf (opengl-font-width ofont) (opengl::glut-char-width #\a glutfont)))
-      (t (let ((widths-array (make-array (- *opengl-font-end*
-                                            *opengl-font-start*)
-                                         :element-type 'fixnum))
-               (maxwid 0))
-           (do-ofont-chars (char-code)
-             (let* ((move (rassoc char-code *unicode-window-1252* :test #'(lambda (a b) (= a (car b)))))
-                    (trans-idx (-& char-code *opengl-font-start*))
-                    (cw (opengl::glut-char-width (cond ((null move) (code-char char-code))
-                                                   (t (code-char (car move))))
-                                                 glutfont)))
-               (setf (aref widths-array trans-idx) cw)
-               (setq maxwid (max maxwid cw))))
-           (setf (opengl-font-width ofont) maxwid)
-           (setf (opengl-font-widths-array ofont) widths-array))))
-    ofont))
-
 ;;; It's taking too long to cache all the fonts on startup so the
 ;;; new scheme is to resolve the native font into an OpenGL font but
 ;;; fill in the font info on demand (in particular, the widths array)
@@ -337,7 +305,6 @@ Modification History (most recent at the top)
 ;;; Filling the entire unicode space of a font still introduces a perceptable
 ;;; stutter so the new paradigm will be to fill the ASCII space of the widths
 ;;; array and fill in the rest character by character on demand
-#-glut
 (defun fill-oglfont-parameters (ofont &optional (pane *boxer-pane*))
   (let* ((native-font (opengl-font-native-font ofont))
          (ascent (gp::get-font-ascent pane native-font)))
@@ -380,19 +347,6 @@ Modification History (most recent at the top)
     ;; new lazy caching scheme
     (gl-delete-lists (opengl-font-dl-base-addr ofont) *opengl-font-cache-end*)  ;was *opengl-font-end*
     (setf (opengl-font-dl-base-addr ofont) nil)))
-;
-
-#|
-(gp:get-font-ascent
-(gp:get-font-descent
-(gp:get-font-width
-(gp:get-string-extent
-(gp:find-best-font
-(gp:draw-string
-(gp:get-character-extent
-|#
-
-
 
 ;;; External Interface
 ;; ogl-set-font
@@ -504,7 +458,6 @@ Modification History (most recent at the top)
                (incf acc (aref wa (charcode->oglfont-index (char-code (char string i))))))
              acc))
       (t (* (opengl-font-width font) (length string))))))
-
 
 (defun ogl-draw-char (char x y)
   (gl-raster-pos2-f (ogl-type x 'float) (ogl-type y 'float)) ; (+ y (opengl-font-ascent *current-opengl-font*))

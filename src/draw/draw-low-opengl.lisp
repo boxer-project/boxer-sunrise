@@ -491,13 +491,7 @@ notes:: check points arg on draw-poly
 (defvar *font-family-names* (make-array %%font-family-size :initial-element nil))
 
 ;; Must be True Type Fonts
-(defvar *font-families*
-  #+glut
-  '("Fixed" "Times" "Helvetica")
-  #+capogi
-  '("Arial" "Courier New" "Times New Roman" "Verdana")
-  #-(or glut capogi)
-  '("Courier" "Arial" "Times"))  ; Verdana ?
+(defvar *font-families* '("Arial" "Courier New" "Times New Roman" "Verdana"))
 
 (defvar *default-font-family* (car *font-families*))
 (defvar *default-font-size*   3)
@@ -862,16 +856,13 @@ notes:: check points arg on draw-poly
 ;; font caches with the internal representation system font
 ;; Note: 4/16/2010 do not calculate all the font info for every font up font
 (defun fill-bootstrapped-font-caches ()
-  #+glut (opengl::initialize-glut-font-pointers)
-  #+glut (opengl::initialize-glut-font-metrics)
-  #+capogi (bw::load-capogi-font-cache)
+  (bw::load-capogi-font-cache)
   (dolist (font-family *font-families*)
     (dotimes (i (length *font-sizes*))
       (let ((size (svref *font-sizes* i)))
         (dolist (style '(nil (:bold) (:italic) (:bold :italic))) ; leave out :underline for now
           (make-boxer-font (list* font-family size style)
-                           #+glut T
-                           #-glut (cache-on-startup? font-family size style)))))))
+                           (cache-on-startup? font-family size style)))))))
 
 (defun cache-on-startup? (family size style)
   (declare (ignore style))

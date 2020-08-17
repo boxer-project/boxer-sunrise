@@ -237,9 +237,6 @@ Modification History (most recent at top)
 (defvar *font-sub-style-menu*
   (make-instance 'capi::menu :title "Style"
                  :items
-                 #+glut
-                 nil
-                 #-glut
                  (list (make-instance 'capi:menu-component
                                       :interaction :multiple-selection
                                       :popup-callback 'set-font-style-menu-selection
