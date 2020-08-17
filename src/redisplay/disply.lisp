@@ -639,22 +639,6 @@ Modification History (most recent at the top)
     (unless no-drawing
       (bitblt-move-region wid hei x-offset y-offset delta-x delta-y))))
 
-
-#+lispm
-(compiler:make-obsolete move-screen-boxes
-			"Why aren't you moving ALL the characters instead ?")
-;(DEFUN MOVE-SCREEN-BOXES (SCREEN-BOXES DELTA-X DELTA-Y)
-;  (WHEN (NOT-NULL SCREEN-BOXES)
-;    (CHECK-SCREEN-BOX-ARG (FIRST SCREEN-BOXES))
-;    (MULTIPLE-VALUE-BIND (WID HEI)
-;	(SCREEN-BOXES-AND-WHITESPACE-SIZE SCREEN-BOXES)
-;      (MULTIPLE-VALUE-BIND (X-OFFSET Y-OFFSET)
-;	  (SCREEN-OBJ-OFFSETS (CAR SCREEN-BOXES))
-;	(BITBLT-MOVE-REGION WID HEI X-OFFSET Y-OFFSET DELTA-X DELTA-Y)
-;	(DOLIST (SCREEN-BOX SCREEN-BOXES)
-;	  (INCF (SCREEN-OBJ-X-OFFSET SCREEN-BOX) DELTA-X)
-;	  (INCF (SCREEN-OBJ-Y-OFFSET SCREEN-BOX) DELTA-Y))))))
-
 (defun move-screen-obj (screen-obj delta-x delta-y &optional no-drawing)
   (when (not-null screen-obj)
     ;; sgithens TODO (check-screen-obj-arg screen-obj)
