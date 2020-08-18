@@ -50,4 +50,5 @@
         ;;   :identifier "org.boxer.BoxerSunrise"
         ;;   )
         (merge-pathnames "./data/boxersunrise.app/Contents/MacOS/boxersunrise" (uiop:getcwd))
-        0 :interface :capi)
+        0 :interface :capi
+        :startup-bitmap-file nil)
