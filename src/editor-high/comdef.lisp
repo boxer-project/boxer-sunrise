@@ -962,7 +962,7 @@ Modification History (most recent at top)
 (defvar *popup-docs* nil)
 
 (defvar *popup-doc-font*
-  #+lispworks (%make-font-number-internal 0 0)
+  #+lispworks (%make-font-number-internal 0 1)
   #+mcl (make-boxer-font '("Geneva" 10)))
 
 ;; a pale yellow...
