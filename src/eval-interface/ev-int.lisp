@@ -375,19 +375,6 @@ Modification History (most recent at top)
      . ,body)
     (reset-mouse-cursor)))
 
-;;; Hack floating point lossage
-
-#+lcl3.0
-(defmacro with-floating-point-exceptions-handled (&body body)
-  `(lcl::with-floating-point-traps
-    (nil '(lcl:floating-point-overflow lcl:floating-point-underflow
-                                       lcl:floating-point-invalid-operation lcl:division-by-zero))
-    (progn . ,body)))
-
-#-lcl3.0
-(defmacro with-floating-point-exceptions-handled (&body body)
-  `(progn . ,body))
-
 ;;; Lots of things want to be queued during and eval and processed afterwards
 ;;; This has to be wrapped around the OUTERMOST invocation.
 ;;; Specifically, printing of returned values has to take place BEFORE the
@@ -413,10 +400,9 @@ Modification History (most recent at top)
                                          (boxer-eval::*doit-key-process* boxer-eval::*current-process*))
                                     #+lispworks (setq *evaluation-in-progress?* t)
                                     (with-editor-mutation-queueing
-                                      (with-floating-point-exceptions-handled
-                                        (with-screen-box-modification-tracking
-                                          (with-absolute-position-cache-recording
-                                            . ,body)))))
+                                      (with-screen-box-modification-tracking
+                                        (with-absolute-position-cache-recording
+                                          . ,body))))
                                   #+lispworks (setq *evaluation-in-progress?* nil)))))))))
     (unless (null *post-eval-hook*)
       (if (listp *post-eval-hook*)
