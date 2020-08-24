@@ -100,25 +100,25 @@ Modification History (most recent at top)
   (if (numberp x)
       x
       (let ((box-rows (get-box-rows x)))
-	(when (null (cdr box-rows))
-	  (let ((entries (evrow-pointers (car (get-box-rows x)))))
-	    (when (and entries (null (cdr entries)))
-	      (let ((object (access-evrow-element x (car entries))))
-		(when (numberp object)
-		  object))))))))
+  (when (null (cdr box-rows))
+    (let ((entries (evrow-pointers (car (get-box-rows x)))))
+      (when (and entries (null (cdr entries)))
+        (let ((object (access-evrow-element x (car entries))))
+    (when (numberp object)
+      object))))))))
 
 (defun numberize-or-error (x)
   (if (numberp x) x
       (let ((box-rows (get-box-rows x)))
-	(if (and box-rows (null (cdr box-rows)))
-	    (let ((entries (evrow-pointers (car (get-box-rows x)))))
-	      (if (and entries (null (cdr entries)))
-		  (let ((object (access-evrow-element x (car entries))))
-		    (if (numberp object)
-			object
-			(boxer-eval::primitive-signal-error :number-expected x)))
-		  (boxer-eval::primitive-signal-error :number-expected x)))
-	    (boxer-eval::primitive-signal-error :number-expected x)))))
+  (if (and box-rows (null (cdr box-rows)))
+      (let ((entries (evrow-pointers (car (get-box-rows x)))))
+        (if (and entries (null (cdr entries)))
+      (let ((object (access-evrow-element x (car entries))))
+        (if (numberp object)
+      object
+      (boxer-eval::primitive-signal-error :number-expected x)))
+      (boxer-eval::primitive-signal-error :number-expected x)))
+      (boxer-eval::primitive-signal-error :number-expected x)))))
 
 
 ;;; Similarly, this function does the work of DATAFY.
@@ -174,21 +174,21 @@ Modification History (most recent at top)
 
 (defun restore-point-position (position-object &optional force-cursor-move?)
   (let ((original-box (process-doit-cursor-position-box
-		       position-object))
-	(original-row (process-doit-cursor-position-row
-		       position-object))
-	(original-cha-no (process-doit-cursor-position-cha-no
-		          position-object))
-	(original-row-no (process-doit-cursor-position-row-no
-		          position-object))
-	(original-box-stack (process-doit-cursor-position-box-stack
-			     position-object))
-	(original-screen-box (process-doit-cursor-position-screen-box
-			      position-object)))
+           position-object))
+  (original-row (process-doit-cursor-position-row
+           position-object))
+  (original-cha-no (process-doit-cursor-position-cha-no
+              position-object))
+  (original-row-no (process-doit-cursor-position-row-no
+              position-object))
+  (original-box-stack (process-doit-cursor-position-box-stack
+           position-object))
+  (original-screen-box (process-doit-cursor-position-screen-box
+            position-object)))
     (cond ((and (superior? original-box *initial-box*)
-	        ;; is the box we started in still part of the hierarchy ?
-	        ;; if so, be more detailed
-	        (not (null (screen-obj-actual-obj original-screen-box)))
+          ;; is the box we started in still part of the hierarchy ?
+          ;; if so, be more detailed
+          (not (null (screen-obj-actual-obj original-screen-box)))
                 (superior? (screen-obj-actual-obj original-screen-box)
                            *initial-box*))
            ;; make sure the screen-box we are in is also still
@@ -287,26 +287,26 @@ Modification History (most recent at top)
 ;                      ;; now stop
 ;                      (return nil)))))
            )
-	  (t
-	   ;; uh oh, looks like the original box we were in is no longer
-	   ;; part of the hierarchy so move upwards until we reach
-	   ;; familiar territory
-	   (dolist (old-box (cdr original-box-stack))
-	     (when (superior? old-box *initial-box*)
-	       ;; box is still connected to the hierarchy
-	       (move-point (box-first-bp-values old-box))
+    (t
+     ;; uh oh, looks like the original box we were in is no longer
+     ;; part of the hierarchy so move upwards until we reach
+     ;; familiar territory
+     (dolist (old-box (cdr original-box-stack))
+       (when (superior? old-box *initial-box*)
+         ;; box is still connected to the hierarchy
+         (move-point (box-first-bp-values old-box))
                ;(move-to-bp-values *point* (box-first-bp-values old-box))
-	       ;; blechh, however, in the general case, the last
-	       ;; possible superior may not even be visible so we need
-	       ;; to handle THAT first.
-	       ;; Solution probably involves walking up the stack of
-	       ;; screen-boxes to decide on a reasonable outermost
-	       ;; screen box and then making sure the new point-screen-box
-	       ;; is part of the new outermost-screen-box.
+         ;; blechh, however, in the general case, the last
+         ;; possible superior may not even be visible so we need
+         ;; to handle THAT first.
+         ;; Solution probably involves walking up the stack of
+         ;; screen-boxes to decide on a reasonable outermost
+         ;; screen box and then making sure the new point-screen-box
+         ;; is part of the new outermost-screen-box.
                (let ((old-screen-box (car (displayed-screen-objs old-box))))
                  (cond ((not (null old-screen-box))
                         ;; box was visible so we can just set
-	                (setf (bp-screen-box *point*) old-screen-box)
+                  (setf (bp-screen-box *point*) old-screen-box)
                         (enter old-box))
                        (t
                         ;; box is not visible, this can mean that the box was
@@ -333,7 +333,7 @@ Modification History (most recent at top)
   `(progn
      (fill-doit-cursor-position-vector boxer-eval::*process-doit-cursor-position*)
      (unwind-protect
-	  (progn . ,body)
+    (progn . ,body)
        (restore-point-position boxer-eval::*process-doit-cursor-position*))))
 
 (defun fill-doit-cursor-position-vector (vector &optional (bp *point*))
@@ -341,26 +341,26 @@ Modification History (most recent at top)
   (setf (process-doit-cursor-position-row vector) (bp-row bp))
   (setf (process-doit-cursor-position-cha-no vector) (bp-cha-no bp))
   (setf (process-doit-cursor-position-row-no vector)
-	(when (bp-box bp) (row-row-no (bp-box bp) (bp-row bp))))
+  (when (bp-box bp) (row-row-no (bp-box bp) (bp-row bp))))
   (setf (process-doit-cursor-position-box-stack vector)
-	(with-collection
-	    (do* ((screen-box (bp-screen-box bp)
-			      (unless (null screen-box)
-				(superior-screen-box screen-box)))
-		  (box (if (null screen-box)
-			   (bp-box bp)
-			   (screen-obj-actual-obj screen-box))
-		       (if (null screen-box)
-			   (superior-box box)
-			   (screen-obj-actual-obj screen-box))))
-		((or (eq box *initial-box*)
-		     (when (null box)
+  (with-collection
+      (do* ((screen-box (bp-screen-box bp)
+            (unless (null screen-box)
+        (superior-screen-box screen-box)))
+      (box (if (null screen-box)
+         (bp-box bp)
+         (screen-obj-actual-obj screen-box))
+           (if (null screen-box)
+         (superior-box box)
+         (screen-obj-actual-obj screen-box))))
+    ((or (eq box *initial-box*)
+         (when (null box)
                        (when *boxer-system-hacker*
-		         (warn "The *point* is not in the editor hierarchy"))
-		       t)))
-	      (collect box))))
+             (warn "The *point* is not in the editor hierarchy"))
+           t)))
+        (collect box))))
   (setf (process-doit-cursor-position-screen-box vector)
-	(bp-screen-box bp))
+  (bp-screen-box bp))
   vector)
 
 (defvar *mouse-cursor-change-during-eval?* t)
@@ -369,10 +369,10 @@ Modification History (most recent at top)
 ;;; during the polling function
 (defmacro with-mouse-cursor-on (&body body)
   `(unwind-protect
-	(progn
-	  (unless (null *mouse-cursor-change-during-eval?*)
-	    (set-mouse-cursor :eval))
-	  . ,body)
+  (progn
+    (unless (null *mouse-cursor-change-during-eval?*)
+      (set-mouse-cursor :eval))
+    . ,body)
      (reset-mouse-cursor)))
 
 ;;; Hack floating point lossage
@@ -381,7 +381,7 @@ Modification History (most recent at top)
 (defmacro with-floating-point-exceptions-handled (&body body)
   `(lcl::with-floating-point-traps
        (nil '(lcl:floating-point-overflow lcl:floating-point-underflow
-	      lcl:floating-point-invalid-operation lcl:division-by-zero))
+        lcl:floating-point-invalid-operation lcl:division-by-zero))
      (progn . ,body)))
 
 #-lcl3.0
@@ -454,17 +454,17 @@ Modification History (most recent at top)
 
 (defun error-value-printable-place? ()
   (not (or (eq (class-name (class-of (point-row))) 'name-row)
-	   ;; underneath a graphics box
-	   (do* ((screen-box (point-screen-box) (superior screen-box))
-		 (box (when (screen-box? screen-box)
-			(screen-obj-actual-obj screen-box))
-		      (when (screen-box? screen-box)
-			(screen-obj-actual-obj screen-box))))
-		((not (box? box)) nil)
-	     (when (and (graphics-box? box)
-			(display-style-graphics-mode?
-			 (display-style-list box)))
-	       (return t))))))
+     ;; underneath a graphics box
+     (do* ((screen-box (point-screen-box) (superior screen-box))
+     (box (when (screen-box? screen-box)
+      (screen-obj-actual-obj screen-box))
+          (when (screen-box? screen-box)
+      (screen-obj-actual-obj screen-box))))
+    ((not (box? box)) nil)
+       (when (and (graphics-box? box)
+      (display-style-graphics-mode?
+       (display-style-list box)))
+         (return t))))))
 
 (defvar *last-unprintable-returned-value* boxer-eval::*novalue*)
 
@@ -483,47 +483,47 @@ Modification History (most recent at top)
   (setq *last-unprintable-error-box* error)
   (unprintable-sound)
   (status-line-display 'boxer-editor-error
-		       "Can't print error box, Invisible-Error returns it"))
+           "Can't print error box, Invisible-Error returns it"))
 
 (defun print-returned-value-when-possible (result &optional error?)
   (cond ((and error? (not (error-value-printable-place?)))
-	 (unprintable-error-box-warning result))
-	((returned-value-printable-place?)
-	 (doit-print-returned-value result))
-	((eq result boxer-eval::*novalue*))
-	(t (unprintable-returned-value-warning result))))
+   (unprintable-error-box-warning result))
+  ((returned-value-printable-place?)
+   (doit-print-returned-value result))
+  ((eq result boxer-eval::*novalue*))
+  (t (unprintable-returned-value-warning result))))
 
 (defun doit-internal (&optional list-to-eval)
   (if *evaluation-in-progress?*
       (boxer-editor-error "Can't do COM-DOIT inide COM-DOIT")
       (unwind-protect
-	   (let ((row (point-row))
-		 (process boxer-eval::*current-process*))
-	     (unless (name-row? row)
-	       (top-level-eval-wrapper
-		(multiple-value-bind (result error?)
-		    (boxer-eval::boxer-eval (or list-to-eval (eval-objs row)))
-		  ;; this test not be good enough.  what if
-		  ;; another process moves the cursor, and then
-		  ;; resumes this process?  Well, maybe that's
-		  ;; OK -- we can define that to be OK.  This
-		  ;; will keep doit-print-returned-value from
-		  ;; messing with other processes cursor positions,
-		  ;; yet allow keyboard macros to work.
-		  ;; maybe we should store the invoking key/function
-		  ;; in the doit-cursor-position, and base it on
-		  ;; who did started it originally?
-		  (unless (eq process boxer-eval::*current-process*)
-		    (restore-point-position
-		     boxer-eval::*process-doit-cursor-position* t))
-		  (print-returned-value-when-possible result error?)
-		  (unless (or *doit-restore-cursor-position*
-			      (eq process boxer-eval::*current-process*))
-		    (restore-point-position
-		     (boxer-eval::process-variable
-		      process
-		      boxer-eval::*process-doit-cursor-position*) t))))))
-	(reset-editor-numeric-arg))))
+     (let ((row (point-row))
+     (process boxer-eval::*current-process*))
+       (unless (name-row? row)
+         (top-level-eval-wrapper
+    (multiple-value-bind (result error?)
+        (boxer-eval::boxer-eval (or list-to-eval (eval-objs row)))
+      ;; this test not be good enough.  what if
+      ;; another process moves the cursor, and then
+      ;; resumes this process?  Well, maybe that's
+      ;; OK -- we can define that to be OK.  This
+      ;; will keep doit-print-returned-value from
+      ;; messing with other processes cursor positions,
+      ;; yet allow keyboard macros to work.
+      ;; maybe we should store the invoking key/function
+      ;; in the doit-cursor-position, and base it on
+      ;; who did started it originally?
+      (unless (eq process boxer-eval::*current-process*)
+        (restore-point-position
+         boxer-eval::*process-doit-cursor-position* t))
+      (print-returned-value-when-possible result error?)
+      (unless (or *doit-restore-cursor-position*
+            (eq process boxer-eval::*current-process*))
+        (restore-point-position
+         (boxer-eval::process-variable
+          process
+          boxer-eval::*process-doit-cursor-position*) t))))))
+  (reset-editor-numeric-arg))))
 
 
 ;; flush?
@@ -546,9 +546,9 @@ Modification History (most recent at top)
   (let ((bg-process (boxer-eval::next-restartable-process)))
     (unless (null bg-process)
       (let ((boxer-eval::*initial-poll-count* boxer-eval::*background-poll-count*)
-	    (boxer-eval::*poll-count* boxer-eval::*background-poll-count*))
-	(background-eval-wrapper
-	 (boxer-eval::boxer-eval nil :process-state bg-process))))))
+      (boxer-eval::*poll-count* boxer-eval::*background-poll-count*))
+  (background-eval-wrapper
+   (boxer-eval::boxer-eval nil :process-state bg-process))))))
 
 ;;;
 ;;;Eval with timing for debugging:
@@ -658,31 +658,31 @@ Modification History (most recent at top)
                          (unless (eq alt-value boxer-eval::*novalue*)
                            (return alt-value))))))))
     (cond ((eq value boxer-eval::*novalue*) nil)
-	  ((boxer-eval::boxer-function? value)
-	   (cond ((boxer-eval::compiled-boxer-function? value)
-		  (let ((returned-value
-			 (funcall(boxer-eval::compiled-boxer-function-object value))))
-		    (unless (or (null returned-value)
-				(eq returned-value boxer-eval::*novalue*))
-		      (insert-cha *point*
-				  (convert-doit-result-for-printing
-				   returned-value))))
-		  (maybe-handle-trigger-in-editor))
-		 (t (error "Unusual object ~S in handle-boxer-key" value)))
-	   t)
-	  ((doit-box? value)
-	   (handle-boxer-key-doit-box (virtual-copy value))
-	   t)
-	  ((or (data-box? value)
-	       (sprite-box? value))
-	   (handle-boxer-key-data-box value)
-	   t)
-	  ((port-box? value)
-	   (if (doit-box? (ports value))
-	       (handle-boxer-key-doit-box name)
-	       (handle-boxer-key-data-box value))
-	   t)
-	  (t nil))))
+    ((boxer-eval::boxer-function? value)
+     (cond ((boxer-eval::compiled-boxer-function? value)
+      (let ((returned-value
+       (funcall(boxer-eval::compiled-boxer-function-object value))))
+        (unless (or (null returned-value)
+        (eq returned-value boxer-eval::*novalue*))
+          (insert-cha *point*
+          (convert-doit-result-for-printing
+           returned-value))))
+      (maybe-handle-trigger-in-editor))
+     (t (error "Unusual object ~S in handle-boxer-key" value)))
+     t)
+    ((doit-box? value)
+     (handle-boxer-key-doit-box (virtual-copy value))
+     t)
+    ((or (data-box? value)
+         (sprite-box? value))
+     (handle-boxer-key-data-box value)
+     t)
+    ((port-box? value)
+     (if (doit-box? (ports value))
+         (handle-boxer-key-doit-box name)
+         (handle-boxer-key-data-box value))
+     t)
+    (t nil))))
 
 ;; mostly right, it still doesn't hack the translation of the actual click
 ;; name i.e. GRAPHICS-MOUSE-MIDDLE <==> MOUSE-CLICK-ON-GRAPHICS but since we
@@ -739,7 +739,7 @@ Modification History (most recent at top)
                                       click bits area)
   (unless (null (bp-row mouse-bp))
     (let ((value (let ((boxer-eval::*lexical-variables-root* (bp-box mouse-bp)))
-		   (or (mode-key name)
+       (or (mode-key name)
                        (when *try-alternate-platform-names*
                          (dolist (altname (alternate-platform-click-names
                                            click bits area))
@@ -749,82 +749,82 @@ Modification History (most recent at top)
                                (return altvalue)))))
                        (boxer-eval::boxer-symeval name)))))
       (cond ((eq value boxer-eval::*novalue*) nil)
-	    ((boxer-eval::boxer-function? value)
-	     (cond ((boxer-eval::compiled-boxer-function? value)
-		    (let ((result
-			   (funcall
-			    (boxer-eval::compiled-boxer-function-object value)
-			    window x y mouse-bp clicked?)))
-		      (unless (or (null result) (eq result boxer-eval::*novalue*))
-			(insert-cha
-			 *point* (convert-doit-result-for-printing result))))
-		    (maybe-handle-trigger-in-editor)
-		    t)
-		   (t
-		    (com-mouse-move-point window x y mouse-bp clicked?)
-		    (handle-boxer-key-doit-box name)
-		    t)))
-	    ((data-box? value)
-	     (com-mouse-move-point window x y mouse-bp clicked?)
-	     (handle-boxer-key-data-box value)
-	     t)
-	    ((doit-box? value)
-	     (com-mouse-move-point window x y mouse-bp clicked? t)
-	     (handle-boxer-key-doit-box (virtual-copy value))
-	     t)
-	    (t nil)))))
+      ((boxer-eval::boxer-function? value)
+       (cond ((boxer-eval::compiled-boxer-function? value)
+        (let ((result
+         (funcall
+          (boxer-eval::compiled-boxer-function-object value)
+          window x y mouse-bp clicked?)))
+          (unless (or (null result) (eq result boxer-eval::*novalue*))
+      (insert-cha
+       *point* (convert-doit-result-for-printing result))))
+        (maybe-handle-trigger-in-editor)
+        t)
+       (t
+        (com-mouse-move-point window x y mouse-bp clicked?)
+        (handle-boxer-key-doit-box name)
+        t)))
+      ((data-box? value)
+       (com-mouse-move-point window x y mouse-bp clicked?)
+       (handle-boxer-key-data-box value)
+       t)
+      ((doit-box? value)
+       (com-mouse-move-point window x y mouse-bp clicked? t)
+       (handle-boxer-key-doit-box (virtual-copy value))
+       t)
+      (t nil)))))
 
 (defun handle-boxer-key-doit-box (value)
   (if *evaluation-in-progress?*
       (boxer-editor-error "Can't do DOIT keys while evaluating an expression")
       (let ((process boxer-eval::*current-process*))
-	(top-level-eval-wrapper
-	 (multiple-value-bind (result error?)
-	     (boxer-eval::boxer-eval (list value))
-	   ;; this test is wrong -- see doit-print-returned-value above.
-	   (cond ((eq process boxer-eval::*current-process*)
-		  (cond ((not (null error?))
-			 (unprintable-error-box-warning result))
-			((and (returned-value-printable-place?)
-			      (not (or (null result)
-				       (eq result boxer-eval::*novalue*))))
-			 (insert-cha *point*
-				     (convert-doit-result-for-printing
-				      result)))
-			((eq result boxer-eval::*novalue*))
-			(t (unprintable-returned-value-warning result))))
-		 (t (restore-point-position
-		     boxer-eval::*process-doit-cursor-position* t)
-		     (cond ((and error? (not (error-value-printable-place?)))
-			    (unprintable-error-box-warning result))
-			   ((returned-value-printable-place?)
-			    (doit-print-returned-value result))
-			   ((eq result boxer-eval::*novalue*))
-			   (t (unprintable-returned-value-warning result)))
-		    (unless *doit-restore-cursor-position*
-		      (restore-point-position
-		       (boxer-eval::process-variable
-			process
-			boxer-eval::*process-doit-cursor-position*)))))))
-	(maybe-handle-trigger-in-editor))))
+  (top-level-eval-wrapper
+   (multiple-value-bind (result error?)
+       (boxer-eval::boxer-eval (list value))
+     ;; this test is wrong -- see doit-print-returned-value above.
+     (cond ((eq process boxer-eval::*current-process*)
+      (cond ((not (null error?))
+       (unprintable-error-box-warning result))
+      ((and (returned-value-printable-place?)
+            (not (or (null result)
+               (eq result boxer-eval::*novalue*))))
+       (insert-cha *point*
+             (convert-doit-result-for-printing
+              result)))
+      ((eq result boxer-eval::*novalue*))
+      (t (unprintable-returned-value-warning result))))
+     (t (restore-point-position
+         boxer-eval::*process-doit-cursor-position* t)
+         (cond ((and error? (not (error-value-printable-place?)))
+          (unprintable-error-box-warning result))
+         ((returned-value-printable-place?)
+          (doit-print-returned-value result))
+         ((eq result boxer-eval::*novalue*))
+         (t (unprintable-returned-value-warning result)))
+        (unless *doit-restore-cursor-position*
+          (restore-point-position
+           (boxer-eval::process-variable
+      process
+      boxer-eval::*process-doit-cursor-position*)))))))
+  (maybe-handle-trigger-in-editor))))
 
 (defun handle-boxer-key-data-box (value)
   (let ((boxer-eval::*primitive-shadow-warning-on?* nil))
     ;; don't warn about shadowing
     (if (name-row? (point-row))
-	(unprintable-returned-value-warning (copy-top-level-box value))
-	(insert-cha *point* (copy-top-level-box value)))
+  (unprintable-returned-value-warning (copy-top-level-box value))
+  (insert-cha *point* (copy-top-level-box value)))
     (maybe-handle-trigger-in-editor)))
 
 (defun convert-doit-result-for-printing (result)
   (let ((*current-font-descriptor* *default-font-descriptor*))
     (cond ((numberp result) (make-box `((,result))))
-	  ((data-box? result) result)
-	  ((fast-eval-data-box? result)
-	   (top-level-print-vc result))
-	  ((fast-eval-port-box? result)
-	   (top-level-print-vp result))
-	  (t (error "Unknown object ~S in HANDLE-BOXER-KEY" result)))))
+    ((data-box? result) result)
+    ((fast-eval-data-box? result)
+     (top-level-print-vc result))
+    ((fast-eval-port-box? result)
+     (top-level-print-vp result))
+    (t (error "Unknown object ~S in HANDLE-BOXER-KEY" result)))))
 
 ;; We must check for returned-value, which might
 ;; be an error.  We ignore other returned value.
@@ -833,8 +833,8 @@ Modification History (most recent at top)
 (defun maybe-handle-trigger-in-editor ()
   (when (not (null boxer-eval::*trigger-list-to-run*))
     (multiple-value-bind (result errorp)
-	(boxer-eval::eval-top-level (prog1 boxer-eval::*trigger-list-to-run*
-				(setq boxer-eval::*trigger-list-to-run* nil)))
+  (boxer-eval::eval-top-level (prog1 boxer-eval::*trigger-list-to-run*
+        (setq boxer-eval::*trigger-list-to-run* nil)))
       (when (and errorp (box? result)) (insert-cha *point* result)))))
 
 
@@ -843,20 +843,20 @@ Modification History (most recent at top)
 ;;;
 (defun arglist-for-prompter (object)
   (mapcar #'(lambda (u)
-	      (if (consp u) (cadr u) u))
-	  (cond ((or (numberp object) (data-box? object)) nil)
-		((eq object boxer-eval::*novalue*)
-		 (boxer-editor-error "No Box with this name"))
-		((symbolp object)
-		 (arglist-for-prompter (boxer-eval::boxer-symeval object)))
-		((and (boxer-eval::possible-eval-object? object)
+        (if (consp u) (cadr u) u))
+    (cond ((or (numberp object) (data-box? object)) nil)
+    ((eq object boxer-eval::*novalue*)
+     (boxer-editor-error "No Box with this name"))
+    ((symbolp object)
+     (arglist-for-prompter (boxer-eval::boxer-symeval object)))
+    ((and (boxer-eval::possible-eval-object? object)
                       (boxer-eval::compiled-boxer-function? object))
-		 (boxer-eval::boxer-function-arglist object))
-		((doit-box? object)
-		 (boxer-eval::boxer-function-arglist (boxer-eval::cached-code-editor-box object)))
-		((port-box? object)
-		 (arglist-for-prompter (get-port-target object)))
-		(t (boxer-editor-error "Object is not a boxer function")))))
+     (boxer-eval::boxer-function-arglist object))
+    ((doit-box? object)
+     (boxer-eval::boxer-function-arglist (boxer-eval::cached-code-editor-box object)))
+    ((port-box? object)
+     (arglist-for-prompter (get-port-target object)))
+    (t (boxer-editor-error "Object is not a boxer function")))))
 
 
 ;;;
@@ -878,8 +878,8 @@ Modification History (most recent at top)
   (boxer-eval::initialize-special-stack-frame-initializers)
   (boxer-eval::init-global-eval-vars)
   (setq boxer-eval::*false*
-	(boxer::make-vc (list (boxer::make-evrow-from-entry 'bu::false))))
+  (boxer::make-vc (list (boxer::make-evrow-from-entry 'bu::false))))
   (setq boxer-eval::*true*
-	(boxer::make-vc (list (boxer::make-evrow-from-entry 'bu::true))))
+  (boxer::make-vc (list (boxer::make-evrow-from-entry 'bu::true))))
   #+sun (setup-boxer-send)
   nil)
