@@ -77,35 +77,35 @@ Modification History (most recent at the top)
 
 (defmacro define-resource (name parameters &rest plist)
   (if (oddp (length plist))
-      (error "Odd number of elements in the Plist, ~S" plist)
-      (let ((con (getf plist :constructor))
-      (dummy-name (gensym))
-            (init (getf plist :initializer)))
-  (when (null con)
-    (warn "There isn't a :constructor defined here, ~
+    (error "Odd number of elements in the Plist, ~S" plist)
+    (let ((con (getf plist :constructor))
+          (dummy-name (gensym))
+          (init (getf plist :initializer)))
+      (when (null con)
+        (warn "There isn't a :constructor defined here, ~
                  assuming (MAKE-~A) is the right thing"
-    name)
-    (setq con (list (intern (symbol-format nil "MAKE-~A" name)))))
-  `(progn
-     (setf (get ',name 'resource) t)
-     (defun ,dummy-name ()
-       (,@con ,@parameters))
-     (setf (get ',name 'resource-maker) #',dummy-name)
-           (setf (get ',name 'initializer) ,init)
-     (setf (get ',name 'available-resources)
-     (let ((ar nil))
-       (dotimes (i ,(or (getf plist :initial-copies) 1))
-         (push (funcall (get ',name 'resource-maker)) ar))
-       ar))))))
+              name)
+        (setq con (list (intern (symbol-format nil "MAKE-~A" name)))))
+      `(progn
+        (setf (get ',name 'resource) t)
+        (defun ,dummy-name ()
+          (,@con ,@parameters))
+        (setf (get ',name 'resource-maker) #',dummy-name)
+        (setf (get ',name 'initializer) ,init)
+        (setf (get ',name 'available-resources)
+              (let ((ar nil))
+                (dotimes (i ,(or (getf plist :initial-copies) 1))
+                  (push (funcall (get ',name 'resource-maker)) ar))
+                ar))))))
 
 (defsubst allocate-resource (name)
   (if (get name 'resource)
-      (let ((r (or (pop (get name 'available-resources))
-             (funcall (get name 'resource-maker))))
-            (i (get name 'initializer)))
-        (unless (null i) (funcall i r))
-        r)
-      (error "~S is not a defined resource" name)))
+    (let ((r (or (pop (get name 'available-resources))
+                 (funcall (get name 'resource-maker))))
+          (i (get name 'initializer)))
+      (unless (null i) (funcall i r))
+      r)
+    (error "~S is not a defined resource" name)))
 
 (defsubst deallocate-resource (name old-resource)
   (push old-resource (get name 'available-resources)))
@@ -113,20 +113,20 @@ Modification History (most recent at the top)
 (defmacro using-resource ((var resource) &body body)
   `(let ((.resource-thing. (allocate-resource ',resource)))
      (unwind-protect
-   (let ((,var .resource-thing.))
-     . ,body)
-       (deallocate-resource ',resource .resource-thing.))))
+      (let ((,var .resource-thing.))
+        . ,body)
+      (deallocate-resource ',resource .resource-thing.))))
 
 
 
 ;;initializations...
 
 (defvar *boxer-pathname-default* (merge-pathnames "foo.box"
-              (user-homedir-pathname))
+                                                  (user-homedir-pathname))
   "Default pathname for saving boxer files")
 
 (defvar *init-file-specifier* (merge-pathnames "boxer-init.box"
-                 *boxer-pathname-default*)
+                                               *boxer-pathname-default*)
   "The default name of the initial Boxer world load. ")
 
 (defvar *sticky-file-defaulting?* t
@@ -387,36 +387,36 @@ Modification History (most recent at the top)
 
 (defmacro writing-bin-file ((box stream file) &body body)
   `(with-open-file (,stream ,file :direction ':output
-                      :element-type '(unsigned-byte 8.))
+                             :element-type '(unsigned-byte 8.))
      (writing-bin-stream (,box ,stream)
-       . ,body)))
+                         . ,body)))
 
 (defvar *dumping-font-alist* nil)
 
 (defmacro writing-bin-stream ((box stream) &body body)
   `(progn
-     (using-resource (*bin-dump-table* dump-hash-table)
-         (using-resource (*dumped-box-table* dumped-box-hash-table)
-             (start-bin-file ,stream)
-             (let ((*bin-dump-index* 0)
-             (*bin-dump-package* *package*)
-             (*file-word-writer-function*
-              *file-word-writer-function*)
-                                           (*dumping-font-alist* nil)
-             (*current-dumping-box* ,box)
-             (*outermost-dumping-box* ,box))
-               . ,body))
-         (end-bin-file ,stream))))
+    (using-resource (*bin-dump-table* dump-hash-table)
+                    (using-resource (*dumped-box-table* dumped-box-hash-table)
+                                    (start-bin-file ,stream)
+                                    (let ((*bin-dump-index* 0)
+                                          (*bin-dump-package* *package*)
+                                          (*file-word-writer-function*
+                                           *file-word-writer-function*)
+                                          (*dumping-font-alist* nil)
+                                          (*current-dumping-box* ,box)
+                                          (*outermost-dumping-box* ,box))
+                                      . ,body))
+                    (end-bin-file ,stream))))
 
 
 (defun internal-dumping-error (&optional reason)
   (if boxer-eval::*give-lisp-errors*
-      (error "~A while trying to dump the box, ~A"
-             (or reason "An error occurred") *current-dumping-box*)
-      (boxer-eval::primitive-signal-error
-  :file (format nil "~A trying to dump the box"
-                      (or reason "An error occurred"))
-  *current-dumping-box*)))
+    (error "~A while trying to dump the box, ~A"
+           (or reason "An error occurred") *current-dumping-box*)
+    (boxer-eval::primitive-signal-error
+     :file (format nil "~A trying to dump the box"
+                   (or reason "An error occurred"))
+     *current-dumping-box*)))
 
 
 ;*******************************************************************************
@@ -457,9 +457,9 @@ Modification History (most recent at the top)
          (*autoloading-namestring* (when (typep ,fs 'file-stream)
                                      (namestring ,fs))))
      (prog1 (progn . ,body)
-       (with-lisp-error-reporting
-         (dolist (ab *autoload-list*)
-           (when (null (first-inferior-row ab)) (fill-box-from-server ab)))))))
+            (with-lisp-error-reporting
+              (dolist (ab *autoload-list*)
+                (when (null (first-inferior-row ab)) (fill-box-from-server ab)))))))
 
 (defvar *prompt-for-server-file-not-found* T)
 
@@ -467,68 +467,68 @@ Modification History (most recent at the top)
   `(funcall *bin-next-command-function* . ,args))
 
 (defmacro loading-bin-file ((stream next-command-function)
-          &body body)
+                            &body body)
   `(let* ((*bin-next-command-function* ,next-command-function)
-    (*bin-load-index* 0)
-    (*file-bin-version* 0)
-    (*circular-ports* nil)
-    (*post-load-relink-ports* nil)
-    (*file-word-reader-function* *file-word-reader-function*))
+          (*bin-load-index* 0)
+          (*file-bin-version* 0)
+          (*circular-ports* nil)
+          (*post-load-relink-ports* nil)
+          (*file-word-reader-function* *file-word-reader-function*))
      (using-resource (*bin-load-table* bin-load-table)
-         (bin-load-start ,stream)
-         (prog1 (progn . ,body)
-           (dolist (p *circular-ports*)
-       (unless (or (not (numberp (cdr p))) (zerop (cdr p)))
-         (set-port-to-box (car p)
-              (direct-circular-port-target
-               (car p) (cdr p)))))
-           (dolist (p *post-load-relink-ports*)
-       (unless (not (numberp (cdr p)))
-         (let ((target (aref *bin-load-table* (cdr p))))
-           (if (box? target)
-         (set-port-to-box (car p) target)
-         (progn (warn "Can't Relink Port to ~A" target)
-          (set-port-to-box
-           (car p)
-           (make-box
-            '(("Was a Bad Target")))))))))))))
+                     (bin-load-start ,stream)
+                     (prog1 (progn . ,body)
+                            (dolist (p *circular-ports*)
+                              (unless (or (not (numberp (cdr p))) (zerop (cdr p)))
+                                (set-port-to-box (car p)
+                                                 (direct-circular-port-target
+                                                  (car p) (cdr p)))))
+                            (dolist (p *post-load-relink-ports*)
+                              (unless (not (numberp (cdr p)))
+                                (let ((target (aref *bin-load-table* (cdr p))))
+                                  (if (box? target)
+                                    (set-port-to-box (car p) target)
+                                    (progn (warn "Can't Relink Port to ~A" target)
+                                           (set-port-to-box
+                                            (car p)
+                                            (make-box
+                                             '(("Was a Bad Target")))))))))))))
 
 ;;;Load command definitions...
 ;;;There are three types of commands
 
 (defmacro define-bin-command-op (op-name defining-function table
-           function-prefix arglist
-           &body definition)
+                                         function-prefix arglist
+                                         &body definition)
   (declare (ignore defining-function))
   (let ((function-name (intern (concatenate 'string function-prefix
-              (string op-name)))))
+                                            (string op-name)))))
     `(progn
-       (setf (bin-op-dispatch ,table (ldb %%bin-op-low ,op-name))
-       ',function-name)
-       #+lispm
-       (si::record-source-file-name ',op-name ',defining-function)
-       (defun ,function-name ,arglist . ,definition))))
+      (setf (bin-op-dispatch ,table (ldb %%bin-op-low ,op-name))
+            ',function-name)
+      #+lispm
+      (si::record-source-file-name ',op-name ',defining-function)
+      (defun ,function-name ,arglist . ,definition))))
 
 ;;; A command that may return a value, but does not store it in the table
 (defmacro define-load-command (op-name arglist &body body)
   `(define-bin-command-op ,op-name define-load-command
-        *bin-op-load-command-table* "LOAD-" ,arglist
+     *bin-op-load-command-table* "LOAD-" ,arglist
      . ,body))
 
 ;;; A command that does not return a value at all
 (defmacro define-load-command-for-effect (op-name arglist &body body)
   `(define-bin-command-op ,op-name define-load-command-for-effect
-        *bin-op-load-command-table* "LOAD-" ,arglist
+     *bin-op-load-command-table* "LOAD-" ,arglist
      ,@body
      *no-value-marker*))
 
 ;;; A command that returns a value stored in the next slot in the table
 (defmacro define-load-command-for-value (op-name arglist &body body)
   `(progn
-     (setf (get ',op-name 'bin-table-loading-command) t)
-     (define-bin-command-op ,op-name define-load-command-for-value
-       *bin-op-load-command-table* "LOAD-" ,arglist
-       (enter-bin-load-table (progn . ,body)))))
+    (setf (get ',op-name 'bin-table-loading-command) t)
+    (define-bin-command-op ,op-name define-load-command-for-value
+      *bin-op-load-command-table* "LOAD-" ,arglist
+      (enter-bin-load-table (progn . ,body)))))
 
 (defmacro enter-bin-load-table (value)
   `(let ((.index. *bin-load-index*))
@@ -548,46 +548,46 @@ Modification History (most recent at the top)
   ;; sanity check, should look like a LIST
   (declare (values length dotted?))
   (multiple-value-bind (opcode extra-arg)
-      (decode-bin-opcode (bin-next-byte stream))
-    (cond ((=& opcode bin-op-list-immediate)
-     (values extra-arg (bin-next-value stream)))
-    ((=& opcode bin-op-list)
-     (values (bin-next-value stream) (bin-next-value stream)))
-    (t (error "Expected a LIST opcode, either ~D or ~D got ~D instead"
-        bin-op-list bin-op-list-immediate opcode)))))
+                       (decode-bin-opcode (bin-next-byte stream))
+                       (cond ((=& opcode bin-op-list-immediate)
+                              (values extra-arg (bin-next-value stream)))
+                         ((=& opcode bin-op-list)
+                          (values (bin-next-value stream) (bin-next-value stream)))
+                         (t (error "Expected a LIST opcode, either ~D or ~D got ~D instead"
+                                   bin-op-list bin-op-list-immediate opcode)))))
 
 ;;; The body MUST side effect the stream by removing ONE AND ONLY ONE
 ;;; item from the stream each time it is called
 (defmacro with-loading-list ((stream &optional
-             (idx-var (gensym))
-             (dotted?-var (gensym) dotted-var-supplied-p))
-           &body body)
+                                     (idx-var (gensym))
+                                     (dotted?-var (gensym) dotted-var-supplied-p))
+                             &body body)
   `(multiple-value-bind (length ,dotted?-var)
-       (load-list-values ,stream)
-     ,(when (null dotted-var-supplied-p) `(declare (ignore ,dotted?-var)))
-     (enter-bin-load-table 'non-consed-list)
-     (dotimes (,idx-var length) . ,body)))
+                        (load-list-values ,stream)
+                        ,(when (null dotted-var-supplied-p) `(declare (ignore ,dotted?-var)))
+                        (enter-bin-load-table 'non-consed-list)
+                        (dotimes (,idx-var length) . ,body)))
 
 ;;; file property list handlers
 
 (defmacro deffile-property-handler (keyword value-arg &body body)
   (let ((name (intern (symbol-format nil "~A-FILE-PROPERTY-HANDLER" keyword)
-          (find-package 'boxer))))
+                      (find-package 'boxer))))
     `(progn
-       (defun ,name (,value-arg) ,@body)
-       (setf (get ',keyword 'file-property-list-handler) ',name))))
+      (defun ,name (,value-arg) ,@body)
+      (setf (get ',keyword 'file-property-list-handler) ',name))))
 
 
 (defun handle-file-property-list (plist)
   (do* ((remaining plist (cddr remaining))
-  (key (car remaining) (car remaining))
-  (value (cadr remaining) (cadr remaining)))
-       ((null remaining))
+        (key (car remaining) (car remaining))
+        (value (cadr remaining) (cadr remaining)))
+    ((null remaining))
     (cond ((eq key :package)) ; handled explicitly in old code
-    (t (let ((handler (get key 'file-property-list-handler)))
-         (if (null handler)
-       (warn "Unhandled File property, ~S" key)
-       (funcall handler value)))))))
+      (t (let ((handler (get key 'file-property-list-handler)))
+           (if (null handler)
+             (warn "Unhandled File property, ~S" key)
+             (funcall handler value)))))))
 
 ;; try and cut down on unneccessary string CONSing by using a buffer
 ;; especially now, (= *file-bin-version* 12), that we use strings as part
@@ -636,50 +636,50 @@ Modification History (most recent at the top)
 (defvar *file-reader-word-swapping-toggle-alist* nil)
 
 (defmacro deffile-word-reader (name-suffix arglist
-             &key normal-form swapping-form)
+                                           &key normal-form swapping-form)
   (let ((normal-name (intern (symbol-format nil "READ-FILE-WORD-~A" name-suffix)))
-  (swap-name (intern (symbol-format nil "READ-FILE-SWAP-WORD-~A" name-suffix))))
+        (swap-name (intern (symbol-format nil "READ-FILE-SWAP-WORD-~A" name-suffix))))
     `(progn
-       (defun ,normal-name ,arglist ,normal-form)
-       (defun ,swap-name ,arglist ,swapping-form)
-       (let ((entry (assoc ',normal-name
-         *file-reader-word-swapping-toggle-alist*))
-       (rentry (assoc ',swap-name
-          *file-reader-word-swapping-toggle-alist*)))
-   (if (null entry)
-       (setq *file-reader-word-swapping-toggle-alist*
-       (push (cons ',normal-name ',swap-name)
-       *file-reader-word-swapping-toggle-alist*))
-       (setf (cdr entry) ',swap-name))
-   (if (null rentry)
-       (setq *file-reader-word-swapping-toggle-alist*
-       (push (cons ',swap-name ',normal-name)
-       *file-reader-word-swapping-toggle-alist*))
-       (setf (cdr rentry) ',normal-name))))))
+      (defun ,normal-name ,arglist ,normal-form)
+      (defun ,swap-name ,arglist ,swapping-form)
+      (let ((entry (assoc ',normal-name
+                          *file-reader-word-swapping-toggle-alist*))
+            (rentry (assoc ',swap-name
+                           *file-reader-word-swapping-toggle-alist*)))
+        (if (null entry)
+          (setq *file-reader-word-swapping-toggle-alist*
+                (push (cons ',normal-name ',swap-name)
+                      *file-reader-word-swapping-toggle-alist*))
+          (setf (cdr entry) ',swap-name))
+        (if (null rentry)
+          (setq *file-reader-word-swapping-toggle-alist*
+                (push (cons ',swap-name ',normal-name)
+                      *file-reader-word-swapping-toggle-alist*))
+          (setf (cdr rentry) ',normal-name))))))
 
 (defvar *file-writer-word-swapping-toggle-alist* nil)
 
 (defmacro deffile-word-writer (name-suffix arglist
-             &key normal-form swapping-form)
+                                           &key normal-form swapping-form)
   (let ((normal-name (intern (symbol-format nil "WRITE-FILE-WORD-~A" name-suffix)))
-  (swap-name (intern (symbol-format nil "WRITE-FILE-SWAP-WORD-~A" name-suffix))))
+        (swap-name (intern (symbol-format nil "WRITE-FILE-SWAP-WORD-~A" name-suffix))))
     `(progn
-       (defun ,normal-name ,arglist ,normal-form)
-       (defun ,swap-name ,arglist ,swapping-form)
-       (let ((entry (assoc ',normal-name
-         *file-writer-word-swapping-toggle-alist*))
-       (rentry (assoc ',swap-name
-          *file-writer-word-swapping-toggle-alist*)))
-   (if (null entry)
-       (setq *file-writer-word-swapping-toggle-alist*
-       (push (cons ',normal-name ',swap-name)
-       *file-writer-word-swapping-toggle-alist*))
-       (setf (cdr entry) ',swap-name))
-   (if (null rentry)
-       (setq *file-writer-word-swapping-toggle-alist*
-       (push (cons ',swap-name ',normal-name)
-       *file-writer-word-swapping-toggle-alist*))
-       (setf (cdr rentry) ',normal-name))))))
+      (defun ,normal-name ,arglist ,normal-form)
+      (defun ,swap-name ,arglist ,swapping-form)
+      (let ((entry (assoc ',normal-name
+                          *file-writer-word-swapping-toggle-alist*))
+            (rentry (assoc ',swap-name
+                           *file-writer-word-swapping-toggle-alist*)))
+        (if (null entry)
+          (setq *file-writer-word-swapping-toggle-alist*
+                (push (cons ',normal-name ',swap-name)
+                      *file-writer-word-swapping-toggle-alist*))
+          (setf (cdr entry) ',swap-name))
+        (if (null rentry)
+          (setq *file-writer-word-swapping-toggle-alist*
+                (push (cons ',swap-name ',normal-name)
+                      *file-writer-word-swapping-toggle-alist*))
+          (setf (cdr rentry) ',normal-name))))))
 
 (deffile-word-reader from-stream (fs &optional (eof-errorp t) eof-value)
   :normal-form
@@ -688,24 +688,24 @@ Modification History (most recent at the top)
     (cond ((and (not eof-errorp)
                 (or (eq low eof-value) (eq hi eof-value)))
            eof-value)
-          (t
-           (dpb& hi %%bin-op-top-half low))))
+      (t
+       (dpb& hi %%bin-op-top-half low))))
   :swapping-form
   (let ((hi  (read-byte fs eof-errorp eof-value))
         (low (read-byte fs eof-errorp eof-value)))
     (cond ((and (not eof-errorp)
                 (or (eq low eof-value) (eq hi eof-value)))
            eof-value)
-          (t
-           (dpb& hi %%bin-op-top-half low)))))
+      (t
+       (dpb& hi %%bin-op-top-half low)))))
 
 (deffile-word-writer to-stream (word fs)
   :normal-form
   (progn (write-byte (ldb& %%bin-op-low-half word) fs)
-   (write-byte (ldb& %%bin-op-top-half word) fs))
+         (write-byte (ldb& %%bin-op-top-half word) fs))
   :swapping-form
   (progn (write-byte (ldb& %%bin-op-top-half word) fs)
-   (write-byte (ldb& %%bin-op-low-half word) fs)))
+         (write-byte (ldb& %%bin-op-low-half word) fs)))
 
 (defvar *file-word-reader-function* 'read-file-word-from-stream)
 
@@ -713,19 +713,19 @@ Modification History (most recent at the top)
 
 (defun toggle-reader-byte-swapping ()
   (let ((entry (assoc *file-word-reader-function*
-          *file-reader-word-swapping-toggle-alist*)))
+                      *file-reader-word-swapping-toggle-alist*)))
     (if (null entry)
-  (error "Cannot toggle file word reading from ~A"
-         *file-word-reader-function*)
-  (setq *file-word-reader-function* (cdr entry)))))
+      (error "Cannot toggle file word reading from ~A"
+             *file-word-reader-function*)
+      (setq *file-word-reader-function* (cdr entry)))))
 
 (defun toggle-writer-byte-swapping ()
   (let ((entry (assoc *file-word-writer-function*
-          *file-writer-word-swapping-toggle-alist*)))
+                      *file-writer-word-swapping-toggle-alist*)))
     (if (null entry)
-  (error "Cannot toggle file word writing from ~A"
-         *file-word-writer-function*)
-  (setq *file-word-writer-function* (cdr entry)))))
+      (error "Cannot toggle file word writing from ~A"
+             *file-word-writer-function*)
+      (setq *file-word-writer-function* (cdr entry)))))
 
 (defmacro read-file-word (word &rest args)
   `(funcall *file-word-reader-function* ,word . ,args))
@@ -772,9 +772,9 @@ Modification History (most recent at the top)
 ;; FUNCTION is a function that takes 1 arg, a filename, and should return a box
 (defmacro deffile-type-reader (type function)
   `(progn
-     (unless (fast-memq ',type *special-file-readers*)
-       (push ',type *special-file-readers*))
-     (setf (get ',type 'file-type-reader-function) ',function)))
+    (unless (fast-memq ',type *special-file-readers*)
+      (push ',type *special-file-readers*))
+    (setf (get ',type 'file-type-reader-function) ',function)))
 
 (defun get-special-file-reader (type)  (get type 'file-type-reader-function))
 
@@ -805,36 +805,36 @@ Modification History (most recent at the top)
         (screen-box-x (gensym))   (screen-box-y (gensym))
         (screen-box-wid (gensym)) (screen-box-hei (gensym)))
     `(drawing-on-window (*boxer-pane*)
-       (let* ((,screen-box (or (car (displayed-screen-objs ,box))
-                               (when (superior? (outermost-box) ,box)
-                                 (outermost-screen-box))))
-              ,screen-box-wid ,screen-box-hei)
-         (multiple-value-bind (,screen-box-x ,screen-box-y)
-             (when (screen-box? ,screen-box)
-               (setq ,screen-box-wid (screen-obj-wid ,screen-box)
-                     ,screen-box-hei (screen-obj-hei ,screen-box))
-               (xy-position ,screen-box))
-           (unwind-protect
-             (progn
-               (unless (null ,screen-box-x)
-                 #+opengl
-                 (with-pen-color (bw::*blinker-color*)
-                   (box::with-blending-on
-                     (draw-rectangle alu-seta
-                                     ,screen-box-wid ,screen-box-hei
-                                     ,screen-box-x ,screen-box-y)))
-                 #-opengl
-                 (draw-rectangle alu-xor ,screen-box-wid ,screen-box-hei
-                                 ,screen-box-x ,screen-box-y)
-                 (force-graphics-output))
-               . ,body)
-             (unless (null ,screen-box-x)
-               #+opengl
-               (repaint)
-               #-opengl
-               (draw-rectangle alu-xor ,screen-box-wid ,screen-box-hei
-                               ,screen-box-x ,screen-box-y)
-               (force-graphics-output))))))))
+                        (let* ((,screen-box (or (car (displayed-screen-objs ,box))
+                                                (when (superior? (outermost-box) ,box)
+                                                  (outermost-screen-box))))
+                               ,screen-box-wid ,screen-box-hei)
+                          (multiple-value-bind (,screen-box-x ,screen-box-y)
+                                               (when (screen-box? ,screen-box)
+                                                 (setq ,screen-box-wid (screen-obj-wid ,screen-box)
+                                                        ,screen-box-hei (screen-obj-hei ,screen-box))
+                                                 (xy-position ,screen-box))
+                                               (unwind-protect
+                                                (progn
+                                                 (unless (null ,screen-box-x)
+                                                   #+opengl
+                                                   (with-pen-color (bw::*blinker-color*)
+                                                     (box::with-blending-on
+                                                      (draw-rectangle alu-seta
+                                                                      ,screen-box-wid ,screen-box-hei
+                                                                      ,screen-box-x ,screen-box-y)))
+                                                   #-opengl
+                                                   (draw-rectangle alu-xor ,screen-box-wid ,screen-box-hei
+                                                                   ,screen-box-x ,screen-box-y)
+                                                   (force-graphics-output))
+                                                 . ,body)
+                                                (unless (null ,screen-box-x)
+                                                  #+opengl
+                                                  (repaint)
+                                                  #-opengl
+                                                  (draw-rectangle alu-xor ,screen-box-wid ,screen-box-hei
+                                                                  ,screen-box-x ,screen-box-y)
+                                                  (force-graphics-output))))))))
 
 ;;;
 
