@@ -54,8 +54,8 @@
 (defun default-poll-internal ()
   (or *last-interrupt-char*
       (let ((abort? (bw::keyboard-interrupt? boxer::*boxer-pane*)))
-    (cond ((null abort?)
-           nil)
+        (cond ((null abort?)
+               nil)
           (t
            (setq *last-interrupt-char* abort?)
            t)))))
@@ -70,8 +70,8 @@
   (setq *last-poll-time* (get-internal-real-time))
   (or *last-interrupt-char*
       (let ((abort? (bw::keyboard-interrupt? boxer::*boxer-pane*)))
-    (cond ((null abort?)
-           nil)
+        (cond ((null abort?)
+               nil)
           (t
            (setq *last-interrupt-char* abort?)
            t)))))
@@ -83,7 +83,7 @@
 (defun reset-poll-count ()
   (setq *poll-count* 1)) ;; (poll) will decrement BEFORE testing for 0
 
-
+
 ;;;
 ;;; Notices
 ;;;
@@ -122,17 +122,17 @@
   (when (not (null *exception-signalled*))
     (warn "An error was signalled when an error was yet unhandled."))
   (setq *exception-signalled* 'error-exception
-    *error-type* error-type
-    *error-sfun* *executing-sfun*
-    *exception-args* (copy-seq error-args)))
+        *error-type* error-type
+        *error-sfun* *executing-sfun*
+        *exception-args* (copy-seq error-args)))
 
 (defun signal-error-from-state (error-state)
   (when (not (null *exception-signalled*))
     (warn "An error was signalled when an error was yet unhandled."))
   (setq *exception-signalled* 'error-exception
-    *error-type* (error-state-type error-state)
-    *error-sfun* (error-state-sfun error-state)
-    *exception-args* (error-state-args error-state))
+        *error-type* (error-state-type error-state)
+        *error-sfun* (error-state-sfun error-state)
+        *exception-args* (error-state-args error-state))
   (throw 'boxer-primitive-error-signal nil))
 
 
@@ -143,24 +143,24 @@
          (*enable-interrupt-polling-in-editor* t))
      (prog1 (catch 'boxer-primitive-error-signal
               (prog1 (progn . ,body)
-                (setq error-signalled? nil)))
-       (when error-signalled?
-         (boxer::boxer-editor-error
-          (if *error-sfun* "In primitive ~s, ~s ~s" "~s~* ~s")
-          *error-type* *error-sfun*
-          (mapcar
-           #'(lambda (u)
-               (cond
-                ((and (typep u 'simple-vector) (boxer-function? u))
-                 (if (compiled-boxer-function? u)
-                   (compiled-boxer-function-name u)
-                   (format
-                    nil
-                    "[~a...]"
-                    (car (interpreted-boxer-function-text u)))))
-                (t u)))
-           *exception-args*)
-          (clear-error-variables))))))
+                     (setq error-signalled? nil)))
+            (when error-signalled?
+              (boxer::boxer-editor-error
+               (if *error-sfun* "In primitive ~s, ~s ~s" "~s~* ~s")
+               *error-type* *error-sfun*
+               (mapcar
+                #'(lambda (u)
+                          (cond
+                            ((and (typep u 'simple-vector) (boxer-function? u))
+                             (if (compiled-boxer-function? u)
+                               (compiled-boxer-function-name u)
+                               (format
+                                nil
+                                "[~a...]"
+                                (car (interpreted-boxer-function-text u)))))
+                            (t u)))
+                *exception-args*)
+               (clear-error-variables))))))
 
 
 ;;;
@@ -176,8 +176,8 @@
   (let ((char *last-interrupt-char*))
     (setq *last-interrupt-char* nil) ;we know it's ^G of some sort.
     (if (member char bw::*noisy-abort-key-chars*)
-    (signal-error :STOPPED!)
-    (signal-error :STOPPED))))
+      (signal-error :STOPPED!)
+      (signal-error :STOPPED))))
 
 ;; this is for use INSIDE of primitives (like READ)
 (defun check-for-interrupt (error-type &rest error-args)
@@ -208,33 +208,33 @@
 (defun handle-error ()
   (setq *lexical-variables-root* (boxer::point-box))
   (unwind-protect
-       (if *give-lisp-errors*
-       (give-lisp-error)
-       (let ((result (make-error-result)))
-         (cond (*stepping*
-            (stepper-signal-error result))
-           ((not (eq *current-process* *doit-key-process*))
-            ;; if the current process is a background process,
-            ;; then we need to setup the error and then
-            ;; tell the user where to find it
-            (unprintable-background-error-box-warning result)
-            ;; since we aren't going to THROW out of the
-            ;; evaluator (because there may be other processes
-            ;; waiting to be run), we need to do the cleanup
-            ;; forms explicitly here
-            (unwind-to-top-level)
-            (reset-stacks)
-            :background-error)
-           (t
-            (throw 'boxer-error (values result t))))))
-    (clear-error-variables)))
+   (if *give-lisp-errors*
+     (give-lisp-error)
+     (let ((result (make-error-result)))
+       (cond (*stepping*
+              (stepper-signal-error result))
+         ((not (eq *current-process* *doit-key-process*))
+          ;; if the current process is a background process,
+          ;; then we need to setup the error and then
+          ;; tell the user where to find it
+          (unprintable-background-error-box-warning result)
+          ;; since we aren't going to THROW out of the
+          ;; evaluator (because there may be other processes
+          ;; waiting to be run), we need to do the cleanup
+          ;; forms explicitly here
+          (unwind-to-top-level)
+          (reset-stacks)
+          :background-error)
+         (t
+          (throw 'boxer-error (values result t))))))
+   (clear-error-variables)))
 
 (defun unprintable-background-error-box-warning (error)
   ;; save away the error box
   error
   (boxer::unprintable-sound)
   (boxer::status-line-display 'boxer::boxer-editor-error
-                  "Error in Background Process"))
+                              "Error in Background Process"))
 
 (defun clear-error-variables ()
   ;; these variables aren't in any frames or anything, so they
@@ -250,17 +250,17 @@
   ;; :STOPPED! is the code for noisy abort.
   ;; we want to be quiet if the error type is quiet abort.
   (if (eq *error-type* :stopped)
-      *novalue*
-      (make-error-box)))
+    *novalue*
+    (make-error-box)))
 
 (defun make-error-box ()
   (let ((boxer::*current-font-descriptor* boxer::*default-font-descriptor*))
     (boxer::make-box
      `(("Error:" ,.(error-report-error-string))
        ,.(error-report-error-sfun)
-       ,.(error-report-exception-args)
-       ,.(error-report-executing-line)
-       .,(error-report-executing-box)))))
+        ,.(error-report-exception-args)
+        ,.(error-report-executing-line)
+        .,(error-report-executing-box)))))
 
 (defun error-report-error-string ()
   (list
@@ -289,10 +289,10 @@
 
 (defun error-report-error-sfun ()
   (if *error-sfun*
-      (list (list "Primitive"
-          (canonicalize-primitive-name-for-error
-           (compiled-boxer-function-name *error-sfun*))))
-      nil))
+    (list (list "Primitive"
+                (canonicalize-primitive-name-for-error
+                 (compiled-boxer-function-name *error-sfun*))))
+    nil))
 
 (defvar *canonical-primitive-names*
   '((%ifs-internal-1 . IFS)
@@ -306,41 +306,41 @@
 
 (defun error-report-exception-args ()
   (if *exception-args*
-      (list (mapcan
-         #'canonicalize-weird-object
-         *exception-args*))))
+    (list (mapcan
+           #'canonicalize-weird-object
+           *exception-args*))))
 
 (defun error-report-executing-line ()
   (if (and *executing-line* (consp (car *executing-line*)))
-      (list (cons "in line"
-          (mapcan #'canonicalize-weird-object
-              (car *executing-line*))))))
+    (list (cons "in line"
+                (mapcan #'canonicalize-weird-object
+                        (car *executing-line*))))))
 
 (defun error-report-executing-box ()
   (let ((function-box
-     (and *executing-function*
-          (interpreted-boxer-function-backpointer *executing-function*))))
+         (and *executing-function*
+              (interpreted-boxer-function-backpointer *executing-function*))))
     (if (boxer::box? function-box)
-    (let* ((function-box-named? (boxer::name-row function-box))
-           (backtrace-list (backtrace-list nil))
-           (nontrivial-backtrace? (not (null backtrace-list))))
-      (nconc
-       (list (list* "of box"
-            (let ((port
-                   (boxer::top-level-print-vp
-                (boxer::port-to
-                 function-box))))
-              (boxer::supershrink port)
-              port)
-            (if (and (not function-box-named?)
-                 nontrivial-backtrace?)
-                (list "inside"
-                  (crock-boxer-fun-name-string-try-hard
-                   function-box nil))
-                nil)))
-       (and nontrivial-backtrace?
-        (list (list "called by"
-                (stringify-backtrace-list backtrace-list)))))))))
+      (let* ((function-box-named? (boxer::name-row function-box))
+             (backtrace-list (backtrace-list nil))
+             (nontrivial-backtrace? (not (null backtrace-list))))
+        (nconc
+         (list (list* "of box"
+                      (let ((port
+                             (boxer::top-level-print-vp
+                              (boxer::port-to
+                               function-box))))
+                        (boxer::supershrink port)
+                        port)
+                      (if (and (not function-box-named?)
+                               nontrivial-backtrace?)
+                        (list "inside"
+                              (crock-boxer-fun-name-string-try-hard
+                               function-box nil))
+                        nil)))
+         (and nontrivial-backtrace?
+              (list (list "called by"
+                          (stringify-backtrace-list backtrace-list)))))))))
 
 ;; Returns a list of believable Boxer objects and strings representing the
 ;; argument.  makes sure no boxes are inserted without being copied.
@@ -351,105 +351,105 @@
     ((symbolp u) (list (canonicalize-primitive-name-for-error u)))
     ((boxer-function? u)
      (cond ((compiled-boxer-function? u)
-        (list (canonicalize-primitive-name-for-error
-               (compiled-boxer-function-name u))))
-           ((doit-box?
+            (list (canonicalize-primitive-name-for-error
+                   (compiled-boxer-function-name u))))
+       ((doit-box?
+          (interpreted-boxer-function-backpointer u))
+        (list (boxer::copy-box
+               (interpreted-boxer-function-backpointer u))))
+       ;; these next 2 cases fall out of RUN
+       ;; RUN of a data box or...
+       ((data-box?
          (interpreted-boxer-function-backpointer u))
         (list (boxer::copy-box
                (interpreted-boxer-function-backpointer u))))
-           ;; these next 2 cases fall out of RUN
-           ;; RUN of a data box or...
-           ((data-box?
-         (interpreted-boxer-function-backpointer u))
-        (list (boxer::copy-box
-               (interpreted-boxer-function-backpointer u))))
-           ;; RUN of a Virtual copy
-           ((and (simple-vector-p
+       ;; RUN of a Virtual copy
+       ((and (simple-vector-p
               (interpreted-boxer-function-backpointer u))
              (fast-eval-data-box?
               (interpreted-boxer-function-backpointer u)))
         (list (boxer::top-level-print-vc
                (interpreted-boxer-function-backpointer u))))
-           ((and (simple-vector-p
+       ((and (simple-vector-p
               (interpreted-boxer-function-backpointer u))
              (fast-eval-doit-box?
               (interpreted-boxer-function-backpointer u)))
         (list (boxer::top-level-print-vc
                (interpreted-boxer-function-backpointer u))))
-           ((null (interpreted-boxer-function-backpointer u))
+       ((null (interpreted-boxer-function-backpointer u))
         (list (format nil "[Unamed-Function: ~A]"
-                  (interpreted-boxer-function-text u))))
-           (t (list (format nil "Strange object: ~S" u)))))
-        ((typep u 'boxer::foreign-data)
-         (boxer::make-editor-box-from-foreign-data u))
+                      (interpreted-boxer-function-text u))))
+       (t (list (format nil "Strange object: ~S" u)))))
+    ((typep u 'boxer::foreign-data)
+     (boxer::make-editor-box-from-foreign-data u))
     ((special-token? u)
      (cond ((dots-list-token? u)
-                (let* ((symbols (special-token-item u))
-                       (string (symbol-name (car symbols))))
-                  (dolist (S (cdr symbols) (list string))
-                    (setq string
-                          (concatenate 'string string "." (symbol-name s))))))
-           (t
+            (let* ((symbols (special-token-item u))
+                   (string (symbol-name (car symbols))))
+              (dolist (S (cdr symbols) (list string))
+                (setq string
+                      (concatenate 'string string "." (symbol-name s))))))
+       (t
         (cons (cdr (fast-assq
-                (special-token-type u)
-                *special-token-type-symbol-alist-for-error*))
+                    (special-token-type u)
+                    *special-token-type-symbol-alist-for-error*))
               (canonicalize-weird-object (special-token-item u))))))
     ((boxer::virtual-copy? u) (list (boxer::top-level-print-vc u)))
     ((boxer::virtual-port? u) (list (boxer::top-level-print-vp u)))
     ((boxer::box? u) (list (boxer::copy-box u)))
     ((consp u) (mapcar #'canonicalize-weird-object u))
-        ((compiled-boxer-function? u)
+    ((compiled-boxer-function? u)
      (list (compiled-boxer-function-name u)))
     ;; give up on representing the list per se.
     (t (list u))))
 
 (defun give-lisp-error ()
   (error (if *error-sfun*
-         "In primitive ~s, ~s ~s"
-         "~s~* ~s")
-     *error-type*
-     *error-sfun*
-     (mapcar
-      #'(lambda (u)
-          (cond
-           ((boxer-function? u)
-        (if (compiled-boxer-function? u)
-            (compiled-boxer-function-name u)
-            (format
-             nil
-             "[~a...]"
-             (car (interpreted-boxer-function-text u)))))
-           (t u)))
-      *exception-args*)))
+           "In primitive ~s, ~s ~s"
+           "~s~* ~s")
+         *error-type*
+         *error-sfun*
+         (mapcar
+          #'(lambda (u)
+                    (cond
+                      ((boxer-function? u)
+                       (if (compiled-boxer-function? u)
+                         (compiled-boxer-function-name u)
+                         (format
+                          nil
+                          "[~a...]"
+                          (car (interpreted-boxer-function-text u)))))
+                      (t u)))
+          *exception-args*)))
 
 ;; used all over.
 ;; terrible name
 (defun crock-boxer-fun-box-name-string (boxer-function)
   (and boxer-function
        (let ((obj (interpreted-boxer-function-backpointer boxer-function)))
-     (cond ((boxer::box? obj)
-        (let ((name-row (boxer::name-row obj)))
-          (and name-row (boxer::name-string obj))))
+         (cond ((boxer::box? obj)
+                (let ((name-row (boxer::name-row obj)))
+                  (and name-row (boxer::name-string obj))))
            ((boxer::virtual-copy? obj)
-        (let ((name (boxer::vc-name obj)))
-          (or (and name (string name))
-              "[]")))
+            (let ((name (boxer::vc-name obj)))
+              (or (and name (string name))
+                  "[]")))
            ((boxer::virtual-port? obj)
-        (let ((name (boxer::vp-name obj)))
-          (or (and name (string name))
-              "<>")))
+            (let ((name (boxer::vp-name obj)))
+              (or (and name (string name))
+                  "<>")))
            (t nil)))))
 
 (defun crock-boxer-fun-box-name (boxer-function)
   (and boxer-function
        (let ((obj (interpreted-boxer-function-backpointer boxer-function)))
-     (cond ((boxer::box? obj)
-        (let ((name-row (boxer::name-row obj)))
-          (and name-row (boxer::cached-name name-row))))
+         (cond ((boxer::box? obj)
+                (let ((name-row (boxer::name-row obj)))
+                  (and name-row (boxer::cached-name name-row))))
            ((boxer::virtual-copy? obj)
-        (boxer::vc-name obj))
+            (boxer::vc-name obj))
            ((boxer::virtual-port? obj)
-        (boxer::vp-name obj))
+            (boxer::vp-name obj))
            (t nil)))))
 
 
@@ -457,55 +457,55 @@
 ;; hierarchy until it finds a function name.
 (defun crock-boxer-fun-name-string-try-hard (fun &optional (include-self? t))
   (labels ((crock-boxer-fun-name-internal (fun)
-       (cond ((null fun) nil)
-         ((and (boxer-function? fun)
-               (interpreted-boxer-function? fun))
-          (let ((name (crock-boxer-fun-box-name-string fun)))
-            (if (not (null name))
-            (list name)
-            (crock-boxer-fun-name-internal
-             (interpreted-boxer-function-backpointer
-              fun)))))
-         ((boxer::box? fun)
-          (let ((name-row (boxer::name-row fun)))
-            (if name-row
-            (list (boxer::name fun))
-            (let ((superior (boxer::superior-box
-                     fun)))
-              (if (null superior) nil
-                  (cons nil
-                    (crock-boxer-fun-name-internal
-                     superior)))))))
-         (t (error "unknown thing ~S in crock-boxer-fun-name" fun)))))
-    (let* ((string-list (crock-boxer-fun-name-internal fun))
-           (munged-string-list (nreverse
-                        (if (and (not include-self?)
-                                         (null (car string-list)))
-                          (cdr string-list)
-                        string-list))))
-      (and munged-string-list
-       (reduce #'(lambda (a b) (concatenate 'string (or a "[]")
-                        "."
-                        (or b "[]")))
-                   munged-string-list)))))
+                                          (cond ((null fun) nil)
+                                            ((and (boxer-function? fun)
+                                                  (interpreted-boxer-function? fun))
+                                             (let ((name (crock-boxer-fun-box-name-string fun)))
+                                               (if (not (null name))
+                                                 (list name)
+                                                 (crock-boxer-fun-name-internal
+                                                  (interpreted-boxer-function-backpointer
+                                                   fun)))))
+                                            ((boxer::box? fun)
+                                             (let ((name-row (boxer::name-row fun)))
+                                               (if name-row
+                                                 (list (boxer::name fun))
+                                                 (let ((superior (boxer::superior-box
+                                                                  fun)))
+                                                   (if (null superior) nil
+                                                     (cons nil
+                                                           (crock-boxer-fun-name-internal
+                                                            superior)))))))
+                                            (t (error "unknown thing ~S in crock-boxer-fun-name" fun)))))
+          (let* ((string-list (crock-boxer-fun-name-internal fun))
+                 (munged-string-list (nreverse
+                                      (if (and (not include-self?)
+                                               (null (car string-list)))
+                                        (cdr string-list)
+                                        string-list))))
+            (and munged-string-list
+                 (reduce #'(lambda (a b) (concatenate 'string (or a "[]")
+                                                      "."
+                                                      (or b "[]")))
+                         munged-string-list)))))
 
 (defun backtrace-list (&optional (include-current? t))
   (let ((list nil))
     (flet ((record-function (object)
-         (let ((name (crock-boxer-fun-name-string-try-hard object)))
-           (unless (null name)
-         (push name list)))))
-      (if include-current? (record-function *executing-function*))
-      (do ((frame *pdl* (stack-frame-next-frame frame)))
-      ((null frame) list)
-    (cond ((eval-args-frame-p frame))
-          ((ufun-frame-p frame)
-           (record-function
-        (dbg-ufun-frame-*executing-function* frame)))
-          ((doit-port-funcall-frame-p frame))
-          ((tell-special-frame-p frame))
-          ((repeat-special-frame-p frame))
-          (t nil))))))
+                            (let ((name (crock-boxer-fun-name-string-try-hard object)))
+                              (unless (null name)
+                                (push name list)))))
+          (if include-current? (record-function *executing-function*))
+          (do ((frame *pdl* (stack-frame-next-frame frame)))
+            ((null frame) list)
+            (cond ((eval-args-frame-p frame))
+              ((ufun-frame-p frame)
+               (record-function
+                (dbg-ufun-frame-*executing-function* frame)))
+              ((doit-port-funcall-frame-p frame))
+              ((tell-special-frame-p frame))
+              ((repeat-special-frame-p frame))
+              (t nil))))))
 
 
 (defvar *maximum-backtrace-bottom* 15)
@@ -517,12 +517,12 @@
       ((<=& length *maximum-backtrace-bottom*)
        (reduce #'(lambda (a b) (concatenate 'string a "->" b)) list))
       (t (let ((top (subseq list 0 *minimum-backtrace-top*))
-           (bottom (subseq list
-                   (boxer::max&
-                    (- length *maximum-backtrace-bottom*)
-                    0))))
+               (bottom (subseq list
+                               (boxer::max&
+                                (- length *maximum-backtrace-bottom*)
+                                0))))
            (reduce #'(lambda (a b)
-               (concatenate 'string a "->" b))
-               (nconc top (list "...") bottom)))))))
+                             (concatenate 'string a "->" b))
+                   (nconc top (list "...") bottom)))))))
 
 
