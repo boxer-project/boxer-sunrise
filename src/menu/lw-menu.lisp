@@ -1029,23 +1029,6 @@ Modification History (most recent at top)
   (declare (ignore data interface))
   (boxer::com-force-redisplay t))
 
-(defun menu-enter-license-key (data interface)
-  (declare (ignore data interface))
-  (cond ((boxer::valid-boxer-license?)
-         (capi:display-message "This Boxer is already Licensed"))
-        (t
-         (do ((keystring (boxer::boxer-license-dialog)
-                         (boxer::boxer-license-dialog)))
-             ((when (not (null keystring))
-                (let ((ln (read-from-string keystring nil nil)))
-                  (and (numberp ln) (boxer::valid-license-number ln))))
-              (boxer::set-boxer-license-key keystring))
-           ;; bad entry prompt for try more tries
-           (unless (capi:prompt-for-confirmation "Invalid License Key, Try again ?"
-                                                 :owner *boxer-frame*)
-             (return nil))))))
-
-
 ;; Sub Menus
 ;; Display Properties Sub Menu
 

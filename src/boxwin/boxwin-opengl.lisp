@@ -571,8 +571,7 @@ Modification History (most recent at top)
                                                      :callback 'menu-name-spelling-help)
                                     ("Key/Mouse" ;:accelerator "Alt-?"
                                      :callback 'menu-key-mouse-help)))
-                       (:component (("Repaint" :accelerator #\r :callback 'menu-redisplay)))
-                       (:component (("License Boxer" :callback 'menu-enter-license-key)))))
+                       (:component (("Repaint" :accelerator #\r :callback 'menu-redisplay)))))
     ;; submenus
     (display-props-sub-menu "Display Properties..."
                             (("Zoom Control" :callback 'menu-zoom-toggle
@@ -682,33 +681,6 @@ Modification History (most recent at top)
 (defvar *default-starting-box-file* "start.box")
 
 (defvar *display-bootstrapping-no-boxes-yet* t)
-
-(defvar *expiration-date* nil)
-;; or a universal time as in (encode-universal-time 0 0 0 1 1 2003 )
-;; which is 00:00:00 jan 1 2003
-
-(defun expired-notification-quit ()
-  (multiple-value-bind (sec min hour date month year)
-      (decode-universal-time *expiration-date*)
-    (declare (ignore sec min hour))
-    (let ((dialog (capi:make-container
-                   (make-instance 'capi:pinboard-layout
-                                  :min-width 400 :min-height 200
-                                  :description
-                                  (list (make-instance
-                                         'capi:title-pane
-                                         :x 20 :y 20 :width 360 :height 100
-                                         :text (format nil "This Boxer application expired on ~D/~D/~D" month date year))
-                                        (make-instance
-                                         'capi:push-button
-                                         :x 175 :y 100 :width 50 :height 20
-                                         :text "OK"
-                                         :selection-callback
-                                         #'(lambda (&rest ignore)
-                                             (declare (ignore ignore))
-                                             (capi:exit-dialog t))))))))
-    (capi:display-dialog dialog :modal t)))
-  (lw:quit :ignore-errors-p t))
 
 (defun window-system-specific-start-boxer ()
   (let ((boot-start-time (get-internal-real-time))
@@ -1106,39 +1078,6 @@ Modification History (most recent at top)
           (boxer-idle-function)))))
 
 (defvar *suppress-event-queueing?* nil)
-
-#| leave out for now, trying it with input model paradigm--see boxer-track-mouse-handler
-;; mousepos
-
-(fli:define-c-struct :point
-  (x :long)
-  (y :long)
-  )
-
-(fli:define-c-typedef :lppoint (:pointer :point))
-
-;; BOOL GetCursorPos (LPPOIN lpPoint) ;
-(fli:define-foreign-function (%get-cursor-pos "GetCursorPos") ((lppoint :lppoint))
-  :language :c
-  :calling-convention :stdcall
-  :result-type (:boolean :long)
-  :module "user32.dll")
-
-;; eventually, statically allocate the point
-;; NOTE: this is relative to the upper left corner of the screen, need to
-;;       offset the result by the location of the boxer window
-(defun get-cursor-pos ()
-  (fli:with-dynamic-foreign-objects ()
-    (let ((pt (fli:allocate-dynamic-foreign-object :type :point)))
-      (unwind-protect
-          (progn (%get-cursor-pos pt)
-            (values (fli:foreign-slot-value pt 'x)
-                    (fli:foreign-slot-value pt 'y)))
-        (fli:free-foreign-object pt)))))
-
-
-|#
-
 
 ;; input handlers
 (defvar *event-id* 0)
