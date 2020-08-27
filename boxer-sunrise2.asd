@@ -54,10 +54,10 @@
                  ;; Beginning of `EVALDEFS` module
                  ;; "Basic Defs and Macros used by the evaluator including how variables work."
                  (:file "evaldefs/evalmacs")
+                 (:file "evaldefs/funs")
                  (:file "evaldefs/fdeval")
                  (:file "evaldefs/stacks")
                  (:file "evaldefs/bind")
-                 (:file "evaldefs/funs")
                  (:file "evaldefs/eval")
 
                  ;; Beginning of `EVALPRIMS` module
