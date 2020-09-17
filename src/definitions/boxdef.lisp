@@ -60,7 +60,7 @@ Modification History (most recent at top)
 ;; of the OR which is there now.
 (defmacro fast-iwmc-class-p (thing)
   (warn "You need to define a version of FAST-IWMC-CLASS-P for ~A of ~A"
-	(lisp-implementation-version) (lisp-implementation-type))
+  (lisp-implementation-version) (lisp-implementation-type))
   `(typep ,thing 'structure))
 
 (defvar *include-compiled-type-checking* t)
@@ -106,7 +106,7 @@ Modification History (most recent at top)
 ;;;  This gives BOXER objects their very own PLIST
 
 (defclass plist-subclass
-	  ()
+    ()
   ((plist :initform nil :accessor plist))
   (:metaclass block-compile-class))
 
@@ -117,9 +117,9 @@ Modification History (most recent at top)
   (if (eq (car (slot-value obj 'plist)) indicator)
       (setf (slot-value obj 'plist) (cddr (slot-value obj 'plist)))
       (do* ((rest (slot-value obj 'plist) (cddr rest))
-	    (ind (caddr rest) (caddr rest)))
-	   ((null rest))
-	(when (eq ind indicator) (setf (cddr rest) (cddddr rest))))))
+      (ind (caddr rest) (caddr rest)))
+     ((null rest))
+  (when (eq ind indicator) (setf (cddr rest) (cddddr rest))))))
 
 ;; we really should make SETF win
 (defmethod putprop ((obj plist-subclass) value indicator)
@@ -131,9 +131,9 @@ Modification History (most recent at top)
     ()
   ((virtual-copy-rows :initform nil)
    (contained-links :initform nil
-		    :accessor contained-links)
+        :accessor contained-links)
    (branch-links :initform nil
-		 :accessor branch-links))
+     :accessor branch-links))
   (:metaclass block-compile-class)
   (:documentation "Interface to virtual copy"))
 
@@ -307,11 +307,11 @@ Modification History (most recent at top)
   "the cha-no of the point for use with cntrl-p and cntrl-n")
 
 (defvar *word-delimiters* (do ((i 31 (1+ i))
-			       (list nil))
-			      ((= i 256) list)
-			    (when (and (standard-char-p (code-char i))
-				       (not (alphanumericp (code-char i))))
-			      (push (code-char i) list))))
+             (list nil))
+            ((= i 256) list)
+          (when (and (standard-char-p (code-char i))
+               (not (alphanumericp (code-char i))))
+            (push (code-char i) list))))
 
 
 (DEFVAR *BOXER-VERSION-INFO* NIL
@@ -353,9 +353,9 @@ Modification History (most recent at top)
 (defclass actual-obj-subclass
     ()
   ((screen-objs :initform nil
-		:accessor actual-obj-screen-objs)
+    :accessor actual-obj-screen-objs)
    (tick :initform 1
-	 :accessor actual-obj-tick))
+   :accessor actual-obj-tick))
   (:metaclass block-compile-class)
   (:documentation "Used by editor objects to interface with the redisplay" ))
 
@@ -398,11 +398,11 @@ Modification History (most recent at top)
     (virtual-copy-subclass actual-obj-subclass plist-subclass)
   ((superior-row :initform nil :accessor superior-row :initarg :superior-row)
    (first-inferior-row :initform nil :accessor first-inferior-row
-		       :initarg :first-inferior-row)
+           :initarg :first-inferior-row)
    (cached-rows :initform nil :accessor cached-rows)
    (ports :initform nil :accessor ports)
    (display-style-list :initform (make-display-style)
-		       :accessor display-style-list)
+           :accessor display-style-list)
    (name :initform nil :accessor name)
    (static-variables-alist :initform nil :accessor static-variables-alist)
    (exports :initform nil :accessor exports)
@@ -419,21 +419,21 @@ Modification History (most recent at top)
 (defgeneric box? (x) (:method (x) nil) (:method ((x box)) t))
 
 (defclass doit-box
-	  (box)
+    (box)
      ()
   (:metaclass block-compile-class))
 
 (defgeneric doit-box? (x) (:method (x) nil) (:method ((x doit-box)) t))
 
 (defclass data-box
-	  (box)
+    (box)
      ()
   (:metaclass block-compile-class))
 
 (defgeneric data-box? (x) (:method (x) nil) (:method ((x data-box)) t))
 
 (defclass port-box
-	  (box)
+    (box)
      ()
   (:metaclass block-compile-class))
 
@@ -451,10 +451,10 @@ Modification History (most recent at top)
 ;; for delineating regions in the editor...
 
 (defstruct (interval
-	    (:predicate interval?)
-	    (:copier nil)
-	    (:print-function print-interval)
-	    (:constructor %make-interval (start-bp stop-bp)))
+      (:predicate interval?)
+      (:copier nil)
+      (:print-function print-interval)
+      (:constructor %make-interval (start-bp stop-bp)))
   (start-bp nil)
   (stop-bp nil)
   (visibility nil)
@@ -464,30 +464,30 @@ Modification History (most recent at top)
 (defun print-interval (interval stream level)
   (declare (ignore level))
   (format stream "#<INTERVAL [~A,~D] [~A,~D]>"
-	  (bp-row (interval-start-bp interval))
-	  (bp-cha-no (interval-start-bp interval))
-	  (bp-row (interval-stop-bp interval))
-	  (bp-cha-no (interval-stop-bp interval))))
+    (bp-row (interval-start-bp interval))
+    (bp-cha-no (interval-start-bp interval))
+    (bp-row (interval-stop-bp interval))
+    (bp-cha-no (interval-stop-bp interval))))
 
 
 (defstruct (graphics-sheet (:constructor
-			    %make-simple-graphics-sheet
-			    (draw-wid draw-hei superior-box))
-			   (:constructor %make-graphics-sheet-with-bitmap
-			    (draw-wid draw-hei bit-array superior-box))
-			   (:constructor
-			    %make-graphics-sheet-with-graphics-list
-			    (draw-wid draw-hei superior-box))
-			   (:constructor make-graphics-sheet-from-file
-			    (draw-wid draw-hei draw-mode))
-			   (:copier nil)
+          %make-simple-graphics-sheet
+          (draw-wid draw-hei superior-box))
+         (:constructor %make-graphics-sheet-with-bitmap
+          (draw-wid draw-hei bit-array superior-box))
+         (:constructor
+          %make-graphics-sheet-with-graphics-list
+          (draw-wid draw-hei superior-box))
+         (:constructor make-graphics-sheet-from-file
+          (draw-wid draw-hei draw-mode))
+         (:copier nil)
          (:predicate graphics-sheet?)
-			   (:print-function
-			     (lambda (gs s depth)
-			       (declare (ignore depth))
-			       (format s "#<Graphics-Sheet W-~D. H-~D.>"
-				       (graphics-sheet-draw-wid gs)
-				       (graphics-sheet-draw-hei gs)))))
+         (:print-function
+           (lambda (gs s depth)
+             (declare (ignore depth))
+             (format s "#<Graphics-Sheet W-~D. H-~D.>"
+               (graphics-sheet-draw-wid gs)
+               (graphics-sheet-draw-hei gs)))))
   (draw-wid *default-graphics-sheet-width*)
   (draw-hei *default-graphics-sheet-height*)
   (screen-objs nil)
@@ -532,15 +532,15 @@ Modification History (most recent at top)
        (not (zerop& (ldb& ',(byte 1 position) (slot-value self 'flags)))))
      (defmethod ,(intern (symbol-format nil "SET-~A" name)) ((self box) t-or-nil)
        (setf (slot-value self 'flags)
-	     (dpb& (if t-or-nil 1 0)
-		  ',(byte 1 position)
-		  (slot-value self 'flags)))
+       (dpb& (if t-or-nil 1 0)
+      ',(byte 1 position)
+      (slot-value self 'flags)))
        t-or-nil)
      (defmethod (setf ,name) (t-or-nil (self box))
        (setf (slot-value self 'flags)
-	     (dpb& (if t-or-nil 1 0)
-		  ',(byte 1 position)
-		  (slot-value self 'flags)))
+       (dpb& (if t-or-nil 1 0)
+      ',(byte 1 position)
+      (slot-value self 'flags)))
        t-or-nil)))
 
 (define-box-flag shrink-proof? 0)
@@ -609,9 +609,9 @@ Modification History (most recent at top)
 ;;;global variable's  *current-screen-box* and *marked-screen-box*
 
 (DEFSTRUCT (BP (:TYPE LIST) :NAMED          ;Easier to Debug
-	       (:CONSTRUCTOR MAKE-BP (TYPE))
-	       (:CONSTRUCTOR MAKE-INITIALIZED-BP (TYPE ROW CHA-NO))
-	       (:CONC-NAME   BP-))
+         (:CONSTRUCTOR MAKE-BP (TYPE))
+         (:CONSTRUCTOR MAKE-INITIALIZED-BP (TYPE ROW CHA-NO))
+         (:CONC-NAME   BP-))
   (ROW    NIL)
   (CHA-NO 0)
   (SCREEN-BOX NIL)
@@ -653,15 +653,15 @@ Modification History (most recent at top)
 (defvar *foreground-color*)
 
 (defstruct (boxer-font-descriptor (:conc-name bfd-)
-				  (:predicate bfd?)
-				  (:constructor make-bfd (cha-no font-no))
+          (:predicate bfd?)
+          (:constructor make-bfd (cha-no font-no))
                                   (:constructor make-cfd (cha-no font-no color))
-				  (:print-function
-				   (lambda (bfd stream depth)
-				     (declare (ignore depth))
-				     (format stream "#<Bfd ~D ~X ~X>"
-					     (bfd-cha-no bfd)
-					     (bfd-font-no bfd)
+          (:print-function
+           (lambda (bfd stream depth)
+             (declare (ignore depth))
+             (format stream "#<Bfd ~D ~X ~X>"
+               (bfd-cha-no bfd)
+               (bfd-font-no bfd)
                                              (bfd-color bfd)))))
   (cha-no 0 :type fixnum)
   (font-no 0 :type fixnum)
@@ -764,13 +764,13 @@ Modification History (most recent at top)
 (defsubst box-interface? (thing)
   (and (simple-vector-p thing)
        (or (eq (svref& thing 0) 'valid-value-box-interface)
-	   (eq (svref& thing 0) 'invalid-value-box-interface)
-	   (eq (svref& thing 0) 'special-value-box-interface))))
+     (eq (svref& thing 0) 'invalid-value-box-interface)
+     (eq (svref& thing 0) 'special-value-box-interface))))
 
 (defmacro special-box-interface-update-function (bi) `(svref& ,bi 5))
 
 (defun %make-sv-box-interface (value &optional slot-name (sup-box nil)
-				     update-fun)
+             update-fun)
   (let ((bi (make-array 6)))
     (setf (svref& bi 0) 'special-value-box-interface)
     (setf (box-interface-value     bi) value)
