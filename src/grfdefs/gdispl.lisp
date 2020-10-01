@@ -301,8 +301,8 @@ Modification History (most recent at the top)
 (defun graphics-command-opcode (command-name)
   (let ((entry (fast-assq command-name *graphics-command-name-opcode-alist*)))
     (if (null entry)
-	(error "No Graphics Command Opcode for ~S" command-name)
-	(cdr entry))))
+  (error "No Graphics Command Opcode for ~S" command-name)
+  (cdr entry))))
 
 (defun get-graphics-command-descriptor (name-or-opcode)
   (etypecase name-or-opcode
@@ -310,8 +310,8 @@ Modification History (most recent at the top)
     (symbol (setq name-or-opcode (graphics-command-opcode name-or-opcode))))
   (let ((des (svref& *graphics-command-descriptor-table* name-or-opcode)))
     (if (null des)
-	(error "No Descriptor found for ~S" name-or-opcode)
-	des)))
+  (error "No Descriptor found for ~S" name-or-opcode)
+  des)))
 )
 
 (defun graphics-command-descriptor (graphics-command)
@@ -333,19 +333,19 @@ Modification History (most recent at the top)
 
 (defun graphics-command-slot-offset (descriptor slot-name)
   (let ((pos (position slot-name
-		       (graphics-command-descriptor-slots descriptor))))
+           (graphics-command-descriptor-slots descriptor))))
     (if (null pos)
-	(error "The slot, ~S, does not seem to be in the Graphics Command ~S"
-	       slot-name (graphics-command-descriptor-name descriptor))
-	(1+ pos))))
+  (error "The slot, ~S, does not seem to be in the Graphics Command ~S"
+         slot-name (graphics-command-descriptor-name descriptor))
+  (1+ pos))))
 
 ) ; eval-when
 
 
 (defun copy-graphics-command (graphics-command)
   (funcall (svref& *graphics-command-copier-table*
-		   (svref& graphics-command 0))
-	   graphics-command))
+       (svref& graphics-command 0))
+     graphics-command))
 
 (defmacro bind-graphics-handlers ((table) &body body)
   `(let ((*graphics-command-dispatch-table* ,table))
@@ -353,90 +353,90 @@ Modification History (most recent at the top)
 
 (defmacro process-graphics-command-marker (graphics-command &rest args)
   `(let ((handler (svref& *graphics-command-dispatch-table*
-			  (svref& ,graphics-command 0))))
+        (svref& ,graphics-command 0))))
      (unless (null  handler)
        (funcall handler ,graphics-command ,@args))))
 
 (defun graphics-command-extents (graphics-command)
   (declare (values min-x min-y max-x max-y))
   (let ((handler (svref& *graphics-command-size-values-table*
-			 (svref& graphics-command 0))))
+       (svref& graphics-command 0))))
     (if (null handler)
-	(values 0 0 0 0)
-	(funcall handler graphics-command))))
+  (values 0 0 0 0)
+  (funcall handler graphics-command))))
 
 (defun dump-graphics-command (command stream &optional (type :turtle-shape))
   (declare (ignore type))
   (let ((handler (svref& *graphics-command-dumper-dispatch-table*
-			 (svref& command 0))))
+       (svref& command 0))))
     (if (null handler)
-	(dump-boxer-thing command stream)
-	(funcall handler command stream))))
+  (dump-boxer-thing command stream)
+  (funcall handler command stream))))
 
 ;; this is actually more of a post load processing kinda thing
 (defun load-graphics-command (command &optional (type :turtle-shape))
   (declare (ignore type))
   (let ((handler (svref& *graphics-command-loader-dispatch-table*
-			 (svref& command 0))))
+       (svref& command 0))))
     (unless (null handler)
       (funcall handler command))))
 
 (defun translate-graphics-command-to-sprite-primitive (command)
   (let* ((x (if (>= (svref& command 0) 32)
-		(-& (svref& command 0) 32)
-		(svref& command 0)))
-	 (handler (svref& *graphics-command-sprite-command-translation-table*
-			  x)))
+    (-& (svref& command 0) 32)
+    (svref& command 0)))
+   (handler (svref& *graphics-command-sprite-command-translation-table*
+        x)))
     (unless (null handler) (funcall handler command))))
 
 (defun translate-graphics-command (graphics-command trans-x trans-y)
   (let ((handler (svref& *graphics-command-translation-table*
-			 (svref& graphics-command 0))))
+       (svref& graphics-command 0))))
     (unless (null handler)
       (funcall handler graphics-command trans-x trans-y))))
 
 (defun translate-and-scale-graphics-command (graphics-command
-					     trans-x trans-y
-					     scale-x scale-y)
+               trans-x trans-y
+               scale-x scale-y)
   (let ((handler (svref& *graphics-command-translation-and-scaling-table*
-			 (svref& graphics-command 0))))
+       (svref& graphics-command 0))))
     (unless (null handler)
       (funcall handler graphics-command trans-x trans-y scale-x scale-y))))
 
 (defun translate-boxer->window-command (from-graphics-command
-					to-graphics-command
-					trans-x trans-y
-					cos-scale sin-scale scale)
+          to-graphics-command
+          trans-x trans-y
+          cos-scale sin-scale scale)
   (let ((handler (svref& *turtle-translation-table*
-			 (svref& from-graphics-command 0))))
+       (svref& from-graphics-command 0))))
     (unless (null handler)
       (funcall handler
-	       from-graphics-command to-graphics-command
-	       trans-x trans-y cos-scale sin-scale scale))))
+         from-graphics-command to-graphics-command
+         trans-x trans-y cos-scale sin-scale scale))))
 
 (defun allocate-boxer->window-command (graphics-command)
   (let ((handler (svref& *graphics-command-boxer->window-translation-table*
-			 (let ((opcode (svref& graphics-command 0)))
-			   ;; this is a crock to handle cases where
-			   ;; we (maybe) need to convert old graphics
-			   ;; commands from obsolete files
-			   (if (>=& opcode 32) (-& opcode 32) opcode)))))
+       (let ((opcode (svref& graphics-command 0)))
+         ;; this is a crock to handle cases where
+         ;; we (maybe) need to convert old graphics
+         ;; commands from obsolete files
+         (if (>=& opcode 32) (-& opcode 32) opcode)))))
     (if (null handler)
-	(error "No translation allocator for ~A" graphics-command)
-	(funcall handler graphics-command))))
+  (error "No translation allocator for ~A" graphics-command)
+  (funcall handler graphics-command))))
 
 (defun allocate-window->boxer-command (graphics-command)
   (let ((handler (svref& *graphics-command-window->boxer-translation-table*
-			 (svref& graphics-command 0))))
+       (svref& graphics-command 0))))
     (if (null handler)
-	(error "No translation allocator for ~A" graphics-command)
-	(funcall handler graphics-command))))
+  (error "No translation allocator for ~A" graphics-command)
+  (funcall handler graphics-command))))
 
 (defmacro graphics-command-values (command-name-or-opcode
-				   graphics-command &body body)
+           graphics-command &body body)
   (let ((opcode (etypecase command-name-or-opcode
-		  (number command-name-or-opcode)
-		  (symbol (graphics-command-opcode command-name-or-opcode)))))
+      (number command-name-or-opcode)
+      (symbol (graphics-command-opcode command-name-or-opcode)))))
     `(,(svref& *graphics-command-binding-values-table* opcode)
        ,graphics-command
        ,@body)))
@@ -444,8 +444,8 @@ Modification History (most recent at the top)
 
 (defun deallocate-graphics-command-marker (graphics-command)
   (funcall (svref& *graphics-command-deallocation-table*
-		   (svref& graphics-command 0))
-	   graphics-command))
+       (svref& graphics-command 0))
+     graphics-command))
 
 
 
@@ -464,7 +464,7 @@ Modification History (most recent at the top)
 ;;;; COLOR
 
 (defstruct (boxer-color :named (:type vector)
-			(:constructor %make-boxer-color (red green blue)))
+      (:constructor %make-boxer-color (red green blue)))
   (red   0)
   (green 0)
   (blue  0))
@@ -488,10 +488,10 @@ Modification History (most recent at the top)
 ;;; Commands will be of the window system/integer variety
 
 (defstruct (graphics-command-list (:type vector)
-				  (:include storage-vector)
-				  ;; we define our own versions or these
-				  (:copier %%copy-graphics-command-list)
-				  (:constructor %%make-graphics-command-list))
+          (:include storage-vector)
+          ;; we define our own versions or these
+          (:copier %%copy-graphics-command-list)
+          (:constructor %%make-graphics-command-list))
   agent
   (alu *initial-graphics-state-current-alu*)
   (pen-width *initial-graphics-state-current-pen-width*)
@@ -516,10 +516,10 @@ Modification History (most recent at the top)
 ;;; Commands will be of the boxer/floating point variety
 
 (defstruct (turtle-shape (:type vector)
-			 (:include graphics-command-list)
-			 ;;
-			 (:copier %%copy-turtle-shape)
-			 (:constructor %%make-turtle-shape))
+       (:include graphics-command-list)
+       ;;
+       (:copier %%copy-turtle-shape)
+       (:constructor %%make-turtle-shape))
   )
 
 (defsubst turtle-shape? (thing)
@@ -532,10 +532,10 @@ Modification History (most recent at the top)
 ;;; Commands will be of the window system/integer variety
 
 (defstruct (turtle-window-shape (:type vector)
-				(:include graphics-command-list)
-				;; we need to define our own versions of
-				(:copier %%copy-turtle-window-shape)
-				(:constructor %%make-turtle-window-shape))
+        (:include graphics-command-list)
+        ;; we need to define our own versions of
+        (:copier %%copy-turtle-window-shape)
+        (:constructor %%make-turtle-window-shape))
   (valid nil)
   ;; some places to cache popular quantities
   min-graphics-x-extent
@@ -549,14 +549,14 @@ Modification History (most recent at the top)
 
 (defmacro expand-mutators-and-body (args initial-index &body body)
   (cond ((null args)
-	 `(progn . ,body))
-	(t `(macrolet ((,(intern (symbol-format nil "SET-~A" (car args)))
-			   (new-value)
-			 `(setf (svref& .graphics-command. ,,initial-index)
-				,new-value)))
-	      (expand-mutators-and-body ,(cdr args)
-					,(incf initial-index)
-					,@body)))))
+   `(progn . ,body))
+  (t `(macrolet ((,(intern (symbol-format nil "SET-~A" (car args)))
+         (new-value)
+       `(setf (svref& .graphics-command. ,,initial-index)
+        ,new-value)))
+        (expand-mutators-and-body ,(cdr args)
+          ,(incf initial-index)
+          ,@body)))))
 
 ;;; A template (which should be the same length as the args) specifies
 ;;; how to convert particular slots of a window-system-integer-command
@@ -578,15 +578,15 @@ Modification History (most recent at the top)
 (defun expand-transform-template-item (arg template-action direction)
   (ecase direction
     (:boxer->window (case template-action
-		      (:x-transform (list 'fix-array-coordinate-x arg))
-		      (:y-transform (list 'fix-array-coordinate-y arg))
-		      (:coerce      (list 'round arg))
-		      (t            arg)))
+          (:x-transform (list 'fix-array-coordinate-x arg))
+          (:y-transform (list 'fix-array-coordinate-y arg))
+          (:coerce      (list 'round arg))
+          (t            arg)))
     (:window->boxer (case template-action
-		      (:x-transform (list 'user-coordinate-fix-x arg))
-		      (:y-transform (list 'user-coordinate-fix-y arg))
-		      (:coerce      (list 'float arg))
-		      (t            arg)))))
+          (:x-transform (list 'user-coordinate-fix-x arg))
+          (:y-transform (list 'user-coordinate-fix-y arg))
+          (:coerce      (list 'float arg))
+          (t            arg)))))
 )
 
 (eval-when (compile load eval)
@@ -594,8 +594,8 @@ Modification History (most recent at the top)
   (let ((revargnames nil))
     (dolist (arg arglist)
       (cond ((fast-memq arg lambda-list-keywords))
-	    ((consp arg) (push (car arg) revargnames))
-	    (t (push arg revargnames))))
+      ((consp arg) (push (car arg) revargnames))
+      (t (push arg revargnames))))
     (nreverse revargnames)))
 
 ;; this is not smart about special forms
@@ -648,154 +648,154 @@ Modification History (most recent at the top)
                   ,body)))))))
 
 (defmacro defgraphics-command ((name opcode
-				     &optional (optimize-recording? nil))
-			       args
-			       extents-form boxer-extents-form
-			       dump-args dump-form
-			       load-args load-form
+             &optional (optimize-recording? nil))
+             args
+             extents-form boxer-extents-form
+             dump-args dump-form
+             load-args load-form
                                deallocate-args deallocate-form
-			       sprite-command
-			       transform-template
+             sprite-command
+             transform-template
                                copy-post-processing
-			       &body draw-body)
+             &body draw-body)
   (flet ((numeric-declaration-args ()
-	   (with-collection
-	       (do* ((list-of-args args (cdr list-of-args))
-		     (arg (car list-of-args) (car list-of-args))
-		     (template-items transform-template (cdr template-items))
-		     (template-item (car template-items) (car template-items)))
-		    ((null list-of-args))
-		 (unless (null template-item)
-		   (collect arg))))))
+     (with-collection
+         (do* ((list-of-args args (cdr list-of-args))
+         (arg (car list-of-args) (car list-of-args))
+         (template-items transform-template (cdr template-items))
+         (template-item (car template-items) (car template-items)))
+        ((null list-of-args))
+     (unless (null template-item)
+       (collect arg))))))
     (let* ((boxer-command-name (intern (symbol-format nil "BOXER-~A" name)))
-	   (boxer-command-opcode (+ opcode *boxer-graphics-command-mask*))
-	   (wstruct-name
-	    (intern (symbol-format nil "WINDOW-GRAPHICS-COMMAND-~A" name)))
-	   (wmake-name
-	    (intern (symbol-format nil "MAKE-WINDOW-GRAPHICS-COMMAND-~A" name)))
-	   (wcopy-name
-	    (intern (symbol-format nil "COPY-WINDOW-GRAPHICS-COMMAND-~A" name)))
+     (boxer-command-opcode (+ opcode *boxer-graphics-command-mask*))
+     (wstruct-name
+      (intern (symbol-format nil "WINDOW-GRAPHICS-COMMAND-~A" name)))
+     (wmake-name
+      (intern (symbol-format nil "MAKE-WINDOW-GRAPHICS-COMMAND-~A" name)))
+     (wcopy-name
+      (intern (symbol-format nil "COPY-WINDOW-GRAPHICS-COMMAND-~A" name)))
            (wcopy-struct-name (if (null copy-post-processing) wcopy-name
                                   (intern
                                    (symbol-format
                                     nil "%COPY-WINDOW-GRAPHICS-COMMAND-~A" name))))
-	   (bstruct-name
-	    (intern (symbol-format nil "BOXER-GRAPHICS-COMMAND-~A" name)))
-	   (bmake-name
-	    (intern (symbol-format nil "MAKE-BOXER-GRAPHICS-COMMAND-~A" name)))
-	   (bcopy-name
-	    (intern (symbol-format nil "COPY-BOXER-GRAPHICS-COMMAND-~A" name)))
+     (bstruct-name
+      (intern (symbol-format nil "BOXER-GRAPHICS-COMMAND-~A" name)))
+     (bmake-name
+      (intern (symbol-format nil "MAKE-BOXER-GRAPHICS-COMMAND-~A" name)))
+     (bcopy-name
+      (intern (symbol-format nil "COPY-BOXER-GRAPHICS-COMMAND-~A" name)))
            (bcopy-struct-name (if (null copy-post-processing) bcopy-name
                                   (intern
                                    (symbol-format
                                     nil "%COPY-BOXER-GRAPHICS-COMMAND-~A" name))))
-	   (window->boxer-name
-	    (intern (symbol-format nil "GRAPHICS-WINDOW->BOXER-~A-ALLOCATOR" name)))
-	   (boxer->window-name
-	    (intern (symbol-format nil "GRAPHICS-BOXER->WINDOW-~A-ALLOCATOR" name)))
-	   (recording-function
-	    (intern (symbol-format nil "RECORD-BOXER-GRAPHICS-COMMAND-~A" name)))
-	   (process-function
-	    (intern (symbol-format nil "Process Graphics Command ~A" name)))
-	   (window-binding-values-macro
-	    (intern (symbol-format nil "~A Window Binding Values Macro" name)))
-	   (boxer-binding-values-macro
-	    (intern (symbol-format nil "~A Boxer Binding Values Macro" name)))
-	   (window-extents-function
-	    (intern (symbol-format nil "~A Window Command Extents" name)))
-	   (boxer-extents-function
-	    (intern (symbol-format nil "~A Boxer Command Extents" name)))
-	   (dump-function-name
-	    (intern (symbol-format nil "GRAPHICS COMMAND ~A DUMPER" name)))
-	   (load-function-name
-	    (intern (symbol-format nil "GRAPHICS COMMAND ~A LOADER" name)))
-	   (sprite-command-translator-name
-	    (intern (symbol-format nil "~A SPRITE TRANSLATOR" name)))
-	   (wdeallocate-function (gensym))
-	   (bdeallocate-function (gensym)))
+     (window->boxer-name
+      (intern (symbol-format nil "GRAPHICS-WINDOW->BOXER-~A-ALLOCATOR" name)))
+     (boxer->window-name
+      (intern (symbol-format nil "GRAPHICS-BOXER->WINDOW-~A-ALLOCATOR" name)))
+     (recording-function
+      (intern (symbol-format nil "RECORD-BOXER-GRAPHICS-COMMAND-~A" name)))
+     (process-function
+      (intern (symbol-format nil "Process Graphics Command ~A" name)))
+     (window-binding-values-macro
+      (intern (symbol-format nil "~A Window Binding Values Macro" name)))
+     (boxer-binding-values-macro
+      (intern (symbol-format nil "~A Boxer Binding Values Macro" name)))
+     (window-extents-function
+      (intern (symbol-format nil "~A Window Command Extents" name)))
+     (boxer-extents-function
+      (intern (symbol-format nil "~A Boxer Command Extents" name)))
+     (dump-function-name
+      (intern (symbol-format nil "GRAPHICS COMMAND ~A DUMPER" name)))
+     (load-function-name
+      (intern (symbol-format nil "GRAPHICS COMMAND ~A LOADER" name)))
+     (sprite-command-translator-name
+      (intern (symbol-format nil "~A SPRITE TRANSLATOR" name)))
+     (wdeallocate-function (gensym))
+     (bdeallocate-function (gensym)))
       `(progn
-	 (defstruct (,wstruct-name (:type vector)
-				   (:constructor ,wmake-name ,args)
-				   (:copier ,wcopy-struct-name))
-	   ;; slot 0 is used as an index into the dispatch table
-	   (type ,opcode)
-	   ,@args)
+   (defstruct (,wstruct-name (:type vector)
+           (:constructor ,wmake-name ,args)
+           (:copier ,wcopy-struct-name))
+     ;; slot 0 is used as an index into the dispatch table
+     (type ,opcode)
+     ,@args)
          ,(unless (null copy-post-processing)
             `(defun ,wcopy-name (gc)
                (let ((graphics-command (,wcopy-struct-name gc)))
                  ,copy-post-processing
                  graphics-command)))
-	 ,(when (>=& opcode (svlength *graphics-command-copier-table*))
-	    ;; for that compile time error checking appeal
-	    (error "The *graphics-command-copier-table* is too short"))
-	 (setf (svref& *graphics-command-copier-table* ,opcode)
-	       ',wcopy-name)
-	 (defstruct (,bstruct-name (:type vector)
-				   (:constructor ,bmake-name ,args)
-				   (:copier ,bcopy-struct-name))
-	   ;; slot 0 is used as an index into the dispatch table
-	   (type ,boxer-command-opcode)
-	   ,@args)
+   ,(when (>=& opcode (svlength *graphics-command-copier-table*))
+      ;; for that compile time error checking appeal
+      (error "The *graphics-command-copier-table* is too short"))
+   (setf (svref& *graphics-command-copier-table* ,opcode)
+         ',wcopy-name)
+   (defstruct (,bstruct-name (:type vector)
+           (:constructor ,bmake-name ,args)
+           (:copier ,bcopy-struct-name))
+     ;; slot 0 is used as an index into the dispatch table
+     (type ,boxer-command-opcode)
+     ,@args)
          ,(unless (null copy-post-processing)
             `(defun ,bcopy-name (gc)
                (let ((graphics-command (,bcopy-struct-name gc)))
                  ,copy-post-processing
                  graphics-command)))
-	 ,(when (>=& boxer-command-opcode
-		     (svlength *graphics-command-copier-table*))
-	    ;; for that compile time error checking appeal
-	    (error "The *graphics-command-copier-table* is too short"))
-	 (setf (svref& *graphics-command-copier-table*
-		       ,boxer-command-opcode) ',bcopy-name)
-	 ;; this indirection is provided because we may want to
-	 ;; switch to some resource scheme for these command markers
-	 ;; instead of just consing them up on the fly
-	 (defun ,recording-function ,args
-	   (unless (not (null *supress-graphics-recording?*))
-	     ,(if optimize-recording?
-		  `(if (eq *graphics-command-recording-mode* ':boxer)
-		       (unless (check-existing-graphics-state-entries
-				,boxer-command-opcode ,@args %graphics-list)
-			 (sv-append %graphics-list (,bmake-name ,@args)))
-		       (unless (check-existing-graphics-state-entries
-				,opcode ,@args %graphics-list)
-			 (sv-append %graphics-list (,wmake-name ,@args))))
-		  `(sv-append %graphics-list
-			      (if (eq *graphics-command-recording-mode*
-				      ':boxer)
-				  (,bmake-name ,@args)
-				  (,wmake-name ,@args))))))
+   ,(when (>=& boxer-command-opcode
+         (svlength *graphics-command-copier-table*))
+      ;; for that compile time error checking appeal
+      (error "The *graphics-command-copier-table* is too short"))
+   (setf (svref& *graphics-command-copier-table*
+           ,boxer-command-opcode) ',bcopy-name)
+   ;; this indirection is provided because we may want to
+   ;; switch to some resource scheme for these command markers
+   ;; instead of just consing them up on the fly
+   (defun ,recording-function ,args
+     (unless (not (null *supress-graphics-recording?*))
+       ,(if optimize-recording?
+      `(if (eq *graphics-command-recording-mode* ':boxer)
+           (unless (check-existing-graphics-state-entries
+        ,boxer-command-opcode ,@args %graphics-list)
+       (sv-append %graphics-list (,bmake-name ,@args)))
+           (unless (check-existing-graphics-state-entries
+        ,opcode ,@args %graphics-list)
+       (sv-append %graphics-list (,wmake-name ,@args))))
+      `(sv-append %graphics-list
+            (if (eq *graphics-command-recording-mode*
+              ':boxer)
+          (,bmake-name ,@args)
+          (,wmake-name ,@args))))))
 
-	 ;; extents
-	 (defun ,window-extents-function (graphics-command)
+   ;; extents
+   (defun ,window-extents-function (graphics-command)
            (with-graphics-command-slots-bound graphics-command ,args
              ,extents-form))
-	 ,(when (>=& opcode (svlength *graphics-command-size-values-table*))
-	    ;; for that compile time error checking appeal
-	    (error "The *graphics-command-size-values-table* is too short"))
-	 (setf (svref& *graphics-command-size-values-table* ,opcode)
-	       ',window-extents-function)
-	 (defun ,boxer-extents-function (graphics-command)
+   ,(when (>=& opcode (svlength *graphics-command-size-values-table*))
+      ;; for that compile time error checking appeal
+      (error "The *graphics-command-size-values-table* is too short"))
+   (setf (svref& *graphics-command-size-values-table* ,opcode)
+         ',window-extents-function)
+   (defun ,boxer-extents-function (graphics-command)
            (with-graphics-command-slots-bound graphics-command ,args
              ,boxer-extents-form))
-	 ,(when (>=& boxer-command-opcode
-		     (svlength *graphics-command-size-values-table*))
-	    ;; for that compile time error checking appeal
-	    (error "The *graphics-command-size-values-table* is too short"))
-	 (setf (svref& *graphics-command-size-values-table*
-		       ,boxer-command-opcode)
-	       ',boxer-extents-function)
+   ,(when (>=& boxer-command-opcode
+         (svlength *graphics-command-size-values-table*))
+      ;; for that compile time error checking appeal
+      (error "The *graphics-command-size-values-table* is too short"))
+   (setf (svref& *graphics-command-size-values-table*
+           ,boxer-command-opcode)
+         ',boxer-extents-function)
 
-	 ;; record the descriptor
-	 ,(when (>=& boxer-command-opcode
-		     (svlength *graphics-command-descriptor-table*))
-	    ;; for that compile time error checking appeal
-	    (error "The *graphics-command-descriptor-table* is too short"))
-	 (setf (svref& *graphics-command-descriptor-table* ,opcode)
-	       (make-graphics-command-descriptor :name ',name
-						 :slots ',args
-						 :transform-template
-						 ',transform-template))
+   ;; record the descriptor
+   ,(when (>=& boxer-command-opcode
+         (svlength *graphics-command-descriptor-table*))
+      ;; for that compile time error checking appeal
+      (error "The *graphics-command-descriptor-table* is too short"))
+   (setf (svref& *graphics-command-descriptor-table* ,opcode)
+         (make-graphics-command-descriptor :name ',name
+             :slots ',args
+             :transform-template
+             ',transform-template))
          ;; some other macros further down need this info to be defined at
          ;; macroexpansion time.  This is not a problem for implementations which
          ;; macroexpand as they eval (depth 1st, sort of).  For implementations
@@ -804,44 +804,44 @@ Modification History (most recent at the top)
          ;; NOTE: we still need the other form to define the vars during load
          #+lispworks
          ,(progn (setf (svref& *graphics-command-descriptor-table* opcode)
-	               (make-graphics-command-descriptor :name name
-						         :slots args
-						         :transform-template
-						         transform-template))
+                 (make-graphics-command-descriptor :name name
+                     :slots args
+                     :transform-template
+                     transform-template))
             nil)
-	 ;; and the back mapping
-	 (let ((entry (fast-assq ',name *graphics-command-name-opcode-alist*)))
-	   (if (null entry)
-	       (push (cons ',name ,opcode) *graphics-command-name-opcode-alist*)
-	       (setf (cdr entry) ,opcode)))
+   ;; and the back mapping
+   (let ((entry (fast-assq ',name *graphics-command-name-opcode-alist*)))
+     (if (null entry)
+         (push (cons ',name ,opcode) *graphics-command-name-opcode-alist*)
+         (setf (cdr entry) ,opcode)))
          ;; needed for decoding during further macroexpansion
          #+lispworks
          ,(when (null (fast-assq name *graphics-command-name-opcode-alist*))
             (push (cons name opcode) *graphics-command-name-opcode-alist*)
             nil)
 
-	 (setf (svref& *graphics-command-descriptor-table*
-			 ,boxer-command-opcode)
-	       (make-graphics-command-descriptor :name ',boxer-command-name
-						 :slots ',args
-						 :transform-template
-						 ',transform-template))
+   (setf (svref& *graphics-command-descriptor-table*
+       ,boxer-command-opcode)
+         (make-graphics-command-descriptor :name ',boxer-command-name
+             :slots ',args
+             :transform-template
+             ',transform-template))
          ;; needed for decoding during further macroexpansion
          #+lispworks
          ,(progn (setf (svref& *graphics-command-descriptor-table*
                                boxer-command-opcode)
-	               (make-graphics-command-descriptor :name boxer-command-name
-						         :slots args
-						         :transform-template
-						         transform-template))
+                 (make-graphics-command-descriptor :name boxer-command-name
+                     :slots args
+                     :transform-template
+                     transform-template))
             nil)
-	 ;; and the back mapping
-	 (let ((entry (fast-assq ',boxer-command-name
-				 *graphics-command-name-opcode-alist*)))
-	   (if (null entry)
-	       (push (cons ',boxer-command-name ,boxer-command-opcode)
-		     *graphics-command-name-opcode-alist*)
-	       (setf (cdr entry) ,boxer-command-opcode)))
+   ;; and the back mapping
+   (let ((entry (fast-assq ',boxer-command-name
+         *graphics-command-name-opcode-alist*)))
+     (if (null entry)
+         (push (cons ',boxer-command-name ,boxer-command-opcode)
+         *graphics-command-name-opcode-alist*)
+         (setf (cdr entry) ,boxer-command-opcode)))
          ;; needed for decoding during further macroexpansion
          #+lispworks
          ,(when (null (fast-assq boxer-command-name
@@ -850,9 +850,9 @@ Modification History (most recent at the top)
                   *graphics-command-name-opcode-alist*)
             nil)
 
-	 ;; the default handlers for drawing the
-	 ;; objects directly into the graphics box
-	 (defun ,process-function (graphics-command)
+   ;; the default handlers for drawing the
+   ;; objects directly into the graphics box
+   (defun ,process-function (graphics-command)
            (with-graphics-command-slots-bound graphics-command ,args
              (progn ,@draw-body)))
 
@@ -865,172 +865,172 @@ Modification History (most recent at the top)
 ;	     (declare (fixnum ,@(numeric-declaration-args)))
 ;	     ,@args
 ;	     (progn ,@draw-body)))
-	 ;; now install the drawing function in the dispatch table
-	 ,(when (>=& opcode (svlength *graphics-command-dispatch-table*))
-	    ;; for that compile time error checking appeal
-	    (error "The *graphics-command-dispatch-table* is too short"))
-	 (setf (svref& *graphics-command-dispatch-table* ,opcode)
-	       ',process-function)
+   ;; now install the drawing function in the dispatch table
+   ,(when (>=& opcode (svlength *graphics-command-dispatch-table*))
+      ;; for that compile time error checking appeal
+      (error "The *graphics-command-dispatch-table* is too short"))
+   (setf (svref& *graphics-command-dispatch-table* ,opcode)
+         ',process-function)
 
-	 ;; establishes a lexical environment for a particular graphics
-	 ;; command where the slots are bound to the names of the args
-	 ;; the default handler does this by itself, these macros are for
-	 ;; the benefit of various defgraphics-handlers to use
-	 (defmacro ,window-binding-values-macro (graphics-command &body body)
-	   `(let ((.graphics-command. ,graphics-command))
-	      (let
-		  ,',(let ((idx 0))
-		       (mapcar #'(lambda (arg)
-				   (incf idx)
-				   (list arg `(svref& .graphics-command. ,idx)))
-			       args))
-		(declare (fixnum . ,',(numeric-declaration-args)))
-		;; prevent bound but never used errors
-		(progn . ,',args)
-		;; define local mutators...
-		(expand-mutators-and-body ,',args 1 ,@body))))
-	 ;; now install it
-	 ,(when (>=& opcode (svlength  *graphics-command-binding-values-table*))
-	    ;; for that compile time error checking appeal
-	    (error "The  *graphics-command-binding-values-table* is too short"))
-	 (setf (svref&  *graphics-command-binding-values-table* ,opcode)
-	       ',window-binding-values-macro)
+   ;; establishes a lexical environment for a particular graphics
+   ;; command where the slots are bound to the names of the args
+   ;; the default handler does this by itself, these macros are for
+   ;; the benefit of various defgraphics-handlers to use
+   (defmacro ,window-binding-values-macro (graphics-command &body body)
+     `(let ((.graphics-command. ,graphics-command))
+        (let
+      ,',(let ((idx 0))
+           (mapcar #'(lambda (arg)
+           (incf idx)
+           (list arg `(svref& .graphics-command. ,idx)))
+             args))
+    (declare (fixnum . ,',(numeric-declaration-args)))
+    ;; prevent bound but never used errors
+    (progn . ,',args)
+    ;; define local mutators...
+    (expand-mutators-and-body ,',args 1 ,@body))))
+   ;; now install it
+   ,(when (>=& opcode (svlength  *graphics-command-binding-values-table*))
+      ;; for that compile time error checking appeal
+      (error "The  *graphics-command-binding-values-table* is too short"))
+   (setf (svref&  *graphics-command-binding-values-table* ,opcode)
+         ',window-binding-values-macro)
 
-	 (defmacro ,boxer-binding-values-macro (graphics-command &body body)
-	   `(let ((.graphics-command. ,graphics-command))
-	      (let
-		  ,',(let ((idx 0))
-		       (mapcar #'(lambda (arg)
-				   (incf idx)
-				   (list arg `(svref& .graphics-command. ,idx)))
-			       args))
-		(declare (type boxer-float . ,',(numeric-declaration-args)))
-		;; prevent bound but never used errors
-		(progn . ,',args)
-		;; define local mutators...
-		(expand-mutators-and-body ,',args 1 ,@body))))
-	 ;; now install it
-	 ,(when (>=& boxer-command-opcode
-		     (svlength  *graphics-command-binding-values-table*))
-	    ;; for that compile time error checking appeal
-	    (error "The  *graphics-command-binding-values-table* is too short"))
-	 (setf (svref&  *graphics-command-binding-values-table*
-			,boxer-command-opcode) ',boxer-binding-values-macro)
+   (defmacro ,boxer-binding-values-macro (graphics-command &body body)
+     `(let ((.graphics-command. ,graphics-command))
+        (let
+      ,',(let ((idx 0))
+           (mapcar #'(lambda (arg)
+           (incf idx)
+           (list arg `(svref& .graphics-command. ,idx)))
+             args))
+    (declare (type boxer-float . ,',(numeric-declaration-args)))
+    ;; prevent bound but never used errors
+    (progn . ,',args)
+    ;; define local mutators...
+    (expand-mutators-and-body ,',args 1 ,@body))))
+   ;; now install it
+   ,(when (>=& boxer-command-opcode
+         (svlength  *graphics-command-binding-values-table*))
+      ;; for that compile time error checking appeal
+      (error "The  *graphics-command-binding-values-table* is too short"))
+   (setf (svref&  *graphics-command-binding-values-table*
+      ,boxer-command-opcode) ',boxer-binding-values-macro)
 
-	 ;; if we move to a resource scheme, this will be useful and we
-	 ;; will have to install it into its own dispatch table like the
-	 ;; drawing functions
-	 (defun ,wdeallocate-function ,deallocate-args
+   ;; if we move to a resource scheme, this will be useful and we
+   ;; will have to install it into its own dispatch table like the
+   ;; drawing functions
+   (defun ,wdeallocate-function ,deallocate-args
            (with-graphics-command-slots-bound ,(car deallocate-args) ,args
              ,deallocate-form))
-	 ;; install it
-	 ,(when (>=& opcode (svlength *graphics-command-deallocation-table*))
-	    ;; for that compile time error checking appeal
-	    (error "The *graphics-command-deallocation-table* is too short"))
-	 (setf (svref& *graphics-command-deallocation-table* ,opcode)
-	       ',wdeallocate-function)
+   ;; install it
+   ,(when (>=& opcode (svlength *graphics-command-deallocation-table*))
+      ;; for that compile time error checking appeal
+      (error "The *graphics-command-deallocation-table* is too short"))
+   (setf (svref& *graphics-command-deallocation-table* ,opcode)
+         ',wdeallocate-function)
 
-	 (defun ,bdeallocate-function ,deallocate-args
+   (defun ,bdeallocate-function ,deallocate-args
            (with-graphics-command-slots-bound ,(car deallocate-args) ,args
              ,deallocate-form))
-	 ;; install it
-	 ,(when (>=& boxer-command-opcode
-		     (svlength *graphics-command-deallocation-table*))
-	    ;; for that compile time error checking appeal
-	    (error "The *graphics-command-deallocation-table* is too short"))
-	 (setf (svref& *graphics-command-deallocation-table*
-		       ,boxer-command-opcode)
-	       ',bdeallocate-function)
+   ;; install it
+   ,(when (>=& boxer-command-opcode
+         (svlength *graphics-command-deallocation-table*))
+      ;; for that compile time error checking appeal
+      (error "The *graphics-command-deallocation-table* is too short"))
+   (setf (svref& *graphics-command-deallocation-table*
+           ,boxer-command-opcode)
+         ',bdeallocate-function)
 
-	 ;; Conversion functions from Window->Boxer coordinates and back
-	 ;; these rely on being called within a with-graphics-vars-bound
-	 (defun ,window->boxer-name (window-command)
+   ;; Conversion functions from Window->Boxer coordinates and back
+   ;; these rely on being called within a with-graphics-vars-bound
+   (defun ,window->boxer-name (window-command)
            (let ((graphics-command
-	          (,bmake-name ,@(let ((idx 0))
-			           (mapcar #'(lambda (arg)
-					       (declare (ignore arg))
-					       (incf idx)
-					       (expand-transform-template-item
-					        `(svref& window-command ,idx)
-					        (nth (1- idx) transform-template)
-					        ':window->boxer))
-				           args)))))
+            (,bmake-name ,@(let ((idx 0))
+                 (mapcar #'(lambda (arg)
+                 (declare (ignore arg))
+                 (incf idx)
+                 (expand-transform-template-item
+                  `(svref& window-command ,idx)
+                  (nth (1- idx) transform-template)
+                  ':window->boxer))
+                   args)))))
              ,copy-post-processing
              graphics-command))
-	 ;; install it
-	 (setf (svref& *graphics-command-window->boxer-translation-table*
-		       ,opcode)
-	       ',window->boxer-name)
-	 (defun ,boxer->window-name (boxer-graphics-command)
+   ;; install it
+   (setf (svref& *graphics-command-window->boxer-translation-table*
+           ,opcode)
+         ',window->boxer-name)
+   (defun ,boxer->window-name (boxer-graphics-command)
            (let ((graphics-command
-	          (,wmake-name ,@(let ((idx 0))
-			           (mapcar #'(lambda (arg)
-					       (declare (ignore arg))
-					       (incf idx)
-					       (expand-transform-template-item
-					        `(svref& boxer-graphics-command ,idx)
-					        (nth (1- idx) transform-template)
-					        ':boxer->window))
-				           args)))))
+            (,wmake-name ,@(let ((idx 0))
+                 (mapcar #'(lambda (arg)
+                 (declare (ignore arg))
+                 (incf idx)
+                 (expand-transform-template-item
+                  `(svref& boxer-graphics-command ,idx)
+                  (nth (1- idx) transform-template)
+                  ':boxer->window))
+                   args)))))
              ,copy-post-processing
              graphics-command))
-	 (setf (svref& *graphics-command-boxer->window-translation-table*
-		       ,opcode)
-	       ',boxer->window-name)
+   (setf (svref& *graphics-command-boxer->window-translation-table*
+           ,opcode)
+         ',boxer->window-name)
 
-	 ;; File system interface
-	 (defun ,dump-function-name ,dump-args
-	   ,@(arglist-argnames dump-args)
-	   ,dump-form)
-	 (setf (svref& *graphics-command-dumper-dispatch-table* ,opcode)
-	       ',dump-function-name
+   ;; File system interface
+   (defun ,dump-function-name ,dump-args
+     ,@(arglist-argnames dump-args)
+     ,dump-form)
+   (setf (svref& *graphics-command-dumper-dispatch-table* ,opcode)
+         ',dump-function-name
                (svref& *graphics-command-dumper-dispatch-table*
                        ,boxer-command-opcode)
-	       ',dump-function-name)
-	 (defun ,load-function-name ,load-args
-	   ,@(arglist-argnames load-args)
-	   ,load-form)
-	 (setf (svref& *graphics-command-loader-dispatch-table* ,opcode)
-	       ',load-function-name
+         ',dump-function-name)
+   (defun ,load-function-name ,load-args
+     ,@(arglist-argnames load-args)
+     ,load-form)
+   (setf (svref& *graphics-command-loader-dispatch-table* ,opcode)
+         ',load-function-name
                (svref& *graphics-command-loader-dispatch-table*
                        ,boxer-command-opcode)
-	       ',load-function-name)
+         ',load-function-name)
 
-	 ;; back translation to sprite commands
-	 (defun ,sprite-command-translator-name (command)
-	   (declare (special last-x last-y))
+   ;; back translation to sprite commands
+   (defun ,sprite-command-translator-name (command)
+     (declare (special last-x last-y))
            (with-graphics-command-slots-bound command ,args
              ,sprite-command))
-	 (setf (svref& *graphics-command-sprite-command-translation-table*
-		       ,opcode)
-	       ',sprite-command-translator-name)
+   (setf (svref& *graphics-command-sprite-command-translation-table*
+           ,opcode)
+         ',sprite-command-translator-name)
 
-	 ;; now make the function for drawing on the window (that also records)
-	 (defun ,name ,args
-	   ,@args
-	   (progn ,@draw-body))
+   ;; now make the function for drawing on the window (that also records)
+   (defun ,name ,args
+     ,@args
+     (progn ,@draw-body))
 
-	 ;; finally return the name (as opposed to random returned values)
-	 ',name))))
+   ;; finally return the name (as opposed to random returned values)
+   ',name))))
 
 ) ; eval-when
 
 ;;; this is mostly for readability
 ;; (eval (compile load eval)
 (defmacro defgraphics-state-change ((name opcode) args
-				    &key
+            &key
                                     extents-form boxer-extents-form
-				    (dump-args '(command stream &optional
-						 (type :turtle-shape)))
-				    (dump-form
-				     '(dump-boxer-thing command stream))
-				    (load-args '(command &optional
-						 (type :turtle-shape)))
-				    (load-form 'command)
+            (dump-args '(command stream &optional
+             (type :turtle-shape)))
+            (dump-form
+             '(dump-boxer-thing command stream))
+            (load-args '(command &optional
+             (type :turtle-shape)))
+            (load-form 'command)
                                     (deallocate-args '(graphics-command))
                                     (deallocate-form 'graphics-command)
-				    sprite-command
-				    body)
+            sprite-command
+            body)
   `(defgraphics-command (,name ,opcode t)
        ,args
      ,(or extents-form '(progn graphics-command (values 0 0 0 0 t)))
@@ -1044,43 +1044,43 @@ Modification History (most recent at the top)
 ;; )
 
 (defmacro defgraphics-handler ((name &optional
-				     (table
-				      '*graphics-command-translation-table*))
-			       extra-args &body body)
+             (table
+              '*graphics-command-translation-table*))
+             extra-args &body body)
   (let ((handler-name (intern (symbol-format nil "~A Graphics Handler ~A"
-				      name (gensym))))
-	(handler-opcode (graphics-command-opcode name)))
+              name (gensym))))
+  (handler-opcode (graphics-command-opcode name)))
     ;; some of that ole' compile time error checking appeal...
     (cond ((null table)
-	   (error "Need a table to put the handlers in"))
-	  ((vectorp table)
-	   (when (>= handler-opcode (svlength table))
-	     (error "The table, ~A, is too short for an opcode of ~D"
-		    table handler-opcode)))
-	  ((symbolp table)
-	   (let ((value (symbol-value table)))
-	     (if (vectorp value)
-		 (when (>= handler-opcode (svlength value))
-		   (error "The table, ~A, is too short for an opcode of ~D"
-			  table handler-opcode))
-		 (error "Hey, ~A doesn't look like a handler table"))))
-	  (t (error "fooey !")))
+     (error "Need a table to put the handlers in"))
+    ((vectorp table)
+     (when (>= handler-opcode (svlength table))
+       (error "The table, ~A, is too short for an opcode of ~D"
+        table handler-opcode)))
+    ((symbolp table)
+     (let ((value (symbol-value table)))
+       (if (vectorp value)
+     (when (>= handler-opcode (svlength value))
+       (error "The table, ~A, is too short for an opcode of ~D"
+        table handler-opcode))
+     (error "Hey, ~A doesn't look like a handler table"))))
+    (t (error "fooey !")))
     (cond ((null body)
-	   ;; a null body means that we should copy the default handler
-	   `(if (null (svref& *graphics-command-dispatch-table*
-			      ,handler-opcode))
-		(error "There is NO default command for ~S" ',name)
-		(setf (svref& ,table ,handler-opcode)
-		      (svref& *graphics-command-dispatch-table*
-			      ,handler-opcode))))
-	  (t
-	   `(progn
-	      (defun ,handler-name (graphics-command . ,extra-args)
-		,@extra-args
-		(graphics-command-values ,name graphics-command
-					 . ,body))
-	      (setf (svref& ,table ,handler-opcode) ',handler-name)
-	      ',name)))))
+     ;; a null body means that we should copy the default handler
+     `(if (null (svref& *graphics-command-dispatch-table*
+            ,handler-opcode))
+    (error "There is NO default command for ~S" ',name)
+    (setf (svref& ,table ,handler-opcode)
+          (svref& *graphics-command-dispatch-table*
+            ,handler-opcode))))
+    (t
+     `(progn
+        (defun ,handler-name (graphics-command . ,extra-args)
+    ,@extra-args
+    (graphics-command-values ,name graphics-command
+           . ,body))
+        (setf (svref& ,table ,handler-opcode) ',handler-name)
+        ',name)))))
 
 
 ;;; Used to define arbitrary transformations between the boxer/floating
@@ -1096,52 +1096,52 @@ Modification History (most recent at the top)
 ;;;
 (eval-when (compile load eval)
 (defmacro defgraphics-translator ((name &optional
-					(table '*turtle-translation-table*)
-					(direction :boxer->window))
-				  extra-args translation-clauses)
+          (table '*turtle-translation-table*)
+          (direction :boxer->window))
+          extra-args translation-clauses)
   (let* ((handler-name (intern (symbol-format nil "~A Graphics Translator ~A"
-				       name (gensym))))
-	 (handler-opcode (if (eq direction :window->boxer)
-			     (graphics-command-opcode name)
-			     (+ (graphics-command-opcode name)
-				*boxer-graphics-command-mask*)))
-	 (command-descriptor (get-graphics-command-descriptor handler-opcode))
-	 (template (graphics-command-descriptor-transform-template
-		    command-descriptor))
+               name (gensym))))
+   (handler-opcode (if (eq direction :window->boxer)
+           (graphics-command-opcode name)
+           (+ (graphics-command-opcode name)
+        *boxer-graphics-command-mask*)))
+   (command-descriptor (get-graphics-command-descriptor handler-opcode))
+   (template (graphics-command-descriptor-transform-template
+        command-descriptor))
         )
     ;; some of that ole' compile time error checking appeal...
     (cond ((null table)
-	   (error "Need a table to put the handlers in"))
-	  ((vectorp table)
-	   (when (>= handler-opcode (svlength table))
-	     (error "The table, ~A, is too short for an opcode of ~D"
-		    table handler-opcode)))
-	  ((symbolp table)
-	   (let ((value (symbol-value table)))
-	     (if (vectorp value)
-		 (when (>= handler-opcode (svlength value))
-		   (error "The table, ~A, is too short for an opcode of ~D"
-			  table handler-opcode))
-		 (error "Hey, ~A doesn't look like a handler table"))))
-	  (t (error "fooey !")))
+     (error "Need a table to put the handlers in"))
+    ((vectorp table)
+     (when (>= handler-opcode (svlength table))
+       (error "The table, ~A, is too short for an opcode of ~D"
+        table handler-opcode)))
+    ((symbolp table)
+     (let ((value (symbol-value table)))
+       (if (vectorp value)
+     (when (>= handler-opcode (svlength value))
+       (error "The table, ~A, is too short for an opcode of ~D"
+        table handler-opcode))
+     (error "Hey, ~A doesn't look like a handler table"))))
+    (t (error "fooey !")))
     `(progn
        (defun ,handler-name (from-gc to-gc . ,extra-args)
-	 ,@extra-args   ;; handle bound but never used errors
-	 (graphics-command-values ,handler-opcode from-gc
-	    ,@(with-collection
-		  (dolist (slot (graphics-command-descriptor-slots
-				 command-descriptor))
-		    (let ((tform (assoc slot translation-clauses))
-			  (offset (graphics-command-slot-offset
-				   command-descriptor slot)))
-		      (collect
-		       `(setf (svref& to-gc ,offset)
-			      ,(if (not (null tform))
-				   (cadr tform)
-				   (let ((template-action (nth (1- offset)
-							       template)))
-				     (expand-transform-template-item
-				      slot template-action direction))))))))))
+   ,@extra-args   ;; handle bound but never used errors
+   (graphics-command-values ,handler-opcode from-gc
+      ,@(with-collection
+      (dolist (slot (graphics-command-descriptor-slots
+         command-descriptor))
+        (let ((tform (assoc slot translation-clauses))
+        (offset (graphics-command-slot-offset
+           command-descriptor slot)))
+          (collect
+           `(setf (svref& to-gc ,offset)
+            ,(if (not (null tform))
+           (cadr tform)
+           (let ((template-action (nth (1- offset)
+                     template)))
+             (expand-transform-template-item
+              slot template-action direction))))))))))
        (setf (svref& ,table ,handler-opcode) ',handler-name)
        ',handler-name)))
 
@@ -1175,32 +1175,32 @@ Modification History (most recent at the top)
 ;;;
 
 (defmacro defstandard-graphics-handlers ((name opcode)
-					 &key
-					 command-args
-					 extents-form
-					 (boxer-extents-form extents-form)
-					 (dump-args '(command stream &optional
-						      (type :turtle-shape)))
-					 (dump-form
-					  '(dump-boxer-thing command stream))
-					 (load-args '(command &optional
-						      (type :turtle-shape)))
-					 (load-form 'command)
-					 sprite-command
-					 transformation-template
+           &key
+           command-args
+           extents-form
+           (boxer-extents-form extents-form)
+           (dump-args '(command stream &optional
+                  (type :turtle-shape)))
+           (dump-form
+            '(dump-boxer-thing command stream))
+           (load-args '(command &optional
+                  (type :turtle-shape)))
+           (load-form 'command)
+           sprite-command
+           transformation-template
                                          copy-post-processing
-					 command-body
-					 translation-args
-					 translation-body
-					 translation-and-scaling-args
-					 translation-and-scaling-body
-					 turtle-translator-args
-					 turtle-translator-clauses
+           command-body
+           translation-args
+           translation-body
+           translation-and-scaling-args
+           translation-and-scaling-body
+           turtle-translator-args
+           turtle-translator-clauses
                                          (deallocate-args '(graphics-command))
                                          (deallocate-form 'graphics-command))
   `(progn
      (defgraphics-command (,name ,opcode)
-	 ,command-args
+   ,command-args
        ,extents-form ,boxer-extents-form
        ,dump-args ,dump-form ,load-args ,load-form
        ,deallocate-args ,deallocate-form
@@ -1208,14 +1208,14 @@ Modification History (most recent at the top)
        ,transformation-template ,copy-post-processing
        ,command-body)
      (defgraphics-handler (,name *graphics-command-translation-table*)
-	                  ,translation-args
+                    ,translation-args
        ,translation-body)
      (defgraphics-handler (,name
-			   *graphics-command-translation-and-scaling-table*)
-	                  ,translation-and-scaling-args
+         *graphics-command-translation-and-scaling-table*)
+                    ,translation-and-scaling-args
        ,translation-and-scaling-body)
      (defgraphics-translator (,name)
-	 ,turtle-translator-args ,turtle-translator-clauses)))
+   ,turtle-translator-args ,turtle-translator-clauses)))
 
 
 
@@ -1242,32 +1242,32 @@ Modification History (most recent at the top)
 
 (def-redisplay-initialization ; :turtle-shape
     (setq *default-graphics-object-shape*
-	  (let ((%graphics-list (make-turtle-shape 8))
-		(*graphics-command-recording-mode* ':boxer))
+    (let ((%graphics-list (make-turtle-shape 8))
+    (*graphics-command-recording-mode* ':boxer))
             (record-boxer-graphics-command-change-alu alu-seta)
-	    (record-boxer-graphics-command-change-pen-width 1)
-	    (record-boxer-graphics-command-centered-rectangle
-	     0.0 0.0
-	     *default-graphics-object-size* *default-graphics-object-size*)
-	    %graphics-list)
-	  *default-turtle-shape*
-	  (let ((%graphics-list (make-turtle-shape 8))
-		(*graphics-command-recording-mode* ':boxer))
+      (record-boxer-graphics-command-change-pen-width 1)
+      (record-boxer-graphics-command-centered-rectangle
+       0.0 0.0
+       *default-graphics-object-size* *default-graphics-object-size*)
+      %graphics-list)
+    *default-turtle-shape*
+    (let ((%graphics-list (make-turtle-shape 8))
+    (*graphics-command-recording-mode* ':boxer))
             (record-boxer-graphics-command-change-alu alu-seta)
-	    (record-boxer-graphics-command-change-pen-width 1)
-	    ;; the base line
-	    (record-boxer-graphics-command-line-segment
-	     (- *turtle-half-base*) (- (/ *turtle-height* 3.0))
-	     *turtle-half-base* (- (/ *turtle-height* 3.0)))
-	    ;; the right side
-	    (record-boxer-graphics-command-line-segment
-	     *turtle-half-base* (- (/ *turtle-height* 3.0))
-	     0.0 (* 2 (/ *turtle-height* 3)))
-	    ;; the left side
-	    (record-boxer-graphics-command-line-segment
-	     0.0 (* 2 (/ *turtle-height* 3))
-	     (- *turtle-half-base*) (- (/ *turtle-height* 3.0)))
-	    %graphics-list)))
+      (record-boxer-graphics-command-change-pen-width 1)
+      ;; the base line
+      (record-boxer-graphics-command-line-segment
+       (- *turtle-half-base*) (- (/ *turtle-height* 3.0))
+       *turtle-half-base* (- (/ *turtle-height* 3.0)))
+      ;; the right side
+      (record-boxer-graphics-command-line-segment
+       *turtle-half-base* (- (/ *turtle-height* 3.0))
+       0.0 (* 2 (/ *turtle-height* 3)))
+      ;; the left side
+      (record-boxer-graphics-command-line-segment
+       0.0 (* 2 (/ *turtle-height* 3))
+       (- *turtle-half-base*) (- (/ *turtle-height* 3.0)))
+      %graphics-list)))
 
 ;;; puts a graphics list into the initial state by issuing
 ;;; state changing commands when neccessary
@@ -1276,19 +1276,19 @@ Modification History (most recent at the top)
 (defun canonicalize-graphics-state (gl)
   (let ((%graphics-list gl))
     (unless (=& (graphics-command-list-alu gl)
-		*initial-graphics-state-current-alu*)
+    *initial-graphics-state-current-alu*)
       (record-boxer-graphics-command-change-alu
        *initial-graphics-state-current-alu*))
     (unless (=& (graphics-command-list-pen-width gl)
-		*initial-graphics-state-current-pen-width*)
+    *initial-graphics-state-current-pen-width*)
       (record-boxer-graphics-command-change-pen-width
        *initial-graphics-state-current-pen-width*))
     (unless (color= (graphics-command-list-pen-color gl)
-	       *initial-graphics-state-current-pen-color*)
+         *initial-graphics-state-current-pen-color*)
       (record-boxer-graphics-command-change-graphics-color
        *initial-graphics-state-current-pen-color*))
     (unless (=& (graphics-command-list-font-no gl)
-		*initial-graphics-state-current-font-no*)
+    *initial-graphics-state-current-font-no*)
       (record-boxer-graphics-command-change-graphics-font
        *initial-graphics-state-current-font-no*))))
 
@@ -1302,62 +1302,62 @@ Modification History (most recent at the top)
   (let ((al (storage-vector-active-length graphics-list)))
     (unless (zerop& al)
       (let ((last-entry (sv-nth (1-& al) graphics-list)))
-	(cond ((=& opcode (svref& last-entry 0))
-	       (setf (svref& last-entry 1) new-value)
-	       T)
-	      (t nil))))))
+  (cond ((=& opcode (svref& last-entry 0))
+         (setf (svref& last-entry 1) new-value)
+         T)
+        (t nil))))))
 
 (defmacro with-graphics-state ((gcl &optional use-initial-values) &body body)
   (let ((old-pen-width (gensym))
-	(old-pen-color (gensym))
-	(old-font-no (gensym)))
+  (old-pen-color (gensym))
+  (old-font-no (gensym)))
     `(let ((*graphics-state-current-alu* *initial-graphics-state-current-alu*)
-	   (*graphics-state-current-font-no*
-	    *initial-graphics-state-current-font-no*)
-	   (,old-pen-width *graphics-state-current-pen-width*)
-	   (*graphics-state-current-pen-width*
-	    *initial-graphics-state-current-pen-width*)
-	   (,old-pen-color *graphics-state-current-pen-color*)
-	   (*graphics-state-current-pen-color*
-	    *initial-graphics-state-current-pen-color*)
-	   (,old-font-no *graphics-state-current-font-no*))
+     (*graphics-state-current-font-no*
+      *initial-graphics-state-current-font-no*)
+     (,old-pen-width *graphics-state-current-pen-width*)
+     (*graphics-state-current-pen-width*
+      *initial-graphics-state-current-pen-width*)
+     (,old-pen-color *graphics-state-current-pen-color*)
+     (*graphics-state-current-pen-color*
+      *initial-graphics-state-current-pen-color*)
+     (,old-font-no *graphics-state-current-font-no*))
        (unwind-protect
-	    (progn
-	      (unless (null ,gcl)
-		,(when (null use-initial-values)
-		     `(setq *graphics-state-current-alu*
-			    (graphics-command-list-alu ,gcl)
-			    *graphics-state-current-font-no*
-			    (or (graphics-command-list-font-no ,gcl)
-				*graphics-state-current-font-no*)
-			    *graphics-state-current-pen-width*
-			    (or (graphics-command-list-pen-width ,gcl)
-				*graphics-state-current-pen-width*)
-			    *graphics-state-current-pen-color*
-			    (or (graphics-command-list-pen-color ,gcl)
-				*graphics-state-current-pen-color*)))
-		(when (not (=& ,old-pen-width
-			       *graphics-state-current-pen-width*))
-		  (%set-pen-size *graphics-state-current-pen-width*))
-		(when (not (color= ,old-pen-color
-			      *graphics-state-current-pen-color*))
-		  (%set-pen-color *graphics-state-current-pen-color*)))
-		   . ,body)
-	 (unless (null ,gcl)
-	   (setf (graphics-command-list-alu ,gcl) *graphics-state-current-alu*)
-	   (setf (graphics-command-list-font-no ,gcl)
-		 *graphics-state-current-font-no*)
-	   (setf (graphics-command-list-pen-width ,gcl)
-		 *graphics-state-current-pen-width*)
-	   (setf (graphics-command-list-pen-color ,gcl)
-		 *graphics-state-current-pen-color*)
-	   ;; restore any state variables that
-	   ;; might have been bashed in the body
+      (progn
+        (unless (null ,gcl)
+    ,(when (null use-initial-values)
+         `(setq *graphics-state-current-alu*
+          (graphics-command-list-alu ,gcl)
+          *graphics-state-current-font-no*
+          (or (graphics-command-list-font-no ,gcl)
+        *graphics-state-current-font-no*)
+          *graphics-state-current-pen-width*
+          (or (graphics-command-list-pen-width ,gcl)
+        *graphics-state-current-pen-width*)
+          *graphics-state-current-pen-color*
+          (or (graphics-command-list-pen-color ,gcl)
+        *graphics-state-current-pen-color*)))
+    (when (not (=& ,old-pen-width
+             *graphics-state-current-pen-width*))
+      (%set-pen-size *graphics-state-current-pen-width*))
+    (when (not (color= ,old-pen-color
+            *graphics-state-current-pen-color*))
+      (%set-pen-color *graphics-state-current-pen-color*)))
+       . ,body)
+   (unless (null ,gcl)
+     (setf (graphics-command-list-alu ,gcl) *graphics-state-current-alu*)
+     (setf (graphics-command-list-font-no ,gcl)
+     *graphics-state-current-font-no*)
+     (setf (graphics-command-list-pen-width ,gcl)
+     *graphics-state-current-pen-width*)
+     (setf (graphics-command-list-pen-color ,gcl)
+     *graphics-state-current-pen-color*)
+     ;; restore any state variables that
+     ;; might have been bashed in the body
            ,old-font-no ; placeholder and to supress warnings
-	   (when (not (=& ,old-pen-width *graphics-state-current-pen-width*))
-	     (%set-pen-size ,old-pen-width))
-	   (when (not (color= ,old-pen-color *graphics-state-current-pen-color*))
-	     (%set-pen-color ,old-pen-color)))))))
+     (when (not (=& ,old-pen-width *graphics-state-current-pen-width*))
+       (%set-pen-size ,old-pen-width))
+     (when (not (color= ,old-pen-color *graphics-state-current-pen-color*))
+       (%set-pen-color ,old-pen-color)))))))
 
 ;; a lightweight version of with-graphics-state.  Only the value of the
 ;; variables should be changed in the BODY (and NOT the window system's
@@ -1378,37 +1378,37 @@ Modification History (most recent at the top)
 (defun update-graphics-state (agent)
   (let ((pen (pen agent)))
     (cond ((null %graphics-list))
-	  ((not (graphics-command-list? %graphics-list))
-	   (error "%graphics-list, ~A, is not bound to a Graphics Command List"
-		  %graphics-list))
-	  ((eq agent (graphics-command-list-agent %graphics-list))
-	   ;; if the agent is the same, then we do nothing, except
+    ((not (graphics-command-list? %graphics-list))
+     (error "%graphics-list, ~A, is not bound to a Graphics Command List"
+      %graphics-list))
+    ((eq agent (graphics-command-list-agent %graphics-list))
+     ;; if the agent is the same, then we do nothing, except
            ;; updating the penerase color if neccessary
            (let ((bgc nil)) ;; stack allocation
              (when (and (eq pen 'bu::erase)
                         (not (color= *graphics-state-current-pen-color*
                                      (setq bgc (background-graphics-color agent)))))
-	       (record-boxer-graphics-command-change-graphics-color bgc)
+         (record-boxer-graphics-command-change-graphics-color bgc)
                (setf (graphics-command-list-pen-color %graphics-list) bgc)
-	       (change-graphics-color bgc))))
-	  ((eq pen 'bu::up)) ; the agent might do a PD
-	  ;; if the agent is not drawing, do nothing
-	  ;; also need a clause here for agents that do not use pens
-	  (t
-	   ;; otherwise, we need to update the graphics
-	   ;; state from the values of the agent
-	   (setf (graphics-command-list-agent %graphics-list) agent)
-	   (synchronize-graphics-state agent)))))
+         (change-graphics-color bgc))))
+    ((eq pen 'bu::up)) ; the agent might do a PD
+    ;; if the agent is not drawing, do nothing
+    ;; also need a clause here for agents that do not use pens
+    (t
+     ;; otherwise, we need to update the graphics
+     ;; state from the values of the agent
+     (setf (graphics-command-list-agent %graphics-list) agent)
+     (synchronize-graphics-state agent)))))
 
 (defun reset-graphics-list-values (gl)
   (setf (graphics-command-list-agent gl) nil
-	(graphics-command-list-alu gl) *initial-graphics-state-current-alu*
-	(graphics-command-list-pen-width gl)
-	*initial-graphics-state-current-pen-width*
-	(graphics-command-list-font-no gl)
-	*initial-graphics-state-current-font-no*
-	(graphics-command-list-pen-color gl)
-	*initial-graphics-state-current-pen-color*)
+  (graphics-command-list-alu gl) *initial-graphics-state-current-alu*
+  (graphics-command-list-pen-width gl)
+  *initial-graphics-state-current-pen-width*
+  (graphics-command-list-font-no gl)
+  *initial-graphics-state-current-font-no*
+  (graphics-command-list-pen-color gl)
+  *initial-graphics-state-current-pen-color*)
   gl)
 
 
@@ -1416,8 +1416,8 @@ Modification History (most recent at the top)
 ;;;; Operations on Graphics Command Lists
 
 (defun make-graphics-command-list (&optional
-				   (length
-				    *default-graphics-list-initial-length*))
+           (length
+            *default-graphics-list-initial-length*))
   (%%make-graphics-command-list :contents (allocate-c-vector length)))
 
 (defun clear-graphics-list (gl)
@@ -1428,18 +1428,18 @@ Modification History (most recent at the top)
 
 (defun copy-graphics-command-list-state (old-graphics-list new-graphics-list)
   (setf (graphics-command-list-alu new-graphics-list)
-	(graphics-command-list-alu old-graphics-list))
+  (graphics-command-list-alu old-graphics-list))
   (setf (graphics-command-list-pen-width new-graphics-list)
-	(graphics-command-list-pen-width old-graphics-list))
+  (graphics-command-list-pen-width old-graphics-list))
   (setf (graphics-command-list-font-no new-graphics-list)
-	(graphics-command-list-font-no old-graphics-list))
+  (graphics-command-list-font-no old-graphics-list))
   (setf (graphics-command-list-pen-color new-graphics-list)
-	(graphics-command-list-pen-color old-graphics-list)))
+  (graphics-command-list-pen-color old-graphics-list)))
 
 (defun copy-graphics-command-list (command-list)
   (let* ((command-list-length (storage-vector-active-length command-list))
-	 (new-list (make-graphics-command-list (1+& command-list-length)))
-	 (new-contents (%sv-contents new-list)))
+   (new-list (make-graphics-command-list (1+& command-list-length)))
+   (new-contents (%sv-contents new-list)))
     (copy-graphics-command-list-state command-list new-list)
     (do-vector-contents (item command-list :index-var-name idx)
       (setf (svref& new-contents idx) (copy-graphics-command item)))
@@ -1448,15 +1448,15 @@ Modification History (most recent at the top)
 
 
 (defun make-turtle-shape (&optional (length
-				     *default-graphics-list-initial-length*))
+             *default-graphics-list-initial-length*))
   (%%make-turtle-shape :contents (allocate-c-vector length)))
 
 (defun make-turtle-window-shape (&optional (shape *default-turtle-shape*))
   (let ((tws (%%make-turtle-window-shape
-	      :contents (allocate-c-vector
-			 (storage-vector-max-length shape)))))
+        :contents (allocate-c-vector
+       (storage-vector-max-length shape)))))
     (do-vector-contents (gc shape)
-	(sv-append tws (allocate-boxer->window-command gc)))
+  (sv-append tws (allocate-boxer->window-command gc)))
     tws))
 
 
@@ -1465,11 +1465,11 @@ Modification History (most recent at the top)
     (translate-graphics-command graphics-command trans-x trans-y)))
 
 (defun translate-and-scale-graphics-command-list (gl trans-x trans-y
-						     scale-x scale-y)
+                 scale-x scale-y)
   (do-vector-contents (graphics-command gl)
     (translate-and-scale-graphics-command graphics-command
-					  trans-x trans-y
-					  scale-x scale-y)))
+            trans-x trans-y
+            scale-x scale-y)))
 
 ;;; should go somewhere else eventually, doesn't hack clipping
 ;;; should also handle "boxer-bit-gravity" eventually , for now,
@@ -1487,19 +1487,19 @@ Modification History (most recent at the top)
 ;; the memory with every twitch of the mouse
 (defun resize-graphics-sheet (sheet new-wid new-hei)
   (let* ((old-wid (graphics-sheet-draw-wid sheet))
-	 (old-hei (graphics-sheet-draw-hei sheet))
-	 (wid-scale (/ new-wid (float old-wid)))
-	 (hei-scale (/ new-hei (float old-hei))))
+   (old-hei (graphics-sheet-draw-hei sheet))
+   (wid-scale (/ new-wid (float old-wid)))
+   (hei-scale (/ new-hei (float old-hei))))
     (when (and *update-bitmap?* (not (null (graphics-sheet-bit-array sheet))))
       (let ((old-bitmap (graphics-sheet-bit-array sheet))
-	    (new-bitmap (make-offscreen-bitmap *boxer-pane*
-					       new-wid new-hei)))
-	;; if the new bitmap is bigger, initialize it
-	(when (or (> new-wid old-wid) (> new-hei old-hei))
+      (new-bitmap (make-offscreen-bitmap *boxer-pane*
+                 new-wid new-hei)))
+  ;; if the new bitmap is bigger, initialize it
+  (when (or (> new-wid old-wid) (> new-hei old-hei))
           #-opengl
-	  (drawing-on-bitmap (new-bitmap)
-	     (with-pen-color ((or (graphics-sheet-background sheet) *background-color*))
-		 (draw-rectangle alu-seta new-wid new-hei 0 0)))
+    (drawing-on-bitmap (new-bitmap)
+       (with-pen-color ((or (graphics-sheet-background sheet) *background-color*))
+     (draw-rectangle alu-seta new-wid new-hei 0 0)))
           #+opengl
           (clear-offscreen-bitmap new-bitmap (or (graphics-sheet-background sheet)
                                                  *background-color*))
@@ -1536,51 +1536,51 @@ Modification History (most recent at the top)
             (max& 0 (round (-& new-wid old-wid) 2))
             (max& 0 (round (-& new-hei old-hei) 2)))))
         ;; now install the new bitmap
-	(setf (graphics-sheet-bit-array sheet) new-bitmap)
-	;; we might not want to do this if sprites are allowed to have
-	;; pointers to raw pixmaps in their shapes
-	(free-offscreen-bitmap old-bitmap)))
+  (setf (graphics-sheet-bit-array sheet) new-bitmap)
+  ;; we might not want to do this if sprites are allowed to have
+  ;; pointers to raw pixmaps in their shapes
+  (free-offscreen-bitmap old-bitmap)))
     (when (not (null (graphics-sheet-graphics-list sheet)))
       (ecase *boxer-graphics-box-bit-gravity*
-	(:top-right
-	 (when *scale-on-resize?*
-	   (translate-and-scale-graphics-command-list
-	    (graphics-sheet-graphics-list sheet)
-	    0 0 wid-scale hei-scale)))
-	(:center
-	 (cond ((null *scale-on-resize?*)
-		(translate-graphics-command-list
-		 (graphics-sheet-graphics-list sheet)
-		 (round (-& new-wid old-wid) 2)
-		 (round (-& new-hei old-hei) 2))
-		)
-	       (t
-		(translate-graphics-command-list
-		 (graphics-sheet-graphics-list sheet)
-		 (-& (round old-wid 2)) (-& (round old-hei 2)))
-		(translate-and-scale-graphics-command-list
-		 (graphics-sheet-graphics-list sheet)
-		 (round new-wid 2) (round new-hei 2)
-		 wid-scale hei-scale))))))
+  (:top-right
+   (when *scale-on-resize?*
+     (translate-and-scale-graphics-command-list
+      (graphics-sheet-graphics-list sheet)
+      0 0 wid-scale hei-scale)))
+  (:center
+   (cond ((null *scale-on-resize?*)
+    (translate-graphics-command-list
+     (graphics-sheet-graphics-list sheet)
+     (round (-& new-wid old-wid) 2)
+     (round (-& new-hei old-hei) 2))
+    )
+         (t
+    (translate-graphics-command-list
+     (graphics-sheet-graphics-list sheet)
+     (-& (round old-wid 2)) (-& (round old-hei 2)))
+    (translate-and-scale-graphics-command-list
+     (graphics-sheet-graphics-list sheet)
+     (round new-wid 2) (round new-hei 2)
+     wid-scale hei-scale))))))
     (when (not (null (graphics-sheet-object-list sheet)))
       ;; (maybe) move sprites to a new position
       ;; don't move if there are no sprites or if the box is in :clip mode
       (ecase *boxer-graphics-box-bit-gravity*
-	(:top-right)
-	(:center
-	 (cond ((null *scale-on-resize?*)
-		(dolist (obj (graphics-sheet-object-list sheet))
-		  ;; leave things where they are unless they
-		  ;; would be clipped, in which case send them
-		  ;; home unless the sheet is in :clip mode
-		  (when (and (or (>= (abs (x-position obj)) (/ new-wid 2))
-			         (>= (abs (y-position obj)) (/ new-hei 2)))
+  (:top-right)
+  (:center
+   (cond ((null *scale-on-resize?*)
+    (dolist (obj (graphics-sheet-object-list sheet))
+      ;; leave things where they are unless they
+      ;; would be clipped, in which case send them
+      ;; home unless the sheet is in :clip mode
+      (when (and (or (>= (abs (x-position obj)) (/ new-wid 2))
+               (>= (abs (y-position obj)) (/ new-hei 2)))
                              (not (eq (graphics-sheet-draw-mode sheet) ':clip)))
-		    (let ((%drawing-width new-wid) (%drawing-height new-hei)
-			  (%drawing-half-width (/ new-wid 2.0))
-			  (%drawing-half-height (/ new-hei 2.0)))
-		      (set-xy obj (wrap-x-coordinate (x-position obj))
-			      (wrap-y-coordinate (y-position obj))))
+        (let ((%drawing-width new-wid) (%drawing-height new-hei)
+        (%drawing-half-width (/ new-wid 2.0))
+        (%drawing-half-height (/ new-hei 2.0)))
+          (set-xy obj (wrap-x-coordinate (x-position obj))
+            (wrap-y-coordinate (y-position obj))))
 
 ;		    (let* ((home-pos (home-position obj))
 ;			   (home-x (car home-pos))
@@ -1591,16 +1591,16 @@ Modification History (most recent at the top)
 ;		      (set-y-position obj (* (signum home-y)
 ;					     (max (abs home-y)
 ;						  (/ new-wid 2)))))
-		    )
-		  ;; if there is a window-shape cache, invalidate it
-		  #-gl (flush-window-shape-cache obj)))
-	       (t
-		(dolist (obj (graphics-sheet-object-list sheet))
+        )
+      ;; if there is a window-shape cache, invalidate it
+      #-gl (flush-window-shape-cache obj)))
+         (t
+    (dolist (obj (graphics-sheet-object-list sheet))
                   (when (not (eq (graphics-sheet-draw-mode sheet) ':clip))
-		    (set-x-position obj (* (x-position obj) wid-scale))
-		    (set-y-position obj (* (y-position obj) hei-scale)))
-		  ;; if there is a window-shape cache, invalidate it
-		  #-gl (flush-window-shape-cache obj)))))))
+        (set-x-position obj (* (x-position obj) wid-scale))
+        (set-y-position obj (* (y-position obj) hei-scale)))
+      ;; if there is a window-shape cache, invalidate it
+      #-gl (flush-window-shape-cache obj)))))))
     (setf (graphics-sheet-draw-wid sheet) new-wid)
     (setf (graphics-sheet-draw-hei sheet) new-hei)))
 
@@ -1622,18 +1622,18 @@ Modification History (most recent at the top)
   :dump-form
   (let ((existing-alu (svref& command 1)))
     (unwind-protect
-	 (progn (setf (svref& command 1) (canonicalize-file-alu existing-alu))
-		(dump-boxer-thing command stream))
+   (progn (setf (svref& command 1) (canonicalize-file-alu existing-alu))
+    (dump-boxer-thing command stream))
       (setf (svref& command 1) existing-alu)))
   :load-form
   (setf (svref& command 1) (reallocate-file-alu (svref& command 1)))
   :sprite-command
   (list (case new-alu
-	  (#.alu-xor 'bu::penreverse)
-	  ((#.alu-ior #.alu-seta) 'bu::pendown)
-	  ((#.alu-andca #.alu-setz) 'bu::penerase)
-	  (t (warn "Untranslatable alu ~A, assuming PENDOWN" new-alu)
-	     'bu::pendown)))
+    (#.alu-xor 'bu::penreverse)
+    ((#.alu-ior #.alu-seta) 'bu::pendown)
+    ((#.alu-andca #.alu-setz) 'bu::penerase)
+    (t (warn "Untranslatable alu ~A, assuming PENDOWN" new-alu)
+       'bu::pendown)))
   :body
   (unless (=& new-alu *graphics-state-current-alu*)
     (setq *graphics-state-current-alu* new-alu)))
@@ -1672,7 +1672,7 @@ Modification History (most recent at the top)
     (otherwise alu)))
 
 (defgraphics-translator (change-alu) (trans-x trans-y cos-scale sin-scale
-					      scale)
+                scale)
   ())
 
 (eval-when (compile load eval)
@@ -1690,8 +1690,8 @@ Modification History (most recent at the top)
 )
 
 (defgraphics-translator (change-pen-width) (trans-x trans-y
-						    cos-scale sin-scale
-						    scale)
+                cos-scale sin-scale
+                scale)
   ())
 
 (defun make-font-from-file-value (file-font)
@@ -1719,7 +1719,7 @@ Modification History (most recent at the top)
                     ;; guts of a dump-array
                     (enter-table 'fake-array)
                     (write-file-word bin-op-initialize-and-return-array stream)
-	            (dump-array-1 stream 2 nil) (dump-boxer-thing 2 stream)
+              (dump-array-1 stream 2 nil) (dump-boxer-thing 2 stream)
                     (dump-boxer-thing (svref& command 0) stream)
                     (dump-font (svref& command 1) stream))
                    (t (dump-boxer-thing command stream)))
@@ -1736,8 +1736,8 @@ Modification History (most recent at the top)
 )
 
 (defgraphics-translator (change-graphics-font) (trans-x trans-y
-							cos-scale sin-scale
-							scale)
+              cos-scale sin-scale
+              scale)
   ())
 
 ;; check for foreground, background and predefined colors
@@ -1745,8 +1745,8 @@ Modification History (most recent at the top)
   (multiple-value-bind (r g b a)
       (lookup-color-values-in-box box pixel)
     (if (null r)
-	(pixel-rgb-values pixel)
-	(list r g b (if (null a) 100 a)))))
+  (pixel-rgb-values pixel)
+  (list r g b (if (null a) 100 a)))))
 
 ;; for *file-bin-version* > 12, colors are fixnums again
 (defun reallocate-pixel-color (color)
@@ -1769,15 +1769,15 @@ Modification History (most recent at the top)
   :dump-form
   (let ((existing-pixel (svref& command 1)))
     (unwind-protect
-	 (progn (setf (svref& command 1)
+   (progn (setf (svref& command 1)
                       (if (>=& *version-number* 12)
                           (pixel-dump-value existing-pixel)
-		          (canonicalize-pixel-color existing-pixel)))
-		(dump-boxer-thing command stream))
+              (canonicalize-pixel-color existing-pixel)))
+    (dump-boxer-thing command stream))
       (setf (svref& command 1) existing-pixel)))
   :load-form
   (setf (svref& command 1)
-	(reallocate-pixel-color (svref& command 1)))
+  (reallocate-pixel-color (svref& command 1)))
   :sprite-command
   (list 'bu::set-pen-color new-color)
   :body
@@ -1787,19 +1787,19 @@ Modification History (most recent at the top)
 )
 
 (defgraphics-translator (change-graphics-color) (trans-x trans-y
-							 cos-scale sin-scale
-							 scale)
+               cos-scale sin-scale
+               scale)
   ())
 
 
 
 (defun sprite-commands-for-new-position (new-x new-y &optional (alu alu-xor))
   (list 'bu::penup 'bu::setxy new-x new-y
-	(case alu
-	  (#.alu-xor 'bu::penxor)
-	  ((#.alu-seta #.alu-ior) 'bu::pendown)
-	  ((#.alu-setz #.alu-andca) 'bu::penerase)
-	  (t 'bu::pendown))))
+  (case alu
+    (#.alu-xor 'bu::penxor)
+    ((#.alu-seta #.alu-ior) 'bu::pendown)
+    ((#.alu-setz #.alu-andca) 'bu::penerase)
+    (t 'bu::pendown))))
 
 ;;;; Commands that draw
 
@@ -1815,15 +1815,15 @@ Modification History (most recent at the top)
 (defun ensure-legal-window-coordinate (n)
   (cond ((< n #.(min-window-coord))
          (at-user-level
-	   (warn "window system coordinate ~D too small, changing to ~D"
-	         n #.(min-window-coord)))
-	 #.(min-window-coord))
-	((>= n #.(max-window-coord))
-	 (at-user-level
+     (warn "window system coordinate ~D too small, changing to ~D"
+           n #.(min-window-coord)))
+   #.(min-window-coord))
+  ((>= n #.(max-window-coord))
+   (at-user-level
            (warn "window system coordinate ~D too large, changing to ~D"
-	         n #.(max-window-coord)))
-	 #.(max-window-coord))
-	(t n)))
+           n #.(max-window-coord)))
+   #.(max-window-coord))
+  (t n)))
 
 (eval-when (compile load eval)
 (defstandard-graphics-handlers (line-segment 3)
@@ -1848,46 +1848,46 @@ Modification History (most recent at the top)
     (unless (zerop *graphics-state-current-pen-width*)
       (ck-mode-draw-line x0 y0 x1 y1 *graphics-state-current-alu*)
       #|(let ((sx0 (scale-x x0)) (sy0 (scale-y y0))
-	    (sx1 (scale-x x1)) (sy1 (scale-y y1)))
-	(%draw-line (ensure-legal-window-coordinate sx0)
-		    (ensure-legal-window-coordinate sy0)
-		    (ensure-legal-window-coordinate sx1)
-		    (ensure-legal-window-coordinate sy1)
-		    *graphics-state-current-alu* t %drawing-array))|#
+      (sx1 (scale-x x1)) (sy1 (scale-y y1)))
+  (%draw-line (ensure-legal-window-coordinate sx0)
+        (ensure-legal-window-coordinate sy0)
+        (ensure-legal-window-coordinate sx1)
+        (ensure-legal-window-coordinate sy1)
+        *graphics-state-current-alu* t %drawing-array))|#
       )
     :sprite-command
     (cond ((and (= x0 last-x) (= y0 last-y))
-	   (setq last-x x1 last-y y1)
-	   (list 'bu::setxy x1 y1))
-	  (t
-	   (setq last-x x1 last-y y1)
-	   (append (sprite-commands-for-new-position x0 y0)
-		   (list 'bu::setxy x1 y1))))
+     (setq last-x x1 last-y y1)
+     (list 'bu::setxy x1 y1))
+    (t
+     (setq last-x x1 last-y y1)
+     (append (sprite-commands-for-new-position x0 y0)
+       (list 'bu::setxy x1 y1))))
     :TRANSLATION-ARGS
     (trans-x trans-y)
     :TRANSLATION-BODY
     (progn (set-x0 (+& x0 trans-x)) (set-y0 (+& y0 trans-y))
-	   (set-x1 (+& x1 trans-x)) (set-y1 (+& y1 trans-y)))
+     (set-x1 (+& x1 trans-x)) (set-y1 (+& y1 trans-y)))
     ;; translation and scaling (for window GC's)
     :TRANSLATION-AND-SCALING-ARGS
     (trans-x trans-y scale-x scale-y)
     :TRANSLATION-AND-SCALING-BODY
     (progn (set-x0 (+& (fixr (* x0 scale-x)) trans-x))
-	   (set-y0 (+& (fixr (* y0 scale-y)) trans-y))
-	   (set-x1 (+& (fixr (* x1 scale-x)) trans-x))
-	   (set-y1 (+& (fixr (* y1 scale-y)) trans-y)))
+     (set-y0 (+& (fixr (* y0 scale-y)) trans-y))
+     (set-x1 (+& (fixr (* x1 scale-x)) trans-x))
+     (set-y1 (+& (fixr (* y1 scale-y)) trans-y)))
     ;; sprite shape translation
     :TURTLE-TRANSLATOR-ARGS
     (trans-x trans-y cos-scale sin-scale scale)
     :TURTLE-TRANSLATOR-CLAUSES
     ((x0 (fix-array-coordinate-x
-	  (+ trans-x (+ (* cos-scale x0) (* sin-scale y0)))))
+    (+ trans-x (+ (* cos-scale x0) (* sin-scale y0)))))
      (y0 (fix-array-coordinate-y
-	  (+ trans-y (- (* cos-scale y0) (* sin-scale x0)))))
+    (+ trans-y (- (* cos-scale y0) (* sin-scale x0)))))
      (x1 (fix-array-coordinate-x
-	  (+ trans-x (+ (* cos-scale x1) (* sin-scale y1)))))
+    (+ trans-x (+ (* cos-scale x1) (* sin-scale y1)))))
      (y1 (fix-array-coordinate-y
-	  (+ trans-y (- (* cos-scale y1) (* sin-scale x1))))))
+    (+ trans-y (- (* cos-scale y1) (* sin-scale x1))))))
     )
 ) ;eval-when
 
@@ -1902,35 +1902,35 @@ Modification History (most recent at the top)
     (:x-transform :y-transform :x-transform :y-transform)
     :COMMAND-BODY
     (%draw-line (scale-x x0) (scale-y y0) (scale-x x1) (scale-y y1)
-		*graphics-state-current-alu* t %drawing-array)
+    *graphics-state-current-alu* t %drawing-array)
     :TRANSLATION-ARGS
     (trans-x trans-y)
     :TRANSLATION-BODY
     (progn (set-x0 (+& x0 trans-x)) (set-y0 (+& y0 trans-y))
-	   (set-x1 (+& x1 trans-x)) (set-y1 (+& y1 trans-y)))
+     (set-x1 (+& x1 trans-x)) (set-y1 (+& y1 trans-y)))
     ;; translation and scaling
     :TRANSLATION-AND-SCALING-ARGS
     (trans-x trans-y scale-x scale-y)
     :TRANSLATION-AND-SCALING-BODY
     (progn (set-x0 (+& (fixr (* x0 scale-x)) trans-x))
-	   (set-y0 (+& (fixr (* y0 scale-y)) trans-y))
-	   (set-x1 (+& (fixr (* x1 scale-x)) trans-x))
-	   (set-y1 (+& (fixr (* y1 scale-y)) trans-y)))
+     (set-y0 (+& (fixr (* y0 scale-y)) trans-y))
+     (set-x1 (+& (fixr (* x1 scale-x)) trans-x))
+     (set-y1 (+& (fixr (* y1 scale-y)) trans-y)))
     ;; sprite shape drawing
     :SPRITE-HANDLER-ARGS
     (trans-x trans-y cos-scale sin-scale scale)
     :SPRITE-HANDLER-BODY
     (line-segment (fixr (+ trans-x (+ (* cos-scale x0) (* sin-scale y0))))
-		  (fixr (+ trans-y (- (* sin-scale x0) (* cos-scale y0))))
-		  (fixr (+ trans-x (+ (* cos-scale x1) (* sin-scale y1))))
-		  (fixr (+ trans-y (- (* sin-scale x1) (* cos-scale y1)))))
+      (fixr (+ trans-y (- (* sin-scale x0) (* cos-scale y0))))
+      (fixr (+ trans-x (+ (* cos-scale x1) (* sin-scale y1))))
+      (fixr (+ trans-y (- (* sin-scale x1) (* cos-scale y1)))))
     :SPRITE-EXTENTS-BODY
     (let ((start-x (fixr (+ trans-x (+ (* cos-scale x0) (* sin-scale y0)))))
-	  (start-y (fixr (+ trans-y (- (* sin-scale x0) (* cos-scale y0)))))
-	  (stop-x  (fixr (+ trans-x (+ (* cos-scale x1) (* sin-scale y1)))))
-	  (stop-y  (fixr (+ trans-y (- (* sin-scale x1) (* cos-scale y1))))))
+    (start-y (fixr (+ trans-y (- (* sin-scale x0) (* cos-scale y0)))))
+    (stop-x  (fixr (+ trans-x (+ (* cos-scale x1) (* sin-scale y1)))))
+    (stop-y  (fixr (+ trans-y (- (* sin-scale x1) (* cos-scale y1))))))
       (values (min& start-x stop-x) (min& start-y stop-y)
-	      (max& start-x stop-x) (max& start-y stop-y))))
+        (max& start-x stop-x) (max& start-y stop-y))))
 
 |#
 
@@ -1948,62 +1948,62 @@ Modification History (most recent at the top)
     (let ((height 0) (s string) (width 0) (wx x))
       (loop
        (setq height (+ height (1+& (string-hei
-				    *graphics-state-current-font-no*)))
-	     width (max& (ceiling (string-wid *graphics-state-current-font-no*
-				     (subseq s 0 (position #\newline s))))
-			 width)
-	     wx (min& wx (fixr (- x (/ width 2)))))
+            *graphics-state-current-font-no*)))
+       width (max& (ceiling (string-wid *graphics-state-current-font-no*
+             (subseq s 0 (position #\newline s))))
+       width)
+       wx (min& wx (fixr (- x (/ width 2)))))
        ;; If we have handled the last line (the current line has no CR's)
        (if (not (position #\newline s))
-	   (return (values wx y (+& wx width) (+& y height)))
-	   (setq s (subseq s (let ((p (position #\newline s)))
-			       (if (null p) 0 (1+& p))))))))
+     (return (values wx y (+& wx width) (+& y height)))
+     (setq s (subseq s (let ((p (position #\newline s)))
+             (if (null p) 0 (1+& p))))))))
     :BOXER-EXTENTS-FORM
     (let ((height 0) (s string) (width 0) (wx x))
       (loop
        (setq height
-	     (+ height (1+(string-hei *graphics-state-current-font-no*)))
-	     width (max (string-wid *graphics-state-current-font-no*
+       (+ height (1+(string-hei *graphics-state-current-font-no*)))
+       width (max (string-wid *graphics-state-current-font-no*
                                     (subseq s 0 (position #\newline s)))
-			 width)
-	     wx (min wx (- x (/ width 2))))
+       width)
+       wx (min wx (- x (/ width 2))))
        ;; If we have handled the last line (the current line has no CR's)
        (if (not (position #\newline s))
-	   (return (values (coerce wx 'boxer-float) (coerce y 'boxer-float)
-			   (coerce (+ wx width) 'boxer-float)
-			   (coerce (+ y height) 'boxer-float)))
-	   (setq s (subseq s (let ((p (position #\newline s)))
-			       (if (null p) 0 (1+& p))))))))
+     (return (values (coerce wx 'boxer-float) (coerce y 'boxer-float)
+         (coerce (+ wx width) 'boxer-float)
+         (coerce (+ y height) 'boxer-float)))
+     (setq s (subseq s (let ((p (position #\newline s)))
+             (if (null p) 0 (1+& p))))))))
     :TRANSFORMATION-TEMPLATE
     (:x-transform :y-transform nil)
     :COMMAND-BODY
     ;; Yuck, rewrite these to remove all the string CONSing
     (do* ((height (1+& (string-hei *graphics-state-current-font-no*)))
-	  (s string (subseq s (let ((p (position #\newline s)))
-				(if (null p) 0 (1+& p)))))
-	  (trimmed-string (subseq s 0 (position #\newline s))
-			  (subseq s 0 (position #\newline s)))
-	  (width (ceiling (string-wid *graphics-state-current-font-no* trimmed-string))
-		 (ceiling (string-wid *graphics-state-current-font-no* trimmed-string)))
-	  (wx (fixr (- x (/ width 2))) (fixr (- x (/ width 2))))
-	  (wy (fixr y) (+& wy height)))
-	 ((not (position #\newline s))
-	  (%draw-string *graphics-state-current-alu*
-			*graphics-state-current-font-no* trimmed-string
-			(ensure-legal-window-coordinate (scale-x wx))
-			(ensure-legal-window-coordinate (scale-y wy))))
+    (s string (subseq s (let ((p (position #\newline s)))
+        (if (null p) 0 (1+& p)))))
+    (trimmed-string (subseq s 0 (position #\newline s))
+        (subseq s 0 (position #\newline s)))
+    (width (ceiling (string-wid *graphics-state-current-font-no* trimmed-string))
+     (ceiling (string-wid *graphics-state-current-font-no* trimmed-string)))
+    (wx (fixr (- x (/ width 2))) (fixr (- x (/ width 2))))
+    (wy (fixr y) (+& wy height)))
+   ((not (position #\newline s))
+    (%draw-string *graphics-state-current-alu*
+      *graphics-state-current-font-no* trimmed-string
+      (ensure-legal-window-coordinate (scale-x wx))
+      (ensure-legal-window-coordinate (scale-y wy))))
       (%draw-string *graphics-state-current-alu*
-		    *graphics-state-current-font-no* trimmed-string
-		    (ensure-legal-window-coordinate (scale-x wx))
-		    (ensure-legal-window-coordinate (scale-y wy))))
+        *graphics-state-current-font-no* trimmed-string
+        (ensure-legal-window-coordinate (scale-x wx))
+        (ensure-legal-window-coordinate (scale-y wy))))
     :SPRITE-COMMAND
     (cond ((and (= x last-x) (= y last-y))
-	   (list 'bu::type (make-box (list (list (coerce string
+     (list 'bu::type (make-box (list (list (coerce string
                                                          'simple-string))))))
-	  (t
-	   (setq last-x x last-y y)
-	   (append (sprite-commands-for-new-position x y)
-		   (list 'bu::type
+    (t
+     (setq last-x x last-y y)
+     (append (sprite-commands-for-new-position x y)
+       (list 'bu::type
                          (make-box (list (list (coerce string
                                                        'simple-string))))))))
     :TRANSLATION-ARGS
@@ -2015,15 +2015,15 @@ Modification History (most recent at the top)
     (trans-x trans-y scale-x scale-y)
     :TRANSLATION-AND-SCALING-BODY
     (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-	   (set-y (+& (fixr (* y scale-y)) trans-y)))
+     (set-y (+& (fixr (* y scale-y)) trans-y)))
     ;; sprite shape translation
     :TURTLE-TRANSLATOR-ARGS
     (trans-x trans-y cos-scale sin-scale scale)
     :TURTLE-TRANSLATOR-CLAUSES
     ((x (fix-array-coordinate-x
-	 (+ trans-x (+ (* cos-scale x) (* sin-scale y)))))
+   (+ trans-x (+ (* cos-scale x) (* sin-scale y)))))
      (y (fix-array-coordinate-y
-	 (+ trans-y (- (* cos-scale y) (* sin-scale x)))))))
+   (+ trans-y (- (* cos-scale y) (* sin-scale x)))))))
 
 (defstandard-graphics-handlers (left-string 8)
     :COMMAND-ARGS (x y string)
@@ -2031,39 +2031,39 @@ Modification History (most recent at the top)
     (let ((height 0) (s string) (width 0))
       (loop
        (setq height (+ height 1(string-hei *graphics-state-current-font-no*))
-	     width (max (string-wid *graphics-state-current-font-no*
-				    (subseq s 0 (position #\newline s)))
-			width))
+       width (max (string-wid *graphics-state-current-font-no*
+            (subseq s 0 (position #\newline s)))
+      width))
        ;; If we have handled the last line (the current line has no CR's)
        (if (not (position #\newline s))
-	   (return (values x y (+ x width) (+ y height)))
-	   (setq s (subseq s (let ((p (position #\newline s)))
-			       (if (null p) 0 (1+& p))))))))
+     (return (values x y (+ x width) (+ y height)))
+     (setq s (subseq s (let ((p (position #\newline s)))
+             (if (null p) 0 (1+& p))))))))
     :TRANSFORMATION-TEMPLATE
     (:x-transform :y-transform nil)
     :COMMAND-BODY
     (let ((current-y y) (s string))
       (loop
        (%draw-string *graphics-state-current-alu*
-		    *graphics-state-current-font-no*
-		    (subseq s 0 (position #\newline s))
-		    (ensure-legal-window-coordinate (scale-x(fixr x)))
-		    (ensure-legal-window-coordinate (scale-y(fixr current-y))))
+        *graphics-state-current-font-no*
+        (subseq s 0 (position #\newline s))
+        (ensure-legal-window-coordinate (scale-x(fixr x)))
+        (ensure-legal-window-coordinate (scale-y(fixr current-y))))
        ;; If we have drawn the last line (the current line has no CR's)
        (if (not (position #\newline s))
-	   (return)
-	   (setq s (subseq s (let ((p (position #\newline s)))
-			       (if (null p) 0 (1+& p))))
-		 current-y (+ current-y 1
-			      (string-hei *graphics-state-current-font-no*))))))
+     (return)
+     (setq s (subseq s (let ((p (position #\newline s)))
+             (if (null p) 0 (1+& p))))
+     current-y (+ current-y 1
+            (string-hei *graphics-state-current-font-no*))))))
     :SPRITE-COMMAND
     (cond ((and (= x last-x) (= y last-y))
-	   (list 'bu::ltype (make-box (list (list (coerce string
+     (list 'bu::ltype (make-box (list (list (coerce string
                                                          'simple-string))))))
-	  (t
-	   (setq last-x x last-y y)
-	   (append (sprite-commands-for-new-position x y)
-		   (list 'bu::ltype
+    (t
+     (setq last-x x last-y y)
+     (append (sprite-commands-for-new-position x y)
+       (list 'bu::ltype
                          (make-box (list (list (coerce string
                                                        'simple-string))))))))
     :TRANSLATION-ARGS
@@ -2075,7 +2075,7 @@ Modification History (most recent at the top)
     (trans-x trans-y scale-x scale-y)
     :TRANSLATION-AND-SCALING-BODY
     (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-	   (set-y (+& (fixr (* y scale-y)) trans-y)))
+     (set-y (+& (fixr (* y scale-y)) trans-y)))
     ;; sprite shape translation
     :TURTLE-TRANSLATOR-ARGS
     (trans-x trans-y cos-scale sin-scale scale)
@@ -2091,44 +2091,44 @@ Modification History (most recent at the top)
     (let ((height 0) (s string) (width 0))
       (loop
        (setq height (+ height 1 (string-hei *graphics-state-current-font-no*))
-	     width (max (string-wid *graphics-state-current-font-no*
-				    (subseq s 0 (position #\newline s)))
-			width))
+       width (max (string-wid *graphics-state-current-font-no*
+            (subseq s 0 (position #\newline s)))
+      width))
        ;; If we have handled the last line (the current line has no CR's)
        (if (not (position #\newline s))
-	   (return (values (- x width) y x (+ y height)))
-	   (setq s (subseq s (let ((p (position #\newline s)))
-			       (if (null p) 0 (1+& p))))))))
+     (return (values (- x width) y x (+ y height)))
+     (setq s (subseq s (let ((p (position #\newline s)))
+             (if (null p) 0 (1+& p))))))))
     :TRANSFORMATION-TEMPLATE
     (:x-transform :y-transform nil)
     :COMMAND-BODY
     (let ((current-y y) (s string) (width 0) (trimmed-string ""))
       (loop
        (setq trimmed-string (subseq s 0 (position #\newline s))
-	     width (string-wid *graphics-state-current-font-no* trimmed-string))
+       width (string-wid *graphics-state-current-font-no* trimmed-string))
        (%draw-string *graphics-state-current-alu*
-		    *graphics-state-current-font-no*
-		    trimmed-string
-		    (ensure-legal-window-coordinate
-		     (scale-x (fixr (- x width))))
-		    (ensure-legal-window-coordinate
-		     (scale-y (fixr current-y))))
+        *graphics-state-current-font-no*
+        trimmed-string
+        (ensure-legal-window-coordinate
+         (scale-x (fixr (- x width))))
+        (ensure-legal-window-coordinate
+         (scale-y (fixr current-y))))
        ;; If we have drawn the last line (the current line has no CR's)
        (if (not (position #\newline s))
-	   (return)
-	   (setq s (subseq s (let ((p (position #\newline s)))
-			       (if (null p) 0 (1+& p))))
-		 current-y (+ current-y
-			      (1+ (string-hei
-				   *graphics-state-current-font-no*)))))))
+     (return)
+     (setq s (subseq s (let ((p (position #\newline s)))
+             (if (null p) 0 (1+& p))))
+     current-y (+ current-y
+            (1+ (string-hei
+           *graphics-state-current-font-no*)))))))
     :SPRITE-COMMAND
     (cond ((and (= x last-x) (= y last-y))
-	   (list 'bu::rtype (make-box (list (list (coerce string
+     (list 'bu::rtype (make-box (list (list (coerce string
                                                          'simple-string))))))
-	  (t
-	   (setq last-x x last-y y)
-	   (append (sprite-commands-for-new-position x y)
-		   (list 'bu::rtype
+    (t
+     (setq last-x x last-y y)
+     (append (sprite-commands-for-new-position x y)
+       (list 'bu::rtype
                          (make-box (list (list (coerce string
                                                        'simple-string))))))))
     :TRANSLATION-ARGS
@@ -2140,7 +2140,7 @@ Modification History (most recent at the top)
     (trans-x trans-y scale-x scale-y)
     :TRANSLATION-AND-SCALING-BODY
     (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-	   (set-y (+& (fixr (* y scale-y)) trans-y)))
+     (set-y (+& (fixr (* y scale-y)) trans-y)))
     ;; sprite shape translation
     :TURTLE-TRANSLATOR-ARGS
     (trans-x trans-y cos-scale sin-scale scale)
@@ -2171,27 +2171,27 @@ Modification History (most recent at the top)
                 (+& x half-width wfudge) (+& y half-height hfudge))))
     :BOXER-EXTENTS-FORM
     (let ((half-width (values (/ width 2.0)))
-	  (half-height (values (/ height 2.0))))
+    (half-height (values (/ height 2.0))))
       (declare (type boxer-float half-width half-height))
       (values (float-minus x half-width) (float-minus y half-height)
-	      (float-plus x half-width) (float-plus y half-height)))
+        (float-plus x half-width) (float-plus y half-height)))
     :TRANSFORMATION-TEMPLATE
     (:x-transform :y-transform :coerce :coerce)
     :SPRITE-COMMAND
     (cond ((and (= x last-x) (= y last-y))
-	   (list 'bu::stamp-rect width height))
-	  (t
-	   (setq last-x x last-y y)
-	   (append (sprite-commands-for-new-position x y)
-		   (list 'bu::stamp-rect width height))))
+     (list 'bu::stamp-rect width height))
+    (t
+     (setq last-x x last-y y)
+     (append (sprite-commands-for-new-position x y)
+       (list 'bu::stamp-rect width height))))
     :COMMAND-BODY
     (unless (or (zerop width) (zerop height))
       (%draw-rectangle (fixr width) (fixr height)
-		       (ensure-legal-window-coordinate
-			(scale-x (-& x (floor (the fixnum width) 2))))
-		       (ensure-legal-window-coordinate
-			(scale-y (-& y (floor (the fixnum height) 2))))
-		       *graphics-state-current-alu* %drawing-array))
+           (ensure-legal-window-coordinate
+      (scale-x (-& x (floor (the fixnum width) 2))))
+           (ensure-legal-window-coordinate
+      (scale-y (-& y (floor (the fixnum height) 2))))
+           *graphics-state-current-alu* %drawing-array))
     :TRANSLATION-ARGS
     (trans-x trans-y)
     :TRANSLATION-BODY
@@ -2201,9 +2201,9 @@ Modification History (most recent at the top)
     (trans-x trans-y scale-x scale-y)
     :TRANSLATION-AND-SCALING-BODY
     (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-	   (set-y (+& (fixr (* y scale-y)) trans-y))
-	   (set-width (fixr (* width scale-x)))
-	   (set-height (fixr (* height scale-y))))
+     (set-y (+& (fixr (* y scale-y)) trans-y))
+     (set-width (fixr (* width scale-x)))
+     (set-height (fixr (* height scale-y))))
     ;; sprite shape translation
     :TURTLE-TRANSLATOR-ARGS
     (trans-x trans-y cos-scale sin-scale scale)
@@ -2224,38 +2224,38 @@ Modification History (most recent at the top)
     (multiple-value-bind (half-size fudge)
         (truncate *graphics-state-current-pen-width* 2)
       (values (-& x half-size) (-& y half-size)
-	      (+& x half-size fudge) (+& y half-size fudge)))
+        (+& x half-size fudge) (+& y half-size fudge)))
     :BOXER-EXTENTS-FORM
     (let ((half-size (/ *graphics-state-current-pen-width* 2.0)))
       (declare (type boxer-float half-size))
       (values (float-minus x half-size) (float-minus y half-size)
-	      (float-plus x half-size) (float-plus y half-size)))
+        (float-plus x half-size) (float-plus y half-size)))
     :TRANSFORMATION-TEMPLATE
     (:x-transform :y-transform)
     :SPRITE-COMMAND
     (cond ((and (= x last-x) (= y last-y))
-	   (list 'bu::dot))
-	  (t
-	   (setq last-x x last-y y)
-	   (append (sprite-commands-for-new-position x y)
-		   (list 'bu::dot))))
+     (list 'bu::dot))
+    (t
+     (setq last-x x last-y y)
+     (append (sprite-commands-for-new-position x y)
+       (list 'bu::dot))))
     :COMMAND-BODY
     (unless (zerop *graphics-state-current-pen-width*)
       (%draw-rectangle *graphics-state-current-pen-width*
-		       *graphics-state-current-pen-width*
-		       (ensure-legal-window-coordinate
-			(scale-x (-& x
-				     (floor
-				      (the fixnum
-					   *graphics-state-current-pen-width*)
-				      2))))
-		       (ensure-legal-window-coordinate
-			(scale-y (-& y
-				     (floor
-				      (the fixnum
-					   *graphics-state-current-pen-width*)
-				      2))))
-		       *graphics-state-current-alu* %drawing-array))
+           *graphics-state-current-pen-width*
+           (ensure-legal-window-coordinate
+      (scale-x (-& x
+             (floor
+              (the fixnum
+             *graphics-state-current-pen-width*)
+              2))))
+           (ensure-legal-window-coordinate
+      (scale-y (-& y
+             (floor
+              (the fixnum
+             *graphics-state-current-pen-width*)
+              2))))
+           *graphics-state-current-alu* %drawing-array))
     :TRANSLATION-ARGS
     (trans-x trans-y)
     :TRANSLATION-BODY
@@ -2265,7 +2265,7 @@ Modification History (most recent at the top)
     (trans-x trans-y scale-x scale-y)
     :TRANSLATION-AND-SCALING-BODY
     (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-	   (set-y (+& (fixr (* y scale-y)) trans-y)))
+     (set-y (+& (fixr (* y scale-y)) trans-y)))
     ;; sprite shape translation
     :TURTLE-TRANSLATOR-ARGS
     (trans-x trans-y cos-scale sin-scale scale)
@@ -2284,19 +2284,19 @@ Modification History (most recent at the top)
                 (+& x half-width wfudge) (+& y half-height hfudge))))
     :BOXER-EXTENTS-FORM
     (let ((half-width (values (/ width 2.0)))
-	  (half-height (values (/ height 2.0))))
+    (half-height (values (/ height 2.0))))
       (declare (type boxer-float half-width half-height))
       (values (float-minus x half-width) (float-minus y half-height)
-	      (float-plus x half-width) (float-plus y half-height)))
+        (float-plus x half-width) (float-plus y half-height)))
     :TRANSFORMATION-TEMPLATE
     (:x-transform :y-transform :coerce :coerce)
     :SPRITE-COMMAND
     (cond ((and (= x last-x) (= y last-y))
-	   (list 'bu::stamp-hollow-rect width height))
-	  (t
-	   (setq last-x x last-y y)
-	   (append (sprite-commands-for-new-position x y)
-		   (list 'bu::stamp-hollow-rect width height))))
+     (list 'bu::stamp-hollow-rect width height))
+    (t
+     (setq last-x x last-y y)
+     (append (sprite-commands-for-new-position x y)
+       (list 'bu::stamp-hollow-rect width height))))
     :COMMAND-BODY
     (unless (or (zerop width) (zerop height))
       (let ((xxx (ensure-legal-window-coordinate
@@ -2333,9 +2333,9 @@ Modification History (most recent at the top)
     (trans-x trans-y scale-x scale-y)
     :TRANSLATION-AND-SCALING-BODY
     (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-	   (set-y (+& (fixr (* y scale-y)) trans-y))
-	   (set-width (fixr (* width scale-x)))
-	   (set-height (fixr (* height scale-y))))
+     (set-y (+& (fixr (* y scale-y)) trans-y))
+     (set-width (fixr (* width scale-x)))
+     (set-height (fixr (* height scale-y))))
     ;; sprite shape translation
     :TURTLE-TRANSLATOR-ARGS
     (trans-x trans-y cos-scale sin-scale scale)
@@ -2356,11 +2356,11 @@ Modification History (most recent at the top)
                 (+& x half-width wfudge) (+& y half-height hfudge))))
     :BOXER-EXTENTS-FORM
     (let ((half-width (/ width 2.0))
-	  (half-height (/ height 2.0)))
+    (half-height (/ height 2.0)))
       (declare (type boxer-float half-width half-height))
       ;; removed float-plus/minus because x & y are not floats
       (values (- x half-width) (- y half-height)
-	      (+ x half-width) (+ y half-height)))
+        (+ x half-width) (+ y half-height)))
     :TRANSFORMATION-TEMPLATE
     (nil :x-transform :y-transform :coerce :coerce)
     :copy-post-processing
@@ -2386,11 +2386,11 @@ Modification History (most recent at the top)
         (dump-boxer-thing height stream)))
     :COMMAND-BODY
     (%bitblt-to-screen *graphics-state-current-alu* (fixr width) (fixr height)
-		       bitmap 0 0
-		       (ensure-legal-window-coordinate
-			(scale-x (-& x (floor (the fixnum width) 2))))
-		       (ensure-legal-window-coordinate
-			(scale-y (-& y (floor (the fixnum height) 2)))))
+           bitmap 0 0
+           (ensure-legal-window-coordinate
+      (scale-x (-& x (floor (the fixnum width) 2))))
+           (ensure-legal-window-coordinate
+      (scale-y (-& y (floor (the fixnum height) 2)))))
     :TRANSLATION-ARGS
     (trans-x trans-y)
     :TRANSLATION-BODY
@@ -2400,9 +2400,9 @@ Modification History (most recent at the top)
     (trans-x trans-y scale-x scale-y)
     :TRANSLATION-AND-SCALING-BODY
     (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-	   (set-y (+& (fixr (* y scale-y)) trans-y))
-	   (set-width (fixr (* width scale-x)))
-	   (set-height (fixr (* height scale-y))))
+     (set-y (+& (fixr (* y scale-y)) trans-y))
+     (set-width (fixr (* width scale-x)))
+     (set-height (fixr (* height scale-y))))
     ;; sprite shape translation
     :TURTLE-TRANSLATOR-ARGS
     (trans-x trans-y cos-scale sin-scale scale)
@@ -2448,16 +2448,16 @@ Modification History (most recent at the top)
       (values (-& x radius) (-& y radius) (+& x radius) (+& y radius)))
     :BOXER-EXTENTS-FORM
     (values (- x radius) (- y radius)
-	    (+ x radius) (+ y radius))
+      (+ x radius) (+ y radius))
     :TRANSFORMATION-TEMPLATE
     (:x-transform :y-transform nil nil nil)
     :SPRITE-COMMAND ; !!!what abut synching HEADING ???
     (cond ((and (= x last-x) (= y last-y))
-	   (list 'bu::stamp-wedge radius sweep-angle))
-	  (t
-	   (setq last-x x last-y y)
-	   (append (sprite-commands-for-new-position x y)
-		   (list 'bu::stamp-wedge radius sweep-angle))))
+     (list 'bu::stamp-wedge radius sweep-angle))
+    (t
+     (setq last-x x last-y y)
+     (append (sprite-commands-for-new-position x y)
+       (list 'bu::stamp-wedge radius sweep-angle))))
     :COMMAND-BODY
     (when (plusp radius)
       #+opengl
@@ -2467,14 +2467,14 @@ Modification History (most recent at the top)
                    start-angle sweep-angle T)
       #-opengl
       (let ((diameter  (fixr (+ radius radius)))
-	    (fix-radius (fixr radius)))
-	(%draw-filled-arc %drawing-array *graphics-state-current-alu*
-			  (ensure-legal-window-coordinate
-			   (scale-x (-& x fix-radius)))
-			  (ensure-legal-window-coordinate
-			   (scale-y (-& y fix-radius)))
-			  diameter diameter
-			  start-angle sweep-angle))
+      (fix-radius (fixr radius)))
+  (%draw-filled-arc %drawing-array *graphics-state-current-alu*
+        (ensure-legal-window-coordinate
+         (scale-x (-& x fix-radius)))
+        (ensure-legal-window-coordinate
+         (scale-y (-& y fix-radius)))
+        diameter diameter
+        start-angle sweep-angle))
       )
     :TRANSLATION-ARGS
     ;; translation
@@ -2486,8 +2486,8 @@ Modification History (most recent at the top)
     (trans-x trans-y scale-x scale-y)
     :TRANSLATION-AND-SCALING-BODY
     (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-	   (set-y (+& (fixr (* y scale-y)) trans-y))
-	   (set-radius (fixr (* radius (min scale-x scale-y)))))
+     (set-y (+& (fixr (* y scale-y)) trans-y))
+     (set-radius (fixr (* radius (min scale-x scale-y)))))
     ;; sprite shape translation
     :TURTLE-TRANSLATOR-ARGS
     (trans-x trans-y cos-scale sin-scale scale)
@@ -2505,16 +2505,16 @@ Modification History (most recent at the top)
       (values (-& x radius) (-& y radius) (+& x radius) (+& y radius)))
     :BOXER-EXTENTS-FORM
     (values (- x radius) (- y radius)
-	    (+ x radius) (+ y radius))
+      (+ x radius) (+ y radius))
     :TRANSFORMATION-TEMPLATE
     (:x-transform :y-transform nil nil nil)
     :SPRITE-COMMAND
     (cond ((and (= x last-x) (= y last-y))
-	   (list 'bu::stamp-arc radius sweep-angle))
-	  (t
-	   (setq last-x x last-y y)
-	   (append (sprite-commands-for-new-position x y)
-		   (list 'bu::stamp-arc radius sweep-angle))))
+     (list 'bu::stamp-arc radius sweep-angle))
+    (t
+     (setq last-x x last-y y)
+     (append (sprite-commands-for-new-position x y)
+       (list 'bu::stamp-arc radius sweep-angle))))
     :COMMAND-BODY
     (unless (zerop radius)
       #+opengl
@@ -2524,11 +2524,11 @@ Modification History (most recent at the top)
                    start-angle sweep-angle nil)
       #-opengl
       (let ((diameter  (fixr (* 2 radius)))
-	    (fix-radius (fixr radius)))
-	(%draw-arc %drawing-array *graphics-state-current-alu*
-		   (ensure-legal-window-coordinate (scale-x (-& x fix-radius)))
-		   (ensure-legal-window-coordinate (scale-y (-& y fix-radius)))
-		   diameter diameter
+      (fix-radius (fixr radius)))
+  (%draw-arc %drawing-array *graphics-state-current-alu*
+       (ensure-legal-window-coordinate (scale-x (-& x fix-radius)))
+       (ensure-legal-window-coordinate (scale-y (-& y fix-radius)))
+       diameter diameter
                    start-angle sweep-angle)))
     :TRANSLATION-ARGS
     ;; translation
@@ -2540,8 +2540,8 @@ Modification History (most recent at the top)
     (trans-x trans-y scale-x scale-y)
     :TRANSLATION-AND-SCALING-BODY
     (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-	   (set-y (+& (fixr (* y scale-y)) trans-y))
-	   (set-radius (fixr (* radius (min scale-x scale-y)))))
+     (set-y (+& (fixr (* y scale-y)) trans-y))
+     (set-radius (fixr (* radius (min scale-x scale-y)))))
     ;; sprite shape translation
     :TURTLE-TRANSLATOR-ARGS
     (trans-x trans-y cos-scale sin-scale scale)
@@ -2561,30 +2561,30 @@ Modification History (most recent at the top)
                 (+& x half-width wfudge) (+& y half-height hfudge))))
     :BOXER-EXTENTS-FORM
     (let ((half-width (/ width 2.0))
-	  (half-height (/  height 2.0)))
+    (half-height (/  height 2.0)))
       (declare (type boxer-float half-width half-height))
       (values (float-minus x half-width) (float-minus y half-height)
-	      (float-plus x half-width) (float-plus y half-height)))
+        (float-plus x half-width) (float-plus y half-height)))
     :TRANSFORMATION-TEMPLATE
     (:x-transform :y-transform :coerce :coerce)
     :SPRITE-COMMAND
     (cond ((and (= x last-x) (= y last-y))
-	   (list 'bu::stamp-ellipse width height))
-	  (t
-	   (setq last-x x last-y y)
-	   (append (sprite-commands-for-new-position x y)
-		   (list 'bu::stamp-ellipse width height))))
+     (list 'bu::stamp-ellipse width height))
+    (t
+     (setq last-x x last-y y)
+     (append (sprite-commands-for-new-position x y)
+       (list 'bu::stamp-ellipse width height))))
     :COMMAND-BODY
     (unless (or (zerop width) (zerop height))
       (let ((half-width (floor width 2))
-	    (half-height (floor height 2)))
-	(%draw-filled-arc %drawing-array *graphics-state-current-alu*
-			  (ensure-legal-window-coordinate
-			   (scale-x (-& x half-width)))
-			  (ensure-legal-window-coordinate
-			   (scale-y (-& y half-height)))
-			  (fixr width) (fixr height)
-			  0 360)))
+      (half-height (floor height 2)))
+  (%draw-filled-arc %drawing-array *graphics-state-current-alu*
+        (ensure-legal-window-coordinate
+         (scale-x (-& x half-width)))
+        (ensure-legal-window-coordinate
+         (scale-y (-& y half-height)))
+        (fixr width) (fixr height)
+        0 360)))
     :TRANSLATION-ARGS
     ;; translation
     (trans-x trans-y)
@@ -2595,9 +2595,9 @@ Modification History (most recent at the top)
     (trans-x trans-y scale-x scale-y)
     :TRANSLATION-AND-SCALING-BODY
     (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-	   (set-y (+& (fixr (* y scale-y)) trans-y))
-	   (set-width (fixr (* width scale-x)))
-	   (set-height (fixr (* height scale-y))))
+     (set-y (+& (fixr (* y scale-y)) trans-y))
+     (set-width (fixr (* width scale-x)))
+     (set-height (fixr (* height scale-y))))
     ;; sprite shape translation
     :TURTLE-TRANSLATOR-ARGS
     (trans-x trans-y cos-scale sin-scale scale)
@@ -2618,28 +2618,28 @@ Modification History (most recent at the top)
                 (+& x half-width wfudge) (+& y half-height hfudge))))
     :BOXER-EXTENTS-FORM
     (let ((half-width (/ width 2.0))
-	  (half-height (/  height 2.0)))
+    (half-height (/  height 2.0)))
       (declare (type boxer-float half-width half-height))
       (values (float-minus x half-width) (float-minus y half-height)
-	      (float-plus x half-width) (float-plus y half-height)))
+        (float-plus x half-width) (float-plus y half-height)))
     :TRANSFORMATION-TEMPLATE
     (:x-transform :y-transform :coerce :coerce)
     :SPRITE-COMMAND
     (cond ((and (= x last-x) (= y last-y))
-	   (list 'bu::stamp-hollow-ellipse width height))
-	  (t
-	   (setq last-x x last-y y)
-	   (append (sprite-commands-for-new-position x y)
-		   (list 'bu::stamp-hollow-ellipse width height))))
+     (list 'bu::stamp-hollow-ellipse width height))
+    (t
+     (setq last-x x last-y y)
+     (append (sprite-commands-for-new-position x y)
+       (list 'bu::stamp-hollow-ellipse width height))))
     :COMMAND-BODY
     (unless (or (zerop width) (zerop height))
       (let ((half-width (floor width 2))
-	    (half-height (floor height 2)))
-	(%draw-arc %drawing-array *graphics-state-current-alu*
-		   (ensure-legal-window-coordinate (scale-x (-& x half-width)))
-		   (ensure-legal-window-coordinate (scale-y (-& y half-height)))
-		   (fixr width) (fixr height)
-		   0 360)))
+      (half-height (floor height 2)))
+  (%draw-arc %drawing-array *graphics-state-current-alu*
+       (ensure-legal-window-coordinate (scale-x (-& x half-width)))
+       (ensure-legal-window-coordinate (scale-y (-& y half-height)))
+       (fixr width) (fixr height)
+       0 360)))
     :TRANSLATION-ARGS
     ;; translation
     (trans-x trans-y)
@@ -2650,9 +2650,9 @@ Modification History (most recent at the top)
     (trans-x trans-y scale-x scale-y)
     :TRANSLATION-AND-SCALING-BODY
     (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-	   (set-y (+& (fixr (* y scale-y)) trans-y))
-	   (set-width (fixr (* width scale-x)))
-	   (set-height (fixr (* height scale-y))))
+     (set-y (+& (fixr (* y scale-y)) trans-y))
+     (set-width (fixr (* width scale-x)))
+     (set-height (fixr (* height scale-y))))
     ;; sprite shape translation
     :TURTLE-TRANSLATOR-ARGS
     (trans-x trans-y cos-scale sin-scale scale)
@@ -2675,11 +2675,11 @@ Modification History (most recent at the top)
     (:x-transform :y-transform nil)
     :SPRITE-COMMAND
     (cond ((and (= x last-x) (= y last-y))
-	   (list 'bu::stamp-circle radius))
-	  (t
-	   (setq last-x x last-y y)
-	   (append (sprite-commands-for-new-position x y)
-		   (list 'bu::stamp-circle radius))))
+     (list 'bu::stamp-circle radius))
+    (t
+     (setq last-x x last-y y)
+     (append (sprite-commands-for-new-position x y)
+       (list 'bu::stamp-circle radius))))
     :COMMAND-BODY
     (when (plusp radius)
       #+opengl
@@ -2689,14 +2689,14 @@ Modification History (most recent at the top)
                     T)
       #-opengl
       (let ((diameter  (fixr (+ radius radius)))
-	    (fix-radius (fixr radius)))
-	(%draw-filled-arc %drawing-array *graphics-state-current-alu*
-			  (ensure-legal-window-coordinate
-			   (scale-x (-& x fix-radius)))
-			  (ensure-legal-window-coordinate
-			   (scale-y (-& y fix-radius)))
-			  diameter diameter
-			  0 360))
+      (fix-radius (fixr radius)))
+  (%draw-filled-arc %drawing-array *graphics-state-current-alu*
+        (ensure-legal-window-coordinate
+         (scale-x (-& x fix-radius)))
+        (ensure-legal-window-coordinate
+         (scale-y (-& y fix-radius)))
+        diameter diameter
+        0 360))
       )
     :TRANSLATION-ARGS
     ;; translation
@@ -2708,8 +2708,8 @@ Modification History (most recent at the top)
     (trans-x trans-y scale-x scale-y)
     :TRANSLATION-AND-SCALING-BODY
     (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-	   (set-y (+& (fixr (* y scale-y)) trans-y))
-	   (set-radius (fixr (* radius (min scale-x scale-y)))))
+     (set-y (+& (fixr (* y scale-y)) trans-y))
+     (set-radius (fixr (* radius (min scale-x scale-y)))))
     ;; sprite shape translation
     :TURTLE-TRANSLATOR-ARGS
     (trans-x trans-y cos-scale sin-scale scale)
@@ -2731,11 +2731,11 @@ Modification History (most recent at the top)
     (:x-transform :y-transform nil)
     :SPRITE-COMMAND
     (cond ((and (= x last-x) (= y last-y))
-	   (list 'bu::stamp-hollow-circle radius))
-	  (t
-	   (setq last-x x last-y y)
-	   (append (sprite-commands-for-new-position x y)
-		   (list 'bu::stamp-hollow-circle radius))))
+     (list 'bu::stamp-hollow-circle radius))
+    (t
+     (setq last-x x last-y y)
+     (append (sprite-commands-for-new-position x y)
+       (list 'bu::stamp-hollow-circle radius))))
     :COMMAND-BODY
     (unless (zerop radius)
       #+opengl
@@ -2745,11 +2745,11 @@ Modification History (most recent at the top)
                     nil)
       #-opengl
       (let ((diameter  (fixr (* 2 radius)))
-	    (fix-radius (fixr radius)))
-	(%draw-arc %drawing-array *graphics-state-current-alu*
-		   (ensure-legal-window-coordinate (scale-x (-& x fix-radius)))
-		   (ensure-legal-window-coordinate (scale-y (-& y fix-radius)))
-		   diameter diameter 0 360))
+      (fix-radius (fixr radius)))
+  (%draw-arc %drawing-array *graphics-state-current-alu*
+       (ensure-legal-window-coordinate (scale-x (-& x fix-radius)))
+       (ensure-legal-window-coordinate (scale-y (-& y fix-radius)))
+       diameter diameter 0 360))
       )
     :TRANSLATION-ARGS
     ;; translation
@@ -2761,8 +2761,8 @@ Modification History (most recent at the top)
     (trans-x trans-y scale-x scale-y)
     :TRANSLATION-AND-SCALING-BODY
     (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-	   (set-y (+& (fixr (* y scale-y)) trans-y))
-	   (set-radius (fixr (* radius (min scale-x scale-y)))))
+     (set-y (+& (fixr (* y scale-y)) trans-y))
+     (set-radius (fixr (* radius (min scale-x scale-y)))))
     ;; sprite shape translation
     :TURTLE-TRANSLATOR-ARGS
     (trans-x trans-y cos-scale sin-scale scale)
@@ -2780,7 +2780,7 @@ Modification History (most recent at the top)
   `(with-graphics-state (,gl t)
      (with-blending-on
        (do-vector-contents (command ,gl)
-	 (process-graphics-command-marker command . ,args)))))
+   (process-graphics-command-marker command . ,args)))))
 
 (defun redisplay-graphics-sheet (gs graphics-screen-box)
   (with-graphics-vars-bound ((screen-obj-actual-obj graphics-screen-box))
@@ -2808,8 +2808,8 @@ Modification History (most recent at the top)
 ;;; show probably do some type checking about compatibility
 ;;; of the from and to args
 (defun dub-graphics-list (from-gl &optional
-				  (to-gl %graphics-list)
-				  (action ':append))
+          (to-gl %graphics-list)
+          (action ':append))
   (ecase action
     (:append
      ;; first, set the drawing parameters to the basic state
@@ -2823,14 +2823,14 @@ Modification History (most recent at the top)
        (sv-append to-gl (copy-graphics-command command)))))
   ;; now make sure the to-gl has the same current state as the from-gl
   (setf (graphics-command-list-agent to-gl) nil
-	(graphics-command-list-alu to-gl) (graphics-command-list-alu from-gl)
-	(graphics-command-list-pen-width to-gl) (graphics-command-list-pen-width from-gl)
-	(graphics-command-list-font-no to-gl) (graphics-command-list-font-no from-gl)
-	(graphics-command-list-pen-color to-gl) (graphics-command-list-pen-color from-gl))
+  (graphics-command-list-alu to-gl) (graphics-command-list-alu from-gl)
+  (graphics-command-list-pen-width to-gl) (graphics-command-list-pen-width from-gl)
+  (graphics-command-list-font-no to-gl) (graphics-command-list-font-no from-gl)
+  (graphics-command-list-pen-color to-gl) (graphics-command-list-pen-color from-gl))
   (setq *graphics-state-current-alu* (graphics-command-list-alu to-gl)
-	*graphics-state-current-pen-width* (graphics-command-list-pen-width to-gl)
-	*graphics-state-current-font-no* (graphics-command-list-font-no to-gl)
-	*graphics-state-current-pen-color* (graphics-command-list-pen-color to-gl)))
+  *graphics-state-current-pen-width* (graphics-command-list-pen-width to-gl)
+  *graphics-state-current-font-no* (graphics-command-list-font-no to-gl)
+  *graphics-state-current-pen-color* (graphics-command-list-pen-color to-gl)))
 
 
 
@@ -3024,19 +3024,19 @@ Modification History (most recent at the top)
     (format stream " ~A" (svref& com i))))
 
 (defun show-graphics-list (gl &optional
-			      (first-n nil) (stream *standard-output*))
+            (first-n nil) (stream *standard-output*))
   (format stream "~%STATE is [agent:~A],[alu:~A],~
                              [font-no:~A],[pen-width:~A],[pen-color:~A]  values are:"
-	  (graphics-command-list-agent gl) (graphics-command-list-alu gl)
-	  (graphics-command-list-font-no gl)
-	  (graphics-command-list-pen-width gl)
-	  (graphics-command-list-pen-color gl))
+    (graphics-command-list-agent gl) (graphics-command-list-alu gl)
+    (graphics-command-list-font-no gl)
+    (graphics-command-list-pen-width gl)
+    (graphics-command-list-pen-color gl))
   (let ((counter 0))
     (do-vector-contents (command gl)
       (show-graphics-command command stream)
       (incf& counter)
       (when (and first-n (= counter first-n))
-	(return nil)))))
+  (return nil)))))
 
 (defun show-graphics-state (gl &optional (label "Current Graphics State"))
   (let ((agent (and gl (graphics-command-list-agent gl))))
@@ -3058,17 +3058,17 @@ Modification History (most recent at the top)
 #|
 (defun test (box x y)
   (drawing-on-window (*boxer-pane*)
-		     (with-graphics-state
-		     (with-graphics-vars-bound (box)
-			   (change-pen-width 1)
-			   (ellipse x y 60 60)
-			   (centered-rectangle x y 42 42)
-			   (line-segment (- x 30) y (- x 60) (- y 20))
-			   (line-segment (- x 30) y (- x 60) (+ y 20))
-			   (change-pen-width 4)
-			   (line-segment (+ x 30) y (+ x 60) (- y 20))
-			   (line-segment (+ x 30) y (+ x 60) (+ y 20))
-			   (centered-string x (+ y 40) "Alien")))))
+         (with-graphics-state
+         (with-graphics-vars-bound (box)
+         (change-pen-width 1)
+         (ellipse x y 60 60)
+         (centered-rectangle x y 42 42)
+         (line-segment (- x 30) y (- x 60) (- y 20))
+         (line-segment (- x 30) y (- x 60) (+ y 20))
+         (change-pen-width 4)
+         (line-segment (+ x 30) y (+ x 60) (- y 20))
+         (line-segment (+ x 30) y (+ x 60) (+ y 20))
+         (centered-string x (+ y 40) "Alien")))))
 |#
 
 
