@@ -66,47 +66,47 @@ Modification History (most recent at top)
 
 (defmethod all-interface-slots ((self graphics-cursor))
   (append (call-next-method)
-	  (list 'shown? 'pen 'pen-width 'type-font 'pen-color)))
+      (list 'shown? 'pen 'pen-width 'type-font 'pen-color)))
 
 (defmethod link-interface-slots ((self graphics-cursor) sprite-box)
   (call-next-method)
   (install-interface-slot (slot-value self 'shown?)
-			  'bu::shown? sprite-box)
+              'bu::shown? sprite-box)
   (install-interface-slot (slot-value self 'pen)
-			  'bu::pen sprite-box)
+              'bu::pen sprite-box)
   (install-interface-slot (slot-value self 'pen-width)
-			  'bu::pen-width sprite-box)
+              'bu::pen-width sprite-box)
   (install-interface-slot (slot-value self 'pen-color)
-			  'bu::pen-color sprite-box)
+              'bu::pen-color sprite-box)
   (install-interface-slot (slot-value self 'type-font)
-			  'bu::type-font sprite-box))
+              'bu::type-font sprite-box))
 
 (defmethod unlink-interface-slots ((self graphics-cursor) sprite-box)
   (call-next-method)
   (uninstall-interface-slot (slot-value self 'shown?)
-			    'bu::shown? sprite-box)
+                'bu::shown? sprite-box)
   (uninstall-interface-slot (slot-value self 'pen)
-			    'bu::pen sprite-box)
+                'bu::pen sprite-box)
   (uninstall-interface-slot (slot-value self 'pen-width)
-			    'bu::pen-width sprite-box)
+                'bu::pen-width sprite-box)
   (uninstall-interface-slot (slot-value self 'pen-color)
-			    'bu::pen-color sprite-box)
+                'bu::pen-color sprite-box)
   (uninstall-interface-slot (slot-value self 'type-font)
-			    'bu::type-font sprite-box))
+                'bu::type-font sprite-box))
 
 (defmethod copy-graphics-slots ((old-gc graphics-cursor)
-				(new-gc graphics-cursor))
+                (new-gc graphics-cursor))
   (call-next-method)
   (setf (box-interface-value (slot-value new-gc 'shown?))
-	(box-interface-value (slot-value old-gc 'shown?)))
+    (box-interface-value (slot-value old-gc 'shown?)))
   (setf (box-interface-value (slot-value new-gc 'pen))
-	(box-interface-value (slot-value old-gc 'pen)))
+    (box-interface-value (slot-value old-gc 'pen)))
   (setf (box-interface-value (slot-value new-gc 'pen-width))
-	(box-interface-value (slot-value old-gc 'pen-width)))
+    (box-interface-value (slot-value old-gc 'pen-width)))
   (setf (box-interface-value (slot-value new-gc 'pen-color))
-	(box-interface-value (slot-value old-gc 'pen-color)))
+    (box-interface-value (slot-value old-gc 'pen-color)))
   (setf (box-interface-value (slot-value new-gc 'type-font))
-	(box-interface-value (slot-value old-gc 'type-font))))
+    (box-interface-value (slot-value old-gc 'type-font))))
 
 
 
@@ -118,15 +118,15 @@ Modification History (most recent at top)
     (with-graphics-state-bound
       (do-vector-contents (gc gl)
         (multiple-value-bind (gc-min-x gc-min-y gc-max-x gc-max-y
-				       state-change?)
-	                     (graphics-command-extents gc)
-	  (unless state-change?
-	    (setq min-x (min gc-min-x min-x)
-		  min-y (min gc-min-y min-y)
-		  max-x (max gc-max-x max-x)
-		  max-y (max gc-max-y max-y))))))
+                       state-change?)
+                         (graphics-command-extents gc)
+      (unless state-change?
+        (setq min-x (min gc-min-x min-x)
+          min-y (min gc-min-y min-y)
+          max-x (max gc-max-x max-x)
+          max-y (max gc-max-y max-y))))))
     (values (* 2 (1+ (max (abs min-x) (abs max-x))))
-	    (* 2 (1+ (max (abs min-y) (abs max-y)))))))
+        (* 2 (1+ (max (abs min-y) (abs max-y)))))))
 
 (defun shape-box-updater-internal (box shape)
   (with-font-map-bound (*boxer-pane*);;in case there are TYPE commands in the shape
@@ -138,15 +138,15 @@ Modification History (most recent at top)
     ;; figure out the size it is supposed to be
     (let ((gs (graphics-info box)))
       (multiple-value-bind (width height)
-	  (graphics-list-extent shape)
-	(setf (graphics-sheet-draw-wid gs) (values (ceiling width))
-	      (graphics-sheet-draw-hei gs) (values (ceiling height))))
+      (graphics-list-extent shape)
+    (setf (graphics-sheet-draw-wid gs) (values (ceiling width))
+          (graphics-sheet-draw-hei gs) (values (ceiling height))))
       ;; now update the graphics list
       (with-graphics-vars-bound (box)
-	(clear-graphics-list %graphics-list)
-	(do-vector-contents (shape-gc shape)
-	  (sv-append %graphics-list
-		     (allocate-boxer->window-command shape-gc)))))
+    (clear-graphics-list %graphics-list)
+    (do-vector-contents (shape-gc shape)
+      (sv-append %graphics-list
+             (allocate-boxer->window-command shape-gc)))))
     ;; make sure we are in graphics mode
     (setf (display-style-graphics-mode? (display-style-list box)) t)))
 
@@ -160,53 +160,53 @@ Modification History (most recent at top)
 
 (defmethod set-shape ((self button) shape-box &optional dont-update-box)
   (let* ((shape-slot (slot-value self 'shape))
-	 (shape (box-interface-value shape-slot)))
+     (shape (box-interface-value shape-slot)))
     (cond ((sprite-box? shape-box)
-	   ;; just copy the sprite's shape into the current shape
-	   (dub-graphics-list (shape (slot-value shape-box
-						 'associated-turtle))
-			      shape :replace))
-	  ((and (virtual-copy? shape-box)
-		(fast-vc-has-sprite? shape-box))
-	   ;; just copy the sprite's shape into the current shape
-	   (dub-graphics-list (shape (getf (vc-graphics shape-box) 'turtle))
-			      shape :replace))
-	  (t
-	   ;; must be some flavor of graphics box
-	   ;; need to convert to from window to turtle commands
-	   (with-graphics-vars-bound (shape-box)
-	     (clear-graphics-list shape)
+       ;; just copy the sprite's shape into the current shape
+       (dub-graphics-list (shape (slot-value shape-box
+                         'associated-turtle))
+                  shape :replace))
+      ((and (virtual-copy? shape-box)
+        (fast-vc-has-sprite? shape-box))
+       ;; just copy the sprite's shape into the current shape
+       (dub-graphics-list (shape (getf (vc-graphics shape-box) 'turtle))
+                  shape :replace))
+      (t
+       ;; must be some flavor of graphics box
+       ;; need to convert to from window to turtle commands
+       (with-graphics-vars-bound (shape-box)
+         (clear-graphics-list shape)
              (unless (null %bit-array)
                ;; if the shape-box has a background bitmap, lay that in first
                (sv-append shape (make-boxer-graphics-command-centered-bitmap
                                  (new-offscreen-copy %bit-array)
                                  0 0 (offscreen-bitmap-width %bit-array)
                                  (offscreen-bitmap-height %bit-array))))
-	     (do-vector-contents (graphics-command %graphics-list)
-	       (sv-append shape (allocate-window->boxer-command
-				 graphics-command))))))
+         (do-vector-contents (graphics-command %graphics-list)
+           (sv-append shape (allocate-window->boxer-command
+                 graphics-command))))))
     ;; handle any box interface...
     (when (and (null dont-update-box)
-	       (not (null (box-interface-box shape-slot))))
+           (not (null (box-interface-box shape-slot))))
       (shape-box-updater shape-slot))
     ;; fixup other slots which depend on the shape...
     (update-save-under self)
     (update-window-shape-allocation self)
     ;; now we need to initialize the save under...
     (let ((assoc-graphics-box (slot-value self 'assoc-graphics-box))
-	  (ahead (absolute-heading self))
-	  (asize (absolute-size self)))
+      (ahead (absolute-heading self))
+      (asize (absolute-size self)))
       (unless (null assoc-graphics-box)
-	(with-graphics-vars-bound (assoc-graphics-box)
-	  (update-window-shape (box-interface-value (slot-value self 'shape))
-			       (slot-value self 'window-shape)
-			       (absolute-x-position self)
-			       (absolute-y-position self)
-			       (* (cosd ahead) asize) (* (sind ahead) asize)
-			       asize)
-	  (with-graphics-screen-parameters-once
-	      (unless (eq (turtle-save-under self) 'xor-redraw)
-		(save-under-turtle self))))))))
+    (with-graphics-vars-bound (assoc-graphics-box)
+      (update-window-shape (box-interface-value (slot-value self 'shape))
+                   (slot-value self 'window-shape)
+                   (absolute-x-position self)
+                   (absolute-y-position self)
+                   (* (cosd ahead) asize) (* (sind ahead) asize)
+                   asize)
+      (with-graphics-screen-parameters-once
+          (unless (eq (turtle-save-under self) 'xor-redraw)
+        (save-under-turtle self))))))))
 
 
 
@@ -217,31 +217,31 @@ Modification History (most recent at top)
 ;;; a with-sprites-hidden macro)
 
 (defmethod set-shown? ((self graphics-cursor) new-value
-			&optional dont-update-box (explicit t))
+            &optional dont-update-box (explicit t))
   (let* ((slot (slot-value self 'shown?))
-	 #-opengl (old-value (box-interface-value slot))
-	 (box (box-interface-box slot))
-	 #-opengl (top-guy (top-sprite self)))
+     #-opengl (old-value (box-interface-value slot))
+     (box (box-interface-box slot))
+     #-opengl (top-guy (top-sprite self)))
     (multiple-value-bind (word value)
-	(case new-value
-	  ((t bu::all bu::true) (values 'bu::true t))
-	  ((nil bu::none bu::false) (values 'bu::false nil))
-	  ((:subsprites bu::subsprites) (values 'bu::subsprites :subsprites))
-	  ((:no-subsprites bu::no-subsprites)
-	   (values 'bu::no-subsprites ':no-subsprites)))
+    (case new-value
+      ((t bu::all bu::true) (values 'bu::true t))
+      ((nil bu::none bu::false) (values 'bu::false nil))
+      ((:subsprites bu::subsprites) (values 'bu::subsprites :subsprites))
+      ((:no-subsprites bu::no-subsprites)
+       (values 'bu::no-subsprites ':no-subsprites)))
       #-opengl
       (unless (or (not explicit) (eq old-value value))
-	;; if the shown? values are different, then
-	;; erase (before changing the shown? values)
-	(with-graphics-screen-parameters (erase top-guy)))
+    ;; if the shown? values are different, then
+    ;; erase (before changing the shown? values)
+    (with-graphics-screen-parameters (erase top-guy)))
       (when (and (null dont-update-box) (not (null box)))
-	(bash-box-to-single-value box word))
+    (bash-box-to-single-value box word))
       (setf (box-interface-value slot) value)
       #-opengl
       (unless (or (not explicit) (eq old-value value))
-	;; if the shown? values are different, then we need to redraw
-	(with-graphics-screen-parameters
-	    (when (shown? top-guy) (draw top-guy)))))))
+    ;; if the shown? values are different, then we need to redraw
+    (with-graphics-screen-parameters
+        (when (shown? top-guy) (draw top-guy)))))))
 
 (defmethod shown?-symbol ((self graphics-cursor))
   (case (box-interface-value (slot-value self 'shown?))
@@ -259,20 +259,20 @@ Modification History (most recent at top)
 (defmethod subsprites-shown? ((self graphics-cursor))
   (let ((superior-turtle (slot-value self 'superior-turtle)))
     (if (not (null superior-turtle))
-	(and (subsprites-shown? superior-turtle)
-	     (fast-memq (box-interface-value (slot-value self 'shown?))
-			'(t :subsprites)))
-	(fast-memq (box-interface-value (slot-value self 'shown?))
-		   '(t :subsprites)))))
+    (and (subsprites-shown? superior-turtle)
+         (fast-memq (box-interface-value (slot-value self 'shown?))
+            '(t :subsprites)))
+    (fast-memq (box-interface-value (slot-value self 'shown?))
+           '(t :subsprites)))))
 
 (defmethod absolute-shown? ((self graphics-cursor))
   (let ((sh (box-interface-value (slot-value self 'shown?)))
-	(superior-turtle (slot-value self 'superior-turtle)))
+    (superior-turtle (slot-value self 'superior-turtle)))
     (if superior-turtle
-	(if (null sh)
-	    nil
-	    (subsprites-shown? superior-turtle))
-	(not (null sh)))))
+    (if (null sh)
+        nil
+        (subsprites-shown? superior-turtle))
+    (not (null sh)))))
 
 (defmethod pen ((self graphics-cursor))
   (box-interface-value (slot-value self 'pen)))
@@ -306,97 +306,97 @@ Modification History (most recent at top)
                  (background (graphics-sheet-background gs)))
              (cond ((and *check-bit-array-color* (not (null bit-array)))
                     (with-graphics-vars-bound-internal gs
-	              (let ((gb-x (fix-array-coordinate-x (x-position self)))
+                  (let ((gb-x (fix-array-coordinate-x (x-position self)))
                             (gb-y (fix-array-coordinate-y (y-position self))))
-	                (if (and (<=& 0 gb-x (graphics-sheet-draw-wid gs))
-		                 (<=& 0 gb-y (graphics-sheet-draw-hei gs)))
-		          (cond ((not (null bit-array))
-			         (offscreen-pixel-color gb-x gb-y bit-array))
-			        ((not (null background))
-			         background)
-			        (t *background-color*))))))
+                    (if (and (<=& 0 gb-x (graphics-sheet-draw-wid gs))
+                         (<=& 0 gb-y (graphics-sheet-draw-hei gs)))
+                  (cond ((not (null bit-array))
+                     (offscreen-pixel-color gb-x gb-y bit-array))
+                    ((not (null background))
+                     background)
+                    (t *background-color*))))))
                    (t
                     background)))))))
    *background-color*))
 
 (defmethod set-pen ((self graphics-cursor) new-value &optional dont-update-box)
   (let ((pen-alu (get-alu-from-pen new-value))
-	(slot (slot-value self 'pen)))
+    (slot (slot-value self 'pen)))
     (setf (box-interface-value slot) new-value)
     (when (null %learning-shape?)
       (let ((box (box-interface-box slot)))
-	(when (and (null dont-update-box) (not (null box)))
-	  (bash-box-to-single-value box new-value))))
+    (when (and (null dont-update-box) (not (null box)))
+      (bash-box-to-single-value box new-value))))
     (unless (or (null pen-alu) (eq %graphics-box :no-graphics))
       (let ((erase-color (when (eq new-value 'bu::erase)
-			   (background-graphics-color self))))
-	(cond ((eq self (graphics-command-list-agent %graphics-list))
-	       ;; if the current sprite is still the "owner" then just
-	       ;; record the change in alu with special handling for
-	       ;; erasing in a graphics box which has a background
-	       (cond (erase-color
-		      (unless (eql *graphics-state-current-alu* alu-seta)
-			(record-boxer-graphics-command-change-alu alu-seta)
-			(change-alu alu-seta))
-		      (unless (eql *graphics-state-current-pen-color*
-				   erase-color)
-			(record-boxer-graphics-command-change-graphics-color
-			 erase-color)
-			(change-graphics-color erase-color)))
-		     (t
-		      (unless (eql *graphics-state-current-alu* pen-alu)
-			(record-boxer-graphics-command-change-alu pen-alu)
-			(change-alu pen-alu))
-		      ;; check the validity of the color since it may
-		      ;; have been changed by a previous erase command, note
-		      ;; that we can't check the current value of the alu
-		      ;; for 'bu::erase because there may have been
-		      ;; an intervening PENUP command
+               (background-graphics-color self))))
+    (cond ((eq self (graphics-command-list-agent %graphics-list))
+           ;; if the current sprite is still the "owner" then just
+           ;; record the change in alu with special handling for
+           ;; erasing in a graphics box which has a background
+           (cond (erase-color
+              (unless (eql *graphics-state-current-alu* alu-seta)
+            (record-boxer-graphics-command-change-alu alu-seta)
+            (change-alu alu-seta))
+              (unless (eql *graphics-state-current-pen-color*
+                   erase-color)
+            (record-boxer-graphics-command-change-graphics-color
+             erase-color)
+            (change-graphics-color erase-color)))
+             (t
+              (unless (eql *graphics-state-current-alu* pen-alu)
+            (record-boxer-graphics-command-change-alu pen-alu)
+            (change-alu pen-alu))
+              ;; check the validity of the color since it may
+              ;; have been changed by a previous erase command, note
+              ;; that we can't check the current value of the alu
+              ;; for 'bu::erase because there may have been
+              ;; an intervening PENUP command
 
-			;; always record when learning shape because we
-			;; can't side effect the sprite's state to
-			;; check if the current color is correcta
-		      (let ((gc (box-interface-value (slot-value self
-								 'pen-color))))
-			(unless (eql *graphics-state-current-pen-color* gc)
-			  (record-boxer-graphics-command-change-graphics-color
-			   gc)
-			  (change-graphics-color gc))))))
-	      (t
-	       ;; first, make sure the current state of the graphics list
-	       ;; matches the state of the drawing sprite, this is handled
-	       ;; in a different way if the sprite is erasing
-	       (cond (erase-color
-		      (synchronize-graphics-state-for-erase self erase-color))
-		     (t (synchronize-graphics-state self)))
-	       ;; Now that everything agrees, set the new "owner"
-	       (setf (graphics-command-list-agent %graphics-list) self)))))))
+            ;; always record when learning shape because we
+            ;; can't side effect the sprite's state to
+            ;; check if the current color is correcta
+              (let ((gc (box-interface-value (slot-value self
+                                 'pen-color))))
+            (unless (eql *graphics-state-current-pen-color* gc)
+              (record-boxer-graphics-command-change-graphics-color
+               gc)
+              (change-graphics-color gc))))))
+          (t
+           ;; first, make sure the current state of the graphics list
+           ;; matches the state of the drawing sprite, this is handled
+           ;; in a different way if the sprite is erasing
+           (cond (erase-color
+              (synchronize-graphics-state-for-erase self erase-color))
+             (t (synchronize-graphics-state self)))
+           ;; Now that everything agrees, set the new "owner"
+           (setf (graphics-command-list-agent %graphics-list) self)))))))
 
 (defmethod pen-width ((self graphics-cursor))
   (box-interface-value (slot-value self 'pen-width)))
 
 (defmethod set-pen-width ((self graphics-cursor) new-value
-			  &optional dont-update-box)
+              &optional dont-update-box)
   (unless (typep new-value 'fixnum)
     (setq new-value (values (ceiling new-value))))
   ;; Bash slots in the data structure only if we are NOT recording a shape
   (when (null %learning-shape?)
     (let* ((slot (slot-value self 'pen-width))
-	   (box (box-interface-box slot)))
+       (box (box-interface-box slot)))
       (when (and (null dont-update-box) (not (null box)))
-	(bash-box-to-single-value box new-value))))
+    (bash-box-to-single-value box new-value))))
   (setf (box-interface-value (slot-value self 'pen-width)) new-value)
   ;; Record appropriate changes into the graphics list
   (unless (null %graphics-list)
     (if (eq self (graphics-command-list-agent %graphics-list))
-	;; if the current sprite is still the "owner" then just
-	;; record the change in pen-width
-	(unless (eql *graphics-state-current-pen-width* new-value)
-	  (record-boxer-graphics-command-change-pen-width new-value))
-	;; otherwise, we need to set a new "owner"
-	(progn
-	  (synchronize-graphics-state self t)
-	  (setf (graphics-command-list-agent %graphics-list) self)))
+    ;; if the current sprite is still the "owner" then just
+    ;; record the change in pen-width
+    (unless (eql *graphics-state-current-pen-width* new-value)
+      (record-boxer-graphics-command-change-pen-width new-value))
+    ;; otherwise, we need to set a new "owner"
+    (progn
+      (synchronize-graphics-state self t)
+      (setf (graphics-command-list-agent %graphics-list) self)))
     ;; finally, change the global value
     (change-pen-width new-value)))
 
@@ -439,9 +439,9 @@ Modification History (most recent at top)
     ;; first make sure there is a graphics sheet
     (when (null (graphics-info box))
       (setf (graphics-info box)
-	    (%make-simple-graphics-sheet *pen-color-graphics-size*
-					 *pen-color-graphics-size*
-					 box)))
+        (%make-simple-graphics-sheet *pen-color-graphics-size*
+                     *pen-color-graphics-size*
+                     box)))
     ;; now that we are sure there is a graphics sheet, update
     ;; it by setting the background color
     (setf (graphics-sheet-background (graphics-info box)) value)
@@ -454,24 +454,24 @@ Modification History (most recent at top)
   (box-interface-value (slot-value self 'pen-color)))
 
 (defmethod set-pen-color ((self graphics-cursor) new-value
-			  &optional dont-update-box)
+              &optional dont-update-box)
   ;; Bash slots in the data structure only if we are NOT recording a shape
   (when (null %learning-shape?)
     (let ((slot (slot-value self 'pen-color)))
       (when (and (null dont-update-box) (not (null (box-interface-box slot))))
-	(pen-color-box-updater slot))))
+    (pen-color-box-updater slot))))
   (setf (box-interface-value (slot-value self 'pen-color)) new-value)
   ;; Record appropriate changes into the graphics list
   (unless (null %graphics-list)
     (if (eq self (graphics-command-list-agent %graphics-list))
-	;; if the current sprite is still the "owner" then just
-	;; record the change in pen-color
-	(unless (color= *graphics-state-current-pen-color* new-value)
-	  (record-boxer-graphics-command-change-graphics-color new-value))
-	;; otherwise, we need to set a new "owner"
-	(progn
-	  (synchronize-graphics-state self t)
-	  (setf (graphics-command-list-agent %graphics-list) self)))
+    ;; if the current sprite is still the "owner" then just
+    ;; record the change in pen-color
+    (unless (color= *graphics-state-current-pen-color* new-value)
+      (record-boxer-graphics-command-change-graphics-color new-value))
+    ;; otherwise, we need to set a new "owner"
+    (progn
+      (synchronize-graphics-state self t)
+      (setf (graphics-command-list-agent %graphics-list) self)))
     ;; finally, change the global value
     (change-graphics-color new-value)))
 
@@ -482,11 +482,11 @@ Modification History (most recent at top)
 
 
 (defmethod set-type-font ((self graphics-cursor) new-value
-			 &optional dont-update-box)
+             &optional dont-update-box)
   ;; Bash slots in the data structure only if we are NOT recording a shape
   (when (null %learning-shape?)
     (let* ((slot (slot-value self 'type-font))
-	   (box (box-interface-box slot)))
+       (box (box-interface-box slot)))
       (when (and (null dont-update-box) (not (null box)))
         #+mcl
         (bash-box-to-list-value box
@@ -494,20 +494,20 @@ Modification History (most recent at top)
                                        (font-size new-value)
                                        (font-styles new-value)))
         #-mcl
-	(bash-box-to-single-value box
-				  (font-name-from-font-no new-value)))))
+    (bash-box-to-single-value box
+                  (font-name-from-font-no new-value)))))
   (setf (box-interface-value (slot-value self 'type-font)) new-value)
   ;; Record appropriate changes into the graphics list
   (unless (null %graphics-list)
     (if (eq self (graphics-command-list-agent %graphics-list))
-	;; if the current sprite is still the "owner" then just
-	;; record the change in font
-	(unless (eql *graphics-state-current-font-no* new-value)
-	  (record-boxer-graphics-command-change-graphics-font new-value))
-	;; otherwise, we need to set a new "owner"
-	(progn
-	  (synchronize-graphics-state self t)
-	  (setf (graphics-command-list-agent %graphics-list) self)))
+    ;; if the current sprite is still the "owner" then just
+    ;; record the change in font
+    (unless (eql *graphics-state-current-font-no* new-value)
+      (record-boxer-graphics-command-change-graphics-font new-value))
+    ;; otherwise, we need to set a new "owner"
+    (progn
+      (synchronize-graphics-state self t)
+      (setf (graphics-command-list-agent %graphics-list) self)))
     ;; finally, change the global value
     (change-graphics-font new-value)))
 
@@ -520,46 +520,46 @@ Modification History (most recent at top)
 ;;; that describe the current graphics state
 
 (defmethod synchronize-graphics-state ((agent graphics-cursor)
-				       &optional (force? nil))
+                       &optional (force? nil))
   (let* ((pw (box-interface-value (slot-value agent 'pen-width)))
-	 (gc (box-interface-value (slot-value agent 'pen-color)))
-	 (pen-state (box-interface-value (slot-value agent 'pen)))
-	 (alu (get-alu-from-pen pen-state))
-	 (font (box-interface-value (slot-value agent 'type-font)))
-	 ;; this has to be bound explicitly here because this method can
-	 ;; be called INSIDE of update-shape
-	 (*graphics-command-recording-mode* ':window)
+     (gc (box-interface-value (slot-value agent 'pen-color)))
+     (pen-state (box-interface-value (slot-value agent 'pen)))
+     (alu (get-alu-from-pen pen-state))
+     (font (box-interface-value (slot-value agent 'type-font)))
+     ;; this has to be bound explicitly here because this method can
+     ;; be called INSIDE of update-shape
+     (*graphics-command-recording-mode* ':window)
          ;; Do not supress recording of these synchronization commands
          (*supress-graphics-recording?* nil))
     (unless (and (not force?) (eq pen-state 'up))
       ;; don't need to synchronize if the sprite isn't going to be
       (unless (eql *graphics-state-current-alu* alu)
-	(unless (null alu)
-	  (record-boxer-graphics-command-change-alu alu))
+    (unless (null alu)
+      (record-boxer-graphics-command-change-alu alu))
         (setf (graphics-command-list-alu %graphics-list) alu)
-	(change-alu (or alu alu-andca)))
+    (change-alu (or alu alu-andca)))
       (unless (eql *graphics-state-current-pen-width* pw)
-	(record-boxer-graphics-command-change-pen-width pw)
+    (record-boxer-graphics-command-change-pen-width pw)
         (setf (graphics-command-list-pen-width %graphics-list) pw)
-	(change-pen-width pw))
+    (change-pen-width pw))
       (unless (color= *graphics-state-current-pen-color* gc)
-	(record-boxer-graphics-command-change-graphics-color gc)
+    (record-boxer-graphics-command-change-graphics-color gc)
         (setf (graphics-command-list-pen-color %graphics-list) gc)
-	(change-graphics-color gc))
+    (change-graphics-color gc))
       (unless (eql *graphics-state-current-font-no* font)
-	(record-boxer-graphics-command-change-graphics-font font)
+    (record-boxer-graphics-command-change-graphics-font font)
         (setf (graphics-command-list-font-no %graphics-list) font)
-	(change-graphics-font font)))))
+    (change-graphics-font font)))))
 
 ;; similiar to synchronize-graphics-state except we synch to erasing
 ;; values instead of the intrinsic values of the sprite
 (defmethod synchronize-graphics-state-for-erase ((agent graphics-cursor)
-						 erase-color)
+                         erase-color)
   (let* ((pw (box-interface-value (slot-value agent 'pen-width)))
-	 (font (box-interface-value (slot-value agent 'type-font)))
-	 ;; this has to be bound explicitly here because this method can
-	 ;; be called INSIDE of update-shape
-	 (*graphics-command-recording-mode* ':window))
+     (font (box-interface-value (slot-value agent 'type-font)))
+     ;; this has to be bound explicitly here because this method can
+     ;; be called INSIDE of update-shape
+     (*graphics-command-recording-mode* ':window))
     (unless (eql *graphics-state-current-alu* alu-seta)
       (record-boxer-graphics-command-change-alu alu-seta)
       (change-alu alu-seta))
@@ -587,11 +587,11 @@ Modification History (most recent at top)
 (defmethod new-shape-preamble ((agent graphics-cursor) graphics-command-list)
   (setf (graphics-command-list-agent graphics-command-list) agent)
   (let ((pw (box-interface-value (slot-value agent 'pen-width)))
-	(alu (or (get-alu-from-pen
-		  (box-interface-value (slot-value agent 'pen)))
-		 alu-andca))
-	(font (box-interface-value (slot-value agent 'type-font)))
-	(%graphics-list graphics-command-list))
+    (alu (or (get-alu-from-pen
+          (box-interface-value (slot-value agent 'pen)))
+         alu-andca))
+    (font (box-interface-value (slot-value agent 'type-font)))
+    (%graphics-list graphics-command-list))
     ;; the current alu of the turtle
     (setf (graphics-command-list-alu graphics-command-list) alu)
     (record-boxer-graphics-command-change-alu alu)
@@ -614,10 +614,10 @@ Modification History (most recent at top)
 (defmethod new-shape-preamble ((agent graphics-cursor) graphics-command-list)
   (setf (graphics-command-list-agent graphics-command-list) agent)
   (let (;(font (box-interface-value (slot-value agent 'type-font)))
-	(%graphics-list graphics-command-list))
+    (%graphics-list graphics-command-list))
     ;; the current alu of the turtle
     (setf (graphics-command-list-alu graphics-command-list)
-	  (initial-shape-alu))
+      (initial-shape-alu))
     (record-boxer-graphics-command-change-alu (initial-shape-alu))
     ;; need to side effect the pen state of the turtle because the optimized
     ;; graphics command recording mechanism will not record if the turtle's
@@ -628,16 +628,16 @@ Modification History (most recent at top)
           (initial-shape-pen-symbol))
     ;; the current pen-width of the turtle
     (setf (graphics-command-list-pen-width graphics-command-list)
-	  (initial-shape-pen-width))
+      (initial-shape-pen-width))
     (record-boxer-graphics-command-change-pen-width (initial-shape-pen-width))
     ;; the pen color
     (setf (graphics-command-list-pen-color graphics-command-list)
-	  (initial-shape-pen-color))
+      (initial-shape-pen-color))
     (record-boxer-graphics-command-change-graphics-color
      (initial-shape-pen-color))
     ;; the current type-font of the turtle...
     (setf (graphics-command-list-font-no graphics-command-list)
-	  (initial-shape-type-font))
+      (initial-shape-type-font))
     (record-boxer-graphics-command-change-graphics-font
      (initial-shape-type-font))))
 
@@ -650,16 +650,16 @@ Modification History (most recent at top)
 
 (defmethod stamp-dot ((self graphics-cursor))
   (let ((alu (get-alu-from-pen
-	      (box-interface-value (slot-value self 'pen)))))
+          (box-interface-value (slot-value self 'pen)))))
     (cond ((null alu))
-	  ((not (null %learning-shape?))
-	   (record-boxer-graphics-command-dot (x-position self)
-					      (y-position self)))
-	  ((not (no-graphics?))
-	   (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-		 (array-y (fix-array-coordinate-y (absolute-y-position self))))
-	     (record-boxer-graphics-command-dot array-x array-y)
-	     #-opengl
+      ((not (null %learning-shape?))
+       (record-boxer-graphics-command-dot (x-position self)
+                          (y-position self)))
+      ((not (no-graphics?))
+       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
+         (array-y (fix-array-coordinate-y (absolute-y-position self))))
+         (record-boxer-graphics-command-dot array-x array-y)
+         #-opengl
              (with-graphics-screen-parameters
                (dot array-x array-y)))))))
 
@@ -668,40 +668,40 @@ Modification History (most recent at top)
 
 #-gl
 (defmethod turtle-rect ((self graphics-cursor) wid hei
-			&optional (orientation :centered))
+            &optional (orientation :centered))
   (declare (ignore orientation))	; a hook for later
   (let ((alu (get-alu-from-pen
-	      (box-interface-value (slot-value self 'pen)))))
+          (box-interface-value (slot-value self 'pen)))))
     (cond ((null alu))
-	  ((not (null %learning-shape?))
-	   (record-boxer-graphics-command-centered-rectangle
-	    (x-position self) (y-position self)
-	    (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
-	  ((not (no-graphics?))
-	   (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-		 (array-y (fix-array-coordinate-y (absolute-y-position self))))
-	     (record-boxer-graphics-command-centered-rectangle
-	      array-x array-y wid hei)
+      ((not (null %learning-shape?))
+       (record-boxer-graphics-command-centered-rectangle
+        (x-position self) (y-position self)
+        (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
+      ((not (no-graphics?))
+       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
+         (array-y (fix-array-coordinate-y (absolute-y-position self))))
+         (record-boxer-graphics-command-centered-rectangle
+          array-x array-y wid hei)
              #-opengl
-	     (with-graphics-screen-parameters
-		 (centered-rectangle array-x array-y wid hei)))))))
+         (with-graphics-screen-parameters
+         (centered-rectangle array-x array-y wid hei)))))))
 
 (defmethod hollow-turtle-rect ((self graphics-cursor) wid hei
-			&optional (orientation :centered))
+            &optional (orientation :centered))
   (declare (ignore orientation))	; a hook for later
   (let ((alu (get-alu-from-pen
-	      (box-interface-value (slot-value self 'pen)))))
+          (box-interface-value (slot-value self 'pen)))))
     (cond ((null alu))
-	  ((not (null %learning-shape?))
-	   (record-boxer-graphics-command-hollow-rectangle
-	    (x-position self) (y-position self)
-	    (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
-	  ((not (no-graphics?))
-	   (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-		 (array-y (fix-array-coordinate-y (absolute-y-position self))))
-	     (record-boxer-graphics-command-hollow-rectangle
-	      array-x array-y wid hei)
-	     #-opengl
+      ((not (null %learning-shape?))
+       (record-boxer-graphics-command-hollow-rectangle
+        (x-position self) (y-position self)
+        (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
+      ((not (no-graphics?))
+       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
+         (array-y (fix-array-coordinate-y (absolute-y-position self))))
+         (record-boxer-graphics-command-hollow-rectangle
+          array-x array-y wid hei)
+         #-opengl
              (with-graphics-screen-parameters
                (hollow-rectangle array-x array-y wid hei)))))))
 
@@ -715,22 +715,22 @@ Modification History (most recent at top)
 ;;;
 #+gl
 (defmethod turtle-rect ((self graphics-cursor) wid hei
-			&optional (orientation :centered))
+            &optional (orientation :centered))
   (declare (ignore orientation))	; a hook for later
   (let ((alu (get-alu-from-pen
-	      (box-interface-value (slot-value self 'pen)))))
+          (box-interface-value (slot-value self 'pen)))))
     (cond ((null alu))
-	  ((not (null %learning-shape?))
-	   (record-boxer-graphics-command-centered-rectangle
-	    (x-position self) (y-position self)
-	    (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
-	  ((not (no-graphics?))
-	   (let ((abs-x (absolute-x-position self))
-		 (abs-y (absolute-y-position self)))
-	     (record-boxer-graphics-command-centered-rectangle
-	      abs-x abs-y wid hei)
-	     (with-graphics-screen-parameters
-		 (centered-rectangle abs-x abs-y wid hei)))))))
+      ((not (null %learning-shape?))
+       (record-boxer-graphics-command-centered-rectangle
+        (x-position self) (y-position self)
+        (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
+      ((not (no-graphics?))
+       (let ((abs-x (absolute-x-position self))
+         (abs-y (absolute-y-position self)))
+         (record-boxer-graphics-command-centered-rectangle
+          abs-x abs-y wid hei)
+         (with-graphics-screen-parameters
+         (centered-rectangle abs-x abs-y wid hei)))))))
 
 
 
@@ -738,105 +738,105 @@ Modification History (most recent at top)
 ;;; Circle, Ellipses and Arcs
 
 (defmethod stamp-ellipse ((self graphics-cursor) wid hei
-			  &optional (orientation :centered))
+              &optional (orientation :centered))
   (declare (ignore orientation))	; a hook for later
   (let ((alu (get-alu-from-pen
-	      (box-interface-value (slot-value self 'pen)))))
+          (box-interface-value (slot-value self 'pen)))))
     (cond ((null alu))
-	  ((not (null %learning-shape?))
-	   (record-boxer-graphics-command-filled-ellipse
-	    (x-position self) (y-position self)
-	    (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
-	  ((not (no-graphics?))
-	   (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-		 (array-y (fix-array-coordinate-y (absolute-y-position self))))
-	     (record-boxer-graphics-command-filled-ellipse
-	      array-x array-y wid hei)
-	     #-opengl
+      ((not (null %learning-shape?))
+       (record-boxer-graphics-command-filled-ellipse
+        (x-position self) (y-position self)
+        (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
+      ((not (no-graphics?))
+       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
+         (array-y (fix-array-coordinate-y (absolute-y-position self))))
+         (record-boxer-graphics-command-filled-ellipse
+          array-x array-y wid hei)
+         #-opengl
              (with-graphics-screen-parameters
-		 (filled-ellipse array-x array-y wid hei)))))))
+         (filled-ellipse array-x array-y wid hei)))))))
 
 (defmethod stamp-hollow-ellipse ((self graphics-cursor) wid hei
-				 &optional (orientation :centered))
+                 &optional (orientation :centered))
   (declare (ignore orientation))	; a hook for later
   (let ((alu (get-alu-from-pen
-	      (box-interface-value (slot-value self 'pen)))))
+          (box-interface-value (slot-value self 'pen)))))
     (cond ((null alu))
-	  ((not (null %learning-shape?))
-	   (record-boxer-graphics-command-ellipse
-	    (x-position self) (y-position self)
-	    (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
-	  ((not (no-graphics?))
-	   (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-		 (array-y (fix-array-coordinate-y (absolute-y-position self))))
-	     (record-boxer-graphics-command-ellipse
-	      array-x array-y wid hei)
-	     #-opengl
+      ((not (null %learning-shape?))
+       (record-boxer-graphics-command-ellipse
+        (x-position self) (y-position self)
+        (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
+      ((not (no-graphics?))
+       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
+         (array-y (fix-array-coordinate-y (absolute-y-position self))))
+         (record-boxer-graphics-command-ellipse
+          array-x array-y wid hei)
+         #-opengl
              (with-graphics-screen-parameters
-		 (ellipse array-x array-y wid hei)))))))
+         (ellipse array-x array-y wid hei)))))))
 
 (defmethod stamp-circle ((self graphics-cursor) radius)
   (let ((alu (get-alu-from-pen
-	      (box-interface-value (slot-value self 'pen)))))
+          (box-interface-value (slot-value self 'pen)))))
     (cond ((null alu))
-	  ((not (null %learning-shape?))
-	   (record-boxer-graphics-command-filled-circle
-	    (x-position self) (y-position self) (coerce radius 'boxer-float)))
-	  ((not (no-graphics?))
-	   (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-		 (array-y (fix-array-coordinate-y (absolute-y-position self))))
-	     (record-boxer-graphics-command-filled-circle
-	      array-x array-y radius)
+      ((not (null %learning-shape?))
+       (record-boxer-graphics-command-filled-circle
+        (x-position self) (y-position self) (coerce radius 'boxer-float)))
+      ((not (no-graphics?))
+       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
+         (array-y (fix-array-coordinate-y (absolute-y-position self))))
+         (record-boxer-graphics-command-filled-circle
+          array-x array-y radius)
              (with-graphics-screen-parameters
-		 (filled-circle array-x array-y radius)))))))
+         (filled-circle array-x array-y radius)))))))
 
 (defmethod stamp-hollow-circle ((self graphics-cursor) radius)
   (let ((alu (get-alu-from-pen
-	      (box-interface-value (slot-value self 'pen)))))
+          (box-interface-value (slot-value self 'pen)))))
     (cond ((null alu))
-	  ((not (null %learning-shape?))
-	   (record-boxer-graphics-command-circle
-	    (x-position self) (y-position self) (coerce radius 'boxer-float)))
-	  ((not (no-graphics?))
-	   (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-		 (array-y (fix-array-coordinate-y (absolute-y-position self))))
-	     (record-boxer-graphics-command-circle array-x array-y radius)
+      ((not (null %learning-shape?))
+       (record-boxer-graphics-command-circle
+        (x-position self) (y-position self) (coerce radius 'boxer-float)))
+      ((not (no-graphics?))
+       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
+         (array-y (fix-array-coordinate-y (absolute-y-position self))))
+         (record-boxer-graphics-command-circle array-x array-y radius)
              (with-graphics-screen-parameters
-		 (circle array-x array-y radius)))))))
+         (circle array-x array-y radius)))))))
 
 (defmethod stamp-wedge ((self graphics-cursor) radius sweep-angle)
   (let ((alu (get-alu-from-pen
-	      (box-interface-value (slot-value self 'pen)))))
+          (box-interface-value (slot-value self 'pen)))))
     (cond ((null alu))
-	  ((not (null %learning-shape?))
-	   (record-boxer-graphics-command-wedge
-	    (x-position self) (y-position self) (coerce radius 'boxer-float)
+      ((not (null %learning-shape?))
+       (record-boxer-graphics-command-wedge
+        (x-position self) (y-position self) (coerce radius 'boxer-float)
             (heading self) sweep-angle))
-	  ((not (no-graphics?))
-	   (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-		 (array-y (fix-array-coordinate-y (absolute-y-position self)))
+      ((not (no-graphics?))
+       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
+         (array-y (fix-array-coordinate-y (absolute-y-position self)))
                  (abheading (absolute-heading self)))
-	     (record-boxer-graphics-command-wedge
-	      array-x array-y radius abheading sweep-angle)
+         (record-boxer-graphics-command-wedge
+          array-x array-y radius abheading sweep-angle)
              (with-graphics-screen-parameters
-		 (wedge array-x array-y radius abheading sweep-angle)))))))
+         (wedge array-x array-y radius abheading sweep-angle)))))))
 
 (defmethod stamp-arc ((self graphics-cursor) radius sweep-angle)
   (let ((alu (get-alu-from-pen
-	      (box-interface-value (slot-value self 'pen)))))
+          (box-interface-value (slot-value self 'pen)))))
     (cond ((null alu))
-	  ((not (null %learning-shape?))
-	   (record-boxer-graphics-command-arc
-	    (x-position self) (y-position self) (coerce radius 'boxer-float)
+      ((not (null %learning-shape?))
+       (record-boxer-graphics-command-arc
+        (x-position self) (y-position self) (coerce radius 'boxer-float)
             (heading self) sweep-angle))
-	  ((not (no-graphics?))
-	   (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-		 (array-y (fix-array-coordinate-y (absolute-y-position self)))
+      ((not (no-graphics?))
+       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
+         (array-y (fix-array-coordinate-y (absolute-y-position self)))
                  (abheading (absolute-heading self)))
-	     (record-boxer-graphics-command-arc
-	      array-x array-y radius abheading sweep-angle)
+         (record-boxer-graphics-command-arc
+          array-x array-y radius abheading sweep-angle)
              (with-graphics-screen-parameters
-		 (arc array-x array-y radius abheading sweep-angle)))))))
+         (arc array-x array-y radius abheading sweep-angle)))))))
 
 
 ;;;; Pictures
@@ -852,57 +852,57 @@ Modification History (most recent at top)
     new-bm))
 
 (defmethod stamp-bitmap ((self graphics-cursor) bitmap wid hei
-			 &optional (orientation :centered))
+             &optional (orientation :centered))
   (declare (ignore orientation)) ;; a hook for later
   (let ((alu (get-alu-from-pen
-	      (box-interface-value (slot-value self 'pen)))))
+          (box-interface-value (slot-value self 'pen)))))
     (cond ((null alu))
-	  ((not (null %learning-shape?))
-	   (record-boxer-graphics-command-centered-bitmap
+      ((not (null %learning-shape?))
+       (record-boxer-graphics-command-centered-bitmap
             ;; shouldn't we be copying this bitmap here ???
-	    (new-offscreen-copy bitmap) (x-position self) (y-position self)
-	    (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
-	  ((not (no-graphics?))
-	   (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-		 (array-y (fix-array-coordinate-y (absolute-y-position self)))
+        (new-offscreen-copy bitmap) (x-position self) (y-position self)
+        (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
+      ((not (no-graphics?))
+       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
+         (array-y (fix-array-coordinate-y (absolute-y-position self)))
                  (nbitmap (new-offscreen-copy bitmap)))
-	     (record-boxer-graphics-command-centered-bitmap
-	      nbitmap array-x array-y wid hei)
-	     #-opengl
+         (record-boxer-graphics-command-centered-bitmap
+          nbitmap array-x array-y wid hei)
+         #-opengl
              (with-graphics-screen-parameters
-		 (centered-bitmap nbitmap array-x array-y wid hei)))))))
+         (centered-bitmap nbitmap array-x array-y wid hei)))))))
 
 ;;; orientation can be :centered, :right or :left
 (defmethod type-box ((self graphics-cursor) box
-		     &optional (orientation ':centered))
+             &optional (orientation ':centered))
   (let ((alu (get-alu-from-pen (box-interface-value (slot-value self 'pen)))))
     (cond ((null alu))
-	  ((not (null %learning-shape?))
-	   (ecase orientation
-	     (:centered (record-boxer-graphics-command-centered-string
-			 (x-position self) (y-position self)
-			 (box-text-string box)))
-	     (:right (record-boxer-graphics-command-right-string
-		      (x-position self) (y-position self) (box-text-string box)))
-	     (:left (record-boxer-graphics-command-left-string
-		     (x-position self) (y-position self) (box-text-string box)))))
-	  ((not (no-graphics?))
-	   (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-		 (array-y (fix-array-coordinate-y (absolute-y-position self))))
-	     (ecase orientation
-	       (:centered (record-boxer-graphics-command-centered-string
-			   array-x array-y (box-text-string box)))
-	       (:right (record-boxer-graphics-command-right-string
-			array-x array-y (box-text-string box)))
-	       (:left (record-boxer-graphics-command-left-string
-		       array-x array-y (box-text-string box))))
-	     #-opengl
+      ((not (null %learning-shape?))
+       (ecase orientation
+         (:centered (record-boxer-graphics-command-centered-string
+             (x-position self) (y-position self)
+             (box-text-string box)))
+         (:right (record-boxer-graphics-command-right-string
+              (x-position self) (y-position self) (box-text-string box)))
+         (:left (record-boxer-graphics-command-left-string
+             (x-position self) (y-position self) (box-text-string box)))))
+      ((not (no-graphics?))
+       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
+         (array-y (fix-array-coordinate-y (absolute-y-position self))))
+         (ecase orientation
+           (:centered (record-boxer-graphics-command-centered-string
+               array-x array-y (box-text-string box)))
+           (:right (record-boxer-graphics-command-right-string
+            array-x array-y (box-text-string box)))
+           (:left (record-boxer-graphics-command-left-string
+               array-x array-y (box-text-string box))))
+         #-opengl
              (with-graphics-screen-parameters
-		 (ecase orientation
-		   (:centered (centered-string array-x array-y
-					       (box-text-string box)))
-		   (:right (right-string array-x array-y (box-text-string box)))
-		   (:left (left-string array-x array-y (box-text-string box))))))))))
+         (ecase orientation
+           (:centered (centered-string array-x array-y
+                           (box-text-string box)))
+           (:right (right-string array-x array-y (box-text-string box)))
+           (:left (left-string array-x array-y (box-text-string box))))))))))
 
 
 (defmethod stamp ((self graphics-cursor))
@@ -913,9 +913,9 @@ Modification History (most recent at top)
         (let ((*currently-moving-sprite* :go-ahead-and-draw-anyway))
           ;; shouldn't need this binding anymore now that this mechanism
           ;; is limited to ONLY inside the with-sprite-prim-env macro
-	  (draw self ; pen-mode   need to figure out how to set up state info
+      (draw self ; pen-mode   need to figure out how to set up state info
                 ; for the drawing of the shape....
-		)))
+        )))
       #+opengl
       (draw-update self)
       ;; the call to draw will insure the validity of the window-shape
