@@ -66,13 +66,13 @@ Modification History (most recent at top)
 
 (defun estimate-row-height (row)
   (if (null row) 0
-      (let ((height 0) (ix 0))
-        (with-font-hacking ((row-fds row))
-          (do-row-chas ((c row))
-            (check-and-handle-font-changes ix)
-            (incf& ix)
-            (when (box? c) (setq height (max height (estimate-box-height c))))))
-  (max height (0-char-height row)))))
+    (let ((height 0) (ix 0))
+      (with-font-hacking ((row-fds row))
+        (do-row-chas ((c row))
+          (check-and-handle-font-changes ix)
+          (incf& ix)
+          (when (box? c) (setq height (max height (estimate-box-height c))))))
+      (max height (0-char-height row)))))
 
 
 ;; this assumes that the font map is already bound
@@ -91,22 +91,22 @@ Modification History (most recent at top)
 
 (defun initialize-horizontal-border-thicknesses ()
   (flet ((horizontal-border-thickness (box)
-     (let ((screen-box (allocate-screen-obj-internal box)))
-       (multiple-value-bind (left top right bottom)
-     (box-borders-widths (class-name (class-of box)) screen-box)
-         (declare (ignore left right))
-         (deallocate-screen-obj-internal screen-box)
-         (+ top bottom)))))
-    (with-font-map-bound (*boxer-pane*)
-      (setq *data-box-horizontal-border-thickness*
-      (horizontal-border-thickness (make-instance 'data-box))
-      *doit-box-horizontal-border-thickness*
-      (horizontal-border-thickness (make-instance 'doit-box))
-      *port-box-horizontal-border-thickness*
-      (horizontal-border-thickness (let ((box (make-instance 'port-box)))
-             (setf (ports box)
-             (make-instance 'data-box))
-             box))))))
+                                      (let ((screen-box (allocate-screen-obj-internal box)))
+                                        (multiple-value-bind (left top right bottom)
+                                                             (box-borders-widths (class-name (class-of box)) screen-box)
+                                                             (declare (ignore left right))
+                                                             (deallocate-screen-obj-internal screen-box)
+                                                             (+ top bottom)))))
+        (with-font-map-bound (*boxer-pane*)
+          (setq *data-box-horizontal-border-thickness*
+                (horizontal-border-thickness (make-instance 'data-box))
+                *doit-box-horizontal-border-thickness*
+                (horizontal-border-thickness (make-instance 'doit-box))
+                *port-box-horizontal-border-thickness*
+                (horizontal-border-thickness (let ((box (make-instance 'port-box)))
+                                               (setf (ports box)
+                                                     (make-instance 'data-box))
+                                               box))))))
 
 (defun horizontal-border-height (box)
   (case (class-name (class-of box))
@@ -118,8 +118,8 @@ Modification History (most recent at top)
 (defun record-circular-port (port)
   (let ((entry (fast-assq port port-redisplay-history)))
     (if (null entry)
-  (push (cons port 1) port-redisplay-history)
-  (setf (cdr entry) (1+ (cdr entry))))))
+      (push (cons port 1) port-redisplay-history)
+      (setf (cdr entry) (1+ (cdr entry))))))
 
 ;; added support for boxtops 10/13/99
 (defun estimate-box-height (box)
@@ -127,28 +127,28 @@ Modification History (most recent at top)
          (let ((boxtop (boxtop box)))
            (cond ((null boxtop)
                   (+ *shrunk-box-hei* (horizontal-border-height box)))
-                 (t (multiple-value-bind (btwid bthei)
-                        (boxtop-size boxtop box)
-                      (declare (ignore btwid))
-                      bthei)))))
-  ((numberp (display-style-fixed-hei (display-style-list box)))
-   (display-style-fixed-hei (display-style-list box)))
-  ((circular-port? box)
-   (if (port-has-been-displayed-enough? box)
+             (t (multiple-value-bind (btwid bthei)
+                                     (boxtop-size boxtop box)
+                                     (declare (ignore btwid))
+                                     bthei)))))
+    ((numberp (display-style-fixed-hei (display-style-list box)))
+     (display-style-fixed-hei (display-style-list box)))
+    ((circular-port? box)
+     (if (port-has-been-displayed-enough? box)
        (+ (horizontal-border-height box)
-     (multiple-value-bind (ewid ehei)
-         (funcall (get *box-ellipsis-current-style* 'size))
-       (declare (ignore ewid)) ehei))
+          (multiple-value-bind (ewid ehei)
+                               (funcall (get *box-ellipsis-current-style* 'size))
+                               (declare (ignore ewid)) ehei))
        (progn
-         (record-circular-port box)
-         (+ (horizontal-border-height box)
-       (with-summation
-           (dolist (row (rows box))
-       (sum (estimate-row-height row))))))))
-  (t
-   (+ (horizontal-border-height box)
-       (with-summation
-     (dolist (row (rows box)) (sum (estimate-row-height row))))))))
+        (record-circular-port box)
+        (+ (horizontal-border-height box)
+           (with-summation
+             (dolist (row (rows box))
+               (sum (estimate-row-height row))))))))
+    (t
+     (+ (horizontal-border-height box)
+        (with-summation
+          (dolist (row (rows box)) (sum (estimate-row-height row))))))))
 
 (defun assure-head-room-in-box (last-row screen-box)
   "This starts at LAST-ROW and returns the highest up row that can
@@ -157,16 +157,16 @@ Modification History (most recent at top)
   (let* ((available-room (- (screen-obj-hei screen-box)
                             (horizontal-border-height
                              (screen-obj-actual-obj screen-box))))
-   (port-redisplay-history nil)
+         (port-redisplay-history nil)
          (room-left (- available-room (estimate-row-height last-row)))
          (fits-row nil))
     (do ((row last-row (previous-row row)))
-        ((null row) (or fits-row (first-inferior-row (superior-box last-row))))
+      ((null row) (or fits-row (first-inferior-row (superior-box last-row))))
       (let ((remaining (- room-left (estimate-row-height row))))
         (cond ((<= remaining 0)
                (return (or fits-row row)))
-              (t
-               (setq fits-row row room-left remaining)))))))
+          (t
+           (setq fits-row row room-left remaining)))))))
 
 (defun assure-leg-room-in-box (row screen-box)
   (declare (ignore screen-box))
@@ -174,104 +174,104 @@ Modification History (most recent at top)
 
 ;; does the row have screen structure within the screen box
 (defmethod row-has-screen-structure? ((self row)
-            &optional (current-screen-box
-                 (point-screen-box)))
+                                      &optional (current-screen-box
+                                                 (point-screen-box)))
   (cdr (assoc current-screen-box (actual-obj-screen-objs self))))
 
 (defmethod ensure-row-is-displayed ((row row) screen-box
-            &optional (direction -1) scroll-anyway)
+                                              &optional (direction -1) scroll-anyway)
   "make sure that the screen box's scroll to actual row is such
    that ROW will be seen. A DIRECTION of 1 specifies that we are
    moving downward, -1 upward. "
   (let ((screen-row (row-has-screen-structure? row screen-box))
-  (box (screen-obj-actual-obj (point-screen-box))))
-#| what is THIS supposed to do ?????
+        (box (screen-obj-actual-obj (point-screen-box))))
+    #| what is THIS supposed to do ?????
     (if (and screen-row (fixed-size box)
-       (<= (+ (screen-obj-y-offset screen-row)
-        (horizontal-border-height box)
-        );; fudge factor to solve a boundary cond.
-     (screen-obj-hei screen-box)))
-  nil) ; extra close paren for emacs' puny mind
-|#
+             (<= (+ (screen-obj-y-offset screen-row)
+                    (horizontal-border-height box)
+                    );; fudge factor to solve a boundary cond.
+                 (screen-obj-hei screen-box)))
+      nil) ; extra close paren for emacs' puny mind
+    |#
     (cond ((eq row (slot-value box 'closets))
-     (unless (row-row-no box row)
-       ;; if the closet is not opened, open it
-       (insert-row-at-row-no box row 0 t)
-       (modified row))
-     ;; then scroll to the top
-     (set-scroll-to-actual-row screen-box nil))
-    ((or scroll-anyway
-         ;; We should scroll if we have been told to, OR
-         (and screen-row (screen-obj-y-got-clipped? screen-row))
-         ;; the screen structure that is there is clipped, OR
-         (row-< row (scroll-to-actual-row screen-box))
-         ;; the destination row is above the current scroll row
-         (and (or (fixed-size box)
-      (screen-obj-y-got-clipped? screen-box))
-        ;; various cases where the box can't get any bigger
-        (or (and (null screen-row)
-           ;; no screen-row
-           (or (minusp& direction)
-         ;; could be a new row, check to
-         ;; see if there is room
-         (let* ((lsr (last-screen-row screen-box))
-          (ler (screen-obj-actual-obj lsr))
-                                        (available-room (- (screen-obj-hei
-                                                             screen-box)
-                                                            ;; quick and dirty
-                                                            (round
-                                                             (horizontal-border-height
-                                                              box) 2)
-                                                            ;; the real deal
-                                                            ;(multiple-value-bind
-                                                            ;  (lef top rig bot)
-                                                            ;  (box-borders-widths
-                                                            ;   (box-type box)
-                                                            ;   screen-box)
-                                                            ;  (declare (ignore
-                                                            ;            lef top rig))
-                                                            ;  bot)
-                                                            )))
-           (if (row-< row ler)
-               ;; if the row is before the last
-               ;; visible row don't have to scroll
-               ;; since we've already made sure that
-               ;; the row is AFTER the current
-               ;; scrolled row
-               nil
-               (do* ((edrow ler (next-row edrow))
-               (y (+ (screen-obj-y-offset
-                 lsr)
-                (screen-obj-hei lsr))
-            (+ y (estimate-row-height
-                   edrow))))
-              ((or (null edrow)
-             (>= y available-room))
-               (not (null edrow)))
-           (when (eq edrow row)
-             (return nil)))))))
-      (and screen-row
-           (> (+ (screen-obj-y-offset screen-row)
-            (horizontal-border-height box))
-        (screen-obj-hei screen-box))))))
-     (set-scroll-to-actual-row
-      screen-box
-      (if (minusp direction)
-    (let* ((new-row (assure-head-room-in-box row screen-box))
-           (prev-row (previous-row new-row)))
-                  (set-force-redisplay-infs? screen-box)
-      (if (and scroll-anyway
-         (eq new-row (scroll-to-actual-row screen-box))
-         (not (null prev-row)))
-          prev-row
-          new-row))
-    ;; sounds like a box is a luxury car
-    ;; (or want to be one)
-    (assure-leg-room-in-box  row screen-box)))))))
+           (unless (row-row-no box row)
+             ;; if the closet is not opened, open it
+             (insert-row-at-row-no box row 0 t)
+             (modified row))
+           ;; then scroll to the top
+           (set-scroll-to-actual-row screen-box nil))
+      ((or scroll-anyway
+           ;; We should scroll if we have been told to, OR
+           (and screen-row (screen-obj-y-got-clipped? screen-row))
+           ;; the screen structure that is there is clipped, OR
+           (row-< row (scroll-to-actual-row screen-box))
+           ;; the destination row is above the current scroll row
+           (and (or (fixed-size box)
+                    (screen-obj-y-got-clipped? screen-box))
+                ;; various cases where the box can't get any bigger
+                (or (and (null screen-row)
+                         ;; no screen-row
+                         (or (minusp& direction)
+                             ;; could be a new row, check to
+                             ;; see if there is room
+                             (let* ((lsr (last-screen-row screen-box))
+                                    (ler (screen-obj-actual-obj lsr))
+                                    (available-room (- (screen-obj-hei
+                                                        screen-box)
+                                                       ;; quick and dirty
+                                                       (round
+                                                        (horizontal-border-height
+                                                         box) 2)
+                                                       ;; the real deal
+                                                       ;(multiple-value-bind
+                                                       ;  (lef top rig bot)
+                                                       ;  (box-borders-widths
+                                                       ;   (box-type box)
+                                                       ;   screen-box)
+                                                       ;  (declare (ignore
+                                                       ;            lef top rig))
+                                                       ;  bot)
+                                                       )))
+                               (if (row-< row ler)
+                                 ;; if the row is before the last
+                                 ;; visible row don't have to scroll
+                                 ;; since we've already made sure that
+                                 ;; the row is AFTER the current
+                                 ;; scrolled row
+                                 nil
+                                 (do* ((edrow ler (next-row edrow))
+                                       (y (+ (screen-obj-y-offset
+                                              lsr)
+                                             (screen-obj-hei lsr))
+                                          (+ y (estimate-row-height
+                                                edrow))))
+                                   ((or (null edrow)
+                                        (>= y available-room))
+                                    (not (null edrow)))
+                                   (when (eq edrow row)
+                                     (return nil)))))))
+                    (and screen-row
+                         (> (+ (screen-obj-y-offset screen-row)
+                               (horizontal-border-height box))
+                            (screen-obj-hei screen-box))))))
+       (set-scroll-to-actual-row
+        screen-box
+        (if (minusp direction)
+          (let* ((new-row (assure-head-room-in-box row screen-box))
+                 (prev-row (previous-row new-row)))
+            (set-force-redisplay-infs? screen-box)
+            (if (and scroll-anyway
+                     (eq new-row (scroll-to-actual-row screen-box))
+                     (not (null prev-row)))
+              prev-row
+              new-row))
+          ;; sounds like a box is a luxury car
+          ;; (or want to be one)
+          (assure-leg-room-in-box  row screen-box)))))))
 
 
 (defmethod ensure-row-is-displayed ((row name-row) screen-box
-        &optional (direction -1) scroll-anyway)
+                                                   &optional (direction -1) scroll-anyway)
   (declare (ignore screen-box direction scroll-anyway))
   nil)
 
@@ -280,28 +280,28 @@ Modification History (most recent at top)
 (defmethod screen-box-is-scrollable? ((screen-box screen-box))
   (declare (values top? bottom? last-row-at-top?))
   (let ((top (slot-value screen-box 'scroll-to-actual-row))
-  (lsr (last-screen-row screen-box)))
+        (lsr (last-screen-row screen-box)))
     ;; is this the right place to interfere ?
     (when (and (row? top)
-         (not (eq (let ((eb (slot-value screen-box 'actual-obj)))
-        (if (port-box? eb) (ports eb) eb))
-      (superior-box top))))
+               (not (eq (let ((eb (slot-value screen-box 'actual-obj)))
+                          (if (port-box? eb) (ports eb) eb))
+                        (superior-box top))))
       ;; looks the the scrolling row is no longer part of the box
       (set-scroll-to-actual-row screen-box nil)
       (setq top nil))
     (let* ((edbox (slot-value screen-box 'actual-obj))
            (last-ed-row (if (port-box? edbox)
-                            (last-inferior-row (ports edbox))
-                            (last-inferior-row edbox))))
+                          (last-inferior-row (ports edbox))
+                          (last-inferior-row edbox))))
       (values (or (and top (or (not (eq top (first-inferior-row edbox)))))
                   (not (zerop (slot-value screen-box 'scroll-y-offset))))
-        (and lsr (not (eq (screen-obj-actual-obj lsr) last-ed-row)))
-      ; using this allows all except 1-row boxes to scroll
-      ;	         (eq (or top (first-inferior-row
-      ;			       (slot-value screen-box 'actual-obj)))
-      ;		     (and lsr (screen-obj-actual-obj lsr)))
+              (and lsr (not (eq (screen-obj-actual-obj lsr) last-ed-row)))
+              ; using this allows all except 1-row boxes to scroll
+              ;	         (eq (or top (first-inferior-row
+              ;			       (slot-value screen-box 'actual-obj)))
+              ;		     (and lsr (screen-obj-actual-obj lsr)))
               (eq last-ed-row (slot-value screen-box 'scroll-to-actual-row))
-      ))))
+              ))))
 
 (defmethod screen-box-is-scrollable? ((screen-box graphics-screen-box))
   (values nil nil))
@@ -324,54 +324,54 @@ Modification History (most recent at top)
            (move (+& scroll-y-offset pixels))
            (actual-velocity pixels))
       (multiple-value-bind (lef top rig bot)
-          (box-borders-widths (box-type screen-box) screen-box)
-        (cond ((plusp& move)
-               ;; scrolled down beyond the extent of the current top row
-               ;; if there is a row above this one, go to that
-               (let ((prev-row (previous-row top-row)))
-                 (cond ((null prev-row)
-                        ;; no previous row so set to scrolled to top of box values
-                        (setq scroll-y-offset 0 scroll-to-actual-row nil)
-                        (setq actual-velocity (-& pixels move)))
-                       (t
-                        ;; setup screen structure for the prev-row
-                        (let ((psr (allocate-screen-obj-for-use-in
-                                    prev-row screen-box)))
-                          (insert-screen-row screen-box psr top-screen-row)
-                          ;; now we have to simulate a redisplay-pass-1 for the row
-                          (setf (screen-obj-x-offset psr) lef
-                                (screen-obj-y-offset psr) top)
-                          ;; note that it also sets origin and clipping like the
-                          ;; usual redisplay-pass-1-sr because inferior boxes
-                          ;; may do some erasing and the erasing should happen
-                          ;; in the right place
-                          (with-origin-at ((screen-obj-x-offset psr)
-                                           (screen-obj-y-offset psr))
-                            (update-screen-row-for-scrolling
-                             psr (-& wid lef rig) (-& hei top bot)))
-                          (setq scroll-to-actual-row prev-row
-                                scroll-y-offset
-                                (-& move (screen-obj-hei psr)))
-                          (new-1st-screen-row-for-scrolling
-                           screen-box psr
-                           (-& hei top bot scroll-y-offset)))))))
-            ((null (next-row top-row))
-             ;; nowhere to go
-             ;; should fix velocity here too....
-             (setq scroll-y-offset 0))
-            ((>=& (-& move) top-row-height)
-             ;; scrolled up beyond the extent of the current top row
-             ;; we know there must be a next row because we already checked
-             (setq scroll-to-actual-row (next-row top-row)
-                   scroll-y-offset (+& move top-row-height))
-             (remove-1st-screen-row-for-scrolling screen-box top-screen-row)
-             (check-new-screen-row-for-scrolling screen-box lef top rig bot))
-            (t
-             (setq scroll-y-offset move)
-             (unless (plusp& pixels)
-               ;; no need to check the bottom if we are scrolling upwards
-               (check-new-screen-row-for-scrolling screen-box
-                                                   lef top rig bot)))))
+                           (box-borders-widths (box-type screen-box) screen-box)
+                           (cond ((plusp& move)
+                                  ;; scrolled down beyond the extent of the current top row
+                                  ;; if there is a row above this one, go to that
+                                  (let ((prev-row (previous-row top-row)))
+                                    (cond ((null prev-row)
+                                           ;; no previous row so set to scrolled to top of box values
+                                           (setq scroll-y-offset 0 scroll-to-actual-row nil)
+                                           (setq actual-velocity (-& pixels move)))
+                                      (t
+                                       ;; setup screen structure for the prev-row
+                                       (let ((psr (allocate-screen-obj-for-use-in
+                                                   prev-row screen-box)))
+                                         (insert-screen-row screen-box psr top-screen-row)
+                                         ;; now we have to simulate a redisplay-pass-1 for the row
+                                         (setf (screen-obj-x-offset psr) lef
+                                               (screen-obj-y-offset psr) top)
+                                         ;; note that it also sets origin and clipping like the
+                                         ;; usual redisplay-pass-1-sr because inferior boxes
+                                         ;; may do some erasing and the erasing should happen
+                                         ;; in the right place
+                                         (with-origin-at ((screen-obj-x-offset psr)
+                                                          (screen-obj-y-offset psr))
+                                           (update-screen-row-for-scrolling
+                                            psr (-& wid lef rig) (-& hei top bot)))
+                                         (setq scroll-to-actual-row prev-row
+                                               scroll-y-offset
+                                               (-& move (screen-obj-hei psr)))
+                                         (new-1st-screen-row-for-scrolling
+                                          screen-box psr
+                                          (-& hei top bot scroll-y-offset)))))))
+                             ((null (next-row top-row))
+                              ;; nowhere to go
+                              ;; should fix velocity here too....
+                              (setq scroll-y-offset 0))
+                             ((>=& (-& move) top-row-height)
+                              ;; scrolled up beyond the extent of the current top row
+                              ;; we know there must be a next row because we already checked
+                              (setq scroll-to-actual-row (next-row top-row)
+                                    scroll-y-offset (+& move top-row-height))
+                              (remove-1st-screen-row-for-scrolling screen-box top-screen-row)
+                              (check-new-screen-row-for-scrolling screen-box lef top rig bot))
+                             (t
+                              (setq scroll-y-offset move)
+                              (unless (plusp& pixels)
+                                ;; no need to check the bottom if we are scrolling upwards
+                                (check-new-screen-row-for-scrolling screen-box
+                                                                    lef top rig bot)))))
       ;(set-force-redisplay-infs? screen-box)
       (setf (slot-value screen-box 'needs-redisplay-pass-2?) t)
       actual-velocity)))
@@ -397,26 +397,26 @@ Modification History (most recent at top)
                                                 (+& (-& hei top bot box-occupied)
                                                     (screen-obj-hei
                                                      last-screen-row)))))
-            ((>& (-& hei top bot) box-occupied)
-             ;; there is room for more inferiors at the bottom of the box...
-             ;; 1st see if we want more rows...
-             (let ((next-unseen-row (next-row (screen-obj-actual-obj
-                                               last-screen-row))))
-               (unless (null next-unseen-row)
-                 (let ((nsr (allocate-screen-obj-for-use-in next-unseen-row
-                                                            screen-box)))
-                   (append-screen-row screen-box nsr)
-                   (setf (screen-obj-x-offset nsr) lef
-                         (screen-obj-y-offset nsr) (+& top row-size))
-                   (with-origin-at ((+& scroll-x-offset
-                                        (screen-obj-x-offset nsr))
-                                    (+& scroll-y-offset
-                                        (screen-obj-y-offset nsr)))
-                     (with-clipping-inside (0 0 (-& wid lef rig)
-                                            (-& hei top bot box-occupied))
-                       (update-screen-row-for-scrolling
-                        nsr (-& wid lef rig) (-& hei top bot
-                                                 box-occupied))))))))))))
+        ((>& (-& hei top bot) box-occupied)
+         ;; there is room for more inferiors at the bottom of the box...
+         ;; 1st see if we want more rows...
+         (let ((next-unseen-row (next-row (screen-obj-actual-obj
+                                           last-screen-row))))
+           (unless (null next-unseen-row)
+             (let ((nsr (allocate-screen-obj-for-use-in next-unseen-row
+                                                        screen-box)))
+               (append-screen-row screen-box nsr)
+               (setf (screen-obj-x-offset nsr) lef
+                     (screen-obj-y-offset nsr) (+& top row-size))
+               (with-origin-at ((+& scroll-x-offset
+                                    (screen-obj-x-offset nsr))
+                                (+& scroll-y-offset
+                                    (screen-obj-y-offset nsr)))
+                 (with-clipping-inside (0 0 (-& wid lef rig)
+                                          (-& hei top bot box-occupied))
+                   (update-screen-row-for-scrolling
+                    nsr (-& wid lef rig) (-& hei top bot
+                                             box-occupied))))))))))))
 
 ;; this updates the rest of the screen-rows of a box when a new one
 ;; has been inserted in the front
@@ -432,10 +432,10 @@ Modification History (most recent at top)
              (kill-screen-rows-from screen-box pos)
              ;; should deallocate killed rows...
              (return nil))
-            (t
-             (setf (screen-obj-y-offset screen-row)
-                   (+& (screen-obj-y-offset screen-row) y-inc))
-             (incf& acc-hei (screen-obj-hei screen-row)))))))
+        (t
+         (setf (screen-obj-y-offset screen-row)
+               (+& (screen-obj-y-offset screen-row) y-inc))
+         (incf& acc-hei (screen-obj-hei screen-row)))))))
 
 (defmethod remove-1st-screen-row-for-scrolling ((screen-box screen-box) 1st-row)
   (let ((1st-hei (screen-obj-hei 1st-row)))
@@ -480,7 +480,7 @@ Modification History (most recent at top)
         (aref button-vector 2) wid (aref button-vector 3) hei))
 
 (defun button-memory-match? (x y wid hei
-                             &optional (button-vector *last-scrolled-dims*))
+                               &optional (button-vector *last-scrolled-dims*))
   (and (=& (aref button-vector 0) x) (=& (aref button-vector 1) y)
        (=& (aref button-vector 2) wid) (=& (aref button-vector 3) hei)))
 
@@ -488,12 +488,12 @@ Modification History (most recent at top)
 
 (defun dont-show-scroll-buttons? (screen-box)
   (or ;(null screen-box)  ; should already have been checked
-      ;; screen-box is not connected
-      (null (superior-screen-box screen-box))
+   ;; screen-box is not connected
+   (null (superior-screen-box screen-box))
       (graphics-screen-box? screen-box)
       (and (not (outermost-screen-box? screen-box))
-     (fast-memq (display-style (screen-obj-actual-obj screen-box))
-          '(:shrunk :supershrunk :boxtop)))
+           (fast-memq (display-style (screen-obj-actual-obj screen-box))
+                      '(:shrunk :supershrunk :boxtop)))
       ;; make sure that the screen-box is part of the hierarchy
       ;(do ((sb screen-box (when (or (screen-row? sb) (screen-box? sb))
       ;		    (superior sb))))
@@ -503,7 +503,7 @@ Modification History (most recent at top)
 
 ;; don't need to show corner spots now that we have mouse tracking documentation
 (defun dont-show-resize-hotspots? (screen-box)
- ; (or (eq *initial-box* (screen-obj-actual-obj screen-box)))
+  ; (or (eq *initial-box* (screen-obj-actual-obj screen-box)))
   (declare (ignore screen-box)) t)
 
 
@@ -526,20 +526,20 @@ Modification History (most recent at top)
     (and cl (row-row-no box cl))))
 
 
-
+
 ;;;; New Stuff
 
 (defmethod v-scrollable? ((self screen-box))
   (with-slots (actual-obj scroll-to-actual-row screen-rows)
-      self
+    self
     (unless (symbolp screen-rows) ;;  screen-rows can be a symbol for port ellipsis
       (or (< (screen-rows-length self) (length-in-rows actual-obj))
-           (and (not (null scroll-to-actual-row))
-                (not (eq scroll-to-actual-row (first-inferior-row actual-obj))))))))
+          (and (not (null scroll-to-actual-row))
+               (not (eq scroll-to-actual-row (first-inferior-row actual-obj))))))))
 
 (defmethod h-scrollable? ((self screen-box))
   (with-slots (scroll-x-offset max-scroll-wid)
-      self
+    self
     (or (not (zerop scroll-x-offset)) (not (null max-scroll-wid)))))
 
 ;;; scroll bar support
@@ -550,80 +550,80 @@ Modification History (most recent at top)
   (with-slots (actual-obj wid hei box-type scroll-to-actual-row
                           scroll-x-offset ; scroll-y-offset ;;vertical elevator drawing should use this...
                           max-scroll-wid)
-      self
+    self
     (multiple-value-bind (il it ir ib)
-        (box-borders-widths box-type self)
-      (let* ((total-rows (length-in-rows actual-obj))
-             (visible-rows (screen-rows-length self))
-             (inner-wid (- wid il ir))
-             (inner-hei (- hei it ib))
-             (type-label-width (border-label-width box-type))
-             (vert-x (- wid ir (- (border-thickness (border-style actual-obj)) 1)))
-             (sbe (scroll-buttons-extent)))
-        (when (v-scrollable? self)
-          ;; ok need to draw vertical scroll GUI
-          (draw-vertical-elevator vert-x it (- inner-hei sbe)
-                                  (/ visible-rows total-rows)
-                                  (if (null scroll-to-actual-row) 0
-                                    (/ (row-row-no actual-obj scroll-to-actual-row) total-rows)))
-          (draw-vertical-scroll-buttons vert-x (- hei ib sbe)))
-        (when (h-scrollable? self)
-          ;; ok, need to draw horizontal scroll GUI
-          (let* ((esize (cond ((null max-scroll-wid) 1/2)
-                              (t  (/ (min inner-wid (+ max-scroll-wid scroll-x-offset))
-                                     max-scroll-wid))))
-                 (epos (cond ((null max-scroll-wid) 1/2)
-                             (t (/ (- scroll-x-offset) max-scroll-wid)))))
-            ;; It is possible for scroll-x-offset to exceed max-scroll-wid under certain conditions in
-            ;; particular, vertical scrolling away from an extra wide section which horizontally scrolled
-            (draw-horizontal-elevator (+ type-label-width il) (- hei ib)
-                                      (- inner-wid type-label-width sbe)
-                                      esize
-                                      epos))
-          (draw-horizontal-scroll-buttons (- wid ir sbe) (- hei ib)))))))
+                         (box-borders-widths box-type self)
+                         (let* ((total-rows (length-in-rows actual-obj))
+                                (visible-rows (screen-rows-length self))
+                                (inner-wid (- wid il ir))
+                                (inner-hei (- hei it ib))
+                                (type-label-width (border-label-width box-type))
+                                (vert-x (- wid ir (- (border-thickness (border-style actual-obj)) 1)))
+                                (sbe (scroll-buttons-extent)))
+                           (when (v-scrollable? self)
+                             ;; ok need to draw vertical scroll GUI
+                             (draw-vertical-elevator vert-x it (- inner-hei sbe)
+                                                     (/ visible-rows total-rows)
+                                                     (if (null scroll-to-actual-row) 0
+                                                       (/ (row-row-no actual-obj scroll-to-actual-row) total-rows)))
+                             (draw-vertical-scroll-buttons vert-x (- hei ib sbe)))
+                           (when (h-scrollable? self)
+                             ;; ok, need to draw horizontal scroll GUI
+                             (let* ((esize (cond ((null max-scroll-wid) 1/2)
+                                             (t  (/ (min inner-wid (+ max-scroll-wid scroll-x-offset))
+                                                    max-scroll-wid))))
+                                    (epos (cond ((null max-scroll-wid) 1/2)
+                                            (t (/ (- scroll-x-offset) max-scroll-wid)))))
+                               ;; It is possible for scroll-x-offset to exceed max-scroll-wid under certain conditions in
+                               ;; particular, vertical scrolling away from an extra wide section which horizontally scrolled
+                               (draw-horizontal-elevator (+ type-label-width il) (- hei ib)
+                                                         (- inner-wid type-label-width sbe)
+                                                         esize
+                                                         epos))
+                             (draw-horizontal-scroll-buttons (- wid ir sbe) (- hei ib)))))))
 
 ;; useful info for h-scroll tracking, returns the elevator's  min-x, max-x and
 ;; current left x-pos relative to the box
 (defmethod h-scroll-info ((self screen-box))
   (with-slots (wid box-type scroll-x-offset max-scroll-wid)
-      self
+    self
     (multiple-value-bind (il it ir ib)
-        (box-borders-widths box-type self)
-      (declare (ignore it ib))
-      (let* ((type-label-width (border-label-width box-type))
-             (s-start (+ type-label-width il) )
-             (s-width (- wid il ir type-label-width (scroll-buttons-extent))))
-        (values s-start
-                (+ s-start s-width);(+ s-start (- s-width (round (* s-width (/ (- wid il ir) max-scroll-wid)))))
-                (+ s-start (abs (round (* s-width (/ scroll-x-offset max-scroll-wid))))))))))
+                         (box-borders-widths box-type self)
+                         (declare (ignore it ib))
+                         (let* ((type-label-width (border-label-width box-type))
+                                (s-start (+ type-label-width il) )
+                                (s-width (- wid il ir type-label-width (scroll-buttons-extent))))
+                           (values s-start
+                                   (+ s-start s-width);(+ s-start (- s-width (round (* s-width (/ (- wid il ir) max-scroll-wid)))))
+                                   (+ s-start (abs (round (* s-width (/ scroll-x-offset max-scroll-wid))))))))))
 
 (defmethod v-scroll-info ((self screen-box))
   (with-slots (hei box-type)
-      self
+    self
     (multiple-value-bind (il it ir ib)
-        (box-borders-widths box-type self)
-      (declare (ignore il ir))
-      (let ((s-width (- hei it ib (scroll-buttons-extent))))
-        (values it
-                (+ it s-width))))))
+                         (box-borders-widths box-type self)
+                         (declare (ignore il ir))
+                         (let ((s-width (- hei it ib (scroll-buttons-extent))))
+                           (values it
+                                   (+ it s-width))))))
 
 (defmethod draw-scroll-info ((self graphics-screen-box))
   (with-slots (actual-obj wid hei box-type)
-      self
+    self
     (multiple-value-bind (il it ir ib)
-        (box-borders-widths box-type self)
-      (let* ((gs (graphics-sheet actual-obj))
-             (gsw (graphics-sheet-draw-wid gs))
-             (gsh (graphics-sheet-draw-hei gs))
-             (inner-wid (- wid il ir))
-             (inner-hei (- hei it ib)))
-        (unless (>= inner-hei gsh)
-          ;; need to draw vertical scroll GUI
-          )
-        (unless (>= inner-wid gsw)
-          ;; need to draw horizontal scroll GUI
-          )
-        ))))
+                         (box-borders-widths box-type self)
+                         (let* ((gs (graphics-sheet actual-obj))
+                                (gsw (graphics-sheet-draw-wid gs))
+                                (gsh (graphics-sheet-draw-hei gs))
+                                (inner-wid (- wid il ir))
+                                (inner-hei (- hei it ib)))
+                           (unless (>= inner-hei gsh)
+                             ;; need to draw vertical scroll GUI
+                             )
+                           (unless (>= inner-wid gsw)
+                             ;; need to draw horizontal scroll GUI
+                             )
+                           ))))
 
 (defvar *scroll-info-offset* 2 "How far to indent scroll info from the inner (text) part of the box")
 (defvar *scroll-elevator-thickness* 2)
@@ -699,36 +699,36 @@ Modification History (most recent at top)
 
 (defun get-scroll-position (x y screen-box &optional (box-type (box-type screen-box)))
   (multiple-value-bind (box-window-x box-window-y)
-      (xy-position screen-box)
-    (multiple-value-bind (left top right bottom)
-        (box-borders-widths box-type screen-box)
-      (declare (ignore left top))
-      (multiple-value-bind (wid hei)
-          (screen-obj-size screen-box)
-        (multiple-value-bind (scroll-top scroll-bottom last-is-top?)
-            (screen-box-is-scrollable? screen-box)
-          (declare (ignore scroll-bottom))
-          (let* ((sbe (scroll-buttons-extent))
-                 ;; these are the demarcation lines between the elevator space
-                 ;; and the buttons
-                 (v-div (+ box-window-y (- hei bottom sbe)))
-                 (h-div (+ box-window-x (- wid right sbe))))
-            ;; now check for horizontal stuff, must be in the horizontal
-            ;; because it isn't in the vertical space and we can only come here
-            ;; as a result of a previous tracking returning :scroll-bar
-            (cond ((< y v-div) :v-bar)
-                  ;; check the vertical stuff first
-                  ((and (>= x (+ box-window-x (- wid right)))
-                        (> y (+ v-div *scroll-button-length* 2))) ; fudge factor...
-                   (unless last-is-top? :v-down-button))
-                  ((>= x (+ box-window-x (- wid right)))
-                   (unless (null scroll-top) :v-up-button))
-                  ;; if it isn't vertical, must be horizontal...
-                  ((< x h-div) :h-bar)
-                  ((> x (+ h-div *scroll-button-length*))
-                   (unless (null (slot-value screen-box 'max-scroll-wid)) :h-right-button))
-                  (t
-                   (unless (zerop (slot-value screen-box 'scroll-x-offset)) :h-left-button)))))))))
+                       (xy-position screen-box)
+                       (multiple-value-bind (left top right bottom)
+                                            (box-borders-widths box-type screen-box)
+                                            (declare (ignore left top))
+                                            (multiple-value-bind (wid hei)
+                                                                 (screen-obj-size screen-box)
+                                                                 (multiple-value-bind (scroll-top scroll-bottom last-is-top?)
+                                                                                      (screen-box-is-scrollable? screen-box)
+                                                                                      (declare (ignore scroll-bottom))
+                                                                                      (let* ((sbe (scroll-buttons-extent))
+                                                                                             ;; these are the demarcation lines between the elevator space
+                                                                                             ;; and the buttons
+                                                                                             (v-div (+ box-window-y (- hei bottom sbe)))
+                                                                                             (h-div (+ box-window-x (- wid right sbe))))
+                                                                                        ;; now check for horizontal stuff, must be in the horizontal
+                                                                                        ;; because it isn't in the vertical space and we can only come here
+                                                                                        ;; as a result of a previous tracking returning :scroll-bar
+                                                                                        (cond ((< y v-div) :v-bar)
+                                                                                          ;; check the vertical stuff first
+                                                                                          ((and (>= x (+ box-window-x (- wid right)))
+                                                                                                (> y (+ v-div *scroll-button-length* 2))) ; fudge factor...
+                                                                                                                                          (unless last-is-top? :v-down-button))
+                                                                                          ((>= x (+ box-window-x (- wid right)))
+                                                                                           (unless (null scroll-top) :v-up-button))
+                                                                                          ;; if it isn't vertical, must be horizontal...
+                                                                                          ((< x h-div) :h-bar)
+                                                                                          ((> x (+ h-div *scroll-button-length*))
+                                                                                           (unless (null (slot-value screen-box 'max-scroll-wid)) :h-right-button))
+                                                                                          (t
+                                                                                           (unless (zerop (slot-value screen-box 'scroll-x-offset)) :h-left-button)))))))))
 
 (defvar *horizontal-click-scroll-quantum* 10
   "How much to scroll horizontally when a horizontal scroll button has been clicked")
@@ -740,16 +740,16 @@ Modification History (most recent at top)
     (setf (slot-value screen-box 'scroll-x-offset)
           (cond ((plusp velocity)
                  (min new-scroll-x-offset 0))
-                (t
-                 (max new-scroll-x-offset (- (if (null (slot-value screen-box 'max-scroll-wid))
-                                                 (floor (screen-obj-wid screen-box) 2)
-                                               (slot-value screen-box 'max-scroll-wid)))))))))
+            (t
+             (max new-scroll-x-offset (- (if (null (slot-value screen-box 'max-scroll-wid))
+                                           (floor (screen-obj-wid screen-box) 2)
+                                           (slot-value screen-box 'max-scroll-wid)))))))))
 
 ;; should this be in coms-oglmouse ?
 ;; this needs to move the *point* if it is scrolled off the screen
 (defun mouse-h-scroll (screen-box direction &optional (vboost 1))
   (let ((velocity (if (eq direction :right)
-                      (* vboost (- *horizontal-continuous-scroll-quantum*))
+                    (* vboost (- *horizontal-continuous-scroll-quantum*))
                     (* vboost *horizontal-continuous-scroll-quantum*))))
     ;; do SOMETHING, for cases that should be interpreted as a slow click
     (h-scroll-screen-box screen-box velocity)
@@ -764,10 +764,10 @@ Modification History (most recent at top)
                     (and (eq direction :left)
                          (zerop (slot-value screen-box 'scroll-x-offset))))
             (return))
-          (h-scroll-screen-box screen-box velocity)
-          (repaint t)
-          (simple-wait-with-timeout *scroll-pause-time*
-                                    #'(lambda () (zerop& (mouse-button-state)))))
+      (h-scroll-screen-box screen-box velocity)
+      (repaint t)
+      (simple-wait-with-timeout *scroll-pause-time*
+                                #'(lambda () (zerop& (mouse-button-state)))))
     ;; maybe adjust *point* here, otherwise (repaint) can change the scroll state
     ;; no need to adjust in the loop because we aren't calling the scroll changing version of repaint
     (maybe-move-point-after-scrolling screen-box direction)))
@@ -778,21 +778,21 @@ Modification History (most recent at top)
       (cond ((and (null psr) (eq direction :right))
              ;; can happen if the row has been scrolled out of sight...
              (move-point (screen-box-first-visible-bp-values screen-box)))
-            ((null psr) ;; moving toward the beginning of the box...
-             (move-point (screen-box-last-visible-bp-values screen-box)))
-            (t
-             (multiple-value-bind (1st-cha last-cha)
-                 (visible-cha-extents psr)
-               (cond ((null 1st-cha) ; the row *point* is on is not visible
-                      ;; need to find a row that is....
-                      (if (eq direction :right)
-                          (search-downward-for-visible-row psr)
-                        (search-upward-for-visible-row psr)))
-                     ((<= 1st-cha (point-cha-no) last-cha)) ; current *point* is visible...
-                     ((eq direction :right)
-                      (set-bp-cha-no *point* (max 1st-cha (1- last-cha))))
-                     ((eq direction :left)
-                      (set-bp-cha-no *point* (min (1+ 1st-cha) last-cha))))))))))
+        ((null psr) ;; moving toward the beginning of the box...
+                    (move-point (screen-box-last-visible-bp-values screen-box)))
+        (t
+         (multiple-value-bind (1st-cha last-cha)
+                              (visible-cha-extents psr)
+                              (cond ((null 1st-cha) ; the row *point* is on is not visible
+                                     ;; need to find a row that is....
+                                                    (if (eq direction :right)
+                                                      (search-downward-for-visible-row psr)
+                                                      (search-upward-for-visible-row psr)))
+                                ((<= 1st-cha (point-cha-no) last-cha)) ; current *point* is visible...
+                                ((eq direction :right)
+                                 (set-bp-cha-no *point* (max 1st-cha (1- last-cha))))
+                                ((eq direction :left)
+                                 (set-bp-cha-no *point* (min (1+ 1st-cha) last-cha))))))))))
 
 ;; loop through the screen-row's chars returning the 1st and last visible char
 ;; repaint will have run so we can trust any cached dimensions
@@ -811,7 +811,7 @@ Modification History (most recent at top)
         (when (> remaining-offset sbwid)
           (return (values 1st-visible-cha obj-no)))))
     (cond ((null 1st-visible-cha) nil)
-          (t (values 1st-visible-cha (max 1st-visible-cha (1- (screen-chas-length self))))))))
+      (t (values 1st-visible-cha (max 1st-visible-cha (1- (screen-chas-length self))))))))
 
 (defmethod search-downward-for-visible-row ((self screen-row) &optional (continue? t))
   (let* ((sb (screen-box self))
@@ -819,13 +819,13 @@ Modification History (most recent at top)
          (moved? nil))
     (do* ((sr-no start-sr-no (1+ sr-no))
           (sr (screen-row-at-row-no sb sr-no) (screen-row-at-row-no sb sr-no)))
-         ((null sr))
+      ((null sr))
       (multiple-value-bind (1st last)
-          (visible-cha-extents sr)
-        (unless (null 1st)
-          (set-bp-row    *point* (screen-obj-actual-obj sr))
-          (set-bp-cha-no *point* (max 1st (1- last)))
-          (setq moved? t))))
+                           (visible-cha-extents sr)
+                           (unless (null 1st)
+                             (set-bp-row    *point* (screen-obj-actual-obj sr))
+                             (set-bp-cha-no *point* (max 1st (1- last)))
+                             (setq moved? t))))
     ;; if nothing has been moved, start looking in the other direction...
     (when (and (null moved?) (not (null continue?)))
       (search-upward-for-visible-row self nil))))
@@ -835,14 +835,14 @@ Modification History (most recent at top)
          (start-sr-no (1+ (screen-row-row-no sb self)))
          (moved? nil))
     (do ((sr-no start-sr-no (1- sr-no)))
-        ((minusp sr-no))
+      ((minusp sr-no))
       (let ((sr (screen-row-at-row-no sb sr-no)))
         (multiple-value-bind (1st last)
-            (visible-cha-extents sr)
-          (unless (null 1st)
-            (set-bp-row    *point* (screen-obj-actual-obj sr))
-            (set-bp-cha-no *point* (min (1+ 1st) last))
-            (setq moved? t)))))
+                             (visible-cha-extents sr)
+                             (unless (null 1st)
+                               (set-bp-row    *point* (screen-obj-actual-obj sr))
+                               (set-bp-cha-no *point* (min (1+ 1st) last))
+                               (setq moved? t)))))
     ;; if nothing has been moved, start looking in the other direction...
     (when (and (null moved?) (not (null continue?)))
       (search-downward-for-visible-row self nil))))
@@ -852,26 +852,26 @@ Modification History (most recent at top)
 (defun mouse-in-h-scroll-bar-internal (screen-box x y)
   (let ((initial-scroll-pos (slot-value screen-box 'scroll-x-offset)))
     (multiple-value-bind (h-min-x h-max-x)
-        (h-scroll-info screen-box)
-      (multiple-value-bind (box-window-x box-window-y)
-    (xy-position screen-box)
-        ;; the "offset" is the difference between the initial mouse pos to the start if
-        ;; the horizontal scrolling elevator which is where the new scrolling location is
-        ;; calculated from
-        (declare (ignore box-window-y))
-        (let ((x-offset (+ box-window-x h-min-x))
-              (h-working-width (- h-max-x h-min-x)))
-          (with-mouse-tracking ((mouse-x x) (mouse-y y))
-            (declare (ignore mouse-y))
-            (setf (slot-value screen-box 'scroll-x-offset)
-                  (- (round (* (min (/ (max 0 (- mouse-x x-offset)) h-working-width) 1)
-                               (- (slot-value screen-box 'max-scroll-wid)
-                                  (/ (screen-obj-wid screen-box) 2))))))
-            (repaint t)))
-        (maybe-move-point-after-scrolling screen-box (if (< initial-scroll-pos
-                                                            (slot-value screen-box 'scroll-x-offset))
-                                                         :left
-                                                       :right))))))
+                         (h-scroll-info screen-box)
+                         (multiple-value-bind (box-window-x box-window-y)
+                                              (xy-position screen-box)
+                                              ;; the "offset" is the difference between the initial mouse pos to the start if
+                                              ;; the horizontal scrolling elevator which is where the new scrolling location is
+                                              ;; calculated from
+                                              (declare (ignore box-window-y))
+                                              (let ((x-offset (+ box-window-x h-min-x))
+                                                    (h-working-width (- h-max-x h-min-x)))
+                                                (with-mouse-tracking ((mouse-x x) (mouse-y y))
+                                                  (declare (ignore mouse-y))
+                                                  (setf (slot-value screen-box 'scroll-x-offset)
+                                                        (- (round (* (min (/ (max 0 (- mouse-x x-offset)) h-working-width) 1)
+                                                                     (- (slot-value screen-box 'max-scroll-wid)
+                                                                        (/ (screen-obj-wid screen-box) 2))))))
+                                                  (repaint t)))
+                                              (maybe-move-point-after-scrolling screen-box (if (< initial-scroll-pos
+                                                                                                  (slot-value screen-box 'scroll-x-offset))
+                                                                                             :left
+                                                                                             :right))))))
 
 
 
