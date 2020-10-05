@@ -72,7 +72,7 @@ Modification History (most recent at top)
             (check-and-handle-font-changes ix)
             (incf& ix)
             (when (box? c) (setq height (max height (estimate-box-height c))))))
-	(max height (0-char-height row)))))
+  (max height (0-char-height row)))))
 
 
 ;; this assumes that the font map is already bound
@@ -91,22 +91,22 @@ Modification History (most recent at top)
 
 (defun initialize-horizontal-border-thicknesses ()
   (flet ((horizontal-border-thickness (box)
-	   (let ((screen-box (allocate-screen-obj-internal box)))
-	     (multiple-value-bind (left top right bottom)
-		 (box-borders-widths (class-name (class-of box)) screen-box)
-	       (declare (ignore left right))
-	       (deallocate-screen-obj-internal screen-box)
-	       (+ top bottom)))))
+     (let ((screen-box (allocate-screen-obj-internal box)))
+       (multiple-value-bind (left top right bottom)
+     (box-borders-widths (class-name (class-of box)) screen-box)
+         (declare (ignore left right))
+         (deallocate-screen-obj-internal screen-box)
+         (+ top bottom)))))
     (with-font-map-bound (*boxer-pane*)
       (setq *data-box-horizontal-border-thickness*
-	    (horizontal-border-thickness (make-instance 'data-box))
-	    *doit-box-horizontal-border-thickness*
-	    (horizontal-border-thickness (make-instance 'doit-box))
-	    *port-box-horizontal-border-thickness*
-	    (horizontal-border-thickness (let ((box (make-instance 'port-box)))
-					   (setf (ports box)
-						 (make-instance 'data-box))
-					   box))))))
+      (horizontal-border-thickness (make-instance 'data-box))
+      *doit-box-horizontal-border-thickness*
+      (horizontal-border-thickness (make-instance 'doit-box))
+      *port-box-horizontal-border-thickness*
+      (horizontal-border-thickness (let ((box (make-instance 'port-box)))
+             (setf (ports box)
+             (make-instance 'data-box))
+             box))))))
 
 (defun horizontal-border-height (box)
   (case (class-name (class-of box))
@@ -118,8 +118,8 @@ Modification History (most recent at top)
 (defun record-circular-port (port)
   (let ((entry (fast-assq port port-redisplay-history)))
     (if (null entry)
-	(push (cons port 1) port-redisplay-history)
-	(setf (cdr entry) (1+ (cdr entry))))))
+  (push (cons port 1) port-redisplay-history)
+  (setf (cdr entry) (1+ (cdr entry))))))
 
 ;; added support for boxtops 10/13/99
 (defun estimate-box-height (box)
@@ -131,24 +131,24 @@ Modification History (most recent at top)
                         (boxtop-size boxtop box)
                       (declare (ignore btwid))
                       bthei)))))
-	((numberp (display-style-fixed-hei (display-style-list box)))
-	 (display-style-fixed-hei (display-style-list box)))
-	((circular-port? box)
-	 (if (port-has-been-displayed-enough? box)
-	     (+ (horizontal-border-height box)
-		 (multiple-value-bind (ewid ehei)
-		     (funcall (get *box-ellipsis-current-style* 'size))
-		   (declare (ignore ewid)) ehei))
-	     (progn
-	       (record-circular-port box)
-	       (+ (horizontal-border-height box)
-		   (with-summation
-		       (dolist (row (rows box))
-			 (sum (estimate-row-height row))))))))
-	(t
-	 (+ (horizontal-border-height box)
-	     (with-summation
-		 (dolist (row (rows box)) (sum (estimate-row-height row))))))))
+  ((numberp (display-style-fixed-hei (display-style-list box)))
+   (display-style-fixed-hei (display-style-list box)))
+  ((circular-port? box)
+   (if (port-has-been-displayed-enough? box)
+       (+ (horizontal-border-height box)
+     (multiple-value-bind (ewid ehei)
+         (funcall (get *box-ellipsis-current-style* 'size))
+       (declare (ignore ewid)) ehei))
+       (progn
+         (record-circular-port box)
+         (+ (horizontal-border-height box)
+       (with-summation
+           (dolist (row (rows box))
+       (sum (estimate-row-height row))))))))
+  (t
+   (+ (horizontal-border-height box)
+       (with-summation
+     (dolist (row (rows box)) (sum (estimate-row-height row))))))))
 
 (defun assure-head-room-in-box (last-row screen-box)
   "This starts at LAST-ROW and returns the highest up row that can
@@ -157,7 +157,7 @@ Modification History (most recent at top)
   (let* ((available-room (- (screen-obj-hei screen-box)
                             (horizontal-border-height
                              (screen-obj-actual-obj screen-box))))
-	 (port-redisplay-history nil)
+   (port-redisplay-history nil)
          (room-left (- available-room (estimate-row-height last-row)))
          (fits-row nil))
     (do ((row last-row (previous-row row)))
@@ -174,48 +174,48 @@ Modification History (most recent at top)
 
 ;; does the row have screen structure within the screen box
 (defmethod row-has-screen-structure? ((self row)
-				    &optional (current-screen-box
-					       (point-screen-box)))
+            &optional (current-screen-box
+                 (point-screen-box)))
   (cdr (assoc current-screen-box (actual-obj-screen-objs self))))
 
 (defmethod ensure-row-is-displayed ((row row) screen-box
-				    &optional (direction -1) scroll-anyway)
+            &optional (direction -1) scroll-anyway)
   "make sure that the screen box's scroll to actual row is such
    that ROW will be seen. A DIRECTION of 1 specifies that we are
    moving downward, -1 upward. "
   (let ((screen-row (row-has-screen-structure? row screen-box))
-	(box (screen-obj-actual-obj (point-screen-box))))
+  (box (screen-obj-actual-obj (point-screen-box))))
 #| what is THIS supposed to do ?????
     (if (and screen-row (fixed-size box)
-	     (<= (+ (screen-obj-y-offset screen-row)
-		    (horizontal-border-height box)
-		    );; fudge factor to solve a boundary cond.
-		 (screen-obj-hei screen-box)))
-	nil) ; extra close paren for emacs' puny mind
+       (<= (+ (screen-obj-y-offset screen-row)
+        (horizontal-border-height box)
+        );; fudge factor to solve a boundary cond.
+     (screen-obj-hei screen-box)))
+  nil) ; extra close paren for emacs' puny mind
 |#
     (cond ((eq row (slot-value box 'closets))
-	   (unless (row-row-no box row)
-	     ;; if the closet is not opened, open it
-	     (insert-row-at-row-no box row 0 t)
-	     (modified row))
-	   ;; then scroll to the top
-	   (set-scroll-to-actual-row screen-box nil))
-	  ((or scroll-anyway
-	       ;; We should scroll if we have been told to, OR
-	       (and screen-row (screen-obj-y-got-clipped? screen-row))
-	       ;; the screen structure that is there is clipped, OR
-	       (row-< row (scroll-to-actual-row screen-box))
-	       ;; the destination row is above the current scroll row
-	       (and (or (fixed-size box)
-			(screen-obj-y-got-clipped? screen-box))
-		    ;; various cases where the box can't get any bigger
-		    (or (and (null screen-row)
-			     ;; no screen-row
-			     (or (minusp& direction)
-				 ;; could be a new row, check to
-				 ;; see if there is room
-				 (let* ((lsr (last-screen-row screen-box))
-					(ler (screen-obj-actual-obj lsr))
+     (unless (row-row-no box row)
+       ;; if the closet is not opened, open it
+       (insert-row-at-row-no box row 0 t)
+       (modified row))
+     ;; then scroll to the top
+     (set-scroll-to-actual-row screen-box nil))
+    ((or scroll-anyway
+         ;; We should scroll if we have been told to, OR
+         (and screen-row (screen-obj-y-got-clipped? screen-row))
+         ;; the screen structure that is there is clipped, OR
+         (row-< row (scroll-to-actual-row screen-box))
+         ;; the destination row is above the current scroll row
+         (and (or (fixed-size box)
+      (screen-obj-y-got-clipped? screen-box))
+        ;; various cases where the box can't get any bigger
+        (or (and (null screen-row)
+           ;; no screen-row
+           (or (minusp& direction)
+         ;; could be a new row, check to
+         ;; see if there is room
+         (let* ((lsr (last-screen-row screen-box))
+          (ler (screen-obj-actual-obj lsr))
                                         (available-room (- (screen-obj-hei
                                                              screen-box)
                                                             ;; quick and dirty
@@ -232,46 +232,46 @@ Modification History (most recent at top)
                                                             ;            lef top rig))
                                                             ;  bot)
                                                             )))
-				   (if (row-< row ler)
-				       ;; if the row is before the last
-				       ;; visible row don't have to scroll
-				       ;; since we've already made sure that
-				       ;; the row is AFTER the current
-				       ;; scrolled row
-				       nil
-				       (do* ((edrow ler (next-row edrow))
-					     (y (+ (screen-obj-y-offset
-						     lsr)
-						    (screen-obj-hei lsr))
-						(+ y (estimate-row-height
-						       edrow))))
-					    ((or (null edrow)
-						 (>= y available-room))
-					     (not (null edrow)))
-					 (when (eq edrow row)
-					   (return nil)))))))
-			(and screen-row
-			     (> (+ (screen-obj-y-offset screen-row)
-				    (horizontal-border-height box))
-				(screen-obj-hei screen-box))))))
-	   (set-scroll-to-actual-row
-	    screen-box
-	    (if (minusp direction)
-		(let* ((new-row (assure-head-room-in-box row screen-box))
-		       (prev-row (previous-row new-row)))
+           (if (row-< row ler)
+               ;; if the row is before the last
+               ;; visible row don't have to scroll
+               ;; since we've already made sure that
+               ;; the row is AFTER the current
+               ;; scrolled row
+               nil
+               (do* ((edrow ler (next-row edrow))
+               (y (+ (screen-obj-y-offset
+                 lsr)
+                (screen-obj-hei lsr))
+            (+ y (estimate-row-height
+                   edrow))))
+              ((or (null edrow)
+             (>= y available-room))
+               (not (null edrow)))
+           (when (eq edrow row)
+             (return nil)))))))
+      (and screen-row
+           (> (+ (screen-obj-y-offset screen-row)
+            (horizontal-border-height box))
+        (screen-obj-hei screen-box))))))
+     (set-scroll-to-actual-row
+      screen-box
+      (if (minusp direction)
+    (let* ((new-row (assure-head-room-in-box row screen-box))
+           (prev-row (previous-row new-row)))
                   (set-force-redisplay-infs? screen-box)
-		  (if (and scroll-anyway
-			   (eq new-row (scroll-to-actual-row screen-box))
-			   (not (null prev-row)))
-		      prev-row
-		      new-row))
-		;; sounds like a box is a luxury car
-		;; (or want to be one)
-		(assure-leg-room-in-box  row screen-box)))))))
+      (if (and scroll-anyway
+         (eq new-row (scroll-to-actual-row screen-box))
+         (not (null prev-row)))
+          prev-row
+          new-row))
+    ;; sounds like a box is a luxury car
+    ;; (or want to be one)
+    (assure-leg-room-in-box  row screen-box)))))))
 
 
 (defmethod ensure-row-is-displayed ((row name-row) screen-box
-				&optional (direction -1) scroll-anyway)
+        &optional (direction -1) scroll-anyway)
   (declare (ignore screen-box direction scroll-anyway))
   nil)
 
@@ -280,12 +280,12 @@ Modification History (most recent at top)
 (defmethod screen-box-is-scrollable? ((screen-box screen-box))
   (declare (values top? bottom? last-row-at-top?))
   (let ((top (slot-value screen-box 'scroll-to-actual-row))
-	(lsr (last-screen-row screen-box)))
+  (lsr (last-screen-row screen-box)))
     ;; is this the right place to interfere ?
     (when (and (row? top)
-	       (not (eq (let ((eb (slot-value screen-box 'actual-obj)))
-			  (if (port-box? eb) (ports eb) eb))
-			(superior-box top))))
+         (not (eq (let ((eb (slot-value screen-box 'actual-obj)))
+        (if (port-box? eb) (ports eb) eb))
+      (superior-box top))))
       ;; looks the the scrolling row is no longer part of the box
       (set-scroll-to-actual-row screen-box nil)
       (setq top nil))
@@ -295,7 +295,7 @@ Modification History (most recent at top)
                             (last-inferior-row edbox))))
       (values (or (and top (or (not (eq top (first-inferior-row edbox)))))
                   (not (zerop (slot-value screen-box 'scroll-y-offset))))
-	      (and lsr (not (eq (screen-obj-actual-obj lsr) last-ed-row)))
+        (and lsr (not (eq (screen-obj-actual-obj lsr) last-ed-row)))
       ; using this allows all except 1-row boxes to scroll
       ;	         (eq (or top (first-inferior-row
       ;			       (slot-value screen-box 'actual-obj)))
@@ -492,8 +492,8 @@ Modification History (most recent at top)
       (null (superior-screen-box screen-box))
       (graphics-screen-box? screen-box)
       (and (not (outermost-screen-box? screen-box))
-	   (fast-memq (display-style (screen-obj-actual-obj screen-box))
-		      '(:shrunk :supershrunk :boxtop)))
+     (fast-memq (display-style (screen-obj-actual-obj screen-box))
+          '(:shrunk :supershrunk :boxtop)))
       ;; make sure that the screen-box is part of the hierarchy
       ;(do ((sb screen-box (when (or (screen-row? sb) (screen-box? sb))
       ;		    (superior sb))))
@@ -854,7 +854,7 @@ Modification History (most recent at top)
     (multiple-value-bind (h-min-x h-max-x)
         (h-scroll-info screen-box)
       (multiple-value-bind (box-window-x box-window-y)
-	  (xy-position screen-box)
+    (xy-position screen-box)
         ;; the "offset" is the difference between the initial mouse pos to the start if
         ;; the horizontal scrolling elevator which is where the new scrolling location is
         ;; calculated from
