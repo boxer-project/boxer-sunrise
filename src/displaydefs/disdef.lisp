@@ -103,68 +103,68 @@ Modification History (most recent at the top)
 
 (defun initialize-gray-patterns ()
   (setq *GRAY0* (boxer-window::make-pattern
-     '((1 0 0 0 0 1 0 0 0 0)
-       (0 0 1 0 0 0 0 1 0 0)
-       (0 0 0 0 1 0 0 0 0 1)
-       (0 1 0 0 0 0 1 0 0 0)
-       (0 0 0 1 0 0 0 0 1 0))))
+                 '((1 0 0 0 0 1 0 0 0 0)
+                   (0 0 1 0 0 0 0 1 0 0)
+                   (0 0 0 0 1 0 0 0 0 1)
+                   (0 1 0 0 0 0 1 0 0 0)
+                   (0 0 0 1 0 0 0 0 1 0))))
   (setq *GRAY1* (boxer-window::make-pattern
-     '((1 0 0 0 1 0 0 0)
-       (0 1 0 0 0 1 0 0)
-       (0 0 0 1 0 0 0 1)
-       (0 0 1 0 0 0 1 0))))
+                 '((1 0 0 0 1 0 0 0)
+                   (0 1 0 0 0 1 0 0)
+                   (0 0 0 1 0 0 0 1)
+                   (0 0 1 0 0 0 1 0))))
   (setq *GRAY2* (boxer-window::make-pattern
-     '((1 0 0 0)
-       (0 0 1 0)
-       (0 1 0 0))))
+                 '((1 0 0 0)
+                   (0 0 1 0)
+                   (0 1 0 0))))
   (setq *GRAY3* (boxer-window::make-pattern
-     '((1 0 0 0 1 0 1 0)
-       (0 1 0 1 0 0 0 1)
-       (1 0 0 0 1 0 1 0)
-       (0 1 0 1 0 0 0 1))))
+                 '((1 0 0 0 1 0 1 0)
+                   (0 1 0 1 0 0 0 1)
+                   (1 0 0 0 1 0 1 0)
+                   (0 1 0 1 0 0 0 1))))
   (setq *GRAY4* (boxer-window::make-pattern
-     '((1 0 1 0 1 0 1 0)
-       (0 1 0 0 0 1 0 0)
-       (1 0 1 0 1 0 1 0))))
+                 '((1 0 1 0 1 0 1 0)
+                   (0 1 0 0 0 1 0 0)
+                   (1 0 1 0 1 0 1 0))))
   (setq *GRAY5* (boxer-window::make-pattern
-     '((1 0 1 0 1 0 1 0)
-       (0 1 0 1 0 1 0 1)
-       (1 0 1 0 1 0 1 0)
-       (0 1 0 1 0 1 0 1))))
+                 '((1 0 1 0 1 0 1 0)
+                   (0 1 0 1 0 1 0 1)
+                   (1 0 1 0 1 0 1 0)
+                   (0 1 0 1 0 1 0 1))))
   ;; finally set up *gray* to be one of the grays we just defined
   (setq *GRAY* *GRAY0*
-  *filegray* (boxer-window::make-pattern '((1 1) (1 1)))
-  *graphicsgray* *gray1*))
+        *filegray* (boxer-window::make-pattern '((1 1) (1 1)))
+        *graphicsgray* *gray1*))
 
 ;;; The X implementation requires that the font map stuff be set
 ;;; up BEFORE the redisplay inits are run but we better check first...
 (def-redisplay-initialization
- (progn (initialize-gray-patterns)
-        (initialize-colors)
-    ;; moved here because FD's need init'd colors
-    (setq *default-font-descriptor* (make-bfd -1 *default-font*)
-          *current-font-descriptor* (make-bfd -1 *default-font*))
-    (drawing-on-window (boxer-window::*boxer-pane*)
-      (set-font-info *normal-font-no*))))
+  (progn (initialize-gray-patterns)
+         (initialize-colors)
+         ;; moved here because FD's need init'd colors
+         (setq *default-font-descriptor* (make-bfd -1 *default-font*)
+               *current-font-descriptor* (make-bfd -1 *default-font*))
+         (drawing-on-window (boxer-window::*boxer-pane*)
+                            (set-font-info *normal-font-no*))))
 
 
 ;;;NOTE:it must be loaded before any of the other display files
 
 (DEFSUBST MAKE-SCREEN-CHA (ACTUAL-CHA)
-  ACTUAL-CHA)
+          ACTUAL-CHA)
 
 (DEFSUBST SCREEN-CHA? (SC) (CHARACTERP SC))
 
 (DEFMACRO CHA-WIDTH (CHA) `(CHA-WID ,CHA))
 
 (DEFVAR FREE-SCREEN-ROWS NIL
-  "A list of free screen-rows.")
+        "A list of free screen-rows.")
 
 (DEFVAR FREE-SCREEN-BOXS NIL
-  "A list of free screen-boxs.")
+        "A list of free screen-boxs.")
 
 (DEFVAR FREE-GRAPHICS-SCREEN-BOXS NIL
-  "A list of free graphics-screen-boxs.")
+        "A list of free graphics-screen-boxs.")
 
 (defvar free-sprite-screen-boxs nil
   "A list of free sprite-screen-boxs.")
@@ -180,83 +180,83 @@ Modification History (most recent at the top)
 (DEFVAR initial-no-of-free-sprite-screen-boxs 20)
 
 (DEFUN ALLOCATE-GRAPHICS-SCREEN-BOX-INTERNAL (GRAPHICS-BOX)
-  (LET ((GRAPHICS-SCREEN-BOX (OR (POP FREE-GRAPHICS-SCREEN-BOXS)
-         (MAKE-INSTANCE 'GRAPHICS-SCREEN-BOX))))
-    (RE-INIT GRAPHICS-SCREEN-BOX GRAPHICS-BOX)
-    GRAPHICS-SCREEN-BOX))
+       (LET ((GRAPHICS-SCREEN-BOX (OR (POP FREE-GRAPHICS-SCREEN-BOXS)
+                                      (MAKE-INSTANCE 'GRAPHICS-SCREEN-BOX))))
+            (RE-INIT GRAPHICS-SCREEN-BOX GRAPHICS-BOX)
+            GRAPHICS-SCREEN-BOX))
 
 (defun allocate-sprite-screen-box-internal (sprite-box)
   (let ((sprite-screen-box (or (pop free-sprite-screen-boxs)
-         (make-instance 'sprite-screen-box))))
+                               (make-instance 'sprite-screen-box))))
     (re-init sprite-screen-box sprite-box)
     sprite-screen-box))
 
 (DEFUN ACTUAL-OBJ-OF-SCREEN-OBJ (SCREEN-OBJ)
-  (IF (SCREEN-CHA? SCREEN-OBJ)
-      SCREEN-OBJ
-      (SCREEN-OBJ-ACTUAL-OBJ SCREEN-OBJ)))
+       (IF (SCREEN-CHA? SCREEN-OBJ)
+           SCREEN-OBJ
+           (SCREEN-OBJ-ACTUAL-OBJ SCREEN-OBJ)))
 
 (DEFUN ALLOCATE-SCREEN-ROW-INTERNAL (ACTUAL-ROW)
-  (LET ((SCREEN-ROW (OR (POP FREE-SCREEN-ROWS) (MAKE-INSTANCE 'SCREEN-ROW))))
-    (RE-INIT SCREEN-ROW ACTUAL-ROW)
-    SCREEN-ROW))
+       (LET ((SCREEN-ROW (OR (POP FREE-SCREEN-ROWS) (MAKE-INSTANCE 'SCREEN-ROW))))
+            (RE-INIT SCREEN-ROW ACTUAL-ROW)
+            SCREEN-ROW))
 
 (DEFUN ALLOCATE-SCREEN-BOX-INTERNAL (ACTUAL-BOX)
-  (LET ((SCREEN-BOX (OR (POP FREE-SCREEN-BOXS) (MAKE-INSTANCE 'SCREEN-BOX))))
-    (RE-INIT SCREEN-BOX ACTUAL-BOX)
-    SCREEN-BOX))
+       (LET ((SCREEN-BOX (OR (POP FREE-SCREEN-BOXS) (MAKE-INSTANCE 'SCREEN-BOX))))
+            (RE-INIT SCREEN-BOX ACTUAL-BOX)
+            SCREEN-BOX))
 
 (DEFUN ALLOCATE-GRAPHICS-SCREEN-SHEET-INTERNAL (GRAPHICS-SHEET)
-  (MAKE-GRAPHICS-SCREEN-SHEET GRAPHICS-SHEET))
+       (MAKE-GRAPHICS-SCREEN-SHEET GRAPHICS-SHEET))
 
 
 (DEFUN ALLOCATE-SCREEN-OBJ-INTERNAL (ACTUAL-OBJ)
-  (COND ((and (box? actual-obj)
-              (display-style-graphics-mode? (display-style-list actual-obj)))
-         (let ((gi (graphics-info actual-obj)))
-           (cond ((graphics-sheet? gi)
-                  (ALLOCATE-GRAPHICS-SCREEN-BOX-INTERNAL ACTUAL-OBJ))
-                 ((screen-obj? gi)
-                  (allocate-sprite-screen-box-internal actual-obj))
-                 (t
-                  (barf "Can't allocate a graphics screen obj for ~S"
-                        actual-obj)))))
-  ((and (port-box? actual-obj)
-        (graphics-box? (ports actual-obj))
-        (display-style-graphics-mode? (display-style-list actual-obj)))
-   (ALLOCATE-GRAPHICS-SCREEN-BOX-INTERNAL ACTUAL-OBJ))
-  ((BOX? ACTUAL-OBJ) (ALLOCATE-SCREEN-BOX-INTERNAL ACTUAL-OBJ))
-  ((ROW? ACTUAL-OBJ) (ALLOCATE-SCREEN-ROW-INTERNAL ACTUAL-OBJ))
-  ((GRAPHICS-SHEET? ACTUAL-OBJ)
-   (ALLOCATE-GRAPHICS-SCREEN-SHEET-INTERNAL ACTUAL-OBJ))
-  (T (BARF  "Can't allocate a screen-obj for ~S" ACTUAL-OBJ))))
+       (COND ((and (box? actual-obj)
+                   (display-style-graphics-mode? (display-style-list actual-obj)))
+              (let ((gi (graphics-info actual-obj)))
+                (cond ((graphics-sheet? gi)
+                       (ALLOCATE-GRAPHICS-SCREEN-BOX-INTERNAL ACTUAL-OBJ))
+                  ((screen-obj? gi)
+                   (allocate-sprite-screen-box-internal actual-obj))
+                  (t
+                   (barf "Can't allocate a graphics screen obj for ~S"
+                         actual-obj)))))
+             ((and (port-box? actual-obj)
+                   (graphics-box? (ports actual-obj))
+                   (display-style-graphics-mode? (display-style-list actual-obj)))
+              (ALLOCATE-GRAPHICS-SCREEN-BOX-INTERNAL ACTUAL-OBJ))
+             ((BOX? ACTUAL-OBJ) (ALLOCATE-SCREEN-BOX-INTERNAL ACTUAL-OBJ))
+             ((ROW? ACTUAL-OBJ) (ALLOCATE-SCREEN-ROW-INTERNAL ACTUAL-OBJ))
+             ((GRAPHICS-SHEET? ACTUAL-OBJ)
+              (ALLOCATE-GRAPHICS-SCREEN-SHEET-INTERNAL ACTUAL-OBJ))
+             (T (BARF  "Can't allocate a screen-obj for ~S" ACTUAL-OBJ))))
 
 (DEFUN DEALLOCATE-SCREEN-ROW-INTERNAL (SCREEN-ROW)
-  (de-allocate-init screen-row)
-  (PUSH SCREEN-ROW FREE-SCREEN-ROWS))
+       (de-allocate-init screen-row)
+       (PUSH SCREEN-ROW FREE-SCREEN-ROWS))
 
 (DEFUN DEALLOCATE-SCREEN-BOX-INTERNAL (SCREEN-BOX)
-  (de-allocate-init screen-box)
-  (PUSH SCREEN-BOX FREE-SCREEN-BOXS))
+       (de-allocate-init screen-box)
+       (PUSH SCREEN-BOX FREE-SCREEN-BOXS))
 
 (DEFUN DEALLOCATE-GRAPHICS-SCREEN-BOX-INTERNAL (GRAPHICS-SCREEN-BOX)
-  (de-allocate-init graphics-screen-box)
-  (PUSH GRAPHICS-SCREEN-BOX FREE-GRAPHICS-SCREEN-BOXS))
+       (de-allocate-init graphics-screen-box)
+       (PUSH GRAPHICS-SCREEN-BOX FREE-GRAPHICS-SCREEN-BOXS))
 
 (defun deallocate-sprite-screen-box-internal (sprite-screen-box)
   (de-allocate-init sprite-screen-box)
   (push sprite-screen-box free-sprite-screen-boxs))
 
 (DEFUN DEALLOCATE-SCREEN-OBJ-INTERNAL (SCREEN-OBJ)
-  (COND ((GRAPHICS-SCREEN-BOX? SCREEN-OBJ)
-   (DEALLOCATE-GRAPHICS-SCREEN-BOX-INTERNAL SCREEN-OBJ))
-  ((SCREEN-BOX? SCREEN-OBJ) (DEALLOCATE-SCREEN-BOX-INTERNAL SCREEN-OBJ))
-  ((SCREEN-ROW? SCREEN-OBJ) (DEALLOCATE-SCREEN-ROW-INTERNAL SCREEN-OBJ))
-  ((graphics-screen-sheet? screen-obj)
-   (deallocate-graphics-screen-sheet-internal screen-obj))
-        ((sprite-screen-box? screen-obj)
-         (deallocate-sprite-screen-box-internal screen-obj))
-  (T (BARF "Can't deallocate ~S" SCREEN-OBJ))))
+       (COND ((GRAPHICS-SCREEN-BOX? SCREEN-OBJ)
+              (DEALLOCATE-GRAPHICS-SCREEN-BOX-INTERNAL SCREEN-OBJ))
+             ((SCREEN-BOX? SCREEN-OBJ) (DEALLOCATE-SCREEN-BOX-INTERNAL SCREEN-OBJ))
+             ((SCREEN-ROW? SCREEN-OBJ) (DEALLOCATE-SCREEN-ROW-INTERNAL SCREEN-OBJ))
+             ((graphics-screen-sheet? screen-obj)
+              (deallocate-graphics-screen-sheet-internal screen-obj))
+             ((sprite-screen-box? screen-obj)
+              (deallocate-sprite-screen-box-internal screen-obj))
+             (T (BARF "Can't deallocate ~S" SCREEN-OBJ))))
 
 ;; make this do something if we ever make the allocate use resources
 (defun deallocate-graphics-screen-sheet-internal (gss)
@@ -282,29 +282,29 @@ Modification History (most recent at the top)
 (DEFVAR *DEFINED-BOX-ELLIPSIS-STYLES* NIL)
 
 (DEFUN BOX-ELLIPSIS-STYLE? (THING)
-  (AND (SYMBOLP THING) (MEMBER THING *DEFINED-BOX-ELLIPSIS-STYLES*)))
+       (AND (SYMBOLP THING) (MEMBER THING *DEFINED-BOX-ELLIPSIS-STYLES*)))
 
 (DEFMACRO DEFINE-BOX-ELLIPSIS-STYLE (NAME)
-  (let ((erase-name (intern (symbol-format nil "~A-ERASE-SELF" name)))
-  (size-name  (intern (symbol-format nil "~A-SIZE" name))))
-    `(PROGN 'COMPILE
-      (PUSH ',NAME *DEFINED-BOX-ELLIPSIS-STYLES*)   ;; default erase adn size properties
-      ;; we can overide this with some other definition later
-      (defun ,erase-name (x-coord y-coord)
-       (erase-rectangle *box-ellipsis-wid* *box-ellipsis-hei*
-           x-coord y-coord))
-      (setf (get ',name 'erase-self) ',erase-name)
-      (DEFUN ,size-name ()
-       (VALUES *BOX-ELLIPSIS-WID* *BOX-ELLIPSIS-HEI*))
-      (setf (get ',name 'size) ',size-name))))
+          (let ((erase-name (intern (symbol-format nil "~A-ERASE-SELF" name)))
+                (size-name  (intern (symbol-format nil "~A-SIZE" name))))
+            `(PROGN 'COMPILE
+                    (PUSH ',NAME *DEFINED-BOX-ELLIPSIS-STYLES*)   ;; default erase adn size properties
+                    ;; we can overide this with some other definition later
+                    (defun ,erase-name (x-coord y-coord)
+                      (erase-rectangle *box-ellipsis-wid* *box-ellipsis-hei*
+                                       x-coord y-coord))
+                    (setf (get ',name 'erase-self) ',erase-name)
+                    (DEFUN ,size-name ()
+                            (VALUES *BOX-ELLIPSIS-WID* *BOX-ELLIPSIS-HEI*))
+                    (setf (get ',name 'size) ',size-name))))
 
 (DEFVAR *BOX-ELLIPSIS-CURRENT-STYLE* 'BOX-ELLIPSIS-SOLID-LINES)
 
 (DEFMACRO ALTERING-REGION ((REGION) &BODY BODY)
-  (WARN "ALTERING-REGION is obsolete.  Use with-open-blinker instead.")
-  `(WITHOUT-INTERRUPTS
-     (OPEN-BLINKER ,REGION)
-     (PROGN . ,BODY)))
+          (WARN "ALTERING-REGION is obsolete.  Use with-open-blinker instead.")
+          `(WITHOUT-INTERRUPTS
+            (OPEN-BLINKER ,REGION)
+            (PROGN . ,BODY)))
 
 (defmacro with-real-time (&body body)
   `(progn . ,body))
@@ -314,41 +314,41 @@ Modification History (most recent at the top)
 ;;;****************************************************************;;;
 
 (DEFMACRO QUEUEING-SCREEN-OBJS-DEALLOCATION (&BODY BODY)
-  `(LET ((SCREEN-OBJS-DEALLOCATION-QUEUE NIL))
-     (DECLARE (SPECIAL SCREEN-OBJS-DEALLOCATION-QUEUE))
-     (UNWIND-PROTECT
-   (PROGN . ,BODY)
-       (DOLIST (QUEUED-SCREEN-OBJ SCREEN-OBJS-DEALLOCATION-QUEUE)
-   (DEALLOCATE-SELF QUEUED-SCREEN-OBJ)))))
+          `(LET ((SCREEN-OBJS-DEALLOCATION-QUEUE NIL))
+                (DECLARE (SPECIAL SCREEN-OBJS-DEALLOCATION-QUEUE))
+                (UNWIND-PROTECT
+                 (PROGN . ,BODY)
+                 (DOLIST (QUEUED-SCREEN-OBJ SCREEN-OBJS-DEALLOCATION-QUEUE)
+                         (DEALLOCATE-SELF QUEUED-SCREEN-OBJ)))))
 
 (DEFMACRO PORT-REDISPLAYING-HISTORY ((ACTUAL-BOX) &BODY BODY)
-  `(LET ((PORT-REDISPLAY-HISTORY (UPDATE-PORT-REDISPLAY-HISTORY ,ACTUAL-BOX)))
-     . ,BODY))
+          `(LET ((PORT-REDISPLAY-HISTORY (UPDATE-PORT-REDISPLAY-HISTORY ,ACTUAL-BOX)))
+                . ,BODY))
 
 (DEFMACRO REDISPLAYING-WINDOW ((WINDOW) &BODY BODY)
-  `(LET* ((*REDISPLAY-WINDOW* ,WINDOW)
-    (*OUTERMOST-SCREEN-BOX* (OUTERMOST-SCREEN-BOX ,WINDOW))
-    (.OUTERMOST-SCREEN-BOX. *OUTERMOST-SCREEN-BOX*))
-     (QUEUEING-SCREEN-OBJS-DEALLOCATION
-       (DRAWING-ON-WINDOW (,WINDOW)
-   (UNWIND-PROTECT
-     (PROGN . ,BODY)
-     ;; Check to see if *outermost-screen-box* got changed during
-     ;; the redisplay. If it did, then tell the window about it.
-     (WHEN (NOT (EQ *OUTERMOST-SCREEN-BOX* .OUTERMOST-SCREEN-BOX.))
-     (SET-OUTERMOST-SCREEN-BOX-IN-WINDOW ,WINDOW *OUTERMOST-SCREEN-BOX*)))))))
+          `(LET* ((*REDISPLAY-WINDOW* ,WINDOW)
+                  (*OUTERMOST-SCREEN-BOX* (OUTERMOST-SCREEN-BOX ,WINDOW))
+                  (.OUTERMOST-SCREEN-BOX. *OUTERMOST-SCREEN-BOX*))
+                 (QUEUEING-SCREEN-OBJS-DEALLOCATION
+                  (DRAWING-ON-WINDOW (,WINDOW)
+                                     (UNWIND-PROTECT
+                                      (PROGN . ,BODY)
+                                      ;; Check to see if *outermost-screen-box* got changed during
+                                      ;; the redisplay. If it did, then tell the window about it.
+                                      (WHEN (NOT (EQ *OUTERMOST-SCREEN-BOX* .OUTERMOST-SCREEN-BOX.))
+                                            (SET-OUTERMOST-SCREEN-BOX-IN-WINDOW ,WINDOW *OUTERMOST-SCREEN-BOX*)))))))
 
 (DEFMACRO REDISPLAYING-BOX (SCREEN-BOX &BODY BODY)
-  ;;this macro sets up the scaling for the redisplay of a particular box without having to
-  ;;redisplay the entire screen.  This means that the box to be redisplayed has to be a fixed
-  ;;sized box to avoid worrying about propagating changes in size to the superiors of the box.
-  `(QUEUEING-SCREEN-OBJS-DEALLOCATION
-     (MULTIPLE-VALUE-BIND (SUPERIOR-ORIGIN-X-OFFSET SUPERIOR-ORIGIN-Y-OFFSET)
-          (let ((ssb (superior ,screen-box)))
-            (if (screen-obj? ssb) (xy-position ssb) (values 0 0)))
-       (with-origin-at ((SCALE-X SUPERIOR-ORIGIN-X-OFFSET)
-                        (SCALE-Y SUPERIOR-ORIGIN-Y-OFFSET))
-         ,@BODY))))
+          ;;this macro sets up the scaling for the redisplay of a particular box without having to
+          ;;redisplay the entire screen.  This means that the box to be redisplayed has to be a fixed
+          ;;sized box to avoid worrying about propagating changes in size to the superiors of the box.
+          `(QUEUEING-SCREEN-OBJS-DEALLOCATION
+            (MULTIPLE-VALUE-BIND (SUPERIOR-ORIGIN-X-OFFSET SUPERIOR-ORIGIN-Y-OFFSET)
+                                 (let ((ssb (superior ,screen-box)))
+                                   (if (screen-obj? ssb) (xy-position ssb) (values 0 0)))
+                                 (with-origin-at ((SCALE-X SUPERIOR-ORIGIN-X-OFFSET)
+                                                  (SCALE-Y SUPERIOR-ORIGIN-Y-OFFSET))
+                                   ,@BODY))))
 
 ;;; Graphics defs and macros
 
@@ -357,20 +357,20 @@ Modification History (most recent at the top)
 (DEFVAR *DEFAULT-GRAPHICS-SHEET-HEIGHT* 200.)
 
 (DEFVAR *MAKE-TURTLE-WITH-NEW-GRAPHICS-BOX* NIL
-  "Determines if graphics boxes are created with a turtle already in it. ")
+        "Determines if graphics boxes are created with a turtle already in it. ")
 
 (defstruct (graphics-screen-sheet (:conc-name graphics-screen-sheet-)
-          (:predicate graphics-screen-sheet?)
-          (:constructor %make-g-screen-sheet
-           (actual-obj x-offset y-offset))
-          (:print-function
-            (lambda (gss str &rest other)
-              (declare (ignore other))
-              (format str "#<graph-scr-st x-~d. y-~d.>"
-                (graphics-screen-sheet-x-offset
-                 gss)
-                (graphics-screen-sheet-y-offset
-                 gss)))))
+                                  (:predicate graphics-screen-sheet?)
+                                  (:constructor %make-g-screen-sheet
+                                                (actual-obj x-offset y-offset))
+                                  (:print-function
+                                   (lambda (gss str &rest other)
+                                           (declare (ignore other))
+                                           (format str "#<graph-scr-st x-~d. y-~d.>"
+                                                   (graphics-screen-sheet-x-offset
+                                                    gss)
+                                                   (graphics-screen-sheet-y-offset
+                                                    gss)))))
   (x-offset 0.)
   (y-offset 0.)
   (screen-box nil)
@@ -378,7 +378,7 @@ Modification History (most recent at the top)
 
 (defmacro check-graphics-screen-sheet-arg (x)
   `(check-type ,x (satisfies graphics-screen-sheet?)
-         "A graphics screen sheet"))
+                "A graphics screen sheet"))
 
 ;;; random useful structs and stuff
 
@@ -390,7 +390,7 @@ Modification History (most recent at the top)
   (border-style nil))
 
 (defstruct (screen-row-rdp1-info (:type vector)
-         (:conc-name sr-rdp1-info-))
+                                 (:conc-name sr-rdp1-info-))
   (action nil) ; a keyword
   (from-cha-no 0)
   (from-offset 0)
@@ -403,7 +403,7 @@ Modification History (most recent at the top)
 ;; changed will use them at any given time
 (defun allocate-sr-rdp1-info (&optional (from-cha-no 0) (from-offset 0))
   (make-screen-row-rdp1-info :from-cha-no from-cha-no
-           :from-offset from-offset))
+                             :from-offset from-offset))
 
 ;; a stub for allocation
 (defun free-sr-rdp1-info (info) (declare (ignore info))  nil)
@@ -430,7 +430,7 @@ Modification History (most recent at the top)
 (defvar *absolute-position-caches-filled* ':toplevel)
 
 (defstruct (ab-pos-cache (:type vector)
-       (:constructor make-ab-pos-cache (x y iw ih sx sy)))
+                         (:constructor make-ab-pos-cache (x y iw ih sx sy)))
   (x 0)
   (y 0)
   (iw 0)
@@ -452,9 +452,9 @@ Modification History (most recent at the top)
 (defmacro with-absolute-position-cache-recording (&body body)
   `(let ((*absolute-position-caches-filled* nil))
      (unwind-protect
-    (progn . ,body)
-       (dolist (cache *absolute-position-caches-filled*)
-   (setf (ab-pos-cache-valid cache) nil)))))
+      (progn . ,body)
+      (dolist (cache *absolute-position-caches-filled*)
+        (setf (ab-pos-cache-valid cache) nil)))))
 
 ;;;; Fonts
 
@@ -475,42 +475,42 @@ Modification History (most recent at the top)
 
 (defmacro with-font-hacking ((font-descriptors
                               &key (start-cha-no 0) (cha-drawing? nil))
-           &body body)
+                             &body body)
   (let ((initial-font-no (gensym)))
     `(macrolet ((check-and-handle-font-changes (cha-no)
-      `(cond ((null next-font-change))
-             ((=& ,cha-no next-font-change)
-        (set-font-info
-         (bfd-font-no (car remaining-font-descriptors)))
-                          ,',(when cha-drawing?
-                               '(%set-pen-color
-                                 (bfd-color (car remaining-font-descriptors))))
-        (setq remaining-font-descriptors
-              (cdr remaining-font-descriptors))
-        (setq next-font-change
-              (and remaining-font-descriptors
-             (bfd-cha-no
-              (car remaining-font-descriptors)))))))
+                                               `(cond ((null next-font-change))
+                                                  ((=& ,cha-no next-font-change)
+                                                   (set-font-info
+                                                    (bfd-font-no (car remaining-font-descriptors)))
+                                                   ,',(when cha-drawing?
+                                                        '(%set-pen-color
+                                                          (bfd-color (car remaining-font-descriptors))))
+                                                   (setq remaining-font-descriptors
+                                                         (cdr remaining-font-descriptors))
+                                                   (setq next-font-change
+                                                         (and remaining-font-descriptors
+                                                              (bfd-cha-no
+                                                               (car remaining-font-descriptors)))))))
                 (recheck-font-state (cha-no)
-                  `(set-font-info (bfd-font-no
-                                   (closest-bfd-internal
-                                    ,',font-descriptors ,cha-no)))))
-       (let* ((,initial-font-no (bfd-font-no
-                                 (closest-bfd-internal ,font-descriptors
-                                                       ,start-cha-no)))
-              (remaining-font-descriptors
-               (if (zerop& ,start-cha-no)
-                 ,font-descriptors
-                 (do ((leftovers ,font-descriptors (cdr leftovers)))
-                     ((or (null leftovers)
-                          (>& (bfd-cha-no (car leftovers)) ,start-cha-no))
-                      leftovers)
-                   ;(setq ,initial-font-no (bfd-font-no (car leftovers)))
-                   )))
-              (next-font-change (and remaining-font-descriptors
-                                     (bfd-cha-no (car remaining-font-descriptors)))))
-         (rebind-font-info (,initial-font-no)
-           (maintaining-pen-color ,@body))))))
+                                    `(set-font-info (bfd-font-no
+                                                     (closest-bfd-internal
+                                                      ,',font-descriptors ,cha-no)))))
+               (let* ((,initial-font-no (bfd-font-no
+                                         (closest-bfd-internal ,font-descriptors
+                                                                ,start-cha-no)))
+                      (remaining-font-descriptors
+                       (if (zerop& ,start-cha-no)
+                         ,font-descriptors
+                         (do ((leftovers ,font-descriptors (cdr leftovers)))
+                           ((or (null leftovers)
+                                (>& (bfd-cha-no (car leftovers)) ,start-cha-no))
+                            leftovers)
+                           ;(setq ,initial-font-no (bfd-font-no (car leftovers)))
+                           )))
+                      (next-font-change (and remaining-font-descriptors
+                                             (bfd-cha-no (car remaining-font-descriptors)))))
+                 (rebind-font-info (,initial-font-no)
+                                   (maintaining-pen-color ,@body))))))
 
 ;; this is used when it is important to know about font info
 ;; during the body of the iteration.  Examples would be pass-1
@@ -518,19 +518,19 @@ Modification History (most recent at the top)
 ;; of characters for bitblt or erasing.
 
 (defmacro do-screen-chas-with-font-info ((var screen-chas
-                &key start stop index-var-name
-                font-descriptors (cha-drawing? nil))
-           &body body)
+                                           &key start stop index-var-name
+                                           font-descriptors (cha-drawing? nil))
+                                         &body body)
   (let ((index-name (or index-var-name (gensym))))
     `(let ((fds (or ,font-descriptors (screen-chas-array-fds ,screen-chas))))
        (with-font-hacking (fds :start-cha-no (or ,start 0)
                                :cha-drawing? ,cha-drawing?)
-   (do-vector-contents (,var ,screen-chas
-           :start ,start
-           :stop ,stop
-           :index-var-name ,index-name)
-     (check-and-handle-font-changes ,index-name)
-     . ,body)))))
+         (do-vector-contents (,var ,screen-chas
+                               :start ,start
+                               :stop ,stop
+                               :index-var-name ,index-name)
+           (check-and-handle-font-changes ,index-name)
+           . ,body)))))
 
 ;;; for systems which buffer graphics
 ;;; this applies equally to command buffering a la X or
