@@ -84,9 +84,9 @@ Modification History (most recent at top)
     (setf (screen-row new-screen-cha) self)))
 
 (defmethod insert-screen-chas-at-cha-no ((self screen-row)
-					 new-screen-chas-list cha-no)
+           new-screen-chas-list cha-no)
   (sv-multiple-insert-at (slot-value self 'screen-chas) cha-no
-			 new-screen-chas-list)
+       new-screen-chas-list)
   (dolist (new-screen-cha new-screen-chas-list)
     (when (screen-box? new-screen-cha)
       (setf (screen-row new-screen-cha) self))))
@@ -94,14 +94,14 @@ Modification History (most recent at top)
 (defmethod insert-screen-row ((self screen-box) new-screen-row before-screen-row)
   (check-screen-row-arg new-screen-row)
   (cond ((null (screen-box new-screen-row))
-	 (setf (screen-box new-screen-row) self)
-	 (if (not-null before-screen-row)
-	     (sv-insert-before (slot-value self 'screen-rows)
-			       new-screen-row before-screen-row)
-	     (sv-append (slot-value self 'screen-rows) new-screen-row)))
-	(t
-	 (barf "The screen-row ~S is already part of ~S"
-	       new-screen-row (screen-box new-screen-row)))))
+   (setf (screen-box new-screen-row) self)
+   (if (not-null before-screen-row)
+       (sv-insert-before (slot-value self 'screen-rows)
+             new-screen-row before-screen-row)
+       (sv-append (slot-value self 'screen-rows) new-screen-row)))
+  (t
+   (barf "The screen-row ~S is already part of ~S"
+         new-screen-row (screen-box new-screen-row)))))
 
 
 ;;;   :APPEND-SCREEN-CHA <new-screen-cha>
@@ -122,12 +122,12 @@ Modification History (most recent at top)
 (defmethod append-screen-row ((self screen-box) new-screen-row)
   (check-screen-row-arg new-screen-row)
   (cond ((null (screen-box new-screen-row))
-	 (setf (screen-box new-screen-row) self)
-	 (sv-append (slot-value self 'screen-rows) new-screen-row))
-	(t
-	 ;; Oops..
-	 (barf "The screen row ~s is already part of ~S"
-	       new-screen-row (screen-box new-screen-row)))))
+   (setf (screen-box new-screen-row) self)
+   (sv-append (slot-value self 'screen-rows) new-screen-row))
+  (t
+   ;; Oops..
+   (barf "The screen row ~s is already part of ~S"
+         new-screen-row (screen-box new-screen-row)))))
 
 
 ;;;   :DELETE-SCREEN-CHA <screen-cha>
@@ -148,7 +148,7 @@ Modification History (most recent at top)
 
 (defmethod delete-screen-chas-from-to ((self screen-row) from-cha-no to-cha-no)
   (do-vector-contents (cha-to-delete (slot-value self 'screen-chas)
-				     :start from-cha-no :stop to-cha-no)
+             :start from-cha-no :stop to-cha-no)
     (when (screen-box? cha-to-delete)
       (setf (screen-row cha-to-delete) nil)))
   (sv-delete-from-to (slot-value self 'screen-chas) from-cha-no to-cha-no))
@@ -156,17 +156,17 @@ Modification History (most recent at top)
 (defmethod delete-screen-row ((self screen-box) screen-row-to-delete)
   (check-screen-row-arg screen-row-to-delete)
   (cond ((eq (screen-box screen-row-to-delete) self)
-	 (setf (screen-box screen-row-to-delete) nil)
-	 (sv-delete-item (slot-value self 'screen-rows) screen-row-to-delete))
-	(t
-	 ;; Oops..
-	 (barf "The screen-row ~S is not part of the screen-box ~S"
-	       screen-row-to-delete self))))
+   (setf (screen-box screen-row-to-delete) nil)
+   (sv-delete-item (slot-value self 'screen-rows) screen-row-to-delete))
+  (t
+   ;; Oops..
+   (barf "The screen-row ~S is not part of the screen-box ~S"
+         screen-row-to-delete self))))
 
 (defmethod delete-screen-rows-from-to ((self screen-box
-					     ) from-row-no to-row-no)
+               ) from-row-no to-row-no)
   (do-vector-contents (row-to-delete (slot-value self 'screen-rows)
-				     :start from-row-no :stop to-row-no)
+             :start from-row-no :stop to-row-no)
     (setf (screen-box row-to-delete) nil))
   (sv-delete-from-to (slot-value self 'screen-rows) from-row-no to-row-no))
 
@@ -180,7 +180,7 @@ Modification History (most recent at top)
 
 (defmethod kill-screen-chas-from ((self screen-row) no-of-first-obj-to-kill)
   (do-vector-contents (cha-to-kill (slot-value self 'screen-chas)
-				   :start no-of-first-obj-to-kill)
+           :start no-of-first-obj-to-kill)
     (when (screen-box? cha-to-kill)
       (setf (screen-row cha-to-kill) nil)))
   (sv-delete-to-end (slot-value self 'screen-chas) no-of-first-obj-to-kill))
@@ -188,56 +188,56 @@ Modification History (most recent at top)
 (defmethod kill-screen-cha ((self screen-row) screen-cha-to-kill)
   (check-screen-cha-arg screen-cha-to-kill)
   (cond ((eq (screen-row screen-cha-to-kill) self)
-	 (do-self-and-next-sv-contents (cha-to-kill
-					 (slot-value self 'screen-chas)
-					 screen-cha-to-kill)
-	   (when (screen-box? cha-to-kill)
-	     (setf (screen-row cha-to-kill) nil)))
-	 (sv-delete-from-item-to-end (slot-value self 'screen-chas)
-				     screen-cha-to-kill))
-	(t
-	 ;; Oops..
-	 (barf "The screen cha ~S is not part of the screen row ~S"
-	       screen-cha-to-kill self))))
+   (do-self-and-next-sv-contents (cha-to-kill
+           (slot-value self 'screen-chas)
+           screen-cha-to-kill)
+     (when (screen-box? cha-to-kill)
+       (setf (screen-row cha-to-kill) nil)))
+   (sv-delete-from-item-to-end (slot-value self 'screen-chas)
+             screen-cha-to-kill))
+  (t
+   ;; Oops..
+   (barf "The screen cha ~S is not part of the screen row ~S"
+         screen-cha-to-kill self))))
 
 ;;; this does the same thing except it conses a list of the killed chas
 (defmethod kill-screen-chas-and-return-them ((self screen-row) screen-cha-to-kill)
   (check-screen-cha-arg screen-cha-to-kill)
   (cond ((eq (screen-row screen-cha-to-kill) self)
-	 (let ((chas-to-return nil))
-	   (do-self-and-next-sv-contents (cha-to-kill
-					   (slot-value self 'screen-chas)
-					   screen-cha-to-kill)
-	     (push cha-to-kill chas-to-return)
-	     (when (screen-box? cha-to-kill)
-	       (setf (screen-row cha-to-kill) nil)))
-	   (sv-delete-from-item-to-end (slot-value self 'screen-chas)
-				       screen-cha-to-kill)
-	   (nreverse chas-to-return)))
-	(t
-	 ;; Oops..
-	 (barf "The screen cha ~S is not part of the screen row ~S"
-	       screen-cha-to-kill self))))
+   (let ((chas-to-return nil))
+     (do-self-and-next-sv-contents (cha-to-kill
+             (slot-value self 'screen-chas)
+             screen-cha-to-kill)
+       (push cha-to-kill chas-to-return)
+       (when (screen-box? cha-to-kill)
+         (setf (screen-row cha-to-kill) nil)))
+     (sv-delete-from-item-to-end (slot-value self 'screen-chas)
+               screen-cha-to-kill)
+     (nreverse chas-to-return)))
+  (t
+   ;; Oops..
+   (barf "The screen cha ~S is not part of the screen row ~S"
+         screen-cha-to-kill self))))
 
 (defmethod kill-screen-rows-from ((self screen-box) no-of-first-obj-to-kill)
   (do-vector-contents (row-to-kill (slot-value self 'screen-rows)
-				   :start no-of-first-obj-to-kill)
+           :start no-of-first-obj-to-kill)
     (setf (screen-box row-to-kill) nil))
   (sv-delete-to-end (slot-value self 'screen-rows) no-of-first-obj-to-kill))
 
 (defmethod kill-screen-row ((self screen-box) screen-row-to-kill)
   (check-screen-row-arg screen-row-to-kill)
   (cond ((eq (screen-box screen-row-to-kill) self)
-	 (do-self-and-next-sv-contents (row-to-kill
-					 (slot-value self 'screen-rows)
-					 screen-row-to-kill)
-	   (setf (screen-box row-to-kill) nil))
-	 (sv-delete-from-item-to-end (slot-value self 'screen-rows)
-				     screen-row-to-kill))
-	(t
-	 ;; Oops..
-	 (barf "The screen row ~S is not part of the screen box ~S"
-	       screen-row-to-kill self))))
+   (do-self-and-next-sv-contents (row-to-kill
+           (slot-value self 'screen-rows)
+           screen-row-to-kill)
+     (setf (screen-box row-to-kill) nil))
+   (sv-delete-from-item-to-end (slot-value self 'screen-rows)
+             screen-row-to-kill))
+  (t
+   ;; Oops..
+   (barf "The screen row ~S is not part of the screen box ~S"
+         screen-row-to-kill self))))
 
 
 ;;; LOW-LEVEL screen-obj accessors. All of these do the obvious thing.
@@ -254,8 +254,8 @@ Modification History (most recent at top)
 
 (defmethod last-screen-cha ((self screen-row))
   (sv-nth (1-& (storage-vector-active-length
-		 (slot-value self 'screen-chas)))
-	  (slot-value self 'screen-chas)))
+     (slot-value self 'screen-chas)))
+    (slot-value self 'screen-chas)))
 
 ;; screen-rows can be a symbol (port ellipsis style)
 (defmethod first-screen-row ((self screen-box))
@@ -267,7 +267,7 @@ Modification History (most recent at top)
   (let ((srs (slot-value self 'screen-rows)))
     (unless (or (symbolp srs) (zerop& (storage-vector-active-length srs)))
       (sv-nth (1-& (storage-vector-active-length (slot-value self 'screen-rows)))
-	      (slot-value self 'screen-rows)))))
+        (slot-value self 'screen-rows)))))
 
 (defmethod first-screen-row ((self graphics-screen-box))
   ;(declare (ignore self))
@@ -287,8 +287,8 @@ Modification History (most recent at top)
 
 (defmethod screen-cha-at-cha-no ((self screen-row) cha-no)
   (when (<& cha-no
-	    (storage-vector-active-length
-	      (slot-value self 'screen-chas)))
+      (storage-vector-active-length
+        (slot-value self 'screen-chas)))
     (sv-nth cha-no (slot-value self 'screen-chas))))
 
 (defmethod screen-cha-cha-no ((self screen-row) cha)
@@ -296,8 +296,8 @@ Modification History (most recent at top)
 
 (defmethod screen-row-at-row-no ((self screen-box) row-no)
   (when (<& row-no
-	    (storage-vector-active-length
-	      (slot-value self 'screen-rows)))
+      (storage-vector-active-length
+        (slot-value self 'screen-rows)))
     (sv-nth row-no (slot-value self 'screen-rows))))
 
 (defmethod screen-row-row-no ((self screen-box) row)
@@ -313,10 +313,10 @@ Modification History (most recent at top)
 (defmethod set-screen-sheet ((self graphics-screen-box) new-sheet)
   (setf (screen-rows self) new-sheet)
   (cond ((null new-sheet))
-	((graphics-screen-sheet? new-sheet)
-	 (setf (graphics-screen-sheet-screen-box new-sheet) self))
-	(t (error "Trying to set the screen-sheet for ~A to ~A"
-		  self new-sheet))))
+  ((graphics-screen-sheet? new-sheet)
+   (setf (graphics-screen-sheet-screen-box new-sheet) self))
+  (t (error "Trying to set the screen-sheet for ~A to ~A"
+      self new-sheet))))
 
 ;;; just go to the actual obj instead ?
 (defmethod screen-sprite ((self sprite-screen-box))
@@ -359,7 +359,7 @@ Modification History (most recent at top)
 
 (defmethod offsets ((self screen-obj))
   (values (slot-value self 'x-offset)
-	  (slot-value self 'y-offset)))
+    (slot-value self 'y-offset)))
 
 (defmethod set-offsets ((self screen-obj) new-x-offset new-y-offset)
   (setf (slot-value self 'x-offset) new-x-offset)
@@ -369,9 +369,9 @@ Modification History (most recent at top)
 
 (DEFMETHOD SET-BPS ((SELF SCREEN-BOX) NEW-VALUE)
   (ASSERT #+ti '(LAMBDA (X) (AND (LISTP X) (EVERY X 'BP?)))
-	  #-ti #'(LAMBDA (X) (AND (LISTP X) (EVERY X 'BP?)))
-	  (NEW-VALUE)
-	  "A list of Boxer BP's")
+    #-ti #'(LAMBDA (X) (AND (LISTP X) (EVERY X 'BP?)))
+    (NEW-VALUE)
+    "A list of Boxer BP's")
   (SETF (BPS SELF) NEW-VALUE))
 
 (DEFMETHOD ADD-BP ((SELF SCREEN-BOX) NEW-BP)
