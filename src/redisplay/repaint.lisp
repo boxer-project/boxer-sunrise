@@ -103,12 +103,12 @@ Modification History (most recent at the top)
              (not (null *complete-redisplay-in-progress?*))
              ;; got less room...
              (and (not-null max-wid) (< max-wid (slot-value self 'wid)))
-	     (and (not-null max-hei) (< max-hei (slot-value self 'hei)))
+       (and (not-null max-hei) (< max-hei (slot-value self 'hei)))
              ;; was clipped but got more room...
-	     (and (not-null (slot-value self 'x-got-clipped?))
-		  (not-null max-wid) (> max-wid (slot-value self 'wid)))
-	     (and (not-null (slot-value self 'y-got-clipped?))
-		  (not-null max-hei) (> max-hei (slot-value self 'hei)))
+       (and (not-null (slot-value self 'x-got-clipped?))
+      (not-null max-wid) (> max-wid (slot-value self 'wid)))
+       (and (not-null (slot-value self 'y-got-clipped?))
+      (not-null max-hei) (> max-hei (slot-value self 'hei)))
              ;; deep active sprite
 ;             (active-sprite-inside? self)
              )
@@ -139,7 +139,7 @@ Modification History (most recent at the top)
         ;; don't change the FD cha-no's in screen structure, if the CONSing
         ;; gets too bad, might need to consider modifying existing screen FD's
         (mapcar #'copy-boxer-font-descriptor
-	        (chas-array-fds (chas-array (slot-value self 'actual-obj))))))
+          (chas-array-fds (chas-array (slot-value self 'actual-obj))))))
 
 ;(defmethod got-repainted ((self screen-box))
 ;  (call-next-method)
@@ -157,7 +157,7 @@ Modification History (most recent at the top)
       self
     (port-redisplaying-history (actual-obj)
       (multiple-value-bind (il it ir ib)
-	  (box-borders-widths box-type self)
+    (box-borders-widths box-type self)
         (declare (ignore ir ib))
         (cond ((and (port-box? actual-obj)
                     (port-has-been-displayed-enough? actual-obj))
@@ -252,23 +252,23 @@ Modification History (most recent at the top)
                      (set-screen-obj-offsets inf-screen-obj inf-x-offset inf-y-offset)
                      (repaint-pass-1-sr inf-screen-obj
                                         infs-new-max-wid infs-new-max-hei))
-                   		     ;; Finally, let inf-screen-obj make its contibution to the
-		     ;; total new-wid, new-hei etc. of all the inf-screen-objs.
-		     (multiple-value-setq (infs-new-wid infs-new-hei
-							infs-new-x-got-clipped?
-							infs-new-y-got-clipped?
-							inf-y-offset
-							infs-new-max-hei)
-		       ;; inf-screen-obj has to be a
-		       ;; screen-row, so we don't pass
-		       ;; INF-X-OFFSET and NEW-MAX-WID
-		       (rp1-sr-increment-superior-parameters
-			inf-screen-obj
-			infs-new-wid infs-new-hei
-			infs-new-x-got-clipped?
-			infs-new-y-got-clipped?
-			inf-y-offset
-			infs-new-max-hei))))))))))
+                            ;; Finally, let inf-screen-obj make its contibution to the
+         ;; total new-wid, new-hei etc. of all the inf-screen-objs.
+         (multiple-value-setq (infs-new-wid infs-new-hei
+              infs-new-x-got-clipped?
+              infs-new-y-got-clipped?
+              inf-y-offset
+              infs-new-max-hei)
+           ;; inf-screen-obj has to be a
+           ;; screen-row, so we don't pass
+           ;; INF-X-OFFSET and NEW-MAX-WID
+           (rp1-sr-increment-superior-parameters
+      inf-screen-obj
+      infs-new-wid infs-new-hei
+      infs-new-x-got-clipped?
+      infs-new-y-got-clipped?
+      inf-y-offset
+      infs-new-max-hei))))))))))
 
 
 (defmethod rp1-sb-punt-extra-screen-objs ((self screen-box) first-screen-row-to-punt)
@@ -278,18 +278,18 @@ Modification History (most recent at the top)
     (kill-screen-rows-from self pos)))
 
 (defmethod rp1-sb-patch-out-of-synch-lossage ((self screen-box)
-					       inf-actual-obj inf-screen-obj
-					       screen-obj-x-offset
-					       screen-obj-y-offset)
+                 inf-actual-obj inf-screen-obj
+                 screen-obj-x-offset
+                 screen-obj-y-offset)
   (let* ((matching-screen-obj
-	   (allocate-screen-obj-for-use-in inf-actual-obj
-		 (lowest-screen-box self)))
-	 (matching-screen-obj-superior
-	   (superior matching-screen-obj)))
+     (allocate-screen-obj-for-use-in inf-actual-obj
+     (lowest-screen-box self)))
+   (matching-screen-obj-superior
+     (superior matching-screen-obj)))
     (cond ((eq matching-screen-obj-superior self)
-	   ;; the screen-obj which matches inf-actual-obj must be
-	   ;; farther along in this screen obj somewhere.
-	   ;; (One common cause for this is a deletion).
+     ;; the screen-obj which matches inf-actual-obj must be
+     ;; farther along in this screen obj somewhere.
+     ;; (One common cause for this is a deletion).
            (let ((start-pos (screen-row-row-no self inf-screen-obj))
                  (stop-pos  (screen-row-row-no self matching-screen-obj)))
              (queue-for-deallocation-screen-rows-from (slot-value self 'screen-rows)
@@ -300,8 +300,8 @@ Modification History (most recent at the top)
              matching-screen-obj))
           (t
            ;; the screen-obj which matches inf-actual-obj is not in
-	   ;; use anywhere. This means inf-actual-obj is a new actual-
-	   ;; obj. (Probably the most common cause for this is an insertion)
+     ;; use anywhere. This means inf-actual-obj is a new actual-
+     ;; obj. (Probably the most common cause for this is an insertion)
            ;;Just insert the matching-screen-obj in the right place and we're done.
            (insert-screen-row self matching-screen-obj inf-screen-obj)
            (set-screen-obj-offsets matching-screen-obj
@@ -315,11 +315,11 @@ Modification History (most recent at the top)
                                                  inf-y-offset
                                                  infs-new-max-hei)
   (values (max infs-new-wid (slot-value self 'wid))
-	  (+ infs-new-hei (slot-value self 'hei))
-	  (or infs-new-x-got-clipped? (slot-value self 'x-got-clipped?))
-	  (or infs-new-y-got-clipped? (slot-value self 'y-got-clipped?))
-	  (+ inf-y-offset (slot-value self 'hei))
-	  (- infs-new-max-hei (slot-value self 'hei))))
+    (+ infs-new-hei (slot-value self 'hei))
+    (or infs-new-x-got-clipped? (slot-value self 'x-got-clipped?))
+    (or infs-new-y-got-clipped? (slot-value self 'y-got-clipped?))
+    (+ inf-y-offset (slot-value self 'hei))
+    (- infs-new-max-hei (slot-value self 'hei))))
 
 
 
@@ -337,22 +337,22 @@ Modification History (most recent at the top)
 ;;; run out of screen space so we can calculate the size of the row in order to get the scroll info right
 
 (defmethod repaint-inferiors-pass-1-sr ((self screen-row)
-					  infs-new-max-wid infs-new-max-hei
-					  &optional
-					  (first-inf-x-offset 0)
-					  (first-inf-y-offset 0))
+            infs-new-max-wid infs-new-max-hei
+            &optional
+            (first-inf-x-offset 0)
+            (first-inf-y-offset 0))
   (with-slots (wid hei actual-obj screen-chas)
       self
     (let* ((*complete-redisplay-in-progress?*
-	     (or *complete-redisplay-in-progress?*
-		 (slot-value self 'force-redisplay-infs?)))
-	   (infs-new-wid 0)
-	   (infs-new-hei 0)
-	   (infs-new-x-got-clipped? nil)
-	   (infs-new-y-got-clipped? nil)
+       (or *complete-redisplay-in-progress?*
+     (slot-value self 'force-redisplay-infs?)))
+     (infs-new-wid 0)
+     (infs-new-hei 0)
+     (infs-new-x-got-clipped? nil)
+     (infs-new-y-got-clipped? nil)
            (new-baseline 0)
-	   (inf-x-offset first-inf-x-offset)
-	   (inf-y-offset first-inf-y-offset))
+     (inf-x-offset first-inf-x-offset)
+     (inf-y-offset first-inf-y-offset))
       ;; if we aren't already erasing everything, erase the row
       (unless *complete-redisplay-in-progress?* (erase-rectangle wid hei 0 0))
       ;; Watch out, this is a little flaky since we aren't going through the
@@ -459,50 +459,50 @@ Modification History (most recent at the top)
 ;; this mainly has to inform any further boxes that their services
 ;; will no longer be required....
 (defmethod rp1-sr-punt-extra-screen-objs-from ((self screen-row)
-					     no-of-first-obj-to-punt
-					     clipped?
-					     x-coord y-coord)
+               no-of-first-obj-to-punt
+               clipped?
+               x-coord y-coord)
   ;; erase the glyphs from the screen...
   (erase-screen-chas (slot-value self 'screen-chas) no-of-first-obj-to-punt
                      x-coord y-coord)
   ;; handle the deallocation of any boxes
   (queue-screen-objs-for-deallocation-from (slot-value self 'screen-chas)
-					   no-of-first-obj-to-punt)
+             no-of-first-obj-to-punt)
   ;; remove the extra screen characters and boxes from the screen row
   (kill-screen-chas-from self no-of-first-obj-to-punt))
 
 (defun screen-cha-increment-superior-parameters (screen-cha
-						 infs-new-wid
-						 infs-new-hei
+             infs-new-wid
+             infs-new-hei
                                                  infs-new-x-got-clipped?
                                                  infs-new-y-got-clipped?
-						 inf-x-offset
-						 infs-new-max-wid
-						 infs-new-max-hei
+             inf-x-offset
+             infs-new-max-wid
+             infs-new-max-hei
                                                  current-baseline)
   (let ((wid (cha-wid screen-cha))
-	(hei (cha-hei)))
+  (hei (cha-hei)))
     (values (+ infs-new-wid wid)
-	    (max infs-new-hei hei)
-	    (or infs-new-x-got-clipped? (> wid infs-new-max-wid))
-	    (or infs-new-y-got-clipped? (> hei infs-new-max-hei))
-	    (+ inf-x-offset wid)
-	    (- infs-new-max-wid wid)
+      (max infs-new-hei hei)
+      (or infs-new-x-got-clipped? (> wid infs-new-max-wid))
+      (or infs-new-y-got-clipped? (> hei infs-new-max-hei))
+      (+ inf-x-offset wid)
+      (- infs-new-max-wid wid)
             (max current-baseline (cha-ascent)))))
 
 ;;;only boxes and rows should be getting this message (NOT chas)
 (defmethod rp1-sb-increment-superior-parameters ((self screen-box)
-						  infs-new-wid infs-new-hei
-						  infs-new-x-got-clipped?
-						  infs-new-y-got-clipped?
-						  inf-x-offset
-						  infs-new-max-wid)
+              infs-new-wid infs-new-hei
+              infs-new-x-got-clipped?
+              infs-new-y-got-clipped?
+              inf-x-offset
+              infs-new-max-wid)
   (values (+ infs-new-wid (slot-value self 'wid))
-	  (max infs-new-hei (slot-value self 'hei))
-	  (or infs-new-x-got-clipped? (slot-value self 'x-got-clipped?))
-	  (or infs-new-y-got-clipped? (slot-value self 'y-got-clipped?))
-	  (+ inf-x-offset (slot-value self 'wid))
-	  (- infs-new-max-wid (slot-value self 'wid))))
+    (max infs-new-hei (slot-value self 'hei))
+    (or infs-new-x-got-clipped? (slot-value self 'x-got-clipped?))
+    (or infs-new-y-got-clipped? (slot-value self 'y-got-clipped?))
+    (+ inf-x-offset (slot-value self 'wid))
+    (- infs-new-max-wid (slot-value self 'wid))))
 
 
 
@@ -510,13 +510,13 @@ Modification History (most recent at the top)
 (defmethod repaint-pass-1-sr ((self screen-row) max-wid max-hei)
   (with-drawing-inside-region ((slot-value self 'x-offset)
                                (slot-value self 'y-offset)
-			       (slot-value self 'wid)
+             (slot-value self 'wid)
                                (slot-value self 'hei))
     ;; During redisplay-pass-1 the only region of the screen the redisplay
     ;; methods are allowed to draw in is the region of the screen currently
     ;; occupied by the screen obj.
     (multiple-value-bind (nw nh nxc nyc base total-wid)
-	(repaint-inferiors-pass-1-sr self max-wid max-hei)
+  (repaint-inferiors-pass-1-sr self max-wid max-hei)
       (setf (slot-value self 'wid) nw)
       (let ((1st-font (bfd-font-no (closest-bfd (slot-value self 'actual-obj) 0))))
         (rebind-font-info (1st-font)
@@ -543,7 +543,7 @@ Modification History (most recent at the top)
                    actual-obj scroll-to-actual-row box-type)
       self
     (let ((new-box-type (class-name (class-of actual-obj)))
-	  (new-display-style (display-style actual-obj))
+    (new-display-style (display-style actual-obj))
           (boxtop (boxtop actual-obj)))
       (cond ((and (eq new-display-style :supershrunk)
                   (not (eq self *outermost-screen-box*)))
@@ -712,17 +712,17 @@ Modification History (most recent at the top)
                                          (not (null (next-row last-row))))
                                     (next-row last-row))
                                    (t last-row))))
-	(set-scroll-to-actual-row self new-scroll-row)
-	new-scroll-row))))
+  (set-scroll-to-actual-row self new-scroll-row)
+  new-scroll-row))))
 
 ;; zeroes Y scrolling offset.  this fixes non pageUp for (tall) partially scrolled
 ;; 1st lines
 (defmethod scroll-up-one-screen-box ((self screen-box))
   (unless (or (null (screen-obj-actual-obj self))
-	      (zerop& (screen-rows-length self)))
+        (zerop& (screen-rows-length self)))
     (setf (slot-value self 'scroll-y-offset) 0)
     (ensure-row-is-displayed (screen-obj-actual-obj (first-screen-row self))
-			     self -1 t)))
+           self -1 t)))
 
 ;; shadow these methods out for graphics-screen-boxes
 (defmethod set-scroll-to-actual-row ((self graphics-screen-box) new-value)
@@ -753,15 +753,15 @@ Modification History (most recent at the top)
   (with-slots (wid hei box-type screen-rows scroll-x-offset scroll-y-offset)
       self
     (multiple-value-bind (il it ir ib)
-	(box-borders-widths box-type self)
+  (box-borders-widths box-type self)
       (with-clipping-inside (il it (- wid il ir) (- hei it ib))
-	;; The clipping and rescaling for these methods is similar to
-	;; the clipping and rescaling for the other redisplay-pass-1
-	;; and redisplay-pass-2 methods, except that here the region
-	;; of the screen of that is being draw inside is
-	;; a subpart of the screen obj, the screen-box's screen-rows.
-	(if (draw-port-box-ellipsis? self)
-	    (draw-port-box-ellipsis self il it)
+  ;; The clipping and rescaling for these methods is similar to
+  ;; the clipping and rescaling for the other redisplay-pass-1
+  ;; and redisplay-pass-2 methods, except that here the region
+  ;; of the screen of that is being draw inside is
+  ;; a subpart of the screen obj, the screen-box's screen-rows.
+  (if (draw-port-box-ellipsis? self)
+      (draw-port-box-ellipsis self il it)
           (with-scrolling-origin (scroll-x-offset scroll-y-offset)
             (do-vector-contents (inf-screen-obj screen-rows :index-var-name row-no)
               (when (needs-repaint-pass-2? inf-screen-obj)
@@ -769,7 +769,7 @@ Modification History (most recent at the top)
 
 (defmethod repaint-inferiors-pass-2-sr ((self screen-row))
   (let* ((inf-x-offset 0)
-	 (inf-y-offset 0)
+   (inf-y-offset 0)
          (row-baseline (slot-value self 'baseline))
          (row-fds (row-fds (slot-value self 'actual-obj))))
     (do-screen-chas-with-font-info (inf-screen-obj (slot-value self 'screen-chas)
@@ -780,9 +780,9 @@ Modification History (most recent at the top)
              ;; draw the char
              (draw-cha alu-seta inf-screen-obj
                        inf-x-offset (+ row-baseline inf-y-offset))
-	     ;; update the inf-x-offset
-	     (incf inf-x-offset (cha-wid inf-screen-obj)))
-	    (t
+       ;; update the inf-x-offset
+       (incf inf-x-offset (cha-wid inf-screen-obj)))
+      (t
              ;; make sure the box knows where it should be
              ;; this SHOULD be correct as a result of pass-1
              (unless (and (= (screen-obj-x-offset inf-screen-obj) inf-x-offset)
@@ -792,12 +792,12 @@ Modification History (most recent at the top)
                (setf (screen-obj-y-offset inf-screen-obj) inf-y-offset))
              (when (needs-repaint-pass-2? inf-screen-obj)
                (repaint-pass-2-sb inf-screen-obj))
-	     ;; finally update inf-x-offset, screen-box style
-	     (incf inf-x-offset (screen-obj-wid inf-screen-obj)))))))
+       ;; finally update inf-x-offset, screen-box style
+       (incf inf-x-offset (screen-obj-wid inf-screen-obj)))))))
 
 (defmethod repaint-pass-2-sr ((self screen-row))
   (with-slots (x-offset y-offset wid hei actual-obj)
-	       self
+         self
     (with-drawing-inside-region (x-offset y-offset wid hei)
       (when (closet-row? actual-obj (superior-box actual-obj))
         ;; this should get the inner width from the superior box
@@ -821,13 +821,13 @@ Modification History (most recent at the top)
         ;; occupied by the screen obj, and the space that will be occupied by
         ;; the screen obj when redisplay-pass-2 is complete.
         (case (display-style self)
-	  (:supershrunk (draw-super-shrunk-box 0 0 box-type))
-	  (:shrunk (let ((boxtop (boxtop actual-obj)))
-		     (cond ((null boxtop)
-			    (gray-body self)
-			    ;; Now deal with the Borders,
-			    (box-borders-draw box-type self))
-			   (t
+    (:supershrunk (draw-super-shrunk-box 0 0 box-type))
+    (:shrunk (let ((boxtop (boxtop actual-obj)))
+         (cond ((null boxtop)
+          (gray-body self)
+          ;; Now deal with the Borders,
+          (box-borders-draw box-type self))
+         (t
                             ;; keep track of the boxtop we are drawing so
                             ;; we can tell in pass-1 if it changes (and, therefore,
                             ;; need to erase the old one...
@@ -838,7 +838,7 @@ Modification History (most recent at the top)
 ;			    (with-turtle-clipping (wid hei)
 ;			      (draw-boxtop boxtop actual-obj 0 0 wid hei))
                             ))))
-	  (t ;; have to draw any background BEFORE inferiors
+    (t ;; have to draw any background BEFORE inferiors
              (unless nil ;(null background)
                (multiple-value-bind (lef top rig bot)
                    (box-borders-widths box-type self)
@@ -869,16 +869,16 @@ Modification History (most recent at the top)
   (multiple-value-bind (il it ir ib)
       (box-borders-widths (class-name (class-of (screen-obj-actual-obj self))) self)
     (let ((inside-wid (- (slot-value self 'wid) (+ ir il)))
-	  (inside-hei (- (slot-value self 'hei) (+ ib it)))
+    (inside-hei (- (slot-value self 'hei) (+ ib it)))
           #-(or lwwin opengl)
-	  (gray (if (or (and (storage-chunk? (slot-value self 'actual-obj))
-			     (null (slot-value (slot-value self 'actual-obj)
-					       'first-inferior-row)))
-			(and (port-box? (slot-value self 'actual-obj))
-			     (null (ports (slot-value self 'actual-obj)))
-			     (boxnet::cross-file-port-branch-links
-			      (slot-value self 'actual-obj))))
-		    *filegray*
+    (gray (if (or (and (storage-chunk? (slot-value self 'actual-obj))
+           (null (slot-value (slot-value self 'actual-obj)
+                 'first-inferior-row)))
+      (and (port-box? (slot-value self 'actual-obj))
+           (null (ports (slot-value self 'actual-obj)))
+           (boxnet::cross-file-port-branch-links
+            (slot-value self 'actual-obj))))
+        *filegray*
                   (gray-self self))))
       #+(or lwwin opengl)
       (with-pen-color (*gray*)
@@ -893,20 +893,20 @@ Modification History (most recent at the top)
 ;;;redisplay for graphics boxes
 
 (defmethod repaint-inferiors-pass-1-sb ((self graphics-screen-box)
-					  infs-new-max-wid infs-new-max-hei
-					  &optional
-					  (first-inf-x-offset 0)
-					  (first-inf-y-offset 0)
-					  ignore)
+            infs-new-max-wid infs-new-max-hei
+            &optional
+            (first-inf-x-offset 0)
+            (first-inf-y-offset 0)
+            ignore)
   (declare (ignore ignore))
   (let* ((graphics-sheet (graphics-sheet (screen-obj-actual-obj self)))
-	 (desired-wid (graphics-sheet-draw-wid graphics-sheet))
-	 (desired-hei (graphics-sheet-draw-hei graphics-sheet)))
+   (desired-wid (graphics-sheet-draw-wid graphics-sheet))
+   (desired-hei (graphics-sheet-draw-hei graphics-sheet)))
     ;; first make-sure that there is a screen object for the graphics sheet
     (when (not (graphics-screen-sheet? (screen-sheet self)))
       (let ((screen-sheet (allocate-screen-sheet-for-use-in graphics-sheet
-							    self)))
-	(set-screen-sheet self screen-sheet)))
+                  self)))
+  (set-screen-sheet self screen-sheet)))
     (let ((screen-sheet (screen-sheet self)))
       ;; now adjust the slots of the graphics-screen-sheet
       (unless (= first-inf-x-offset
@@ -919,57 +919,57 @@ Modification History (most recent at the top)
       (setf (graphics-screen-sheet-actual-obj screen-sheet) graphics-sheet))
     ;; make sure we have the Right graphics-sheet
     (unless (eq graphics-sheet
-		(graphics-screen-sheet-actual-obj (screen-sheet self)))
+    (graphics-screen-sheet-actual-obj (screen-sheet self)))
       (setf (graphics-screen-sheet-actual-obj (screen-sheet self))
-	    graphics-sheet)
+      graphics-sheet)
       (set-force-redisplay-infs? self))
     ;; error check, remove this SOON !!!!!!!
     (IF (NOT (GRAPHICS-SCREEN-SHEET? (SCREEN-ROWS SELF)))
-	(BARF "The object ~S, inside of ~S is not a GRAPHICS-SHEET. "
-	      (SCREEN-ROWS SELF) SELF)
-	(VALUES (min desired-wid infs-new-max-wid)	;width of the innards
-		;; either there is enough room for the entire bit-array to
-		;; be displayed or else we return whatever room we are given
-		(min desired-hei infs-new-max-hei)	;height of the innards
-		;; same argument as above
-		(> desired-wid infs-new-max-wid)	;x-got-clipped?
-		(> desired-hei infs-new-max-hei)))))	;y-got-clipped?
+  (BARF "The object ~S, inside of ~S is not a GRAPHICS-SHEET. "
+        (SCREEN-ROWS SELF) SELF)
+  (VALUES (min desired-wid infs-new-max-wid)	;width of the innards
+    ;; either there is enough room for the entire bit-array to
+    ;; be displayed or else we return whatever room we are given
+    (min desired-hei infs-new-max-hei)	;height of the innards
+    ;; same argument as above
+    (> desired-wid infs-new-max-wid)	;x-got-clipped?
+    (> desired-hei infs-new-max-hei)))))	;y-got-clipped?
 
 (defmethod repaint-inferiors-pass-2-sb ((SELF GRAPHICS-SCREEN-BOX))
   (LET ((*COMPLETE-REDISPLAY-IN-PROGRESS?*
-	 (OR *COMPLETE-REDISPLAY-IN-PROGRESS?*
-	     (SCREEN-OBJ-FORCE-REDISPLAY-INFS? SELF)))
-	(GRAPHICS-SHEET (GRAPHICS-SCREEN-SHEET-ACTUAL-OBJ
-			 (SCREEN-SHEET SELF)))
+   (OR *COMPLETE-REDISPLAY-IN-PROGRESS?*
+       (SCREEN-OBJ-FORCE-REDISPLAY-INFS? SELF)))
+  (GRAPHICS-SHEET (GRAPHICS-SCREEN-SHEET-ACTUAL-OBJ
+       (SCREEN-SHEET SELF)))
         (av-info (av-info (slot-value self 'actual-obj))))
     (when *complete-redisplay-in-progress?*
       (multiple-value-bind (x y)
-	  (graphics-screen-sheet-offsets (screen-sheet self))
-	(multiple-value-bind (il it ir ib)
-	    (box-borders-widths (slot-value self 'box-type) self)
-	  (let ((inner-width  (min (- (slot-value self 'wid) il ir)
+    (graphics-screen-sheet-offsets (screen-sheet self))
+  (multiple-value-bind (il it ir ib)
+      (box-borders-widths (slot-value self 'box-type) self)
+    (let ((inner-width  (min (- (slot-value self 'wid) il ir)
                                     (graphics-sheet-draw-wid graphics-sheet)))
                 (inner-height (min (- (slot-value self 'hei) it ib)
                                     (graphics-sheet-draw-hei graphics-sheet))))
-	    (with-drawing-inside-region (x y inner-width inner-height)
-	      (with-turtle-clipping (inner-width inner-height)
-		;; first handle the background or video if there is any
+      (with-drawing-inside-region (x y inner-width inner-height)
+        (with-turtle-clipping (inner-width inner-height)
+    ;; first handle the background or video if there is any
                 (cond ((not (null av-info))
                        (draw-current-av-info av-info 0 0
                                              inner-width inner-height))
-		      ((not (null (graphics-sheet-background graphics-sheet)))
-		       (with-pen-color ((graphics-sheet-background graphics-sheet))
-		         (draw-rectangle alu-seta inner-width inner-height 0 0))))
+          ((not (null (graphics-sheet-background graphics-sheet)))
+           (with-pen-color ((graphics-sheet-background graphics-sheet))
+             (draw-rectangle alu-seta inner-width inner-height 0 0))))
                 (let ((ba (graphics-sheet-bit-array graphics-sheet)))
                   (unless (null ba)
-		    (#-X BITBLT-TO-SCREEN #+(and SUN X) bitblt-pixrect-to-screen
+        (#-X BITBLT-TO-SCREEN #+(and SUN X) bitblt-pixrect-to-screen
                      ALU-SETA
                      (min inner-width  (offscreen-bitmap-width  ba))
                      (min inner-height (offscreen-bitmap-height ba))
                      ba 0 0 0 0)))
-		;; then handle any sprite graphics...
-		(unless (null (graphics-sheet-graphics-list graphics-sheet))
-		  (redisplay-graphics-sheet graphics-sheet self))))))))))
+    ;; then handle any sprite graphics...
+    (unless (null (graphics-sheet-graphics-list graphics-sheet))
+      (redisplay-graphics-sheet graphics-sheet self))))))))))
 
 
 
@@ -992,8 +992,8 @@ Modification History (most recent at the top)
 (defun repaint-window (&OPTIONAL (WINDOW *BOXER-PANE*) (flush-buffer? t))
   (REDISPLAYING-WINDOW (WINDOW)
      (LET ((*COMPLETE-REDISPLAY-IN-PROGRESS?*
-	    (OR *COMPLETE-REDISPLAY-IN-PROGRESS?*
-		(rassoc ':CLEAR-SCREEN *REDISPLAY-CLUES*))))
+      (OR *COMPLETE-REDISPLAY-IN-PROGRESS?*
+    (rassoc ':CLEAR-SCREEN *REDISPLAY-CLUES*))))
 ;       (COND ((NOT-NULL *COMPLETE-REDISPLAY-IN-PROGRESS?*)
 ;	      (CLEAR-WINDOW WINDOW)))
        (clear-window window)
@@ -1189,20 +1189,20 @@ Modification History (most recent at the top)
 
 (defun get-cursor-height (cha)
   (COND ((NULL CHA) 12)
-	((CHA? CHA) (CHA-HEI))
-	((and (box? cha) (null (displayed-screen-objs cha)))
-	 17)
-	((EQ ':SHRUNK
-	     (DISPLAY-STYLE
-		   (BP-SCREEN-BOX *POINT*)))
-	 (- (SCREEN-OBJ-HEI (BP-SCREEN-BOX *POINT*))
-	    17))
-	((name-row? (SLOT-VALUE cha 'name))
-	 (+ ;(box-borders-name-tab-height (car (displayed-screen-objs cha))) 7
+  ((CHA? CHA) (CHA-HEI))
+  ((and (box? cha) (null (displayed-screen-objs cha)))
+   17)
+  ((EQ ':SHRUNK
+       (DISPLAY-STYLE
+       (BP-SCREEN-BOX *POINT*)))
+   (- (SCREEN-OBJ-HEI (BP-SCREEN-BOX *POINT*))
+      17))
+  ((name-row? (SLOT-VALUE cha 'name))
+   (+ ;(box-borders-name-tab-height (car (displayed-screen-objs cha))) 7
             12))
-	(T
-	   (let ((sb (INF-CURRENT-SCREEN-BOX CHA)))
-	     (if (null sb) 17 (SCREEN-OBJ-HEI sb))))))
+  (T
+     (let ((sb (INF-CURRENT-SCREEN-BOX CHA)))
+       (if (null sb) 17 (SCREEN-OBJ-HEI sb))))))
 
 
 
@@ -1247,12 +1247,12 @@ Modification History (most recent at the top)
 
 (defmethod set-needs-redisplay-pass-2? ((self screen-obj) new-value)
   (setf (slot-value self 'needs-redisplay-pass-2?)
-	;; try an preserve any existing border opcode
-	(if (or (null new-value) (typep new-value 'fixnum))
-	    new-value
-	    (or (slot-value self 'needs-redisplay-pass-2?) new-value)))
+  ;; try an preserve any existing border opcode
+  (if (or (null new-value) (typep new-value 'fixnum))
+      new-value
+      (or (slot-value self 'needs-redisplay-pass-2?) new-value)))
    (when (not-null new-value)
-	(let ((superior (superior self)))
-	  (when (screen-obj? superior)
-	    (set-needs-redisplay-pass-2? superior t)))))
+  (let ((superior (superior self)))
+    (when (screen-obj? superior)
+      (set-needs-redisplay-pass-2? superior t)))))
 
