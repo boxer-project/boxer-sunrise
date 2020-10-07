@@ -246,7 +246,13 @@ Modification History (most recent at top)
   (storage-vector-active-length (slot-value self 'screen-chas)))
 
 (defmethod screen-rows-length ((self screen-box))
-  (storage-vector-active-length (slot-value self 'screen-rows)))
+  ;; There is an issue where sometimes boxer::*box-ellipsis-current-style* is used
+  ;; has a marker variable in the screen-rows slot instead of an actual screen-rows
+  ;; object. When that happens, this method shouldn't be called, but sometimes it still
+  ;; does. sgithens 2020-10-06
+  (if (vectorp (slot-value self 'screen-rows))
+    (storage-vector-active-length (slot-value self 'boxer::screen-rows))
+    0))
 
 (defmethod first-screen-cha ((self screen-row))
   (unless (zerop& (storage-vector-active-length (slot-value self 'screen-chas)))
