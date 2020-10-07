@@ -22,8 +22,8 @@
 
                  ;; Beginning of `DEFINITIONS` module
                  (:file "definitions/macros")
-                 (:file "definitions/boxdef")
                  (:file "definitions/storage")
+                 (:file "definitions/boxdef")
                  (:file "definitions/vrtdef")
 
                  ;; Begining of `redisplay` module
@@ -85,13 +85,14 @@
 
                  ;; Beginning of `REDISPLAY` module
                  ;; "The redisplay for the Editor"
+                 (:file "redisplay/disply")
                  (:file "redisplay/lodisp")
                  (:file "redisplay/repaint")
                  (:file "redisplay/new-borders")
-                 (:file "redisplay/disply")
 
                  ;; Beginning of `GRFDEFS` module
                  ;; "Definitions for Sprite Graphics"
+                 (:file "filesystem/fildfs")
                  (:file "grfdefs/grobjs")
                  (:file "grfdefs/grfdfs")
                  (:file "grfdefs/gdispl")
@@ -139,7 +140,6 @@
                  (:file "stepper/stepper")
                  ;; Beginning of `FILESYSTEM` module
                  ;; "Saving and Restoring Boxes To/From Files"
-                 (:file "filesystem/fildfs")
                  (:file "filesystem/dumper")
                  (:file "filesystem/loader")
                  (:file "filesystem/clientmacros")
