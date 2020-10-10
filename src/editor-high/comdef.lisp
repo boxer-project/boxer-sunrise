@@ -86,8 +86,8 @@ Modification History (most recent at top)
   ;; Reset it to NIL before executing the body, since the body may wish
   ;; to call itself recursively or may call another editor function.
   `(dotimes (i (prog1 (or *editor-numeric-argument* 1)
-		 (reset-editor-numeric-arg)))
-	 . ,body))
+     (reset-editor-numeric-arg)))
+   . ,body))
 
 (DEFUN RESET-EDITOR-NUMERIC-ARG ()
   (LET ((OLD-ARG *EDITOR-NUMERIC-ARGUMENT*))
@@ -122,9 +122,9 @@ Modification History (most recent at top)
   `(PROGN
      (BOXER-COMMAND-DEFINE ',COM-NAME ',DOC-STRING)
      (DEFUN ,COM-NAME ,ARGS
-	 ,DOC-STRING
-	 (progn (increment-key-tick)
-		. ,BODY))))
+   ,DOC-STRING
+   (progn (increment-key-tick)
+    . ,BODY))))
 
 ;;; Editor no nos
 ;;; beeps for now but should be more informative in the future
@@ -165,39 +165,39 @@ Modification History (most recent at top)
 
 (DEFUN BOX-POINT-IS-NEAR ()
   (LET* ((ROW (BP-ROW *POINT*))
-	 (CHA-NO (BP-CHA-NO *POINT*))
-	 (CHA-BEFORE-BP (CHA-AT-CHA-NO ROW (- CHA-NO 1)))
-	 (CHA-AFTER-BP  (CHA-AT-CHA-NO ROW CHA-NO)))
+   (CHA-NO (BP-CHA-NO *POINT*))
+   (CHA-BEFORE-BP (CHA-AT-CHA-NO ROW (- CHA-NO 1)))
+   (CHA-AFTER-BP  (CHA-AT-CHA-NO ROW CHA-NO)))
     (COND ((BOX? CHA-AFTER-BP) (VALUES CHA-AFTER-BP :AFTER))
-	  ((BOX? CHA-BEFORE-BP) (VALUES CHA-BEFORE-BP :BEFORE))
-	  (T NIL))))
+    ((BOX? CHA-BEFORE-BP) (VALUES CHA-BEFORE-BP :BEFORE))
+    (T NIL))))
 
 (defun point-next-box ()
   (let ((start-row (point-row)) (start-cha-no (point-cha-no)))
     (do ((row start-row (next-row row)))
-	((null row) nil)
+  ((null row) nil)
       (let ((box (do-row-chas ((cha row :start
-				    (if (eq row start-row) start-cha-no 0)))
-		   (when (box? cha) (return cha)))))
-	(unless (null box)
-	  (return (values box (allocate-screen-obj-for-use-in
-			       box (screen-box-point-is-in)))))))))
+            (if (eq row start-row) start-cha-no 0)))
+       (when (box? cha) (return cha)))))
+  (unless (null box)
+    (return (values box (allocate-screen-obj-for-use-in
+             box (screen-box-point-is-in)))))))))
 
 (defun point-previous-box ()
   (let ((start-row (point-row)) (start-cha-no (point-cha-no)))
     (do ((row start-row (previous-row row)))
-	((null row) nil)
+  ((null row) nil)
       (let ((box (do* ((chas-array (chas-array row))
-		       (chas (chas-array-chas chas-array))
-		       (length (chas-array-active-length chas-array))
-		       (i (if (eq row start-row) (1-& start-cha-no)(1-& length))
-			  (1-& i)))
-		      ((minusp& i) nil)
-		   (let ((cha (svref& chas i)))
-		     (when (box? cha) (return cha))))))
-	(unless (null box)
-	  (return (values box (allocate-screen-obj-for-use-in
-			       box (screen-box-point-is-in)))))))))
+           (chas (chas-array-chas chas-array))
+           (length (chas-array-active-length chas-array))
+           (i (if (eq row start-row) (1-& start-cha-no)(1-& length))
+        (1-& i)))
+          ((minusp& i) nil)
+       (let ((cha (svref& chas i)))
+         (when (box? cha) (return cha))))))
+  (unless (null box)
+    (return (values box (allocate-screen-obj-for-use-in
+             box (screen-box-point-is-in)))))))))
 
 
 
@@ -212,47 +212,47 @@ Modification History (most recent at top)
 
 (DEFMACRO MAP-OVER-CHAS ((START-BP DIRECTION) &BODY BODY)
   `(DO* ((ROW (BP-ROW ,START-BP) ROW)
-	 (NEXT-OR-PREVIOUS-ROW (IF (PLUSP ,DIRECTION)
-				   (WHEN (NOT-NULL ROW)(NEXT-ROW ROW))
-				   (WHEN (NOT-NULL ROW)(PREVIOUS-ROW ROW)))
-			       (IF (PLUSP ,DIRECTION)
-				   (WHEN (NOT-NULL ROW)(NEXT-ROW ROW))
-				   (WHEN (NOT-NULL ROW)(PREVIOUS-ROW ROW))))
-	 (CHA-NO (BP-CHA-NO ,START-BP) (+ CHA-NO ,DIRECTION))
-	 (CHA (CHA-AT-CHA-NO ROW (IF (PLUSP ,DIRECTION) CHA-NO (- CHA-NO 1)))
-	      (CHA-AT-CHA-NO ROW (IF (PLUSP ,DIRECTION) CHA-NO (- CHA-NO 1)))))
-	(NIL)
+   (NEXT-OR-PREVIOUS-ROW (IF (PLUSP ,DIRECTION)
+           (WHEN (NOT-NULL ROW)(NEXT-ROW ROW))
+           (WHEN (NOT-NULL ROW)(PREVIOUS-ROW ROW)))
+             (IF (PLUSP ,DIRECTION)
+           (WHEN (NOT-NULL ROW)(NEXT-ROW ROW))
+           (WHEN (NOT-NULL ROW)(PREVIOUS-ROW ROW))))
+   (CHA-NO (BP-CHA-NO ,START-BP) (+ CHA-NO ,DIRECTION))
+   (CHA (CHA-AT-CHA-NO ROW (IF (PLUSP ,DIRECTION) CHA-NO (- CHA-NO 1)))
+        (CHA-AT-CHA-NO ROW (IF (PLUSP ,DIRECTION) CHA-NO (- CHA-NO 1)))))
+  (NIL)
      (COND ((AND (NULL CHA) (NOT-NULL NEXT-OR-PREVIOUS-ROW))
-	    (SETQ ROW NEXT-OR-PREVIOUS-ROW
-		  CHA-NO (IF (PLUSP DIRECTION) 0
-			     (LENGTH-IN-CHAS NEXT-OR-PREVIOUS-ROW))))
-	   (T
-	    . ,BODY))))
+      (SETQ ROW NEXT-OR-PREVIOUS-ROW
+      CHA-NO (IF (PLUSP DIRECTION) 0
+           (LENGTH-IN-CHAS NEXT-OR-PREVIOUS-ROW))))
+     (T
+      . ,BODY))))
 
 
 (DEFMACRO MAP-OVER-CHAS-IN-LINE ((START-BP DIRECTION) &BODY BODY)
   `(DO* ((ROW (BP-ROW ,START-BP) ROW)
-	 (NEXT-OR-PREVIOUS-ROW (IF (PLUSP ,DIRECTION)
-				   (WHEN (NOT-NULL ROW)(NEXT-ROW ROW))
-				   (WHEN (NOT-NULL ROW)(PREVIOUS-ROW ROW)))
-			       (IF (PLUSP ,DIRECTION)
-				   (WHEN (NOT-NULL ROW)(NEXT-ROW ROW))
-				   (WHEN (NOT-NULL ROW)(PREVIOUS-ROW ROW))))
-	 (CHA-NO (BP-CHA-NO ,START-BP) (+ CHA-NO ,DIRECTION))
-	 (CHA (CHA-AT-CHA-NO ROW (IF (PLUSP ,DIRECTION) CHA-NO
-					   (- CHA-NO 1)))
-	      (CHA-AT-CHA-NO ROW (IF (PLUSP ,DIRECTION) CHA-NO
-					   (- CHA-NO 1)))))
-	(NIL)
+   (NEXT-OR-PREVIOUS-ROW (IF (PLUSP ,DIRECTION)
+           (WHEN (NOT-NULL ROW)(NEXT-ROW ROW))
+           (WHEN (NOT-NULL ROW)(PREVIOUS-ROW ROW)))
+             (IF (PLUSP ,DIRECTION)
+           (WHEN (NOT-NULL ROW)(NEXT-ROW ROW))
+           (WHEN (NOT-NULL ROW)(PREVIOUS-ROW ROW))))
+   (CHA-NO (BP-CHA-NO ,START-BP) (+ CHA-NO ,DIRECTION))
+   (CHA (CHA-AT-CHA-NO ROW (IF (PLUSP ,DIRECTION) CHA-NO
+             (- CHA-NO 1)))
+        (CHA-AT-CHA-NO ROW (IF (PLUSP ,DIRECTION) CHA-NO
+             (- CHA-NO 1)))))
+  (NIL)
      (COND ((AND (NULL NOT-FIRST-CHA?)
-		 (NULL CHA)
-		 (NOT-NULL NEXT-OR-PREVIOUS-ROW))
-	    (SETQ ROW NEXT-OR-PREVIOUS-ROW
-		  CHA-NO (IF (PLUSP DIRECTION) -1
-					;gets incremented in loop above
-					;immediately
-			     (1+ (LENGTH-IN-CHAS NEXT-OR-PREVIOUS-ROW)))))
-	   (T . ,BODY))))
+     (NULL CHA)
+     (NOT-NULL NEXT-OR-PREVIOUS-ROW))
+      (SETQ ROW NEXT-OR-PREVIOUS-ROW
+      CHA-NO (IF (PLUSP DIRECTION) -1
+          ;gets incremented in loop above
+          ;immediately
+           (1+ (LENGTH-IN-CHAS NEXT-OR-PREVIOUS-ROW)))))
+     (T . ,BODY))))
 
 
 
@@ -280,20 +280,20 @@ Modification History (most recent at top)
 
 #|
 (DEFVAR *TOP-LEVEL-HELP-BOX*
-	(MAKE-BOX '(("Type one of the following:")
-		    ("A (Display commands with a given string)")
-		    ("C (Document a Particular Command)")
-		    (""))))
+  (MAKE-BOX '(("Type one of the following:")
+        ("A (Display commands with a given string)")
+        ("C (Document a Particular Command)")
+        (""))))
 
 (DEFVAR *COMMAND-DOCUMENTATION-HELP-BOX*
-	(MAKE-BOX '(("Type a key to be documented: ")
-		    ("")
-		    (""))))
+  (MAKE-BOX '(("Type a key to be documented: ")
+        ("")
+        (""))))
 
 (DEFVAR *APROPOS-DOCUMENTATION-HELP-BOX*
-	(MAKE-BOX `(("APROPOS (Substring): ")
-		    ("")
-		    (""))))
+  (MAKE-BOX `(("APROPOS (Substring): ")
+        ("")
+        (""))))
 
 |#
 
@@ -306,16 +306,16 @@ Modification History (most recent at top)
   (let ((row (gensym)) (cha-no (gensym)) (screen-box (gensym)))
     `(let ((,bp-var (make-bp ':fixed)))
        (multiple-value-bind (,row ,cha-no ,screen-box)
-	   ,bp-values-form
-	 (progn
-	   ;; use the setf versions for now.  If it turns out that
-	   ;; there is a reason to use the SET-BP-xxx functions, then
-	   ;; this need to turn into an unwind-protect which deletes the
-	   ;; temporary BP from the row and screen-box
-	   (setf (bp-row ,bp-var) ,row)
-	   (setf (bp-cha-no ,bp-var) ,cha-no)
-	   (setf (bp-screen-box ,bp-var) ,screen-box)
-	   . ,body)))))
+     ,bp-values-form
+   (progn
+     ;; use the setf versions for now.  If it turns out that
+     ;; there is a reason to use the SET-BP-xxx functions, then
+     ;; this need to turn into an unwind-protect which deletes the
+     ;; temporary BP from the row and screen-box
+     (setf (bp-row ,bp-var) ,row)
+     (setf (bp-cha-no ,bp-var) ,cha-no)
+     (setf (bp-screen-box ,bp-var) ,screen-box)
+     . ,body)))))
 
 ;;; Move the POINT to another (possibly non-local) location specified by BP
 ;;; This function performs all of the neccessary zooms, expands and scrolls
@@ -330,83 +330,83 @@ Modification History (most recent at top)
   (unless (null *zoom-step-pause-time*)
     (drawing-on-window (*boxer-pane*)
       (with-temporary-bp (dest-bp(values dest-row dest-cha-no dest-screen-box))
-	(multiple-value-bind (to-x to-y)
-	    (bp-coordinates dest-bp)
-	  (multiple-value-bind (from-x from-y)
-	      (bp-coordinates *point*)
-	    (let ((from-hei (get-cursor-height (bp-cha *point*)))
-		  (to-hei (get-cursor-height (bp-cha dest-bp)))
-		  (half-delta-x (fixr (/ (- to-x from-x) 2)))
-		  (half-delta-y (fixr (/ (- to-y from-y) 2)))
-		  (delta-size (* *cursor-animate-steps*
-				  *cursor-animate-growth-quantum*)))
-	      (flet ((draw-trail-up ()
-		       (do ((i 0 (1+& i))
-			    (wid 3 (+ wid *cursor-animate-growth-quantum*))
-			    (hei from-hei (+ hei
-					      *cursor-animate-growth-quantum*))
-			    (x from-x (+ x (fixr(/ half-delta-x
-						    *cursor-animate-steps*))))
-			    (y from-y (+ y (fixr(/ half-delta-y
-						    *cursor-animate-steps*)))))
-			   ((>=& i *cursor-animate-steps*))
-			 (draw-rectangle alu-xor wid hei x y)
+  (multiple-value-bind (to-x to-y)
+      (bp-coordinates dest-bp)
+    (multiple-value-bind (from-x from-y)
+        (bp-coordinates *point*)
+      (let ((from-hei (get-cursor-height (bp-cha *point*)))
+      (to-hei (get-cursor-height (bp-cha dest-bp)))
+      (half-delta-x (fixr (/ (- to-x from-x) 2)))
+      (half-delta-y (fixr (/ (- to-y from-y) 2)))
+      (delta-size (* *cursor-animate-steps*
+          *cursor-animate-growth-quantum*)))
+        (flet ((draw-trail-up ()
+           (do ((i 0 (1+& i))
+          (wid 3 (+ wid *cursor-animate-growth-quantum*))
+          (hei from-hei (+ hei
+                *cursor-animate-growth-quantum*))
+          (x from-x (+ x (fixr(/ half-delta-x
+                *cursor-animate-steps*))))
+          (y from-y (+ y (fixr(/ half-delta-y
+                *cursor-animate-steps*)))))
+         ((>=& i *cursor-animate-steps*))
+       (draw-rectangle alu-xor wid hei x y)
                          (force-graphics-output)
-			 (snooze *zoom-step-pause-time*)
-			 (draw-rectangle alu-xor wid hei x y)
+       (snooze *zoom-step-pause-time*)
+       (draw-rectangle alu-xor wid hei x y)
                          (force-graphics-output)))
-		     (draw-trail-down ()
-		       (do ((i 0 (1+& i))
-			    (wid (+ 3 delta-size)
-				 (- wid *cursor-animate-growth-quantum*))
-			    (hei (+ to-hei delta-size)
-				 (- hei *cursor-animate-growth-quantum*))
-			    (x (- to-x half-delta-x)
-			       (+ x (fixr (/ half-delta-x
-					      *cursor-animate-steps*))))
-			    (y (- to-y half-delta-y)
-			       (+ y (fixr (/ half-delta-y
-					      *cursor-animate-steps*)))))
-			   ((>=& i *cursor-animate-steps*))
-			 (draw-rectangle alu-xor wid hei x y)
+         (draw-trail-down ()
+           (do ((i 0 (1+& i))
+          (wid (+ 3 delta-size)
+         (- wid *cursor-animate-growth-quantum*))
+          (hei (+ to-hei delta-size)
+         (- hei *cursor-animate-growth-quantum*))
+          (x (- to-x half-delta-x)
+             (+ x (fixr (/ half-delta-x
+                *cursor-animate-steps*))))
+          (y (- to-y half-delta-y)
+             (+ y (fixr (/ half-delta-y
+                *cursor-animate-steps*)))))
+         ((>=& i *cursor-animate-steps*))
+       (draw-rectangle alu-xor wid hei x y)
                          (force-graphics-output)
-			 (snooze *zoom-step-pause-time*)
-			 (draw-rectangle alu-xor wid hei x y)
+       (snooze *zoom-step-pause-time*)
+       (draw-rectangle alu-xor wid hei x y)
                          (force-graphics-output))))
-	      ;; first get bigger...
-	      (draw-trail-up)
-	      ;; now get smaller
-	      (draw-trail-down)))))))))
+        ;; first get bigger...
+        (draw-trail-up)
+        ;; now get smaller
+        (draw-trail-down)))))))))
 
 (defun animate-scrolling (screen-box)
   (unless (null *zoom-step-pause-time*)
     (drawing-on-window (*boxer-pane*)
       (multiple-value-bind (box-x box-y)
-	  (xy-position screen-box)
-	(multiple-value-bind (left top right bottom)
-	    (box-borders-widths (box-type screen-box) screen-box)
-	  (declare (ignore left))
-	  (let ((x (- (+ box-x (screen-obj-wid screen-box)) right 4))
-		(y (+ box-y top))
-		(wid (+ right 8))
-		(hei (- (screen-obj-hei screen-box) top bottom)))
-	    (dotimes (i 12)
-	      (draw-rectangle alu-xor wid hei x y)
+    (xy-position screen-box)
+  (multiple-value-bind (left top right bottom)
+      (box-borders-widths (box-type screen-box) screen-box)
+    (declare (ignore left))
+    (let ((x (- (+ box-x (screen-obj-wid screen-box)) right 4))
+    (y (+ box-y top))
+    (wid (+ right 8))
+    (hei (- (screen-obj-hei screen-box) top bottom)))
+      (dotimes (i 12)
+        (draw-rectangle alu-xor wid hei x y)
               (force-graphics-output)
-	      (snooze *zoom-step-pause-time*)
-	      (draw-rectangle alu-xor wid hei x y)
+        (snooze *zoom-step-pause-time*)
+        (draw-rectangle alu-xor wid hei x y)
               (force-graphics-output))))))))
 
 (defun move-to-bp (bp &optional (moving-bp *point*))
   (let ((*zoom-step-pause-time* (if (zerop *move-bp-zoom-pause-time*)
-				    nil
-				    *move-bp-zoom-pause-time*)))
+            nil
+            *move-bp-zoom-pause-time*)))
     (cond ((superior? (bp-box bp) (bp-box moving-bp))
-	   (downward-move-to-bp bp moving-bp))
-	  (t
-	   ;; looks like we are going to have to go up before we can go down
-	   (upward-move-to-common-box bp moving-bp)
-	   (downward-move-to-bp bp moving-bp)))
+     (downward-move-to-bp bp moving-bp))
+    (t
+     ;; looks like we are going to have to go up before we can go down
+     (upward-move-to-common-box bp moving-bp)
+     (downward-move-to-bp bp moving-bp)))
     (enter (bp-box moving-bp))))
 
 ;; basically like MOVE-BP (and MOVE-POINT) except it will change the
@@ -428,111 +428,111 @@ Modification History (most recent at top)
 (defun upward-move-to-common-box (bp &optional (moving-bp *point*))
   (let  ((box (bp-box moving-bp)))
     (cond ((superior? (bp-box bp) box))	;we have arrived
-	  (t (unless (eq box *initial-box*)
-	       (com-exit-box)
+    (t (unless (eq box *initial-box*)
+         (com-exit-box)
 ;	       (exit box (superior-screen-box (bp-screen-box moving-bp))
 ;		     (superior-box box) t)
-	       )
-	     (upward-move-to-common-box bp moving-bp)))))
+         )
+       (upward-move-to-common-box bp moving-bp)))))
 
 ;;; The destination is in some inferior of the current box
 (defun downward-move-to-bp (bp &optional (moving-bp *point*))
   (let* ((row (bp-row bp))
-	 (old-row (bp-row moving-bp))
-	 (screen-row (visible-screen-obj-of-inferior-actual-obj
-		      row (bp-screen-box moving-bp))))
+   (old-row (bp-row moving-bp))
+   (screen-row (visible-screen-obj-of-inferior-actual-obj
+          row (bp-screen-box moving-bp))))
     (cond ((not-null screen-row)
-	   ;; the destination is visible already
-	   (animate-cursor-move (screen-box screen-row)
-				(bp-row bp) (bp-cha-no bp))
-	   (move-bp moving-bp (bp-values bp))
-	   (set-bp-screen-box moving-bp (screen-box screen-row)))
-	  ((or (not (null (row-row-no (bp-box moving-bp) row)))
-	       (and row (eq row (slot-value (bp-box moving-bp) 'closets))))
-	   ;; the destination is in the current box but
-	   ;; is scrolled out of sight
-	   (move-bp moving-bp (bp-values bp))
-	   (when (ensure-row-is-displayed (bp-row moving-bp)
-					  (bp-screen-box moving-bp)
-					  (if (row-> row old-row) 1 -1))
-	     (animate-scrolling (bp-screen-box moving-bp))
-	     ;; explicit call to redisplay to make sure screen structure
-	     ;; gets created before more processing occurs
-	     (repaint)))
-	  (t
-	   (let* ((path (find-path-from-superior-to-inferior
-			 (bp-box moving-bp) (bp-box bp)))
-		  (new-box (lowest-visible-box (bp-screen-box moving-bp)
-					       path)))
-	     (cond ((null path)
-		    (editor-barf "the bp, ~a, is not in an inferior of ~a" bp
-				 (bp-box moving-bp)))
-		   ((null new-box)
-		    ;; the downward chain of boxes is not visible probably
-		    ;; because we are scrolled to the wrong place in the
-		    ;; current screen box so we scroll to the correct
-		    ;; row, then try again
-		    (move-bp moving-bp (box-self-bp-values (car path)))
-		    (when (ensure-row-is-displayed (bp-row moving-bp)
-						   (bp-screen-box moving-bp)
-						   (if (row-> (superior-row
-							       (car path))
-							      old-row)
-						       1 -1))
-		      (animate-scrolling (bp-screen-box moving-bp))
-		      ;; explicit call to redisplay to make sure screen
-		      ;; structure gets created before more processing occurs
-		      (repaint))
-		    ;; check to see if the new-box is visible now, if it
-		    ;; isn't, it is probably because it is scrolled
-		    ;; horizontally since we've scrolled vertically to the
-		    ;; row it is suppose to be on
-		    (let ((new-new-box (lowest-visible-box
-					(bp-screen-box moving-bp) path)))
-		      (when (null new-new-box)
-			(let ((new-new-sb (allocate-screen-obj-for-use-in
-					   (car path)
-					   (bp-screen-box moving-bp))))
-			  (move-bp moving-bp (box-first-bp-values (car path)))
-			  (set-bp-screen-box moving-bp new-new-sb)
-			  ;; now we can zoom
-			  (push *outermost-screen-box*
-				*outermost-screen-box-stack*)
-			  (let ((*box-zoom-waiting-time*
-				 (* *box-zoom-waiting-time* 2)))
-			    ;; slow things down a bit
-			    (set-outermost-box (bp-box moving-bp)
-					       new-new-sb)))))
-		    (downward-move-to-bp bp moving-bp))
-		   (t
-		    (when (display-style-graphics-mode?
-			   (display-style-list new-box))
-		      ;; the chain is in an inferior of a
-		      ;; graphics/graphics-data-box which is currently
-		      ;; in graphics mode so we have to toggle it
-		      ;; before we can zoom it up
-		      (toggle-view-internal new-box)
-		      (repaint))
-		    ;; move to lowest visible box, zoom, then try again
-		    (animate-cursor-move
-		     (visible-screen-obj-of-inferior-actual-obj
-		      new-box (bp-screen-box moving-bp))
-		     (first-inferior-row new-box) 0)
-		    (move-bp moving-bp (box-first-bp-values new-box))
-		    (set-bp-screen-box
-		     moving-bp
-		     (visible-screen-obj-of-inferior-actual-obj
-		      new-box (bp-screen-box moving-bp)))
-		    ;; now we can zoom
-		    (push *outermost-screen-box*
-			  *outermost-screen-box-stack*)
-		    (let ((*box-zoom-waiting-time*
-			   (* *box-zoom-waiting-time* 2)))
-		      ;; slow things down a bit
-		      (set-outermost-box (bp-box moving-bp)
-					 (bp-screen-box moving-bp)))
-		    ;; then try again
-		    (downward-move-to-bp bp moving-bp))))))))
+     ;; the destination is visible already
+     (animate-cursor-move (screen-box screen-row)
+        (bp-row bp) (bp-cha-no bp))
+     (move-bp moving-bp (bp-values bp))
+     (set-bp-screen-box moving-bp (screen-box screen-row)))
+    ((or (not (null (row-row-no (bp-box moving-bp) row)))
+         (and row (eq row (slot-value (bp-box moving-bp) 'closets))))
+     ;; the destination is in the current box but
+     ;; is scrolled out of sight
+     (move-bp moving-bp (bp-values bp))
+     (when (ensure-row-is-displayed (bp-row moving-bp)
+            (bp-screen-box moving-bp)
+            (if (row-> row old-row) 1 -1))
+       (animate-scrolling (bp-screen-box moving-bp))
+       ;; explicit call to redisplay to make sure screen structure
+       ;; gets created before more processing occurs
+       (repaint)))
+    (t
+     (let* ((path (find-path-from-superior-to-inferior
+       (bp-box moving-bp) (bp-box bp)))
+      (new-box (lowest-visible-box (bp-screen-box moving-bp)
+                 path)))
+       (cond ((null path)
+        (editor-barf "the bp, ~a, is not in an inferior of ~a" bp
+         (bp-box moving-bp)))
+       ((null new-box)
+        ;; the downward chain of boxes is not visible probably
+        ;; because we are scrolled to the wrong place in the
+        ;; current screen box so we scroll to the correct
+        ;; row, then try again
+        (move-bp moving-bp (box-self-bp-values (car path)))
+        (when (ensure-row-is-displayed (bp-row moving-bp)
+               (bp-screen-box moving-bp)
+               (if (row-> (superior-row
+                     (car path))
+                    old-row)
+                   1 -1))
+          (animate-scrolling (bp-screen-box moving-bp))
+          ;; explicit call to redisplay to make sure screen
+          ;; structure gets created before more processing occurs
+          (repaint))
+        ;; check to see if the new-box is visible now, if it
+        ;; isn't, it is probably because it is scrolled
+        ;; horizontally since we've scrolled vertically to the
+        ;; row it is suppose to be on
+        (let ((new-new-box (lowest-visible-box
+          (bp-screen-box moving-bp) path)))
+          (when (null new-new-box)
+      (let ((new-new-sb (allocate-screen-obj-for-use-in
+             (car path)
+             (bp-screen-box moving-bp))))
+        (move-bp moving-bp (box-first-bp-values (car path)))
+        (set-bp-screen-box moving-bp new-new-sb)
+        ;; now we can zoom
+        (push *outermost-screen-box*
+        *outermost-screen-box-stack*)
+        (let ((*box-zoom-waiting-time*
+         (* *box-zoom-waiting-time* 2)))
+          ;; slow things down a bit
+          (set-outermost-box (bp-box moving-bp)
+                 new-new-sb)))))
+        (downward-move-to-bp bp moving-bp))
+       (t
+        (when (display-style-graphics-mode?
+         (display-style-list new-box))
+          ;; the chain is in an inferior of a
+          ;; graphics/graphics-data-box which is currently
+          ;; in graphics mode so we have to toggle it
+          ;; before we can zoom it up
+          (toggle-view-internal new-box)
+          (repaint))
+        ;; move to lowest visible box, zoom, then try again
+        (animate-cursor-move
+         (visible-screen-obj-of-inferior-actual-obj
+          new-box (bp-screen-box moving-bp))
+         (first-inferior-row new-box) 0)
+        (move-bp moving-bp (box-first-bp-values new-box))
+        (set-bp-screen-box
+         moving-bp
+         (visible-screen-obj-of-inferior-actual-obj
+          new-box (bp-screen-box moving-bp)))
+        ;; now we can zoom
+        (push *outermost-screen-box*
+        *outermost-screen-box-stack*)
+        (let ((*box-zoom-waiting-time*
+         (* *box-zoom-waiting-time* 2)))
+          ;; slow things down a bit
+          (set-outermost-box (bp-box moving-bp)
+           (bp-screen-box moving-bp)))
+        ;; then try again
+        (downward-move-to-bp bp moving-bp))))))))
 
 
 
@@ -655,10 +655,10 @@ Modification History (most recent at top)
 ;;; shadowed bindings will remain unaffected
 (defun save-and-rebind-key (key-name new-function)
   (let ((existing (if (boundp key-name) (caddr (symbol-value key-name)) ':unbound))
-	(entry (fast-assq key-name *saved-key-functions*)))
+  (entry (fast-assq key-name *saved-key-functions*)))
     ;; record the old version
     (cond ((null entry) (push (cons key-name existing) *saved-key-functions*))
-	  (t (setf (cdr entry) existing)))
+    (t (setf (cdr entry) existing)))
     ;; now set it to the new version
     (boxer-eval::boxer-toplevel-set-nocache
      key-name
@@ -668,26 +668,26 @@ Modification History (most recent at top)
 ;; key should look like 'bu::crap
 (defun restore-saved-function (key-name)
   (let ((entry (cdr (fast-assq key-name *saved-key-functions*)))
-	(vanilla (lookup-mode-key *global-top-level-mode* key-name)))
+  (vanilla (lookup-mode-key *global-top-level-mode* key-name)))
     (cond ((null entry)
-	   (cond ((null vanilla)
+     (cond ((null vanilla)
                  ;(warn "No saved function for ~A, Unbinding the key" key-name)
-		  (boxer-eval::boxer-toplevel-nocache-unset key-name))
-		 (t
-		  (warn "No saved function for ~A, setting to top level value" key-name)
-		  (boxer-eval::boxer-toplevel-set-nocache key-name vanilla))))
-	  ((or (eq entry ':unbound) (eq entry boxer-eval::*novalue*))
-	   (boxer-eval::boxer-toplevel-nocache-unset key-name))
-	  ((boxer-eval::compiled-boxer-function? entry)
-	   (boxer-eval::boxer-toplevel-set-nocache key-name entry))
-	  (t
-	   ;; probably means the previous binding for the key was
-	   ;; to a box, right thing for now is to unbind the key
-	   (if (null vanilla)
-	       (boxer-eval::boxer-toplevel-nocache-unset key-name)
-	       (progn
-		 (warn "No saved function for ~A, setting to top level value" key-name)
-		 (boxer-eval::boxer-toplevel-set-nocache key-name vanilla)))))))
+      (boxer-eval::boxer-toplevel-nocache-unset key-name))
+     (t
+      (warn "No saved function for ~A, setting to top level value" key-name)
+      (boxer-eval::boxer-toplevel-set-nocache key-name vanilla))))
+    ((or (eq entry ':unbound) (eq entry boxer-eval::*novalue*))
+     (boxer-eval::boxer-toplevel-nocache-unset key-name))
+    ((boxer-eval::compiled-boxer-function? entry)
+     (boxer-eval::boxer-toplevel-set-nocache key-name entry))
+    (t
+     ;; probably means the previous binding for the key was
+     ;; to a box, right thing for now is to unbind the key
+     (if (null vanilla)
+         (boxer-eval::boxer-toplevel-nocache-unset key-name)
+         (progn
+     (warn "No saved function for ~A, setting to top level value" key-name)
+     (boxer-eval::boxer-toplevel-set-nocache key-name vanilla)))))))
 |#
 
 
@@ -712,8 +712,8 @@ Modification History (most recent at top)
   (if (null *dummy-box*) (setq *dummy-box* (make-dummy-box)))
   (if (null *generic-port*)
       (progn (setq *generic-port* (port-to-internal *dummy-box*))
-	     (INSERT-CHA *POINT* *generic-port*)
-	     (set-mouse-cursor :retarget)
+       (INSERT-CHA *POINT* *generic-port*)
+       (set-mouse-cursor :retarget)
              (boxer-editor-message "Click on a Box to Select Port's Target")
              (add-mode (retarget-port-mode))
              #-opengl (add-redisplay-clue (point-row) ':insert))
@@ -727,21 +727,21 @@ Modification History (most recent at top)
   (if (null *dummy-box*) (setq *dummy-box* (make-dummy-box)))
   (if (null *generic-port*)
       (progn (setq *generic-port* (port-to-internal *dummy-box*))
-	     (INSERT-CHA *POINT* *generic-port*)
-	     (set-mouse-cursor :retarget)
-	     (save-and-rebind-key (current-mouse-click-name #+mcl 0 #-mcl 1 0)
-				  #'com-redirect-generic-port)
-	     (save-and-rebind-key (current-mouse-click-name #+mcl 0 #-mcl 1
+       (INSERT-CHA *POINT* *generic-port*)
+       (set-mouse-cursor :retarget)
+       (save-and-rebind-key (current-mouse-click-name #+mcl 0 #-mcl 1 0)
+          #'com-redirect-generic-port)
+       (save-and-rebind-key (current-mouse-click-name #+mcl 0 #-mcl 1
                                                             0 :graphics)
-				  #'com-redirect-generic-port)
-	     (save-and-rebind-key (current-mouse-click-name #+mcl 0 #-mcl 1
+          #'com-redirect-generic-port)
+       (save-and-rebind-key (current-mouse-click-name #+mcl 0 #-mcl 1
                                                             0 :sprite)
-				  #'com-redirect-generic-port)
-	     (add-redisplay-clue (point-row) ':insert)
-	     boxer-eval::*novalue*)
+          #'com-redirect-generic-port)
+       (add-redisplay-clue (point-row) ':insert)
+       boxer-eval::*novalue*)
       (progn
-	(boxer-editor-error "Use the generic port you have made.")
-	boxer-eval::*novalue*)))
+  (boxer-editor-error "Use the generic port you have made.")
+  boxer-eval::*novalue*)))
 |#
 
 (defvar *previous-port-target* nil)
@@ -761,8 +761,8 @@ Modification History (most recent at top)
              (target :unspecified))
         (catch 'mouse-coord-cancel (setq target (get-box-under-mouse)))
         (unless (eq target :unspecified) (retarget-port *generic-port* target))
-	(modified *generic-port*)
-	(clean-mouse-port-state)))
+  (modified *generic-port*)
+  (clean-mouse-port-state)))
   boxer-eval::*novalue*)
 
 ;;;;; get the box the mouse points to.
@@ -775,11 +775,11 @@ Modification History (most recent at top)
     (multiple-value-bind (x y)
         (mouse-window-coords)
       (let* ((mbp (mouse-position-values x y))
-	     (mrow (bp-row mbp)))
+       (mrow (bp-row mbp)))
         (if (and (row? mrow) (not (null (superior-box mrow))))
-	  (superior-box mrow)
-	  ;; maybe should error out instead ?
-	  nil)))))
+    (superior-box mrow)
+    ;; maybe should error out instead ?
+    nil)))))
 
 (defun clean-mouse-port-state ()
   (reset-mouse-cursor)
@@ -947,11 +947,11 @@ Modification History (most recent at top)
 
 (defun get-shift-names (shift-bits)
   (let ((name (nth (1- shift-bits)
-		   (boxer::input-device-shift-list
-		    boxer::*current-input-device-platform*))))
+       (boxer::input-device-shift-list
+        boxer::*current-input-device-platform*))))
     (if (null name)
-	(error "Can't find shift names for shift bits: ~D" shift-bits)
-	name)))
+  (error "Can't find shift names for shift bits: ~D" shift-bits)
+  name)))
 
 
 
