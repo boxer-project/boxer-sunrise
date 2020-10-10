@@ -1641,9 +1641,28 @@ Modification History (most recent at top)
 
 ;; ****more stubs
 
-(defun set-mouse-cursor (cursor) (declare (ignore cursor)) nil)
-(defun set-mouse-cursor-internal (cursor) (declare (ignore cursor)) nil)
-(defun reset-mouse-cursor () nil)
+(defun set-mouse-cursor (cursor)
+  "Changes the current style of the mouse cursor using a keyword. Currently supported keywords are:
+    :retarget (crosshairs)"
+  (set-mouse-cursor-internal cursor))
+
+(defun set-mouse-cursor-internal (cursor)
+  ;; These are all currently referenced at some point in the code from previous
+  ;; eras. We'll need to revisit them with some UI design. - sgithens 2020-10-09
+  (cond
+    ((eq cursor :retarget) ; retarget is when we are choosing the box target for a new port
+     (setf (capi:simple-pane-cursor *boxer-pane*) :crosshair))
+    ((eq cursor :hotspot) nil) ; TODO
+    ((eq cursor :type-tab) nil) ; TODO
+    ((eq cursor :name-box) nil) ; TODO
+    ((eq cursor :normal) nil) ; TODO
+    ((eq cursor :expandspot) nil) ; TODO
+    ((eq cursor :suitcase) nil) ; TODO
+    (t nil)))
+
+(defun reset-mouse-cursor ()
+  "Sets the current mouse cursor back to the system default."
+  (setf (capi:simple-pane-cursor *boxer-pane*) nil))
 
 ;;;; Blinkers, mostly copied from clx
 
