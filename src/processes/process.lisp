@@ -52,7 +52,7 @@ Modification History (most recent at top)
 (defmacro process-variable (process variable-name)
   (declare-eval-state-variable-index-macro)
   (let ((index (position variable-name *eval-state-vars*
-       :key #'evsi-variable-name)))
+                         :key #'evsi-variable-name)))
     (when (null index)
       (error "~S is not a known evaluator process variable." variable-name))
     `(svref& ,process ,index)))
@@ -60,26 +60,26 @@ Modification History (most recent at top)
 (defmacro %make-process-state-vector ()
   (declare-eval-state-variable-index-macro)
   `(vector .
-    ,(mapcar #'(lambda (var)
-     (if (evsi-local-p var)
-         (evsi-local-initial-value var)
-         (evsi-global-initial-value var)))
-       *eval-state-vars*)))
+           ,(mapcar #'(lambda (var)
+                              (if (evsi-local-p var)
+                                (evsi-local-initial-value var)
+                                (evsi-global-initial-value var)))
+                    *eval-state-vars*)))
 
 ;;; Call this to make a process vector for a new process.
 (defun init-process-state-vector ()
   (setq *current-process* (%make-process-state-vector))
   (setf (process-variable *current-process* *current-process*)
-  *current-process*))
+        *current-process*))
 
 (defmacro %reset-process (proc)
   (let ((forms nil))
     (dolist (var *eval-state-vars* `(progn . ,(nreverse forms)))
       (push `(setf (process-variable ,proc ,(evsi-variable-name var))
-       ,(if (evsi-local-p var)
-      (evsi-local-initial-value var)
-      (evsi-global-initial-value var)))
-      forms))))
+                   ,(if (evsi-local-p var)
+                      (evsi-local-initial-value var)
+                      (evsi-global-initial-value var)))
+            forms))))
 
 (defun reset-process (proc)
   (%reset-process proc))
@@ -88,8 +88,8 @@ Modification History (most recent at top)
   (let ((forms nil))
     (dolist (var *eval-state-vars* `(progn . ,(nreverse forms)))
       (push `(format t "~%~S: ~S" ',(evsi-variable-name var)
-         (process-variable ,proc ,(evsi-variable-name var)))
-      forms))))
+                     (process-variable ,proc ,(evsi-variable-name var)))
+            forms))))
 
 (defun print-process (proc)
   (let ((*print-circle* t))
@@ -105,26 +105,26 @@ Modification History (most recent at top)
 (defmacro store-evaluator-state ()
   (let ((i 0))
     `(progn
-       (when *debugging*
-   (format t "~%Storing Process State for ~A" *current-process*))
-       (setf . ,(mapcan #'(lambda (var)
-          (if (evsi-local-p var)
-        (list `(svref& *current-process*
-                 ,(prog1 i (incf i)))
-              (evsi-variable-name var))
-        (progn (incf i) nil)))
-      *eval-state-vars*))
-       (%store-evaluator-state-internal))))
+      (when *debugging*
+        (format t "~%Storing Process State for ~A" *current-process*))
+      (setf . ,(mapcan #'(lambda (var)
+                                 (if (evsi-local-p var)
+                                   (list `(svref& *current-process*
+                                                  ,(prog1 i (incf i)))
+                                         (evsi-variable-name var))
+                                   (progn (incf i) nil)))
+                       *eval-state-vars*))
+      (%store-evaluator-state-internal))))
 
 (defmacro %store-evaluator-state-internal-1 ()
   (let ((i 0))
     `(setf . ,(mapcan #'(lambda (var)
-        (if (not (evsi-local-p var))
-            (list `(svref& *current-process*
-               ,(prog1 i (incf i)))
-            (evsi-variable-name var))
-            (progn (incf i) nil)))
-          *eval-state-vars*))))
+                                (if (not (evsi-local-p var))
+                                  (list `(svref& *current-process*
+                                                 ,(prog1 i (incf i)))
+                                        (evsi-variable-name var))
+                                  (progn (incf i) nil)))
+                      *eval-state-vars*))))
 
 
 (defun %store-evaluator-state-internal ()
@@ -134,28 +134,28 @@ Modification History (most recent at top)
 (defmacro retrieve-evaluator-state ()
   (let ((i 0))
     `(progn
-       (when *debugging*
-   (format t "~%Retrieving Process State from ~A" *current-process*))
-       (setq . ,(mapcan #'(lambda (var)
-          (if (evsi-local-p var)
-        (list (evsi-variable-name var)
-              `(svref& *current-process*
-                 ,(prog1 i (incf i))))
-        (progn (incf i) nil)))
-      *eval-state-vars*))
-       (%retrieve-evaluator-state-internal))))
+      (when *debugging*
+        (format t "~%Retrieving Process State from ~A" *current-process*))
+      (setq . ,(mapcan #'(lambda (var)
+                                 (if (evsi-local-p var)
+                                   (list (evsi-variable-name var)
+                                         `(svref& *current-process*
+                                                  ,(prog1 i (incf i))))
+                                   (progn (incf i) nil)))
+                       *eval-state-vars*))
+      (%retrieve-evaluator-state-internal))))
 
 
 
 (defmacro %retrieve-evaluator-state-internal-1 ()
   (let ((i 0))
     `(setq . ,(mapcan #'(lambda (var)
-        (if (not (evsi-local-p var))
-            (list (evsi-variable-name var)
-            `(svref& *current-process*
-               ,(prog1 i (incf i))))
-            (progn (incf i) nil)))
-          *eval-state-vars*))))
+                                (if (not (evsi-local-p var))
+                                  (list (evsi-variable-name var)
+                                        `(svref& *current-process*
+                                                 ,(prog1 i (incf i))))
+                                  (progn (incf i) nil)))
+                      *eval-state-vars*))))
 
 (defun %retrieve-evaluator-state-internal ()
   (%retrieve-evaluator-state-internal-1))
@@ -172,20 +172,20 @@ Modification History (most recent at top)
 
 (defun process-run-function (rest-of-line box)
   (let ((proc (or (box::getprop box :process)
-      (let ((newproc (%make-process-state-vector)))
-        (setf (process-variable newproc *current-function*)
-        newproc)
-        newproc))))
+                  (let ((newproc (%make-process-state-vector)))
+                    (setf (process-variable newproc *current-function*)
+                          newproc)
+                    newproc))))
     (let ((current-line (process-variable proc *executing-pointer*)))
       (cond ((null current-line)
-       )
-      ;; eventually
-      ;; ((eq (car rest-of-line) 'bu::stop-process)...)
-      (t
-       ;; not really the right thing,
-       ;; we should walk up ufun frames and append rest-of-line
-       ;; to the top level *executing-pointer*
-       (primitive-signal-error :process "The box, " box ", is busy"))))))
+             )
+        ;; eventually
+        ;; ((eq (car rest-of-line) 'bu::stop-process)...)
+        (t
+         ;; not really the right thing,
+         ;; we should walk up ufun frames and append rest-of-line
+         ;; to the top level *executing-pointer*
+         (primitive-signal-error :process "The box, " box ", is busy"))))))
 
 
 ;;
@@ -244,25 +244,25 @@ Modification History (most recent at top)
 (defun poll-internal-and-schedule ()
   (or *last-interrupt-char*
       (multiple-value-bind (abort? any-input?)
-    (bw::keyboard-interrupt? boxer::*boxer-pane*)
-  (cond ((null any-input?)
-         (next-restartable-process))
-        ((null abort?)
-         ;; there IS pending input
-         ;; switch to the keyboard owning process, or else :pause
-         ;; the current one so we can return to toplevel
-         (or (keyboard-owning-process)
-       (if (not (null *doit-key-process*))
-           (next-restartable-process)
-           :pause)))
-        (t
-         (setq *last-interrupt-char* abort?)
-         t)))))
+                           (bw::keyboard-interrupt? boxer::*boxer-pane*)
+                           (cond ((null any-input?)
+                                  (next-restartable-process))
+                             ((null abort?)
+                              ;; there IS pending input
+                              ;; switch to the keyboard owning process, or else :pause
+                              ;; the current one so we can return to toplevel
+                              (or (keyboard-owning-process)
+                                  (if (not (null *doit-key-process*))
+                                    (next-restartable-process)
+                                    :pause)))
+                             (t
+                              (setq *last-interrupt-char* abort?)
+                              t)))))
 
 (defun queue-process (proc)
   (if (null *boxer-processes*)
-      (setq *boxer-processes* (list proc))
-      (nconc (last *boxer-processes*) (list proc))))
+    (setq *boxer-processes* (list proc))
+    (nconc (last *boxer-processes*) (list proc))))
 
 ;; we could slam the evaluator state into the process before
 ;; finishing it, instead, we'll just reset it explicitly here
@@ -275,7 +275,7 @@ Modification History (most recent at top)
   (when (eq proc *doit-key-process*)
     ;(queue-process proc)
     (setq *doit-key-process* nil))
-;  (process-display *boxer-processes*)
+  ;  (process-display *boxer-processes*)
   proc)
 
 ;; only setting it when it is already bound
@@ -290,9 +290,9 @@ Modification History (most recent at top)
 
 (defmacro with-recursive-edit-key-bindings (&body body)
   (let* ((newdoitfun (encapsulate-key-function 'box::com-recursive-doit))
-   (lk (make-non-caching-static-variable 'bu::line-key newdoitfun))
-   (r2 (make-non-caching-static-variable 'bu::R2-key newdoitfun))
-   (r3 (make-non-caching-static-variable 'bu::R3-key newdoitfun)))
+         (lk (make-non-caching-static-variable 'bu::line-key newdoitfun))
+         (r2 (make-non-caching-static-variable 'bu::R2-key newdoitfun))
+         (r3 (make-non-caching-static-variable 'bu::R3-key newdoitfun)))
     `(let ((bu::line-key ',lk) (bu::r2-key ',r2) (bu::r3-key ',r3))
        (declare (special bu::line-key bu::r2-key bu::r3-key))
        . ,body)))
