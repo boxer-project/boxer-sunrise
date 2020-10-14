@@ -82,9 +82,9 @@ current region, marks the current
 row instead. "
   (let ((region (or *region-being-defined* (get-current-region))))
     (cond ((not-null region)
-	   (doit-internal))
-	  (t
-	   (com-mark-row))))
+     (doit-internal))
+    (t
+     (com-mark-row))))
   boxer-eval::*novalue*)
 |#
 
@@ -111,11 +111,11 @@ row instead. "
   (if *inside-doit-crock*
       (boxer-editor-error "Already inside COM-DOIT")
       (let ((*inside-doit-crock* t))
-	(unwind-protect
-	     (unless (name-row? (point-row))
-	       (top-level-eval-wrapper
-		(doit-print-returned-value (boxer-eval::eval-point-row))))
-	  (reset-editor-numeric-arg)))))
+  (unwind-protect
+       (unless (name-row? (point-row))
+         (top-level-eval-wrapper
+    (doit-print-returned-value (boxer-eval::eval-point-row))))
+    (reset-editor-numeric-arg)))))
 |#
 
 ;;; Look for a | returned-value comment.  If there is one, delete the text
@@ -125,58 +125,58 @@ row instead. "
 (defun doit-print-returned-value (returned-value)
   (let* ((boxer-eval::*primitive-shadow-warning-on?* nil) ; don't warn while printing
          (*current-font-descriptor* *default-font-descriptor*)
-	 (processed-returned-value
-	  (cond ((eq returned-value boxer-eval::*novalue*) nil)
-		(t (cond ((numberp returned-value)
-			  (top-level-print-number returned-value))
-			 ((virtual-copy? returned-value)
-			  (top-level-print-vc returned-value))
-			 ((virtual-port? returned-value)
-			  (top-level-print-vp returned-value))
-			 ;((fast-memq returned-value '(bu::true bu::false))
-			 ; (make-box `((,returned-value))))
-			 ((data-box? returned-value)
-			   ;Error Boxes and READ
-			  returned-value)
-			 ((doit-box? returned-value)
-			   ;Stepper Boxes
-			  returned-value)
-			 ((port-box? returned-value)
-			  (port-to-internal (ports returned-value)))
+   (processed-returned-value
+    (cond ((eq returned-value boxer-eval::*novalue*) nil)
+    (t (cond ((numberp returned-value)
+        (top-level-print-number returned-value))
+       ((virtual-copy? returned-value)
+        (top-level-print-vc returned-value))
+       ((virtual-port? returned-value)
+        (top-level-print-vp returned-value))
+       ;((fast-memq returned-value '(bu::true bu::false))
+       ; (make-box `((,returned-value))))
+       ((data-box? returned-value)
+         ;Error Boxes and READ
+        returned-value)
+       ((doit-box? returned-value)
+         ;Stepper Boxes
+        returned-value)
+       ((port-box? returned-value)
+        (port-to-internal (ports returned-value)))
                          ((typep returned-value 'foreign-data)
                           (make-editor-box-from-foreign-data returned-value))
-			 (t (format nil "Weird object: ~a" returned-value))))))
-	 (bp (make-bp ':moving))
-	 (row (bp-row *point*))
-	 (row-chas (chas-array row))
-	 (existing-vertical-bar-cha-no
-	   (position #\| (chas-array-chas row-chas) :test #'equal
-		     :end (chas-array-active-length row-chas))))
+       (t (format nil "Weird object: ~a" returned-value))))))
+   (bp (make-bp ':moving))
+   (row (bp-row *point*))
+   (row-chas (chas-array row))
+   (existing-vertical-bar-cha-no
+     (position #\| (chas-array-chas row-chas) :test #'equal
+         :end (chas-array-active-length row-chas))))
     (unwind-protect
-	 (progn
-	   (cond ((not-null existing-vertical-bar-cha-no)
-		  (dolist (bp (bps row))
-		    (setf (bp-cha-no bp)
-			  (min existing-vertical-bar-cha-no
-			       (bp-cha-no bp))))
-		  (move-bp-1 bp row
-			     (+ existing-vertical-bar-cha-no
-				(if (not (null processed-returned-value))
-				    1
-				    0)))
-		  (queue-editor-objs-for-deallocation
+   (progn
+     (cond ((not-null existing-vertical-bar-cha-no)
+      (dolist (bp (bps row))
+        (setf (bp-cha-no bp)
+        (min existing-vertical-bar-cha-no
+             (bp-cha-no bp))))
+      (move-bp-1 bp row
+           (+ existing-vertical-bar-cha-no
+        (if (not (null processed-returned-value))
+            1
+            0)))
+      (queue-editor-objs-for-deallocation
                    (delete-chas-to-end-of-row bp ':fixed)))
-		 ((not (null processed-returned-value))
-		  (move-bp bp (row-last-bp-values row))
-		  ;; flush trailing spaces (but not if there's
-		  ;; an old value there)
-		  (do ((i (1-& (length-in-chas row)) (1-& i)))
-		      ((not (equal (cha-at-cha-no row i) #\Space)))
-		    (delete-cha-at-cha-no row i))
-		  (insert-row-chas bp (make-row '("   |")) :moving)))
-	   (when (not (null processed-returned-value))
-	     #-opengl (add-redisplay-clue (bp-row bp) ':insert)
-	     (insert-row-chas bp (make-row `(,processed-returned-value)))))
+     ((not (null processed-returned-value))
+      (move-bp bp (row-last-bp-values row))
+      ;; flush trailing spaces (but not if there's
+      ;; an old value there)
+      (do ((i (1-& (length-in-chas row)) (1-& i)))
+          ((not (equal (cha-at-cha-no row i) #\Space)))
+        (delete-cha-at-cha-no row i))
+      (insert-row-chas bp (make-row '("   |")) :moving)))
+     (when (not (null processed-returned-value))
+       #-opengl (add-redisplay-clue (bp-row bp) ':insert)
+       (insert-row-chas bp (make-row `(,processed-returned-value)))))
       ;; make sure the bp used in printing gets deallocated
       (deallocate-bp bp))))
 
@@ -230,37 +230,37 @@ row instead. "
   (reset-region)
   (let ((closet-row (slot-value (box-point-is-in) 'closets)))
     (flet ((in-closet-row? ()
-	     (do ((row (point-row) (and (superior-box row)
-					(superior-row (superior-box row)))))
-		 ((null row) nil)
-	       (when (eq row closet-row)
-		 (return t)))))
+       (do ((row (point-row) (and (superior-box row)
+          (superior-row (superior-box row)))))
+     ((null row) nil)
+         (when (eq row closet-row)
+     (return t)))))
       (cond ((null closet-row))
-	    ((fast-memq closet-row (rows (box-point-is-in)))
-	     (let ((cr-no (row-row-no (box-point-is-in) closet-row))
-		   (dest-row (or (next-row closet-row)
-				 (previous-row closet-row))))
-	       (cond ((null dest-row)
-		      ;; we're going to remove the only row in the box
-		      ;; so we better put one back
-		      (let ((new-row (make-row '())))
-			(append-row (box-point-is-in) new-row)
-			(delete-row-at-row-no (box-point-is-in) cr-no)
-			(when (in-closet-row?)
-			  (move-point (row-first-bp-values new-row)))
-			(unless (null (scroll-to-actual-row
-				       (screen-box-point-is-in)))
-			  (set-scroll-to-actual-row
-			    (screen-box-point-is-in) nil))))
-		     (t
-		      (delete-row-at-row-no (box-point-is-in) cr-no)
-		      (when (in-closet-row?)
-			    (move-point (row-first-bp-values dest-row)))
-		      (unless (null (scroll-to-actual-row
-				     (screen-box-point-is-in)))
-			(set-scroll-to-actual-row
-			  (screen-box-point-is-in) dest-row)))))
-	     (modified (box-point-is-in))))))
+      ((fast-memq closet-row (rows (box-point-is-in)))
+       (let ((cr-no (row-row-no (box-point-is-in) closet-row))
+       (dest-row (or (next-row closet-row)
+         (previous-row closet-row))))
+         (cond ((null dest-row)
+          ;; we're going to remove the only row in the box
+          ;; so we better put one back
+          (let ((new-row (make-row '())))
+      (append-row (box-point-is-in) new-row)
+      (delete-row-at-row-no (box-point-is-in) cr-no)
+      (when (in-closet-row?)
+        (move-point (row-first-bp-values new-row)))
+      (unless (null (scroll-to-actual-row
+               (screen-box-point-is-in)))
+        (set-scroll-to-actual-row
+          (screen-box-point-is-in) nil))))
+         (t
+          (delete-row-at-row-no (box-point-is-in) cr-no)
+          (when (in-closet-row?)
+          (move-point (row-first-bp-values dest-row)))
+          (unless (null (scroll-to-actual-row
+             (screen-box-point-is-in)))
+      (set-scroll-to-actual-row
+        (screen-box-point-is-in) dest-row)))))
+       (modified (box-point-is-in))))))
   boxer-eval::*novalue*)
 
 
@@ -276,15 +276,15 @@ row instead. "
   (reset-region)
   (let ((closet-row (slot-value box 'closets)))
     (flet ((in-closet-row? ()
-	     (do ((row (point-row) (and (superior-box row)
-					(superior-row (superior-box row)))))
-		 ((null row) nil)
-	       (when (eq row closet-row) (return t)))))
+       (do ((row (point-row) (and (superior-box row)
+          (superior-row (superior-box row)))))
+     ((null row) nil)
+         (when (eq row closet-row) (return t)))))
       (cond ((or (null closet-row)
                  (not (row-row-no box closet-row)))
              ;; there is no open closet so open it...
              (multiple-value-bind (closet-row new?)
-		                  (closet-row box)
+                      (closet-row box)
                ;; There is now a closet-row to edit so we need to
                ;; splice it into the row structure.
                (when (graphics-screen-box? screen-box)
@@ -365,35 +365,35 @@ row instead. "
   (unless (name-row? (point-row))
     (let ((first-chunk (chunk-at-cha-no (point-row) 0)))
       (cond ((null first-chunk)
-	     (boxer-editor-error "Can't find a function near the cursor. "))
-	    ((member (chunk-chunk (get-pointer-value first-chunk nil))
-		     *symbols-for-input-line* :test #'eq)
-	     (do ((arglist (cdr (eval-objs (point-row)))
-			   (cdr arglist))
-		  (chunk-no 1 (1+& chunk-no)))
-		 ((null arglist))
-	       (when (and (not (eq (car arglist)
-				   'boxer-eval::*ignoring-definition-object*))
-			  (not (boxer-eval::flavored-input-marker? (car arglist))))
-		 #-opengl (add-redisplay-clue (point-row) ':insert)
-		 (boxer-eval::step-replace-token
-		  chunk-no (let ((new-box (make-box '(()))))
-			     (set-name new-box
-				       (make-name-row
-					(list (car arglist)))))))))
-	    (t
-	     (let ((chunk (prompter-chunk-before-point))) ;
-	       (if (null chunk)
-		   (boxer-editor-error
-		    "Can't find a function near the cursor. ")
-		   (let ((arglist
-			  (arglist-for-prompter
-			   (chunk-chunk (get-pointer-value chunk nil)))))
-		     (unless (null arglist)
-		       #-opengl (add-redisplay-clue (point-row) ':insert)
-		       (insert-prompter-arglist
-			arglist
-			(end-of-chunk-cha-no (point-row) chunk)))))))))
+       (boxer-editor-error "Can't find a function near the cursor. "))
+      ((member (chunk-chunk (get-pointer-value first-chunk nil))
+         *symbols-for-input-line* :test #'eq)
+       (do ((arglist (cdr (eval-objs (point-row)))
+         (cdr arglist))
+      (chunk-no 1 (1+& chunk-no)))
+     ((null arglist))
+         (when (and (not (eq (car arglist)
+           'boxer-eval::*ignoring-definition-object*))
+        (not (boxer-eval::flavored-input-marker? (car arglist))))
+     #-opengl (add-redisplay-clue (point-row) ':insert)
+     (boxer-eval::step-replace-token
+      chunk-no (let ((new-box (make-box '(()))))
+           (set-name new-box
+               (make-name-row
+          (list (car arglist)))))))))
+      (t
+       (let ((chunk (prompter-chunk-before-point))) ;
+         (if (null chunk)
+       (boxer-editor-error
+        "Can't find a function near the cursor. ")
+       (let ((arglist
+        (arglist-for-prompter
+         (chunk-chunk (get-pointer-value chunk nil)))))
+         (unless (null arglist)
+           #-opengl (add-redisplay-clue (point-row) ':insert)
+           (insert-prompter-arglist
+      arglist
+      (end-of-chunk-cha-no (point-row) chunk)))))))))
     boxer-eval::*novalue*))
 
 
@@ -401,18 +401,18 @@ row instead. "
   (MOVE-POINT-1 (point-row) function-end-cha-no (point-screen-box))
   (dolist (item list)
     (map nil #'(lambda (cha)
-		 (insert-cha *point* cha :moving)) (format nil " ~a:" item)))
+     (insert-cha *point* cha :moving)) (format nil " ~a:" item)))
   (MOVE-POINT-1 (POINT-ROW)
-		(+& function-end-cha-no
-		    (length (format nil "~a" (car list)))
-		    2)
-		(POINT-SCREEN-BOX)))
+    (+& function-end-cha-no
+        (length (format nil "~a" (car list)))
+        2)
+    (POINT-SCREEN-BOX)))
 
 
 (defun prompter-chunk-before-point ()
   (let ((cha-no (if (zerop& (bp-cha-no *point*))
-		    0
-		    (1-& (bp-cha-no *point*)))))
+        0
+        (1-& (bp-cha-no *point*)))))
     (chunk-at-cha-no (point-row) cha-no T)))
 
 
@@ -444,7 +444,7 @@ row instead. "
                        ;; are on a border area
                        (multiple-value-bind (mouse-bp local-x local-y
                                                       area)
-				            (mouse-position-values x-pos y-pos)
+                    (mouse-position-values x-pos y-pos)
                          (declare (ignore mouse-bp local-x local-y))
                          (lookup-click-name click bits area)))))
          (value (boxer-eval::boxer-symeval key-name))
@@ -561,7 +561,7 @@ followed by a return."
   (reset-region)
   (status-line-display 'com-insert-key-name "Press any key...")
   (let* ((input (get-boxer-input *boxer-pane*))
-	 (key-name (if (key-event? input)
+   (key-name (if (key-event? input)
                      (lookup-key-name (input-code input) (input-bits input))
                      (let ((click  (mouse-event-click  input))
                            (x-pos  (mouse-event-x-pos  input))
@@ -571,14 +571,14 @@ followed by a return."
                        ;; are on a border area
                        (multiple-value-bind (mouse-bp local-x local-y
                                                       area)
-				            (mouse-position-values x-pos y-pos)
+                    (mouse-position-values x-pos y-pos)
                          (declare (ignore mouse-bp local-x local-y))
                          (lookup-click-name click bits area)))))
-	 (key-string (string key-name)))
+   (key-string (string key-name)))
     (status-line-undisplay 'com-insert-key-name)
     (unless (null key-name)
       (dotimes& (i (length key-string))
-	(insert-cha *point* (aref key-string i))))
+  (insert-cha *point* (aref key-string i))))
     #-opengl (add-redisplay-clue (point-row) ':insert))
   (com-return)
   boxer-eval::*novalue*)
