@@ -495,7 +495,7 @@ Modification History (most recent at top)
                          ("Copy" :accelerator #\c  :callback 'menu-copy-region)
                          ("Paste" :accelerator #\v :callback 'menu-yank)
                          ("Yank" :accelerator #\y :callback 'menu-retrieve)
-                         ("Paste from Clipboard" :callback 'menu-clipboard-paste)
+                         ("Paste from Clipboard" :accelerator #\V :callback 'menu-clipboard-paste)
                          ("Paste Graphics" :callback 'menu-paste-graphics)
                          ))
                        (:component
