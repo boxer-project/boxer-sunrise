@@ -27,8 +27,8 @@
                                          +-------+
 
 
-	   This file contains top level definitions for
-	   the set of BOXER Editor Mouse Commands.
+     This file contains top level definitions for
+     the set of BOXER Editor Mouse Commands.
 
 
 Modification History (most recent at top)
@@ -97,11 +97,11 @@ Modification History (most recent at top)
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let ((new-box (bp-box mouse-bp))
-	(new-row (bp-row mouse-bp))
-	(mouse-screen-box (bp-screen-box mouse-bp))
-	(new-cha-no (bp-cha-no mouse-bp)))
+  (new-row (bp-row mouse-bp))
+  (mouse-screen-box (bp-screen-box mouse-bp))
+  (new-cha-no (bp-cha-no mouse-bp)))
     (when (and (not-null new-row)
-	       (box? new-box))
+         (box? new-box))
       (send-exit-messages new-box mouse-screen-box)
       (move-point-1 new-row new-cha-no mouse-screen-box)
       (com-collapse-box)))
@@ -115,11 +115,11 @@ Modification History (most recent at top)
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let ((new-box (bp-box mouse-bp))
-	(new-row (bp-row mouse-bp))
-	(mouse-screen-box (bp-screen-box mouse-bp))
-	(new-cha-no (bp-cha-no mouse-bp)))
+  (new-row (bp-row mouse-bp))
+  (mouse-screen-box (bp-screen-box mouse-bp))
+  (new-cha-no (bp-cha-no mouse-bp)))
     (when (and (not-null new-row)
-	       (box? new-box))
+         (box? new-box))
       (send-exit-messages new-box mouse-screen-box)
       (move-point-1 new-row new-cha-no mouse-screen-box)
       (com-shrink-box)))
@@ -133,19 +133,19 @@ Modification History (most recent at top)
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let ((new-box (bp-box mouse-bp))
-	(new-row (bp-row mouse-bp))
-	(mouse-screen-box (bp-screen-box mouse-bp))
-	(new-cha-no (bp-cha-no mouse-bp)))
+  (new-row (bp-row mouse-bp))
+  (mouse-screen-box (bp-screen-box mouse-bp))
+  (new-cha-no (bp-cha-no mouse-bp)))
     (when (and (not-null new-row)
-	       (box? new-box))
+         (box? new-box))
       (unless (and (not (eq mouse-screen-box (outermost-screen-box)))
-		   mouse-screen-box
-		   (eq :supershrunk
-		       (display-style
-			(screen-obj-actual-obj mouse-screen-box))))
-	(send-exit-messages new-box mouse-screen-box)
-	(move-point-1 new-row new-cha-no mouse-screen-box)
-	(com-super-shrink-box))))
+       mouse-screen-box
+       (eq :supershrunk
+           (display-style
+      (screen-obj-actual-obj mouse-screen-box))))
+  (send-exit-messages new-box mouse-screen-box)
+  (move-point-1 new-row new-cha-no mouse-screen-box)
+  (com-super-shrink-box))))
   boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-expand-box (window x y mouse-bp click-only?)
@@ -156,14 +156,14 @@ Modification History (most recent at top)
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let ((new-box (bp-box mouse-bp))
-	(old-box (point-box))
-	(new-row (bp-row mouse-bp))
-	(mouse-screen-box (bp-screen-box mouse-bp))
-	(new-cha-no (bp-cha-no mouse-bp)))
+  (old-box (point-box))
+  (new-row (bp-row mouse-bp))
+  (mouse-screen-box (bp-screen-box mouse-bp))
+  (new-cha-no (bp-cha-no mouse-bp)))
     (when (and (not-null new-row) (box? new-box))
       (unless (eq old-box new-box)
-	(send-exit-messages new-box mouse-screen-box)
-	(enter new-box (not (superior? old-box new-box))))
+  (send-exit-messages new-box mouse-screen-box)
+  (enter new-box (not (superior? old-box new-box))))
       (move-point-1 new-row new-cha-no mouse-screen-box)
       (com-expand-box)))
   boxer-eval::*novalue*)
@@ -176,17 +176,17 @@ Modification History (most recent at top)
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let ((old-box (point-box))
-	(new-box (bp-box mouse-bp))
-	(new-row (bp-row mouse-bp))
-	(new-cha-no (bp-cha-no mouse-bp)))
+  (new-box (bp-box mouse-bp))
+  (new-row (bp-row mouse-bp))
+  (new-cha-no (bp-cha-no mouse-bp)))
     (when (and (not-null new-row) (box? new-box))
       (unless (eq old-box new-box)
-	(send-exit-messages new-box (bp-screen-box mouse-bp))
-	(enter new-box (not (superior? old-box new-box))))
+  (send-exit-messages new-box (bp-screen-box mouse-bp))
+  (enter new-box (not (superior? old-box new-box))))
       (move-point-1 new-row new-cha-no (bp-screen-box mouse-bp))
       (if (graphics-box? new-box)
-	  (com-expand-box)
-	  (com-set-outermost-box))))
+    (com-expand-box)
+    (com-set-outermost-box))))
   boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-move-point (window x y mouse-bp click-only? &optional (box-proc nil))
@@ -197,18 +197,18 @@ Modification History (most recent at top)
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let ((old-box (point-box))
-	(new-box (bp-box mouse-bp))
-	(new-row (bp-row mouse-bp))
-	(mouse-screen-box (bp-screen-box mouse-bp))
-	(new-cha-no (bp-cha-no mouse-bp)))
+  (new-box (bp-box mouse-bp))
+  (new-row (bp-row mouse-bp))
+  (mouse-screen-box (bp-screen-box mouse-bp))
+  (new-cha-no (bp-cha-no mouse-bp)))
     (when (and (not-null new-row) (not-null new-cha-no) (not-null new-box))
       (unless (eq old-box new-box)
-	(send-exit-messages new-box mouse-screen-box)
-	(enter new-box (not (superior? old-box new-box))))
+  (send-exit-messages new-box mouse-screen-box)
+  (enter new-box (not (superior? old-box new-box))))
       (move-point-1 new-row new-cha-no mouse-screen-box))
     (when (and (not box-proc)
-	       (not (name-row? new-row))
-	       (shrunken? (screen-obj-actual-obj (screen-box-point-is-in))))
+         (not (name-row? new-row))
+         (shrunken? (screen-obj-actual-obj (screen-box-point-is-in))))
       (com-expand-box)))
   ;(repaint-cursor)
   boxer-eval::*novalue*)
@@ -589,40 +589,40 @@ Modification History (most recent at top)
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let ((new-box (bp-box mouse-bp))
-	(new-row (bp-row mouse-bp))
-	(mouse-screen-box (bp-screen-box mouse-bp))
-	(new-cha-no (bp-cha-no mouse-bp)))
+  (new-row (bp-row mouse-bp))
+  (mouse-screen-box (bp-screen-box mouse-bp))
+  (new-cha-no (bp-cha-no mouse-bp)))
     (when (and (not (null new-row)) (box? new-box))
       (let ((actual-obj (screen-obj-actual-obj mouse-screen-box)))
-	(cond ((eq mouse-screen-box (outermost-screen-box))
-	       (multiple-value-bind (row cha-no screen-box rel-x rel-y)
-		   (mouse-position-values x y)
-		 (declare (ignore row cha-no screen-box rel-y))
-		 (send-exit-messages new-box mouse-screen-box)
-		 (move-point-1 new-row new-cha-no mouse-screen-box)
-		 (if (< (* rel-x 2)
-			(screen-object-width mouse-screen-box))
-		     (com-collapse-box)
-		     (com-shrink-box))))
-	      ((shrunken? actual-obj)
-	       (send-exit-messages
-		new-box mouse-screen-box
-		(eq (superior-box (point-box)) new-box))
-	       (move-point-1 new-row new-cha-no mouse-screen-box)
-	       ;; no send-exit-messages yet.
-	       (com-mouse-set-outermost-box window x y mouse-bp click-only?))
-	      (t
-	       (multiple-value-bind (row cha-no screen-box rel-x rel-y)
-		 (screen-obj-at-position x y)
-		 row cha-no screen-box rel-y
-		 (send-exit-messages new-box mouse-screen-box)
-		 (move-point-1 new-row new-cha-no mouse-screen-box)
-		 (cond ((< (* rel-x 2)
-			   (screen-object-width mouse-screen-box))
-			(enter new-box)
-			(com-expand-box))
-		       (t
-			(com-collapse-box)))))))))
+  (cond ((eq mouse-screen-box (outermost-screen-box))
+         (multiple-value-bind (row cha-no screen-box rel-x rel-y)
+       (mouse-position-values x y)
+     (declare (ignore row cha-no screen-box rel-y))
+     (send-exit-messages new-box mouse-screen-box)
+     (move-point-1 new-row new-cha-no mouse-screen-box)
+     (if (< (* rel-x 2)
+      (screen-object-width mouse-screen-box))
+         (com-collapse-box)
+         (com-shrink-box))))
+        ((shrunken? actual-obj)
+         (send-exit-messages
+    new-box mouse-screen-box
+    (eq (superior-box (point-box)) new-box))
+         (move-point-1 new-row new-cha-no mouse-screen-box)
+         ;; no send-exit-messages yet.
+         (com-mouse-set-outermost-box window x y mouse-bp click-only?))
+        (t
+         (multiple-value-bind (row cha-no screen-box rel-x rel-y)
+     (screen-obj-at-position x y)
+     row cha-no screen-box rel-y
+     (send-exit-messages new-box mouse-screen-box)
+     (move-point-1 new-row new-cha-no mouse-screen-box)
+     (cond ((< (* rel-x 2)
+         (screen-object-width mouse-screen-box))
+      (enter new-box)
+      (com-expand-box))
+           (t
+      (com-collapse-box)))))))))
   boxer-eval::*novalue*)
 
 |#
@@ -632,7 +632,7 @@ Modification History (most recent at top)
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let* ((screen-box (bp-screen-box mouse-bp))
-	 (actual-box (screen-obj-actual-obj screen-box)))
+   (actual-box (screen-obj-actual-obj screen-box)))
     (cond ((null actual-box))
           ((and (shrunken? actual-box)
                 (not (eq screen-box (outermost-screen-box))))
@@ -665,16 +665,16 @@ Modification History (most recent at top)
 
 (defun suck-region ()
   (setq *suitcase-region*
-	(or *region-being-defined* (get-current-region)))
+  (or *region-being-defined* (get-current-region)))
   (cond ((not (null *suitcase-region*))
-	 (with-region-top-level-bps (*suitcase-region* :start-bp-name start
-						       :stop-bp-name stop)
-	   (setq *old-region-location* (copy-bp start)))
-	 (kill-region *suitcase-region*))
-	(t
-	 ;; just in case...
-	 (unless (null *suitcase-mode*) (cleanup-suitcase))
-	 (boxer-editor-error "No region to kill."))))
+   (with-region-top-level-bps (*suitcase-region* :start-bp-name start
+                   :stop-bp-name stop)
+     (setq *old-region-location* (copy-bp start)))
+   (kill-region *suitcase-region*))
+  (t
+   ;; just in case...
+   (unless (null *suitcase-mode*) (cleanup-suitcase))
+   (boxer-editor-error "No region to kill."))))
 
 ;;;
 #| ;; old, use modes now
@@ -726,13 +726,13 @@ Modification History (most recent at top)
 ;;; suck the region up into a suitcase, without destroying the text sucked
 (defun suck-copy-region ()
     (setq *suitcase-region*
-	  (or *region-being-defined* (get-current-region)))
+    (or *region-being-defined* (get-current-region)))
     (cond (*suitcase-region* (setq *suitcase-region*
-				   (copy-interval *suitcase-region*)))
-	  (t
-	   ;; just in case...
-	   (unless (null *suitcase-mode*) (cleanup-suitcase))
-	   (boxer-editor-error "No region to copy."))))
+           (copy-interval *suitcase-region*)))
+    (t
+     ;; just in case...
+     (unless (null *suitcase-mode*) (cleanup-suitcase))
+     (boxer-editor-error "No region to copy."))))
 
 ;; cleanup function, it may be called after yanking or by the Abort key
 (defun cleanup-suitcase ()
@@ -740,7 +740,7 @@ Modification History (most recent at top)
     (unless (null *old-region-location*)
       (move-to-bp *old-region-location*)
       (unless (null *suitcase-region*)
-	(yank-region *point* *suitcase-region*)
+  (yank-region *point* *suitcase-region*)
       (setq *old-region-location* nil)))
     (unless (null *suitcase-region*) (deallocate-region *suitcase-region*))
     (setq *suitcase-region* nil)
@@ -753,12 +753,12 @@ Modification History (most recent at top)
 (defun com-bring-back-region (window x y mouse-bp click-only?)
   (com-mouse-move-point window x y mouse-bp click-only?)
   (cond ((not (null *suitcase-region*))
-	 (yank-region  *point* *suitcase-region*)
-	 ;; if successful, no need to reset...
-	 (setq *old-region-location* nil)
-	 (cleanup-suitcase))
-	((not (null *suitcase-mode*))
-	 (cleanup-suitcase)))
+   (yank-region  *point* *suitcase-region*)
+   ;; if successful, no need to reset...
+   (setq *old-region-location* nil)
+   (cleanup-suitcase))
+  ((not (null *suitcase-mode*))
+   (cleanup-suitcase)))
   (reset-editor-numeric-arg)
   (reset-region)
   boxer-eval::*novalue*)
@@ -778,8 +778,8 @@ Modification History (most recent at top)
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let* ((screen-box (bp-screen-box mouse-bp))
-	 (actual-box (screen-obj-actual-obj screen-box))
-	 (box-type (box-type screen-box)))
+   (actual-box (screen-obj-actual-obj screen-box))
+   (box-type (box-type screen-box)))
     (cond ((null actual-box))
           ((shrunken? actual-box)
            ;; might as well open it
@@ -787,21 +787,21 @@ Modification History (most recent at top)
           ((not (null click-only?))
            ;; reset the scrolling to the top
            (set-scroll-to-actual-row screen-box nil)
-	   (set-fixed-size actual-box nil nil))
+     (set-fixed-size actual-box nil nil))
           ((and *only-shrink-wrap-text-boxes* (null (graphics-sheet actual-box)))
            (when *warn-about-disabled-commands*
              (boxer-editor-warning
               "Resizing Text Boxes is disabled, see the Preferences menu")))
-	  ((eq screen-box (outermost-screen-box))
+    ((eq screen-box (outermost-screen-box))
            (boxer-editor-warning
             "Can't Resize the Outermost Box. Resize the Window instead."))
-	  (t
+    (t
            ;; mouse grab, interactive loop
            (multiple-value-bind (box-window-x box-window-y)
-	       (xy-position screen-box)
-	     (multiple-value-bind (left top right bottom)
-	         (box-borders-widths box-type screen-box)
-	       ;(drawing-on-window (*boxer-pane*)
+         (xy-position screen-box)
+       (multiple-value-bind (left top right bottom)
+           (box-borders-widths box-type screen-box)
+         ;(drawing-on-window (*boxer-pane*)
                (let ((minimum-track-wid *minimum-box-wid*)
                      (minimum-track-hei *minimum-box-hei*)
                      (first-movement-flag nil))
@@ -927,41 +927,41 @@ Modification History (most recent at top)
                               :width ,width :height ,height)))))))
 
 (defboxer-command com-mouse-br-corner-collapse-box (window x y mouse-bp
-							   click-only?)
+                 click-only?)
   "make the box one size larger"
   window x y  ; (declare (ignore window x y))
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let ((screen-box (bp-screen-box mouse-bp)))
     (when (or click-only?
-	      (mouse-corner-tracking (:bottom-right) #'shrink-corner-fun screen-box))
+        (mouse-corner-tracking (:bottom-right) #'shrink-corner-fun screen-box))
       (let ((new-box (bp-box mouse-bp))
-	    (new-row (bp-row mouse-bp))
-	    (new-cha-no (bp-cha-no mouse-bp)))
-	(when (and (not-null new-row)
-		   (box? new-box))
-	  (unless (and (not (eq screen-box (outermost-screen-box)))
-		       (and screen-box
-			    (shrunken? (screen-obj-actual-obj screen-box))))
-	    (send-exit-messages new-box screen-box)
-	    (move-point-1 new-row new-cha-no screen-box)
-	    (com-collapse-box))))))
+      (new-row (bp-row mouse-bp))
+      (new-cha-no (bp-cha-no mouse-bp)))
+  (when (and (not-null new-row)
+       (box? new-box))
+    (unless (and (not (eq screen-box (outermost-screen-box)))
+           (and screen-box
+          (shrunken? (screen-obj-actual-obj screen-box))))
+      (send-exit-messages new-box screen-box)
+      (move-point-1 new-row new-cha-no screen-box)
+      (com-collapse-box))))))
   boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-tl-corner-collapse-box (window x y
-							   mouse-bp click-only?)
+                 mouse-bp click-only?)
   "make the box one size larger"
   window x y  ; (declare (ignore window x y))
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let ((screen-box (bp-screen-box mouse-bp)))
     (when (or click-only?
-	      (mouse-corner-tracking (:top-left) #'shrink-corner-fun screen-box))
+        (mouse-corner-tracking (:top-left) #'shrink-corner-fun screen-box))
       (let ((new-box (bp-box mouse-bp))
-	    (new-row (bp-row mouse-bp))
-	    (new-cha-no (bp-cha-no mouse-bp)))
-	(when (and (not-null new-row)
-		   (box? new-box))
+      (new-row (bp-row mouse-bp))
+      (new-cha-no (bp-cha-no mouse-bp)))
+  (when (and (not-null new-row)
+       (box? new-box))
           (let* ((edbox (and screen-box (screen-obj-actual-obj screen-box)))
                  (ds (and edbox (display-style edbox))))
             (cond ((and (not (eq screen-box (outermost-screen-box)))
@@ -970,25 +970,25 @@ Modification History (most recent at top)
                         (eq ds :shrunk))
                    (com-collapse-box edbox))
                   (t
-	           (send-exit-messages new-box screen-box)
-	           (move-point-1 new-row new-cha-no screen-box)
-	           (com-collapse-box))))))))
+             (send-exit-messages new-box screen-box)
+             (move-point-1 new-row new-cha-no screen-box)
+             (com-collapse-box))))))))
   boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-br-corner-shrink-box (window x y mouse-bp
-							 click-only?)
+               click-only?)
   "make the box one size larger"
   window x y ;  (declare (ignore window x y))
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let ((screen-box (bp-screen-box mouse-bp)))
     (when (or click-only?
-	      (mouse-corner-tracking (:bottom-right) #'shrink-corner-fun screen-box))
+        (mouse-corner-tracking (:bottom-right) #'shrink-corner-fun screen-box))
       (let ((new-box (bp-box mouse-bp))
-	    (new-row (bp-row mouse-bp))
-	    (new-cha-no (bp-cha-no mouse-bp)))
-	(when (and (not-null new-row)
-		   (box? new-box))
+      (new-row (bp-row mouse-bp))
+      (new-cha-no (bp-cha-no mouse-bp)))
+  (when (and (not-null new-row)
+       (box? new-box))
           (let* ((edbox (and screen-box (screen-obj-actual-obj screen-box)))
                  (ds (and edbox (display-style edbox))))
             (cond ((and (not (eq screen-box (outermost-screen-box)))
@@ -997,105 +997,105 @@ Modification History (most recent at top)
                         (eq ds :shrunk))
                    (com-shrink-box edbox))
                   (t
-	           (send-exit-messages new-box screen-box)
-	           (move-point-1 new-row new-cha-no screen-box)
-	           (com-shrink-box))))))))
+             (send-exit-messages new-box screen-box)
+             (move-point-1 new-row new-cha-no screen-box)
+             (com-shrink-box))))))))
   boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-tl-corner-super-shrink-box (window x y mouse-bp
-							       click-only?)
+                     click-only?)
   "make the box one size larger"
   window x y ;  (declare (ignore window x y))
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let ((screen-box (bp-screen-box mouse-bp)))
     (when (or click-only?
-	      (mouse-corner-tracking (:top-left) #'shrink-corner-fun screen-box))
+        (mouse-corner-tracking (:top-left) #'shrink-corner-fun screen-box))
       (let ((new-box (bp-box mouse-bp))
-	    (new-row (bp-row mouse-bp))
-	    (new-cha-no (bp-cha-no mouse-bp)))
-	(when (and (not-null new-row)
-		   (box? new-box))
-	  (unless (and (not (eq screen-box (outermost-screen-box)))
-		       screen-box
-		       (eq :supershrunk
-			   (display-style (screen-obj-actual-obj screen-box))))
-	    (send-exit-messages new-box screen-box)
-	    (move-point-1 new-row new-cha-no screen-box)
-	    (com-super-shrink-box))))))
+      (new-row (bp-row mouse-bp))
+      (new-cha-no (bp-cha-no mouse-bp)))
+  (when (and (not-null new-row)
+       (box? new-box))
+    (unless (and (not (eq screen-box (outermost-screen-box)))
+           screen-box
+           (eq :supershrunk
+         (display-style (screen-obj-actual-obj screen-box))))
+      (send-exit-messages new-box screen-box)
+      (move-point-1 new-row new-cha-no screen-box)
+      (com-super-shrink-box))))))
   boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-tr-corner-expand-box (window x y mouse-bp
-							 click-only?)
+               click-only?)
   "make the box one size larger"
   window x y  ;  (declare (ignore window x y))
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let ((screen-box (bp-screen-box mouse-bp)))
     (when (or click-only?
-	      (mouse-corner-tracking (:top-right) #'expand-corner-fun screen-box))
+        (mouse-corner-tracking (:top-right) #'expand-corner-fun screen-box))
       (let ((old-box (point-box))
-	    (new-box (bp-box mouse-bp))
-	    (new-row (bp-row mouse-bp))
-	    (mouse-screen-box (bp-screen-box mouse-bp))
-	    (new-cha-no (bp-cha-no mouse-bp)))
-	(when (and (not-null new-row) (box? new-box))
-	  (unless (eq old-box new-box)
-	    (send-exit-messages new-box mouse-screen-box)
-	    (enter new-box (not (superior? old-box new-box))))
-	  (move-point-1 new-row new-cha-no mouse-screen-box)
-	  (com-expand-box)))))
+      (new-box (bp-box mouse-bp))
+      (new-row (bp-row mouse-bp))
+      (mouse-screen-box (bp-screen-box mouse-bp))
+      (new-cha-no (bp-cha-no mouse-bp)))
+  (when (and (not-null new-row) (box? new-box))
+    (unless (eq old-box new-box)
+      (send-exit-messages new-box mouse-screen-box)
+      (enter new-box (not (superior? old-box new-box))))
+    (move-point-1 new-row new-cha-no mouse-screen-box)
+    (com-expand-box)))))
   boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-br-corner-expand-box (window x y mouse-bp
-							 click-only?)
+               click-only?)
   "make the box one size larger"
   window x y  ;  (declare (ignore window x y))
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let ((screen-box (bp-screen-box mouse-bp)))
     (when (or click-only?
-	      (mouse-corner-tracking (:bottom-right) #'expand-corner-fun screen-box))
+        (mouse-corner-tracking (:bottom-right) #'expand-corner-fun screen-box))
       (let ((old-box (point-box))
-	    (new-box (bp-box mouse-bp))
-	    (new-row (bp-row mouse-bp))
-	    (mouse-screen-box (bp-screen-box mouse-bp))
-	    (new-cha-no (bp-cha-no mouse-bp)))
-	(when (and (not-null new-row) (box? new-box))
-	  (unless (eq old-box new-box)
-	    (send-exit-messages new-box mouse-screen-box)
-	    (enter new-box (not (superior? old-box new-box))))
-	  (move-point-1 new-row new-cha-no mouse-screen-box)
-	  (com-expand-box)))))
+      (new-box (bp-box mouse-bp))
+      (new-row (bp-row mouse-bp))
+      (mouse-screen-box (bp-screen-box mouse-bp))
+      (new-cha-no (bp-cha-no mouse-bp)))
+  (when (and (not-null new-row) (box? new-box))
+    (unless (eq old-box new-box)
+      (send-exit-messages new-box mouse-screen-box)
+      (enter new-box (not (superior? old-box new-box))))
+    (move-point-1 new-row new-cha-no mouse-screen-box)
+    (com-expand-box)))))
   boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-br-corner-set-outermost-box (window x y mouse-bp
-								click-only?)
+                click-only?)
   "make the box one size larger"
   window x y ;  (declare (ignore window x y))
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let ((screen-box (bp-screen-box mouse-bp)))
     (when (or click-only?
-	      (mouse-corner-tracking (:bottom-right) #'expand-corner-fun screen-box))
+        (mouse-corner-tracking (:bottom-right) #'expand-corner-fun screen-box))
       (let ((old-box (point-box))
-	    (new-box (bp-box mouse-bp))
-	    (new-row (bp-row mouse-bp))
-	    (mouse-screen-box (bp-screen-box mouse-bp))
-	    (new-cha-no (bp-cha-no mouse-bp)))
-	(when (and (not-null new-row) (box? new-box))
-	  (unless (eq old-box new-box)
-	    (send-exit-messages new-box mouse-screen-box)
-	    (enter new-box (not (superior? old-box new-box))))
-	  (move-point-1 new-row new-cha-no mouse-screen-box)
-	  (if (and (graphics-box? new-box)
-		   (display-style-graphics-mode? (display-style-list new-box)))
-	      (com-expand-box)
-	      (com-set-outermost-box))))))
+      (new-box (bp-box mouse-bp))
+      (new-row (bp-row mouse-bp))
+      (mouse-screen-box (bp-screen-box mouse-bp))
+      (new-cha-no (bp-cha-no mouse-bp)))
+  (when (and (not-null new-row) (box? new-box))
+    (unless (eq old-box new-box)
+      (send-exit-messages new-box mouse-screen-box)
+      (enter new-box (not (superior? old-box new-box))))
+    (move-point-1 new-row new-cha-no mouse-screen-box)
+    (if (and (graphics-box? new-box)
+       (display-style-graphics-mode? (display-style-list new-box)))
+        (com-expand-box)
+        (com-set-outermost-box))))))
   boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-tr-corner-toggle-closet (window x y
-							 mouse-bp click-only?)
+               mouse-bp click-only?)
   "Open the closet if it is closed and
    close the closet if it is open."
   window x y click-only?;  (declare (ignore window x y click-only?))
@@ -1108,20 +1108,20 @@ Modification History (most recent at top)
           ((or ;click-only?     ; try and suppress accidental closet clicks
             (mouse-corner-tracking (:top-right) #'toggle-corner-fun screen-box))
            (let ((old-box (point-box))
-	         (new-box (bp-box mouse-bp))
-	         (new-row (bp-row mouse-bp))
-	         (mouse-screen-box (bp-screen-box mouse-bp))
-	         (new-cha-no (bp-cha-no mouse-bp)))
-	     (when (and (not-null new-row) (box? new-box))
-	       (unless (eq old-box new-box)
-	         (send-exit-messages new-box mouse-screen-box)
-	         (enter new-box (not (superior? old-box new-box))))
-	       (move-point-1 new-row new-cha-no mouse-screen-box)
-	       (com-toggle-closets))))))
+           (new-box (bp-box mouse-bp))
+           (new-row (bp-row mouse-bp))
+           (mouse-screen-box (bp-screen-box mouse-bp))
+           (new-cha-no (bp-cha-no mouse-bp)))
+       (when (and (not-null new-row) (box? new-box))
+         (unless (eq old-box new-box)
+           (send-exit-messages new-box mouse-screen-box)
+           (enter new-box (not (superior? old-box new-box))))
+         (move-point-1 new-row new-cha-no mouse-screen-box)
+         (com-toggle-closets))))))
   boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-tl-corner-toggle-closet (window x y
-							 mouse-bp click-only?)
+               mouse-bp click-only?)
   "Open the closet if it is closed and
    close the closet if it is open."
   window x y click-only?;  (declare (ignore window x y click-only?))
@@ -1134,39 +1134,39 @@ Modification History (most recent at top)
           ((or ;click-only?     ; try and suppress accidental closet clicks
             (mouse-corner-tracking (:top-left) #'toggle-corner-fun screen-box))
            (let ((old-box (point-box))
-	         (new-box (bp-box mouse-bp))
-	         (new-row (bp-row mouse-bp))
-	         (mouse-screen-box (bp-screen-box mouse-bp))
-	         (new-cha-no (bp-cha-no mouse-bp)))
-	     (when (and (not-null new-row) (box? new-box))
-	       (unless (eq old-box new-box)
-	         (send-exit-messages new-box mouse-screen-box)
-	         (enter new-box (not (superior? old-box new-box))))
-	       (move-point-1 new-row new-cha-no mouse-screen-box)
-	       (com-toggle-closets))))))
+           (new-box (bp-box mouse-bp))
+           (new-row (bp-row mouse-bp))
+           (mouse-screen-box (bp-screen-box mouse-bp))
+           (new-cha-no (bp-cha-no mouse-bp)))
+       (when (and (not-null new-row) (box? new-box))
+         (unless (eq old-box new-box)
+           (send-exit-messages new-box mouse-screen-box)
+           (enter new-box (not (superior? old-box new-box))))
+         (move-point-1 new-row new-cha-no mouse-screen-box)
+         (com-toggle-closets))))))
   boxer-eval::*novalue*)
 
 (defvar *slow-graphics-toggle* t)
 
 (defboxer-command com-mouse-bl-corner-toggle-box-view (window x y mouse-bp
-							   click-only?)
+                 click-only?)
   "Toggle the box view"
   window x y ;  (declare (ignore window x y))
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let* ((screen-box (bp-screen-box mouse-bp))
-	 (box (screen-obj-actual-obj screen-box))
-	 (screen-objs (screen-objs box))
-	 (graphics-sheet (if (port-box? box)
-			     (slot-value (ports box) 'graphics-info)
-			     (slot-value box 'graphics-info)))
-	 (display-style (display-style-list box)))
+   (box (screen-obj-actual-obj screen-box))
+   (screen-objs (screen-objs box))
+   (graphics-sheet (if (port-box? box)
+           (slot-value (ports box) 'graphics-info)
+           (slot-value box 'graphics-info)))
+   (display-style (display-style-list box)))
     (cond ((and (not (display-style-graphics-mode? display-style))
-		(null graphics-sheet))
-	   (boxer-editor-error "This box has no graphics"))
-	  ((eq screen-box *outermost-screen-box*)
-	   (boxer-editor-error "Can't toggle the view of the Outermost Box"))
-	  ((if *slow-graphics-toggle*
+    (null graphics-sheet))
+     (boxer-editor-error "This box has no graphics"))
+    ((eq screen-box *outermost-screen-box*)
+     (boxer-editor-error "Can't toggle the view of the Outermost Box"))
+    ((if *slow-graphics-toggle*
                (and (let ((waited? (mouse-still-down-after-pause?
                                     *mouse-action-pause-time*)))
                       ;; if the user has clicked, but not waited long enough,
@@ -1179,16 +1179,16 @@ Modification History (most recent at top)
                     (mouse-corner-tracking (:bottom-left)
                                            #'toggle-corner-fun screen-box))
                (or click-only?
-	           (mouse-corner-tracking (:bottom-left)
-				          #'toggle-corner-fun screen-box)))
-	    ;; modify the editor box
-	   (if (display-style-graphics-mode? display-style)
-	       (setf (display-style-graphics-mode? display-style) nil)
-	       (setf (display-style-graphics-mode? display-style) t))
-	   ;; then handle changes to the screen boxes
-	   (dolist (sb screen-objs)
-	     (toggle-type sb) (set-force-redisplay-infs? sb t))
-	   (modified (box-screen-point-is-in)))))
+             (mouse-corner-tracking (:bottom-left)
+                  #'toggle-corner-fun screen-box)))
+      ;; modify the editor box
+     (if (display-style-graphics-mode? display-style)
+         (setf (display-style-graphics-mode? display-style) nil)
+         (setf (display-style-graphics-mode? display-style) t))
+     ;; then handle changes to the screen boxes
+     (dolist (sb screen-objs)
+       (toggle-type sb) (set-force-redisplay-infs? sb t))
+     (modified (box-screen-point-is-in)))))
   boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-border-name-box (window x y mouse-bp click-only?)
@@ -1228,7 +1228,7 @@ Modification History (most recent at top)
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let* ((screen-box (bp-screen-box mouse-bp))
-	 (box-type (box-type screen-box)))
+   (box-type (box-type screen-box)))
     (when (or (eq box-type 'data-box) (eq box-type 'doit-box))
       (if (not (null *enable-mouse-toggle-box-type?*))
           (when (multiple-value-bind (box-window-x box-window-y)
@@ -1267,20 +1267,20 @@ Modification History (most recent at top)
   (reset-region)
   (let* ((screen-box (bp-screen-box mouse-bp))
          (edbox (screen-obj-actual-obj screen-box))
-	 (box-type (box-type screen-box))
-	 (fixed? (not (null (display-style-fixed-wid
+   (box-type (box-type screen-box))
+   (fixed? (not (null (display-style-fixed-wid
                              (display-style-list edbox))))))
     (unless (and *only-scroll-current-box?* (neq screen-box (point-screen-box)))
       (unless fixed? ; fix the box size during scrolling
         (multiple-value-bind (current-wid current-hei)
-  	    (screen-obj-size screen-box)
-	  (multiple-value-bind (l-wid t-wid r-wid b-wid)
-	      (with-font-map-bound (*boxer-pane*)
-	        (box-borders-widths (box-type  (screen-box-point-is-in))
-				    (screen-box-point-is-in)))
-	    (set-fixed-size edbox
-			    (- current-wid l-wid r-wid)
-			    (- current-hei t-wid b-wid)))))
+        (screen-obj-size screen-box)
+    (multiple-value-bind (l-wid t-wid r-wid b-wid)
+        (with-font-map-bound (*boxer-pane*)
+          (box-borders-widths (box-type  (screen-box-point-is-in))
+            (screen-box-point-is-in)))
+      (set-fixed-size edbox
+          (- current-wid l-wid r-wid)
+          (- current-hei t-wid b-wid)))))
       (case (get-scroll-position x y screen-box box-type)
         (:v-up-button (if click-only?
                           (com-scroll-up-row screen-box)
@@ -1312,20 +1312,20 @@ Modification History (most recent at top)
   window
   (reset-region)
   (let* ((screen-box (bp-screen-box mouse-bp))
-	 (box-type (box-type screen-box))
-	 (fixed? (not (null (display-style-fixed-wid
-			     (display-style-list (screen-obj-actual-obj
-						  screen-box)))))))
+   (box-type (box-type screen-box))
+   (fixed? (not (null (display-style-fixed-wid
+           (display-style-list (screen-obj-actual-obj
+              screen-box)))))))
     (unless (and *only-scroll-current-box?* (neq screen-box (point-screen-box)))
       (unless fixed? ; fix the box size during scrolling
         (multiple-value-bind (wid hei)
-	    (screen-obj-size screen-box)
-	  (multiple-value-bind (left top right bottom)
+      (screen-obj-size screen-box)
+    (multiple-value-bind (left top right bottom)
               (box-borders-widths (box-type  (screen-box-point-is-in))
                                   (screen-box-point-is-in))
-	    (set-fixed-size (screen-obj-actual-obj screen-box)
-			    (- wid left right)
-			    (- hei top bottom)))))
+      (set-fixed-size (screen-obj-actual-obj screen-box)
+          (- wid left right)
+          (- hei top bottom)))))
       (case (get-scroll-position x y screen-box box-type)
         (:v-up-button (if click-only?
                           (com-scroll-up-one-screen-box (list screen-box))
@@ -1355,7 +1355,7 @@ Modification History (most recent at top)
   (reset-region)
   (let* ((screen-box (bp-screen-box mouse-bp))
          (edbox (screen-obj-actual-obj screen-box))
-	 (box-type (box-type screen-box)))
+   (box-type (box-type screen-box)))
     (unless (and *only-scroll-current-box?* (neq screen-box (point-screen-box)))
       (multiple-value-bind (left top right bottom)
           (box-borders-widths box-type screen-box)
@@ -1501,16 +1501,16 @@ Modification History (most recent at top)
       (com-scroll-up-one-screen-box screen-box-list)
       (com-scroll-dn-one-screen-box screen-box-list))
   (simple-wait-with-timeout *initial-scroll-pause-time*
-			    #'(lambda () (zerop& (mouse-button-state))))
+          #'(lambda () (zerop& (mouse-button-state))))
   (loop (when (zerop& (mouse-button-state)) (return))
-	(if (eq direction :up)
-	    (com-scroll-up-one-screen-box screen-box-list)
-	    (com-scroll-dn-one-screen-box screen-box-list))
-	#-opengl (redisplay)
+  (if (eq direction :up)
+      (com-scroll-up-one-screen-box screen-box-list)
+      (com-scroll-dn-one-screen-box screen-box-list))
+  #-opengl (redisplay)
         #+opengl (repaint)
-	(simple-wait-with-timeout *scroll-pause-time*
-				  #'(lambda ()
-				      (zerop& (mouse-button-state))))))
+  (simple-wait-with-timeout *scroll-pause-time*
+          #'(lambda ()
+              (zerop& (mouse-button-state))))))
 
 (defvar *max-scroll-grid-increment* 15
   "Maximum number of pixels between each tick in the scroll bar grid")
@@ -1562,33 +1562,33 @@ Modification History (most recent at top)
 
 #|
 (defun mouse-in-scroll-bar-internal (screen-box x y click-only?
-						box-window-x box-window-y
-						wid hei left top right bottom)
+            box-window-x box-window-y
+            wid hei left top right bottom)
   (declare (ignore left))
   (let* ((inside-hei (-& hei top bottom))
-	 (available-shaft (-& inside-hei (*& *scroll-button-height* 2)))
-	 (ed-box (screen-obj-actual-obj screen-box))
-	 (norows (length-in-rows ed-box))
+   (available-shaft (-& inside-hei (*& *scroll-button-height* 2)))
+   (ed-box (screen-obj-actual-obj screen-box))
+   (norows (length-in-rows ed-box))
          (maxrow nil) ; a cache for the lowest desired row number
-	 (scroll-row (scroll-to-actual-row screen-box))
-	 (current-row-no (if (null scroll-row) 0
-			     (row-row-no ed-box scroll-row)))
-	 ;; mini scroll if there is more room than we want to use
-	 (mini-scroll? (>& available-shaft
-			   (* *max-scroll-grid-increment* norows)))
-	 (shaft-height (if mini-scroll?
-			   (* *max-scroll-grid-increment* norows)
-			   available-shaft))
-	 (shaft-y (if mini-scroll?
-		      (+& top *scroll-button-height*
-			  (floor (-& available-shaft
-				     (* *max-scroll-grid-increment* norows))
-				 2)
+   (scroll-row (scroll-to-actual-row screen-box))
+   (current-row-no (if (null scroll-row) 0
+           (row-row-no ed-box scroll-row)))
+   ;; mini scroll if there is more room than we want to use
+   (mini-scroll? (>& available-shaft
+         (* *max-scroll-grid-increment* norows)))
+   (shaft-height (if mini-scroll?
+         (* *max-scroll-grid-increment* norows)
+         available-shaft))
+   (shaft-y (if mini-scroll?
+          (+& top *scroll-button-height*
+        (floor (-& available-shaft
+             (* *max-scroll-grid-increment* norows))
+         2)
                           box-window-y)
-		      (+& top *scroll-button-height* box-window-y)))
-	 (elevator-y (+& (floor (* (/ current-row-no norows) shaft-height))
-			 shaft-y))
-	 (row-heights (make-array norows :initial-element nil))
+          (+& top *scroll-button-height* box-window-y)))
+   (elevator-y (+& (floor (* (/ current-row-no norows) shaft-height))
+       shaft-y))
+   (row-heights (make-array norows :initial-element nil))
          (x-offset (+& box-window-x (-& wid right))))
     (declare (simple-vector row-heights))
     (labels ((new-row-no (y)
@@ -1596,8 +1596,8 @@ Modification History (most recent at top)
                ;; scrolling down to the last row makes it hard to use
                ;; the scrolling buttons on the resulting 1 row high box
                (let ((raw-row (round (* (/ (min& (max& 0 (-& y shaft-y)) shaft-height)
-			                   shaft-height)
-			                (1-& norows)))))
+                         shaft-height)
+                      (1-& norows)))))
                  (cond ((null maxrow)
                         (let ((end (ending-row-no raw-row)))
                           (cond ((>=& end norows)
@@ -1605,21 +1605,21 @@ Modification History (most recent at top)
                                  (or maxrow raw-row))
                                 (t raw-row))))
                        (t (min raw-row maxrow)))))
-	     (get-row-height (row-no)
-	       (let ((entry (svref& row-heights row-no)))
-		 (cond ((null entry)
-			(let* ((edrow (row-at-row-no ed-box row-no))
-			       (scrow (car (screen-objs edrow)))
-			       (row-height
-				(if (and scrow
-					 (not (screen-obj-y-got-clipped?
-					       scrow)))
-				    (screen-obj-hei scrow)
-				    (estimate-row-height edrow))))
-			  (setf (svref& row-heights row-no) row-height)
-			  row-height))
-		       (t entry))))
-	     (draw-scroll-grid ()
+       (get-row-height (row-no)
+         (let ((entry (svref& row-heights row-no)))
+     (cond ((null entry)
+      (let* ((edrow (row-at-row-no ed-box row-no))
+             (scrow (car (screen-objs edrow)))
+             (row-height
+        (if (and scrow
+           (not (screen-obj-y-got-clipped?
+                 scrow)))
+            (screen-obj-hei scrow)
+            (estimate-row-height edrow))))
+        (setf (svref& row-heights row-no) row-height)
+        row-height))
+           (t entry))))
+       (draw-scroll-grid ()
                ;; erase the box border
                (erase-rectangle *scroll-grid-width* shaft-height
                                 x-offset shaft-y)
@@ -1643,17 +1643,17 @@ Modification History (most recent at top)
                                               (-& *scroll-grid-width* 6) 1
                                               (+& x-offset 3)
                                               y-offset))))))))
-	     (ending-row-no (starting-row)
-	       (do* ((last-row (length row-heights)) (height 0)
-		     (row starting-row (1+& row)))
-		    ((>=& row last-row)
+       (ending-row-no (starting-row)
+         (do* ((last-row (length row-heights)) (height 0)
+         (row starting-row (1+& row)))
+        ((>=& row last-row)
                      (setq maxrow starting-row) ;; fill the maxrow cache
                      row)
-		 ;; need to do this AFTER last-row check
-		 (setq height (+& height (get-row-height row)))
-		 (when (>=& height inside-hei)
+     ;; need to do this AFTER last-row check
+     (setq height (+& height (get-row-height row)))
+     (when (>=& height inside-hei)
                    (return row))))
-	     (draw-line-indicator ()
+       (draw-line-indicator ()
                (erase-rectangle *scroll-grid-width* 10 x-offset (-& shaft-y 10))
                ;; make the line counter 1-based
                (draw-string alu-seta *box-border-label-font-no*
@@ -1665,22 +1665,22 @@ Modification History (most recent at top)
                             (elevator-row-string
                              (1+ (ending-row-no current-row-no)))
                             x-offset (+& shaft-y shaft-height)))
-	     (draw-temp-elevator ()
-	       (draw-rectangle alu-xor
+       (draw-temp-elevator ()
+         (draw-rectangle alu-xor
                                (-& *scroll-grid-width* 2)
                                (+& *scroll-button-height* 2)
-			       x-offset (1-& elevator-y)))
-	     (erase-temp-elevator ()
-	       (draw-rectangle alu-xor
+             x-offset (1-& elevator-y)))
+       (erase-temp-elevator ()
+         (draw-rectangle alu-xor
                                (-& *scroll-grid-width* 2)
                                (+& *scroll-button-height* 2)
-			       x-offset (1-& elevator-y))))
+             x-offset (1-& elevator-y))))
       (if click-only?
-	  ;; don't have to do tracking, just figure out the row
-	  (set-scroll-to-actual-row screen-box
-				    (row-at-row-no ed-box (new-row-no y)))
-	  ;; draw the grid and track
-	  (drawing-on-window (*boxer-pane*)
+    ;; don't have to do tracking, just figure out the row
+    (set-scroll-to-actual-row screen-box
+            (row-at-row-no ed-box (new-row-no y)))
+    ;; draw the grid and track
+    (drawing-on-window (*boxer-pane*)
             (with-clipping-inside (x-offset (- shaft-y 10)
                                             *scroll-grid-width* (+ 20 shaft-height))
               (draw-scroll-grid)
@@ -1700,11 +1700,11 @@ Modification History (most recent at top)
               (erase-temp-elevator)
               (erase-rectangle *scroll-grid-width* shaft-height x-offset shaft-y))
             (force-graphics-output)
-	    ;; actually make the change
-	    (set-scroll-to-actual-row screen-box
+      ;; actually make the change
+      (set-scroll-to-actual-row screen-box
                                       (new-elevator-scrolled-row ed-box
                                                                  current-row-no))
-	    (set-force-redisplay-infs? screen-box))))))
+      (set-force-redisplay-infs? screen-box))))))
 |#
 
 ;; there is only room to display 2 digits of row #'s
@@ -1749,83 +1749,83 @@ Modification History (most recent at top)
   (reset-region)
   (drawing-on-window (*boxer-pane*)
   (let* ((screen-box (point-screen-box))
-	 (box-type (box-type screen-box))
-	 (resize-backing-store (allocate-backing-store
-				*mouse-resize-corner-bitmap*))
-	 (toggle-view-backing-store (allocate-backing-store
-				     *mouse-toggle-view-bitmap*))
-	 (name-stub-backing-store (allocate-backing-store
-				   *mouse-name-tab-bitmap*))
-	 (toggle-type-backing-store (allocate-backing-store
-				     (if (eq box-type 'data-box)
-					       *mouse-doit-toggle-bitmap*
-					       *mouse-data-toggle-bitmap*))))
+   (box-type (box-type screen-box))
+   (resize-backing-store (allocate-backing-store
+        *mouse-resize-corner-bitmap*))
+   (toggle-view-backing-store (allocate-backing-store
+             *mouse-toggle-view-bitmap*))
+   (name-stub-backing-store (allocate-backing-store
+           *mouse-name-tab-bitmap*))
+   (toggle-type-backing-store (allocate-backing-store
+             (if (eq box-type 'data-box)
+                 *mouse-doit-toggle-bitmap*
+                 *mouse-data-toggle-bitmap*))))
     (flet ((grab-back (store x y)
-		      (bitblt-from-screen alu-seta
-					  (offscreen-bitmap-width store)
-					  (offscreen-bitmap-height store)
-					  store x y 0 0))
-	   (stamp-icon (icon x y)
-		       (bitblt-to-screen alu-seta
-					 (offscreen-bitmap-width icon)
-					 (offscreen-bitmap-height icon)
-					 icon 0 0 x y)))
+          (bitblt-from-screen alu-seta
+            (offscreen-bitmap-width store)
+            (offscreen-bitmap-height store)
+            store x y 0 0))
+     (stamp-icon (icon x y)
+           (bitblt-to-screen alu-seta
+           (offscreen-bitmap-width icon)
+           (offscreen-bitmap-height icon)
+           icon 0 0 x y)))
       (multiple-value-bind (box-window-x box-window-y)
         (xy-position screen-box)
       (multiple-value-bind (left top right bottom)
-	  (box-borders-widths box-type screen-box)
-	(declare (ignore top))
-	(multiple-value-bind (delta-x delta-y)
-	    (box-borders-offsets box-type screen-box)
-	  (let ((resize-x (-& (+& box-window-x (screen-obj-wid screen-box))
-			      right))
-		(resize-y (-& (+& box-window-y (screen-obj-hei screen-box))
-			      bottom))
-		(toggle-view-x (+& box-window-x delta-x))
-		(toggle-view-y (+& box-window-y delta-y
-				   (box-borders-cached-name-tab-height
-				    (box-type screen-box) screen-box)))
-		(toggle-type-x (+& box-window-x left))
-		(toggle-type-y (-& (+& box-window-y (screen-obj-hei screen-box))
-				   bottom)))
-	    ;; first grab underlying areas
-	    (grab-back resize-backing-store resize-x resize-y)
-	    (grab-back toggle-view-backing-store toggle-view-x toggle-view-y)
-	    (when (fast-memq box-type '(data-box 'doit-box))
-	      (grab-back toggle-type-backing-store toggle-type-x toggle-type-y))
-	    (with-multiple-execution
-		(dotimes (i *number-of-christmas-blinks*)
-		  (stamp-icon (let ((z (mod i 3)))
-				(cond ((=& z 0) *mouse-resize-corner-bitmap*)
-				      ((=& z 1) *mouse-expand-corner-bitmap*)
-				      (t *mouse-shrink-corner-bitmap*)))
-			      resize-x resize-y)
-		  (stamp-icon *mouse-toggle-view-bitmap* toggle-view-x toggle-view-y)
-		  (when (fast-memq box-type '(data-box 'doit-box))
-		    (stamp-icon (if (eq box-type 'data-box)
-				    *mouse-doit-toggle-bitmap*
-				    *mouse-data-toggle-bitmap*)
-				toggle-type-x toggle-type-y))
+    (box-borders-widths box-type screen-box)
+  (declare (ignore top))
+  (multiple-value-bind (delta-x delta-y)
+      (box-borders-offsets box-type screen-box)
+    (let ((resize-x (-& (+& box-window-x (screen-obj-wid screen-box))
+            right))
+    (resize-y (-& (+& box-window-y (screen-obj-hei screen-box))
+            bottom))
+    (toggle-view-x (+& box-window-x delta-x))
+    (toggle-view-y (+& box-window-y delta-y
+           (box-borders-cached-name-tab-height
+            (box-type screen-box) screen-box)))
+    (toggle-type-x (+& box-window-x left))
+    (toggle-type-y (-& (+& box-window-y (screen-obj-hei screen-box))
+           bottom)))
+      ;; first grab underlying areas
+      (grab-back resize-backing-store resize-x resize-y)
+      (grab-back toggle-view-backing-store toggle-view-x toggle-view-y)
+      (when (fast-memq box-type '(data-box 'doit-box))
+        (grab-back toggle-type-backing-store toggle-type-x toggle-type-y))
+      (with-multiple-execution
+    (dotimes (i *number-of-christmas-blinks*)
+      (stamp-icon (let ((z (mod i 3)))
+        (cond ((=& z 0) *mouse-resize-corner-bitmap*)
+              ((=& z 1) *mouse-expand-corner-bitmap*)
+              (t *mouse-shrink-corner-bitmap*)))
+            resize-x resize-y)
+      (stamp-icon *mouse-toggle-view-bitmap* toggle-view-x toggle-view-y)
+      (when (fast-memq box-type '(data-box 'doit-box))
+        (stamp-icon (if (eq box-type 'data-box)
+            *mouse-doit-toggle-bitmap*
+            *mouse-data-toggle-bitmap*)
+        toggle-type-x toggle-type-y))
                   (force-graphics-output)
-		  (sleep *christmas-half-time*)
-		  (stamp-icon resize-backing-store resize-x resize-y)
-		  (stamp-icon toggle-view-backing-store toggle-view-x toggle-view-y)
-		  (when (fast-memq box-type '(data-box 'doit-box))
-		    (stamp-icon toggle-type-backing-store
-				toggle-type-x toggle-type-y))
+      (sleep *christmas-half-time*)
+      (stamp-icon resize-backing-store resize-x resize-y)
+      (stamp-icon toggle-view-backing-store toggle-view-x toggle-view-y)
+      (when (fast-memq box-type '(data-box 'doit-box))
+        (stamp-icon toggle-type-backing-store
+        toggle-type-x toggle-type-y))
                   (force-graphics-output)
-		  (sleep *christmas-half-time*))))))))
+      (sleep *christmas-half-time*))))))))
     ;; deallocate the backing stores
     (deallocate-backing-store *mouse-resize-corner-bitmap*
-			      resize-backing-store)
+            resize-backing-store)
     (deallocate-backing-store *mouse-toggle-view-bitmap*
-			      toggle-view-backing-store)
+            toggle-view-backing-store)
     (deallocate-backing-store *mouse-name-tab-bitmap*
-			      name-stub-backing-store)
+            name-stub-backing-store)
     (deallocate-backing-store (if (eq box-type 'data-box)
-				  *mouse-doit-toggle-bitmap*
-				  *mouse-data-toggle-bitmap*)
-			      toggle-type-backing-store)))
+          *mouse-doit-toggle-bitmap*
+          *mouse-data-toggle-bitmap*)
+            toggle-type-backing-store)))
   boxer-eval::*novalue*)
 |#
 
