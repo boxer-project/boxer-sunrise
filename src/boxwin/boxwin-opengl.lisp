@@ -514,24 +514,28 @@ Modification History (most recent at top)
                          ("Sprite" ;:accelerator "alt-s"
                           :callback 'menu-sprite-box)))
                        (:component
-                        (("Port" ;:accelerator "alt-p"
+                        (("Port" :accelerator #\P
                           :callback 'menu-port)))
                        ("Unbox" :accelerator #\@ :callback 'menu-unbox)))
     (box-menu "Box" ((:component (("Name	|" :callback 'menu-name
                                             :enabled-function
                                             'box-check-menu-item-enabled?)))
                      (:component
-                      (("Closet" :callback 'menu-closet-flip
+                      (("Closet" :accelerator #\O
+                                 :callback 'menu-closet-flip
                                  :title-function 'closet-menu-item-print
                                  :enabled-function 'box-check-menu-item-enabled?)
-                       ("Graphics" :callback 'menu-graphics-flip
+                       ("Graphics" :accelerator #\}
+                                   :callback 'menu-graphics-flip
                                    :title-function 'graphics-menu-item-print
                                    :enabled-function 'graphics-flip-menu-item-enabled?)
-                       ("Data/Doit" :callback 'menu-data-doit-flip
+                       ("Data/Doit" :accelerator #\]
+                                    :callback 'menu-data-doit-flip
                                     :title-function 'type-menu-item-print
                                     :enabled-function
                                     'type-flip-menu-item-enabled?)
-                       ("Transparency" :callback 'menu-transparency-flip
+                       ("Transparency" :accelerator #\e
+                                       :callback 'menu-transparency-flip
                                        :title-function 'trans-menu-item-print
                                        :enabled-function
                                        'box-check-menu-item-enabled?)))
@@ -549,9 +553,9 @@ Modification History (most recent at top)
                                            :callback 'menu-do-line)))
                    ;(:component (("Step" :callback 'menu-step)))
                    (:component (("Stop	Ctrl-." :callback 'menu-stop)))))
-    (font-menu "Font" (("Zoom +" ;:accelerator "alt->"
+    (font-menu "Font" (("Zoom +" :accelerator #\=
                         :callback 'menu-font-bigger)
-                       ("Zoom -"; :accelerator "alt-<"
+                       ("Zoom -" :accelerator #\-
                         :callback 'menu-font-smaller)
                        ;*font-sub-font-menu* *font-sub-size-menu*
                        ;*font-sub-style-menu* *font-sub-color-menu*
