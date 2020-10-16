@@ -1074,7 +1074,12 @@ Modification History (most recent at top)
       (and (not *global-hotspot-control?*)
            (top-left-hotspot-active? edbox))))
 
-(defboxer-command com-mouse-tl-pop-up (window x y mouse-bp click-only?)
+(defboxer-command com-mouse-tl-pop-up (&optional (window *boxer-pane*)
+                                       (x (bw::boxer-pane-mouse-x))
+                                       (y (bw::boxer-pane-mouse-y))
+                                       (mouse-bp
+                                        (mouse-position-values x y))
+                                       (click-only? t))
   "Pop up a box attribute menu"
   window x y ;  (declare (ignore window x y))
   ;; first, if there already is an existing region, flush it
@@ -1153,7 +1158,12 @@ Modification History (most recent at top)
   (or (and *global-hotspot-control?* *top-right-hotspots-on?*)
       (and (not *global-hotspot-control?*) (top-right-hotspot-active? edbox))))
 
-(defboxer-command com-mouse-tr-pop-up (window x y mouse-bp click-only?)
+(defboxer-command com-mouse-tr-pop-up (&optional (window *boxer-pane*)
+                                       (x (bw::boxer-pane-mouse-x))
+                                       (y (bw::boxer-pane-mouse-y))
+                                       (mouse-bp
+                                        (mouse-position-values x y))
+                                       (click-only? t))
   "Pop up a box attribute menu"
   window x y ;  (declare (ignore window x y))
   ;; first, if there already is an existing region, flush it
@@ -1212,7 +1222,12 @@ Modification History (most recent at top)
   (or (and *global-hotspot-control?* *bottom-left-hotspots-on?*)
       (and (not *global-hotspot-control?*) (bottom-left-hotspot-active? edbox))))
 
-(defboxer-command com-mouse-bl-pop-up (window x y mouse-bp click-only?)
+(defboxer-command com-mouse-bl-pop-up (&optional (window *boxer-pane*)
+                                       (x (bw::boxer-pane-mouse-x))
+                                       (y (bw::boxer-pane-mouse-y))
+                                       (mouse-bp
+                                        (mouse-position-values x y))
+                                       (click-only? t))
   "Pop up a box attribute menu"
   window x y ;  (declare (ignore window x y))
   ;; first, if there already is an existing region, flush it
@@ -1265,7 +1280,12 @@ Modification History (most recent at top)
 ;; NOTE: bottom right corner NEVER (currently) checks the global var, only
 ;; the local box flag is used...
 ;; active hotspot is interpreted to mean resizable
-(defboxer-command com-mouse-br-pop-up (window x y mouse-bp click-only?)
+(defboxer-command com-mouse-br-pop-up (&optional (window *boxer-pane*)
+                                       (x (bw::boxer-pane-mouse-x))
+                                       (y (bw::boxer-pane-mouse-y))
+                                       (mouse-bp
+                                       (mouse-position-values x y))
+                                       (click-only? t))
   "Pop up a box attribute menu"
   window x y ;  (declare (ignore window x y))
   ;; first, if there already is an existing region, flush it
@@ -1371,7 +1391,12 @@ Modification History (most recent at top)
     (set-menu-item-check-mark read-item (read-only-box? box))
     (set-menu-item-check-mark autl-item (autoload-file? box))))
 
-(defboxer-command com-mouse-type-tag-pop-up (window x y mouse-bp click-only?)
+(defboxer-command com-mouse-type-tag-pop-up (&optional (window *boxer-pane*)
+                                             (x (bw::boxer-pane-mouse-x))
+                                             (y (bw::boxer-pane-mouse-y))
+                                             (mouse-bp
+                                              (mouse-position-values x y))
+                                             (click-only? t))
   "Pop up a box attribute menu"
   window x y ;  (declare (ignore window x y))
   ;; first, if there already is an existing region, flush it
