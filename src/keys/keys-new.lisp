@@ -402,6 +402,7 @@ Modification History (most recent at top)
   (boxer-eval::defboxer-key bu::mouse-double-click com-mouse-doit-now)
   (boxer-eval::defboxer-key bu::command-mouse-double-click com-mouse-set-outermost-box)
 
+  (boxer-eval::defboxer-key bu::mouse-click-on-graphics com-noop)
   (boxer-eval::defboxer-key bu::option-mouse-click-on-graphics com-mouse-collapse-box)
   (boxer-eval::defboxer-key bu::command-mouse-click-on-graphics com-mouse-expand-box)
 
@@ -434,6 +435,7 @@ Modification History (most recent at top)
   (boxer-eval::defboxer-key bu::mouse-right-click      com-mouse-doit-now)
   (boxer-eval::defboxer-key bu::alt-mouse-right-click  com-mouse-set-outermost-box)
 
+  (boxer-eval::defboxer-key bu::mouse-click-on-graphics  com-noop)
   (boxer-eval::defboxer-key bu::ctrl-mouse-click-on-graphics  com-mouse-collapse-box)
   (boxer-eval::defboxer-key bu::alt-mouse-click-on-graphics   com-mouse-expand-box)
 

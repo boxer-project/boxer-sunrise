@@ -1319,7 +1319,8 @@ Modification History (most recent at top)
                      (*hotspot-mouse-screen-box* screen-box))
                  (menu-select *br-popup*
                               (- (+ abs-x swid) right)
-                              (- (+ abs-y shei) bottom)))))))))
+                              (- (+ abs-y shei) bottom))))))))
+  boxer-eval::*novalue*)
 
 
 ;;;; Type Tag Popup Menu
