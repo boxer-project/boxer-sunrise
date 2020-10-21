@@ -579,7 +579,8 @@
                                                           ;; region is still there so...
                                                           (entering-region-mode)))))
                                                     )			; Matches catch 'mouse-confusion
-                                                  boxer-eval::*novalue*))))))
+                                                  boxer-eval::*novalue*)))))
+  boxer-eval::*novalue*)
 
 #|  ; unused ?
 (defun reconcile-region-blinker-list (region blinker-list)
