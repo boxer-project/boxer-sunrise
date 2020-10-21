@@ -112,7 +112,7 @@ Modification History (most recent at top)
   boxer-eval::*novalue*)
 
 (boxer-eval::defboxer-primitive bu::really-save ((bu::port-to box)
-				     (boxer-eval::dont-copy filename))
+             (boxer-eval::dont-copy filename))
   (catch 'cancel-boxer-file-dialog
     (save-generic (box-or-port-target box) (box-text-string filename)
                   :always-save? t))
@@ -296,13 +296,13 @@ Modification History (most recent at top)
              (throw 'cancel-boxer-file-dialog nil)
              ;; if we are going to query, then don't error out
              #|
-	       (boxer-eval::primitive-signal-error
-		:file-overwrite-warning
-		(make-box `(("The File:")
-			    (,(namestring dest-pathname))
-			    ("has been changed since you last Read it")
-			    ()
-			    ("Use REALLY-SAVE to save out changes"))))|#
+         (boxer-eval::primitive-signal-error
+    :file-overwrite-warning
+    (make-box `(("The File:")
+          (,(namestring dest-pathname))
+          ("has been changed since you last Read it")
+          ()
+          ("Use REALLY-SAVE to save out changes"))))|#
              )
             ((not (eq (boxer-file-box fps) box))
              ;; the box doesn't match with the most current box for this file
@@ -316,10 +316,10 @@ Modification History (most recent at top)
                ;; dont error out if we bother to ask...
                (throw 'cancel-boxer-file-dialog nil)
                #|
-		 (boxer-eval::primitive-signal-error
-		  :file-overwrite-warning
-		  "The filename, " (namestring dest-pathname)
-		  ", is associated with a different box")|#
+     (boxer-eval::primitive-signal-error
+      :file-overwrite-warning
+      "The filename, " (namestring dest-pathname)
+      ", is associated with a different box")|#
                ))))
     (setf (read-only-box? box) read-only?)
     ;; this should be changed to be more data driven like the file readers
@@ -365,20 +365,20 @@ Modification History (most recent at top)
 
 (defun save-internal (box dest-pathname)
   (let* ((tmp-file-string (symbol-name (gensym)))
-	 (tmp-dest (merge-pathnames tmp-file-string
-				    dest-pathname)))
+   (tmp-dest (merge-pathnames tmp-file-string
+            dest-pathname)))
    (unwind-protect
-	 (let ((*status-line-saving-format-string*
+   (let ((*status-line-saving-format-string*
                 (status-line-save-format-string dest-pathname)))
            ;; feedback
            (status-line-display 'saving-box
                                 (format nil "Saving ~A..." dest-pathname))
-	   ;; actually dump the box
-	   (dump-top-level-box box tmp-dest)
-	   ;; now check to see if we need to make a backup
-	   (make-backup-if-necessary dest-pathname)
-	   ;; now move the freshly save file from the tmp-name to the dest name
-	   (rename-file tmp-dest dest-pathname))
+     ;; actually dump the box
+     (dump-top-level-box box tmp-dest)
+     ;; now check to see if we need to make a backup
+     (make-backup-if-necessary dest-pathname)
+     ;; now move the freshly save file from the tmp-name to the dest name
+     (rename-file tmp-dest dest-pathname))
      (status-line-undisplay 'saving-box)
      (boxer-editor-message "~A box saved to ~A" (name-string box)(namestring dest-pathname))
      ;; make sure the tmp-dest is gone
@@ -391,21 +391,21 @@ Modification History (most recent at top)
       ;; that leaves it unchangeable (e.g. pathname-name becomes NIL
       ;; if the "default" was ".login")
       (if (and (not (null (pathname-name dest-pathname)))
-	       (not (null (pathname-type dest-pathname))))
-	  (setq *boxer-pathname-default* dest-pathname)
-	  ;; otherwise, use as much of the dest-pathname as we can to set
-	  ;; the default
-	  (setq *boxer-pathname-default*
-		(make-pathname :directory (pathname-directory dest-pathname)
-			       :defaults *boxer-pathname-default*))))
+         (not (null (pathname-type dest-pathname))))
+    (setq *boxer-pathname-default* dest-pathname)
+    ;; otherwise, use as much of the dest-pathname as we can to set
+    ;; the default
+    (setq *boxer-pathname-default*
+    (make-pathname :directory (pathname-directory dest-pathname)
+             :defaults *boxer-pathname-default*))))
     (when *automatic-file-compression-on*
       ;; Compress the file only if it's greater than
       ;; *file-compress-minimum-length*.  Otherwise the time
       ;; it takes won't be worth it.
       (let ((length (with-open-file (stream dest-pathname :direction :input)
-		       (file-length stream))))
-	(if (> length *file-compress-minimum-length*)
-	    (compress-file dest-pathname))))))
+           (file-length stream))))
+  (if (> length *file-compress-minimum-length*)
+      (compress-file dest-pathname))))))
 
 (defun make-backup-if-necessary (dest-pathname)
   (when (probe-file dest-pathname)
@@ -427,13 +427,13 @@ Modification History (most recent at top)
                                         *file-backup-suffix*)
                            dest-pathname))
                          (t
-		          (concatenate 'string
-			               (namestring dest-pathname)
+              (concatenate 'string
+                     (namestring dest-pathname)
                                        *file-backup-suffix*))))
                  #-(or mcl win32)
-		 (concatenate 'string
-			      (namestring dest-pathname)
-			      *file-backup-suffix*)
+     (concatenate 'string
+            (namestring dest-pathname)
+            *file-backup-suffix*)
                  #+mcl :if-exists #+mcl :supersede)))
 
 
@@ -509,7 +509,7 @@ Modification History (most recent at top)
 ;; track of and it is in those higher up functions where the bookeeping must occur
 (defun read-internal-1 (filename &optional
                                  (pathname (check-valid-filename-for-primitive
-		                            filename *boxer-pathname-default*)))
+                                filename *boxer-pathname-default*)))
   (when (null (probe-file pathname)) (maybe-uncompress-file pathname))
   (unless (probe-file pathname)
     (if *in-autoload-environment*
@@ -556,7 +556,7 @@ Modification History (most recent at top)
 
 (boxer-eval::defboxer-primitive bu::probe-file ((boxer-eval::dont-copy filename))
   (let ((pathname (check-valid-filename-for-primitive
-		   (box-text-string filename) *boxer-pathname-default*)))
+       (box-text-string filename) *boxer-pathname-default*)))
     (when (null (probe-file pathname)) (maybe-uncompress-file pathname))
     (boxer-eval::boxer-boolean (probe-file pathname))))
 
@@ -583,27 +583,27 @@ Modification History (most recent at top)
 
 (boxer-eval::defboxer-primitive bu::directory ((boxer-eval::dont-copy file-pattern))
   (make-vc (or (mapcar #'(lambda (p)
-			   (make-evrow-from-entry (intern-in-bu-package
-						   (namestring p))))
-		       (directory-internal (box-text-string file-pattern)))
-	       (list (make-empty-evrow)))))
+         (make-evrow-from-entry (intern-in-bu-package
+               (namestring p))))
+           (directory-internal (box-text-string file-pattern)))
+         (list (make-empty-evrow)))))
 
 (defvar *default-directory-type* "box")
 
 (defun directory-internal (pattern-string)
   (let* ((pattern-pathname (check-valid-filename-for-primitive
-			    pattern-string
-			    (make-pathname
-			     :name :wild :type #-sun :unspecific #+sun *default-directory-type*
-			     :defaults *boxer-pathname-default*) t))
-	 (directory-name (make-pathname
-			  :directory (pathname-directory pattern-pathname)
+          pattern-string
+          (make-pathname
+           :name :wild :type #-sun :unspecific #+sun *default-directory-type*
+           :defaults *boxer-pathname-default*) t))
+   (directory-name (make-pathname
+        :directory (pathname-directory pattern-pathname)
                           ;; mac seems to need this, bare directory pathnames
                           ;; return NIL
                           #+mcl :name #+mcl ':wild)))
     (file-pattern-match?
      (make-pathname :name (pathname-name pattern-pathname)
-		    :type (pathname-type pattern-pathname))
+        :type (pathname-type pattern-pathname))
      (directory directory-name))))
 
 
@@ -614,56 +614,56 @@ Modification History (most recent at top)
 ;; and a string as the CDR
 (defun parse-pathname-pattern (pp)
   (values (parse-pattern-component (pathname-name pp))
-	  (parse-pattern-component (pathname-type pp))))
+    (parse-pattern-component (pathname-type pp))))
 
 (defun parse-pattern-component (pattern)
   (let ((return-specs nil) (max-wild-place (when (stringp pattern)
-					     (1-& (length pattern)))))
+               (1-& (length pattern)))))
     (cond ((or (eq pattern :wild) (eq pattern :unspecific)
-	       (= max-wild-place -1))
-	   (push (cons :wild "") return-specs))
-	  ((stringp pattern)
-	   (let ((wild-place 0))
-	     (loop
-	      (let ((new-wild-place (position #\* pattern
-					      :start wild-place)))
-		(cond ((and (null new-wild-place) (zerop wild-place))
-		       ;; this means no wild cards
-		       (push (cons :whole pattern) return-specs)
-		       (return))
-		      ((null new-wild-place)
-		       ;; no more wild cards, but some have
-		       ;; already been processed
-		       (push (cons :end (subseq pattern wild-place))
-			     return-specs)
-		       (return))
-		      ;; at this point we know we have found a wild card
-		      ;; somewhere in the pattern
-		      ((and (zerop wild-place) (zerop new-wild-place))
-		       ;; the wild card has been found at the beginning
-		       (setq wild-place 1))
-		      ((zerop wild-place)
-		       ;; just starting but wild card has been found
-		       (push (cons :begin
-				   (subseq pattern 0 new-wild-place))
-			     return-specs)
-		       (if (= new-wild-place max-wild-place)
-			   (return)
-			   (setq wild-place (1+& new-wild-place))))
-		      ((= wild-place new-wild-place)
-		       ;; this can happen if someone type "**" in the pattern
-		       (if (= new-wild-place max-wild-place)
-			   (return)
-			   (setq wild-place (1+& new-wild-place))))
-		      (t
-		       (push (cons :inside
-				   (subseq pattern wild-place new-wild-place))
-			     return-specs)
-		       (if (= new-wild-place max-wild-place)
-			   (return)
-			   (setq wild-place (1+& new-wild-place)))))))))
-	  (t
-	   (error "Pattern spec, ~A, is not a string or :WILD" pattern)))
+         (= max-wild-place -1))
+     (push (cons :wild "") return-specs))
+    ((stringp pattern)
+     (let ((wild-place 0))
+       (loop
+        (let ((new-wild-place (position #\* pattern
+                :start wild-place)))
+    (cond ((and (null new-wild-place) (zerop wild-place))
+           ;; this means no wild cards
+           (push (cons :whole pattern) return-specs)
+           (return))
+          ((null new-wild-place)
+           ;; no more wild cards, but some have
+           ;; already been processed
+           (push (cons :end (subseq pattern wild-place))
+           return-specs)
+           (return))
+          ;; at this point we know we have found a wild card
+          ;; somewhere in the pattern
+          ((and (zerop wild-place) (zerop new-wild-place))
+           ;; the wild card has been found at the beginning
+           (setq wild-place 1))
+          ((zerop wild-place)
+           ;; just starting but wild card has been found
+           (push (cons :begin
+           (subseq pattern 0 new-wild-place))
+           return-specs)
+           (if (= new-wild-place max-wild-place)
+         (return)
+         (setq wild-place (1+& new-wild-place))))
+          ((= wild-place new-wild-place)
+           ;; this can happen if someone type "**" in the pattern
+           (if (= new-wild-place max-wild-place)
+         (return)
+         (setq wild-place (1+& new-wild-place))))
+          (t
+           (push (cons :inside
+           (subseq pattern wild-place new-wild-place))
+           return-specs)
+           (if (= new-wild-place max-wild-place)
+         (return)
+         (setq wild-place (1+& new-wild-place)))))))))
+    (t
+     (error "Pattern spec, ~A, is not a string or :WILD" pattern)))
     (nreverse return-specs)))
 
 
@@ -671,11 +671,11 @@ Modification History (most recent at top)
 (defun file-pattern-match? (pattern file-list)
   (let ((return-list nil))
     (multiple-value-bind (name-specs type-specs)
-	(parse-pathname-pattern pattern)
+  (parse-pathname-pattern pattern)
       (dolist (file file-list)
-	(when (and (component-pattern-match? name-specs (pathname-name file))
-		   (component-pattern-match? type-specs (pathname-type file)))
-	  (push file return-list)))
+  (when (and (component-pattern-match? name-specs (pathname-name file))
+       (component-pattern-match? type-specs (pathname-type file)))
+    (push file return-list)))
       (nreverse return-list))))
 
 
@@ -683,26 +683,26 @@ Modification History (most recent at top)
   (let ((start 0) (pattern-match? t))
     (dolist (spec pattern-specs)
       (case (car spec)
-	(:wild (return))
-	(:whole (unless (string= comp (cdr spec)) (setq pattern-match? nil))
-		(return))
-	(:begin (let ((place (search (cdr spec) comp)))
-		  (cond ((and place (zerop& place))
-			 (setq start (length (cdr spec))))
-			(t
-			 (setq pattern-match? nil) (return)))))
-	(:end   (let ((place (search (cdr spec) comp
-				     :from-end t :start2 start)))
-		  (unless (and place
-			       (=& place
-				   (-& (length comp)
-				       (length (cdr spec)))))
-		    (setq pattern-match? nil) (return))))
-	(:inside (let ((place (search (cdr spec) comp :start2 start)))
-		   (cond ((null place)
-			  (setq pattern-match? nil) (return))
-			 (t
-			  (setq start (+ (length (cdr spec)) start))))))))
+  (:wild (return))
+  (:whole (unless (string= comp (cdr spec)) (setq pattern-match? nil))
+    (return))
+  (:begin (let ((place (search (cdr spec) comp)))
+      (cond ((and place (zerop& place))
+       (setq start (length (cdr spec))))
+      (t
+       (setq pattern-match? nil) (return)))))
+  (:end   (let ((place (search (cdr spec) comp
+             :from-end t :start2 start)))
+      (unless (and place
+             (=& place
+           (-& (length comp)
+               (length (cdr spec)))))
+        (setq pattern-match? nil) (return))))
+  (:inside (let ((place (search (cdr spec) comp :start2 start)))
+       (cond ((null place)
+        (setq pattern-match? nil) (return))
+       (t
+        (setq start (+ (length (cdr spec)) start))))))))
     ;; if the pattern-match? flag is still true after all of
     ;; the pattern-specs have run, push the file onto the return list
     pattern-match?))
@@ -710,11 +710,11 @@ Modification History (most recent at top)
 
 (boxer-eval::defboxer-primitive bu::delete-file ((boxer-eval::dont-copy filename))
   (let* ((filestring (box-text-string filename))
-	 (pathname (check-valid-filename-for-primitive
-		    filestring *boxer-pathname-default*)))
+   (pathname (check-valid-filename-for-primitive
+        filestring *boxer-pathname-default*)))
     (unless (probe-file pathname)
       (boxer-eval::primitive-signal-error :file-or-directory-not-found
-				    (namestring pathname)))
+            (namestring pathname)))
     (delete-file pathname)
     boxer-eval::*novalue*))
 
@@ -733,19 +733,19 @@ Modification History (most recent at top)
 
 (boxer-eval::defboxer-primitive bu::read-text-file ((boxer-eval::dont-copy filename))
   (let* ((filestring (box-text-string filename))
-	 (pathname (make-pathname :directory
-				  (pathname-directory
-				   (check-valid-filename-for-primitive
-				    filestring *boxer-pathname-default*))
-				 :defaults
-				 (check-valid-filename-for-primitive
-				  filestring))))
+   (pathname (make-pathname :directory
+          (pathname-directory
+           (check-valid-filename-for-primitive
+            filestring *boxer-pathname-default*))
+         :defaults
+         (check-valid-filename-for-primitive
+          filestring))))
     (when (null (probe-file pathname)) (maybe-uncompress-file pathname))
     (unless (probe-file pathname)
       (boxer-eval::primitive-signal-error :file-or-directory-not-found
-				    (namestring pathname)))
+            (namestring pathname)))
     (prog1
-	(read-text-file-internal pathname)
+  (read-text-file-internal pathname)
       ;; now handle file stickyness if we want to
     (unless (null *sticky-file-defaulting?*)
       ;; set the default pathname to be the current pathname ONLY after
@@ -754,13 +754,13 @@ Modification History (most recent at top)
       ;; that leaves it unchangeable (e.g. pathname-name becomes NIL
       ;; if the "default" was ".login")
       (if (and (not (null (pathname-name pathname)))
-	       (not (null (pathname-type pathname))))
-	  (setq *boxer-pathname-default* pathname)
-	  ;; otherwise, use as much of the pathname as we can to set
-	  ;; the default
-	  (setq *boxer-pathname-default*
-		(make-pathname :directory (pathname-directory pathname)
-			       :defaults *boxer-pathname-default*)))))))
+         (not (null (pathname-type pathname))))
+    (setq *boxer-pathname-default* pathname)
+    ;; otherwise, use as much of the pathname as we can to set
+    ;; the default
+    (setq *boxer-pathname-default*
+    (make-pathname :directory (pathname-directory pathname)
+             :defaults *boxer-pathname-default*)))))))
 
 ;;; a useful hack...
 (boxer-eval::defboxer-primitive bu::read-text-box-shrink ((dont-copy filename))
@@ -780,15 +780,15 @@ Modification History (most recent at top)
 (defun read-text-stream-internal (stream)
   (let ((first-line (read-line stream nil nil)))
     (if (null first-line)
-	(make-box '(()))
-	(let* ((return-box (make-box (list (make-row-from-string first-line))))
-	       (prev-row (first-inferior-row return-box)))
-	  (do ((current-line (read-line stream nil nil)
-			     (read-line stream nil nil)))
-	      ((null current-line) return-box)
-	    (let ((new-row (make-row-from-string current-line)))
-	      (insert-row-after-row return-box new-row prev-row)
-	      (setq prev-row new-row)))))))
+  (make-box '(()))
+  (let* ((return-box (make-box (list (make-row-from-string first-line))))
+         (prev-row (first-inferior-row return-box)))
+    (do ((current-line (read-line stream nil nil)
+           (read-line stream nil nil)))
+        ((null current-line) return-box)
+      (let ((new-row (make-row-from-string current-line)))
+        (insert-row-after-row return-box new-row prev-row)
+        (setq prev-row new-row)))))))
 
 
 ;;; ':error means blow out, nil means do nothing (insert "[]")
@@ -798,27 +798,27 @@ Modification History (most recent at top)
 
 
 (boxer-eval::defboxer-primitive bu::write-text-file ((bu::port-to box)
-					 (boxer-eval::dont-copy filename))
+           (boxer-eval::dont-copy filename))
   box filename ;; silence bound but not used compiler warnings
   (boxer-eval::primitive-signal-error
    :obsolete-function
    "WRITE-TEXT-FILE is an obsolete function, use SAVE-TEXT-FILE instead"))
 
 (boxer-eval::defboxer-primitive bu::save-text-file ((bu::port-to box)
-					 (boxer-eval::dont-copy filename))
+           (boxer-eval::dont-copy filename))
   (process-editor-mutation-queue-within-eval)
   (save-text-file-internal (box-or-port-target box) (box-text-string filename)))
 
 (defun save-text-file-internal (box filestring)
   (let* ((tmp-file-string (symbol-name (gensym))) ;should do something better
-	 (dest-pathname (make-pathname :directory
-				       (pathname-directory
-					(check-valid-filename-for-primitive
-					 filestring *boxer-pathname-default*))
-				       :defaults
-				       (check-valid-filename-for-primitive
-					filestring)))
-	 (tmp-dest (merge-pathnames tmp-file-string dest-pathname)))
+   (dest-pathname (make-pathname :directory
+               (pathname-directory
+          (check-valid-filename-for-primitive
+           filestring *boxer-pathname-default*))
+               :defaults
+               (check-valid-filename-for-primitive
+          filestring)))
+   (tmp-dest (merge-pathnames tmp-file-string dest-pathname)))
     ;; make sure we have an editor object
     (cond ((box? box))
           ((virtual-copy? box)
@@ -838,13 +838,13 @@ Modification History (most recent at top)
       ;; that leaves it unchangeable (e.g. pathname-name becomes NIL
       ;; if the "default" was ".login")
       (if (and (not (null (pathname-name dest-pathname)))
-	       (not (null (pathname-type dest-pathname))))
-	  (setq *boxer-pathname-default* dest-pathname)
-	  ;; otherwise, use as much of the dest-pathname as we can to set
-	  ;; the default
-	  (setq *boxer-pathname-default*
-		(make-pathname :directory (pathname-directory dest-pathname)
-			       :defaults *boxer-pathname-default*))))
+         (not (null (pathname-type dest-pathname))))
+    (setq *boxer-pathname-default* dest-pathname)
+    ;; otherwise, use as much of the dest-pathname as we can to set
+    ;; the default
+    (setq *boxer-pathname-default*
+    (make-pathname :directory (pathname-directory dest-pathname)
+             :defaults *boxer-pathname-default*))))
     boxer-eval::*novalue*))
 
 (defun write-text-file-internal (box pathname)
@@ -893,32 +893,32 @@ Modification History (most recent at top)
 ;; maybe we should put some sort of reality checking into this ?
 (boxer-eval::defboxer-primitive bu::set-current-directory ((boxer-eval::dont-copy directory))
   (flet ((directory? (pathname)
-	   (and (probe-file pathname)
-		(string-equal (directory-namestring pathname)
-			      (namestring pathname)))))
+     (and (probe-file pathname)
+    (string-equal (directory-namestring pathname)
+            (namestring pathname)))))
     (let* ((raw-pathname (check-valid-filename-for-primitive
-			  (box-text-string directory)))
-	   (dirs (pathname-directory raw-pathname))
-	   (name (pathname-name raw-pathname))
-	   (pathname (if (null name) raw-pathname
-			 (make-pathname :directory
-					(append dirs (list name))))))
+        (box-text-string directory)))
+     (dirs (pathname-directory raw-pathname))
+     (name (pathname-name raw-pathname))
+     (pathname (if (null name) raw-pathname
+       (make-pathname :directory
+          (append dirs (list name))))))
       (if (directory? pathname)
-	  (setq *boxer-pathname-default*
-		(make-pathname :directory (pathname-directory pathname)
-			       :defaults *boxer-pathname-default*))
-	  (boxer-eval::primitive-signal-error :not-a-directory
-					(namestring pathname)))))
+    (setq *boxer-pathname-default*
+    (make-pathname :directory (pathname-directory pathname)
+             :defaults *boxer-pathname-default*))
+    (boxer-eval::primitive-signal-error :not-a-directory
+          (namestring pathname)))))
   boxer-eval::*novalue*)
 
 
 (boxer-eval::defboxer-primitive bu::current-directory ()
   (make-vc (list (make-evrow-from-entry
-		  (intern-in-bu-package
-		   (let ((string (namestring *boxer-pathname-default*)))
-		     (subseq string 0
-			     (search (pathname-name *boxer-pathname-default*)
-				     string :from-end t))))))))
+      (intern-in-bu-package
+       (let ((string (namestring *boxer-pathname-default*)))
+         (subseq string 0
+           (search (pathname-name *boxer-pathname-default*)
+             string :from-end t))))))))
 
 (boxer-eval::defboxer-primitive bu::default-directory ()
   (boxer-eval::primitive-signal-error
@@ -1387,12 +1387,12 @@ Modification History (most recent at top)
   (let ((world-save-name (merge-pathnames save-name *boxer-pathname-default*)))
     ;; first make sure the name is ok
     (loop (when (yes-or-no-p "~%Save Your Boxer World in ~A ? "
-			     world-save-name)
-	    ;; we are happy with the name, then save it away
-	    ;; otherwise, prompt for a new name
-	    (format t "~%New File Name to Save in: ")
-	    (setq world-save-name
-		  (merge-pathnames (read-line) world-save-name))))
+           world-save-name)
+      ;; we are happy with the name, then save it away
+      ;; otherwise, prompt for a new name
+      (format t "~%New File Name to Save in: ")
+      (setq world-save-name
+      (merge-pathnames (read-line) world-save-name))))
     ;; then save it away verbosely
     (when verbose (format t "~%Dumping boxer world to ~A" world-save-name))
     (dump-top-level-box *initial-box* world-save-name)
@@ -1560,31 +1560,31 @@ Modification History (most recent at top)
 (boxer-eval::defboxer-primitive bu::mail ((boxer-eval::dont-copy to) (boxer-eval::dont-copy text))
   (let ((to-box-rows (get-box-rows to)))
     (let ((recipient (evrow-text-string (car to-box-rows) to))
-	  (subject (and (cdr to-box-rows)
-			(evrow-text-string (cadr to-box-rows) to)))
-	  (message (box-text-string text))
-	  (mail-in-file (make-temporary-filename "mail-in"))
-	  (mail-out-file (make-temporary-filename "mail-out")))
+    (subject (and (cdr to-box-rows)
+      (evrow-text-string (cadr to-box-rows) to)))
+    (message (box-text-string text))
+    (mail-in-file (make-temporary-filename "mail-in"))
+    (mail-out-file (make-temporary-filename "mail-out")))
       (unwind-protect
-	  (progn
-	    (with-open-file (stream mail-in-file :direction :output
-				    :if-exists :error)
-	      (and subject (format stream "~~s ~a~%" subject))
-	      (write-string message stream))
-	    #+Lucid (lcl::run-unix-program "/usr/ucb/mail"
-					   :arguments (list recipient)
-					   :input mail-in-file
-					   :output mail-out-file)
-	    (with-open-file (stream mail-out-file :direction :input
-				    :if-does-not-exist nil)
-	      (if (or (null stream)
-		      (zerop& (file-length stream)))
-		  boxer-eval::*novalue*
-		  (read-text-stream-internal stream))))
-	(when (probe-file mail-in-file)
-	  (delete-file mail-in-file))
-	(when (probe-file mail-out-file)
-	  (delete-file mail-out-file))))))
+    (progn
+      (with-open-file (stream mail-in-file :direction :output
+            :if-exists :error)
+        (and subject (format stream "~~s ~a~%" subject))
+        (write-string message stream))
+      #+Lucid (lcl::run-unix-program "/usr/ucb/mail"
+             :arguments (list recipient)
+             :input mail-in-file
+             :output mail-out-file)
+      (with-open-file (stream mail-out-file :direction :input
+            :if-does-not-exist nil)
+        (if (or (null stream)
+          (zerop& (file-length stream)))
+      boxer-eval::*novalue*
+      (read-text-stream-internal stream))))
+  (when (probe-file mail-in-file)
+    (delete-file mail-in-file))
+  (when (probe-file mail-out-file)
+    (delete-file mail-out-file))))))
 |#
 
 
@@ -1611,8 +1611,8 @@ Modification History (most recent at top)
 
 (defun compress-file (pathname)
   #+Unix (progn
-	   (make-backup-if-necessary (concatenate 'string (namestring pathname) ".Z"))
-	   (boxer-run-unix-program "compress" (list "-f" (namestring pathname))))
+     (make-backup-if-necessary (concatenate 'string (namestring pathname) ".Z"))
+     (boxer-run-unix-program "compress" (list "-f" (namestring pathname))))
   #-Unix (progn pathname nil))
 
 (defun uncompress-file (pathname)
@@ -1621,22 +1621,22 @@ Modification History (most recent at top)
 
 (defun maybe-uncompress-file (pathname)
   #+Unix (when (and (null (probe-file pathname))
-		    (probe-file (concatenate 'string (namestring pathname) ".Z")))
-	   #+Lucid (uncompress-file pathname)
-	   #-Lucid nil)
+        (probe-file (concatenate 'string (namestring pathname) ".Z")))
+     #+Lucid (uncompress-file pathname)
+     #-Lucid nil)
   #-Unix (progn pathname nil))
 
 #-mcl
 (boxer-eval::defboxer-primitive bu::compress-file ((boxer-eval::dont-copy name))
   (let ((filename (if (numberp name)
-		      (format nil "~D" name)
-		      (box-text-string name))))
+          (format nil "~D" name)
+          (box-text-string name))))
     (if (null (probe-file filename))
-	(boxer-eval::signal-error :FILE-NOT-FOUND (boxer-eval::copy-thing name))
-	(let ((error-string (compress-file filename)))
-	  (if (null error-string)
-	      boxer-eval::*novalue*
-	      (boxer-eval::signal-error :COMPRESS-FILE error-string))))))
+  (boxer-eval::signal-error :FILE-NOT-FOUND (boxer-eval::copy-thing name))
+  (let ((error-string (compress-file filename)))
+    (if (null error-string)
+        boxer-eval::*novalue*
+        (boxer-eval::signal-error :COMPRESS-FILE error-string))))))
 
 
 
@@ -1652,35 +1652,35 @@ Modification History (most recent at top)
 ;;; Didn't do anything about stdout, though.
 (defun boxer-run-unix-program (program-name arguments)
   #+Unix (let ((error-result
-		#+Lucid (multiple-value-bind
-			      (stream error-output-stream exit-status process-id)
-			    ;; We can't do both :error-output :stream
-			    ;; and :wait t, so we have to assume that the process
-			    ;; is finished when when we find out that the error-output-stream
-			    ;; is done.
-			    (system::run-program program-name
-						 :arguments arguments
-						 :wait nil
-						 :if-error-output-exists nil
-						 :error-output :stream)
-			  (declare (ignore stream process-id))
-			  (if error-output-stream
-			      (prog1 (do* ((string (read-line error-output-stream
-							      nil
-							      nil)
-						   (read-line error-output-stream
-							      nil
-							      nil))
-					   (result nil))
-					  ((null string) (nreverse result))
-				       (unless (null string)
-					 (push string result)))
-				(close error-output-stream))
-			      (format nil "Unknown Unix Error ~D" exit-status)))
-		#-Lucid "BOXER-RUN-UNIX-PROGRAM not implemented on this system"))
-	   (if (stringp error-result)
-	       (boxer-eval::primitive-signal-error :UNIX-PROGRAM-ERROR error-result)
-	       nil))
+    #+Lucid (multiple-value-bind
+            (stream error-output-stream exit-status process-id)
+          ;; We can't do both :error-output :stream
+          ;; and :wait t, so we have to assume that the process
+          ;; is finished when when we find out that the error-output-stream
+          ;; is done.
+          (system::run-program program-name
+             :arguments arguments
+             :wait nil
+             :if-error-output-exists nil
+             :error-output :stream)
+        (declare (ignore stream process-id))
+        (if error-output-stream
+            (prog1 (do* ((string (read-line error-output-stream
+                    nil
+                    nil)
+               (read-line error-output-stream
+                    nil
+                    nil))
+             (result nil))
+            ((null string) (nreverse result))
+               (unless (null string)
+           (push string result)))
+        (close error-output-stream))
+            (format nil "Unknown Unix Error ~D" exit-status)))
+    #-Lucid "BOXER-RUN-UNIX-PROGRAM not implemented on this system"))
+     (if (stringp error-result)
+         (boxer-eval::primitive-signal-error :UNIX-PROGRAM-ERROR error-result)
+         nil))
   #-Unix (progn program-name arguments
                 "BOXER-RUN-UNIX-PROGRAM not implemented on this system"))
 
