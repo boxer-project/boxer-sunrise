@@ -151,7 +151,9 @@
                  (:file "filesystem/applefile")
                  (:file "filesystem/surf")
                  (:file "filesystem/http")
-                ;;  (:file "filesystem/mail")
+                 ;; (:file "filesystem/ftp")
+                 ;; (:file "filesystem/gopher")
+                 ;; (:file "filesystem/mail")
                  ;; (:file "filesystem/mailfile")
                  ;; Beginning of `TRIGGER` module
                  ;; "Box triggers for Constraint Propagation and Other Fun Stuff"
