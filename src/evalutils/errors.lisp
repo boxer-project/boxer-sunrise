@@ -382,7 +382,7 @@
        (t (list (format nil "Strange object: ~S" u)))))
     ((typep u 'boxer::foreign-data)
      (boxer::make-editor-box-from-foreign-data u))
-    ((special-token? u)
+    ((and (possible-eval-object? u) (special-token? u))
      (cond ((dots-list-token? u)
             (let* ((symbols (special-token-item u))
                    (string (symbol-name (car symbols))))
