@@ -1149,7 +1149,7 @@ removes it from the kill buffer.  No copy is made."
   (let ((text (textify-thing thing)))
     (when text
       #+mcl (ccl:put-scrap :text text)
-      #+lispworks (capi::set-clipboard *boxer-frame* text)
+      #+lispworks (capi::set-clipboard *boxer-frame* thing text)
       ;; NOTE:for LW and X, use capi::set-selection
       #-(or mcl lispworks) (warn "Write System Scrap undefined for ~A on ~A"
                              (lisp-implementation-type) (machine-type)))))

@@ -493,10 +493,13 @@ Modification History (most recent at top)
     (edit-menu "Edit" ((:component
                         (("Cut" :accelerator #\x  :callback 'menu-cut-region)
                          ("Copy" :accelerator #\c  :callback 'menu-copy-region)
-                         ("Paste" :accelerator #\v :callback 'menu-yank)
+                         ("Paste" :accelerator #\v :callback 'menu-clipboard-paste)
                          ("Yank" :accelerator #\y :callback 'menu-retrieve)
-                         ("Paste from Clipboard" :accelerator #\V :callback 'menu-clipboard-paste)
-                         ("Paste Graphics" :callback 'menu-paste-graphics)
+                         ;; Previously in 2014, before fixing up `paste` to check if the
+                         ;; last clipboard item was from boxer/lisp we had:
+                         ;; Paste - bound to to #'menu-yank -> boxer::com-yank
+                         ;; Paste from Clipboard #'menu-clipboard-paste -> (bw::paste *boxer-frame*)
+                         ;; Paste Graphics - #'menu-paste-graphics -> (bw::paste-pict)
                          ))
                        (:component
                         (("Select Box" :callback 'menu-select-box-contents
@@ -1932,7 +1935,14 @@ Modification History (most recent at top)
         (boxer::insert-cha boxer::*point* gb :moving)))))
 
 (defmethod paste ((self boxer-frame))
-  (cond ((not (capi:clipboard-empty self :string))
+  (cond ((equal '(nil :lisp) (multiple-value-list (capi:clipboard-empty self :value)))
+         ;; We are looking an undocumented multiple return value for type :value where
+         ;; the second return value will be symbol :lisp if it came from lispworks. If
+         ;; this is the case we know we were the last one to set the clipboard and yank
+         ;; in our most recent item.
+         ;; http://www.lispworks.com/documentation/lw71/CAPI-W/html/capi-w-206.htm#82688
+         (boxer::com-yank))
+        ((not (capi:clipboard-empty self :string))
          (paste-text))
         ((not (capi:clipboard-empty self :image))
          (paste-pict))
