@@ -203,7 +203,6 @@ row instead. "
            (modified (box-point-is-in))
            ;; now put the point in the closet
            (move-point (row-first-bp-values closet-row))
-           #-opengl (redisplay)		; crock to allocate screen structure
            (unless new?
              (dolist (sr (screen-objs closet-row))
                (set-force-redisplay-infs? sr))))
@@ -219,7 +218,6 @@ row instead. "
            (set-scroll-to-actual-row (screen-box-point-is-in)
                                      closet-row)
            (modified (box-point-is-in))
-           #-opengl(redisplay)
            (unless new?
              (dolist (sr (screen-objs closet-row))
                (set-force-redisplay-infs? sr))))))
@@ -302,7 +300,6 @@ row instead. "
                    (move-point (row-first-bp-values closet-row)))
                  (let* ((bir (boxes-in-row closet-row))
                         (sos (and bir (screen-objs (car bir)))))
-                   ;(redisplay)	; crock to allocate screen structure
                    (unless (null sos)
                      ;; don't need to set this if there were not any
                      ;; screen objs BEFORE the explicit call to redisplay
@@ -319,7 +316,6 @@ row instead. "
                  (modified box)
                  (let* ((bir (boxes-in-row closet-row))
                         (sos (and bir (screen-objs (car bir)))))
-                   #-opengl(redisplay)
                    (unless (null sos)
                      (dolist (sr (screen-objs closet-row))
                        (set-force-redisplay-infs? sr))))))))

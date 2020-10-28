@@ -985,8 +985,7 @@ specified target. "
       (boxer-editor-error "You cannot make boxes on a name row. ")
       (progn
 	(make-graphics-box-internal)
-	#-opengl(redisplay)
-        #+opengl(repaint)))
+        (repaint)))
   boxer-eval::*novalue*)
 
 (defboxer-command com-make-big-graphics-box ()
@@ -996,8 +995,7 @@ specified target. "
       (boxer-editor-error "You cannot make boxes on a name row. ")
       (progn
 	(make-graphics-box-internal 500. 400.)
-	#-opengl(redisplay)
-        #+opengl(repaint)))
+        (repaint)))
   boxer-eval::*novalue*)
 
 (defboxer-command com-make-giant-graphics-box ()
@@ -1007,8 +1005,7 @@ specified target. "
       (boxer-editor-error "You cannot make boxes on a name row. ")
       (progn
 	(make-graphics-box-internal 900. 500.)
-	#-opengl(redisplay)
-        #+opengl(repaint)))
+        (repaint)))
   boxer-eval::*novalue*)
 
 
@@ -1023,8 +1020,7 @@ specified target. "
 	(make-graphics-box-internal *default-graphics-box-width*
 				    *default-graphics-box-height*
 				    nil)
-	#-opengl(redisplay)
-        #+opengl(repaint)))
+        (repaint)))
   boxer-eval::*novalue*)
 
 (defboxer-command com-make-transparent-graphics-box ()
@@ -1036,8 +1032,7 @@ specified target. "
 	(make-graphics-box-internal *default-graphics-box-width*
 				    *default-graphics-box-height*
 				    t)
-	#-opengl(redisplay)
-        #+opengl(repaint)))
+        (repaint)))
   boxer-eval::*novalue*)
 
 
@@ -1086,8 +1081,7 @@ specified target. "
       (boxer-editor-error "You cannot make boxes on a name row. ")
       (progn
 	(make-turtle-box-internal)
-	#-opengl(redisplay)
-        #+opengl(repaint)))
+        (repaint)))
   boxer-eval::*novalue*)
 
 (defboxer-command com-make-big-turtle-box ()
@@ -1097,8 +1091,7 @@ specified target. "
       (boxer-editor-error "You cannot make boxes on a name row. ")
       (progn
 	(make-turtle-box-internal 500. 400.)
-	#-opengl(redisplay)
-        #+opengl(repaint)))
+        (repaint)))
   boxer-eval::*novalue*)
 
 (defboxer-command com-make-giant-turtle-box ()
@@ -1108,8 +1101,7 @@ specified target. "
       (boxer-editor-error "You cannot make boxes on a name row. ")
       (progn
 	(make-turtle-box-internal 900. 500.)
-	#-opengl(redisplay)
-        #+opengl(repaint))))
+        (repaint))))
 
 
 ;;; specific versions...
@@ -1123,8 +1115,7 @@ specified target. "
 	(make-turtle-box-internal *default-graphics-box-width*
 				  *default-graphics-box-height*
 				  nil)
-	#-opengl(redisplay)
-        #+opengl(repaint)))
+        (repaint)))
   boxer-eval::*novalue*)
 
 (defboxer-command com-make-transparent-turtle-box ()
@@ -1136,8 +1127,7 @@ specified target. "
 	(make-turtle-box-internal *default-graphics-box-width*
 				  *default-graphics-box-height*
 				  t)
-	#-opengl(redisplay)
-        #+opengl(repaint)))
+        (repaint)))
   boxer-eval::*novalue*)
 
 

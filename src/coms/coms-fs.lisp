@@ -275,7 +275,7 @@ Modification History (most recent at top)
                                (string= (slot-value box 'name) "WORLD")))
                   (setf (slot-value box 'name) nil)))
               (insert-cha *point* box)
-              (when explicit-redisplay #+opengl (repaint) #-opengl (redisplay))))))
+              (when explicit-redisplay (repaint))))))
       ;; this marks the box superior to the box being loaded
       (mark-file-box-dirty (point-row))))
   boxer-eval::*novalue*)
@@ -317,7 +317,7 @@ Modification History (most recent at top)
              ;; mark the containing box before entering
              (mark-file-box-dirty (point-row))
              (com-enter-box)))))
-  (when explicit-redisplay #+opengl (repaint) #-opengl (redisplay))
+  (when explicit-redisplay (repaint))
   boxer-eval::*novalue*)
 
 ;; rewrite this to CONS less later....
@@ -494,7 +494,7 @@ Modification History (most recent at top)
             (when *name-link-boxes*
               (set-name xbox (make-name-row (list (pathname-name filename)))))
             (insert-cha *point* xbox)
-            (when explicit-redisplay #+opengl (repaint) #-opengl (redisplay)))))
+            (when explicit-redisplay (repaint)))))
       ;; this marks the box superior to the box being loaded
       (mark-file-box-dirty (point-row))))
   boxer-eval::*novalue*)

@@ -1616,8 +1616,7 @@
     (if (eq direction :up)
       (com-scroll-up-one-screen-box screen-box-list)
       (com-scroll-dn-one-screen-box screen-box-list))
-    #-opengl (redisplay)
-    #+opengl (repaint)
+    (repaint)
     (simple-wait-with-timeout *scroll-pause-time*
                               #'(lambda ()
                                         (zerop& (mouse-button-state))))))

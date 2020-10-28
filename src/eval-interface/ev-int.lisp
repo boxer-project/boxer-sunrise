@@ -317,7 +317,6 @@ Modification History (most recent at top)
                       (cond ((null nob) (return nil))
                         (t (set-outermost-box
                             (screen-obj-actual-obj nob) nob))))
-                    #-opengl (redisplay)
                     (when (not (null (car (displayed-screen-objs old-box))))
                       (setq found-sb t)
                       (return nil)))
