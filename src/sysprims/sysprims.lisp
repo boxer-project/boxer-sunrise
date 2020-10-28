@@ -250,7 +250,7 @@ Modification History (most recent at the top)
                                           (default-lw-pref-file-name)))
   (with-open-file (fs file :direction :output :if-exists :supersede)
     (format fs "# Boxer Preferences File Created on ~A~%"
-            (boxnet::rfc822-date-time))
+            (boxer::rfc822-date-time))
     (dolist (pref *boxer-preferences-list*)
       (let ((write-handler (assoc pref *preference-write-handlers*)))
         (unless (null write-handler)

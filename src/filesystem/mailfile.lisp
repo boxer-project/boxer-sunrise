@@ -116,7 +116,7 @@ Modification History (most recent at top)
 ;; and Mozilla based mail
 ;;
 (defun insert-mailfile-msg-separator (stream)
-  (format stream "From - ~A~&" (rfc822-date-time)))
+  (format stream "From - ~A~&" (boxer::rfc822-date-time)))
 
 (defun mailfile-eom? (rawline)
   (let ((place (search "From " rawline)))

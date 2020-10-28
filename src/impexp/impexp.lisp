@@ -154,7 +154,12 @@ writing-foreign-file (stream-var ffc filename)
 
 ;;; utilities
 
-
+(defun rfc822-date-time (&optional (time (get-universal-time)))
+  (multiple-value-bind (sec min hou day mon yea dow dst time-zone)
+      (decode-universal-time time)
+    (format nil "~a, ~a ~a ~a ~2,'0d:~2,'0d:~2,'0d ~a"
+            (ut-day dow nil) day (ut-month mon nil) yea ;(mod yea 100)
+            hou min sec (ut-tz  time-zone dst))))
 
 (defmethod text-only-row? ((row row))
   (not (do-row-chas ((cha row)) (when (box? cha) (return t)))))
@@ -409,7 +414,7 @@ writing-foreign-file (stream-var ffc filename)
   (let ((nr (name-row box)))
     (unless (null nr) (format stream "    <title>~A</title>~%" (text-string nr))))
   ;; eventually look for created from (possibly) reading in file
-  (let ((current-date-string (boxnet::rfc822-date-time)))
+  (let ((current-date-string (rfc822-date-time)))
     (format stream "    <dateCreated>~A</dateCreated>~%" current-date-string)
     (format stream "    <dateModified>~A</dateModified>~%" current-date-string))
   ;; expansion control

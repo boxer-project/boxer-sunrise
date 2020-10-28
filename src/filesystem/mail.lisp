@@ -85,7 +85,7 @@ Modification History (most recent at top)
          operation
  5/25/00 get-mime-uu-binary-data
  6/21/99 make sure unique-mime-path checks for valid pathname everywhere
- 6/14/99 better "'s handling in mime-header-line-value
+ 6/14/99 better s handling in mime-header-line-value
          newpath-for-mime was using original name instead of the corrected
          rawpath name.  Note:max mac file length is 31 ! (not 32)
  4/26/99 send/get-mime-box now handle link property
@@ -162,13 +162,6 @@ Modification History (most recent at top)
   (net-write-line stream "DATA")
   (handle-tcp-response stream))
 
-(defun rfc822-date-time (&optional (time (get-universal-time)))
-  (multiple-value-bind (sec min hou day mon yea dow dst time-zone)
-      (decode-universal-time time)
-    (format nil "~a, ~a ~a ~a ~2,'0d:~2,'0d:~2,'0d ~a"
-            (ut-day dow nil) day (ut-month mon nil) yea ;(mod yea 100)
-            hou min sec (ut-tz  time-zone dst))))
-
 (defun message-id (&optional (time (get-universal-time)))
   (format nil "<~A.~A@~A>" time (gensym) (machine-instance)))
 
@@ -183,7 +176,7 @@ Modification History (most recent at top)
        (net-write-line stream "To: ~A" to))
    (unless (null subject) (net-write-line stream "Subject: ~A" subject))
    (let ((now (get-universal-time)))
-     (net-write-line stream "Date: ~A" (rfc822-date-time now))
+     (net-write-line stream "Date: ~A" (boxer::rfc822-date-time now))
      (net-write-line stream "Message-ID: ~A" (message-id now)))
    (net-write-line stream "MIME-Version: ~A" mime-version)
    ;; handle specific content types here
