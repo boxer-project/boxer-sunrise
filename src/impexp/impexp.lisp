@@ -154,6 +154,8 @@ writing-foreign-file (stream-var ffc filename)
 
 ;;; utilities
 
+
+
 (defmethod text-only-row? ((row row))
   (not (do-row-chas ((cha row)) (when (box? cha) (return t)))))
 
@@ -520,29 +522,3 @@ writing-foreign-file (stream-var ffc filename)
                        *foreign-file-class-exports*)))
     (unless (null ffc)
       (com-export-box-as ffc))))
-
-#+mcl
-(progn
-
-(setq *export-file-menu*
-  (make-instance 'ccl::menu :menu-item-title "Export"
-                 :menu-items
-                 (mapcar #'(lambda (ffc)
-                             (make-instance 'ccl::menu-item
-                               :menu-item-title (ffc-pretty-name ffc)
-                               :menu-item-action #'(lambda ()
-                                                     (bw::queue-event
-                                                      (list 'com-export-box-as
-                                                            ffc)))))
-                         *foreign-file-class-exports*)))
-
-(let* ((fmis (ccl::menu-items *boxer-file-menu*))
-       (bottom-items (nthcdr 10 fmis)))
-  (dolist (bottom-item bottom-items)
-    (ccl:remove-menu-items *boxer-file-menu* bottom-item))
-  (dolist (new (list* *export-file-menu* bottom-items))
-    (ccl:add-menu-items *boxer-file-menu* new)))
-
-
-)
-
