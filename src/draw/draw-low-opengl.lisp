@@ -247,7 +247,7 @@ notes:: check points arg on draw-poly
      (opengl::rendering-on (,view)
                            ;; always start by drawing eveywhere
                            (bw::ogl-reshape (sheet-inside-width ,view) (sheet-inside-height ,view))
-                           (bw::gl-scissor 0 0 (sheet-inside-width ,view) (sheet-inside-height ,view))
+                           (opengl::gl-scissor 0 0 (sheet-inside-width ,view) (sheet-inside-height ,view))
                            . ,body)))
 
 (defmacro current-graphics-state ()
@@ -270,14 +270,14 @@ notes:: check points arg on draw-poly
 ;  (format t "~&SCissor ~D, ~D, ~D ~D" lef (- (sheet-inside-height box::%drawing-array)
 ;                         box::%origin-y-offset)
 ;          (-& rig lef) (-& bot top))
-  (bw::gl-scissor (floor lef)
+  (opengl::gl-scissor (floor lef)
                   (floor (1+ (- (sheet-inside-height box::%drawing-array) bot)))
                   (ceiling (- rig (- lef 1)))
                   (ceiling (- bot top))))
 
 ;;; **** NEW, used in draw-high-highware-clip
 (defun window-system-dependent-set-origin (h v)
-  (bw::gl-translatef h v 0.0))
+  (opengl::gl-translatef h v 0.0))
 
 (defvar %local-clip-lef 0)
 (defvar %local-clip-top 0)
@@ -308,10 +308,10 @@ notes:: check points arg on draw-poly
   (values (sheet-inside-width  w) (sheet-inside-height w)))
 
 (defun clear-window (w)
-  (bw::rendering-on (w)
+  (opengl::rendering-on (w)
     ;; sets the clearing color
     ;; shouldn't need to do this EVERY time
-    (bw::gl-clear-color (bw::ogl-color-red *background-color*)
+    (opengl::gl-clear-color (bw::ogl-color-red *background-color*)
                         (bw::ogl-color-green *background-color*)
                         (bw::ogl-color-blue *background-color*)
                         0.0)
@@ -324,7 +324,7 @@ notes:: check points arg on draw-poly
     ;; *GL-depth-BUFFER-BIT*
     ;; *GL-accum-BUFFER-BIT*
     ;; *GL-stencil-BUFFER-BIT*
-    (bw::gl-clear bw::*gl-color-buffer-bit*)))
+    (opengl::gl-clear opengl::*gl-color-buffer-bit*)))
 
 ;;; used by repaint-in-eval
 (defvar *last-eval-repaint* 0)
@@ -338,8 +338,8 @@ notes:: check points arg on draw-poly
 
 ;;; stub for double buffering window systems
 (defun flush-port-buffer (&optional (pane *boxer-pane*))
-  (bw::rendering-on (pane) (bw::gl-flush))
-  (bw::swap-buffers pane))
+  (opengl::rendering-on (pane) (opengl::gl-flush))
+  (opengl::swap-buffers pane))
 
 (defun string-wid (font-no string)
   (let ((font (find-filled-font font-no)))
@@ -961,7 +961,7 @@ notes:: check points arg on draw-poly
 ;; needs to be happening inside a drawing-on-window (actually rendering-on)
 (defmacro with-pen-size ((newsize) &body body)
   (let ((oldpsvar (gensym)) (nochangevar (gensym)) (newsizevar (gensym)))
-    `(let ((,oldpsvar (bw::get-opengl-state bw::*gl-line-width* :float))
+    `(let ((,oldpsvar (bw::get-opengl-state opengl::*gl-line-width* :float))
            (,newsizevar (float ,newsize))
            (,nochangevar nil))
        (unwind-protect
@@ -973,13 +973,13 @@ notes:: check points arg on draw-poly
 
 (defmacro with-line-stippling ((pattern factor) &body body)
   (let ((stipplevar (gensym)))
-    `(let ((,stipplevar (bw::get-opengl-state bw::*gl-line-stipple* :boolean)))
+    `(let ((,stipplevar (bw::get-opengl-state opengl::*gl-line-stipple* :boolean)))
        (unwind-protect
         (progn
          (opengl::gl-line-stipple ,factor ,pattern)
-         (opengl::gl-enable bw::*gl-line-stipple*)
+         (opengl::gl-enable opengl:*gl-line-stipple*)
          . ,body)
-        (unless ,stipplevar (opengl::gl-disable bw::*gl-line-stipple*))))))
+        (unless ,stipplevar (opengl::gl-disable opengl::*gl-line-stipple*))))))
 
 
 
@@ -1321,7 +1321,7 @@ notes:: check points arg on draw-poly
                                                         bitmap-width bitmap-height)
                   &body body)
   (declare (ignore bitmap-width bitmap-height))
-  `(bw::rendering-on (*boxer-pane*)
+  `(opengl::rendering-on (*boxer-pane*)
      (unwind-protect
          (progn
            (bw::gl-draw-buffer bw::*gl-aux1*)
@@ -1340,15 +1340,15 @@ notes:: check points arg on draw-poly
                                                         bitmap-width bitmap-height)
                                                 &body body)
   (declare (ignore bitmap-width bitmap-height))
-  `(bw::rendering-on (*boxer-pane*)
-                     (bw::gl-draw-buffer bw::*gl-aux1*)
+  `(opengl::rendering-on (*boxer-pane*)
+                     (opengl::gl-draw-buffer opengl::*gl-aux1*)
                      (progn . ,body)
-                     (bw::gl-flush)
+                     (opengl::gl-flush)
                      (opengl::%pixblt-from-screen ,bitmap 0 (- (sheet-inside-height *boxer-pane*)
                                                                (opengl::ogl-pixmap-height ,bitmap))
                                                    (opengl::ogl-pixmap-width  ,bitmap)
                                                    (opengl::ogl-pixmap-height ,bitmap)
-                                                   0 0 bw::*gl-back*)))
+                                                   0 0 opengl::*gl-back*)))
 
 (defun clear-offscreen-bitmap (bm &optional (clear-color *background-color*))
   (opengl::clear-ogl-pixmap bm (opengl::make-offscreen-pixel
@@ -1486,13 +1486,13 @@ notes:: check points arg on draw-poly
 ;;; should we pass blend functions in ? ((src-blend-func dst-blend-func) &body body)
 (defmacro with-blending-on (&body body)
   (let ((current-blend-var (gensym)))
-    `(let ((,current-blend-var (bw::gl-enabled? bw::*gl-blend*)))
+    `(let ((,current-blend-var (bw::gl-enabled? opengl::*gl-blend*)))
        (unwind-protect
         (progn
-         (bw::gl-enable bw::*gl-line-smooth*)
-         (bw::gl-enable bw::*gl-polygon-smooth*)
-         (bw::gl-enable bw::*gl-blend*)
-         (bw::gl-blend-func bw::*gl-src-alpha* bw::*gl-one-minus-src-alpha*)
-         (bw::gl-hint bw::*gl-line-smooth-hint* bw::*gl-nicest*)
+         (opengl::gl-enable opengl::*gl-line-smooth*)
+         (opengl::gl-enable opengl::*gl-polygon-smooth*)
+         (opengl::gl-enable opengl::*gl-blend*)
+         (opengl::gl-blend-func opengl::*gl-src-alpha* opengl::*gl-one-minus-src-alpha*)
+         (opengl::gl-hint opengl::*gl-line-smooth-hint* opengl::*gl-nicest*)
          . ,body)
-        (unless ,current-blend-var (bw::gl-disable bw::*gl-blend*))))))
+        (unless ,current-blend-var (opengl::gl-disable opengl::*gl-blend*))))))

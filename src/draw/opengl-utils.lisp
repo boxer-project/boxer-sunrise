@@ -69,8 +69,8 @@ Modification History (most recent at the top)
              (unwind-protect
               (progn
                (,(ecase (if (listp type) (car type) type)
-                        (:boolean 'gl-get-booleanv)
-                        ((:signed-32 :integer) 'gl-get-integerv)
+                        (:boolean 'opengl:gl-get-booleanv)
+                        ((:signed-32 :integer) 'opengl:gl-get-integerv)
                         (:float 'opengl::gl-get-floatv))
                 ,pname ,gl-vect-var)
                ,(cond ((and (listp type) (not (null return-vector)))
@@ -78,16 +78,16 @@ Modification History (most recent at the top)
                   ((listp type)
                    `(values ,@(let ((value-forms nil))
                                 (dotimes (i (cadr type))
-                                  (push `(gl-vector-aref ,gl-vect-var ,i)
+                                  (push `(opengl:gl-vector-aref ,gl-vect-var ,i)
                                         value-forms))
                                 (nreverse value-forms))))
                   ((eq type :boolean)
-                   `(let ((raw (gl-vector-aref ,gl-vect-var 0)))
+                   `(let ((raw (opengl:gl-vector-aref ,gl-vect-var 0)))
                       (cond ((zerop raw) nil)
                         ((= raw 1) t)
                         (t (error "~D is not a valid boolean value" raw)))))
                   (t
-                   `(gl-vector-aref ,gl-vect-var 0))))
+                   `(opengl:gl-vector-aref ,gl-vect-var 0))))
               (when (null ,return-vector)
                 (opengl::free-gl-vector ,gl-vect-var)))))))
 
@@ -102,7 +102,7 @@ Modification History (most recent at the top)
        (format *error-output* ,format-string . ,args))))
 
 ;;;; for testing flags
-(defun gl-enabled? (flag) (if (zerop (gl-is-enabled flag)) nil t))
+(defun gl-enabled? (flag) (if (zerop (opengl:gl-is-enabled flag)) nil t))
 
 ;;;;
 (eval-when (compile)
@@ -127,14 +127,14 @@ Modification History (most recent at the top)
 ;;; new layer of opengl drawing primitives which (optional) check & coerce parameter type
 
 (defun ogl-draw-line (x0 y0 x1 y1)
-  (gl-begin bw::*gl-lines*)
-  (gl-vertex2-f (ogl-type x0 'float) (ogl-type y0 'float))
-  (gl-vertex2-f (ogl-type x1 'float) (ogl-type y1 'float))
-  (gl-end))
+  (opengl:gl-begin opengl:*gl-lines*)
+  (opengl:gl-vertex2-f (ogl-type x0 'float) (ogl-type y0 'float))
+  (opengl:gl-vertex2-f (ogl-type x1 'float) (ogl-type y1 'float))
+  (opengl:gl-end))
 
 (defun ogl-set-pen-size (new)
-  (gl-point-size (ogl-type new 'float))
-  (gl-line-width (ogl-type new 'float)))
+  (opengl:gl-point-size (ogl-type new 'float))
+  (opengl:gl-line-width (ogl-type new 'float)))
 
 
 ;;; note that gl-begin can also be
@@ -143,30 +143,30 @@ Modification History (most recent at the top)
 ;; *GL-QUAD-STRIP*, or *gl-polygon*
 
 (defun ogl-draw-poly (points)
-  (gl-begin *gl-polygon*)
-  (dolist (v points) (gl-vertex2-f (ogl-type (car v) 'float) (ogl-type (cadr v) 'float)))
-  (gl-end))
+  (opengl:gl-begin opengl:*gl-polygon*)
+  (dolist (v points) (opengl:gl-vertex2-f (ogl-type (car v) 'float) (ogl-type (cadr v) 'float)))
+  (opengl:gl-end))
 
 ;; used directly
 (defun boxer::multiline2 (&rest x-and-y-s)
-  (gl-begin *gl-line-strip*)
+  (opengl:gl-begin opengl:*gl-line-strip*)
   (do* ((vertices x-and-y-s (cddr vertices))
         (x (car vertices)  (car vertices))
         (y (cadr vertices) (cadr vertices)))
     ((null y)
      (unless (null x) ; both run out @ same time
        (error "Unpaired vertex in ~A" x-and-y-s)))
-    (gl-vertex2-f (ogl-type x 'float) (ogl-type y 'float)))
-  (gl-end))
+    (opengl:gl-vertex2-f (ogl-type x 'float) (ogl-type y 'float)))
+  (opengl:gl-end))
 
 (defun ogl-draw-rect (x0 y0 x1 y1)
-  (gl-rectf (ogl-type x0 'float) (ogl-type y0 'float)
+  (opengl:gl-rectf (ogl-type x0 'float) (ogl-type y0 'float)
             (ogl-type x1 'float) (ogl-type y1 'float)))
 
 (defun ogl-draw-point (x y)
-  (gl-begin *gl-points*)
-  (gl-vertex2-f (ogl-type x 'float) (ogl-type y 'float))
-  (gl-end))
+  (opengl:gl-begin *gl-points*)
+  (opengl:gl-vertex2-f (ogl-type x 'float) (ogl-type y 'float))
+  (opengl:gl-end))
 
 ;;;; FONTS
 
@@ -335,7 +335,7 @@ Modification History (most recent at the top)
 ;; for now, allow wgl-use-font to signal the error (:errorp t)
 (defun %ogl-cache-font (ofont)
   (let ((ba (cond ((null box::%drawing-array)
-                   (rendering-on (*boxer-pane*) (cache-capogi-font (opengl-font-native-font ofont))))
+                   (opengl:rendering-on (*boxer-pane*) (cache-capogi-font (opengl-font-native-font ofont))))
               (t
                (cache-capogi-font (opengl-font-native-font ofont))))))
     (setf (opengl-font-dl-base-addr ofont) ba))
@@ -345,7 +345,7 @@ Modification History (most recent at the top)
   (unless (null (opengl-font-dl-base-addr ofont))
     ;; it is possible for a font to be in the cache, but unfilled because of the
     ;; new lazy caching scheme
-    (gl-delete-lists (opengl-font-dl-base-addr ofont) *opengl-font-cache-end*)  ;was *opengl-font-end*
+    (opengl:gl-delete-lists (opengl-font-dl-base-addr ofont) *opengl-font-cache-end*)  ;was *opengl-font-end*
     (setf (opengl-font-dl-base-addr ofont) nil)))
 
 ;;; External Interface
@@ -460,12 +460,12 @@ Modification History (most recent at the top)
       (t (* (opengl-font-width font) (length string))))))
 
 (defun ogl-draw-char (char x y)
-  (gl-raster-pos2-f (ogl-type x 'float) (ogl-type y 'float)) ; (+ y (opengl-font-ascent *current-opengl-font*))
-  (gl-call-list (+ *current-opengl-font-base-addr*
+  (opengl:gl-raster-pos2-f (ogl-type x 'float) (ogl-type y 'float)) ; (+ y (opengl-font-ascent *current-opengl-font*))
+  (opengl:gl-call-list (+ *current-opengl-font-base-addr*
                    (charcode->oglfont-index (char-code char)))))
 
 (defun ogl-draw-string (text x y)
-  (gl-raster-pos2-f (ogl-type x 'float) (ogl-type (+ y (opengl-font-ascent *current-opengl-font*)) 'float))
+  (opengl:gl-raster-pos2-f (ogl-type x 'float) (ogl-type (+ y (opengl-font-ascent *current-opengl-font*)) 'float))
   (let* ((base (-& *current-opengl-font-base-addr*
                    ;; this is pretty flaky and will break if there ever is a
                    ;; char-code which is less than *opengl-font-start*
@@ -528,17 +528,17 @@ Modification History (most recent at the top)
                   (color:color-green colorspec)
                   (color:color-blue colorspec)))
 
-(defun ogl-color-red   (color) (gl-vector-aref color 0))
-(defun ogl-color-green (color) (gl-vector-aref color 1))
-(defun ogl-color-blue  (color) (gl-vector-aref color 2))
-(defun ogl-color-alpha (color) (gl-vector-aref color 3))
+(defun ogl-color-red   (color) (opengl:gl-vector-aref color 0))
+(defun ogl-color-green (color) (opengl:gl-vector-aref color 1))
+(defun ogl-color-blue  (color) (opengl:gl-vector-aref color 2))
+(defun ogl-color-alpha (color) (opengl:gl-vector-aref color 3))
 
-(defun ogl-set-color (color) (gl-color4-fv color))
+(defun ogl-set-color (color) (opengl:gl-color4-fv color))
 
 (defun ogl-color= (c1 c2)
-  (and (= (gl-vector-aref c1 0) (gl-vector-aref c2 0))
-       (= (gl-vector-aref c1 1) (gl-vector-aref c2 1))
-       (= (gl-vector-aref c1 2) (gl-vector-aref c2 2))
+  (and (= (opengl:gl-vector-aref c1 0) (opengl:gl-vector-aref c2 0))
+       (= (opengl:gl-vector-aref c1 1) (opengl:gl-vector-aref c2 1))
+       (= (opengl:gl-vector-aref c1 2) (opengl:gl-vector-aref c2 2))
        ;; compare alpha values ?
        ))
 
@@ -554,7 +554,7 @@ Modification History (most recent at the top)
 (defun allocate-ogl-color () (or (pop *ogl-color-pool*) (%make-ogl-color)))
 
 (defun ogl-current-color (&optional (vector *ogl-current-color-vector*))
-  (get-opengl-state *gl-current-color* (:float 4) vector))
+  (get-opengl-state opengl:*gl-current-color* (:float 4) vector))
 
 (defun deallocate-ogl-color (color) (push color *ogl-color-pool*))
 
@@ -588,13 +588,13 @@ Modification History (most recent at the top)
 ; in example code
 
 (defun ogl-reshape (width height)
-  (gl-viewport 0 0 width height) ; x y width height (ints)
+  (opengl:gl-viewport 0 0 width height) ; x y width height (ints)
   (debug-opengl-print "~%OGL Reshape (~D, ~D)" width height)
-  (gl-matrix-mode *gl-projection*)
-  (gl-load-identity)
+  (opengl:gl-matrix-mode opengl:*gl-projection*)
+  (opengl:gl-load-identity)
   ;; orthographic projection, 0,0 = top,left
   ;; Note:GL-Ortho wants double-floats as args (and insists on the mac)
-  (gl-ortho (coerce 0.0 'double-float)            (coerce (float width) 'double-float)
+  (opengl:gl-ortho (coerce 0.0 'double-float)            (coerce (float width) 'double-float)
             (coerce (float height) 'double-float) (coerce 0.0 'double-float)
             (coerce -1.0 'double-float)           (coerce 1.0 'double-float)))
 
@@ -633,15 +633,15 @@ Modification History (most recent at the top)
          (radial-factor (cos theta))
          (x radius) ; start 3 O'clock
          (y 0))
-    (gl-begin (if filled? *gl-polygon* *gl-line-loop*))
+    (opengl:gl-begin (if filled? opengl:*gl-polygon* opengl:*gl-line-loop*))
     (dotimes (i num-slices)
-      (gl-vertex2-f (coerce (+ x cx) 'single-float) (coerce (+ y cy) 'single-float))
+      (opengl:gl-vertex2-f (coerce (+ x cx) 'single-float) (coerce (+ y cy) 'single-float))
       (let ((tx (- y)) (ty x))
         (setq x (+ x (* tx tangent-factor))
               y (+ y (* ty tangent-factor)))
         (setq x (* x radial-factor)
               y (* y radial-factor))))
-    (gl-end)))
+    (opengl:gl-end)))
 
 (defun opengl-draw-arc (cx cy radius start-angle arc-angle &optional filled?)
   (let* ((num-slices (round (* (num-slices radius) (/ arc-angle (* 2 pi)))))
@@ -650,16 +650,16 @@ Modification History (most recent at the top)
          (radial-factor (cos theta))
          (x (* radius (cos start-angle)))
          (y (* radius (sin start-angle))))
-    (gl-begin (if filled? *gl-polygon* *gl-line-strip*))
-    (when filled? (gl-vertex2-f (coerce cx 'single-float) (coerce cy 'single-float)))
+    (opengl:gl-begin (if filled? opengl:*gl-polygon* opengl:*gl-line-strip*))
+    (when filled? (opengl:gl-vertex2-f (coerce cx 'single-float) (coerce cy 'single-float)))
     (dotimes (i num-slices)
-      (gl-vertex2-f (coerce (+ x cx) 'single-float) (coerce (+ y cy) 'single-float))
+      (opengl:gl-vertex2-f (coerce (+ x cx) 'single-float) (coerce (+ y cy) 'single-float))
       (let ((tx (- y)) (ty x))
         (setq x (+ x (* tx tangent-factor))
               y (+ y (* ty tangent-factor)))
         (setq x (* x radial-factor)
               y (* y radial-factor))))
-    (gl-end)))
+    (opengl:gl-end)))
 
 #|
 
