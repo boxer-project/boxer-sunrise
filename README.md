@@ -35,8 +35,13 @@ start the Boxer canvas and UI.
 (load #P"~/code/boxer-sunrise/src/bootstrap.lisp")
 ```
 
-## Authors
+## Authors through the years
 
 * Andrea A. diSessa
+* Hal Abelson
+* David Neves
+* Eric Tenenbaum
+* Gregor Kiczales
 * Edward H. Lay
+* Leigh Klotz
 * Steven W. Githens
