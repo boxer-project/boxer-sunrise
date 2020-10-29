@@ -112,6 +112,9 @@
                  ;; Beginning of `IMPEXP` module
                  ;; "This imports and exports boxer structure to/from other common file types"
                  (:file "impexp/impexp")
+                 (:file "impexp/html-export")
+                 (:file "impexp/opml-export")
+                ;;  (:file "impexp/json-export")
                  ;; Beginning of `CHNKPR` module
                  ;; "This is the interface between the Editor and the Evaluator"
                  (:file "chnkpr/chunker")

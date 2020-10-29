@@ -22,6 +22,7 @@
 
 |#
 (require "asdf")
+(ql:quickload :drakma)
 
 ;; TODO fix this to preserve the windows logical drive
 (defvar *boxer-project-dir* (make-pathname :directory (butlast (pathname-directory *load-truename*))))
