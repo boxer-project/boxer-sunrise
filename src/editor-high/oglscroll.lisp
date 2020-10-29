@@ -626,9 +626,9 @@ Modification History (most recent at top)
                            ))))
 
 (defvar *scroll-info-offset* 2 "How far to indent scroll info from the inner (text) part of the box")
-(defvar *scroll-elevator-thickness* 2)
-(defvar *scroll-button-width* 4)
-(defvar *scroll-button-length* 4)
+(defvar *scroll-elevator-thickness* 10)
+(defvar *scroll-button-width* 10)
+(defvar *scroll-button-length* 6)
 (defvar *scroll-elevator-color*)
 (defvar *scroll-buttons-color*)
 
