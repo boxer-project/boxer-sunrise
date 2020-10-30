@@ -720,15 +720,15 @@ Modification History (most recent at top)
       ;; fullscreen-window check
       (let ((screen (capi:convert-to-screen)))
         (when (> *starting-window-width* 0)
-          (set-hint-table *boxer-frame* (list :width *starting-window-width*)))
+          (capi:set-hint-table *boxer-frame* (list :width *starting-window-width*)))
         (when (> *starting-window-height* 0)
-          (set-hint-table *boxer-frame* (list :height *starting-window-height*)))
+          (capi:set-hint-table *boxer-frame* (list :height *starting-window-height*)))
         ;; fullscreen check AFTER prefs are loaded but BEFORE display ?
         (when *fullscreen-window-p*
-          (set-hint-table *boxer-frame*
+          (capi:set-hint-table *boxer-frame*
                           (list :x 0 :y 0
-                                :width (- (screen-width screen) 10)
-                                :height (- (screen-height screen) 120)))))
+                                :width (- (capi:screen-width screen) 10)
+                                :height (- (capi:screen-height screen) 120)))))
       (start-boxer-progress "Setting Hints ~D" (get-internal-real-time) 40)
       (capi:display *boxer-frame*)
 ;     (break "After Display...")

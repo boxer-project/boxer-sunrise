@@ -67,7 +67,7 @@
 (defpackage :boxnet (:use :common-lisp :boxer-eval :boxer))
 
 (defpackage :boxer-window
-  (:use :common-lisp :boxer :capi :opengl)
+  (:use :common-lisp :boxer)
   (:nicknames :bw)
   (:export :*glyph-pane*
            :outermost-screen-box))
