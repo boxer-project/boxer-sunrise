@@ -1,6 +1,6 @@
 # Change Log
 
-## 3.4.1 2020-10-30
+## 3.4.1 2020-10-29
 
 - Increased scrollbar width a bit for visibility.
 
