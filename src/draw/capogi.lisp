@@ -199,32 +199,6 @@ Modification History (most recent at the top)
 ;; window should be made and font already setup...
 ;; character is drawn with the upper left corner at (cx,cy)
 ;; this is the inner loop function - optimize here (particularly the stew of pixels & colors)
-#|
-(defun new-capogi-char (char &optional (cx 0) (cy 0) (pane *glyph-pane*))
-  (gp:with-graphics-state (pane :operation alu-seta)
-    (multiple-value-bind (left top right bottom)
-        (gp:get-character-extent pane char)
-      (let* ((wid (abs (- left right))) (hei (abs (- top bottom)))
-             (new-char (make-capogi-char :char char :wid wid :hei hei))
-             (hor-bytes (ceiling wid 8))
-             (maxx (floor wid))
-             (bytes nil))
-        ;; erase
-        (gp::draw-rectangle pane cx cy (+ wid 1) hei
-                          :foreground (gp::graphics-port-background pane)
-                          :operation alu-seta :filled t)
-        ;; now draw the char
-        (gp:draw-character pane char (- cx left) (- cy top))
-        ;; now we translate the screen data to a list of bytes in left->right,
-        ;; bottom->top order.
-        ;; actually the loops are backward cause we push each byte as we calculate them
-        (do ((y 0 (1+ y)))
-            ((>= y hei) (setf (capogi-char-data new-char) bytes))
-          (do ((x (* (1- hor-bytes) 8) (- x 8)))
-              ((< x 0))
-            (push (glyph-byte-value x y maxx) bytes)))
-        new-char))))
-|#
 
 (defun new-capogi-char (char &optional (cx 0) (cy 0) (pane *glyph-pane*))
   (gp:with-graphics-state (pane :operation alu-seta)
@@ -283,21 +257,6 @@ Modification History (most recent at the top)
         (cond ((>= gx maxx) (return nil)) ;; no more valid points to check
               ((not white?) (setq return-byte (+ return-byte (ash 1 (- 7 i))))) )))
     return-byte))
-
-#|
-(defun glyph-byte-value (x y maxx &optional (pane *glyph-pane*))
-  (let ((return-byte 0))
-    (dotimes (i 8)
-      (let* ((gx (+ x i))
-             (point (gp:get-point pane gx y))
-             ;; get-point returns a simple vector with #(:RGB Red Blue Green)
-             (white? (= (svref point 3) 1.0s0))
-             ;; just checking the blue component which seems like it might be enough
-             )
-        (cond ((>= gx maxx) (return nil)) ;; no more valid points to check
-              ((not white?) (setq return-byte (+ return-byte (ash 1 (- 7 i))))) )))
-    return-byte))
-|#
 
 (defun draw-char-for-caching (charcode &optional (x 0) (y 0) (pane *glyph-pane*))
   (gp:with-graphics-state (pane :operation alu-seta)
@@ -468,7 +427,6 @@ Modification History (most recent at the top)
                               :output)
     (dump-capogi-font-internal font s)))
 
-
 ;; clean byte stream version...
 (defun dump-capogi-font-internal (font stream)
   (let ((font-values (capi-font-values (capogi-font-capi-font font)))
@@ -494,30 +452,6 @@ Modification History (most recent at the top)
         (error "~D chars is larger than the current file format supports" ccount))
       (write-byte ccount stream)
       (dotimes (i ccount) (dump-capogi-char (svref chars i) stream)))))
-
-#|
-;; dump the font as a plist + chars to allow for future changes
-;; move into dumper.lisp/loader.lisp ?
-(defun dump-capogi-font-internal (font stream)
-  (when (boundp 'boxer::*bin-dump-table*)
-    ;; means we are in the context of a box save...
-    (boxer::enter-table font))
-  (boxer::write-file-word boxer::bin-op-capogi-font stream)
-  (let ((plist (capogi-font-plist font)))
-    (boxer::dump-list-preamble (1+ (length plist)) stream)
-    (dolist (item plist) (boxer::dump-boxer-thing item stream)))
-  ;; now dump the chars as a list of char data
-  (let ((ccount (capogi-font-count cfont)))
-    (boxer::dump-list-preamble ccount stream)
-    (dolist (char (capogi-font-chars cfont))
-      (dump-capogi-char char stream))))
-
-(defun capogi-font-plist (cfont)
-  (list :capi-font   (capi-font-values (capogi-font-capi-font cfont))
-        :height      (capogi-font-height cfont)
-        :fixed-width (capogi-font-fixed-width cfont)
-        :chars))
-|#
 
 (defun capi-font-values (f)
   (cond ((gp::font-p f)
@@ -574,18 +508,6 @@ Modification History (most recent at the top)
           (dolist (b data) (write-byte b stream))
         (dotimes (i dlength)
           (write-byte (fli:foreign-aref data i) stream))))))
-
-#|
-(defun dump-capogi-char (glyph stream)
-  (let* ((data (capogi-char-data glyph))
-         (ldata (when (listp data) (length data))))
-    (cond ((null ldata) (error "FFI char data conversion not yet implemented, ~A" glyph))
-          (t
-           (boxer::dump-list-preamble (+ ldata 2) stream)
-           (boxer::dump-boxer-thing (capogi-char-char glyph) stream)
-           (boxer::dump-boxer-thing (capogi-char-wid  glyph) stream)
-           (dolist (byte data) (boxer::dump-boxer-thing byte stream))))))
-|#
 
 (defun load-capogi-font (stream)
   ;; 1st check for magic numbers and get file version number
