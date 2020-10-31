@@ -1022,31 +1022,6 @@ Modification History (most recent at the top)
 
 ;; if not fullscreen, pass-1 should clear changed areas
 ;; Note: should scrolling ops, pass in the box being scrolled as the changed area ?
-#|
-(defun repaint (&optional just-windows?)
-  (let ((*complete-redisplay-in-progress?* t))
-    (redisplaying-unit
-     (dolist (redisplayable-window *redisplayable-windows*)
-       #+opengl
-       (capi:apply-in-pane-process redisplayable-window #'repaint-window redisplayable-window)
-       #-opengl
-       (repaint-window redisplayable-window)
-       )
-     (dolist (region *region-list*)
-       (when (not (null region)) (interval-update-repaint-all-rows region)))
-     (setq *redisplay-clues* nil)
-     ;; comment out next line for outermost box save document, updates will
-     ;; occur inside of set-outermost-box instead...
-     (when (bp? *point*)
-       (set-window-name (current-file-status (point-box)))
-       ;; repaint-cursor can now cause horizontal scrolling of the box neccessitating an
-       ;; additional repaint, if so, it will throw to 'scroll-x-changed TAG
-       (unless just-windows?
-         #+opengl
-         (capi:apply-in-pane-process *boxer-pane* #'repaint-cursor)
-         #-opengl
-         (repaint-cursor))))))
-|#
 
 (defun repaint-internal (&optional just-windows?)
   (let ((*complete-redisplay-in-progress?* t))
