@@ -61,10 +61,10 @@
 (defvar *chas-array-default-size* 32.)
 
 (defstruct (chas-array (:type vector)
-           (:include storage-vector)
-           (:constructor %make-chas-array)
-           (:copier nil) ;; we do this ourselves
-           )
+                       (:include storage-vector)
+                       (:constructor %make-chas-array)
+                       (:copier nil) ;; we do this ourselves
+                       )
   (bps nil)
   (fds nil))
 
@@ -97,15 +97,15 @@
   (check-chas-array-arg chas-array)
   (let ((active-length (chas-array-active-length chas-array)))
     (cond ((and (integerp arg) (>=& arg 0) (<& arg active-length)))
-    (t
-     (barf "Bad Arg, ~A." arg)))))
+          (t
+           (barf "Bad Arg, ~A." arg)))))
 
 (defun check-chas-array-new-cha-no-arg (chas-array arg)
   (check-chas-array-arg chas-array)
   (let ((active-length (chas-array-active-length chas-array)))
     (cond ((and (integerp arg) (>=& arg 0) (<=& arg active-length)))
-    (t
-     (barf "Bad Arg, ~A" arg)))))
+          (t
+           (barf "Bad Arg, ~A" arg)))))
 
 (defmacro fast-chas-array-get-cha (chas cha-no)
   `(svref& ,chas ,cha-no))
@@ -140,53 +140,53 @@
   (let ((old-active-length (chas-array-active-length chas-array)))
     (chas-array-assure-room chas-array (+& old-active-length distance))
     (cond ((and (plusp& distance) (not (>=& strt-cha-no old-active-length)))
-     (chas-array-slide-chas-pos chas-array strt-cha-no
-              distance old-active-length)
+           (chas-array-slide-chas-pos chas-array strt-cha-no
+                                      distance old-active-length)
            (chas-array-slide-fds chas-array strt-cha-no distance))
-    ((minusp& distance)
-     (chas-array-slide-chas-neg chas-array strt-cha-no
-              distance old-active-length)
+          ((minusp& distance)
+           (chas-array-slide-chas-neg chas-array strt-cha-no
+                                      distance old-active-length)
            (chas-array-slide-fds chas-array strt-cha-no distance)))
     (chas-array-slide-bps chas-array strt-cha-no distance)))
 
 (defun chas-array-slide-chas-pos (chas-array strt-cha-no
-          distance old-active-length)
+                                  distance old-active-length)
   (do ((chas (chas-array-chas chas-array))
        (orig-cha-no (-& old-active-length 1) (-& orig-cha-no 1)))
       ((<& orig-cha-no strt-cha-no))
     (fast-chas-array-set-cha chas
-           (+& orig-cha-no distance)
-           (fast-chas-array-get-cha chas orig-cha-no))))
+                             (+& orig-cha-no distance)
+                             (fast-chas-array-get-cha chas orig-cha-no))))
 
 (defun chas-array-slide-chas-neg (chas-array strt-cha-no
-          distance old-active-length)
+                                  distance old-active-length)
   (do ((chas (chas-array-chas chas-array))
        (orig-cha-no strt-cha-no (+& orig-cha-no 1)))
       ((>=& orig-cha-no old-active-length))
     (fast-chas-array-set-cha chas
-      (+& orig-cha-no distance)
-      (fast-chas-array-get-cha chas orig-cha-no))))
+                             (+& orig-cha-no distance)
+                             (fast-chas-array-get-cha chas orig-cha-no))))
 
 (defun chas-array-slide-bps (chas-array strt-cha-no distance)
   (dolist (bp (chas-array-bps chas-array))
     (cond ((or (>& (bp-cha-no bp) strt-cha-no)
-         (and (=& (bp-cha-no bp) strt-cha-no)
-        (eq (bp-type bp) ':moving)))
-     (incf& (bp-cha-no bp) distance)))))
+               (and (=& (bp-cha-no bp) strt-cha-no)
+                    (eq (bp-type bp) ':moving)))
+           (incf& (bp-cha-no bp) distance)))))
 
 (defun chas-array-slide-fds (chas-array strt-cha-no distance)
   (unless (null (chas-array-fds chas-array))
-      (dolist (fd (chas-array-fds chas-array))
-        (cond ((>=& (bfd-cha-no fd) strt-cha-no)
-         (incf& (bfd-cha-no fd) distance)))))
-    ;; now remove any Font Descriptors that have coalesced
-  ; use compact-fds at some later time to avoid premature removal of a
-  ; FD that chas-array-move-chas might need
-;    (setf (chas-array-fds chas-array)
-;	  (delete-duplicates (chas-array-fds chas-array)
-;			      :test #'(lambda (fd1 fd2)
-;					(=& (bfd-cha-no fd1)
-;					    (bfd-cha-no fd2)))))
+    (dolist (fd (chas-array-fds chas-array))
+      (cond ((>=& (bfd-cha-no fd) strt-cha-no)
+             (incf& (bfd-cha-no fd) distance)))))
+  ;; now remove any Font Descriptors that have coalesced
+                                        ; use compact-fds at some later time to avoid premature removal of a
+                                        ; FD that chas-array-move-chas might need
+                                        ;    (setf (chas-array-fds chas-array)
+                                        ;	  (delete-duplicates (chas-array-fds chas-array)
+                                        ;			      :test #'(lambda (fd1 fd2)
+                                        ;					(=& (bfd-cha-no fd1)
+                                        ;					    (bfd-cha-no fd2)))))
   )
 
 ;;; CHAS-ARRAY-INSERT-CHA-1 is an internal function used by all of the
@@ -247,10 +247,10 @@
 (defun copy-fd-at (fd cha-no) (make-cfd cha-no (bfd-font-no fd) (bfd-color fd)))
 
 (defun chas-array-move-chas (from-chas-array from-chas-array-strt-cha-no
-           into-chas-array into-chas-array-strt-cha-no
-           no-of-chas-to-move superior-row)
+                             into-chas-array into-chas-array-strt-cha-no
+                             no-of-chas-to-move superior-row)
   (let ((from-chas-array-stop-cha-no (+& from-chas-array-strt-cha-no
-           no-of-chas-to-move))
+                                         no-of-chas-to-move))
         ;; these have to calculated here BEFORE any FD's are slid around
         (from-starting-bfd (closest-bfd-internal (chas-array-fds from-chas-array)
                                                  from-chas-array-strt-cha-no))
@@ -258,22 +258,22 @@
                                                  into-chas-array-strt-cha-no)))
     ;; First we be real good and check all our args like we promised.
     (check-chas-array-new-cha-no-arg from-chas-array
-             from-chas-array-strt-cha-no)
+                                     from-chas-array-strt-cha-no)
     (check-chas-array-new-cha-no-arg from-chas-array
-             from-chas-array-stop-cha-no)
+                                     from-chas-array-stop-cha-no)
     (check-chas-array-new-cha-no-arg into-chas-array
-             into-chas-array-strt-cha-no)
+                                     into-chas-array-strt-cha-no)
     ;; make room for the new characters
     (chas-array-slide-chas into-chas-array
                            into-chas-array-strt-cha-no no-of-chas-to-move)
     ;; actually move the characters from one chas-array to the other
     (dotimes& (cha-no no-of-chas-to-move)
-      (let ((from-cha-no (+& from-chas-array-strt-cha-no cha-no))
-      (into-cha-no (+& into-chas-array-strt-cha-no cha-no)))
-  (chas-array-insert-cha-1 into-chas-array
-         into-cha-no
-         (chas-array-get-cha from-chas-array
-                 from-cha-no))))
+              (let ((from-cha-no (+& from-chas-array-strt-cha-no cha-no))
+                    (into-cha-no (+& into-chas-array-strt-cha-no cha-no)))
+                (chas-array-insert-cha-1 into-chas-array
+                                         into-cha-no
+                                         (chas-array-get-cha from-chas-array
+                                                             from-cha-no))))
     ;; handle the gap left by the characters that were moved
     (chas-array-slide-chas
      from-chas-array from-chas-array-stop-cha-no (-& no-of-chas-to-move))
@@ -285,13 +285,13 @@
     ;; move any BP's
     (dolist (bp (chas-array-bps from-chas-array))
       (let ((bp-cha-no (bp-cha-no bp)))
-  (cond ((or (and (>& bp-cha-no from-chas-array-strt-cha-no)
-      (<& bp-cha-no (-& from-chas-array-stop-cha-no 1)))
-       (and (=& bp-cha-no from-chas-array-strt-cha-no)
-      (eq (bp-type bp) ':moving)))
-         (move-bp-1 bp superior-row
-        (+& into-chas-array-strt-cha-no
-            (-& bp-cha-no from-chas-array-strt-cha-no)))))))
+        (cond ((or (and (>& bp-cha-no from-chas-array-strt-cha-no)
+                        (<& bp-cha-no (-& from-chas-array-stop-cha-no 1)))
+                   (and (=& bp-cha-no from-chas-array-strt-cha-no)
+                        (eq (bp-type bp) ':moving)))
+               (move-bp-1 bp superior-row
+                          (+& into-chas-array-strt-cha-no
+                              (-& bp-cha-no from-chas-array-strt-cha-no)))))))
     ;; handle FD's we may have to add extra FD's if the beginning of the
     ;; moved section in not coincidental with an earlier BFD and to preserve the
     ;; fontness of the chas AFTER the inserted row-chas
@@ -340,8 +340,8 @@
                ;; prefer the last-fd EXCEPT for empty row case
                (if (and (zerop (bfd-cha-no fd))
                         (zerop (chas-array-active-length chas-array)))
-                 (push fd unneeded-fds)
-                 (push last-fd  unneeded-fds)))))
+                   (push fd unneeded-fds)
+                   (push last-fd  unneeded-fds)))))
       (setq last-fd fd))
     (dolist (ufd unneeded-fds) (chas-array-delete-bfd chas-array ufd))))
 
@@ -354,7 +354,7 @@
 
 (defmethod set-bps ((self row) new-value)
   (assert (and (listp new-value) (every #'bp? new-value)) (new-value)
-    "A list of Boxer BP's")
+          "A list of Boxer BP's")
   (setf (chas-array-bps (slot-value self 'chas-array)) new-value))
 
 (defmethod add-bp ((self row) bp)
@@ -367,7 +367,7 @@
   (check-bp-arg bp)
   (let ((chas-array (slot-value self 'chas-array)))
     (setf (chas-array-bps chas-array)
-    (fast-delq bp (chas-array-bps chas-array)))))
+          (fast-delq bp (chas-array-bps chas-array)))))
 
 
 ;;; First, some Font Descriptor utilities
@@ -384,45 +384,45 @@
       (push bfd (chas-array-fds chas-array))
       ;; looks like we have to loop through to figure out the right place
       (do* ((fds (chas-array-fds chas-array) (cdr fds))
-      (next-fds (cdr fds) (cdr fds))
-      (current-fd (car fds) (car fds))
-      (next-fd (car next-fds) (car next-fds))
-      (bfd-cha-no (bfd-cha-no bfd)))
-     ((null fds))
-  (cond ((<& bfd-cha-no (bfd-cha-no current-fd))
+            (next-fds (cdr fds) (cdr fds))
+            (current-fd (car fds) (car fds))
+            (next-fd (car next-fds) (car next-fds))
+            (bfd-cha-no (bfd-cha-no bfd)))
+           ((null fds))
+        (cond ((<& bfd-cha-no (bfd-cha-no current-fd))
                ;; this can happen if the new bfd is to be inserted BEFORE
                ;; all of the existing BFD's
                (setf (chas-array-fds chas-array) (list* bfd fds))
                (return))
               ((=& bfd-cha-no (bfd-cha-no current-fd))
-         ;; if there already is a FD at the right place, bash
-         ;; its values rather than splicing a new FD into the list
-         (setf (bfd-font-no current-fd) (bfd-font-no bfd)
+               ;; if there already is a FD at the right place, bash
+               ;; its values rather than splicing a new FD into the list
+               (setf (bfd-font-no current-fd) (bfd-font-no bfd)
                      (bfd-color   current-fd) (bfd-color   bfd))
-         (return))
-        ((>& bfd-cha-no (bfd-cha-no current-fd))
-         (cond ((null next-fd)
-          (setf (cdr fds) (list bfd))
-          (return))
-         ((<& bfd-cha-no (bfd-cha-no next-fd))
-          ;; we are in between 2 FD's so we should splice in here
-          (setf (cdr fds) (cons bfd next-fds))
-          (return))
-         ((=& bfd-cha-no (bfd-cha-no next-fd))
-          (setf (bfd-font-no next-fd) (bfd-font-no bfd)
+               (return))
+              ((>& bfd-cha-no (bfd-cha-no current-fd))
+               (cond ((null next-fd)
+                      (setf (cdr fds) (list bfd))
+                      (return))
+                     ((<& bfd-cha-no (bfd-cha-no next-fd))
+                      ;; we are in between 2 FD's so we should splice in here
+                      (setf (cdr fds) (cons bfd next-fds))
+                      (return))
+                     ((=& bfd-cha-no (bfd-cha-no next-fd))
+                      (setf (bfd-font-no next-fd) (bfd-font-no bfd)
                             (bfd-color   next-fd) (bfd-color   bfd))
-          (return))))))))
+                      (return))))))))
 
 (defun chas-array-delete-bfd (chas-array bfd)
   (setf (chas-array-fds chas-array)
-  (fast-delq bfd (chas-array-fds chas-array))))
+        (fast-delq bfd (chas-array-fds chas-array))))
 
 (defmethod row-fds ((self row))
   (chas-array-fds (slot-value self 'chas-array)))
 
 (defmethod set-fds ((self row) new-value)
   (assert (and (listp new-value) (every #'bfd? new-value)) (new-value)
-    "A list of Boxer Font Descriptors")
+          "A list of Boxer Font Descriptors")
   (setf (chas-array-fds (slot-value self 'chas-array)) new-value))
 
 (defmethod insert-bfd ((self row) new-bfd)
@@ -463,26 +463,26 @@
   (setf (slot-value self 'chas-array) na))
 
 (defmacro do-row-chas (((var row &key (start 0) stop) . other-do-vars)
-           &body body)
+                       &body body)
   (let ((chas-array (gensym))
-  (chas (gensym))
-  (active-length (gensym))
-  (cha-no (gensym)))
-  `(let* ((,chas-array (chas-array ,row))
-    (,chas (chas-array-chas ,chas-array))
-    (,active-length (if (null ,stop)
-                              (chas-array-active-length ,chas-array)
-                              ,stop)))
-     (let ((,var nil))				       	;Note that there is a
-       (do ((,cha-no ,start (+& ,cha-no 1))  	       	;good reason for using
-      . ,other-do-vars)			       	;this weird
-     ((>=& ,cha-no ,active-length))                  ;(LET ((,VAR NIL)) ...)
-   (setq ,var
-         (fast-chas-array-get-cha ,chas ,cha-no));(SETQ ,VAR <foo>)
-         (macrolet ((change-cha (new-cha)
-                      `(setf (fast-chas-array-get-cha ,',chas ,',cha-no)
-                             ,new-cha)))
-     . ,body))))))
+        (chas (gensym))
+        (active-length (gensym))
+        (cha-no (gensym)))
+    `(let* ((,chas-array (chas-array ,row))
+            (,chas (chas-array-chas ,chas-array))
+            (,active-length (if (null ,stop)
+                                (chas-array-active-length ,chas-array)
+                                ,stop)))
+       (let ((,var nil))				       	;Note that there is a
+         (do ((,cha-no ,start (+& ,cha-no 1))  	       	;good reason for using
+              . ,other-do-vars)			       	;this weird
+             ((>=& ,cha-no ,active-length))                  ;(LET ((,VAR NIL)) ...)
+           (setq ,var
+                 (fast-chas-array-get-cha ,chas ,cha-no));(SETQ ,VAR <foo>)
+           (macrolet ((change-cha (new-cha)
+                        `(setf (fast-chas-array-get-cha ,',chas ,',cha-no)
+                               ,new-cha)))
+             . ,body))))))
 
 (defmethod length-in-chas ((self row))
   (chas-array-active-length (slot-value self 'chas-array)))
@@ -490,28 +490,28 @@
 (defmethod cha-at-cha-no ((self row) n)
   (let ((chas-array (slot-value self 'chas-array)))
     (cond ((or (<& n 0)
-         (>=& n (chas-array-active-length chas-array))) nil)
-    (t (chas-array-get-cha chas-array n)))))
+               (>=& n (chas-array-active-length chas-array))) nil)
+          (t (chas-array-get-cha chas-array n)))))
 
 ;;; this is useful for changing case and fonts and such
 (defmethod change-cha-at-cha-no ((self row) n new-cha)
   (let ((chas-array (slot-value self 'chas-array)))
     (cond ((or (<& n 0)
-         (>=& n (chas-array-active-length chas-array))) nil)
-    (t (let ((old-cha (chas-array-get-cha chas-array n)))
-         (unless (cha? old-cha)
-     (delete-self-action old-cha)))
-       (chas-array-set-cha chas-array n new-cha)
-       (modified self)
-       (unless (cha? new-CHA)
-         (SET-SUPERIOR-ROW new-CHA SELF)
-         (insert-self-action new-cha))))))
+               (>=& n (chas-array-active-length chas-array))) nil)
+          (t (let ((old-cha (chas-array-get-cha chas-array n)))
+               (unless (cha? old-cha)
+                 (delete-self-action old-cha)))
+             (chas-array-set-cha chas-array n new-cha)
+             (modified self)
+             (unless (cha? new-CHA)
+               (SET-SUPERIOR-ROW new-CHA SELF)
+               (insert-self-action new-cha))))))
 
 (defmethod cha-cha-no ((row row) cha-to-get-cha-no-of)
   (do-row-chas ((cha row)
-    (cha-no 0 (+& cha-no 1)))
+                (cha-no 0 (+& cha-no 1)))
     (cond ((eq cha cha-to-get-cha-no-of)
-     (return cha-no)))))
+           (return cha-no)))))
 
 (DEFMETHOD CHAS ((ROW ROW))
   (OR (CACHED-CHAS ROW) (CACHE-CHAS ROW)))
@@ -522,25 +522,25 @@
     CHAS))
 
 (defmethod chas-between-cha-nos ((self row) start
-         &optional (stop (length-in-chas self)))
+                                 &optional (stop (length-in-chas self)))
   (with-collection
-    (do ((cha-no start (1+& cha-no)))
-        ((=& cha-no stop))
-      (collect (cha-at-cha-no self cha-no)))))
+      (do ((cha-no start (1+& cha-no)))
+          ((=& cha-no stop))
+        (collect (cha-at-cha-no self cha-no)))))
 
 (DEFMETHOD BOXES-IN-ROW ((ROW ROW))
   (WITH-COLLECTION
-    (DO-ROW-CHAS ((CHA ROW))
-      (unless (cha? CHA) (COLLECT CHA)))))
+      (DO-ROW-CHAS ((CHA ROW))
+        (unless (cha? CHA) (COLLECT CHA)))))
 
 (defmethod boxes-between-cha-nos  ((row row) strt-cha-no stop-cha-no)
   (with-collection
       (do* ((index strt-cha-no (+& index 1))
-      (cha (cha-at-cha-no row index)
-     (cha-at-cha-no row index)))
-     ((=& index stop-cha-no))
-  (unless (cha? cha)
-    (collect cha)))))
+            (cha (cha-at-cha-no row index)
+                 (cha-at-cha-no row index)))
+           ((=& index stop-cha-no))
+        (unless (cha? cha)
+          (collect cha)))))
 
 (defun copy-current-bfd (at-cha-no)
   (let ((new (make-bfd at-cha-no (bfd-font-no *current-font-descriptor*))))
@@ -580,8 +580,8 @@
 
 (defmethod insert-list-of-chas-at-cha-no ((self row) list-of-chas cha-no)
   (do* ((remaining-chas list-of-chas (cdr remaining-chas))
-  (CHA (CAR REMAINING-CHAS))
-  (present-cha-no cha-no (1+ present-cha-no)))
+        (CHA (CAR REMAINING-CHAS))
+        (present-cha-no cha-no (1+ present-cha-no)))
        ((null remaining-chas))
     (insert-cha-at-cha-no self cha present-cha-no)
     (unless (cha? CHA)
@@ -597,35 +597,35 @@
     (MODIFIED SELF)))
 
 (defmethod insert-row-chas-at-cha-no ((self row) row cha-no
-              &optional
-              (from-start-cha-no 0)
-              (from-stop-cha-no (length-in-chas row)))
+                                      &optional
+                                        (from-start-cha-no 0)
+                                        (from-stop-cha-no (length-in-chas row)))
   (unless (>& from-start-cha-no from-stop-cha-no)
     (let ((row-chas-array (chas-array row)))
       (do-row-chas ((c row :start from-start-cha-no :stop from-stop-cha-no))
-       (unless (cha? c)
-         (set-superior-row c self)
-         (insert-self-action c)))
+        (unless (cha? c)
+          (set-superior-row c self)
+          (insert-self-action c)))
       (chas-array-move-chas row-chas-array from-start-cha-no
-          (chas-array self) cha-no
-          (-& from-stop-cha-no from-start-cha-no)
-          self))
+                            (chas-array self) cha-no
+                            (-& from-stop-cha-no from-start-cha-no)
+                            self))
     (modified self)))
 
 (defmethod delete-chas-between-cha-nos ((row row) strt-cha-no stop-cha-no)
   (let* ((return-row (make-initialized-row))
-   (return-row-chas-array (chas-array return-row)))
+         (return-row-chas-array (chas-array return-row)))
     (chas-array-move-chas
-      (chas-array row) strt-cha-no return-row-chas-array
-      0 (-& stop-cha-no strt-cha-no) return-row)
+     (chas-array row) strt-cha-no return-row-chas-array
+     0 (-& stop-cha-no strt-cha-no) return-row)
     (modified row)
     (modified return-row)
     (do-row-chas ((c return-row))
       (unless (cha? c)
-  ;; note that the Boxes here still think they are inferiors of
-  ;; the original row So that DELETE-SELF-ACTION can win
-  (delete-self-action c)
-  (set-superior-row c return-row)))
+        ;; note that the Boxes here still think they are inferiors of
+        ;; the original row So that DELETE-SELF-ACTION can win
+        (delete-self-action c)
+        (set-superior-row c return-row)))
     return-row))
 
 (defmethod kill-chas-at-cha-no  ((self row) strt-cha-no)
@@ -652,7 +652,7 @@
 
 (defmethod append-list-of-chas ((self row) list-of-chas)
   (insert-list-of-chas-at-cha-no self list-of-chas
-  (chas-array-active-length (chas-array self))))
+                                 (chas-array-active-length (chas-array self))))
 
 
 ;;; Box rows are kept a doubly linked list. The box points to its first row,
@@ -722,9 +722,9 @@
 
 (defmacro do-box-rows (((var box) . other-do-vars) &body body)
   `(do ((,var (first-inferior-row ,box) (next-row ,var))
-  . ,other-do-vars)
+        . ,other-do-vars)
        ((null ,var))
-     . ,body))
+    . ,body))
 
 (defmethod length-in-rows ((self box))
   (do ((row (first-inferior-row self) (next-row row))
@@ -739,20 +739,20 @@
 
 (defmethod length-in-chas ((self box))
   (with-summation
-    (do-box-rows ((row self)) (sum (length-in-chas row)))))
+      (do-box-rows ((row self)) (sum (length-in-chas row)))))
 
 (defmethod row-at-row-no ((self box) row-no)
   (unless (minusp row-no)
     (do ((row (first-inferior-row self) (next-row row))
-   (i row-no (-& i 1)))
-  ((or (null row) (<& i 1)) row))))
+         (i row-no (-& i 1)))
+        ((or (null row) (<& i 1)) row))))
 
 (defmethod row-row-no ((self box) row)
   (do ((inf-row (first-inferior-row self) (next-row inf-row))
        (row-no 0 (+& row-no 1)))
       ((null inf-row))
     (when (eq inf-row row)
-    (return row-no))))
+      (return row-no))))
 
 (defmethod cache-rows ((box box))
   (let ((rows (with-collection (do-box-rows ((row box)) (collect row)))))
@@ -763,23 +763,23 @@
   (or (slot-value box 'cached-rows) (cache-rows box)))
 
 (defmethod insert-row-at-row-no ((box box) row row-no
-         &optional (check-closet t))
+                                 &optional (check-closet t))
   (let* ((row-at-row-no (row-at-row-no box row-no))
-   (row-before-row-no  ;; was (row-at-row-no box (- row-no 1))
-    (or (and row-at-row-no (previous-row row-at-row-no))
-        (row-at-row-no box (-& row-no 1)))))
+         (row-before-row-no  ;; was (row-at-row-no box (- row-no 1))
+           (or (and row-at-row-no (previous-row row-at-row-no))
+               (row-at-row-no box (-& row-no 1)))))
     (set-superior-box row box)
     (set-previous-row row row-before-row-no)
     (set-next-row row row-at-row-no)
     (if (null row-before-row-no)
-  (set-first-inferior-row box row)
-  (set-next-row row-before-row-no row))
+        (set-first-inferior-row box row)
+        (set-next-row row-before-row-no row))
     (unless (null row-at-row-no)
       (set-previous-row row-at-row-no row))
     (when (or (null check-closet)
-        (not (eq row (slot-value box 'closets))))
+              (not (eq row (slot-value box 'closets))))
       (do-row-chas ((c row))
-  (unless (cha? c) (insert-self-action c))))))
+        (unless (cha? c) (insert-self-action c))))))
 
 
 (defmethod delete-row-at-row-no ((box box) pos &optional (check-closet t))
@@ -787,22 +787,22 @@
   ;; that each box has at least one row in it.
   (unless (null (next-row (first-inferior-row box)));(= (length-in-rows box) 1)
     (let* ((row (row-at-row-no box pos))
-     (row-prev-row (unless (null row) (previous-row row)))
-     (row-next-row (unless (null row) (next-row row))))
+           (row-prev-row (unless (null row) (previous-row row)))
+           (row-next-row (unless (null row) (next-row row))))
       (unless (null row)
-  (when (or (null check-closet)
-        (not (eq row (slot-value box 'closets))))
-    (do-row-chas ((c row))
-      (unless (cha? c) (delete-self-action c)))
-    (set-superior-box row nil))
-  (set-previous-row row nil)
-  (set-next-row row nil))
+        (when (or (null check-closet)
+                  (not (eq row (slot-value box 'closets))))
+          (do-row-chas ((c row))
+            (unless (cha? c) (delete-self-action c)))
+          (set-superior-box row nil))
+        (set-previous-row row nil)
+        (set-next-row row nil))
       (if (eq row (first-inferior-row box))
-    (setf (first-inferior-row box) row-next-row)
-    (unless (null row-prev-row)
-      (set-next-row row-prev-row row-next-row)))
+          (setf (first-inferior-row box) row-next-row)
+          (unless (null row-prev-row)
+            (set-next-row row-prev-row row-next-row)))
       (unless (null row-next-row)
-  (set-previous-row row-next-row row-prev-row)))))
+        (set-previous-row row-next-row row-prev-row)))))
 
 
 ;;; Operations that take existing box rows as position specifiers. These
@@ -810,20 +810,20 @@
 ;;; as position specifiers.
 
 (defmethod insert-row-before-row ((box box) row before-row
-          &optional (check-closet t))
+                                  &optional (check-closet t))
   (let ((prev-row (previous-row before-row)))
     (set-superior-box row box)
     (set-previous-row row prev-row)
     (set-previous-row before-row row)
     (set-next-row row before-row)
     (if (not-null prev-row)    ; we are not inserting into the beginning...
-  (set-next-row prev-row row)
-  (set-first-inferior-row box row)))
+        (set-next-row prev-row row)
+        (set-first-inferior-row box row)))
   (when (or (null check-closet) (not (eq row (slot-value box 'closets))))
     (do-row-chas ((c row)) (unless (cha? c) (insert-self-action c)))))
 
 (defmethod insert-row-after-row ((box box) row after-row
-         &optional (check-closet t))
+                                 &optional (check-closet t))
   (let ((after-after-row (next-row after-row)))
     (set-superior-box row box)
     (set-next-row after-row row)
@@ -840,17 +840,17 @@
 (defmethod delete-row ((self box) row &optional (check-closet t))
   (when (eq (superior-box row) self)
     (let ((prev-row (previous-row row))
-    (next-row (next-row row)))
+          (next-row (next-row row)))
       (when (or (null check-closet)
-    (not (eq row (slot-value self 'closets))))
-  (do-row-chas ((c row))
-         (unless (cha? c) (delete-self-action c)))
-  (set-superior-box row nil))
+                (not (eq row (slot-value self 'closets))))
+        (do-row-chas ((c row))
+          (unless (cha? c) (delete-self-action c)))
+        (set-superior-box row nil))
       (set-previous-row row nil)
       (set-next-row row nil)
       (if (eq row (first-inferior-row self))
-    (setf (first-inferior-row self) next-row)
-    (unless (null prev-row) (set-next-row prev-row next-row)))
+          (setf (first-inferior-row self) next-row)
+          (unless (null prev-row) (set-next-row prev-row next-row)))
       (unless (null next-row) (set-previous-row next-row prev-row)))))
 
 
@@ -872,11 +872,11 @@
 (defmethod kill-box-contents ((self box) &optional (check-closet t))
   (let ((closet-row (and check-closet (slot-value self 'closets))))
     (do ((row (first-inferior-row self)
-        (next-row row)))
-  ((null row))
+              (next-row row)))
+        ((null row))
       (unless (eq row closet-row)
-  (do-row-chas ((c row)) (unless (cha? c) (delete-self-action c self)))
-  (set-superior-box row nil)))
+        (do-row-chas ((c row)) (unless (cha? c) (delete-self-action c self)))
+        (set-superior-box row nil)))
     (setf (first-inferior-row self) nil)
     ;; if there are any screen-boxes, then we also need to reset their
     ;; scrolling row since it could still be pointing at one
@@ -887,35 +887,35 @@
 (defmacro action-at-bp-internal (&body do-action-form)
   `(let ((old-bp-type (bp-type bp)))
      (unwind-protect
-       (progn (setf (bp-type bp) (if force-bp-type force-bp-type old-bp-type))
-        . ,do-action-form)
+          (progn (setf (bp-type bp) (if force-bp-type force-bp-type old-bp-type))
+                 . ,do-action-form)
        (setf (bp-type bp) old-bp-type))))
 
 (defun insert-cha (bp cha &optional (force-bp-type nil))
   (action-at-bp-internal
-    (insert-cha-at-cha-no (bp-row bp) cha (bp-cha-no bp))))
+   (insert-cha-at-cha-no (bp-row bp) cha (bp-cha-no bp))))
 
 (defun insert-row-chas (bp row &optional (force-bp-type nil))
   (action-at-bp-internal
-    (insert-row-chas-at-cha-no (bp-row bp) row (bp-cha-no bp))))
+   (insert-row-chas-at-cha-no (bp-row bp) row (bp-cha-no bp))))
 
 (defun insert-row (bp row &optional (force-bp-type nil))
   (action-at-bp-internal
-    (let* ((bp-box (bp-box bp))
-     (bp-row (bp-row bp))
-     (bp-row-row-no (row-row-no bp-box bp-row))
-     (temp-row (let ((*boxes-being-temporarily-deleted* t))
-            (delete-chas-to-end-of-row bp force-bp-type))))
-      (insert-row-at-row-no bp-box row (+ bp-row-row-no 1))
-      (move-point (row-last-bp-values row))
-      (let ((*boxes-being-temporarily-deleted* t))
-  (insert-row-chas bp temp-row :fixed)))))
+   (let* ((bp-box (bp-box bp))
+          (bp-row (bp-row bp))
+          (bp-row-row-no (row-row-no bp-box bp-row))
+          (temp-row (let ((*boxes-being-temporarily-deleted* t))
+                      (delete-chas-to-end-of-row bp force-bp-type))))
+     (insert-row-at-row-no bp-box row (+ bp-row-row-no 1))
+     (move-point (row-last-bp-values row))
+     (let ((*boxes-being-temporarily-deleted* t))
+       (insert-row-chas bp temp-row :fixed)))))
 
 (defun delete-chas-to-end-of-row (bp &optional (force-bp-type nil))
   (action-at-bp-internal
-    (let ((row (bp-row bp))
-    (cha-no (bp-cha-no bp)))
-      (kill-chas-at-cha-no row cha-no))))
+   (let ((row (bp-row bp))
+         (cha-no (bp-cha-no bp)))
+     (kill-chas-at-cha-no row cha-no))))
 
 
 ;;;; FIND-LOWEST-COMMON-SUPERIOR-BOX
@@ -927,33 +927,33 @@
 (defun find-lowest-common-superior-box (box1 box2)
   (let ((mark-this-pass (cons nil nil))) ;might even be able to use INCF.
     (do ((box1 box1 (and box1 (superior-box box1)))
-   (box2 box2 (and box2 (superior-box box2))))
-  (())
+         (box2 box2 (and box2 (superior-box box2))))
+        (())
       (cond ((eq box1 box2)
-       (return box1))
-      ((eq (and box1 (getprop box1 ':lowest-common-superior-mark))
-     mark-this-pass)
-       (return box1))
-      ((eq (and box2 (getprop box2 ':lowest-common-superior-mark))
-     mark-this-pass)
-       (return box2))
-      (t
-       (and box1 (putprop box1 mark-this-pass
-        ':lowest-common-superior-mark))
-       (and box2 (putprop box2 mark-this-pass '
-        :lowest-common-superior-mark)))))))
+             (return box1))
+            ((eq (and box1 (getprop box1 ':lowest-common-superior-mark))
+                 mark-this-pass)
+             (return box1))
+            ((eq (and box2 (getprop box2 ':lowest-common-superior-mark))
+                 mark-this-pass)
+             (return box2))
+            (t
+             (and box1 (putprop box1 mark-this-pass
+                                ':lowest-common-superior-mark))
+             (and box2 (putprop box2 mark-this-pass '
+                                :lowest-common-superior-mark)))))))
 
 (defun obj-contains-obj? (outer inner)
   (do ((inner inner (superior-obj inner)))
       ((null inner) nil)
     (cond ((eq inner outer)
-     (return t)))))
+           (return t)))))
 
 (defun box-contains-box? (outer-box inner-box)
   (do ((inner (superior-box inner-box) (superior-box inner)))
       ((null inner) nil)
     (and (eq inner outer-box)
-   (return t))))
+         (return t))))
 
 (defun level-of-superiority (outer-box inner-box)
   (do ((i 0 (1+& i))
@@ -1002,21 +1002,21 @@
 (defun find-path (from-box to-box)
   (declare (values box-to-throw-to downward-entry-chain))
   (cond ((eq from-box to-box)
-   (values nil
-     nil))
-  ((box-contains-box? to-box from-box)
-   (values to-box
-     nil))
-  ((box-contains-box? from-box to-box)
-   (values nil
-     (find-path-from-superior-to-inferior from-box to-box)))
-  (t
-   (let ((lowest-common-superior-box
-     (find-lowest-common-superior-box from-box
-              to-box)))
-     (values lowest-common-superior-box
-       (find-path-from-superior-to-inferior
-         lowest-common-superior-box to-box))))))
+         (values nil
+                 nil))
+        ((box-contains-box? to-box from-box)
+         (values to-box
+                 nil))
+        ((box-contains-box? from-box to-box)
+         (values nil
+                 (find-path-from-superior-to-inferior from-box to-box)))
+        (t
+         (let ((lowest-common-superior-box
+                 (find-lowest-common-superior-box from-box
+                                                  to-box)))
+           (values lowest-common-superior-box
+                   (find-path-from-superior-to-inferior
+                    lowest-common-superior-box to-box))))))
 
 
 (defun find-path-from-superior-to-inferior (superior-box inferior-box)
@@ -1032,20 +1032,20 @@
 ;;; get a chance to run. It is not clear that this is the right thing
 
 (defun send-exit-messages (destination-box destination-screen-box
-         &optional(one-step-up? t))
+                           &optional(one-step-up? t))
   (let ((current-box (point-box)))
     (cond ((eq (find-lowest-common-superior-box current-box destination-box)
-         current-box)
-     nil)
-    ((superior? destination-screen-box (point-screen-box)) nil)
-    ((null (superior-box current-box)) nil)
-    (t (exit current-box
-       (superior-screen-box (bp-screen-box *point*))
-       (superior-box current-box)
-       one-step-up?)
-       (maybe-handle-trigger-in-editor)
-       (send-exit-messages destination-box
-         destination-screen-box)))))
+               current-box)
+           nil)
+          ((superior? destination-screen-box (point-screen-box)) nil)
+          ((null (superior-box current-box)) nil)
+          (t (exit current-box
+                   (superior-screen-box (bp-screen-box *point*))
+                   (superior-box current-box)
+                   one-step-up?)
+             (maybe-handle-trigger-in-editor)
+             (send-exit-messages destination-box
+                                 destination-screen-box)))))
 
 
 ;; Needs these to keep reDisplay code alive.
@@ -1077,59 +1077,59 @@
   ;; you must promise not to insert or delete things from the rows
   ;; since we cache the row chas.
   `(labels ((do-for-internal-body (,var) . ,body)
-      (do-for-internal-iterator (superior-box)
-        (do* ((row (slot-value superior-box 'first-inferior-row)
-       (next-row row)))
-       ((null row))
-    (let* ((chas-array (chas-array-chas (chas-array row)))
-           (length (chas-array-active-length (chas-array row))))
-      (do ((cha-no 0 (1+& cha-no)))
-          ((=& cha-no length))
-        (let ((cha (aref chas-array cha-no)))
-          (when (null cha) (return nil))
-          (when (not (cha? cha))
-      (do-for-internal-body cha)
-      (do-for-internal-iterator cha))))))))
-    (do-for-internal-iterator ,the-box)))
+            (do-for-internal-iterator (superior-box)
+              (do* ((row (slot-value superior-box 'first-inferior-row)
+                         (next-row row)))
+                   ((null row))
+                (let* ((chas-array (chas-array-chas (chas-array row)))
+                       (length (chas-array-active-length (chas-array row))))
+                  (do ((cha-no 0 (1+& cha-no)))
+                      ((=& cha-no length))
+                    (let ((cha (aref chas-array cha-no)))
+                      (when (null cha) (return nil))
+                      (when (not (cha? cha))
+                        (do-for-internal-body cha)
+                        (do-for-internal-iterator cha))))))))
+     (do-for-internal-iterator ,the-box)))
 
 ;;;; From region.lisp
 ;;; needs to be here so it will be defined when editor.lisp gets compiled
 
 (defmacro do-interval-chas ((cha interval &key (output-newlines? nil))
-          &body body)
+                            &body body)
   (let ((real-start-bp (gensym))
-  (real-stop-bp  (gensym))
-  (current-row   (gensym))
-  (current-stop-cha-no  (gensym))
-  (current-cha-no (gensym)))
+        (real-stop-bp  (gensym))
+        (current-row   (gensym))
+        (current-stop-cha-no  (gensym))
+        (current-cha-no (gensym)))
     `(multiple-value-bind (,real-start-bp ,real-stop-bp)
-   (order-bps (interval-start-bp ,interval)
-        (interval-stop-bp  ,interval))
+         (order-bps (interval-start-bp ,interval)
+                    (interval-stop-bp  ,interval))
        (let* ((,current-row (bp-row ,real-start-bp))
-        (,current-cha-no (bp-cha-no ,real-start-bp))
-        (,current-stop-cha-no (if (or (null ,current-row)
-              (eq ,current-row
-            (bp-row ,real-stop-bp)))
-          (bp-cha-no ,real-stop-bp)
-          (length-in-chas ,current-row))))
-   (labels ((last-row? () (or (null ,current-row)
-            (eq ,current-row (bp-row ,real-stop-bp))))
-      (end-of-row? () (=& ,current-cha-no ,current-stop-cha-no))
-      (next-row-values ()
-        (setq ,current-row (next-row ,current-row)
-        ,current-cha-no 0
-        ,current-stop-cha-no
-        (if (last-row?)
-            (bp-cha-no ,real-stop-bp)
-            (length-in-chas ,current-row)))))
-     (loop
-      (let ((,cha (if (end-of-row?)
-         #\Newline
-         (cha-at-cha-no ,current-row ,current-cha-no))))
-        (cond ((and (last-row?) (end-of-row?))
-         (return nil))
-        ((and (null ,output-newlines?) (end-of-row?)))
-        (t . ,body))
-        (if (end-of-row?)
-      (next-row-values)
-      (incf& ,current-cha-no)))))))))
+              (,current-cha-no (bp-cha-no ,real-start-bp))
+              (,current-stop-cha-no (if (or (null ,current-row)
+                                            (eq ,current-row
+                                                (bp-row ,real-stop-bp)))
+                                        (bp-cha-no ,real-stop-bp)
+                                        (length-in-chas ,current-row))))
+         (labels ((last-row? () (or (null ,current-row)
+                                    (eq ,current-row (bp-row ,real-stop-bp))))
+                  (end-of-row? () (=& ,current-cha-no ,current-stop-cha-no))
+                  (next-row-values ()
+                    (setq ,current-row (next-row ,current-row)
+                          ,current-cha-no 0
+                          ,current-stop-cha-no
+                          (if (last-row?)
+                              (bp-cha-no ,real-stop-bp)
+                              (length-in-chas ,current-row)))))
+           (loop
+             (let ((,cha (if (end-of-row?)
+                             #\Newline
+                             (cha-at-cha-no ,current-row ,current-cha-no))))
+               (cond ((and (last-row?) (end-of-row?))
+                      (return nil))
+                     ((and (null ,output-newlines?) (end-of-row?)))
+                     (t . ,body))
+               (if (end-of-row?)
+                   (next-row-values)
+                   (incf& ,current-cha-no)))))))))
