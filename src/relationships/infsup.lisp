@@ -805,80 +805,6 @@
   (set-previous-row row-next-row row-prev-row)))))
 
 
-;;; These are no longer used.  They work (6/6/88), but do much useless work,
-;;; and KILL-ROW was ever called.  See KILL-BOX-CONTENTS, the more efficient
-;;; replacement.
-#|
-(defmethod insert-box-rows-at-row-no ((self box) box row-no)
-  (let ((box-first-row (kill-row box (first-inferior-row box))))
-    (unless (null box-first-row)
-      (let ((row-at-row-no (row-at-row-no self row-no))
-      (row-bf-row-no (row-at-row-no self (- row-no 1)))
-      (box-last-row (do* ((next-box-row (next-row box-first-row)
-                (next-row box-row))
-        (box-row box-first-row next-box-row))
-             (())
-          (set-superior-box box-row self)
-          (do-row-chas ((c box-row)) (unless (cha? c) (insert-self-action c)))
-          (if (null next-box-row) (return box-row)))))
-  (set-previous-row box-first-row row-bf-row-no)
-  (set-next-row box-last-row row-at-row-no)
-  (set-next-row row-bf-row-no box-first-row)
-  (set-previous-row row-at-row-no box-last-row)))))
-
-(defmethod delete-rows-between-row-nos ((self box) strt-row-no stop-row-no
-          &optional (check-closet t))
-  (let* ((strt-row (row-at-row-no self strt-row-no))
-   (stop-row (row-at-row-no self stop-row-no))
-   (strt-row-prev-row (unless (null strt-row) (previous-row strt-row)))
-         (stop-row-next-row (unless (null stop-row) (next-row stop-row)))
-   (return-box (make-initialized-box))
-   (closet-row (slot-value self 'closets)))
-    (do ((row strt-row (next-row row)))
-  ((null row))
-      (when (or (null check-closet) (not (eq row closet-row)))
-  (do-row-chas ((c row)) (unless (cha? c) (delete-self-action c)))
-  (set-superior-box row nil)))
-    (set-previous-row strt-row nil)
-    (set-next-row strt-row nil)
-    (if (null strt-row-prev-row)
-  (set-first-inferior-row self stop-row-next-row)
-  (set-next-row strt-row-prev-row stop-row-next-row))
-    (unless (null stop-row-next-row)
-      (set-previous-row stop-row-next-row strt-row-prev-row))
-    (append-row return-box strt-row)
-    return-box))
-
-(defmethod delete-between-rows ((self box) strt-row stop-row
-        &optional (check-closet t))
-  (let ((strt-row-prev-row (when (not-null strt-row)(previous-row strt-row)))
-  (stop-row-next-row (when (not-null stop-row)(next-row stop-row)))
-  (return-box (make-initialized-box))
-  (closet-row (slot-value self 'closets)))
-    (do ((row strt-row (next-row row)))
-  ((eq row stop-row-next-row))
-      (when (or (null check-closet) (not (eq row closet-row)))
-  (do-row-chas ((c row)) (unless (cha? c) (delete-self-action c)))
-  (set-superior-box row nil)))
-    (set-previous-row strt-row nil)
-    (set-next-row stop-row nil)
-    (if (null strt-row-prev-row)
-  (set-first-inferior-row self stop-row-next-row)
-  (set-next-row strt-row-prev-row stop-row-next-row))
-    (when (not-null stop-row-next-row)
-      (set-previous-row stop-row-next-row strt-row-prev-row))
-    (set-first-inferior-row return-box strt-row)
-    return-box))
-
-(defmethod kill-rows-at-row-no ((self box) strt-row-no)
-  (let ((stop-row-no (length-in-rows self)))
-    (delete-rows-between-row-nos self strt-row-no stop-row-no)))
-
-(defmethod kill-row ((self box) row)
-  (kill-rows-at-row-no self (row-row-no self row)))
-|#
-
-
 ;;; Operations that take existing box rows as position specifiers. These
 ;;; operations are built on top of the operations that take row positions
 ;;; as position specifiers.
@@ -992,16 +918,6 @@
       (kill-chas-at-cha-no row cha-no))))
 
 
-#|  obsolete, give it 6 months and then remove from source (7/19/91)
-(defun delete-rows-to-end-of-box (bp &optional (force-bp-type nil))
-  (action-at-bp-internal
-    (let ((box (bp-box bp))
-    (row (bp-row bp)))
-      (unless (null box)
-  (kill-rows-at-row-no box (+ (row-row-no box row) 1))))))
-|#
-
-
 ;;;; FIND-LOWEST-COMMON-SUPERIOR-BOX
 ;;; This function takes two boxes as its inputs and find the lowest box
 ;;; which is a superior of both of those boxes. It is slightly bummed
@@ -1108,14 +1024,7 @@
        (result nil))
       ((eq box superior-box) result)
     (push box result)))
-#|
-(defun find-path-from-superior-to-inferior (superior-box inferior-box)
-  (nreverse
-    (with-collection
-      (do ((box inferior-box (superior-box box)))
-    ((eq box superior-box))
-  (collect box)))))
-|#
+
 ;;; This moves the *point* upward in the hierarchy via the exit method
 ;;; until it reaches the destination-box
 ;;; the one-step-up? arg controls whether or not triggers are run in
