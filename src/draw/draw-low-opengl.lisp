@@ -110,26 +110,8 @@ notes:: check points arg on draw-poly
 
 (in-package :boxer)
 
-;;; Opengl configuration variables
-;;; in theory, the GPU will be queried as a redisplay init and these
-;;; parameters will be initialized.
-(defvar *OpenGL-lots-o-memory-yay* t
-  "Mostly having to do with how much stuff we will try and cache on GPU")
-
-
-(defun configure-gpu-parameters ()
-  ;; font vars
-;  *opengl-font-start*  ; 0 or 32
-;  *opengl-font-count*  ; 128 or 256
-  )
-
-(def-redisplay-initialization (configure-gpu-parameters))
-
 ;;; skinable support (move to box-borders ?)
 ;;; corners, sides, trans sides, labels, names
-
-
-
 
 ;;;; Constants and Variables
 
@@ -211,10 +193,6 @@ notes:: check points arg on draw-poly
 ;; yuck !!!
 (defun window-depth (window)
   (declare (ignore window)) (capi:screen-depth (car (capi::screens))))
-
-;;; why doesn't this work ?  It's a documented function
-; (gp:port-depth window))
-
 
 ;;; &&&& stub
 ;;; **** returns pixel value(window system dependent) at windw coords (x,y)
@@ -680,9 +658,9 @@ notes:: check points arg on draw-poly
 ;; main interface function, how/when cache ????
 
 (defun make-boxer-font (rawfontspec &optional (calculate-parameters? T))
-  (if bw::*use-capogi-fonts*
-    (make-boxer-font-capogi rawfontspec)
-    (make-boxer-font-ogl rawfontspec calculate-parameters?)))
+  (make-boxer-font-capogi rawfontspec))
+  ;; (if bw::*use-capogi-fonts*
+  ;;   (make-boxer-font-ogl rawfontspec calculate-parameters?)))
 
 ;; always "calculate parameters" because they are already available in the capogi font structure
 (defun make-boxer-font-capogi (rawfontspec)
@@ -700,62 +678,6 @@ notes:: check points arg on draw-poly
        (or (find-cached-font font-no nil)
            (cache-font (bw::make-opengl-font-from-capogi-font cfont) font-no nil))
        font-no))))
-
-(defun make-boxer-font-ogl (rawfontspec calculate-parameters?)
-  (let* ((alias (font-family-alias (car rawfontspec)))
-         (fontspec (if alias (list* alias (cdr rawfontspec)) rawfontspec))
-         (sysfont (boxer-font-spec->lw-font fontspec))
-         (font-no (fontspec->font-no fontspec)))
-    (cond ((null font-no)
-           ;; no cached font, we have to be careful here because a possible
-           ;; scenario is that we are translating a mac font which could come out
-           ;; as an existing PC font
-           ;; wait until we have a solid native font before converting to an
-           ;; opengl font
-           (let* ((oglfont  (if (null calculate-parameters?)
-                              (bw::register-opengl-font-from-native-font sysfont)
-                              (bw::make-opengl-font-from-native-font sysfont)))
-                  (localname (unless (null oglfont)
-                               (gp:font-description-attribute-value
-                                (gp:font-description sysfont) :family)))
-                  (newfontspec (list* localname (cdr fontspec)))
-                  (new-font-no (fontspec->font-no newfontspec T)))
-             (unless (null localname)
-               (set-font-family-alias (car rawfontspec) localname)
-               (unless (member localname *font-families* :test #'string-equal)
-                 (nconc *font-families* (list localname))))
-             (or (find-cached-font new-font-no nil)
-                 (cache-font oglfont new-font-no nil))
-             new-font-no))
-      (t
-       (or (find-cached-font font-no nil)
-           (let ((font (if (null calculate-parameters?)
-                         (bw::register-opengl-font-from-native-font
-                          (boxer-font-spec->lw-font fontspec))
-                         (bw::make-opengl-font-from-native-font sysfont))))
-             (cache-font font font-no nil)))
-       font-no))))
-
-;; the LW font internals looks like it supports :underline, but leave out for
-;; now because it isn't documented
-(defun boxer-font-spec->lw-font (spec)
-  (let ((family (car spec))
-        (size (or (cadr spec) 10))
-        (styles (cddr spec)))
-    (gp:find-best-font *boxer-pane*
-                       (gp:make-font-description :family family
-                                                 :size size
-                                                 :weight (if (member :bold styles)
-                                                           :bold
-                                                           :normal)
-                                                 :slant (if (member :italic styles)
-                                                          :italic
-                                                          :roman)
-                                                 :underline
-                                                 (not (null (member :underline
-                                                                    styles)))))))
-
-
 
 ;; the external interface, see comsf.lisp for usage
 (defun font-style (font-no) (%font-face-idx font-no))
@@ -857,15 +779,7 @@ notes:: check points arg on draw-poly
 
 (defun cha-ascent () %drawing-font-cha-ascent)
 
-; not used ?
-;(defun fast-cha-ascent () (gp:get-font-ascent %drawing-array))
-;(defun fast-cha-hei ()
-;  (+& (gp:get-font-ascent  %drawing-array)
-;      (gp:get-font-descent %drawing-array)))
-
 (defun cha-hei () %drawing-font-cha-hei)
-
-
 
 (defun %draw-string (alu font string x y &optional (window %drawing-array))
   (declare (ignore alu window))
@@ -874,7 +788,6 @@ notes:: check points arg on draw-poly
       (error "Can't find cached font for ~X" font)
       (bw::with-ogl-font (system-font)
                          (bw::ogl-draw-string string x y)))))
-
 
 ;;; this takes a set of boxer points and converts them into a form that
 ;;; the window system desires.  The x/y-function args will be funcalled
@@ -932,9 +845,6 @@ notes:: check points arg on draw-poly
          (opengl::gl-enable opengl:*gl-line-stipple*)
          . ,body)
         (unless ,stipplevar (opengl::gl-disable opengl::*gl-line-stipple*))))))
-
-
-
 
 ;;;; COLOR (incomplete)
 
@@ -1075,10 +985,6 @@ notes:: check points arg on draw-poly
     (with-pen-color (*background-color*)
       (%draw-rectangle w h x y alu-seta window))))
 
-; gp::erase-rectangle ignores the state of the transform
-; so it loses for sub boxes during redisplay
-  ;(gp:clear-rectangle window x y w h)
-
 ;;; These take topleft coordinates
 ;; the angle args are like CLX, start at 3 oclock and positive sweep is
 ;; counterclockwise.  Need to convert to boxer sense where we start at
@@ -1203,20 +1109,6 @@ notes:: check points arg on draw-poly
                                 (round (* (color-red clear-color) 255))
                                 (round (* (color-green clear-color) 255))
                                 (round (* (color-blue clear-color) 255)))))
-
-#| ;; no longer used?
-(defmacro with-drawing-into-new-bitmap ((bitmap-name
-           drawable bit-width bit-height
-           . window-system-specific-args)
-          &body body)
-  (declare (ignore window-system-specific-args))
-  `(let ((,bitmap-name (make-offscreen-bitmap ,drawable ,bit-width ,bit-height)))
-     (drawing-on-bitmap (,bitmap-name)
-       (progn
-         (%erase-rectangle ,bit-width ,bit-height 0 0 ,bitmap-name)
-         ,@body))
-     ,bitmap-name))
-|#
 
 ;;; These assume bitmap bounds are zero based
 (defun offscreen-bitmap-height (bm) (opengl::ogl-pixmap-height bm))

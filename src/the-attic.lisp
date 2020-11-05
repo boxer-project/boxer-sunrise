@@ -388,6 +388,100 @@
 ;;;; FILE: draw-low-opengl.lisp
 ;;;;
 
+;;; Opengl configuration variables
+;;; in theory, the GPU will be queried as a redisplay init and these
+;;; parameters will be initialized.
+(defvar *OpenGL-lots-o-memory-yay* t
+  "Mostly having to do with how much stuff we will try and cache on GPU")
+
+(defun configure-gpu-parameters ()
+  ;; font vars
+;  *opengl-font-start*  ; 0 or 32
+;  *opengl-font-count*  ; 128 or 256
+  )
+(def-redisplay-initialization (configure-gpu-parameters))
+
+;;; why doesn't this work ?  It's a documented function
+; (gp:port-depth window))
+
+(defun make-boxer-font-ogl (rawfontspec calculate-parameters?)
+  (let* ((alias (font-family-alias (car rawfontspec)))
+         (fontspec (if alias (list* alias (cdr rawfontspec)) rawfontspec))
+         (sysfont (boxer-font-spec->lw-font fontspec))
+         (font-no (fontspec->font-no fontspec)))
+    (cond ((null font-no)
+           ;; no cached font, we have to be careful here because a possible
+           ;; scenario is that we are translating a mac font which could come out
+           ;; as an existing PC font
+           ;; wait until we have a solid native font before converting to an
+           ;; opengl font
+           (let* ((oglfont  (if (null calculate-parameters?)
+                              (bw::register-opengl-font-from-native-font sysfont)
+                              (bw::make-opengl-font-from-native-font sysfont)))
+                  (localname (unless (null oglfont)
+                               (gp:font-description-attribute-value
+                                (gp:font-description sysfont) :family)))
+                  (newfontspec (list* localname (cdr fontspec)))
+                  (new-font-no (fontspec->font-no newfontspec T)))
+             (unless (null localname)
+               (set-font-family-alias (car rawfontspec) localname)
+               (unless (member localname *font-families* :test #'string-equal)
+                 (nconc *font-families* (list localname))))
+             (or (find-cached-font new-font-no nil)
+                 (cache-font oglfont new-font-no nil))
+             new-font-no))
+      (t
+       (or (find-cached-font font-no nil)
+           (let ((font (if (null calculate-parameters?)
+                         (bw::register-opengl-font-from-native-font
+                          (boxer-font-spec->lw-font fontspec))
+                         (bw::make-opengl-font-from-native-font sysfont))))
+             (cache-font font font-no nil)))
+       font-no))))
+
+;; the LW font internals looks like it supports :underline, but leave out for
+;; now because it isn't documented
+(defun boxer-font-spec->lw-font (spec)
+  (let ((family (car spec))
+        (size (or (cadr spec) 10))
+        (styles (cddr spec)))
+    (gp:find-best-font *boxer-pane*
+                       (gp:make-font-description :family family
+                                                 :size size
+                                                 :weight (if (member :bold styles)
+                                                           :bold
+                                                           :normal)
+                                                 :slant (if (member :italic styles)
+                                                          :italic
+                                                          :roman)
+                                                 :underline
+                                                 (not (null (member :underline
+                                                                    styles)))))))
+
+; not used ?
+;(defun fast-cha-ascent () (gp:get-font-ascent %drawing-array))
+;(defun fast-cha-hei ()
+;  (+& (gp:get-font-ascent  %drawing-array)
+;      (gp:get-font-descent %drawing-array)))
+
+#| ;; no longer used?
+(defmacro with-drawing-into-new-bitmap ((bitmap-name
+           drawable bit-width bit-height
+           . window-system-specific-args)
+          &body body)
+  (declare (ignore window-system-specific-args))
+  `(let ((,bitmap-name (make-offscreen-bitmap ,drawable ,bit-width ,bit-height)))
+     (drawing-on-bitmap (,bitmap-name)
+       (progn
+         (%erase-rectangle ,bit-width ,bit-height 0 0 ,bitmap-name)
+         ,@body))
+     ,bitmap-name))
+|#
+
+; gp::erase-rectangle ignores the state of the transform
+; so it loses for sub boxes during redisplay
+  ;(gp:clear-rectangle window x y w h)
+
 ;;;;; obsolete.... commented out 7/18/13
 ;(defvar *font-map* (make-array '(8)))
 ;(defvar *font-codes* (make-array '(8)))
