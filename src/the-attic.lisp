@@ -899,3 +899,30 @@
                 (intern (cadr result) (find-package "KEYWORD"))
                 (intern (caddr result) (find-package "KEYWORD"))))))))
 |#
+
+;;;;
+;;;; FILE: opengl-utils.lisp
+;;;;
+
+;; conversion from a native font to an OpenGL font
+;; 1) get a LW font from a boxer font spec
+;; 2) make an opengl font struct
+;; 3) calculate height & width info for the font using the native font
+;;    we could have opengl do it but then we have to convert formats & work
+;;    in floating point
+;;
+;; 4) use win32::wgl-use-font to cache local font in GPU
+;; *) font caching mechanism uses the DL-base-addr slot in opengl font struct
+;; *) Note that the :start arg to wgl-use-font should be the same offset used
+;;    when drawing chars, that's what *opengl-starting-char-index* is for
+
+(defun register-opengl-font-from-native-font (native-font &optional (pane *boxer-pane*))
+  (declare (ignore pane))
+  (%make-opengl-font :native-font native-font))
+
+(defun make-opengl-font-from-native-font (native-font &optional (pane *boxer-pane*))
+  (let ((oglfont (register-opengl-font-from-native-font native-font)))
+    (fill-oglfont-parameters oglfont pane)
+    oglfont))
+
+(defvar *use-capogi-fonts* t) ; want to allow option for scaleable vector OpenGL fonts in Windows

@@ -273,30 +273,6 @@ Modification History (most recent at the top)
   (font  nil)
   )
 
-
-;; conversion from a native font to an OpenGL font
-;; 1) get a LW font from a boxer font spec
-;; 2) make an opengl font struct
-;; 3) calculate height & width info for the font using the native font
-;;    we could have opengl do it but then we have to convert formats & work
-;;    in floating point
-;;
-;; 4) use win32::wgl-use-font to cache local font in GPU
-;; *) font caching mechanism uses the DL-base-addr slot in opengl font struct
-;; *) Note that the :start arg to wgl-use-font should be the same offset used
-;;    when drawing chars, that's what *opengl-starting-char-index* is for
-
-(defun register-opengl-font-from-native-font (native-font &optional (pane *boxer-pane*))
-  (declare (ignore pane))
-  (%make-opengl-font :native-font native-font))
-
-(defun make-opengl-font-from-native-font (native-font &optional (pane *boxer-pane*))
-  (let ((oglfont (register-opengl-font-from-native-font native-font)))
-    (fill-oglfont-parameters oglfont pane)
-    oglfont))
-
-(defvar *use-capogi-fonts* t) ; want to allow option for scaleable vector OpenGL fonts in Windows
-
 ;;; It's taking too long to cache all the fonts on startup so the
 ;;; new scheme is to resolve the native font into an OpenGL font but
 ;;; fill in the font info on demand (in particular, the widths array)
@@ -577,9 +553,6 @@ Modification History (most recent at the top)
           bw::*ogl-color-counter* bw::*ogl-color-freed*
           (- bw::*ogl-color-counter* bw::*ogl-color-freed*))
   (when clear? (setq bw::*ogl-color-counter* 0 bw::*ogl-color-freed* 0)))
-
-
-
 
 ; the gl-viewport is conditionalized with:
 ;  (when #+Win32 (win32:is-window-visible
