@@ -385,6 +385,158 @@
 |#
 
 ;;;;
+;;;; FILE: draw-low-opengl.lisp
+;;;;
+
+;;;;; obsolete.... commented out 7/18/13
+;(defvar *font-map* (make-array '(8)))
+;(defvar *font-codes* (make-array '(8)))
+
+;;; ???
+;(defun sheet-font-map (w)
+;  (declare (ignore w))
+;  *font-map*)
+
+#|
+;; make a true type font, and associate it with a font number
+;; font may already exists be associated
+;; cases: 1) no font-no => get new ttf-font (a) fill cache or (b) not (c) cache is filled with another font
+;;        2) font-no => (a) cache is filled or (b) fill cache
+
+(defun make-boxer-font (rawfontspec &optional (calculate-parameters? T))
+  (let* ((alias (font-family-alias (car rawfontspec)))
+         ;; this allows boxer level font translation (eq "Geneva" => "Arial")
+         (fontspec (if alias (list* alias (cdr rawfontspec)) rawfontspec))
+         (font-no (fontspec->font-no fontspec)))
+    (cond ((null font-no)
+           ;; no assigned font
+           (let* ((ttf-font (bw::register-ttf-font fontspec))
+                  (ttf-fontspec (bw::ttf-fontspec ttf-font))
+                  ;; register-ttf-font may map the requested font into an existing ttf-font
+                  (ttf-font-no (fontspec->font-no ttf-fontspec T)))
+             (when (not (string= (car fontspec) (car ttf-fontspec)))
+               (set-font-family-alias (car rawfontspec) (car ttf-fontspec)))
+             (unless (member (car ttf-fontspec) *font-families* :test #'string-equal)
+               (nconc *font-families* (list (car ttf-fontspec))))
+             (unless (find-cached-font ttf-font-no)
+               (cache-font ttf-font ttf-font-no))
+             (when calculate-parameters?
+               (bw::cache-ttf-font *boxer-pane* :font ttf-font))
+             ttf-font-no))
+          (t
+           (unless (find-cached-font font-no)
+             (let ((ttf-font (bw::register-ttf-font fontspec)))
+               (cache-font ttf-font font-no)
+               (when calculate-parameters?
+                 (bw::cache-ttf-font *boxer-pane* :font ttf-font))))
+           font-no))))
+|#
+
+;(defun %set-font-size (boxer-font new-size)
+;  (let ((new-idx (%font-size-to-idx new-size)))
+;    (dpb new-idx (byte %%font-size-bit-length   %%font-size-bit-pos) boxer-font)))
+
+#| ;; leave this here in case we need to remember how to do software clipping
+(defun %bitblt-to-screen (alu wid hei from-array fx fy tx ty)
+  (let* ((scaled-to-x (+& %origin-x-offset tx)) (scaled-to-y (+& %origin-y-offset ty))
+         (clipped-to-x (clip-x scaled-to-x))    (clipped-to-y (clip-y scaled-to-y))
+   (+wid (abs& wid))
+   (+hei (abs& hei))
+   (lef-overrun (max& 0 (-& scaled-to-x clipped-to-x)))
+   (top-overrun (max& 0 (-& scaled-to-y clipped-to-y)))
+   (rig-overrun (max& 0 (-& (+& clipped-to-x +wid)
+          (clip-x (+& clipped-to-x +wid)))))
+   (bot-overrun (max& 0 (-& (+& clipped-to-y +hei)
+          (clip-y (+& clipped-to-y +hei)))))
+   (clipped-wid (*& (sign-of-no wid)
+        (max& 0 (-& +wid lef-overrun rig-overrun))))
+   (clipped-hei (*& (sign-of-no hei)
+        (max& 0 (-& +hei top-overrun bot-overrun)))))
+    (or (zerop& clipped-wid)
+        (zerop& clipped-hei)
+        (gp:pixblt %drawing-array alu from-array clipped-to-x clipped-to-y
+                   clipped-wid clipped-hei fx fy))))
+|#
+
+#|
+(defun %bitblt-from-screen (alu wid hei to-array fx fy tx ty)
+  (let* ((scaled-from-x (+& %origin-x-offset fx))
+         (scaled-from-y (+& %origin-y-offset fy))
+         (clipped-from-x (clip-x scaled-from-x))
+         (clipped-from-y (clip-y scaled-from-y))
+         (+wid (abs& wid))
+   (+hei (abs& hei))
+   (lef-overrun (max& 0 (-& scaled-from-x clipped-from-x)))
+   (top-overrun (max& 0 (-& scaled-from-y clipped-from-y)))
+   (rig-overrun (max& 0 (-& (+& clipped-from-x +wid)
+                                  (clip-x (+& clipped-from-x +wid)))))
+   (bot-overrun (max& 0 (-& (+& clipped-from-y +hei)
+                                  (clip-y (+& clipped-from-y +hei)))))
+   (clipped-wid (*& (sign-of-no wid) (max& 0 (-& +wid lef-overrun rig-overrun))))
+   (clipped-hei (*& (sign-of-no hei) (max& 0 (-& +hei top-overrun bot-overrun)))))
+    (or (zerop& clipped-wid)
+        (zerop& clipped-hei)
+        (gp:pixblt to-array alu %drawing-array tx ty
+                   clipped-wid clipped-hei clipped-from-x clipped-from-y))))
+|#
+
+#|
+(defun %bitblt-in-screen (alu wid hei array fx fy tx ty)
+  (let* ((scaled-from-x (+& %origin-x-offset fx))
+         (scaled-from-y (+& %origin-y-offset fy))
+         (scaled-to-x   (+& %origin-x-offset tx))
+         (scaled-to-y   (+& %origin-y-offset ty))
+         (clipped-from-x (clip-x scaled-from-x))
+         (clipped-from-y (clip-y scaled-from-y))
+   (clipped-to-x (clip-x scaled-to-x))
+   (clipped-to-y (clip-y scaled-to-y))
+   (+wid (abs& wid))
+   (+hei (abs& hei))
+   (lef-overrun (max& 0
+                            (-& scaled-from-x clipped-from-x)
+                            (-& scaled-to-x clipped-to-x)))
+   (top-overrun (max& 0
+          (-& scaled-from-y clipped-from-y)
+          (-& scaled-to-y clipped-to-y)))
+   (rig-overrun (max& 0
+          (-& (+& clipped-from-x +wid)
+        (clip-x (+& clipped-from-x +wid)))
+          (-& (+& clipped-to-x +wid)
+        (clip-x (+& clipped-to-x +wid)))))
+   (bot-overrun (max& 0
+          (-& (+& clipped-from-y +hei)
+                                (clip-y (+& clipped-from-y +hei)))
+          (-& (+& clipped-to-y +hei)
+        (clip-y (+& clipped-to-y +hei)))))
+   (clipped-wid (*& (sign-of-no wid) (max& 0 (-& +wid lef-overrun rig-overrun))))
+   (clipped-hei (*& (sign-of-no hei) (max& 0 (-& +hei top-overrun bot-overrun)))))
+    (or (zerop& clipped-wid)
+        (zerop& clipped-hei)
+        (gp:pixblt array alu array clipped-to-x clipped-to-y
+                   clipped-wid clipped-hei clipped-from-x clipped-from-y))))
+|#
+
+;; this could draws into an auxiliary buffer and then
+;; transfers the bits from that buffer into an ogl-pixmap
+#|
+(defmacro with-system-dependent-bitmap-drawing ((bitmap &optional
+                                                        bitmap-width bitmap-height)
+                  &body body)
+  (declare (ignore bitmap-width bitmap-height))
+  `(opengl::rendering-on (*boxer-pane*)
+     (unwind-protect
+         (progn
+           (bw::gl-draw-buffer bw::*gl-aux1*)
+           (progn . ,body)
+           (bw::gl-flush)
+           (opengl::%pixblt-from-screen ,bitmap 0 0
+                                        (opengl::ogl-pixmap-width  ,bitmap)
+                                        (opengl::ogl-pixmap-height ,bitmap)
+                                        0 0 bw::*gl-aux1*))
+       (bw::gl-draw-buffer bw::*gl-back*))))
+|#
+
+;;;;
 ;;;; FILE: infsup.lisp
 ;;;;
 
