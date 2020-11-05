@@ -107,7 +107,7 @@ Modification History (most recent at the top)
 
 ;;; converting to OpenGL
 (defun make-opengl-font-from-capogi-font (cfont)
-  (let ((oglfont (register-opengl-font-from-native-font cfont))
+  (let ((oglfont (%make-opengl-font :native-font cfont))
         (cfw (capogi-font-fixed-width cfont)))
     (setf (opengl-font-height oglfont) (capogi-font-height cfont)
           (opengl-font-ascent oglfont) (capogi-font-ascent cfont)
