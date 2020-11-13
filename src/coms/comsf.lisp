@@ -27,8 +27,8 @@
                                          +-------+
 
 
-	  This file contains top level definitions for
-	  BOXER Editor Commands that deal with Fonts and
+    This file contains top level definitions for
+    BOXER Editor Commands that deal with Fonts and
           character styles
 
 
@@ -70,27 +70,27 @@ Modification History (most recent at top)
   (LET ((NOT-FIRST-CHA? NIL))
     (MAP-OVER-CHAS-IN-LINE (BP DIRECTION)
       (LET ((DELIMITER-CHA? (char-member cha delimiter-chas)))
-	(cond ((AND (NULL CHA)(NULL NEXT-OR-PREVIOUS-ROW))
-	       ;; end/beginning of the box
-	       (RETURN (VALUES ROW CHA-NO)))
-	      ((AND NOT-FIRST-CHA? (NULL CHA))
-	       ;; end/beginning of the line
-	       (RETURN (VALUES ROW CHA-NO)))
-	      ((and not-first-cha? (box? cha))
-	       ;; go only one box at a time
-	      (return (values row cha-no)))
-	      ((AND NOT-FIRST-CHA? DELIMITER-CHA?)
-	       ;; end of the word
-	       (RETURN (VALUES ROW CHA-NO)))
-	      ((NOT DELIMITER-CHA?)
-	       ;; beginning of word
-	       (SETQ NOT-FIRST-CHA? T)
-	       (CHANGE-CHA-AT-CHA-NO ROW CHA-NO
-		     (funcall FCN (CHA-AT-CHA-NO ROW CHA-NO))))
-	      (T
-	       ;; delimiter chas before word
-	       (CHANGE-CHA-AT-CHA-NO ROW CHA-NO
-		     (funcall FCN (CHA-AT-CHA-NO ROW CHA-NO)))))))))
+  (cond ((AND (NULL CHA)(NULL NEXT-OR-PREVIOUS-ROW))
+         ;; end/beginning of the box
+         (RETURN (VALUES ROW CHA-NO)))
+        ((AND NOT-FIRST-CHA? (NULL CHA))
+         ;; end/beginning of the line
+         (RETURN (VALUES ROW CHA-NO)))
+        ((and not-first-cha? (box? cha))
+         ;; go only one box at a time
+        (return (values row cha-no)))
+        ((AND NOT-FIRST-CHA? DELIMITER-CHA?)
+         ;; end of the word
+         (RETURN (VALUES ROW CHA-NO)))
+        ((NOT DELIMITER-CHA?)
+         ;; beginning of word
+         (SETQ NOT-FIRST-CHA? T)
+         (CHANGE-CHA-AT-CHA-NO ROW CHA-NO
+         (funcall FCN (CHA-AT-CHA-NO ROW CHA-NO))))
+        (T
+         ;; delimiter chas before word
+         (CHANGE-CHA-AT-CHA-NO ROW CHA-NO
+         (funcall FCN (CHA-AT-CHA-NO ROW CHA-NO)))))))))
 
 
 
@@ -365,7 +365,7 @@ Modification History (most recent at top)
 ;; returns a list of any Font Descriptors beyond the cha-no of the row
 (defmethod remaining-bfds ((row row) cha-no)
   (member cha-no (chas-array-fds (slot-value row 'chas-array))
-	  :test #'(lambda (cha-no bfd) (>& (bfd-cha-no bfd) cha-no))))
+    :test #'(lambda (cha-no bfd) (>& (bfd-cha-no bfd) cha-no))))
 
 
 ;; best guess for character width and height for the current font
@@ -377,64 +377,64 @@ Modification History (most recent at top)
 
 #|
 (defmethod change-font-between-cha-nos ((row row) new-font-no
-					&optional
-					(start-cha-no 0)
-					(stop-cha-no (length-in-chas row)))
+          &optional
+          (start-cha-no 0)
+          (stop-cha-no (length-in-chas row)))
   (let* ((last-font-no 0)
-	 (chas-array (slot-value row 'chas-array)))
+   (chas-array (slot-value row 'chas-array)))
     (cond ((null (chas-array-fds chas-array))
-	   ;; there are no Font Descriptors in the row so we can
-	   ;; just insert new ones without checking
-	   (if  (=& stop-cha-no (chas-array-active-length chas-array))
-		;; we don't need to insert another FD if we
-		;; are at the end of the row
-		(push (make-bfd start-cha-no new-font-no)
-		      (chas-array-fds chas-array))
-		;; looks like we have to know when to stop
-		(setf (chas-array-fds chas-array)
-		      (list (make-bfd start-cha-no new-font-no)
-			    (make-bfd stop-cha-no last-font-no)))))
-	  (t
-	   ;; looks like we may have to check and (possibly) alter
-	   ;; the values of intervening Font Descriptors
-	   (do* ((fds (chas-array-fds chas-array) (cdr fds))
-		 (next-fds (cdr fds) (cdr fds))
-		 (current-fd (car fds) (car fds))
-		 (next-fd (car next-fds) (car next-fds))
-		 (inside-new-font? nil)
-		 (bfd-cha-no (if (null inside-new-font?)
-				 start-cha-no
-				 stop-cha-no)))
-		((null next-fds) (setf (cdr fds) (list bfd)))
-	     (cond ((=& bfd-cha-no (bfd-cha-no current-fd))
-		    ;; if there already is a FD at the right place, bash
-		    ;; its values rather than splicing a new FD into the list
-		    (cond ((null inside-new-font?)
-			   (setq inside-new-font? t)
-			   (setq last-font-no (bfd-font-no current-fd))
-			   (setf (bfd-font-no current-fd)
-				 (logior& (bfd-font-no current-fd)
-					  (bfd-font-no bfd))))
-			  (t
-			   ;; if there is already a FD where we want
-			   ;; to stop, then we just leave it alone
-			   (return))))
-		   ((>& bfd-cha-no (bfd-cha-no current-fd))
-		    (cond ((null next-fd)
+     ;; there are no Font Descriptors in the row so we can
+     ;; just insert new ones without checking
+     (if  (=& stop-cha-no (chas-array-active-length chas-array))
+    ;; we don't need to insert another FD if we
+    ;; are at the end of the row
+    (push (make-bfd start-cha-no new-font-no)
+          (chas-array-fds chas-array))
+    ;; looks like we have to know when to stop
+    (setf (chas-array-fds chas-array)
+          (list (make-bfd start-cha-no new-font-no)
+          (make-bfd stop-cha-no last-font-no)))))
+    (t
+     ;; looks like we may have to check and (possibly) alter
+     ;; the values of intervening Font Descriptors
+     (do* ((fds (chas-array-fds chas-array) (cdr fds))
+     (next-fds (cdr fds) (cdr fds))
+     (current-fd (car fds) (car fds))
+     (next-fd (car next-fds) (car next-fds))
+     (inside-new-font? nil)
+     (bfd-cha-no (if (null inside-new-font?)
+         start-cha-no
+         stop-cha-no)))
+    ((null next-fds) (setf (cdr fds) (list bfd)))
+       (cond ((=& bfd-cha-no (bfd-cha-no current-fd))
+        ;; if there already is a FD at the right place, bash
+        ;; its values rather than splicing a new FD into the list
+        (cond ((null inside-new-font?)
+         (setq inside-new-font? t)
+         (setq last-font-no (bfd-font-no current-fd))
+         (setf (bfd-font-no current-fd)
+         (logior& (bfd-font-no current-fd)
+            (bfd-font-no bfd))))
+        (t
+         ;; if there is already a FD where we want
+         ;; to stop, then we just leave it alone
+         (return))))
+       ((>& bfd-cha-no (bfd-cha-no current-fd))
+        (cond ((null next-fd)
 
-			   (setf (cdr fds) (list bfd))
-			   (return))
-			  ((<& bfd-cha-no (bfd-cha-no next-fd))
-			   ;; we are in between 2 FD's so we should splice in here
-			   (setf (cdr fds) (cons bfd next-fds))
-			   (return))
-			  ((=& bfd-cha-no (bfd-cha-no next-fd))
-			   (setf (bfd-font-no next-fd)
-				 (logior& (bfd-font-no next-fd) (bfd-font-no bfd)))
-			   (return))))
-		   (t
-		    ;; record the last-font-no
-		    (setq last-font-no (bfd-font-no current-fd))))))
+         (setf (cdr fds) (list bfd))
+         (return))
+        ((<& bfd-cha-no (bfd-cha-no next-fd))
+         ;; we are in between 2 FD's so we should splice in here
+         (setf (cdr fds) (cons bfd next-fds))
+         (return))
+        ((=& bfd-cha-no (bfd-cha-no next-fd))
+         (setf (bfd-font-no next-fd)
+         (logior& (bfd-font-no next-fd) (bfd-font-no bfd)))
+         (return))))
+       (t
+        ;; record the last-font-no
+        (setq last-font-no (bfd-font-no current-fd))))))
 
 
 
@@ -448,8 +448,8 @@ Modification History (most recent at top)
     ;; now OR the new-font-no into any intervening Font Descriptors
     (dolist (bfd (remaining-bfds row start-cha-no))
       (cond ((>& (bfd-cha-no bfd) stop-cha-no)
-	     ;; there are still subsequent FD's down the row so we need
-	     ;; to add a FD which
+       ;; there are still subsequent FD's down the row so we need
+       ;; to add a FD which
 
 
 |#
@@ -485,9 +485,9 @@ Modification History (most recent at top)
   (WITH-MULTIPLE-EXECUTION
     (LET ((OLD-CHAR (CHA-AT-CHA-NO (POINT-ROW) (POINT-CHA-NO))))
       (CHANGE-CHA-AT-CHA-NO (POINT-ROW)
-	    (POINT-CHA-NO)
-	    (MAKE-CHAR OLD-CHAR
-		       (CHAR-BITS OLD-CHAR) ':BOLD (CHAR-FONT-FAMILY OLD-CHAR)))
+      (POINT-CHA-NO)
+      (MAKE-CHAR OLD-CHAR
+           (CHAR-BITS OLD-CHAR) ':BOLD (CHAR-FONT-FAMILY OLD-CHAR)))
       (MOVE-POINT (BP-FORWARD-CHA-VALUES *POINT*))))
   boxer-eval::*novalue*)
 
@@ -502,9 +502,9 @@ Modification History (most recent at top)
   (WITH-MULTIPLE-EXECUTION
     (LET ((OLD-CHAR (CHA-AT-CHA-NO (POINT-ROW) (POINT-CHA-NO))))
       (CHANGE-CHA-AT-CHA-NO (POINT-ROW)
-	    (POINT-CHA-NO)
-	    (MAKE-CHAR OLD-CHAR
-		       (CHAR-BITS OLD-CHAR) ':ITALIC (CHAR-FONT-FAMILY OLD-CHAR)))
+      (POINT-CHA-NO)
+      (MAKE-CHAR OLD-CHAR
+           (CHAR-BITS OLD-CHAR) ':ITALIC (CHAR-FONT-FAMILY OLD-CHAR)))
       (MOVE-POINT (BP-FORWARD-CHA-VALUES *POINT*))))
   boxer-eval::*novalue*)
 
@@ -563,8 +563,8 @@ Modification History (most recent at top)
     (do () ((not (member (bp-cha bp) *word-delimiters*)))
       (move-bp bp (bp-forward-cha-values bp))))
   (change-cha-at-cha-no (bp-row bp)
-	(bp-cha-no bp)
-	(boxer-char-upcase (cha-at-cha-no (bp-row bp) (bp-cha-no bp))))
+  (bp-cha-no bp)
+  (boxer-char-upcase (cha-at-cha-no (bp-row bp) (bp-cha-no bp))))
   (move-bp bp (bp-forward-cha-values bp))
   (unless (member (bp-cha bp) *word-delimiters*)
     (move-bp bp (bp-lowercase-forward-word-values bp)))
@@ -738,14 +738,14 @@ If started in the middle of a word, capitalizes the current letter."
 (defboxer-command com-toggle-font-size ()
   "Cycles through the available font sizes for the Boxer Window"
   (cond ((eql *font-size-state-var* 0)
-	 (progn
-	   (setq *font-size-state-var* 1)
-	   (com-fat)))
-	((eql *font-size-state-var* 1)
-	 (progn
-	   (setq *font-size-state-var* 2)
-	   (com-bloat)))
-	(t
-	 (progn (setq *font-size-state-var* 0)
-		(com-nutri-system))))
+   (progn
+     (setq *font-size-state-var* 1)
+     (com-fat)))
+  ((eql *font-size-state-var* 1)
+   (progn
+     (setq *font-size-state-var* 2)
+     (com-bloat)))
+  (t
+   (progn (setq *font-size-state-var* 0)
+    (com-nutri-system))))
   boxer-eval::*novalue*)
