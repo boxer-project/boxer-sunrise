@@ -201,8 +201,7 @@ Modification History (most recent at top)
 ;; Step
 (boxer-eval::defboxer-key (bu::line-key 1) com-step)
 (boxer-eval::defboxer-key (bu::line-key 2) com-step) ; not approved
-#+apple (boxer-eval::defboxer-key (bu::return-key 1) com-doit-now) ; should be com-step
-#+lispworks (boxer-eval::defboxer-key (bu::return-key 1) com-doit-now) ; PC only has enter-key
+(boxer-eval::defboxer-key (bu::return-key 1) com-doit-now)
 
 ;; Name-Tab
 (boxer-eval::defboxer-key bu::\|-key com-name-box)
@@ -219,13 +218,9 @@ Modification History (most recent at top)
 (boxer-eval::defboxer-key (bu::help-key 1) com-prompt)
 (boxer-eval::defboxer-key (bu::help-key 2) com-document-key)
 ;; on the PC the Insert-key is in the same place as the mac help key
-#+lispworks
-(progn
-  (boxer-eval::defboxer-key bu::insert-key com-help)
-  (boxer-eval::defboxer-key (bu::insert-key 1) com-prompt)
-  (boxer-eval::defboxer-key (bu::insert-key 2) com-document-key)
-  )
-
+(boxer-eval::defboxer-key bu::insert-key com-help)
+(boxer-eval::defboxer-key (bu::insert-key 1) com-prompt)
+(boxer-eval::defboxer-key (bu::insert-key 2) com-document-key)
 
 (boxer-eval::defboxer-key (bu::h-key 1) com-help)
 
@@ -233,14 +228,7 @@ Modification History (most recent at top)
 (boxer-eval::defboxer-key (bu::t-key 1) com-toggle-box-transparency)
 
 ;; Print Screen
-(boxer-eval::defboxer-key (bu::p-key 1)
-              #+lwwin com-hardcopy-lw-window
-              #+mcl   com-hardcopy-mac-window
-              #-(or lwwin mcl) com-print-screen)
-
-#+sun (boxer-eval::defboxer-key bu::R2-key com-print-screen)
-
-#+sun (boxer-eval::defboxer-key (bu::R2-key 2) com-print-screen-to-file)
+(boxer-eval::defboxer-key (bu::p-key 1) com-print-screen)
 
 ;; Zoom
 (boxer-eval::defboxer-key (bu::z-key 1) com-move-to-port-target)
@@ -268,18 +256,14 @@ Modification History (most recent at top)
 ;; Box Scroll
 (boxer-eval::defboxer-key (bu::up-arrow-key 1) com-scroll-up-one-screen-box)
 (boxer-eval::defboxer-key (bu::down-arrow-key 1) com-scroll-dn-one-screen-box)
-#+apple (boxer-eval::defboxer-key bu::page-up-key com-scroll-up-one-screen-box)
-#+apple (boxer-eval::defboxer-key bu::page-down-key com-scroll-dn-one-screen-box)
-#+lispworks (boxer-eval::defboxer-key bu::page-up-key com-scroll-up-one-screen-box)
-#+lispworks (boxer-eval::defboxer-key bu::page-down-key com-scroll-dn-one-screen-box)
+(boxer-eval::defboxer-key bu::page-up-key com-scroll-up-one-screen-box)
+(boxer-eval::defboxer-key bu::page-down-key com-scroll-dn-one-screen-box)
 
 ;; Global Box
 (boxer-eval::defboxer-key (bu::up-arrow-key 2) com-beginning-of-box)
 (boxer-eval::defboxer-key (bu::down-arrow-key 2) com-end-of-box)
-#+apple (boxer-eval::defboxer-key bu::home-key com-beginning-of-box)
-#+apple (boxer-eval::defboxer-key bu::end-key  com-end-of-box)
-#+lispworks (boxer-eval::defboxer-key bu::home-key com-beginning-of-box)
-#+lispworks (boxer-eval::defboxer-key bu::end-key  com-end-of-box)
+(boxer-eval::defboxer-key bu::home-key com-beginning-of-box)
+(boxer-eval::defboxer-key bu::end-key  com-end-of-box)
 
 ;; Among Box Navigation
 (boxer-eval::defboxer-key (bu::up-arrow-key 3) com-shrink-box)
@@ -328,11 +312,6 @@ Modification History (most recent at top)
 (boxer-eval::defboxer-key (bu::c-key 2) com-capitalize-word)
 (boxer-eval::defboxer-key (bu::u-key 2) com-uppercase-word)
 (boxer-eval::defboxer-key (bu::l-key 2) com-lowercase-word)
-
-
-(boxer-eval::defboxer-key (bu::>-key 2) com-fat)
-
-(boxer-eval::defboxer-key (bu::<-key 2) com-nutri-system)
 
 
 ;;;; saving/going to locations
@@ -384,8 +363,6 @@ Modification History (most recent at top)
 
 (boxer-eval::defboxer-key (bu::~-key 1) com-toggle-modified-flag) ;com-unmodify-document
 
-
-
 ;;;; MICE
 
 ;; plain clicks on middle of boxes
@@ -424,9 +401,7 @@ Modification History (most recent at top)
 ;  #+opengl ;; temporary
 ;  (boxer-eval::defboxer-key bu::mouse-click       com-mouse-move-point)
   (boxer-eval::defboxer-key bu::alt-mouse-click   com-mouse-expand-box)
-#-OPENGL
-  (boxer-eval::defboxer-key bu::ctrl-mouse-click  com-mouse-collapse-box)
-  #+opengl
+
   (boxer-eval::defboxer-key bu::ctrl-mouse-click  com-mouse-define-region)
 
   (boxer-eval::defboxer-key bu::ctrl-mouse-right-click com-mouse-shrink-box)
@@ -482,38 +457,17 @@ Modification History (most recent at top)
   (boxer-eval::defboxer-key bu::alt-mouse-click-on-top-left com-mouse-tl-corner-toggle-closet)
   )
 
-
-
 ;; names
 
-#+apple
-(progn
-  (boxer-eval::defboxer-key bu::mouse-click-on-name-handle  com-mouse-border-name-box)
-  (boxer-eval::defboxer-key bu::mouse-click-on-name         com-mouse-move-point)
-  )
-
-#+win32
-(progn
-  (boxer-eval::defboxer-key bu::mouse-click-on-name-handle com-mouse-border-name-box)
-  (boxer-eval::defboxer-key bu::mouse-click-on-name        com-mouse-move-point)
-  )
-
-
+(boxer-eval::defboxer-key bu::mouse-click-on-name-handle com-mouse-border-name-box)
+(boxer-eval::defboxer-key bu::mouse-click-on-name         com-mouse-move-point)
 
 ;; toggle view
 
-#+apple
-(progn
-  (boxer-eval::defboxer-key bu::mouse-click-on-bottom-left com-mouse-bl-corner-toggle-box-view)
-  (boxer-eval::defboxer-key bu::command-mouse-click-on-bottom-left com-mouse-bl-pop-up)
-  )
+(boxer-eval::defboxer-key bu::mouse-click-on-bottom-left com-mouse-bl-corner-toggle-box-view)
 
-#+win32
-(progn
-  (boxer-eval::defboxer-key bu::mouse-click-on-bottom-left
-                com-mouse-bl-corner-toggle-box-view)
-  (boxer-eval::defboxer-key bu::mouse-right-click-on-bottom-left com-mouse-bl-pop-up)
-  )
+#+apple (boxer-eval::defboxer-key bu::command-mouse-click-on-bottom-left com-mouse-bl-pop-up)
+#+win32 (boxer-eval::defboxer-key bu::mouse-right-click-on-bottom-left com-mouse-bl-pop-up)
 
 ;; toggle closet
 
@@ -537,17 +491,10 @@ Modification History (most recent at top)
 
 ;; toggle type
 
-#+apple
-(progn
-  (boxer-eval::defboxer-key bu::mouse-click-on-type   com-mouse-border-toggle-type)
-  (boxer-eval::defboxer-key bu::command-mouse-click-on-type   com-mouse-type-tag-pop-up)
-  )
+(boxer-eval::defboxer-key bu::mouse-click-on-type   com-mouse-border-toggle-type)
 
-#+win32
-(progn
-  (boxer-eval::defboxer-key bu::mouse-click-on-type  com-mouse-border-toggle-type)
-  (boxer-eval::defboxer-key bu::mouse-right-click-on-type com-mouse-type-tag-pop-up)
-  )
+#+apple (boxer-eval::defboxer-key bu::command-mouse-click-on-type   com-mouse-type-tag-pop-up)
+#+win32 (boxer-eval::defboxer-key bu::mouse-right-click-on-type com-mouse-type-tag-pop-up)
 
 ;; scrolling
 
@@ -586,9 +533,6 @@ Modification History (most recent at top)
 (boxer-eval::defboxer-key (bu::f15-key 3) com-noop)
 #+apple
 (boxer-eval::defboxer-key (bu::f14-key 3) com-noop)
-
-
-
 ;;;
 (eval-when (load)
   (boxer-eval::boxer-toplevel-set 'bu::new-box-properties (make-new-box-properties-box))

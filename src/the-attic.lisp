@@ -1059,6 +1059,17 @@
   (collect box)))))
 |#
 
+;;;;
+;;;; FILE: keys-new.lisp
+;;;;
+(boxer-eval::defboxer-key (bu::>-key 2) com-fat)
+(boxer-eval::defboxer-key (bu::<-key 2) com-nutri-system)
+
+#+sun (boxer-eval::defboxer-key bu::R2-key com-print-screen)
+
+#+sun (boxer-eval::defboxer-key (bu::R2-key 2) com-print-screen-to-file)
+
+#+apple (boxer-eval::defboxer-key (bu::return-key 1) com-doit-now) ; should be com-step
 
 ;;;;
 ;;;; FILE: lw-menu.lisp
