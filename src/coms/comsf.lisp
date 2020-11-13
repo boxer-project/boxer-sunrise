@@ -1,64 +1,51 @@
-;; -*- Mode:LISP;Syntax:Common-Lisp; Package:BOXER;-*-
-
-#|
-
-
- $Header: comsf.lisp,v 1.0 90/01/24 22:09:10 boxer Exp $
-
-
- $Log:	comsf.lisp,v $
-;;;Revision 1.0  90/01/24  22:09:10  boxer
-;;;Initial revision
-;;;
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                         +-Data--+
-                This file is part of the | BOXER | system
-                                         +-------+
-
-
-    This file contains top level definitions for
-    BOXER Editor Commands that deal with Fonts and
-          character styles
-
-
-
-
-Modification History (most recent at top)
-
- 7/15/13 removed very old #+ font functions to allow removal of unused font defvars
-10/06/07 #-opengl all references to add-redisplay-clue
- 4/21/03 merged current LW and MCL files
-1/22/02 change-region-font-internal rewritten to preserve the font info which is
-        not the subject of the change.  Also changed
-        change-region-font,style,size, color to use new -internal function
-4/09/01 *supported-font-sizes, com-nutri-system, com-fat, com-bloat for lwwin
-2/03/00 added normal-font?
-9/09/99 change-region-font-internal grab last-bfd values at the beginning
-        since those values can be side-effected if the last-bfd coincides
-        with a row or region boundary
-4/30/99 change-region-font-internal changed to NOT insert the trailing BFD if
-        we are at the end of the row
-3/29/99 finalized font LW font functions
-1/04/99 added LW specific font functions
-9/02/98 moved bfd= to editor.lisp, needed to be defined earlier
-8/27/98 added current-font-values which return width,height of the current font
-5/04/98 changed mac version of com-nutri-system, com-fat and com-bloat to
-        use new font implementation
-5/01/98 started logging changes: source = boxer version 2.3 (new fonts)
-
-
-|#
+;;;; -*- Mode:LISP;Syntax:Common-Lisp; Package:BOXER;-*-
+;;;;
+;;;;        Boxer
+;;;;        Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;        Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;        used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;        Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;        https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                             +-Data--+
+;;;;                    This file is part of the | BOXER | system
+;;;;                                             +-------+
+;;;;
+;;;;
+;;;;        This file contains top level definitions for
+;;;;        BOXER Editor Commands that deal with Fonts and
+;;;;              character styles
+;;;;
+;;;;
+;;;;
+;;;;
+;;;;    Modification History (most recent at top)
+;;;;
+;;;;     7/15/13 removed very old #+ font functions to allow removal of unused font defvars
+;;;;    10/06/07 #-opengl all references to add-redisplay-clue
+;;;;     4/21/03 merged current LW and MCL files
+;;;;    1/22/02 change-region-font-internal rewritten to preserve the font info which is
+;;;;            not the subject of the change.  Also changed
+;;;;            change-region-font,style,size, color to use new -internal function
+;;;;    4/09/01 *supported-font-sizes, com-nutri-system, com-fat, com-bloat for lwwin
+;;;;    2/03/00 added normal-font?
+;;;;    9/09/99 change-region-font-internal grab last-bfd values at the beginning
+;;;;            since those values can be side-effected if the last-bfd coincides
+;;;;            with a row or region boundary
+;;;;    4/30/99 change-region-font-internal changed to NOT insert the trailing BFD if
+;;;;            we are at the end of the row
+;;;;    3/29/99 finalized font LW font functions
+;;;;    1/04/99 added LW specific font functions
+;;;;    9/02/98 moved bfd= to editor.lisp, needed to be defined earlier
+;;;;    8/27/98 added current-font-values which return width,height of the current font
+;;;;    5/04/98 changed mac version of com-nutri-system, com-fat and com-bloat to
+;;;;            use new font implementation
+;;;;    5/01/98 started logging changes: source = boxer version 2.3 (new fonts)
+;;;;
 
 (in-package :boxer)
 
