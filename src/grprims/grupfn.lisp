@@ -30,7 +30,7 @@
 
 (defun no-interface-box-error (box-name turtle)
   (error "There doesn't seem to be a Box for the ~A slot of ~A"
-   box-name turtle))
+         box-name turtle))
 
 ;; used to make sure that we are running the trigger inside of the sprite
 ;; in order to prevent copies of interface boxes from being active
@@ -44,25 +44,25 @@
                                                 'sprite-variable))
   (let ((n (extract-item-from-editor-box box)))
     (cond ((numberp n) n)
-          (t (sprite-update-warning
-              "Didn't Get a number for ~A. Will change it to ~D"
-              slot-name-for-bad-arg-warning 0)
-             (values 0 t)))))
+      (t (sprite-update-warning
+          "Didn't Get a number for ~A. Will change it to ~D"
+          slot-name-for-bad-arg-warning 0)
+         (values 0 t)))))
 
 ;;; +++ interesting fact: compiling this calls genysm no fewer than 40 times (MCL2.0f3c2)
 (eval-when (compile load eval)
-(defsprite-trigger-function bu::update-x-position () (sprite turtle)
-  (when (inside-sprite? sprite)
-    (let* ((slot (slot-value turtle 'x-position))
-     (box (box-interface-box slot)))
-      (if (null box)
-          (no-interface-box-error 'X-POSITION turtle)
-          (multiple-value-bind (new-x fix?)
-              (check-and-get-number-arg box 'X-POSITION�)
-            (with-sprites-hidden t
-              (move-to turtle new-x (y-position turtle) (not fix?)))))))
-  boxer-eval::*novalue*)
-)
+           (defsprite-trigger-function bu::update-x-position () (sprite turtle)
+             (when (inside-sprite? sprite)
+               (let* ((slot (slot-value turtle 'x-position))
+                      (box (box-interface-box slot)))
+                 (if (null box)
+                   (no-interface-box-error 'X-POSITION turtle)
+                   (multiple-value-bind (new-x fix?)
+                                        (check-and-get-number-arg box 'X-POSITION�)
+                                        (with-sprites-hidden t
+                                          (move-to turtle new-x (y-position turtle) (not fix?)))))))
+             boxer-eval::*novalue*)
+           )
 
 (add-sprite-update-function x-position bu::update-x-position)
 
@@ -70,13 +70,13 @@
 (defsprite-trigger-function bu::update-y-position () (sprite turtle)
   (when (inside-sprite? sprite)
     (let* ((slot (slot-value turtle 'y-position))
-     (box (box-interface-box slot)))
+           (box (box-interface-box slot)))
       (if (null box)
-          (no-interface-box-error 'Y-POSITION turtle)
-          (multiple-value-bind (new-y fix?)
-              (check-and-get-number-arg box 'Y-POSITION�)
-            (with-sprites-hidden t
-              (move-to turtle (x-position turtle) new-y (not fix?)))))))
+        (no-interface-box-error 'Y-POSITION turtle)
+        (multiple-value-bind (new-y fix?)
+                             (check-and-get-number-arg box 'Y-POSITION�)
+                             (with-sprites-hidden t
+                               (move-to turtle (x-position turtle) new-y (not fix?)))))))
   boxer-eval::*novalue*)
 
 (add-sprite-update-function y-position bu::update-y-position)
@@ -85,12 +85,12 @@
 (defsprite-trigger-function bu::update-heading () (sprite turtle)
   (when (inside-sprite? sprite)
     (let* ((slot (slot-value turtle 'heading))
-     (box (box-interface-box slot)))
+           (box (box-interface-box slot)))
       (if (null box)
-          (no-interface-box-error 'HEADING turtle)
-          (multiple-value-bind (new-h fix?)
-              (check-and-get-number-arg box 'HEADING)
-            (with-sprites-hidden nil (turn-to turtle new-h (not fix?)))))))
+        (no-interface-box-error 'HEADING turtle)
+        (multiple-value-bind (new-h fix?)
+                             (check-and-get-number-arg box 'HEADING)
+                             (with-sprites-hidden nil (turn-to turtle new-h (not fix?)))))))
   boxer-eval::*novalue*)
 
 (add-sprite-update-function heading bu::update-heading)
@@ -110,12 +110,12 @@
 (defsprite-trigger-function bu::update-shown? () (sprite turtle)
   (when (inside-sprite? sprite)
     (let* ((slot (slot-value turtle 'shown?))
-     (box (box-interface-box slot)))
+           (box (box-interface-box slot)))
       (if (null box)
-    (no-interface-box-error "SHOWN?" turtle)
-          (multiple-value-bind (new-shown? fix?)
-        (check-and-get-hide-arg box slot)
-            (set-shown? turtle new-shown? (not fix?))))))
+        (no-interface-box-error "SHOWN?" turtle)
+        (multiple-value-bind (new-shown? fix?)
+                             (check-and-get-hide-arg box slot)
+                             (set-shown? turtle new-shown? (not fix?))))))
   boxer-eval::*novalue*)
 
 (add-sprite-update-function shown? bu::update-shown?)
@@ -137,34 +137,34 @@
       (if (null box)
         (no-interface-box-error 'PEN turtle)
         (multiple-value-bind (pen fix?) (check-and-get-pen-arg box)
-          (set-pen turtle pen (not fix?))))))
+                             (set-pen turtle pen (not fix?))))))
   boxer-eval::*novalue*)
 
 (add-sprite-update-function pen bu::update-pen)
 
 (defun check-and-get-pen-width-arg (box)
   (let ((arg (extract-item-from-editor-box box))
-  (oldarg nil))
+        (oldarg nil))
     (cond ((and (integerp arg) (> arg 0)) arg)
-          ((numberp arg)
-           (setq oldarg arg arg (max& 1 (round arg)))
-           (sprite-update-warning
-            "Pen Width, ~A, should be an integer > 0, changing to ~D"
-            oldarg arg)
-           (values arg t))
-          (t
-           (sprite-update-warning "Bad Pen Width,~D, changing to 1" arg)
-           (values 1 t)))))
+      ((numberp arg)
+       (setq oldarg arg arg (max& 1 (round arg)))
+       (sprite-update-warning
+        "Pen Width, ~A, should be an integer > 0, changing to ~D"
+        oldarg arg)
+       (values arg t))
+      (t
+       (sprite-update-warning "Bad Pen Width,~D, changing to 1" arg)
+       (values 1 t)))))
 
 (defsprite-trigger-function bu::update-pen-width () (sprite turtle)
   (when (inside-sprite? sprite)
     (let* ((slot (slot-value turtle 'pen-width))
-     (box (box-interface-box slot)))
+           (box (box-interface-box slot)))
       (if (null box)
-    (no-interface-box-error 'pen-width turtle)
-          (multiple-value-bind (new-pen-width fix?)
-        (check-and-get-pen-width-arg box)
-            (set-pen-width turtle new-pen-width (not fix?))))))
+        (no-interface-box-error 'pen-width turtle)
+        (multiple-value-bind (new-pen-width fix?)
+                             (check-and-get-pen-width-arg box)
+                             (set-pen-width turtle new-pen-width (not fix?))))))
   boxer-eval::*novalue*)
 
 (add-sprite-update-function pen-width bu::update-pen-width)
@@ -173,27 +173,27 @@
 (defun check-and-get-type-font-arg (box)
   (let ((arg (extract-item-from-editor-box box)))
     (cond ((and (integerp arg) (<=& 1 arg 7)) arg)
-          (t
-           (sprite-update-warning "Bad Pen Font,~D, changing to 4" arg)
-           (values 4 t)))))
+      (t
+       (sprite-update-warning "Bad Pen Font,~D, changing to 4" arg)
+       (values 4 t)))))
 
 #+mcl
 (defun check-and-get-type-font-arg (box)
   (let ((arg (font-from-box box t)))
     (cond ((integerp arg) arg)
-          (t
-           (sprite-update-warning "Bad Pen Font,~D, changing to Courier 10 bold" arg)
-           (values (make-boxer-font '("Courier" 10 :bold)) t)))))
+      (t
+       (sprite-update-warning "Bad Pen Font,~D, changing to Courier 10 bold" arg)
+       (values (make-boxer-font '("Courier" 10 :bold)) t)))))
 
 (defsprite-trigger-function bu::update-type-font () (sprite turtle)
   (when (inside-sprite? sprite)
     (let* ((slot (slot-value turtle 'type-font))
-     (box (box-interface-box slot)))
+           (box (box-interface-box slot)))
       (if (null box)
-    (no-interface-box-error 'type-font turtle)
-          (multiple-value-bind (new-type-font fix?)
-              (check-and-get-type-font-arg box)
-            (set-type-font turtle new-type-font (not fix?))))))
+        (no-interface-box-error 'type-font turtle)
+        (multiple-value-bind (new-type-font fix?)
+                             (check-and-get-type-font-arg box)
+                             (set-type-font turtle new-type-font (not fix?))))))
   boxer-eval::*novalue*)
 
 (add-sprite-update-function type-font bu::update-type-font)
@@ -202,36 +202,36 @@
 ;; this must also act like the bu::update-color-box trigger
 
 (boxer-eval::defboxer-primitive bu::update-pen-color ()
-  (update-color-box-internal (get-graphics-box)) ; Should return the right box
-  (with-sprite-primitive-environment (sprite turtle t)
-    (when (inside-sprite? sprite)
-      (let* ((slot (slot-value turtle 'pen-color))
-       (box (box-interface-box slot)))
-        (if (null box)
-            (no-interface-box-error 'pen-color turtle)
-      (set-pen-color turtle (graphics-sheet-background
-           (graphics-sheet box)) t))
-        boxer-eval::*novalue*))))
+                                (update-color-box-internal (get-graphics-box)) ; Should return the right box
+                                (with-sprite-primitive-environment (sprite turtle t)
+                                  (when (inside-sprite? sprite)
+                                    (let* ((slot (slot-value turtle 'pen-color))
+                                           (box (box-interface-box slot)))
+                                      (if (null box)
+                                        (no-interface-box-error 'pen-color turtle)
+                                        (set-pen-color turtle (graphics-sheet-background
+                                                               (graphics-sheet box)) t))
+                                      boxer-eval::*novalue*))))
 
 (add-sprite-update-function pen-color bu::update-pen-color)
 
 (defun check-and-get-size-arg (box)
   (let ((n (extract-item-from-editor-box box)))
     (cond ((and (numberp n) (plusp n)) n)
-          (t (sprite-update-warning
-              "Didn't Get a Positive Number for ~A. Changing to ~D" 'SPRITE-SIZE 1)
-             (values 1 t)))))
+      (t (sprite-update-warning
+          "Didn't Get a Positive Number for ~A. Changing to ~D" 'SPRITE-SIZE 1)
+         (values 1 t)))))
 
 (defsprite-trigger-function bu::update-sprite-size () (sprite turtle)
   (when (inside-sprite? sprite)
     (let* ((slot (slot-value turtle 'sprite-size))
-     (box (box-interface-box slot)))
+           (box (box-interface-box slot)))
       (if (null box)
-    (no-interface-box-error 'SPRITE-SIZE turtle)
-          (multiple-value-bind (new-size fix?)
-        (check-and-get-size-arg box)
-            (with-sprites-hidden nil
-              (set-sprite-size turtle new-size (not fix?)))))))
+        (no-interface-box-error 'SPRITE-SIZE turtle)
+        (multiple-value-bind (new-size fix?)
+                             (check-and-get-size-arg box)
+                             (with-sprites-hidden nil
+                               (set-sprite-size turtle new-size (not fix?)))))))
   boxer-eval::*novalue*)
 
 (add-sprite-update-function sprite-size bu::update-sprite-size)
@@ -239,21 +239,21 @@
 (defun check-and-get-number-args (box)
   (let ((n (subseq (flat-box-items box) 0 2)))
     (cond ((every #'numberp n) n)
-          (t (sprite-update-warning
-              "Didn't Get numbers for ~A. Will change it to ~A"
-              'HOME-POSITION '(0 0))
-             (values '(0 0) t)))))
+      (t (sprite-update-warning
+          "Didn't Get numbers for ~A. Will change it to ~A"
+          'HOME-POSITION '(0 0))
+         (values '(0 0) t)))))
 
 (defsprite-trigger-function bu::update-home-position () (sprite turtle)
   (when (inside-sprite? sprite)
     (let* ((slot (slot-value turtle 'home-position))
-     (box (box-interface-box slot)))
+           (box (box-interface-box slot)))
       (if (null box)
-          (no-interface-box-error 'HOME-POSITION turtle)
-    (multiple-value-bind (new-home fix?)
-              (check-and-get-number-args box)
-            (set-home-position turtle (car new-home) (cadr new-home)
-                               (not fix?))))))
+        (no-interface-box-error 'HOME-POSITION turtle)
+        (multiple-value-bind (new-home fix?)
+                             (check-and-get-number-args box)
+                             (set-home-position turtle (car new-home) (cadr new-home)
+                                                (not fix?))))))
   boxer-eval::*novalue*)
 
 (add-sprite-update-function home-position bu::update-home-position)
@@ -269,15 +269,15 @@
 ;;; which is also a redisplay init
 
 (def-redisplay-initialization ; :bu-turtle-shape
-    (boxer-eval::boxer-toplevel-set
-     'bu::turtle-shape
-     (let ((box (make-box (convert-graphics-list-to-make-box-format
-         *default-turtle-shape*)))
-     ;; a bootstrapping hack, needed because the value of this
-     ;; variable isn't setup until the evaluator inits which
-     ;; (can) comes later.
-     (%learning-shape-graphics-list nil))
-       (shape-box-updater-internal box *default-turtle-shape*)
-       box))
-    )
+  (boxer-eval::boxer-toplevel-set
+   'bu::turtle-shape
+   (let ((box (make-box (convert-graphics-list-to-make-box-format
+                         *default-turtle-shape*)))
+         ;; a bootstrapping hack, needed because the value of this
+         ;; variable isn't setup until the evaluator inits which
+         ;; (can) comes later.
+         (%learning-shape-graphics-list nil))
+     (shape-box-updater-internal box *default-turtle-shape*)
+     box))
+  )
 
