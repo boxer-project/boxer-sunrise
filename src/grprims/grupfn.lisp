@@ -169,21 +169,12 @@
 
 (add-sprite-update-function pen-width bu::update-pen-width)
 
-#-mcl
 (defun check-and-get-type-font-arg (box)
   (let ((arg (extract-item-from-editor-box box)))
     (cond ((and (integerp arg) (<=& 1 arg 7)) arg)
       (t
        (sprite-update-warning "Bad Pen Font,~D, changing to 4" arg)
        (values 4 t)))))
-
-#+mcl
-(defun check-and-get-type-font-arg (box)
-  (let ((arg (font-from-box box t)))
-    (cond ((integerp arg) arg)
-      (t
-       (sprite-update-warning "Bad Pen Font,~D, changing to Courier 10 bold" arg)
-       (values (make-boxer-font '("Courier" 10 :bold)) t)))))
 
 (defsprite-trigger-function bu::update-type-font () (sprite turtle)
   (when (inside-sprite? sprite)
