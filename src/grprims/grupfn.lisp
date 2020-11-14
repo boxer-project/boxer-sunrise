@@ -1,49 +1,32 @@
-;; -*- Mode:LISP; Syntax:Common-Lisp; Package:BOXER; -*-
-#|
-
-
- $Header: grupfn.lisp,v 1.0 90/01/24 22:13:00 boxer Exp $
-
- $Log:	grupfn.lisp,v $
-;;;Revision 1.0  90/01/24  22:13:00  boxer
-;;;Initial revision
-;;;
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                      +-Data--+
-             This file is part of the | BOXER | system
-                                      +-------+
-
-
-
-      This file contains sprite slot update functions
-
-
-
-
-Modification History (most recent at top)
-
- 4/19/03 merged current LW and MCL sources
- 5/05/98 type-font fixes to handle new fonts
- 5/05/98 started logging: source = Boxer version 2.3
-
-
-|#
+;;;; -*- Mode:LISP; Syntax:Common-Lisp; Package:BOXER; -*-
+;;;;
+;;;;        Boxer
+;;;;        Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;        Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;        used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;        Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;        https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                          +-Data--+
+;;;;                 This file is part of the | BOXER | system
+;;;;                                          +-------+
+;;;;
+;;;;
+;;;;          This file contains sprite slot update functions
+;;;;
+;;;;
+;;;;    Modification History (most recent at top)
+;;;;
+;;;;     4/19/03 merged current LW and MCL sources
+;;;;     5/05/98 type-font fixes to handle new fonts
+;;;;     5/05/98 started logging: source = Boxer version 2.3
+;;;;
 
 (in-package :boxer)
-
-
-
 
 (defun no-interface-box-error (box-name turtle)
   (error "There doesn't seem to be a Box for the ~A slot of ~A"
