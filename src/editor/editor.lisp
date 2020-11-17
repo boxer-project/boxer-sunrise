@@ -79,8 +79,8 @@
     ;; make sure the new row starts with the current font or else
     ;; the font changing mechanism will reset the current font to
     ;; the default font (see move-point-1 for details)
-    (unless (or  #+lispworks (null *current-font-descriptor*)
-                 #+lispworks (null *default-font-descriptor*)
+    (unless (or  (null *current-font-descriptor*)
+                 (null *default-font-descriptor*)
                  ;; certain make-box inits can occur before the BFD's are
                  ;; defined because the LW version doesn't define the BFD's
                  ;; until after the *boxer-frame* is made
@@ -1460,16 +1460,15 @@ points to the Box which contains the lower BP,then the superior BP is returned"
     (catch *input-throw-tag*
       (loop (multiple-value-bind (char bits)
                                  (get-character-input *boxer-pane*)
-                                 #-mcl (declare (ignore bits))
-                                 (cond ((editor-abort-char? char #+mcl bits)
+                                 (declare (ignore bits))
+                                 (cond ((editor-abort-char? char)
                                         (status-line-undisplay 'boxer-editor-error)
                                         (return-from get-string-from-status-line (values "" T)))
                                    (t
                                     (case char
-                                      ((#+mcl #\enter #+sun #.(code-char 214) ; Sun ENTER see keydef-high
-                                         #\return #\linefeed)
+                                      ((#\return #\linefeed)
                                        (setq cancelled? nil) (return))
-                                      ((#\delete #-mcl #\backspace)
+                                      ((#\delete #\backspace)
                                        (let ((fp (fill-pointer return-string)))
                                          (unless (zerop& fp)
                                            (setf (fill-pointer return-string) (1-& fp))
@@ -1486,36 +1485,6 @@ points to the Box which contains the lower BP,then the superior BP is returned"
     (status-line-undisplay 'boxer-editor-error)
     (if cancelled? (values "" T) return-string)))
 
-
-#|
-(defun get-boxer-status-string (outermost-box-name other-string)
-  (flet ((get-boxer-version-string ()
-           (or *boxer-version-info*
-               (system-version 'boxer))))
-
-    (cond ((null other-string)
-     (when (null outermost-box-name)
-       (setq outermost-box-name (name-string (outermost-box))))
-     (if (null *editor-numeric-argument*)
-         (format nil "~A |         Outermost Box: ~A"
-           (get-boxer-version-string) outermost-box-name)
-         (format nil "~A |         Outermost Box: ~A | Arg: ~D"
-           (get-boxer-version-string) outermost-box-name
-           *editor-numeric-argument*)))
-    (t
-     (if (null *editor-numeric-argument*)
-         (format nil "~A |         ~A" (get-boxer-version-string) other-string)
-         (format nil "~A |         ~A | Arg: ~D" (get-boxer-version-string) other-string *editor-numeric-argument*))))))
-
-
-(defun redraw-status-line (&optional new-name other-string)
-  (window-system-dependent-redraw-status-line
-   (get-boxer-status-string new-name other-string)
-   (not (null new-name))))
-|#
-
-
-
 ;;; Name Tab utilities
 
 ;;  *FONT-NUMBER-FOR-NAMING* should be changed to...
@@ -1529,8 +1498,7 @@ points to the Box which contains the lower BP,then the superior BP is returned"
            cha row)
     (chas-array-insert-cha (chas-array row)
                            cha-no
-                           #-mcl (make-char cha 0)
-                           #+mcl cha))
+                           (make-char cha 0)))
   (modified row))
 
 (defmethod insert-row-chas-at-cha-no ((name-row name-row) row cha-no

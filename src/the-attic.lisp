@@ -965,6 +965,37 @@
 |#
 
 ;;;;
+;;;; FILE: editor.lisp
+;;;;
+
+#|
+(defun get-boxer-status-string (outermost-box-name other-string)
+  (flet ((get-boxer-version-string ()
+           (or *boxer-version-info*
+               (system-version 'boxer))))
+
+    (cond ((null other-string)
+     (when (null outermost-box-name)
+       (setq outermost-box-name (name-string (outermost-box))))
+     (if (null *editor-numeric-argument*)
+         (format nil "~A |         Outermost Box: ~A"
+           (get-boxer-version-string) outermost-box-name)
+         (format nil "~A |         Outermost Box: ~A | Arg: ~D"
+           (get-boxer-version-string) outermost-box-name
+           *editor-numeric-argument*)))
+    (t
+     (if (null *editor-numeric-argument*)
+         (format nil "~A |         ~A" (get-boxer-version-string) other-string)
+         (format nil "~A |         ~A | Arg: ~D" (get-boxer-version-string) other-string *editor-numeric-argument*))))))
+
+
+(defun redraw-status-line (&optional new-name other-string)
+  (window-system-dependent-redraw-status-line
+   (get-boxer-status-string new-name other-string)
+   (not (null new-name))))
+|#
+
+;;;;
 ;;;; FILE: infsup.lisp
 ;;;;
 
