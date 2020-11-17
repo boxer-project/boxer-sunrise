@@ -1,66 +1,54 @@
-;;; -*- Mode:lisp;Syntax:Common-Lisp; Package:BOXER; Base:10.-*-
-
-#|
-
-
- $Header: editor.lisp,v 1.0 90/01/24 22:10:36 boxer Exp $
-
- $Log:	editor.lisp,v $
-;;;Revision 1.0  90/01/24  22:10:36  boxer
-;;;Initial revision
-;;;
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                          +-Data--+
-                 This file is part of the | BOXER | system
-                                          +-------+
-
- This file contains low-level code for the BOXER editor.
-
-
-
-Modification History (most recent at top)
-
-11/27/09 added closet-row?
- 7/08/09 screen-box-last-visible-bp-values
- 6/24/09 defined (point-screen-row)
- 3/17/07 added :graphics-info handler to initialize-instance for box's
- 3/14/07 insert/delete-self-action handles spriteness
-10/13/06 added name-string-or-null, using name is deprecated, use name-string instead
- 2/13/03 merged current LW and MCL files
- 9/02/02 added file-box-dirty?
- 6/05/02 removed start box loading in setup-editor, moved to boxwin files
- 3/20/02 added shrink-on-exit? handling to exit method
- 2/14/01 merged current LW and MCL files
-11/30/00 exit method fixed to handle possible null screen-structure
- 7/12/00 start.box used in setup-editor
- 6/16/99 fixed circular-port? to recognize circularity that doesn't include its
-         original port parameter
- 2/15/99 make-intialized-row checks for existing BFD vars because they may not be
-         defined in the LW version until after *boxer-frame* is made
- 2/09/99 avoid-box-name-conflict-by-removing-name checks for boxness
- 1/ 8/99 removed keyword check for set-type, removed obsolete warning TYPE method
-10/30/98 get-string-from-status-line now looks for and can handle menu item aborts
- 9/ 2/98 added bfd= from comsf.lisp so it will be defined before its' 1st use
- 8/ 4/98 added interval clause to listp clause in
-         queue-editor-objs-for-deallocation
- 7/30/98 changed make-initialized-row to set the font on new row to avoid
-         reversion to default font bug
-
- 7/30/98 Started Logging changes: source = boxer version 2.3beta
-
-
-|#
+;;;; -*- Mode:lisp;Syntax:Common-Lisp; Package:BOXER; Base:10.-*-
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                            +-Data--+
+;;;;                   This file is part of the | BOXER | system
+;;;;                                            +-------+
+;;;;
+;;;;   This file contains low-level code for the BOXER editor.
+;;;;
+;;;;
+;;;;
+;;;;  Modification History (most recent at top)
+;;;;
+;;;;  11/27/09 added closet-row?
+;;;;   7/08/09 screen-box-last-visible-bp-values
+;;;;   6/24/09 defined (point-screen-row)
+;;;;   3/17/07 added :graphics-info handler to initialize-instance for box's
+;;;;   3/14/07 insert/delete-self-action handles spriteness
+;;;;  10/13/06 added name-string-or-null, using name is deprecated, use name-string instead
+;;;;   2/13/03 merged current LW and MCL files
+;;;;   9/02/02 added file-box-dirty?
+;;;;   6/05/02 removed start box loading in setup-editor, moved to boxwin files
+;;;;   3/20/02 added shrink-on-exit? handling to exit method
+;;;;   2/14/01 merged current LW and MCL files
+;;;;  11/30/00 exit method fixed to handle possible null screen-structure
+;;;;   7/12/00 start.box used in setup-editor
+;;;;   6/16/99 fixed circular-port? to recognize circularity that doesn't include its
+;;;;           original port parameter
+;;;;   2/15/99 make-intialized-row checks for existing BFD vars because they may not be
+;;;;           defined in the LW version until after *boxer-frame* is made
+;;;;   2/09/99 avoid-box-name-conflict-by-removing-name checks for boxness
+;;;;   1/ 8/99 removed keyword check for set-type, removed obsolete warning TYPE method
+;;;;  10/30/98 get-string-from-status-line now looks for and can handle menu item aborts
+;;;;   9/ 2/98 added bfd= from comsf.lisp so it will be defined before its' 1st use
+;;;;   8/ 4/98 added interval clause to listp clause in
+;;;;           queue-editor-objs-for-deallocation
+;;;;   7/30/98 changed make-initialized-row to set the font on new row to avoid
+;;;;           reversion to default font bug
+;;;;
+;;;;   7/30/98 Started Logging changes: source = boxer version 2.3beta
+;;;;
 
 (in-package :boxer)
 
