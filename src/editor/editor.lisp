@@ -1621,8 +1621,9 @@ points to the Box which contains the lower BP,then the superior BP is returned"
   (GET-BOX-NAME-FOR-PRINTING (SLOT-VALUE BOX 'NAME)))
 
 (defun name-string-or-null (box)
-  (let ((nr (slot-value box 'name)))
-    (unless (null nr) (get-box-name-for-printing nr))))
+  (unless (null box)
+    (let ((nr (slot-value box 'name)))
+      (unless (null nr) (get-box-name-for-printing nr)))))
 
 ;; call this on an old box when inserting a new box with the same name.
 ;; the recursive case is handled automagically.
