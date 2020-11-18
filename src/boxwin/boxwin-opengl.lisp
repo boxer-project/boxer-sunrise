@@ -862,6 +862,20 @@ Modification History (most recent at top)
                 ((key-event?   ev) (return ev))
                 (t (pop *boxer-eval-queue*))))))
 
+;;; Mouse handling, mostly copied from clx
+(defstruct (mouse-event (:conc-name mouse-event-)
+      (:predicate mouse-event?))
+  ;; these are required slots that handle-boxer-input uses
+  (type :mouse-click) ;; other option is :mouse-hold
+  (window *boxer-pane*)
+  (x-pos 0)
+  (y-pos 0)
+  (click 0) ;; which button is down
+  (bits 0)  ;; which shift bits are down
+  ;; these are (+++ not) used in click processing
+  (last-time-stamp 0)
+  (number-of-clicks 1))
+
 ;; pause and wait for another possible click
 (defun maybe-unify-mouse-click (click)
   (let ((button (mouse-event-click click))
@@ -966,20 +980,6 @@ Modification History (most recent at top)
 (defun queue-event (event)
  ; (when (characterp event) (setq *dribble* (nconc (list event) *dribble*)))
   (setq *boxer-eval-queue* (nconc *boxer-eval-queue* (list event))))
-
-;;; Mouse handling, mostly copied from clx
-(defstruct (mouse-event (:conc-name mouse-event-)
-      (:predicate mouse-event?))
-  ;; these are required slots that handle-boxer-input uses
-  (type :mouse-click) ;; other option is :mouse-hold
-  (window *boxer-pane*)
-  (x-pos 0)
-  (y-pos 0)
-  (click 0) ;; which button is down
-  (bits 0)  ;; which shift bits are down
-  ;; these are (+++ not) used in click processing
-  (last-time-stamp 0)
-  (number-of-clicks 1))
 
 (defvar *double-click-wait-interval* .3
   "Number of seconds to wait for another (possible) mouse click")
