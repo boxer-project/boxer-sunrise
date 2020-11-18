@@ -169,7 +169,6 @@
    bw::*foreground-color* bw::*background-color*
    bw::main-screen bw::sheet-screen-array bw::prepare-sheet
    bw::sheet-font-map bw::make-pattern
-   bw::with-drawing-into-new-bitmap
    bw::sheet-inside-left bw::sheet-inside-top
    bw::sheet-inside-width bw::sheet-inside-height bw::window-inside-size
    bw::window-depth bw::window-pixel
