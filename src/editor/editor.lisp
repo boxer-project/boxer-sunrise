@@ -1494,8 +1494,8 @@ points to the Box which contains the lower BP,then the superior BP is returned"
 (defmethod insert-cha-at-cha-no ((row name-row) cha cha-no)
   ;  "Gives the characters in the naming area a different font. "
   (if (box? cha)
-    (error "An attempt was made to insert the box, ~S, into the row ~S"
-           cha row)
+    (boxer-editor-error "Cannot insert boxes in name rows. An attempt was made to insert the box, ~S, into the row ~S"
+                        cha row)
     (chas-array-insert-cha (chas-array row)
                            cha-no
                            (make-char cha 0)))
