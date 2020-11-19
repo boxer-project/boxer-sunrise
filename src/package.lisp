@@ -26,6 +26,7 @@
 (defpackage :boxer
   (:use :common-lisp :boxer-user)
   (:nicknames :box)
+  (:shadow :once-only)
   (:export :symbol-format
            :*boxer-frame*
            :with-collection
@@ -40,7 +41,21 @@
            :run-redisplay-inits
            :fast-assq
            :block-compile-class
-           :deffile-property-handler))
+           :deffile-property-handler
+           :recompile-boxer :load-boxer :make-boxer :start-boxer :boxer
+           :fix
+           :fixr
+           :+&  :fixnum-plus  :-&  :fixnum-minus  :*&  :fixnum-times
+           :=&  :fixnum-=  :<&  :fixnum-<  :>&  :fixnum->  :<=&  :fixnum-<=
+           :>=&  :fixnum->=  :1+&  :1-&  :zerop&  :max&  :min&  :svref& :incf& :decf&
+           :float-plus :float-minus :float-times
+           :ldb& :dpb& :logior& :logand& :logxor&
+           :defsubst :dotimes&
+           :barf :with-collection :collect :neq :sind :cosd
+           :fast-delq :fast-memq :fast-assq
+           :between :inclusive-between? :intern-keyword :symbol-format
+           :string-case :char-case)
+           )
 
 (defpackage :boxer-eval
   (:use :common-lisp)
@@ -72,26 +87,10 @@
 
 ;;;; Set up the packages that we will be using
 
-;; Symbols in the boxer package that we want others to see
-
-(export '(recompile-boxer load-boxer make-boxer start-boxer boxer))
-
 ;;; useful symbols from the boxer pkg (mostly from macros.lisp)
 ;;; that we want ALL other packages to see.  There are import
 ;;; statements below for specific symbols that should be seen
 ;;; in specific packages
-(export '(fix fixr  +&  fixnum-plus  -&  fixnum-minus  *&  fixnum-times
-              =&  fixnum-=  <&  fixnum-<  >&  fixnum->  <=&  fixnum-<=
-              >=&  fixnum->=  1+&  1-&  zerop&  max&  min&  svref& incf& decf&
-              float-plus float-minus float-times
-              ldb& dpb& logior& logand& logxor&
-              defsubst dotimes&
-              barf with-collection collect neq sind cosd
-              fast-delq fast-memq fast-assq
-              between inclusive-between? intern-keyword symbol-format
-              string-case char-case))
-
-(shadow 'boxer::once-only (find-package 'boxer))
 
 (DEFMACRO DEFPROP (SYM VALUE INDICATOR)
           `(SETF (GET ',SYM ',INDICATOR) ',VALUE))
