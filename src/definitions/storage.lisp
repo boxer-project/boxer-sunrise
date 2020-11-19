@@ -45,7 +45,7 @@
 ;;; the contents over to the new one.  We maintain free lists of these
 ;;; vectors and pop/push them as required.
 
-(defconstant *default-initial-storage-vector-length* 8.)
+(defconstant +default-initial-storage-vector-length+ 8.)
 
 ;;; we define a defstruct here so that storage vectors can be we can :INCLUDEd
 ;;; in other structures (such as graphics command lists)
@@ -54,7 +54,7 @@
                            (:constructor %%make-storage-vector)
                            (:copier %%copy-storage-vector)
                            (:conc-name %%sv-))
-  (contents (make-array *default-initial-storage-vector-length*))
+  (contents (make-array +default-initial-storage-vector-length+))
   (fill-pointer 0))
 
 
@@ -94,7 +94,7 @@
 
 ;; this makes a SV with the fill pointer set to 0
 (defun make-storage-vector (&optional
-                            (length *default-initial-storage-vector-length*))
+                            (length +default-initial-storage-vector-length+))
   (%%make-storage-vector :contents (make-array length)
                          :fill-pointer 0))
 
@@ -135,7 +135,7 @@
 
 ;;; increment of growth after we have passed the point where there
 ;;; may be pre-allocated vectors
-(defconstant *storage-vector-terminal-growth-quantum* 256.)
+(defconstant +storage-vector-terminal-growth-quantum+ 256.)
 
 ;; we store pre-consed contents-vectors of certain sizes in free-lists
 
@@ -161,11 +161,11 @@
 ;;; compiled code  will depend upon the COMPILE time
 ;;; value of *compile-in-storage-metering-info*
 
-(defconstant *max-storage-meters* 8)
+(defconstant +max-storage-meters+ 8)
 
 (eval-when
  (:compile-toplevel :load-toplevel :execute)
- (defvar *storage-substrate-metering-info* (make-array *max-storage-meters*))
+ (defvar *storage-substrate-metering-info* (make-array +max-storage-meters+))
  )
 
 (defvar *storage-meter-initializers* nil)
@@ -279,7 +279,7 @@
           (meter-summary (storage-substrate-newly-consed-meter) "consed")
           ))
 
-(eval-when (eval load)
+(eval-when (:load-toplevel :execute)
            (initialize-storage-meters)
            )
 
@@ -287,7 +287,7 @@
 ;;; are using these for lots of other things (like chas-arrays
 ;;; and graphics-command-lists), they have to be made earlier
 
-(eval-when (eval load)
+(eval-when (:load-toplevel :execute)
            (initialize-storage-vector-free-lists)
            (setq *free-list-init-flag* t)
            )
@@ -321,7 +321,7 @@
                    clauses))
            ;; the fall through case...
            (push `(t (make-array (+ ,key
-                                     *storage-vector-terminal-growth-quantum*)))
+                                     +storage-vector-terminal-growth-quantum+)))
                  clauses))
       (t
        ;; otherwise, compile in the metering info
@@ -346,7 +346,7 @@
                (record-storage-substrate-alloc-event
                 ,(length *initial-storage-setup-alist*))
                (make-array (+ ,key
-                               *storage-vector-terminal-growth-quantum*)))
+                               +storage-vector-terminal-growth-quantum+)))
              clauses)))
     (nreverse clauses)))
 
