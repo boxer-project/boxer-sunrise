@@ -1000,12 +1000,12 @@ notes:: check points arg on draw-poly
   (if (minusp sweep-angle)
     ;; change the start so that we can use ABS sweep
     (bw::opengl-draw-arc x y radius
-                         (* *degs->rads* (mod (- (+ start-angle sweep-angle) 90) 360))
-                         (* *degs->rads* (abs sweep-angle))
+                         (* +degs->rads+ (mod (- (+ start-angle sweep-angle) 90) 360))
+                         (* +degs->rads+ (abs sweep-angle))
                          filled?)
     (bw::opengl-draw-arc x y radius
-                         (* *degs->rads* (mod (- start-angle 90) 360))
-                         (* *degs->rads* sweep-angle)
+                         (* +degs->rads+ (mod (- start-angle 90) 360))
+                         (* +degs->rads+ sweep-angle)
                          filled?)))
 
 
@@ -1014,11 +1014,11 @@ notes:: check points arg on draw-poly
   (declare (ignore bit-array alu x y width height th1 th2))
 #|
   (if (=& alu alu-xor)
-      (gp:draw-arc bit-array x y width height (* (- 90 th1) *degs->rads*)
-                   (* th2 *degs->rads* -1)
+      (gp:draw-arc bit-array x y width height (* (- 90 th1) +degs->rads+)
+                   (* th2 +degs->rads+ -1)
                :operation alu :filled nil :foreground #xffffff)
-    (gp:draw-arc bit-array x y width height (* (- 90 th1) *degs->rads*)
-                 (* th2 *degs->rads* -1)
+    (gp:draw-arc bit-array x y width height (* (- 90 th1) +degs->rads+)
+                 (* th2 +degs->rads+ -1)
                :operation alu :filled nil))
 |#
 )
@@ -1028,11 +1028,11 @@ notes:: check points arg on draw-poly
   (declare (ignore bit-array alu x y width height th1 th2))
 #|
   (if (=& alu alu-xor)
-      (gp:draw-arc bit-array x y width height (* (- 90 th1) *degs->rads*)
-                   (* th2 *degs->rads* -1)
+      (gp:draw-arc bit-array x y width height (* (- 90 th1) +degs->rads+)
+                   (* th2 +degs->rads+ -1)
                :operation alu :filled t :foreground #xffffff)
-    (gp:draw-arc bit-array x y width height (* (- 90 th1) *degs->rads*)
-                 (* th2 *degs->rads* -1)
+    (gp:draw-arc bit-array x y width height (* (- 90 th1) +degs->rads+)
+                 (* th2 +degs->rads+ -1)
                  :operation alu :filled t))
 |#
 )

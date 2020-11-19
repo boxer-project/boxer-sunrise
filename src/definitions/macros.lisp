@@ -554,13 +554,13 @@ Modification History (most recent at top)
 ;;    which lack fast trig functions
 ;;
 
-(defconstant *degs->rads* (/ pi 180.0))
+(defconstant +degs->rads+ (/ pi 180.0))
 
 #-(or lispm tltrig)
 (progn					; double precision
-  (defun sind (x) (sin (float-times (float x) *degs->rads*)))
+  (defun sind (x) (sin (float-times (float x) +degs->rads+)))
 
-  (defun cosd (x) (cos (float-times (float x) *degs->rads*)))
+  (defun cosd (x) (cos (float-times (float x) +degs->rads+)))
   )
 
 #+tltrig
@@ -570,13 +570,13 @@ Modification History (most recent at top)
   (defun make-sin-table ()
     (let ((table (make-array 360 :element-type 'double-float)))
       (dotimes (i 360)
-	(setf (aref table i) (sin (* i *degs->rads*))))
+	(setf (aref table i) (sin (* i +degs->rads+))))
       table))
 
   (defun make-cos-table ()
     (let ((table (make-array 360 :element-type 'double-float)))
       (dotimes (i 360)
-	(setf (aref table i) (cos (* i *degs->rads*))))
+	(setf (aref table i) (cos (* i +degs->rads+))))
       table))
 
   (defvar *sin-lookup-table* (make-sin-table))
