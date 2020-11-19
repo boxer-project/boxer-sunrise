@@ -93,12 +93,43 @@
            ;;   #+(or lispworks mcl) :block-compile-class
            :modified :name-string
            :dump-plist-internal :dump-plist-length
-           :ut-day :ut-month :ut-tz)
+           :ut-day :ut-month :ut-tz
+           :defsubst :virtual-copy-error-clause
+           :with-collection :collect
+           ;; instance variables and generic function names
+           :static-variable-cache :cached-code
+           :static-variables-alist
+           ;; type checking
+           :fast-eval-doit-box? :fast-eval-data-box?
+           :fast-eval-port-box? :fast-eval-sprite-box?
+           :fast-editor-doit-box? :fast-editor-data-box?
+           :fast-editor-sprite-box? :fast-editor-port-box?
+           :doit-box? :data-box?
+           :sprite-box? :port-box?
+           ;; other predicates
+           :named-box?
+           ;; PCL stuff
+           ;;   #+clos clos::slot-value #+clos clos::defmethod
+           ;;   #+clos clos::bcm-class-and-instantiable-superiors-symbol
+           ;; Boxer/CL fixup
+           :fast-assq :fast-delq
+           :fast-del-if :fast-memq
+           :compiler-let
+           :fix :fixr :symbol-format
+           :+& :-& :*&
+           :=& :<& :>&
+           :<=& :>=&
+           :/=&
+           :1+& :1-&
+           :incf& :decf&
+           :zerop& :svref& :dotimes& :svlength
+           )
            )
 
 (defpackage :boxer-eval
   (:use :common-lisp)
   (:use :boxer)
+  (:shadow :debug)
   (:nicknames :eval)
   (:export :LOOKUP-STATIC-VARIABLE-IN-BOX-ONLY
            :REMOVE-STATIC-VARIABLE
@@ -108,7 +139,19 @@
            :defboxer-primitive
            :*LEXICAL-VARIABLES-ROOT*
            :defboxer-primitive :primitive-signal-error
-           :signal-error :true? :false?)
+           :signal-error :true? :false?
+           :*lexical-variables-root* :add-static-variable-pair
+           :evaluator-delete-self-action
+           :lookup-static-variable-in-box-only
+           :remove-static-variable
+           :defboxer-key :funcall-boxer-key
+           :set-exports
+           :boxer-boolean
+           :list-rest :numberize
+           :set-and-save-state-variables
+           :recursive-funcall-invoke
+           :restore-state-variables
+           :boxer-symeval)
   )
 
 (defpackage :boxnet
@@ -308,67 +351,7 @@
         (FIND-PACKAGE 'BOXER-WINDOW))
 
 
-
-
 ;;; Set up package for the evaluator.
-
-(export '(boxer-eval::*lexical-variables-root* boxer-eval::add-static-variable-pair
-                                               boxer-eval::evaluator-delete-self-action
-                                               boxer-eval::lookup-static-variable-in-box-only
-                                               boxer-eval::remove-static-variable
-                                               boxer-eval::defboxer-key boxer-eval::funcall-boxer-key
-                                               boxer-eval::set-exports
-                                               boxer-eval::boxer-boolean
-                                               boxer-eval::list-rest boxer-eval::numberize
-                                               boxer-eval::set-and-save-state-variables
-                                               boxer-eval::recursive-funcall-invoke
-                                               boxer-eval::restore-state-variables
-                                               boxer-eval::boxer-symeval)
-        (find-package :boxer-eval))
-
-(import '(boxer::defsubst boxer::virtual-copy-error-clause
-                          boxer::with-collection boxer::collect
-                          ;; instance variables and generic function names
-                          boxer::static-variable-cache boxer::cached-code
-                          boxer::static-variables-alist
-                          ;; type checking
-                          boxer::fast-eval-doit-box? boxer::fast-eval-data-box?
-                          boxer::fast-eval-port-box? boxer::fast-eval-sprite-box?
-                          boxer::fast-editor-doit-box? boxer::fast-editor-data-box?
-                          boxer::fast-editor-sprite-box? boxer::fast-editor-port-box?
-                          boxer::doit-box? boxer::data-box?
-                          boxer::sprite-box? boxer::port-box?
-                          ;; other predicates
-                          boxer::named-box?
-                          ;; PCL stuff
-                          ;;   #+clos clos::slot-value #+clos clos::defmethod
-                          ;;   #+clos clos::bcm-class-and-instantiable-superiors-symbol
-                          ;; Boxer/CL fixup
-                          boxer::fast-assq boxer::fast-delq
-                          boxer::fast-del-if boxer::fast-memq
-                          boxer::compiler-let)
-  (find-package 'boxer-eval))
-
-(import '(boxer::fix boxer::fixr boxer::symbol-format
-                     boxer::+& boxer::-& boxer::*&
-                     boxer::=& boxer::<& boxer::>&
-                     boxer::<=& boxer::>=&
-                     boxer::/=&
-                     boxer::1+& boxer::1-&
-                     boxer::incf& boxer::decf&
-                     boxer::zerop& boxer::svref& boxer::dotimes& boxer::svlength)
-  'boxer-eval)
-
-#+lispworks
-(shadow 'boxer-eval::debug (find-package :boxer-eval))
-
-(import '(boxer-eval::defboxer-key boxer-eval::defboxer-primitive
-                                   ; Until Lucid fixes the DEFSTRUCT lossage you have to be in the EVAL package
-                                   ; when doing defrecursive-*-primitives.
-                                   ;;        boxer-eval::defrecursive-funcall-primitive
-                                   ;;	  boxer-eval::defrecursive-eval-primitive
-                                   boxer-eval::set-exports)
-  (find-package 'boxer))
 
 ;;; Set up package for the boxer network.
 
