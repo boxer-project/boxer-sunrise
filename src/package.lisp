@@ -21,6 +21,7 @@
 (defpackage :boxer-user
   (:use)
   (:nicknames :bu :boxer-users :pkg-bu-package :pkg-boxer-user-package)
+  (:export :input :inputs :true :false :port-to :datafy)
   )
 
 (defpackage :boxer
@@ -94,13 +95,6 @@
 
 (DEFMACRO DEFPROP (SYM VALUE INDICATOR)
           `(SETF (GET ',SYM ',INDICATOR) ',VALUE))
-
-;; external symbols that we need to reference from BOXER
-;; the symbols must be present before we export them
-;; :: won't create the symbol.
-
-(export '(bu::input bu::inputs bu::true bu::false bu::port-to bu::datafy)
-        (find-package 'boxer-user))
 
 ;; Some useful variables and functions for dealing with the BU package
 
