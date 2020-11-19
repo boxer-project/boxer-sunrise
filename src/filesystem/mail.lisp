@@ -193,7 +193,7 @@ Modification History (most recent at top)
                                      (format nil ".~A" type)
                                      ""))))
      (otherwise (error "Don't know how to send a type ~A message" smtp-type)))
-   (net-write-line stream "X-Mailer: ~A" (system-version 'boxer::boxer))
+   (net-write-line stream "X-Mailer: ~A" (system-version))
    (net-write-line stream "") ; CRLF
    )
 

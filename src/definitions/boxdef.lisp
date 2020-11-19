@@ -56,7 +56,7 @@ Modification History (most recent at top)
   "Returns the current semver version of boxer based on it's asdf configuration."
   (slot-value (asdf/system:find-system :boxer-sunrise2) 'asdf/component:version))
 
-(defun system-version (box)
+(defun system-version ()
   "Returns a version string for boxer that looks like:
     Boxer version 3.2 Public OPENGL Release
 

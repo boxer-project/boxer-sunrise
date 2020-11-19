@@ -1883,7 +1883,7 @@ Modification History (most recent at top)
 ;;; "About Boxer" window ?
 (defun about-boxer-function ()
   (capi:display-message-on-screen (capi:convert-to-screen nil)
-                                  "Boxer-4.0.0")); (sm::system-version 'boxer::boxer)))
+                                  (system-version)))
 
 
 ;;; System clipboard
@@ -1959,7 +1959,7 @@ Modification History (most recent at top)
 
 ;; should add date/time too
 (defun bug-report-header (stream)
-  (let* ((system-string "Boxer-4.0.0") ;(sm::system-version 'boxer::boxer))
+  (let* ((system-string (system-version))
          (xtens (mapcar #'box::boxer-extension-pretty-name box::*boxer-extensions*)))
     (format stream "~A ~
                    ~%  with Extensions: ~A ~

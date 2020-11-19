@@ -141,7 +141,7 @@ Modification History (most recent at the top)
 ;; these should be format strings
 (defvar *html-deep-print-meta-info*
   (format nil "    <meta name=\"GENERATOR\" content=\"~A HTML Printer v~A\""
-          3.2 0));;(system-version 'boxer) *deep-hardcopy-version*)) ;; TODO sgithens: reform how this system version is calculated on load
+          (system-version) 0));; *deep-hardcopy-version*)) ;; TODO sgithens: reform how this system version is calculated on load
 
 (defmethod deep-hardcopy-preamble ((hc html-hardcopy) &optional box)
   (with-slots (output-stream) hc

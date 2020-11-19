@@ -1260,7 +1260,7 @@ removes it from the kill buffer.  No copy is made."
     ("or you can save the box in a file by clicking on the \"Save File\" button")))
 
 (defun make-bug-mail-template ()
-  (let* ((system-string (system-version 'boxer))
+  (let* ((system-string (system-version))
          (xtens (mapcar #'boxer-extension-pretty-name *boxer-extensions*))
          (file-button (make-box (list
                                  (list

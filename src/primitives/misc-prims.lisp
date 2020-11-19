@@ -425,7 +425,7 @@ Modification History (most recent at top)
                        )))))
 
 (boxer-eval::defboxer-primitive bu::boxer-version ()
-  (crock-make-vc `((,(system-version 'boxer))
+  (crock-make-vc `((,(system-version))
 		   (,(lisp-implementation-version) ,(lisp-implementation-type))
 		   (,(machine-type) ,(machine-instance)))))
 

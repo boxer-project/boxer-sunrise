@@ -1407,7 +1407,7 @@ points to the Box which contains the lower BP,then the superior BP is returned"
 (defun get-boxer-status-string ()
   (flet ((get-boxer-version-string ()
                                    (or *boxer-version-info*
-                                       (system-version 'boxer))))
+                                       (system-version))))
         (let ((other-strings (mapcar #'cdr *boxer-status-string-alist*)))
           (cond ((and (null *editor-numeric-argument*) (null other-strings))
                  (get-boxer-version-string))
