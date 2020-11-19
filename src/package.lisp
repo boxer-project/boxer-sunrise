@@ -55,7 +55,45 @@
            :barf :with-collection :collect :neq :sind :cosd
            :fast-delq :fast-memq :fast-assq
            :between :inclusive-between? :intern-keyword :symbol-format
-           :string-case :char-case)
+           :string-case :char-case
+           :once-only :control-character-display-prefix
+           :%drawing-window :%drawing-array
+           :%drawing-font-map
+           :scale-x :scale-y
+           :x-out-of-bounds? :y-out-of-bounds?
+           ;; font vars
+           :%drawing-font :%drawing-fit
+           :%drawing-font-cha-wid
+           :%drawing-font-cha-hei
+           :%drawing-font-cha-wid-table
+           ;; inits
+           :def-redisplay-initialization
+           :run-redisplay-inits
+           ;; useful macros
+           :defsubst
+
+           :wait-with-timeout :storage-chunk?
+           :*outermost-dumping-box* :*initial-box*
+           :getprop :removeprop :read-only-box?
+           :dump-boxer-thing :putprop :load-box-on-login?
+           :superior-box :box? :fast-delq :superior?
+           :link-target :link-port :link-type
+           :contained-links :branch-links
+           :port-branch-link :target-branch-link
+           :set-port-to-box :plist
+           :inferior-link :dump-list-preamble
+           :deffile-property-handler :box-text-string :make-vc
+           :find-lowest-common-
+           :enter :point-box :box? :virtual-copy
+           :*boxer-version-info* :redraw-status-line
+           :box-text-string :setup-editor :*initial-box*
+           :make-box :shrink :box-or-port-target
+           :append-row :make-row
+           :storage-chunk? :display-style :set-display-style
+           ;;   #+(or lispworks mcl) :block-compile-class
+           :modified :name-string
+           :dump-plist-internal :dump-plist-length
+           :ut-day :ut-month :ut-tz)
            )
 
 (defpackage :boxer-eval
@@ -68,10 +106,36 @@
            :LOOKUP-STATIC-VARIABLE-IN-BOX-ONLY
            :REMOVE-STATIC-VARIABLE
            :defboxer-primitive
-           :*LEXICAL-VARIABLES-ROOT*)
+           :*LEXICAL-VARIABLES-ROOT*
+           :defboxer-primitive :primitive-signal-error
+           :signal-error :true? :false?)
   )
 
-(defpackage :boxnet (:use :common-lisp :boxer-eval :boxer))
+(defpackage :boxnet
+  (:use :common-lisp :boxer-eval :boxer)
+  (:export :fill-box-from-server :fill-box
+    :storage-chunk-plist-half-length
+    :dump-storage-chunk-plist-items
+    :cross-file-port?
+    :*dump-out-file-box-inferiors?*
+    :in-bfs-environment?
+    :no-inferiors-for-file?
+    :dump-cross-file-port-reference
+    :load-server-box-id
+    :load-cross-file-contained-links
+    :load-cross-file-port-branch-links
+    :load-cross-file-target-branch-links
+    :load-cross-file-target-ends
+    :load-cross-file-link-id
+    :no-cross-file-links?
+    :cross-file-link-insert-self-action
+    :cross-file-link-delete-self-action
+    :cross-file-port-insert-self-action
+    :cross-file-port-delete-self-action
+    :cross-file-port-branch-links
+    :articulate-target-branch
+    :dump-box-url :load-url :url-string?
+    :url-box? :read-internal-url))
 
 (defpackage :boxer-window
   (:use :common-lisp :boxer)
@@ -129,23 +193,6 @@
 ;;; What we need from BOXER
 
 ;;; shadow the symbol from SCL preferring the PCL one
-
-(import '(boxer::once-only boxer::control-character-display-prefix
-                           boxer::%drawing-window boxer::%drawing-array
-                           boxer::%drawing-font-map
-                           boxer::scale-x boxer::scale-y
-                           boxer::x-out-of-bounds? boxer::y-out-of-bounds?
-                           ;; font vars
-                           boxer::%drawing-font boxer::%drawing-fit
-                           boxer::%drawing-font-cha-wid
-                           boxer::%drawing-font-cha-hei
-                           boxer::%drawing-font-cha-wid-table
-                           ;; inits
-                           boxer::def-redisplay-initialization
-                           boxer::run-redisplay-inits
-                           ;; useful macros
-                           boxer::defsubst)
-  (find-package 'boxer-window))
 
 ;;; What BOXER uses
 (export
@@ -325,56 +372,6 @@
 
 ;;; Set up package for the boxer network.
 
-(import '(boxer::wait-with-timeout boxer::storage-chunk?
-                                   boxer::*outermost-dumping-box* boxer::*initial-box*
-                                   boxer::getprop boxer::removeprop boxer::read-only-box?
-                                   boxer::dump-boxer-thing boxer::putprop boxer::load-box-on-login?
-                                   boxer::superior-box boxer::box? boxer::fast-delq boxer::superior?
-                                   boxer::link-target boxer::link-port boxer::link-type
-                                   boxer::contained-links boxer::branch-links
-                                   boxer::port-branch-link boxer::target-branch-link
-                                   boxer::set-port-to-box boxer::plist
-                                   boxer::inferior-link boxer::dump-list-preamble
-                                   boxer::deffile-property-handler boxer::box-text-string box::make-vc
-                                   boxer::find-lowest-common-superior-box
-                                   boxer-eval::defboxer-primitive boxer-eval::primitive-signal-error
-                                   boxer-eval::signal-error boxer-eval::true? boxer-eval::false?
-                                   boxer::enter boxer::point-box boxer::box? boxer::virtual-copy
-                                   boxer::*boxer-version-info* boxer::redraw-status-line
-                                   boxer::box-text-string boxer::setup-editor boxer::*initial-box*
-                                   boxer::make-box boxer::shrink boxer::box-or-port-target
-                                   boxer::append-row boxer::make-row
-                                   boxer::storage-chunk? boxer::display-style boxer::set-display-style
-                                   ;;   #+(or lispworks mcl) boxer::block-compile-class
-                                   boxer::modified boxer::name-string
-                                   boxer::dump-plist-internal boxer::dump-plist-length
-                                   boxer::ut-day boxer::ut-month boxer::ut-tz)
-  'boxnet)
-
-(export '(boxnet::fill-box-from-server boxnet::fill-box
-                                       boxnet::storage-chunk-plist-half-length
-                                       boxnet::dump-storage-chunk-plist-items
-                                       boxnet::cross-file-port?
-                                       boxnet::*dump-out-file-box-inferiors?*
-                                       boxnet::in-bfs-environment?
-                                       boxnet::no-inferiors-for-file?
-                                       boxnet::dump-cross-file-port-reference
-                                       boxnet::load-server-box-id
-                                       boxnet::load-cross-file-contained-links
-                                       boxnet::load-cross-file-port-branch-links
-                                       boxnet::load-cross-file-target-branch-links
-                                       boxnet::load-cross-file-target-ends
-                                       boxnet::load-cross-file-link-id
-                                       boxnet::no-cross-file-links?
-                                       boxnet::cross-file-link-insert-self-action
-                                       boxnet::cross-file-link-delete-self-action
-                                       boxnet::cross-file-port-insert-self-action
-                                       boxnet::cross-file-port-delete-self-action
-                                       boxnet::cross-file-port-branch-links
-                                       boxnet::articulate-target-branch
-                                       boxnet::dump-box-url boxnet::load-url boxnet::url-string?
-                                       boxnet::url-box? boxnet::read-internal-url)
-        (find-package 'boxnet))
 
 (use-package 'boxnet)
 
