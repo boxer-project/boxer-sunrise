@@ -276,6 +276,11 @@
            :mouse-event-window :mouse-event-type
            :mouse-event-x-pos :mouse-event-y-pos
            :mouse-event-click :mouse-event-bits
+
+           REGION-X :REGION-Y
+           :REGION-WID :REGION-HEI :REGION-VISIBILITY
+           ;; functions that let the windows do the walking
+           :BOXER-TOP-OF-STACK-GROUP-BINDINGS
            ))
 
 (in-package :boxer)
@@ -337,14 +342,6 @@
 
 (import '(bw::mouse-click-names bw::mouse-state-names bw::lookup-click-name)
   (find-package 'boxer))
-
-;;; most of these are either redundant or obsolete.
-(EXPORT '(BW::REGION-X BW::REGION-Y
-                       BW::REGION-WID BW::REGION-HEI BW::REGION-VISIBILITY
-                       ;; functions that let the windows do the walking
-                       BW::BOXER-TOP-OF-STACK-GROUP-BINDINGS)
-        (FIND-PACKAGE 'BOXER-WINDOW))
-
 
 ;;; Set up package for the evaluator.
 
