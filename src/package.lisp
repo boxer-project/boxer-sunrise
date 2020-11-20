@@ -218,7 +218,33 @@
            :set-mouse-cursor :reset-mouse-cursor :with-mouse-cursor :beep
            :mouse-window-coords :mouse-button-state
            :deallocate-system-dependent-structures
-           :max-window-coord :min-window-coord))
+           :max-window-coord :min-window-coord
+
+           :*redisplayable-windows*
+           :outermost-screen-box
+           ;; useful variables...
+           :*boxer-pane* :*name-pane* :*boxer-frame*
+           :*point-blinker* :*mouse-blinker* :*sprite-blinker*
+           :mini-boxer-command-loop
+           ;; Window operations
+           :set-outermost-screen-box-in-window :beep
+           :window-system-dependent-redraw-status-line :clear-window
+           ;; input functions
+           :get-character-input :get-boxer-input
+           :get-any-event;; not used by boxer but useful for debugging
+           ;; cursor and blinker manipulation
+           :*number-of-mouse-buttons*
+           :with-mouse-tracking
+           :with-mouse-tracking-inside;; these  bind...
+           :mouse-x :mouse-y
+           :mouse-button-state
+           :mouse-window-coords
+           :warp-pointer
+           :make-blinker :draw-blinker
+           :make-region-row-blinker :draw-region-row-blinker
+           :with-open-blinker :with-open-blinkers
+           :set-cursorpos :set-cursor-size
+           :set-cursor-visibility :set-window-name))
 
 (in-package :boxer)
 
@@ -274,32 +300,6 @@
 
 ;;; From the boxwin-xxx files
 
-(export '(bw::*redisplayable-windows*
-          bw::outermost-screen-box
-          ;; useful variables...
-          bw::*boxer-pane* bw::*name-pane* bw::*boxer-frame*
-          bw::*point-blinker* bw::*mouse-blinker* bw::*sprite-blinker*
-          bw::mini-boxer-command-loop
-          ;; Window operations
-          bw::set-outermost-screen-box-in-window bw::beep
-          bw::window-system-dependent-redraw-status-line bw::clear-window
-          ;; input functions
-          bw::get-character-input bw::get-boxer-input
-          bw::get-any-event;; not used by boxer but useful for debugging
-          ;; cursor and blinker manipulation
-          bw::*number-of-mouse-buttons*
-          bw::with-mouse-tracking
-          bw::with-mouse-tracking-inside;; these  bind...
-          bw::mouse-x bw::mouse-y
-          bw::mouse-button-state
-          bw::mouse-window-coords
-          bw::warp-pointer
-          bw::make-blinker bw::draw-blinker
-          bw::make-region-row-blinker bw::draw-region-row-blinker
-          bw::with-open-blinker bw::with-open-blinkers
-          bw::set-cursorpos bw::set-cursor-size
-          bw::set-cursor-visibility bw::set-window-name)
-        (find-package 'boxer-window))
 
 (import '(boxer::setup-redisplay boxer::setup-editor boxer::not-null
                                  boxer::redisplay boxer::handle-boxer-input

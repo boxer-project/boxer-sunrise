@@ -752,7 +752,7 @@ should ignore it.")
 	  (copy-graphics-sheet (graphics-info from-box) box)))
   ;; copy any export info
   (unless (null (exports from-box))
-    (set-exports box (exports from-box))
+    (boxer-eval::set-exports box (exports from-box))
     ;; make sure the box looks right
     (setf (display-style-border-style (display-style-list box))
 	  ':dashed))
