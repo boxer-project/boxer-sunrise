@@ -269,7 +269,14 @@
            :make-region-row-blinker :draw-region-row-blinker
            :with-open-blinker :with-open-blinkers
            :set-cursorpos :set-cursor-size
-           :set-cursor-visibility :set-window-name))
+           :set-cursor-visibility :set-window-name
+
+           :key-event? :mouse-event?
+           :key-or-button-event? :key-event-values
+           :mouse-event-window :mouse-event-type
+           :mouse-event-x-pos :mouse-event-y-pos
+           :mouse-event-click :mouse-event-bits
+           ))
 
 (in-package :boxer)
 
@@ -327,12 +334,6 @@
 
 ;;; from the keydef-low-xxx.lisp files
 
-(export '(bw::key-event? bw::mouse-event?
-                         bw::key-or-button-event? bw::key-event-values
-                         bw::mouse-event-window bw::mouse-event-type
-                         bw::mouse-event-x-pos bw::mouse-event-y-pos
-                         bw::mouse-event-click bw::mouse-event-bits)
-        (find-package 'boxer-window))
 
 (import '(bw::mouse-click-names bw::mouse-state-names bw::lookup-click-name)
   (find-package 'boxer))
