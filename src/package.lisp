@@ -123,6 +123,31 @@
            :1+& :1-&
            :incf& :decf&
            :zerop& :svref& :dotimes& :svlength
+           :setup-redisplay :setup-editor :not-null
+           :redisplay :handle-boxer-input
+           :deftype-checking-macros
+           :*cursor-blinker-wid*
+           :*cursor-blinker-min-hei*
+           :window-system-specific-make-boxer
+           :window-system-specific-start-boxer
+           #+X
+           :*default-keymap-translation-filename*
+           :status-line-display :redraw-status-line
+           :force-redisplay
+           ;;
+           :%local-clip-lef :%local-clip-top
+           :%local-clip-rig :%local-clip-bot
+           :%origin-x-offset :%origin-y-offset
+           ;;
+           ;;  :key-event? :mouse-event?
+           :input-code :input-bits
+           ;; dribble symbols
+           :*dribble-playback*
+           :update-dribble-mouse-state
+           :dribble-mouse-state-x
+           :dribble-mouse-state-y
+           :dribble-mouse-state-buttons
+           :record-mouse-state
            )
            )
 
@@ -299,34 +324,6 @@
 
 
 ;;; From the boxwin-xxx files
-
-
-(import '(boxer::setup-redisplay boxer::setup-editor boxer::not-null
-                                 boxer::redisplay boxer::handle-boxer-input
-                                 boxer::deftype-checking-macros
-                                 boxer::*cursor-blinker-wid*
-                                 boxer::*cursor-blinker-min-hei*
-                                 boxer::window-system-specific-make-boxer
-                                 boxer::window-system-specific-start-boxer
-                                 #+X
-                                 boxer::*default-keymap-translation-filename*
-                                 boxer::status-line-display boxer::redraw-status-line
-                                 boxer::force-redisplay
-                                 ;;
-                                 boxer::%local-clip-lef boxer::%local-clip-top
-                                 boxer::%local-clip-rig boxer::%local-clip-bot
-                                 boxer::%origin-x-offset boxer::%origin-y-offset
-                                 ;;
-                                 ;;  boxer::key-event? boxer::mouse-event?
-                                 boxer::input-code boxer::input-bits
-                                 ;; dribble symbols
-                                 boxer::*dribble-playback*
-                                 boxer::update-dribble-mouse-state
-                                 boxer::dribble-mouse-state-x
-                                 boxer::dribble-mouse-state-y
-                                 boxer::dribble-mouse-state-buttons
-                                 boxer::record-mouse-state)
-  (find-package 'boxer-window))
 
 ;;; from the keydef-low-xxx.lisp files
 
