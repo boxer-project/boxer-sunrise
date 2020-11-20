@@ -184,7 +184,41 @@
   (:use :common-lisp :boxer)
   (:nicknames :bw)
   (:export :*glyph-pane*
-           :outermost-screen-box))
+           :outermost-screen-box
+           :alu-andca :alu-seta :alu-xor :alu-and :alu-ior :alu-setz
+           :*foreground-color* :*background-color*
+           :main-screen :sheet-screen-array :prepare-sheet
+           :sheet-font-map :make-pattern
+           :sheet-inside-left :sheet-inside-top
+           :sheet-inside-width :sheet-inside-height :window-inside-size
+           :window-depth :window-pixel
+           :%bitblt-in-screen :%bitblt-to-screen :%bitblt-from-screen
+           :%bitblt-tile-to-screen :%draw-point
+           :%draw-rectangle :%erase-rectangle :%draw-line :%draw-poly
+           :boxer-points->window-system-points :%draw-arc :%draw-filled-arc
+           :set-outermost-screen-box-in-window
+           :draw-cha :cha-wid :cha-hei
+           :%draw-cha :%draw-string
+           :string-wid :string-hei
+           :font-char-height
+           ;; bitmap functions
+           :make-offscreen-bitmap :copy-offscreen-bitmap :free-offscreen-bitmap
+           :offscreen-bitmap-width :offscreen-bitmap-height
+           :offscreen-bitmap-depth :with-system-dependent-bitmap-drawing
+           :with-drawing-port
+           :offscreen-bitmap-image :set-offscreen-bitmap-image
+           :offscreen-pixel :image-pixel
+           :with-window-system-dependent-clipping :with-turtle-clipping
+           :%draw-rectangle-on-offscreen-bitmap
+           :%draw-line-on-offscreen-bitmap
+           :draw-string-to-offscreen-bitmap
+           :rebind-font-info :set-font-info
+           :%make-color :color? :color= :with-pen-color :%set-pen-color
+           :%set-pen-size :pixel-rgb-values
+           :set-mouse-cursor :reset-mouse-cursor :with-mouse-cursor :beep
+           :mouse-window-coords :mouse-button-state
+           :deallocate-system-dependent-structures
+           :max-window-coord :min-window-coord))
 
 (in-package :boxer)
 
@@ -237,43 +271,6 @@
 
 ;;; shadow the symbol from SCL preferring the PCL one
 
-;;; What BOXER uses
-(export
- '(bw::alu-andca bw::alu-seta bw::alu-xor bw::alu-and bw::alu-ior bw::alu-setz
-                 bw::*foreground-color* bw::*background-color*
-                 bw::main-screen bw::sheet-screen-array bw::prepare-sheet
-                 bw::sheet-font-map bw::make-pattern
-                 bw::sheet-inside-left bw::sheet-inside-top
-                 bw::sheet-inside-width bw::sheet-inside-height bw::window-inside-size
-                 bw::window-depth bw::window-pixel
-                 bw::%bitblt-in-screen bw::%bitblt-to-screen bw::%bitblt-from-screen
-                 bw::%bitblt-tile-to-screen bw::%draw-point
-                 bw::%draw-rectangle bw::%erase-rectangle bw::%draw-line bw::%draw-poly
-                 bw::boxer-points->window-system-points bw::%draw-arc bw::%draw-filled-arc
-                 bw::set-outermost-screen-box-in-window
-                 bw::draw-cha bw::cha-wid bw::cha-hei
-                 bw::%draw-cha bw::%draw-string
-                 bw::string-wid bw::string-hei
-                 bw::font-char-height
-                 ;; bitmap functions
-                 bw::make-offscreen-bitmap bw::copy-offscreen-bitmap bw::free-offscreen-bitmap
-                 bw::offscreen-bitmap-width bw::offscreen-bitmap-height
-                 bw::offscreen-bitmap-depth bw::with-system-dependent-bitmap-drawing
-                 bw::with-drawing-port
-                 bw::offscreen-bitmap-image bw::set-offscreen-bitmap-image
-                 bw::offscreen-pixel bw::image-pixel
-                 bw::with-window-system-dependent-clipping bw::with-turtle-clipping
-                 bw::%draw-rectangle-on-offscreen-bitmap
-                 bw::%draw-line-on-offscreen-bitmap
-                 bw::draw-string-to-offscreen-bitmap
-                 bw::rebind-font-info bw::set-font-info
-                 bw::%make-color bw::color? bw::color= bw::with-pen-color bw::%set-pen-color
-                 bw::%set-pen-size bw::pixel-rgb-values
-                 bw::set-mouse-cursor bw::reset-mouse-cursor bw::with-mouse-cursor bw::beep
-                 bw::mouse-window-coords bw::mouse-button-state
-                 bw::deallocate-system-dependent-structures
-                 bw::max-window-coord bw::min-window-coord)
- (find-package 'boxer-window))
 
 ;;; From the boxwin-xxx files
 
