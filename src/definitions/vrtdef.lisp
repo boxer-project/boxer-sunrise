@@ -72,22 +72,22 @@ Modification History (most recent at top)
   `(progn
      (setq *vc-debug-block* (make-array *vc-debug-block-size*))
      ,@(with-collection
-	  (dotimes (i *vc-debug-block-size*)
-	    (let ((name (intern (symbol-format nil "VC-DBG-~D" i))))
-	      (collect
-	       `(defun ,name ()
-		  (svref *vc-debug-block* ,i))))))))
+    (dotimes (i *vc-debug-block-size*)
+      (let ((name (intern (symbol-format nil "VC-DBG-~D" i))))
+        (collect
+         `(defun ,name ()
+      (svref *vc-debug-block* ,i))))))))
 
 (defun fill-vc-debug-block (&rest args)
   (do* ((i 0 (1+ i))
-	(restargs args (cdr restargs))
-	(arg (car restargs) (car restargs)))
+  (restargs args (cdr restargs))
+  (arg (car restargs) (car restargs)))
        ((null restargs))
     (setf (svref *vc-debug-block* i) arg)))
 
 (defun vc-debug (&optional single-step?)
   (setq *vc-debugging?*
-	(if (null single-step?) t :single-step)))
+  (if (null single-step?) t :single-step)))
 
 (defun vc-nodebug () (setq *vc-debugging?* nil))
 
@@ -109,16 +109,16 @@ Modification History (most recent at top)
   (when *virtual-copy-debugging-option-on?*
     `(progn
        (when *vc-debugging?*
-	 (format t "~%~A " ',place)
-	 ,@(with-collection
-	       (dolist (arg args)
-		 (collect `(format t "~S ~S, " ',arg ,arg))))
-	 (when (eq *vc-debugging?* :single-step)
-	   (do () ((not (char-equal (read-char) *vc-debug-break-char*)))
-	     ;; fill the debug-block if it exists
-	     (unless (null *vc-debug-block*)
-	       (fill-vc-debug-block ,@args))
-	     (break)))))))
+   (format t "~%~A " ',place)
+   ,@(with-collection
+         (dolist (arg args)
+     (collect `(format t "~S ~S, " ',arg ,arg))))
+   (when (eq *vc-debugging?* :single-step)
+     (do () ((not (char-equal (read-char) *vc-debug-break-char*)))
+       ;; fill the debug-block if it exists
+       (unless (null *vc-debug-block*)
+         (fill-vc-debug-block ,@args))
+       (break)))))))
 
 
 ;; this is for use in a COND clause as in
@@ -176,8 +176,8 @@ Modification History (most recent at top)
 ;;
 
 (defstruct (formatting-info (:conc-name fi-)
-			    (:predicate %formatting-info?)
-			    (:print-function print-formatting-info))
+          (:predicate %formatting-info?)
+          (:print-function print-formatting-info))
   (chas nil)
   (start -1)
   (stop -1)
@@ -193,12 +193,12 @@ Modification History (most recent at top)
 (defmacro do-fi-chas ((var fi) &body body)
   `(if (numberp ,fi)
        (let ((,var #\space))
-	 (dotimes& (i ,fi)
-	   . ,body))
+   (dotimes& (i ,fi)
+     . ,body))
        (do ((cha-no (fi-start ,fi) (1+& cha-no)))
-	   ((>=& cha-no (fi-stop ,fi)))
-	 (let ((,var (svref& (fi-chas ,fi) cha-no)))
-	   . ,body))))
+     ((>=& cha-no (fi-stop ,fi)))
+   (let ((,var (svref& (fi-chas ,fi) cha-no)))
+     . ,body))))
 
 (defun null-fi? (fi)
   (or (and (numberp fi) (zerop& fi))
@@ -206,21 +206,21 @@ Modification History (most recent at top)
 
 (defun first-fi-cha (fi)
   (cond ((null-fi? fi) nil)
-	((numberp fi) #\space)
-	(t (svref& (fi-chas fi) (fi-start fi)))))
+  ((numberp fi) #\space)
+  (t (svref& (fi-chas fi) (fi-start fi)))))
 
 (defun last-fi-cha (fi)
   (cond ((null-fi? fi) nil)
-	((numberp fi) #\space)
-	(t (svref& (fi-chas fi) (1-& (fi-stop fi))))))
+  ((numberp fi) #\space)
+  (t (svref& (fi-chas fi) (1-& (fi-stop fi))))))
 
 ;; need special handling to merge the old rfp with the new lfp since they
 ;; may share space
 (defun coalesce-fi (orfp lfp &rest fis)
   (let* ((array (make-array 32 :adjustable t :fill-pointer 0))
-	 (return-fi (make-formatting-info :start 0))
+   (return-fi (make-formatting-info :start 0))
          (trailing-rfp-space 0)
-	 (stop 0))
+   (stop 0))
     (do-fi-chas (cha orfp)
       (vector-push-extend cha array) (incf& stop)
       (if (char= cha #\space)
@@ -240,13 +240,13 @@ Modification History (most recent at top)
     ;; now append the rest of the chars
     (dolist (fi fis)
       (unless (null fi)
-	(do-fi-chas (cha fi) (vector-push-extend cha array) (incf& stop))))
+  (do-fi-chas (cha fi) (vector-push-extend cha array) (incf& stop))))
     (setf (fi-stop return-fi) stop)
     ;; arrays have to be simple-vectors so we gots to copy into one
     ;; fortunately, this function should not get called a lot
     (let ((chas (make-array stop)))
       (dotimes (i stop)
-	(setf (svref& chas i) (aref array i)))
+  (setf (svref& chas i) (aref array i)))
       (setf (fi-chas return-fi) chas))
     return-fi))
 
@@ -263,24 +263,24 @@ Modification History (most recent at top)
 ;;; chunk-row.
 (defmacro with-local-formatting-info ((stream) &body body)
   `(let ((%%local-formatting-array%% (formatting-array ,stream))
-	 (%%local-formatting-offset%% (stream-position ,stream)))
+   (%%local-formatting-offset%% (stream-position ,stream)))
      (declare (special %%local-formatting-array%%
-		       %%local-formatting-offset%%))
+           %%local-formatting-offset%%))
      . ,body))
 
 (defun make-local-formatting-info (&optional (start-pos 0)
-					     (stop-pos start-pos))
+               (stop-pos start-pos))
   (declare (special %%local-formatting-array%%
-		    %%local-formatting-offset%%))
+        %%local-formatting-offset%%))
     (make-formatting-info :chas %%local-formatting-array%%
-			  :start (- start-pos %%local-formatting-offset%%)
-			  :stop (- stop-pos %%local-formatting-offset%%)))
+        :start (- start-pos %%local-formatting-offset%%)
+        :stop (- stop-pos %%local-formatting-offset%%)))
 
 (defun fi-length (fi)
   (cond ((numberp fi) fi)
-	((%formatting-info? fi)
-	 (-& (fi-stop fi) (fi-start fi)))
-	(t (error "~A is not a valid Formatting-Info" fi))))
+  ((%formatting-info? fi)
+   (-& (fi-stop fi) (fi-start fi)))
+  (t (error "~A is not a valid Formatting-Info" fi))))
 
 ;;; CHUNK's
 ;;
@@ -311,13 +311,13 @@ Modification History (most recent at top)
 ;;
 
 (defstruct (chunk :named (:type vector)
-		  (:conc-name chunk-)
-		  (:predicate nil)
-		  (:constructor %make-chunk (left-format
-					      pname
-					      chunk
-					      right-format
-					      &optional plist)))
+      (:conc-name chunk-)
+      (:predicate nil)
+      (:constructor %make-chunk (left-format
+                pname
+                chunk
+                right-format
+                &optional plist)))
   left-format
   pname
   chunk
@@ -340,13 +340,13 @@ Modification History (most recent at top)
 
 ;;; I dont think we'll need eval-props anymore (see the new eval for details)
 (defun make-chunk (left-format pname chunk right-format
-			       &optional label eval-prop)
+             &optional label eval-prop)
   (cond ((and (null label) (null eval-prop))
-	 (%make-chunk left-format pname chunk right-format))
-	((null eval-prop)
-	 (%make-chunk left-format pname chunk right-format `(:label ,label)))
-	(T (%make-chunk left-format pname chunk right-format
-			`(:label ,label :eval-prop ,eval-prop)))))
+   (%make-chunk left-format pname chunk right-format))
+  ((null eval-prop)
+   (%make-chunk left-format pname chunk right-format `(:label ,label)))
+  (T (%make-chunk left-format pname chunk right-format
+      `(:label ,label :eval-prop ,eval-prop)))))
 
 
 ;;; Special evaluator proerties like unbox are bundled up into a struct with
@@ -403,7 +403,7 @@ Modification History (most recent at top)
 
 ;;; Pointer Predicates
 (defun pointer? (thing) (and (listp thing)
-			     (fast-memq (car thing) '(single multiple))))
+           (fast-memq (car thing) '(single multiple))))
 (deftype pointer () '(satisfies pointer?))
 
 
@@ -412,7 +412,7 @@ Modification History (most recent at top)
 (defmacro vc-check-pointer (thing)
   (when (not (null *virtual-copy-debugging-option-on?*))
     `(unless (and (listp ,thing)
-		  (fast-memq (car ,thing) '(single multiple)))
+      (fast-memq (car ,thing) '(single multiple)))
        (error "~S is not a valid Pointer" ,thing))))
 
 ;; these are useful alternatives to having to write things like:
@@ -428,13 +428,13 @@ Modification History (most recent at top)
 ;;; Multipointers
 
 (defstruct (multi-pointer-slot (:conc-name %mps-)
-			       (:copier nil)
-			       (:constructor
-				%make-mps-from-original-item (value))
-			       (:constructor
-				%make-mps-from-mutation (who when value))
-			       (:print-function multi-pointer-slot-printer)
-			       (:predicate multi-pointer-slot?))
+             (:copier nil)
+             (:constructor
+        %make-mps-from-original-item (value))
+             (:constructor
+        %make-mps-from-mutation (who when value))
+             (:print-function multi-pointer-slot-printer)
+             (:predicate multi-pointer-slot?))
   (who nil)
   (when -1)
   (value nil))
@@ -444,7 +444,7 @@ Modification History (most recent at top)
   (if (null *print-boxer-structure*)
       (format stream "#<MPS ~A>" (%mps-when mps))
       (format stream "#<MPS who:~A when:~A what:~A>"
-	      (%mps-who mps) (%mps-when mps) (%mps-value mps))))
+        (%mps-who mps) (%mps-when mps) (%mps-value mps))))
 
 ;;;; Rows
 ;;  Rows are composed of Pointers (either SINGLE or MULTIPLE).
@@ -454,10 +454,10 @@ Modification History (most recent at top)
 ;;  ROW-FORMAT is used when there are NO entries but the row contains ONLY
 ;;  formatting info such as a comment
 (defstruct (evrow :copier
-		  (:predicate evrow?)
-		  (:conc-name evrow-)
-		  (:print-function print-evrow-internal)
-		  )
+      (:predicate evrow?)
+      (:conc-name evrow-)
+      (:print-function print-evrow-internal)
+      )
   (pointers   '())
   (row-format nil)
   (inferior-links? nil)
@@ -473,7 +473,7 @@ Modification History (most recent at top)
 ;;; it is used both by virtual-copy's and vc-rows-entry's
 
 (defstruct (virtual-copy-internal-slots (:type vector)
-					(:conc-name vcis-))
+          (:conc-name vcis-))
   (type 'data-box)
   ;; this has to be here so the fast evaluator type checking mechanism will
   ;; work.  This is only used by virtual-copy's.  vc-rows-entry's will
@@ -506,9 +506,9 @@ Modification History (most recent at top)
 ;; a trip through the evaluator
 ;;
 (defstruct (virtual-copy (:type vector)
-			 (:include virtual-copy-internal-slots)
-			 (:conc-name vc-)
-			 (:copier %copy-vc))	;need to write our own version
+       (:include virtual-copy-internal-slots)
+       (:conc-name vc-)
+       (:copier %copy-vc))	;need to write our own version
   (name nil)
   (progenitor nil)			;A backpointer to the original Box
   (cached-binding-alist nil)		;Useful only in the case of TELL
@@ -529,17 +529,17 @@ Modification History (most recent at top)
 (defun virtual-copy? (thing)
   (and (simple-vector-p thing)
        (let ((type (vc-type thing)))
-	 (or (eq type 'data-box)
-	     (eq type 'doit-box)
-	     (eq type 'sprite-box)))))
+   (or (eq type 'data-box)
+       (eq type 'doit-box)
+       (eq type 'sprite-box)))))
 
 (deftype virtual-copy () '(satisfies virtual-copy?))
 
 (defstruct (virtual-port (:type vector)
-			 (:conc-name vp-)
-			 ;(:predicate virtual-port?)
-			 ;(:print-function print-virtual-port)
-			 )
+       (:conc-name vp-)
+       ;(:predicate virtual-port?)
+       ;(:print-function print-virtual-port)
+       )
   (type-slot 'port-box :read-only t)
   (name nil)
   (path nil) ;PATH will be valid until a change is made, when it gets flushed.
@@ -581,8 +581,8 @@ Modification History (most recent at top)
 (eval-when
     (:compile-toplevel :load-toplevel :execute)
 (defstruct (vc-rows-entry (:type vector)
-			  (:include virtual-copy-internal-slots)
-			  (:constructor %make-vc-rows-entry))
+        (:include virtual-copy-internal-slots)
+        (:constructor %make-vc-rows-entry))
   (time 0)
   (cached-binding-alist nil)
   (single-is-exact? nil)
@@ -595,7 +595,7 @@ Modification History (most recent at top)
   ;; aaacckkk !!! (checking for VCness vs VCRs )
   (and (simple-vector-p thing)
        (=& (length (the simple-vector thing))
-	   #.(length (%make-vc-rows-entry)))))
+     #.(length (%make-vc-rows-entry)))))
 
 
 ;;; Mutations of editor structure are an enormous time sink
@@ -612,9 +612,9 @@ Modification History (most recent at top)
 (defmacro with-editor-mutation-queueing (&body body)
   `(let ((*editor-objects-to-be-modified* nil))
      (unwind-protect
-	 (progn . ,body)
+   (progn . ,body)
        (process-editor-object-mutation-queue
-	*editor-objects-to-be-modified*))))
+  *editor-objects-to-be-modified*))))
 
 (defun process-editor-mutation-queue-within-eval ()
   (let ((*propagate-modified-messages?* t))
@@ -675,12 +675,12 @@ Modification History (most recent at top)
     (let ((count 0))
       (format stream "#<EVROW")
       (dolist (entry (evrow-pointers evrow))
-	(cond ((null entry) (return))
-	      ((and (null *print-boxer-structure* )
-		    (= count *evrow-print-length*))
-	       (format stream " ...")
-	       (return))
-	      (t (format stream "~A" entry))))
+  (cond ((null entry) (return))
+        ((and (null *print-boxer-structure* )
+        (= count *evrow-print-length*))
+         (format stream " ...")
+         (return))
+        (t (format stream "~A" entry))))
       (format stream ">"))))
 
 (defun print-vc-internal (vc stream)
@@ -705,20 +705,20 @@ Modification History (most recent at top)
         (let ((path (vp-path vp)))
           (dotimes (limit *port-path-print-length*)
             (let ((box (nth limit path)))
-	      (cond ((null box) (return))
+        (cond ((null box) (return))
                     ((virtual-copy? box)
-	             (format stream "[~A]->" (print-vc-internal box stream)))
+               (format stream "[~A]->" (print-vc-internal box stream)))
                     (t
-	             (format stream "[")
-		     (box-print-self-internal box stream)
-		     (format stream "]->"))))))
-	(cond ((virtual-copy? target)
-	       (format stream "[~A]" (print-vc-internal target stream)))
-	      ((multi-pointer? target) (format stream "MP"))
-	      (t
-	       (format stream "[")
-	       (box-print-self-internal target stream)
-	       (format stream "]"))))
+               (format stream "[")
+         (box-print-self-internal box stream)
+         (format stream "]->"))))))
+  (cond ((virtual-copy? target)
+         (format stream "[~A]" (print-vc-internal target stream)))
+        ((multi-pointer? target) (format stream "MP"))
+        (t
+         (format stream "[")
+         (box-print-self-internal target stream)
+         (format stream "]"))))
     (format stream  ">")))
 
 
@@ -780,23 +780,23 @@ Modification History (most recent at top)
 (defun get-box-rows (box-or-port &optional when)
   (let ((box (box-or-port-target box-or-port)))
     (cond ((virtual-copy? box) (fast-box-rows box))
-	  ((or (box? box) (typep box 'foreign-data))
-	   (if (null when)
-	       (virtual-copy-rows box)
-	       (virtual-copy-rows box when)))
-	  (t (boxer-eval::primitive-signal-error
-	      :vc-error
-	      box-or-port
-	      "is not a virtual copy or a box")))))
+    ((or (box? box) (typep box 'foreign-data))
+     (if (null when)
+         (virtual-copy-rows box)
+         (virtual-copy-rows box when)))
+    (t (boxer-eval::primitive-signal-error
+        :vc-error
+        box-or-port
+        "is not a virtual copy or a box")))))
 
 (defsetf get-box-rows (box-or-port) (new-rows)
   `(let ((box (box-or-port-target ,box-or-port)))
      (cond ((virtual-copy? box)
-	    (setf (fast-box-rows box) ,new-rows))
-	   ((box? box)
-	    (change-virtual-copy-rows box ,new-rows))
-	   (t (boxer-eval::primitive-signal-error
-	       box "is not a virtual copy or a box")))))
+      (setf (fast-box-rows box) ,new-rows))
+     ((box? box)
+      (change-virtual-copy-rows box ,new-rows))
+     (t (boxer-eval::primitive-signal-error
+         box "is not a virtual copy or a box")))))
 
 (defsetf box-name (box) (new-name)
   `(etypecase ,box
@@ -824,13 +824,13 @@ Modification History (most recent at top)
 
 (defmacro with-top-level-vc-vars ((editor-box-to-be-copied) &body body)
   `(let ((*links-to-be-copied* (contained-links ,editor-box-to-be-copied))
-	 (*virtual-copy-target-alist* nil)
-	 (*virtual-copy-ports-left-to-process* nil))
+   (*virtual-copy-target-alist* nil)
+   (*virtual-copy-ports-left-to-process* nil))
      . ,body))
 
 (defstruct (link (:conc-name link-)
-		 (:constructor make-link (type port target))
-		 (:copier nil))
+     (:constructor make-link (type port target))
+     (:copier nil))
   (type 'port-link)
   (port nil)
   (target nil))
@@ -877,25 +877,25 @@ Modification History (most recent at top)
   (if (null +link-checking-paranoia+)
       `(progn . ,body)
       `(if (valid-link-type? (link-type ,link))
-	   (progn . ,body)
-	   (error "The Link, ~S, was not a valid type of link" ,link))))
+     (progn . ,body)
+     (error "The Link, ~S, was not a valid type of link" ,link))))
 
 (defun expand-type-checking-pairs (list)
   (if (oddp (length list))
       (error
        "Odd number of elements in ~S which should contain PLACE-TYPE pairs" list)
       (let ((sexprs nil))
-	(do* ((l list (cddr l))
-	      (place (car l) (car l))
-	      (type (cadr l) (cadr l)))
-	     ((null l) sexprs)
-	  (push `(check-type ,place ,type) sexprs)))))
+  (do* ((l list (cddr l))
+        (place (car l) (car l))
+        (type (cadr l) (cadr l)))
+       ((null l) sexprs)
+    (push `(check-type ,place ,type) sexprs)))))
 
 (defmacro with-type-checking (place-type-pairs &body body)
   (if (null +type-checking-on+)
       `(,@body)
       `(progn ,@(expand-type-checking-pairs place-type-pairs)
-	      ,@body)))
+        ,@body)))
 
 ;;; Metering Statistics
 
@@ -940,8 +940,8 @@ Modification History (most recent at top)
        (vc-debugging "~%Virtual Copying Editor Box: ~A at ~D" ,ed-box *tick*)
        (incf (vcs-top-level-copies *current-vc-recording-structure*))
        (when (null (contained-links ,ed-box))
-	 (vc-debugging " (no contained links)")
-	 (incf (vcs-portless-copies *current-vc-recording-structure*))))))
+   (vc-debugging " (no contained links)")
+   (incf (vcs-portless-copies *current-vc-recording-structure*))))))
 
 (defmacro record-vc-copy (vc)
   (unless (null +compile-with-vc-metering+)
@@ -949,7 +949,7 @@ Modification History (most recent at top)
        (vc-debugging "~%Virtual Copying VC: ~A at ~D" ,vc *tick*)
        (incf (vcs-vc-of-vcs *current-vc-recording-structure*))
        (when (null (vc-inlinks? ,vc))
-	 (incf (vcs-portless-copies *current-vc-recording-structure*))))))
+   (incf (vcs-portless-copies *current-vc-recording-structure*))))))
 
 (defmacro record-inferior-node-search ()
   (unless (null +compile-with-vc-metering+)
@@ -966,7 +966,7 @@ Modification History (most recent at top)
   (unless (null +compile-with-vc-metering+)
     `(unless (null *vc-metering-on*)
        (incf (vcs-acc-link-list-length *current-vc-recording-structure*)
-	     ,length))))
+       ,length))))
 
 (defmacro record-row-decache-from-mpg ()
   (unless (null +compile-with-vc-metering+)
@@ -983,12 +983,12 @@ Modification History (most recent at top)
   (if (null +compile-with-vc-metering+)
       `,val
       `(unless (null *vc-metering-on*)
-	 (vc-debugging "~%DeReferencing MultiPointer: ~A ==> ~A" ,mp ,val)
-	 ;(showmp ,mp)
-	 (incf (vcs-multi-ptr-refs *current-vc-recording-structure*))
-	 (incf (vcs-multi-ptr-acc-length *current-vc-recording-structure*)
-	       (length (pointer-value-internal ,mp)))
-	 ,val)))
+   (vc-debugging "~%DeReferencing MultiPointer: ~A ==> ~A" ,mp ,val)
+   ;(showmp ,mp)
+   (incf (vcs-multi-ptr-refs *current-vc-recording-structure*))
+   (incf (vcs-multi-ptr-acc-length *current-vc-recording-structure*)
+         (length (pointer-value-internal ,mp)))
+   ,val)))
 
 (defmacro record-row-entry-vc-creation ()
   (unless (null +compile-with-vc-metering+)
@@ -1009,13 +1009,13 @@ Modification History (most recent at top)
   (unless (null +compile-with-vc-metering+)
     `(unless (null *vc-metering-on*)
        (incf (vcs-vc-var-lookup-cache-misses
-	      *current-vc-recording-structure*)))))
+        *current-vc-recording-structure*)))))
 
 (defmacro record-vc-var-lookup-cache-fill ()
   (unless (null +compile-with-vc-metering+)
     `(unless (null *vc-metering-on*)
        (incf (vcs-vc-var-lookup-cache-fills
-	      *current-vc-recording-structure*)))))
+        *current-vc-recording-structure*)))))
 
 (defmacro record-vcre-var-lookup ()
   (unless (null +compile-with-vc-metering+)
@@ -1026,19 +1026,19 @@ Modification History (most recent at top)
   (unless (null +compile-with-vc-metering+)
     `(unless (null *vc-metering-on*)
        (incf (vcs-vcre-var-lookup-cache-hits
-	      *current-vc-recording-structure*)))))
+        *current-vc-recording-structure*)))))
 
 (defmacro record-vcre-var-lookup-cache-miss ()
   (unless (null +compile-with-vc-metering+)
     `(unless (null *vc-metering-on*)
        (incf (vcs-vcre-var-lookup-cache-misses
-	      *current-vc-recording-structure*)))))
+        *current-vc-recording-structure*)))))
 
 (defmacro record-vcre-var-lookup-cache-fill ()
   (unless (null +compile-with-vc-metering+)
     `(unless (null *vc-metering-on*)
        (incf (vcs-vcre-var-lookup-cache-fills
-	      *current-vc-recording-structure*)))))
+        *current-vc-recording-structure*)))))
 
 ;;;;; TIME
 
