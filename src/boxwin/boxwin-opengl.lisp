@@ -736,6 +736,7 @@ Modification History (most recent at top)
       (when (member "-debug" sys:*line-arguments-list* :test #'string-equal)
         (opengl:describe-configuration *boxer-pane*))
       (boxer::fill-bootstrapped-font-caches)
+      #+freetype-fonts (boxer::load-freetype-faces)
       (let ((boxer::%private-graphics-list nil))
         ;; needed by shape-box updater in the redisplay inits but not set until
         ;; (boxer-eval::setup-evaluator) farther down

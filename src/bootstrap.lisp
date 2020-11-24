@@ -23,6 +23,8 @@
 |#
 (require "asdf")
 (ql:quickload :drakma)
+(ql:quickload :cl-freetype2)
+
 
 ;; TODO fix this to preserve the windows logical drive
 (defvar *boxer-project-dir* (make-pathname :directory (butlast (pathname-directory *load-truename*))))
@@ -35,6 +37,7 @@
 
 (load (example-file "opengl/examples/load"))
 (setf *features* (cons :opengl *features*))
+(setf *features* (cons :freetype-fonts *features*))
 (asdf:load-system :boxer-sunrise2)
 (setf boxer-window::*capogi-font-directory* (merge-pathnames "data/boxersunrise.app/Contents/Resources/Fonts/" *boxer-project-dir*))
 

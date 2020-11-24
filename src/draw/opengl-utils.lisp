@@ -436,29 +436,34 @@ Modification History (most recent at the top)
       (t (* (opengl-font-width font) (length string))))))
 
 (defun ogl-draw-char (char x y)
-  (opengl:gl-raster-pos2-f (ogl-type x 'float) (ogl-type y 'float)) ; (+ y (opengl-font-ascent *current-opengl-font*))
-  (opengl:gl-call-list (+ *current-opengl-font-base-addr*
-                   (charcode->oglfont-index (char-code char)))))
+  (if (member :freetype-fonts *features*)
+    (boxer::freetype-draw-char char x y *current-opengl-font* *ogl-current-color-vector* t)
+    (progn
+     (opengl:gl-raster-pos2-f (ogl-type x 'float) (ogl-type y 'float)) ; (+ y (opengl-font-ascent *current-opengl-font*))
+     (opengl:gl-call-list (+ *current-opengl-font-base-addr*
+                             (charcode->oglfont-index (char-code char)))))))
 
 (defun ogl-draw-string (text x y)
-  (opengl:gl-raster-pos2-f (ogl-type x 'float) (ogl-type (+ y (opengl-font-ascent *current-opengl-font*)) 'float))
-  (let* ((base (-& *current-opengl-font-base-addr*
-                   ;; this is pretty flaky and will break if there ever is a
-                   ;; char-code which is less than *opengl-font-start*
-                   *opengl-font-start*)))
-    ;; Set up for a string-drawing display list call.
-    (opengl:gl-list-base base)
-    ;; sgithens debug (opengl:gl-list-base *current-opengl-font-base-addr*)
-    ;; Draw a string using font display lists.
-    (fli:with-foreign-string (ptr elts bytes
-                                  :external-format :unicode
-                                  :null-terminated-p nil)
-                             text
-                             (declare (ignore bytes))
-                             (opengl:gl-call-lists elts
-                                                   opengl:*gl-unsigned-short* ; to match :unicode
-                                                   ;opengl:*gl-unsigned-byte*
-                                                   ptr))))
+  (if (member :freetype-fonts *features*)
+    (boxer::freetype-draw-char text x y *current-opengl-font* *ogl-current-color-vector*)
+    (progn
+     (opengl:gl-raster-pos2-f (ogl-type x 'float) (ogl-type (+ y (opengl-font-ascent *current-opengl-font*)) 'float))
+     (let* ((base (-& *current-opengl-font-base-addr*
+                      ;; this is pretty flaky and will break if there ever is a
+                      ;; char-code which is less than *opengl-font-start*
+                      *opengl-font-start*)))
+       ;; Set up for a string-drawing display list call.
+       (opengl:gl-list-base base)
+       ;; Draw a string using font display lists.
+       (fli:with-foreign-string (ptr elts bytes
+                                     :external-format :unicode
+                                     :null-terminated-p nil)
+                                text
+                                (declare (ignore bytes))
+                                (opengl:gl-call-lists elts
+                                                      opengl:*gl-unsigned-short* ; to match :unicode
+                                                      ;opengl:*gl-unsigned-byte*
+                                                      ptr))))))
 
 ;; useful for debugging as in (dolist (f *cached-fonts*) (d-font f))
 (defun d-font (ofont)
