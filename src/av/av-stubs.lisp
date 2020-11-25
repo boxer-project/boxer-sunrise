@@ -239,10 +239,10 @@
 
 ;; here temporarily
 ;; as in option-a-key (a for av ? can't use "v" because it's already taken)
-(defboxer-key (bu::a-key 2) com-make-av-box)
+(boxer-eval::defboxer-key (bu::a-key 2) com-make-av-box)
 
 ;; Primitives
-(defboxer-primitive bu::set-av-file ((bu::port-to av-box)
+(boxer-eval::defboxer-primitive bu::set-av-file ((bu::port-to av-box)
                                      (eval::dont-copy filename))
   (let* ((box (box-or-port-target av-box))
          (info (av-info box)))
@@ -260,7 +260,7 @@
       ((not (box? box)) nil)
     (when (not (null (av-info box))) (return box))))
 
-(defboxer-primitive bu::update-frame ()
+(boxer-eval::defboxer-primitive bu::update-frame ()
   (let* ((av-box (get-relevant-av-box))
          (info (and av-box (av-info av-box)))
          (interface-box (get-frame-interface-box av-box)))
@@ -294,7 +294,7 @@
       (boxer-av-rate->internal-av-rate box-value)
       box-value))
 
-(defboxer-primitive bu::update-playback-speed ()
+(boxer-eval::defboxer-primitive bu::update-playback-speed ()
   (let* ((av-box (get-relevant-av-box))
          (info (and av-box (av-info av-box)))
          (interface-box (get-playback-interface-box av-box)))
@@ -312,7 +312,7 @@
   eval::*novalue*)
 
 ;; these are in the "implicit" arg style, use TELL to specify which av-box
-(defboxer-primitive bu::set-time-counter ((eval::numberize new-time))
+(boxer-eval::defboxer-primitive bu::set-time-counter ((eval::numberize new-time))
   (let ((av-box (get-relevant-av-box)))
     (if (null av-box)
         (eval::primitive-signal-error :av-error "Can't find AV box")
@@ -330,7 +330,7 @@
     (modified-graphics av-box))
   eval::*novalue*)
 
-(defboxer-primitive bu::set-playback-speed ((eval::dont-copy new-speed))
+(boxer-eval::defboxer-primitive bu::set-playback-speed ((eval::dont-copy new-speed))
   (let ((av-box (get-relevant-av-box)))
     (if (null av-box)
         (eval::primitive-signal-error :av-error "Can't find AV box")
@@ -347,7 +347,7 @@
 ;; you need to decide if the drawing-on-turtle-slate is necessary for
 ;; your purposes, also, remember that ALL primitives operate inside an
 ;; DRAWING-ON-WINDOW environment
-(defboxer-primitive bu::play ()
+(boxer-eval::defboxer-primitive bu::play ()
   (let ((av-box (get-relevant-av-box)))
     (if (null av-box)
         (eval::primitive-signal-error :av-error "Can't find AV box")
@@ -369,7 +369,7 @@
           (modified-graphics av-box))))
   eval::*novalue*)
 
-(defboxer-primitive bu::play-for ((eval::numberize time))
+(boxer-eval::defboxer-primitive bu::play-for ((eval::numberize time))
   (let ((av-box (get-relevant-av-box)))
     (if (null av-box)
         (eval::primitive-signal-error :av-error "Can't find AV box")
@@ -383,7 +383,7 @@
           (modified-graphics av-box))))
   eval::*novalue*)
 
-(defboxer-primitive bu::av-length ()
+(boxer-eval::defboxer-primitive bu::av-length ()
   (let ((av-box (get-relevant-av-box)))
     (if (null av-box)
         (eval::primitive-signal-error :av-error "Can't find AV box")
