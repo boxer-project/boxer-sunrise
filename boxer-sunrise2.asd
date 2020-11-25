@@ -30,13 +30,12 @@
                  (:file "disdcl/disdcl")
 
                  ;; Beginning of `DRAW` module
-                 (:file "draw/opengl-utils")
-                 (:file "draw/capogi")
-                ;;  (:file "opengl-utils-glut")
+                 #+lispworks (:file "draw/opengl-utils")
+                 #+lispworks (:file "draw/capogi")
+                 #+(and lispworks freetype-fonts) (:file "draw/freetype-fonts")
                  (:file "draw/draw-low-opengl")
                  (:file "draw/draw-high-common")
                  (:file "draw/draw-high-hardware-clip")
-
 
                  ;; Beginning of `DISPLAYDEFS` module
                  ;; "Some more Definitions for Drawing things"
