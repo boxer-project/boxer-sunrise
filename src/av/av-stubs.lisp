@@ -1,24 +1,19 @@
-; -*- Mode:LISP; Syntax: Common-Lisp; Package:Boxer; -*-
-#|
-
-
-
-    Copyright 1995 - 1996 Regents of the University of California
-
- Enhancements and Modifications Copyright 1998 - 2003 Pyxisystems LLC
-
-                                         +-Data--+
-                This file is part of the | BOXER | system
-                                         +-------+
-
-
-Modification History (most recent at top)
-
- 8/04/03 fixed typo in deallocate-av-info
- 4/22/03 merged current LW and MCL files, no diffs, updated copyright
-
-
-|#
+;;;; -*- Mode:LISP; Syntax: Common-Lisp; Package:Boxer; -*-
+;;;;
+;;;;      Copyright 1995 - 1996 Regents of the University of California
+;;;;
+;;;;   Enhancements and Modifications Copyright 1998 - 2003 Pyxisystems LLC
+;;;;
+;;;;                                           +-Data--+
+;;;;                  This file is part of the | BOXER | system
+;;;;                                           +-------+
+;;;;
+;;;;
+;;;;  Modification History (most recent at top)
+;;;;
+;;;;   8/04/03 fixed typo in deallocate-av-info
+;;;;   4/22/03 merged current LW and MCL files, no diffs, updated copyright
+;;;;
 
 
 (in-package :boxer)
