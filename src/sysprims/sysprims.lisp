@@ -877,4 +877,10 @@ Modification History (most recent at the top)
 			 "to" "make" "the" "changes")
 		   (list "Reconfigure-System")))))
 
-
+(boxer-eval:defboxer-primitive bu::toggle-fonts ()
+  "A command for toggling between capi cfnt fonts and freetype fonts
+   until we're done with the transition."
+  (if (member :freetype-fonts *features*)
+    (setf *features* (remove :freetype-fonts *features*))
+    (setf *features* (cons :freetype-fonts *features*)))
+  boxer-eval::*novalue*)

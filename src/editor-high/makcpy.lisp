@@ -174,7 +174,7 @@ Modification History (most recent at top)
     (unless (or (null (exports from-box))
 		(not (or (eq copy-top-level-attributes? t)
 			 (eq copy-top-level-attributes? ':exports))))
-      (set-exports to-box (exports from-box))
+      (boxer-eval::set-exports to-box (exports from-box))
       ;; make sure the box looks right
       (setf (display-style-border-style (display-style-list to-box))
             (if (storage-chunk? to-box)
