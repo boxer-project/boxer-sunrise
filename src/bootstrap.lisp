@@ -35,7 +35,7 @@
                       #+win32 #P"Z:/code/boxer-sunrise2/"
                 asdf:*central-registry*))
 
-(load (example-file "opengl/examples/load"))
+#+lispworks (load (example-file "opengl/examples/load"))
 (setf *features* (cons :opengl *features*))
 (setf *features* (cons :freetype-fonts *features*))
 (asdf:load-system :boxer-sunrise2)
