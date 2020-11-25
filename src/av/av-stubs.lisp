@@ -43,11 +43,11 @@ Modification History (most recent at top)
 ;;    COPY-AV-INFO
 ;;
 (defstruct av-info
-  (file nil)  ; pathname or string 
+  (file nil)  ; pathname or string
   (data nil)  ; a place to cache the data from the file if we want (e.g. after get-resource ?)
   (frame-pointer 0) ; QT dependent number, use mt's idea of seconds at higher level
   (playback-rate 1) ; a number, or perhaps some yet to be determined keywords
-  (preferred-width  50) ; these are likely to be just QT interface functions 
+  (preferred-width  50) ; these are likely to be just QT interface functions
   (preferred-height 50) ; though it might be advantageous to cache these values
   ;; what else ????
   ;; looking at other QT players, there seem to be other state vars like
@@ -58,7 +58,7 @@ Modification History (most recent at top)
 ;;****stub****
 ;; used to return any system dependent QT info that the GC can't reach
 ;; <avi> is a an av-info struct...
-(defun deallocate-av-info (avi) 
+(defun deallocate-av-info (avi)
   (declare (ignore avi))
   t)
 
@@ -80,7 +80,7 @@ Modification History (most recent at top)
 
 ;; all drawing is assumed to take place in a window where the origin has
 ;; been set to be the upper left hand corner of the graphics box where
-;; the drawing is supposed to take place.  
+;; the drawing is supposed to take place.
 ;; see drawing-on-turtle-slate for prims and various redisplay methods
 ;; If you need to draw in global coords, you can use the %origin-x-offset and
 ;; %origin-y-offset vars to get the current translation.  You MUST set it
@@ -111,7 +111,7 @@ Modification History (most recent at top)
 ;; note that start can be < stop which means to play backward
 ;;
 ;; This is used in the prims PLAY and PLAY-FOR at the end of this file
-;;  
+;;
 ;; The <time> arg should be in internal-av-time units
 ;; the wid and hei args represent the available space in the screen-box
 (defun play-frames (av x y wid hei &optional time)
@@ -137,19 +137,19 @@ Modification History (most recent at top)
           (sleep frame-pause-time)))))
 
 ;; pure boxer, these make the editor interface to internal QT values
-;; you can use these as models for interfaces to other internal state 
-;; variables.  To make them work, you will have to write 
+;; you can use these as models for interfaces to other internal state
+;; variables.  To make them work, you will have to write
 ;; the update-<state variable name> boxer function.
 (defun make-frame-interface-box (current-value)
   (let ((box (make-box `((,current-value)) 'data-box "Frame")))
-    (add-closet-row box (make-row (list (make-box '(("Update-Frame")) 
+    (add-closet-row box (make-row (list (make-box '(("Update-Frame"))
                                                   'doit-box
                                                   "Modified-Trigger"))))
     box))
 
 (defun make-playback-interface-box (current-value)
   (let ((box (make-box `((,current-value)) 'data-box "Playback-Speed")))
-    (add-closet-row box (make-row (list (make-box '(("Update-Playback-Speed")) 
+    (add-closet-row box (make-row (list (make-box '(("Update-Playback-Speed"))
                                                   'doit-box
                                                   "Modified-Trigger"))))
     box))
@@ -157,7 +157,7 @@ Modification History (most recent at top)
 ;; these are supposed to translate between the value of internal video
 ;; state values and whatever representation we choose to use at the user level
 ;; For example between seconds and frame numbers
-;; we pass the av-info in case we need some additional information to 
+;; we pass the av-info in case we need some additional information to
 ;; make the translation
 ;;
 ;; These are used by the various update-<state varable> boxer functions
@@ -182,11 +182,11 @@ Modification History (most recent at top)
 
 ;; pure boxer stuff though it does use the defstruct accessors which may
 ;; be plain functions in a real QT implementation...
-(defun make-av-box (av-info) 
+(defun make-av-box (av-info)
   (let* ((box (make-box '(()) 'data-box))
          (1st-row (first-inferior-row box)))
     ;; normal graphics box stuff
-    (setf (graphics-sheet box) 
+    (setf (graphics-sheet box)
           (make-graphics-sheet (av-info-preferred-width av-info)
                                (av-info-preferred-height av-info) box))
     ;; give the box a graphics sheet
@@ -203,7 +203,7 @@ Modification History (most recent at top)
                           (av-info-playback-rate av-info))))
     ;; add any other interface boxes here
     box))
-  
+
 ;;****stub****
 ;; mac implementation could check signatures and file types....
 (defun av-file? (pathname) (not (null pathname)))
@@ -213,7 +213,7 @@ Modification History (most recent at top)
 ;; the structure is then attached to a box.
 ;; Slots (like current-frame) in the structure which may not be derived
 ;; from the file should be intialized
-;; 
+;;
 (defun set-av-info-from-file (info pathname)
   ;; this is probably the minimal thing for any implementation...
   (setf (av-info-file info) pathname)
@@ -225,7 +225,7 @@ Modification History (most recent at top)
   (let ((lines nil) (eof-value (cons 'a 'b)))
     (with-open-file (s pathname)
       (do ((line (read-line s nil eof-value) (read-line s nil eof-value)))
-          ((eq line eof-value) 
+          ((eq line eof-value)
            (setf (av-info-data info)
                  (make-array (length lines) :initial-contents lines)))
         (setq lines (nconc lines (list line))))))
@@ -241,20 +241,20 @@ Modification History (most recent at top)
     (unless (null av-box) (insert-cha *point* av-box))
     (add-redisplay-clue (point-row) :insert)
     eval::*novalue*))
-        
+
 ;; here temporarily
 ;; as in option-a-key (a for av ? can't use "v" because it's already taken)
 (defboxer-key (bu::a-key 2) com-make-av-box)
 
 ;; Primitives
-(defboxer-primitive bu::set-av-file ((bu::port-to av-box) 
+(defboxer-primitive bu::set-av-file ((bu::port-to av-box)
                                      (eval::dont-copy filename))
   (let* ((box (box-or-port-target av-box))
          (info (av-info box)))
     (if (null info)
         ;; errors for now, possible to make be graceful and just convert...
         (eval::primitive-signal-error :av-error "The box is not an AV box")
-        (progn 
+        (progn
           (set-av-info-from-file info (box-text-string filename))
           (modified-graphics box)))
     eval::*novalue*))
@@ -269,10 +269,10 @@ Modification History (most recent at top)
   (let* ((av-box (get-relevant-av-box))
          (info (and av-box (av-info av-box)))
          (interface-box (get-frame-interface-box av-box)))
-    (cond ((null av-box) 
+    (cond ((null av-box)
            (eval::primitive-signal-error :av-error "No AV box"))
           ((null interface-box)
-           (eval::primitive-signal-error :av-error 
+           (eval::primitive-signal-error :av-error
                                          "Frame interface box is missing"))
           (t (let* ((frame-from-box (extract-item-from-editor-box interface-box))
                     (blength (internal-av-time->boxer-av-time (av-length info)))
@@ -289,7 +289,7 @@ Modification History (most recent at top)
     (modified-graphics av-box))
   eval::*novalue*)
 
-;;  
+;;
 (defun legal-playback-value? (box-value)
   (or (numberp box-value)
       (fast-memq box-value '(bu::normal bu::fastest))))
@@ -303,16 +303,16 @@ Modification History (most recent at top)
   (let* ((av-box (get-relevant-av-box))
          (info (and av-box (av-info av-box)))
          (interface-box (get-playback-interface-box av-box)))
-    (cond ((null av-box) 
+    (cond ((null av-box)
            (eval::primitive-signal-error :av-error "No AV box"))
           ((null interface-box)
-           (eval::primitive-signal-error :av-error 
+           (eval::primitive-signal-error :av-error
                                          "Playback interface box is missing"))
           (t (let* ((rate-from-box (extract-item-from-editor-box interface-box)))
                (unless (legal-playback-value? rate-from-box)
                  (bash-box-to-single-value interface-box 'bu::normal)
                  (setq rate-from-box 'bu::normal))
-               (setf (av-info-playback-rate info) 
+               (setf (av-info-playback-rate info)
                      (convert-playback-value rate-from-box))))))
   eval::*novalue*)
 
@@ -324,13 +324,13 @@ Modification History (most recent at top)
         (let* ((info (av-info av-box))
                (blength (internal-av-time->boxer-av-time (av-length info))))
           (cond ((< new-time 0)
-                 (eval::primitive-signal-error :av-error 
+                 (eval::primitive-signal-error :av-error
                                                "The new time should be > 0"))
                 ((> new-time blength)
-                 (eval::primitive-signal-error :av-error 
+                 (eval::primitive-signal-error :av-error
                                                "The new time should be < "
                                                blength))
-                (t (setf (av-info-frame-pointer info) 
+                (t (setf (av-info-frame-pointer info)
                          (boxer-av-time->internal-av-time new-time))))))
     (modified-graphics av-box))
   eval::*novalue*)
@@ -342,9 +342,9 @@ Modification History (most recent at top)
         (let ((info (av-info av-box))
               (new-value (car (flat-box-items new-speed))))
           (if (not (legal-playback-value? new-value))
-              (eval::primitive-signal-error :av-error new-speed 
+              (eval::primitive-signal-error :av-error new-speed
                                             "is not a legal playback value")
-              (setf (av-info-playback-rate info) 
+              (setf (av-info-playback-rate info)
                     (convert-playback-value new-value))))))
   eval::*novalue*)
 
@@ -360,10 +360,10 @@ Modification History (most recent at top)
               (gs (graphics-sheet av-box)))
           ;; we just grab one screen-box instead of displaying in all
           ;; of them like normal sprite graphics.  It seems unlikely that
-          ;; unrolling the playing of frames would be fast enough to make 
+          ;; unrolling the playing of frames would be fast enough to make
           ;; this work in the multi screen-box case anyway
           ;;
-          ;; This SetOrigin's and clips to the inside top left corner 
+          ;; This SetOrigin's and clips to the inside top left corner
           ;; of the screen-box.  Skip
           (drawing-on-turtle-slate screen-box
             (play-frames (av-info av-box) 0 0
