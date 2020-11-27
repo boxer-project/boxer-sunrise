@@ -852,7 +852,7 @@ Modification History (most recent at top)
 
 (defun boxer-eval::evaluator-helpful-message (message)
   (when *evaluator-helpful*
-    (boxer-editor-warning message)))
+    (boxer-editor-message message)))
 
 
 ;;;
