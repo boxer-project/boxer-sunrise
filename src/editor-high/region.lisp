@@ -611,9 +611,9 @@ Modification History (most recent at top)
 	 (left-trim (with-summation
                       (do-screen-chas-with-font-info (cha screen-chas
                                                           :stop start-cha-no)
-                        (sum (if (screen-cha? cha)
+                        (if cha (sum (if (screen-cha? cha)
                                  (cha-wid cha)
-                               (screen-obj-wid cha))))))
+                               (screen-obj-wid cha)))))))
 	 (right-trim
 	  (if (>=& stop-cha-no (screen-chas-length screen-row))
 	      0
@@ -621,9 +621,9 @@ Modification History (most recent at top)
               (do-screen-chas-with-font-info (cha (slot-value screen-row
                                                               'screen-chas)
                                                   :start stop-cha-no)
-                (sum (if (screen-cha? cha)
+                (if cha (sum (if (screen-cha? cha)
                          (cha-wid cha)
-                       (screen-obj-wid cha)))))))
+                       (screen-obj-wid cha))))))))
 	 (desired-wid (- row-wid left-trim right-trim)))
     (multiple-value-bind (x y)
 	(xy-position screen-row)

@@ -214,7 +214,7 @@ Modification History (most recent at top)
                          (or (minusp& direction)
                              ;; could be a new row, check to
                              ;; see if there is room
-                             (let* ((lsr (last-screen-row screen-box))
+                             (if (last-screen-row screen-box) (let* ((lsr (last-screen-row screen-box))
                                     (ler (screen-obj-actual-obj lsr))
                                     (available-room (- (screen-obj-hei
                                                         screen-box)
@@ -249,7 +249,7 @@ Modification History (most recent at top)
                                         (>= y available-room))
                                     (not (null edrow)))
                                    (when (eq edrow row)
-                                     (return nil)))))))
+                                     (return nil))))))))
                     (and screen-row
                          (> (+ (screen-obj-y-offset screen-row)
                                (horizontal-border-height box))
