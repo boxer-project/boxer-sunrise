@@ -32,6 +32,21 @@
 
 (load (example-file "opengl/examples/load"))
 (setf *features* (cons :opengl *features*))
+(setf *features* (cons :freetype-fonts *features*))
+(setf *features* (cons :delivering *features*))
+
+(let ((quicklisp-init (merge-pathnames "quicklisp/setup.lisp" (user-homedir-pathname))))
+  (when (probe-file quicklisp-init)
+    (load quicklisp-init)))
+
+(ql:quickload :drakma)
+;; Loading these freetype2 dependencies so they are available when we manually
+;; load the freetype compiles files during startup.
+(ql:quickload :alexandria)
+(ql:quickload :trivial-garbage)
+(ql:quickload :cffi)
+;; (ql:quickload :cl-freetype2)
+
 (asdf:load-system :boxer-sunrise2)
 
 (deliver 'boxer::start-boxer
@@ -51,4 +66,6 @@
         ;;   )
         (merge-pathnames "./data/boxersunrise.app/Contents/MacOS/boxersunrise" (uiop:getcwd))
         0 :interface :capi
-        :startup-bitmap-file nil)
+        :keep-pretty-printer t
+        :startup-bitmap-file nil
+        )
