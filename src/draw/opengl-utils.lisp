@@ -445,7 +445,7 @@ Modification History (most recent at the top)
 
 (defun ogl-draw-string (text x y)
   (if (member :freetype-fonts *features*)
-    (boxer::freetype-draw-char text x y *current-opengl-font* *ogl-current-color-vector*)
+    (boxer::freetype-draw-char text (floor x) (floor y) *current-opengl-font* *ogl-current-color-vector*)
     (progn
      (opengl:gl-raster-pos2-f (ogl-type x 'float) (ogl-type (+ y (opengl-font-ascent *current-opengl-font*)) 'float))
      (let* ((base (-& *current-opengl-font-base-addr*
