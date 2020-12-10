@@ -36,14 +36,14 @@
   (intern (string thing) 'boxer-eval))
 
 (eval-when
-  (:compile-toplevel :load-toplevel :execute)
-    (defun create-local-eval-state-vars-bvl ()
-      (mapcan #'(lambda (entry)
-            (if (evsi-local-p entry)
-          (list (list (evsi-variable-name entry) (evsi-local-initial-value entry)))
-              nil))
-            *eval-state-vars*))
-)
+ (:compile-toplevel :load-toplevel :execute)
+ (defun create-local-eval-state-vars-bvl ()
+   (mapcan #'(lambda (entry)
+                     (if (evsi-local-p entry)
+                       (list (list (evsi-variable-name entry) (evsi-local-initial-value entry)))
+                       nil))
+           *eval-state-vars*))
+ )
 
 ;;; The evaluator invokes this macro right at the beginning
 ;;; to set up the state variables and handle unexpected Lisp errors.
@@ -51,16 +51,16 @@
   (let ((eval-completion-gensym (gensym)))
     `(let ((,eval-completion-gensym nil))
        (catch 'boxer-error
-   (unwind-protect
-        (compiler-let ()
-    (let ,(create-local-eval-state-vars-bvl)
-      (compiler-let ()
-        (prog1 (progn . ,body) (setq ,eval-completion-gensym t)))))
-     (unless ,eval-completion-gensym
-       (when boxer::*boxer-system-hacker* (format t "~%Unwinding stack..."))
-       (unwind-to-top-level)
-       (reset-stacks)
-       (when boxer::*boxer-system-hacker* (format t "Done~%"))))))))
+         (unwind-protect
+          (compiler-let ()
+                        (let ,(create-local-eval-state-vars-bvl)
+                          (compiler-let ()
+                                        (prog1 (progn . ,body) (setq ,eval-completion-gensym t)))))
+          (unless ,eval-completion-gensym
+            (when boxer::*boxer-system-hacker* (format t "~%Unwinding stack..."))
+            (unwind-to-top-level)
+            (reset-stacks)
+            (when boxer::*boxer-system-hacker* (format t "Done~%"))))))))
 
 ;;;
 ;;; Evaluator Debugging
@@ -73,7 +73,7 @@
 
 ;; sgithens March 7, 2020
 ;; (defun debug ()
-  ;; (setq *debugging* t))
+;; (setq *debugging* t))
 
 (defun nodebug ()
   (setq *debugging* nil))
@@ -83,16 +83,16 @@
      ., body))
 
 (defmacro quick-time ()
- `(get-internal-real-time))
+  `(get-internal-real-time))
 
 (defmacro init-timing ()
   (when *compile-with-debugging*
     `(when-debugging
-      (setq *timing-overhead* 0)
-      (setq *start-time* (quick-time))
-      (trace-entering Testing)
-      (trace-entering Testing)
-      (setq *timing-overhead* *last-timing-figure*))))
+       (setq *timing-overhead* 0)
+       (setq *start-time* (quick-time))
+       (trace-entering Testing)
+       (trace-entering Testing)
+       (setq *timing-overhead* *last-timing-figure*))))
 
 (defvar *pc-for-debugging* nil
   "Examine this variable to see where the evaluator croaked.")
@@ -100,19 +100,19 @@
 (defmacro trace-entering (place &rest args)
   (when *compile-with-debugging*
     `(progn
-       ,(unless (eq place 'handle-exception) `(setq *pc-for-debugging* ',place))
+      ,(unless (eq place 'handle-exception) `(setq *pc-for-debugging* ',place))
        (when *debugging*
-   (let ((time (quick-time)))
-     (setq *last-timing-figure* (- time *start-time* *timing-overhead*))
-     (format t "~Dms~%" *last-timing-figure*)
-     (format t "~A " ',place)
-     ,@(boxer::with-collection
-        (dolist (arg args)
-    (boxer::collect `(format t "~S ~S, " ',arg ,arg))))
-     (do () ((not (char-equal (read-char)
-            #\c))); TODO sgithens #\control-c)))
-       (break))
-     (setq *start-time* (quick-time)))))))
+         (let ((time (quick-time)))
+           (setq *last-timing-figure* (- time *start-time* *timing-overhead*))
+           (format t "~Dms~%" *last-timing-figure*)
+           (format t "~A " ',place)
+           ,@(boxer::with-collection
+              (dolist (arg args)
+                (boxer::collect `(format t "~S ~S, " ',arg ,arg))))
+           (do () ((not (char-equal (read-char)
+                                    #\c))); TODO sgithens #\control-c)))
+             (break))
+           (setq *start-time* (quick-time)))))))
 
 ;;;
 ;;; Fast Type checking mechanisms
@@ -184,30 +184,30 @@
 
 (defmacro compile-lambda-if-possible (name lambda-form)
   `(cond ((null *compile-boxer-generated-lambda?*) ,lambda-form)
-   ((eq *compile-boxer-generated-lambda?* :fast-compile)
-    (proclaim '(optimize (compilation-speed 3)))
-    (unwind-protect (symbol-function (compile ,name ,lambda-form))
-      (proclaim `(optimize (compilation-speed ,*old-compilation-speed*)))))
-   (t
-    (symbol-function (compile ,name ,lambda-form)))))
+     ((eq *compile-boxer-generated-lambda?* :fast-compile)
+      (proclaim '(optimize (compilation-speed 3)))
+      (unwind-protect (symbol-function (compile ,name ,lambda-form))
+                      (proclaim `(optimize (compilation-speed ,*old-compilation-speed*)))))
+     (t
+      (symbol-function (compile ,name ,lambda-form)))))
 
 ;;;
 ;;; Polling/Interrupts
 ;;;
 (defmacro poll (&optional always?)
   (cond (always?
-   `(if (poll-internal)
-        (setq *poll-count* 1)))
-  (t
-   `(or *last-interrupt-char*
-              (let ((pc (decf& *poll-count*)))
-          (cond ((zerop& pc)
-           (setq *poll-count* *initial-poll-count*)
-                       (unless (null *periodic-eval-action*) (funcall *periodic-eval-action*))
-           (poll-internal))
-                      ((member pc *periodic-eval-times* :test #'=)
-                       (unless (null *periodic-eval-action*) (funcall *periodic-eval-action*))
-                       nil)))))))
+         `(if (poll-internal)
+            (setq *poll-count* 1)))
+    (t
+     `(or *last-interrupt-char*
+          (let ((pc (decf& *poll-count*)))
+            (cond ((zerop& pc)
+                   (setq *poll-count* *initial-poll-count*)
+                   (unless (null *periodic-eval-action*) (funcall *periodic-eval-action*))
+                   (poll-internal))
+              ((member pc *periodic-eval-times* :test #'=)
+               (unless (null *periodic-eval-action*) (funcall *periodic-eval-action*))
+               nil)))))))
 
 ;;;
 ;;; Arg Flavors
@@ -219,9 +219,9 @@
 ;for number of selectq items?
 (defmacro special-arg-handling-cases (&body selectq-body)
   `(cond ((or (null *current-function*) (symbolp (car *arglist*)))
-    ., (cdr (assoc 'otherwise selectq-body)))
-   (t (case (caar *arglist*)
-        ., selectq-body))))
+          ., (cdr (assoc 'otherwise selectq-body)))
+     (t (case (caar *arglist*)
+          ., selectq-body))))
 
 ;;;
 ;;; Stepper -- we have a separate evaluator for the stepper.
@@ -230,19 +230,19 @@
 
 (defmacro when-stepping (&body body)
   (if *compiling-stepper*
-      `(when *stepping* . ,body)
+    `(when *stepping* . ,body)
     nil))
 
 (defmacro unless-stepping (&body body)
   (if (not *compiling-stepper*)
-      `(progn . ,body)
+    `(progn . ,body)
     nil))
 
 ;;;
 ;;; tail recursion
 ;;;
 (boxer::defsubst tail-recurse-p ()
-  nil)
+                 nil)
 
 
 
