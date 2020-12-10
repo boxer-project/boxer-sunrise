@@ -1,43 +1,34 @@
 ;;; -*- Syntax: Common-lisp; Base: 10; Package: EVAL -*-
+;;;;
+;;;;        Boxer
+;;;;        Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;        Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;        used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;        Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;        https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                             +-Data--+
+;;;;                    This file is part of the | BOXER | system
+;;;;                                             +-------+
+;;;;
+;;;;
+;;;;      The Explicit Control Evaluator
+;;;;
+;;;;    Modification History (most recent at top)
+;;;;
+;;;;    10/26/08 poll has to run periodic eval actions when polling as well (poll count = 0)
+;;;;    10/21/03 modified poll macro to handle periodic evaluator actions which
+;;;;             take place more often than checks for interrupt chars
+;;;;     2/11/03 merged current LW and MCL files
+;;;;     8/09/00 changed lwwin interrupt char in trace-entering to #\c
+;;;;     2/14/99 started Harlequin Lispworks changes, shadow DEBUG
+;;;;             eval-object? and possible-eval-object?, quick-time
+;;;;
 
-#|
-
- $Header: evalmacs.lisp,v 1.0 90/01/24 22:11:33 boxer Exp $
-
- $Log:	evalmacs.lisp,v $
-;;;Revision 1.0  90/01/24  22:11:33  boxer
-;;;Initial revision
-;;;
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                         +-Data--+
-                This file is part of the | BOXER | system
-                                         +-------+
-
-
-  The Explicit Control Evaluator
-
-Modification History (most recent at top)
-
-10/26/08 poll has to run periodic eval actions when polling as well (poll count = 0)
-10/21/03 modified poll macro to handle periodic evaluator actions which
-         take place more often than checks for interrupt chars
- 2/11/03 merged current LW and MCL files
- 8/09/00 changed lwwin interrupt char in trace-entering to #\c
- 2/14/99 started Harlequin Lispworks changes, shadow DEBUG
-         eval-object? and possible-eval-object?, quick-time
-
-|#
 
 (in-package :boxer-eval)
 
