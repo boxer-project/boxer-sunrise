@@ -474,7 +474,7 @@ Modification History (most recent at top)
     (boxer-toplevel-set-nocache key-name
                                 (boxer-eval::encapsulate-key-function function))))
 
-(eval-when (compile load eval)
+(eval-when (:compile-toplevel :load-toplevel :execute)
            (defun encapsulate-key-function (fun)
              (make-compiled-boxer-function
               :arglist nil
