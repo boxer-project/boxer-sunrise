@@ -60,16 +60,16 @@ Modification History (most recent at top)
   (let ((eval-completion-gensym (gensym)))
     `(let ((,eval-completion-gensym nil))
        (catch 'boxer-error
-	 (unwind-protect
-	      (compiler-let ()
-		(let ,(create-local-eval-state-vars-bvl)
-		  (compiler-let ()
-		    (prog1 (progn . ,body) (setq ,eval-completion-gensym t)))))
-	   (unless ,eval-completion-gensym
-	     (when boxer::*boxer-system-hacker* (format t "~%Unwinding stack..."))
-	     (unwind-to-top-level)
-	     (reset-stacks)
-	     (when boxer::*boxer-system-hacker* (format t "Done~%"))))))))
+   (unwind-protect
+        (compiler-let ()
+    (let ,(create-local-eval-state-vars-bvl)
+      (compiler-let ()
+        (prog1 (progn . ,body) (setq ,eval-completion-gensym t)))))
+     (unless ,eval-completion-gensym
+       (when boxer::*boxer-system-hacker* (format t "~%Unwinding stack..."))
+       (unwind-to-top-level)
+       (reset-stacks)
+       (when boxer::*boxer-system-hacker* (format t "Done~%"))))))))
 
 ;;;
 ;;; Evaluator Debugging
@@ -111,17 +111,17 @@ Modification History (most recent at top)
     `(progn
        ,(unless (eq place 'handle-exception) `(setq *pc-for-debugging* ',place))
        (when *debugging*
-	 (let ((time (quick-time)))
-	   (setq *last-timing-figure* (- time *start-time* *timing-overhead*))
-	   (format t "~Dms~%" *last-timing-figure*)
-	   (format t "~A " ',place)
-	   ,@(boxer::with-collection
-	      (dolist (arg args)
-		(boxer::collect `(format t "~S ~S, " ',arg ,arg))))
-	   (do () ((not (char-equal (read-char)
-				    #\c))); TODO sgithens #\control-c)))
-	     (break))
-	   (setq *start-time* (quick-time)))))))
+   (let ((time (quick-time)))
+     (setq *last-timing-figure* (- time *start-time* *timing-overhead*))
+     (format t "~Dms~%" *last-timing-figure*)
+     (format t "~A " ',place)
+     ,@(boxer::with-collection
+        (dolist (arg args)
+    (boxer::collect `(format t "~S ~S, " ',arg ,arg))))
+     (do () ((not (char-equal (read-char)
+            #\c))); TODO sgithens #\control-c)))
+       (break))
+     (setq *start-time* (quick-time)))))))
 
 ;;;
 ;;; Fast Type checking mechanisms
@@ -193,27 +193,27 @@ Modification History (most recent at top)
 
 (defmacro compile-lambda-if-possible (name lambda-form)
   `(cond ((null *compile-boxer-generated-lambda?*) ,lambda-form)
-	 ((eq *compile-boxer-generated-lambda?* :fast-compile)
-	  (proclaim '(optimize (compilation-speed 3)))
-	  (unwind-protect (symbol-function (compile ,name ,lambda-form))
-	    (proclaim `(optimize (compilation-speed ,*old-compilation-speed*)))))
-	 (t
-	  (symbol-function (compile ,name ,lambda-form)))))
+   ((eq *compile-boxer-generated-lambda?* :fast-compile)
+    (proclaim '(optimize (compilation-speed 3)))
+    (unwind-protect (symbol-function (compile ,name ,lambda-form))
+      (proclaim `(optimize (compilation-speed ,*old-compilation-speed*)))))
+   (t
+    (symbol-function (compile ,name ,lambda-form)))))
 
 ;;;
 ;;; Polling/Interrupts
 ;;;
 (defmacro poll (&optional always?)
   (cond (always?
-	 `(if (poll-internal)
-	      (setq *poll-count* 1)))
-	(t
-	 `(or *last-interrupt-char*
+   `(if (poll-internal)
+        (setq *poll-count* 1)))
+  (t
+   `(or *last-interrupt-char*
               (let ((pc (decf& *poll-count*)))
-	        (cond ((zerop& pc)
-		       (setq *poll-count* *initial-poll-count*)
+          (cond ((zerop& pc)
+           (setq *poll-count* *initial-poll-count*)
                        (unless (null *periodic-eval-action*) (funcall *periodic-eval-action*))
-		       (poll-internal))
+           (poll-internal))
                       ((member pc *periodic-eval-times* :test #'=)
                        (unless (null *periodic-eval-action*) (funcall *periodic-eval-action*))
                        nil)))))))
@@ -228,9 +228,9 @@ Modification History (most recent at top)
 ;for number of selectq items?
 (defmacro special-arg-handling-cases (&body selectq-body)
   `(cond ((or (null *current-function*) (symbolp (car *arglist*)))
-	  ., (cdr (assoc 'otherwise selectq-body)))
-	 (t (case (caar *arglist*)
-	      ., selectq-body))))
+    ., (cdr (assoc 'otherwise selectq-body)))
+   (t (case (caar *arglist*)
+        ., selectq-body))))
 
 ;;;
 ;;; Stepper -- we have a separate evaluator for the stepper.
