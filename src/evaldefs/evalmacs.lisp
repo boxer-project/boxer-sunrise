@@ -135,18 +135,9 @@
 
 ;;; POSSIBLE-EVAL-OBJECT? tells whether it is legal to look in slot 0.
 (defmacro possible-eval-object? (thing)
-  #+(or lucid lispworks)
-  `(simple-vector-p ,thing)
-  #+(or excl lispm)
-  T
-  #+mcl
-  `(vectorp ,thing)  ; +++ I guess
-  #-(or lucid lispm excl mcl lispworks)
-  (warn "Check if your CLOS or PCL implementation uses vectors to make its objects~%~
-         If (vectorp (make-instance <whatever>) is NIL, then~
-         change the definition of ~S to simply return T" 'possible-eval-object)
-  #-(or lucid lispm excl mcl lispworks)
-  `(vectorp ,thing))
+  ;; sgithens 2020-12-20 TODO if there are any problems with this while porting to
+  ;; sbcl and other generic common-lisps, see the old example in the attic.
+  `(simple-vector-p ,thing))
 
 ;; This function distinguishes eval objects from editor objects,
 ;; but doesn't guarantee to distinguish eval objects from other vectors.

@@ -996,6 +996,25 @@
 |#
 
 ;;;;
+;;;; FILE: evalmacs.lisp
+;;;;
+
+;;; POSSIBLE-EVAL-OBJECT? tells whether it is legal to look in slot 0.
+(defmacro possible-eval-object? (thing)
+  #+(or lucid lispworks)
+  `(simple-vector-p ,thing)
+  #+(or excl lispm)
+  T
+  #+mcl
+  `(vectorp ,thing)  ; +++ I guess
+  #-(or lucid lispm excl mcl lispworks)
+  (warn "Check if your CLOS or PCL implementation uses vectors to make its objects~%~
+         If (vectorp (make-instance <whatever>) is NIL, then~
+         change the definition of ~S to simply return T" 'possible-eval-object)
+  #-(or lucid lispm excl mcl lispworks)
+  `(vectorp ,thing))
+
+;;;;
 ;;;; FILE: infsup.lisp
 ;;;;
 
