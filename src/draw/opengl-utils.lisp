@@ -411,6 +411,12 @@ Modification History (most recent at the top)
 
 ;;; sizes, this can be all done on the CPU side
 (defun ogl-char-width (cha &optional (font *current-opengl-font*))
+  #+freetype-fonts
+  (let* ((cha-pixmap (boxer::find-freetype-pixmap cha font *ogl-current-color-vector*))
+        (width (opengl::ogl-pixmap-width cha-pixmap)))
+    ;; TODO This should actually be the glyph advance value
+    (+ width 1))
+  #-freetype-fonts
   (let ((wa (opengl-font-widths-array font)))
     (cond ((not (null wa))
            (let ((ccw (aref wa (charcode->oglfont-index (char-code cha)))))
@@ -427,6 +433,12 @@ Modification History (most recent at the top)
 (defun ogl-font-ascent (font) (opengl-font-ascent font))
 
 (defun ogl-string-width (string &optional (font *current-opengl-font*))
+  #+freetype-fonts
+  (let* ((cha-pixmap (boxer::find-freetype-pixmap string font *ogl-current-color-vector*))
+        (width (opengl::ogl-pixmap-width cha-pixmap)))
+    ;; TODO This should actually be the glyph advance value
+    (+ width))
+  #-freetype-fonts
   (let ((wa (opengl-font-widths-array font)))
     (cond ((not (null wa))
            (let ((acc 0))
