@@ -148,6 +148,8 @@
            :dribble-mouse-state-y
            :dribble-mouse-state-buttons
            :record-mouse-state
+
+           :mouse-click-names :mouse-state-names :lookup-click-name
            )
            )
 
@@ -340,8 +342,8 @@
 ;;; from the keydef-low-xxx.lisp files
 
 
-(import '(bw::mouse-click-names bw::mouse-state-names bw::lookup-click-name)
-  (find-package 'boxer))
+;; (import '(bw::mouse-click-names bw::mouse-state-names bw::lookup-click-name)
+;;   (find-package 'boxer))
 
 ;;; Set up package for the evaluator.
 

@@ -38,8 +38,20 @@
                  ;; RELATIONSHIPS
                  (:file "relationships/infsup")
 
+                 ;; EVALVARS
+                 (:file "evalvars/varmacs")
+                 (:file "evalvars/vars")
+
                  ;; EVALDEFS
                  (:file "evaldefs/evalmacs")
+                 (:file "evaldefs/funs")
+                 (:file "evaldefs/fdeval")
+                 (:file "evaldefs/stacks")
+                 (:file "evaldefs/bind")
+                 (:file "evaldefs/eval")
+
+                 ;; EVALPRIMS
+                 (:file "evalprims/prims")
                 )))
   :description ""
   :long-description
