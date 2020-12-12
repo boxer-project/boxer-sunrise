@@ -1,47 +1,35 @@
-;-*- Mode:Lisp; Package:boxer; Syntax: Common-Lisp; -*-
-#|
-
-
- $Header: mouse.lisp,v 1.0 90/01/24 22:15:02 boxer Exp $
-
- $Log:	mouse.lisp,v $
-;;;Revision 1.0  90/01/24  22:15:02  boxer
-;;;Initial revision
-;;;
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                         +-Data--+
-                This file is part of the | Boxer | System
-                                         +-------+
-
-
-       The Code for handling the mouse is here
-
-Modification History (most recent at top)
-
- 9/13/12 compiler warning free
- 9/10/12 de-fixnum: position-in-screen-obj, get-cha-no, find-bp-values, get-area-of-box,
-                    mouse-documentation-area, mouse-doc-place, screen-obj-at, xy-context
-                    in-screen-box?, screen-offset->cha-no
- 2/15/03 merged current LW and MCL files
- 2/16/01 merged current LW and MCL files
-12/07/00 changed the :bottom clause in mouse-position-screen-row-values for better
-         mouse tracking.  Also the row method of find-bp-values
-12/07/00 Started logging changes: source = Boxer version 2.4.1
-
-
-
-|#
+;;;;-*- Mode:Lisp; Package:boxer; Syntax: Common-Lisp; -*-
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                           +-Data--+
+;;;;                  This file is part of the | Boxer | System
+;;;;                                           +-------+
+;;;;
+;;;;
+;;;;         The Code for handling the mouse is here
+;;;;
+;;;;  Modification History (most recent at top)
+;;;;
+;;;;   9/13/12 compiler warning free
+;;;;   9/10/12 de-fixnum: position-in-screen-obj, get-cha-no, find-bp-values, get-area-of-box,
+;;;;                      mouse-documentation-area, mouse-doc-place, screen-obj-at, xy-context
+;;;;                      in-screen-box?, screen-offset->cha-no
+;;;;   2/15/03 merged current LW and MCL files
+;;;;   2/16/01 merged current LW and MCL files
+;;;;  12/07/00 changed the :bottom clause in mouse-position-screen-row-values for better
+;;;;           mouse tracking.  Also the row method of find-bp-values
+;;;;  12/07/00 Started logging changes: source = Boxer version 2.4.1
+;;;;
 
 (in-package :boxer)
 
