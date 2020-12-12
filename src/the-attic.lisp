@@ -1296,6 +1296,123 @@
 |#
 
 ;;;;
+;;;; FILE: mouse.lisp
+;;;;
+
+#|
+;;; **** this is now hacked in boxwin-mcl by modifying the coords
+;;; **** of the mouse blip
+;; make sure the returned value will be a row
+;;; +++ I made these account for getting their coordinates in the window frame, parallel to
+;;; mouse-position-values, above.  This is necessary to make tracking work right on the Mac
+;;; version.  I have no idea what effect it will have on the Sun version. -- mt
+#+mcl
+(defun mouse-position-screen-row-values (global-x global-y)
+  (multiple-value-bind (so local-offset position)
+      (screen-obj-at (outermost-screen-box)
+                     (- global-x (sheet-inside-left *boxer-pane*))
+                     (- global-y (sheet-inside-top *boxer-pane*)))
+    (cond ((screen-row? so)
+       (values so local-offset))
+      (t
+       (let ((sr (screen-row so)))
+         (if (not (screen-row? sr))
+         (ecase position
+           (:top (values (first-screen-row so) local-offset))
+           (:bottom (values (last-screen-row so) local-offset)))
+         (values sr local-offset)))))))
+
+|#
+
+;;; this is obsolete
+(defmacro with-mouse-bp-bound ((x y window) &body body)
+  (declare (ignore x y window body))
+  (error "This macro is obsolete"))
+
+;;; This shouldn't be consing up a BP every time ....
+;(defmacro with-mouse-bp-bound ((x y window) &body body)
+;  "This macro sets up an environment where MOUSE-BP is bound to a BP which
+;   indicates where in the actual structure the mouse is pointing to.
+;   MOUSE-SCREEN-BOX is also bound to the screen box which the mouse is
+;   pointing to. "
+;  `(let ((mouse-bp (make-bp ':fixed)))
+;     (multiple-value-bind (mouse-row mouse-cha-no mouse-screen-box)
+;	 (screen-obj-at-position ,x ,y ,window)
+;     (unwind-protect
+;       (progn
+;	 (set-bp-row mouse-bp mouse-row)
+;	 (set-bp-cha-no mouse-bp mouse-cha-no)
+;	 (set-bp-screen-box mouse-bp mouse-screen-box)
+;	 . ,body)
+;       (when (not-null (bp-row mouse-bp))
+;	 (delete-bp (bp-row mouse-bp) mouse-bp))))))
+
+
+
+#|
+;;;; RESIZE Support
+
+(defconstant *resize-blinker-width* 1)
+
+(defun draw-resize-blinker (x y wid hei)
+  (draw-rectangle alu-xor *resize-blinker-width* hei x y)
+  (draw-rectangle alu-xor
+          (-& wid *resize-blinker-width*) *resize-blinker-width*
+          (+& x *resize-blinker-width*) y)
+  (draw-rectangle alu-xor
+          *resize-blinker-width* (-& hei *resize-blinker-width*)
+          (-& (+& x wid ) *resize-blinker-width*)
+          (+& y *resize-blinker-width*))
+  (draw-rectangle alu-xor
+          (-& wid (*& 2 *resize-blinker-width*)) *resize-blinker-width*
+          (+& x *resize-blinker-width*)
+          (-& (+& y hei) *resize-blinker-width*)))
+
+(defun resize-tracker (editor-box x y screen-box)
+  (multiple-value-bind (box-window-x box-window-y)
+      (xy-position screen-box)
+    (multiple-value-bind (left top right bottom)
+        (box-borders-widths (slot-value screen-box 'box-type) screen-box)
+     (drawing-on-window (*boxer-pane*)
+    ;; draw the resize icon on the box...
+        (bitblt-to-screen alu-seta 7 7 *mouse-resize-bitmap* 0 0
+              (-& (+& box-window-x (screen-obj-wid screen-box))
+                  right)
+              (-& (+& box-window-y (screen-obj-hei screen-box))
+                  bottom))
+    (let ((old-wid x) (old-hei y))
+      ;; draw-the initial resize blinker
+      (draw-resize-blinker box-window-x box-window-y old-wid old-hei)
+    ;; now track the mouse
+    (multiple-value-bind (final-x final-y)
+        (with-mouse-tracking ((mouse-x box-window-x)
+                  (mouse-y box-window-y))
+          (let ((new-wid (-& mouse-x box-window-x))
+            (new-hei (-& mouse-y box-window-y)))
+        (unless (or (minusp new-wid) (minusp new-hei))
+          ;; erase the previous resize blinker
+          (draw-resize-blinker box-window-x box-window-y
+                       old-wid old-hei)
+          ;; and update the values and draw the new one
+          (setq old-wid new-wid old-hei new-hei)
+          (draw-resize-blinker box-window-x box-window-y
+                       new-wid new-hei))))
+      ;; erase the last hollow blinker
+      (draw-resize-blinker box-window-x box-window-y old-wid old-hei)
+      (unless (or (<& final-x box-window-x)
+              (<& final-y box-window-y))
+        (set-fixed-size editor-box
+                (- final-x box-window-x left right)
+                (- final-y box-window-y top bottom))))))))
+  (modified editor-box)
+  (box-first-bp-values editor-box))
+
+
+(setf (get :resize-tab 'mouse-bp-values-handler) 'resize-tracker)
+
+|#
+
+;;;;
 ;;;; FILE: opengl-utils.lisp
 ;;;;
 
