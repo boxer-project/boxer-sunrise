@@ -1,58 +1,47 @@
 ;; -*- Mode:LISP;Syntax:Common-Lisp; Package:BOXER; Base:8.-*-
-#|
-
-
- $Header: keydef-high.lisp,v 1.0 90/01/24 22:13:17 boxer Exp $
-
- $Log:	keydef-high.lisp,v $
-;;;Revision 1.0  90/01/24  22:13:17  boxer
-;;;Initial revision
-;;;
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                         +-Data--+
-                This file is part of the | BOXER | system
-                                         +-------+
-
-
-
-   This file contains utilities for defining keys and how to handle them.
-
-Modification History (most recent at top)
-
- 7/14/06 all #+lwwin changed to #+lispworks for opengl port
- 8/20/03 added :initial-element nil to make-mouse-click-name-translation-table,
-         initialize-lookup-arrays
- 4/21/03 merged current LW and MCL files
-10/18/02 INITIALIZE-INPUT-LOOKUP-ARRAYS *INITIAL-PLATFORM*
-         *KEY-NAMES* *ALTERNATE-KEY-NAMES*
-         *ALTERNATE-MOUSE-CLICK-NAME-TRANSLATION-TABLE*
-         HANDLE-BOXER-INPUT changed to pass keycode and bits to specific functions
-         so that alternate-key/click name handling works faster and conses less
-         MOUSE-CLICK-BOXER-INPUT-HANDLER passes CLICK BITS AREA for the same reason
-10/09/02 code review: existing platform specific input device functions predate
-         initial PC port so no need to excise specific functions before rewrite
- 3/19/02 *boxer-event-id*, boxer-event-id, next-boxer-event
-         used in handle-boxer-event
- 7/12/00 *key-name-lookup-array-size* changed to 230 to handle full range of F keys
- 1/03/00 mouse names changed to maximize compatibility with mac code
-12/18/99 mouse names
-11/27/99 function key handling
- 8/03/99 added lwwin chages in handle-boxer-input
- 5/27/98 Started Logging Changes: source = Boxer version 2.3 alphaR1
-
-
-|#
+;;;;
+;;;;        Boxer
+;;;;        Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;        Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;        used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;        Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;        https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                             +-Data--+
+;;;;                    This file is part of the | BOXER | system
+;;;;                                             +-------+
+;;;;
+;;;;
+;;;;
+;;;;       This file contains utilities for defining keys and how to handle them.
+;;;;
+;;;;    Modification History (most recent at top)
+;;;;
+;;;;     7/14/06 all #+lwwin changed to #+lispworks for opengl port
+;;;;     8/20/03 added :initial-element nil to make-mouse-click-name-translation-table,
+;;;;             initialize-lookup-arrays
+;;;;     4/21/03 merged current LW and MCL files
+;;;;    10/18/02 INITIALIZE-INPUT-LOOKUP-ARRAYS *INITIAL-PLATFORM*
+;;;;             *KEY-NAMES* *ALTERNATE-KEY-NAMES*
+;;;;             *ALTERNATE-MOUSE-CLICK-NAME-TRANSLATION-TABLE*
+;;;;             HANDLE-BOXER-INPUT changed to pass keycode and bits to specific functions
+;;;;             so that alternate-key/click name handling works faster and conses less
+;;;;             MOUSE-CLICK-BOXER-INPUT-HANDLER passes CLICK BITS AREA for the same reason
+;;;;    10/09/02 code review: existing platform specific input device functions predate
+;;;;             initial PC port so no need to excise specific functions before rewrite
+;;;;     3/19/02 *boxer-event-id*, boxer-event-id, next-boxer-event
+;;;;             used in handle-boxer-event
+;;;;     7/12/00 *key-name-lookup-array-size* changed to 230 to handle full range of F keys
+;;;;     1/03/00 mouse names changed to maximize compatibility with mac code
+;;;;    12/18/99 mouse names
+;;;;    11/27/99 function key handling
+;;;;     8/03/99 added lwwin chages in handle-boxer-input
+;;;;     5/27/98 Started Logging Changes: source = Boxer version 2.3 alphaR1
+;;;;
 
 (in-package :boxer)
 
