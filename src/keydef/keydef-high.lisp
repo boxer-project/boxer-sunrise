@@ -75,7 +75,7 @@ Modification History (most recent at top)
 
 (defconstant *key-name-lookup-array-size* #+(and lispworks win32) 230.
                                           #+(and lispworks cocoa) 328
-					  #-lispworks 170.
+            #-lispworks 170.
   "For most implementations, this really ought to be based on char-code-limit")
 
 (defvar *key-names* nil
@@ -104,30 +104,30 @@ Modification History (most recent at top)
 
 (defun define-key-name (key-name key-code &optional (bits 0))
   (cond ((numberp key-code)
-	 (if (<& key-code (car (array-dimensions *key-names*)))
-	     (setf (aref *key-names* key-code bits) key-name)
-	     (when *key-name-out-of-range-warning?*
-	       (warn
-		"~D is beyond the range of the current key-array" key-code))))
-	((symbolp key-code)
-	 (error
-	  "~%Can't store symbols in key-names.~
+   (if (<& key-code (car (array-dimensions *key-names*)))
+       (setf (aref *key-names* key-code bits) key-name)
+       (when *key-name-out-of-range-warning?*
+         (warn
+    "~D is beyond the range of the current key-array" key-code))))
+  ((symbolp key-code)
+   (error
+    "~%Can't store symbols in key-names.~
            ~%In order to teach Boxer how to handle a new kind of symbol~
            ~%in its input buffer you should define a function to handle~
            ~%the symbol on the symbol's :BOXER-INPUT property. When Boxer~
            ~%sees that symbol in its input buffer it will call that function~
            ~%with the symbol as its only argument."))
-	((listp key-code)
-	 (error
-	  "~%Can't store blips in key-names.~
+  ((listp key-code)
+   (error
+    "~%Can't store blips in key-names.~
            ~%In order to teach the editor how to handle a new kind of blip in~
            ~%in its input buffer you should define a function to handle the~
            ~%blip on the :BOXER-INPUT property of the symbol which is the car~
            ~%of the blip. When Boxer sees a blip with that symbol as its car~
            ~%in its input buffer it will call that function with the blip as~
            ~%its only argument."))
-	(t
-	 (error "~S is a completely unknown type of Boxer Input." key-code))))
+  (t
+   (error "~S is a completely unknown type of Boxer Input." key-code))))
 
 
 (defun lookup-key-name (key-code key-bits)
@@ -137,19 +137,19 @@ Modification History (most recent at top)
 
 (defun define-key-and-all-its-shifted-key-names (key-name key-code platform)
   (if (and (< key-code char-code-limit)
-	   (upper-case-p (code-char key-code)))
+     (upper-case-p (code-char key-code)))
       ;; for some reason MCL considers some undefined chars to be uppercase
       (define-key-name (intern-in-bu-package (symbol-format nil "CAPITAL-~A"
-							    key-name))
-	  key-code)
+                  key-name))
+    key-code)
       (define-key-name key-name     key-code))
   (do* ((bit 1 (1+ bit))
-	(shift-list (input-device-shift-list platform) (cdr shift-list))
-	(shift-name (car shift-list) (car shift-list))
-	(shifted-key-name (intern-in-bu-package
-			   (symbol-format nil "~A-~A" shift-name key-name))
-			  (intern-in-bu-package
-			   (symbol-format nil "~A-~A" shift-name key-name))))
+  (shift-list (input-device-shift-list platform) (cdr shift-list))
+  (shift-name (car shift-list) (car shift-list))
+  (shifted-key-name (intern-in-bu-package
+         (symbol-format nil "~A-~A" shift-name key-name))
+        (intern-in-bu-package
+         (symbol-format nil "~A-~A" shift-name key-name))))
        ((null shift-list))
     (define-key-name shifted-key-name key-code bit)))
 
@@ -158,8 +158,8 @@ Modification History (most recent at top)
   ;; first check the global table
   (when (boundp old-name)
     (boxer-eval::boxer-toplevel-set-nocache new-name
-				      (boxer-eval::static-variable-value
-				       (symbol-value old-name))))
+              (boxer-eval::static-variable-value
+               (symbol-value old-name))))
   ;; now check all the comtabs
   (dolist (ct *existing-comtabs*)
     (let ((old-value (gethash old-name ct)))
@@ -184,21 +184,21 @@ Modification History (most recent at top)
   (if (boundp '*mcl-special-keycodes*)
       ;; if we have the information to figure it out, do so
       (mapcar #'(lambda (pair)
-		  (list (cadr pair)
-			(get (cadr pair) :mcl-special-char-code)))
-	      *mcl-special-keycodes*)
+      (list (cadr pair)
+      (get (cadr pair) :mcl-special-char-code)))
+        *mcl-special-keycodes*)
       ;; otherwise use something that may be obsolete
       ;; The following was calculated on a mac in May 1994
       '((BOXER-USER::F1-KEY 256) (BOXER-USER::F2-KEY 257)
-	(BOXER-USER::F3-KEY 258) (BOXER-USER::F4-KEY 259)
-	(BOXER-USER::F5-KEY 260) (BOXER-USER::F6-KEY 261)
-	(BOXER-USER::F7-KEY 262) (BOXER-USER::F8-KEY 263)
-	(BOXER-USER::F9-KEY 264) (BOXER-USER::F10-KEY 265)
-	(BOXER-USER::F11-KEY 266) (BOXER-USER::F12-KEY 267)
-	(BOXER-USER::F13-KEY 268) (BOXER-USER::F14-KEY 269)
-	(BOXER-USER::F15-KEY 270) (BOXER-USER::ENTER-KEY 272)
-	(BOXER-USER::LEFT-ARROW-KEY 272) (BOXER-USER::RIGHT-ARROW-KEY 273)
-	(BOXER-USER::UP-ARROW-KEY 274) (BOXER-USER::DOWN-ARROW-KEY 275))))
+  (BOXER-USER::F3-KEY 258) (BOXER-USER::F4-KEY 259)
+  (BOXER-USER::F5-KEY 260) (BOXER-USER::F6-KEY 261)
+  (BOXER-USER::F7-KEY 262) (BOXER-USER::F8-KEY 263)
+  (BOXER-USER::F9-KEY 264) (BOXER-USER::F10-KEY 265)
+  (BOXER-USER::F11-KEY 266) (BOXER-USER::F12-KEY 267)
+  (BOXER-USER::F13-KEY 268) (BOXER-USER::F14-KEY 269)
+  (BOXER-USER::F15-KEY 270) (BOXER-USER::ENTER-KEY 272)
+  (BOXER-USER::LEFT-ARROW-KEY 272) (BOXER-USER::RIGHT-ARROW-KEY 273)
+  (BOXER-USER::UP-ARROW-KEY 274) (BOXER-USER::DOWN-ARROW-KEY 275))))
 
 ;; the file keydef-lwm which defines this is loaded otherwise
 #-(and lispworks mac)
@@ -267,14 +267,14 @@ Modification History (most recent at top)
   ;; keys are by given the lowercase meaning, with "CAPITAL"
   ;; defined as a shift key.
   (do* ((key-code #o101 (1+ key-code))
-	(key-name (intern-in-bu-package
-		   (format nil "~A-KEY" (string-upcase
-					 (format nil "~:@C"
-						 (code-char key-code)))))
-		  (intern-in-bu-package
-		   (format nil "~A-KEY" (string-upcase
-					 (format nil "~:@C"
-						 (code-char key-code)))))))
+  (key-name (intern-in-bu-package
+       (format nil "~A-KEY" (string-upcase
+           (format nil "~:@C"
+             (code-char key-code)))))
+      (intern-in-bu-package
+       (format nil "~A-KEY" (string-upcase
+           (format nil "~:@C"
+             (code-char key-code)))))))
        ((= key-code #o133))
     (define-key-and-all-its-shifted-key-names key-name key-code platform)
     (define-key-and-all-its-shifted-key-names key-name (+ key-code #o40) platform))
@@ -286,12 +286,12 @@ Modification History (most recent at top)
   (do* ((key-code 0 (1+ key-code)))
        ((= key-code #o177))
     (unless (or (and (>= key-code #o101) (<= key-code #o132))
-		(and (>= key-code #o141) (<= key-code #o172)))
+    (and (>= key-code #o141) (<= key-code #o172)))
       (define-key-and-all-its-shifted-key-names
-	  (intern-in-bu-package
-	   (format nil "~A-KEY" (string-upcase
-				 (format nil "~:@C" (code-char key-code)))))
-	  key-code platform)))
+    (intern-in-bu-package
+     (format nil "~A-KEY" (string-upcase
+         (format nil "~:@C" (code-char key-code)))))
+    key-code platform)))
 
   ;; Give names to all the keys that we can't use the format ~C directive
   ;; to get a name for. Basically these are keys like SPACE, DELETE etc.
@@ -301,8 +301,8 @@ Modification History (most recent at top)
 
   (dolist (key-that-format-~c-loses-on  *keyboard-special-keys*)
     (define-key-and-all-its-shifted-key-names
-	(car  key-that-format-~c-loses-on)
-	(char-code (cadr key-that-format-~c-loses-on)) platform))
+  (car  key-that-format-~c-loses-on)
+  (char-code (cadr key-that-format-~c-loses-on)) platform))
   )
 
 ;;; This is different from define-basic-keys in that we want to loop through
@@ -325,7 +325,7 @@ Modification History (most recent at top)
                                unshifted-name)))
                ((null shifts))
             (let ((new-name (intern-in-bu-package
-			     (symbol-format nil "~A-~A"
+           (symbol-format nil "~A-~A"
                                             shift-name vanilla-name))))
               (check-key-rebinding (aref *key-names* i bit) new-name)
               (setf (aref *key-names* i bit) new-name))))))))
@@ -340,7 +340,7 @@ Modification History (most recent at top)
   ;; that doesn't fit very well into common lisp chars
   (dolist (special-key (input-device-special-keys platform))
     (define-key-and-all-its-shifted-key-names
-	(car special-key) (cadr special-key) platform)))
+  (car special-key) (cadr special-key) platform)))
 
 
 ;;; support for self-inserting non-standard characters
@@ -348,10 +348,10 @@ Modification History (most recent at top)
 (defmacro defself-inserting-key (key-name char)
   `(progn
      (boxer-eval::defboxer-key-internal ',key-name
-	 #'(lambda ()
-	     (with-multiple-execution
-		 #-opengl (add-redisplay-clue (point-row) ':insert)
-	       (insert-cha *point* ,char :moving))
+   #'(lambda ()
+       (with-multiple-execution
+     #-opengl (add-redisplay-clue (point-row) ':insert)
+         (insert-cha *point* ,char :moving))
              (mark-file-box-dirty (point-row))
              boxer-eval::*novalue*))
      (boxer-command-define ',key-name
@@ -374,23 +374,23 @@ Modification History (most recent at top)
 
 (defun make-mouse-click-name-translation-table (platform)
   (make-array `(,(length (input-device-mouse-string platform))
-		,(1+ (length (input-device-shift-list platform))))
+    ,(1+ (length (input-device-shift-list platform))))
               :initial-element nil))
 
 (defun mouse-click-name-string (button shift place platform)
   (intern-in-bu-package
    (cond ((and (null place) (null shift))
-	  (symbol-format nil "MOUSE-~A" button))
-	 ((null place)
-	  (symbol-format nil "~A-MOUSE-~A" shift button))
-	 ((null shift)
-	  (case platform
-	    ((:mac :ibm-pc :lwm) (symbol-format nil "MOUSE-~A-ON-~A" button place))
-	    (t    (symbol-format nil "~A-MOUSE-~A" place button))))
-	 (t
-	  (case platform
-	    ((:mac :ibm-pc :lwm) (symbol-format nil "~A-MOUSE-~A-ON-~A" shift button place))
-	    (t (symbol-format nil "~A-~A-MOUSE-~A" shift place button)))))))
+    (symbol-format nil "MOUSE-~A" button))
+   ((null place)
+    (symbol-format nil "~A-MOUSE-~A" shift button))
+   ((null shift)
+    (case platform
+      ((:mac :ibm-pc :lwm) (symbol-format nil "MOUSE-~A-ON-~A" button place))
+      (t    (symbol-format nil "~A-MOUSE-~A" place button))))
+   (t
+    (case platform
+      ((:mac :ibm-pc :lwm) (symbol-format nil "~A-MOUSE-~A-ON-~A" shift button place))
+      (t (symbol-format nil "~A-~A-MOUSE-~A" shift place button)))))))
 
 (defun current-mouse-click-name (button shift &optional place)
   (let ((button-names (input-device-mouse-string
@@ -405,35 +405,35 @@ Modification History (most recent at top)
                                place *current-input-device-platform*))))
 
 (defun setup-mouse-translation-table (platform
-				      &optional
-				      place-name
-				      (table
-				       (make-mouse-click-name-translation-table
-					platform))
-				      (unbound-name-help-message-p
-				       (or (null place-name)
-					   (member place-name
-						   '(:graphics :sprite)))))
+              &optional
+              place-name
+              (table
+               (make-mouse-click-name-translation-table
+          platform))
+              (unbound-name-help-message-p
+               (or (null place-name)
+             (member place-name
+               '(:graphics :sprite)))))
   ;; first fill the slots in the table...
   ;; starting with the unshifted names
   (do* ((button 0 (1+ button))
-	(buttons (input-device-mouse-string platform) (cdr buttons))
-	(button-name (car buttons) (car buttons)))
+  (buttons (input-device-mouse-string platform) (cdr buttons))
+  (button-name (car buttons) (car buttons)))
        ((null buttons))
     (let ((name (mouse-click-name-string button-name nil place-name platform)))
       (setf (aref table button 0) name)
       (when unbound-name-help-message-p
-	(setf (get name 'unbound-name-help-message)
-	      "and its shifted names, are generated by clicking the mouse"))))
+  (setf (get name 'unbound-name-help-message)
+        "and its shifted names, are generated by clicking the mouse"))))
   ;; followed by the shifted names
   (do* ((bit 1 (1+ bit))
-	(shift-list (input-device-shift-list platform) (cdr shift-list))
-	(shift-name (car shift-list) (car shift-list)))
+  (shift-list (input-device-shift-list platform) (cdr shift-list))
+  (shift-name (car shift-list) (car shift-list)))
        ((null shift-list))
     (do* ((button 0 (1+ button))
-	  (buttons (input-device-mouse-string platform) (cdr buttons))
-	  (button-name (car buttons) (car buttons)))
-	 ((null buttons))
+    (buttons (input-device-mouse-string platform) (cdr buttons))
+    (button-name (car buttons) (car buttons)))
+   ((null buttons))
       (setf (aref table button bit)
             (mouse-click-name-string button-name shift-name
                                      place-name platform))))
@@ -451,11 +451,11 @@ Modification History (most recent at top)
 ;; for each entry, entries with no translation are left alone and the input
 ;; will continue to generate the old name
 (defun reset-mouse-translation-table (platform
-				      &optional
-				      place-name
-				      (table
-				       (make-mouse-click-name-translation-table
-					platform)
+              &optional
+              place-name
+              (table
+               (make-mouse-click-name-translation-table
+          platform)
                                        table-supplied?))
   (when (not table-supplied?)
     (warn "Reset-mouse-translation-table:table was not supplied, making one...")
@@ -472,8 +472,8 @@ Modification History (most recent at top)
 ;      (error "Mismatch between array size and..."))
     (do* ((bit 0 (1+ bit))
           (shift-list (cons nil (input-device-shift-list platform))
-		      (cdr shift-list))
-	  (shift-name (car shift-list) (car shift-list)))
+          (cdr shift-list))
+    (shift-name (car shift-list) (car shift-list)))
          ((>=& bit (array-dimension table 1)))
       (do* ((button 0 (1+& button))
             (buttons old-names (cdr buttons))
@@ -513,18 +513,18 @@ Modification History (most recent at top)
 
 (defun lookup-click-name (click bits &optional border-area)
   (cond ((>& click  (maximum-mouse-button-encoding)) 'bu::mouse-lots-o-clicks)
-	((or (null border-area)
-	     (eq border-area ':inside) (eq border-area ':outside))
-	 (aref *default-mouse-click-name-translation-table* click bits))
-	(t (let ((table (get border-area 'click-translation-table)))
-	     (cond ((null table)
-		    (warn "No mouse click name translation table for ~A~
+  ((or (null border-area)
+       (eq border-area ':inside) (eq border-area ':outside))
+   (aref *default-mouse-click-name-translation-table* click bits))
+  (t (let ((table (get border-area 'click-translation-table)))
+       (cond ((null table)
+        (warn "No mouse click name translation table for ~A~
                            ~%Perhaps you still need to call ~
                             (setup-mouse-translation-table ~S ~S)"
-			  border-area
-			  *current-input-device-platform* border-area)
-		    'bu::generic-mouse-click)
-		   (t (aref table click bits)))))))
+        border-area
+        *current-input-device-platform* border-area)
+        'bu::generic-mouse-click)
+       (t (aref table click bits)))))))
 
 
 (defun set-mouse-translation-table (platform rebind?)
@@ -631,28 +631,28 @@ Modification History (most recent at top)
 
 (defun mouse-click-boxer-input-handler (blip)
   (let ((window (mouse-event-window blip))
-	(click  (mouse-event-click  blip))
-	(x-pos  (mouse-event-x-pos  blip))
-	(y-pos  (mouse-event-y-pos  blip))
-	(bits   (mouse-event-bits   blip))
-	(click? (eq (mouse-event-type   blip)
-		    ':mouse-click)))
+  (click  (mouse-event-click  blip))
+  (x-pos  (mouse-event-x-pos  blip))
+  (y-pos  (mouse-event-y-pos  blip))
+  (bits   (mouse-event-bits   blip))
+  (click? (eq (mouse-event-type   blip)
+        ':mouse-click)))
     ;; now call the mouse tracker to see if we are on a border area
     (multiple-value-bind (mouse-bp local-x local-y area)
         (mouse-position-values x-pos y-pos)
       (declare (ignore local-x local-y))
       (let ((click-name (lookup-click-name click bits area)))
-	(handle-boxer-mouse-click
-	 click-name window x-pos y-pos mouse-bp click? click bits area)))))
+  (handle-boxer-mouse-click
+   click-name window x-pos y-pos mouse-bp click? click bits area)))))
 
 
 (defun get-mouse-click-name (blip)
   (multiple-value-bind (mouse-bp local-x local-y area)
       (mouse-position-values (mouse-event-x-pos blip) (mouse-event-y-pos blip))
     (values (lookup-click-name (mouse-event-click blip)
-			       (mouse-event-bits blip)
-			       area)
-	    mouse-bp local-x local-y)))
+             (mouse-event-bits blip)
+             area)
+      mouse-bp local-x local-y)))
 
 
 (setf (get :mouse-click :boxer-input) 'mouse-click-boxer-input-handler)
@@ -665,15 +665,15 @@ Modification History (most recent at top)
   `(eval-when (compile load eval)
      (when (not (null (assoc ,key-name *boxer-command-key-alist*)))
        (setq *boxer-command-key-alist*
-	     (delete (assoc ,key-name *boxer-command-key-alist*)
-		     *boxer-command-key-alist*)))
+       (delete (assoc ,key-name *boxer-command-key-alist*)
+         *boxer-command-key-alist*)))
      (push (cons ,key-name ,command-name) *boxer-command-key-alist*)))
 
 (defun record-command-key-internal (key-name command-name)
   (when (not (null (assoc key-name *boxer-command-key-alist*)))
     (setq *boxer-command-key-alist*
-	  (delete (assoc key-name *boxer-command-key-alist*)
-		  *boxer-command-key-alist*)))
+    (delete (assoc key-name *boxer-command-key-alist*)
+      *boxer-command-key-alist*)))
   (push (cons key-name command-name) *boxer-command-key-alist*))
 
 ;; note that while there might be several keys for one command,
@@ -685,6 +685,6 @@ Modification History (most recent at top)
 (defun get-keys-for-command (command)
   (with-collection
     (dolist (pair *boxer-command-key-alist*)
-	(when (eq command (cdr pair))
-	  (collect (car pair))))))
+  (when (eq command (cdr pair))
+    (collect (car pair))))))
 
