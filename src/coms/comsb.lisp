@@ -1,70 +1,58 @@
-;; -*- Mode:LISP;Syntax:Common-Lisp; Package:BOXER; Base:8. -*-
-
-#|
-
-
- $Header: comsb.lisp,v 1.0 90/01/24 22:08:58 boxer Exp $
-
-
- $Log:	comsb.lisp,v $
-;;;Revision 1.0  90/01/24  22:08:58  boxer
-;;;Initial revision
-;;;
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                         +-Data--+
-                This file is part of the | BOXER | system
-                                         +-------+
-
-
-    This file contains top level definitions for
-    BOXER Editor Commands that deal with Boxes
-
-Box Commands:
-  COM-MAKE-BOX COM-TOGGLE-BOX-TYPE COM-MAKE-DATA-BOX
-  COM-ENTER-BOX COM-MAKE-AND-ENTER-BOX
-  COM-MAKE-AND-ENTER-DATA-BOX COM-EXIT-BOX
-Shrinking and Expanding:
-  COM-COLLAPSE-BOX COM-SHRINK-BOX COM-EXPAND-BOX COM-MAKE-SHRINK-PROOF-SCREEN
-  COM-UNSHRINK-PROOF-SCREEN COM-SET-OUTERMOST-BOX COM-NAME-BOX COM-FIX-BOX-SIZE
-  COM-UNFIX-BOX-SIZE
-Ports:
-  COM-MAKE-PORT COM-PLACE-PORT
-Graphics:
-  COM-MAKE-GRAPHICS-BOX COM-MAKE-GRAPHICS-DATA-BOX COM-MAKE-GRAPHICS-BOX
-  COM-TOGGLE-BOX-VIEW COM-MAKE-SPRITE-BOX
-
-
-
-Modification History (most recent at top)
- 8/28/07 toggle-view-internal checks to make sure that we really have a graphics-sheet
-         in the graphics-info slot to prevent (for now) toggling of sprite boxes
- 1/15/07 make-turtle-box-internal, (redisplay)'s => (repaint)'s
- 7/28/05 com-make-box should supply 'doit-box type arg for
-         make-initialized-box-for-editor
- 7/02/05 new function for making new boxes which use new-box-properties
-         make-initialized-box-for-editor
- 4/21/03 merged current LW and MCL files
- 3/15/02 COM-EXPAND-BOX now checks the always-zoom? flag
- 2/13/01 merged current LW and MCL files
-10/21/99 autofill finished debugging (for now...)
-10/17/99 new autofill stuff
-01/06/98 COM-ENTER-NEXT-BOX opens the next box if it is shrunken
-10/06/98 make-graphics/turtle-box-internal both changed to start with resizing
-         automatically enabled
-10/06/98 started logging changes: source = boxer version 2.3beta+
-
-|#
+;;;; -*- Mode:LISP;Syntax:Common-Lisp; Package:BOXER; Base:8. -*-
+;;;;
+;;;;        Boxer
+;;;;        Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;        Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;        used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;        Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;        https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                             +-Data--+
+;;;;                    This file is part of the | BOXER | system
+;;;;                                             +-------+
+;;;;
+;;;;
+;;;;        This file contains top level definitions for
+;;;;        BOXER Editor Commands that deal with Boxes
+;;;;
+;;;;    Box Commands:
+;;;;      COM-MAKE-BOX COM-TOGGLE-BOX-TYPE COM-MAKE-DATA-BOX
+;;;;      COM-ENTER-BOX COM-MAKE-AND-ENTER-BOX
+;;;;      COM-MAKE-AND-ENTER-DATA-BOX COM-EXIT-BOX
+;;;;    Shrinking and Expanding:
+;;;;      COM-COLLAPSE-BOX COM-SHRINK-BOX COM-EXPAND-BOX COM-MAKE-SHRINK-PROOF-SCREEN
+;;;;      COM-UNSHRINK-PROOF-SCREEN COM-SET-OUTERMOST-BOX COM-NAME-BOX COM-FIX-BOX-SIZE
+;;;;      COM-UNFIX-BOX-SIZE
+;;;;    Ports:
+;;;;      COM-MAKE-PORT COM-PLACE-PORT
+;;;;    Graphics:
+;;;;      COM-MAKE-GRAPHICS-BOX COM-MAKE-GRAPHICS-DATA-BOX COM-MAKE-GRAPHICS-BOX
+;;;;      COM-TOGGLE-BOX-VIEW COM-MAKE-SPRITE-BOX
+;;;;
+;;;;
+;;;;
+;;;;    Modification History (most recent at top)
+;;;;     8/28/07 toggle-view-internal checks to make sure that we really have a graphics-sheet
+;;;;             in the graphics-info slot to prevent (for now) toggling of sprite boxes
+;;;;     1/15/07 make-turtle-box-internal, (redisplay)'s => (repaint)'s
+;;;;     7/28/05 com-make-box should supply 'doit-box type arg for
+;;;;             make-initialized-box-for-editor
+;;;;     7/02/05 new function for making new boxes which use new-box-properties
+;;;;             make-initialized-box-for-editor
+;;;;     4/21/03 merged current LW and MCL files
+;;;;     3/15/02 COM-EXPAND-BOX now checks the always-zoom? flag
+;;;;     2/13/01 merged current LW and MCL files
+;;;;    10/21/99 autofill finished debugging (for now...)
+;;;;    10/17/99 new autofill stuff
+;;;;    01/06/98 COM-ENTER-NEXT-BOX opens the next box if it is shrunken
+;;;;    10/06/98 make-graphics/turtle-box-internal both changed to start with resizing
+;;;;             automatically enabled
+;;;;    10/06/98 started logging changes: source = boxer version 2.3beta+
+;;;;
 
 (in-package :boxer)
 
