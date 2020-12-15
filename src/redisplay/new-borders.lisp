@@ -921,15 +921,19 @@ Modification History (most recent at top)
         (mouse-box-values actual-obj screen-obj)))
 
 (define-border-mouse-handler :name
-    #'(lambda (actual-obj x y screen-box)
-        (declare (ignore y))
-        ;;(insure-box-contents-for-click actual-obj)
-        (let ((nr (name-row actual-obj)))
-          (values nr
-                  (get-cha-no-in-name-row
-                   (- x (box-borders-name-tab-values (box-type screen-box)
-                                                      screen-box))
-                   (chas nr))))))
+  #'(lambda (actual-obj x y screen-box)
+            ;;(insure-box-contents-for-click actual-obj)
+            (let ((nr (name-row actual-obj)))
+              (cond ((null nr)
+                     ;; If the nr is nil, it almost certainly means that it's the name-row
+                     ;; for the top level WORLD box, which users cannot rename.
+                     (boxer-editor-error "You cannot name the outermost box")
+                     (funcall (get :inside 'mouse-bp-values-handler) actual-obj x y screen-box))
+                (t (values nr
+                           (get-cha-no-in-name-row
+                            (- x (box-borders-name-tab-values (box-type screen-box)
+                                                              screen-box))
+                            (chas nr))))))))
 
 ;;; in OpenGL, the name "handles" refer to concrete space
 (define-border-mouse-handler :name-handle
