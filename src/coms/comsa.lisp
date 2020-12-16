@@ -1157,8 +1157,11 @@ removes it from the kill buffer.  No copy is made."
 
 (defun textify-thing (thing &optional stream)
   (if (not stream)
-    (with-output-to-string (stream)
-      (textify-thing thing stream))
+    (let ((togo-string (make-array '(0) :element-type 'character
+                               :fill-pointer 0 :adjustable t)))
+       (with-output-to-string (stream togo-string)
+         (textify-thing thing stream))
+       togo-string)
     (flet ((textify-row (row)
              (let* ((chas (chas-array row))
                     (length (chas-array-active-length chas)))

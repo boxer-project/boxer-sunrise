@@ -437,7 +437,7 @@ Oldness and Oldossity.....
      (let* ((stop (fi-stop fi))
 	    (start (fi-start fi))
 	    (length (-& stop start))
-	    (st (make-string length))
+	    (st (make-string length :element-type 'character))
 	    (chas (fi-chas fi)))
        (do ((i 0 (1+& i)) (j start (1+& j)))
 	   ((>=& i length) st)
