@@ -49,12 +49,12 @@
 (defvar *turtle-half-base* 5.0)
 
 (defvar *default-turtle-shape*
-    #(#(
-        #(32 2)
-        #(33 1)
-        #(35 -5.0 -5.0 5.0 -5.0)
-        #(35 5.0 -5.0 0.0 10.0)
-        #(35 0.0 10.0 -5.0 -5.0) NIL NIL NIL
+  #(#(
+      #(32 2)
+       #(33 1)
+       #(35 -5.0 -5.0 5.0 -5.0)
+       #(35 5.0 -5.0 0.0 10.0)
+       #(35 0.0 10.0 -5.0 -5.0) NIL NIL NIL
        ) 5 NIL 2 1 49 NIL NIL)) ;;#<Pointer to type :LISP-SINGLE-FLOAT = #x007163A0> NIL)
 
 ;;;;; GRAPHICS Objects
@@ -71,19 +71,19 @@
 ;;;
 
 (eval-when (load compile eval)
-(defclass graphics-object
-    ()
-  ((x-position         :initform (%make-vv-box-interface 0.0 'x-position))
-   (y-position         :initform (%make-vv-box-interface 0.0 'y-position))
-   (subsprites         :initform nil :accessor subsprites)
-   (superior-turtle    :initform nil :accessor superior-turtle)
-   (sprite-box         :initform nil :accessor sprite-box)
-   (assoc-graphics-box :initform nil :accessor assoc-graphics-box))
-  (:metaclass block-compile-class)
-  ;; (:abstract-class t)
-  (:documentation
-   "Bare minimum for a graphics object, slots for box interface and position"))
-)
+           (defclass graphics-object
+             ()
+             ((x-position         :initform (%make-vv-box-interface 0.0 'x-position))
+              (y-position         :initform (%make-vv-box-interface 0.0 'y-position))
+              (subsprites         :initform nil :accessor subsprites)
+              (superior-turtle    :initform nil :accessor superior-turtle)
+              (sprite-box         :initform nil :accessor sprite-box)
+              (assoc-graphics-box :initform nil :accessor assoc-graphics-box))
+             (:metaclass block-compile-class)
+             ;; (:abstract-class t)
+             (:documentation
+              "Bare minimum for a graphics object, slots for box interface and position"))
+           )
 
 (defgeneric graphics-object? (x) (:method (x) nil) (:method ((x graphics-object)) t))
 
@@ -93,32 +93,32 @@
 ;;;
 
 (defclass button
-    (graphics-object)
+  (graphics-object)
   ((shape      :initform nil)
    (save-under :initform nil
-         :accessor turtle-save-under)
+               :accessor turtle-save-under)
    (window-shape :initform nil
-     :accessor turtle-window-shape))
+                 :accessor turtle-window-shape))
   (:metaclass block-compile-class))
 
 ;;;; This has the capability to draw lines when it moves
 
 (defclass graphics-cursor
-    (button)
+  (button)
   ((shown?    :initform (%make-iv-box-interface T 'shown?))
    (pen       :initform (%make-iv-box-interface 'bu::down 'pen))
    (pen-width :initform (%make-vv-box-interface 1 'pen-width))
    (pen-color :initform (%make-sv-box-interface
-       *foreground-color* 'pen-color
-       nil 'pen-color-box-updater))
+                         *foreground-color* 'pen-color
+                         nil 'pen-color-box-updater))
    (type-font :initform (%make-iv-box-interface
-       *sprite-type-font-no* 'type-font)))
+                         *sprite-type-font-no* 'type-font)))
   (:metaclass block-compile-class))
 
 ;;;; Our friend the turtle...
 
 (defclass turtle
-    (graphics-cursor)
+  (graphics-cursor)
   ((heading       :initform (%make-vv-box-interface 0 'heading))
    (home-position :initform (%make-iv-box-interface '(0.0 0.0) 'home-position))
    (sprite-size   :initform (%make-vv-box-interface 1.0 'sprite-size))
@@ -168,8 +168,8 @@
     (cond ((graphics-sheet? gi)
            (set-assoc-graphics-box new-object self)
            (push new-object (graphics-sheet-object-list gi)))
-          ((graphics-object? gi)
-           (add-subturtle gi new-object)))))
+      ((graphics-object? gi)
+       (add-subturtle gi new-object)))))
 
 (defmethod remove-graphics-object ((self box) old-object)
   (let ((gi (slot-value self 'graphics-info)))
@@ -178,8 +178,8 @@
              (set-assoc-graphics-box old-object nil)
              (setf (graphics-sheet-object-list gi)
                    (fast-delq old-object (graphics-sheet-object-list gi)))))
-          ((graphics-object? gi)
-           (remove-subturtle gi old-object)))))
+      ((graphics-object? gi)
+       (remove-subturtle gi old-object)))))
 
 ;;; coordinate transformations.
 ;;;
@@ -203,8 +203,8 @@
 
 (defun array-coordinate-y (user-y)
   (float-minus %drawing-half-height
-         (float user-y) ; (* user-y *scrunch-factor*)
-     ))
+               (float user-y) ; (* user-y *scrunch-factor*)
+               ))
 
 ;;; ARRAY ==> USER
 
@@ -240,24 +240,24 @@
 
 (defun wrap-object-coords (object)
   (setf (slot-value object 'x-position)
-  (wrap-x-coordinate (slot-value object 'x-position)))
+        (wrap-x-coordinate (slot-value object 'x-position)))
   (setf (slot-value object 'y-position)
-  (wrap-y-coordinate (slot-value object 'y-position))))
+        (wrap-y-coordinate (slot-value object 'y-position))))
 
 ;;; Lucid (lcl3.0) specific versions try are written to
 ;;; minimize floating point CONSing
 
 (defun wrap-x-coordinate (user-x)
   (user-coordinate-x (float-modulo (array-coordinate-x user-x)
-           %drawing-width)))
+                                   %drawing-width)))
 
 (defun wrap-y-coordinate (user-y)
   (user-coordinate-y (float-modulo (array-coordinate-y user-y)
-           %drawing-height)))
+                                   %drawing-height)))
 
 (defun float-modulo (num mod)
   (let ((fmod (float mod)))
     (if (and (plusp num) (< num fmod))
-  num
-  (let ((x (- num (* (floor num fmod) fmod))))
-    (if (minusp x) (+ x fmod) x)))))
+      num
+      (let ((x (- num (* (floor num fmod) fmod))))
+        (if (minusp x) (+ x fmod) x)))))
