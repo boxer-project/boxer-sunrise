@@ -38,7 +38,6 @@
 
 (defvar *default-graphics-box-height* 200.)
 
-
 (defvar *default-graphics-object-class* 'turtle)
 
 (defvar *default-graphics-object-size* 15.0)
@@ -57,46 +56,6 @@
         #(35 5.0 -5.0 0.0 10.0)
         #(35 0.0 10.0 -5.0 -5.0) NIL NIL NIL
        ) 5 NIL 2 1 49 NIL NIL)) ;;#<Pointer to type :LISP-SINGLE-FLOAT = #x007163A0> NIL)
-
-;;; The actual def-redisplay-initialization moved to gdispl.lisp
-;;; for ordering reasons
-#|
-;;; This has to be a redisplay init because make-turtle-shape
-;;; depends upon the runtime value of *foreground-color* which
-;;; is not defined until AFTER the windows are created for some
-;;; window systems (like CLX)
-(def-redisplay-initialization ; :turtle-shape
-    (setq *default-graphics-object-shape*
-    (let ((%graphics-list (make-turtle-shape 8))
-    (*graphics-command-recording-mode* ':boxer))
-            (record-boxer-graphics-command-change-alu alu-seta)
-      (record-boxer-graphics-command-change-pen-width 1)
-      (record-boxer-graphics-command-centered-rectangle
-       0.0 0.0
-       *default-graphics-object-size* *default-graphics-object-size*)
-      %graphics-list)
-    *default-turtle-shape*
-    (let ((%graphics-list (make-turtle-shape 8))
-    (*graphics-command-recording-mode* ':boxer))
-            (record-boxer-graphics-command-change-alu alu-seta)
-      (record-boxer-graphics-command-change-pen-width 1)
-      ;; the base line
-      (record-boxer-graphics-command-line-segment
-       (- *turtle-half-base*) (- (/ *turtle-height* 3.0))
-       *turtle-half-base* (- (/ *turtle-height* 3.0)))
-      ;; the right side
-      (record-boxer-graphics-command-line-segment
-       *turtle-half-base* (- (/ *turtle-height* 3.0))
-       0.0 (* 2 (/ *turtle-height* 3)))
-      ;; the left side
-      (record-boxer-graphics-command-line-segment
-       0.0 (* 2 (/ *turtle-height* 3))
-       (- *turtle-half-base*) (- (/ *turtle-height* 3.0)))
-      %graphics-list)))
-
-|#
-
-
 
 ;;;;; GRAPHICS Objects
 
@@ -156,7 +115,6 @@
        *sprite-type-font-no* 'type-font)))
   (:metaclass block-compile-class))
 
-
 ;;;; Our friend the turtle...
 
 (defclass turtle
@@ -180,11 +138,6 @@
 
 ;; (block-compile-epilogue turtle)
 
-
-
-
-
-
 (defun make-turtle ()
   (make-instance 'turtle))
 
@@ -195,7 +148,6 @@
   (bitmap nil)
   (middle 0)
   (size))
-
 
 ;; sgithens TODO, for some reason this complains that graphics-object is unbound...
 ;; (deftype-checking-macros graphics-object "A Graphics Object")
@@ -229,7 +181,6 @@
           ((graphics-object? gi)
            (remove-subturtle gi old-object)))))
 
-
 ;;; coordinate transformations.
 ;;;
 ;;; ARRAY coordinates are referenced to the indices of the bit-array
@@ -255,7 +206,6 @@
          (float user-y) ; (* user-y *scrunch-factor*)
      ))
 
-
 ;;; ARRAY ==> USER
 
 (defun user-coordinate-x (array-x)
@@ -274,7 +224,6 @@
   ;(/ (- %drawing-half-height array-y) *scrunch-factor*)
   (float-minus %drawing-half-height (float array-y)))
 
-
 ;;; these want ARRAY coordinates
 
 (defun point-in-array? (x y)
@@ -287,8 +236,6 @@
 (defsubst y-in-array? (y)
   (and (>=& y 0) (<& y %drawing-height)))
 
-
-
 ;;; normalize coordinates to the on screen position
 
 (defun wrap-object-coords (object)
@@ -300,61 +247,13 @@
 ;;; Lucid (lcl3.0) specific versions try are written to
 ;;; minimize floating point CONSing
 
-#-lcl3.0
 (defun wrap-x-coordinate (user-x)
   (user-coordinate-x (float-modulo (array-coordinate-x user-x)
            %drawing-width)))
 
-
-;;; We go through these contortions in order to reduce
-;;; the floating point CONSing.  Using this version seems to
-;;; reduce the FP consing from about 8 DP-FP numbers per call to 2
-#+lcl3.0
-(defun wrap-x-coordinate (user-x)
-  (let ((float-temp 0.0) (float-width (float (the fixnum %drawing-width))))
-    (declare (float float-temp float-width))
-    (setq float-temp (float-plus %drawing-half-width user-x))
-    (float-minus (if (and (plusp float-temp) (< float-temp float-width))
-         float-temp
-         (let ((scratch 0.0))
-           (declare (float scratch))
-           (setq scratch float-temp)
-           (setq float-temp
-           (values (ffloor float-temp float-width)))
-           (setq float-temp (float-times float-temp float-width))
-           (setq float-temp (float-minus scratch float-temp))
-           (if (minusp float-temp)
-         (float-plus float-temp float-width)
-         float-temp)))
-     %drawing-half-width)))
-
-#-lcl3.0
 (defun wrap-y-coordinate (user-y)
   (user-coordinate-y (float-modulo (array-coordinate-y user-y)
            %drawing-height)))
-
-;;; We go through these contortions in order to reduce
-;;; the floating point CONSing.  Using this version seems to
-;;; reduce the FP consing from about 8 DP-FP numbers per call to 2
-#+lcl3.0
-(defun wrap-y-coordinate (user-y)
-  (let ((float-temp 0.0) (float-height 0.0))
-    (declare (float float-temp float-height))
-    (setq float-height (float (the fixnum %drawing-height)))
-    (setq float-temp (float-minus %drawing-half-height user-y))
-    (float-minus %drawing-half-height
-     (if (and (plusp float-temp) (< float-temp float-height))
-         float-temp
-         (let ((scratch 0.0))
-           (declare (float scratch))
-           (setq scratch float-temp)
-           (setq float-temp
-           (values (ffloor float-temp float-height)))
-           (setq float-temp (float-times float-temp float-height))
-           (setq float-temp (float-minus scratch float-temp))
-           (if (minusp float-temp)
-         (float-plus float-temp float-height)
-         float-temp))))))
 
 (defun float-modulo (num mod)
   (let ((fmod (float mod)))
@@ -362,4 +261,3 @@
   num
   (let ((x (- num (* (floor num fmod) fmod))))
     (if (minusp x) (+ x fmod) x)))))
-
