@@ -77,32 +77,32 @@ Modification History (most recent at top)
 ;;; window systems (like CLX)
 (def-redisplay-initialization ; :turtle-shape
     (setq *default-graphics-object-shape*
-	  (let ((%graphics-list (make-turtle-shape 8))
-		(*graphics-command-recording-mode* ':boxer))
+    (let ((%graphics-list (make-turtle-shape 8))
+    (*graphics-command-recording-mode* ':boxer))
             (record-boxer-graphics-command-change-alu alu-seta)
-	    (record-boxer-graphics-command-change-pen-width 1)
-	    (record-boxer-graphics-command-centered-rectangle
-	     0.0 0.0
-	     *default-graphics-object-size* *default-graphics-object-size*)
-	    %graphics-list)
-	  *default-turtle-shape*
-	  (let ((%graphics-list (make-turtle-shape 8))
-		(*graphics-command-recording-mode* ':boxer))
+      (record-boxer-graphics-command-change-pen-width 1)
+      (record-boxer-graphics-command-centered-rectangle
+       0.0 0.0
+       *default-graphics-object-size* *default-graphics-object-size*)
+      %graphics-list)
+    *default-turtle-shape*
+    (let ((%graphics-list (make-turtle-shape 8))
+    (*graphics-command-recording-mode* ':boxer))
             (record-boxer-graphics-command-change-alu alu-seta)
-	    (record-boxer-graphics-command-change-pen-width 1)
-	    ;; the base line
-	    (record-boxer-graphics-command-line-segment
-	     (- *turtle-half-base*) (- (/ *turtle-height* 3.0))
-	     *turtle-half-base* (- (/ *turtle-height* 3.0)))
-	    ;; the right side
-	    (record-boxer-graphics-command-line-segment
-	     *turtle-half-base* (- (/ *turtle-height* 3.0))
-	     0.0 (* 2 (/ *turtle-height* 3)))
-	    ;; the left side
-	    (record-boxer-graphics-command-line-segment
-	     0.0 (* 2 (/ *turtle-height* 3))
-	     (- *turtle-half-base*) (- (/ *turtle-height* 3.0)))
-	    %graphics-list)))
+      (record-boxer-graphics-command-change-pen-width 1)
+      ;; the base line
+      (record-boxer-graphics-command-line-segment
+       (- *turtle-half-base*) (- (/ *turtle-height* 3.0))
+       *turtle-half-base* (- (/ *turtle-height* 3.0)))
+      ;; the right side
+      (record-boxer-graphics-command-line-segment
+       *turtle-half-base* (- (/ *turtle-height* 3.0))
+       0.0 (* 2 (/ *turtle-height* 3)))
+      ;; the left side
+      (record-boxer-graphics-command-line-segment
+       0.0 (* 2 (/ *turtle-height* 3))
+       (- *turtle-half-base*) (- (/ *turtle-height* 3.0)))
+      %graphics-list)))
 
 |#
 
@@ -147,9 +147,9 @@ Modification History (most recent at top)
     (graphics-object)
   ((shape      :initform nil)
    (save-under :initform nil
-	       :accessor turtle-save-under)
+         :accessor turtle-save-under)
    (window-shape :initform nil
-		 :accessor turtle-window-shape))
+     :accessor turtle-window-shape))
   (:metaclass block-compile-class))
 
 ;;;; This has the capability to draw lines when it moves
@@ -160,10 +160,10 @@ Modification History (most recent at top)
    (pen       :initform (%make-iv-box-interface 'bu::down 'pen))
    (pen-width :initform (%make-vv-box-interface 1 'pen-width))
    (pen-color :initform (%make-sv-box-interface
-			 *foreground-color* 'pen-color
-			 nil 'pen-color-box-updater))
+       *foreground-color* 'pen-color
+       nil 'pen-color-box-updater))
    (type-font :initform (%make-iv-box-interface
-			 *sprite-type-font-no* 'type-font)))
+       *sprite-type-font-no* 'type-font)))
   (:metaclass block-compile-class))
 
 
@@ -262,7 +262,7 @@ Modification History (most recent at top)
 
 (defun array-coordinate-y (user-y)
   (float-minus %drawing-half-height
-	       (float user-y) ; (* user-y *scrunch-factor*)
+         (float user-y) ; (* user-y *scrunch-factor*)
      ))
 
 
@@ -303,9 +303,9 @@ Modification History (most recent at top)
 
 (defun wrap-object-coords (object)
   (setf (slot-value object 'x-position)
-	(wrap-x-coordinate (slot-value object 'x-position)))
+  (wrap-x-coordinate (slot-value object 'x-position)))
   (setf (slot-value object 'y-position)
-	(wrap-y-coordinate (slot-value object 'y-position))))
+  (wrap-y-coordinate (slot-value object 'y-position))))
 
 ;;; Lucid (lcl3.0) specific versions try are written to
 ;;; minimize floating point CONSing
@@ -313,7 +313,7 @@ Modification History (most recent at top)
 #-lcl3.0
 (defun wrap-x-coordinate (user-x)
   (user-coordinate-x (float-modulo (array-coordinate-x user-x)
-				   %drawing-width)))
+           %drawing-width)))
 
 
 ;;; We go through these contortions in order to reduce
@@ -325,23 +325,23 @@ Modification History (most recent at top)
     (declare (float float-temp float-width))
     (setq float-temp (float-plus %drawing-half-width user-x))
     (float-minus (if (and (plusp float-temp) (< float-temp float-width))
-		     float-temp
-		     (let ((scratch 0.0))
-		       (declare (float scratch))
-		       (setq scratch float-temp)
-		       (setq float-temp
-			     (values (ffloor float-temp float-width)))
-		       (setq float-temp (float-times float-temp float-width))
-		       (setq float-temp (float-minus scratch float-temp))
-		       (if (minusp float-temp)
-			   (float-plus float-temp float-width)
-			   float-temp)))
-		 %drawing-half-width)))
+         float-temp
+         (let ((scratch 0.0))
+           (declare (float scratch))
+           (setq scratch float-temp)
+           (setq float-temp
+           (values (ffloor float-temp float-width)))
+           (setq float-temp (float-times float-temp float-width))
+           (setq float-temp (float-minus scratch float-temp))
+           (if (minusp float-temp)
+         (float-plus float-temp float-width)
+         float-temp)))
+     %drawing-half-width)))
 
 #-lcl3.0
 (defun wrap-y-coordinate (user-y)
   (user-coordinate-y (float-modulo (array-coordinate-y user-y)
-				   %drawing-height)))
+           %drawing-height)))
 
 ;;; We go through these contortions in order to reduce
 ;;; the floating point CONSing.  Using this version seems to
@@ -353,23 +353,23 @@ Modification History (most recent at top)
     (setq float-height (float (the fixnum %drawing-height)))
     (setq float-temp (float-minus %drawing-half-height user-y))
     (float-minus %drawing-half-height
-		 (if (and (plusp float-temp) (< float-temp float-height))
-		     float-temp
-		     (let ((scratch 0.0))
-		       (declare (float scratch))
-		       (setq scratch float-temp)
-		       (setq float-temp
-			     (values (ffloor float-temp float-height)))
-		       (setq float-temp (float-times float-temp float-height))
-		       (setq float-temp (float-minus scratch float-temp))
-		       (if (minusp float-temp)
-			   (float-plus float-temp float-height)
-			   float-temp))))))
+     (if (and (plusp float-temp) (< float-temp float-height))
+         float-temp
+         (let ((scratch 0.0))
+           (declare (float scratch))
+           (setq scratch float-temp)
+           (setq float-temp
+           (values (ffloor float-temp float-height)))
+           (setq float-temp (float-times float-temp float-height))
+           (setq float-temp (float-minus scratch float-temp))
+           (if (minusp float-temp)
+         (float-plus float-temp float-height)
+         float-temp))))))
 
 (defun float-modulo (num mod)
   (let ((fmod (float mod)))
     (if (and (plusp num) (< num fmod))
-	num
-	(let ((x (- num (* (floor num fmod) fmod))))
-	  (if (minusp x) (+ x fmod) x)))))
+  num
+  (let ((x (- num (* (floor num fmod) fmod))))
+    (if (minusp x) (+ x fmod) x)))))
 
