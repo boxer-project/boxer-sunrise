@@ -1502,6 +1502,95 @@
   `(vectorp ,thing))
 
 ;;;;
+;;;; FILE: grobjs.lisp
+;;;;
+
+;;; The actual def-redisplay-initialization moved to gdispl.lisp
+;;; for ordering reasons
+#|
+;;; This has to be a redisplay init because make-turtle-shape
+;;; depends upon the runtime value of *foreground-color* which
+;;; is not defined until AFTER the windows are created for some
+;;; window systems (like CLX)
+(def-redisplay-initialization ; :turtle-shape
+    (setq *default-graphics-object-shape*
+    (let ((%graphics-list (make-turtle-shape 8))
+    (*graphics-command-recording-mode* ':boxer))
+            (record-boxer-graphics-command-change-alu alu-seta)
+      (record-boxer-graphics-command-change-pen-width 1)
+      (record-boxer-graphics-command-centered-rectangle
+       0.0 0.0
+       *default-graphics-object-size* *default-graphics-object-size*)
+      %graphics-list)
+    *default-turtle-shape*
+    (let ((%graphics-list (make-turtle-shape 8))
+    (*graphics-command-recording-mode* ':boxer))
+            (record-boxer-graphics-command-change-alu alu-seta)
+      (record-boxer-graphics-command-change-pen-width 1)
+      ;; the base line
+      (record-boxer-graphics-command-line-segment
+       (- *turtle-half-base*) (- (/ *turtle-height* 3.0))
+       *turtle-half-base* (- (/ *turtle-height* 3.0)))
+      ;; the right side
+      (record-boxer-graphics-command-line-segment
+       *turtle-half-base* (- (/ *turtle-height* 3.0))
+       0.0 (* 2 (/ *turtle-height* 3)))
+      ;; the left side
+      (record-boxer-graphics-command-line-segment
+       0.0 (* 2 (/ *turtle-height* 3))
+       (- *turtle-half-base*) (- (/ *turtle-height* 3.0)))
+      %graphics-list)))
+
+|#
+
+;;; We go through these contortions in order to reduce
+;;; the floating point CONSing.  Using this version seems to
+;;; reduce the FP consing from about 8 DP-FP numbers per call to 2
+#+lcl3.0
+(defun wrap-x-coordinate (user-x)
+  (let ((float-temp 0.0) (float-width (float (the fixnum %drawing-width))))
+    (declare (float float-temp float-width))
+    (setq float-temp (float-plus %drawing-half-width user-x))
+    (float-minus (if (and (plusp float-temp) (< float-temp float-width))
+         float-temp
+         (let ((scratch 0.0))
+           (declare (float scratch))
+           (setq scratch float-temp)
+           (setq float-temp
+           (values (ffloor float-temp float-width)))
+           (setq float-temp (float-times float-temp float-width))
+           (setq float-temp (float-minus scratch float-temp))
+           (if (minusp float-temp)
+         (float-plus float-temp float-width)
+         float-temp)))
+     %drawing-half-width)))
+
+
+;;; We go through these contortions in order to reduce
+;;; the floating point CONSing.  Using this version seems to
+;;; reduce the FP consing from about 8 DP-FP numbers per call to 2
+#+lcl3.0
+(defun wrap-y-coordinate (user-y)
+  (let ((float-temp 0.0) (float-height 0.0))
+    (declare (float float-temp float-height))
+    (setq float-height (float (the fixnum %drawing-height)))
+    (setq float-temp (float-minus %drawing-half-height user-y))
+    (float-minus %drawing-half-height
+     (if (and (plusp float-temp) (< float-temp float-height))
+         float-temp
+         (let ((scratch 0.0))
+           (declare (float scratch))
+           (setq scratch float-temp)
+           (setq float-temp
+           (values (ffloor float-temp float-height)))
+           (setq float-temp (float-times float-temp float-height))
+           (setq float-temp (float-minus scratch float-temp))
+           (if (minusp float-temp)
+         (float-plus float-temp float-height)
+         float-temp))))))
+
+
+;;;;
 ;;;; FILE: infsup.lisp
 ;;;;
 
