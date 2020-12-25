@@ -103,42 +103,42 @@ Modification History (most recent at the top)
        ;; preferences menu box.
        (unless (fast-memq ',name *boxer-preferences-list*)
          (setq *boxer-preferences-list*
-	       (append *boxer-preferences-list* (list ',name))))
+         (append *boxer-preferences-list* (list ',name))))
        ;; read/write handlers for prefs files
        (let ((existing-r-entry (assoc ',name *preference-read-handlers*))
              (existing-w-entry (assoc ',name *preference-write-handlers*)))
-	 (if (null existing-r-entry)
-	     (push (list ',name ',file-reader-name ',value-type)
+   (if (null existing-r-entry)
+       (push (list ',name ',file-reader-name ',value-type)
                    *preference-read-handlers*)
-	     ;; just bash the slots in the existing entry
-	     (setf (cadr existing-r-entry)  ',file-reader-name
-		   (caddr existing-r-entry) ',value-type))
+       ;; just bash the slots in the existing entry
+       (setf (cadr existing-r-entry)  ',file-reader-name
+       (caddr existing-r-entry) ',value-type))
          (if (null existing-w-entry)
-	     (push (list ',name ',file-writer-name ',value-type)
+       (push (list ',name ',file-writer-name ',value-type)
                    *preference-write-handlers*)
-	     ;; just bash the slots in the existing entry
-	     (setf (cadr existing-w-entry)  ',file-writer-name
-		   (caddr existing-w-entry) ',value-type)))
+       ;; just bash the slots in the existing entry
+       (setf (cadr existing-w-entry)  ',file-writer-name
+       (caddr existing-w-entry) ',value-type)))
        ;; funcalled from handle-site-initializations (in site.lisp)
        (defun ,file-reader-name (value-string)
-	 (let ((new-value (coerce-config-value value-string ,value-type)))
-	   (unless (or (null *site-initialization-verbosity*)
+   (let ((new-value (coerce-config-value value-string ,value-type)))
+     (unless (or (null *site-initialization-verbosity*)
                        (member :mcl-appgen *features*))
-	     (format t "~%Initializing System Variable ~A to ~A"
+       (format t "~%Initializing System Variable ~A to ~A"
                      ',variable new-value))
-	   (setq ,variable new-value)))
+     (setq ,variable new-value)))
        (defun ,file-writer-name (filestream)
          (format filestream "~A: ~A~%" ',name ,(cond ((eq value-type :boolean)
                                                     `(if ,variable "True" "False"))
                                                    (t variable))))
        ;; used to generate a pref setting box with the current value
        (setf (get ',name 'system-parameter-default-value)
-	     #'(lambda () ,(caddr initial-value-spec)))
+       #'(lambda () ,(caddr initial-value-spec)))
        ;; documentation for the pref setting box
        (unless (null ',documentation)
          (setf (get ',name 'system-parameter-type) ',(car documentation))
          (setf (get ',name 'system-parameter-documentation)
-	       ',(cdr documentation)))
+         ',(cdr documentation)))
        ;; hooks for autogenerate preferences dialog
        #+(or mcl lispworks)
        (defun ,queued-pref-name (,(pref-arg-name args))
@@ -229,7 +229,7 @@ Modification History (most recent at the top)
   (with-open-file (s pref-file :direction :input)
     (loop
       (multiple-value-bind (valid? eof? keyword value)
-	  (read-config-line s *keyword-buffer* *value-buffer*)
+    (read-config-line s *keyword-buffer* *value-buffer*)
         (cond (eof? (return))
               (valid? (handle-preference-initialization
                        (intern-in-bu-package keyword) value)))
@@ -239,8 +239,8 @@ Modification History (most recent at the top)
 (defun handle-preference-initialization (keyword value)
   (let ((handler-entry (assoc keyword *preference-read-handlers*)))
     (if (null handler-entry)
-	(warn "~A is an obsolete pref. Save boxer prefs again to eliminate further warnings" keyword)
-	(funcall (cadr handler-entry) value))))
+  (warn "~A is an obsolete pref. Save boxer prefs again to eliminate further warnings" keyword)
+  (funcall (cadr handler-entry) value))))
 
 ;;; Writing out Preferences Files
 (defun write-preferences (&optional (file #+(and unix (not lispworks)) "~/.boxerrc"
@@ -278,9 +278,9 @@ Modification History (most recent at the top)
                       ("How many numerals should appear after")
                       ("the decimal point in decimal numbers ?"))
   (cond ((and (integerp new-precision)
-	      (>=& new-precision 0))
-	 (set-decimal-printing-precision new-precision))
-	(t (set-decimal-printing-precision nil)))
+        (>=& new-precision 0))
+   (set-decimal-printing-precision new-precision))
+  (t (set-decimal-printing-precision nil)))
   boxer-eval::*novalue*)
 
 
@@ -383,16 +383,16 @@ Modification History (most recent at the top)
    ("Should newly made sprite boxes include fewer")
    ("visible attributes to save memory ?"))
   (cond ((not (null true-or-false))
-	 (setq *new-sprites-should-be-diet-sprites?* t
-	       *graphics-interface-boxes-in-box* :default
-	       *graphics-interface-boxes-in-closet* :default))
-	(t
-	 (setq *new-sprites-should-be-diet-sprites?* nil
-	       *graphics-interface-boxes-in-box*
-	       '(x-position y-position heading)
-	       *graphics-interface-boxes-in-closet*
-	       '(shape shown? home-position sprite-size
-		 pen pen-width type-font pen-color))))
+   (setq *new-sprites-should-be-diet-sprites?* t
+         *graphics-interface-boxes-in-box* :default
+         *graphics-interface-boxes-in-closet* :default))
+  (t
+   (setq *new-sprites-should-be-diet-sprites?* nil
+         *graphics-interface-boxes-in-box*
+         '(x-position y-position heading)
+         *graphics-interface-boxes-in-closet*
+         '(shape shown? home-position sprite-size
+     pen pen-width type-font pen-color))))
   boxer-eval::*novalue*)
 
 (defboxer-preference bu::penerase-color-from-bit-array (true-or-false)
@@ -524,12 +524,12 @@ Modification History (most recent at the top)
    ("special (control) keys or mouse actions ?")
    ("(Different platforms may use different names.)"))
   (let ((canonicalized-name (intern (string-upcase machine-type)
-				    (find-package 'keyword))))
+            (find-package 'keyword))))
     (if (fast-memq canonicalized-name *defined-input-device-platforms*)
-	(make-input-devices canonicalized-name)
-	(boxer-eval::primitive-signal-error :preference
-				      "The machine-type, " machine-type
-				      ", does not have a defined set of input devices"))
+  (make-input-devices canonicalized-name)
+  (boxer-eval::primitive-signal-error :preference
+              "The machine-type, " machine-type
+              ", does not have a defined set of input devices"))
     boxer-eval::*novalue*))
 
 #| ;; removed 9/08/02
@@ -794,40 +794,40 @@ Modification History (most recent at the top)
 
 (defun make-preferences-box ()
   (let ((prefs-box (make-box '(("Boxer Preferences..."))))
-	(subgroup-box-alist nil))
+  (subgroup-box-alist nil))
     (flet ((make-pref-box (fun initial-value doc)
-	     (if (null doc)
-		 (make-box (list (list fun
-				       (cond ((virtual-copy? initial-value)
-					      (top-level-print-vc
-					       initial-value))
-					     (t initial-value)))))
-		 (make-box (list (list (make-box doc))
-				 (list fun
-				       (cond ((virtual-copy? initial-value)
-					      (top-level-print-vc
-					       initial-value))
-					     (t initial-value)))))))
-	   (subgroup-box (preference)
-	     (let ((subgroup (get preference 'system-parameter-type)))
-	       (or (cdr (assoc subgroup subgroup-box-alist))
-		   (let ((new (make-box '(()) 'data-box
-					(string-capitalize
-					 (symbol-name subgroup)))))
-		     (setf (slot-value new 'first-inferior-row) nil)
-		     (setq subgroup-box-alist
-			   (acons subgroup new subgroup-box-alist))
-		     (shrink new)
-		     (append-row prefs-box (make-row (list new)))
-		     new)))))
+       (if (null doc)
+     (make-box (list (list fun
+               (cond ((virtual-copy? initial-value)
+                (top-level-print-vc
+                 initial-value))
+               (t initial-value)))))
+     (make-box (list (list (make-box doc))
+         (list fun
+               (cond ((virtual-copy? initial-value)
+                (top-level-print-vc
+                 initial-value))
+               (t initial-value)))))))
+     (subgroup-box (preference)
+       (let ((subgroup (get preference 'system-parameter-type)))
+         (or (cdr (assoc subgroup subgroup-box-alist))
+       (let ((new (make-box '(()) 'data-box
+          (string-capitalize
+           (symbol-name subgroup)))))
+         (setf (slot-value new 'first-inferior-row) nil)
+         (setq subgroup-box-alist
+         (acons subgroup new subgroup-box-alist))
+         (shrink new)
+         (append-row prefs-box (make-row (list new)))
+         new)))))
       (dolist (pref *boxer-preferences-list*)
-	(let ((pbox (make-pref-box
-		     pref
-		     (funcall (get pref 'system-parameter-default-value))
-		     (get pref 'system-parameter-documentation)))
-	      (subgroup (subgroup-box pref)))
-	  (shrink pbox)
-	  (append-row subgroup (make-row (list pbox))))))
+  (let ((pbox (make-pref-box
+         pref
+         (funcall (get pref 'system-parameter-default-value))
+         (get pref 'system-parameter-documentation)))
+        (subgroup (subgroup-box pref)))
+    (shrink pbox)
+    (append-row subgroup (make-row (list pbox))))))
     prefs-box))
 
 
@@ -863,19 +863,19 @@ Modification History (most recent at the top)
 
 (boxer-eval::defboxer-primitive bu::configuration-info ()
   (let* ((confile (merge-pathnames *default-configuration-file-name*
-				   *default-site-directory*))
-	 (conbox (if (probe-file confile)
-		     (read-text-file-internal confile)
-		     (empty-configuration-box))))
+           *default-site-directory*))
+   (conbox (if (probe-file confile)
+         (read-text-file-internal confile)
+         (empty-configuration-box))))
     (shrink conbox)
     (make-vc (list (list "Edit" "the" "following" "box:")
-		   (list "Write-Text-File" conbox
-			 (make-box `((,(namestring confile)))))
-		   (list "You" "need" "to" "write" "out" "your" "changes"
-			 "by" "evaluating" "the" "above" "line")
-		   (list "and" "then" "evaluate" "the" "next" "line"
-			 "to" "make" "the" "changes")
-		   (list "Reconfigure-System")))))
+       (list "Write-Text-File" conbox
+       (make-box `((,(namestring confile)))))
+       (list "You" "need" "to" "write" "out" "your" "changes"
+       "by" "evaluating" "the" "above" "line")
+       (list "and" "then" "evaluate" "the" "next" "line"
+       "to" "make" "the" "changes")
+       (list "Reconfigure-System")))))
 
 (boxer-eval:defboxer-primitive bu::toggle-fonts ()
   "A command for toggling between capi cfnt fonts and freetype fonts
