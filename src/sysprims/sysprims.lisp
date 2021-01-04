@@ -1,69 +1,59 @@
-;; -*- Mode:LISP; Syntax:Common-Lisp; Package:BOXER; -*-
-#|
-
-
- $Header: sysprims.lisp,v 1.0 90/01/24 22:18:27 boxer Exp $
-
- $Log:	sysprims.lisp,v $
-;;;Revision 1.0  90/01/24  22:18:27  boxer
-;;;Initial revision
-;;;
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                      +-Data--+
-             This file is part of the | BOXER | system
-                                      +-------+
-
-
-
-
-         This file contains primitives for altering
-         system level parameters for the Boxer System
-
-
-Modification History (most recent at the top)
-
- 4/10/14 com-show-font-info, bu::show-font-info
- 2/17/12 added bu::name-link-boxes
- 1/11/10 added bu::report-crash
- 1/03/10 added bu::boxer-window-{width,height}
-11/17/08 added bu::update-display-during-eval, defboxer-preference now handles keyword option correctly
- 8/05/08 changed all pref name discrimination from #+/-lwwin to #+/-capi
-10/06/05 added penerase-color-from-bit-array, temporarily
- 7/23/04 added mail-inbox-file, removed max-viewable-message-size & draw=icon-options
-10/31/03 removed #+carbon-compat bu::immediate-sprite-drawing
- 9/08/03 new pref for #+carbon-compat bu::immediate-sprite-drawing
- 5/16/03 draw-icon-options (temporary) for #+lwwin
- 4/21/03 merged current LW and MCL files
- 9/08/02 removed fullscreen-window and added maximize-window to do the same job
-         in order to be UC free compliant
- 5/24/01 removed zoom-pause added popup-mouse-documentation
- 5/10/01 changed pref categories to shorter names so the folder tabs
-         in the preference dialog will line up better
- 5/05/01 changed defboxer-preference macro to preserve documentation line breaks
- 2/17/01 merged current LW and MCL files
- 9/10/00 query-for-unknown-mime-type added to network-settings
- 5/28/00 more LW changes to the defboxer-preference macro
- 5/14/00 initial LW changes
- 6/13/99 added fullscreen-window
- 5/12/99 made Andy suggested changes to documentation wording
- 4/26/99 added max-viewable-message-size to network settings
- 4/20/99 added warn-about-outlink-ports
- 9/14/98 removed disable-box-resizing preference
- 9/02/98 changed documentation for zoom-pause to inform about 0 value option
- 9/02/98 Start logging changes: source = boxer version 2.3beta
-
-|#
+;;;;  -*- Mode:LISP; Syntax:Common-Lisp; Package:BOXER; -*-
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                        +-Data--+
+;;;;               This file is part of the | BOXER | system
+;;;;                                        +-------+
+;;;;
+;;;;
+;;;;
+;;;;
+;;;;           This file contains primitives for altering
+;;;;           system level parameters for the Boxer System
+;;;;
+;;;;
+;;;;  Modification History (most recent at the top)
+;;;;
+;;;;   4/10/14 com-show-font-info, bu::show-font-info
+;;;;   2/17/12 added bu::name-link-boxes
+;;;;   1/11/10 added bu::report-crash
+;;;;   1/03/10 added bu::boxer-window-{width,height}
+;;;;  11/17/08 added bu::update-display-during-eval, defboxer-preference now handles keyword option correctly
+;;;;   8/05/08 changed all pref name discrimination from #+/-lwwin to #+/-capi
+;;;;  10/06/05 added penerase-color-from-bit-array, temporarily
+;;;;   7/23/04 added mail-inbox-file, removed max-viewable-message-size & draw=icon-options
+;;;;  10/31/03 removed #+carbon-compat bu::immediate-sprite-drawing
+;;;;   9/08/03 new pref for #+carbon-compat bu::immediate-sprite-drawing
+;;;;   5/16/03 draw-icon-options (temporary) for #+lwwin
+;;;;   4/21/03 merged current LW and MCL files
+;;;;   9/08/02 removed fullscreen-window and added maximize-window to do the same job
+;;;;           in order to be UC free compliant
+;;;;   5/24/01 removed zoom-pause added popup-mouse-documentation
+;;;;   5/10/01 changed pref categories to shorter names so the folder tabs
+;;;;           in the preference dialog will line up better
+;;;;   5/05/01 changed defboxer-preference macro to preserve documentation line breaks
+;;;;   2/17/01 merged current LW and MCL files
+;;;;   9/10/00 query-for-unknown-mime-type added to network-settings
+;;;;   5/28/00 more LW changes to the defboxer-preference macro
+;;;;   5/14/00 initial LW changes
+;;;;   6/13/99 added fullscreen-window
+;;;;   5/12/99 made Andy suggested changes to documentation wording
+;;;;   4/26/99 added max-viewable-message-size to network settings
+;;;;   4/20/99 added warn-about-outlink-ports
+;;;;   9/14/98 removed disable-box-resizing preference
+;;;;   9/02/98 changed documentation for zoom-pause to inform about 0 value option
+;;;;   9/02/98 Start logging changes: source = boxer version 2.3beta
+;;;;
 
 (in-package :boxer)
 
