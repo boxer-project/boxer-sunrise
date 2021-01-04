@@ -137,15 +137,6 @@
        (defun ,dialog-item-action-name (di)
          (let ((existing (fast-assq ',queued-pref-name
                                     *preference-dialog-change-list*))
-               #+mcl
-               (value ,(ecase value-type
-                         (:boolean '(ccl::check-box-checked-p di))
-                         (:number '(let ((ns (ccl::dialog-item-text di)))
-                                     (when (numberstring? ns)
-                                       (ignoring-number-read-errors
-                                         (read-from-string ns nil nil)))))
-                         (:string '(ccl::dialog-item-text di))
-                         (:keyword '(ccl::dialog-item-text di))))
                #+lispworks
                (value ,(ecase value-type
                          (:boolean '(capi:button-selected di))
@@ -162,11 +153,6 @@
                           *preference-dialog-change-list*)))))
        #+(or mcl lispworks)
        (defun ,dialog-item-doc-name (di)
-         #+mcl (declare (ignore di))
-         #+mcl
-         (ccl::set-dialog-item-text *current-documentation-dialog-item*
-                                    ,(flatten-documentation
-                                      (cdr documentation)))
          #+lispworks
          (unless (eq di *preference-dialog-last-doc-item*)
            (setf (capi:display-pane-text *current-documentation-dialog-item*)
@@ -244,12 +230,7 @@
     (dolist (pref *boxer-preferences-list*)
       (let ((write-handler (assoc pref *preference-write-handlers*)))
         (unless (null write-handler)
-          (funcall (cadr write-handler) fs)))))
-  ;;
-  #+mcl
-  (when (probe-file file)
-    (ccl::set-mac-file-creator file :BOXR)
-    (ccl::set-mac-file-type file :BOXP)))
+          (funcall (cadr write-handler) fs))))))
 
 (boxer-eval::defboxer-primitive bu::save-preferences ()
   (write-preferences)
@@ -393,53 +374,6 @@
   (setq *check-bit-array-color* true-or-false)
   boxer-eval::*novalue*)
 
-;; no longer needed, perhaps replace with interrupt poll count value
-;#+carbon-compat
-;(defboxer-preference bu::immediate-sprite-drawing (true-or-false)
-;  ((*sprite-drawing-flush?* :boolean
-;                            (boxer-eval::boxer-boolean *sprite-drawing-flush?*))
-;   #+lwwin graphics #-lwwin graphics-settings
-;   ("Should sprite graphics draw immediately with every command")
-;   ("Setting this to false speeds up complicated sprite graphics"))
-;  (cond ((not (null true-or-false))
-;	 (setq *sprite-drawing-flush?* t))
-;	(t
-;	 (setq *sprite-drawing-flush?* nil)))
-;  boxer-eval::*novalue*)
-
-;; obsolete
-;(defboxer-preference bu::enable-box-type-toggling-with-mouse (true-or-false)
-;  ((*enable-mouse-toggle-box-type?* :boolean
-;    (boxer-eval::boxer-boolean *enable-mouse-toggle-box-type?*))
-;   #+lwwin editor #-lwwin editor-settings
-;   ("Should the mouse be able to toggle the box")
-;   ("type by clicking on the type label ?"))
-;  (setq *enable-mouse-toggle-box-type?* true-or-false)
-;  boxer-eval::*novalue*)
-
-;; removed 5/12/99 this is never encountered in practice now that we have menus
-;; on the mouse corners
-;(defboxer-preference bu::warn-about-disabled-commands (true-or-false)
-;  ((*warn-about-disabled-commands* :boolean
-;    (boxer-eval::boxer-boolean *warn-about-disabled-commands*))
-;   #+lwwin editor #-lwwin editor-settings
-;   ("Should the user be informed when trying a disabled command.  ")
-;   ("or should the action do nothing."))
-;  (setq *warn-about-disabled-commands* true-or-false)
-;  boxer-eval::*novalue*)
-
-;; removed 5/24/01: no one is ever going to know what to do with this,
-;; we should eventually replace it with an "animation speed" slider which also
-;; controls things like speed of popup mouse doc unscrolling and move-to-bp
-;(defboxer-preference bu::zoom-pause ((boxer-eval::numberize seconds))
-;  ((*move-bp-zoom-pause-time* :number *move-bp-zoom-pause-time*)
-;   #+lwwin editor #-lwwin editor-settings
-;   ("How many seconds pause should there be between steps while")
-;   ("zooming to a place (e.g., the target of a port)")
-;   ("Setting to 0 will disable animation."))
-;  (setq *move-bp-zoom-pause-time* seconds)
-;  boxer-eval::*novalue*)
-
 (defboxer-preference bu::show-border-type-labels (true-or-false)
   ((*show-border-type-labels* :boolean (boxer-eval::boxer-boolean *show-border-type-labels*))
    #+capi editor #-capi editor-settings
@@ -448,44 +382,6 @@
   #-opengl (force-redisplay)
   #+opengl (force-repaint)
   boxer-eval::*novalue*)
-
-; removed 2/22/97
-;(defboxer-preference bu::lock-all-closets (true-or-false)
-;  ((*lock-all-closets* :boolean (boxer-eval::boxer-boolean *lock-all-closets*))
-;   #+lwwin editor #-lwwin editor-settings
-;   ("Should all closets start out being locked"))
-;  (setq *lock-all-closets* true-or-false)
-;  (force-redisplay)
-;  boxer-eval::*novalue*)
-
-;; removed 9/14/98
-;; used to be only-shrink-wrap-text-boxes
-;(defboxer-preference bu::disable-box-resizing (true-or-false)
-;  ((*only-shrink-wrap-text-boxes* :boolean (boxer-eval::boxer-boolean
-;                                            *only-shrink-wrap-text-boxes*))
-;   #+lwwin editor #-lwwin editor-settings
-;   ("Do not allow the size of text boxes to be fixed. If TRUE,")
-;   ("boxes will automatically stretch to fit the contents"))
-;  (setq *only-shrink-wrap-text-boxes* true-or-false)
-;  boxer-eval::*novalue*)
-
-;;turned off for now
-;(defboxer-preference bu::slow-graphics-toggling (true-or-false)
-;  ((*slow-graphics-toggle* :boolean (boxer-eval::boxer-boolean *slow-graphics-toggle*))
-;   editor-settings
-;   ("Require the user to confirm graphics toggling by holding the mouse")
-;   ("button down for a small interval before the action will take place"))
-;  (setq *slow-graphics-toggle* true-or-false)
-;  boxer-eval::*novalue*)
-
-;; removed 5/12/99 at andy's suggestion
-;(defboxer-preference bu::only-scroll-current-box (true-or-false)
-;  ((*only-scroll-current-box?* :boolean (boxer-eval::boxer-boolean *only-scroll-current-box?*))
-;   editor-settings
-;   ("Limit the ability to scroll the contents to the current box"))
-;  (setq *only-scroll-current-box?* true-or-false)
-;  (force-redisplay)
-;  boxer-eval::*novalue*)
 
 (defboxer-preference bu::smooth-scrolling (true-or-false)
   ((*smooth-scrolling?* :boolean (boxer-eval::boxer-boolean *smooth-scrolling?*))
@@ -522,16 +418,6 @@
               ", does not have a defined set of input devices"))
     boxer-eval::*novalue*))
 
-#| ;; removed 9/08/02
-(defboxer-preference bu::fullscreen-window (true-or-false)
-  ((bw::*fullscreen-window-p* :boolean
-                              (boxer-eval::boxer-boolean bw::*fullscreen-window-p*))
-   #+lwwin editor #-lwwin editor-settings
-   ("Should the boxer window occupy the entire screen ?"))
-  (setq bw::*fullscreen-window-p* true-or-false)
-  boxer-eval::*novalue*)
-|#
-
 ;; added 9/08/02
 (defboxer-preference bu::maximize-window (true-or-false)
   ((bw::*fullscreen-window-p* :boolean
@@ -566,20 +452,6 @@
   (setq *popup-mouse-documentation* true-or-false)
   boxer-eval::*novalue*)
 
-
-;; removed 5/12/99 at andy's suggestion
-;(defboxer-preference bu::enable-egc (true-or-false)
-;   ((*egc-enabled?* :boolean (boxer-eval::boxer-boolean *egc-enabled?*))
-;    #+lwwin evaluator #-lwwin evaluator-settings
-;    ("Should the Ephemeral Garbage Collector be turned on ?"))
-;  (let ((new-value true-or-false))
-;    (setq *egc-enabled?* new-value)
-;    #+ccl (ccl::egc new-value)
-;    #+lucid (if new-value (lcl::egc-on) (lcl::egc-off))
-;    )
-;  boxer-eval::*novalue*)
-
-
 (defboxer-preference bu::report-crash (true-or-false)
     ((bw::*report-crash* :boolean
                          (boxer-eval::boxer-boolean bw::*report-crash*))
@@ -587,8 +459,6 @@
      ("Should lisp errors be logged ?"))
   (setq bw::*report-crash* true-or-false)
   boxer-eval::*novalue*)
-
-
 
 ;;;; (Postscript) Printer Preferences (mostly unix based)
 
@@ -624,8 +494,6 @@
     ;; need some sort of consistency checking on the name here
     (setq *ps-file* newname)
     boxer-eval::*novalue*))
-
-
 
 ;;;; Serial Line Preferences
 
@@ -675,19 +543,6 @@
    ("Should box links to non boxer files be created with the same name as the file"))
   (setq *name-link-boxes* true-or-false)
   boxer-eval::*novalue*)
-
-;; what about ALL bitmap ops...
-
-;; removed 5/12/99 at andy's suggestion
-;#+mcl
-;(defboxer-preference bu::use-fast-bitmap-loaders (true-or-false)
-;  ((*use-mac-fast-bitmap-loaders* :boolean
-;                                  (boxer-eval::boxer-boolean
-;                                   *use-mac-fast-bitmap-loaders*))
-;   File-System-Settings
-;   ("Use the experimental (may crash your machine) fast bitmap operations ?"))
-;  (setq *use-mac-fast-bitmap-loaders* true-or-false)
-;  boxer-eval::*novalue*)
 
 (defboxer-preference bu::warn-about-outlink-ports (true-or-false)
   ((*warn-about-outlink-ports* :boolean
@@ -739,17 +594,6 @@
   (setq boxnet::*query-for-unknown-mime-type* true-or-false)
   boxer-eval::*novalue*)
 
-;; not currently use
-#|
-(defboxer-preference bu::max-viewable-message-size ((boxer-eval::numberize length))
-  ((boxnet::*max-viewable-message-length*
-    :number boxnet::*max-viewable-message-length*)
-   #+lwwin network #-lwwin network-settings
-   ("What is the maximum size mail message that will appear in Boxer ?"))
-  (setq boxnet::*max-viewable-message-length* length)
-  boxer-eval::*novalue*)
-|#
-
 (defboxer-preference bu::mail-inbox-file (filename)
     ((boxnet::*inbox-pathname* :string (make-box `((,boxnet::*inbox-pathname*))))
      #+capi network #-capi network-settings
@@ -758,22 +602,6 @@
     ;; should reality check here (at least directory should exist)
     (setq boxnet::*inbox-pathname* newpath)
     boxer-eval::*novalue*))
-
-;;; temporary
-#|
-#+lwwin
-(defboxer-preference bu::draw-icon-options ((boxer-eval::numberize new-option))
-                     ((*windows-draw-icon-options* :number
-                                                   *windows-draw-icon-options*)
-                      #+lwwin temporary
-                      ("Try different draw-icon display routines")
-                      ("Should be an interger between 0 and 15"))
-  (when (and (integerp new-option) (<=& 0 new-option 15))
-    (setq  *windows-draw-icon-options* new-option))
-  boxer-eval::*novalue*)
-|#
-
-
 
 ;;;; Putting it all together....
 
@@ -819,9 +647,6 @@
     (shrink pbox)
     (append-row subgroup (make-row (list pbox))))))
     prefs-box))
-
-
-
 
 (defboxer-command com-make-preferences-box ()
   "Insert the Preferences Box at the Cursor"
