@@ -71,131 +71,131 @@
 (defvar *preference-write-handlers* nil)
 
 (eval-when (compile load eval)
-(defmacro defboxer-preference (name args
-                                    (initial-value-spec . documentation)
-                                    &body body)
-  (let ((file-reader-name (intern (symbol-format nil "~A-FILE-READER" name) 'boxer))
-        (file-writer-name (intern (symbol-format nil "~A-FILE-WRITER" name) 'boxer))
-        ;; these are used by the preferences dialog on the mac
-        #+(or mcl lispworks)
-        (dialog-item-action-name (intern (symbol-format nil "~A-DI-ACTION"
-                                                              name) 'boxer))
-        #+(or mcl lispworks)
-        (queued-pref-name (intern (symbol-format nil "~A-Q-FUNCTION"
-                                                       name) 'boxer))
-        #+(or mcl lispworks)
-        (dialog-item-doc-name (intern (symbol-format nil "~A-DI-DOC"
-                                                           name) 'boxer))
-        (variable (car initial-value-spec))
-        (value-type (cadr initial-value-spec)))
-    `(progn
-       ;; first, stash away info that we will need later to setup the
-       ;; preferences menu box.
-       (unless (fast-memq ',name *boxer-preferences-list*)
-         (setq *boxer-preferences-list*
-         (append *boxer-preferences-list* (list ',name))))
-       ;; read/write handlers for prefs files
-       (let ((existing-r-entry (assoc ',name *preference-read-handlers*))
-             (existing-w-entry (assoc ',name *preference-write-handlers*)))
-   (if (null existing-r-entry)
-       (push (list ',name ',file-reader-name ',value-type)
-                   *preference-read-handlers*)
-       ;; just bash the slots in the existing entry
-       (setf (cadr existing-r-entry)  ',file-reader-name
-       (caddr existing-r-entry) ',value-type))
-         (if (null existing-w-entry)
-       (push (list ',name ',file-writer-name ',value-type)
-                   *preference-write-handlers*)
-       ;; just bash the slots in the existing entry
-       (setf (cadr existing-w-entry)  ',file-writer-name
-       (caddr existing-w-entry) ',value-type)))
-       ;; funcalled from handle-site-initializations (in site.lisp)
-       (defun ,file-reader-name (value-string)
-   (let ((new-value (coerce-config-value value-string ,value-type)))
-     (unless (or (null *site-initialization-verbosity*)
-                       (member :mcl-appgen *features*))
-       (format t "~%Initializing System Variable ~A to ~A"
-                     ',variable new-value))
-     (setq ,variable new-value)))
-       (defun ,file-writer-name (filestream)
-         (format filestream "~A: ~A~%" ',name ,(cond ((eq value-type :boolean)
-                                                    `(if ,variable "True" "False"))
-                                                   (t variable))))
-       ;; used to generate a pref setting box with the current value
-       (setf (get ',name 'system-parameter-default-value)
-       #'(lambda () ,(caddr initial-value-spec)))
-       ;; documentation for the pref setting box
-       (unless (null ',documentation)
-         (setf (get ',name 'system-parameter-type) ',(car documentation))
-         (setf (get ',name 'system-parameter-documentation)
-         ',(cdr documentation)))
-       ;; hooks for autogenerate preferences dialog
-       #+(or mcl lispworks)
-       (defun ,queued-pref-name (,(pref-arg-name args))
-         . ,body)
-       #+(or mcl lispworks)
-       (defun ,dialog-item-action-name (di)
-         (let ((existing (fast-assq ',queued-pref-name
-                                    *preference-dialog-change-list*))
-               #+lispworks
-               (value ,(ecase value-type
-                         (:boolean '(capi:button-selected di))
-                         (:number '(let ((ns (capi:text-input-pane-text di)))
-                                     (when (numberstring? ns)
-                                       (ignoring-number-read-errors
-                                         (read-from-string ns nil nil)))))
-                         (:string  '(capi:text-input-pane-text di))
-                         (:keyword '(capi:text-input-pane-text di))))
-               )
-           (cond ((not (null existing))
-                  (setf (cdr existing) value))
-                 (t (push (cons ',queued-pref-name value)
-                          *preference-dialog-change-list*)))))
-       #+(or mcl lispworks)
-       (defun ,dialog-item-doc-name (di)
-         #+lispworks
-         (unless (eq di *preference-dialog-last-doc-item*)
-           (setf (capi:display-pane-text *current-documentation-dialog-item*)
-                 ',(unpack-documentation (cdr documentation)))
-           (setq *preference-dialog-last-doc-item* di))
-         )
-       #+(or mcl lispworks)
-       (setf (get ',name 'system-parameter-pref-dialog-info)
-             (list ',variable ',(car documentation) ',value-type
-                   ',dialog-item-action-name ',dialog-item-doc-name))
-       (boxer-eval::defboxer-primitive ,name ,args
-         ;; sort of flaky but don't want to have to specify separate args
-         ;; for the function and the body
-         (let ((,(pref-arg-name args)
-                  ,(ecase value-type
-                     (:boolean `(boxer-eval::true? ,(pref-arg-name args)))
-                     (:number  (pref-arg-name args))
-                     (:string `(box-text-string ,(pref-arg-name args)))
-                     (:keyword `(intern-keyword (box-text-string ,(pref-arg-name args)))))))
-           . ,body)))))
+           (defmacro defboxer-preference (name args
+                                               (initial-value-spec . documentation)
+                                               &body body)
+             (let ((file-reader-name (intern (symbol-format nil "~A-FILE-READER" name) 'boxer))
+                   (file-writer-name (intern (symbol-format nil "~A-FILE-WRITER" name) 'boxer))
+                   ;; these are used by the preferences dialog on the mac
+                   #+(or mcl lispworks)
+                   (dialog-item-action-name (intern (symbol-format nil "~A-DI-ACTION"
+                                                                   name) 'boxer))
+                   #+(or mcl lispworks)
+                   (queued-pref-name (intern (symbol-format nil "~A-Q-FUNCTION"
+                                                            name) 'boxer))
+                   #+(or mcl lispworks)
+                   (dialog-item-doc-name (intern (symbol-format nil "~A-DI-DOC"
+                                                                name) 'boxer))
+                   (variable (car initial-value-spec))
+                   (value-type (cadr initial-value-spec)))
+               `(progn
+                 ;; first, stash away info that we will need later to setup the
+                 ;; preferences menu box.
+                 (unless (fast-memq ',name *boxer-preferences-list*)
+                   (setq *boxer-preferences-list*
+                         (append *boxer-preferences-list* (list ',name))))
+                 ;; read/write handlers for prefs files
+                 (let ((existing-r-entry (assoc ',name *preference-read-handlers*))
+                       (existing-w-entry (assoc ',name *preference-write-handlers*)))
+                   (if (null existing-r-entry)
+                     (push (list ',name ',file-reader-name ',value-type)
+                           *preference-read-handlers*)
+                     ;; just bash the slots in the existing entry
+                     (setf (cadr existing-r-entry)  ',file-reader-name
+                           (caddr existing-r-entry) ',value-type))
+                   (if (null existing-w-entry)
+                     (push (list ',name ',file-writer-name ',value-type)
+                           *preference-write-handlers*)
+                     ;; just bash the slots in the existing entry
+                     (setf (cadr existing-w-entry)  ',file-writer-name
+                           (caddr existing-w-entry) ',value-type)))
+                 ;; funcalled from handle-site-initializations (in site.lisp)
+                 (defun ,file-reader-name (value-string)
+                   (let ((new-value (coerce-config-value value-string ,value-type)))
+                     (unless (or (null *site-initialization-verbosity*)
+                                 (member :mcl-appgen *features*))
+                       (format t "~%Initializing System Variable ~A to ~A"
+                               ',variable new-value))
+                     (setq ,variable new-value)))
+                 (defun ,file-writer-name (filestream)
+                   (format filestream "~A: ~A~%" ',name ,(cond ((eq value-type :boolean)
+                                                                `(if ,variable "True" "False"))
+                                                           (t variable))))
+                 ;; used to generate a pref setting box with the current value
+                 (setf (get ',name 'system-parameter-default-value)
+                       #'(lambda () ,(caddr initial-value-spec)))
+                 ;; documentation for the pref setting box
+                 (unless (null ',documentation)
+                   (setf (get ',name 'system-parameter-type) ',(car documentation))
+                   (setf (get ',name 'system-parameter-documentation)
+                         ',(cdr documentation)))
+                 ;; hooks for autogenerate preferences dialog
+                 #+(or mcl lispworks)
+                 (defun ,queued-pref-name (,(pref-arg-name args))
+                   . ,body)
+                 #+(or mcl lispworks)
+                 (defun ,dialog-item-action-name (di)
+                   (let ((existing (fast-assq ',queued-pref-name
+                                              *preference-dialog-change-list*))
+                         #+lispworks
+                         (value ,(ecase value-type
+                                        (:boolean '(capi:button-selected di))
+                                        (:number '(let ((ns (capi:text-input-pane-text di)))
+                                                    (when (numberstring? ns)
+                                                      (ignoring-number-read-errors
+                                                       (read-from-string ns nil nil)))))
+                                        (:string  '(capi:text-input-pane-text di))
+                                        (:keyword '(capi:text-input-pane-text di))))
+                         )
+                     (cond ((not (null existing))
+                            (setf (cdr existing) value))
+                       (t (push (cons ',queued-pref-name value)
+                                *preference-dialog-change-list*)))))
+                 #+(or mcl lispworks)
+                 (defun ,dialog-item-doc-name (di)
+                   #+lispworks
+                   (unless (eq di *preference-dialog-last-doc-item*)
+                     (setf (capi:display-pane-text *current-documentation-dialog-item*)
+                           ',(unpack-documentation (cdr documentation)))
+                     (setq *preference-dialog-last-doc-item* di))
+                   )
+                 #+(or mcl lispworks)
+                 (setf (get ',name 'system-parameter-pref-dialog-info)
+                       (list ',variable ',(car documentation) ',value-type
+                             ',dialog-item-action-name ',dialog-item-doc-name))
+                 (boxer-eval::defboxer-primitive ,name ,args
+                                                  ;; sort of flaky but don't want to have to specify separate args
+                                                  ;; for the function and the body
+                                                  (let ((,(pref-arg-name args)
+                                                         ,(ecase value-type
+                                                                 (:boolean `(boxer-eval::true? ,(pref-arg-name args)))
+                                                                 (:number  (pref-arg-name args))
+                                                                 (:string `(box-text-string ,(pref-arg-name args)))
+                                                                 (:keyword `(intern-keyword (box-text-string ,(pref-arg-name args)))))))
+                                                    . ,body)))))
 
 
-(defun pref-arg-name (arglist)
-  (let ((guess (car arglist))) (cond ((listp guess) (cadr guess)) (t guess))))
+           (defun pref-arg-name (arglist)
+             (let ((guess (car arglist))) (cond ((listp guess) (cadr guess)) (t guess))))
 
 
-;; doc's are a list of lists of strings
-#+(or mcl lispworks)
-(defun flatten-documentation (doc)
-  (let ((return-string (make-array 64 :element-type 'standard-char
-                                   :fill-pointer 0 :adjustable t)))
-    (dolist (x doc)
-      (let* ((str (car x)) (end (length str)))
-        (do ((i 0 (1+& i))) ((>=& i end))
-          (vector-push-extend (char str i) return-string)))
-      (vector-push-extend #\space return-string))
-    return-string))
+           ;; doc's are a list of lists of strings
+           #+(or mcl lispworks)
+           (defun flatten-documentation (doc)
+             (let ((return-string (make-array 64 :element-type 'standard-char
+                                              :fill-pointer 0 :adjustable t)))
+               (dolist (x doc)
+                 (let* ((str (car x)) (end (length str)))
+                   (do ((i 0 (1+& i))) ((>=& i end))
+                     (vector-push-extend (char str i) return-string)))
+                 (vector-push-extend #\space return-string))
+               return-string))
 
-#+lispworks
-(defun unpack-documentation (doc)
-  (with-collection
-    (dolist (x doc)
-      (collect (car x)))))
+           #+lispworks
+           (defun unpack-documentation (doc)
+             (with-collection
+               (dolist (x doc)
+                 (collect (car x)))))
 
 ) ;; eval-when
 
@@ -205,18 +205,18 @@
   (with-open-file (s pref-file :direction :input)
     (loop
       (multiple-value-bind (valid? eof? keyword value)
-    (read-config-line s *keyword-buffer* *value-buffer*)
-        (cond (eof? (return))
-              (valid? (handle-preference-initialization
-                       (intern-in-bu-package keyword) value)))
-        (buffer-clear *keyword-buffer*)
-        (buffer-clear *value-buffer*)))))
+                           (read-config-line s *keyword-buffer* *value-buffer*)
+                           (cond (eof? (return))
+                             (valid? (handle-preference-initialization
+                                      (intern-in-bu-package keyword) value)))
+                           (buffer-clear *keyword-buffer*)
+                           (buffer-clear *value-buffer*)))))
 
 (defun handle-preference-initialization (keyword value)
   (let ((handler-entry (assoc keyword *preference-read-handlers*)))
     (if (null handler-entry)
-  (warn "~A is an obsolete pref. Save boxer prefs again to eliminate further warnings" keyword)
-  (funcall (cadr handler-entry) value))))
+      (warn "~A is an obsolete pref. Save boxer prefs again to eliminate further warnings" keyword)
+      (funcall (cadr handler-entry) value))))
 
 ;;; Writing out Preferences Files
 (defun write-preferences (&optional (file #+(and unix (not lispworks)) "~/.boxerrc"
@@ -233,8 +233,8 @@
           (funcall (cadr write-handler) fs))))))
 
 (boxer-eval::defboxer-primitive bu::save-preferences ()
-  (write-preferences)
-  boxer-eval::*novalue*)
+                                (write-preferences)
+                                boxer-eval::*novalue*)
 
 
 
@@ -244,14 +244,14 @@
 ;;;; Printer Preferences
 
 (defboxer-preference bu::printing-precision ((boxer-eval::numberize new-precision))
-                     ((*decimal-print-precision* :number *decimal-print-precision*)
-                      #+capi results #-capi result-appearance
-                      ("How many numerals should appear after")
-                      ("the decimal point in decimal numbers ?"))
+  ((*decimal-print-precision* :number *decimal-print-precision*)
+   #+capi results #-capi result-appearance
+   ("How many numerals should appear after")
+   ("the decimal point in decimal numbers ?"))
   (cond ((and (integerp new-precision)
-        (>=& new-precision 0))
-   (set-decimal-printing-precision new-precision))
-  (t (set-decimal-printing-precision nil)))
+              (>=& new-precision 0))
+         (set-decimal-printing-precision new-precision))
+    (t (set-decimal-printing-precision nil)))
   boxer-eval::*novalue*)
 
 
@@ -266,7 +266,7 @@
 
 (defboxer-preference bu::preserve-empty-lines-in-build (true-or-false)
   ((*interpolate-empty-rows-too?* :boolean
-    (boxer-eval::boxer-boolean *interpolate-empty-rows-too?*))
+                                  (boxer-eval::boxer-boolean *interpolate-empty-rows-too?*))
    #+capi results #-capi result-appearance
    ("Should empty lines in boxes referred to via @'s")
    ("in BUILD templates be preserved ? "))
@@ -277,7 +277,7 @@
 
 (defboxer-preference bu::step-wait-for-key-press (true-or-false)
   ((boxer-eval::*step-wait-for-key-press* :boolean
-    (boxer-eval::boxer-boolean boxer-eval::*step-wait-for-key-press*))
+                                          (boxer-eval::boxer-boolean boxer-eval::*step-wait-for-key-press*))
    #+capi evaluator #-capi evaluator-settings
    ("Should the Stepper wait for a key press ")
    ("before going on to the next step ?")
@@ -305,7 +305,7 @@
 
 (defboxer-preference bu::primitive-shadow-warnings (true-or-false)
   ((boxer-eval::*warn-about-primitive-shadowing* :boolean
-    (boxer-eval::boxer-boolean boxer-eval::*warn-about-primitive-shadowing*))
+                                                 (boxer-eval::boxer-boolean boxer-eval::*warn-about-primitive-shadowing*))
    #+capi evaluator #-capi evaluator-settings
    ("Should you get a warning if you redefine a Boxer primitive ?"))
   (setq boxer-eval::*warn-about-primitive-shadowing* true-or-false)
@@ -313,7 +313,7 @@
 
 (defboxer-preference bu::update-display-during-eval (true-or-false)
   ((*repaint-during-eval?* :keyword
-    (boxer-eval::boxer-boolean boxer-eval::*warn-about-primitive-shadowing*))
+                           (boxer-eval::boxer-boolean boxer-eval::*warn-about-primitive-shadowing*))
    #+capi evaluator #-capi evaluator-settings
    ("Should the screen be repainted during eval ? Valid entries are ALWAYS, NEVER and CHANGED-GRAPHICS"))
   (setq *repaint-during-eval?* true-or-false)
@@ -325,7 +325,7 @@
 
 (defboxer-preference bu::make-transparent-graphics-boxes (true-or-false)
   ((*default-graphics-box-transparency* :boolean
-    (boxer-eval::boxer-boolean *default-graphics-box-transparency*))
+                                        (boxer-eval::boxer-boolean *default-graphics-box-transparency*))
    #+capi graphics #-capi graphics-settings
    ("Should newly made graphics boxes be transparent ?"))
   (setq *default-graphics-box-transparency* true-or-false)
@@ -333,7 +333,7 @@
 
 (defboxer-preference bu::include-sprite-in-new-graphics (true-or-false)
   ((*include-sprite-box-in-new-graphics?* :boolean
-    (boxer-eval::boxer-boolean *include-sprite-box-in-new-graphics?*))
+                                          (boxer-eval::boxer-boolean *include-sprite-box-in-new-graphics?*))
    #+capi graphics #-capi graphics-settings
    ("Should newly made graphics boxes include a sprite ?"))
   (setq *include-sprite-box-in-new-graphics?* true-or-false)
@@ -349,21 +349,21 @@
 
 (defboxer-preference bu::make-diet-sprites (true-or-false)
   ((*new-sprites-should-be-diet-sprites?* :boolean
-    (boxer-eval::boxer-boolean *new-sprites-should-be-diet-sprites?*))
+                                          (boxer-eval::boxer-boolean *new-sprites-should-be-diet-sprites?*))
    #+capi graphics #-capi graphics-settings
    ("Should newly made sprite boxes include fewer")
    ("visible attributes to save memory ?"))
   (cond ((not (null true-or-false))
-   (setq *new-sprites-should-be-diet-sprites?* t
-         *graphics-interface-boxes-in-box* :default
-         *graphics-interface-boxes-in-closet* :default))
-  (t
-   (setq *new-sprites-should-be-diet-sprites?* nil
-         *graphics-interface-boxes-in-box*
-         '(x-position y-position heading)
-         *graphics-interface-boxes-in-closet*
-         '(shape shown? home-position sprite-size
-     pen pen-width type-font pen-color))))
+         (setq *new-sprites-should-be-diet-sprites?* t
+               *graphics-interface-boxes-in-box* :default
+               *graphics-interface-boxes-in-closet* :default))
+    (t
+     (setq *new-sprites-should-be-diet-sprites?* nil
+           *graphics-interface-boxes-in-box*
+           '(x-position y-position heading)
+           *graphics-interface-boxes-in-closet*
+           '(shape shown? home-position sprite-size
+                   pen pen-width type-font pen-color))))
   boxer-eval::*novalue*)
 
 (defboxer-preference bu::penerase-color-from-bit-array (true-or-false)
@@ -395,7 +395,7 @@
 
 (defboxer-preference bu::global-hotspot-controls (true-or-false)
   ((*global-hotspot-control?* :boolean
-                        (boxer-eval::boxer-boolean *global-hotspot-control?*))
+                              (boxer-eval::boxer-boolean *global-hotspot-control?*))
    #+capi editor #-capi editor-settings
    ("Should turning a hotspot off or on affect all hotspots ?"))
   (setq *global-hotspot-control?* true-or-false)
@@ -410,12 +410,12 @@
    ("special (control) keys or mouse actions ?")
    ("(Different platforms may use different names.)"))
   (let ((canonicalized-name (intern (string-upcase machine-type)
-            (find-package 'keyword))))
+                                    (find-package 'keyword))))
     (if (fast-memq canonicalized-name *defined-input-device-platforms*)
-  (make-input-devices canonicalized-name)
-  (boxer-eval::primitive-signal-error :preference
-              "The machine-type, " machine-type
-              ", does not have a defined set of input devices"))
+      (make-input-devices canonicalized-name)
+      (boxer-eval::primitive-signal-error :preference
+                                          "The machine-type, " machine-type
+                                          ", does not have a defined set of input devices"))
     boxer-eval::*novalue*))
 
 ;; added 9/08/02
@@ -428,35 +428,35 @@
   boxer-eval::*novalue*)
 
 (defboxer-preference bu::boxer-window-width ((boxer-eval::numberize w))
-    ((bw::*starting-window-width* :number bw::*starting-window-width*)
-     #+capi editor #-capi editor-settings
-     ("The initial width of the Boxer window, 0 lets the computer decide"))
+  ((bw::*starting-window-width* :number bw::*starting-window-width*)
+   #+capi editor #-capi editor-settings
+   ("The initial width of the Boxer window, 0 lets the computer decide"))
   (setq bw::*starting-window-width* w)
   boxer-eval::*novalue*)
 
 (defboxer-preference bu::boxer-window-height ((boxer-eval::numberize w))
-    ((bw::*starting-window-height* :number bw::*starting-window-height*)
-     #+capi editor #-capi editor-settings
-     ("The initial height of the Boxer window, 0 lets the computer decide"))
+  ((bw::*starting-window-height* :number bw::*starting-window-height*)
+   #+capi editor #-capi editor-settings
+   ("The initial height of the Boxer window, 0 lets the computer decide"))
   (setq bw::*starting-window-height* w)
   boxer-eval::*novalue*)
 
 ;; This should be changed to :choice after the :choice pref is implemented
 #+(and (not opengl) capi) ; dont offer until it works...
 (defboxer-preference bu::popup-mouse-documentation (true-or-false)
-    ((*popup-mouse-documentation?* :boolean
-                                   (boxer-eval::boxer-boolean
-                                    *popup-mouse-documentation?*))
-     #+capi editor #-capi editor-settings
-     ("Should mouse documentation popup after a short delay ?"))
+  ((*popup-mouse-documentation?* :boolean
+                                 (boxer-eval::boxer-boolean
+                                  *popup-mouse-documentation?*))
+   #+capi editor #-capi editor-settings
+   ("Should mouse documentation popup after a short delay ?"))
   (setq *popup-mouse-documentation* true-or-false)
   boxer-eval::*novalue*)
 
 (defboxer-preference bu::report-crash (true-or-false)
-    ((bw::*report-crash* :boolean
-                         (boxer-eval::boxer-boolean bw::*report-crash*))
-     #+capi editor #-capi editor-settings
-     ("Should lisp errors be logged ?"))
+  ((bw::*report-crash* :boolean
+                       (boxer-eval::boxer-boolean bw::*report-crash*))
+   #+capi editor #-capi editor-settings
+   ("Should lisp errors be logged ?"))
   (setq bw::*report-crash* true-or-false)
   boxer-eval::*novalue*)
 
@@ -500,7 +500,7 @@
 #+(and unix (not macosx))
 (defboxer-preference bu::newline-after-serial-writes (true-or-false)
   ((*add-newline-to-serial-writes* :boolean
-    (boxer-eval::boxer-boolean *add-newline-to-serial-writes*))
+                                   (boxer-eval::boxer-boolean *add-newline-to-serial-writes*))
    #+capi communication #-capi communication-settings
    ("Should extra Carriage Returns be added")
    ("at the end of each Serial-Write ? "))
@@ -521,7 +521,7 @@
 
 (defboxer-preference bu::terse-file-status (true-or-false)
   ((*terse-file-status* :boolean
-    (boxer-eval::boxer-boolean *terse-file-status*))
+                        (boxer-eval::boxer-boolean *terse-file-status*))
    #+capi Files #-capi File-System-Settings
    ("Should file names use abbreviated form (as opposed to ")
    ("full pathnames) in the status line ?"))
@@ -538,7 +538,7 @@
 
 (defboxer-preference bu::name-link-boxes (true-or-false)
   ((*name-link-boxes* :boolean
-    (boxer-eval::boxer-boolean *name-link-boxes*))
+                      (boxer-eval::boxer-boolean *name-link-boxes*))
    #+capi Files #-capi File-System-Settings
    ("Should box links to non boxer files be created with the same name as the file"))
   (setq *name-link-boxes* true-or-false)
@@ -546,7 +546,7 @@
 
 (defboxer-preference bu::warn-about-outlink-ports (true-or-false)
   ((*warn-about-outlink-ports* :boolean
-    (boxer-eval::boxer-boolean *warn-about-outlink-ports*))
+                               (boxer-eval::boxer-boolean *warn-about-outlink-ports*))
    #+capi Files #-capi File-System-Settings
    ("Should you receive a warning when trying to save a ")
    ("file with ports that link outside the file ?"))
@@ -564,13 +564,13 @@
          (@pos (position #\@ newname)))
     ;; need some sort of consistency checking on the name here
     (if (null @pos)
-        (boxer-eval::primitive-signal-error :preferences-error
-                                      newname
-                                      " Does not look like a valid address")
-        (let ((user (subseq newname 0 @pos)) (host (subseq newname (1+ @pos))))
-          (setq boxnet::*user-mail-address* newname
-                boxnet::*pop-user* user
-                boxnet::*pop-host* host)))
+      (boxer-eval::primitive-signal-error :preferences-error
+                                          newname
+                                          " Does not look like a valid address")
+      (let ((user (subseq newname 0 @pos)) (host (subseq newname (1+ @pos))))
+        (setq boxnet::*user-mail-address* newname
+              boxnet::*pop-user* user
+              boxnet::*pop-host* host)))
     boxer-eval::*novalue*))
 
 (defboxer-preference bu::mail-relay-host (host)
@@ -587,7 +587,7 @@
 
 (defboxer-preference bu::query-for-unkown-mime-type (true-or-false)
   ((boxnet::*query-for-unknown-mime-type* :boolean
-    (boxer-eval::boxer-boolean boxnet::*query-for-unknown-mime-type*))
+                                          (boxer-eval::boxer-boolean boxnet::*query-for-unknown-mime-type*))
    #+capi network #-capi network-settings
    ("Should a dialog popup if an unknown")
    ("MIME (mail attachment) type is encountered ?"))
@@ -595,9 +595,9 @@
   boxer-eval::*novalue*)
 
 (defboxer-preference bu::mail-inbox-file (filename)
-    ((boxnet::*inbox-pathname* :string (make-box `((,boxnet::*inbox-pathname*))))
-     #+capi network #-capi network-settings
-     ("Which File should new mail be placed in"))
+  ((boxnet::*inbox-pathname* :string (make-box `((,boxnet::*inbox-pathname*))))
+   #+capi network #-capi network-settings
+   ("Which File should new mail be placed in"))
   (let ((newpath filename))
     ;; should reality check here (at least directory should exist)
     (setq boxnet::*inbox-pathname* newpath)
@@ -612,40 +612,40 @@
 
 (defun make-preferences-box ()
   (let ((prefs-box (make-box '(("Boxer Preferences..."))))
-  (subgroup-box-alist nil))
+        (subgroup-box-alist nil))
     (flet ((make-pref-box (fun initial-value doc)
-       (if (null doc)
-     (make-box (list (list fun
-               (cond ((virtual-copy? initial-value)
-                (top-level-print-vc
-                 initial-value))
-               (t initial-value)))))
-     (make-box (list (list (make-box doc))
-         (list fun
-               (cond ((virtual-copy? initial-value)
-                (top-level-print-vc
-                 initial-value))
-               (t initial-value)))))))
-     (subgroup-box (preference)
-       (let ((subgroup (get preference 'system-parameter-type)))
-         (or (cdr (assoc subgroup subgroup-box-alist))
-       (let ((new (make-box '(()) 'data-box
-          (string-capitalize
-           (symbol-name subgroup)))))
-         (setf (slot-value new 'first-inferior-row) nil)
-         (setq subgroup-box-alist
-         (acons subgroup new subgroup-box-alist))
-         (shrink new)
-         (append-row prefs-box (make-row (list new)))
-         new)))))
-      (dolist (pref *boxer-preferences-list*)
-  (let ((pbox (make-pref-box
-         pref
-         (funcall (get pref 'system-parameter-default-value))
-         (get pref 'system-parameter-documentation)))
-        (subgroup (subgroup-box pref)))
-    (shrink pbox)
-    (append-row subgroup (make-row (list pbox))))))
+                          (if (null doc)
+                            (make-box (list (list fun
+                                                  (cond ((virtual-copy? initial-value)
+                                                         (top-level-print-vc
+                                                          initial-value))
+                                                    (t initial-value)))))
+                            (make-box (list (list (make-box doc))
+                                            (list fun
+                                                  (cond ((virtual-copy? initial-value)
+                                                         (top-level-print-vc
+                                                          initial-value))
+                                                    (t initial-value)))))))
+           (subgroup-box (preference)
+                         (let ((subgroup (get preference 'system-parameter-type)))
+                           (or (cdr (assoc subgroup subgroup-box-alist))
+                               (let ((new (make-box '(()) 'data-box
+                                                    (string-capitalize
+                                                     (symbol-name subgroup)))))
+                                 (setf (slot-value new 'first-inferior-row) nil)
+                                 (setq subgroup-box-alist
+                                       (acons subgroup new subgroup-box-alist))
+                                 (shrink new)
+                                 (append-row prefs-box (make-row (list new)))
+                                 new)))))
+          (dolist (pref *boxer-preferences-list*)
+            (let ((pbox (make-pref-box
+                         pref
+                         (funcall (get pref 'system-parameter-default-value))
+                         (get pref 'system-parameter-documentation)))
+                  (subgroup (subgroup-box pref)))
+              (shrink pbox)
+              (append-row subgroup (make-row (list pbox))))))
     prefs-box))
 
 (defboxer-command com-make-preferences-box ()
@@ -656,12 +656,12 @@
   boxer-eval::*novalue*)
 
 (boxer-eval::defboxer-primitive bu::system-preferences ()
-  (virtual-copy (make-preferences-box)))
+                                (virtual-copy (make-preferences-box)))
 
 ;;; use this after the site file has been edited
 (boxer-eval::defboxer-primitive bu::reconfigure-system ()
-  (handle-site-initializations)
-  boxer-eval::*novalue*)
+                                (handle-site-initializations)
+                                boxer-eval::*novalue*)
 
 (defboxer-command com-show-font-info ()
   "Display font information"
@@ -678,24 +678,24 @@
 
 (boxer-eval::defboxer-primitive bu::configuration-info ()
   (let* ((confile (merge-pathnames *default-configuration-file-name*
-           *default-site-directory*))
-   (conbox (if (probe-file confile)
-         (read-text-file-internal confile)
-         (empty-configuration-box))))
+                                    *default-site-directory*))
+          (conbox (if (probe-file confile)
+                    (read-text-file-internal confile)
+                    (empty-configuration-box))))
     (shrink conbox)
     (make-vc (list (list "Edit" "the" "following" "box:")
-       (list "Write-Text-File" conbox
-       (make-box `((,(namestring confile)))))
-       (list "You" "need" "to" "write" "out" "your" "changes"
-       "by" "evaluating" "the" "above" "line")
-       (list "and" "then" "evaluate" "the" "next" "line"
-       "to" "make" "the" "changes")
-       (list "Reconfigure-System")))))
+                    (list "Write-Text-File" conbox
+                          (make-box `((,(namestring confile)))))
+                    (list "You" "need" "to" "write" "out" "your" "changes"
+                          "by" "evaluating" "the" "above" "line")
+                    (list "and" "then" "evaluate" "the" "next" "line"
+                          "to" "make" "the" "changes")
+                    (list "Reconfigure-System")))))
 
 (boxer-eval:defboxer-primitive bu::toggle-fonts ()
   "A command for toggling between capi cfnt fonts and freetype fonts
    until we're done with the transition."
-  (if (member :freetype-fonts *features*)
-    (setf *features* (remove :freetype-fonts *features*))
-    (setf *features* (cons :freetype-fonts *features*)))
-  boxer-eval::*novalue*)
+                               (if (member :freetype-fonts *features*)
+                                 (setf *features* (remove :freetype-fonts *features*))
+                                 (setf *features* (cons :freetype-fonts *features*)))
+                               boxer-eval::*novalue*)
