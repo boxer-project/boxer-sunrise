@@ -45,7 +45,6 @@
         (dolist (screen-box (get-visible-screen-objs  self))
           (unless (eq ':shrunk (display-style screen-box))
             (drawing-on-turtle-slate screen-box
-                                     #-gl
                                      (cond ((or (null bg) bitmap-p)
                                             (erase-rectangle gswid gshei 0 0))
                                        ((color? bg)
@@ -54,15 +53,6 @@
                                           (draw-rectangle alu-seta gswid gshei 0 0)))
                                        ;; check for tiling pattern here
                                        )
-                                     #+gl
-                                     (progn
-                                      (bw::pushattributes)
-                                      (bw::setpattern 0)
-                                      (if (numberp bg) (bw::color bg)(bw::color *background-color*))
-                                      (bw::rectfi
-                                       (- (round gswid 2)) (- (round gshei 2))
-                                       (round gswid 2) (- gshei 2))
-                                      (bw::popattributes))
                                      ;; now, if only one of the drawing sufaces has been cleared,
                                      ;; we need to regenerate the other surface
                                      (when (and (not graphics-list-p) graphics-list)
@@ -83,19 +73,4 @@
      (clear-box self :bitmap-p nil :graphics-list-p t))
     ((eq surface :none)
      (clear-box self :bitmap-p nil :graphics-list-p nil))
-    (t (clear-box self)))
-  ;  (with-graphics-vars-bound (self sheet)
-  ;    #-gl
-  ;    (with-graphics-screen-parameters-once
-  ;	(dolist (turtle (graphics-sheet-object-list sheet))
-  ;	  ;; the save-under of the moving turtle has to be filled BEFORE ANY
-  ;	  ;; turtles are drawn or else it might capture part of another
-  ;	  ;; turtle's shape
-  ;	  (save-under-turtle turtle)))
-  ;    (with-graphics-screen-parameters
-  ;	#+gl
-  ;      (bw::clear-overlay-planes)
-  ;      (dolist (turtle (graphics-sheet-object-list sheet))
-  ;	(when (shown? turtle)
-  ;	  (draw turtle)))))
-  )
+    (t (clear-box self))))
