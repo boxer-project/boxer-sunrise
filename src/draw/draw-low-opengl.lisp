@@ -352,10 +352,10 @@ notes:: check points arg on draw-poly
 (defun set-font-info (x)
   (let ((system-font (find-cached-font x)))
     (bw::ogl-set-font system-font)
-    (multiple-value-bind (ascent height widmax leading)
+    (multiple-value-bind (ascent height  leading)
                          (bw::ogl-font-info system-font)
-                         (setq %drawing-font x
-                               %drawing-font-cha-wid widmax ;; originally (- widmax 3)
+                         (setq ; %drawing-font x
+                               ; %drawing-font-cha-wid widmax ;; originally (- widmax 3)
                                %drawing-font-cha-ascent ascent
                                %drawing-font-cha-hei (+ height leading)))
     x))

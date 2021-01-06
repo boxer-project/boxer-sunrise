@@ -248,12 +248,10 @@ Modification History (most recent at the top)
 (defstruct (opengl-font (:constructor %make-opengl-font)
                         (:print-function %print-opengl-font))
   (native-font nil)   ;
-  (width nil) ;
   (height 0)
   ;; since opengl char drawing is baseline based, this is a useful
   ;; parameter to have available...
   (ascent 0)
-  (widths-array nil)
   )
 
 (defun %print-opengl-font (font stream level)
@@ -270,40 +268,6 @@ Modification History (most recent at the top)
   (color nil)
   (font  nil)
   )
-
-;;; It's taking too long to cache all the fonts on startup so the
-;;; new scheme is to resolve the native font into an OpenGL font but
-;;; fill in the font info on demand (in particular, the widths array)
-;;;
-;;; Note: 5/28/2011
-;;; Filling the entire unicode space of a font still introduces a perceptable
-;;; stutter so the new paradigm will be to fill the ASCII space of the widths
-;;; array and fill in the rest character by character on demand
-(defun fill-oglfont-parameters (ofont &optional (pane *boxer-pane*))
-  (let* ((native-font (opengl-font-native-font ofont))
-         (ascent (gp::get-font-ascent pane native-font)))
-    (setf (opengl-font-ascent ofont) ascent
-          (opengl-font-height ofont) (+ ascent (gp::get-font-descent pane
-                                                                     native-font)))
-    (cond ((gp::font-fixed-width-p pane native-font)
-           (setf (opengl-font-width ofont)
-                 (gp::get-char-width pane #\a native-font)))
-      (t (let ((widths-array (make-array (- *opengl-font-end*
-                                            *opengl-font-start*)
-                                         :element-type 'float
-                                         ; :element-type 'fixnum
-                                         ))
-               (maxwid 0))
-           (do-ofont-chars (char-code :end *opengl-font-cache-end*)
-             (let ((trans-idx (-& char-code *opengl-font-start*))
-                   (cw (gp::get-char-width pane (code-char char-code)
-                                           native-font)))
-               (setf (aref widths-array trans-idx) cw)
-               (setq maxwid (max maxwid cw))))
-           (setf (opengl-font-width ofont) maxwid)
-           (setf (opengl-font-widths-array ofont) widths-array))))
-    ofont))
-
 
 ;;; External Interface
 ;; ogl-set-font
@@ -316,11 +280,7 @@ Modification History (most recent at the top)
 ;; it is now possible for an OpenGL font to not have all its parameters
 ;; precalculated @ startup so check for, and handle this here
 
-(defun ensure-oglfont-parameters (font)
-  (when (and (null (opengl-font-width font))
-             (null (opengl-font-widths-array font)))
-    ;; font does not have precalculated width(s) info
-    (fill-oglfont-parameters font)))
+(defun ensure-oglfont-parameters (font) )
 
 ;; this handles font parameter filling in the editor
 ;; font parameter filling in sprite graphics is handled by change-graphics-font
@@ -360,7 +320,7 @@ Modification History (most recent at the top)
 ;; need to figure out what width info is used...
 (defun ogl-font-info (font)
   (values (bw::opengl-font-ascent font) (bw::opengl-font-height font)
-          (bw::opengl-font-width font) 1))
+           1))
 
 ;; Note: last value is "leading" which is the recommended space between lines
 
