@@ -763,15 +763,13 @@ notes:: check points arg on draw-poly
       (bw::ogl-set-font system-font))))
 
 (defmacro maintaining-drawing-font (&body body)
-  (let ((font-var (gensym)) (fba-var (gensym)))
-    `(let ((,font-var bw::*current-opengl-font*)
-           (,fba-var bw::*current-opengl-font-base-addr*))
+  (let ((font-var (gensym)))
+    `(let ((,font-var bw::*current-opengl-font*))
        (unwind-protect
         (progn . ,body)
         ;; NOTE: fonts aren't necessarily EQ
         (unless (eql bw::*current-opengl-font* ,font-var)
-          (setq bw::*current-opengl-font* ,font-var
-                bw::*current-opengl-font-base-addr* ,fba-var))))))
+          (setq bw::*current-opengl-font* ,font-var))))))
 
 ;; proportional fonts
 (defun cha-wid (char)

@@ -173,7 +173,6 @@ Modification History (most recent at the top)
 (defvar *current-opengl-font* nil
   "set-font sets, char drawing uses this value")
 
-(defvar *current-opengl-font-base-addr* nil)
 
 ;; control how much of font to cache on GPU
 ;; we can tune these on startup if GPU memory is low
@@ -249,7 +248,6 @@ Modification History (most recent at the top)
 (defstruct (opengl-font (:constructor %make-opengl-font)
                         (:print-function %print-opengl-font))
   (native-font nil)   ;
-  (dl-base-addr nil)  ; NIL means font is not in GPU cache
   (width nil) ;
   (height 0)
   ;; since opengl char drawing is baseline based, this is a useful
@@ -263,10 +261,10 @@ Modification History (most recent at the top)
   (cond ((capogi-font? (opengl-font-native-font font))
          (format stream "#<OGLFont ")
          (print-capogi-font-internal (opengl-font-native-font font) stream)
-         (format stream "[~A]>" (opengl-font-dl-base-addr font)))
+         (format stream ">" ))
     (t
-     (format stream "#<OGLFont ~A [~A]>"
-             (opengl-font-native-font font) (opengl-font-dl-base-addr font)))))
+     (format stream "#<OGLFont ~A >"
+             (opengl-font-native-font font)))))
 
 (defstruct (ogl-graphics-state (:constructor %make-ogl-graphics-state))
   (color nil)
@@ -314,15 +312,12 @@ Modification History (most recent at the top)
                    (opengl:rendering-on (*boxer-pane*) (cache-capogi-font (opengl-font-native-font ofont))))
               (t
                (cache-capogi-font (opengl-font-native-font ofont))))))
-    (setf (opengl-font-dl-base-addr ofont) ba))
+    )
   ofont)
 
 (defun %ogl-decache-font (ofont)
-  (unless (null (opengl-font-dl-base-addr ofont))
-    ;; it is possible for a font to be in the cache, but unfilled because of the
-    ;; new lazy caching scheme
-    (opengl:gl-delete-lists (opengl-font-dl-base-addr ofont) *opengl-font-cache-end*)  ;was *opengl-font-end*
-    (setf (opengl-font-dl-base-addr ofont) nil)))
+  ;; TODO sgithens Remove this completely
+    )
 
 ;;; External Interface
 ;; ogl-set-font
@@ -339,28 +334,21 @@ Modification History (most recent at the top)
   (when (and (null (opengl-font-width font))
              (null (opengl-font-widths-array font)))
     ;; font does not have precalculated width(s) info
-    (fill-oglfont-parameters font))
-  (when (null (opengl-font-dl-base-addr font)) (ogl-cache-font font)))
+    (fill-oglfont-parameters font)))
 
 ;; this handles font parameter filling in the editor
 ;; font parameter filling in sprite graphics is handled by change-graphics-font
 (defun ogl-set-font (font)
   (ensure-oglfont-parameters font)
-  (setq *current-opengl-font* font
-        *current-opengl-font-base-addr* (opengl-font-dl-base-addr font)))
+  (setq *current-opengl-font* font))
 
 (defmacro with-ogl-font ((font) &body body)
   (let ((oldfont (gensym)))
     `(let ((,oldfont *current-opengl-font*))
        (unwind-protect
         (progn
-         (when (null (opengl-font-dl-base-addr ,font)) (ogl-cache-font ,font))
-         (let ((*current-opengl-font* ,font)
-               (*current-opengl-font-base-addr*
-                (opengl-font-dl-base-addr ,font)))
-           . ,body))
-        (when (null (opengl-font-dl-base-addr ,oldfont))
-          (ogl-cache-font ,oldfont))))))
+         (let ((*current-opengl-font* ,font))
+           . ,body))))))
 
 ;;; Font cache is a FIFO list of font structs
 ;;; we should query the OPENGL implemtation and tune some of these numbers
@@ -438,8 +426,8 @@ Modification History (most recent at the top)
   (let* ((nf (bw::opengl-font-native-font ofont))
          (attr (gp:font-description-attributes
                 (gp::font-description nf))))
-    (format t "~%~A  ~D  ~A,~A: base addr = ~D" (getf attr :name) (getf attr :size)
-            (getf attr :weight) (getf attr :slant) (bw::opengl-font-dl-base-addr ofont))))
+    (format t "~%~A  ~D  ~A,~A" (getf attr :name) (getf attr :size)
+            (getf attr :weight) (getf attr :slant))))
 
 
 
