@@ -120,23 +120,6 @@ Modification History (most recent at the top)
         ))
     oglfont))
 
-;; should fill the widths-array in the same loop...
-;; needs to be called inside of an   (opengl:rendering-on (window)
-
-(defun cache-capogi-font (cfont &optional make-widths-array?)
-  (let* ((ccount (capogi-font-count  cfont))
-         (fhei (capogi-font-height cfont))
-         (fascent (capogi-font-ascent cfont))
-         (fbaseline (float (- fhei fascent)))
-         (wa (when (and make-widths-array? (null (capogi-font-fixed-width cfont)))
-               (make-array ccount)))
-         (chars (capogi-font-chars cfont))
-         (ba (opengl:gl-gen-lists ccount)))
-    (opengl:gl-pixel-storei opengl:*gl-unpack-alignment* 1)
-    (values ba wa)))
-
-
-
 ;;; file operations
 
 ;; setq this when saving

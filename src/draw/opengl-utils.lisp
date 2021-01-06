@@ -304,16 +304,6 @@ Modification History (most recent at the top)
            (setf (opengl-font-widths-array ofont) widths-array))))
     ofont))
 
-
-;; should do smarter error handling here
-;; for now, allow wgl-use-font to signal the error (:errorp t)
-(defun %ogl-cache-font (ofont)
-  (let ((ba (cond ((null box::%drawing-array)
-                   (opengl:rendering-on (*boxer-pane*) (cache-capogi-font (opengl-font-native-font ofont))))
-              (t
-               (cache-capogi-font (opengl-font-native-font ofont))))))
-    )
-  ofont)
 
 ;;; External Interface
 ;; ogl-set-font
@@ -364,19 +354,6 @@ Modification History (most recent at the top)
   (when *include-font-debugging*
     `(when *debug-font-caching*
        . ,forms)))
-
-(defun ogl-cache-font (font-struct)
-  (ogl-debug (format t "~&===> Caching ~A" font-struct))
-  (ogl-debug (format t "  cache= ~A" *cached-fonts*))
-  (cond ((>= (length *cached-fonts*) *font-cache-size*)
-         ;; decache from GPU...
-         (ogl-debug (format t "~& %decaching ~A" (car (last *cached-fonts*))))
-         ;; remove from font list
-         (setq *cached-fonts* (subseq *cached-fonts* 0 (1-& *font-cache-size*)))
-         ;; add new
-         (push (%ogl-cache-font font-struct) *cached-fonts*))
-    (t (push (%ogl-cache-font font-struct) *cached-fonts*)))
-  (ogl-debug (format t "~& cache= ~A~&" *cached-fonts*)))
 
 ;; returns ascent, height and leading (space between rows)
 ;; maybe shopuld return width info ?
