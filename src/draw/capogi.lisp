@@ -53,23 +53,14 @@ Modification History (most recent at the top)
 (defvar *capogi-font-families* nil)
 (defvar *capogi-font-sizes* nil)
 
-(defstruct capogi-char
-  (char #\null)
-  (wid 0)
-  (hei 0)  ;; should we use ascent, descent instead ?
-  (data nil))  ;; list of bytes, left to right, bottom to top padded out to full bytes
-
-(defvar *capogi-char-count* 255)
-
 (defstruct (capogi-font (:constructor %make-capogi-font)
                         (:print-function print-capogi-font)
                         (:predicate capogi-font?))
   (capi-font nil) ; can be an instance of a capi font or a list of (family size styles)
-  (count *capogi-char-count*)
+  (count 255)
   (height 0)  ;; any other font metrics ?
   (ascent 0)
-  (fixed-width nil) ;; nil for var width fonts, otherwise a number
-  (chars nil))
+  )
 
 (defun print-capogi-font (font stream level)
   (declare (ignore level))
@@ -107,8 +98,7 @@ Modification History (most recent at the top)
 
 ;;; converting to OpenGL
 (defun make-opengl-font-from-capogi-font (cfont)
-  (let ((oglfont (%make-opengl-font :native-font cfont))
-        (cfw (capogi-font-fixed-width cfont)))
+  (let ((oglfont (%make-opengl-font :native-font cfont)))
     (setf (opengl-font-height oglfont) (capogi-font-height cfont)
           (opengl-font-ascent oglfont) (capogi-font-ascent cfont))
     oglfont))
@@ -237,13 +227,8 @@ Modification History (most recent at the top)
          (cfont (%make-capogi-font
                  :capi-font (list* family-name size (styles-from-byte style-byte))
                  :height (read-byte stream)
-                 :ascent (read-byte stream)
-                 :fixed-width (let ((fwbyte (read-byte stream)))
-                                (if (zerop fwbyte) nil fwbyte))))
-         (ccount (read-byte stream))
-         (chars (make-array ccount)))
+                 :ascent (read-byte stream))))
     (declare (ignore version)) ; will use it eventually and must get the byte out anyway
-    (setf (capogi-font-chars cfont) chars)
     cfont))
 
 (defun read-simple-string (stream)
