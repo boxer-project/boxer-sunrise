@@ -411,42 +411,21 @@ Modification History (most recent at the top)
 
 ;;; sizes, this can be all done on the CPU side
 (defun ogl-char-width (cha &optional (font *current-opengl-font*))
-  #+freetype-fonts
   (let* ((cha-pixmap (boxer::find-freetype-pixmap cha font *ogl-current-color-vector*))
         (width (opengl::ogl-pixmap-width cha-pixmap)))
     ;; TODO This could potentially be the glyph advance value, but so far the value of
     ;; that and the pixmap widths seem the same.
-    width)
-  #-freetype-fonts
-  (let ((wa (opengl-font-widths-array font)))
-    (cond ((not (null wa))
-           (let ((ccw (aref wa (charcode->oglfont-index (char-code cha)))))
-             (cond ((null ccw)
-                    (let ((w (gp:get-char-width *boxer-pane* (char-code cha)
-                                                (opengl-font-native-font font))))
-                      (setf (aref wa (charcode->oglfont-index (char-code cha))) w)
-                      w))
-               (t ccw))))
-      (t (opengl-font-width font)))))
+    width))
 
 ;; the same for both char,string-height
 (defun ogl-font-height (font) (opengl-font-height font))
 (defun ogl-font-ascent (font) (opengl-font-ascent font))
 
 (defun ogl-string-width (string &optional (font *current-opengl-font*))
-  #+freetype-fonts
   (let* ((cha-pixmap (boxer::find-freetype-pixmap string font *ogl-current-color-vector*))
         (width (opengl::ogl-pixmap-width cha-pixmap)))
     ;; TODO This should actually be the glyph advance value
-    (+ width))
-  #-freetype-fonts
-  (let ((wa (opengl-font-widths-array font)))
-    (cond ((not (null wa))
-           (let ((acc 0))
-             (dotimes (i (length string))
-               (incf acc (aref wa (charcode->oglfont-index (char-code (char string i))))))
-             acc))
-      (t (* (opengl-font-width font) (length string))))))
+    width))
 
 (defun ogl-draw-char (char x y)
   (if (member :freetype-fonts *features*)
