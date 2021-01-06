@@ -148,6 +148,8 @@ Modification History (most recent at top)
                 ;; set file props only if we are transitioning
                 (set-file-box-properties what))
               (mark-box-as-file what filename)
+              ;; Add to Open Recents...
+              (add-recent-file filename)
               (mark-file-box-clean what)
               (modified what)))))))
   boxer-eval::*novalue*)
@@ -249,11 +251,12 @@ Modification History (most recent at top)
                    (when (neq read-only? (read-only-box? box))
                      (setf (read-only-box? box) read-only?)))
                  (unless (eq existing-filename filename)
-                   (putprop box filename :associated-file)))))
+                   (putprop box filename :associated-file))
+                 (add-recent-file filename))))
         (mark-file-box-clean box))))
   boxer-eval::*novalue*)
 
-(defboxer-command com-open-box-file (&optional explicit-redisplay)
+(defboxer-command com-open-box-file (&optional explicit-redisplay file-to-open)
   "Inserts the contents of a Boxer file"
   (if (name-row? (point-row))
     (boxer-editor-error "Can't insert a (file) box while in a name")
@@ -261,7 +264,7 @@ Modification History (most recent at top)
       (catch 'cancel-boxer-file-dialog
         (boxer-eval::report-eval-errors-in-editor
           ;; (with-drawing-port *boxer-pane*
-          (let* ((filename (boxer-open-file-dialog))
+          (let* ((filename (or file-to-open (boxer-open-file-dialog)))
                  (box (read-internal filename)))
             (when (box? box)
               ;; if this was previously, a saved world box, we need to
@@ -275,6 +278,8 @@ Modification History (most recent at top)
                                (string= (slot-value box 'name) "WORLD")))
                   (setf (slot-value box 'name) nil)))
               (insert-cha *point* box)
+              ;; Add the newly opened file to the recents list
+              (add-recent-file filename)
               (when explicit-redisplay (repaint))))))
       ;; this marks the box superior to the box being loaded
       (mark-file-box-dirty (point-row))))

@@ -256,6 +256,23 @@ Modification History (most recent at top)
                                                :cyan :magenta :yellow :purple :gray :orange)
                                       :callback 'font-color-menu-action))))
 
+(defun open-recent-items (interface)
+  "Build the menu items for recently opened files."
+  (mapcar #'(lambda (x)
+              (cdr (assoc :path x)))
+    (boxer::get-recent-files)))
+
+(defvar *file-open-recent-menu*
+  (make-instance 'capi::menu-component
+                 :items
+                 (list
+                   (make-instance 'capi:menu-item :title "Open..."
+                                      :accelerator #\o :callback 'open-file)
+                   (make-instance 'capi::menu :title "Open Recent"
+                                      :items-function 'open-recent-items
+                                      :callback #'(lambda (data interface)
+                                        (boxer::com-open-box-file t data))))))
+
 (defvar *file-export-menu*
   (make-instance 'capi::menu :title "Export..."
                  :items
@@ -471,17 +488,17 @@ Modification History (most recent at top)
                  :columns 1 :rows 2 :y-gap 1 :x-uniform-size-p t))
   ;; menu item actions are defined in lw-menu.lisp
   (:menus
-    (file-menu "File" ((:component
-                        (("New" :callback 'new-file-box)
-                         ("Open" :accelerator #\o :callback 'open-file)
-                         ("Close" :callback 'close-file-box)
-                         ("File Toggle" :callback 'menu-file-toggle
-                                        :title-function 'menu-file-toggle-print)))
+    (file-menu "File" (
+                       ;; The Open and Open Recent components are generated and inserted programatically at runtime.
                        (:component
                         (("Save" :accelerator #\s :callback 'save-document
                                  :enabled-function 'save-menu-item-enabled-function)
                          ("Save As..." :callback 'save-document-as)
-                         ("Save Box As..." :callback 'save-box-as)))
+                         ("Close" :callback 'close-file-box)))
+                       (:component
+                        (("File Toggle" :callback 'menu-file-toggle  ;; Mark box as file
+                                        :title-function 'menu-file-toggle-print)
+                         ("Mark Box as File, Save..." :callback 'save-box-as) )) ; Previously "Save Box As..."
                        (:component
                         (("Link to File" :callback 'open-xref)))
                        (:component
@@ -652,7 +669,12 @@ Modification History (most recent at top)
                       *font-sub-style-menu* *font-sub-color-menu*)))
   (setf (capi::menu-items (slot-value *boxer-frame* 'bw::file-menu))
         (let ((fmis (capi::menu-items (slot-value *boxer-frame* 'bw::file-menu))))
-          (append (butlast fmis) (list bw::*file-export-menu*) (last fmis)))))
+          (append (butlast fmis) (list bw::*file-export-menu*) (last fmis))))
+  ;; Recent files
+  (boxer::reset-recent-files)
+  (setf (capi::menu-items (slot-value *boxer-frame* 'bw::file-menu))
+        (let ((fmis (capi::menu-items (slot-value *boxer-frame* 'bw::file-menu))))
+          (append  (list bw::*file-open-recent-menu*) fmis))))
 
 (defun window-system-specific-make-boxer ()
   (setq *boxer-frame* (make-instance 'boxer-frame))
