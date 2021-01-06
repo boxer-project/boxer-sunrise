@@ -314,10 +314,6 @@ Modification History (most recent at the top)
                (cache-capogi-font (opengl-font-native-font ofont))))))
     )
   ofont)
-
-(defun %ogl-decache-font (ofont)
-  ;; TODO sgithens Remove this completely
-    )
 
 ;;; External Interface
 ;; ogl-set-font
@@ -375,18 +371,12 @@ Modification History (most recent at the top)
   (cond ((>= (length *cached-fonts*) *font-cache-size*)
          ;; decache from GPU...
          (ogl-debug (format t "~& %decaching ~A" (car (last *cached-fonts*))))
-         (%ogl-decache-font (car (last *cached-fonts*)))
          ;; remove from font list
          (setq *cached-fonts* (subseq *cached-fonts* 0 (1-& *font-cache-size*)))
          ;; add new
          (push (%ogl-cache-font font-struct) *cached-fonts*))
     (t (push (%ogl-cache-font font-struct) *cached-fonts*)))
   (ogl-debug (format t "~& cache= ~A~&" *cached-fonts*)))
-
-;; useful during debugging....
-(defun clear-ogl-font-cache ()
-  (dolist (f *cached-fonts*) (%ogl-decache-font f))
-  (setq *cached-fonts* nil))
 
 ;; returns ascent, height and leading (space between rows)
 ;; maybe shopuld return width info ?
