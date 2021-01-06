@@ -117,8 +117,7 @@ Modification History (most recent at the top)
              (wa (make-array ccount))
              (chars (capogi-font-chars cfont)))
       (setf (opengl-font-widths-array oglfont) wa)
-      (dotimes (i ccount)
-        (setf (svref wa i) (capogi-char-wid (svref chars i))))))
+        ))
     oglfont))
 
 ;; should fill the widths-array in the same loop...
@@ -134,21 +133,6 @@ Modification History (most recent at the top)
          (chars (capogi-font-chars cfont))
          (ba (opengl:gl-gen-lists ccount)))
     (opengl:gl-pixel-storei opengl:*gl-unpack-alignment* 1)
-    (dotimes (i ccount)
-      (let* ((char (svref chars i))
-             (cwid (capogi-char-wid char))
-             (raw-data (capogi-char-data char))
-             (ffi-data (cond ((typep raw-data 'fli::pointer) raw-data)
-                             ((listp raw-data)
-                              (fli:allocate-foreign-object :type '(:unsigned :byte)
-                                                           :initial-contents raw-data))
-                             (t (error "Bad char data ~A" raw-data)))))
-        (when wa (setf (svref wa i) cwid))
-        (opengl:gl-new-list (+ ba i) opengl:*gl-compile*)
-        ;; the bitmap should have its origin at its baseline
-        (opengl:gl-bitmap cwid fhei 0.0 fbaseline (float cwid) 0.0 ffi-data)
-        (opengl:gl-end-list)
-        (unless (eq raw-data ffi-data) (setf (capogi-char-data char) ffi-data))))
     (values ba wa)))
 
 
@@ -284,7 +268,6 @@ Modification History (most recent at the top)
          (chars (make-array ccount)))
     (declare (ignore version)) ; will use it eventually and must get the byte out anyway
     (setf (capogi-font-chars cfont) chars)
-    (dotimes (i ccount) (setf (svref chars i) (load-capogi-glyph stream)))
     cfont))
 
 (defun read-simple-string (stream)
@@ -301,26 +284,6 @@ Modification History (most recent at the top)
         (t '(:gak))))
 
 (defvar *convert-char-data-on-load?* t) ; any reason to NOT do this ?
-
-(defun load-capogi-glyph (stream)
-  (let ((char (make-capogi-char)))
-    ;; first, read 4 bytes and assemble the character
-    (setf (capogi-char-char char)
-          (code-char (dpb (read-byte stream) (byte 8 24)
-                          (dpb (read-byte stream) (byte 8 16)
-                               (dpb (read-byte stream) (byte 8 8)
-                                    (read-byte stream))))))
-    ;; now 1 byte of width
-    (setf (capogi-char-wid char) (read-byte stream))
-    ;; now the data
-    (let* ((count (dpb (read-byte stream) (byte 8 8 ) (read-byte stream)))
-           (f-array (fli:allocate-foreign-object :nelems count :type '(:unsigned :byte))))
-      (dotimes (i count)
-        (setf (fli:dereference f-array :index i) (read-byte stream)))
-      (setf (capogi-char-data char) f-array))
-    char))
-
-
 
 ;;;; not for regular Boxer operations
 
