@@ -135,17 +135,9 @@ Modification History (most recent at the top)
       (when (probe-file (merge-pathnames testfile sd))
         (return sd)))))
 
-(defvar *capogi-font-file-type* "cfnt")
-
-(defvar *capogi-font-file-version* 1)
-
 (defmacro with-capogi-font-stream ((stream-var file direction) &body body)
   `(with-open-file (,stream-var ,file :direction ,direction :element-type '(unsigned-byte 8))
      . ,body))
-
-(defun cfont-filename (cfont)
-  (let ((fv (capi-font-values (capogi-font-capi-font cfont))))
-    (make-cfont-filename (car fv) (cadr fv) (cddr fv))))
 
 (defun make-cfont-filename (family size styles)
   (format nil "~A~D~A.~A"
@@ -155,7 +147,7 @@ Modification History (most recent at the top)
                 ((member :bold styles) "b")
                 ((member :italic styles) "i")
                 (t ""))
-          *capogi-font-file-type*))
+          "cfnt"))
 
 ;; core interface,
 ;; fill-bootstrapped-font-caches calls make-boxer-font to make an OpenGL font with
@@ -243,8 +235,6 @@ Modification History (most recent at the top)
         ((= byte 2) '(:italic))
         ((= byte 3) '(:bold :italic))
         (t '(:gak))))
-
-(defvar *convert-char-data-on-load?* t) ; any reason to NOT do this ?
 
 ;;;; not for regular Boxer operations
 
