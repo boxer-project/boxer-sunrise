@@ -414,8 +414,9 @@ Modification History (most recent at the top)
   #+freetype-fonts
   (let* ((cha-pixmap (boxer::find-freetype-pixmap cha font *ogl-current-color-vector*))
         (width (opengl::ogl-pixmap-width cha-pixmap)))
-    ;; TODO This should actually be the glyph advance value
-    (+ width 1))
+    ;; TODO This could potentially be the glyph advance value, but so far the value of
+    ;; that and the pixmap widths seem the same.
+    width)
   #-freetype-fonts
   (let ((wa (opengl-font-widths-array font)))
     (cond ((not (null wa))
