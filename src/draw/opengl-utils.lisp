@@ -253,7 +253,7 @@ Modification History (most recent at the top)
   (declare (ignore level))
   (cond ((capogi-font? (opengl-font-native-font font))
          (format stream "#<OGLFont ")
-         (print-capogi-font-internal (opengl-font-native-font font) stream)
+         (print-capogi-font (opengl-font-native-font font) stream)
          (format stream ">" ))
     (t
      (format stream "#<OGLFont ~A >"

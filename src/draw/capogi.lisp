@@ -58,26 +58,10 @@ Modification History (most recent at the top)
                         (:predicate capogi-font?))
   (capi-font nil)) ; can be an instance of a capi font or a list of (family size styles)
 
-
 (defun print-capogi-font (font stream level)
   (declare (ignore level))
-  (format stream "#<CAPOGI-FONT ")
-  (print-capogi-font-internal font stream)
-  (format stream ">"))
-
-(defun print-capogi-font-internal (font stream)
   (let ((f (capogi-font-capi-font font)))
-    (cond ((listp f)
-           (format stream "~A ~D ~{ ~A~}" (car f) (cadr f) (cddr f)))
-          (t
-           (format stream "~A" (font-pretty-name f))))))
-
-(defun font-pretty-name (gpfont &optional stream)
-  (let* ((fdesc (gp:font-description gpfont))
-         (attr (unless (null fdesc) (gp:font-description-attributes fdesc))))
-    (unless (null attr)
-      (format stream "~A ~A ~A ~D"
-              (getf attr :family) (getf attr :weight) (getf attr :slant) (getf attr :size)))))
+    (format stream "#<CAPOGI-FONT ~A ~D ~{ ~A~}>" (car f) (cadr f) (cddr f))))
 
 ;; because the glyphs are aliased, we look check if the pixel is white or not, instead of
 ;; looking for black
@@ -102,43 +86,6 @@ Modification History (most recent at the top)
 
 ;; setq this when saving
 (defvar *capogi-font-directory* nil)
-;; this is more useful with delivered boxer images
-(defun capogi-font-directory ()
-  (or *capogi-font-directory*
-      (setq *capogi-font-directory* (font-directory-search))))
-
-
-;; remember that the Mac app is inside a directory "bundle"
-;; <bundle directory>/Contents/MacOS/<executable>
-;; we can put the fonts into the bundle in the location <bundle directory>/Contents/Resources/Fonts
-(defun font-directory-search ()
-  (let ((testfile "Arial10.cfnt")
-        (searchlist (list *capogi-font-directory*
-                          #+macosx
-                          (make-pathname :directory
-                                         (append (butlast (pathname-directory (lw:lisp-image-name)))
-                                                 '("Resources" "Fonts")))
-                          (make-pathname :directory
-                                         (append (pathname-directory (lw:lisp-image-name))
-                                                 '("Fonts"))))))
-    (dolist (folder-key '(:appdata :local-appdata :common-appdata))
-      (push (make-pathname :directory (append (pathname-directory
-                                               (sys::get-folder-path folder-key))
-                                              '("Boxer" "Fonts")))
-            searchlist))
-    (dolist (sd searchlist)
-      (when (probe-file (merge-pathnames testfile sd))
-        (return sd)))))
-
-(defun make-cfont-filename (family size styles)
-  (format nil "~A~D~A.~A"
-          family (round size)  ; MacOS allows floating font sizes
-          (cond ((null styles) "")
-                ((and (member :bold styles) (member :italic styles)) "bi")
-                ((member :bold styles) "b")
-                ((member :italic styles) "i")
-                (t ""))
-          "cfnt"))
 
 ;; core interface,
 ;; fill-bootstrapped-font-caches calls make-boxer-font to make an OpenGL font with
@@ -240,9 +187,8 @@ Modification History (most recent at the top)
 ;; returns a list of strings
 (defun capogi-fonts-info ()
   "This is used by the show-font-info primitive."
-  (let* ((cfd (capogi-font-directory))
-         (infofilename (merge-pathnames "info.txt" cfd))
-         (return-strings (list (format nil"Active Font directory is ~A" (bw::capogi-font-directory)))))
+  (let* ((infofilename (merge-pathnames "info.txt" bw::*capogi-font-directory*))
+         (return-strings (list (format nil"Active Font directory is ~A" bw::*capogi-font-directory*))))
     (when (probe-file infofilename)
       (with-open-file (s infofilename :direction :input :element-type 'character)
         (loop (let ((line (read-line s nil nil)))
