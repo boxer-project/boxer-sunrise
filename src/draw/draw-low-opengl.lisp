@@ -201,9 +201,7 @@ notes:: check points arg on draw-poly
 (defun window-pixel-color (x y &optional (view *boxer-pane*)) (opengl::pixel->color (%get-pixel view x y)))
 
 (defmacro rebind-font-info ((font-no) &body body)
-  `(let ((%drawing-font %drawing-font)
-         (%drawing-font-cha-wid %drawing-font-cha-wid)
-         (%drawing-font-cha-hei %drawing-font-cha-hei)
+  `(let ((%drawing-font-cha-hei %drawing-font-cha-hei)
          (%drawing-font-cha-ascent %drawing-font-cha-ascent))
      (unless (null ,font-no)
        (maintaining-drawing-font
@@ -354,9 +352,7 @@ notes:: check points arg on draw-poly
     (bw::ogl-set-font system-font)
     (multiple-value-bind (ascent height  leading)
                          (bw::ogl-font-info system-font)
-                         (setq ; %drawing-font x
-                               ; %drawing-font-cha-wid widmax ;; originally (- widmax 3)
-                               %drawing-font-cha-ascent ascent
+                         (setq %drawing-font-cha-ascent ascent
                                %drawing-font-cha-hei (+ height leading)))
     x))
 

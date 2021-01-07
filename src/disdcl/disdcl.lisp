@@ -195,13 +195,8 @@ Modification History (most recent at the top)
 (DEFVAR %CLIP-BOT 0)
 
 ;;;; Font Vars....
-(defvar %drawing-font)
 
-(defvar %drawing-font-cha-wid)
 (defvar %drawing-font-cha-hei)
-
-(defvar %drawing-fit)
-(defvar %drawing-font-cha-wid-table)
 
 (defvar *redisplay-id* 0)
 (defvar *redisplay-in-progress?* nil)
