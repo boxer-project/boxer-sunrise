@@ -130,10 +130,6 @@ Modification History (most recent at the top)
       (when (probe-file (merge-pathnames testfile sd))
         (return sd)))))
 
-(defmacro with-capogi-font-stream ((stream-var file direction) &body body)
-  `(with-open-file (,stream-var ,file :direction ,direction :element-type '(unsigned-byte 8))
-     . ,body))
-
 (defun make-cfont-filename (family size styles)
   (format nil "~A~D~A.~A"
           family (round size)  ; MacOS allows floating font sizes
@@ -198,37 +194,6 @@ Modification History (most recent at the top)
         ((member :italic styles) 2)
         (t 0)))
 
-;; might want to pack the char data
-;; doesn't hack data which has already been converted to FFI
-;; each char will dump 4 bytes of charcode (to allow future possibility for unicode)
-;; 1 byte for char width(any chars larger than 255 ?), and then the data, 2 bytes length + bytes
-
-(defun load-capogi-font (stream)
-  ;; 1st check for magic numbers and get file version number
-  (unless (and (= (read-byte stream) #xF0) (= (read-byte stream) #x3D))
-    (error "~A is out of synch or NOT a Capogi Font stream" stream))
-  (let* ((version (read-byte stream))
-         (family-name (read-simple-string stream))
-         (size (read-byte stream))
-         (style-byte (read-byte stream))
-         (cfont (%make-capogi-font
-                 :capi-font (list* family-name size (styles-from-byte style-byte)))))
-    (declare (ignore version)) ; will use it eventually and must get the byte out anyway
-    cfont))
-
-(defun read-simple-string (stream)
-  (let* ((count (read-byte stream))
-         (string (make-string count)))
-    (dotimes (i count) (setf (char string i) (code-char (read-byte stream))))
-    string))
-
-(defun styles-from-byte (byte)
-  (cond ((zerop byte) nil)
-        ((= byte 1) '(:bold))
-        ((= byte 2) '(:italic))
-        ((= byte 3) '(:bold :italic))
-        (t '(:gak))))
-
 ;;;; not for regular Boxer operations
 
 (defun init-capogi-font-cache ()
@@ -267,13 +232,9 @@ Modification History (most recent at the top)
           (when verbose?
             (format t "~%Loading ~A ~D ~A => (~D,~D,~D)"
                     fam size (if (null style) "" style) i j k))
-          (with-capogi-font-stream (stream (merge-pathnames (make-cfont-filename fam
-                                                                                 size
-                                                                                 style)
-                                                            (capogi-font-directory))
-                                           ':input)
             (setf (svref (svref (svref *capogi-font-cache* i) j) k)
-                  (load-capogi-font stream)))
+                              (%make-capogi-font
+                :capi-font (list* fam size style)))
           (setq k  (1+ k)))))))
 
 ;; returns a list of strings
