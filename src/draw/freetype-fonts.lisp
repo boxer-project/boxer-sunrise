@@ -102,6 +102,7 @@
 
 (defun make-freetype-pixmap (char-to-draw current-font cur-color)
   (let* ((rendered-array (freetype2::toy-string-to-array (current-freetype-font current-font) (string char-to-draw) :left-right))
+         (advances (freetype2::get-string-advances (current-freetype-font current-font) (string char-to-draw)))
          (width (freetype2::array-dimension rendered-array 1))
          (height (freetype2::array-dimension rendered-array 0))
          (fli-data (fli:allocate-foreign-object :type :unsigned
