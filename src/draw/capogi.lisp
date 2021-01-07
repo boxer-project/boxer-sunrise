@@ -56,10 +56,8 @@ Modification History (most recent at the top)
 (defstruct (capogi-font (:constructor %make-capogi-font)
                         (:print-function print-capogi-font)
                         (:predicate capogi-font?))
-  (capi-font nil) ; can be an instance of a capi font or a list of (family size styles)
-  (height 0)  ;; any other font metrics ?
-  (ascent 0)
-  )
+  (capi-font nil)) ; can be an instance of a capi font or a list of (family size styles)
+
 
 (defun print-capogi-font (font stream level)
   (declare (ignore level))
@@ -214,9 +212,7 @@ Modification History (most recent at the top)
          (size (read-byte stream))
          (style-byte (read-byte stream))
          (cfont (%make-capogi-font
-                 :capi-font (list* family-name size (styles-from-byte style-byte))
-                 :height (read-byte stream)
-                 :ascent (read-byte stream))))
+                 :capi-font (list* family-name size (styles-from-byte style-byte)))))
     (declare (ignore version)) ; will use it eventually and must get the byte out anyway
     cfont))
 
