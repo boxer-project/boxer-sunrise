@@ -247,12 +247,7 @@ Modification History (most recent at the top)
 
 (defstruct (opengl-font (:constructor %make-opengl-font)
                         (:print-function %print-opengl-font))
-  (native-font nil)   ;
-  (height 0)
-  ;; since opengl char drawing is baseline based, this is a useful
-  ;; parameter to have available...
-  (ascent 0)
-  )
+  (native-font nil))
 
 (defun %print-opengl-font (font stream level)
   (declare (ignore level))
@@ -319,8 +314,7 @@ Modification History (most recent at the top)
 ;; maybe shopuld return width info ?
 ;; need to figure out what width info is used...
 (defun ogl-font-info (font)
-  (values (bw::opengl-font-ascent font) (bw::opengl-font-height font)
-           1))
+  (values (ogl-font-ascent font) (ogl-font-height font) 1))
 
 ;; Note: last value is "leading" which is the recommended space between lines
 
@@ -333,8 +327,15 @@ Modification History (most recent at the top)
     width))
 
 ;; the same for both char,string-height
-(defun ogl-font-height (font) (opengl-font-height font))
-(defun ogl-font-ascent (font) (opengl-font-ascent font))
+(defun ogl-font-height (font)
+  "sgithens TODO: temporary hack until we draw the proper values from freetype"
+  (let* ((cha-pixmap (boxer::find-freetype-pixmap "A" font *ogl-current-color-vector*))
+        (height (opengl::ogl-pixmap-height cha-pixmap)))
+    height))
+
+(defun ogl-font-ascent (font)
+  "sgithens TODO: temporary hack see ogl-font-height, the math for this should be even more different"
+  (ogl-font-height font))
 
 (defun ogl-string-width (string &optional (font *current-opengl-font*))
   (let* ((cha-pixmap (boxer::find-freetype-pixmap string font *ogl-current-color-vector*))

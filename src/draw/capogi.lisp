@@ -57,7 +57,6 @@ Modification History (most recent at the top)
                         (:print-function print-capogi-font)
                         (:predicate capogi-font?))
   (capi-font nil) ; can be an instance of a capi font or a list of (family size styles)
-  (count 255)
   (height 0)  ;; any other font metrics ?
   (ascent 0)
   )
@@ -99,8 +98,6 @@ Modification History (most recent at the top)
 ;;; converting to OpenGL
 (defun make-opengl-font-from-capogi-font (cfont)
   (let ((oglfont (%make-opengl-font :native-font cfont)))
-    (setf (opengl-font-height oglfont) (capogi-font-height cfont)
-          (opengl-font-ascent oglfont) (capogi-font-ascent cfont))
     oglfont))
 
 ;;; file operations

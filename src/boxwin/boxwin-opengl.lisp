@@ -757,15 +757,6 @@ Modification History (most recent at top)
       (start-boxer-progress "Display ~D" (get-internal-real-time) 50)
       (when (member "-debug" sys:*line-arguments-list* :test #'string-equal)
         (opengl:describe-configuration *boxer-pane*))
-      (boxer::fill-bootstrapped-font-caches)
-      #+freetype-fonts (boxer::load-freetype-faces)
-      (let ((boxer::%private-graphics-list nil))
-        ;; needed by shape-box updater in the redisplay inits but not set until
-        ;; (boxer-eval::setup-evaluator) farther down
-        (run-redisplay-inits))
-
-      (start-boxer-progress "RDP inits ~D" (get-internal-real-time) 60)
-      (fixup-menus)
       ;; move to inits
 ;     (let ((gs (gp::get-graphics-state *boxer-pane*)))
 ;     (setf (gp::graphics-state-foreground gs) boxer::*foreground-color*))
@@ -782,6 +773,16 @@ Modification History (most recent at top)
                     (opengl::gl-enable opengl::*gl-blend*)
                     (opengl::gl-blend-func opengl::*gl-src-alpha* opengl::*gl-one-minus-src-alpha*)
                     (opengl::gl-hint opengl::*gl-line-smooth-hint* opengl::*gl-nicest*))
+      (boxer::fill-bootstrapped-font-caches)
+      ;; #+freetype-fonts
+      (boxer::load-freetype-faces)
+      (let ((boxer::%private-graphics-list nil))
+        ;; needed by shape-box updater in the redisplay inits but not set until
+        ;; (boxer-eval::setup-evaluator) farther down
+        (run-redisplay-inits))
+
+      (start-boxer-progress "RDP inits ~D" (get-internal-real-time) 60)
+      (fixup-menus)
       (setup-editor *old-world*)
       (setq *display-bootstrapping-no-boxes-yet* nil)
       (start-boxer-progress "Editor ~D" (get-internal-real-time) 70)
