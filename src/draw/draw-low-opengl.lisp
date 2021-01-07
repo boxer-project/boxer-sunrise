@@ -652,14 +652,8 @@ notes:: check points arg on draw-poly
 
 ;; main interface function, how/when cache ????
 
-;; (defun make-boxer-font (rawfontspec &optional (calculate-parameters? T))
-;;   (make-boxer-font-capogi rawfontspec)
-;;   )
-  ;; (if bw::*use-capogi-fonts*
-  ;;   (make-boxer-font-ogl rawfontspec calculate-parameters?)))
-
 ;; always "calculate parameters" because they are already available in the capogi font structure
-(defun make-boxer-font (rawfontspec &optional (calculate-parameters? T))
+(defun make-boxer-font (rawfontspec)
   (let* ((alias (font-family-alias (car rawfontspec)))
          (fontspec (if alias (list* alias (cdr rawfontspec)) rawfontspec))
          (cfont (bw::boxer-font-spec->capogi-font fontspec))
@@ -732,23 +726,7 @@ notes:: check points arg on draw-poly
     (dotimes (i (length *font-sizes*))
       (let ((size (svref *font-sizes* i)))
         (dolist (style '(nil (:bold) (:italic) (:bold :italic))) ; leave out :underline for now
-          (make-boxer-font (list* font-family size style)
-                           (cache-on-startup? font-family size style)))))))
-
-(defun cache-on-startup? (family size style)
-  (declare (ignore style))
-  (and (string-equal family "Courier")
-       (<=  size 18)))
-
-;; old version, these are the ones which MUSTbe defined
-;; note that "Courier New" must be the 1st family cached
-;  (make-boxer-font '("Courier New" 10)) ; this should fill family=0, size=10
-;  ;; now fill the rest of the family=0, size=10 slots
-;  (make-boxer-font '("Courier New" 10 :bold))
-;  (make-boxer-font '("Courier New" 10 :italic))
-;  (make-boxer-font '("Courier New" 10 :bold :italic))
-;  (make-boxer-font '("Courier New" 6)
-
+          (make-boxer-font (list* font-family size style)))))))
 
 ;; THIS is safe to do
 (eval-when (load)  (init-bootstrapping-font-vars))
