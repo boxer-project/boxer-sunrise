@@ -63,13 +63,6 @@ Modification History (most recent at the top)
   (let ((f (capogi-font-capi-font font)))
     (format stream "#<CAPOGI-FONT ~A ~D ~{ ~A~}>" (car f) (cadr f) (cddr f))))
 
-;;; converting to OpenGL
-(defun make-opengl-font-from-capogi-font (cfont)
-  (%make-opengl-font :native-font cfont))
-
-  ;; (let ((oglfont (%make-opengl-font :native-font cfont)))
-  ;;   oglfont))
-
 ;;; file operations
 
 ;; setq this when saving

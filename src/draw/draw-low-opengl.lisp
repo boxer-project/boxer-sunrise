@@ -320,21 +320,21 @@ notes:: check points arg on draw-poly
   (opengl::swap-buffers pane))
 
 (defun string-wid (font-no string)
-  (let ((font (find-filled-font font-no)))
+  (let ((font (find-cached-font font-no)))
     (if (null font)
       (error "No cached font for ~X" font-no)
       (bw::with-ogl-font (font)
                          (bw::ogl-string-width string font)))))
 
 (defun string-hei (font-no)
-  (let ((font (find-filled-font font-no)))
+  (let ((font (find-cached-font font-no)))
     (if (null font)
       (error "No cached font for ~X" font-no)
       (bw::with-ogl-font  (font)
                           (bw::ogl-font-height font)))))
 
 (defun string-ascent (font-no)
-  (let ((font (find-filled-font font-no)))
+  (let ((font (find-cached-font font-no)))
     (if (null font)
       (error "No cached font for ~X" font-no)
       (bw::with-ogl-font  (font)
@@ -593,10 +593,6 @@ notes:: check points arg on draw-poly
                                                                   size))))
                              (unless (null face-cache) (svref& face-cache face)))))))
 
-;; use when we are bypassing the bw::ogl-set-font mechanism
-(defun find-filled-font (font-no)
-  (find-cached-font font-no))
-
 (defun cache-font (font font-no &optional (translate-size t))
   (multiple-value-bind (fam size face)
                        (font-values font-no)
@@ -656,26 +652,28 @@ notes:: check points arg on draw-poly
 
 ;; main interface function, how/when cache ????
 
-(defun make-boxer-font (rawfontspec &optional (calculate-parameters? T))
-  (make-boxer-font-capogi rawfontspec))
+;; (defun make-boxer-font (rawfontspec &optional (calculate-parameters? T))
+;;   (make-boxer-font-capogi rawfontspec)
+;;   )
   ;; (if bw::*use-capogi-fonts*
   ;;   (make-boxer-font-ogl rawfontspec calculate-parameters?)))
 
 ;; always "calculate parameters" because they are already available in the capogi font structure
-(defun make-boxer-font-capogi (rawfontspec)
+(defun make-boxer-font (rawfontspec &optional (calculate-parameters? T))
   (let* ((alias (font-family-alias (car rawfontspec)))
          (fontspec (if alias (list* alias (cdr rawfontspec)) rawfontspec))
          (cfont (bw::boxer-font-spec->capogi-font fontspec))
          (font-no (fontspec->font-no fontspec)))
     (cond ((null font-no)
-           (let ((oglfont (bw::make-opengl-font-from-capogi-font cfont))
+           (let ((oglfont (bw::%make-opengl-font :native-font cfont))
                  (new-font-no (fontspec->font-no fontspec T)))
              (or (find-cached-font new-font-no nil)
                  (cache-font oglfont new-font-no nil))
              new-font-no))
       (t
-       (or (find-cached-font font-no nil)
-           (cache-font (bw::make-opengl-font-from-capogi-font cfont) font-no nil))
+        (or (find-cached-font font-no nil)
+           (cache-font (bw::%make-opengl-font :native-font cfont) font-no nil)
+            )
        font-no))))
 
 ;; the external interface, see comsf.lisp for usage

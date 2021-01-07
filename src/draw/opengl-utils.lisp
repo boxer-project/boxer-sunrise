@@ -179,13 +179,8 @@ Modification History (most recent at the top)
 
 (defun %print-opengl-font (font stream level)
   (declare (ignore level))
-  (cond ((capogi-font? (opengl-font-native-font font))
-         (format stream "#<OGLFont ")
-         (print-capogi-font (opengl-font-native-font font) stream)
-         (format stream ">" ))
-    (t
-     (format stream "#<OGLFont ~A >"
-             (opengl-font-native-font font)))))
+  (format stream "#<OGLFont ~A >"
+             (opengl-font-native-font font)))
 
 (defstruct (ogl-graphics-state (:constructor %make-ogl-graphics-state))
   (color nil)
@@ -273,19 +268,6 @@ Modification History (most recent at the top)
 
 (defun ogl-draw-string (text x y)
   (boxer::freetype-draw-char text (floor x) (floor y) *current-opengl-font* *ogl-current-color-vector*))
-
-;; useful for debugging as in (dolist (f *cached-fonts*) (d-font f))
-(defun d-font (ofont)
-  (let* ((nf (bw::opengl-font-native-font ofont))
-         (attr (gp:font-description-attributes
-                (gp::font-description nf))))
-    (format t "~%~A  ~D  ~A,~A" (getf attr :name) (getf attr :size)
-            (getf attr :weight) (getf attr :slant))))
-
-
-
-
-
 
 ;;;; COLORS
 
