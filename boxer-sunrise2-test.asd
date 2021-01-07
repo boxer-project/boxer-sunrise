@@ -13,8 +13,8 @@
                 :components
                 ((:test-file "boxer-sunrise2")
                  (:test-file "boxdef-tests")
-                 (:test-file "capogi-tests")
-                 (:test-file "stacks-tests"))))
+                 (:test-file "stacks-tests")
+                 (:test-file "boxapp-data-tests"))))
   :description "Test system for boxer-sunrise2"
 
   :perform (test-op (op c) (symbol-call :prove-asdf :run-test-system c)))
