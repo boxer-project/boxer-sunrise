@@ -595,8 +595,7 @@ notes:: check points arg on draw-poly
 
 ;; use when we are bypassing the bw::ogl-set-font mechanism
 (defun find-filled-font (font-no)
-  (let ((f (find-cached-font font-no)))
-    (unless (null f) (bw::ensure-oglfont-parameters f) f)))
+  (find-cached-font font-no))
 
 (defun cache-font (font font-no &optional (translate-size t))
   (multiple-value-bind (fam size face)

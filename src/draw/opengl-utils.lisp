@@ -173,78 +173,6 @@ Modification History (most recent at the top)
 (defvar *current-opengl-font* nil
   "set-font sets, char drawing uses this value")
 
-
-;; control how much of font to cache on GPU
-;; we can tune these on startup if GPU memory is low
-;; useful alternative values would be from 32 to 128
-;; these values MUST be finalized BEFORE any opengl fonts are created !!!
-
-;; the current font caching scheme is as follows:
-;; We will cache for chars based on ISO-8859-1 with the exception that we'll
-;; pack the space from #x80 to #x9F with the Windows-1252 glyphs
-;; if we need to save GPU memory we can skip charcodes from #x0 to #x20 since those
-;; are non printing chars (That's the purpose of *opengl-font-start*)
-;; *** TrueType fonts require exsitence of glyph 0 (it's the "missing char glyph") ***
-;; Since Lispworks uses unicode strings (in particular, the result of cut & paste
-;; from other apps) we have to intercept the unicode char codes for the glyphs
-;; in Windows-1252 between #x80 and #x9F
-;; That is the job of the function charcode->oglfont-index
-
-(defconstant *opengl-font-start* 0)
-(defparameter *opengl-font-end*  #x2123)
-(defparameter *opengl-font-cache-end* 255)
-
-(defvar *opengl-font-outline-p* nil)
-
-(defvar *default-char-code* 32) ; should print as a "box" , 32 is SPACE for now
-
-(defvar *unicode-font?* t)
-
-(defun charcode->oglfont-index (charcode)
-  (cond ((>= charcode *opengl-font-cache-end*) ; instead of *opengl-font-end*
-         ;; most likely unicode, see if there is a translation...
-                                               (unicode->oglfont-index charcode))
-    (t (-& charcode *opengl-font-start*))))
-
-(defvar *unicode-window-1252*
-  '((#x20AC 128)  ; euro
-    (#x201A 130)  ; &sbquo low single curved quote, left
-    (#x0192 131)  ; f
-    (#x201E 132)  ; &bdquo low double curved quote
-    (#x2026 133)  ; "..." ellipsis
-    (#x2020 134)  ; dagger
-    (#x2021 135)  ; double dagger
-    (#x02C6 136)  ; circumflex
-    (#x2030 137)  ; permille
-    (#x0160 138)  ;
-    (#x2039 139)  ; &lsaquo single angle quote, left
-    (#x0152 140)  ; OE (dipthong)
-    (#x017D 142)  ; Z+hacek
-    (#x2018 145)  ; &lsquo single curved quote, left
-    (#x2019 146)  ; &rsquo single curved quote, right
-    (#x201C 147)  ; &ldquo double curved quote, left
-    (#x201D 148)  ; &rdquo double curved quote, right
-    (#x2022 149)  ; &bull  bullet
-    (#x2013 150)  ; &ndash
-    (#x2014 151)  ; &mdash
-    (#x02DC 152)  ; ~  tilde
-    (#x2122 153)  ; TM  trademark
-    (#x0161 154)  ; S
-    (#x203A 155)  ; &rsaquo single angle quote, right
-    (#x0153 156)  ; oe dipthong
-    (#x017E 158)  ; z+hacek
-    (#x0178 159))); Y diaresis
-
-(defun unicode->oglfont-index (unicode)
-  (let ((trans (cadr (assoc unicode *unicode-window-1252* :test #'=))))
-    (cond ((null trans) *default-char-code*)
-      (t (-& trans *opengl-font-start*)))))
-
-(defmacro do-ofont-chars ((char-code-var &key (end '*opengl-font-end*)) &body body)
-  `(do ((,char-code-var *opengl-font-start* (1+& ,char-code-var)))
-     ((>=& ,char-code-var ,end))
-     . ,body))
-
 (defstruct (opengl-font (:constructor %make-opengl-font)
                         (:print-function %print-opengl-font))
   (native-font nil))
@@ -275,12 +203,9 @@ Modification History (most recent at the top)
 ;; it is now possible for an OpenGL font to not have all its parameters
 ;; precalculated @ startup so check for, and handle this here
 
-(defun ensure-oglfont-parameters (font) )
-
 ;; this handles font parameter filling in the editor
 ;; font parameter filling in sprite graphics is handled by change-graphics-font
 (defun ogl-set-font (font)
-  (ensure-oglfont-parameters font)
   (setq *current-opengl-font* font))
 
 (defmacro with-ogl-font ((font) &body body)

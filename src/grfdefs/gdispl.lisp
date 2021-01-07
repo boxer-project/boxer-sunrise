@@ -1730,7 +1730,6 @@ Modification History (most recent at the top)
   :body
   (unless (=& new-font-no *graphics-state-current-font-no*)
     ;; have to check for possible font
-    (bw::ensure-oglfont-parameters (find-cached-font new-font-no))
     (setq *graphics-state-current-font-no* new-font-no)))
 )
 

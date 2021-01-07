@@ -63,24 +63,12 @@ Modification History (most recent at the top)
   (let ((f (capogi-font-capi-font font)))
     (format stream "#<CAPOGI-FONT ~A ~D ~{ ~A~}>" (car f) (cadr f) (cddr f))))
 
-;; because the glyphs are aliased, we look check if the pixel is white or not, instead of
-;; looking for black
-
-(defvar *white-enuff* 2.0s0)
-;; get-point returns a simple vector with #(:RGB Red Blue Green)
-(defun white-point? (point)
-;  ;; just checking the blue component which seems like it might be enough
-;  (= (svref point 3) 1.0s0)
-  (let ((total (+ (svref point 1) (svref point 2) (svref point 3))))
-    ;; possibly change this to use a weighted luminance formula such as
-    ;; Y = 0.2126 R + 0.7152 G + 0.0722 B
-    ;; max value for total will be 3.0s0
-    (> total *white-enuff*)))
-
 ;;; converting to OpenGL
 (defun make-opengl-font-from-capogi-font (cfont)
-  (let ((oglfont (%make-opengl-font :native-font cfont)))
-    oglfont))
+  (%make-opengl-font :native-font cfont))
+
+  ;; (let ((oglfont (%make-opengl-font :native-font cfont)))
+  ;;   oglfont))
 
 ;;; file operations
 
@@ -104,8 +92,6 @@ Modification History (most recent at the top)
       (let ((csize (svref *capogi-font-sizes* i)))
         (cond ((= csize size) (return i))
               ((> csize size) (return (values i t))))))))
-
-;  (position size *capogi-font-sizes* :test #'=)
 
 ;; should return the default (Courier New, idx = 0) if no match is found
 ;; should warn when exact match is not found ?
