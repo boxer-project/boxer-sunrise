@@ -663,15 +663,17 @@
                                 (handle-site-initializations)
                                 boxer-eval::*novalue*)
 
-(defboxer-command com-show-font-info ()
-  "Display font information"
-  (reset-region)
-  (reset-editor-numeric-arg)
-  (insert-cha *point* (make-box (mapcar #'list (bw::capogi-fonts-info))))
-  boxer-eval::*novalue*)
+;; Temporarily, or perhaps permanently removing this while fonts are being
+;; reworked and simplified.
+;; (defboxer-command com-show-font-info ()
+;;   "Display font information"
+;;   (reset-region)
+;;   (reset-editor-numeric-arg)
+;;   (insert-cha *point* (make-box (mapcar #'list (bw::capogi-fonts-info))))
+;;   boxer-eval::*novalue*)
 
-(boxer-eval::defboxer-primitive bu::show-font-info ()
-  (virtual-copy (make-box (mapcar #'list (bw::capogi-fonts-info)))))
+;; (boxer-eval::defboxer-primitive bu::show-font-info ()
+;;   (virtual-copy (make-box (mapcar #'list (bw::capogi-fonts-info)))))
 
 ;;; should specify all available slots, punt for now
 (defun empty-configuration-box () (make-box '(())))

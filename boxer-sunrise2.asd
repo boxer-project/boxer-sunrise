@@ -31,7 +31,6 @@
 
                  ;; Beginning of `DRAW` module
                  #+lispworks (:file "draw/opengl-utils")
-                 #+lispworks (:file "draw/capogi")
                  #+(and lispworks freetype-fonts (not delivering)) (:file "draw/freetype-fonts")
                  (:file "draw/draw-low-opengl")
                  (:file "draw/draw-high-common")
