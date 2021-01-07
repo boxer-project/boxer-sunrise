@@ -58,8 +58,8 @@
   The current font sizes are:
       9, 10, 12, 14, 16, 20, 24
   "
-  (let* ((cur-native-font (bw::opengl-font-native-font current-font))
-         (capi-font-triple (bw::capogi-font-capi-font cur-native-font))
+  (let* (; (cur-font-triple (bw::opengl-font-font-triple current-font))
+         (capi-font-triple (bw::opengl-font-font-triple current-font))
          (name (car capi-font-triple))
          (size (cadr capi-font-triple))
          (style (cddr capi-font-triple))
@@ -124,8 +124,8 @@
   "Returns a pixmap ready for rendering. Needs to cache pixmaps based on the following:
    CAPI Font List, Color, Char/String
   "
-  (let* ((cur-native-font (bw::opengl-font-native-font current-font))
-         (capi-font-triple (bw::capogi-font-capi-font cur-native-font))
+  (let* (; (cur-font-triple (bw::opengl-font-font-triple current-font))
+         (capi-font-triple (bw::opengl-font-font-triple current-font))
          (cur-color (current-rgba-percents cur-ogl-color))
          (cache-key `(,capi-font-triple ,cur-color ,char-string))
          (cached-pixmap (gethash cache-key *freetype-pixmap-cache*)))

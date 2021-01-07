@@ -170,17 +170,19 @@ Modification History (most recent at the top)
 
 ;;;; FONTS
 
+(defvar *capogi-font-directory* nil)
+
 (defvar *current-opengl-font* nil
   "set-font sets, char drawing uses this value")
 
 (defstruct (opengl-font (:constructor %make-opengl-font)
                         (:print-function %print-opengl-font))
-  (native-font nil))
+  (font-triple nil))
 
 (defun %print-opengl-font (font stream level)
   (declare (ignore level))
   (format stream "#<OGLFont ~A >"
-             (opengl-font-native-font font)))
+             (opengl-font-font-triple font)))
 
 (defstruct (ogl-graphics-state (:constructor %make-ogl-graphics-state))
   (color nil)
@@ -215,9 +217,9 @@ Modification History (most recent at the top)
 ;;; we should query the OPENGL implemtation and tune some of these numbers
 ;;; during startup
 
-(defvar *font-cache-size* 32)
+;; (defvar *font-cache-size* 32)
 
-(defvar *cached-fonts* nil)
+;; (defvar *cached-fonts* nil)
 
 (eval-when (compile)
            (defvar *include-font-debugging* nil)

@@ -656,17 +656,16 @@ notes:: check points arg on draw-poly
 (defun make-boxer-font (rawfontspec)
   (let* ((alias (font-family-alias (car rawfontspec)))
          (fontspec (if alias (list* alias (cdr rawfontspec)) rawfontspec))
-         (cfont (bw::boxer-font-spec->capogi-font fontspec))
          (font-no (fontspec->font-no fontspec)))
     (cond ((null font-no)
-           (let ((oglfont (bw::%make-opengl-font :native-font cfont))
+           (let ((oglfont (bw::%make-opengl-font :font-triple fontspec))
                  (new-font-no (fontspec->font-no fontspec T)))
              (or (find-cached-font new-font-no nil)
                  (cache-font oglfont new-font-no nil))
              new-font-no))
       (t
         (or (find-cached-font font-no nil)
-           (cache-font (bw::%make-opengl-font :native-font cfont) font-no nil)
+           (cache-font (bw::%make-opengl-font :font-triple fontspec) font-no nil)
             )
        font-no))))
 
@@ -721,7 +720,6 @@ notes:: check points arg on draw-poly
 ;; font caches with the internal representation system font
 ;; Note: 4/16/2010 do not calculate all the font info for every font up font
 (defun fill-bootstrapped-font-caches ()
-  (bw::load-capogi-font-cache)
   (dolist (font-family *font-families*)
     (dotimes (i (length *font-sizes*))
       (let ((size (svref *font-sizes* i)))
