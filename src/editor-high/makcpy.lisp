@@ -51,12 +51,12 @@
          (new-sheet (make-graphics-sheet wid hei new-superior-box)))
     (when (not (null (graphics-sheet-graphics-list from-sheet)))
       (setf (graphics-sheet-graphics-list new-sheet)
-	    (copy-graphics-command-list
-	     (graphics-sheet-graphics-list from-sheet))))
+      (copy-graphics-command-list
+       (graphics-sheet-graphics-list from-sheet))))
     (setf (graphics-sheet-background new-sheet)
-	  (graphics-sheet-background from-sheet))
+    (graphics-sheet-background from-sheet))
     (setf (graphics-sheet-draw-mode new-sheet)
-	  (graphics-sheet-draw-mode from-sheet))
+    (graphics-sheet-draw-mode from-sheet))
     (when (not (null (graphics-sheet-bit-array from-sheet)))
       (let ((bm (make-offscreen-bitmap *boxer-pane* wid hei)))
         (setf (graphics-sheet-bit-array new-sheet) bm)
@@ -69,7 +69,7 @@
             (bitblt-to-screen alu-seta wid hei (graphics-sheet-bit-array from-sheet)
                               0 0 0 0))
           #+opengl
-	  (copy-offscreen-bitmap alu-seta wid hei (graphics-sheet-bit-array from-sheet) 0 0 bm 0 0)
+    (copy-offscreen-bitmap alu-seta wid hei (graphics-sheet-bit-array from-sheet) 0 0 bm 0 0)
           ;; mark the dirty? flag
           (setf (graphics-sheet-bit-array-dirty? new-sheet) t)
           )))
@@ -88,7 +88,7 @@
         (fir (slot-value self 'first-inferior-row)))
     ;; these flags always get unset
     (setq flags (set-box-flag-fake-file-box
-		 (set-box-flag-build-template? flags nil) nil))
+     (set-box-flag-build-template? flags nil) nil))
     (when (and (box-flag-storage-chunk? flags) (null fir)
                (not (box-flag-read-only-box? flags)))
       (setq flags (set-box-flag-copy-file? flags t)))
@@ -103,8 +103,8 @@
 (defvar *copy-special-box-properties-hook* nil)
 
 (defmethod copy-special-box-properties ((from-box box) to-box
-					&optional
-					(copy-top-level-attributes? t))
+          &optional
+          (copy-top-level-attributes? t))
   ;; display style...
   (set-display-style-list to-box (copy-display-style (display-style-list from-box)))
   ;; there should be a better way to do this, like maybe
@@ -160,45 +160,45 @@
   (unless (null copy-top-level-attributes?)
     ;; copy any export info
     (unless (or (null (exports from-box))
-		(not (or (eq copy-top-level-attributes? t)
-			 (eq copy-top-level-attributes? ':exports))))
+    (not (or (eq copy-top-level-attributes? t)
+       (eq copy-top-level-attributes? ':exports))))
       (boxer-eval::set-exports to-box (exports from-box))
       ;; make sure the box looks right
       (setf (display-style-border-style (display-style-list to-box))
             (if (storage-chunk? to-box)
               :thick-dashed
-	      ':dashed)))
+        ':dashed)))
     ;; and the name
     (let ((name (slot-value from-box 'name)))
       (unless (or (null name)
-		  (not (or (eq copy-top-level-attributes? t)
-			   (eq copy-top-level-attributes? ':name))))
-	(set-name to-box (make-name-row `(,(if (stringp name) name
-					       (text-string name)))))))))
+      (not (or (eq copy-top-level-attributes? t)
+         (eq copy-top-level-attributes? ':name))))
+  (set-name to-box (make-name-row `(,(if (stringp name) name
+                 (text-string name)))))))))
 
 (defmethod copy-box ((port port-box) &optional (copy-top-level-attributes? t))
   (let ((new-port (make-initialized-box :type 'port-box))
-	(target (ports port)))
+  (target (ports port)))
     (copy-special-box-properties port new-port copy-top-level-attributes?)
     (set-port-to-box new-port target)
     (let ((target-pair (assoc target .link-target-alist.)))
       (if (null target-pair)
-	  (push new-port .port-copy-list.)
-	  (set-port-to-box new-port (cdr target-pair))))
+    (push new-port .port-copy-list.)
+    (set-port-to-box new-port (cdr target-pair))))
     new-port))
 
 (defun copy-box-internal (from-box to-box)
   (let* ((from-previous-row nil)
-	 (from-closets (slot-value from-box 'closets))
-	 (first-apparent-row (first-inferior-row from-box))
-	 (from-current-row (if (and (eq first-apparent-row from-closets)
-				    (not (null first-apparent-row)))
-			       (next-row first-apparent-row)
-			       first-apparent-row))
-	 (to-previous-row nil)
-	 (to-current-row (if (null from-current-row)
-			     (make-row '())
-			     (copy-row from-current-row nil to-box))))
+   (from-closets (slot-value from-box 'closets))
+   (first-apparent-row (first-inferior-row from-box))
+   (from-current-row (if (and (eq first-apparent-row from-closets)
+            (not (null first-apparent-row)))
+             (next-row first-apparent-row)
+             first-apparent-row))
+   (to-previous-row nil)
+   (to-current-row (if (null from-current-row)
+           (make-row '())
+           (copy-row from-current-row nil to-box))))
     ;;Copy the various parameters.
     (unless (null from-closets)
       (add-closet-row to-box (copy-row from-closets nil to-box)))
@@ -209,20 +209,20 @@
        ;; If there's a previous row, tell it and the
        ;; current row about each other.
        (unless (null to-previous-row)
-	 (insert-row-after-row to-box to-current-row to-previous-row))
+   (insert-row-after-row to-box to-current-row to-previous-row))
        ;; Relegate the current row to the status of previous row.
        (setq to-previous-row to-current-row
-	     from-previous-row from-current-row)
+       from-previous-row from-current-row)
        ;; Get the next row to copy.  If it's not there,
        ;; then we're done making new rows.
        ;; Otherwise, make a new row and make that be the current row.
        (setq from-current-row (unless (null from-previous-row)
-				(next-row from-previous-row)))
+        (next-row from-previous-row)))
        (if (null from-current-row) (return))
        ;; The previous-row of the newly-made row is being set here and above.
        ;; Which is right?
        (setq to-current-row
-	     (copy-row from-current-row to-previous-row to-box))))
+       (copy-row from-current-row to-previous-row to-box))))
     ;; handle port KLUDGE.
     (when (not-null (ports from-box))
       (push (cons from-box to-box) .link-target-alist.))
@@ -233,41 +233,41 @@
 ;; mechanism, use with caution
 (defun move-box-internals (from-box to-box &optional (fast t))
   (let* ((from-closets (slot-value from-box 'closets))
-	 (first-apparent-row (first-inferior-row from-box))
-	 (from-current-row (if (and (eq first-apparent-row from-closets)
-				    (not (null first-apparent-row)))
-			       (next-row first-apparent-row)
-			       first-apparent-row)))
+   (first-apparent-row (first-inferior-row from-box))
+   (from-current-row (if (and (eq first-apparent-row from-closets)
+            (not (null first-apparent-row)))
+             (next-row first-apparent-row)
+             first-apparent-row)))
     (unless (null from-closets)
       (setf (slot-value to-box 'closets) from-closets)
       (set-superior-box from-closets to-box))
     (cond ((not (null fast))
-	   (unless (null first-apparent-row)
-	     ;; Begin with the to-box owning the first row
-	     ;; and with no previous row
-	     (setf (slot-value to-box 'first-inferior-row) from-current-row)
-	     (setf (slot-value from-box 'first-inferior-row) nil))
-	   ;; explicitly move the bindings since we are bypassing the
-	   ;; insert-self protocols when moving the rows over.
-	   (setf (slot-value to-box 'static-variables-alist)
-		 (slot-value from-box 'static-variables-alist)
-		 (slot-value from-box 'static-variables-alist)
-		 nil)
-	   ;; explicitly move triggers since we are bypassing the
-	   ;; insert-self protocols
-	   (setf (slot-value to-box   'current-triggers)
-		 (slot-value from-box 'current-triggers)
-		 (slot-value to-box   'trigger-cache)
-		 (slot-value from-box   'trigger-cache))
-	   (do ((row from-current-row (next-row row)))
-	       ((null row))
-	     (setf (superior-box row) to-box)))
-	  ((not (null first-apparent-row))
-	   (let ((next-row nil))
-	     (do ((row first-apparent-row next-row))
-		 ((null row))
-	       (setq next-row (next-row row))
-	       (append-row to-box row)))))))
+     (unless (null first-apparent-row)
+       ;; Begin with the to-box owning the first row
+       ;; and with no previous row
+       (setf (slot-value to-box 'first-inferior-row) from-current-row)
+       (setf (slot-value from-box 'first-inferior-row) nil))
+     ;; explicitly move the bindings since we are bypassing the
+     ;; insert-self protocols when moving the rows over.
+     (setf (slot-value to-box 'static-variables-alist)
+     (slot-value from-box 'static-variables-alist)
+     (slot-value from-box 'static-variables-alist)
+     nil)
+     ;; explicitly move triggers since we are bypassing the
+     ;; insert-self protocols
+     (setf (slot-value to-box   'current-triggers)
+     (slot-value from-box 'current-triggers)
+     (slot-value to-box   'trigger-cache)
+     (slot-value from-box   'trigger-cache))
+     (do ((row from-current-row (next-row row)))
+         ((null row))
+       (setf (superior-box row) to-box)))
+    ((not (null first-apparent-row))
+     (let ((next-row nil))
+       (do ((row first-apparent-row next-row))
+     ((null row))
+         (setq next-row (next-row row))
+         (append-row to-box row)))))))
 
 
 (DEFUN COPY-ROW (FROM-ROW &OPTIONAL NEW-PREVIOUS-ROW NEW-SUPERIOR-BOX
@@ -290,33 +290,33 @@
                                                      nil copy-box-arg-supplied?))
   (with-fast-chas-array-manipulation (from-chas fast-from-chas)
     (flet ((make-length-n-chas-array (n)
-	     (let ((array (make-chas-array (max& *chas-array-default-size* n))))
-	       (setf (chas-array-active-length array) n)
-	       array)))
-	(let* ((length (chas-array-active-length from-chas))
-	       (to-chas (make-length-n-chas-array length)))
-	  (with-fast-chas-array-manipulation (to-chas fast-to-chas)
-	    (dotimes& (index length)
-	      (if (cha? (fast-chas-array-get-cha fast-from-chas index))
-		  (setf (fast-chas-array-get-cha fast-to-chas index)
-			(fast-chas-array-get-cha fast-from-chas index))
-		  (setf (fast-chas-array-get-cha fast-to-chas index)
-			(let ((new-box (if copy-box-arg-supplied?
+       (let ((array (make-chas-array (max& *chas-array-default-size* n))))
+         (setf (chas-array-active-length array) n)
+         array)))
+  (let* ((length (chas-array-active-length from-chas))
+         (to-chas (make-length-n-chas-array length)))
+    (with-fast-chas-array-manipulation (to-chas fast-to-chas)
+      (dotimes& (index length)
+        (if (cha? (fast-chas-array-get-cha fast-from-chas index))
+      (setf (fast-chas-array-get-cha fast-to-chas index)
+      (fast-chas-array-get-cha fast-from-chas index))
+      (setf (fast-chas-array-get-cha fast-to-chas index)
+      (let ((new-box (if copy-box-arg-supplied?
                                            (funcall *recursive-copy-box-function*
-					            (fast-chas-array-get-cha
-					             fast-from-chas index)
+                      (fast-chas-array-get-cha
+                       fast-from-chas index)
                                                     copy-box-args)
                                            (funcall *recursive-copy-box-function*
-					            (fast-chas-array-get-cha
-					             fast-from-chas index)))))
-			  (setf (superior-row new-box) new-row)
-			  new-box))))
+                      (fast-chas-array-get-cha
+                       fast-from-chas index)))))
+        (setf (superior-row new-box) new-row)
+        new-box))))
             (setf (chas-array-fds to-chas)
                   (mapcar #'(lambda (fd) (make-cfd (bfd-cha-no  fd)
                                                    (bfd-font-no fd)
                                                    (bfd-color   fd)))
                           (chas-array-fds from-chas)))
-	    to-chas)))))
+      to-chas)))))
 
 
 
@@ -329,35 +329,35 @@
 (defun fast-string-into-chas-array (string ca)
   ;(declare (simple-string string))
   (let ((sl (length string))
-	(cl (chas-array-active-length ca)))
+  (cl (chas-array-active-length ca)))
     (chas-array-assure-room ca (+& cl sl))
     (with-fast-chas-array-manipulation (ca chas)
       (dotimes& (i sl)
-	(setf (aref chas (+& cl i)) (aref string i)))
+  (setf (aref chas (+& cl i)) (aref string i)))
       (setf (chas-array-active-length ca) (+& cl sl)))))
 
 (defun make-row-from-string (string)
   (let* ((new-row (make-initialized-row))
-	 (ca (chas-array new-row))
-	 (sl (length string))
-	 (al sl)
-	 (ca-idx 0))
+   (ca (chas-array new-row))
+   (sl (length string))
+   (al sl)
+   (ca-idx 0))
     (chas-array-assure-room ca al)
     (do ((idx 0 (1+& idx)))
         ((>=& idx sl))
       (let ((cha (aref string idx)))
-	(cond ((char= cha #\tab)
-	       ;; hack tabs to be 8 spaces
-	       (let ((tab-spaces (-& 8 (mod ca-idx 8))))
-		 (incf& al (1-& tab-spaces))  (chas-array-assure-room ca al)
-		 (dotimes& (i tab-spaces)
-		   (setf (aref (chas-array-chas ca) ca-idx) #\space)
+  (cond ((char= cha #\tab)
+         ;; hack tabs to be 8 spaces
+         (let ((tab-spaces (-& 8 (mod ca-idx 8))))
+     (incf& al (1-& tab-spaces))  (chas-array-assure-room ca al)
+     (dotimes& (i tab-spaces)
+       (setf (aref (chas-array-chas ca) ca-idx) #\space)
                    (incf& ca-idx))))
-	      ((or (char= cha #\return) (char= cha #\newline))
-	       ;; ignore CR's and NL's
-	       (decf& al))
-	      (t
-	       (setf (aref (chas-array-chas ca) ca-idx) cha) (incf& ca-idx)))))
+        ((or (char= cha #\return) (char= cha #\newline))
+         ;; ignore CR's and NL's
+         (decf& al))
+        (t
+         (setf (aref (chas-array-chas ca) ca-idx) cha) (incf& ca-idx)))))
     (setf (chas-array-active-length ca) (max& al 0))
     new-row))
 
@@ -370,48 +370,48 @@
 
 (defun make-row (list)
   (let* ((new-row (make-initialized-row))
-	 (ca (chas-array new-row))
-	 (idx 0)
-	 (length (length list)))
+   (ca (chas-array new-row))
+   (idx 0)
+   (length (length list)))
     (dolist (item list)
       (cond ((numberp item)
-	     (fast-string-into-chas-array (format nil "~a" item) ca))
-	    ((stringp item)
-	     (fast-string-into-chas-array item ca))
-	    ((symbolp item)
-	     (fast-string-into-chas-array (symbol-name item) ca))
-	    ((characterp item) (fast-chas-array-append-cha ca item))
-	    ((box? item)
-	     (fast-chas-array-append-cha ca item)
-	     (set-superior-row item new-row))
-	    (t (error "Don't know how to make a row out of ~S" item)))
+       (fast-string-into-chas-array (format nil "~a" item) ca))
+      ((stringp item)
+       (fast-string-into-chas-array item ca))
+      ((symbolp item)
+       (fast-string-into-chas-array (symbol-name item) ca))
+      ((characterp item) (fast-chas-array-append-cha ca item))
+      ((box? item)
+       (fast-chas-array-append-cha ca item)
+       (set-superior-row item new-row))
+      (t (error "Don't know how to make a row out of ~S" item)))
       (incf& idx)
       (unless (=& idx length)
-	(fast-chas-array-append-cha ca #\space)))
+  (fast-chas-array-append-cha ca #\space)))
     new-row))
 
 (defun make-name-row (list &optional (cached-name nil))
   (let* ((new-row (make-instance 'name-row :cached-name cached-name))
-	 (ca (chas-array new-row))
-	 (idx 0)
-	 (length (length list)))
+   (ca (chas-array new-row))
+   (idx 0)
+   (length (length list)))
     (dolist (item list)
       (cond ((numberp item)
-	     (fast-string-into-chas-array (format nil "~a" item) ca))
-	    ((stringp item)
-	     (fast-string-into-chas-array item ca))
-	    ((symbolp item)
-	     (fast-string-into-chas-array (symbol-name item) ca))
-	    ((box? item) (error "You must be losing to put ~A here" item))
-	    (t (error "Don't know how to make a row out of ~S" item)))
+       (fast-string-into-chas-array (format nil "~a" item) ca))
+      ((stringp item)
+       (fast-string-into-chas-array item ca))
+      ((symbolp item)
+       (fast-string-into-chas-array (symbol-name item) ca))
+      ((box? item) (error "You must be losing to put ~A here" item))
+      (t (error "Don't know how to make a row out of ~S" item)))
       (incf& idx)
       (unless (=& idx length)
-	(fast-chas-array-append-cha ca #\space)))
+  (fast-chas-array-append-cha ca #\space)))
     new-row))
 
 (defun make-box (rows &optional (type 'data-box) name)
   (let ((box (make-uninitialized-box type))
-	(last-row (if (row? (car rows)) (car rows) (make-row (car rows)))))
+  (last-row (if (row? (car rows)) (car rows) (make-row (car rows)))))
     ;; Note that the box initialize method IS NOT BEING CALLED
     ;; because we DON'T WANT TO CONS up a first-inferior-row
     ;; so we have to manually call the parts of the initialize method
@@ -421,11 +421,11 @@
     (setf (slot-value box 'display-style-list) (make-display-style))
     (insert-row-at-row-no box last-row 0)
     (do* ((rows-to-go (cdr rows) (cdr rows-to-go))
-	  (row (car rows-to-go) (car rows-to-go)))
-	 ((null rows-to-go))
+    (row (car rows-to-go) (car rows-to-go)))
+   ((null rows-to-go))
       (let ((row-to-insert (if (row? row) row (make-row row))))
-	(insert-row-after-row box row-to-insert last-row)
-	(setq last-row row-to-insert)))
+  (insert-row-after-row box row-to-insert last-row)
+  (setq last-row row-to-insert)))
     (unless (null name)
       (set-name box (make-name-row `(,name))))
     box))
