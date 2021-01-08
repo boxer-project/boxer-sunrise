@@ -1,46 +1,44 @@
-#|
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                         +-Data--+
-                This file is part of the | BOXER | system
-                                         +-------+
-
-
-
-Modification History (most recent at top)
-
- 3/14/11 document-mouse-handler conditionalized for #+/-opengl
-12/05/10 added popup info handling to the mouse-doc-status
-10/16/10 undocument-mouse
- 9/23/10 initial FULL OpenGL implementation
- 6/15/05 document-mouse-dispatch & undocument-mouse-dispatch changed to use new
-         special case mouse docs for auto resize, outermost & initial boxes
- 6/09/05 mouse doc string tuning: "Other choices" changed to "More Choices"
-         also added special cases for top left of initial-box (can't shrink it)
-         and top right of outermost box (can't expand it)
-         document-top-{left,right}-mouse changed to check for & handle these cases
- 2/12/05 *mouse-doc-wait-time* reduced from 1 to .5 secs
-         maybe-undocument-mouse added for more frequent checks on the validity
-         of existing mouse docs
-         check to see if mouse is still on the same spot added to popup-doc-delay
- 8/24/04 used new var *change-mouse-on-hotspots* to conditionalize mouse cursor
-         changing
- 6/18/04 conditionalized mouse doc strings for macs ("Hold" instead of
-         "Right Click" for "Other Choices")
- 6/15/04 started file (unifying mouse documentation code from the various
-         boxwin-xxx files
-
-|#
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                           +-Data--+
+;;;;                  This file is part of the | BOXER | system
+;;;;                                           +-------+
+;;;;
+;;;;
+;;;;
+;;;;  Modification History (most recent at top)
+;;;;
+;;;;   3/14/11 document-mouse-handler conditionalized for #+/-opengl
+;;;;  12/05/10 added popup info handling to the mouse-doc-status
+;;;;  10/16/10 undocument-mouse
+;;;;   9/23/10 initial FULL OpenGL implementation
+;;;;   6/15/05 document-mouse-dispatch & undocument-mouse-dispatch changed to use new
+;;;;           special case mouse docs for auto resize, outermost & initial boxes
+;;;;   6/09/05 mouse doc string tuning: "Other choices" changed to "More Choices"
+;;;;           also added special cases for top left of initial-box (can't shrink it)
+;;;;           and top right of outermost box (can't expand it)
+;;;;           document-top-{left,right}-mouse changed to check for & handle these cases
+;;;;   2/12/05 *mouse-doc-wait-time* reduced from 1 to .5 secs
+;;;;           maybe-undocument-mouse added for more frequent checks on the validity
+;;;;           of existing mouse docs
+;;;;           check to see if mouse is still on the same spot added to popup-doc-delay
+;;;;   8/24/04 used new var *change-mouse-on-hotspots* to conditionalize mouse cursor
+;;;;           changing
+;;;;   6/18/04 conditionalized mouse doc strings for macs ("Hold" instead of
+;;;;           "Right Click" for "Other Choices")
+;;;;   6/15/04 started file (unifying mouse documentation code from the various
+;;;;           boxwin-xxx files
+;;;;
 
 (in-package :boxer-window)
 
