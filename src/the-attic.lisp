@@ -385,6 +385,169 @@
 |#
 
 ;;;;
+;;;; FILE: comdef.lisp
+;;;;
+
+;; #-opengl
+;; (defun track-mouse-area (hilight-fun &key x y width height)
+;;   (let ((backing-store (allocate-backing-store width height)))
+;;     (drawing-on-window (*boxer-pane*)
+;;       (let ((min-x (-& x *border-tab-hysteresis*))
+;;             (min-y (-& y *border-tab-hysteresis*))
+;;             (max-x (+& x width *border-tab-hysteresis*))
+;;             (max-y (+& y height *border-tab-hysteresis*))
+;;             (icon-on? t))
+;;         (flet ((icon-on ()
+;;                  (erase-rectangle width height x y)
+;;                  (funcall hilight-fun x y width height)
+;;                  (force-graphics-output)
+;;                  (setq icon-on? T))
+;;                (icon-off ()
+;;                  (repaint) ; gak !!
+;;                  ;(bitblt-to-screen alu-seta width height backing-store 0 0 x y)
+;;                  ;(force-graphics-output)
+;;                  (setq icon-on? nil)))
+;;           ;; 1st grab what's on the screen...
+;;           (bitblt-from-screen alu-seta width height backing-store x y 0 0)
+;;           ;; initially turn the icon on since that is how we got here in the 1st place
+;;           (icon-on)
+;;           (multiple-value-bind (final-x final-y)
+;;               (with-mouse-tracking ((mouse-x x) (mouse-y y))
+;;                 (progn
+;;                   (cond ((and (null icon-on?)
+;;                               ;; if the icon is off, and we move back in
+;;                               (<& min-x mouse-x max-x) (<& min-y mouse-y max-y))
+;;                          ;; then turn the icon back on
+;;                          (icon-on))
+;;                         ((and icon-on?
+;;                               ;; if the icon is on and we move out
+;;                               (or (not (<& min-x mouse-x max-x))
+;;                                   (not (<& min-y mouse-y max-y))))
+;;                          ;; then turn off the visual indicator
+;;                          (icon-off)))))
+;;             ;; first turn the icon off if it is on...
+;;             (unless (null icon-on?) (icon-off))
+;;             (deallocate-backing-store backing-store)
+;;             ;; now return whether we are still on...
+;;             (and (<& min-x final-x max-x) (<& min-y final-y max-y))))))))
+
+;;;; Wrong! You should be using modes now !!!
+
+#|
+;;; leave it here until we manage to flush old code
+;;; utilities for temporarily rebinding keys (like for
+;;; copying/moving regions)
+
+(defvar *saved-key-functions* nil)
+
+;;; Note, this is saving and rebinding TOP LEVEL bindings
+;;; shadowed bindings will remain unaffected
+(defun save-and-rebind-key (key-name new-function)
+  (let ((existing (if (boundp key-name) (caddr (symbol-value key-name)) ':unbound))
+        (entry (fast-assq key-name *saved-key-functions*)))
+    ;; record the old version
+    (cond ((null entry) (push (cons key-name existing) *saved-key-functions*))
+      (t (setf (cdr entry) existing)))
+    ;; now set it to the new version
+    (boxer-eval::boxer-toplevel-set-nocache
+     key-name
+     (boxer-eval::make-compiled-boxer-function
+      :arglist nil :precedence 0 :infix-p nil :object new-function))))
+
+;; key should look like 'bu::crap
+(defun restore-saved-function (key-name)
+  (let ((entry (cdr (fast-assq key-name *saved-key-functions*)))
+        (vanilla (lookup-mode-key *global-top-level-mode* key-name)))
+    (cond ((null entry)
+           (cond ((null vanilla)
+                  ;(warn "No saved function for ~A, Unbinding the key" key-name)
+                  (boxer-eval::boxer-toplevel-nocache-unset key-name))
+             (t
+              (warn "No saved function for ~A, setting to top level value" key-name)
+              (boxer-eval::boxer-toplevel-set-nocache key-name vanilla))))
+      ((or (eq entry ':unbound) (eq entry boxer-eval::*novalue*))
+       (boxer-eval::boxer-toplevel-nocache-unset key-name))
+      ((boxer-eval::compiled-boxer-function? entry)
+       (boxer-eval::boxer-toplevel-set-nocache key-name entry))
+      (t
+       ;; probably means the previous binding for the key was
+       ;; to a box, right thing for now is to unbind the key
+       (if (null vanilla)
+         (boxer-eval::boxer-toplevel-nocache-unset key-name)
+         (progn
+          (warn "No saved function for ~A, setting to top level value" key-name)
+          (boxer-eval::boxer-toplevel-set-nocache key-name vanilla)))))))
+|#
+
+#|
+(defun make-generic-port (&rest foo)
+  "make a generic port so the person may redirect it"
+  (declare (ignore foo))
+  (if (null *dummy-box*) (setq *dummy-box* (make-dummy-box)))
+  (if (null *generic-port*)
+      (progn (setq *generic-port* (port-to-internal *dummy-box*))
+       (INSERT-CHA *POINT* *generic-port*)
+       (set-mouse-cursor :retarget)
+       (save-and-rebind-key (current-mouse-click-name #+mcl 0 #-mcl 1 0)
+          #'com-redirect-generic-port)
+       (save-and-rebind-key (current-mouse-click-name #+mcl 0 #-mcl 1
+                                                            0 :graphics)
+          #'com-redirect-generic-port)
+       (save-and-rebind-key (current-mouse-click-name #+mcl 0 #-mcl 1
+                                                            0 :sprite)
+          #'com-redirect-generic-port)
+       (add-redisplay-clue (point-row) ':insert)
+       boxer-eval::*novalue*)
+      (progn
+  (boxer-editor-error "Use the generic port you have made.")
+  boxer-eval::*novalue*)))
+|#
+
+#| ;; converted to using modes
+(defun clean-mouse-port-state ()
+  (reset-mouse-cursor)
+  ;;; rebind the mouse-middle
+  (restore-saved-function (current-mouse-click-name #+mcl 0 #-mcl 1 0))
+  (restore-saved-function (current-mouse-click-name #+mcl 0 #-mcl 1
+                                                    0 :graphics))
+  (restore-saved-function (current-mouse-click-name #+mcl 0 #-mcl 1
+                                                    0 :sprite))
+  (setq *generic-port* nil))
+|#
+
+#|
+    (save-and-rebind-key main-cut-name #'com-suck-region)
+    (save-and-rebind-key #+mcl (current-mouse-click-name 0 2 :graphics)
+                         #-mcl (current-mouse-click-name 0 0 :graphics)
+                         #'com-suck-region)
+    (save-and-rebind-key #+mcl (current-mouse-click-name 0 2 :sprite)
+                         #-mcl (current-mouse-click-name 0 0 :sprite)
+                         #'com-suck-region)
+    (save-and-rebind-key main-copy-name #'com-suck-copy-region)
+    (save-and-rebind-key #+mcl (current-mouse-click-name 0 1 :graphics)
+                         #-mcl (current-mouse-click-name 2 0 :graphics)
+                         #'com-suck-copy-region)
+    (save-and-rebind-key #+mcl (current-mouse-click-name 0 1 :sprite)
+                         #-mcl (current-mouse-click-name 2 0 :sprite)
+                         #'com-suck-copy-region)
+|#
+
+#|
+  (restore-saved-function #+mcl (current-mouse-click-name 0 2)
+                          #-mcl (current-mouse-click-name 0 0))
+  (restore-saved-function #+mcl (current-mouse-click-name 0 2 :graphics)
+                          #-mcl (current-mouse-click-name 0 0 :graphics))
+  (restore-saved-function #+mcl (current-mouse-click-name 0 2 :sprite)
+                          #-mcl (current-mouse-click-name 0 0 :sprite))
+  (restore-saved-function #+mcl (current-mouse-click-name 0 1)
+                          #-mcl (current-mouse-click-name 2 0))
+  (restore-saved-function #+mcl (current-mouse-click-name 0 1 :graphics)
+                          #-mcl (current-mouse-click-name 2 0 :graphics))
+  (restore-saved-function #+mcl (current-mouse-click-name 0 1 :sprite)
+                          #-mcl (current-mouse-click-name 2 0 :sprite))
+|#
+
+;;;;
 ;;;; FILE: comsb.lisp
 ;;;;
 
