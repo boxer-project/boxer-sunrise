@@ -1,51 +1,39 @@
-;;; -*- Package: BOXER; Mode: LISP; Base: 10.; Syntax: Common-Lisp -*-
-
-#|
-
-
- $Header: makcpy.lisp,v 1.0 90/01/24 22:14:32 boxer Exp $
-
- $Log:	makcpy.lisp,v $
-;;;Revision 1.0  90/01/24  22:14:32  boxer
-;;;Initial revision
-;;;
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                   +-Data--+
-          This file is part of the | BOXER |  System
-                                   +-------+
-
-
-  This file contains code for copying and making Editor Objects quickly.
-
-
-Modification History (most recent at top)
-
-12/15/11 text-string for row now returns second value of T when a box is encountered
- 2/22/09 copy-graphics-sheet
- 3/16/07 copy-special-box-properties now hacks graphics-info paradigm
- 2/15/03 merged current LW and MCL files
- 2/12/02 added bitmap dirty? handling to copy-graphics-sheet
- 2/16/01 merged current LW and MCL files
-10/01/99 copy-secial-box-properties: fix to bug where copy-thing (comsa.lisp) copies
-         with top-level attributes flag set to :name and pathnames of unfilled file
-         boxes are not copied
-4/05/99 added #+lispworks for text-string methods
- 5/03/98 changed copy-row to also copy FD's
- 5/03/98 starting logging: source = boxer 2.3
-
-
-|#
+;;;; -*- Package: BOXER; Mode: LISP; Base: 10.; Syntax: Common-Lisp -*-
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                     +-Data--+
+;;;;            This file is part of the | BOXER |  System
+;;;;                                     +-------+
+;;;;
+;;;;
+;;;;    This file contains code for copying and making Editor Objects quickly.
+;;;;
+;;;;
+;;;;  Modification History (most recent at top)
+;;;;
+;;;;  12/15/11 text-string for row now returns second value of T when a box is encountered
+;;;;   2/22/09 copy-graphics-sheet
+;;;;   3/16/07 copy-special-box-properties now hacks graphics-info paradigm
+;;;;   2/15/03 merged current LW and MCL files
+;;;;   2/12/02 added bitmap dirty? handling to copy-graphics-sheet
+;;;;   2/16/01 merged current LW and MCL files
+;;;;  10/01/99 copy-secial-box-properties: fix to bug where copy-thing (comsa.lisp) copies
+;;;;           with top-level attributes flag set to :name and pathnames of unfilled file
+;;;;           boxes are not copied
+;;;;  4/05/99 added #+lispworks for text-string methods
+;;;;   5/03/98 changed copy-row to also copy FD's
+;;;;   5/03/98 starting logging: source = boxer 2.3
+;;;;
 
 (in-package :boxer)
 
