@@ -442,53 +442,6 @@ Modification History (most recent at top)
       (set-name box (make-name-row `(,name))))
     box))
 
-
-
-
-
-#|
-;; Yuck, this is an example of how NOT to do this, it iterates over
-;; the characters at least 4 (!) times
-(defmethod text-string ((row row))
-  (let* ((chas (chas row))
-	(NO-OF-BOXES (COUNT-IF #'BOX? CHAS)))
-    (IF (ZEROP NO-OF-BOXES)
-	(let ((string (make-array (length chas)
-				   :ELEMENT-TYPE
-				   #-(or mcl symbolics) 'STRING-CHAR
-				   #+(or mcl symbolics) 'character)))
-	  (do ((i 0 (1+ i))
-	       (chas chas (cdr chas)))
-	      ((null chas))
-	      (setf (aref string i)
-		    #+(or symbolics mcl) (car chas)
-		    #-(or symbolics mcl) (make-char (car chas))))
-	  string)
-	(let ((return-string (make-array (+& (length chas) no-of-boxes)
-					 :element-type
-					 #-(or mcl symbolics) 'string-char
-					 #+(or mcl symbolics) 'character
-					 :fill-pointer 0)))
-	  (dolist (cha chas (values return-string t))
-	    (cond ((cha? cha) (vector-push cha return-string))
-		  (t
-		   (vector-push #\[ return-string)
-		   (vector-push #\] return-string))))))))
-
-;; too much CONSing...
-(defmethod text-string ((box box))
-  (let ((return-string ""))
-    (do-box-rows ((row box))
-       (if (eq row (first-inferior-row box))
-	   (setq return-string (text-string row))
-	   (setq return-string (concatenate 'string
-					    return-string
-					    (make-string 1 :initial-element #\return)
-					    (text-string row)))))
-    return-string))
-
-|#
-
 (defmethod text-string ((row row)
                         &optional (return-string
                                    (make-array (length-in-chas row)
@@ -527,60 +480,3 @@ Modification History (most recent at top)
       (unless (null (next-row row)) ; true for the last row
         (vector-push-extend #\return return-string))))
   return-string)
-
-
-#|  (originally from emanip.lisp ) this still needs to be converted....
-
-(DEFUN MAKE-BOX-FROM-STRING (STRING)
-  "make a box from a string.  carriage returns start new rows.  this is the inverse function
-to the :TEXT-STRING method of boxes. "
-  (MAKE-BOX
-    (LOOP WITH START = 0
-	  FOR INDEX FROM 0 TO (1- (LENGTH STRING))
-	  FOR CHA = (AREF STRING INDEX)
-	  WHEN (OR (CHAR= CHA #\CR) (CHAR= CHA #\LINE))
-	    COLLECT (LIST (NSUBSTRING STRING START INDEX)) INTO ROWS
-	  WHEN (OR (CHAR= CHA #\CR) (CHAR= CHA #\LINE))
-	    DO (SETQ START (1+ INDEX))
-	  FINALLY
-	    (RETURN (APPEND ROWS (LIST (LIST (NSUBSTRING STRING START INDEX))))))))
-
-
-
-
-;;;;BOX-EQUAL
-(DEFUN BOX-EQUAL (BOX1 BOX2)
-  (EQUAL BOX1 BOX2))
-
-(DEFUN ROW-EQUAL (ROW1 ROW2)
-  (EQUAL ROW1 ROW2))
-
-;(DEFMETHOD (BOX :EQUL) (BOX)
-;  (LET ((MY-LENGTH-IN-ROWS (LENGTH-IN-ROWS SELF))
-;	(HE-LENGTH-IN-ROWS (LENGTH-IN-ROWS BOX)))
-;    (COND ((NOT (= MY-LENGTH-IN-ROWS HE-LENGTH-IN-ROWS)) NIL)
-;	  (T
-;	   (DO* ((ROW-NO 0 (+ ROW-NO 1))
-;		 (MY-ROW (ROW-AT-ROW-NO SELF ROW-NO) (ROW-AT-ROW-NO SELF ROW-NO))
-;		 (HE-ROW (ROW-AT-ROW-NO BOX ROW-NO) (ROW-AT-ROW-NO BOX ROW-NO)))
-;		((>= ROW-NO MY-LENGTH-IN-ROWS) T)
-;	     (OR (EQUAL MY-ROW HE-ROW)
-;		 (RETURN NIL)))))))
-;
-;(DEFMETHOD (ROW :EQUL) (ROW)
-;  (LET ((MY-LENGTH-IN-CHAS (LENGTH-IN-CHAS SELF))
-;	(HE-LENGTH-IN-CHAS (LENGTH-IN-CHAS ROW)))
-;    (COND ((NOT (= MY-LENGTH-IN-CHAS HE-LENGTH-IN-CHAS)) NIL)
-;	  (T
-;	   (DO* ((CHA-NO 0 (+ CHA-NO 1))
-;		 (MY-CHA (CHA-AT-CHA-NO SELF CHA-NO) (CHA-AT-CHA-NO SELF CHA-NO))
-;		 (HE-CHA (CHA-AT-CHA-NO ROW CHA-NO) (CHA-AT-CHA-NO ROW CHA-NO)))
-;		((>= CHA-NO MY-LENGTH-IN-CHAS) T)
-;	     (COND ((AND (BOX? MY-CHA) (BOX? HE-CHA))
-;		    (IF (NOT (EQUAL MY-CHA HE-CHA))
-;			(RETURN NIL)))
-;		   ((= (CHAR-CODE MY-CHA) (CHAR-CODE HE-CHA))
-;		    T)
-;		   (T (RETURN NIL))))))))
-
-|#
