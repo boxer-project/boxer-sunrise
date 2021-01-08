@@ -2255,6 +2255,83 @@ to the :TEXT-STRING method of boxes. "
 |#
 
 ;;;;
+;;;; FILE: mousedoc.lisp
+;;;;
+
+  #+mcl "Click to Supershrink (Hold for more choices)"
+  #+mcl "Click to Shrink (Hold for more choices)"
+  #+mcl "Click to Expand (Hold for more choices)"
+  #+mcl "Click to Expand to Fullscreen (Hold for more choices)"
+  #+mcl "Flip to Graphics (Hold for more choices)"
+  #+mcl "Flip to Text (Hold for more choices)"
+  #+mcl "Hold for more choices"
+  #+mcl "Hold for more choices"
+
+  #-opengl
+(defun mouse-doc-status-backing () (svref& *mouse-doc-status* 2))
+
+#-opengl
+(defun set-mouse-doc-status-backing (newback)
+  (setf (svref& *mouse-doc-status* 2) newback))
+
+           #-opengl
+           (boxer::drawing-on-window (*boxer-pane*)
+             (document-mouse-dispatch place screen-box T))
+
+#-opengl
+           (boxer::drawing-on-window (*boxer-pane*)
+             (document-mouse-dispatch place screen-box))
+
+  #+mcl
+(defun popup-doc-delay ()
+  (let ((original-event-id (event-id)))
+    (or
+     (process-wait-with-timeout "Mouse Documentation"
+                                (round (* 60 *mouse-doc-wait-time*))
+                                #'(lambda ()
+                                    (not (= (event-id) original-event-id))))
+     (boxer::drawing-on-window (*boxer-pane*)
+       ;; why is this neccessarry ? shouldn't we already be in a drawing-on-window ?
+       ;; perhaps the process switch messes the graphics state up ?
+       (neq (mouse-place) (mouse-doc-status-place))))))
+
+           #-opengl ; only need to "undraw" for non OpenGL
+    (boxer::drawing-on-window (*boxer-pane*) (undocument-mouse-dispatch))
+
+    #-opengl
+        (when *change-mouse-on-hotspots*
+          (set-mouse-cursor-internal *current-mouse-cursor*))
+
+#-opengl
+(defun undocument-mouse-dispatch ()
+  (let* ((place (mouse-doc-status-place))
+         (screen-box (mouse-doc-status-screen-box))
+         (edbox (cond ((boxer::screen-box? screen-box)
+                       (boxer::screen-obj-actual-obj screen-box))
+                      ((boxer::sprite-box? screen-box)
+                       screen-box)
+                      (t nil)))
+         (target (when edbox (boxer::box-or-port-target edbox))))
+    (case place
+      (:top-left     (boxer::popup-undoc-shrink
+                      screen-box
+                      (and (eq (boxer::display-style edbox) :shrunk)
+                           (not (eq screen-box (outermost-screen-box))))))
+      (:top-right    (boxer::popup-undoc-expand
+                      screen-box (neq (boxer::display-style edbox) :shrunk)))
+      (:bottom-left  (unless (null (slot-value target 'boxer::graphics-sheet))
+                       (boxer::popup-undoc-view-flip
+                        screen-box (not (boxer::graphics-screen-box? screen-box)))))
+      (:bottom-right (if (boxer::bottom-right-hotspot-active? edbox)
+                       (boxer::popup-undoc-resize screen-box)
+                       (boxer::popup-undoc-resize screen-box t)))
+      ((:type :port-target-type) (boxer::popup-undoc-toggle-type screen-box))
+      ;; future expansion...
+      (:name-handle)
+      (:graphics (boxer::popup-undoc-graphics screen-box))
+      (:sprite))))
+
+;;;;
 ;;;; FILE: opengl-utils.lisp
 ;;;;
 
