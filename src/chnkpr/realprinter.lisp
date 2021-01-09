@@ -140,41 +140,6 @@ ToDO:make-editor-box-from-vc doesn't hack turtles correctly yet....
   (dolist (sb (screen-objs port)) (set-scroll-to-actual-row sb nil))
   (modified port))
 
-#|
-;;; This is what we stick into rows for ports until we can retarget
-;;; them.  The reason we need to do this is that inserting a port
-;;; that doesn't have a legit target plays havoc with all the port caching
-;;; code so we defer inserting ports untilthe very end when we have both
-;;; a well defined hierarchy that we are inserting into and a legitimate
-;;; port-target pair to insert.
-;;;
-
-;;; establish a default for these so we don't blow out
-(defmethod insert-self-action ((self t) &optional superior)
-  ;(declare (ignore self superior))
-  nil)
-
-(defmethod delete-self-action ((self t) &optional superior)
-  ;(declare (ignore self superior))
-  nil)
-;; old stuff.  Using editor ports instead with the relevant info on the PLiST
-
-;;; this ought to be just a vector but I'd like to be able to see
-;;; what is what for now
-(defstruct (port-retargetting-placeholder
-	     (:conc-name prp-)
-	     #+symbolics
-	     (:print-function print-placeholder-internal))
-  row
-  target)
-
-#+symbolics
-(defun print-placeholder-internal (pl stream depth)
-  (declare (ignore pl depth))
-  (format stream ""))
-
-|#
-
 ;;;; Formatting...
 
 ;;; Most of this stuff is just so I can say show-boxer-printing-options cause
@@ -736,37 +701,6 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
 	   (error "Virtual Port target, ~S, is not a Box or Virtual Copy"
 		  target)))))
 
-#|
-;;; old stuff.  when vc's are targets, use real ports and record the VC
-;; on the plist to be retargetted later
-
-(defun make-port-from-vp (vp)
-  ;; now reset the target
-  (let ((target (vp-target vp)))
-    (cond ((virtual-copy? target)
-	   ;; this may have been an interior link so record it
-	   ;; cause we may need to retarget it later
-	   (let ((placeholder (make-port-retargetting-placeholder
-				:target target)))
-	     (record-port-printing placeholder)
-	     placeholder))
-	  ((box? target)
-	   (let ((port (make-uninitialized-box 'port-box)))
-	     ;; fixup some slots that the init method would have fixed
-	     (setf (slot-value port 'display-style-list) (make-display-style))
-	     (setf (slot-value port 'tick) (tick))
-	     ;; ports to editor boxes can be made immediately
-	     (set-port-to-box port target)
-	     ;; record it so port caching will work later
-	     (record-outlink-port port)
-	     (unless (null (vp-name vp))
-	       (set-name port (make-name-row (list (vp-name vp)))))
-	     port))
-	  (t
-	   (error "Virtual Port target, ~S, is not a Box or Virtual Copy"
-		  target)))))
-|#
-
 (defmethod make-editor-box-for-printing ((eb box) &optional new-superior)
   (if (numberp *creation-time-for-printing-vc*)
       (cond ((and new-superior (eq new-superior (superior-box eb))) eb)
@@ -890,80 +824,3 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
 					new-row)))
 	  (t (error "The evrow, ~S, cannot be printed" evrow)))
     new-row))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;           Old stuff below                              ;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#|
-
-(defun convert-vc-box-to-editor-box (vc)
-  (let ((box (make-uninitialized-box (vc-type vc)))
-	(last-row (convert-evrow-to-editor-row (car (vc-rows vc)) vc)))
-    (initialize-from-defaults box)
-    (insert-row-at-row-no box last-row 0)
-    (dolist (evrow (cdr (vc-rows vc)))
-      (let ((new-row (convert-evrow-to-editor-row evrow vc)))
-	(insert-row-after-row box new-row last-row)
-	(setq last-row new-row)))
-    (when (vc-name vc)
-      (set-name box (make-name-row `(,(vc-name vc)))))
-    box))
-
-
-(defun convert-evrow-to-editor-row (evrow superior-box)
-  (make-row-no-spaces
-    (mapcon #'(lambda (list)
-		(convert-to-editor-object
-		  (get-pointer-value (car list) superior-box)
-		  (null (cdr list))))
-	    (evrow-pointers evrow))))
-
-(defun convert-to-editor-object (object lastp)
-  (cond ((chunk-p object)
-	 (let* ((left (chunk-left-format object))
-		(pname (chunk-pname object))
-		(right (chunk-right-format object))
-		(chars (fi-chas left)))
-	   (nconc (subseq chars
-			  (fi-start left)
-			  (fi-stop left))
-		  (cond ((box? pname) (list (copy-box pname)))
-			((virtual-copy? object)
-                         (list (convert-vc-box-to-editor-box pname)))
-			(t (subseq chars
-				   (fi-start pname)
-				   (fi-stop pname))))
-		  (if lastp
-		      (subseq chars
-			      (fi-start right)
-			      (fi-stop right))))))
-	(t
-	 (let ((result (cond ((or (numberp object)
-                                  (symbolp object)
-                                  (characterp object))
-			      object)
-			     ((virtual-copy? object)
-			      (convert-vc-box-to-editor-box object))
-			     ((box? object) (copy-box object))
-			     (t (error "~S is not a chunk" object)))))
-	   (if lastp (list result) (list result #\space))))))
-
-;;; *** We need to rewrite convert-to-editor-object
-(defun make-row-no-spaces (list)
-  (let* ((new-row (make-initialized-row))
-	 (ca (chas-array new-row))
-	 (idx 0))
-    (dolist (item list)
-      (cond ((numberp item) (fast-string-into-chas-array
-			     (convert-number-to-string item) ca))
-	    ((stringp item) (fast-string-into-chas-array item ca))
-	    ((symbolp item) (fast-string-into-chas-array (symbol-name item) ca))
-	    ((characterp item) (fast-chas-array-append-cha ca item))
-	    ((box? item)
-	     (fast-chas-array-append-cha ca item)
-	     (set-superior-row item new-row))
-	    (t (error "Don't know how to make a row out of ~S" item)))
-      (incf idx))
-    new-row))
-
-|#
