@@ -651,10 +651,6 @@ Modification History (most recent at top)
                                 (boxer::read-internal (car args))))
            (boxer::repaint)))))
 
-;; for ALT key handling
-#+lispworks4
-(defmethod capi::interface-keys-style ((self boxer-frame)) :emacs)
-
 (defvar *boxer-frame-initial-width* 800) ;(- (screen-width (convert-to-screen)) 200)
 (defvar *boxer-frame-initial-height* 600);(- (screen-height (convert-to-screen))100)
 
@@ -1579,14 +1575,6 @@ Modification History (most recent at top)
      (setq *suppress-expose-handler* nil
            *suppressed-actions* nil)))
 
-;(defun boxer-expose-window-handler (pane x y wid hei)
-;  (declare (ignore pane x y wid hei))
-;  (funcall *expose-window-handler-function*))
-
-;(defun boxer-expose-window-handler (pane x y wid hei)
-;  (declare (ignore pane x y))
-;    (funcall *expose-window-handler-function* wid hei))
-
 (defun boxer-expose-window-handler (pane x y wid hei)
   (declare (ignore x y))
   (cond ((not (null *display-bootstrapping-no-boxes-yet*))
@@ -1602,16 +1590,12 @@ Modification History (most recent at top)
   ;; a stub
   nil)
 
-;(defun bootstrap-expose-window-function (wid hei)
-;  (rendering-on (*boxer-pane*) (ogl-reshape wid hei)))
-
 (defun expose-window-function (wid hei)
   (declare (ignore wid hei))
 ;  (unless *suppress-expose-handler*
     (redraw-status-line)
     (boxer::force-repaint))
 ;)
-
 
 ;; careful, this called during startup before the outermost screen box
 ;; is created (by the 1st call to redisplay)
@@ -1644,8 +1628,6 @@ Modification History (most recent at top)
         (unless (and (= obwid (box::screen-obj-wid osb))
                      (= obhei (box::screen-obj-hei osb)))
           (box::set-fixed-size osb obwid obhei))))))
-
-
 
 ;; ****stubs
 
@@ -1716,14 +1698,6 @@ Modification History (most recent at top)
 
 (defsetf sheet-blinker-list %set-sheet-blinker-list)
 
-#|
-(defsetf sheet-blinker-list (window) (new-list)
-  `(let ((entry (box::fast-assq ,window *boxer-window-blinker-alist*)))
-     (if (null entry)
-   (push ,new-list *boxer-window-blinker-alist*)
-   (setf (cdr entry) ,new-list))))
-|#
-
 (defstruct (blinker (:conc-name blinker-)
         (:constructor %make-blinker))
   (x 0)
@@ -1792,58 +1766,6 @@ Modification History (most recent at top)
   blinker-list
   `(progn . ,body))
 
-#|
-(defmacro with-open-blinker ((blinker) &body body)
-  `(macrolet ((draw-generic-blinker (blinker)
-                `(etypecase ,blinker
-                   (region-row-blinker (draw-region-row-blinker ,blinker))
-                   (blinker (draw-blinker ,blinker)))))
-     (boxer::without-interrupts
-       (unwind-protect
-         (progn (when (blinker-visibility ,blinker)
-                  (box::drawing-on-window-without-prepare-sheet (*boxer-pane*)
-                    (box::with-origin-at (0 0) ; invoke the quickdraw scaling
-           (draw-generic-blinker ,blinker))))
-                ;; Erase the blinker if it is visible
-                ;; then do whatever you were going to do
-                . ,body)
-         (when (blinker-visibility ,blinker)
-           ;; If the blinker is supposed to be visible, then redraw it
-           (box::drawing-on-window-without-prepare-sheet (*boxer-pane*)
-             (box::with-origin-at (0 0) ; invoke the quickdraw scaling
-               (draw-generic-blinker ,blinker))))))))
-
-(defmacro with-open-blinkers (blinker-list &body body)
-  `(macrolet ((draw-generic-blinker (blinker)
-     `(etypecase ,blinker
-       (region-row-blinker (draw-region-row-blinker ,blinker))
-       (blinker (draw-blinker ,blinker)))))
-;     (box::drawing-on-window-without-prepare-sheet (*boxer-pane*) ; +++ this is probably not the right thing, fix
-;; **** Almost, actually this needs to be wrapped around the blinker drawing
-;; **** but NOT the body since the body will be inside a drawing-on-window
-      (unwind-protect
-   (progn (boxer::without-interrupts
-                  (boxer::drawing-on-window-without-prepare-sheet (*boxer-pane*)
-                    ;; **** this will set the value of the offset to be the
-                    ;; **** origin of the *boxer-pane*
-                    (boxer::with-origin-at (0 0)
-                      ;; **** this will set the offset in the window system
-          (dolist (b ,blinker-list)
-            (when (blinker-visibility b)
-                          (draw-generic-blinker b))))))
-    . ,body)
-       (boxer::without-interrupts
-         (boxer::drawing-on-window-without-prepare-sheet (*boxer-pane*)
-           ;; **** this will set the value of the offset to be the
-           ;; **** origin of the *boxer-pane*
-           (boxer::with-origin-at (0 0)
-             ;; **** this will set the offset in the window system
-       (dolist (b ,blinker-list)
-         (when (blinker-visibility b)
-                 (draw-generic-blinker b)))))))))
-
-|#
-
 (defun set-cursor-visibility (blinker new-vis)
   (setf (blinker-visibility blinker) new-vis))
 
@@ -1865,8 +1787,6 @@ Modification History (most recent at top)
         "Blinker Width or Height is < 0"))
   (setf (blinker-width  cursor) (max (round wid) 0))
   (setf (blinker-height cursor) (max (round hei) 0)))
-
-
 
 ;;;
 (defun window-system-dependent-redraw-status-line (string)
@@ -1902,13 +1822,10 @@ Modification History (most recent at top)
                *redisplayable-window-outermost-box-alist*)
   (setf (cdr pair) new-outermost-screen-box))))
 
-
-
 ;;; "About Boxer" window ?
 (defun about-boxer-function ()
   (capi:display-message-on-screen (capi:convert-to-screen nil)
                                   (system-version)))
-
 
 ;;; System clipboard
 
@@ -1921,19 +1838,6 @@ Modification History (most recent at top)
               (boxer::insert-row boxer::*point*
                                  (boxer::make-initialized-row) :moving)
               (boxer::insert-cha boxer::*point* char :moving)))))))
-
-#|
-(defun image-to-bitmap (image)
-  (unless (null image)
-    (let* ((wid (gp:image-width image)) (hei (gp:image-height image))
-           (bim (make-offscreen-bitmap *boxer-pane* wid hei)))
-      (with-system-dependent-bitmap-drawing (bim wid hei)
-        (%erase-rectangle wid hei 0 0 bim)
-        (with-pen-color (boxer::*red*)
-          (boxer::draw-rectangle alu-seta 10 10 10 10))
-        (gp:draw-image bim image 0 0))
-      (values bim wid hei))))
-|#
 
 (defun image-to-bitmap (image)
   (unless (null image)
@@ -1974,7 +1878,6 @@ Modification History (most recent at top)
   (boxer::repaint))
 
 
-
 ;;;;  Crash reporting
 
 (defvar *report-crash* t)
