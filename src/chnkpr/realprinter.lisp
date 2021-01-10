@@ -62,27 +62,27 @@ ToDO:make-editor-box-from-vc doesn't hack turtles correctly yet....
 
 (defmacro with-port-retargetting (&body body)
   `(let ((*vc-target-printing-alist* nil)
-	 (*printing-ports-to-retarget* nil)
-	 (*outports* nil))
+     (*printing-ports-to-retarget* nil)
+     (*outports* nil))
      (flet ((retarget-ports ()
-	      (dolist (port *printing-ports-to-retarget*)
-		(let* ((vc-target (getprop port 'retargetting-vc))
-		       (new-target
-			(cdr (fast-assq vc-target
-					*vc-target-printing-alist*))))
-		  ;; need to clear the entry here
-		  (putprop port nil 'retargetting-vc)
-		  (if (null new-target)
-		      ;; Note that this is the case where we return a port
-		      ;; to structure that was consed on the stack and so we
-		      ;; don't have to worry about caching its link
-		      (set-port-to-box port (make-editor-box-from-vc
-					     vc-target))
-		      ;; need to cache links here...
-		      (retarget-port port new-target))))))
+          (dolist (port *printing-ports-to-retarget*)
+        (let* ((vc-target (getprop port 'retargetting-vc))
+               (new-target
+            (cdr (fast-assq vc-target
+                    *vc-target-printing-alist*))))
+          ;; need to clear the entry here
+          (putprop port nil 'retargetting-vc)
+          (if (null new-target)
+              ;; Note that this is the case where we return a port
+              ;; to structure that was consed on the stack and so we
+              ;; don't have to worry about caching its link
+              (set-port-to-box port (make-editor-box-from-vc
+                         vc-target))
+              ;; need to cache links here...
+              (retarget-port port new-target))))))
        (unwind-protect
-	    (progn . ,body)
-	 (retarget-ports)))))
+        (progn . ,body)
+     (retarget-ports)))))
 
 (defun record-port-printing (port)
   (unless (fast-memq port *printing-ports-to-retarget*)
@@ -114,15 +114,15 @@ ToDO:make-editor-box-from-vc doesn't hack turtles correctly yet....
       ;; not really removing the target from the hierarchy
       ;; handle port link cache removal for the box itself...
       (let ((common-node (find-lowest-common-superior-box old-target port)))
-	(unless (null common-node)
-	  ;; remove inferior-links starting from the common node
-	  (remove-link common-node (make-link 'inferior-link port old-target))
-	  ;; remove 'port-branch-links starting from the port branch
-	  ;; this should terminate when it reaches the common superior
-	  (remove-link port (make-link 'port-branch-link port old-target))
-	  ;; remove 'target-branch-links starting from the target
-	  ;; branch.  This should also terminate at the common-node
-	  (remove-link old-target
+    (unless (null common-node)
+      ;; remove inferior-links starting from the common node
+      (remove-link common-node (make-link 'inferior-link port old-target))
+      ;; remove 'port-branch-links starting from the port branch
+      ;; this should terminate when it reaches the common superior
+      (remove-link port (make-link 'port-branch-link port old-target))
+      ;; remove 'target-branch-links starting from the target
+      ;; branch.  This should also terminate at the common-node
+      (remove-link old-target
                        (make-link 'target-branch-link port old-target))))))
   (set-port-to-box port newbox)
   (insert-self-link-action newbox)
@@ -130,9 +130,9 @@ ToDO:make-editor-box-from-vc doesn't hack turtles correctly yet....
     (when (display-style-graphics-mode? dsl)
       ;; check to make sure the new target has graphics
       (when (null (graphics-sheet newbox))
-	(setf (display-style-graphics-mode? dsl) nil)
-	(dolist (sb (screen-objs port))
-	  (toggle-type sb)
+    (setf (display-style-graphics-mode? dsl) nil)
+    (dolist (sb (screen-objs port))
+      (toggle-type sb)
           (set-force-redisplay-infs? sb t)))))
   ;; this will uncrack any cracked ports...
   (inform-port-that-target-has-returned port)
@@ -150,11 +150,11 @@ ToDO:make-editor-box-from-vc doesn't hack turtles correctly yet....
 (defmacro define-printing-option (name value &optional (doc-string nil))
   (let ((var-name (intern (symbol-format nil "*BOXER-PRINTING-OPTION-~A*" name))))
     `(progn (unless (fast-assq ',name *boxer-printing-options*)
-	      (push (cons ',name ',var-name) *boxer-printing-options*))
-	    (unless (null ,doc-string)
-	      (setf (get ',name 'printing-documentation)
-		    ,doc-string))
-	      (defvar ,var-name ,value))))
+          (push (cons ',name ',var-name) *boxer-printing-options*))
+        (unless (null ,doc-string)
+          (setf (get ',name 'printing-documentation)
+            ,doc-string))
+          (defvar ,var-name ,value))))
 
 (defun boxer-printing-option? (name)
   (fast-assq name *boxer-printing-options*))
@@ -164,14 +164,14 @@ ToDO:make-editor-box-from-vc doesn't hack turtles correctly yet....
   (dolist (option *boxer-printing-options*)
     (let ((doc (get (car option) 'printing-documentation)))
       (if (null doc)
-	  (format t "~%~A is the variable ~A~%~
+      (format t "~%~A is the variable ~A~%~
                     ~5twhich currently has a value of: ~A"
-		  (car option) (cdr option) (symbol-value (cdr option)))
-	  (format t "~%~A, ~A~%~
+          (car option) (cdr option) (symbol-value (cdr option)))
+      (format t "~%~A, ~A~%~
                      ~5t~A is bound to the variable ~A~%~
                      ~5twhich currently has a value of: ~A"
-		  (car option) doc (car option)
-		  (cdr option) (symbol-value (cdr option)))))))
+          (car option) doc (car option)
+          (cdr option) (symbol-value (cdr option)))))))
 
 ;;; Standard Boxer Printing Options
 
@@ -188,144 +188,144 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
 
 
 (defun print-formatting-property (fi chas-array row
-				     &optional last-p no-extra-space-p)
+                     &optional last-p no-extra-space-p)
   (cond ((and (null fi) last-p))
-	((null fi)
-	 ;; the default formatting property is a space
-	 (print-formatting-property
-	   *boxer-printing-option-default-formatting-property*
-	   chas-array
-	   row))
-	((eq fi ':start)
-	 ;; this is formatting-info of the first chunk on the row
-	 (when (null *boxer-printing-option-no-initial-whitespace*)
-	   (print-formatting-property
-	     *boxer-printing-option-default-formatting-property*
-	     chas-array
-	     row)))
-	((null-fi? fi)
-	 (unless (or last-p no-extra-space-p)
-	   ;; Need to insure that items will be separated by spaces even if
-	   ;; formatting-info (left +/or right) has 0 spaces
-	   (fast-chas-array-append-cha chas-array #\Space)))
+    ((null fi)
+     ;; the default formatting property is a space
+     (print-formatting-property
+       *boxer-printing-option-default-formatting-property*
+       chas-array
+       row))
+    ((eq fi ':start)
+     ;; this is formatting-info of the first chunk on the row
+     (when (null *boxer-printing-option-no-initial-whitespace*)
+       (print-formatting-property
+         *boxer-printing-option-default-formatting-property*
+         chas-array
+         row)))
+    ((null-fi? fi)
+     (unless (or last-p no-extra-space-p)
+       ;; Need to insure that items will be separated by spaces even if
+       ;; formatting-info (left +/or right) has 0 spaces
+       (fast-chas-array-append-cha chas-array #\Space)))
 ;	((not (null last-p))
-	 ;; temporary hack.  this needs to be smart about when NOT to
-	 ;; print the trailing fi.  An example of lossage is when a
-	 ;; row terminating chunk is selected from in front of another chunk
-	 ;; that has a label.  The terminating chunk now has a right-formatting
-	 ;; property containing the label of the chunk that USED to follow it
-	 ;; on the other hand, we would like to try and preserve comments
-	 ;; this may end up neccesitating extra slots in chunk structs
+     ;; temporary hack.  this needs to be smart about when NOT to
+     ;; print the trailing fi.  An example of lossage is when a
+     ;; row terminating chunk is selected from in front of another chunk
+     ;; that has a label.  The terminating chunk now has a right-formatting
+     ;; property containing the label of the chunk that USED to follow it
+     ;; on the other hand, we would like to try and preserve comments
+     ;; this may end up neccesitating extra slots in chunk structs
 ;	 )
-	(t
-	 (do-fi-chas (cha fi)
-	   (cond ((cha? cha)
-		  (fast-chas-array-append-cha chas-array cha))
-		 (t
-		  ;; must be a box.
+    (t
+     (do-fi-chas (cha fi)
+       (cond ((cha? cha)
+          (fast-chas-array-append-cha chas-array cha))
+         (t
+          ;; must be a box.
                   (let ((cb (copy-box cha)))
-		    (fast-chas-array-append-cha chas-array cb)
-		    (set-superior-row cb row))))))))
+            (fast-chas-array-append-cha chas-array cb)
+            (set-superior-row cb row))))))))
 
 (defun merge-formatting-properties (f1 f2 chas-array row
-				       &optional no-extra-space-p)
+                       &optional no-extra-space-p)
   (cond ((eql f1 f2)
-	 ;; this is the easy common case where adjacent chunks
-	 ;; have remained adjacent when it has become time to
-	 ;; print them or else both chunks are newly created
-	 ;; and neither of them has any associated formatting info
-	 (print-formatting-property f1 chas-array row nil no-extra-space-p))
-	((null f1)
-	 (print-formatting-property f2 chas-array row nil no-extra-space-p))
-	((eq f1 ':start)
-	 ;; this is formatting-info of the first chunk on the row
-	 (unless (and (or (numberp f2) (null f2))
-		      *boxer-printing-option-no-initial-whitespace*)
-	   (print-formatting-property f2 chas-array row)))
-	((null f2)
-	 (print-formatting-property f1 chas-array row nil no-extra-space-p))
-	;; this clause is here for paranoia
-	((or (not (formatting-info? f1)) (not (formatting-info? f2)))
-	 (error "Both ~S and ~S should be formatting infos" f1 f2))
-	;; at this point, we know that both f1 and f2 are legit
-	;; formatting infos
-	(t
-	 (case *boxer-printing-option-format-preference*
-	   (:right
+     ;; this is the easy common case where adjacent chunks
+     ;; have remained adjacent when it has become time to
+     ;; print them or else both chunks are newly created
+     ;; and neither of them has any associated formatting info
+     (print-formatting-property f1 chas-array row nil no-extra-space-p))
+    ((null f1)
+     (print-formatting-property f2 chas-array row nil no-extra-space-p))
+    ((eq f1 ':start)
+     ;; this is formatting-info of the first chunk on the row
+     (unless (and (or (numberp f2) (null f2))
+              *boxer-printing-option-no-initial-whitespace*)
+       (print-formatting-property f2 chas-array row)))
+    ((null f2)
+     (print-formatting-property f1 chas-array row nil no-extra-space-p))
+    ;; this clause is here for paranoia
+    ((or (not (formatting-info? f1)) (not (formatting-info? f2)))
+     (error "Both ~S and ~S should be formatting infos" f1 f2))
+    ;; at this point, we know that both f1 and f2 are legit
+    ;; formatting infos
+    (t
+     (case *boxer-printing-option-format-preference*
+       (:right
             (let ((f2first (first-fi-cha f2)) (f1last (last-fi-cha f1)))
               ;; insure that there will be at least 1 space separating tokens
-	      (when (and f2first (char= f2first #\space)
-		         (not (and f1last (char= f1last #\space)))
-		         (not no-extra-space-p))
-	        (fast-chas-array-append-cha chas-array #\space)))
-	    (print-formatting-property f1 chas-array row nil no-extra-space-p))
-	   (:left
+          (when (and f2first (char= f2first #\space)
+                 (not (and f1last (char= f1last #\space)))
+                 (not no-extra-space-p))
+            (fast-chas-array-append-cha chas-array #\space)))
+        (print-formatting-property f1 chas-array row nil no-extra-space-p))
+       (:left
             (let ((f1last (last-fi-cha f1)) (f2first (first-fi-cha f2)))
-	      (when (and f1last (char= f1last #\space)
-		         (not (and f2first (char= f2first #\space)))
-		         (not no-extra-space-p))
-	        (fast-chas-array-append-cha chas-array #\Space)))
-	    (print-formatting-property f2 chas-array row nil no-extra-space-p))
-	   (:merge
-	     ;; need to make some chunker mods to speed this up
-	     ;; specifically, need to cache the fact that a fi is
-	     ;; all spaces so we dont search the list every time
-	     (cerror "How about printing the left format instead"
-		     "Sorry, format info merging is not implemented yet")
+          (when (and f1last (char= f1last #\space)
+                 (not (and f2first (char= f2first #\space)))
+                 (not no-extra-space-p))
+            (fast-chas-array-append-cha chas-array #\Space)))
+        (print-formatting-property f2 chas-array row nil no-extra-space-p))
+       (:merge
+         ;; need to make some chunker mods to speed this up
+         ;; specifically, need to cache the fact that a fi is
+         ;; all spaces so we dont search the list every time
+         (cerror "How about printing the left format instead"
+             "Sorry, format info merging is not implemented yet")
              (let ((f1last (last-fi-cha f1)) (f2first (first-fi-cha f2)))
-	       (when (and f1last (char= f1last #\space)
-			  (not (and f2first (char= (first-fi-cha f2) #\space)))
-			  (not no-extra-space-p))
-	         (fast-chas-array-append-cha chas-array #\Space)))
-	     (print-formatting-property f2 chas-array row
-				       nil no-extra-space-p))))))
+           (when (and f1last (char= f1last #\space)
+              (not (and f2first (char= (first-fi-cha f2) #\space)))
+              (not no-extra-space-p))
+             (fast-chas-array-append-cha chas-array #\Space)))
+         (print-formatting-property f2 chas-array row
+                       nil no-extra-space-p))))))
 
 
 
 (defun print-thing-into-chas-array (item row &optional
-					 (chas-array (chas-array row))
-					 updating-editor-box)
+                     (chas-array (chas-array row))
+                     updating-editor-box)
     (cond ((numberp item)
-	   (fast-string-into-chas-array (convert-number-to-string item)
-					chas-array))
-	  ((symbolp item)
-	   (fast-string-into-chas-array (symbol-name item) chas-array))
-	  ((virtual-copy? item)
-	   (let ((new-box (make-editor-box-from-vc item)))
-	     (fast-chas-array-append-cha chas-array new-box)
-	     (set-superior-row new-box row)))
-	  ((box? item)
-	   (let ((new-box (make-editor-box-for-printing item
-							updating-editor-box)))
-	     (fast-chas-array-append-cha chas-array new-box)
-	     (set-superior-row new-box row)))
-	  ((virtual-port? item)
-	   (let ((new-port (make-port-from-vp item)))
-	     (fast-chas-array-append-cha chas-array new-port)
-	     (set-superior-row new-port row)))
-	  ((stringp item)
-	   (fast-string-into-chas-array item chas-array))
-	  ((eval-prop? item)
-	   (fast-eval-prop-into-chas-array item row
-					   chas-array updating-editor-box))
-	  (t (error "Don't know how to insert ~S into ~S" item row))))
+       (fast-string-into-chas-array (convert-number-to-string item)
+                    chas-array))
+      ((symbolp item)
+       (fast-string-into-chas-array (symbol-name item) chas-array))
+      ((virtual-copy? item)
+       (let ((new-box (make-editor-box-from-vc item)))
+         (fast-chas-array-append-cha chas-array new-box)
+         (set-superior-row new-box row)))
+      ((box? item)
+       (let ((new-box (make-editor-box-for-printing item
+                            updating-editor-box)))
+         (fast-chas-array-append-cha chas-array new-box)
+         (set-superior-row new-box row)))
+      ((virtual-port? item)
+       (let ((new-port (make-port-from-vp item)))
+         (fast-chas-array-append-cha chas-array new-port)
+         (set-superior-row new-port row)))
+      ((stringp item)
+       (fast-string-into-chas-array item chas-array))
+      ((eval-prop? item)
+       (fast-eval-prop-into-chas-array item row
+                       chas-array updating-editor-box))
+      (t (error "Don't know how to insert ~S into ~S" item row))))
 
 (defun fast-eval-prop-into-chas-array (prop row chas-array sbox)
   (let ((p (eval-prop-prop prop))
-	(value (eval-prop-contents prop)))
+    (value (eval-prop-contents prop)))
     (case p
       (bu::@ (fast-chas-array-append-cha chas-array #\@)
-	     (print-thing-into-chas-array value row chas-array sbox))
+         (print-thing-into-chas-array value row chas-array sbox))
       (bu::eval-it (fast-chas-array-append-cha chas-array #\!)
-		   (print-thing-into-chas-array value row chas-array sbox))
+           (print-thing-into-chas-array value row chas-array sbox))
       (bu::previous-tell-environment
        (fast-chas-array-append-cha chas-array #\^)
        (print-thing-into-chas-array value row chas-array sbox))
       (bu::dots-list
        (print-thing-into-chas-array (car value) row chas-array sbox)
        (dolist (segment (cdr value))
-	 (fast-chas-array-append-cha chas-array #\.)
-	 (print-thing-into-chas-array segment row chas-array sbox))))))
+     (fast-chas-array-append-cha chas-array #\.)
+     (print-thing-into-chas-array segment row chas-array sbox))))))
 
 (defun print-eval-props-into-chas-array (props chas-array)
   (dolist (prop props)
@@ -336,31 +336,31 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
        (fast-chas-array-append-cha chas-array #\^)))))
 
 (defun print-chunk-value-for-editor (chunk chas-array row
-					   &optional
-					   chunk-p updating-editor-box)
+                       &optional
+                       chunk-p updating-editor-box)
   (cond ((null chunk-p)
-	 (print-thing-into-chas-array chunk row chas-array
-				      updating-editor-box))
-	((only-formatting-chunk? chunk)
-	 (unless (null (chunk-pname chunk))
-	   (print-formatting-property (chunk-pname chunk) chas-array row)))
-	(t (let ((val (chunk-chunk chunk)))
-	     (cond ((or (symbolp val)
-			(numberp val))
-		    (print-formatting-property (chunk-pname chunk)
-					       chas-array
-					       row))
-		   (t
-		    ;; we don't have to worry about eval-props in the
-		    ;; symbol or number cases because they will be encoded
-		    ;; into the chunk-pname for those chunk values
-		    (let ((eval-props (getf (chunk-plist chunk) :eval-prop)))
-		      (unless (null eval-props)
-			(print-eval-props-into-chas-array eval-props
-							  chas-array))
-		      (print-thing-into-chas-array (chunk-chunk chunk)
-						   row chas-array
-						   updating-editor-box))))))))
+     (print-thing-into-chas-array chunk row chas-array
+                      updating-editor-box))
+    ((only-formatting-chunk? chunk)
+     (unless (null (chunk-pname chunk))
+       (print-formatting-property (chunk-pname chunk) chas-array row)))
+    (t (let ((val (chunk-chunk chunk)))
+         (cond ((or (symbolp val)
+            (numberp val))
+            (print-formatting-property (chunk-pname chunk)
+                           chas-array
+                           row))
+           (t
+            ;; we don't have to worry about eval-props in the
+            ;; symbol or number cases because they will be encoded
+            ;; into the chunk-pname for those chunk values
+            (let ((eval-props (getf (chunk-plist chunk) :eval-prop)))
+              (unless (null eval-props)
+            (print-eval-props-into-chas-array eval-props
+                              chas-array))
+              (print-thing-into-chas-array (chunk-chunk chunk)
+                           row chas-array
+                           updating-editor-box))))))))
 
 
 
@@ -376,32 +376,32 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
   (if (null precision)
       (setq *boxer-float-print-string* "~F")
       (setq *decimal-print-precision* precision
-	    *boxer-float-print-string* (format nil "~~,~DF"
-					       *decimal-print-precision*))))
+        *boxer-float-print-string* (format nil "~~,~DF"
+                           *decimal-print-precision*))))
 
 (defun convert-number-to-string (number)
   (cond ((integerp number)
-	 (format nil "~D" number))
-	((floatp number)
-	 (format nil *boxer-float-print-string*
-		 #+lcl3.0 (case (lcl::extreme-float-p number)
-			    (:minus-infinity most-negative-long-float)
-			    (:plus-infinity most-positive-long-float)
-			    (t number))
-		 #-lcl3.0 number))
-	((and (null *print-rationals*) (rationalp number))
-	 (format nil *boxer-float-print-string* number))
-	(t (format nil "~D" number))))
+     (format nil "~D" number))
+    ((floatp number)
+     (format nil *boxer-float-print-string*
+         #+lcl3.0 (case (lcl::extreme-float-p number)
+                (:minus-infinity most-negative-long-float)
+                (:plus-infinity most-positive-long-float)
+                (t number))
+         #-lcl3.0 number))
+    ((and (null *print-rationals*) (rationalp number))
+     (format nil *boxer-float-print-string* number))
+    (t (format nil "~D" number))))
 
 #|
  ;; this is for printing fractions > 1 as 1&2/3 but we need to
  ;; make the chunker understand this notation BEFORE we can
  ;; have the printer produce it....
-	 (if (< (abs number) 1)
-	     number
-	   (multiple-value-bind (integer-part fractional-part)
+     (if (< (abs number) 1)
+         number
+       (multiple-value-bind (integer-part fractional-part)
               (truncate number)
-	    (format nil "~D&~D" integer-part fractional-part)))
+        (format nil "~D&~D" integer-part fractional-part)))
 |#
 
 (defun top-level-print-number (number)
@@ -440,71 +440,71 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
 ;; during the course of a particular EVAL.
 
 (defun copy-closet-row-checking-for-changes (from-row binding-alist
-						      &optional
-						      new-previous-row
-						      new-superior-box)
+                              &optional
+                              new-previous-row
+                              new-superior-box)
   (flet ((copy-chas-array (from-chas new-row)
-	   (with-fast-chas-array-manipulation (from-chas fast-from-chas)
-	     (flet ((make-length-n-chas-array (n)
-		      (let ((array (make-chas-array
-				    (max& *chas-array-default-size* n))))
-			(setf (chas-array-active-length array) n)
-			array)))
-	       (let* ((length (chas-array-active-length from-chas))
-		      (to-chas (make-length-n-chas-array length)))
-		 (with-fast-chas-array-manipulation (to-chas fast-to-chas)
-		   (dotimes& (index length)
-		     (if (cha? (fast-chas-array-get-cha fast-from-chas index))
-			 (setf (fast-chas-array-get-cha fast-to-chas index)
-			       (fast-chas-array-get-cha fast-from-chas index))
-			 (setf (fast-chas-array-get-cha fast-to-chas index)
-			       ;; here is the check for modified items
-			       ;; in the closet...
-			       (let ((new-box
-				      (let* ((box (fast-chas-array-get-cha
-						   fast-from-chas index))
-					     (nr (name-row box))
-					     (name (unless (null nr)
-						     (get-box-name nr)))
-					     (alist-entry (fast-assq
-							   name binding-alist))
-					     (alist-value
-					      (unless (null alist-entry)
-						(boxer-eval::static-variable-value
-						 alist-entry))))
-					(if (or (null alist-value)
-						(not (and (virtual-copy?
-							   alist-value)
-							  (vc-modified?
-							   alist-value))))
-					    (copy-box box)
-					    (make-editor-box-from-vc
-					     alist-value)))))
-				 (setf (superior-row new-box) new-row)
-				 new-box))))
-		   to-chas))))))
+       (with-fast-chas-array-manipulation (from-chas fast-from-chas)
+         (flet ((make-length-n-chas-array (n)
+              (let ((array (make-chas-array
+                    (max& *chas-array-default-size* n))))
+            (setf (chas-array-active-length array) n)
+            array)))
+           (let* ((length (chas-array-active-length from-chas))
+              (to-chas (make-length-n-chas-array length)))
+         (with-fast-chas-array-manipulation (to-chas fast-to-chas)
+           (dotimes& (index length)
+             (if (cha? (fast-chas-array-get-cha fast-from-chas index))
+             (setf (fast-chas-array-get-cha fast-to-chas index)
+                   (fast-chas-array-get-cha fast-from-chas index))
+             (setf (fast-chas-array-get-cha fast-to-chas index)
+                   ;; here is the check for modified items
+                   ;; in the closet...
+                   (let ((new-box
+                      (let* ((box (fast-chas-array-get-cha
+                           fast-from-chas index))
+                         (nr (name-row box))
+                         (name (unless (null nr)
+                             (get-box-name nr)))
+                         (alist-entry (fast-assq
+                               name binding-alist))
+                         (alist-value
+                          (unless (null alist-entry)
+                        (boxer-eval::static-variable-value
+                         alist-entry))))
+                    (if (or (null alist-value)
+                        (not (and (virtual-copy?
+                               alist-value)
+                              (vc-modified?
+                               alist-value))))
+                        (copy-box box)
+                        (make-editor-box-from-vc
+                         alist-value)))))
+                 (setf (superior-row new-box) new-row)
+                 new-box))))
+           to-chas))))))
     (let ((new-row (make-uninitialized-row)))
       (setf (actual-obj-tick new-row) -1)
       (setf (superior-box new-row) new-superior-box)
       (setf (previous-row new-row) new-previous-row)
       (setf (chas-array new-row)
-	    (copy-chas-array (chas-array from-row) new-row))
+        (copy-chas-array (chas-array from-row) new-row))
       new-row)))
 
 (defun make-editor-box-from-vc (vc)
   (let ((*creation-time-for-printing-vc* (vc-creation-time vc))
-	(box (make-uninitialized-box (vc-type vc)))
-	(original (vc-progenitor vc)))
+    (box (make-uninitialized-box (vc-type vc)))
+    (original (vc-progenitor vc)))
     ;; fixup some slots that the init method would have fixed
     (let ((new-ds (if (not (box? original))
-	            (make-display-style)
-	            (copy-display-style (slot-value original
+                (make-display-style)
+                (copy-display-style (slot-value original
                                                     'display-style-list)))))
       (setf (slot-value box 'display-style-list) new-ds)
       ;; vc's never propogate transparency so make sure that
       ;; the result "looks" correct
       (setf (display-style-border-style new-ds)
-	    (case (display-style-border-style new-ds)
+        (case (display-style-border-style new-ds)
               ((:thick :thick-dashed) :thick)
               (t nil))))
     (unless (null original)
@@ -516,20 +516,20 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
       (setf (slot-value box 'flags) (new-flags-for-copy original nil)))
     ;; if there was a graphics sheet in the original, copy it,
     (unless (or ; (null original)
-	     (null (vc-graphics vc)))
+         (null (vc-graphics vc)))
       ;; first check for a graphics sheet
       (let ((graphics-sheet (graphics-info-graphics-sheet
-			     (vc-graphics vc))))
-	(unless (null graphics-sheet)
+                 (vc-graphics vc))))
+    (unless (null graphics-sheet)
           ;; make sure we DON't deallocate the graphics sheet's
           ;; remember that graphics from VC's are marked for deallocation
           ;; at creation time
           (unqueue-non-lisp-structure-for-deallocation graphics-sheet)
-	  (setf (graphics-info box) graphics-sheet)
-	  (setf (graphics-sheet-superior-box graphics-sheet) box)
-	  ;; if there IS graphics, make sure that the graphics view
-	  ;; is the one to be presented....
-	  (setf (display-style-graphics-mode? (display-style-list box)) t))
+      (setf (graphics-info box) graphics-sheet)
+      (setf (graphics-sheet-superior-box graphics-sheet) box)
+      ;; if there IS graphics, make sure that the graphics view
+      ;; is the one to be presented....
+      (setf (display-style-graphics-mode? (display-style-list box)) t))
         ;; check for other visual props which may occur with a graphics sheet
         ;; like av-info, gif?, jpeg?
         (let ((av (graphics-info-av (vc-graphics vc))))
@@ -546,18 +546,18 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
     ;; NoNoNo, preserve closets even for changed boxes....
     (let ((closet (vc-closets vc)))
       (unless (null closet) ; (null original) ;flushed on changed
-	;; Note: closet can be an evrow (usually inside of build templates)
-	(when (evrow? closet) (setq closet (make-row-from-evrow closet vc)))
-	(add-closet-row box
-			(let ((alist (vc-cached-binding-alist vc))
+    ;; Note: closet can be an evrow (usually inside of build templates)
+    (when (evrow? closet) (setq closet (make-row-from-evrow closet vc)))
+    (add-closet-row box
+            (let ((alist (vc-cached-binding-alist vc))
                               (*recursive-copy-box-function*
                                #'make-editor-box-for-printing))
-			  (if (and (not (null original))
+              (if (and (not (null original))
                                    (or (null alist)
-				       (eq alist *no-names-in-vc-marker*)))
-			      (copy-row closet)
-			      (copy-closet-row-checking-for-changes
-			       closet alist))))))
+                       (eq alist *no-names-in-vc-marker*)))
+                  (copy-row closet)
+                  (copy-closet-row-checking-for-changes
+                   closet alist))))))
     ;; if this can be a port target, then record it
     (unless (null (vc-port-target? vc))
       (record-target-printing vc box))
@@ -575,8 +575,8 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
         (setf (slot-value go 'sprite-box) box)))
     ;; now append the rows, make sure there is at least 1 row in the result
     (if (null (vc-rows vc))
-	(append-row box (make-row '()))
-	(dolist (vr (vc-rows vc)) (append-row box (make-row-from-evrow vr vc))))
+    (append-row box (make-row '()))
+    (dolist (vr (vc-rows vc)) (append-row box (make-row-from-evrow vr vc))))
     ;; now that the rows have been calculated, we link the turtle into the
     ;; sprite box, checking for the possibility that some of the turtle's
     ;; instance variables have box values
@@ -646,60 +646,60 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
                     (shape (box-interface-value slot)))
                (unless (null gl)
                  (with-graphics-vars-bound (box)
-	           (clear-graphics-list shape)
-	           (do-vector-contents (graphics-command gl)
-	             (sv-append shape (allocate-window->boxer-command
-				       graphics-command))))))))))
+               (clear-graphics-list shape)
+               (do-vector-contents (graphics-command gl)
+                 (sv-append shape (allocate-window->boxer-command
+                       graphics-command))))))))))
 
 ;; this is used by PROCESS-EDITOR-OBJECT-MUTATION-QUEUE
 (defun make-editor-rows-from-evrows (evrows vc-rows-entry
-					    creation-time editor-box)
+                        creation-time editor-box)
   (let ((*creation-time-for-printing-vc* creation-time)
-	(return-rows nil))
+    (return-rows nil))
     ;; now process the rows
     (cond ((null evrows)
-	   (push (make-row '()) return-rows))
-	  ((numberp evrows)
-	   (push (make-row (list (convert-number-to-string evrows)))
-		 return-rows))
-	  (t
-	   ;; make sure that there is at least 1 empty row
-	   (dolist (vr evrows (setq return-rows (nreverse return-rows)))
-	     (push (make-row-from-evrow vr vc-rows-entry editor-box)
-		   return-rows))))
+       (push (make-row '()) return-rows))
+      ((numberp evrows)
+       (push (make-row (list (convert-number-to-string evrows)))
+         return-rows))
+      (t
+       ;; make sure that there is at least 1 empty row
+       (dolist (vr evrows (setq return-rows (nreverse return-rows)))
+         (push (make-row-from-evrow vr vc-rows-entry editor-box)
+           return-rows))))
     return-rows))
 
 ;;; now returns an extra value of T if the port needs to be retargetted
 (defun make-port-from-vp (vp &optional ignore-name?)
   ;; now reset the target
   (let ((target (vp-target vp))
-	(port (make-uninitialized-box 'port-box)))
+    (port (make-uninitialized-box 'port-box)))
     ;; fixup some slots that the init method would have fixed
     (setf (slot-value port 'display-style-list) (make-display-style))
     (setf (slot-value port 'tick) (tick))
     (unless (or ignore-name? (null (vp-name vp)))
       (set-name port (make-name-row (list (vp-name vp)))))
     (cond ((virtual-copy? target)
-	   (let ((new-target (lookup-new-target target)))
-	     (cond ((not (null new-target))
-		    (set-port-to-box port new-target)
-		    port)
-		   (t
-		    (putprop port target 'retargetting-vc)
-		    (record-port-printing port)
-		    (values port t)))))
-	  ((box? target)
-	   ;; ports to editor boxes can be made immediately
-	   (set-port-to-box port target)
-	   ;; record it so port caching will work later
-	   (record-outlink-port port)
-	   port)
+       (let ((new-target (lookup-new-target target)))
+         (cond ((not (null new-target))
+            (set-port-to-box port new-target)
+            port)
+           (t
+            (putprop port target 'retargetting-vc)
+            (record-port-printing port)
+            (values port t)))))
+      ((box? target)
+       ;; ports to editor boxes can be made immediately
+       (set-port-to-box port target)
+       ;; record it so port caching will work later
+       (record-outlink-port port)
+       port)
           ((typep target 'foreign-data)
            (set-port-to-box port (make-editor-box-from-foreign-data target))
            port)
-	  (t
-	   (error "Virtual Port target, ~S, is not a Box or Virtual Copy"
-		  target)))))
+      (t
+       (error "Virtual Port target, ~S, is not a Box or Virtual Copy"
+          target)))))
 
 (defmethod make-editor-box-for-printing ((eb box) &optional new-superior)
   (if (numberp *creation-time-for-printing-vc*)
@@ -707,10 +707,10 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
             ((all-new-box? eb)
              (setf (all-new-box? eb) nil)
              eb)
-	    ((null (slot-value eb 'virtual-copy-rows))
-	     ;; looks like this box hasn't been touched at all
-	     ;; during EVAL so we can just (editor) copy it
-	     ;(copy-box eb)
+        ((null (slot-value eb 'virtual-copy-rows))
+         ;; looks like this box hasn't been touched at all
+         ;; during EVAL so we can just (editor) copy it
+         ;(copy-box eb)
              ;; WRONG !!!!!
              ;; even if THIS level of box is untouched it is possible
              ;; for a deep inferior of this box to have been modified
@@ -720,107 +720,107 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
              (let ((*recursive-copy-box-function* #'make-editor-box-for-printing))
                (copy-box eb))
              )
-	    (t
-	     (let ((box (allocate-instance (class-of eb))))
-	       (shared-initialize box t)
-	       ;; fixup some slots that the init method would have fixed
-	       (copy-special-box-properties eb box)
-	       (setf (slot-value box 'tick) (tick))
-	       ;; now fix up the innards
-	       (cond ((port-box? box)
-		      (record-outlink-port box)
-		      (set-port-to-box box (ports eb)))
-		     (t
-		      ;; the deal with the rows
-		      (let* ((vrows (virtual-copy-rows
-				     eb *creation-time-for-printing-vc*))
-			     (prev-row (if (null vrows)
-					   (make-row '())
-					   (make-row-from-evrow (car vrows)
-								nil))))
-			;; if the box is an unchanged copy,
-			;; look for a closet to copy
-			(let ((original-closet (and eb
-						    (slot-value eb 'closets))))
-			  (unless (null original-closet)
-			    (let ((closet-in-box (row-row-no eb
-							     original-closet)))
-			      (if (null closet-in-box)
-				  (add-closet-row box
-						  (copy-row original-closet))
-				  (setf (slot-value box 'closets)
-					(copy-row original-closet))))))
-			;; attach the 1st row
-			(append-row box prev-row)
-			;; now loop through the remaining rows
-			(do* ((vrs (cdr vrows) (cdr vrs))
-			      (vr (car vrs) (car vrs)))
-			     ((null vrs) )
-			  (let ((current-row (make-row-from-evrow vr nil)))
-			    (insert-row-after-row box current-row prev-row)
-			    (setq prev-row current-row))))))
-	       box)))
+        (t
+         (let ((box (allocate-instance (class-of eb))))
+           (shared-initialize box t)
+           ;; fixup some slots that the init method would have fixed
+           (copy-special-box-properties eb box)
+           (setf (slot-value box 'tick) (tick))
+           ;; now fix up the innards
+           (cond ((port-box? box)
+              (record-outlink-port box)
+              (set-port-to-box box (ports eb)))
+             (t
+              ;; the deal with the rows
+              (let* ((vrows (virtual-copy-rows
+                     eb *creation-time-for-printing-vc*))
+                 (prev-row (if (null vrows)
+                       (make-row '())
+                       (make-row-from-evrow (car vrows)
+                                nil))))
+            ;; if the box is an unchanged copy,
+            ;; look for a closet to copy
+            (let ((original-closet (and eb
+                            (slot-value eb 'closets))))
+              (unless (null original-closet)
+                (let ((closet-in-box (row-row-no eb
+                                 original-closet)))
+                  (if (null closet-in-box)
+                  (add-closet-row box
+                          (copy-row original-closet))
+                  (setf (slot-value box 'closets)
+                    (copy-row original-closet))))))
+            ;; attach the 1st row
+            (append-row box prev-row)
+            ;; now loop through the remaining rows
+            (do* ((vrs (cdr vrows) (cdr vrs))
+                  (vr (car vrs) (car vrs)))
+                 ((null vrs) )
+              (let ((current-row (make-row-from-evrow vr nil)))
+                (insert-row-after-row box current-row prev-row)
+                (setq prev-row current-row))))))
+           box)))
       (error "Looks like we are trying print an editor box that ~
               is NOT part of a VC")))
 
 
 (defun make-row-from-evrow (evrow sup-box &optional updating-editor-box)
   (let* ((new-row (make-initialized-row))
-	 (chas-array (chas-array new-row))
-	 (current-right-format ':start)
-	 (evrow-format (evrow-row-format evrow)))
+     (chas-array (chas-array new-row))
+     (current-right-format ':start)
+     (evrow-format (evrow-row-format evrow)))
     ;; fix the timestamp
     (setf (slot-value new-row 'tick) (tick))
     (cond ((and (null evrow-format)
-		(null (evrow-pointers evrow))))
-	  ((null evrow-format)
-	   (let ((last-chunk-was-box? nil))
-	     (dolist (el (evrow-pointers evrow))
-	       (let* ((chunk (get-pointer-value el sup-box))
-		      (chunk-p (chunk-p chunk))
-		      (value (if chunk-p (chunk-chunk chunk) chunk))
-		      (current-left-format  (when chunk-p
-					      (chunk-left-format chunk))))
-	       ;;; first, print the stuff on the left
-		 (merge-formatting-properties
-		  current-right-format current-left-format
-		  chas-array new-row
+        (null (evrow-pointers evrow))))
+      ((null evrow-format)
+       (let ((last-chunk-was-box? nil))
+         (dolist (el (evrow-pointers evrow))
+           (let* ((chunk (get-pointer-value el sup-box))
+              (chunk-p (chunk-p chunk))
+              (value (if chunk-p (chunk-chunk chunk) chunk))
+              (current-left-format  (when chunk-p
+                          (chunk-left-format chunk))))
+           ;;; first, print the stuff on the left
+         (merge-formatting-properties
+          current-right-format current-left-format
+          chas-array new-row
                   (let ((this-chunk-is-box? (or (virtual-copy? value)
                                                 (virtual-port? value)
-			                        (box? value))))
-		    (prog1
+                                    (box? value))))
+            (prog1
                       (or
-		       ;; don't need to insert spaces if
-		       ;; the previous or current chunk is a box...
-		       last-chunk-was-box? this-chunk-is-box?
-		       ;; or this chunk has a leading
-		       ;; special character
-		       (when chunk-p
-		         (fast-memq (car (getf (chunk-plist chunk) :eval-prop))
-				    '(bu::@ bu::eval-it
-				      bu::previous-tell-environment))))
+               ;; don't need to insert spaces if
+               ;; the previous or current chunk is a box...
+               last-chunk-was-box? this-chunk-is-box?
+               ;; or this chunk has a leading
+               ;; special character
+               (when chunk-p
+                 (fast-memq (car (getf (chunk-plist chunk) :eval-prop))
+                    '(bu::@ bu::eval-it
+                      bu::previous-tell-environment))))
                       (setq last-chunk-was-box? this-chunk-is-box?))))
-	       ;;; now print the chunk itself
-		 (print-chunk-value-for-editor
-		  chunk chas-array new-row chunk-p updating-editor-box)
-	       ;;; setup the right-format for the next entry in the row
-		 (setq current-right-format
-		       (when chunk-p (chunk-right-format chunk))))))
-	   ;; finally, print the remaining right format
-	   (print-formatting-property current-right-format
-				      chas-array new-row t))
-	  ((chunk-p evrow-format)
-	   (when (formatting-info? (chunk-left-format evrow-format))
-	     (print-formatting-property (chunk-left-format evrow-format)
-					chas-array
-					new-row))
-	   (when (formatting-info? (chunk-pname evrow-format))
-	     (print-formatting-property (chunk-pname evrow-format)
-					chas-array
-					new-row))
-	   (when (formatting-info? (chunk-right-format evrow-format))
-	     (print-formatting-property (chunk-right-format evrow-format)
-					chas-array
-					new-row)))
-	  (t (error "The evrow, ~S, cannot be printed" evrow)))
+           ;;; now print the chunk itself
+         (print-chunk-value-for-editor
+          chunk chas-array new-row chunk-p updating-editor-box)
+           ;;; setup the right-format for the next entry in the row
+         (setq current-right-format
+               (when chunk-p (chunk-right-format chunk))))))
+       ;; finally, print the remaining right format
+       (print-formatting-property current-right-format
+                      chas-array new-row t))
+      ((chunk-p evrow-format)
+       (when (formatting-info? (chunk-left-format evrow-format))
+         (print-formatting-property (chunk-left-format evrow-format)
+                    chas-array
+                    new-row))
+       (when (formatting-info? (chunk-pname evrow-format))
+         (print-formatting-property (chunk-pname evrow-format)
+                    chas-array
+                    new-row))
+       (when (formatting-info? (chunk-right-format evrow-format))
+         (print-formatting-property (chunk-right-format evrow-format)
+                    chas-array
+                    new-row)))
+      (t (error "The evrow, ~S, cannot be printed" evrow)))
     new-row))
