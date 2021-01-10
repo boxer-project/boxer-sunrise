@@ -2597,6 +2597,11 @@ to the :TEXT-STRING method of boxes. "
 
 |#
 
+             #+lcl3.0 (case (lcl::extreme-float-p number)
+                        (:minus-infinity most-negative-long-float)
+                        (:plus-infinity most-positive-long-float)
+                        (t number))
+
 ;;;;
 ;;;; FILE: sysprims.lisp
 ;;;;
