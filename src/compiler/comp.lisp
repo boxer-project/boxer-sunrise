@@ -30,15 +30,15 @@
 
 
 (defstruct (compiled-boxer-object
-       (:print-function print-compiled-boxer-object))
+            (:print-function print-compiled-boxer-object))
   (code nil)
   (args nil))
 
 (defun print-compiled-boxer-object (obj stream &optional depth)
   (declare (ignore depth))
   (format stream "#<Compiled Boxer Object ~A ~D>"
-    (compiled-boxer-object-args obj)
-    (storage-vector-active-length (compiled-boxer-object-code obj))))
+          (compiled-boxer-object-args obj)
+          (storage-vector-active-length (compiled-boxer-object-code obj))))
 
 ;;;; stack Support Macros
 ;;; (cbos = compiled-build-object-stack)
@@ -51,11 +51,11 @@
 
 (defmacro cbos-pop ()
   `(if (null *build-stack*)
-       (error "The build stack is empty")
-       (let ((value (pop *build-stack*)))
-   (when *debug-stack-machine*
-     (format *trace-output* "~%  Popping ~A" value))
-   value)))
+     (error "The build stack is empty")
+     (let ((value (pop *build-stack*)))
+       (when *debug-stack-machine*
+         (format *trace-output* "~%  Popping ~A" value))
+       value)))
 
 (defmacro cbos-push (object)
   `(let ((value ,object))
@@ -108,12 +108,8 @@
   (when *debug-stack-machine*
     (dotimes (i number-of-args)
       (format *trace-output* "~%  Found formal arg ~A at ~D"
-        (svref& boxer-eval::*vpdl* (-& boxer-eval::*vpdl-index* i 1))
-        (-& boxer-eval::*vpdl-index* i 1)))))
-
-
-
-
+              (svref& boxer-eval::*vpdl* (-& boxer-eval::*vpdl-index* i 1))
+              (-& boxer-eval::*vpdl-index* i 1)))))
 
 
 ;;;; Code generation
@@ -135,23 +131,23 @@
 
 (defmacro define-instruction ((name byte) args &body body)
   `(progn
-     (when (and (not (null (aref *instruction-token-array* ,byte)))
-    (not (eq (aref *instruction-token-array* ,byte) ',name)))
-       (cerror "Go ahead and redefine"
-         "Defining Opcode ~D to be ~A was previously defined to be ~A"
-         ,byte ',name (aref *instruction-token-array* ,byte)))
-     (setf (aref *instruction-token-array* ,byte) ',name)
-     (setf (aref *instruction-arg-vector* ,byte) ,(length args))
-     (let ((entry (assoc ',name *token-instruction-alist*)))
-       (cond ((null entry)
-        (setq *token-instruction-alist*
-        (acons ',name ,byte *token-instruction-alist*)))
-       (t
-        (unless (= ,byte (cdr entry))
-    (warn "Changing token instruction for ~A from ~D to ~D"
-          ',name (cdr entry) ,byte))
-        (setf (cdr entry) ,byte))))
-     (defun ,name ,args . ,body)))
+    (when (and (not (null (aref *instruction-token-array* ,byte)))
+               (not (eq (aref *instruction-token-array* ,byte) ',name)))
+      (cerror "Go ahead and redefine"
+              "Defining Opcode ~D to be ~A was previously defined to be ~A"
+              ,byte ',name (aref *instruction-token-array* ,byte)))
+    (setf (aref *instruction-token-array* ,byte) ',name)
+    (setf (aref *instruction-arg-vector* ,byte) ,(length args))
+    (let ((entry (assoc ',name *token-instruction-alist*)))
+      (cond ((null entry)
+             (setq *token-instruction-alist*
+                   (acons ',name ,byte *token-instruction-alist*)))
+        (t
+         (unless (= ,byte (cdr entry))
+           (warn "Changing token instruction for ~A from ~D to ~D"
+                 ',name (cdr entry) ,byte))
+         (setf (cdr entry) ,byte))))
+    (defun ,name ,args . ,body)))
 
 (defun token->instruction (token)
   (cdr (assoc token *token-instruction-alist*)))
@@ -166,50 +162,50 @@
   (let ((number-of-args 0))
     (do-vector-contents (item (cbo-code build-object))
       (cond ((plusp number-of-args)
-       (decf number-of-args)
-       (format t " ~A" item))
-      ((plusp (instruction-args item))
-       (setf number-of-args (instruction-args item))
-       (format t "~%~A" (instruction->token item)))
-      (t
-       (format t "~%~A" (instruction->token item))))))
+             (decf number-of-args)
+             (format t " ~A" item))
+        ((plusp (instruction-args item))
+         (setf number-of-args (instruction-args item))
+         (format t "~%~A" (instruction->token item)))
+        (t
+         (format t "~%~A" (instruction->token item))))))
   build-object)
 
 (defun generate-code (parse code-vector number-of-args
-          &optional (stack-depth 0))
+                            &optional (stack-depth 0))
   (do* ((remaining-tokens parse (cdr remaining-tokens))
-  (token (car remaining-tokens) (car remaining-tokens)))
-       ((null (cdr remaining-tokens))
-  (issue-instruction token code-vector))
+        (token (car remaining-tokens) (car remaining-tokens)))
+    ((null (cdr remaining-tokens))
+     (issue-instruction token code-vector))
     (cond ((consp token)
-     (generate-code token code-vector number-of-args stack-depth)
-     (incf stack-depth))
-    ((build-function-arg? token)
-     (issue-stack-ref token stack-depth code-vector number-of-args)
-     (incf stack-depth))
-    ;; otherwise, we push
-    ;; we may eventually want to be more type specific here
-    ((typep token 'fixnum)
-     (incf stack-depth)
-     (issue-fixnum-push token code-vector))
-    (t
-     (incf stack-depth)
-     (issue-pointer-push token code-vector)))))
+           (generate-code token code-vector number-of-args stack-depth)
+           (incf stack-depth))
+      ((build-function-arg? token)
+       (issue-stack-ref token stack-depth code-vector number-of-args)
+       (incf stack-depth))
+      ;; otherwise, we push
+      ;; we may eventually want to be more type specific here
+      ((typep token 'fixnum)
+       (incf stack-depth)
+       (issue-fixnum-push token code-vector))
+      (t
+       (incf stack-depth)
+       (issue-pointer-push token code-vector)))))
 
 
 (defun issue-instruction (token code-vector)
   (if (build-fun+args? token)
-      (let ((instruction (token->instruction (build-fun+args-function token))))
-  (cond ((null instruction)
-         (error "No instruction defined for the token ~A" token))
+    (let ((instruction (token->instruction (build-fun+args-function token))))
+      (cond ((null instruction)
+             (error "No instruction defined for the token ~A" token))
         (t
          (sv-append code-vector instruction)
          (dolist (arg (build-fun+args-args token))
-     (sv-append code-vector arg)))))
-      (let ((instruction (token->instruction token)))
-  (if (null instruction)
-      (error "No instruction defined for the token ~A" token)
-      (sv-append code-vector instruction)))))
+           (sv-append code-vector arg)))))
+    (let ((instruction (token->instruction token)))
+      (if (null instruction)
+        (error "No instruction defined for the token ~A" token)
+        (sv-append code-vector instruction)))))
 
 (defun issue-stack-ref (arg current-depth code-vector number-of-args)
   (let ((arg-offset (build-function-arg-argpos arg)))
@@ -224,7 +220,7 @@
   (sv-append code-vector (token->instruction 'push-next))
   (sv-append code-vector token))
 
-
+
 
 ;;; this is used by the evaluator whenever it encounters
 (defun funcall-compiled-boxer-function (object)
@@ -234,10 +230,10 @@
     (execute-compiled-boxer-function-internal
      (compiled-boxer-object-code object))
     (prog1
-  ;; first, pop the returned value
-  (cbos-pop)
-      ;; then pop the formal args
-      (dotimes (i number-of-args) (cbos-pop)))))
+     ;; first, pop the returned value
+     (cbos-pop)
+     ;; then pop the formal args
+     (dotimes (i number-of-args) (cbos-pop)))))
 
 ;;; the 0 args case is handled specially (to avoid recursive eval)
 (defun funcall-0-arg-compiled-boxer-function (object)
@@ -254,30 +250,30 @@
 (defun execute-compiled-boxer-function-internal (code)
   (check-sv-arg code)
   (let ((instr-ptr 0)
-  (end (storage-vector-active-length code))
-  (codevector (%sv-contents code)))
+        (end (storage-vector-active-length code))
+        (codevector (%sv-contents code)))
     (flet ((get-instr ()
-         (prog1 (svref& codevector instr-ptr) (incf& instr-ptr))))
-      (do ((current-instruction (get-instr) (get-instr)))
-    ((>& instr-ptr end))
-  (let ((argcount (instruction-args current-instruction))
-        (instruction-function (instruction->token current-instruction)))
-    (cond ((zerop& argcount)
-     (when *debug-stack-machine*
-       (format *trace-output* "~%Executing ~A"
-         instruction-function))
-     (funcall instruction-function))
-    (t
-     (let ((args (make-list argcount)))
-       #+lucid(declare (lcl::dynamic-extent args))
-       (dotimes (i argcount) (setf (nth i args) (get-instr)))
-       (when *debug-stack-machine*
-         (format *trace-output* "~%Executing ~A on ~A"
-           instruction-function args))
-       (apply instruction-function args)))))))))
+                      (prog1 (svref& codevector instr-ptr) (incf& instr-ptr))))
+          (do ((current-instruction (get-instr) (get-instr)))
+            ((>& instr-ptr end))
+            (let ((argcount (instruction-args current-instruction))
+                  (instruction-function (instruction->token current-instruction)))
+              (cond ((zerop& argcount)
+                     (when *debug-stack-machine*
+                       (format *trace-output* "~%Executing ~A"
+                               instruction-function))
+                     (funcall instruction-function))
+                (t
+                 (let ((args (make-list argcount)))
+                   #+lucid(declare (lcl::dynamic-extent args))
+                   (dotimes (i argcount) (setf (nth i args) (get-instr)))
+                   (when *debug-stack-machine*
+                     (format *trace-output* "~%Executing ~A on ~A"
+                             instruction-function args))
+                   (apply instruction-function args)))))))))
 
 
-
+
 
 ;;; Common Instructions
 
