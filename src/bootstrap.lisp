@@ -22,7 +22,9 @@
 
 |#
 (require "asdf")
+(require "uiop")
 (ql:quickload :drakma)
+(ql:quickload :cl-json)
 (ql:quickload :cl-freetype2)
 
 
@@ -44,6 +46,7 @@
 #+win32(setf boxer-window::*capogi-font-directory* #P"Z:/code/boxer-sunrise2/data/boxersunrise.app/Contents/Resources/Fonts/")
 
 ;; (load (merge-pathnames "run-tests.lisp" *boxer-project-dir*))
+
 (boxer-window::window-system-specific-make-boxer)
 (boxer-window::window-system-specific-start-boxer)
 (boxer-window::font-size-menu-action 3 nil)

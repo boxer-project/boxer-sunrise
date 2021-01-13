@@ -27,27 +27,48 @@
 (defvar *max-number-of-recent-files* 10
     "How many recent files to store by default")
 
-(defun load-recent-files (&optional stream)
-)
+(defun get-boxapp-data-filepath ()
+  "This function retrieves the path on disk where a users appdata should be
+  stored. This is OS specific, on MacOS it's typically something like
+  `~/Library/Application Support/Boxer-data.lisp` and on Windows in the users local
+  appdata directory"
+  (merge-pathnames "Boxer/boxapp-data.lisp"  (sys:get-folder-path :appdata)))
 
-(defun save-recent-files (&optional stream)
-)
+
+(defun load-appdata (&optional (filepath (get-boxapp-data-filepath)))
+  "If this appdata file for boxer exists, we'll load the data from that, otherwise we'll
+  use the default template aleady in *boxer-appdata*"
+  ;; TODO: Think about, and add tests for if the data is corrupted or invalid.
+  (if (probe-file filepath)
+    (with-open-file (s filepath :direction :input)
+      (setf *boxer-appdata* (read s)))))
+
+(defun save-appdata (&optional (filepath (get-boxapp-data-filepath)))
+  "Saves the working Boxer data back to it's entry in the OS specific appdata location."
+  (ensure-directories-exist filepath)
+  (with-open-file (s filepath :direction :output :if-does-not-exist :create :if-exists :supersede)
+    (write *boxer-appdata* :stream s)))
 
 (defun reset-recent-files ()
-    (setf (cdr (assoc :recent-files *boxer-appdata*)) '()))
+    (setf (cdr (assoc :recent-files *boxer-appdata*)) '())
+    (save-appdata))
 
 (defun get-recent-files ()
-    (cdr (assoc :recent-files *boxer-appdata*)))
+  ;; TODO Remove files that may not exist according to probe-file
+  (let ((recent-files (cdr (assoc :recent-files *boxer-appdata*))))
+    (subseq recent-files 0 (if (< (length recent-files)  *max-number-of-recent-files*)
+                                 (length recent-files)
+                                 *max-number-of-recent-files*))))
 
 (defun add-recent-file (path &optional label)
     ;; First remove any duplicates...
     (setf (cdr (assoc :recent-files *boxer-appdata*))
           (remove-if #'(lambda (x)
-                         (equal path (cdr (assoc :path x))))
-                     (get-recent-files)))
+                         (uiop:pathname-equal path (cdr (assoc :path x))))
+                     (cdr (assoc :recent-files *boxer-appdata*))))
 
     ;; Then add it to the top of the list
     (push `((:path . ,path)
             (:label . ,path)) (cdr (assoc :recent-files *boxer-appdata*)))
     (assoc :recent-files *boxer-appdata*)
-)
+    (save-appdata))

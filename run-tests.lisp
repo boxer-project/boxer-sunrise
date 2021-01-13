@@ -8,9 +8,14 @@
 (ql:quickload "cl-ppcre")
 (ql:quickload "prove")
 
+;; This turns off the terminal color sequences and simplifies the characters in the
+;; output so they display well in the lispworks listener.
+(setf prove:*enable-colors* nil)
+(setf prove::*default-reporter* :tap)
+
 (setf asdf:*central-registry*
             (list* '*default-pathname-defaults*
                     (uiop:getcwd)
                 asdf:*central-registry*))
 
-(asdf:test-system :boxer-sunrise2)
+(asdf:test-system :boxer-sunrise2 :reporter :list)
