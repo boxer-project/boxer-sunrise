@@ -35,8 +35,7 @@ Modification History (most recent at top)
 (in-package "OPENGL")
 
 (defvar *pixmap-data-type* *gl-rgba*)
-
-(defvar *pixmap-data-format* *gl-unsigned-int-8-8-8-8-rev*)
+(defvar *pixmap-data-format* *gl-unsigned-byte*)
 
 (defconstant *gl-rgba-rev-alpha-byte* (byte 8 24))
 (defconstant *gl-rgba-rev-blue-byte* (byte 8 16))
@@ -52,7 +51,7 @@ Modification History (most recent at top)
   (cond ((and (integerp width)  (not (minusp width))
               (integerp height) (not (minusp height)))
          (%make-ogl-pixmap :width width :height height
-                           :data (fli:allocate-foreign-object :type :unsigned
+                           :data (fli:allocate-foreign-object :type :unsigned-int
                                                               :initial-element 0
                                                               :nelems (* width height))))
         (t (error "Pixmap dimensions, (~S, ~S) must be non-negative integers"
