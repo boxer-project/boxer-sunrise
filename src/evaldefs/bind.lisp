@@ -434,8 +434,6 @@ already exist.  I have enough trouble already with this hairy cache scheme."
 ;;; can make it faster, please do.  Making it inline, however, seemed to
 ;;; make things slower.
 (defun dynamic-variable-lookup (variable)
-  ;; This gives something like a 20% speedup in MCL -- MT
-  #+mcl (declare (optimize (speed 3) (safety 0)))
   ;; Array and bottom locals are for compilers that can't do the
   ;; side-effect analysis (most of them).
   (let ((array *dynamic-variables-names-array*)
@@ -447,7 +445,6 @@ already exist.  I have enough trouble already with this hairy cache scheme."
 
 ;; used by landscapes
 (defun %dynamic-variable-set (variable newvalue)
-  #+mcl (declare (optimize (speed 3) (safety 0)))
   ;; Array and bottom locals are for compilers that can't do the
   ;; side-effect analysis (most of them).
   (let ((array *dynamic-variables-names-array*)
