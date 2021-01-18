@@ -259,7 +259,9 @@ Modification History (most recent at top)
 (defun open-recent-items (interface)
   "Build the menu items for recently opened files."
   (mapcar #'(lambda (x)
-              (cdr (assoc :path x)))
+              (let* ((path (cdr (assoc :path x)))
+                     (text (file-namestring path)))
+                (make-instance 'capi:menu-item :data path :text text)))
     (boxer::get-recent-files)))
 
 (defvar *file-open-recent-menu*
