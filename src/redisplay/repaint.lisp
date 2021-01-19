@@ -1,59 +1,56 @@
-#|
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-                                             +-Data--+
-                    This file is part of the | BOXER | system
-                                             +-------+
-
-       This file contains all of the high level code that the redisplay uses
-       in the OpenGL port
-
-Modification History (most recent at the top)
-
- 4/22/14 rewrote cursor display to hack fonts cursor-info & repaint-cursor-internal
- 9/ 1/12 Removed fixnum arithmetic from:
-         needs-repaint-pass-1? (screen-obj), repaint-inferiors-pass-1-sb (screen-box)
-         rp1-sr-increment-superior-parameters (screen-row)
-         repaint-inferiors-pass-1-sr (screen-row)
-         rp1-sb-increment-superior-parameters (screen-box)
-         repaint-pass-1-sr (screen-row), repaint-pass-1-sb (screen-box)
-         repaint-inferiors-pass-2-sb (screen-box), repaint-inferiors-pass-2-sr (screen-row)
-         gray-body (screen-box)
-         repaint-inferiors-pass-{1,2}-sb (graphics-screen-box)
-         repaint-cursor-internal
- 8/23/11 flush-port-buffer removed from repaint-window and repaint-cursor,
-         added to repaint-internal, repaint-in-eval
-         removed force-repaint-window
- 8/12/11 repaint
-11/09/10 repaint-window: flush-port-buffer instead of bw::swap-buffers
-11/07/10 use capi:apply-in-pane-process in repaint
- 9/26/10 added repaint-mouse-docs to repaint-window
- 2/05/10 extra reality checking added to repaint
-12/09/09 repaint-guts checks for null *outermost-screen-box*
-11/27/09 repaint-pass-2-sr closet highlighting added
-11/24/09 repaint-in-eval checks bw::*suppressed-actions*
-11/20/09 added force? arg to repaint-in-eval
- 9/02/09 fixed bug in unseen-box-width
- 2/26/09 repaint-inferiors-pass-1-sb resets max-scroll-wid @ beginning of pass
- 2/24/09 now compiler warning free
- 2/23/09 repaint-pass-1-sr, repaint-inferiors-pass-1-sr, update-scroll-wid, unseen-box-width
-         now with horizontal scrolling action
- 2/12/09 got-repainted for SB's no longer needed after removal of inf-shift slot
-02/07/09 repaint-pass-2-sb now calls draw-scroll-info
-11/15/08 repaint-in-eval checks system variable *repaint-during-eval?*
-05/15/06 started file
-
-
-|#
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;                                               +-Data--+
+;;;;                      This file is part of the | BOXER | system
+;;;;                                               +-------+
+;;;;
+;;;;         This file contains all of the high level code that the redisplay uses
+;;;;         in the OpenGL port
+;;;;
+;;;;  Modification History (most recent at the top)
+;;;;
+;;;;   4/22/14 rewrote cursor display to hack fonts cursor-info & repaint-cursor-internal
+;;;;   9/ 1/12 Removed fixnum arithmetic from:
+;;;;           needs-repaint-pass-1? (screen-obj), repaint-inferiors-pass-1-sb (screen-box)
+;;;;           rp1-sr-increment-superior-parameters (screen-row)
+;;;;           repaint-inferiors-pass-1-sr (screen-row)
+;;;;           rp1-sb-increment-superior-parameters (screen-box)
+;;;;           repaint-pass-1-sr (screen-row), repaint-pass-1-sb (screen-box)
+;;;;           repaint-inferiors-pass-2-sb (screen-box), repaint-inferiors-pass-2-sr (screen-row)
+;;;;           gray-body (screen-box)
+;;;;           repaint-inferiors-pass-{1,2}-sb (graphics-screen-box)
+;;;;           repaint-cursor-internal
+;;;;   8/23/11 flush-port-buffer removed from repaint-window and repaint-cursor,
+;;;;           added to repaint-internal, repaint-in-eval
+;;;;           removed force-repaint-window
+;;;;   8/12/11 repaint
+;;;;  11/09/10 repaint-window: flush-port-buffer instead of bw::swap-buffers
+;;;;  11/07/10 use capi:apply-in-pane-process in repaint
+;;;;   9/26/10 added repaint-mouse-docs to repaint-window
+;;;;   2/05/10 extra reality checking added to repaint
+;;;;  12/09/09 repaint-guts checks for null *outermost-screen-box*
+;;;;  11/27/09 repaint-pass-2-sr closet highlighting added
+;;;;  11/24/09 repaint-in-eval checks bw::*suppressed-actions*
+;;;;  11/20/09 added force? arg to repaint-in-eval
+;;;;   9/02/09 fixed bug in unseen-box-width
+;;;;   2/26/09 repaint-inferiors-pass-1-sb resets max-scroll-wid @ beginning of pass
+;;;;   2/24/09 now compiler warning free
+;;;;   2/23/09 repaint-pass-1-sr, repaint-inferiors-pass-1-sr, update-scroll-wid, unseen-box-width
+;;;;           now with horizontal scrolling action
+;;;;   2/12/09 got-repainted for SB's no longer needed after removal of inf-shift slot
+;;;;  02/07/09 repaint-pass-2-sb now calls draw-scroll-info
+;;;;  11/15/08 repaint-in-eval checks system variable *repaint-during-eval?*
+;;;;  05/15/06 started file
+;;;;
 
 (in-package :boxer)
 
