@@ -18,11 +18,13 @@
 
 (in-package :boxer)
 
-(defvar *boxer-appdata* '(
+(defvar *boxer-appdata-template* '(
         (:boxer-appdata . "Required for correct cl-json serialization")
-        (:recent-files . ()))
-    "Data structure that will contain recently opened files, pinned files,
-    and similar items.")
+        (:recent-files . ())))
+
+(defvar *boxer-appdata* *boxer-appdata-template*
+  "Data structure that will contain recently opened files, pinned files,
+  and similar items.")
 
 (defvar *max-number-of-recent-files* 10
     "How many recent files to store by default")
@@ -40,8 +42,9 @@
   use the default template aleady in *boxer-appdata*"
   ;; TODO: Think about, and add tests for if the data is corrupted or invalid.
   (if (probe-file filepath)
-    (with-open-file (s filepath :direction :input)
-      (setf *boxer-appdata* (read s)))))
+    (ignore-errors
+      (with-open-file (s filepath :direction :input)
+        (setf *boxer-appdata* (read s))))))
 
 (defun save-appdata (&optional (filepath (get-boxapp-data-filepath)))
   "Saves the working Boxer data back to it's entry in the OS specific appdata location."
@@ -55,10 +58,15 @@
 
 (defun get-recent-files ()
   ;; TODO Remove files that may not exist according to probe-file
-  (let ((recent-files (cdr (assoc :recent-files *boxer-appdata*))))
-    (subseq recent-files 0 (if (< (length recent-files)  *max-number-of-recent-files*)
+  (handler-case
+    (let ((recent-files (cdr (assoc :recent-files *boxer-appdata*))))
+      (subseq recent-files 0 (if (< (length recent-files)  *max-number-of-recent-files*)
                                  (length recent-files)
-                                 *max-number-of-recent-files*))))
+                                 *max-number-of-recent-files*)))
+    (type-error (e)
+      (format t "Error parsing recent files: ~A~%" e)
+      (setf *boxer-appdata* *boxer-appdata-template*)
+      '())))
 
 (defun add-recent-file (path &optional label)
     ;; First remove any duplicates...
