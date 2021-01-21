@@ -48,14 +48,14 @@
 (defvar *screen-chas-array-default-size* 32.)
 
 (defstruct (screen-chas-array (:type vector)
-            (:include storage-vector)
-            (:constructor %make-screen-chas-array)
-            (:copier nil) ;; we do this ourselves
-            )
+                              (:include storage-vector)
+                              (:constructor %make-screen-chas-array)
+                              (:copier nil) ;; we do this ourselves
+                              )
   (fds nil))
 
 (defun make-screen-chas-array (&optional
-             (length *screen-chas-array-default-size*))
+                               (length *screen-chas-array-default-size*))
   (%make-screen-chas-array :contents (make-array length)))
 
 ;; also see the ACTUAL-OBJ-SUBCLASS which is neccessary
@@ -65,7 +65,7 @@
 ;;; need to think more about whether the clipped? stuff is neccessary
 
 (defclass SCREEN-OBJ
-    ()
+  ()
   ((actual-obj :initform nil :accessor screen-obj-actual-obj)
    (x-offset :initform 0 :accessor screen-obj-x-offset)
    (y-offset :initform 0 :accessor screen-obj-y-offset)
@@ -73,10 +73,10 @@
    (hei :initform 0 :accessor screen-obj-hei)
    (x-got-clipped? :initform nil :accessor screen-obj-x-got-clipped?)
    (y-got-clipped? :initform nil :accessor screen-obj-y-got-clipped?)
-;   (new-wid :initform 0 :accessor screen-obj-new-wid)
-;   (new-hei :initform 0 :accessor screen-obj-new-hei)
-;   (new-x-got-clipped? :initform nil :accessor screen-obj-new-x-got-clipped?)
-;   (new-y-got-clipped? :initform nil :accessor screen-obj-new-y-got-clipped?)
+   ;   (new-wid :initform 0 :accessor screen-obj-new-wid)
+   ;   (new-hei :initform 0 :accessor screen-obj-new-hei)
+   ;   (new-x-got-clipped? :initform nil :accessor screen-obj-new-x-got-clipped?)
+   ;   (new-y-got-clipped? :initform nil :accessor screen-obj-new-y-got-clipped?)
    (tick :initform -1 :accessor screen-obj-tick)
    (needs-redisplay-pass-2? :initform nil :accessor screen-obj-needs-redisplay-pass-2?)
    (force-redisplay-infs? :initform nil :accessor screen-obj-force-redisplay-infs?))
@@ -86,15 +86,15 @@
 
 ;; These only exist as a mixin for the box flavor
 (defclass SCREEN-CHAR-SUBCLASS
-    (screen-obj)
+  (screen-obj)
   ((screen-row :initform nil :accessor screen-row))
   (:metaclass block-compile-class))
 
 (defclass SCREEN-ROW
-    (screen-obj)
+  (screen-obj)
   ((screen-box :initform nil :accessor screen-box)
    (screen-chas :initform (make-screen-chas-array) :accessor screen-chas)
-;   (out-of-synch-mark :initform nil :accessor out-of-synch-mark)
+   ;   (out-of-synch-mark :initform nil :accessor out-of-synch-mark)
    (baseline :initform 0 :accessor baseline))
   (:metaclass block-compile-class))
 
@@ -102,18 +102,18 @@
 
 
 (defclass SCREEN-BOX
-    (screen-char-subclass)
+  (screen-char-subclass)
   ((screen-rows :initform (allocate-storage-vector 8.) :accessor screen-rows)
    (scroll-to-actual-row :initform nil :accessor scroll-to-actual-row)
    ;; how much to slosh inferiors when the borders change
-;   (inf-shift :initform nil :accessor inf-shift)  ; remove?
+   ;   (inf-shift :initform nil :accessor inf-shift)  ; remove?
    (name :initform nil :accessor name)
    (box-type :initform ':doit-box :accessor box-type)
    (bps :initform nil :accessor bps)
    (display-style-list :initform (make-display-style :style nil)
-           :accessor display-style-list)
+                       :accessor display-style-list)
    (superior-screen-box :initform nil :accessor superior-screen-box)
-;   (cached-border-info :initform nil :accessor cached-border-info)  ; remove?
+   ;   (cached-border-info :initform nil :accessor cached-border-info)  ; remove?
    (cached-absolute-pos :initform nil :accessor cached-absolute-pos)
    ;; scrolling vars
    (scroll-y-offset :initform 0)
@@ -124,11 +124,11 @@
 (defgeneric screen-box? (x) (:method (x) nil) (:method ((x screen-box)) t))
 
 (DEFUN CHECK-SCREEN-CHA-ARG (SCREEN-CHA)
-  (OR (CHARACTERP SCREEN-CHA)
-      (SCREEN-BOX? SCREEN-CHA)))
+       (OR (CHARACTERP SCREEN-CHA)
+           (SCREEN-BOX? SCREEN-CHA)))
 
 (defclass GRAPHICS-SCREEN-BOX
-    (screen-box)
+  (screen-box)
   ()
   (:metaclass block-compile-class))
 
@@ -138,11 +138,11 @@
 ;;; box is in text mode.  It has to inherit from screen-box so it can be toggled
 ;;; to/from vanilla screen-box's
 (defclass sprite-screen-box
-   (screen-box)
+  (screen-box)
   ()
   (:metaclass block-compile-class))
 
-(defgeneric sprite-screen-box? (x) (:method (x) nil) (:method ((x sprite-screen-box)) t))
+(defgeneric sprite-screen-box? (x) (:method (x) nil) (:method ((x sprite-screen-box)) t))
 
 ;;;; Variable Declarations
 
@@ -155,26 +155,26 @@
    the forms in *redisplay-related-initializations*")
 
 (DEFVAR %DRAWING-WINDOW NIL
-  "Inside of a drawing-on-window, this variable is bound to the window which
+        "Inside of a drawing-on-window, this variable is bound to the window which
    was given as an argument to drawing-on window, makes sense right.")
 
 (DEFVAR %DRAWING-ARRAY NIL
-  "Inside of a drawing-on-window, this variable is bound to %drawing-window's
+        "Inside of a drawing-on-window, this variable is bound to %drawing-window's
    screen-array (Note that this value is valid because drawing-on-window does
    a prepare-sheet of drawing-window.")
 
 (DEFVAR %DRAWING-FONT-MAP NIL
-  "Inside of a drawing-on-window, this variable is bound to %drawing-window's
+        "Inside of a drawing-on-window, this variable is bound to %drawing-window's
    font-map.")
 
 (DEFVAR %ORIGIN-X-OFFSET 0
-  "Inside of a drawing-on-window, this variable is bound to x-offset of the
+        "Inside of a drawing-on-window, this variable is bound to x-offset of the
    current drawing origin from the screen's actual x origin. With-origin-at
    rebinds this variable (and %origin-y-offset) to change the screen position
    of the drawing origin.")
 
 (DEFVAR %ORIGIN-Y-OFFSET 0
-  "Inside of a drawing-on-window, this variable is bound to y-offset of the
+        "Inside of a drawing-on-window, this variable is bound to y-offset of the
    current drawing origin from the screen's actual y origin. With-origin-at
    rebinds this variable (and %origin-x-offset) to change the screen position
    of the drawing origin.")
@@ -202,25 +202,25 @@
          (*redisplay-encore?* nil))
      (catch 'scroll-x-changed
        (unwind-protect
-           (progn . ,body)
-         (when (not (null *redisplay-encore?*))
-           (progn . ,body))
-         (setq *redisplay-id* (tick))))))
+        (progn . ,body)
+        (when (not (null *redisplay-encore?*))
+          (progn . ,body))
+        (setq *redisplay-id* (tick))))))
 
 (defun redisplay-in-progress? () *redisplay-in-progress?*)
 (defun redisplay-id () *redisplay-id*)
 
-
+
 
 ;;;; Inits
 
 (defmacro def-redisplay-initialization (form)
   (let ((name (intern (symbol-format nil "INIT-REDISPLAY-FUN-~A" (gensym)))))
     `(progn
-       (defun ,name () ,form)
-       (unless (member ',form *redisplay-related-initializations* :test #'equal)
-   (push ',form *redisplay-related-initializations*)
-   (push ',name *redisplay-initialization-list*)))))
+      (defun ,name () ,form)
+      (unless (member ',form *redisplay-related-initializations* :test #'equal)
+        (push ',form *redisplay-related-initializations*)
+        (push ',name *redisplay-initialization-list*)))))
 
 
 (defun run-redisplay-inits ()
