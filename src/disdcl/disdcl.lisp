@@ -58,14 +58,14 @@ Modification History (most recent at the top)
 (defvar *screen-chas-array-default-size* 32.)
 
 (defstruct (screen-chas-array (:type vector)
-			      (:include storage-vector)
-			      (:constructor %make-screen-chas-array)
-			      (:copier nil) ;; we do this ourselves
-			      )
+            (:include storage-vector)
+            (:constructor %make-screen-chas-array)
+            (:copier nil) ;; we do this ourselves
+            )
   (fds nil))
 
 (defun make-screen-chas-array (&optional
-			       (length *screen-chas-array-default-size*))
+             (length *screen-chas-array-default-size*))
   (%make-screen-chas-array :contents (make-array length)))
 
 ;; also see the ACTUAL-OBJ-SUBCLASS which is neccessary
@@ -121,7 +121,7 @@ Modification History (most recent at the top)
    (box-type :initform ':doit-box :accessor box-type)
    (bps :initform nil :accessor bps)
    (display-style-list :initform (make-display-style :style nil)
-		       :accessor display-style-list)
+           :accessor display-style-list)
    (superior-screen-box :initform nil :accessor superior-screen-box)
 ;   (cached-border-info :initform nil :accessor cached-border-info)  ; remove?
    (cached-absolute-pos :initform nil :accessor cached-absolute-pos)
@@ -229,8 +229,8 @@ Modification History (most recent at the top)
     `(progn
        (defun ,name () ,form)
        (unless (member ',form *redisplay-related-initializations* :test #'equal)
-	 (push ',form *redisplay-related-initializations*)
-	 (push ',name *redisplay-initialization-list*)))))
+   (push ',form *redisplay-related-initializations*)
+   (push ',name *redisplay-initialization-list*)))))
 
 
 (defun run-redisplay-inits ()
