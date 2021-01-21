@@ -1,54 +1,44 @@
-; -*- Mode:LISP; Syntax: Common-Lisp; Package:BOXER;-*-
-#|
+;;;;  ; -*- Mode:LISP; Syntax: Common-Lisp; Package:BOXER;-*-
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                           +-Data--+
+;;;;                  This file is part of the | BOXER | system
+;;;;                                           +-------+
+;;;;
+;;;;    This file contains only the variable declarations and Macro definitions that
+;;;;    need to loaded in BEFORE all of the other files in the DISPLAYDEFS module.
+;;;;
+;;;;
+;;;;
+;;;;  Modification History (most recent at the top)
+;;;;
+;;;;   1/21/12 changed the definition of sprite-screen-box class
+;;;;   9/18/10 show-redisplay-init-code
+;;;;   6/04/09 support for redisplaying changed horizontal scrolling in redisplaying-unit
+;;;;   2/10/09 removed inf-shift, cached-border-info slots from SB's and out-of-sync-mark slot from SR's
+;;;;   2/07/09 removed new-{wid,hei} and new-{x,y}-got-clipped? slots from screen-obj
+;;;;           added max-scroll-wid for screen-boxes
+;;;;   added sprite-screen-box class  for sprites representation in redisplay
+;;;;   2/01/05 added *redisplay-id*, *redisplay-in-progress?*, redisplaying-unit &
+;;;;           related accessors
+;;;;   6/18/04 change %origin-y-offset initial value for #+mcl to be 0 (from 15)
+;;;;           because it was breaking mouse doc tracking.  Keep and eye out for
+;;;;           possible future problems though %origin-y-offset is usually accessed
+;;;;           in a rebound environment
+;;;;   2/11/03 merge LW and MCL source, updated copyright
+;;;;   4/28/98 Started Logging changes: source = boxer version 2.2.r4
+;;;;
 
-
- $Header: disdcl.lisp,v 1.0 90/01/24 22:09:27 boxer Exp $
-
-
- $Log:	disdcl.lisp,v $
-;;;Revision 1.0  90/01/24  22:09:27  boxer
-;;;Initial revision
-;;;
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                         +-Data--+
-                This file is part of the | BOXER | system
-                                         +-------+
-
-  This file contains only the variable declarations and Macro definitions that
-  need to loaded in BEFORE all of the other files in the DISPLAYDEFS module.
-
-
-
-Modification History (most recent at the top)
-
- 1/21/12 changed the definition of sprite-screen-box class
- 9/18/10 show-redisplay-init-code
- 6/04/09 support for redisplaying changed horizontal scrolling in redisplaying-unit
- 2/10/09 removed inf-shift, cached-border-info slots from SB's and out-of-sync-mark slot from SR's
- 2/07/09 removed new-{wid,hei} and new-{x,y}-got-clipped? slots from screen-obj
-         added max-scroll-wid for screen-boxes
- added sprite-screen-box class  for sprites representation in redisplay
- 2/01/05 added *redisplay-id*, *redisplay-in-progress?*, redisplaying-unit &
-         related accessors
- 6/18/04 change %origin-y-offset initial value for #+mcl to be 0 (from 15)
-         because it was breaking mouse doc tracking.  Keep and eye out for
-         possible future problems though %origin-y-offset is usually accessed
-         in a rebound environment
- 2/11/03 merge LW and MCL source, updated copyright
- 4/28/98 Started Logging changes: source = boxer version 2.2.r4
-
-|#
 
 (in-package :boxer)
 
