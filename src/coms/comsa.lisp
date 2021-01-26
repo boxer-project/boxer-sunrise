@@ -1234,8 +1234,7 @@ removes it from the kill buffer.  No copy is made."
   (reset-editor-numeric-arg)
   #-opengl(add-redisplay-clue (outermost-box) :clear-screen)
   (when redraw-status-line? (redraw-status-line))
-  #-opengl(force-redisplay)
-  #+opengl(force-repaint)
+  (force-repaint)
   boxer-eval::*novalue*)
 
 (defboxer-command COM-FORCE-REDISPLAY-ALL ()

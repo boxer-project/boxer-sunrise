@@ -379,8 +379,7 @@
    #+capi editor #-capi editor-settings
    ("Should the type label (e.g., doit, data) of boxes be shown ?"))
   (setq *show-border-type-labels* true-or-false)
-  #-opengl (force-redisplay)
-  #+opengl (force-repaint)
+  (force-repaint)
   boxer-eval::*novalue*)
 
 (defboxer-preference bu::smooth-scrolling (true-or-false)
@@ -389,8 +388,7 @@
    ("Should scrolling be one pixel at a time ?")
    ("(This may be turned off for slow machines)"))
   (setq *smooth-scrolling?* true-or-false)
-  #-opengl (force-redisplay)
-  #+opengl (force-repaint)
+  (force-repaint)
   boxer-eval::*novalue*)
 
 (defboxer-preference bu::global-hotspot-controls (true-or-false)
