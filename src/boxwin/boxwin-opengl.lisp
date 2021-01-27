@@ -761,6 +761,8 @@ Modification History (most recent at top)
       ;; opengl equivalent would be...
       (opengl:rendering-on (*boxer-pane*)
                     (initialize-ogl-color-pool)
+                    (boxer::initialize-gray-patterns)
+                    (boxer::initialize-colors)
                     (ogl-set-color box::*foreground-color*)
                     ;; do other OpenGL inits...
                     (setq *ogl-current-color-vector* (make-ogl-color 0.0 0.0 0.0)
