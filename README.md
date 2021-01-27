@@ -1,16 +1,46 @@
-# Boxer-Sunrise
+# Boxer Sunrise
 
-This is an in-progress reconstruction of the Boxer project based on it's original common
-lisp source code.  In addition to bringing the Boxer application and medium back to working
-order, it is also an effort to modernize the lisp source.
+This is the current interation of the historic Boxer project.
 
-## Usage
+## Supported Platforms
 
-Currently, running the entire Boxer system depends on Lispworks as it makes use of it's capi, opengl, and
-delivery frameworks. There are parts of the system that should run on any common lisp, and these are being
-expanded over time.
+Currently Boxer is tested on Intel versions of MacOS 10.13 High Sierra, 10.14 Mojave, 10.15 Catalina, and
+11 Big Sur. These all use Lispworks 7.1.2. The Windows version on Lispworks is not far behind, and is expected
+to be added the tested platforms in March 2021. Some work remains for Linux on Lispworks.
+
+Boxer can be run and developed against using the freely available version of Lispworks. However, in order to
+build deliverable binaries a professional license is required.
+
+Work is in progress to run Boxer against fully open source versions of common lisp, focused primarily on SBCL.
+Additionally the ability to run the core boxer evaluator separately to integrate with new web ecosystems (such
+as node and a possible server side Boxer).
+
+### Running the unit tests and UI in development
+
+#### Dependencies
+
+- Lispworks 7.1.2
+  Lispworks should be fully patches, and for Big Sur, require the extra private-patches addition from lispworks.
+  (as of 2021-01-27)
+- Quicklisp loaded
+  Quicklisp should be installed and available. The personal version of lispworks may require you to load it
+  manually on each startup.
+- Freetype2 Dev libraries
+  The freetype2 development headers and libraries need to be installed. On MacOS this can be installed with
+  homebrew as `brew install freetype2`
+
+With the above installed and a lispworks Listener open, the following will compile and startup Boxer (adjusting the
+path accordingly to your system.)
+
+```lisp
+;; This needs to be a full path to the bootstrap file
+(load #P"~/code/boxer-sunrise/src/bootstrap.lisp")
+```
 
 ### Building the Boxer executable on MacOS
+
+*in-progress These instructions are being updated still for several binary libraries that need to be included
+in the build*
 
 MacOS application bundles can be created with the following delivery script. This will assume you have lispworks
 installed and have the executable in the path. This has been tested with Lispworks 7.1. While you can run Boxer
@@ -25,15 +55,6 @@ lispworks -build src/delivery-script.lisp
 
 You will now find a double-clickable MacOS application in `boxer-sunrise/data/boxersunrise.app`.
 
-### Running the unit tests and UI in development
-
-The following bootstrap script can be run from a Lispworks listener to run the common lisp tests and then
-start the Boxer canvas and UI.
-
-```lisp
-;; This needs to be a full path to the bootstrap file
-(load #P"~/code/boxer-sunrise/src/bootstrap.lisp")
-```
 
 ## Authors through the years
 

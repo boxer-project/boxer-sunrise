@@ -1,5 +1,48 @@
 # Change Log
 
+## 3.4.3 2020-01-27
+
+- boxer-sunrise-3 First set of work on JSON export format
+
+- boxer-sunrise-4 Menu reorganization and open recent
+    - Adding boxapp-data.lisp, which will store session data for boxer in
+      the OS appdata dir (on MacOS will be ~/Library/Application Support/Boxer),
+      such as recently opened files and such.
+    - Re-organizing new, open, mark box, and save menus based on UI suggestions
+      from Andy.
+
+- boxer-sunrise-5 Major refactoring and simplification of fonts, removing old bitmap font support as well as
+  abstraction layers from 2 other old font implementations.
+
+- boxer-bugs-26 Fixes some crashes with higher unicode codepoints.
+  - Several strings were being created with element type base-char.
+  - Changes a make-string call in chunker.lisp to :element-type 'character
+  - Changes an array for with-output-to-string in comsa.lisp to :element-type 'character
+
+- boxer-bugs-27 Removed an erronesous 1 extra padding of pixel when calculating each
+  glyph width that was causing the cursor to move forward faster than the text, as
+  box names are actually rendered as a single pixmap.
+
+- boxer-bugs-28 Fixed the CHA-HEI functions, recentering the box names.
+
+- MacOS Big Sur
+  - Applied a patch from lispworks that fixed the issue that was causing Boxer to not start up on Big Sur.
+
+- MacOS High Sierra
+  - Recompiled the libfreetype.6.dylib library on High Sierra that was causing Boxer to crash on startup.
+    The same Boxer app should be working now across all Intel versions of High Sierra, Mojave, Catalina, and Big Sur.
+
+- Windows 10 support. Fixed opengl rendering issue with pixmaps on Windows as well as several code loading issues. Close
+  to fully supported now.
+
+- crash-fixes
+  - Fixed a crash that occured when clicking on the top level WORLD name row. (You can't rename the top box name.)
+  - Fixed a crash that occured when trying to calculate the width of a port actual-obj that didn't exist.
+
+- the-attic Lots of continuing cleanup in `mouse.lisp`, `comsb.lisp`, `grobjs.lisp`, `sysprims.lisp`,
+  `graphics-clear.lisp`, `comdef.lisp`, `makcpy.lisp`, `mousedoc.lisp`, `boxwin-opengl.lisp`, `realprinter.lisp`,
+  `comp.lisp`, `bind.lisp`,
+
 ## 3.4.2 2020-12-11
 
 - First major round of work for supporting modern truetype and vector fonts backed by freetype2.
