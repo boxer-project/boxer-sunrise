@@ -49,6 +49,13 @@
   (setf (gethash "LiberationSerif-Italic" *freetype-faces*) (make-freetype-face "LiberationSerif-Italic.ttf"))
   (setf (gethash "LiberationSerif-BoldItalic" *freetype-faces*) (make-freetype-face "LiberationSerif-BoldItalic.ttf")))
 
+(defun check-font-triple (triple)
+  "While we are continuing to refactor fonts in the system, sometimes the font size comes in as zero,
+  for now we will reset it to 12."
+  (if (equal (cadr triple) 0)
+    (list (car triple) 12 (cddr triple))
+    triple))
+
 (defun current-freetype-font (current-font)
   "Returns the current face and size based on the values in *current-font-descriptor*
   The current fonts are:
@@ -59,7 +66,7 @@
       9, 10, 12, 14, 16, 20, 24
   "
   (let* (; (cur-font-triple (bw::opengl-font-font-triple current-font))
-         (capi-font-triple (bw::opengl-font-font-triple current-font))
+         (capi-font-triple (check-font-triple (bw::opengl-font-font-triple current-font)))
          (name (car capi-font-triple))
          (size (cadr capi-font-triple))
          (style (cddr capi-font-triple))
@@ -126,7 +133,7 @@
    CAPI Font List, Color, Char/String
   "
   (let* (; (cur-font-triple (bw::opengl-font-font-triple current-font))
-         (capi-font-triple (bw::opengl-font-font-triple current-font))
+         (capi-font-triple (check-font-triple (bw::opengl-font-font-triple current-font)))
          (cur-color (current-rgba-percents cur-ogl-color))
          (cache-key `(,capi-font-triple ,cur-color ,char-string))
          (cached-pixmap (gethash cache-key *freetype-pixmap-cache*)))
