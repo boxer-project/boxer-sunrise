@@ -1,44 +1,33 @@
-;;; -*- Package: BOXER-EVAL; Mode: LISP; Base: 10; Syntax: Common-lisp -*-
-;;;
-;;; $Header: funs.lisp,v 1.0 90/01/24 22:12:04 boxer Exp $
-;;;
-;;; $Log:	funs.lisp,v $
-;;;Revision 1.0  90/01/24  22:12:04  boxer
-;;;Initial revision
-;;;
+;;;; -*- Package: BOXER-EVAL; Mode: LISP; Base: 10; Syntax: Common-lisp -*-
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                        +-------+
+;;;;               This file is part of the | Boxer | System
+;;;;                                        +-Data--+
+;;;;
+;;;;
+;;;;  Modification History (most recent at top)
+;;;;
+;;;;   2/11/03 merged current LW and MCL files
+;;;;   6/04/02 better COMPILED-BOXER-FUNCTION-NAME for LWW and generic
+;;;;   9/18/01 updated COMPILED-BOXER-FUNCTION-NAME for lispworks
+;;;;   2/13/01 merged current LW and MCL files
+;;;;  12/16/99 added placeholder stub for compiled-boxer-function-name
+;;;;   5/04/99 make sure we always use VC mechanism in
+;;;;           convert-editor-box-to-interpreted-procedure-internal
+;;;;   5/04/99 starting logging changes: source = Boxer version 2.3 pre-release
+;;;;
 
-#|
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                      +-------+
-             This file is part of the | Boxer | System
-                                      +-Data--+
-
-
-Modification History (most recent at top)
-
- 2/11/03 merged current LW and MCL files
- 6/04/02 better COMPILED-BOXER-FUNCTION-NAME for LWW and generic
- 9/18/01 updated COMPILED-BOXER-FUNCTION-NAME for lispworks
- 2/13/01 merged current LW and MCL files
-12/16/99 added placeholder stub for compiled-boxer-function-name
- 5/04/99 make sure we always use VC mechanism in
-         convert-editor-box-to-interpreted-procedure-internal
- 5/04/99 starting logging changes: source = Boxer version 2.3 pre-release
-
-|#
-
-;;;
 
 (in-package :boxer-eval)
 
