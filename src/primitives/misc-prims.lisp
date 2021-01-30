@@ -108,70 +108,70 @@ Modification History (most recent at top)
   (let ((rows nil))
     (do-symbols (s (find-package "BOXER-USER"))
       (when (search search-string (symbol-name s))
-	(let ((binding (boxer-eval::boxer-symeval s)))
-	  (if (eq boxer-eval::*novalue* binding)
-	      (let ((unbound-message (get s 'unbound-name-help-message)))
-		(unless (null unbound-message)
-		  (push (list (format nil "~A ~A" s unbound-message)) rows)))
-	      (push (list* (symbol-name s)
-			   (make-row-arg-for-apropos binding))
-		    rows)))))
+  (let ((binding (boxer-eval::boxer-symeval s)))
+    (if (eq boxer-eval::*novalue* binding)
+        (let ((unbound-message (get s 'unbound-name-help-message)))
+    (unless (null unbound-message)
+      (push (list (format nil "~A ~A" s unbound-message)) rows)))
+        (push (list* (symbol-name s)
+         (make-row-arg-for-apropos binding))
+        rows)))))
     (if (null rows)
-	(make-empty-vc)
-	(crock-make-vc (nreverse rows)))))
+  (make-empty-vc)
+  (crock-make-vc (nreverse rows)))))
 
 (defun make-row-arg-for-apropos (binding)
   (cond ((boxer-eval::boxer-function? binding)
-	 (let ((args (mapcar #'(lambda (arg)
-				 (if (and (listp arg)
-					  (eq (car arg) 'boxer-eval::dont-copy))
-				     (cadr arg)
-				     arg))
-			     (boxer-eval::boxer-function-arglist binding))))
-	   (list (if (null args)
-		     (format nil "is a primitive with no arguments")
-		     (format nil "is a primitive with arguments of ~A" args)))))
-	((doit-box? binding)
-	 (let* ((code (boxer-eval::cached-code-editor-box binding))
-		(args (and code (boxer-eval::boxer-function-arglist code))))
-	   (list (cond ((null args) "is a doit box with no inputs")
-		       (t (format nil "is a doit box with inputs of ~A"
-				  args))))))
-	((virtual-port? binding)
-	 (list* "is a port whose target "
-		(make-row-arg-for-apropos (vp-target binding))))
-	((port-box? binding)
-	 (list* "is a port whose target "
-		(make-row-arg-for-apropos (ports binding))))
-	(t
-	 ;; describe the binding
-	 (list (format nil "is a ~A" (apropos-describe binding))))))
+   (let ((args (mapcar #'(lambda (arg)
+         (if (and (listp arg)
+            (eq (car arg) 'boxer-eval::dont-copy))
+             (cadr arg)
+             arg))
+           (boxer-eval::boxer-function-arglist binding))))
+     (list (if (null args)
+         (format nil "is a primitive with no arguments")
+         (format nil "is a primitive with arguments of ~A" args)))))
+  ((doit-box? binding)
+   (let* ((code (boxer-eval::cached-code-editor-box binding))
+    (args (and code (boxer-eval::boxer-function-arglist code))))
+     (list (cond ((null args) "is a doit box with no inputs")
+           (t (format nil "is a doit box with inputs of ~A"
+          args))))))
+  ((virtual-port? binding)
+   (list* "is a port whose target "
+    (make-row-arg-for-apropos (vp-target binding))))
+  ((port-box? binding)
+   (list* "is a port whose target "
+    (make-row-arg-for-apropos (ports binding))))
+  (t
+   ;; describe the binding
+   (list (format nil "is a ~A" (apropos-describe binding))))))
 
 ;;; the default is to just print the object, try and catch
 ;;; large objects and print descriptions of them here
 (defun apropos-describe (thing)
   (cond ((virtual-copy? thing)
-	 (vc-type thing))
-	((data-box? thing)
-	 "Data Box")
-	((box-interface? thing)
-	 ;; should we be more specific depending upon type of interface
-	 ;; and whether there is a current box in existence or should
-	 ;; we preserve the illusion that this is a data-box
-	 "Data Box")
-	(t (format nil "~A" thing))))
+   (vc-type thing))
+  ((data-box? thing)
+   "Data Box")
+  ((box-interface? thing)
+   ;; should we be more specific depending upon type of interface
+   ;; and whether there is a current box in existence or should
+   ;; we preserve the illusion that this is a data-box
+   "Data Box")
+  (t (format nil "~A" thing))))
 
 
 (boxer-eval::defboxer-primitive bu::last-unprintable-error-box ()
   (boxer-eval::primitive-signal-error :obsolete-function
-				"Use INVISIBLE-ERROR instead"))
+        "Use INVISIBLE-ERROR instead"))
 
 (boxer-eval::defboxer-primitive bu::invisible-error ()
   *last-unprintable-error-box*)
 
 (boxer-eval::defboxer-primitive bu::last-unprintable-returned-value ()
   (boxer-eval::primitive-signal-error :obsolete-function
-				"Use INVISIBLE-VALUE instead"))
+        "Use INVISIBLE-VALUE instead"))
 
 (boxer-eval::defboxer-primitive bu::invisible-value ()
   *last-unprintable-returned-value*)
@@ -196,16 +196,16 @@ Modification History (most recent at top)
 
 (defun transform-inputs-row (editor-row)
   (let ((row-chunks (chunks editor-row))
-	(current-flavor nil))
+  (current-flavor nil))
     (when (eq (chunk-chunk (get-pointer-value (car row-chunks) nil))'bu::input)
       (do* ((chunks (cdr row-chunks) (cdr chunks))
-	    (chunk (car chunks) (car chunks))
-	    (chunk-no 1 (1+& chunk-no)))
-	   ((null chunks))
-	(let ((item (chunk-chunk (get-pointer-value chunk nil)))
+      (chunk (car chunks) (car chunks))
+      (chunk-no 1 (1+& chunk-no)))
+     ((null chunks))
+  (let ((item (chunk-chunk (get-pointer-value chunk nil)))
               (start (beginning-of-nth-chunk-cha-no editor-row
                                                     chunk-no)))
-	  (cond ((box? item)
+    (cond ((box? item)
                  ;; remove the box from the row
                  (delete-cha-at-cha-no editor-row start)
                  ;(format t "D~D " start)
@@ -220,44 +220,44 @@ Modification History (most recent at top)
                                                       #.(length "port-to "))))
                          (t (insert-string-at-cha-no editor-row name start))))
                  ;; add the name
-		 (setq current-flavor nil))
-		((boxer-eval::flavored-input-marker? item)
-		 (setq current-flavor item)
-		 ;; port flavor is handled specially
-		 (when (and (eq item 'bu::port-to)
-			    ;; check the next token
-			    (not (box? (chunk-chunk (get-pointer-value
-						     (cadr chunks) nil)))))
-		   ;; remove port-to flavor token
+     (setq current-flavor nil))
+    ((boxer-eval::flavored-input-marker? item)
+     (setq current-flavor item)
+     ;; port flavor is handled specially
+     (when (and (eq item 'bu::port-to)
+          ;; check the next token
+          (not (box? (chunk-chunk (get-pointer-value
+                 (cadr chunks) nil)))))
+       ;; remove port-to flavor token
                    (dotimes (i (-& (end-of-nth-chunk-cha-no editor-row
                                                             chunk-no)
                                    (1-& start)))
                      (delete-cha-at-cha-no editor-row (1-& start)))
-		   ;; now that a token has been removed, decrement the
-		   ;; chunk-no so we keep track of where we are
-		   (setq chunk-no (1-& chunk-no))))
-		(t
-		 ;; must be a symbol, convert it to a box based on
-		 ;; the current flavor
-		 (let ((new-input-box (if (eq current-flavor 'bu::port-to)
-					  (make-input-port item)
-					  (make-box '(()) 'data-box item))))
-		   (dotimes (i (-& (end-of-nth-chunk-cha-no editor-row
-							    chunk-no)
-				   start))
-		     (delete-cha-at-cha-no editor-row start))
-		   ;; insert the new token
-		   (insert-cha-at-cha-no editor-row new-input-box start)
-		   (setq current-flavor nil)))))))))
+       ;; now that a token has been removed, decrement the
+       ;; chunk-no so we keep track of where we are
+       (setq chunk-no (1-& chunk-no))))
+    (t
+     ;; must be a symbol, convert it to a box based on
+     ;; the current flavor
+     (let ((new-input-box (if (eq current-flavor 'bu::port-to)
+            (make-input-port item)
+            (make-box '(()) 'data-box item))))
+       (dotimes (i (-& (end-of-nth-chunk-cha-no editor-row
+                  chunk-no)
+           start))
+         (delete-cha-at-cha-no editor-row start))
+       ;; insert the new token
+       (insert-cha-at-cha-no editor-row new-input-box start)
+       (setq current-flavor nil)))))))))
 
 ;;; this relies on *lexical-variables-root* to get hold of the editor box
 (boxer-eval::defboxer-primitive bu::input ((boxer-eval::list-rest args))
   (cond ((and (box? boxer-eval::*lexical-variables-root*)
               ;; we test for box? in case (point-box) is NIL
               (eq boxer-eval::*lexical-variables-root* (point-box))
-	      (eq 'bu::input
-		  (car (eval-objs (first-inferior-row
-				   boxer-eval::*lexical-variables-root*))))
+        (eq 'bu::input
+      (car (eval-objs (first-inferior-row
+           boxer-eval::*lexical-variables-root*))))
               (equal (remove-if
                            #'(lambda (x)
                                (eq x 'boxer-eval::*ignoring-definition-object*)) args)
@@ -292,37 +292,37 @@ Modification History (most recent at top)
   :state-variables (boxer-eval::*internal-time-stamp*)
   :before
   (cond ((complexp seconds)
-	 (signal-error :IMPROPER-ARGUMENT
-		       "cannot accept complex numbers"))
-	((minusp seconds)
-	 (signal-error :IMPROPER-ARGUMENT
-		       "expected a positive number"))
-	(t (set-and-save-state-variables
-	    ;; record the desire FINISH time
-	    (+ (get-internal-real-time)
-	       (round (* seconds internal-time-units-per-second)))
-	    what)
-	   (recursive-eval-invoke what)))
+   (signal-error :IMPROPER-ARGUMENT
+           "cannot accept complex numbers"))
+  ((minusp seconds)
+   (signal-error :IMPROPER-ARGUMENT
+           "expected a positive number"))
+  (t (set-and-save-state-variables
+      ;; record the desire FINISH time
+      (+ (get-internal-real-time)
+         (round (* seconds internal-time-units-per-second)))
+      what)
+     (recursive-eval-invoke what)))
   :after)
 
 
 (boxer-eval::defrecursive-eval-primitive bu::synchronize ((boxer-eval::numberize seconds)
-						    (boxer-eval::list-rest what))
+                (boxer-eval::list-rest what))
   :stack-frame-allocation (5 5 5 5)
   :state-variables (boxer-eval::*internal-time-stamp* boxer-eval::*repeat-list*)
   :before
   (cond ((complexp seconds)
-	 (signal-error :IMPROPER-ARGUMENT
-		       "cannot accept complex numbers"))
-	((minusp seconds)
-	 (signal-error :IMPROPER-ARGUMENT
-		       "expected a positive number"))
-	(t (set-and-save-state-variables
-	    ;; record the desire FINISH time
-	    (+ (get-internal-real-time)
-	       (round (* seconds internal-time-units-per-second)))
-	    what)
-	   (recursive-eval-invoke what)))
+   (signal-error :IMPROPER-ARGUMENT
+           "cannot accept complex numbers"))
+  ((minusp seconds)
+   (signal-error :IMPROPER-ARGUMENT
+           "expected a positive number"))
+  (t (set-and-save-state-variables
+      ;; record the desire FINISH time
+      (+ (get-internal-real-time)
+         (round (* seconds internal-time-units-per-second)))
+      what)
+     (recursive-eval-invoke what)))
   :after
   )
 |#
@@ -426,8 +426,8 @@ Modification History (most recent at top)
 
 (boxer-eval::defboxer-primitive bu::boxer-version ()
   (crock-make-vc `((,(system-version))
-		   (,(lisp-implementation-version) ,(lisp-implementation-type))
-		   (,(machine-type) ,(machine-instance)))))
+       (,(lisp-implementation-version) ,(lisp-implementation-type))
+       (,(machine-type) ,(machine-instance)))))
 
 
 
@@ -529,7 +529,7 @@ Modification History (most recent at top)
              (move-point (box-first-bp-values target))
              (set-point-screen-box (outermost-screen-box)))
            (multiple-value-bind (new-outermost-box new-outermost-screen-box)
-		                (get-previous-outermost-box-values)
+                    (get-previous-outermost-box-values)
              (set-outermost-box new-outermost-box new-outermost-screen-box))
            (when (superior? pb target)
              (exit target (if (circular-port? target)
@@ -625,10 +625,10 @@ Modification History (most recent at top)
 ;		     (superior-box target) t)))
 ;	   (fill-doit-cursor-position-vector
 ;	    boxer-eval::*process-doit-cursor-position*))
-	  ((box? target)
+    ((box? target)
            (unless (eq (display-style target) ':normal)(unshrink target)))
-	  (t (boxer-eval::primitive-signal-error
-	 :resize-error "You Can only Expand Editor boxes")))
+    (t (boxer-eval::primitive-signal-error
+   :resize-error "You Can only Expand Editor boxes")))
     boxer-eval::*novalue*))
 
 (boxer-eval::defboxer-primitive bu::expand-port ((boxer-eval::dont-copy port))
@@ -643,20 +643,20 @@ Modification History (most recent at top)
     (cond ((box? box)
            (unless (eq (display-style box) :normal) (unshrink box)))
           (t (boxer-eval::primitive-signal-error
-	      :resize-error "You Can only Expand Editor boxes")))
+        :resize-error "You Can only Expand Editor boxes")))
     boxer-eval::*novalue*))
 
 (boxer-eval::defboxer-primitive bu::full-screen-box ((bu::port-to editor-box))
   editor-box
   (boxer-eval::primitive-signal-error :obsolete-function
-				"Use FULLSCREEN-BOX instead"))
+        "Use FULLSCREEN-BOX instead"))
 
 ;; added check for already fullscreen box 1/15/96
 (boxer-eval::defboxer-primitive bu::fullscreen-box ((bu::port-to editor-box))
   (let ((target (box-or-port-target editor-box)))
     (cond ((eq target (outermost-box)))
           ((and (box? target) (not (null (displayed-screen-objs target))))
-	   (push *outermost-screen-box* *outermost-screen-box-stack*)
+     (push *outermost-screen-box* *outermost-screen-box-stack*)
            (set-outermost-box target)
            (repaint)
            (move-point (box-first-bp-values target))
@@ -664,8 +664,8 @@ Modification History (most recent at top)
            (fill-doit-cursor-position-vector
             boxer-eval::*process-doit-cursor-position*))
           (t
-	   (boxer-eval::primitive-signal-error
-	    :resize-error "You Can only Zoom Visible Editor boxes")))
+     (boxer-eval::primitive-signal-error
+      :resize-error "You Can only Zoom Visible Editor boxes")))
     boxer-eval::*novalue*))
 
 (boxer-eval::defboxer-primitive bu::fullscreen-port ((boxer-eval::dont-copy port))
@@ -679,7 +679,7 @@ Modification History (most recent at top)
                       (t (box-or-port-target port)))))
     (cond ((eq target (outermost-box)))
           ((and (box? target) (not (null (displayed-screen-objs target))))
-	   (push *outermost-screen-box* *outermost-screen-box-stack*)
+     (push *outermost-screen-box* *outermost-screen-box-stack*)
            (set-outermost-box target)
            (repaint)
            (move-point (box-first-bp-values target))
@@ -687,8 +687,8 @@ Modification History (most recent at top)
            (fill-doit-cursor-position-vector
             boxer-eval::*process-doit-cursor-position*))
           (t
-	   (boxer-eval::primitive-signal-error
-	    :resize-error "You Can only Zoom Visible Editor boxes")))
+     (boxer-eval::primitive-signal-error
+      :resize-error "You Can only Zoom Visible Editor boxes")))
     boxer-eval::*novalue*))
 
 (boxer-eval::defboxer-primitive bu::box-display ((bu::port-to editor-box))
@@ -715,30 +715,30 @@ Modification History (most recent at top)
           (t (make-vc (list (intern-in-bu-package (display-style box))))))))
 
 (boxer-eval::defboxer-primitive bu::move-cursor ((bu::port-to editor-box)
-				     (boxer-eval::numberize row)
-				     (boxer-eval::numberize cha-no))
+             (boxer-eval::numberize row)
+             (boxer-eval::numberize cha-no))
   (let ((target (box-or-port-target editor-box)))
     (cond  ((or (not (and (typep row 'fixnum) (plusp& row)))
-		(not (and (typep cha-no 'fixnum) (plusp& cha-no))))
-	    (boxer-eval::primitive-signal-error
-	     :move-cursor-error "Row and Cha-no should be positive integers"))
-	   ((and (box? target) (superior? target *initial-box*))
-	    ;; need to make sure screen structure is up to date
-	    (process-editor-mutation-queue-within-eval)
+    (not (and (typep cha-no 'fixnum) (plusp& cha-no))))
+      (boxer-eval::primitive-signal-error
+       :move-cursor-error "Row and Cha-no should be positive integers"))
+     ((and (box? target) (superior? target *initial-box*))
+      ;; need to make sure screen structure is up to date
+      (process-editor-mutation-queue-within-eval)
             (repaint)
-	    ;; might want to Bind *move-bp-zoom-pause-time* here for effect
-	    (let ((edrow (row-at-row-no target (1- row))))
-	      (if (null edrow)
-		  (boxer-eval::primitive-signal-error
-		   :move-cursor-error "No row, " row ", in box: " editor-box)
-		  (progn
-		    (with-temporary-bp (target-bp (values edrow (1- cha-no)))
-		      (move-to-bp target-bp))
-		    (fill-doit-cursor-position-vector
-		     boxer-eval::*process-doit-cursor-position*)))))
-	   (t
-	    (boxer-eval::primitive-signal-error
-	     :move-cursor-error "You can only move to Editor Boxes"))))
+      ;; might want to Bind *move-bp-zoom-pause-time* here for effect
+      (let ((edrow (row-at-row-no target (1- row))))
+        (if (null edrow)
+      (boxer-eval::primitive-signal-error
+       :move-cursor-error "No row, " row ", in box: " editor-box)
+      (progn
+        (with-temporary-bp (target-bp (values edrow (1- cha-no)))
+          (move-to-bp target-bp))
+        (fill-doit-cursor-position-vector
+         boxer-eval::*process-doit-cursor-position*)))))
+     (t
+      (boxer-eval::primitive-signal-error
+       :move-cursor-error "You can only move to Editor Boxes"))))
   boxer-eval::*novalue*)
 
 (boxer-eval::defboxer-primitive bu::scroll-to-row ((bu::port-to box) (boxer-eval::numberize row))
@@ -823,46 +823,46 @@ Modification History (most recent at top)
 
 (defun get-names (box)
   (cond ((box? box)
-	 (make-vc
-	  (if (editor-box-changed? box)
-	      (progn
-		;; a hack to fill the cache...
-		(lookup-variable-in-vc-rows-entry
-		 (car (slot-value box 'virtual-copy-rows))
-		 ':bogus-value
-		 box
-		 NIL)
-		;; The vc-rows-entry variable cache is no a valid
-		;; indication of the state of named boxes
-		(let ((cache (vc-rows-entry-cached-binding-alist
-			      (car (slot-value box 'virtual-copy-rows)))))
-		  (if (eq cache *no-names-in-vc-marker*)
-		      (list (make-empty-evrow))
-		      (mapcar #'(lambda (binding)
-				  (make-evrow-from-entry
-				   (boxer-eval::static-variable-name binding)))
-				   cache))))
-	      ;; looks like the editor box knows what's in it
-	      (mapcar #'(lambda (binding)
-			  (make-evrow-from-entry
-			   (boxer-eval::static-variable-name binding)))
-		      (slot-value box 'static-variables-alist)))))
-	((virtual-copy? box)
-	 ;; a hack to fill the cache...
-	 (lookup-variable-in-virtual-copy box ':bogus-value)
-	 ;; the cache is now guaranteed to be valid so...
-	 (let ((cache (vc-cached-binding-alist box)))
-	   (make-vc (if (eq cache *no-names-in-vc-marker*)
-			(list (make-empty-evrow))
-			(mapcar #'(lambda (binding)
-				    (make-evrow-from-entry
-				     (boxer-eval::static-variable-name binding)))
-				cache)))))
-	((numberp box)
-	 (make-empty-vc))
-	(t
-	 (data-primitive-error "Don't know how to get the names from ~A"
-			       box))))
+   (make-vc
+    (if (editor-box-changed? box)
+        (progn
+    ;; a hack to fill the cache...
+    (lookup-variable-in-vc-rows-entry
+     (car (slot-value box 'virtual-copy-rows))
+     ':bogus-value
+     box
+     NIL)
+    ;; The vc-rows-entry variable cache is no a valid
+    ;; indication of the state of named boxes
+    (let ((cache (vc-rows-entry-cached-binding-alist
+            (car (slot-value box 'virtual-copy-rows)))))
+      (if (eq cache *no-names-in-vc-marker*)
+          (list (make-empty-evrow))
+          (mapcar #'(lambda (binding)
+          (make-evrow-from-entry
+           (boxer-eval::static-variable-name binding)))
+           cache))))
+        ;; looks like the editor box knows what's in it
+        (mapcar #'(lambda (binding)
+        (make-evrow-from-entry
+         (boxer-eval::static-variable-name binding)))
+          (slot-value box 'static-variables-alist)))))
+  ((virtual-copy? box)
+   ;; a hack to fill the cache...
+   (lookup-variable-in-virtual-copy box ':bogus-value)
+   ;; the cache is now guaranteed to be valid so...
+   (let ((cache (vc-cached-binding-alist box)))
+     (make-vc (if (eq cache *no-names-in-vc-marker*)
+      (list (make-empty-evrow))
+      (mapcar #'(lambda (binding)
+            (make-evrow-from-entry
+             (boxer-eval::static-variable-name binding)))
+        cache)))))
+  ((numberp box)
+   (make-empty-vc))
+  (t
+   (data-primitive-error "Don't know how to get the names from ~A"
+             box))))
 
 (boxer-eval::defboxer-primitive bu::names ()
   (get-names (box-or-port-target (static-root))))
@@ -875,21 +875,21 @@ Modification History (most recent at top)
 
 (boxer-eval::defboxer-primitive bu::name-in-box? ((boxer-eval::dont-copy name))
   (let ((box (static-root))
-	(symbol (caar (boxer::raw-unboxed-items name))))
+  (symbol (caar (boxer::raw-unboxed-items name))))
     (boxer-eval::boxer-boolean
      (when (and (symbolp symbol) (not (null symbol)))
        (cond ((virtual-copy? box)
-	      (not (null (lookup-variable-in-virtual-copy box symbol))))
-	     ((box? box)
-	      (not (null (boxer-eval::lookup-static-variable-in-box-only
-			  box symbol))))
-	     (t (boxer-eval::signal-error :IMPROPER-ARGUMENT "Expected a box")))))))
+        (not (null (lookup-variable-in-virtual-copy box symbol))))
+       ((box? box)
+        (not (null (boxer-eval::lookup-static-variable-in-box-only
+        box symbol))))
+       (t (boxer-eval::signal-error :IMPROPER-ARGUMENT "Expected a box")))))))
 
 (defun bound-values (symbol)
   (when (symbolp symbol)
     (let ((local (boxer-eval::boxer-symeval symbol))
-	  (global (when (boundp symbol)
-		    (boxer-eval::static-variable-value (symbol-value symbol)))))
+    (global (when (boundp symbol)
+        (boxer-eval::static-variable-value (symbol-value symbol)))))
       (values (unless (eq local boxer-eval::*novalue*) local) global))))
 
 (boxer-eval::defboxer-primitive bu::top-level-name? ((boxer-eval::dont-copy name))
@@ -905,25 +905,25 @@ Modification History (most recent at top)
 (boxer-eval::defboxer-primitive bu::target-name (pbox)
   (let ((box (box-or-port-target pbox)))
     (if (numberp box) (make-empty-vc)
-	(make-vc
-	 (list
-	  (cond ((or (virtual-port? box) (virtual-copy? box))
-		 (if (not (null (vc-name box)))
-		     (make-evrow-from-entry (box-name box))
-		     (make-empty-evrow)))
-		((box? box)
-		 (if (not (null (name-row box)))
-		     (make-evrow-from-entry (editor-box-name-symbol box))
-		     (make-empty-evrow)))
-		(t nil)))))))
+  (make-vc
+   (list
+    (cond ((or (virtual-port? box) (virtual-copy? box))
+     (if (not (null (vc-name box)))
+         (make-evrow-from-entry (box-name box))
+         (make-empty-evrow)))
+    ((box? box)
+     (if (not (null (name-row box)))
+         (make-evrow-from-entry (editor-box-name-symbol box))
+         (make-empty-evrow)))
+    (t nil)))))))
 
 (defvar *unique-symbol-counter* 0)
 
 (boxer-eval::defboxer-primitive bu::unique-symbol ()
   (make-vc
    (list (make-evrow-from-entry
-	  (intern-in-bu-package
-	   (format nil "UNIQUE-SYMBOL-~D" (incf *unique-symbol-counter*)))))))
+    (intern-in-bu-package
+     (format nil "UNIQUE-SYMBOL-~D" (incf *unique-symbol-counter*)))))))
 
 
 
@@ -1013,26 +1013,26 @@ Modification History (most recent at top)
 (boxer-eval::defboxer-primitive bu::show-key-name ()
   (status-line-display 'show-key-name "Press a key or click the mouse...")
   (let* ((input (get-boxer-input *boxer-pane*))
-	 (key-name (if (key-event? input)
-		       (lookup-key-name (input-code input)(input-bits input))
-		       (let ((click  (mouse-event-click  input))
-			     (x-pos  (mouse-event-x-pos  input))
-			     (y-pos  (mouse-event-y-pos  input))
-			     (bits   (mouse-event-bits   input)))
-			 ;; now call the mouse tracker to see if we
-			 ;; are on a border area
-			 (multiple-value-bind (mouse-bp local-x local-y
-							area)
-			     (mouse-position-values x-pos y-pos)
-			   (declare (ignore mouse-bp local-x local-y))
-			   (lookup-click-name click bits area))))))
+   (key-name (if (key-event? input)
+           (lookup-key-name (input-code input)(input-bits input))
+           (let ((click  (mouse-event-click  input))
+           (x-pos  (mouse-event-x-pos  input))
+           (y-pos  (mouse-event-y-pos  input))
+           (bits   (mouse-event-bits   input)))
+       ;; now call the mouse tracker to see if we
+       ;; are on a border area
+       (multiple-value-bind (mouse-bp local-x local-y
+              area)
+           (mouse-position-values x-pos y-pos)
+         (declare (ignore mouse-bp local-x local-y))
+         (lookup-click-name click bits area))))))
     (status-line-undisplay 'show-key-name)
     (make-vc (list (make-evrow-from-entry key-name)))))
 
 (boxer-eval::defboxer-primitive bu::restore-original-keyboard ()
   (maphash #'(lambda (key-name function)
-	       (boxer-eval::boxer-toplevel-set-nocache key-name function))
-	   (slot-value *global-top-level-mode* 'comtab))
+         (boxer-eval::boxer-toplevel-set-nocache key-name function))
+     (slot-value *global-top-level-mode* 'comtab))
   boxer-eval::*novalue*)
 
 (boxer-eval::defboxer-primitive bu::unset-key ((bu::datafy key-name))
@@ -1047,10 +1047,10 @@ Modification History (most recent at top)
                               (concatenate 'string "COM-" command-string))
                           'boxer)))
     (if (fast-memq command *boxer-editor-commands*)
-	(boxer-eval::boxer-toplevel-set-nocache
-	 (intern-in-bu-package (string-upcase (box-text-string key-name)))
-	 (boxer-eval::encapsulate-key-function command))
-	(boxer-eval::primitive-signal-error :bad-arg command " is not an editor command")))
+  (boxer-eval::boxer-toplevel-set-nocache
+   (intern-in-bu-package (string-upcase (box-text-string key-name)))
+   (boxer-eval::encapsulate-key-function command))
+  (boxer-eval::primitive-signal-error :bad-arg command " is not an editor command")))
   boxer-eval::*novalue*)
 
 
@@ -1081,35 +1081,35 @@ Modification History (most recent at top)
   (multiple-value-bind (x y)
       (mouse-window-coords-for-prims)
     (let* ((mbp (mouse-position-values x y))
-	   (mrow (bp-row mbp)))
+     (mrow (bp-row mbp)))
       (if (and (row? mrow)
-	       (not (null (superior-box mrow))))
-	  (port-to (superior-box mrow))
-	  ;; maybe should error out instead ?
-	  (make-empty-vc)))))
+         (not (null (superior-box mrow))))
+    (port-to (superior-box mrow))
+    ;; maybe should error out instead ?
+    (make-empty-vc)))))
 
 (boxer-eval::defboxer-primitive bu::mouse-box-on-release ()
   (multiple-value-bind (x y)
       (mouse-window-coords-for-prims :up)
     (let* ((mbp (mouse-position-values x y))
-	   (mrow (bp-row mbp)))
+     (mrow (bp-row mbp)))
       (if (and (row? mrow)
-	       (not (null (superior-box mrow))))
-	  (port-to (superior-box mrow))
-	  ;; maybe should error out instead ?
-	  (make-empty-vc)))))
+         (not (null (superior-box mrow))))
+    (port-to (superior-box mrow))
+    ;; maybe should error out instead ?
+    (make-empty-vc)))))
 
 (boxer-eval::defboxer-primitive bu::mouse-box-on-click ()
   (multiple-value-bind (x y)
       (mouse-window-coords-for-prims :down)
     (let* ((mbp (mouse-position-values x y))
-	   (mrow (bp-row mbp)))
+     (mrow (bp-row mbp)))
       (boxer-eval::reset-poll-count)
       (if (and (row? mrow)
-	       (not (null (superior-box mrow))))
-	  (port-to (superior-box mrow))
-	  ;; maybe should error out instead ?
-	  (make-empty-vc)))))
+         (not (null (superior-box mrow))))
+    (port-to (superior-box mrow))
+    ;; maybe should error out instead ?
+    (make-empty-vc)))))
 
 
 
@@ -1130,161 +1130,161 @@ Modification History (most recent at top)
       (box-borders-widths (box-type screen-box) screen-box)
     (declare (ignore right bottom))
     (multiple-value-bind (out-x out-y)
-	(xy-position screen-box)
+  (xy-position screen-box)
       (values (+ left out-x) (+ top out-y)))))
 
 
 (boxer-eval::defboxer-primitive bu::mouse-rc ((bu::port-to relative-box))
   (let ((box (box-or-port-target relative-box)))
     (cond ((not (or (box? box) (superior? box *initial-box*)))
-	   (boxer-eval::primitive-signal-error :mouse-error
-					 "The box, " box
-					 ", is not in the editor"))
-	  (t
-	   (multiple-value-bind (x y)
-	       (mouse-window-coords-for-prims)
-	     (let* ((mbp (mouse-position-values x y))
-		    (sb  (bp-screen-box mbp))
-		    (eb (box-or-port-target (screen-obj-actual-obj sb))))
-	       (cond ((eq eb box)
-		      (make-vc (list (make-evrow-from-entries
-				      (list (1+& (row-row-no eb (bp-row mbp)))
-					    (1+& (chunk-no-at-cha-no
-						  (bp-row mbp) (bp-cha-no mbp) t)))))))
-		     ((superior? eb box)
-		      (do* ((inf eb next-up)
-			    (next-up (superior-box inf) (superior-box inf)))
-			  ((eq next-up box)
-			   (let ((subrow (superior-row inf)))
-			     (make-vc (list (make-evrow-from-entries
-					     (list (1+& (row-row-no box subrow))
-						   (1+& (chunk-no-at-cha-no
-							 subrow
-							 (cha-cha-no subrow inf) t))))))))
-			))
-		     (t
-		      (boxer-eval::primitive-signal-error
-		       :mouse-error "The mouse is not in the box, " box)))))))))
+     (boxer-eval::primitive-signal-error :mouse-error
+           "The box, " box
+           ", is not in the editor"))
+    (t
+     (multiple-value-bind (x y)
+         (mouse-window-coords-for-prims)
+       (let* ((mbp (mouse-position-values x y))
+        (sb  (bp-screen-box mbp))
+        (eb (box-or-port-target (screen-obj-actual-obj sb))))
+         (cond ((eq eb box)
+          (make-vc (list (make-evrow-from-entries
+              (list (1+& (row-row-no eb (bp-row mbp)))
+              (1+& (chunk-no-at-cha-no
+              (bp-row mbp) (bp-cha-no mbp) t)))))))
+         ((superior? eb box)
+          (do* ((inf eb next-up)
+          (next-up (superior-box inf) (superior-box inf)))
+        ((eq next-up box)
+         (let ((subrow (superior-row inf)))
+           (make-vc (list (make-evrow-from-entries
+               (list (1+& (row-row-no box subrow))
+               (1+& (chunk-no-at-cha-no
+               subrow
+               (cha-cha-no subrow inf) t))))))))
+      ))
+         (t
+          (boxer-eval::primitive-signal-error
+           :mouse-error "The mouse is not in the box, " box)))))))))
 
 (boxer-eval::defboxer-primitive bu::mouse-rc-on-click ((bu::port-to relative-box))
   (let ((box (box-or-port-target relative-box)))
     (cond ((not (or (box? box) (superior? box *initial-box*)))
-	   (boxer-eval::primitive-signal-error :mouse-error
-					 "The box, " box
-					 ", is not in the editor"))
-	  (t
-	   (multiple-value-bind (x y)
-	       (mouse-window-coords-for-prims :down)
-	     (let* ((mbp (mouse-position-values x y))
-		    (sb  (bp-screen-box mbp))
-		    (eb (box-or-port-target (screen-obj-actual-obj sb))))
-	       (cond ((eq eb box)
-		      (make-vc (list (make-evrow-from-entries
-				      (list (1+& (row-row-no eb (bp-row mbp)))
-					    (1+& (chunk-no-at-cha-no
-						  (bp-row mbp) (bp-cha-no mbp)
-						  t)))))))
-		     ((superior? eb box)
-		      (do* ((inf eb next-up)
-			    (next-up (superior-box inf) (superior-box inf)))
-			   ((eq next-up box)
-			    (let ((subrow (superior-row inf)))
-			      (make-vc (list (make-evrow-from-entries
-					      (list (1+& (row-row-no box subrow))
-						    (1+& (chunk-no-at-cha-no
-							  subrow
-							  (cha-cha-no subrow inf) t))))))))
-			))
-		     (t
-		      (boxer-eval::primitive-signal-error
-		       :mouse-error "The mouse is not in the box, " box)))))))))
+     (boxer-eval::primitive-signal-error :mouse-error
+           "The box, " box
+           ", is not in the editor"))
+    (t
+     (multiple-value-bind (x y)
+         (mouse-window-coords-for-prims :down)
+       (let* ((mbp (mouse-position-values x y))
+        (sb  (bp-screen-box mbp))
+        (eb (box-or-port-target (screen-obj-actual-obj sb))))
+         (cond ((eq eb box)
+          (make-vc (list (make-evrow-from-entries
+              (list (1+& (row-row-no eb (bp-row mbp)))
+              (1+& (chunk-no-at-cha-no
+              (bp-row mbp) (bp-cha-no mbp)
+              t)))))))
+         ((superior? eb box)
+          (do* ((inf eb next-up)
+          (next-up (superior-box inf) (superior-box inf)))
+         ((eq next-up box)
+          (let ((subrow (superior-row inf)))
+            (make-vc (list (make-evrow-from-entries
+                (list (1+& (row-row-no box subrow))
+                (1+& (chunk-no-at-cha-no
+                subrow
+                (cha-cha-no subrow inf) t))))))))
+      ))
+         (t
+          (boxer-eval::primitive-signal-error
+           :mouse-error "The mouse is not in the box, " box)))))))))
 
 (boxer-eval::defboxer-primitive bu::mouse-rc-on-release ((bu::port-to relative-box))
   (let ((box (box-or-port-target relative-box)))
     (cond ((not (or (box? box) (superior? box *initial-box*)))
-	   (boxer-eval::primitive-signal-error :mouse-error
-					 "The box, " box
-					 ", is not in the editor"))
-	  (t
-	   (multiple-value-bind (x y)
-	       (mouse-window-coords-for-prims :up)
-	     (let* ((mbp (mouse-position-values x y))
-		    (sb  (bp-screen-box mbp))
-		    (eb (box-or-port-target (screen-obj-actual-obj sb))))
-	       (cond ((eq (box-or-port-target box) eb)
-		      (make-vc (list (make-evrow-from-entries
-				      (list (1+& (row-row-no eb (bp-row mbp)))
-					    (1+& (chunk-no-at-cha-no
-						  (bp-row mbp) (bp-cha-no mbp)
-						  t)))))))
-		     ((superior? eb box)
-		      (do* ((inf eb next-up)
-			    (next-up (superior-box inf) (superior-box inf)))
-			   ((eq next-up box)
-			    (let ((subrow (superior-row inf)))
-			      (make-vc (list (make-evrow-from-entries
-					      (list (1+& (row-row-no box subrow))
-						    (1+& (chunk-no-at-cha-no
-							  subrow
-							  (cha-cha-no subrow inf) t))))))))
-			))
-		     (t
-		      (boxer-eval::primitive-signal-error
-		       :mouse-error "The mouse is not in the box, " box)))))))))
+     (boxer-eval::primitive-signal-error :mouse-error
+           "The box, " box
+           ", is not in the editor"))
+    (t
+     (multiple-value-bind (x y)
+         (mouse-window-coords-for-prims :up)
+       (let* ((mbp (mouse-position-values x y))
+        (sb  (bp-screen-box mbp))
+        (eb (box-or-port-target (screen-obj-actual-obj sb))))
+         (cond ((eq (box-or-port-target box) eb)
+          (make-vc (list (make-evrow-from-entries
+              (list (1+& (row-row-no eb (bp-row mbp)))
+              (1+& (chunk-no-at-cha-no
+              (bp-row mbp) (bp-cha-no mbp)
+              t)))))))
+         ((superior? eb box)
+          (do* ((inf eb next-up)
+          (next-up (superior-box inf) (superior-box inf)))
+         ((eq next-up box)
+          (let ((subrow (superior-row inf)))
+            (make-vc (list (make-evrow-from-entries
+                (list (1+& (row-row-no box subrow))
+                (1+& (chunk-no-at-cha-no
+                subrow
+                (cha-cha-no subrow inf) t))))))))
+      ))
+         (t
+          (boxer-eval::primitive-signal-error
+           :mouse-error "The mouse is not in the box, " box)))))))))
 
 (boxer-eval::defboxer-primitive bu::mouse-rc-box ()
   (multiple-value-bind (x y)
       (mouse-window-coords-for-prims)
     (let* ((mbp (mouse-position-values x y))
-	   (sb (bp-screen-box mbp))
-	   (mrow (bp-row mbp))
-	   (eb (box-or-port-target (screen-obj-actual-obj sb))))
+     (sb (bp-screen-box mbp))
+     (mrow (bp-row mbp))
+     (eb (box-or-port-target (screen-obj-actual-obj sb))))
       (if (and (box? eb) (row? mrow))
-	  (make-vc (list (make-evrow-from-entries
-			  (list (if (name-row? mrow)
-				    'bu::name
-				    (1+& (row-row-no eb mrow)))
-				(1+& (chunk-no-at-cha-no mrow
-							 (bp-cha-no mbp) t))
-				(port-to eb)))))
-	  (boxer-eval::primitive-signal-error :mouse-error
-					"Can't find box under mouse")))))
+    (make-vc (list (make-evrow-from-entries
+        (list (if (name-row? mrow)
+            'bu::name
+            (1+& (row-row-no eb mrow)))
+        (1+& (chunk-no-at-cha-no mrow
+               (bp-cha-no mbp) t))
+        (port-to eb)))))
+    (boxer-eval::primitive-signal-error :mouse-error
+          "Can't find box under mouse")))))
 
 (boxer-eval::defboxer-primitive bu::mouse-rc-box-on-click ()
   (multiple-value-bind (x y)
       (mouse-window-coords-for-prims :down)
     (let* ((mbp (mouse-position-values x y))
-	   (sb (bp-screen-box mbp))
-	   (mrow (bp-row mbp))
-	   (eb (box-or-port-target (screen-obj-actual-obj sb))))
+     (sb (bp-screen-box mbp))
+     (mrow (bp-row mbp))
+     (eb (box-or-port-target (screen-obj-actual-obj sb))))
       (if (and (box? eb) (row? mrow))
-	  (make-vc (list (make-evrow-from-entries
-			  (list (if (name-row? mrow)
-				    'bu::Name
+    (make-vc (list (make-evrow-from-entries
+        (list (if (name-row? mrow)
+            'bu::Name
                                   (1+& (row-row-no eb mrow)))
-				(1+& (chunk-no-at-cha-no mrow
-							 (bp-cha-no mbp) t))
-				(port-to eb)))))
-	  (boxer-eval::primitive-signal-error :mouse-error
-					"Can't find box under mouse")))))
+        (1+& (chunk-no-at-cha-no mrow
+               (bp-cha-no mbp) t))
+        (port-to eb)))))
+    (boxer-eval::primitive-signal-error :mouse-error
+          "Can't find box under mouse")))))
 
 (boxer-eval::defboxer-primitive bu::mouse-rc-box-on-release ()
   (multiple-value-bind (x y)
       (mouse-window-coords-for-prims :up)
     (let* ((mbp (mouse-position-values x y))
-	   (sb (bp-screen-box mbp))
-	   (mrow (bp-row mbp))
-	   (eb (box-or-port-target (screen-obj-actual-obj sb))))
+     (sb (bp-screen-box mbp))
+     (mrow (bp-row mbp))
+     (eb (box-or-port-target (screen-obj-actual-obj sb))))
       (if (and (box? eb) (row? mrow))
-	  (make-vc (list (make-evrow-from-entries
-			  (list (if (name-row? mrow)
-				    'bu::Name
-				    (1+& (row-row-no eb mrow)))
-				(1+& (chunk-no-at-cha-no mrow
-							 (bp-cha-no mbp) t))
-				(port-to eb)))))
-	  (boxer-eval::primitive-signal-error :mouse-error
-					"Can't find box under mouse")))))
+    (make-vc (list (make-evrow-from-entries
+        (list (if (name-row? mrow)
+            'bu::Name
+            (1+& (row-row-no eb mrow)))
+        (1+& (chunk-no-at-cha-no mrow
+               (bp-cha-no mbp) t))
+        (port-to eb)))))
+    (boxer-eval::primitive-signal-error :mouse-error
+          "Can't find box under mouse")))))
 
 
 
@@ -1306,60 +1306,60 @@ Modification History (most recent at top)
 
 (defun mouse-x-coord (abs-mouse-x abs-mouse-y)
   (let* ((graphics-box (get-relevant-graphics-box))
-	 (screen-boxes (and graphics-box (get-visible-screen-objs graphics-box))))
+   (screen-boxes (and graphics-box (get-visible-screen-objs graphics-box))))
     (if (null screen-boxes)
-	(boxer-eval::primitive-signal-error :mouse-error "Graphics Box is not visible")
-	(do* ((sbs screen-boxes (cdr sbs)) (sb (car sbs) (car sbs)) (last-x 0))
-	     ((null sb) last-x)
-	  (multiple-value-bind (bx by)
-	      (xy-inside-box sb)
-	    (if (and (< bx abs-mouse-x (+ bx (screen-obj-wid sb)))
-		     (< by abs-mouse-y (+ by (screen-obj-hei sb))))
-		(return (translate-sprite-mouse-x-coordinate
-			 graphics-box (- abs-mouse-x bx)))
-		(setq last-x (translate-sprite-mouse-x-coordinate
-			      graphics-box (- abs-mouse-x bx)))))))))
+  (boxer-eval::primitive-signal-error :mouse-error "Graphics Box is not visible")
+  (do* ((sbs screen-boxes (cdr sbs)) (sb (car sbs) (car sbs)) (last-x 0))
+       ((null sb) last-x)
+    (multiple-value-bind (bx by)
+        (xy-inside-box sb)
+      (if (and (< bx abs-mouse-x (+ bx (screen-obj-wid sb)))
+         (< by abs-mouse-y (+ by (screen-obj-hei sb))))
+    (return (translate-sprite-mouse-x-coordinate
+       graphics-box (- abs-mouse-x bx)))
+    (setq last-x (translate-sprite-mouse-x-coordinate
+            graphics-box (- abs-mouse-x bx)))))))))
 
 (defun mouse-y-coord (abs-mouse-x abs-mouse-y)
   (let* ((graphics-box (get-relevant-graphics-box))
-	 (screen-boxes (and graphics-box (get-visible-screen-objs graphics-box))))
+   (screen-boxes (and graphics-box (get-visible-screen-objs graphics-box))))
     (if (null screen-boxes)
-	(boxer-eval::primitive-signal-error :mouse-error "Graphics Box is not visible")
-	(do* ((sbs screen-boxes (cdr sbs)) (sb (car sbs) (car sbs)) (last-y 0))
-	     ((null sb) last-y)
-	  (multiple-value-bind (bx by)
-	      (xy-inside-box sb)
-	    (if (and (< bx abs-mouse-x (+ bx (screen-obj-wid sb)))
-		     (< by abs-mouse-y (+ by (screen-obj-hei sb))))
-		(return (translate-sprite-mouse-y-coordinate
-			 graphics-box (- abs-mouse-y by)))
-		(setq last-y (translate-sprite-mouse-y-coordinate
-			      graphics-box (- abs-mouse-y by)))))))))
+  (boxer-eval::primitive-signal-error :mouse-error "Graphics Box is not visible")
+  (do* ((sbs screen-boxes (cdr sbs)) (sb (car sbs) (car sbs)) (last-y 0))
+       ((null sb) last-y)
+    (multiple-value-bind (bx by)
+        (xy-inside-box sb)
+      (if (and (< bx abs-mouse-x (+ bx (screen-obj-wid sb)))
+         (< by abs-mouse-y (+ by (screen-obj-hei sb))))
+    (return (translate-sprite-mouse-y-coordinate
+       graphics-box (- abs-mouse-y by)))
+    (setq last-y (translate-sprite-mouse-y-coordinate
+            graphics-box (- abs-mouse-y by)))))))))
 
 (defun mouse-coords (abs-mouse-x abs-mouse-y)
   (let* ((graphics-box (get-relevant-graphics-box))
-	 (screen-boxes (and graphics-box (get-visible-screen-objs graphics-box))))
+   (screen-boxes (and graphics-box (get-visible-screen-objs graphics-box))))
     (if (null screen-boxes)
-	(boxer-eval::primitive-signal-error :mouse-error "Graphics Box is not visible")
-	(do* ((sbs screen-boxes (cdr sbs))
-	      (sb (car sbs) (car sbs)))
-	     ((null (cdr sbs))
-	      (multiple-value-bind (bx by)
-		  (xy-inside-box sb)
-		(multiple-value-bind (sx sy)
-		    (translate-sprite-mouse-coordinates
-		     graphics-box (- abs-mouse-x bx) (- abs-mouse-y by))
-		  (make-vc (list (make-evrow-from-entries (list sx sy)))))))
-	  (multiple-value-bind (bx by)
-	      (xy-inside-box sb)
-	    (when (and (< bx abs-mouse-x (+ bx (screen-obj-wid sb)))
-		       (< by abs-mouse-y (+ by (screen-obj-hei sb))))
-	      (multiple-value-bind (sx sy)
-		  (translate-sprite-mouse-coordinates
-		   graphics-box (- abs-mouse-x bx) (- abs-mouse-y by))
-		(return
-		  (make-vc
-		   (list (make-evrow-from-entries (list sx sy))))))))))))
+  (boxer-eval::primitive-signal-error :mouse-error "Graphics Box is not visible")
+  (do* ((sbs screen-boxes (cdr sbs))
+        (sb (car sbs) (car sbs)))
+       ((null (cdr sbs))
+        (multiple-value-bind (bx by)
+      (xy-inside-box sb)
+    (multiple-value-bind (sx sy)
+        (translate-sprite-mouse-coordinates
+         graphics-box (- abs-mouse-x bx) (- abs-mouse-y by))
+      (make-vc (list (make-evrow-from-entries (list sx sy)))))))
+    (multiple-value-bind (bx by)
+        (xy-inside-box sb)
+      (when (and (< bx abs-mouse-x (+ bx (screen-obj-wid sb)))
+           (< by abs-mouse-y (+ by (screen-obj-hei sb))))
+        (multiple-value-bind (sx sy)
+      (translate-sprite-mouse-coordinates
+       graphics-box (- abs-mouse-x bx) (- abs-mouse-y by))
+    (return
+      (make-vc
+       (list (make-evrow-from-entries (list sx sy))))))))))))
 
 (boxer-eval::defboxer-primitive bu::mouse-x-position ()
   (multiple-value-bind (x y) (mouse-window-coords-for-prims) (mouse-x-coord x y)))
