@@ -1,91 +1,83 @@
 ;; -*- Mode:LISP; Syntax:Common-Lisp; Package:BOXER; -*-
-#|
-
-
- $Header: misc-prims.lisp,v 1.0 90/01/24 22:14:49 boxer Exp $
-
- $Log:	misc-prims.lisp,v $
-;;;Revision 1.0  90/01/24  22:14:49  boxer
-;;;Initial revision
-;;;
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                      +-Data--+
-             This file is part of the | BOXER | system
-                                      +-------+
-
-
-
-
-         This File Contains random leftover primitives that don't
-         have an obvious place to go.
-         Including:
-
-         Apropos
-         Date-and-Time
-         Beep
-         Sleep
-         Redisplay
-         Shrink-Box
-         Expand-Box
-         Mouse Primitives (for now)
-
-
-
-Modification History (most recent at top)
-
- 1/29/13 removed fixnum math from mouse-{x,y}-coord(s)
- 2/ 3/12 launch-internal-xref bug: mac-file-ref-pathname => xref-pathname
-12/30/11 launch-internal-xref, edit-internal-xref from {launch,edit}-internal-mac-file
-12/13/11 choose-file, choose-new-file, choose-file-info
-11/06/11 avoid calls to redisplay for special case of 0 arg in SLEEP
- 1/12/10 Changed bu::redisplay to use repaint-window, shouldn't be using it at all but compat with old code
-         and all...  Also temporarily added bu::lisp-error t debug crash reporter
-11/20/09 mouse-window-coords, sleep force redisplay
-11/19/09 restored redislay prim for OpenGL
- 7/17/07 removed many duplicate defs - probably from an errant paste,
-         calls to (redisplay) => (repaint)
-10/14/06 call to name changed to call to name-string in transform-inputs-row
- 5/19/05 bug report variables moved to comsa.lisp
- 5/11/05 choose-new-file (misc-prims.lisp)
- 4/16/05 status-line-get-box
- 8/27/04 copyright error message in scroll-to-row was still wrong, fixed now...
- 7/16/04 Fixed Copyright error message in set-text-size, set-port-text-size,
-         scroll-to-row
- 5/05/04 mouse button & shift key state predicates now handle mac & PC
- 4/21/03 merged current LW and MCL files
- 1/31/03 choose-file-info added
- 9/06/02 UC free versions of SET-(PORT-)TEXT-SIZE, added SET-(PORT-)TEXT-DIMENSIONS
-         UC free SCROLL-TO-ROW added GET-SCROLL-ROW, SET-SCROLL-ROW
-10/24/01 clear-input
-10/21/01 mouse (and shift key) state prims
- 2/16/01 merged current LW and MCL files
-
-12/29/00 fixed typo in scroll-to-row input flavor
-12/20/00 added scroll-to-row
- 5/22/00 set-text-size & set-port-text size added, args in chars
- 6/03/99 moved guts of click-sound to boxwin-xxx
-
- 2/16/99 moved platform dependent parts of click-sound out
- 2/14/99 Started Harlequin Lispworks changes
-12/15/98 added click-sound prim
- 9/06/98 changed sleep to use looping wait with NO process switching when
-         arg is small (*simple-sleep-threshold* is .25 seconds)
- 6/20/98 changed mouse-{x,y,_}-coords tracking functions to use get-visible-screen-objs
-         instead of displayed-screen-objs to support ports to hidden graphics boxes
- 6/20/98 started logging changes: source = Boxer version 2.3
-
-|#
+;;;;
+;;;;   $Header: misc-prims.lisp,v 1.0 90/01/24 22:14:49 boxer Exp $
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                        +-Data--+
+;;;;               This file is part of the | BOXER | system
+;;;;                                        +-------+
+;;;;
+;;;;
+;;;;
+;;;;
+;;;;           This File Contains random leftover primitives that don't
+;;;;           have an obvious place to go.
+;;;;           Including:
+;;;;
+;;;;           Apropos
+;;;;           Date-and-Time
+;;;;           Beep
+;;;;           Sleep
+;;;;           Redisplay
+;;;;           Shrink-Box
+;;;;           Expand-Box
+;;;;           Mouse Primitives (for now)
+;;;;
+;;;;
+;;;;
+;;;;  Modification History (most recent at top)
+;;;;
+;;;;   1/29/13 removed fixnum math from mouse-{x,y}-coord(s)
+;;;;   2/ 3/12 launch-internal-xref bug: mac-file-ref-pathname => xref-pathname
+;;;;  12/30/11 launch-internal-xref, edit-internal-xref from {launch,edit}-internal-mac-file
+;;;;  12/13/11 choose-file, choose-new-file, choose-file-info
+;;;;  11/06/11 avoid calls to redisplay for special case of 0 arg in SLEEP
+;;;;   1/12/10 Changed bu::redisplay to use repaint-window, shouldn't be using it at all but compat with old code
+;;;;           and all...  Also temporarily added bu::lisp-error t debug crash reporter
+;;;;  11/20/09 mouse-window-coords, sleep force redisplay
+;;;;  11/19/09 restored redislay prim for OpenGL
+;;;;   7/17/07 removed many duplicate defs - probably from an errant paste,
+;;;;           calls to (redisplay) => (repaint)
+;;;;  10/14/06 call to name changed to call to name-string in transform-inputs-row
+;;;;   5/19/05 bug report variables moved to comsa.lisp
+;;;;   5/11/05 choose-new-file (misc-prims.lisp)
+;;;;   4/16/05 status-line-get-box
+;;;;   8/27/04 copyright error message in scroll-to-row was still wrong, fixed now...
+;;;;   7/16/04 Fixed Copyright error message in set-text-size, set-port-text-size,
+;;;;           scroll-to-row
+;;;;   5/05/04 mouse button & shift key state predicates now handle mac & PC
+;;;;   4/21/03 merged current LW and MCL files
+;;;;   1/31/03 choose-file-info added
+;;;;   9/06/02 UC free versions of SET-(PORT-)TEXT-SIZE, added SET-(PORT-)TEXT-DIMENSIONS
+;;;;           UC free SCROLL-TO-ROW added GET-SCROLL-ROW, SET-SCROLL-ROW
+;;;;  10/24/01 clear-input
+;;;;  10/21/01 mouse (and shift key) state prims
+;;;;   2/16/01 merged current LW and MCL files
+;;;;
+;;;;  12/29/00 fixed typo in scroll-to-row input flavor
+;;;;  12/20/00 added scroll-to-row
+;;;;   5/22/00 set-text-size & set-port-text size added, args in chars
+;;;;   6/03/99 moved guts of click-sound to boxwin-xxx
+;;;;
+;;;;   2/16/99 moved platform dependent parts of click-sound out
+;;;;   2/14/99 Started Harlequin Lispworks changes
+;;;;  12/15/98 added click-sound prim
+;;;;   9/06/98 changed sleep to use looping wait with NO process switching when
+;;;;           arg is small (*simple-sleep-threshold* is .25 seconds)
+;;;;   6/20/98 changed mouse-{x,y,_}-coords tracking functions to use get-visible-screen-objs
+;;;;           instead of displayed-screen-objs to support ports to hidden graphics boxes
+;;;;   6/20/98 started logging changes: source = Boxer version 2.3
+;;;;
 
 (in-package :boxer)
 
