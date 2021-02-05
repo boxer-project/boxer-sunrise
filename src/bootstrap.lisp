@@ -23,8 +23,19 @@
 |#
 (require "asdf")
 (require "uiop")
+
+#+win32 (load #P"Z:/quicklisp/setup.lisp")
+
+
 (ql:quickload :drakma)
 (ql:quickload :cl-json)
+(ql:quickload :zpng)
+(ql:quickload :qbase64)
+
+(ql:quickload :cffi)
+#+win32 (pushnew #P"Z:/code/boxer-sunrise2/"
+        cffi:*foreign-library-directories* :test #'equal)
+
 (ql:quickload :cl-freetype2)
 
 
