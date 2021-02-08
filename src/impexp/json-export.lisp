@@ -31,19 +31,19 @@
                                       box
                                       &optional (stream *standard-output*)))
 
-(defmethod box-type (box)
+(defun symbol-from-box-type (box)
   "Return a simple symbol of the box type. This should probably be
 implemented as a defmethod on box subclasses."
   (cond ((sprite-box? box)
-         :sprite)
+         :spritebox)
     ((graphics-box? box)
-     :graphics)
+     :graphicsbox)
     ((doit-box? box)
-     :doit)
+     :doitbox)
     ((data-box? box)
-     :data)
+     :databox)
     ((port-box? box)
-     :port)
+     :portbox)
     (t :not-a-box)))
 
 (defmethod write-foreign-file-graphics-list ((ffc json-file-class) graphics-list stream)
@@ -98,6 +98,16 @@ implemented as a defmethod on box subclasses."
                       (t
                        (format stream "\"~A\": false" name))))))))))))
 
+(defun get-export-namerow-string (box)
+  "Finds the name row of a box and returns the appropriate text string to render in the export, taking in to
+  consideration if it's the initial-box, or nil."
+  (let ((nr (name-row box)))
+    (if nr
+      (text-string nr)
+      (if (equal box *initial-box*)
+        "WORLD"
+        ""))))
+
 (defmethod write-foreign-file-box ((ffc json-file-class) box stream)
   (let* ((*ffc-depth* (1+ *ffc-depth*))
          (*export-properties* (merge-export-properties
@@ -116,7 +126,7 @@ implemented as a defmethod on box subclasses."
       (if (equal box *initial-box*)
         (format stream "{\"name\": \"WORLD\",")
         (format stream "{\"name\": \"\",")))
-    (format stream "~A\"type\": \"~A\",~%" *current-indent* (box-type box))
+    (format stream "~A\"type\": \"~A\",~%" *current-indent* (symbol-from-box-type box))
     ;; exports
     (if (slot-value box 'exports)
       (format stream "\"exports\": \"~A\",~%" (slot-value box 'exports)))
