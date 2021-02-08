@@ -688,17 +688,6 @@
                (* 2 *basic-border-width*))
             (+ corner-size *noname-extension*))))
 
-#|
-(defun scroll-up-tracking-info (screen-box)
-  )
-
-(defun scroll-down-tracking-info (screen-box)
-  )
-
-;; ???
-(defun scroll-elevator-tracking-info (screen-box)
-  )
-|#
 
 ;;; GUI interface
 ;;; these draw the particular GUI element when the mouse is over the corner
@@ -1080,20 +1069,6 @@
 ;; do not have to be limited by the actual size of the corner
 (defvar *mouse-corner-highlight-size* 10)
 
-#|
-;; old style
-(defun draw-mouse-shrink-corner (x y)
-  (with-pen-color (*mouse-doc-highlight-color*)
-    (draw-poly alu-seta (list (cons (+ x -1) (+ y 3)) (cons (+ x 3) (+ y 3))
-                              (cons (+ x 3)  (+ y -1))(cons (+ x -1) (+ y 3))))
-    (draw-poly alu-seta (list (cons (+ x 4) (+ y -1)) (cons (+ x 4) (+ y 3))
-                              (cons (+ x 7)  (+ y 3)) (cons (+ x 4) (+ y -1))))
-    (draw-poly alu-seta (list (cons (+ x 8) (+ y 4)) (cons (+ x 4) (+ y 4))
-                              (cons (+ x 4)  (+ y 8))(cons (+ x 8) (+ y 4))))
-    (draw-poly alu-seta (list (cons (+ x -1) (+ y 4)) (cons (+ x 3) (+ y 4))
-                              (cons (+ x 3)  (+ y 7))(cons (+ x -1) (+ y 4))))))
-|#
-
 ;; elevator style
 (defun draw-mouse-shrink-corner (x y)
   (with-pen-color (*mouse-doc-highlight-color*)
@@ -1106,32 +1081,6 @@
       (draw-poly alu-seta (list (cons full-x y) (cons full-x full-y)
                                 (cons half-x half-y) (cons full-x y)))
       (force-graphics-output))))
-
-#|
-;; old style
-(defun draw-mouse-expand-corner (x y)
-  (let* ((last-pt (+& *border-inside-space* *basic-border-width*))
-         (arrow-side (floor last-pt 2)))
-    (with-pen-color (*mouse-doc-highlight-color*)
-      ;; top left
-      (draw-poly alu-seta (list (cons x y)   (cons x (+& y arrow-side 1))
-                                (cons (+& x arrow-side 1) y) (cons x y)))
-      ;; top right
-      (draw-poly alu-seta (list (cons (-& (+& x last-pt) arrow-side 1) y)
-                                (cons (+& x last-pt) y)
-                                (cons (+& x last-pt) (+& y arrow-side))
-                                (cons (-& (+& x last-pt) arrow-side 1) y)))
-      ;; bottom right
-      (draw-poly alu-seta (list (cons (+& x last-pt) (+& y arrow-side))
-                                (cons (+& x last-pt) (+& y last-pt))
-                                (cons (-& (+& x last-pt) arrow-side 1) (+& y last-pt))
-                                (cons (+& x last-pt) (+& y arrow-side))))
-      ;; bottom left
-      (draw-poly alu-seta (list (cons (+& x arrow-side) (+& y last-pt))
-                                (cons x (+& y last-pt))
-                                (cons x (-& (+& y last-pt) arrow-side 1))
-                                (cons (+& x arrow-side) (+& y last-pt)))))))
-|#
 
 (defun draw-mouse-expand-corner (x y)
   (with-pen-color (*mouse-doc-highlight-color*)
