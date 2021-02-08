@@ -794,9 +794,9 @@ Modification History (most recent at top)
 
 ;;; stub...
 (defun box-borders-zoom (box-type screen-box
-				  start-wid start-hei end-wid end-hei
-				  start-x start-y end-x end-y
-				  steps)
+          start-wid start-hei end-wid end-hei
+          start-x start-y end-x end-y
+          steps)
   (declare (ignore box-type screen-box start-wid start-hei end-wid end-hei
                    start-x start-y end-x end-y steps))
   )
@@ -872,16 +872,16 @@ Modification History (most recent at top)
             (let* ((ssr (screen-row screen-obj))
                    (ssb (unless (null ssr) (screen-box ssr))))
               (if (screen-box? ssb)
-		  (if (> x (/ (screen-obj-wid screen-obj) 2))
+      (if (> x (/ (screen-obj-wid screen-obj) 2))
                       (values row (1+ cha-no) ssb
                               (+ (screen-obj-x-offset ssr)
                                  (screen-obj-x-offset ssb)
                                  (screen-obj-wid screen-obj) x)
                               (+ (screen-obj-y-offset ssr)
                                  (screen-obj-y-offset ssb) y))
-		    (values row cha-no ssb (+ (screen-obj-x-offset ssr)
+        (values row cha-no ssb (+ (screen-obj-x-offset ssr)
                                               (screen-obj-x-offset ssb) x)
-			    (+ (screen-obj-y-offset ssr)
+          (+ (screen-obj-y-offset ssr)
                                (screen-obj-y-offset ssb) y)))
                 (box-first-bp-values actual-obj)))))))
 
@@ -894,31 +894,31 @@ Modification History (most recent at top)
 
 (define-border-mouse-handler :top-left
     #'(lambda (actual-obj x y screen-obj)
-	(declare (ignore x y))
+  (declare (ignore x y))
         (insure-box-contents-for-click actual-obj)
-	(mouse-box-values actual-obj screen-obj)))
+  (mouse-box-values actual-obj screen-obj)))
 
 (define-border-mouse-handler :top-right
     #'(lambda (actual-obj x y screen-obj)
-	(declare (ignore x y))
+  (declare (ignore x y))
         (insure-box-contents-for-click actual-obj)
         (mouse-box-values actual-obj screen-obj)))
 
 (define-border-mouse-handler :bottom-left
     #'(lambda (actual-obj x y screen-obj)
-	(declare (ignore x y))
+  (declare (ignore x y))
         (insure-box-contents-for-click actual-obj)
         (mouse-box-values actual-obj screen-obj)))
 
 (define-border-mouse-handler :bottom-right
     #'(lambda (actual-obj x y screen-obj)
-	(declare (ignore x y))
+  (declare (ignore x y))
         (insure-box-contents-for-click actual-obj)
         (mouse-box-values actual-obj screen-obj)))
 
 (define-border-mouse-handler :type
     #'(lambda (actual-obj x y screen-obj)
-	(declare (ignore x y))
+  (declare (ignore x y))
         (insure-box-contents-for-click actual-obj)
         (mouse-box-values actual-obj screen-obj)))
 
@@ -958,10 +958,10 @@ Modification History (most recent at top)
 
 (define-border-mouse-handler :scroll-bar
     #'(lambda (actual-obj x y screen-box)
-	(declare (ignore x y))
-	(values (or (scroll-to-actual-row screen-box)
-		    (first-inferior-row actual-obj))
-		0)))
+  (declare (ignore x y))
+  (values (or (scroll-to-actual-row screen-box)
+        (first-inferior-row actual-obj))
+    0)))
 
 
 ;; this is called when the mouse code determines that the x,y position
@@ -1021,21 +1021,21 @@ Modification History (most recent at top)
 (defmethod get-position-in-border ((self graphics-screen-box) x y)
   (let ((1st-try (call-next-method)))
     (if (eq 1st-try :try-again)
-	;; graphics boxes shouldn't try again, if you don't get it
-	;; the first time, then assume it is outside
-	':outside
-	1st-try)))
+  ;; graphics boxes shouldn't try again, if you don't get it
+  ;; the first time, then assume it is outside
+  ':outside
+  1st-try)))
 
 ;;; not very modular, need to fix this
 (defun get-cha-no-in-name-row (x list-of-chas)
   (let ((cha-no 0)
-	(acc-wid 0))
+  (acc-wid 0))
     (rebind-font-info (*border-name-font*)
       (dolist (screen-cha list-of-chas (length list-of-chas))
-	(incf acc-wid (cha-wid screen-cha))
-	(incf cha-no)
-	(when (>= acc-wid x)
-	  (return (1- cha-no)))))))
+  (incf acc-wid (cha-wid screen-cha))
+  (incf cha-no)
+  (when (>= acc-wid x)
+    (return (1- cha-no)))))))
 
 
 
