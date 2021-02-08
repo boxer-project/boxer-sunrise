@@ -1,63 +1,61 @@
-;-*- Mode:Lisp; Package:boxer; Syntax: Common-Lisp; -*-
-#|
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                         +-Data--+
-                This file is part of the | Boxer | System
-                                         +-------+
-
-
- The (new opengl port) Code for handling the box borders is here.
-
-box-borders-widths
-box-borders-minimum-size
-box-borders-draw
-
-super-shrunk-size
-draw-super-shrunk-box
-
-
-ToDo:name truncation
-
-Modification History (most recent at top)
-
- 4/19/14 draw-borders-label, border-label-protrusion =>moved label string up 1 pixel
-11/22/12 draw-super-shrunk-box, fine tuned data box case
- 8/29/12 multiline2i => multiline2, undo all the special fixnum arithmetic in:
-         border-label-protrusion,  border-name-{width,height,protrusion},
-         port-name-protrusion, draw-borders-{name,label,closet-info},  draw-port-name,
-         type-tab-tracking-info,  border-thickness,
-         plain-borders-{minimum-size-1,widths-1,draw-1,name-tab-values}
-         port-borders-{widths,minimum-size}
-         port-frame-widths,  box-top-y,
-         draw-{round-corners,slant-corners,super-shrunk-box,port-frame}, port-borders-draw,
-         visible-corner-size, {tl,tr,bl,br}-corner-tracking-info,  name-tab-tracking-info,
-         box-borders-name-tab-position, get-position-in-border,
-         draw-mouse-{shrink,expand,toggle,resize}-corner,
-         All of the mouse border handlers because screen-obj x,y,wid,hei can now be floats
-
- 8/11/12 handle string-wid float returned value: border-{label,name}-width
- 6/23/23 handle string-wid float returned value: plain-borders-minimum-size-1,
-                                                 draw-borders-name, draw-borders-label
- 3/ 7/11 #+opengl version of default-character-height & tuned
-         outline in draw-supershrunk-box
-12/ 5/10 popup doc support added to repaint-mouse-docs
-11/28/09 draw-borders-closet-info added
- 5/11/09 get-position-in-border now returns :scroll-bar for horizontal scroll bar clicks as well
- 8/11/08 get-position-in-border uses *no-label-mouse-tracking-width* to track click on label space when
-         type labels are hidden
-
-|#
+;;;;  ;-*- Mode:Lisp; Package:boxer; Syntax: Common-Lisp; -*-
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                           +-Data--+
+;;;;                  This file is part of the | Boxer | System
+;;;;                                           +-------+
+;;;;
+;;;;
+;;;;   The (new opengl port) Code for handling the box borders is here.
+;;;;
+;;;;  box-borders-widths
+;;;;  box-borders-minimum-size
+;;;;  box-borders-draw
+;;;;
+;;;;  super-shrunk-size
+;;;;  draw-super-shrunk-box
+;;;;
+;;;;
+;;;;  ToDo:name truncation
+;;;;
+;;;;  Modification History (most recent at top)
+;;;;
+;;;;   4/19/14 draw-borders-label, border-label-protrusion =>moved label string up 1 pixel
+;;;;  11/22/12 draw-super-shrunk-box, fine tuned data box case
+;;;;   8/29/12 multiline2i => multiline2, undo all the special fixnum arithmetic in:
+;;;;           border-label-protrusion,  border-name-{width,height,protrusion},
+;;;;           port-name-protrusion, draw-borders-{name,label,closet-info},  draw-port-name,
+;;;;           type-tab-tracking-info,  border-thickness,
+;;;;           plain-borders-{minimum-size-1,widths-1,draw-1,name-tab-values}
+;;;;           port-borders-{widths,minimum-size}
+;;;;           port-frame-widths,  box-top-y,
+;;;;           draw-{round-corners,slant-corners,super-shrunk-box,port-frame}, port-borders-draw,
+;;;;           visible-corner-size, {tl,tr,bl,br}-corner-tracking-info,  name-tab-tracking-info,
+;;;;           box-borders-name-tab-position, get-position-in-border,
+;;;;           draw-mouse-{shrink,expand,toggle,resize}-corner,
+;;;;           All of the mouse border handlers because screen-obj x,y,wid,hei can now be floats
+;;;;
+;;;;   8/11/12 handle string-wid float returned value: border-{label,name}-width
+;;;;   6/23/23 handle string-wid float returned value: plain-borders-minimum-size-1,
+;;;;                                                   draw-borders-name, draw-borders-label
+;;;;   3/ 7/11 #+opengl version of default-character-height & tuned
+;;;;           outline in draw-supershrunk-box
+;;;;  12/ 5/10 popup doc support added to repaint-mouse-docs
+;;;;  11/28/09 draw-borders-closet-info added
+;;;;   5/11/09 get-position-in-border now returns :scroll-bar for horizontal scroll bar clicks as well
+;;;;   8/11/08 get-position-in-border uses *no-label-mouse-tracking-width* to track click on label space when
+;;;;           type labels are hidden
+;;;;
 
 (in-package :boxer)
 
