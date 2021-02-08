@@ -113,7 +113,8 @@
                  (:file "impexp/impexp")
                  (:file "impexp/html-export")
                  (:file "impexp/opml-export")
-                ;;  (:file "impexp/json-export")
+                 (:file "impexp/json-export")
+                 (:file "impexp/full-html-export")
                  ;; Beginning of `CHNKPR` module
                  ;; "This is the interface between the Editor and the Evaluator"
                  (:file "chnkpr/chunker")
@@ -224,7 +225,7 @@
                  (:file "site/xten")
                  ;; Beginning of `menu` module
                  ;;    "Menus for Harlequin Lispworks on the PC"
-                 (:file "menu/lw-menu")
+                 (:file "boxwin/lw-menu")
 
                  ;; Beginning of `av` module
                  ;;    "Primitives and support code for controlling VCR's from Mac Boxer"
