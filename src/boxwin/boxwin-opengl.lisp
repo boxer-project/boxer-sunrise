@@ -1,128 +1,125 @@
 
-#|
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                         +-Data--+
-                This file is part of the | BOXER | system
-                                         +-------+
-
-
-
-Modification History (most recent at top)
-
- 7/29/13 *font-sub-size-menu*
- 3/31/13 change "Name/Spelling" menu item to the more indicative "Find Functions..."
- 1/ 7/12 incr-bar: use capi::apply-in-pane-process for loadbar as well as message-pane mods
-12/17/12 :finished-launching to handle-osx-events, liberalized args in :destroy-callback for boxer-frame
- 9/22/12 removed fixnum lossage in set-cursor{pos,-size}, blinker structure
-12/13/11 added Link to File to "File" menu
-   load-progress-frame, incr-bar, used in window-system-specific-start-boxer-1
-12/17/10 with-open-blinker(s)
- 6/23/10 put timestamps back into debug printing during startup
- 3/21/10 file export menu added
- 1/10/10 finished crash reporter, installed in boxer-system-error-restart{-loop}
- 1/03/10 defvar *starting-window-{width, height}*, (possibly) set by prefs,
-         checked by window-system-specific-start-boxer-1
-12/13/09 image-to-bitmap rewritten to use OpenGL stuff
-11/23/09 resize-handler, resize-handler-utility, *suppressed-actions*
- 7/06/09 fixed typo in with-mouse-tracking which caused the body to run continously
-         even if the mouse was not moved
- 6/06/09 main loop now uses boxer::repaint-with-cursor-relocation
-10/30/08 boxer-click-handler for the mac encodes multi button mice as shifted clicks
- 2/25/08 added QUIT item to file menu for #+win32
- 1/02/08 abort-event? and abort-gesture? check for #\escape
-12/20/05 paste, paste-{test,pict}, image-to-bitmap
-12/15/05 window-system-specific-start-boxer-1 uses lw:lisp-image-name to
-         set starting directory instead of hcl::get-working-directory
- 9/18/05 changed to #+lispworks4 for capi::interface-keys-style
- 7/20/05 *fullscreen-window-p* changed from nil to T
-12/28/04 added "Print" back to File menu
-12/22/04 Help menu changes: (boxwin-lw.lisp)
-12/21/04 new 30 day expiration for window-system-specific-start-boxer,
-         valid-key-or-quit support function
- 6/15/04 removed mouse documentation code (moved to mousedoc.lisp)
- 7/10/03 fixed bug in window-system-specific-start-boxer which required
-         license key even with expiration date
- 6/26/03 commented out "Link to Windows File" and "Print" menu items in the
-         "File" menu. Put them back in when they actually do something...
- 6/22/03 window-system-specific-start-boxer-1 loads double clicked boxes
-         in as file boxes not as top level world
- 6/11/03 finished license handling in window-system-specific-start-boxer
- 6/10/03 added capi::interface-keys-style method for emacs style key handling
- 4/19/03 merged current LW and MCL files, updated copyright
- 3/29/03 hack to make set-window-name work better
-12/01/02 changed order of "Place" menu to put "Toplevel" at the top
-10/23/02 removed "Forget Here" from places menu until "UC clean" reimplementation
-10/06/02 load-boxer-extensions added to window-system-specific-start-boxer
- 9/12/02 load-startup-file function added which uses *uc-free-starting-box-file*
-         window-system-specific-start-boxer changed to use load-startup-file
- 6/05/02 moved start box file loading in window-system-specific-start-boxer &
-         restored previous order, current order is setup-editor (generic),
-         setup-evaluator, FINALLY check for start box and (re)setup-editor
- 6/02/02 window-system-specific-start-boxer setup-evaluator needs to come BEFORE
-         setup-editor
- 3/13/02 boxer-pane-mouse-down? flushes any pending input because if we are
-         checking the state of the mouse buttons, we don't want any mouse down
-         state to appear as a click
- 1/15/02 added boxer-pane-mouse-x and boxer-pane-mouse-y
- 1/11/02 added new hints to name-pane def to fix bug in file save window resizing
-11/05/01 commented out graphics popup documentation from document-mouse-dispatch
-10/16/01 popup-only? arg added to mouse doc functions
-10/28/01 added shifted motion event handlers to :input model to fix bug
-10/23/01 shift-key-pressed? stub implemented
-10/22/01 mouse-button-state, mouse-{down,left,middle,right}?
-10/19/01 key-down?, control-key? & alt-key?
- 5/21/01 no-more-input? fixed to actually check to input queue
- 5/15/01 added user-event-in-queue? to check for keys & clicks (and NOT mouse doc)
-         in maybe-unify-mouse-click
-         undocument-mouse-dispatch fixed bad logic in call to popup-undoc-view-flip
- 5/14/01 removed stepper
- 5/13/01 maybe-unify-mouse-click uses new function peek-next-key-or-mouse-event
-         added fullscreen support to window-system-specific-start-boxer
- 5/11/01 get-boxer-event filters it's output to check for key/mouse events and
-         to ignore other funcallable "events" like document-mouse
- 5/10/01 Fixed keyboard menu equivalents from "Opt" to "Alt"
- 5/01/01 make sure redisplayed is called before any popup documentation
- 4/29/01 mouse doc functions done & debugged
- 4/23/01 mouse doc status, (un)document-mouse
- 4/11/01 updated mouse doc status line strings
- 3/17/01 added keyboard equivalents to menu titles
- 3/14/01 started porting mouse documentation utilities
- 3/07/01 mouse release handlers now hack possible multiply pressed buttons
- 3/04/01 aded :control and :meta clauses for button release in window input def
- 2/17/01 added *fullscreen-window-p*
-10/23/00 resize-handler checks for already correct outermost screen box size
-         BEFORE calling a full redisplay.  This fixes redisplays triggered by
-         changing the size of the status-line
-10/18/00 added suppression capabilities to boxer-expose-window-handler
-         using the with-suppressed-exposure-handling macro
-10/16/00 changed name-pane from capi:display-pane to capi:title-pane
-10/15/00 :print-function changed to :title-function in menu defs
-10/14/00 installed print and enabled functions in window menus
- 7/12/00 added get-character-input
- 7/11/00 uncommented prefs init in start-boxer
- 6/28/00 keyboard-interrupt handling added
- 5/29/00 CORRECTLY installed prefs in edit menu
- 5/25/00 installed prefs in edit menu
- 4/12/00 finally got sizing right...
- 4/10/00 :best-width/height totally worthless, trying plain :width/height...
- 4/06/00 :best-width/height startup window sizing
- 4/03/00 have to include extra input models for tracking mouse coords during hold
-12/03/99 added mouse support
-12/18/98 started file
-
-
-|#
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                           +-Data--+
+;;;;                  This file is part of the | BOXER | system
+;;;;                                           +-------+
+;;;;
+;;;;
+;;;;
+;;;;  Modification History (most recent at top)
+;;;;
+;;;;   7/29/13 *font-sub-size-menu*
+;;;;   3/31/13 change "Name/Spelling" menu item to the more indicative "Find Functions..."
+;;;;   1/ 7/12 incr-bar: use capi::apply-in-pane-process for loadbar as well as message-pane mods
+;;;;  12/17/12 :finished-launching to handle-osx-events, liberalized args in :destroy-callback for boxer-frame
+;;;;   9/22/12 removed fixnum lossage in set-cursor{pos,-size}, blinker structure
+;;;;  12/13/11 added Link to File to "File" menu
+;;;;     load-progress-frame, incr-bar, used in window-system-specific-start-boxer-1
+;;;;  12/17/10 with-open-blinker(s)
+;;;;   6/23/10 put timestamps back into debug printing during startup
+;;;;   3/21/10 file export menu added
+;;;;   1/10/10 finished crash reporter, installed in boxer-system-error-restart{-loop}
+;;;;   1/03/10 defvar *starting-window-{width, height}*, (possibly) set by prefs,
+;;;;           checked by window-system-specific-start-boxer-1
+;;;;  12/13/09 image-to-bitmap rewritten to use OpenGL stuff
+;;;;  11/23/09 resize-handler, resize-handler-utility, *suppressed-actions*
+;;;;   7/06/09 fixed typo in with-mouse-tracking which caused the body to run continously
+;;;;           even if the mouse was not moved
+;;;;   6/06/09 main loop now uses boxer::repaint-with-cursor-relocation
+;;;;  10/30/08 boxer-click-handler for the mac encodes multi button mice as shifted clicks
+;;;;   2/25/08 added QUIT item to file menu for #+win32
+;;;;   1/02/08 abort-event? and abort-gesture? check for #\escape
+;;;;  12/20/05 paste, paste-{test,pict}, image-to-bitmap
+;;;;  12/15/05 window-system-specific-start-boxer-1 uses lw:lisp-image-name to
+;;;;           set starting directory instead of hcl::get-working-directory
+;;;;   9/18/05 changed to #+lispworks4 for capi::interface-keys-style
+;;;;   7/20/05 *fullscreen-window-p* changed from nil to T
+;;;;  12/28/04 added "Print" back to File menu
+;;;;  12/22/04 Help menu changes: (boxwin-lw.lisp)
+;;;;  12/21/04 new 30 day expiration for window-system-specific-start-boxer,
+;;;;           valid-key-or-quit support function
+;;;;   6/15/04 removed mouse documentation code (moved to mousedoc.lisp)
+;;;;   7/10/03 fixed bug in window-system-specific-start-boxer which required
+;;;;           license key even with expiration date
+;;;;   6/26/03 commented out "Link to Windows File" and "Print" menu items in the
+;;;;           "File" menu. Put them back in when they actually do something...
+;;;;   6/22/03 window-system-specific-start-boxer-1 loads double clicked boxes
+;;;;           in as file boxes not as top level world
+;;;;   6/11/03 finished license handling in window-system-specific-start-boxer
+;;;;   6/10/03 added capi::interface-keys-style method for emacs style key handling
+;;;;   4/19/03 merged current LW and MCL files, updated copyright
+;;;;   3/29/03 hack to make set-window-name work better
+;;;;  12/01/02 changed order of "Place" menu to put "Toplevel" at the top
+;;;;  10/23/02 removed "Forget Here" from places menu until "UC clean" reimplementation
+;;;;  10/06/02 load-boxer-extensions added to window-system-specific-start-boxer
+;;;;   9/12/02 load-startup-file function added which uses *uc-free-starting-box-file*
+;;;;           window-system-specific-start-boxer changed to use load-startup-file
+;;;;   6/05/02 moved start box file loading in window-system-specific-start-boxer &
+;;;;           restored previous order, current order is setup-editor (generic),
+;;;;           setup-evaluator, FINALLY check for start box and (re)setup-editor
+;;;;   6/02/02 window-system-specific-start-boxer setup-evaluator needs to come BEFORE
+;;;;           setup-editor
+;;;;   3/13/02 boxer-pane-mouse-down? flushes any pending input because if we are
+;;;;           checking the state of the mouse buttons, we don't want any mouse down
+;;;;           state to appear as a click
+;;;;   1/15/02 added boxer-pane-mouse-x and boxer-pane-mouse-y
+;;;;   1/11/02 added new hints to name-pane def to fix bug in file save window resizing
+;;;;  11/05/01 commented out graphics popup documentation from document-mouse-dispatch
+;;;;  10/16/01 popup-only? arg added to mouse doc functions
+;;;;  10/28/01 added shifted motion event handlers to :input model to fix bug
+;;;;  10/23/01 shift-key-pressed? stub implemented
+;;;;  10/22/01 mouse-button-state, mouse-{down,left,middle,right}?
+;;;;  10/19/01 key-down?, control-key? & alt-key?
+;;;;   5/21/01 no-more-input? fixed to actually check to input queue
+;;;;   5/15/01 added user-event-in-queue? to check for keys & clicks (and NOT mouse doc)
+;;;;           in maybe-unify-mouse-click
+;;;;           undocument-mouse-dispatch fixed bad logic in call to popup-undoc-view-flip
+;;;;   5/14/01 removed stepper
+;;;;   5/13/01 maybe-unify-mouse-click uses new function peek-next-key-or-mouse-event
+;;;;           added fullscreen support to window-system-specific-start-boxer
+;;;;   5/11/01 get-boxer-event filters it's output to check for key/mouse events and
+;;;;           to ignore other funcallable "events" like document-mouse
+;;;;   5/10/01 Fixed keyboard menu equivalents from "Opt" to "Alt"
+;;;;   5/01/01 make sure redisplayed is called before any popup documentation
+;;;;   4/29/01 mouse doc functions done & debugged
+;;;;   4/23/01 mouse doc status, (un)document-mouse
+;;;;   4/11/01 updated mouse doc status line strings
+;;;;   3/17/01 added keyboard equivalents to menu titles
+;;;;   3/14/01 started porting mouse documentation utilities
+;;;;   3/07/01 mouse release handlers now hack possible multiply pressed buttons
+;;;;   3/04/01 aded :control and :meta clauses for button release in window input def
+;;;;   2/17/01 added *fullscreen-window-p*
+;;;;  10/23/00 resize-handler checks for already correct outermost screen box size
+;;;;           BEFORE calling a full redisplay.  This fixes redisplays triggered by
+;;;;           changing the size of the status-line
+;;;;  10/18/00 added suppression capabilities to boxer-expose-window-handler
+;;;;           using the with-suppressed-exposure-handling macro
+;;;;  10/16/00 changed name-pane from capi:display-pane to capi:title-pane
+;;;;  10/15/00 :print-function changed to :title-function in menu defs
+;;;;  10/14/00 installed print and enabled functions in window menus
+;;;;   7/12/00 added get-character-input
+;;;;   7/11/00 uncommented prefs init in start-boxer
+;;;;   6/28/00 keyboard-interrupt handling added
+;;;;   5/29/00 CORRECTLY installed prefs in edit menu
+;;;;   5/25/00 installed prefs in edit menu
+;;;;   4/12/00 finally got sizing right...
+;;;;   4/10/00 :best-width/height totally worthless, trying plain :width/height...
+;;;;   4/06/00 :best-width/height startup window sizing
+;;;;   4/03/00 have to include extra input models for tracking mouse coords during hold
+;;;;  12/03/99 added mouse support
+;;;;  12/18/98 started file
+;;;;
 
 (in-package :boxer-window)
 
