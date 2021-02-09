@@ -106,7 +106,7 @@ Modification History (most recent at top)
   `(let* ((%origin-x-offset ,x) (%origin-y-offset ,y)
           ;; absolute clipping parameters
           (%clip-lef ,x) (%clip-top ,y)
-	  (%clip-rig (+& %clip-lef ,wid)) (%clip-bot (+& %clip-top ,hei))
+    (%clip-rig (+& %clip-lef ,wid)) (%clip-bot (+& %clip-top ,hei))
           ;; relative clipping parameters
           (%local-clip-lef 0)    (%local-clip-top 0)
           (%local-clip-rig ,wid) (%local-clip-bot ,hei))
@@ -199,7 +199,7 @@ Modification History (most recent at top)
         (wid (min& full-wid (-& %local-clip-rig from-x)))
         (hei (min& full-hei (-& %local-clip-bot from-y))))
     (%bitblt-in-screen alu wid hei
-		       %drawing-array from-x from-y to-x   to-y)))
+           %drawing-array from-x from-y to-x   to-y)))
 
 (defun bitblt-move-region (full-wid full-hei from-x from-y delta-x delta-y)
   (let (;; hardware clipping is only performed on the destination
@@ -209,35 +209,35 @@ Modification History (most recent at top)
         (hei (min& full-hei (-& %clip-bot from-y))))
     (unless (or (zerop full-wid) (zerop full-hei))
     (%bitblt-in-screen alu-seta wid hei
-		       %drawing-array from-x from-y
-		       (+& from-x delta-x) (+& from-y delta-y))
+           %drawing-array from-x from-y
+           (+& from-x delta-x) (+& from-y delta-y))
     ;; Now we erase the part of the screen which is no longer covered.
     (unless (zerop delta-x)
       (erase-rectangle (abs delta-x) hei
-		       (cond ((plusp delta-x) from-x)
-			     ((>& (abs delta-x) wid) from-x)
+           (cond ((plusp delta-x) from-x)
+           ((>& (abs delta-x) wid) from-x)
                              #+lwwin
                              ;;If the region we're moving is partly
-			     ;;not displayed due to clipping we have to
-			     ;;clear out stuff specially.  This has a
-			     ;;few bugs but it works better than with
-			     ;;out it.
+           ;;not displayed due to clipping we have to
+           ;;clear out stuff specially.  This has a
+           ;;few bugs but it works better than with
+           ;;out it.
                              ;; NOTE: this is because LW does software clipping for
                              ;; %bitblt ops
-			     ((>& (+& wid from-x  %origin-x-offset) %clip-rig)
-			      (+& %clip-rig delta-x (-& %origin-x-offset)))
-			     (t (+& from-x wid delta-x)))
-		       from-y))
+           ((>& (+& wid from-x  %origin-x-offset) %clip-rig)
+            (+& %clip-rig delta-x (-& %origin-x-offset)))
+           (t (+& from-x wid delta-x)))
+           from-y))
     (unless (zerop delta-y)
       (erase-rectangle wid (abs delta-y)
-		       from-x
-		       (cond ((plusp delta-y) from-y)
-			     ((>& (abs delta-y) hei) from-y)
+           from-x
+           (cond ((plusp delta-y) from-y)
+           ((>& (abs delta-y) hei) from-y)
                              #+lwwin
                              ;; same software clipping stuff, doo dah doo dah...
                              ((>& (+& hei from-y %origin-y-offset) %clip-bot)
-			    (+& %clip-bot delta-y (-& %origin-y-offset)))
-			     (t (+& from-y hei delta-y))))))))
+          (+& %clip-bot delta-y (-& %origin-y-offset)))
+           (t (+& from-y hei delta-y))))))))
 
 ;; NOTE: in the new multi font world, draw-cha needs to draw at the char's
 ;; baseline rather than the top left corner.  This is because in a multifont
