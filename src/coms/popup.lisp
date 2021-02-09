@@ -210,7 +210,6 @@ Modification History (most recent at top)
 
 ;; this is the main method, it pops up at (x,y) then tracks the mouse
 ;; funcalling the selected menu-item-action
-#+opengl
 (defmethod menu-select ((menu popup-menu) x y)
   (multiple-value-bind (mwid mhei) (menu-size menu)
     (let* ((window-width (sheet-inside-width *boxer-pane*)); what about %clip-rig?
@@ -300,124 +299,12 @@ Modification History (most recent at top)
         (unless (null current-item)
           (let ((action (slot-value current-item 'action)))
             (unless (null action) (funcall action))))))))
-
-#-opengl
-(defmethod menu-select ((menu popup-menu) x y)
-  (multiple-value-bind (mwid mhei) (menu-size menu)
-    (let* ((window-width (sheet-inside-width *boxer-pane*)); what about %clip-rig?
-           (window-height (sheet-inside-height *boxer-pane*)) ; %clip-bot?
-           (fit-x (-& (+& x mwid) window-width))
-           (fit-y (-& (+& y mhei) window-height))
-           (backing (make-offscreen-bitmap *boxer-pane* mwid mhei))
-           ;; if either fit-? vars are positive, we will be off the screen
-           (real-x (if (plusp& fit-x) (-& window-width mwid) x))
-           (real-y (if (plusp& fit-y) (-& window-height mhei) y))
-           ;; current-item is bound out here because we'll need it after the
-           ;; tracking loop exits...
-           (current-item nil))
-      (unless (zerop& (mouse-button-state))
-        ;; make sure the mouse is still down
-        ;; if the original x and y aren't good, warp the mouse to the new location
-        ;; a more fine tuned way is to use fit-x and fit-y to shift the current
-        ;; mouse pos by the amount the menu is shifted (later...)
-        (drawing-on-window (*boxer-pane*)
-          (when (or *select-1st-item-on-popup* (plusp& fit-x) (plusp& fit-y))
-            (warp-pointer *boxer-pane* (+& real-x 5) (+& real-y 5)))
-          ;; grab the area into the backing store
-          (bitblt-from-screen alu-seta mwid mhei backing real-x real-y 0 0)
-          ;; now draw the menu and loop
-          (unwind-protect
-            (progn
-              ;; draw menu
-              (draw-menu menu real-x real-y)
-              ;; loop
-              (let ((current-y 0) (current-height 0))
-                (with-mouse-tracking ((mouse-x real-x) (mouse-y real-y))
-                  (let ((local-x (-& mouse-x real-x)) (local-y (-& mouse-y real-y)))
-                    (if (and (<& 0 local-x mwid) (<& 0 local-y mhei))
-                      ;; this means we are IN the popup
-                      (multiple-value-bind (ti iy ih)
-                                           (track-item menu local-y)
-                        (cond ((and (null current-item)
-                                    (not (slot-value ti 'enabled?)))
-                               ;; no current, selected item is disabled...
-                               )
-                              ((null current-item)
-                               ;; 1st time into the loop, set vars and then
-                               (setq current-item ti current-y iy current-height ih)
-                               ;; highlight
-                               (draw-rectangle alu-xor (-& mwid 3) ih
-                                               (1+& real-x) (+& real-y iy)))
-                              ((eq ti current-item)) ; no change, do nothing
-                              ((not (slot-value ti 'enabled?))
-                               ;; new item is disabled but we have to erase...
-                               (draw-rectangle alu-xor (-& mwid 3) current-height
-                                               (1+& real-x) (+& real-y current-y))
-                               (setq current-item nil))
-                              (t ; must be a new item selected,
-                               (draw-rectangle alu-xor (-& mwid 3) ih
-                                               (1+& real-x) (+& real-y iy))
-                               ;; erase old,
-                               (draw-rectangle alu-xor (-& mwid 3) current-height
-                                               (1+& real-x) (+& real-y current-y))
-                               ;; set vars
-                               (setq current-item ti current-y iy current-height ih))))
-                      ;; we are OUT of the popup
-                      (cond ((null current-item)) ; nothing already selected
-                            (t ; erase old item
-                             (draw-rectangle alu-xor (-& mwid 3) current-height
-                                             (1+& real-x) (+& real-y current-y))
-                             (setq current-item nil))))))
-                ;; loop is done, either we are in and item or not
-                ;; why do we have to do this ?
-                #+carbon-compat
-                (window-system-dependent-set-origin %origin-x-offset %origin-y-offset)
-                (unless (null current-item)
-                  ;; if we are in an item, flash and erase the highlighting
-                  (dotimes (i 5)
-                    (draw-rectangle alu-xor (-& mwid 3) current-height
-                                    (1+& real-x) (+& real-y current-y))
-                    (force-graphics-output)
-                    (snooze .05)))))
-            (bitblt-to-screen alu-seta mwid mhei backing 0 0 real-x real-y)
-            (free-offscreen-bitmap backing)))
-        ;; funcall the action (note we are OUTSIDE of the drawing-on-window
-        (unless (null current-item)
-          (let ((action (slot-value current-item 'action)))
-            (unless (null action) (funcall action))))))))
-
-
 
 
 ;;; popup doc methods
 
 (defvar *popup-mouse-documentation?* #+lwwin :unroll #+mcl T #+opengl :unroll
   "Can be NIL (no documentation), :unroll or T")
-
-
-;; use on non double-buffered window systems
-#-opengl
-(progn
-;;; !!!! SHould use allocate-backing-store.....
-;; called at the beginning and whenever the popup doc font is changed
-(defun allocate-popup-backing ()
-  (let ((wid 0)
-        (padding (*& (+& *popup-doc-border-width* *popup-doc-padding*) 2)))
-    (dolist (doc *popup-docs*)
-      (setq wid (max wid (string-wid *popup-doc-font* (popup-doc-string doc)))))
-    (let ((new-wid (+ padding wid))
-          (new-hei (+ (string-hei *popup-doc-font*) padding)))
-    (when (or (null *popup-doc-backing-store*)
-              (not (= new-wid (offscreen-bitmap-width *popup-doc-backing-store*)))
-              (not (= new-hei (offscreen-bitmap-height *popup-doc-backing-store*))))
-      (unless (null *popup-doc-backing-store*)
-        (free-offscreen-bitmap *popup-doc-backing-store*))
-      (setq *popup-doc-backing-store*
-            (make-offscreen-bitmap *boxer-pane* new-wid new-hei))))))
-
-(def-redisplay-initialization (allocate-popup-backing))
-
-)
 
 
 ;;  Practically speaking, this means def-redisplay-initialization
@@ -442,21 +329,6 @@ Modification History (most recent at top)
     ;; crock,
     #+carbon-compat
     (window-system-dependent-set-origin %origin-x-offset %origin-y-offset)
-    ;; first save
-    #-opengl
-    (bitblt-from-screen alu-seta full-wid full-hei *popup-doc-backing-store*
-                        x y 0 0)
-    ;; animation
-    #-opengl
-    (when (eq *popup-mouse-documentation?* :unroll)
-      (with-pen-color (*popup-doc-color*)
-        (do ((i 1 (+ i 3)))
-            ((>= i shei))
-          (draw-rectangle alu-seta (+& swid (*& *popup-doc-padding* 2)) i
-                          (+& x *popup-doc-border-width*)
-                          (+& y *popup-doc-border-width*))
-          (force-graphics-output)
-          (sleep .001))))
     ;; frame (left, top, right and bottom)
     (draw-rectangle alu-seta *popup-doc-border-width* full-hei x y)
     (draw-rectangle alu-seta full-wid *popup-doc-border-width* x y)
@@ -474,27 +346,13 @@ Modification History (most recent at top)
     ;; doc string
     (draw-string alu-seta *popup-doc-font* (slot-value self 'string)
                  (+ x pad) (+ y pad)))
-  #-opengl
-  (force-graphics-output)
   ;; set the flag
   (setq *popup-doc-on?* t))
 
-#+opengl
 (defmethod erase-doc ((self popup-doc) x y)
   (declare (ignore x y))
   (repaint-window)
   (setq *popup-doc-on?* nil))
-
-#-opengl
-(defmethod erase-doc ((self popup-doc) x y)
-  (let ((total-padding (*& (+& *popup-doc-border-width* *popup-doc-padding*) 2)))
-    (bitblt-to-screen alu-seta
-                      (+& (string-wid *popup-doc-font* (slot-value self 'string))
-                          total-padding)
-                      (+& (string-hei *popup-doc-font*) total-padding)
-                      *popup-doc-backing-store* 0 0 x y)
-    (force-graphics-output)
-    (setq *popup-doc-on?* nil)))
 
 (defmethod doc-width ((self popup-doc))
   (+ (ceiling (string-wid *popup-doc-font* (slot-value self 'string)))
@@ -578,33 +436,16 @@ Modification History (most recent at top)
                       :top-left-initial-box)
                      ((not (null  supershrink?))
                       :shrunken-top-left)
-                     (t :top-left))))
-          #-opengl (hotspot-back (allocate-backing-store *mouse-shrink-corner-bitmap*))
-          #-opengl (hotwid (offscreen-bitmap-width  *mouse-shrink-corner-bitmap*))
-          #-opengl (hothei (offscreen-bitmap-height *mouse-shrink-corner-bitmap*)))
+                     (t :top-left)))))
     (multiple-value-bind (x y)
         (xy-position screen-box)
       (multiple-value-bind (delta-x delta-y)
                            (box-borders-offsets box-type screen-box)
         (let ((corner-x (+ x delta-x))
               (corner-y (+ y delta-y
-                            #+opengl
                             (box-top-y (name-string-or-null
                                         (screen-obj-actual-obj screen-box))
-                                        0)
-                            #-opengl
-                            (box-borders-cached-name-tab-height box-type
-                                                                screen-box))))
-          ;; handle the highlighting immediatement
-          #-opengl
-          (unless popup-only?
-            (bw::set-mouse-doc-status-backing hotspot-back)
-            (bitblt-from-screen alu-seta hotwid hothei hotspot-back
-                                corner-x corner-y 0 0)
-            ;; draw the hotspot
-            (bitblt-to-screen alu-seta hotwid hothei *mouse-shrink-corner-bitmap*
-                              0 0 corner-x corner-y))
-          #+opengl
+                                        0))))
           (unless popup-only?
             (bw::set-mouse-doc-status-xy corner-x corner-y))
           ;; then (possibly) the popup doc
@@ -612,37 +453,8 @@ Modification History (most recent at top)
                       (bw::popup-doc-delay))
             (multiple-value-bind (doc-x doc-y)
                 (popup-doc-offset-coords doc corner-x corner-y)
-              #-opengl (draw-doc doc doc-x doc-y)
-              #+opengl (bw::set-mouse-doc-popup-info doc doc-x doc-y))))))))
+              (bw::set-mouse-doc-popup-info doc doc-x doc-y))))))))
 
-#-opengl
-(defun popup-undoc-shrink (screen-box &optional supershrink?)
-  (let ((box-type (box-type screen-box))
-        (doc (get-popup-doc-for-area
-              (cond ((eq (screen-obj-actual-obj screen-box) *initial-box*)
-                      :top-left-initial-box)
-                     ((not (null  supershrink?))
-                      :shrunken-top-left)
-                     (t :top-left))))
-        (backing (bw::mouse-doc-status-backing))
-        (hotwid (offscreen-bitmap-width  *mouse-shrink-corner-bitmap*))
-        (hothei (offscreen-bitmap-height *mouse-shrink-corner-bitmap*)))
-    (multiple-value-bind (x y)
-        (xy-position screen-box)
-      (multiple-value-bind (delta-x delta-y)
-          (box-borders-offsets box-type screen-box)
-        (let ((corner-x (+& x delta-x))
-              (corner-y (+& y delta-y (box-borders-cached-name-tab-height
-                                       box-type screen-box))))
-          (unless (or (null *popup-mouse-documentation?*)
-                      (null *popup-doc-on?*))
-            (multiple-value-bind (doc-x doc-y)
-                (popup-doc-offset-coords doc corner-x corner-y)
-              (erase-doc doc doc-x doc-y)))
-          ;; restore the hospot area
-          (unless (null backing)
-            (bitblt-to-screen alu-seta hotwid hothei backing 0 0 corner-x corner-y)
-            (deallocate-backing-store *mouse-shrink-corner-bitmap* backing)))))))
 
 ;; top right
 
@@ -653,10 +465,7 @@ Modification History (most recent at top)
                      :top-right-outermost-box)
                     ((not (null fullscreen?))
                      :fullscreen)
-                    (t :top-right))))
-        #-opengl (hotspot-back (allocate-backing-store *mouse-expand-corner-bitmap*))
-        #-opengl (hotwid (offscreen-bitmap-width  *mouse-expand-corner-bitmap*))
-        #-opengl (hothei (offscreen-bitmap-height *mouse-expand-corner-bitmap*)))
+                    (t :top-right)))))
     (multiple-value-bind (x y)
         (xy-position screen-box)
       (multiple-value-bind (delta-x delta-y)
@@ -667,22 +476,10 @@ Modification History (most recent at top)
           (declare (ignore lef top bot))
           (let ((corner-x (+ x (screen-obj-wid screen-box) (- rig)))
                 (corner-y (+ y delta-y
-                              #+opengl
+                              ;; #+opengl
                               (box-top-y (name-string-or-null
                                           (screen-obj-actual-obj screen-box))
-                                         0)
-                              #-opengl
-                              (box-borders-cached-name-tab-height
-                               box-type screen-box))))
-            #-opengl
-            (unless popup-only?
-              (bw::set-mouse-doc-status-backing hotspot-back)
-              (bitblt-from-screen alu-seta hotwid hothei hotspot-back
-                                  corner-x corner-y 0 0)
-              ;; draw the hotspot
-              (bitblt-to-screen alu-seta hotwid hothei *mouse-expand-corner-bitmap*
-                                0 0 corner-x corner-y))
-            #+opengl
+                                         0))))
             (unless popup-only?
               (bw::set-mouse-doc-status-xy corner-x corner-y))
             ;;
@@ -690,52 +487,15 @@ Modification History (most recent at top)
                         (bw::popup-doc-delay))
               (multiple-value-bind (doc-x doc-y)
                   (popup-doc-offset-coords doc corner-x corner-y)
-                #-opengl (draw-doc doc doc-x doc-y)
-                #+opengl (bw::set-mouse-doc-popup-info doc doc-x doc-y)))))))))
+                (bw::set-mouse-doc-popup-info doc doc-x doc-y)))))))))
 
-#-opengl
-(defun popup-undoc-expand (screen-box &optional fullscreen?)
-  (let ((box-type (box-type screen-box))
-        (doc (get-popup-doc-for-area
-              (cond ((eq screen-box (outermost-screen-box))
-                     :top-right-outermost-box)
-                    ((not (null fullscreen?))
-                     :fullscreen)
-                    (t :top-right))))
-        (hotspot-back (bw::mouse-doc-status-backing))
-        (hotwid (offscreen-bitmap-width  *mouse-expand-corner-bitmap*))
-        (hothei (offscreen-bitmap-height *mouse-expand-corner-bitmap*)))
-    (multiple-value-bind (x y)
-        (xy-position screen-box)
-      (multiple-value-bind (delta-x delta-y)
-          (box-borders-offsets box-type screen-box)
-        (declare (ignore delta-x))
-        (multiple-value-bind (lef top rig bot)
-            (box-borders-widths box-type screen-box)
-          (declare (ignore lef top bot))
-          (let ((corner-x (+& x (screen-obj-wid screen-box) (-& rig)))
-                (corner-y (+& y delta-y (box-borders-cached-name-tab-height
-                                         box-type screen-box))))
-            (unless (or (null *popup-mouse-documentation?*)
-                        (null *popup-doc-on?*))
-              (multiple-value-bind (doc-x doc-y)
-                  (popup-doc-offset-coords doc corner-x corner-y)
-                (erase-doc doc doc-x doc-y)))
-            (unless (null hotspot-back)
-              (bitblt-to-screen alu-seta hotwid hothei hotspot-back
-                                0 0 corner-x corner-y)
-              (deallocate-backing-store *mouse-expand-corner-bitmap*
-                                        hotspot-back))))))))
 
 ;; bottom left
 
 (defun popup-doc-view-flip (screen-box &optional to-graphics? popup-only?)
   (let ((box-type (box-type screen-box))
         (doc (get-popup-doc-for-area
-              (if to-graphics? :bottom-left-g :bottom-left-t)))
-        #-opengl(hotspot-back (allocate-backing-store *mouse-toggle-view-bitmap*))
-        #-opengl(hotwid (offscreen-bitmap-width  *mouse-toggle-view-bitmap*))
-        #-opengl(hothei (offscreen-bitmap-height *mouse-toggle-view-bitmap*)))
+              (if to-graphics? :bottom-left-g :bottom-left-t))))
     (multiple-value-bind (x y)
         (xy-position screen-box)
       (multiple-value-bind (delta-x delta-y)
@@ -746,15 +506,6 @@ Modification History (most recent at top)
           (declare (ignore lef top rig))
           (let ((corner-x (+ x delta-x))
                 (corner-y (+ y (screen-obj-hei screen-box) (- bot))))
-            #-opengl
-            (unless popup-only?
-              (bw::set-mouse-doc-status-backing hotspot-back)
-              (bitblt-from-screen alu-seta hotwid hothei hotspot-back
-                                  corner-x corner-y 0 0)
-              ;; draw the hotspot
-              (bitblt-to-screen alu-seta hotwid hothei *mouse-toggle-view-bitmap*
-                                0 0 corner-x corner-y))
-            #+opengl
             (unless popup-only?
               (bw::set-mouse-doc-status-xy corner-x corner-y))
             ;;
@@ -762,47 +513,15 @@ Modification History (most recent at top)
                         (bw::popup-doc-delay))
               (multiple-value-bind (doc-x doc-y)
                   (popup-doc-offset-coords doc corner-x corner-y)
-                #-opengl (draw-doc doc doc-x doc-y)
-                #+opengl (bw::set-mouse-doc-popup-info doc doc-x doc-y)))
+                (bw::set-mouse-doc-popup-info doc doc-x doc-y)))
             ))))))
 
-#-opengl
-(defun popup-undoc-view-flip (screen-box &optional to-graphics?)
-  (let ((box-type (box-type screen-box))
-        (doc (get-popup-doc-for-area
-              (if to-graphics? :bottom-left-g :bottom-left-t)))
-        (hotspot-back (bw::mouse-doc-status-backing))
-        (hotwid (offscreen-bitmap-width  *mouse-toggle-view-bitmap*))
-        (hothei (offscreen-bitmap-height *mouse-toggle-view-bitmap*)))
-    (multiple-value-bind (x y)
-        (xy-position screen-box)
-      (multiple-value-bind (delta-x delta-y)
-          (box-borders-offsets box-type screen-box)
-        (declare (ignore delta-y))
-        (multiple-value-bind (lef top rig bot)
-            (box-borders-widths box-type screen-box)
-          (declare (ignore lef top rig))
-          (let ((corner-x (+& x delta-x))
-                (corner-y (+& y (screen-obj-hei screen-box) (-& bot))))
-            (unless (or (null *popup-mouse-documentation?*)
-                        (null *popup-doc-on?*))
-              (multiple-value-bind (doc-x doc-y)
-                  (popup-doc-offset-coords doc corner-x corner-y)
-                (erase-doc doc doc-x doc-y)))
-            (unless (null hotspot-back)
-              (bitblt-to-screen alu-seta hotwid hothei hotspot-back
-                                0 0 corner-x corner-y)
-              (deallocate-backing-store *mouse-toggle-view-bitmap*
-                                        hotspot-back))))))))
 
 ;; bottom right
 
 (defun popup-doc-resize (screen-box popup-only? &optional is-off?)
   (let ((box-type (box-type screen-box))
-        (doc (get-popup-doc-for-area (if is-off? :bottom-right-off :bottom-right)))
-        #-opengl(hotspot-back (allocate-backing-store *mouse-resize-corner-bitmap*))
-        #-opengl(hotwid (offscreen-bitmap-width  *mouse-resize-corner-bitmap*))
-        #-opengl(hothei (offscreen-bitmap-height *mouse-resize-corner-bitmap*)))
+        (doc (get-popup-doc-for-area (if is-off? :bottom-right-off :bottom-right))))
     (multiple-value-bind (x y)
         (xy-position screen-box)
       (multiple-value-bind (lef top rig bot)
@@ -810,48 +529,13 @@ Modification History (most recent at top)
         (declare (ignore lef top))
         (let ((corner-x (+ x (screen-obj-wid screen-box) (- rig)))
               (corner-y (+ y (screen-obj-hei screen-box) (- bot))))
-          #-opengl
-          (unless popup-only?
-            (bw::set-mouse-doc-status-backing hotspot-back)
-            (bitblt-from-screen alu-seta hotwid hothei hotspot-back
-                                corner-x corner-y 0 0)
-            ;; draw the hotspot
-            (bitblt-to-screen alu-seta hotwid hothei *mouse-resize-corner-bitmap*
-                              0 0 corner-x corner-y))
-          #+opengl
           (unless popup-only?
             (bw::set-mouse-doc-status-xy corner-x corner-y))
           (unless (or (null *popup-mouse-documentation?*)
                       (bw::popup-doc-delay))
             (multiple-value-bind (doc-x doc-y)
                 (popup-doc-offset-coords doc corner-x corner-y)
-              #-opengl (draw-doc doc doc-x doc-y)
-              #+opengl (bw::set-mouse-doc-popup-info doc doc-x doc-y))))))))
-
-#-opengl
-(defun popup-undoc-resize (screen-box &optional is-off?)
-  (let ((box-type (box-type screen-box))
-        (doc (get-popup-doc-for-area (if is-off? :bottom-right-off :bottom-right)))
-        (hotspot-back (bw::mouse-doc-status-backing))
-        (hotwid (offscreen-bitmap-width  *mouse-resize-corner-bitmap*))
-        (hothei (offscreen-bitmap-height *mouse-resize-corner-bitmap*)))
-    (multiple-value-bind (x y)
-        (xy-position screen-box)
-      (multiple-value-bind (lef top rig bot)
-          (box-borders-widths box-type screen-box)
-        (declare (ignore lef top))
-        (let ((corner-x (+& x (screen-obj-wid screen-box) (-& rig)))
-              (corner-y (+& y (screen-obj-hei screen-box) (-& bot))))
-          (unless (or (null *popup-mouse-documentation?*)
-                      (null *popup-doc-on?*))
-            (multiple-value-bind (doc-x doc-y)
-                (popup-doc-offset-coords doc corner-x corner-y)
-              (erase-doc doc doc-x doc-y)))
-          (unless (null hotspot-back)
-            (bitblt-to-screen alu-seta hotwid hothei hotspot-back
-                              0 0 corner-x corner-y)
-            (deallocate-backing-store *mouse-resize-corner-bitmap*
-                                      hotspot-back)))))))
+              (bw::set-mouse-doc-popup-info doc doc-x doc-y))))))))
 
 ;; type tab
 ;; we don't light up the hotspot because it would look like the box has
@@ -872,8 +556,7 @@ Modification History (most recent at top)
                       (bw::popup-doc-delay))
             (multiple-value-bind (doc-x doc-y)
                 (popup-doc-offset-coords doc corner-x corner-y)
-              #-opengl (draw-doc doc doc-x doc-y)
-              #+opengl (bw::set-mouse-doc-popup-info doc doc-x doc-y))))))))
+              (bw::set-mouse-doc-popup-info doc doc-x doc-y))))))))
 
 (defun popup-undoc-toggle-type (screen-box)
   (let ((box-type (box-type screen-box))
@@ -901,8 +584,7 @@ Modification History (most recent at top)
           (xy-position screen-box)
         (multiple-value-bind (doc-x doc-y)
             (popup-doc-offset-coords doc (+ x 10) (+ y 10))
-          #-opengl (draw-doc doc doc-x doc-y)
-          #+opengl (bw::set-mouse-doc-popup-info doc doc-x doc-y))))))
+          (bw::set-mouse-doc-popup-info doc doc-x doc-y))))))
 
 (defun popup-undoc-graphics (screen-box)
   (unless (or (null *popup-mouse-documentation?*)
@@ -1326,28 +1008,14 @@ Modification History (most recent at top)
 ;;;; Type Tag Popup Menu
 
 (defvar *tt-popup* (make-instance 'popup-menu
-                     :items (list (make-instance 'menu-item
-                                    :title "Flip to Doit"
-                                    :action 'com-tt-toggle-type)
-                                  #+(or mcl lispworks)
-                                  (make-instance 'menu-item
-                                    :title "Properties"
-                                    :action 'com-edit-box-properties)
-                                  ;; these are now all in the props dialog (mac)
-                                  #-(or mcl lispworks)
-                                  (make-instance 'menu-item
-                                    :title "File"
-                                    :action 'com-tt-toggle-storage-chunk)
-                                  #-(or mcl lispworks)
-                                  (make-instance 'menu-item
-                                    :title "Read Only"
-                                    :action 'com-tt-toggle-read-only)
-                                  #-(or mcl lispworks)
-                                  (make-instance 'menu-item
-                                    :title "Autoload"
-                                    :action 'com-tt-toggle-autoload-file))))
+                                  :items (list (make-instance 'menu-item
+                                                              :title "Flip to Doit"
+                                                              :action 'com-tt-toggle-type)
+                                               ;; #+(or mcl lispworks)
+                                               (make-instance 'menu-item
+                                                              :title "Properties"
+                                                              :action 'com-edit-box-properties))))
 
-#+(or mcl lispworks)
 (defun update-tt-menu (box)
   (let ((type-item  (car (menu-items *tt-popup*))))
     (cond ((data-box? box)
@@ -1359,38 +1027,6 @@ Modification History (most recent at top)
           (t
            (set-menu-item-title type-item "Flip Box Type")
            (menu-item-disable type-item)))))
-
-;; frobs the items in the pop up to be relevant
-;; more elegant to do this by specializing the menu-item-update method
-;; on a tt-pop-up-menu-item class.  Wait until we hack the fonts to do this...
-#-(or mcl lispworks)
-(defun update-tt-menu (box)
-  (let ((type-item  (car (menu-items *tt-popup*)))
-        (store-item (find-menu-item *tt-popup* "File"))
-        (read-item  (find-menu-item *tt-popup* "Read Only"))
-        (autl-item  (find-menu-item *tt-popup* "Autoload")))
-    (cond ((data-box? box)
-           (set-menu-item-title type-item "Flip to Doit")
-           (menu-item-enable type-item))
-          ((doit-box? box)
-           (set-menu-item-title type-item "Flip to Data")
-           (menu-item-enable type-item))
-          (t
-           (set-menu-item-title type-item "Flip Box Type")
-           (menu-item-disable type-item)))
-    (cond ((storage-chunk? box)
-           (set-menu-item-check-mark store-item t)
-           ;; enable the other menu items in case they have been previously disabled
-           (menu-item-enable read-item)
-           (menu-item-enable autl-item))
-          (t (set-menu-item-check-mark store-item nil)
-             ;; disable remaining items because they only apply to storage-chunks
-             (menu-item-disable read-item)
-             (menu-item-disable autl-item)))
-    ;; synchronize the remaining items, even if they are disabled, they
-    ;; should still reflect the current values of the box
-    (set-menu-item-check-mark read-item (read-only-box? box))
-    (set-menu-item-check-mark autl-item (autoload-file? box))))
 
 (defboxer-command com-mouse-type-tag-pop-up (&optional (window *boxer-pane*)
                                              (x (bw::boxer-pane-mouse-x))
@@ -1420,4 +1056,3 @@ Modification History (most recent at top)
             (menu-select *tt-popup*
                          (+ abs-x left) (- (+ abs-y shei) bottom)))))))
   boxer-eval::*novalue*)
-
