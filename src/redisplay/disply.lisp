@@ -408,21 +408,6 @@
       (cha-hei)
       (screen-obj-hei screen-object))))
 
-#|
-
-(defun screen-object-new-width (screen-object)
-  (when screen-object
-    (if (screen-cha? screen-object)
-      (cha-wid screen-object)
-      (screen-obj-new-wid screen-object))))
-
-(defun screen-object-new-height (screen-object)
-  (when screen-object
-    (if (screen-cha? screen-object)
-      (cha-hei)
-      (screen-obj-new-hei screen-object))))
-|#
-
 ;;; this erases ONLY characters to the end of the line
 ;;; NOTE: this CAN'T just iterate through the screen chas erasing
 ;;; characters BECAUSE the screen-chas may have been side effected
@@ -563,124 +548,6 @@
       ;     (set-needs-redisplay-pass-2? screen-row t)
       ;     (set-force-redisplay-infs?  screen-row t)
       (queue-screen-obj-for-deallocation screen-row))))
-
-;; These don't seem to be used in the new OpenGL redisplay...
-#|
-(defun move-screen-rows (sv from-row-no delta-x delta-y &optional to-row-no no-draw?)
-  (unless (>=& from-row-no (storage-vector-active-length  sv))
-    (multiple-value-bind (x-offset y-offset)
-                         (screen-obj-offsets (sv-nth from-row-no sv))
-                         (let ((wid 0) (hei 0))
-                           (do-vector-contents (screen-row sv :start from-row-no :stop to-row-no)
-                             (setq wid (max wid (screen-obj-wid screen-row))
-                                   hei (+  hei (screen-obj-hei screen-row)))
-                             (incf (screen-obj-x-offset screen-row) delta-x)
-                             (incf (screen-obj-y-offset screen-row) delta-y))
-                           ;; finally do the actual moving
-                           (when (null no-draw?)
-                             (bitblt-move-region wid hei x-offset y-offset delta-x delta-y))))))
-
-(defun move-screen-chas (sv from-cha-no delta-x delta-y &optional to-cha-no)
-  (multiple-value-bind (x-offset y-offset)
-                       (screen-obj-offsets (sv-nth from-cha-no sv))
-                       (let ((wid 0) (hei 0))
-                         (do-screen-chas-with-font-info (screen-cha sv
-                                                                    :start from-cha-no
-                                                                    :stop to-cha-no)
-                           (setq wid (+ wid (screen-object-width screen-cha))
-                                 hei (max  hei (screen-object-height screen-cha)))
-                           (unless (screen-cha? screen-cha)
-                             (incf (screen-obj-x-offset screen-cha) delta-x)
-                             (incf (screen-obj-y-offset screen-cha) delta-y)))
-                         ;; finally do the actual moving
-                         (bitblt-move-region wid hei x-offset y-offset delta-x delta-y))))
-
-;;; this is used in pass-2 to blit inferiors over to make room for character
-;;; insertions, we can't use move-screen-chas because the chas we want to move
-;;; no longer correspond to the cha-nos because the screen structure has been
-;;; patched up in pass-1.  We iterate ONLY to look for screen-boxes so that
-;;; their offsets can be updated
-(defun slide-screen-chas (sv from-cha-no delta-cha-no
-                             wid hei x-offset y-offset delta-x delta-y
-                             &optional no-drawing fds)
-  (unless (>=& (+& from-cha-no delta-cha-no)
-               (storage-vector-active-length sv))
-    (cond ((and (null wid) (not no-drawing))
-           ;; we need to calculate the width from the chas we are about
-           ;; to blit as well as adjust the offsets of any screen-boxes
-           ;; that happen to be in the row
-           (setq wid 0)
-           (do-screen-chas-with-font-info (screen-cha
-                                           sv
-                                           :start (+& from-cha-no
-                                                      delta-cha-no)
-                                           :font-descriptors fds)
-             (incf& wid (screen-object-width screen-cha))
-             (unless (screen-cha? screen-cha)
-               (incf& (screen-obj-x-offset screen-cha) delta-x))))
-      (t
-       ;; just update any offsets of boxes
-       (do-vector-contents (screen-cha sv :start (+& from-cha-no
-                                                     delta-cha-no))
-         (unless (screen-cha? screen-cha)
-           (incf& (screen-obj-x-offset screen-cha) delta-x)))))
-    (unless no-drawing
-      (bitblt-move-region wid hei x-offset y-offset delta-x delta-y))))
-
-(defun move-screen-obj (screen-obj delta-x delta-y &optional no-drawing)
-  (when (not-null screen-obj)
-    ;; sgithens TODO (check-screen-obj-arg screen-obj)
-    (multiple-value-bind (wid hei)
-                         (screen-obj-size screen-obj)
-                         (multiple-value-bind (x-offset y-offset)
-                                              (screen-obj-offsets screen-obj)
-                                              (unless no-drawing
-                                                (bitblt-move-region wid hei x-offset y-offset delta-x delta-y))
-                                              (incf (screen-obj-x-offset screen-obj) delta-x)
-                                              (incf (screen-obj-y-offset screen-obj) delta-y)))))
-
-(DEFUN MOVE-GRAPHICS-SHEET (GRAPHICS-SCREEN-SHEET DELTA-X DELTA-Y)
-       (WHEN (NOT-NULL GRAPHICS-SCREEN-SHEET)
-             (CHECK-GRAPHICS-SCREEN-SHEET-ARG GRAPHICS-SCREEN-SHEET)
-             (LET* ((GRAPHICS-SHEET (GRAPHICS-SCREEN-SHEET-ACTUAL-OBJ
-                                     GRAPHICS-SCREEN-SHEET))
-                    (WID (GRAPHICS-SHEET-DRAW-WID GRAPHICS-SHEET))
-                    (HEI (GRAPHICS-SHEET-DRAW-HEI GRAPHICS-SHEET))
-                    (X-OFFSET (GRAPHICS-SCREEN-SHEET-X-OFFSET GRAPHICS-SCREEN-SHEET))
-                    (Y-OFFSET (GRAPHICS-SCREEN-SHEET-Y-OFFSET GRAPHICS-SCREEN-SHEET)))
-                   (BITBLT-MOVE-REGION WID HEI X-OFFSET Y-OFFSET DELTA-X DELTA-Y)
-                   (INCF (GRAPHICS-SCREEN-SHEET-X-OFFSET GRAPHICS-SCREEN-SHEET) DELTA-X)
-                   (INCF (GRAPHICS-SCREEN-SHEET-Y-OFFSET GRAPHICS-SCREEN-SHEET) DELTA-Y))))
-
-(defun move-inferior-screen-objs (inferiors delta-x delta-y)
-  (cond ((null inferiors))
-    ((graphics-screen-sheet? inferiors)
-     (move-graphics-sheet inferiors delta-x delta-y))
-    ((screen-row? (sv-nth 0 inferiors))
-     (move-screen-rows inferiors 0 delta-x delta-y))
-    ((or (screen-cha? (sv-nth 0 inferiors))
-         (screen-box? (sv-nth 0 inferiors)))
-     (move-screen-chas inferiors 0 delta-x delta-y))
-    ((screen-obj? inferiors)
-     (move-screen-obj inferiors delta-x delta-y))
-    (t
-     (barf "Don't know how to move inferior screen object(s), ~S"
-           inferiors))))
-
-(DEFUN GRAY-SIZE-AND-OFFSETS (SCREEN-BOX)
-       (let ((box-type (slot-value screen-box 'box-type)))
-         (MULTIPLE-VALUE-BIND (OUTER-WID OUTER-HEI)
-                              (box-borders-minimum-size box-type screen-box)
-                              (MULTIPLE-VALUE-BIND (IL IT IR IB)
-                                                   (box-borders-widths box-type screen-box)
-                                                   (VALUES (- OUTER-WID IL IR) (- OUTER-HEI IT IB) IL IT)))))
-
-(DEFUN MOVE-GRAY-REGION (SCREEN-BOX DELTA-X DELTA-Y)
-       (MULTIPLE-VALUE-BIND (GRAY-WID GRAY-HEI GRAY-X GRAY-Y)
-                            (GRAY-SIZE-AND-OFFSETS SCREEN-BOX)
-                            (BITBLT-MOVE-REGION GRAY-WID GRAY-HEI GRAY-X GRAY-Y DELTA-X DELTA-Y)))
-
-|#
 
 
 ;:SHRUNK   USE *SHRUNK-BOX-WID* AND *SHRUNK-BOX-HEI*
@@ -1077,31 +944,7 @@
            (MEMBER SCREEN-OBJ
                    (DISPLAYED-SCREEN-OBJS (SCREEN-OBJ-ACTUAL-OBJ SCREEN-OBJ))))
 
-;; #-lispworks6
-;; (DEFUN SET-OUTERMOST-SCREEN-BOX (NEW-OUTERMOST-SCREEN-BOX
-;; 				 &OPTIONAL (WINDOW *BOXER-PANE*))
-;;   (WITHOUT-INTERRUPTS		      ;keep the mouse process from looking at
-;;     (REDISPLAYING-WINDOW (WINDOW)     ;the screen when it is in a munged state
-;;       (UNLESS (EQ NEW-OUTERMOST-SCREEN-BOX *OUTERMOST-SCREEN-BOX*)
-;; 	(DECONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX *OUTERMOST-SCREEN-BOX*
-;; 						    WINDOW)
-;; 	(CONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX NEW-OUTERMOST-SCREEN-BOX
-;; 						  WINDOW)
-;; 	(ERASE-SCREEN-OBJ *OUTERMOST-SCREEN-BOX*)
-;; 	(SETQ *OUTERMOST-SCREEN-BOX* NEW-OUTERMOST-SCREEN-BOX)))
-;;     (SETQ *OUTERMOST-SCREEN-BOX* (OUTERMOST-SCREEN-BOX)) ; why ??
-;;     (LET ((*COMPLETE-REDISPLAY-IN-PROGRESS?* T)
-;; 	  (OLD-SCREEN-ROW (UNLESS (NULL NEW-OUTERMOST-SCREEN-BOX)
-;; 			    (SCREEN-ROW NEW-OUTERMOST-SCREEN-BOX))))
-;;       (WHEN (SCREEN-ROW? OLD-SCREEN-ROW)
-;; 	;; we need to break up the screen-structure
-;; 	(KILL-SCREEN-CHAS-FROM OLD-SCREEN-ROW 0)
-;; 	(if (fast-memq (superior old-screen-row) *outermost-screen-box-stack*)
-;; 	    (deallocate-inferiors (superior old-screen-row))
-;; 	    (deallocate-self (superior old-screen-row))))
-;;       (repaint-window window))))
 
-;; #+lispworks6
 (DEFUN SET-OUTERMOST-SCREEN-BOX (NEW-OUTERMOST-SCREEN-BOX
                                  &OPTIONAL (WINDOW *BOXER-PANE*))
        (REDISPLAYING-WINDOW (WINDOW)
@@ -1142,8 +985,6 @@
     (set-fixed-size screen-box nil nil)
     (set-offsets screen-box 0 0)))
 
-
-
 
 (DEFUN REDISPLAY-CLUE (TYPE &REST ARGS)
        (LET ((HANDLER (GET TYPE ':REDISPLAY-CLUE)))
@@ -1161,18 +1002,6 @@
 (DEFUN OUTERMOST-SCREEN-BOX? (SCREEN-OBJ)
        (AND (SCREEN-BOX? SCREEN-OBJ)
             (EQ SCREEN-OBJ (boxer-window::outermost-screen-box))))
-#|
-
-(defmethod xy-position ((self screen-obj))
-  (multiple-value-bind (superior-x-off superior-y-off)
-                       (cond ((outermost-screen-box? self)
-                              (values 0 0))
-                         (t
-                          (xy-position (superior self))))
-                       (values (+ superior-x-off (screen-obj-x-offset self))
-                               (+ superior-y-off (screen-obj-y-offset self)))))
-|#
-
 
 (defmethod xy-position ((self screen-row))
   (let ((superior (slot-value self 'screen-box)))
@@ -1438,83 +1267,12 @@
                                  (+ superior-y-offset (screen-obj-y-offset so)
                                     (if (screen-box? so) (slot-value so 'scroll-y-offset) 0))))))
 
-;;; The OLD cursor tracker
 
-#|
-(defun bp-positions (bp)
-  (check-bp-arg bp)
-  (let ((box (bp-box bp))
-        (row (bp-row bp))
-        (screen-box (bp-screen-box bp)))
-    (COND ((NULL BOX) NIL)
-          ((name-row? row)
-           (screen-box-name-row-bp-position screen-box row))
-          ((eq ':shrunk (display-style screen-box))
-           (screen-box-first-bp-position screen-box))
-          ((NULL (CURRENT-SCREEN-ROW ROW))
-           (SCREEN-BOX-LAST-BP-POSITION SCREEN-BOX))
-          (t
-           (row-point-position (current-screen-row row) screen-box)))))
-
-(defun screen-box-first-bp-position (screen-box)
-  (multiple-value-bind (x y)
-                       (xy-position screen-box)
-                       (multiple-value-bind (il it)
-                                            (box-borders-widths (slot-value screen-box 'box-type) screen-box)
-                                            (cons (+ x il) (+ y it)))))
-
-(DEFUN SCREEN-BOX-LAST-BP-POSITION (SCREEN-BOX)
-       (MULTIPLE-VALUE-BIND (X Y)
-                            (XY-POSITION SCREEN-BOX)
-                            (CONS (+ X (SCREEN-OBJ-WID SCREEN-BOX))
-                                  (- (+ Y (SCREEN-OBJ-HEI SCREEN-BOX)) *MINIMUM-CURSOR-HEIGHT*))))
-
-(defun screen-box-name-row-bp-position  (screen-box name-row)
-  (declare (ignore name-row))
-  (let ((cha-no (bp-cha-no *point*)))
-    (multiple-value-bind (x y)
-                         (xy-position screen-box)
-                         (multiple-value-bind (tab-x tab-y)
-                                              (box-borders-tab-position (slot-value screen-box 'box-type)
-                                                                        screen-box x y cha-no)
-                                              (cons tab-x tab-y)))))
-
-(DEFUN ROW-POINT-POSITION (SCREEN-ROW &optional screen-box)
-       (LET* ((ROW (SCREEN-OBJ-ACTUAL-OBJ SCREEN-ROW))
-              (LENGTH-IN-CHAS (LENGTH-IN-CHAS ROW))
-              (CHA-NO (BP-CHA-NO *POINT*)))
-             (COND ((NULL (BP-SCREEN-BOX *POINT*))
-                    (BARF NIL "Lost the current Screen Box"))
-                   ((>= CHA-NO LENGTH-IN-CHAS)
-                    (END-OF-ROW-POINT-LOCATION SCREEN-ROW))
-                   (T (INSIDE-OF-ROW-POINT-LOCATION SCREEN-ROW CHA-NO)))))
-
-(DEFUN END-OF-ROW-POINT-LOCATION (SCREEN-ROW)
-       (MULTIPLE-VALUE-BIND (SCREEN-ROW-X SCREEN-ROW-Y)
-                            (XY-POSITION SCREEN-ROW)
-                            (CONS (+ SCREEN-ROW-X (SCREEN-OBJ-WID SCREEN-ROW)) SCREEN-ROW-Y)))
-
-(DEFUN INSIDE-OF-ROW-POINT-LOCATION (SCREEN-ROW CHA-NO)
-       (MULTIPLE-VALUE-BIND (SCREEN-ROW-X SCREEN-ROW-Y)
-                            (XY-POSITION SCREEN-ROW)
-                            (CONS (+ SCREEN-ROW-X
-                                     (X-COORDINATE-OF-CHA-NO SCREEN-ROW CHA-NO)) SCREEN-ROW-Y)))
-
-(DEFUN X-COORDINATE-OF-CHA-NO (ROW CHA-NO &AUX(X-COORD 0))
-       (DO* ((INDEX 0 (+ INDEX 1))
-             (CHA (SCREEN-CHA-AT-CHA-NO ROW INDEX)
-                  (SCREEN-CHA-AT-CHA-NO ROW INDEX)))
-            ((OR (NULL CHA)(= INDEX CHA-NO)) X-COORD)
-            (SETQ X-COORD (+ X-COORD (SCREEN-OBJECT-WIDTH CHA)))))
-|#
 
 (defmethod cha-no->x-coord ((row screen-row) cha-no)
   (with-summation
     (do-vector-contents (cha (slot-value row 'screen-chas) :stop cha-no)
       (sum (screen-object-width cha)))))
-
-
-
 
 
 (DEFMETHOD SCREEN-BP ((SELF SCREEN-CHAR-SUBCLASS))
@@ -1620,4 +1378,3 @@
 
 (setf (get 'box-ellipsis-corner-dots 'draw-self)
       'box-ellipsis-corner-dots-draw-self)
-
