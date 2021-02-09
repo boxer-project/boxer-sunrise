@@ -2477,6 +2477,10 @@ to the :TEXT-STRING method of boxes. "
 ;;;; FILE: mouse.lisp
 ;;;;
 
+;;; old
+;(defsubst screen-boxes-in-row (screen-row)
+;  (subset #'screen-box? (inferiors screen-row)))
+
 #|
 ;;; **** this is now hacked in boxwin-mcl by modifying the coords
 ;;; **** of the mouse blip

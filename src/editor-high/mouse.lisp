@@ -39,10 +39,6 @@
   (and (name-row (screen-obj-actual-obj screen-box))
        (not (eq (outermost-screen-box) screen-box))))
 
-;;; old
-;(defsubst screen-boxes-in-row (screen-row)
-;  (subset #'screen-box? (inferiors screen-row)))
-
 (defun position-in-screen-obj? (x y screen-obj &optional (strict? t))
   (if strict?
     (and (inclusive-between? y 0 (screen-obj-hei screen-obj))
