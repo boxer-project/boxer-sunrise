@@ -1,81 +1,69 @@
-;; -*- Mode:LISP;Syntax:Common-Lisp; Package:BOXER;-*-
-
-#|
-
-
- $Header: disply.lisp,v 1.0 90/01/24 22:09:36 boxer Exp $
-
-
- $Log:	disply.lisp,v $
-;;;Revision 1.0  90/01/24  22:09:36  boxer
-;;;Initial revision
-;;;
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                             +-Data--+
-                    This file is part of the | BOXER | system
-                                             +-------+
-
-   this file contains random codehaving to do with screen structure
-   such as allocation/deallocation code, mouse tracking stuff and box
-   border functions
-
-   All of the high level redisplay code is in the file REDISP and
-   the low level code for accessing and patching up screen structure is
-   to be found in the file LODISP
-
-    LOW-LEVEL SCREEN-OBJ allocation/deallocation code.
-
-    Use our own resource allocation/deallocation scheme here because the
-    Lispm's DEALLOCATE-RESOURCE is so slow that it significantly slows
-    down the whole redisplay code.
-
-
-Modification History (most recent at the top)
-
-11/26/12 set-fixed-size rounds wid/hei for resize-graphics-sheet
- 9/ 2/12 removed fixnum arithmetic from:
-         erase-chas-to-eol, erase-screen-chas, still-inside-rdp1-info
-         erase-and-queue-for-deallocation-screen-rows-from
-         fixed-size (screen-box), window-{xy,x,y}-position (screen-obj)
-         outermost-screen-box-size, bp-coordinates{-via-editor},
-         screen-obj-absolute-coordinates-1
- 8/26/12 removed functions which are no longer being used...
-         move-screen-{rows,chas,obj,graphics-sheet}, slide-screen-chas,
-         move-inferior-screen-objs,GRAY-SIZE-AND-OFFSETS,MOVE-GRAY-REGION
- 1/21/12 sprite-screen-box hacking for setup-redisplay, toggle-type
- 6/08/09 bp-coordinates takes into account unseen chars when calculating x position in row
- 2/11/09 removed usage of cached-border-info from (de-allocate-init (screen-box))
- 2/ 9/09 removed screen-object-new-{width, height}
- 6/01/05 boxtop handles possible graphics in xref
-10/18/04 added fixed-size-1 method for graphics-screen-boxes because the
-         containing box always adjusts its size to he contained sheet
-10/17/04 set-fixed-size (box): don't resize the graphics-sheet for gboxes
-         when we fix the size of the text view of the box
- 7/08/02 boxtop now handles possible VC in 'bu::boxtop lookup
- 2/14/01 merged current LW and MCL files
-10/08/00 added :file clause to boxtop function
- 5/10/99 changed boxtop function to give defined boxtops precedence over :file
- 1/11/99 added #+lispworks versions as needed
- 4/25/99 added support for :file boxtop in boxtop function
-10/22/98 allocate-screen-obj-for-use-in now tries to set scroll row for newly
-         allocated screen boxes
- 5/11/98 de-allocate-init for screen-rows now also resets various font parameters
- 4/29/98 added &optional fds arg to slide-screen-chas to allow either screen
-         or actual row font descriptors to be used (default is screen fds)
- 4/27/98 Started Logging changes: source = boxer version 2.2.r4 + changes for fonts
-
-|#
+;;;;  -*- Mode:LISP;Syntax:Common-Lisp; Package:BOXER;-*-
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those ;;;;  portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is ;;;;  retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with ;;;;  this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                               +-Data--+
+;;;;                      This file is part of the | BOXER | system
+;;;;                                               +-------+
+;;;;
+;;;;     this file contains random codehaving to do with screen structure
+;;;;     such as allocation/deallocation code, mouse tracking stuff and box
+;;;;     border functions
+;;;;
+;;;;     All of the high level redisplay code is in the file REDISP and
+;;;;     the low level code for accessing and patching up screen structure is
+;;;;     to be found in the file LODISP
+;;;;
+;;;;      LOW-LEVEL SCREEN-OBJ allocation/deallocation code.
+;;;;
+;;;;      Use our own resource allocation/deallocation scheme here because the
+;;;;      Lispm's DEALLOCATE-RESOURCE is so slow that it significantly slows
+;;;;      down the whole redisplay code.
+;;;;
+;;;;
+;;;;  Modification History (most recent at the top)
+;;;;
+;;;;  11/26/12 set-fixed-size rounds wid/hei for resize-graphics-sheet
+;;;;   9/ 2/12 removed fixnum arithmetic from:
+;;;;           erase-chas-to-eol, erase-screen-chas, still-inside-rdp1-info
+;;;;           erase-and-queue-for-deallocation-screen-rows-from
+;;;;           fixed-size (screen-box), window-{xy,x,y}-position (screen-obj)
+;;;;           outermost-screen-box-size, bp-coordinates{-via-editor},
+;;;;           screen-obj-absolute-coordinates-1
+;;;;   8/26/12 removed functions which are no longer being used...
+;;;;           move-screen-{rows,chas,obj,graphics-sheet}, slide-screen-chas,
+;;;;           move-inferior-screen-objs,GRAY-SIZE-AND-OFFSETS,MOVE-GRAY-REGION
+;;;;   1/21/12 sprite-screen-box hacking for setup-redisplay, toggle-type
+;;;;   6/08/09 bp-coordinates takes into account unseen chars when calculating x position in row
+;;;;   2/11/09 removed usage of cached-border-info from (de-allocate-init (screen-box))
+;;;;   2/ 9/09 removed screen-object-new-{width, height}
+;;;;   6/01/05 boxtop handles possible graphics in xref
+;;;;  10/18/04 added fixed-size-1 method for graphics-screen-boxes because the
+;;;;           containing box always adjusts its size to he contained sheet
+;;;;  10/17/04 set-fixed-size (box): don't resize the graphics-sheet for gboxes
+;;;;           when we fix the size of the text view of the box
+;;;;   7/08/02 boxtop now handles possible VC in 'bu::boxtop lookup
+;;;;   2/14/01 merged current LW and MCL files
+;;;;  10/08/00 added :file clause to boxtop function
+;;;;   5/10/99 changed boxtop function to give defined boxtops precedence over :file
+;;;;   1/11/99 added #+lispworks versions as needed
+;;;;   4/25/99 added support for :file boxtop in boxtop function
+;;;;  10/22/98 allocate-screen-obj-for-use-in now tries to set scroll row for newly
+;;;;           allocated screen boxes
+;;;;   5/11/98 de-allocate-init for screen-rows now also resets various font parameters
+;;;;   4/29/98 added &optional fds arg to slide-screen-chas to allow either screen
+;;;;           or actual row font descriptors to be used (default is screen fds)
+;;;;   4/27/98 Started Logging changes: source = boxer version 2.2.r4 + changes for fonts
+;;;;
 
 (in-package :boxer)
 
