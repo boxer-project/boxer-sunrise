@@ -211,7 +211,7 @@
                  (:file "coms/popup")
                  ;; Beginning of `keys` module
                  ;; "Install Commands on Specific Keys"
-                 (:file "keys/keys-new")
+                 (:file "keydef/keys-new")
                  ;; Beginning of `UTILITIES` module
                  ;; 	   "Various useful tools for Boxer system hacking"
                  (:file "utilities/mcl-utils")
