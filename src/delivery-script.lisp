@@ -21,6 +21,9 @@
 
 ; http://www.lispworks.com/documentation/lw71/DV/html/delivery-198.htm
 
+;; TODO The Application Builder tool doesn't seem to be loading the initialization file...
+#+win32 (load "Z:/quicklisp/setup.lisp")
+
 (in-package "CL-USER")
 (load-all-patches)
 (require :asdf)
@@ -28,7 +31,8 @@
 (setf asdf:*central-registry*
                (list* '*default-pathname-defaults*
                       (uiop:getcwd)
-                asdf:*central-registry*))
+                      #+win32 #P"z:/code/boxer-sunrise2/" ; TODO Sorting out path functions on win32...
+                      asdf:*central-registry*))
 
 (load (example-file "opengl/examples/load"))
 (setf *features* (cons :opengl *features*))
@@ -40,8 +44,11 @@
     (load quicklisp-init)))
 
 (ql:quickload :drakma)
+(ql:quickload :cl-json)
+(ql:quickload :zpng)
+(ql:quickload :qbase64)
 ;; Loading these freetype2 dependencies so they are available when we manually
-;; load the freetype compiles files during startup.
+;; load the freetype compiles filed during startup.
 (ql:quickload :alexandria)
 (ql:quickload :trivial-garbage)
 (ql:quickload :cffi)
@@ -64,7 +71,10 @@
         ;;   ;; ...or CFBundleIdentifier from the LispWorks bundle
         ;;   :identifier "org.boxer.BoxerSunrise"
         ;;   )
-        (merge-pathnames "./data/boxersunrise.app/Contents/MacOS/boxersunrise" (uiop:getcwd))
+
+        ;; TODO still working on getting these paths sorted out on win32, unfortunately hardcoded at the moment.
+        #+win32 #P"z:/code/boxer-sunrise2/data/boxer-sunrise/boxersunrise.exe"
+        #+mac (merge-pathnames "./data/boxersunrise.app/Contents/MacOS/boxersunrise" (uiop:getcwd))
         0 :interface :capi
         :keep-pretty-printer t
         :startup-bitmap-file nil
