@@ -34,7 +34,9 @@
   stored. This is OS specific, on MacOS it's typically something like
   `~/Library/Application Support/Boxer-data.lisp` and on Windows in the users local
   appdata directory"
-  (merge-pathnames "Boxer/boxapp-data.lisp"  (sys:get-folder-path :appdata)))
+  (merge-pathnames "Boxer/boxapp-data.lisp"
+    #+(or macosx windows) (sys:get-folder-path :appdata)
+    #+linux (uiop:xdg-config-home)))
 
 
 (defun load-appdata (&optional (filepath (get-boxapp-data-filepath)))

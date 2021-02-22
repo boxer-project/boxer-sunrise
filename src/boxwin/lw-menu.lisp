@@ -1517,7 +1517,11 @@ Modification History (most recent at top)
 ;; this should find a reasonable directory
 ;; for now use "~"
 (defun boxer::default-lw-pref-file-name ()
-  (merge-pathnames "Boxer.prf" (sys:get-folder-path #+win32 :appdata #+macosx :my-preferences)))
+  ;; TODO sgithens, refactor this out with a better cross platform version...
+  (merge-pathnames "Boxer.prf"
+    #+win32 (sys:get-folder-path :appdata)
+    #+macosx (sys:get-folder-path :my-preferences)
+    #+linux (uiop:xdg-config-home)))
 
 ;; see sysprims for when this is used....
 (defvar boxer::*current-documentation-dialog-item* nil)
