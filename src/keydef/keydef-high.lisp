@@ -58,14 +58,13 @@
 ;;; BOXER key names, we use an array to look them up in. This is kind
 ;;; of like ZWEI.
 
-(defvar *initial-platform* #+(and macosx lispworks)             :lwm
-  #+win32                              :ibm-pc
-  #-(or lispworks win32) :default)
+(defvar *initial-platform* #+macosx  :lwm
+                           #+win32   :ibm-pc
+                           #+linux   :ibm-pc)
 
-(defconstant *key-name-lookup-array-size* #+(and lispworks win32) 230.
-  #+(and lispworks cocoa) 328
-  #-lispworks 170.
-  "For most implementations, this really ought to be based on char-code-limit")
+(defconstant *key-name-lookup-array-size* 328
+  "For most implementations, this really ought to be based on char-code-limit
+  TODO sgithens Review why we need this, the currenc char-code-limit on linux is 1114112")
 
 (defvar *key-names* nil
   "KEY-NAMES is an art-q array of dimensions 170. by 16.. It is used
@@ -164,56 +163,9 @@
     (BU::TAB-KEY          #\TAB)))
 
 
-
-;;; This is for specific window systems and keyboards that don't neccessarily
-;;; have obvious char codes for particular names of keys.
-
-;; the *mcl-special-keycodes* var is defined in the "keydef-mcl.lisp" file
-(defvar *mac-keyboard-key-name-alist*
-  (if (boundp '*mcl-special-keycodes*)
-    ;; if we have the information to figure it out, do so
-    (mapcar #'(lambda (pair)
-                      (list (cadr pair)
-                            (get (cadr pair) :mcl-special-char-code)))
-            *mcl-special-keycodes*)
-    ;; otherwise use something that may be obsolete
-    ;; The following was calculated on a mac in May 1994
-    '((BOXER-USER::F1-KEY 256) (BOXER-USER::F2-KEY 257)
-                               (BOXER-USER::F3-KEY 258) (BOXER-USER::F4-KEY 259)
-                               (BOXER-USER::F5-KEY 260) (BOXER-USER::F6-KEY 261)
-                               (BOXER-USER::F7-KEY 262) (BOXER-USER::F8-KEY 263)
-                               (BOXER-USER::F9-KEY 264) (BOXER-USER::F10-KEY 265)
-                               (BOXER-USER::F11-KEY 266) (BOXER-USER::F12-KEY 267)
-                               (BOXER-USER::F13-KEY 268) (BOXER-USER::F14-KEY 269)
-                               (BOXER-USER::F15-KEY 270) (BOXER-USER::ENTER-KEY 272)
-                               (BOXER-USER::LEFT-ARROW-KEY 272) (BOXER-USER::RIGHT-ARROW-KEY 273)
-                               (BOXER-USER::UP-ARROW-KEY 274) (BOXER-USER::DOWN-ARROW-KEY 275))))
-
-;; the file keydef-lwm which defines this is loaded otherwise
-#-(and lispworks mac)
-(defvar *LWM-keyboard-key-name-alist* nil)
-
-(defvar *pc-keyboard-key-name-alist*
-  (when (boundp 'bw::*pc-keyboard-raw-key-name-alist*)
-    (mapcar #'(lambda (pair)
-                      (list (car pair)
-                            (char-code (if (bw::remap-char? (cadr pair))
-                                         (bw::remap-char (cadr pair))
-                                         (cadr pair)))))
-            bw::*pc-keyboard-raw-key-name-alist*)))
-
-;;; this is for the SGI Iris when running under the GL interface
-;;; Declared and filled in the keydef-low-sgi.lisp file
-;#+gl
-;(defvar *sgi-keyboard-key-name-code-alist*
-;  )
-
-
-
 ;;;; define known input devices platforms
 
 (eval-when (eval load)
-
            ;; assume the default is more likely to be some kind of unix machine
            ;; with a 3 button mouse, ignore possible function keys
            (define-input-devices :default
@@ -221,27 +173,19 @@
              ("LEFT" "MIDDLE" "RIGHT" "LEFT-TWICE" "MIDDLE-TWICE" "RIGHT-TWICE")
              nil)
 
-           (define-input-devices :mac
-             ("COMMAND" "OPTION" "COMMAND-OPTION")
-             ("CLICK" "DOUBLE-CLICK")
-             *mac-keyboard-key-name-alist*)
-
            (define-input-devices :lwm  ; mac's under lispworks opengl port
-             ("COMMAND" "OPTION" "COMMAND-OPTION")
-             ("CLICK" "DOUBLE-CLICK")
+             ("CTRL" "ALT" "CTRL-ALT" "COMMAND" "OPTION" "COMMAND-OPTION" )
+            ;;  ("CLICK" "DOUBLE-CLICK")
+            ("CLICK" "MIDDLE-CLICK" "RIGHT-CLICK" "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK")
              *lwm-keyboard-key-name-alist*)
 
-           ;  (define-input-devices :ibm-pc
-           ;    ("CTRL" "ALT" "CTRL-ALT")
-           ;    ("LEFT" "MIDDLE" "RIGHT" "LEFT-TWICE" "MIDDLE-TWICE" "RIGHT-TWICE")
-           ;    *pc-keyboard-key-name-alist*)
            ;; pick names to maximize compatibility with mac code
            ;; assign to left button to be plain "CLICK"
            (define-input-devices :ibm-pc
              ("CTRL" "ALT" "CTRL-ALT")
              ("CLICK" "MIDDLE-CLICK" "RIGHT-CLICK" "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK")
-             *pc-keyboard-key-name-alist*)
-           )
+             *lwm-keyboard-key-name-alist*)
+)
 
 
 ;;;; Now, setup the keyboard...
@@ -292,7 +236,7 @@
     (define-key-and-all-its-shifted-key-names
       (car  key-that-format-~c-loses-on)
       (char-code (cadr key-that-format-~c-loses-on)) platform))
-  )
+)
 
 ;;; This is different from define-basic-keys in that we want to loop through
 ;;; the existing array looking for possible translations rather than making
