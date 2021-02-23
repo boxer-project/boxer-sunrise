@@ -1032,10 +1032,6 @@ notes:: check points arg on draw-poly
   (opengl::%pixblt-in-screen (round wid) (round hei)
                              (round fx) (round fy) (round tx) (round ty)))
 
-;; &&&& stub
-(defun %bitblt-tile-to-screen (alu w h tile bitmap to-x to-y)
-  (declare (ignore alu bitmap))
-  (opengl::%pixblt-to-screen tile (round to-x) (round to-y) (round w) (round h) 0 0))
 
 ;; &&&& stub
 (defun %bitblt-icon-to-screen (icon tx ty) (declare (ignore icon tx ty)) )

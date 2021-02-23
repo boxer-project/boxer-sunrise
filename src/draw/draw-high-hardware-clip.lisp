@@ -179,9 +179,6 @@
     (%draw-rectangle w h x y  alu-xor %drawing-window)
     (sleep .1)))
 
-(defun bitblt-tile-to-screen (alu wid hei tile to-x to-y)
-  (%bitblt-tile-to-screen alu wid hei tile %drawing-array to-x to-y))
-
 (defun bitblt-to-screen (alu wid hei from-array from-x from-y to-x to-y)
   (%bitblt-to-screen alu wid hei from-array from-x from-y to-x to-y))
 

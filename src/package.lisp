@@ -220,7 +220,7 @@
            :sheet-inside-width :sheet-inside-height :window-inside-size
            :window-depth :window-pixel
            :%bitblt-in-screen :%bitblt-to-screen :%bitblt-from-screen
-           :%bitblt-tile-to-screen :%draw-point
+           :%draw-point
            :%draw-rectangle :%erase-rectangle :%draw-line :%draw-poly
            :boxer-points->window-system-points :%draw-arc :%draw-filled-arc
            :set-outermost-screen-box-in-window
