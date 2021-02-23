@@ -877,13 +877,8 @@
                                                  (slot-value self 'actual-obj))))
                                      *filegray*
                                      (gray-self self))))
-                         #+(or lwwin opengl)
                          (with-pen-color (*gray*)
-                           (draw-rectangle alu-seta inside-wid inside-hei il it))
-                         #-(or lwwin opengl)
-                         (bitblt-tile-to-screen
-                          alu-seta inside-wid inside-hei gray il it)
-                         )))
+                           (draw-rectangle alu-seta inside-wid inside-hei il it)))))
 
 
 
