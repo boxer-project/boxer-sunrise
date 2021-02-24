@@ -3056,6 +3056,15 @@ to the :TEXT-STRING method of boxes. "
     (set-menu-item-check-mark read-item (read-only-box? box))
     (set-menu-item-check-mark autl-item (autoload-file? box))))
 
+
+    ;; crock,
+    #+carbon-compat
+    (window-system-dependent-set-origin %origin-x-offset %origin-y-offset)
+
+                ;; why do we have to do this ?
+                #+carbon-compat
+                (window-system-dependent-set-origin %origin-x-offset %origin-y-offset)
+
 ;;;;
 ;;;; FILE: realprinter.lisp
 ;;;;

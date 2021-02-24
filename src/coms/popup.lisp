@@ -282,9 +282,6 @@ Modification History (most recent at top)
                              (force-graphics-output)
                              (setq current-item nil))))))
                 ;; loop is done, either we are in and item or not
-                ;; why do we have to do this ?
-                #+carbon-compat
-                (window-system-dependent-set-origin %origin-x-offset %origin-y-offset)
                 (unless (null current-item)
                   ;; if we are in an item, flash and erase the highlighting
                   (dotimes (i 5)
@@ -326,9 +323,6 @@ Modification History (most recent at top)
          (full-pad (* pad 2))
          (full-wid (+ swid full-pad))
          (full-hei (+ shei full-pad)))
-    ;; crock,
-    #+carbon-compat
-    (window-system-dependent-set-origin %origin-x-offset %origin-y-offset)
     ;; frame (left, top, right and bottom)
     (draw-rectangle alu-seta *popup-doc-border-width* full-hei x y)
     (draw-rectangle alu-seta full-wid *popup-doc-border-width* x y)
