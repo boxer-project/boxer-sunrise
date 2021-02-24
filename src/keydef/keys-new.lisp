@@ -363,60 +363,57 @@ Modification History (most recent at top)
 
 (boxer-eval::defboxer-key (bu::~-key 1) com-toggle-modified-flag) ;com-unmodify-document
 
-;;;; MICE
+;;;
+;;; MICE
+;;;
+;;; Possible Mouse click types that can be used depending on device input configuration.
+;;;   mouse-click-on-, command-mouse-click-on-, option-mouse-click-on-
+;;;   alt-mouse-click-on-, ctrl-mouse-click-on-, mouse-double-click-on-
+;;;   mouse-right-click-on-, ctrl-mouse-right-click-on-, alt-mouse-right-click-on-
+;;;   option-mouse-click-on-, command-mouse-click-on-
+;;;
+;;; mouse-click-on-graphics, ctrl-mouse-click-on-graphics, alt-mouse-click-on-graphics
+;;; ctrl-mouse-right-click-on-graphics, alt-mouse-right-click-on-graphics
 
-;; plain clicks on middle of boxes
+;;;
+;;; plain clicks on middle of boxes
+;;;
 
-;; mac one button mouse... (option and command shifts are used
-;; in place of left and right)
-#+apple
-(progn
-  (boxer-eval::defboxer-key bu::mouse-click com-mouse-define-region)
-  (boxer-eval::defboxer-key bu::command-mouse-click  com-mouse-expand-box)
-  (boxer-eval::defboxer-key bu::option-mouse-click  com-mouse-collapse-box)
+;; 2021-02-24 These have been consolidated now in to one set of bindings for MacOS, Windows, Linux
+;; The ctrl click bindings were previously set to Command clicks on MacOS, although that had actually
+;; been binding to ctrl. Once we fix Command bindings, perhaps these bindings should be reviewed,
+;; especially since ctrl-click is often used on MacOS to mimic a right click.
 
-  (boxer-eval::defboxer-key bu::option-mouse-double-click com-mouse-shrink-box)
-  (boxer-eval::defboxer-key bu::mouse-double-click com-mouse-doit-now)
-  (boxer-eval::defboxer-key bu::command-mouse-double-click com-mouse-set-outermost-box)
+(boxer-eval::defboxer-key bu::mouse-click com-mouse-define-region)
 
-  (boxer-eval::defboxer-key bu::mouse-click-on-graphics com-noop)
-  (boxer-eval::defboxer-key bu::option-mouse-click-on-graphics com-mouse-collapse-box)
-  (boxer-eval::defboxer-key bu::command-mouse-click-on-graphics com-mouse-expand-box)
+(boxer-eval::defboxer-key bu::ctrl-mouse-click  com-mouse-expand-box) ; was also previously listed as Command on MacOS
 
-  (boxer-eval::defboxer-key bu::option-mouse-double-click-on-graphics
-          com-mouse-shrink-box)
-  (boxer-eval::defboxer-key bu::command-mouse-double-click-on-graphics
-          com-mouse-set-outermost-box)
-  )
+(boxer-eval::defboxer-key bu::option-mouse-click  com-mouse-collapse-box)
+(boxer-eval::defboxer-key bu::alt-mouse-click  com-mouse-collapse-box)
 
-;; PC 3 button mouse.  Mouse buttons on the PC are asymmetric, the left
-;; button is the common frequently used one, the right button is for
-;; power and menu items.  The middle button is mostly unused
-;; the basic model is to emulate the 1 button mac mouse using the left button,
-;; reserving the right button for the double clicked funs
-#+win32
-(progn
-;  #-opengl
-  (boxer-eval::defboxer-key bu::mouse-click       com-mouse-define-region)
-;  #+opengl ;; temporary
-;  (boxer-eval::defboxer-key bu::mouse-click       com-mouse-move-point)
-  (boxer-eval::defboxer-key bu::alt-mouse-click   com-mouse-expand-box)
+(boxer-eval::defboxer-key bu::option-mouse-double-click com-mouse-shrink-box)
+(boxer-eval::defboxer-key bu::alt-mouse-double-click com-mouse-shrink-box)
 
-  (boxer-eval::defboxer-key bu::ctrl-mouse-click  com-mouse-define-region)
+(boxer-eval::defboxer-key bu::mouse-double-click com-mouse-doit-now)
 
-  (boxer-eval::defboxer-key bu::ctrl-mouse-right-click com-mouse-shrink-box)
-  (boxer-eval::defboxer-key bu::mouse-double-click com-mouse-doit-now)
-  ;; make this a popup to be more windows like
-  (boxer-eval::defboxer-key bu::mouse-right-click      com-mouse-doit-now)
-  (boxer-eval::defboxer-key bu::alt-mouse-right-click  com-mouse-set-outermost-box)
+(boxer-eval::defboxer-key bu::ctrl-mouse-double-click com-mouse-set-outermost-box) ; was also previously listed as Command on MacOS
 
-  (boxer-eval::defboxer-key bu::mouse-click-on-graphics  com-noop)
-  (boxer-eval::defboxer-key bu::ctrl-mouse-click-on-graphics  com-mouse-collapse-box)
-  (boxer-eval::defboxer-key bu::alt-mouse-click-on-graphics   com-mouse-expand-box)
+(boxer-eval::defboxer-key bu::mouse-click-on-graphics com-noop)
 
-  (boxer-eval::defboxer-key bu::ctrl-mouse-right-click-on-graphics com-mouse-shrink-box)
-  (boxer-eval::defboxer-key bu::alt-mouse-right-click-on-graphics  com-mouse-set-outermost-box)
-  )
+(boxer-eval::defboxer-key bu::option-mouse-click-on-graphics com-mouse-collapse-box)
+(boxer-eval::defboxer-key bu::alt-mouse-click-on-graphics com-mouse-collapse-box)
+
+;; TODO 2021-02-24 these should be revisited since graphics boxes can't be fullscreened
+(boxer-eval::defboxer-key bu::ctrl-mouse-click-on-graphics com-mouse-expand-box) ; was also previously listed as Command on MacOS
+(boxer-eval::defboxer-key bu::ctrl-mouse-double-click-on-graphics com-mouse-set-outermost-box)
+
+(boxer-eval::defboxer-key bu::option-mouse-double-click-on-graphics com-mouse-shrink-box)
+(boxer-eval::defboxer-key bu::alt-mouse-double-click-on-graphics com-mouse-shrink-box)
+
+(boxer-eval::defboxer-key bu::mouse-double-click com-mouse-doit-now)
+
+;; This was previously used in windows...
+;; (boxer-eval::defboxer-key bu::mouse-click       com-mouse-move-point)
 
 ;; sprite clicks
 (boxer-eval::defboxer-key bu::mouse-click-on-sprite com-sprite-follow-mouse)
@@ -424,21 +421,6 @@ Modification History (most recent at top)
 ;;;
 ;;; Box Border Mouse Commands
 ;;;
-
-;;; Possible Mouse click types to take care of:
-;;;   mouse-click-on-
-;;;   command-mouse-click-on-
-;;;   option-mouse-click-on-
-;;;   alt-mouse-click-on-
-;;;   ctrl-mouse-click-on-
-;;;   mouse-double-click-on-
-
-;;;   mouse-right-click-on-
-;;;   ctrl-mouse-right-click-on-
-;;;   alt-mouse-right-click-on-
-;;;   option-mouse-click-on-
-;;;   command-mouse-click-on-
-
 ;;;  Top Right Corner:
 ;;;    Click: Expand box to next size up
 ;;;    Double Click: Full Screen
@@ -487,32 +469,29 @@ Modification History (most recent at top)
 (boxer-eval::defboxer-key bu::mouse-click-on-type   com-mouse-border-toggle-type)
 ;; (boxer-eval::defboxer-key bu::mouse-right-click-on-type com-mouse-type-tag-pop-up)
 
-;; ;; names
+;;;
+;;; Box Name Row
+;;;
 
 (boxer-eval::defboxer-key bu::mouse-click-on-name-handle com-mouse-border-name-box)
 (boxer-eval::defboxer-key bu::mouse-click-on-name         com-mouse-move-point)
 
-;; scrolling
+;;;
+;;; Scrolling
+;;;
 
-#+apple
-(progn
-  (boxer-eval::defboxer-key bu::mouse-click-on-scroll-bar                com-mouse-scroll-box)
-  (boxer-eval::defboxer-key bu::command-mouse-click-on-scroll-bar        com-mouse-page-scroll-box)
-  (boxer-eval::defboxer-key bu::option-mouse-click-on-scroll-bar         com-mouse-page-scroll-box)
-  (boxer-eval::defboxer-key bu::mouse-double-click-on-scroll-bar         com-mouse-limit-scroll-box)
-  (boxer-eval::defboxer-key bu::command-mouse-double-click-on-scroll-bar com-mouse-limit-scroll-box)
-  (boxer-eval::defboxer-key bu::option-mouse-double-click-on-scroll-bar  com-mouse-limit-scroll-box)
-  )
+(boxer-eval::defboxer-key bu::mouse-click-on-scroll-bar                com-mouse-scroll-box)
 
-#+win32
-(progn
-  (boxer-eval::defboxer-key bu::mouse-click-on-scroll-bar            com-mouse-scroll-box)
-  (boxer-eval::defboxer-key bu::mouse-right-click-on-scroll-bar      com-mouse-page-scroll)
-  (boxer-eval::defboxer-key bu::ctrl-mouse-click-on-scroll-bar       com-mouse-limit-scroll-box)
-  (boxer-eval::defboxer-key bu::alt-scroll-bar-mouse-click-on-       com-mouse-limit-scroll-box)
-  (boxer-eval::defboxer-key bu::ctrl-mouse-right-click-on-scroll-bar com-mouse-limit-scroll-box)
-  (boxer-eval::defboxer-key bu::alt-mouse-right-click-on-scroll-bar  com-mouse-limit-scroll-box)
-  )
+(boxer-eval::defboxer-key bu::ctrl-mouse-click-on-scroll-bar        com-mouse-page-scroll-box) ;; was previously Command on MacOS
+(boxer-eval::defboxer-key bu::option-mouse-click-on-scroll-bar         com-mouse-page-scroll-box)
+(boxer-eval::defboxer-key bu::alt-mouse-click-on-scroll-bar         com-mouse-page-scroll-box)
+
+(boxer-eval::defboxer-key bu::mouse-double-click-on-scroll-bar         com-mouse-limit-scroll-box)
+(boxer-eval::defboxer-key bu::ctrl-mouse-right-click-on-scroll-bar com-mouse-limit-scroll-box)
+(boxer-eval::defboxer-key bu::alt-mouse-right-click-on-scroll-bar  com-mouse-limit-scroll-box)
+(boxer-eval::defboxer-key bu::option-mouse-double-click-on-scroll-bar  com-mouse-limit-scroll-box)
+(boxer-eval::defboxer-key bu::ctrl-mouse-double-click-on-scroll-bar com-mouse-limit-scroll-box) ;; was previously Command on MacOS
+
 
 ;;;; temporary
 
