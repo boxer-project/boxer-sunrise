@@ -1,57 +1,47 @@
-;; -*- Mode:LISP;Syntax: Common-Lisp; Package:BOXER;-*-
-#|
-
-
- $Header$
-
- $Log$
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                         +-Data--+
-                This file is part of the | BOXER | system
-                                         +-------+
-
-
-
-    New (and hopefully final) key bindings
-
-
-
-Modification History (most recent at top)
-
- 2/05/07 changed #+ mcl's and lwwins to apple and win32 - in this file they refer
-         to physical devices, also "apple" seems to be the only feature that digitool
-         and lispworks share for referring to the mac.
- 6/06/05 added escape-key binding for com-abort
- 1/09/04 added com-hardcopy-lw-window for lispworks ctrl-P
-10/20/04 removed escape key binding (com-christmas-tree)
- 4/21/03 merged current LW and MCL files
- 9/02/02 changed ctrl-~ binding from com-unmodify-document to
-         com-toggle-modified-flag
- 5/22/01 added backspace equivalents for {cmd, opt}-delete and search mode delete
- 2/15/01 merged current LW and MCL files
-12/20/00 added com-fill-box on c-m-f-key
-11/04/00 added com-follow-mouse to mouse-click-on-sprite for LWWIN
-         com-mouse-br-pop-up to mouse-click-on-bottom-right
- 7/06/00 added LWWIN mouse-double-click binding, other double click tuning
- 3/26/00 more PC binding fine tuning
-12/05/99 added PC mouse bindings, reorganized mice bindings into functional groups
-11/28/99 added lispworks PC bindings
-01/06/99 added mac bindings for HOME, END, PAGE-UP, PAGE-DOWN and DELX keys
-01/06/99 started logging changes: source = boxer version 2.3beta+2
-
-
-|#
+;;;;  ;; -*- Mode:LISP;Syntax: Common-Lisp; Package:BOXER;-*-
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                           +-Data--+
+;;;;                  This file is part of the | BOXER | system
+;;;;                                           +-------+
+;;;;
+;;;;
+;;;;      New (and hopefully final) key bindings
+;;;;
+;;;;
+;;;;  Modification History (most recent at top)
+;;;;
+;;;;   2/05/07 changed #+ mcl's and lwwins to apple and win32 - in this file they refer
+;;;;           to physical devices, also "apple" seems to be the only feature that digitool
+;;;;           and lispworks share for referring to the mac.
+;;;;   6/06/05 added escape-key binding for com-abort
+;;;;   1/09/04 added com-hardcopy-lw-window for lispworks ctrl-P
+;;;;  10/20/04 removed escape key binding (com-christmas-tree)
+;;;;   4/21/03 merged current LW and MCL files
+;;;;   9/02/02 changed ctrl-~ binding from com-unmodify-document to
+;;;;           com-toggle-modified-flag
+;;;;   5/22/01 added backspace equivalents for {cmd, opt}-delete and search mode delete
+;;;;   2/15/01 merged current LW and MCL files
+;;;;  12/20/00 added com-fill-box on c-m-f-key
+;;;;  11/04/00 added com-follow-mouse to mouse-click-on-sprite for LWWIN
+;;;;           com-mouse-br-pop-up to mouse-click-on-bottom-right
+;;;;   7/06/00 added LWWIN mouse-double-click binding, other double click tuning
+;;;;   3/26/00 more PC binding fine tuning
+;;;;  12/05/99 added PC mouse bindings, reorganized mice bindings into functional groups
+;;;;  11/28/99 added lispworks PC bindings
+;;;;  01/06/99 added mac bindings for HOME, END, PAGE-UP, PAGE-DOWN and DELX keys
+;;;;  01/06/99 started logging changes: source = boxer version 2.3beta+2
+;;;;
 
 (in-package :boxer)
 
