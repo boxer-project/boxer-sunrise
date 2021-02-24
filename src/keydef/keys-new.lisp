@@ -421,80 +421,76 @@ Modification History (most recent at top)
 ;; sprite clicks
 (boxer-eval::defboxer-key bu::mouse-click-on-sprite com-sprite-follow-mouse)
 
-;;; border mouse coms
+;;;
+;;; Box Border Mouse Commands
+;;;
 
-;; the resize tab...
+;;; Possible Mouse click types to take care of:
+;;;   mouse-click-on-
+;;;   command-mouse-click-on-
+;;;   option-mouse-click-on-
+;;;   alt-mouse-click-on-
+;;;   ctrl-mouse-click-on-
+;;;   mouse-double-click-on-
 
-;; Border mouse coms for the Mac
-#+apple
-(progn
-  (boxer-eval::defboxer-key bu::mouse-click-on-bottom-right com-mouse-br-pop-up)
-  (boxer-eval::defboxer-key bu::mouse-click-on-top-left com-mouse-tl-corner-collapse-box)
-  (boxer-eval::defboxer-key bu::mouse-double-click-on-top-left com-mouse-super-shrink-box)
+;;;   mouse-right-click-on-
+;;;   ctrl-mouse-right-click-on-
+;;;   alt-mouse-right-click-on-
+;;;   option-mouse-click-on-
+;;;   command-mouse-click-on-
 
-  (boxer-eval::defboxer-key bu::mouse-double-click-on-bottom-right com-mouse-set-outermost-box)
-  (boxer-eval::defboxer-key bu::command-mouse-click-on-bottom-right com-mouse-br-corner-expand-box)
-  (boxer-eval::defboxer-key bu::option-mouse-click-on-bottom-right com-mouse-br-corner-collapse-box)
-  (boxer-eval::defboxer-key bu::mouse-double-click-on-top-right com-mouse-set-outermost-box)
-  (boxer-eval::defboxer-key bu::command-mouse-click-on-top-left com-mouse-tl-pop-up)
-  (boxer-eval::defboxer-key bu::option-mouse-click-on-top-left com-mouse-tl-corner-toggle-closet)
-  )
+;;;  Top Right Corner:
+;;;    Click: Expand box to next size up
+;;;    Double Click: Full Screen
+;;;    Right Click: Context Menu
 
+(boxer-eval::defboxer-key bu::mouse-click-on-top-right com-mouse-tr-corner-expand-box)
+(boxer-eval::defboxer-key bu::mouse-double-click-on-top-right com-mouse-set-outermost-box)
 
-#+win32
-(progn
-  (boxer-eval::defboxer-key bu::mouse-click-on-bottom-right com-mouse-br-pop-up)
-  (boxer-eval::defboxer-key bu::mouse-right-click-on-bottom-right com-mouse-br-pop-up)
-  (boxer-eval::defboxer-key bu::mouse-click-on-top-left com-mouse-tl-corner-collapse-box)
-  (boxer-eval::defboxer-key bu::mouse-right-click-on-top-left com-mouse-tl-pop-up)
-  (boxer-eval::defboxer-key bu::mouse-double-click-on-top-left com-mouse-super-shrink-box)
-  (boxer-eval::defboxer-key bu::mouse-click-on-top-right com-mouse-tr-corner-expand-box)
-  (boxer-eval::defboxer-key bu::mouse-double-click-on-bottom-right com-mouse-set-outermost-box)
-  (boxer-eval::defboxer-key bu::alt-mouse-click-on-bottom-right com-mouse-br-corner-expand-box)
-  (boxer-eval::defboxer-key bu::ctrl-mouse-click-on-bottom-right com-mouse-br-corner-collapse-box)
-  (boxer-eval::defboxer-key bu::mouse-double-click-on-top-right com-mouse-set-outermost-box)
-  (boxer-eval::defboxer-key bu::ctrl-mouse-click-on-top-left com-mouse-tl-corner-toggle-closet)
-  (boxer-eval::defboxer-key bu::alt-mouse-click-on-top-left com-mouse-tl-corner-toggle-closet)
-  )
+(boxer-eval::defboxer-key bu::ctrl-mouse-click-on-top-right  com-mouse-boxsize-closet-properties-pop-up)
+(boxer-eval::defboxer-key bu::mouse-right-click-on-top-right  com-mouse-boxsize-closet-properties-pop-up)
 
-;; names
+;;;  Top Left Corner:
+;;;    Click: Shrink to next size down
+;;;    Double Click: Supershrink
+;;;    Right Click: Context Menu
 
-(boxer-eval::defboxer-key bu::mouse-click-on-name-handle com-mouse-border-name-box)
-(boxer-eval::defboxer-key bu::mouse-click-on-name         com-mouse-move-point)
+(boxer-eval::defboxer-key bu::mouse-click-on-top-left com-mouse-tl-corner-collapse-box)
+(boxer-eval::defboxer-key bu::mouse-double-click-on-top-left com-mouse-super-shrink-box)
 
-;; toggle view
+(boxer-eval::defboxer-key bu::mouse-right-click-on-top-left com-mouse-boxsize-closet-properties-pop-up)
+(boxer-eval::defboxer-key bu::ctrl-mouse-click-on-top-left com-mouse-boxsize-closet-properties-pop-up)
+
+;;;  Bottom Left Corner:
+;;;    Click: Flip to text/graphics. Currently requires holding
+;;;    Double Click: Nothing
+;;;    Right Click: Context Menu
 
 (boxer-eval::defboxer-key bu::mouse-click-on-bottom-left com-mouse-bl-corner-toggle-box-view)
 
-#+apple (boxer-eval::defboxer-key bu::command-mouse-click-on-bottom-left com-mouse-bl-pop-up)
-#+win32 (boxer-eval::defboxer-key bu::mouse-right-click-on-bottom-left com-mouse-bl-pop-up)
+(boxer-eval::defboxer-key bu::mouse-right-click-on-bottom-left com-mouse-box-types-pop-up)
+(boxer-eval::defboxer-key bu::ctrl-mouse-click-on-bottom-left com-mouse-box-types-pop-up)
 
-;; toggle closet
+;;;  Bottom Right Corner:
+;;;    Click/Drag: Resize
+;;;    Double Click: Switch back to automatic size
+;;;    Right Click: Context Menu
 
-#+apple
-(progn
-  (boxer-eval::defboxer-key bu::mouse-click-on-top-right com-mouse-tr-corner-expand-box)
-  (boxer-eval::defboxer-key bu::command-mouse-click-on-top-right com-mouse-tr-pop-up)
-  (boxer-eval::defboxer-key bu::option-mouse-click-on-top-right com-mouse-tr-corner-toggle-closet)
-  )
+(boxer-eval::defboxer-key bu::mouse-click-on-bottom-right com-mouse-br-resize-box)
+;; (boxer-eval::defboxer-key bu::mouse-right-click-on-bottom-right com-mouse-br-pop-up)
 
-#+win32
-(progn
-  (boxer-eval::defboxer-key bu::mouse-right-click-on-top-right  com-mouse-tr-pop-up)
-  (boxer-eval::defboxer-key bu::mouse-click-on-top-right        com-mouse-expand-box)
-  (boxer-eval::defboxer-key bu::mouse-double-click-on-top-right com-mouse-set-outermost-box)
-  (boxer-eval::defboxer-key bu::ctrl-mouse-click-on-top-right   com-mouse-tr-corner-toggle-closet)
-  (boxer-eval::defboxer-key bu::alt-mouse-click-on-top-right    com-mouse-tr-corner-toggle-closet)
-  )
-
-
-
-;; toggle type
+;;;  Type Tab:
+;;;    Click: Flip between Doit/Graphics, requires holding
+;;;    Double Click: Nothing
+;;;    Right Click: Context Menu
 
 (boxer-eval::defboxer-key bu::mouse-click-on-type   com-mouse-border-toggle-type)
+;; (boxer-eval::defboxer-key bu::mouse-right-click-on-type com-mouse-type-tag-pop-up)
 
-#+apple (boxer-eval::defboxer-key bu::command-mouse-click-on-type   com-mouse-type-tag-pop-up)
-#+win32 (boxer-eval::defboxer-key bu::mouse-right-click-on-type com-mouse-type-tag-pop-up)
+;; ;; names
+
+(boxer-eval::defboxer-key bu::mouse-click-on-name-handle com-mouse-border-name-box)
+(boxer-eval::defboxer-key bu::mouse-click-on-name         com-mouse-move-point)
 
 ;; scrolling
 

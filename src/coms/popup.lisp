@@ -108,6 +108,9 @@ Modification History (most recent at top)
 (defmethod set-menu-item-title ((menu menu-item) new-title)
   (setf (slot-value menu 'title) new-title))
 
+(defmethod set-menu-item-action ((menu menu-item) new-action)
+  (setf (slot-value menu 'action) new-action))
+
 (defmethod item-size ((item menu-item))
   (values
    (+ (* *menu-item-margin* 2)
@@ -393,7 +396,6 @@ Modification History (most recent at top)
 
 (define-popup-doc :top-right-outermost-box "Box Menu")
 
-
 
 ;;; Popup doc Interface routines
 ;; these are what get called to do the actual documentation by mouse tracking
@@ -451,7 +453,6 @@ Modification History (most recent at top)
 
 
 ;; top right
-
 (defun popup-doc-expand (screen-box &optional fullscreen? popup-only?)
   (let ((box-type (box-type screen-box))
         (doc (get-popup-doc-for-area
@@ -485,7 +486,6 @@ Modification History (most recent at top)
 
 
 ;; bottom left
-
 (defun popup-doc-view-flip (screen-box &optional to-graphics? popup-only?)
   (let ((box-type (box-type screen-box))
         (doc (get-popup-doc-for-area
@@ -509,7 +509,6 @@ Modification History (most recent at top)
                   (popup-doc-offset-coords doc corner-x corner-y)
                 (bw::set-mouse-doc-popup-info doc doc-x doc-y)))
             ))))))
-
 
 ;; bottom right
 
@@ -589,9 +588,6 @@ Modification History (most recent at top)
         (multiple-value-bind (doc-x doc-y)
             (popup-doc-offset-coords doc (+ x 10) (+ y 10))
           (erase-doc doc doc-x doc-y))))))
-
-
-
 
 ;;; Hotspots
 (defvar *global-hotspot-control?* t)
@@ -699,11 +695,32 @@ Modification History (most recent at top)
   "Flip from/to graphics presentation via the bottom left hotspot"
   (com-toggle-box-view box))
 
-
+(defun top-left-hotspot-on? (edbox)
+  (or (and *global-hotspot-control?* *top-left-hotspots-on?*)
+      (and (not *global-hotspot-control?*)
+           (top-left-hotspot-active? edbox))))
 
 
-(defvar *tl-popup* (make-instance 'popup-menu
-                                  :items (list (make-instance 'menu-item
+;;
+;;  Re-usable menu with:
+;;    Fullscreen
+;;    Normal
+;;    Shrunk
+;;    Supershrunk
+;;    -----------
+;;    Open Closet
+;;    Properties
+;;
+
+(defvar *boxsize-closet-properties-popup-menu*
+  (make-instance 'popup-menu
+                    :items (list  (make-instance 'menu-item
+                                    :title "Full Screen"
+                                    :action 'com-hotspot-full-screen-box)
+                                  (make-instance 'menu-item
+                                    :title "Expand"
+                                    :action 'com-hotspot-expand-box)
+                                  (make-instance 'menu-item
                                     :title "Shrink"
                                     :action 'com-hotspot-shrink-box)
                                   (make-instance 'menu-item
@@ -713,128 +730,96 @@ Modification History (most recent at top)
                                     :title "Open Closet"
                                     :action 'com-hotspot-toggle-closet)
                                   (make-instance 'menu-item
-                                    :title "Disable"
-                                    :action 'com-mouse-toggle-tl-hotspot))))
+                                    :title "Properties"
+                                    :action 'com-edit-box-properties)
+                                    )))
 
-;; synchronize the popup with the box
-(defun update-tl-menu (box)
-  (let ((shrink-item      (car    (menu-items *tl-popup*)))
-        (supershrink-item (cadr   (menu-items *tl-popup*)))
-        (closet-item      (caddr  (menu-items *tl-popup*)))
-        (disable-item     (cadddr (menu-items *tl-popup*))))
-    ;; adjust the menu for enable/disable info
-    (cond ((or (and *global-hotspot-control?* *top-left-hotspots-on?*)
-               (and (not *global-hotspot-control?*)
-                    (top-left-hotspot-active? box)))
-           ;; everything should be on...
-           (cond ((eq box *initial-box*) (menu-item-disable shrink-item))
-                 (t (menu-item-enable shrink-item)))
-           (menu-item-enable closet-item)
-           (cond ((eq box *initial-box*) (menu-item-disable supershrink-item))
-                 (t (menu-item-enable supershrink-item)))
-           (set-menu-item-title disable-item "Disable clicking"))
-          (t ;; menu is disabled
-           (menu-item-disable shrink-item)
-           (menu-item-disable closet-item)
-           (menu-item-disable supershrink-item)
-           (set-menu-item-title disable-item "Enable clicking")))
-    ;; adjust for current closet status
-    (let ((closet-row (slot-value box 'closets)))
-      (if (or (null closet-row) (null (row-row-no box closet-row)))
-          ;; either there's no closet or it's currently closed...
-          (set-menu-item-title closet-item "Open Closet")
-          (set-menu-item-title closet-item "Close Closet")))))
+(defun update-boxsize-closet-properties-menu (box)
+  (let ((fullscreen-item  (car    (menu-items *boxsize-closet-properties-popup-menu*)))
+        (expand-item      (cadr   (menu-items *boxsize-closet-properties-popup-menu*)))
+        (shrink-item      (caddr  (menu-items *boxsize-closet-properties-popup-menu*)))
+        (supershrink-item (cadddr (menu-items *boxsize-closet-properties-popup-menu*)))
+        (closet-item      (nth 4  (menu-items *boxsize-closet-properties-popup-menu*)))
+        (properties-item  (nth 5  (menu-items *boxsize-closet-properties-popup-menu*))))
 
-(defun top-left-hotspot-on? (edbox)
-  (or (and *global-hotspot-control?* *top-left-hotspots-on?*)
-      (and (not *global-hotspot-control?*)
-           (top-left-hotspot-active? edbox))))
-
-(defboxer-command com-mouse-tl-pop-up (&optional (window *boxer-pane*)
-                                       (x (bw::boxer-pane-mouse-x))
-                                       (y (bw::boxer-pane-mouse-y))
-                                       (mouse-bp
-                                        (mouse-position-values x y))
-                                       (click-only? t))
-  "Pop up a box attribute menu"
-  window x y ;  (declare (ignore window x y))
-  ;; first, if there already is an existing region, flush it
-  (reset-region) (reset-editor-numeric-arg)
-  (let* ((screen-box (bp-screen-box mouse-bp))
-         (box-type (box-type screen-box))
-         (edbox (screen-obj-actual-obj screen-box))
-         ;; the coms in the pop up rely on there variables
-         (*hotspot-mouse-box* edbox)
-         (*hotspot-mouse-screen-box* screen-box))
-    (if (and (not click-only?)
-             (mouse-still-down-after-pause? 0)) ; maybe *mouse-action-pause-time* ?
-        (multiple-value-bind (left top)
-            (box-borders-widths box-type screen-box)
-          ;; will probably have to fudge this for type tags near the edges of
-          ;; the screen-especially the bottom and right edges
-          (multiple-value-bind (abs-x abs-y) (xy-position screen-box)
-            (update-tl-menu edbox)
-            (menu-select *tl-popup* (+ abs-x left) (+ abs-y top))))
-        ;; for simple clicks we do the action (unless it is disabled)
-        (when (top-left-hotspot-on? edbox) (com-hotspot-shrink-box edbox))))
-  boxer-eval::*novalue*)
-
-(defvar *tr-popup* (make-instance 'popup-menu
-                     :items (list (make-instance 'menu-item
-                                    :title "Expand"
-                                    :action 'com-hotspot-expand-box)
-                                  (make-instance 'menu-item
-                                    :title "Full Screen"
-                                    :action 'com-hotspot-full-screen-box)
-                                  (make-instance 'menu-item
-                                    :title "Open Closet"
-                                    :action 'com-hotspot-toggle-closet)
-                                  (make-instance 'menu-item
-                                    :title "Disable"
-                                    :action 'com-mouse-toggle-tr-hotspot))))
-
-;; synchronize the popup with the box
-(defun update-tr-menu (box)
-  (let ((expand-item      (car    (menu-items *tr-popup*)))
-        (fullscreen-item  (cadr   (menu-items *tr-popup*)))
-        (closet-item      (caddr  (menu-items *tr-popup*)))
-        (disable-item     (cadddr (menu-items *tr-popup*))))
-    ;; adjust the menu for enable/disable info
-    (cond ((or (and *global-hotspot-control?* *top-right-hotspots-on?*)
-               (and (not *global-hotspot-control?*)
-                    (top-right-hotspot-active? box)))
-           ;; everything should be on...
-           (cond ((or (eq box (outermost-box))
+(cond ((or (eq box (outermost-box))
                       (and (graphics-box? box)
                            (display-style-graphics-mode?
                             (display-style-list box))))
                   (menu-item-disable expand-item))
                  (t (menu-item-enable expand-item)))
-           (menu-item-enable closet-item)
-           (cond ((or (eq box (outermost-box))
+
+(cond ((and (eq box (outermost-box))
                       (and (graphics-box? box)
                            (display-style-graphics-mode?
                             (display-style-list box))))
                   (menu-item-disable fullscreen-item))
-                 (t (menu-item-enable fullscreen-item)))
-           (set-menu-item-title disable-item "Disable clicking"))
-          (t ;; menu is disabled
-           (menu-item-disable expand-item)
-           (menu-item-disable closet-item)
-           (menu-item-disable fullscreen-item)
-           (set-menu-item-title disable-item "Enable clicking")))
-    ;; adjust for current closet status
-    (let ((closet-row (slot-value box 'closets)))
+                 ((eq box (outermost-box))
+                   (menu-item-enable fullscreen-item)
+                   (set-menu-item-title fullscreen-item "Collapse")
+                   (set-menu-item-action fullscreen-item 'com-collapse-box))
+                 (t
+                   (menu-item-enable fullscreen-item)
+                   (set-menu-item-title fullscreen-item "Full Screen")
+                   (set-menu-item-action fullscreen-item 'com-hotspot-full-screen-box)))
+
+(let ((closet-row (slot-value box 'closets)))
       (if (or (null closet-row) (null (row-row-no box closet-row)))
           ;; either there's no closet or it's currently closed...
           (set-menu-item-title closet-item "Open Closet")
-          (set-menu-item-title closet-item "Close Closet")))))
+          (set-menu-item-title closet-item "Close Closet")))
+
+        ))
+
+;;
+;; Re-usable menu with:
+;;   Text Side
+;;   Graphics Side
+;;   -------------
+;;   Data
+;;   Doit
+
+(defvar *box-types-popup-menu*
+  (make-instance 'popup-menu
+                   :items (list (make-instance 'menu-item
+                                    :title "Flip"
+                                    :action 'com-hotspot-toggle-graphics)
+                                  (make-instance 'menu-item
+                                    :title "Flip to Doit"
+                                    :action 'com-tt-toggle-type))))
+
+(defun update-box-types-menu (box)
+  (let ((flip-item      (car    (menu-items *box-types-popup-menu*)))
+        (type-item  (cadr   (menu-items *box-types-popup-menu*))))
+
+(cond ((data-box? box)
+           (set-menu-item-title type-item "Flip to Doit")
+           (menu-item-enable type-item))
+          ((doit-box? box)
+           (set-menu-item-title type-item "Flip to Data")
+           (menu-item-enable type-item))
+          (t
+           (set-menu-item-title type-item "Flip Box Type")
+           (menu-item-disable type-item)))
+
+    (cond ((not (graphics-box? box))
+           ;; nothing for now, perhaps later we can add a dialog ADD graphics
+           (menu-item-disable flip-item)
+           (set-menu-item-title flip-item "No Graphics"))
+          ((display-style-graphics-mode? (display-style-list box))
+           (menu-item-enable flip-item)
+           (set-menu-item-title flip-item "Flip to Text"))
+          (t (set-menu-item-title flip-item "Flip to Graphics")
+             (menu-item-enable flip-item)))
+
+  )
+)
 
 (defun top-right-hotspot-on? (edbox)
   (or (and *global-hotspot-control?* *top-right-hotspots-on?*)
       (and (not *global-hotspot-control?*) (top-right-hotspot-active? edbox))))
 
-(defboxer-command com-mouse-tr-pop-up (&optional (window *boxer-pane*)
+(defboxer-command com-mouse-boxsize-closet-properties-pop-up (&optional (window *boxer-pane*)
                                        (x (bw::boxer-pane-mouse-x))
                                        (y (bw::boxer-pane-mouse-y))
                                        (mouse-bp
@@ -858,47 +843,19 @@ Modification History (most recent at top)
           ;; will probably have to fudge this for type tags near the edges of
           ;; the screen-especially the bottom and right edges
           (multiple-value-bind (abs-x abs-y) (xy-position screen-box)
-            (update-tr-menu edbox)
+            (update-boxsize-closet-properties-menu edbox)
             ;; the coms in the pop up rely on this variable
-            (menu-select *tr-popup* (- (+ abs-x swid) right) (+ abs-y top))))
-        ;; for simple clicks we do the action (unless it is disabled)
-        (when (top-right-hotspot-on? edbox) (com-hotspot-expand-box edbox screen-box))))
+            ;; (menu-select *tr-popup* (- (+ abs-x swid) right) (+ abs-y top))
+            (menu-select *boxsize-closet-properties-popup-menu* x y)
+            ))
+        ))
   boxer-eval::*novalue*)
-
-(defvar *bl-popup* (make-instance 'popup-menu
-                     :items (list (make-instance 'menu-item
-                                    :title "Flip"
-                                    :action 'com-hotspot-toggle-graphics)
-                                  (make-instance 'menu-item
-                                    :title "Disable"
-                                    :action 'com-mouse-toggle-bl-hotspot))))
-
-(defun update-bl-menu (box)
-  (let ((flip-item     (car    (menu-items *bl-popup*)))
-        (disable-item  (cadr   (menu-items *bl-popup*))))
-    ;; adjust the menu for enable/disable info
-    (cond ((or (and *global-hotspot-control?* *bottom-left-hotspots-on?*)
-               (and (not *global-hotspot-control?*)
-                    (bottom-left-hotspot-active? box)))
-           ;; everything should be on...
-           (menu-item-enable flip-item)
-           (set-menu-item-title disable-item "Disable clicking"))
-          (t (menu-item-disable flip-item)
-             (set-menu-item-title disable-item "Enable clicking")))
-    ;; now adjust for box status
-    (cond ((not (graphics-box? box))
-           ;; nothing for now, perhaps later we can add a dialog ADD graphics
-           (menu-item-disable flip-item)
-           (set-menu-item-title flip-item "No Graphics"))
-          ((display-style-graphics-mode? (display-style-list box))
-           (set-menu-item-title flip-item "Flip to Text"))
-          (t (set-menu-item-title flip-item "Flip to Graphics")))))
 
 (defun bottom-left-hotspot-on? (edbox)
   (or (and *global-hotspot-control?* *bottom-left-hotspots-on?*)
       (and (not *global-hotspot-control?*) (bottom-left-hotspot-active? edbox))))
 
-(defboxer-command com-mouse-bl-pop-up (&optional (window *boxer-pane*)
+(defboxer-command com-mouse-box-types-pop-up (&optional (window *boxer-pane*)
                                        (x (bw::boxer-pane-mouse-x))
                                        (y (bw::boxer-pane-mouse-y))
                                        (mouse-bp
@@ -922,10 +879,12 @@ Modification History (most recent at top)
           ;; will probably have to fudge this for type tags near the edges of
           ;; the screen-especially the bottom and right edges
           (multiple-value-bind (abs-x abs-y) (xy-position screen-box)
-            (update-bl-menu edbox)
+            (update-box-types-menu edbox)
             ;; the coms in the pop up rely on this variable
-            (menu-select *bl-popup*
-                         (+ abs-x left) (- (+ abs-y shei) bottom))))
+            (menu-select *box-types-popup-menu* x y
+                        ;;  (+ abs-x left) (- (+ abs-y shei) bottom)
+                         )
+                         ))
         ;; for simple clicks we do the action (unless it is disabled)
         (when (bottom-left-hotspot-on? edbox)
           (com-hotspot-toggle-graphics edbox)))))
@@ -998,55 +957,46 @@ Modification History (most recent at top)
                               (- (+ abs-y shei) bottom))))))))
   boxer-eval::*novalue*)
 
-
-;;;; Type Tag Popup Menu
-
-(defvar *tt-popup* (make-instance 'popup-menu
-                                  :items (list (make-instance 'menu-item
-                                                              :title "Flip to Doit"
-                                                              :action 'com-tt-toggle-type)
-                                               ;; #+(or mcl lispworks)
-                                               (make-instance 'menu-item
-                                                              :title "Properties"
-                                                              :action 'com-edit-box-properties))))
-
-(defun update-tt-menu (box)
-  (let ((type-item  (car (menu-items *tt-popup*))))
-    (cond ((data-box? box)
-           (set-menu-item-title type-item "Flip to Doit")
-           (menu-item-enable type-item))
-          ((doit-box? box)
-           (set-menu-item-title type-item "Flip to Data")
-           (menu-item-enable type-item))
-          (t
-           (set-menu-item-title type-item "Flip Box Type")
-           (menu-item-disable type-item)))))
-
-(defboxer-command com-mouse-type-tag-pop-up (&optional (window *boxer-pane*)
-                                             (x (bw::boxer-pane-mouse-x))
-                                             (y (bw::boxer-pane-mouse-y))
-                                             (mouse-bp
-                                              (mouse-position-values x y))
-                                             (click-only? t))
+(defboxer-command com-mouse-br-resize-box (&optional (window *boxer-pane*)
+                                       (x (bw::boxer-pane-mouse-x))
+                                       (y (bw::boxer-pane-mouse-y))
+                                       (mouse-bp
+                                       (mouse-position-values x y))
+                                       (click-only? t))
   "Pop up a box attribute menu"
   window x y ;  (declare (ignore window x y))
   ;; first, if there already is an existing region, flush it
   (reset-region) (reset-editor-numeric-arg)
   (let* ((screen-box (bp-screen-box mouse-bp))
          (box-type (box-type screen-box))
+         (swid (screen-obj-wid screen-box))
          (shei (screen-obj-hei screen-box))
-         (edbox (box-or-port-target (screen-obj-actual-obj screen-box))))
-    (when (and (not click-only?)
-               (mouse-still-down-after-pause? 0)) ;maybe *mouse-action-pause-time* ?
-      (multiple-value-bind (left top right bottom)
-          (box-borders-widths box-type screen-box)
-        (declare (ignore top right))
-        ;; will probably have to fudge this for type tags near the edges of
-        ;; the screen-especially the bottom and right edges
-        (multiple-value-bind (abs-x abs-y) (xy-position screen-box)
-          (update-tt-menu edbox)
-          ;; the coms in the pop up rely on this variable
-          (let ((*hotspot-mouse-box* edbox))
-            (menu-select *tt-popup*
-                         (+ abs-x left) (- (+ abs-y shei) bottom)))))))
+         (edbox (screen-obj-actual-obj screen-box)))
+    (cond (t (bottom-right-hotspot-active? edbox)
+           (if (or click-only? (not (mouse-still-down-after-pause? 0)))
+               ;; hotspot is on, but we only got a click, shortcut to restore menu
+               (progn
+                 (set-fixed-size edbox nil nil)
+                 (set-scroll-to-actual-row screen-box nil)
+                 (modified edbox)
+                 ;; turn the hotspot off so the menu will pop up next time
+                 (set-bottom-right-hotspot-active? edbox nil))
+               ;; otherwise, do the normal resize stuff
+               (com-mouse-resize-box window x y mouse-bp click-only?)))
+          (t ;; otherwise, update and present a menu
+            nil
+          ;;  (multiple-value-bind (left top right bottom)
+          ;;      (box-borders-widths box-type screen-box)
+          ;;    (declare (ignore left top))
+          ;;    ;; will probably have to fudge this for type tags near the edges of
+          ;;    ;; the screen-especially the bottom and right edges
+          ;;    (multiple-value-bind (abs-x abs-y) (xy-position screen-box)
+          ;;      (update-br-menu edbox)
+          ;;      ;; the coms in the pop up rely on this variable
+          ;;      (let ((*hotspot-mouse-box* edbox)
+          ;;            (*hotspot-mouse-screen-box* screen-box))
+          ;;        (menu-select *br-popup*
+          ;;                     (- (+ abs-x swid) right)
+          ;;                     (- (+ abs-y shei) bottom)))))
+                              )))
   boxer-eval::*novalue*)
