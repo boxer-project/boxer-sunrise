@@ -716,6 +716,13 @@ Modification History (most recent at top)
       (and (not *global-hotspot-control?*)
            (top-left-hotspot-active? edbox))))
 
+(defboxer-command com-change-box-to-doit (&optional (box *hotspot-mouse-box*))
+  "Changes the box to a Doit box. If it's already a doit box it should remain so."
+  (set-type box 'doit-box))
+
+(defboxer-command com-change-box-to-data (&optional (box *hotspot-mouse-box*))
+  "Changes the box to a Doit box. If it's already a doit box it should remain so."
+  (set-type box 'data-box))
 
 ;;
 ;;  Re-usable menu with:
@@ -795,36 +802,55 @@ Modification History (most recent at top)
 (defvar *box-types-popup-menu*
   (make-instance 'popup-menu
                    :items (list (make-instance 'menu-item
-                                    :title "Flip"
-                                    :action 'com-hotspot-toggle-graphics)
-                                  (make-instance 'menu-item
-                                    :title "Flip to Doit"
-                                    :action 'com-tt-toggle-type))))
+                                    :title "Text Side"
+                                    :action nil) ; 'com-hotspot-toggle-graphics)
+                                (make-instance 'menu-item
+                                    :title "Graphics Side"
+                                    :action nil) ;'com-hotspot-toggle-graphics)
+                                (make-instance 'menu-item
+                                    :title "-------------"
+                                    :action nil)
+                                (make-instance 'menu-item
+                                    :title "Data"
+                                    :action 'com-change-box-to-data)
+                                (make-instance 'menu-item
+                                    :title "Doit"
+                                    :action 'com-change-box-to-doit)
+                                    )))
 
 (defun update-box-types-menu (box)
-  (let ((flip-item      (car    (menu-items *box-types-popup-menu*)))
-        (type-item  (cadr   (menu-items *box-types-popup-menu*))))
+  (let ((text-side-item      (car   (menu-items *box-types-popup-menu*)))
+        (graphics-side-item  (cadr   (menu-items *box-types-popup-menu*)))
+        (data-item  (nth 3   (menu-items *box-types-popup-menu*)))
+        (doit-item  (nth 4   (menu-items *box-types-popup-menu*)))
+        )
+    (set-menu-item-title text-side-item "Text Side")
+    (set-menu-item-action text-side-item nil)
+    (set-menu-item-title graphics-side-item "Graphics Side")
+    (set-menu-item-action graphics-side-item nil)
+    (menu-item-enable graphics-side-item)
+    (set-menu-item-title data-item "Data")
+    (set-menu-item-title doit-item "Doit")
 
-(cond ((data-box? box)
-           (set-menu-item-title type-item "Flip to Doit")
-           (menu-item-enable type-item))
+    (cond ((data-box? box)
+           (set-menu-item-title data-item "- Data")
+           )
           ((doit-box? box)
-           (set-menu-item-title type-item "Flip to Data")
-           (menu-item-enable type-item))
-          (t
-           (set-menu-item-title type-item "Flip Box Type")
-           (menu-item-disable type-item)))
+           (set-menu-item-title doit-item "- Doit")
+           ))
 
+    ;; Currently, the only command for this is to 'toggle', not explicity set the state.
+    ;; So we're setting the toggle action on the state not currently in vogue, and setting
+    ;; the menu item in the state to nil.
     (cond ((not (graphics-box? box))
            ;; nothing for now, perhaps later we can add a dialog ADD graphics
-           (menu-item-disable flip-item)
-           (set-menu-item-title flip-item "No Graphics"))
+           (menu-item-disable graphics-side-item)
+           (set-menu-item-title text-side-item "- Text Side"))
           ((display-style-graphics-mode? (display-style-list box))
-           (menu-item-enable flip-item)
-           (set-menu-item-title flip-item "Flip to Text"))
-          (t (set-menu-item-title flip-item "Flip to Graphics")
-             (menu-item-enable flip-item)))
-
+           (set-menu-item-title graphics-side-item "- Graphics Side")
+           (set-menu-item-action text-side-item 'com-hotspot-toggle-graphics))
+          (t (set-menu-item-title text-side-item "- Text Side")
+             (set-menu-item-action graphics-side-item 'com-hotspot-toggle-graphics)))
   )
 )
 
