@@ -685,6 +685,22 @@ Modification History (most recent at top)
         (com-expand-box)
         (com-set-outermost-box))))
 
+(defboxer-command com-hotspot-normal-size-box (&optional (box *hotspot-mouse-box*)
+                                                         (screen-box
+                                                          *hotspot-mouse-screen-box*))
+  "Set the box to it's normal size via the hotspot context menu."
+  (cond ((eq box *initial-box*) t )      ; Do nothing if this is the initial box
+        ((eq box (outermost-box)) ; If it's the outermost box, collapse it
+          (com-collapse-box))
+        ((eq (display-style box) ':shrunk) ; If it's shrunk, expand it
+          (com-hotspot-expand-box box screen-box))
+        ((eq (display-style box) ':supershrunk)          ; If it's supershrunk, expand it twice?
+          (com-hotspot-expand-box box screen-box)  ; I don't think this state is possible at the moment
+          (com-hotspot-expand-box box screen-box)) ; supershrunk boxes don't have the menu... yet! 2021-03-01
+        (t t) ; Otherwise it's normal, or some other un as yet expected state
+      )
+  )
+
 (defboxer-command com-hotspot-toggle-closet (&optional (box *hotspot-mouse-box*)
                                                        (screen-box
                                                         *hotspot-mouse-screen-box*))
@@ -715,17 +731,19 @@ Modification History (most recent at top)
 (defvar *boxsize-closet-properties-popup-menu*
   (make-instance 'popup-menu
                     :items (list  (make-instance 'menu-item
-                                    :title "Full Screen"
+                                    :title "Fullscreen"
                                     :action 'com-hotspot-full-screen-box)
                                   (make-instance 'menu-item
-                                    :title "Expand"
-                                    :action 'com-hotspot-expand-box)
+                                    :title "Normal"
+                                    :action 'com-hotspot-normal-size-box )    ;   'com-hotspot-expand-box)
                                   (make-instance 'menu-item
-                                    :title "Shrink"
+                                    :title "Shrunk"
                                     :action 'com-hotspot-shrink-box)
                                   (make-instance 'menu-item
-                                    :title "Supershrink"
+                                    :title "Supershrunk"
                                     :action 'com-hotspot-supershrink-box)
+                                  (make-instance 'menu-item
+                                    :title "-----------")
                                   (make-instance 'menu-item
                                     :title "Open Closet"
                                     :action 'com-hotspot-toggle-closet)
@@ -736,40 +754,35 @@ Modification History (most recent at top)
 
 (defun update-boxsize-closet-properties-menu (box)
   (let ((fullscreen-item  (car    (menu-items *boxsize-closet-properties-popup-menu*)))
-        (expand-item      (cadr   (menu-items *boxsize-closet-properties-popup-menu*)))
+        (normal-item      (cadr   (menu-items *boxsize-closet-properties-popup-menu*)))
         (shrink-item      (caddr  (menu-items *boxsize-closet-properties-popup-menu*)))
         (supershrink-item (cadddr (menu-items *boxsize-closet-properties-popup-menu*)))
-        (closet-item      (nth 4  (menu-items *boxsize-closet-properties-popup-menu*)))
-        (properties-item  (nth 5  (menu-items *boxsize-closet-properties-popup-menu*))))
+        (closet-item      (nth 5  (menu-items *boxsize-closet-properties-popup-menu*)))
+        (properties-item  (nth 6  (menu-items *boxsize-closet-properties-popup-menu*))))
+    (set-menu-item-title fullscreen-item "Fullscreen")
+    (menu-item-enable fullscreen-item)
+    (set-menu-item-title normal-item "Normal")
+    (set-menu-item-title shrink-item "Shrunk")
 
-(cond ((or (eq box (outermost-box))
-                      (and (graphics-box? box)
-                           (display-style-graphics-mode?
-                            (display-style-list box))))
-                  (menu-item-disable expand-item))
-                 (t (menu-item-enable expand-item)))
+    (if (and (graphics-box? box) (display-style-graphics-mode? (display-style-list box)))
+      (menu-item-disable fullscreen-item))
 
-(cond ((and (eq box (outermost-box))
-                      (and (graphics-box? box)
-                           (display-style-graphics-mode?
-                            (display-style-list box))))
-                  (menu-item-disable fullscreen-item))
-                 ((eq box (outermost-box))
-                   (menu-item-enable fullscreen-item)
-                   (set-menu-item-title fullscreen-item "Collapse")
-                   (set-menu-item-action fullscreen-item 'com-collapse-box))
-                 (t
-                   (menu-item-enable fullscreen-item)
-                   (set-menu-item-title fullscreen-item "Full Screen")
-                   (set-menu-item-action fullscreen-item 'com-hotspot-full-screen-box)))
+    (cond ((eq box (outermost-box))
+          ;;  (menu-item-enable fullscreen-item)
+           (set-menu-item-title fullscreen-item "- Fullscreen"))
+          ((eq (display-style box) ':normal)
+           (set-menu-item-title normal-item "- Normal"))
+          ((eq (display-style box) ':shrunk)
+           (set-menu-item-title shrink-item "- Shrunk"))
+          (t
+           nil))
 
-(let ((closet-row (slot-value box 'closets)))
-      (if (or (null closet-row) (null (row-row-no box closet-row)))
-          ;; either there's no closet or it's currently closed...
-          (set-menu-item-title closet-item "Open Closet")
-          (set-menu-item-title closet-item "Close Closet")))
-
-        ))
+    (let ((closet-row (slot-value box 'closets)))
+          (if (or (null closet-row) (null (row-row-no box closet-row)))
+              ;; either there's no closet or it's currently closed...
+              (set-menu-item-title closet-item "Open Closet")
+              (set-menu-item-title closet-item "Close Closet")))
+  ))
 
 ;;
 ;; Re-usable menu with:
