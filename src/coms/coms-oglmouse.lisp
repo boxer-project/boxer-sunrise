@@ -1227,7 +1227,7 @@
            (com-toggle-closets))))))
   boxer-eval::*novalue*)
 
-(defvar *slow-graphics-toggle* t)
+(defvar *slow-graphics-toggle* nil)
 
 (defboxer-command com-mouse-bl-corner-toggle-box-view (&optional (window *boxer-pane*)
                                                                  (x (bw::boxer-pane-mouse-x))
@@ -1308,7 +1308,13 @@
           (modified box-to-name)))))
   boxer-eval::*novalue*)
 
-(defvar *enable-mouse-toggle-box-type?* t)
+(defvar *enable-mouse-toggle-box-type?* t
+  "Setting this to `t` allows the type label to have a click that swaps the box between
+  doit and data.")
+
+(defvar *slow-box-type-toggle* nil
+  "If this is set to `t` then the user must hold down the click on the data label for a bit
+  before it will toggle. The amount of time is specified in `*mouse-action-pause-time*`.")
 
 (defvar *mouse-action-pause-time* .6)
 
@@ -1325,24 +1331,30 @@
   (let* ((screen-box (bp-screen-box mouse-bp))
          (box-type (box-type screen-box)))
     (when (or (eq box-type 'data-box) (eq box-type 'doit-box))
-      (if (not (null *enable-mouse-toggle-box-type?*))
-        (when (multiple-value-bind (box-window-x box-window-y)
-                                   (xy-position screen-box)
-                                   (multiple-value-bind (delta-x delta-y width height)
-                                                        (type-tab-tracking-info screen-box)
-                                                        (and (not click-only?)
-                                                             (let ((start-time (get-internal-real-time)))
-                                                               (and (track-mouse-area #'toggle-corner-fun
-                                                                                      :x (+ box-window-x delta-x)
-                                                                                      :y (+ box-window-y delta-y)
-                                                                                      :width width
-                                                                                      :height height)
-                                                                    (> (- (get-internal-real-time) start-time)
-                                                                       (* *mouse-action-pause-time*
-                                                                          INTERNAL-TIME-UNITS-PER-SECOND)))))))
-          (toggle-type (bp-box mouse-bp))
-          (mark-file-box-dirty (bp-box mouse-bp)))
-        (boxer-editor-error "Toggling of the box type with the mouse is disabled"))))
+      (cond ((and (not (null *enable-mouse-toggle-box-type?*))
+                  (not (null *slow-box-type-toggle*)))
+             (when (multiple-value-bind (box-window-x box-window-y)
+                     (xy-position screen-box)
+                     (multiple-value-bind (delta-x delta-y width height)
+                       (type-tab-tracking-info screen-box)
+                       (and (not click-only?)
+                             (let ((start-time (get-internal-real-time)))
+                               (and (track-mouse-area #'toggle-corner-fun
+                                                     :x (+ box-window-x delta-x)
+                                                     :y (+ box-window-y delta-y)
+                                                     :width width
+                                                     :height height)
+                                   (> (- (get-internal-real-time) start-time)
+                                       (* *mouse-action-pause-time*
+                                         INTERNAL-TIME-UNITS-PER-SECOND)))))
+                                         ))
+               (toggle-type (bp-box mouse-bp))
+               (mark-file-box-dirty (bp-box mouse-bp))))
+            ((not (null *enable-mouse-toggle-box-type?*))
+             (toggle-type (bp-box mouse-bp))
+             (mark-file-box-dirty (bp-box mouse-bp)))
+            (t (boxer-editor-error "Toggling of the box type with the mouse is disabled")))
+    ))
   boxer-eval::*novalue*)
 
 
