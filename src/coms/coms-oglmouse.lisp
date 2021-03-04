@@ -1511,8 +1511,6 @@
                                                                             )))))))))
 
 (defun mouse-page-scroll-internal (direction &rest screen-box-list)
-  #+mcl (declare (dynamic-extent screen-box-list))
-  #+lucid (declare (lcl::dynamic-extent screen-box-list))
   (if (eq direction :up)
     (com-scroll-up-one-screen-box screen-box-list)
     (com-scroll-dn-one-screen-box screen-box-list))
