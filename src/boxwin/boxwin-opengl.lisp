@@ -479,6 +479,12 @@
                               (:gesture-spec gesture-spec-handler))
                :display-callback 'boxer-expose-window-handler
                :resize-callback 'resize-handler
+               ;; The following 4 params are for scrolling gestures (two finger scroll, mouse wheels, etc)
+               :coordinate-origin :fixed-graphics
+               :vertical-scroll :without-bar
+               :horizontal-scroll :without-bar
+               :scroll-callback 'scroll-handler
+
                :visible-min-width  *boxer-pane-minimum-width*
                :visible-min-height *boxer-pane-minimum-height*
                ))
@@ -1599,6 +1605,34 @@
     (redraw-status-line)
     (boxer::force-repaint))
 ;)
+
+(defun scroll-handler (output-pane direction scroll-operation scroll-amount &key interactive)
+  "Scrolls the screen box that the mouse is in based on the direction of the scrolling gestures from
+   a trackpad or mouse."
+  (multiple-value-bind (x y) (boxer-pane-mouse-position)
+    (let* (
+           (mouse-bp (boxer::mouse-position-values x y))
+           (mouse-screen-box (boxer::bp-screen-box mouse-bp))
+           (mouse-actual-obj (slot-value mouse-screen-box 'boxer::actual-obj))
+           (mouse-style (boxer::display-style-style (boxer::display-style-list mouse-actual-obj)))
+           ;; If the mouse is over a supershrunk box we should scroll it's containing box.
+           (screen-box-to-scroll (if (eq mouse-style :SUPERSHRUNK)
+                                     (slot-value mouse-screen-box 'boxer::superior-screen-box)
+                                     mouse-screen-box))
+          )
+      (cond ((and (equal direction :vertical) (equal scroll-operation :step) (> scroll-amount 0))
+             (boxer::mouse-line-scroll-internal screen-box-to-scroll :down))
+            ((and (equal direction :vertical) (equal scroll-operation :step) (< scroll-amount 0))
+              (boxer::mouse-line-scroll-internal screen-box-to-scroll :up))
+            ((and (equal direction :horizontal) (equal scroll-operation :step) (> scroll-amount 0) )
+             ;; (boxer::mouse-h-scroll (boxer::screen-box-point-is-in) :right)
+             (boxer::h-scroll-screen-box screen-box-to-scroll (- boxer::*horizontal-click-scroll-quantum*))
+             (boxer::repaint t))
+            ((and (equal direction :horizontal) (equal scroll-operation :step) (< scroll-amount 0) )
+             ;; (boxer::mouse-h-scroll (boxer::screen-box-point-is-in) :left)
+             (boxer::h-scroll-screen-box screen-box-to-scroll boxer::*horizontal-click-scroll-quantum*)
+             (boxer::repaint t))
+            (t nil)))))
 
 ;; careful, this called during startup before the outermost screen box
 ;; is created (by the 1st call to redisplay)
