@@ -532,7 +532,8 @@ notes:: check points arg on draw-poly
 ;; available sizes are: 6,8,10,12,14,16,18,24
 ;; NOTE: we an get size 7 when loading old mac boxes...
 (defun %font-size-to-idx (size)
-  (cond ((<=& size  8) size)  ;; sgithens: support for relative size saving, see comments on *dump-relative-font-sizes?* in dumper.lisp
+  (cond ((<=& size  7) size) ;; sgithens: support for relative size saving, see comments on *dump-relative-font-sizes?* in dumper.lisp
+        ((<=& size  8) 0)
         ((<=& size  9) 1)
         ((<=& size 10) 2)
         ((<=& size 12) 3)
@@ -545,20 +546,21 @@ notes:: check points arg on draw-poly
         ((<=& size 40) 10)
         ((<=& size 48) 11)
         ((<=& size 56) 12)
-        (t 13)))
+        ((<=& size 64) 13)
+        (t 14)))
 
 (defvar *font-sizes* (vector 8 9 10 12 14 16 20 24 28 32 40 48 56 64)) ;(vector 6 8 10 12 14 16 18 24)
 
 ;; "size" is the size value returned from font-values of a relative font (used in BFD's)
 ;; abstract through this function to allow for more complicated translations, perhaps skipping
 ;; entries in the master cache to get the correct size ratios
-(defun font-size-to-idx (size) (+& size *font-size-baseline* -1))
+(defun font-size-to-idx (size) (+& size *font-size-baseline* )) ;; sgithens boxer-bugs-39 -1))
 
 (defun %font-size-idx-to-size (sidx) (svref *font-sizes* sidx))
 
 (defun make-size-menu-names ()
   (let* ((sl (length *font-sizes*))
-         (n-sizes (- sl 6)) ;; number of possible size settings
+         (n-sizes (- sl 7)) ;; number of possible size settings.  Changed to 7 for boxer-bugs-39
          (names-array (make-array n-sizes))
          (menu-length (length *bfd-font-size-names*)))
     (dotimes (i n-sizes)
