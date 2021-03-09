@@ -121,9 +121,8 @@ Modification History (most recent at the top)
 
 ;;initializations...
 
-(defvar *boxer-pathname-default* (merge-pathnames "foo.box"
-                                                  (user-homedir-pathname))
-  "Default pathname for saving boxer files")
+(defvar *boxer-pathname-default* (user-homedir-pathname)
+  "Default directory pathname for saving boxer files")
 
 (defvar *init-file-specifier* (merge-pathnames "boxer-init.box"
                                                *boxer-pathname-default*)
