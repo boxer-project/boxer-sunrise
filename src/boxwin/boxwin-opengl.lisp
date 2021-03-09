@@ -899,7 +899,18 @@
   (window *boxer-pane*)
   (x-pos 0)
   (y-pos 0)
-  (click 0) ;; which button is down
+  ;; The current values for click are:
+  ;;  0 - Primary Button, usualy left click
+  ;;  1 - Third Button
+  ;;  2 - Secondary Button, usually right click
+  (click 0)
+  ;; The current values for bits are:
+  ;;  0 - No modifier keys
+  ;;  1 - Control Key
+  ;;  2 - Option Key
+  ;;  3 - Control + Option Key
+  ;; 2021-02-10 Double check these on windows. Currently on Mac, Shift-click and
+  ;; Command click don't register anything.
   (bits 0)  ;; which shift bits are down
   ;; these are (+++ not) used in click processing
   (last-time-stamp 0)
@@ -1125,9 +1136,6 @@
 ;; Single Clicks...
 ;; the only work done here is to setup *mouse-down-p* for use by MOUSE-BUTTONS
 
-(defvar *shift-clicks-emulates-multi-buttons* t
-  "Mac Emulation, left mouse simulates mac mouse")
-
 (defconstant *click-1-byte-selector* (byte 1 0))
 (defconstant *click-2-byte-selector* (byte 1 1))
 (defconstant *click-3-byte-selector* (byte 1 2))
@@ -1301,11 +1309,8 @@
   ;; reset any popup docs
   (undocument-mouse)
   ;; queue an eventp
-  #+mac
-  (when (not (zerop button)) ;; encode multibutton  mice on mac as shifted clicks
-    (setq button 0 bits (min 3 (+ bits 1))))
   (let ((me (make-mouse-event :x-pos x :y-pos y :bits bits
-                              :click  (+ button (if double? #+mac 1 #+win32 3 0))
+                              :click  (+ button (if double? 3 0))
                               :number-of-clicks (if double? 2 1)
                               :last-time-stamp (get-internal-real-time)
                               :type :mouse-hold))) ; or  :mouse-click
