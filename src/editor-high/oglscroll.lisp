@@ -569,10 +569,10 @@ Modification History (most recent at top)
                              (draw-vertical-scroll-buttons vert-x (- hei ib sbe)))
                            (when (h-scrollable? self)
                              ;; ok, need to draw horizontal scroll GUI
-                             (let* ((esize (cond ((null max-scroll-wid) 1/2)
+                             (let* ((esize (cond ((or (null max-scroll-wid) (equal max-scroll-wid 0)) 1/2)
                                              (t  (/ (min inner-wid (+ max-scroll-wid scroll-x-offset))
                                                     max-scroll-wid))))
-                                    (epos (cond ((null max-scroll-wid) 1/2)
+                                    (epos (cond ((or (null max-scroll-wid) (equal max-scroll-wid 0)) 1/2)
                                             (t (/ (- scroll-x-offset) max-scroll-wid)))))
                                ;; It is possible for scroll-x-offset to exceed max-scroll-wid under certain conditions in
                                ;; particular, vertical scrolling away from an extra wide section which horizontally scrolled
