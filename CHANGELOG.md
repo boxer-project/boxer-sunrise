@@ -1,5 +1,61 @@
 # Change Log
 
+## 3.4.4 2020-03-??
+
+- boxer-sunrise-16 Minor improvements to scrollbar rendering. Removing tiny up/down buttons.
+
+- boxer-sunrise-6 Fix annoying default file name issue with Windows 10 File Chooser.
+  - Updating default pathname to be a directory without default foo.bar file.
+
+- boxer-sunrise-15 Removing currently un-needed preferences for Email setup and keyboard device configuration (lwm)
+
+- boxer-bugs-39 Adjusting sizes to fix zooming issues.
+  - Includes a crash fix when zooming down to the lowest size.
+  - Fixes issue where fonts at a size 28 would render at size 8.
+
+- boxer-bugs-3 Adding support for scroll gestures from trackpad gestures or mouse scroll wheels.
+
+- boxer-sunrise-9
+  - Updates to hover over renderings. Including some minor color contrast similar to macos max/min
+    buttons and circles with solid borders for contrast
+  - Cleaning up box corner clicks, refactoring pop-up menus, implementing new menu item designs.
+  - Standardizing keyboard bindings across MacOS, Windows, Linux. The only minor differences going forward should stem
+    from differences in the OS key (Windows, Command, etc) and Option rather than Alt, and sutble cultural differences
+    as to when things should belong to Control vs Command (ie. cut n paste, etc)
+  - Fixing up top right/left, bottom left corner menus based on revised designs from Andy
+
+  - Removing mouse delays for toggling graphics and box type.
+    - Toggling graphics already had a defvar *slow-graphics-toggle*, switched
+      this to nil
+    - Introduced a new defvar *slow-box-type-toggle* to control behavior for
+      toggling box types.
+
+- boxer-sunrise-13 Cleaning up keyboards between OS's to simplify setup.
+
+- boxer-sunrise-12 Linux Support
+  - Minor changes to allow starting up under 64-bit Lispworks for Linux/GTK.
+
+- boxer-sunrise-11 Windows 10 Support
+  - Updating start script to take in to account windows drive letters for paths, as well as the slightly
+    difference directory sturcture, and load 64ofasl files for windows and 64xfasl files for MacOS
+  - Minor refactoring for included library paths.
+
+- boxer-sunrise-7 First set of work on updated HTML5 export.
+
+- boxer-sunrise-3 Minor refactoring of JSON export to share with HTML and other export types.
+
+- crash-fixes
+  - Fixed an issue with colors not being correctly initialized before used in the opengl context
+  - Added a special check for some old microworlds storing fonts with relative sizes and starting
+    with font size zero.
+  - Adding extra check to avoid division by zero with max-scroll-wid math
+
+- Continued formatting fixes and improvements across source.
+
+- the-attic
+  - Moving lots of pre-opengl drawing routines from `new-borders.lisp`, `disply.lisp`, `popup.lisp` to the attic.
+  - Lots of other minor removals from deprecated platforms.
+
 ## 3.4.3 2020-01-27
 
 - boxer-sunrise-3 First set of work on JSON export format
