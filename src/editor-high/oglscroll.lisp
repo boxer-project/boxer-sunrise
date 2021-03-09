@@ -562,7 +562,7 @@ Modification History (most recent at top)
                                 (sbe (scroll-buttons-extent)))
                            (when (v-scrollable? self)
                              ;; ok need to draw vertical scroll GUI
-                             (draw-vertical-elevator vert-x it (- inner-hei sbe)
+                             (draw-vertical-elevator vert-x it (- inner-hei 0) ;sbe)
                                                      (/ visible-rows total-rows)
                                                      (if (null scroll-to-actual-row) 0
                                                        (/ (row-row-no actual-obj scroll-to-actual-row) total-rows)))
@@ -625,8 +625,8 @@ Modification History (most recent at top)
                              )
                            ))))
 
-(defvar *scroll-info-offset* 2 "How far to indent scroll info from the inner (text) part of the box")
-(defvar *scroll-elevator-thickness* 10)
+(defvar *scroll-info-offset* 0 "How far to indent scroll info from the inner (text) part of the box")
+(defvar *scroll-elevator-thickness* 6)
 (defvar *scroll-button-width* 10)
 (defvar *scroll-button-length* 6)
 (defvar *scroll-elevator-color*)
@@ -638,26 +638,18 @@ Modification History (most recent at top)
 ;; size is expressed as a rational < 1 = amount of available space to draw the elevator in
 ;; pos is also expressed as a rational 0 <= pos <= 1
 (defun draw-vertical-elevator (x y height size pos)
+   (with-pen-size (1) (with-pen-color (*black*)
+     (opengl::gl-disable opengl::*gl-line-smooth*)
+    (draw-line x y x (+ y height) alu-seta nil)
+    (opengl::gl-enable opengl::*gl-line-smooth*)
+  ))
   (with-pen-color (*scroll-elevator-color*)
     (draw-rectangle alu-seta *scroll-elevator-thickness* (round (* height size))
                     (+ x *scroll-info-offset*) (+ y (round (* pos height))))))
 
 ;; and up arrow and a down arrow, highlight describes which arrow to to hightlight (when the mouse is on it)
-(defun draw-vertical-scroll-buttons (x y)
-  (let ((left-x  (+ x *scroll-info-offset*))
-        (mid-x   (+ x *scroll-info-offset* (/ *scroll-button-width* 2)))
-        (right-x (+ x *scroll-info-offset* *scroll-button-width*))
-        (top-button-bottom-y (+ y 1 *scroll-button-length*))
-        (bottom-button-top-y (+ y 1 *scroll-button-length* 1)))
-    (with-pen-color (*scroll-buttons-color*)
-      ;; upper button
-      (draw-poly alu-seta (list (cons mid-x (+ y 1))
-                                (cons left-x top-button-bottom-y)
-                                (cons right-x top-button-bottom-y)))
-      ;; lower-button
-      (draw-poly alu-seta (list (cons left-x bottom-button-top-y)
-                                (cons right-x bottom-button-top-y)
-                                (cons mid-x (+ y 1 *scroll-button-length* 1 *scroll-button-length*)))))))
+(defun draw-vertical-scroll-buttons (x y) ;; sgithen 2021-03-08 Removing these buttons for now.
+)
 
 (defun scroll-buttons-extent () (+ 1 *scroll-button-length* 1 *scroll-button-length* 1))
 
@@ -668,21 +660,10 @@ Modification History (most recent at top)
     (draw-rectangle alu-seta (round (* width size)) *scroll-elevator-thickness*
                     (+ x (round (* pos width))) (+ y *scroll-info-offset*))))
 
-(defun draw-horizontal-scroll-buttons (x y)
-  (let ((top-y  (+ y *scroll-info-offset*))
-        (mid-y   (+ y *scroll-info-offset* (round *scroll-button-width* 2)))
-        (bottom-y (+ y *scroll-info-offset* *scroll-button-width*))
-        (left-button-right-x (+ x 1 *scroll-button-length*))
-        (right-button-left-x (+ x 1 *scroll-button-length* 1)))
-    (with-pen-color (*scroll-buttons-color*)
-      ;; upper button
-      (draw-poly alu-seta (list (cons (+ x 1) mid-y)
-                                (cons left-button-right-x top-y)
-                                (cons left-button-right-x bottom-y)))
-      ;; lower-button
-      (draw-poly alu-seta (list (cons right-button-left-x top-y)
-                                (cons right-button-left-x bottom-y)
-                                (cons (+ x 1 *scroll-button-length* 1 *scroll-button-length*) mid-y))))))
+(defun draw-horizontal-scroll-buttons (x y) ;; sgithen 2021-03-08 Removing these buttons for now.
+)
+
+
 
 ;; scroll position tracking.  Get-position-in-border only returns :Scroll-bar
 ;; which causes a generic mouse-scrolling com to be invoked.  Finer grained
