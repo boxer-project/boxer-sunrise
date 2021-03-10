@@ -3154,6 +3154,42 @@ to the :TEXT-STRING method of boxes. "
 (defvar *use-capogi-fonts* t) ; want to allow option for scaleable vector OpenGL fonts in Windows
 
 ;;;;
+;;;; FILE: oglscroll.lisp
+;;;;
+(defun draw-vertical-scroll-buttons (x y)
+  (let ((left-x  (+ x *scroll-info-offset*))
+        (mid-x   (+ x *scroll-info-offset* (/ *scroll-button-width* 2)))
+        (right-x (+ x *scroll-info-offset* *scroll-button-width*))
+        (top-button-bottom-y (+ y 1 *scroll-button-length*))
+        (bottom-button-top-y (+ y 1 *scroll-button-length* 1)))
+    (with-pen-color (*scroll-buttons-color*)
+      ;; upper button
+      (draw-poly alu-seta (list (cons mid-x (+ y 1))
+                                (cons left-x top-button-bottom-y)
+                                (cons right-x top-button-bottom-y)))
+      ;; lower-button
+      (draw-poly alu-seta (list (cons left-x bottom-button-top-y)
+                                (cons right-x bottom-button-top-y)
+                                (cons mid-x (+ y 1 *scroll-button-length* 1 *scroll-button-length*)))))))
+
+(defun draw-horizontal-scroll-buttons (x y)
+  (let ((top-y  (+ y *scroll-info-offset*))
+        (mid-y   (+ y *scroll-info-offset* (round *scroll-button-width* 2)))
+        (bottom-y (+ y *scroll-info-offset* *scroll-button-width*))
+        (left-button-right-x (+ x 1 *scroll-button-length*))
+        (right-button-left-x (+ x 1 *scroll-button-length* 1)))
+    (with-pen-color (*scroll-buttons-color*)
+      ;; upper button
+      (draw-poly alu-seta (list (cons (+ x 1) mid-y)
+                                (cons left-button-right-x top-y)
+                                (cons left-button-right-x bottom-y)))
+      ;; lower-button
+      (draw-poly alu-seta (list (cons right-button-left-x top-y)
+                                (cons right-button-left-x bottom-y)
+                                (cons (+ x 1 *scroll-button-length* 1 *scroll-button-length*) mid-y))))))
+
+
+;;;;
 ;;;; FILE: popup.lisp
 ;;;;
 
