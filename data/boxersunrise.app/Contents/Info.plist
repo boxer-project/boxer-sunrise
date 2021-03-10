@@ -31,7 +31,7 @@
 	<string>boxersunrise</string>
 
 	<key>CFBundleIconFile</key>
-	<string>boxer-app.icns</string>
+	<string>boxer-sunrise.icns</string>
 
 	<key>CFBundleIdentifier</key>
 	<string>org.boxer.BoxerSunrise</string>
