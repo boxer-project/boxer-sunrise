@@ -1415,22 +1415,27 @@
   ;; do one thing, show it, then pause...
   (capi::apply-in-pane-process *boxer-pane* #'repaint t)
   (simple-wait-with-timeout *initial-scroll-pause-time* #'(lambda () (zerop& (mouse-button-state))))
-  ;; now loop
-  (let* ((edbox (screen-obj-actual-obj screen-box))
-         (1st-edrow (first-inferior-row edbox))
-         (last-edrow (last-scrolling-row edbox)))
-    (loop (when (or (zerop& (mouse-button-state))
-                    (and (eq direction :up) (eq (scroll-to-actual-row screen-box) 1st-edrow))
-                    (and (eq direction :down) (row-> (scroll-to-actual-row screen-box)
-                                                last-edrow)))
-            ;; stop if the mouse is up or we hit one end or the other...
-            (return))
-      (if (eq direction :up)
-        (com-scroll-up-row screen-box)
-        (com-scroll-dn-row screen-box))
-      (repaint)
-      (simple-wait-with-timeout *scroll-pause-time*
-                                #'(lambda () (zerop& (mouse-button-state)))))))
+
+  ;; sgithens 2021-03-11 This `if` is a temporary crash fix, as this method keeps getting called when there are
+  ;; no previous rows for `last-scrolling-row`
+  (if (and (previous-row (last-inferior-row (screen-obj-actual-obj screen-box)))
+           (previous-row (previous-row (last-inferior-row (screen-obj-actual-obj screen-box)))))
+    ;; now loop
+    (let* ((edbox (screen-obj-actual-obj screen-box))
+          (1st-edrow (first-inferior-row edbox))
+          (last-edrow (last-scrolling-row edbox)))
+      (loop (when (or (zerop& (mouse-button-state))
+                      (and (eq direction :up) (eq (scroll-to-actual-row screen-box) 1st-edrow))
+                      (and (eq direction :down) (row-> (scroll-to-actual-row screen-box)
+                                                  last-edrow)))
+              ;; stop if the mouse is up or we hit one end or the other...
+              (return))
+        (if (eq direction :up)
+          (com-scroll-up-row screen-box)
+          (com-scroll-dn-row screen-box))
+        (repaint)
+        (simple-wait-with-timeout *scroll-pause-time*
+                                  #'(lambda () (zerop& (mouse-button-state))))))))
 
 ;; pixel (as opposed to row) based scrolling
 ;; should we quantize on integral row on exit ??
