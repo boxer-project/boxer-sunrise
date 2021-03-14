@@ -2,6 +2,16 @@
 
 ## 3.4.4 2020-03-12
 
+- Installer updates and expansions
+  - This release we are including an experimental windows binary which requires installing the 
+    "Microsoft Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019". Future releases
+    will properly include these in the installer itself.
+    https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0
+  - We are including a DMG archive for the MacOS version now, with a traditional "drag and drop the binary
+    in to the applications folder" type installer.
+  - Moving forward we'll be slowly cleaning up and including more demos and microworlds with releases.
+    This release we are including the "Annotated Cube" and "Button Factory" demos.
+
 - boxer-sunrise-16 Minor improvements to scrollbar rendering. Removing tiny up/down buttons.
 
 - boxer-sunrise-6 Fix annoying default file name issue with Windows 10 File Chooser.
