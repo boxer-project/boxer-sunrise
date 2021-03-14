@@ -1,6 +1,6 @@
 # Change Log
 
-## 3.4.4 2020-03-??
+## 3.4.4 2020-03-12
 
 - boxer-sunrise-16 Minor improvements to scrollbar rendering. Removing tiny up/down buttons.
 
