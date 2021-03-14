@@ -8,7 +8,7 @@
     will properly include these in the installer itself.
     https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0
   - We are including a DMG archive for the MacOS version now, with a traditional "drag and drop the binary
-    in to the applications folder" type installer.
+    in to the applications folder" type installer.  The DMG folder dimensions and artwork are a work in progress.
   - Moving forward we'll be slowly cleaning up and including more demos and microworlds with releases.
     This release we are including the "Annotated Cube" and "Button Factory" demos.
 
