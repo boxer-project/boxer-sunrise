@@ -165,9 +165,11 @@
 ;;; sure there were no intervening clipping operations.
 
 (defun draw-line (x0 y0 x1 y1 alu end-point?)
+  (agnostic-render (format nil "draw-line ~a ~a ~a ~a" x0 y0 x1 y1))
   (%draw-line x0 y0 x1 y1 alu end-point? %drawing-window))
 
 (defun draw-rectangle (alu w h x y)
+  (agnostic-render (format nil "draw-rectangle ~a ~a ~a ~a" w h x y))
   (%draw-rectangle w h x y alu %drawing-window))
 
 (defun erase-rectangle (w h x y)
@@ -190,8 +192,10 @@
 ;; row, the common reference point will be the baseline instead of the top
 ;; edge
 (defun draw-cha (alu char x y)
+  (agnostic-render (format nil "draw-cha ~a ~a ~a" x y char))
   (%draw-cha alu x y char))
 
 (defun draw-string (alu font-no string region-x region-y &optional window)
+  (agnostic-render (format nil "draw-string ~a ~a ~a" region-x region-y string))
   (declare (ignore window))
   (%draw-string alu font-no string region-x region-y %drawing-window))
