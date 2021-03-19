@@ -1861,56 +1861,6 @@
   (capi:display-message-on-screen (capi:convert-to-screen nil)
                                   (system-version)))
 
-;;; System clipboard
-
-(defun paste-text ()
-  (let ((string (capi::clipboard *boxer-pane* :string)))
-    (unless (null string)
-      (dotimes (i (length string))
-        (let ((char (aref string i)))
-          (if (member char '(#\Newline #\Return #\Linefeed))
-              (boxer::insert-row boxer::*point*
-                                 (boxer::make-initialized-row) :moving)
-              (boxer::insert-cha boxer::*point* char :moving)))))))
-
-(defun image-to-bitmap (image)
-  (unless (null image)
-    (let* ((wid (gp:image-width image)) (hei (gp:image-height image))
-           (bim (make-offscreen-bitmap *boxer-pane* wid hei)))
-      (boxer::copy-image-to-bitmap image bim wid hei)
-      (values bim wid hei))))
-
-(defun paste-pict (&optional (img (capi::clipboard *boxer-pane* :image)
-                                  img-supplied-p))
-  (multiple-value-bind (bm wid hei)
-      (image-to-bitmap img)
-    (unless (null bm)
-      ;; memory leak ?
-      (unless img-supplied-p (gp:free-image *boxer-pane* img))
-      (let* ((gb (boxer::make-box '(())))
-             (gs (boxer::make-graphics-sheet wid hei gb)))
-        (setf (boxer::graphics-sheet-bit-array gs) bm)
-        (setf (boxer::graphics-sheet-bit-array-dirty? gs) T)
-        (setf (boxer::graphics-info gb) gs)
-        (setf (boxer::display-style-graphics-mode?
-               (boxer::display-style-list gb)) T)
-        (boxer::insert-cha boxer::*point* gb :moving)))))
-
-(defmethod paste ((self boxer-frame))
-  (cond ((equal '(nil :lisp) (multiple-value-list (capi:clipboard-empty self :value)))
-         ;; We are looking an undocumented multiple return value for type :value where
-         ;; the second return value will be symbol :lisp if it came from lispworks. If
-         ;; this is the case we know we were the last one to set the clipboard and yank
-         ;; in our most recent item.
-         ;; http://www.lispworks.com/documentation/lw71/CAPI-W/html/capi-w-206.htm#82688
-         (boxer::com-yank))
-        ((not (capi:clipboard-empty self :string))
-         (paste-text))
-        ((not (capi:clipboard-empty self :image))
-         (paste-pict))
-        (t (boxer::com-yank)))
-  (boxer::repaint))
-
 
 ;;;;  Crash reporting
 

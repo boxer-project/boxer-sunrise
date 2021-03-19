@@ -531,7 +531,7 @@ Modification History (most recent at top)
 
 (defun menu-clipboard-paste (d i)
   (declare (ignore d i))
-  (bw::paste *boxer-frame*)
+  (boxer-lw-capi::paste *boxer-frame*)
   boxer-eval::*novalue*)
 
 (defun menu-select-box-contents (data interface)
