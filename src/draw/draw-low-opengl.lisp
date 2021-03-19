@@ -164,17 +164,17 @@ notes:: check points arg on draw-poly
 
 ;; must be called AFTER *boxer-pane* has been created
 (defun initialize-colors ()
-  (setq *black*   (bw::ogl-convert-color (color::get-color-spec :black))
-        *white*   (bw::ogl-convert-color (color::get-color-spec :white))
-        *red*     (bw::ogl-convert-color (color::get-color-spec :red))
-        *green*   (bw::ogl-convert-color (color::get-color-spec :green))
-        *blue*    (bw::ogl-convert-color (color::get-color-spec :blue))
-        *yellow*  (bw::ogl-convert-color (color::get-color-spec :yellow))
-        *magenta* (bw::ogl-convert-color (color::get-color-spec :magenta))
-        *cyan*    (bw::ogl-convert-color (color::get-color-spec :cyan))
-        *orange*  (bw::ogl-convert-color (color::get-color-spec :orange))
-        *purple*  (bw::ogl-convert-color (color::get-color-spec :purple))
-        *gray*    (bw::ogl-convert-color (color::get-color-spec :gray)))
+  (setq *black*   (bw::ogl-convert-color #(:RGB 0.0 0.0 0.0))
+        *white*   (bw::ogl-convert-color #(:RGB 1.0 1.0 1.0))
+        *red*     (bw::ogl-convert-color #(:RGB 1.0 0.0 0.0))
+        *green*   (bw::ogl-convert-color #(:RGB 0.0 1.0 0.0))
+        *blue*    (bw::ogl-convert-color #(:RGB 0.0 0.0 1.0))
+        *yellow*  (bw::ogl-convert-color #(:RGB 1.0 1.0 0.0))
+        *magenta* (bw::ogl-convert-color #(:RGB 1.0 0.0 1.0))
+        *cyan*    (bw::ogl-convert-color #(:RGB 0.0 1.0 1.0))
+        *orange*  (bw::ogl-convert-color #(:RGB 1.0 0.6470585 0.0))
+        *purple*  (bw::ogl-convert-color #(:RGB 0.627451 0.1254902 0.941175))
+        *gray*    (bw::ogl-convert-color #(:RGB 0.752941 0.752941 0.752941)))
   (setq *foreground-color* *black*
         *background-color* *white*
         *default-border-color* *black*
