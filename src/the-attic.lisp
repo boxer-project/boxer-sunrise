@@ -6,6 +6,17 @@
 ;;;; FILE: boxwin-opengl.lisp
 ;;;;
 
+
+(defvar *blinker-alpha-value* .3)
+
+(defun update-blinker-color ()
+  #+win32
+  (let ((bc (color:get-color-spec 'win32::color_highlight)))
+    (setq *blinker-color* (make-ogl-color (color:color-red bc)
+                                          (color:color-green bc)
+                                          (color:color-blue bc)
+                                          *blinker-alpha-value*))))
+
 ;; for ALT key handling
 #+lispworks4
 (defmethod capi::interface-keys-style ((self boxer-frame)) :emacs)
