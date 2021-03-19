@@ -1495,31 +1495,10 @@ Modification History (most recent at the top)
                                                new-wid new-hei)))
         ;; if the new bitmap is bigger, initialize it
         (when (or (> new-wid old-wid) (> new-hei old-hei))
-          #-opengl
-          (drawing-on-bitmap (new-bitmap)
-                             (with-pen-color ((or (graphics-sheet-background sheet) *background-color*))
-                               (draw-rectangle alu-seta new-wid new-hei 0 0)))
-          #+opengl
           (clear-offscreen-bitmap new-bitmap (or (graphics-sheet-background sheet)
                                                  *background-color*))
           )
         ;; now move the old contents into the new bitmap
-        #-opengl
-        (drawing-on-bitmap (new-bitmap)
-                           (case *boxer-graphics-box-bit-gravity*
-                             (:top-right (bitblt-to-screen alu-seta
-                                                           (min& old-wid new-wid)
-                                                           (min& old-hei new-hei)
-                                                           old-bitmap 0 0 0 0))
-                             (:center (bitblt-to-screen alu-seta
-                                                        (min& old-wid new-wid)
-                                                        (min& old-hei new-hei)
-                                                        old-bitmap
-                                                        (max& 0 (round (-& old-wid new-wid) 2))
-                                                        (max& 0 (round (-& old-hei new-hei) 2))
-                                                        (max& 0 (round (-& new-wid old-wid) 2))
-                                                        (max& 0 (round (-& new-hei old-hei) 2))))))
-        #+opengl
         (case *boxer-graphics-box-bit-gravity*
           (:top-right
            (copy-offscreen-bitmap
@@ -2458,21 +2437,10 @@ Modification History (most recent at the top)
             (list 'bu::stamp-wedge radius sweep-angle))))
   :COMMAND-BODY
   (when (plusp radius)
-    #+opengl
     (%draw-c-arc (ensure-legal-window-coordinate (scale-x x))
                 (ensure-legal-window-coordinate (scale-y y))
                 radius
                 start-angle sweep-angle T)
-    #-opengl
-    (let ((diameter  (fixr (+ radius radius)))
-          (fix-radius (fixr radius)))
-      (%draw-filled-arc %drawing-array *graphics-state-current-alu*
-                        (ensure-legal-window-coordinate
-                        (scale-x (-& x fix-radius)))
-                        (ensure-legal-window-coordinate
-                        (scale-y (-& y fix-radius)))
-                        diameter diameter
-                        start-angle sweep-angle))
     )
   :TRANSLATION-ARGS
   ;; translation
@@ -2515,19 +2483,11 @@ Modification History (most recent at the top)
             (list 'bu::stamp-arc radius sweep-angle))))
   :COMMAND-BODY
   (unless (zerop radius)
-    #+opengl
     (%draw-c-arc (ensure-legal-window-coordinate (scale-x x))
                 (ensure-legal-window-coordinate (scale-y y))
                 radius
                 start-angle sweep-angle nil)
-    #-opengl
-    (let ((diameter  (fixr (* 2 radius)))
-          (fix-radius (fixr radius)))
-      (%draw-arc %drawing-array *graphics-state-current-alu*
-                (ensure-legal-window-coordinate (scale-x (-& x fix-radius)))
-                (ensure-legal-window-coordinate (scale-y (-& y fix-radius)))
-                diameter diameter
-                start-angle sweep-angle)))
+    )
   :TRANSLATION-ARGS
   ;; translation
   (trans-x trans-y)
@@ -2680,21 +2640,11 @@ Modification History (most recent at the top)
             (list 'bu::stamp-circle radius))))
   :COMMAND-BODY
   (when (plusp radius)
-    #+opengl
     (%draw-circle (ensure-legal-window-coordinate (scale-x x))
                   (ensure-legal-window-coordinate (scale-y y))
                   radius
                   T)
-    #-opengl
-    (let ((diameter  (fixr (+ radius radius)))
-          (fix-radius (fixr radius)))
-      (%draw-filled-arc %drawing-array *graphics-state-current-alu*
-                        (ensure-legal-window-coordinate
-                        (scale-x (-& x fix-radius)))
-                        (ensure-legal-window-coordinate
-                        (scale-y (-& y fix-radius)))
-                        diameter diameter
-                        0 360))
+
     )
   :TRANSLATION-ARGS
   ;; translation
@@ -2736,18 +2686,10 @@ Modification History (most recent at the top)
             (list 'bu::stamp-hollow-circle radius))))
   :COMMAND-BODY
   (unless (zerop radius)
-    #+opengl
     (%draw-circle (ensure-legal-window-coordinate (scale-x x))
                   (ensure-legal-window-coordinate (scale-y y))
                   radius
                   nil)
-    #-opengl
-    (let ((diameter  (fixr (* 2 radius)))
-          (fix-radius (fixr radius)))
-      (%draw-arc %drawing-array *graphics-state-current-alu*
-                (ensure-legal-window-coordinate (scale-x (-& x fix-radius)))
-                (ensure-legal-window-coordinate (scale-y (-& y fix-radius)))
-                diameter diameter 0 360))
     )
   :TRANSLATION-ARGS
   ;; translation

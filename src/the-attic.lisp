@@ -2411,6 +2411,70 @@
   `(vectorp ,thing))
 
 ;;;;
+;;;; FILE : gdispl.lisp
+;;;;
+
+    #-opengl
+    (let ((diameter  (fixr (+ radius radius)))
+          (fix-radius (fixr radius)))
+      (%draw-filled-arc %drawing-array *graphics-state-current-alu*
+                        (ensure-legal-window-coordinate
+                        (scale-x (-& x fix-radius)))
+                        (ensure-legal-window-coordinate
+                        (scale-y (-& y fix-radius)))
+                        diameter diameter
+                        start-angle sweep-angle))
+
+#-opengl
+    (let ((diameter  (fixr (* 2 radius)))
+          (fix-radius (fixr radius)))
+      (%draw-arc %drawing-array *graphics-state-current-alu*
+                (ensure-legal-window-coordinate (scale-x (-& x fix-radius)))
+                (ensure-legal-window-coordinate (scale-y (-& y fix-radius)))
+                diameter diameter
+                start-angle sweep-angle))
+
+    #-opengl
+    (let ((diameter  (fixr (+ radius radius)))
+          (fix-radius (fixr radius)))
+      (%draw-filled-arc %drawing-array *graphics-state-current-alu*
+                        (ensure-legal-window-coordinate
+                        (scale-x (-& x fix-radius)))
+                        (ensure-legal-window-coordinate
+                        (scale-y (-& y fix-radius)))
+                        diameter diameter
+                        0 360))
+
+    #-opengl
+    (let ((diameter  (fixr (* 2 radius)))
+          (fix-radius (fixr radius)))
+      (%draw-arc %drawing-array *graphics-state-current-alu*
+                (ensure-legal-window-coordinate (scale-x (-& x fix-radius)))
+                (ensure-legal-window-coordinate (scale-y (-& y fix-radius)))
+                diameter diameter 0 360))
+
+          #-opengl
+          (drawing-on-bitmap (new-bitmap)
+                             (with-pen-color ((or (graphics-sheet-background sheet) *background-color*))
+                               (draw-rectangle alu-seta new-wid new-hei 0 0)))
+
+        #-opengl
+        (drawing-on-bitmap (new-bitmap)
+                           (case *boxer-graphics-box-bit-gravity*
+                             (:top-right (bitblt-to-screen alu-seta
+                                                           (min& old-wid new-wid)
+                                                           (min& old-hei new-hei)
+                                                           old-bitmap 0 0 0 0))
+                             (:center (bitblt-to-screen alu-seta
+                                                        (min& old-wid new-wid)
+                                                        (min& old-hei new-hei)
+                                                        old-bitmap
+                                                        (max& 0 (round (-& old-wid new-wid) 2))
+                                                        (max& 0 (round (-& old-hei new-hei) 2))
+                                                        (max& 0 (round (-& new-wid old-wid) 2))
+                                                        (max& 0 (round (-& new-hei old-hei) 2))))))
+
+;;;;
 ;;;; FILE: grobjs.lisp
 ;;;;
 
