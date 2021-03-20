@@ -186,10 +186,6 @@ notes:: check points arg on draw-poly
 (defun sheet-inside-top (window) (declare (ignore window)) 0)
 (defun sheet-inside-left (window) (declare (ignore window)) 0)
 
-;; what about capi:simple-pane-visible-size ?
-(defun sheet-inside-height (window) (gp:port-height window))
-(defun sheet-inside-width  (window) (gp:port-width  window))
-
 ;;; &&&& stub
 ;;; **** returns pixel value(window system dependent) at windw coords (x,y)
 ;;; see BU::COLOR-AT in grprim3.lisp
@@ -204,26 +200,13 @@ notes:: check points arg on draw-poly
         (set-font-info ,font-no)
         ,@body))))
 
-;; this is a stub
-;; it is used by some window systems(the mac) to insure all graphics
-;; commands are sent to the VIEW arg
-;;
-;; we seem to access the graphics state a lot so it might be advantageous to
-;; bind it within this macro
-
-(defvar %graphics-state nil)
-
 (defmacro with-drawing-port (view &body body)
-  `(let ((%drawing-array ,view)
-         (%graphics-state (gp:get-graphics-state ,view)))
+  `(let ((%drawing-array ,view))
      (opengl::rendering-on (,view)
                            ;; always start by drawing eveywhere
                            (bw::ogl-reshape (sheet-inside-width ,view) (sheet-inside-height ,view))
                            (opengl::gl-scissor 0 0 (sheet-inside-width ,view) (sheet-inside-height ,view))
                            . ,body)))
-
-(defmacro current-graphics-state ()
-  '(or %graphics-state (gp:get-graphics-state (or %drawing-array *boxer-pane*))))
 
 ;; **** added WITH-PORT
 (defmacro prepare-sheet ((window) &body body)
@@ -1083,11 +1066,6 @@ notes:: check points arg on draw-poly
 (defun offscreen-bitmap-depth (bitmap)
   (opengl::ogl-pixmap-depth bitmap))
 
-;;; See Inside Mac V-53
-#| ;; unused ?
-(defun pixmap? (bm-or-pm) (typep bm-or-pm 'gp::pixmap-port))
-|#
-
 ;; copy-graphics-sheet in makcpy,  stamp-bitmap in  gcmeth ?
 (defun copy-offscreen-bitmap (alu wid hei src src-x src-y dst dst-x dst-y)
   (declare (ignore alu))
@@ -1159,30 +1137,6 @@ notes:: check points arg on draw-poly
 
 (defun offscreen-pixel-color (x y pixmap)
   (opengl::pixel->color (opengl::pixmap-pixel pixmap x y)))
-
-;;; capi:clipboard returns IMAGES
-(defun copy-image-to-bitmap (image bm w h)
-  (let ((ia (gp:make-image-access *boxer-pane* image))
-        (bdata (opengl::ogl-pixmap-data bm)))
-    (unwind-protect
-     (progn
-      (gp::image-access-transfer-from-image ia)
-      (dotimes (y h)
-        (dotimes (x w)
-          (setf (fli:dereference bdata :index (+ x (* (- h y 1) w)))
-                (uncolor->pixel
-                  (color:unconvert-color *boxer-pane* (gp:image-access-pixel ia x y)))))))
-     (gp:free-image-access ia))))
-
-;; uncolor = result of color:unconvert-color which is a simple-vector with components of
-;; :RGB, red, green, blue & alpha in 0->1.0 floa format
-(defun uncolor->pixel (uncolor)
-  (flet ((convert-color-component (cc)
-                                  (floor (* cc 255))))
-        (opengl::make-offscreen-pixel (convert-color-component (svref uncolor 1))
-                                      (convert-color-component (svref uncolor 2))
-                                      (convert-color-component (svref uncolor 3))
-                                      (convert-color-component (svref uncolor 4)))))
 
 ;;; should we pass blend functions in ? ((src-blend-func dst-blend-func) &body body)
 (defmacro with-blending-on (&body body)

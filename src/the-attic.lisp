@@ -2118,6 +2118,23 @@
 ;;;; FILE: draw-low-opengl.lisp
 ;;;;
 
+;; this is a stub
+;; it is used by some window systems(the mac) to insure all graphics
+;; commands are sent to the VIEW arg
+;;
+;; we seem to access the graphics state a lot so it might be advantageous to
+;; bind it within this macro
+
+(defvar %graphics-state nil)
+
+(defmacro current-graphics-state ()
+  '(or %graphics-state (gp:get-graphics-state (or %drawing-array *boxer-pane*))))
+
+;;; See Inside Mac V-53
+#| ;; unused ?
+(defun pixmap? (bm-or-pm) (typep bm-or-pm 'gp::pixmap-port))
+|#
+
 ;; yuck !!!
 (defun window-depth (window)
   (declare (ignore window)) (capi:screen-depth (car (capi::screens))))
