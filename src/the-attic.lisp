@@ -2118,6 +2118,11 @@
 ;;;; FILE: draw-low-opengl.lisp
 ;;;;
 
+;; yuck !!!
+(defun window-depth (window)
+  (declare (ignore window)) (capi:screen-depth (car (capi::screens))))
+
+
 ;;; Opengl configuration variables
 ;;; in theory, the GPU will be queried as a redisplay init and these
 ;;; parameters will be initialized.

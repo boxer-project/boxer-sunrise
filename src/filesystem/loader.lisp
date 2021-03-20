@@ -1077,15 +1077,15 @@ should ignore it.")
 (defvar *old-style-restore-bitmaps?* nil
   "Probably only Steve ever needs to set this for his Dinosaurs")
 
-
-;; used to test whether to load the picture since there might be
-;; color vs B&W lossage as well as other problems that could prevent a
-;; successful restoration of a dumped out bitmap
 (defun load-picture? (&rest args)
+  "Used to test whether to load the picture since there might be
+  color vs B&W lossage as well as other problems that could prevent a
+  successful restoration of a dumped out bitmap.
+
+  For previous systems such as clx and mcl this returned true, but now
+  it is alwayw nil."
   (declare (ignore args))
-  #+clx (<= (window-depth *boxer-pane*) 1)
-  #+MCL t                               ; temp +++
-  #-(or mcl clx) nil)
+  nil)
 
 ;; make sure new graphics list has a HIDDEN slot
 (defun post-load-process-graphics-list (graphics-list)

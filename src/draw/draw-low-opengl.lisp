@@ -190,10 +190,6 @@ notes:: check points arg on draw-poly
 (defun sheet-inside-height (window) (gp:port-height window))
 (defun sheet-inside-width  (window) (gp:port-width  window))
 
-;; yuck !!!
-(defun window-depth (window)
-  (declare (ignore window)) (capi:screen-depth (car (capi::screens))))
-
 ;;; &&&& stub
 ;;; **** returns pixel value(window system dependent) at windw coords (x,y)
 ;;; see BU::COLOR-AT in grprim3.lisp
