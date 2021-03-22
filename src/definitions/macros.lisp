@@ -1,52 +1,41 @@
 ;; -*- Mode:LISP; Syntax:Common-Lisp; Package:(BOXER :USE (LISP) :NICKNAMES (BOX)) -*-
-#|
-
-
- $Header: macros.lisp,v 1.0 90/01/24 22:14:20 boxer Exp $
-
- $Log:	macros.lisp,v $
-;;;Revision 1.0  90/01/24  22:14:20  boxer
-;;;Initial revision
-;;;
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                         +-Data--+
-                This file is part of the | BOXER | system
-                                         +-------+
-
-
-       This file contains the useful macros for boxer
-
-
-
-Modification History (most recent at top)
-
- 3/ 7/13 removed fixnum arithmetic from snooze.  MacOS time can be larger than fixnums
- 2/10/03 merged current mac & PC source
- 4/17/02 added char-case macro
- 4/08/02 added string-case macro
- 3/27/00 smarter LWWIN version of input-code
- 8/03/99 added lwwin version of key-event?
- 4/10/99 added constant *degs->rads* = (/ pi 180.0) (can't believe this wasn't
-         already done !!)
- 2/14/99 added lispworks version of input-bits, make-char
- 1/08/99 added compiler-let for for Lispworks
-10/25/98 Additions for Harlequin Lispworks for Windows 4.1
- 5/27/98 added with-lisp-error-reporting
- 5/27/98 Started Logging Changes: source = Boxer version 2.3 alphaR1
-
-
-|#
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                           +-Data--+
+;;;;                  This file is part of the | BOXER | system
+;;;;                                           +-------+
+;;;;
+;;;;
+;;;;         This file contains the useful macros for boxer
+;;;;
+;;;;
+;;;;
+;;;;  Modification History (most recent at top)
+;;;;
+;;;;   3/ 7/13 removed fixnum arithmetic from snooze.  MacOS time can be larger than fixnums
+;;;;   2/10/03 merged current mac & PC source
+;;;;   4/17/02 added char-case macro
+;;;;   4/08/02 added string-case macro
+;;;;   3/27/00 smarter LWWIN version of input-code
+;;;;   8/03/99 added lwwin version of key-event?
+;;;;   4/10/99 added constant *degs->rads* = (/ pi 180.0) (can't believe this wasn't
+;;;;           already done !!)
+;;;;   2/14/99 added lispworks version of input-bits, make-char
+;;;;   1/08/99 added compiler-let for for Lispworks
+;;;;  10/25/98 Additions for Harlequin Lispworks for Windows 4.1
+;;;;   5/27/98 added with-lisp-error-reporting
+;;;;   5/27/98 Started Logging Changes: source = Boxer version 2.3 alphaR1
+;;;;
 
 (in-package :box)
 
