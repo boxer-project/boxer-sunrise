@@ -527,103 +527,13 @@
        (and (symbolp ,thing)
             (functionp (symbol-function ,thing)))))
 
-;;; Trig in Degrees
-;; There are 3 flavors of trig here, use the one which works best in
-;; your implementation.  The three flavors are:
-;;  . double precision floating point.  Seems to work best when there
-;;    is good hardware support for IEEE floating point and also
-;;    in implementations which do not carry out single precision
-;;    arithmetic (like lucid's)
-;;
-;;  . single precision floating point.  Can be faster is the implementation
-;;    actually suports it.  As opposed to pretending to support it but
-;;    really doing double precision and then coercing
-;;
-;;  . Table Lookup + linear interpolation.  Useful for implementations
-;;    which lack fast trig functions
-;;
-
 (defconstant +degs->rads+ (/ pi 180.0))
 
-#-(or lispm tltrig)
-(progn					; double precision
-  (defun sind (x) (sin (float-times (float x) +degs->rads+)))
+;; Trig: double precision
+;; See the-attic for anecdotes about the previous implementations of "Trig in Degrees"
+(defun sind (x) (sin (float-times (float x) +degs->rads+)))
 
-  (defun cosd (x) (cos (float-times (float x) +degs->rads+)))
-  )
-
-#+tltrig
-(progn					; table lookup + linear interpolation
-;;; we could phase shift instead of having 2 tables
-;;; but lets not get TOO complicated unless we have to
-  (defun make-sin-table ()
-    (let ((table (make-array 360 :element-type 'double-float)))
-      (dotimes (i 360)
-        (setf (aref table i) (sin (* i +degs->rads+))))
-      table))
-
-  (defun make-cos-table ()
-    (let ((table (make-array 360 :element-type 'double-float)))
-      (dotimes (i 360)
-        (setf (aref table i) (cos (* i +degs->rads+))))
-      table))
-
-  (defvar *sin-lookup-table* (make-sin-table))
-  (defvar *cos-lookup-table* (make-cos-table))
-
-  (defmacro sin-table-lookup (idx)
-    `(the float (aref (the (simple-array float (360)) *sin-lookup-table*)
-                      (the fixnum ,idx))))
-
-  (defmacro cos-table-lookup (idx)
-    `(the float (aref (the (simple-array float (360)) *cos-lookup-table*)
-                      (the fixnum ,idx))))
-
-  (defun tlsin-float-internal (degrees)
-    (declare (float degrees))
-    (multiple-value-bind (idx frac)
-        (the (values fixnum float) (floor degrees))
-      (declare (fixnum idx) (float frac))
-      (setq idx (mod idx 360))
-      (let ((t1 0.0) (t2 0.0))
-        (declare (float t1 t2))
-        (setq t1 (sin-table-lookup idx)
-              t2 (sin-table-lookup (1+& idx)))
-        ;; make t2 hold the difference
-        (setq t2 (float-minus t2 t1))
-        ;; now scale the difference
-        (setq t2 (float-times t2 frac))
-        ;; the answer is...
-        (float-plus t1 t2))))
-
-  (defun sind (degrees)
-    (if (typep degrees 'fixnum)
-        (sin-table-lookup (mod (the fixnum degrees) 360))
-        (tlsin-float-internal degrees)))
-
-  (defun tlcos-float-internal (degrees)
-    (declare (float degrees))
-    (multiple-value-bind (idx frac)
-        (the (values fixnum float) (floor degrees))
-      (declare (fixnum idx) (float frac))
-      (setq idx (mod idx 360))
-      (let ((t1 0.0) (t2 0.0))
-        (declare (float t1 t2))
-        (setq t1 (cos-table-lookup idx)
-              t2 (cos-table-lookup (1+& idx)))
-        ;; make t2 hold the difference
-        (setq t2 (float-minus t2 t1))
-        ;; now scale the difference
-        (setq t2 (float-times t2 frac))
-        ;; the answer is...
-        (float-plus t1 t2))))
-
-  (defun cosd (degrees)
-    (if (typep degrees 'fixnum)
-        (cos-table-lookup (mod (the fixnum degrees) 360))
-        (tlcos-float-internal degrees)))
-  )
-
+(defun cosd (x) (cos (float-times (float x) +degs->rads+)))
 
 ;; #+lispworks
 ;; (defmacro without-interrupts (&body body)
