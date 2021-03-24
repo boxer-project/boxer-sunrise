@@ -193,7 +193,7 @@
   ;; should this restore the original size ?
   (clear-storage-vector (slot-value self 'screen-chas))
   (setf (screen-chas-array-fds (slot-value self 'screen-chas)) nil)
-  (setf (screen-obj-force-redisplay-infs? self) #+3600 t #-3600 nil
+  (setf (screen-obj-force-redisplay-infs? self) nil
         (slot-value self 'baseline) 0
         (slot-value self 'screen-box) nil))
 
