@@ -108,6 +108,7 @@
     final-color))
 
 (defun make-freetype-pixmap (char-to-draw current-font cur-color)
+  #+lispworks  ;TODO factor out :fli calls...
   (let* ((rendered-array (freetype2::toy-string-to-array (current-freetype-font current-font) (string char-to-draw) :left-right))
          (advances (freetype2::get-string-advances (current-freetype-font current-font) (string char-to-draw)))
          (width (freetype2::array-dimension rendered-array 1))

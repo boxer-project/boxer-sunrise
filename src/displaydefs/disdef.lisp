@@ -136,6 +136,43 @@ Modification History (most recent at the top)
         *filegray* (boxer-window::make-pattern '((1 1) (1 1)))
         *graphicsgray* *gray1*))
 
+;;; Graphics defs and macros
+
+(DEFVAR *DEFAULT-GRAPHICS-SHEET-WIDTH* 320.)
+
+(DEFVAR *DEFAULT-GRAPHICS-SHEET-HEIGHT* 200.)
+
+(DEFVAR *MAKE-TURTLE-WITH-NEW-GRAPHICS-BOX* NIL
+        "Determines if graphics boxes are created with a turtle already in it. ")
+
+(defstruct (graphics-screen-sheet (:conc-name graphics-screen-sheet-)
+                                  (:predicate graphics-screen-sheet?)
+                                  (:constructor %make-g-screen-sheet
+                                                (actual-obj x-offset y-offset))
+                                  (:print-function
+                                   (lambda (gss str &rest other)
+                                           (declare (ignore other))
+                                           (format str "#<graph-scr-st x-~d. y-~d.>"
+                                                   (graphics-screen-sheet-x-offset
+                                                    gss)
+                                                   (graphics-screen-sheet-y-offset
+                                                    gss)))))
+  (x-offset 0.)
+  (y-offset 0.)
+  (screen-box nil)
+  (actual-obj nil))
+
+(defmacro check-graphics-screen-sheet-arg (x)
+  `(check-type ,x (satisfies graphics-screen-sheet?)
+                "A graphics screen sheet"))
+
+(defstruct (display-style (:predicate display-style?)) ;; TODO sgithens add docstring for this
+  (style :normal)
+  (fixed-wid nil)
+  (fixed-hei nil)
+  (graphics-mode? nil)
+  (border-style nil))
+
 ;;; The X implementation requires that the font map stuff be set
 ;;; up BEFORE the redisplay inits are run but we better check first...
 (def-redisplay-initialization
@@ -350,44 +387,9 @@ Modification History (most recent at the top)
                                                   (SCALE-Y SUPERIOR-ORIGIN-Y-OFFSET))
                                    ,@BODY))))
 
-;;; Graphics defs and macros
 
-(DEFVAR *DEFAULT-GRAPHICS-SHEET-WIDTH* 320.)
-
-(DEFVAR *DEFAULT-GRAPHICS-SHEET-HEIGHT* 200.)
-
-(DEFVAR *MAKE-TURTLE-WITH-NEW-GRAPHICS-BOX* NIL
-        "Determines if graphics boxes are created with a turtle already in it. ")
-
-(defstruct (graphics-screen-sheet (:conc-name graphics-screen-sheet-)
-                                  (:predicate graphics-screen-sheet?)
-                                  (:constructor %make-g-screen-sheet
-                                                (actual-obj x-offset y-offset))
-                                  (:print-function
-                                   (lambda (gss str &rest other)
-                                           (declare (ignore other))
-                                           (format str "#<graph-scr-st x-~d. y-~d.>"
-                                                   (graphics-screen-sheet-x-offset
-                                                    gss)
-                                                   (graphics-screen-sheet-y-offset
-                                                    gss)))))
-  (x-offset 0.)
-  (y-offset 0.)
-  (screen-box nil)
-  (actual-obj nil))
-
-(defmacro check-graphics-screen-sheet-arg (x)
-  `(check-type ,x (satisfies graphics-screen-sheet?)
-                "A graphics screen sheet"))
 
 ;;; random useful structs and stuff
-
-(defstruct (display-style (:predicate display-style?)) ;; TODO sgithens add docstring for this
-  (style :normal)
-  (fixed-wid nil)
-  (fixed-hei nil)
-  (graphics-mode? nil)
-  (border-style nil))
 
 (defstruct (screen-row-rdp1-info (:type vector)
                                  (:conc-name sr-rdp1-info-))
