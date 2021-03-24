@@ -206,7 +206,7 @@ Modification History (most recent at the top)
 ;;;; 62   BOXER-FILLED-CIRCLE                          (X Y RADIUS)
 ;;;; 63   BOXER-CIRCLE                                 (X Y RADIUS)
 
-(eval-when (load compile eval)
+(eval-when (:compile-toplevel :load-toplevel :execute)
 
 (defvar *default-graphics-list-initial-length* 16.)
 
@@ -292,7 +292,7 @@ Modification History (most recent at the top)
 
 ;;; store information about the graphics-command that
 ;;; might be useful for other macros
-(eval-when (compile load eval)
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (defstruct graphics-command-descriptor
     name
     slots
@@ -325,7 +325,7 @@ Modification History (most recent at the top)
   (graphics-command-descriptor-slots
    (get-graphics-command-descriptor (svref& graphics-command 0))))
 
-(eval-when (compile load eval)
+(eval-when (:compile-toplevel :load-toplevel :execute)
            (defun graphics-command-transform-template (graphics-command)
              (graphics-command-descriptor-transform-template
               (get-graphics-command-descriptor (svref& graphics-command 0))))
@@ -573,7 +573,7 @@ Modification History (most recent at the top)
 
 (defvar *type-check-during-template-conversion* t)
 
-(eval-when (compile load eval)
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (defun expand-transform-template-item (arg template-action direction)
     (ecase direction
           (:boxer->window (case template-action
@@ -588,7 +588,7 @@ Modification History (most recent at the top)
                             (t            arg)))))
 )
 
-(eval-when (compile load eval)
+(eval-when (:compile-toplevel :load-toplevel :execute)
 
 (defun arglist-argnames (arglist)
   (let ((revargnames nil))
@@ -1092,7 +1092,7 @@ Modification History (most recent at the top)
 ;;; This tries to be smart and use info from the transformation-template
 ;;; when none is provided
 ;;;
-(eval-when (compile load eval)
+(eval-when (:compile-toplevel :load-toplevel :execute)
 
 (defmacro defgraphics-translator ((name &optional
                                         (table '*turtle-translation-table*)
@@ -1595,7 +1595,7 @@ Modification History (most recent at the top)
 
 ;;; Graphics State Changes
 
-(eval-when (compile load eval)
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defgraphics-state-change (change-alu 0) (new-alu)
   :dump-form
   (let ((existing-alu (svref& command 1)))
@@ -1653,7 +1653,7 @@ Modification History (most recent at the top)
                                               scale)
   ())
 
-(eval-when (compile load eval)
+(eval-when (:compile-toplevel :load-toplevel :execute)
            (defgraphics-state-change (change-pen-width 1) (new-width)
              :extents-form (progn (setq *graphics-state-current-pen-width* new-width)
                                   ;; need to update because other graphics command
@@ -1687,7 +1687,7 @@ Modification History (most recent at the top)
                  (7 '("Geneva" 7 :bold :italic)))))
     (t (make-boxer-font file-font))))
 
-(eval-when (compile load eval)
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defgraphics-state-change (change-graphics-font 2) (new-font-no)
   :extents-form (progn (setq *graphics-state-current-font-no* new-font-no)
                       ;; need to update because other graphics command
@@ -1741,7 +1741,7 @@ Modification History (most recent at the top)
                        (%make-color (car color) (cadr color) (caddr color))))))
 
 ;; should opengl use :deallocate-form to free color memory ?  is color in use elsewhere ?
-(eval-when (compile load eval)
+(eval-when (:compile-toplevel :load-toplevel :execute)
            (defgraphics-state-change (change-graphics-color 4) (new-color)
              :dump-form
              (let ((existing-pixel (svref& command 1)))
@@ -1802,7 +1802,7 @@ Modification History (most recent at the top)
      #.(max-window-coord))
     (t n)))
 
-(eval-when (compile load eval)
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defstandard-graphics-handlers (line-segment 3)
   :COMMAND-ARGS (x0 y0 x1 y1)
   :EXTENTS-FORM
@@ -1918,7 +1918,7 @@ Modification History (most recent at the top)
 
 ;;; Strings
 
-(eval-when (compile load eval)
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defstandard-graphics-handlers (centered-string 7)
   :COMMAND-ARGS (x y string)
   :EXTENTS-FORM
@@ -2417,7 +2417,7 @@ Modification History (most recent at the top)
 
 ;;; Arcs, Ellipses, and Circles
 
-(eval-when (compile load eval)
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defstandard-graphics-handlers (wedge 26)
   :COMMAND-ARGS (x y radius start-angle sweep-angle)
   :EXTENTS-FORM ;leave as circle for now, get smarter about this later
@@ -2922,19 +2922,6 @@ Modification History (most recent at the top)
     ;; and now, the name
     (draw-string alu-seta *boxtop-text-font* name x (+ y 32))))
 
-(defun draw-graphics-boxtop (boxtop x y wid hei &optional framed?)
-  (cond ((null framed?)
-         ;; just do the graphics
-         (draw-graphics-boxtop-internal boxtop x y wid hei))
-    (t ; there is a frame so handle that first (l,t,r,b)
-       (draw-rectangle alu-seta 1 hei x y)
-       (draw-rectangle alu-seta wid 1 x y)
-       (draw-rectangle alu-seta 1 hei (+ x wid -1) y)
-       (draw-rectangle alu-seta wid 1 x (+ y hei -1))
-       ;; then move the origin over before graphics
-       (with-drawing-inside-region (1 1 (- wid 2) (- hei 2))
-         (draw-graphics-boxtop-internal boxtop x y (- wid 2) (- hei 2))))))
-
 (defun draw-graphics-boxtop-internal (boxtop x y wid hei)
   (unless (null (graphics-sheet-background boxtop))
     (with-pen-color ((graphics-sheet-background boxtop))
@@ -2947,6 +2934,19 @@ Modification History (most recent at the top)
     (with-graphics-vars-bound-internal boxtop
       (playback-graphics-list-internal
        (graphics-sheet-graphics-list boxtop)))))
+
+(defun draw-graphics-boxtop (boxtop x y wid hei &optional framed?)
+  (cond ((null framed?)
+         ;; just do the graphics
+         (draw-graphics-boxtop-internal boxtop x y wid hei))
+    (t ; there is a frame so handle that first (l,t,r,b)
+       (draw-rectangle alu-seta 1 hei x y)
+       (draw-rectangle alu-seta wid 1 x y)
+       (draw-rectangle alu-seta 1 hei (+ x wid -1) y)
+       (draw-rectangle alu-seta wid 1 x (+ y hei -1))
+       ;; then move the origin over before graphics
+       (with-drawing-inside-region (1 1 (- wid 2) (- hei 2))
+         (draw-graphics-boxtop-internal boxtop x y (- wid 2) (- hei 2))))))
 
 (defun draw-file-boxtop (boxtop x y wid)
   (let ((horiz-offset (floor (- wid 32) 2)))
