@@ -460,8 +460,6 @@ Modification History (most recent at the top)
 
 ;;;; Fonts
 
-(defconstant *default-font-no* 0)
-
 ;; Arial is pretty standard and exists on most platforms
 (defvar *default-font* (%make-font-number-internal 0 3))
 
