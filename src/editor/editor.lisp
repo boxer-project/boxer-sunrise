@@ -975,7 +975,7 @@ higher level copy operation. ")
        (COND ((MEMBER NEW-TYPE '(:MOVING :FIXED))
               (SETF (BP-TYPE BP) NEW-TYPE))
              (T
-              (BARF "~S is an illegal type for a BP."))))
+              (BARF "~S is an illegal type for a BP." new-type))))
 
 ;;; This is useful. Note that setting a BP's Box doesn't make any sense.
 
