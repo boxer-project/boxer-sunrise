@@ -789,3 +789,10 @@ attributes given, or NIL if this is not possible."
                                                   :test #'char-equal)
                                          (cdr clause)))))
                        clauses)))
+
+;;; http://www.sbcl.org/manual/#Idiosyncrasies
+;;; Many of the constants in boxer fail the eql test used by defconstant
+;;; and trigger errors in SBCL
+(defmacro define-constant (name value &optional doc)
+  `(defconstant ,name (if (boundp ',name) (symbol-value ',name) ,value)
+     ,@(when doc (list doc))))
