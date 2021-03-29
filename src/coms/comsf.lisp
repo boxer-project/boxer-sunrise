@@ -85,23 +85,14 @@
 ;;;; lower level utilities for handling fonts
 ;; perhaps these belong in a lower level file like draw-low-xxx ?
 
-(defun normal-font? (boxer-font)
-  (not (font-style boxer-font)))
+(defun normal-font? (font-no)
+  (not (font-style font-no)))
 
-(defun bold-font? (boxer-font)
-  (member :bold (font-style boxer-font)))
+(defun bold-font? (font-no)
+  (member :bold (font-style font-no)))
 
-(defun italic-font? (boxer-font)
-  (member :italic (font-style boxer-font)))
-
-;; like typep for font styles...
-(defun font-stylep (boxer-font style)
-  (cond ((or (null style) (eq style :plain))
-         (zerop& (font-style boxer-font)))
-    (t
-     (not (zerop& (logand& (font-style boxer-font)
-                           (case style
-                             (:bold 1) (:italic 2) (:underline 4))))))))
+(defun italic-font? (font-no)
+  (member :italic (font-style font-no)))
 
 (defun font-styles (boxer-font)
   ; TODO sgithens
