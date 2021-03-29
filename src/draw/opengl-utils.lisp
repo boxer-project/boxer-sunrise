@@ -196,9 +196,6 @@ Modification History (most recent at the top)
 ;; ogl-draw-character
 ;; ogl-draw-string
 ;; ogl-string-width, height  (font string)
-;;
-;; it is now possible for an OpenGL font to not have all its parameters
-;; precalculated @ startup so check for, and handle this here
 
 ;; this handles font parameter filling in the editor
 ;; font parameter filling in sprite graphics is handled by change-graphics-font
@@ -212,14 +209,6 @@ Modification History (most recent at the top)
         (progn
          (let ((*current-opengl-font* ,font))
            . ,body))))))
-
-;;; Font cache is a FIFO list of font structs
-;;; we should query the OPENGL implemtation and tune some of these numbers
-;;; during startup
-
-;; (defvar *font-cache-size* 32)
-
-;; (defvar *cached-fonts* nil)
 
 (eval-when (compile)
            (defvar *include-font-debugging* nil)
