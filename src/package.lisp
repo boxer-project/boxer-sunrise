@@ -28,10 +28,14 @@
   (:use :common-lisp :boxer-user)
   (:nicknames :box)
   (:shadow :once-only)
-  (:export :symbol-format
+  (:export :symbol-format :set-font-info
            :*boxer-frame*
            :with-collection
            :collect
+           :sheet-inside-left :sheet-inside-top
+           :sheet-inside-width :sheet-inside-height
+           :alu-andca :alu-seta :alu-xor :alu-and :alu-ior :alu-setz
+           :port-to
            :getprop
            :make-box
            :removeprop
@@ -212,13 +216,11 @@
   (:nicknames :bw)
   (:export :*glyph-pane*
            :outermost-screen-box
-           :alu-andca :alu-seta :alu-xor :alu-and :alu-ior :alu-setz
            :*foreground-color* :*background-color*
            :main-screen :sheet-screen-array :prepare-sheet
            :sheet-font-map :make-pattern
-           :sheet-inside-left :sheet-inside-top
-           :sheet-inside-width :sheet-inside-height :window-inside-size
-           :window-depth :window-pixel
+           :window-inside-size
+           :window-pixel
            :%bitblt-in-screen :%bitblt-to-screen :%bitblt-from-screen
            :%draw-point
            :%draw-rectangle :%erase-rectangle :%draw-line :%draw-poly
@@ -239,7 +241,7 @@
            :%draw-rectangle-on-offscreen-bitmap
            :%draw-line-on-offscreen-bitmap
            :draw-string-to-offscreen-bitmap
-           :rebind-font-info :set-font-info
+           :rebind-font-info
            :%make-color :color? :color= :with-pen-color :%set-pen-color
            :%set-pen-size :pixel-rgb-values
            :set-mouse-cursor :reset-mouse-cursor :with-mouse-cursor :beep

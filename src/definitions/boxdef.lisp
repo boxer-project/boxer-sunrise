@@ -293,22 +293,22 @@ Modification History (most recent at top)
 ;;; NOTE: 3/6/11 these initial values are meaningless, expect all these vars
 ;;;       to be initialized in a draw-low-xxx file
 
-(defvar *normal-font-no* 0)
+(defvar *normal-font-no* nil)
 
 ;; the mac versions are setup in draw-low-mcl.lisp
-(defvar *box-border-label-font-no* #-mcl 4)
+(defvar *box-border-label-font-no* nil)
 
 ;; avoid problems with italics overstriking the
 ;; right edge of the name tab on the mac
 ;; fix this later by when we redo the font/char interface
-(defvar *box-border-name-font-no* #-mcl 3 )
+(defvar *box-border-name-font-no* nil )
 
 
-(defvar *sprite-type-font-no* 1)
+(defvar *sprite-type-font-no* nil)
 
 (defvar *default-font-map-length* 10)
 
-(defvar *boxtop-text-font* 1)
+(defvar *boxtop-text-font* nil)
 
 
 ;;;editor variables...

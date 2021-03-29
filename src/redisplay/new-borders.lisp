@@ -70,8 +70,8 @@
 
 (defvar *border-left-margin* 1) ; *border-inside-space*
 
-(defvar *border-label-font* *box-border-label-font-no*)
-(defvar *border-name-font*  *box-border-name-font-no*)
+(defvar *border-label-font* nil)
+(defvar *border-name-font*  nil)
 
 (defvar *border-name-padding* 1 "whitespace between name string & name border")
 

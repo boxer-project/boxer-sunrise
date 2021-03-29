@@ -798,8 +798,7 @@ Modification History (most recent at top)
 (defvar *popup-docs* nil)
 
 (defvar *popup-doc-font*
-  #+lispworks (%make-font-number-internal 0 1)
-  #+mcl (make-boxer-font '("Geneva" 10)))
+  (make-boxer-font '("Arial" 8)))
 
 ;; a pale yellow...
 ;; try and get a close match to the usual Windows popup doc

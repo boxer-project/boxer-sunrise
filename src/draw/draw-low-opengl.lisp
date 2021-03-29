@@ -326,187 +326,41 @@ notes:: check points arg on draw-poly
 
 (defvar %drawing-font-cha-ascent nil)
 
+(defvar *menu-font-sizes* '(5 6 7 8 9 10 11 12 14 16 18 20 22 24 26 28 36 48 72)
+;; '(9 10 12 14 16 20 24)
+  "We support fonts of any size now, but these are the sizes that will be
+  available from the drop down menu in the UI.")
+
 (defun set-font-info (x)
-  (let ((system-font (find-cached-font x)))
+  (let* ((font-no (if x x *normal-font-no*))
+         (system-font (find-cached-font font-no)))
     (bw::ogl-set-font system-font)
     (multiple-value-bind (ascent height  leading)
                          (bw::ogl-font-info system-font)
                          (setq %drawing-font-cha-ascent ascent
                                %drawing-font-cha-hei (+ height leading)))
-    x))
+    font-no))
 
 
-
-;;
-;;  o fonts remain a fixnum but we use a caching mechanism
-;;    fields of a fontspec are used as indices into simple arrays
-;;
-;;  o We use this indirect mechanism rather than using LW fonts
-;;    directly for several reasons
-;;    1) There are lots of font dependencies in the bootstrapping
-;;       process and in LWWin, fonts can't be defined until AFTER
-;;       the boxer window has been created. The indirection lets
-;;       us refer to a font before it is actually defined.
-;;    2) We need font= to be a fast operation, using fixnums makes
-;;       this so.  Using LW fonts would be a field by field comparison
-;;       at best.
-;;    3) At some point, perhaps for speed, we might want to move to
-;;       using native Windoze fonts directly.  This makes it easy to
-;;       change.
-;;
-;;  o LW most-positive-fixnum = (1- (expt 2 29))  [previously (1- (expt 2 23))]
-;;    therefore, LW boxer fonts will have to be 28 bits wide
-;;
-;;  o A fontspec is a list of family name, size &rest style-attributes
-;;
-;; The Boxer font-no is defined as:
-;;
-;;   o the upper 8 bits specify a font family.  On the mac, the translation between
-;;     number and font name was handled by the MacOS, for LWWin, we'll just
-;;     use an array of font family names, with the number being the index into
-;;     the array.
-;;
-;;   o the style is in the next 4.  Together, the font and the face
-;;     correspond to the MCL concept of the font/face code.
-;;
-;;   o the low 12 bits are used as a size index.  NOT the size.
-;;
-;;   NOTE: we can juggle the various field sizes as needed.  In particular,
-;;         the face field can go down to 3 bits to support BOLD, ITALICS and
-;;         UNDERLINE.  The size field needs only be able to cover the allowed
-;;         (by the interface) sizes.
-;;
-;;  The Structure of the Font Cache
-;;
-;;   o an array of size %%font-family-size(8)
-;;     each element of the array will point to a size array
-;;
-;;   o each size array will be = to the number of allowed (by the interface)
-;;     sizes for each font. For now, we'll specify the defined sizes as:
-;;     6,8,10,12,14,16,18,24 implying a size array with length 8
-;;
-;;   o each entry in the size array points to an array of specific face styles
-;;     for each font, for now, it will be length 4 to support all the possible
-;;     combinations of BOLD, ITALICS
-;;
-;;   o this leaves an extra 4 more bits, either for more sizes or families
-;;
-;;   Boxer Font Number
-;;   +--------------+---------------+-------------+
-;;   |Family index 8|  size index 12|style index 4|
-;;   +------+-------+------+--------+-----+-------+
-;;          |              |             |
-;;          +---+          +--+          +--+
-;;   Font Cache |    +-+      |             |
-;;              |   0| +      |             |
-;;              |    | |      |             |
-;;              +-> i|++------+-> +-+       | styles
-;;                   : : size |   | |       | cache
-;;                   : : cache+-> |++-------+->+-+
-;;                                : :       |  | |
-;;                                : :       +> |++---> LW font
-;;                                             : :
-;;
-
-
-
 (defvar *font-size-baseline* 1 )
 
 (defun max-font-size-baseline-value ()
   (- (length *font-sizes*) 7 1))
 
-;; Low Level Font Utilities
-(defconstant %%font-family-bit-pos 16)
-(defconstant %%font-family-bit-length 8)
-(defconstant %%font-size-bit-pos 4)
-(defconstant %%font-size-bit-length 12)
-(defconstant %%font-face-bit-pos 0)
-(defconstant %%font-face-bit-length 4)
-
-(defconstant %%font-family-size (expt 2 %%font-family-bit-length))
 (defvar *current-font-family-index* 0)
 
-;; doesn't fill the reserved 8-bit sized field, but keep them
-;; only as big as wee need
-;(defconstant %%font-size-cache-length 12)
-(defconstant %%font-face-cache-length 4)
-
-(defvar *font-cache* (make-array %%font-family-size :initial-element nil))
-(defvar *font-family-names* (make-array %%font-family-size :initial-element nil))
+(defvar *font-cache* nil ;
+  "This is a regular list of `opengl-font` structs. Order is important during boxer execution
+  because the boxer-font-descriptors use the integer to track fonts. The order is not important
+  between executions as the actual font sizes and other information are persisted in the `.box` format.")
 
 ;; Must be True Type Fonts
 (defvar *font-families* '("Arial" "Courier New" "Times New Roman" "Verdana"))
 
 (defvar *default-font-family* (car *font-families*))
-(defvar *default-font-size*   3)
-(defvar *default-font-face* nil)
 
-(defun %make-font-size-cache ()
-  (make-array (length *font-sizes*) :initial-element nil))
-; (make-array ;%%font-size-cache-length :initial-element nil))
-
-(defun %make-font-face-cache ()
-  (make-array %%font-face-cache-length :initial-element nil))
-
-;; field extractors
-(defun %font-family-idx (font-no)
-  (ldb& (byte %%font-family-bit-length %%font-family-bit-pos) font-no))
 (defun %font-size-idx (font-no)
-  (ldb& (byte %%font-size-bit-length   %%font-size-bit-pos)   font-no))
-(defun %font-face-idx (font-no)
-  (ldb& (byte %%font-face-bit-length   %%font-face-bit-pos)   font-no))
-
-(defun font-values (font-no)
-  (declare (values family-idx size-idx face-idx))
-  (values (%font-family-idx font-no)
-          (%font-size-idx   font-no)
-          (%font-face-idx   font-no)))
-
-;; search the font cache for an existing match
-;; returns fixnum index or NIL
-(defun font-family-name-pos (string)
-  (dotimes (i *current-font-family-index*)
-    (let ((fam-name (svref& *font-family-names* i)))
-      (when (string-equal string fam-name) ; case insensitive
-        (return i)))))
-
-(defun new-font-family (family-name)
-  (setf (svref& *font-family-names* *current-font-family-index*) family-name
-        (svref& *font-cache* *current-font-family-index*) (%make-font-size-cache))
-  (prog1 *current-font-family-index* (incf& *current-font-family-index*)))
-
-(defun %font-name-to-idx (string &optional create?)
-  (let ((existing (font-family-name-pos string)))
-    (if create? (or existing (new-font-family string)) existing)))
-
-;; BOLD, ITALIC are documented, looks like UNDERLINE is
-;; supported but not documented
-(defun %font-face-to-idx (style-list)
-  (let ((idx 0))
-    (dolist (style style-list)
-      (case style
-        (:bold      (setq idx (logior #b1   idx)))
-        (:italic    (setq idx (logior #b10  idx)))
-        ;(:underline (setq idx (logior #b100 idx)))
-        ))
-    idx))
-
-
-;; there are 2 notions of size.
-;;
-;; the absolute font size is used internally in the font-cache structures,
-;;
-;; the font size, as it appears inside of Boxer-Font-Descriptors is a relative number
-;; from 1 - 7, with 3 being interpreted as "Normal" (leaving 2 smaller and 4 larger sizes)
-;;
-(defvar *bfd-font-size-names*
-  (vector "Smallest" "Smaller" "Normal" "Larger" "Larger2" "Larger3" "Largest"))
-
-;; these need to be in sync (used to initialize the font size menu)
-;; see also font-size-menu-item-name
-(defvar *bfd-font-size-values* '(1 2 3 4 5 6 7))
-
-(defun bfd-font-size-name (size-idx) (svref *bfd-font-size-names* (1- size-idx)))
+  (cadr (bw::opengl-font-font-triple (find-cached-font font-no))))
 
 ;; available sizes are: 6,8,10,12,14,16,18,24
 ;; NOTE: we an get size 7 when loading old mac boxes...
@@ -533,80 +387,37 @@ notes:: check points arg on draw-poly
 ;; "size" is the size value returned from font-values of a relative font (used in BFD's)
 ;; abstract through this function to allow for more complicated translations, perhaps skipping
 ;; entries in the master cache to get the correct size ratios
-(defun font-size-to-idx (size) (+& size *font-size-baseline* )) ;; sgithens boxer-bugs-39 -1))
+(defun font-size-to-idx (size) (+& size *font-size-baseline* -1)) ;; sgithens boxer-bugs-39 -1))
 
 (defun %font-size-idx-to-size (sidx) (svref *font-sizes* sidx))
 
-(defun make-size-menu-names ()
-  (let* ((sl (length *font-sizes*))
-         (n-sizes (- sl 7)) ;; number of possible size settings.  Changed to 7 for boxer-bugs-39
-         (names-array (make-array n-sizes))
-         (menu-length (length *bfd-font-size-names*)))
-    (dotimes (i n-sizes)
-      (let ((names (make-list menu-length)))
-        (setf (svref names-array i) names)
-        (dotimes (j menu-length)
-          (let ((size-name (svref *bfd-font-size-names* j)))
-            (setf (nth j names)
-                  (format nil "~A (~D)" size-name (svref *font-sizes* (+ i j))))))))
-    names-array))
 
-(defvar *font-size-menu-names* (make-size-menu-names))
-
-(defun get-size-menu-names ()
-  (svref *font-size-menu-names* *font-size-baseline*))
-
-(defun font-size-menu-item-name (data)
-  (nth (1- data) (svref *font-size-menu-names* *font-size-baseline*)))
 
 ;; size resolution happens here. The relative size is resolved along with *font-size-baseline*
 (defun find-cached-font (font-no &optional (translate-size t))
-  (multiple-value-bind (fam size face)
-                       (font-values font-no)
-                       (let ((size-cache (svref& *font-cache* fam)))
-                         (unless (null size-cache)
-                           (let ((face-cache (svref& size-cache (if translate-size
-                                                                  (font-size-to-idx size)
-                                                                  size))))
-                             (unless (null face-cache) (svref& face-cache face)))))))
+  (nth font-no *font-cache*);; TODO sgithens: fixup the translate size for zooming
+)
+  ;; (multiple-value-bind (fam size face)
+  ;;                      (font-values font-no)
+  ;;                      (let ((size-cache (svref& *font-cache* fam)))
+  ;;                        (unless (null size-cache)
+  ;;                          (let ((face-cache (svref& size-cache (if translate-size
+  ;;                                                                 (font-size-to-idx size)
+  ;;                                                                 size))))
+  ;;                            (unless (null face-cache) (svref& face-cache face))))))
 
-(defun cache-font (font font-no &optional (translate-size t))
-  (multiple-value-bind (fam size face)
-                       (font-values font-no)
-                       (let ((size-cache (svref& *font-cache* fam)))
-                         (when (null size-cache)
-                           (setq size-cache (%make-font-size-cache))
-                           (setf (svref& *font-cache* fam) size-cache))
-                         (let ((face-cache (svref& size-cache (if translate-size
-                                                                (font-size-to-idx size)
-                                                                size))))
-                           (when (null face-cache)
-                             (setq face-cache (%make-font-face-cache))
-                             (setf (svref& size-cache size) face-cache))
-                           (setf (svref& face-cache face) font)))))
+                            ;;  )
 
-(defun fontspec->font-no (fontspec &optional create?)
-  (let ((fambits (%font-name-to-idx (or (car fontspec) *default-font-family*)
-                                    create?)))
-    (unless (null fambits)
-      (dpb& fambits
-            (byte %%font-family-bit-length %%font-family-bit-pos)
-            (dpb& (%font-size-to-idx (or (cadr fontspec) *default-font-size*))
-                  (byte %%font-size-bit-length   %%font-size-bit-pos)
-                  (%font-face-to-idx (or (cddr fontspec) *default-font-face*)))))))
 
-(defun fontspec->font-values (fontspec)
-  (let ((fambits (%font-name-to-idx (or (car fontspec) *default-font-family*))))
-    (unless (null fambits)
-      (values fambits
-              (%font-size-to-idx (cadr fontspec))
-              (%font-face-to-idx (or (cddr fontspec) *default-font-face*))))))
+
+(defun fontspec->font-no (fontspec)
+  (position-if #'(lambda (x) (equal fontspec (bw::opengl-font-font-triple x))) *font-cache*))
 
 ;; this is the main hook for hacking cross platform fonts
 ;; need to think more deeply about rejecting "obviously" bogus font names
 ;; currently, we rely on gp:find-best-font which just returns a "default" for
 ;; unhandled names (looks like it's "MS Serif")
-
+;;
 ;; use an alist for now, we may have to get more complicated if it looks like
 ;; the number of "foreign" fonts will be large
 (defvar *font-family-aliases*
@@ -616,101 +427,56 @@ notes:: check points arg on draw-poly
 (defun font-family-alias (family-name)
   (cdr (assoc family-name *font-family-aliases* :test #'string-equal)))
 
-(defun set-font-family-alias (family-name local-name)
-  (let ((existing (font-family-alias family-name)))
-    (cond ((null existing)
-           (push (cons family-name local-name) *font-family-aliases*))
-      ((string= local-name (cadr existing)))
-      (t (if *boxer-system-hacker*
-           (error "Trying to CHANGE an alias for ~S from ~S to ~S"
-                  family-name (cadr existing) local-name)
-           (warn "Trying to CHANGE an alias for ~S from ~S to ~S"
-                 family-name (cadr existing) local-name))))))
-
-;; main interface function, how/when cache ????
-
 ;; always "calculate parameters" because they are already available in the capogi font structure
 (defun make-boxer-font (rawfontspec)
   (let* ((alias (font-family-alias (car rawfontspec)))
          (fontspec (if alias (list* alias (cdr rawfontspec)) rawfontspec))
-         (font-no (fontspec->font-no fontspec)))
-    (cond ((null font-no)
-           (let ((oglfont (bw::%make-opengl-font :font-triple fontspec))
-                 (new-font-no (fontspec->font-no fontspec T)))
-             (or (find-cached-font new-font-no nil)
-                 (cache-font oglfont new-font-no nil))
-             new-font-no))
-      (t
-        (or (find-cached-font font-no nil)
-           (cache-font (bw::%make-opengl-font :font-triple fontspec) font-no nil)
-            )
-       font-no))))
+         (font-no (fontspec->font-no fontspec))
+         (oglfont nil))
+    (if font-no
+      font-no
+      (progn (format t "~%make-boxer-font rawfontspec: ~a alias: ~a fontspec: ~a font-no: ~a" rawfontspec alias fontspec font-no)
+        (setf oglfont (bw::%make-opengl-font :font-triple fontspec))
+        (setf *font-cache* (append *font-cache* (list oglfont)))
+        (if (null bw::*current-opengl-font*)
+          (setf bw::*current-opengl-font* oglfont))
+        (1- (length *font-cache*))))
+    ))
 
 ;; the external interface, see comsf.lisp for usage
-(defun font-style (font-no) (%font-face-idx font-no))
+(defun font-style (font-no)
+  (cddr (bw::opengl-font-font-triple (find-cached-font font-no))))
 
 ;; returns absolute font size
 (defun font-size (font-no)
   (%font-size-idx-to-size (font-size-to-idx (%font-size-idx font-no))))
 
-(defun font-name (font-no)
-  (let* ((idx (%font-family-idx font-no)))
-    (when (< idx (length *font-family-names*))
-      (svref *font-family-names* idx))))
+(defun font-name (font-no) ) ; TODO Reimplement
+  ;; (let* ((idx (%font-family-idx font-no)))
+  ;;   (when (< idx (length *font-family-names*))
+  ;;     (svref *font-family-names* idx))))
 
 ;; these next 3 take a font code and should return a new font code
-(defun %set-font (boxer-font new-fname)
-  (let ((new-idx (%font-name-to-idx new-fname)))
-    (dpb new-idx (byte %%font-family-bit-length %%font-family-bit-pos) boxer-font)))
+(defun %set-font (font-no face-name)
+  (let* ((font (find-cached-font font-no))
+         (fontspec (bw::opengl-font-font-triple font)))
+    (make-boxer-font (cons face-name (cdr fontspec)))))
 
-(defun %set-font-size (boxer-font new-size)
-  (dpb new-size (byte %%font-size-bit-length   %%font-size-bit-pos) boxer-font))
+(defun %set-font-size (font-no size)
+  (format t "~% %set-font-size font-no: ~a size: ~a" font-no size)
+  (let* ((font (find-cached-font font-no))
+         (fontspec (bw::opengl-font-font-triple font)))
+    (make-boxer-font (append (list (car fontspec) size) (cddr fontspec)))))
 
-(defun %set-font-style (boxer-font new-style-byte)
-  (dpb new-style-byte (byte %%font-face-bit-length   %%font-face-bit-pos)
-       boxer-font))
+(defun %set-font-style (font-no style)
+  (format t "~% %set-font-style font-no: ~a style: ~a" font-no style))
 
-;; used for bootstrapping, normally we go through make-boxer-font
-(defun %make-font-number-internal (fam-idx size &rest styles)
-  (dpb fam-idx (byte %%font-family-bit-length %%font-family-bit-pos)
-       (%set-font-size (%font-face-to-idx styles) size)))
-
-(defun %%make-font-number-internal (fam-idx size-idx &rest styles)
-  (dpb fam-idx (byte %%font-family-bit-length %%font-family-bit-pos)
-       (dpb size-idx (byte %%font-size-bit-length   %%font-size-bit-pos)
-            (%font-face-to-idx styles))))
-
-;; bypass the caching mechanism because this will get called
-;; at a stage where we can't open any fonts, instead, we hand
-;; make the font numbers but defer actually finding fonts to
-;; fill the cache until after the boxer window has been created
-(defun init-bootstrapping-font-vars ()
-  (setq  *normal-font-no*           (%%make-font-number-internal 0 3)
-         *box-border-label-font-no* (%%make-font-number-internal 0 1)
-         *box-border-name-font-no*  (%%make-font-number-internal 0 3 :bold)
-         *sprite-type-font-no*      (%%make-font-number-internal 0 3 :bold)
-         *boxtop-text-font*         (%%make-font-number-internal 0 3 :bold)
-         ))
-
-;; this is here so it can be kept in synch with  init-bootstrapping-font-vars
-;; note that make-boxer-font is called for side effect, it fills the relevant
-;; font caches with the internal representation system font
-;; Note: 4/16/2010 do not calculate all the font info for every font up font
-(defun fill-bootstrapped-font-caches ()
-  (dolist (font-family *font-families*)
-    (dotimes (i (length *font-sizes*))
-      (let ((size (svref *font-sizes* i)))
-        (dolist (style '(nil (:bold) (:italic) (:bold :italic))) ; leave out :underline for now
-          (make-boxer-font (list* font-family size style)))))))
-
-;; THIS is safe to do
-(eval-when (load)  (init-bootstrapping-font-vars))
-
-(defun set-font (boxer-font)
-  (let ((system-font (find-cached-font boxer-font)))
-    (if (null system-font)
-      (error "No cached font for ~X" boxer-font)
-      (bw::ogl-set-font system-font))))
+;; not currently called anywhere... although it looks useful
+;; (defun set-font (boxer-font)
+;;   (let ((system-font (find-cached-font boxer-font)))
+;;     (if (null system-font)
+;;       (error "No cached font for ~X" boxer-font)
+;;       (bw::ogl-set-font system-font))))
 
 (defmacro maintaining-drawing-font (&body body)
   (let ((font-var (gensym)))

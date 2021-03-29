@@ -196,30 +196,13 @@
                      (list (make-instance 'capi::menu-component
                                           :interaction :single-selection
                                           :popup-callback 'set-font-size-menu-selection
-                                          ; :items box::*bfd-font-size-values*
-                                          ; :print-function 'box::font-size-menu-item-name
                                           :items
                                           (mapcar #'(lambda (data)
                                                       (make-instance 'capi:menu-item
                                                                      :data data
-                                                                     :print-function
-                                                                     'box::font-size-menu-item-name))
-                                                  boxer::*bfd-font-size-values*)
+                                                                     ))
+                                                  boxer::*menu-font-sizes*)
                                       :callback 'font-size-menu-action)))))
-;                 :items
-;                 (list (make-instance 'capi::menu-component
-;                                      :interaction :single-selection
-;                                      :popup-callback 'set-font-size-menu-selection
-;                                      ; :items box::*bfd-font-size-values*
-;                                      ; :print-function 'box::font-size-menu-item-name
-;                                      :items
-;                                      (mapcar #'(lambda (data)
-;                                                  (make-instance 'capi:menu-item
-;                                                                 :data data
-;                                                                 :print-function
-;                                                                 'box::font-size-menu-item-name))
-;                                              boxer::*bfd-font-size-values*)
-;                                      :callback 'font-size-menu-action))))
 
 (defvar *font-sub-style-menu*
   (make-instance 'capi::menu :title "Style"
@@ -767,7 +750,19 @@
                     (opengl::gl-enable opengl::*gl-blend*)
                     (opengl::gl-blend-func opengl::*gl-src-alpha* opengl::*gl-one-minus-src-alpha*)
                     (opengl::gl-hint opengl::*gl-line-smooth-hint* opengl::*gl-nicest*))
-      (boxer::fill-bootstrapped-font-caches)
+      ;; (boxer::fill-bootstrapped-font-caches)
+      (let ((arial-9  (boxer::make-boxer-font '("Arial" 9)))
+            (arial-12 (boxer::make-boxer-font '("Arial" 12)))
+            (arial-12-bold (boxer::make-boxer-font '("Arial" 12 :bold))))
+        (setq  boxer::*normal-font-no*           arial-12
+               boxer::*default-font*             arial-12
+               boxer::*box-border-label-font-no* arial-9
+               boxer::*border-label-font*        arial-9
+               boxer::*box-border-name-font-no*  arial-12-bold
+               boxer::*border-name-font*         arial-12-bold
+               boxer::*sprite-type-font-no*      arial-12-bold
+               boxer::*boxtop-text-font*         arial-12-bold
+        ))
       ;; #+freetype-fonts
       (boxer::load-freetype-faces)
       (let ((boxer::%private-graphics-list nil))

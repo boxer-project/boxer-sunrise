@@ -664,17 +664,8 @@ Modification History (most recent at top)
 ;; should be in this function
 (defun set-font-size-menu-selection (menu)
   (let* ((current-font (boxer::bfd-font-no (get-current-font)))
-         (rel-font-size (boxer::%font-size-idx current-font))
-         ;(abs-font-size (boxer::font-size current-font))
-#|
-         (select-idx (when (numberp font-size)
-                       (position font-size (capi::collection-items menu)
-                                 :test #'(lambda (fs it)
-                                         (= fs (capi::menu-item-data it))))))
-|#
-         )
-    (when (> 8 rel-font-size 0)
-      (setf (capi::choice-selection menu) (1- rel-font-size)))))
+         (font-size (boxer::%font-size-idx current-font)))
+    (setf (capi::choice-selection menu) (position font-size boxer::*menu-font-sizes*))))
 
 (defun font-size-menu-action (data int)
   (declare (ignore int))

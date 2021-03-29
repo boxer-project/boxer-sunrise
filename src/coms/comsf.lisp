@@ -86,24 +86,13 @@
 ;; perhaps these belong in a lower level file like draw-low-xxx ?
 
 (defun normal-font? (boxer-font)
-  (zerop& (font-style boxer-font)))
+  (not (font-style boxer-font)))
 
 (defun bold-font? (boxer-font)
-  (not (zerop& (logand& (font-style boxer-font) 1))))
+  (member :bold (font-style boxer-font)))
 
 (defun italic-font? (boxer-font)
-  (not (zerop& (logand& (font-style boxer-font) 2))))
-
-(defun underline-font? (boxer-font)
-  (not (zerop& (logand& (font-style boxer-font) 4))))
-
-(defun outline-font? (boxer-font) (declare (ignore boxer-font)) nil) ; mac only concept
-
-(defun shadow-font? (boxer-font) (declare (ignore boxer-font)) nil) ; mac only concept
-
-(defun condense-font? (boxer-font) (declare (ignore boxer-font)) nil) ; mac only concept
-
-(defun extend-font? (boxer-font) (declare (ignore boxer-font)) nil) ; mac only concept
+  (member :italic (font-style boxer-font)))
 
 ;; like typep for font styles...
 (defun font-stylep (boxer-font style)
@@ -115,6 +104,8 @@
                              (:bold 1) (:italic 2) (:underline 4))))))))
 
 (defun font-styles (boxer-font)
+  ; TODO sgithens
+  (break "Fix for updated font refactoring")
   (let ((style-byte (font-style boxer-font))
         (return-styles nil))
     (do* ((pos 1 (ash pos 1))
@@ -126,18 +117,19 @@
     (nreverse return-styles)))
 
 
-(defun set-font-style (boxer-font style to-on?)
-  (cond ((or (null style) (eq style :plain))
-         (%set-font-style boxer-font 0))
-    (t (let* ((current-style (font-style boxer-font))
-              (new-style (case style
-                           (:bold (dpb& (if to-on? 1 0)
-                                        '#.(byte 1 0) current-style))
-                           (:italic (dpb& (if to-on? 1 0)
-                                          '#.(byte 1 1) current-style))
-                           (:underline (dpb& (if to-on? 1 0)
-                                             '#.(byte 1 2) current-style)))))
-         (%set-font-style boxer-font new-style)))))
+(defun set-font-style (font-no style to-on?)
+  (let* ((font (find-cached-font font-no))
+         (fontspec (bw::opengl-font-font-triple font)))
+    (cond ((eq style :plain)
+           (make-boxer-font (subseq fontspec 0 2)))
+          ((eq style :bold)
+           (if to-on?
+               (make-boxer-font (append (remove :BOLD fontspec) '(:BOLD)))
+               (make-boxer-font (remove :BOLD fontspec))))
+          ((eq style :italic)
+           (if to-on?
+               (make-boxer-font (append (remove :ITALIC fontspec) '(:ITALIC)))
+               (make-boxer-font (remove :ITALIC fontspec)))))))
 
 ;; look for the bfd which specifies the font info for the position
 (defun closest-bfd (row cha-no) (closest-bfd-internal (row-fds row) cha-no))
