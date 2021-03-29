@@ -60,17 +60,22 @@ Modification History (most recent at the top)
                               (if (eq raw-type :boolean) :unsigned-8 raw-type)))
           `(let ((,gl-vect-var (cond ((and (not (null ,return-vector))
                                            (listp ',type)
-                                           (fli::pointerp ,return-vector))
+                                           ; sgithens 2021-03-21 Removing this check now to get rid of
+                                           ; fli dependency, all uses of get-opengl-state seem safe in
+                                           ; the codebase. Will be refactored as we set up the libre
+                                           ; opengl rendering.
+                                           ;(fli::pointerp ,return-vector)
+                                           )
                                       ,return-vector)
                                  (t
-                                  (opengl:make-gl-vector ,(canonicalize-type
+                                  (opengl::make-gl-vector ,(canonicalize-type
                                                            (if (listp type) (car type) type))
                                                           ,(if (listp type) (cadr type) 1))))))
              (unwind-protect
               (progn
                (,(ecase (if (listp type) (car type) type)
-                        (:boolean 'opengl:gl-get-booleanv)
-                        ((:signed-32 :integer) 'opengl:gl-get-integerv)
+                        (:boolean 'opengl::gl-get-booleanv)
+                        ((:signed-32 :integer) 'opengl::gl-get-integerv)
                         (:float 'opengl::gl-get-floatv))
                 ,pname ,gl-vect-var)
                ,(cond ((and (listp type) (not (null return-vector)))
@@ -78,31 +83,30 @@ Modification History (most recent at the top)
                   ((listp type)
                    `(values ,@(let ((value-forms nil))
                                 (dotimes (i (cadr type))
-                                  (push `(opengl:gl-vector-aref ,gl-vect-var ,i)
+                                  (push `(opengl::gl-vector-aref ,gl-vect-var ,i)
                                         value-forms))
                                 (nreverse value-forms))))
                   ((eq type :boolean)
-                   `(let ((raw (opengl:gl-vector-aref ,gl-vect-var 0)))
+                   `(let ((raw (opengl::gl-vector-aref ,gl-vect-var 0)))
                       (cond ((zerop raw) nil)
                         ((= raw 1) t)
                         (t (error "~D is not a valid boolean value" raw)))))
                   (t
-                   `(opengl:gl-vector-aref ,gl-vect-var 0))))
+                   `(opengl::gl-vector-aref ,gl-vect-var 0))))
               (when (null ,return-vector)
                 (opengl::free-gl-vector ,gl-vect-var)))))))
 
 ;; for debugging
 (eval-when (compile)
-  (defvar *include-opengl-debugging?* t)
+  (defvar *include-opengl-debugging?* nil)
 )
 
 (defmacro debug-opengl-print (format-string &rest args)
   (when *include-opengl-debugging?*
-    `(when (member "-debug" sys:*line-arguments-list* :test #'string-equal)
-       (format *error-output* ,format-string . ,args))))
+    `(format *error-output* ,format-string . ,args)))
 
 ;;;; for testing flags
-(defun gl-enabled? (flag) (if (zerop (opengl:gl-is-enabled flag)) nil t))
+(defun gl-enabled? (flag) (if (zerop (opengl::gl-is-enabled flag)) nil t))
 
 ;;;;
 (eval-when (compile)
@@ -186,8 +190,7 @@ Modification History (most recent at the top)
 
 (defstruct (ogl-graphics-state (:constructor %make-ogl-graphics-state))
   (color nil)
-  (font  nil)
-  )
+  (font  nil))
 
 ;;; External Interface
 ;; ogl-set-font
@@ -276,20 +279,22 @@ Modification History (most recent at the top)
                                (coerce g 'single-float)
                                (coerce b 'single-float)
                                (coerce alpha 'single-float))
-                        (opengl:make-gl-vector :float 4 :contents color)))
+                        (opengl::make-gl-vector :float 4 :contents color)))
 
 (defun %make-ogl-color ()
   (incf *ogl-color-counter*)
-  (opengl:make-gl-vector :float 4))
+  (opengl::make-gl-vector :float 4))
 
 (defun free-ogl-color (color)
   (incf *ogl-color-freed*)
   (opengl::free-gl-vector color))
 
 (defun ogl-convert-color (colorspec)
-  (make-ogl-color (color:color-red colorspec)
-                  (color:color-green colorspec)
-                  (color:color-blue colorspec)))
+  "Takes an RGB spec vector and returns an opengl 4f vector with RGBA values, with alpha at 1.0
+  Colorspec is an RGB vector like this (for orange): #(:RGB 1.0 0.6470585 0.0)"
+  (make-ogl-color (svref colorspec 1)
+                  (svref colorspec 2)
+                  (svref colorspec 3)))
 
 (defun ogl-color-red   (color) (opengl:gl-vector-aref color 0))
 (defun ogl-color-green (color) (opengl:gl-vector-aref color 1))
