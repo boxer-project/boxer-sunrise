@@ -1579,6 +1579,15 @@
                (%set-font-style boxer-font new-style)))))
   )
 
+;; like typep for font styles...
+(defun font-stylep (boxer-font style)
+  (cond ((or (null style) (eq style :plain))
+         (zerop& (font-style boxer-font)))
+    (t
+     (not (zerop& (logand& (font-style boxer-font)
+                           (case style
+                             (:bold 1) (:italic 2) (:underline 4))))))))
+
 #|
 (defmethod change-font-between-cha-nos ((row row) new-font-no
           &optional

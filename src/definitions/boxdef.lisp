@@ -800,3 +800,14 @@ Modification History (most recent at top)
 ;;;; Commands for Mouse border Areas.... these were in coms-oglmouse.lisp
 (defvar *warn-about-disabled-commands* t)
 (defvar *only-shrink-wrap-text-boxes* nil)
+
+;; From draw folder
+(defconstant alu-andca boole-andc1   "Erase")
+(defconstant alu-seta  boole-1       "Drawing bits have priority")
+(defconstant alu-xor   boole-xor     "XORs the bits")
+(defconstant alu-and   boole-and     "ANDs the bits")
+(defconstant alu-ior   boole-ior     "ORs the bits")
+(defconstant alu-setz  boole-clr     "Set to Zero")
+
+(defun max-window-coord () #.(expt 2 15))
+(defun min-window-coord () #.(- (expt 2 15)))

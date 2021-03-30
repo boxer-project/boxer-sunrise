@@ -761,6 +761,8 @@
                boxer::*box-border-name-font-no*  arial-12-bold
                boxer::*border-name-font*         arial-12-bold
                boxer::*sprite-type-font-no*      arial-12-bold
+               boxer::*initial-graphics-state-current-font-no* arial-12-bold
+               boxer::*graphics-state-current-font-no* arial-12-bold
                boxer::*boxtop-text-font*         arial-12-bold
         ))
       ;; #+freetype-fonts
