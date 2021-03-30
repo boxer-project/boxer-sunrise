@@ -142,30 +142,6 @@ Modification History (most recent at top)
   (clearscreen-internal)
   boxer-eval::*novalue*)
 
-(boxer-eval::defboxer-primitive bu::clear-graphics ()
-  (cond ((not (null *uc-copyright-free*))
-         (boxer-eval::primitive-signal-error :copyright
-                                       'bu::clear-graphics
-                                       " is no longer available"))
-        (t
-         (clearscreen-internal))))
-
-(boxer-eval::defboxer-primitive bu::cleargraphics ()
-  (cond ((not (null *uc-copyright-free*))
-         (boxer-eval::primitive-signal-error :copyright
-                                       'bu::cleargraphics
-                                       " is no longer available"))
-        (t
-         (clearscreen-internal))))
-
-(boxer-eval::defboxer-primitive bu::cg ()
-  (cond ((not (null *uc-copyright-free*))
-         (boxer-eval::primitive-signal-error :copyright
-                                       'bu::cg
-                                       " is no longer available"))
-        (t
-         (clearscreen-internal))))
-
 (boxer-eval::defboxer-primitive bu::cb ()
   (clearscreen-internal :background))
 

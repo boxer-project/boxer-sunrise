@@ -560,17 +560,6 @@ Modification History (most recent at top)
     (when (null (probe-file pathname)) (maybe-uncompress-file pathname))
     (boxer-eval::boxer-boolean (probe-file pathname))))
 
-(boxer-eval::defboxer-primitive bu::mark-for-saving ()
-  (cond ((not (null *uc-copyright-free*))
-         (boxer-eval::primitive-signal-error :copyright
-                                       'bu::mark-for-saving
-                                       " is no longer available, use "
-                                       'bu::toggle-modified-flag " instead"))
-        (t
-         (when (box? boxer-eval::*lexical-variables-root*)
-           (mark-file-box-dirty boxer-eval::*lexical-variables-root*))
-         boxer-eval::*novalue*)))
-
 (boxer-eval::defboxer-primitive bu::toggle-modified-flag ()
   (when (box? boxer-eval::*lexical-variables-root*)
     (cond ((file-box-dirty? boxer-eval::*lexical-variables-root*)

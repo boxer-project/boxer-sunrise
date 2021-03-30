@@ -208,23 +208,6 @@ Modification History (most recent at the top)
 	(stamp-hollow-circle turtle radius)))
   boxer-eval::*novalue*)
 
-(defsprite-function bu::stamp-wedge ((boxer-eval::numberize radius)
-                                     (boxer-eval::numberize sweep-angle))
-                    (sprite turtle)
-  (cond ((not (null *uc-copyright-free*))
-         (boxer-eval::primitive-signal-error :copyright
-                                       'stamp-wedge " is no longer available, use "
-                                       'draw-wedge " instead"))
-        (t
-         (if (< radius 0)
-             (boxer-eval::primitive-signal-error :sprite-error
-				           "The Radius, "
-				           radius
-				           "Should be 0 or greater")
-           (with-sprites-hidden t
-	     (stamp-wedge turtle radius sweep-angle)))))
-      boxer-eval::*novalue*)
-
 (defsprite-function bu::draw-wedge ((boxer-eval::numberize radius)
                                      (boxer-eval::numberize sweep-angle))
                     (sprite turtle)
@@ -249,23 +232,6 @@ Modification History (most recent at the top)
       (with-sprites-hidden t
 	(stamp-wedge turtle radius sweep-angle)))
       boxer-eval::*novalue*)
-
-(defsprite-function bu::stamp-arc ((boxer-eval::numberize radius)
-                                   (boxer-eval::numberize sweep-angle))
-                    (sprite turtle)
-  (cond ((not (null *uc-copyright-free*))
-         (boxer-eval::primitive-signal-error :copyright
-                                       'stamp-arc " is no longer available, use "
-                                       'draw-arc " instead"))
-        (t
-         (if (< radius 0)
-             (boxer-eval::primitive-signal-error :sprite-error
-				           "The Radius, "
-				           radius
-				           "Should be 0 or greater")
-           (with-sprites-hidden t
-	     (stamp-arc turtle radius sweep-angle)))))
-  boxer-eval::*novalue*)
 
 (defsprite-function bu::draw-arc ((boxer-eval::numberize radius)
                                    (boxer-eval::numberize sweep-angle))

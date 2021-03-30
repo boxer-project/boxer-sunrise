@@ -426,29 +426,6 @@
 ;;;; display control
 
 
-(boxer-eval::defboxer-primitive bu::set-text-size ((bu::port-to box)
-                                                   (boxer-eval::numberize width)
-                                                   (boxer-eval::numberize height))
-  (cond ((not (null *uc-copyright-free*))
-          (boxer-eval::primitive-signal-error :copyright
-                                              'bu::set-text-size
-                                              " is no longer available, use "
-                                              'bu::set-text-dimensions " instead"))
-    (t
-      (let ((realbox (box-or-port-target box)))
-        (when (box? realbox)
-          (let ((*current-font-descriptor* (closest-bfd
-                                            (first-inferior-row realbox) 0)))
-            (multiple-value-bind (font-cha-wid font-cha-hei)
-                                (current-font-values)
-                                (set-fixed-size realbox
-                                                (* width font-cha-wid) (* height font-cha-hei))
-                                ;; allow further mousing
-                                (unless (bottom-right-hotspot-active? realbox)
-                                  (set-bottom-right-hotspot-active? realbox t))
-                                (modified realbox)))))))
-  boxer-eval::*novalue*)
-
 (boxer-eval::defboxer-primitive bu::set-text-dimensions ((bu::port-to box)
                                                          (boxer-eval::numberize width)
                                                          (boxer-eval::numberize height))
@@ -463,32 +440,6 @@
                               (unless (bottom-right-hotspot-active? realbox)
                                 (set-bottom-right-hotspot-active? realbox t))
                               (modified realbox)))))
-  boxer-eval::*novalue*)
-
-(boxer-eval::defboxer-primitive bu::set-port-text-size ((boxer-eval::dont-copy port)
-                                                        (boxer-eval::numberize width)
-                                                        (boxer-eval::numberize height))
-  (cond ((not (null *uc-copyright-free*))
-          (boxer-eval::primitive-signal-error :copyright
-                                              'bu::set-port-text-size
-                                              " is no longer available, use "
-                                              'bu::set-port-text-dimensions
-                                              " instead"))
-    (t
-      (let ((realbox (box-or-port-target port)))
-        (when (virtual-port? port)
-          (setq port (vp-editor-port-backpointer port)))
-        (when (and (box? realbox) (port-box? port))
-          (let ((*current-font-descriptor* (closest-bfd
-                                            (first-inferior-row realbox) 0)))
-            (multiple-value-bind (font-cha-wid font-cha-hei)
-                                (current-font-values)
-                                (set-fixed-size port
-                                                (* width font-cha-wid) (* height font-cha-hei))
-                                ;; allow further mousing
-                                (unless (bottom-right-hotspot-active? port)
-                                  (set-bottom-right-hotspot-active? port t))
-                                (modified port)))))))
   boxer-eval::*novalue*)
 
 (boxer-eval::defboxer-primitive bu::set-port-text-dimensions ((boxer-eval::dont-copy port)
@@ -732,29 +683,6 @@
         (boxer-eval::primitive-signal-error
         :move-cursor-error "You can only move to Editor Boxes"))))
   boxer-eval::*novalue*)
-
-(boxer-eval::defboxer-primitive bu::scroll-to-row ((bu::port-to box) (boxer-eval::numberize row))
-  (cond ((not (null *uc-copyright-free*))
-          (boxer-eval::primitive-signal-error :copyright
-                                              'bu::scroll-to-row
-                                              " is no longer available, use "
-                                              'bu::set-scroll-row " instead"))
-    (t
-      (let ((target (box-or-port-target box)))
-        (cond ((and (box? target)
-                    (typep row 'fixnum) (plusp& row))
-              (let ((edrow (row-at-row-no target (1- row)))
-                    (screen-objs (screen-objs target)))
-                (unless (null edrow)
-                  (cond ((null screen-objs)
-                          (record-scroll-info target nil edrow))
-                    (t
-                      (dolist (screen-obj screen-objs)
-                        (set-scroll-to-actual-row screen-obj edrow))))))
-              boxer-eval::*novalue*)
-          (t
-          (boxer-eval::primitive-signal-error
-            :scrolling-error "You can only scroll editor boxes")))))))
 
 ;; new! 9/06/02
 

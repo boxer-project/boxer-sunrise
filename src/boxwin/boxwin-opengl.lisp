@@ -812,11 +812,9 @@
                                         *uc-free-starting-box-file*)
                                        T)))
                ((probe-file *default-starting-box-file*)
-                (if (not (null boxer::*uc-copyright-free*))
-                    (start-box-copyright-warning)
-                  (ignore-errors (values (boxer::load-binary-box-internal
-                                          *default-starting-box-file*)
-                                         T))))))))
+                (ignore-errors (values (boxer::load-binary-box-internal
+                                        *default-starting-box-file*)
+                                       T)))))))
 
 (defun start-box-copyright-warning ()
   (boxer::make-box '(("Warning: start.box file detected")

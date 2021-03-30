@@ -2069,15 +2069,6 @@ Modification History (most recent at top)
 		    (record-port-printing editor-port))))
 	   (modified editor-port)))))
 
-(boxer-eval::defboxer-primitive bu::redirect ((boxer-eval::dont-copy port) (bu::port-to target))
-  "retarget the port to the given box"
-  (cond ((not (null *uc-copyright-free*))
-         (boxer-eval::primitive-signal-error :copyright
-                                       'bu::redirect " is no longer available"))
-        (t
-         (retarget-internal port target)
-         boxer-eval::*novalue*)))
-
 (defun point-in-port? (editor-port)
   (let ((screen-objs (screen-objs editor-port))
         (psb (point-screen-box)))

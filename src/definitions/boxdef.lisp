@@ -351,8 +351,6 @@ Modification History (most recent at top)
 ;;; debugging variables
 (defvar *boxer-system-hacker* nil)
 
-(defvar *uc-copyright-free* t)
-
 ;;;; EDITOR OBJECT DEFINITIONS
 
 ;;; see the file chars-xxx.lisp for details on how characters work in Boxer

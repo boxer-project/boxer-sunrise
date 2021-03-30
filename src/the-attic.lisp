@@ -3,6 +3,12 @@
 ;;;;
 
 ;;;;
+;;;; FILE: boxdef.lisp
+;;;;
+
+(defvar *uc-copyright-free* t)
+
+;;;;
 ;;;; FILE: boxwin-opengl.lisp
 ;;;;
 
@@ -1833,6 +1839,19 @@
   boxer-eval::*novalue*)
 
 ;;;;
+;;;; FILE: dataprims.lisp
+;;;;
+
+(boxer-eval::defboxer-primitive bu::redirect ((boxer-eval::dont-copy port) (bu::port-to target))
+  "retarget the port to the given box"
+  (cond ((not (null *uc-copyright-free*))
+         (boxer-eval::primitive-signal-error :copyright
+                                       'bu::redirect " is no longer available"))
+        (t
+         (retarget-internal port target)
+         boxer-eval::*novalue*)))
+
+;;;;
 ;;;; FILE: disply.lisp
 ;;;;
 
@@ -2817,6 +2836,21 @@
                                                         (max& 0 (round (-& new-hei old-hei) 2))))))
 
 ;;;;
+;;;; FILE: file-prims.lisp
+;;;;
+
+(boxer-eval::defboxer-primitive bu::mark-for-saving ()
+  (cond ((not (null *uc-copyright-free*))
+         (boxer-eval::primitive-signal-error :copyright
+                                       'bu::mark-for-saving
+                                       " is no longer available, use "
+                                       'bu::toggle-modified-flag " instead"))
+        (t
+         (when (box? boxer-eval::*lexical-variables-root*)
+           (mark-file-box-dirty boxer-eval::*lexical-variables-root*))
+         boxer-eval::*novalue*)))
+
+;;;;
 ;;;; FILE: grobjs.lisp
 ;;;;
 
@@ -2904,6 +2938,71 @@
          (float-plus float-temp float-height)
          float-temp))))))
 
+;;;;
+;;;; FILE: grprim1.lisp
+;;;;
+
+(boxer-eval::defboxer-primitive bu::clear-graphics ()
+  (cond ((not (null *uc-copyright-free*))
+         (boxer-eval::primitive-signal-error :copyright
+                                       'bu::clear-graphics
+                                       " is no longer available"))
+        (t
+         (clearscreen-internal))))
+
+(boxer-eval::defboxer-primitive bu::cleargraphics ()
+  (cond ((not (null *uc-copyright-free*))
+         (boxer-eval::primitive-signal-error :copyright
+                                       'bu::cleargraphics
+                                       " is no longer available"))
+        (t
+         (clearscreen-internal))))
+
+(boxer-eval::defboxer-primitive bu::cg ()
+  (cond ((not (null *uc-copyright-free*))
+         (boxer-eval::primitive-signal-error :copyright
+                                       'bu::cg
+                                       " is no longer available"))
+        (t
+         (clearscreen-internal))))
+
+;;;;
+;;;; FILE: grprim2.lisp
+;;;;
+
+(defsprite-function bu::stamp-wedge ((boxer-eval::numberize radius)
+                                     (boxer-eval::numberize sweep-angle))
+                    (sprite turtle)
+  (cond ((not (null *uc-copyright-free*))
+         (boxer-eval::primitive-signal-error :copyright
+                                       'stamp-wedge " is no longer available, use "
+                                       'draw-wedge " instead"))
+        (t
+         (if (< radius 0)
+             (boxer-eval::primitive-signal-error :sprite-error
+				           "The Radius, "
+				           radius
+				           "Should be 0 or greater")
+           (with-sprites-hidden t
+	     (stamp-wedge turtle radius sweep-angle)))))
+      boxer-eval::*novalue*)
+
+(defsprite-function bu::stamp-arc ((boxer-eval::numberize radius)
+                                   (boxer-eval::numberize sweep-angle))
+                    (sprite turtle)
+  (cond ((not (null *uc-copyright-free*))
+         (boxer-eval::primitive-signal-error :copyright
+                                       'stamp-arc " is no longer available, use "
+                                       'draw-arc " instead"))
+        (t
+         (if (< radius 0)
+             (boxer-eval::primitive-signal-error :sprite-error
+				           "The Radius, "
+				           radius
+				           "Should be 0 or greater")
+           (with-sprites-hidden t
+	     (stamp-arc turtle radius sweep-angle)))))
+  boxer-eval::*novalue*)
 
 ;;;;
 ;;;; FILE: infsup.lisp
@@ -3390,6 +3489,82 @@ to the :TEXT-STRING method of boxes. "
 ;		   (T (RETURN NIL))))))))
 
 |#
+
+;;;;
+;;;; FILE: misc-prims.lisp
+;;;;
+
+(boxer-eval::defboxer-primitive bu::set-text-size ((bu::port-to box)
+                                                   (boxer-eval::numberize width)
+                                                   (boxer-eval::numberize height))
+  (cond ((not (null *uc-copyright-free*))
+          (boxer-eval::primitive-signal-error :copyright
+                                              'bu::set-text-size
+                                              " is no longer available, use "
+                                              'bu::set-text-dimensions " instead"))
+    (t
+      (let ((realbox (box-or-port-target box)))
+        (when (box? realbox)
+          (let ((*current-font-descriptor* (closest-bfd
+                                            (first-inferior-row realbox) 0)))
+            (multiple-value-bind (font-cha-wid font-cha-hei)
+                                (current-font-values)
+                                (set-fixed-size realbox
+                                                (* width font-cha-wid) (* height font-cha-hei))
+                                ;; allow further mousing
+                                (unless (bottom-right-hotspot-active? realbox)
+                                  (set-bottom-right-hotspot-active? realbox t))
+                                (modified realbox)))))))
+  boxer-eval::*novalue*)
+
+(boxer-eval::defboxer-primitive bu::set-port-text-size ((boxer-eval::dont-copy port)
+                                                        (boxer-eval::numberize width)
+                                                        (boxer-eval::numberize height))
+  (cond ((not (null *uc-copyright-free*))
+          (boxer-eval::primitive-signal-error :copyright
+                                              'bu::set-port-text-size
+                                              " is no longer available, use "
+                                              'bu::set-port-text-dimensions
+                                              " instead"))
+    (t
+      (let ((realbox (box-or-port-target port)))
+        (when (virtual-port? port)
+          (setq port (vp-editor-port-backpointer port)))
+        (when (and (box? realbox) (port-box? port))
+          (let ((*current-font-descriptor* (closest-bfd
+                                            (first-inferior-row realbox) 0)))
+            (multiple-value-bind (font-cha-wid font-cha-hei)
+                                (current-font-values)
+                                (set-fixed-size port
+                                                (* width font-cha-wid) (* height font-cha-hei))
+                                ;; allow further mousing
+                                (unless (bottom-right-hotspot-active? port)
+                                  (set-bottom-right-hotspot-active? port t))
+                                (modified port)))))))
+  boxer-eval::*novalue*)
+
+(boxer-eval::defboxer-primitive bu::scroll-to-row ((bu::port-to box) (boxer-eval::numberize row))
+  (cond ((not (null *uc-copyright-free*))
+          (boxer-eval::primitive-signal-error :copyright
+                                              'bu::scroll-to-row
+                                              " is no longer available, use "
+                                              'bu::set-scroll-row " instead"))
+    (t
+      (let ((target (box-or-port-target box)))
+        (cond ((and (box? target)
+                    (typep row 'fixnum) (plusp& row))
+              (let ((edrow (row-at-row-no target (1- row)))
+                    (screen-objs (screen-objs target)))
+                (unless (null edrow)
+                  (cond ((null screen-objs)
+                          (record-scroll-info target nil edrow))
+                    (t
+                      (dolist (screen-obj screen-objs)
+                        (set-scroll-to-actual-row screen-obj edrow))))))
+              boxer-eval::*novalue*)
+          (t
+          (boxer-eval::primitive-signal-error
+            :scrolling-error "You can only scroll editor boxes")))))))
 
 ;;;;
 ;;;; FILE: mouse.lisp
@@ -4018,6 +4193,101 @@ to the :TEXT-STRING method of boxes. "
                 ;; why do we have to do this ?
                 #+carbon-compat
                 (window-system-dependent-set-origin %origin-x-offset %origin-y-offset)
+
+;;;;
+;;;; FILE: prims.lisp
+;;;;
+
+(defrecursive-eval-primitive bu::any-of ((dont-copy box)
+                                         (list-rest rest-of-line-must-be-empty))
+  :state-variables (*boolean-clauses*)
+  :before
+  (cond ((not (null boxer::*uc-copyright-free*))
+         (boxer-eval::primitive-signal-error :copyright
+                                       'bu::any-of " is no longer available, use "
+                                       'bu::some " instead"))
+        (t
+         (cond ((not (null rest-of-line-must-be-empty))
+                (signal-error
+                 :any-of-bug
+                 "ANY-OF statements must appear on lines by themselves."))
+               ((or (numberp box) (not (fast-eval-data-box? box)))
+                (signal-error :any-of-bug "expects a data box"))
+               (t (let* ((code (interpreted-boxer-function-text
+	                        (if (boxer::virtual-copy? box)
+	                            (cached-code-virtual-copy box)
+	                          (cached-code-editor-box box))))
+                         (1stline (do ((line (car code) (car code)))
+			              ((null code) nil)
+			            (if (null line)
+                                        (pop code)
+                                      (return (pop code))))))
+                    (if (null 1stline) *false*
+                      (progn
+                        (set-and-save-state-variables code)
+                        (recursive-eval-invoke
+                         (list* 'boxer-eval::any-of 1stline)))))))))
+  :after (cond ((null *boolean-clauses*)
+                (restore-state-variables) nil)
+               (t (let ((nextline (do ((line (car *boolean-clauses*)
+					     (car *boolean-clauses*)))
+				      ((null *boolean-clauses*) nil)
+				    (if (null line) (pop *boolean-clauses*)
+					(return (pop *boolean-clauses*))))))
+		    (cond ((null nextline)
+			   (restore-state-variables) nil)
+			  (t
+			   (cons 'boxer-eval::any-of nextline)))))))
+
+;; give helper function same name in eval package is a crock to make
+;; the error message come out right
+(defboxer-primitive boxer-eval::any-of ((dont-copy clause) (list-rest ignore))
+  ignore ; bound but not used blah blah...
+  (cond ((true? clause)
+         (setq *boolean-clauses* nil) *true*)
+        ((false? clause) *false*)
+        (t (signal-error :any-of clause "neither true nor false"))))
+
+(defrecursive-eval-primitive bu::all-of ((dont-copy box)
+                                         (list-rest rest-of-line-must-be-empty))
+  :state-variables (*boolean-clauses*)
+  :before
+  (cond ((not (null boxer::*uc-copyright-free*))
+         (boxer-eval::primitive-signal-error :copyright
+                                       'bu::all-of " is no longer available, use "
+                                       'bu::every " instead"))
+        (t
+         (cond ((not (null rest-of-line-must-be-empty))
+                (signal-error
+                 :all-of-bug
+                 "ALL-OF statements must appear on lines by themselves."))
+               ((or (numberp box) (not (fast-eval-data-box? box)))
+                (signal-error :all-of-bug "expects a data box"))
+               (t (let* ((code (interpreted-boxer-function-text
+	                        (if (boxer::virtual-copy? box)
+	                            (cached-code-virtual-copy box)
+	                          (cached-code-editor-box box))))
+                         (1stline (do ((line (car code) (car code)))
+			              ((null code) nil)
+			            (if (null line)
+                                        (pop code)
+                                      (return (pop code))))))
+                    (if (null 1stline) *true*
+                      (progn
+                        (set-and-save-state-variables code)
+                        (recursive-eval-invoke
+                         (list* 'boxer-eval::all-of 1stline)))))))))
+  :after (cond ((null *boolean-clauses*)
+                (restore-state-variables) nil)
+               (t (let ((nextline (do ((line (car *boolean-clauses*)
+					     (car *boolean-clauses*)))
+				      ((null *boolean-clauses*) nil)
+				    (if (null line) (pop *boolean-clauses*)
+					(return (pop *boolean-clauses*))))))
+		    (cond ((null nextline)
+			   (restore-state-variables) nil)
+			  (t
+			   (cons 'boxer-eval::all-of nextline)))))))
 
 ;;;;
 ;;;; FILE: realprinter.lisp

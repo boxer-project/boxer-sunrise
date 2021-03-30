@@ -254,56 +254,6 @@ Modification History (most recent at the top)
 	((false? true-or-false) (boxer-boolean t))
 	(t (signal-error :NOT-TRUE-OR-FALSE true-or-false))))
 
-(defrecursive-eval-primitive bu::any-of ((dont-copy box)
-                                         (list-rest rest-of-line-must-be-empty))
-  :state-variables (*boolean-clauses*)
-  :before
-  (cond ((not (null boxer::*uc-copyright-free*))
-         (boxer-eval::primitive-signal-error :copyright
-                                       'bu::any-of " is no longer available, use "
-                                       'bu::some " instead"))
-        (t
-         (cond ((not (null rest-of-line-must-be-empty))
-                (signal-error
-                 :any-of-bug
-                 "ANY-OF statements must appear on lines by themselves."))
-               ((or (numberp box) (not (fast-eval-data-box? box)))
-                (signal-error :any-of-bug "expects a data box"))
-               (t (let* ((code (interpreted-boxer-function-text
-	                        (if (boxer::virtual-copy? box)
-	                            (cached-code-virtual-copy box)
-	                          (cached-code-editor-box box))))
-                         (1stline (do ((line (car code) (car code)))
-			              ((null code) nil)
-			            (if (null line)
-                                        (pop code)
-                                      (return (pop code))))))
-                    (if (null 1stline) *false*
-                      (progn
-                        (set-and-save-state-variables code)
-                        (recursive-eval-invoke
-                         (list* 'boxer-eval::any-of 1stline)))))))))
-  :after (cond ((null *boolean-clauses*)
-                (restore-state-variables) nil)
-               (t (let ((nextline (do ((line (car *boolean-clauses*)
-					     (car *boolean-clauses*)))
-				      ((null *boolean-clauses*) nil)
-				    (if (null line) (pop *boolean-clauses*)
-					(return (pop *boolean-clauses*))))))
-		    (cond ((null nextline)
-			   (restore-state-variables) nil)
-			  (t
-			   (cons 'boxer-eval::any-of nextline)))))))
-
-;; give helper function same name in eval package is a crock to make
-;; the error message come out right
-(defboxer-primitive boxer-eval::any-of ((dont-copy clause) (list-rest ignore))
-  ignore ; bound but not used blah blah...
-  (cond ((true? clause)
-         (setq *boolean-clauses* nil) *true*)
-        ((false? clause) *false*)
-        (t (signal-error :any-of clause "neither true nor false"))))
-
 (defrecursive-eval-primitive bu::some ((dont-copy box)
                                        (list-rest rest-of-line-must-be-empty))
   :state-variables (*boolean-clauses*)
@@ -348,47 +298,6 @@ Modification History (most recent at the top)
          (setq *boolean-clauses* nil) *true*)
         ((false? clause) *false*)
         (t (signal-error :some-of clause "neither true nor false"))))
-
-(defrecursive-eval-primitive bu::all-of ((dont-copy box)
-                                         (list-rest rest-of-line-must-be-empty))
-  :state-variables (*boolean-clauses*)
-  :before
-  (cond ((not (null boxer::*uc-copyright-free*))
-         (boxer-eval::primitive-signal-error :copyright
-                                       'bu::all-of " is no longer available, use "
-                                       'bu::every " instead"))
-        (t
-         (cond ((not (null rest-of-line-must-be-empty))
-                (signal-error
-                 :all-of-bug
-                 "ALL-OF statements must appear on lines by themselves."))
-               ((or (numberp box) (not (fast-eval-data-box? box)))
-                (signal-error :all-of-bug "expects a data box"))
-               (t (let* ((code (interpreted-boxer-function-text
-	                        (if (boxer::virtual-copy? box)
-	                            (cached-code-virtual-copy box)
-	                          (cached-code-editor-box box))))
-                         (1stline (do ((line (car code) (car code)))
-			              ((null code) nil)
-			            (if (null line)
-                                        (pop code)
-                                      (return (pop code))))))
-                    (if (null 1stline) *true*
-                      (progn
-                        (set-and-save-state-variables code)
-                        (recursive-eval-invoke
-                         (list* 'boxer-eval::all-of 1stline)))))))))
-  :after (cond ((null *boolean-clauses*)
-                (restore-state-variables) nil)
-               (t (let ((nextline (do ((line (car *boolean-clauses*)
-					     (car *boolean-clauses*)))
-				      ((null *boolean-clauses*) nil)
-				    (if (null line) (pop *boolean-clauses*)
-					(return (pop *boolean-clauses*))))))
-		    (cond ((null nextline)
-			   (restore-state-variables) nil)
-			  (t
-			   (cons 'boxer-eval::all-of nextline)))))))
 
 (defboxer-primitive boxer-eval::all-of ((dont-copy clause) (list-rest ignore))
   ignore
