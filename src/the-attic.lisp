@@ -4298,6 +4298,12 @@ to the :TEXT-STRING method of boxes. "
 			  (t
 			   (cons 'boxer-eval::all-of nextline)))))))
 
+(defboxer-primitive boxer-eval::all-of ((dont-copy clause) (list-rest ignore))
+  ignore
+  (cond ((true? clause) *true*)
+        ((false? clause) (setq *boolean-clauses* nil) *false*)
+        (t (signal-error :any-of clause "neither true nor false"))))
+
 ;;;;
 ;;;; FILE: realprinter.lisp
 ;;;;

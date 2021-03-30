@@ -299,12 +299,6 @@ Modification History (most recent at the top)
         ((false? clause) *false*)
         (t (signal-error :some-of clause "neither true nor false"))))
 
-(defboxer-primitive boxer-eval::all-of ((dont-copy clause) (list-rest ignore))
-  ignore
-  (cond ((true? clause) *true*)
-        ((false? clause) (setq *boolean-clauses* nil) *false*)
-        (t (signal-error :any-of clause "neither true nor false"))))
-
 (defrecursive-eval-primitive bu::every ((dont-copy box)
                                          (list-rest rest-of-line-must-be-empty))
   :state-variables (*boolean-clauses*)
