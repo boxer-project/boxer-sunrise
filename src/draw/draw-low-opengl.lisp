@@ -449,12 +449,14 @@ notes:: check points arg on draw-poly
 
 ;; returns absolute font size
 (defun font-size (font-no)
-  (%font-size-idx-to-size (font-size-to-idx (%font-size-idx font-no))))
+  (let* ((font (find-cached-font font-no))
+         (fontspec (bw::opengl-font-font-triple font)))
+    (cadr fontspec)))
 
-(defun font-name (font-no) ) ; TODO Reimplement
-  ;; (let* ((idx (%font-family-idx font-no)))
-  ;;   (when (< idx (length *font-family-names*))
-  ;;     (svref *font-family-names* idx))))
+(defun font-name (font-no)
+  (let* ((font (find-cached-font font-no))
+         (fontspec (bw::opengl-font-font-triple font)))
+    (car fontspec)))
 
 ;; these next 3 take a font code and should return a new font code
 (defun %set-font (font-no face-name)
