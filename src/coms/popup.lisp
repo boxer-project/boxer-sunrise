@@ -82,7 +82,8 @@ Modification History (most recent at top)
    (action :initarg :action :initform nil)
    ;; font is an index into *boxer-pane*'s font map
    (font  :initarg :font
-          :initform *default-font*)
+          :initform *default-font*
+          :accessor menu-item-font)
    (enabled? :initform t)
    (checked? :initform nil))
   (:metaclass block-compile-class))
@@ -111,15 +112,19 @@ Modification History (most recent at top)
 (defmethod set-menu-item-action ((menu menu-item) new-action)
   (setf (slot-value menu 'action) new-action))
 
+(defmethod get-menu-item-font ((menu menu-item))
+  (or (slot-value menu 'font)
+      *default-font*))
+
 (defmethod item-size ((item menu-item))
   (values
    (+ (* *menu-item-margin* 2)
-       (string-wid (slot-value item 'font) (slot-value item 'title)))
+       (string-wid (get-menu-item-font item) (slot-value item 'title)))
    ;; leave a pixel above and below
-   (+ (string-hei (slot-value item 'font)) 2)))
+   (+ (string-hei (get-menu-item-font item)) 2)))
 
 (defmethod item-height ((item menu-item))
-  (+ (string-hei (slot-value item 'font)) 2))
+  (+ (string-hei (get-menu-item-font item)) 2))
 
 (defvar *default-check-char* #+mcl (code-char 195) #-mcl #\o) ; mcl bullet is 165
 
@@ -129,27 +134,27 @@ Modification History (most recent at top)
       (with-pen-color (*gray*)
         ;; yuck why isn't gray bound somewhere
         (let ((check (slot-value item 'checked?)))
-          (rebind-font-info ((slot-value item 'font))
+          (rebind-font-info ((get-menu-item-font item))
             (cond ((null check))
                   ((characterp check)
                    (draw-cha alu-seta check (+ x 2) (+ y (cha-ascent))))
                   (t (draw-cha alu-seta *default-check-char*
                                (+ x 2)  (+ y (cha-ascent)))))))
-        (draw-string alu-seta (slot-value item 'font) (slot-value item 'title)
+        (draw-string alu-seta (get-menu-item-font item) (slot-value item 'title)
                      (+ x *menu-item-margin*) (1+ y)))
       (progn
         (with-pen-color (*black*)
-          (draw-string alu-seta (slot-value item 'font) (slot-value item 'title)
+          (draw-string alu-seta (get-menu-item-font item) (slot-value item 'title)
                        (+ x *menu-item-margin*) (1+ y))
           (let ((check (slot-value item 'checked?)))
-            (rebind-font-info ((slot-value item 'font))
+            (rebind-font-info ((get-menu-item-font item))
               (cond ((null check))
                     ((characterp check)
                      (draw-cha alu-seta check (+ x 2)  (+ y (cha-ascent))))
                     (t (draw-cha alu-seta *default-check-char*
                                  (+ x 2)  (+ y (cha-ascent))))))))))
   ;; return height used up
-  (+ (string-hei (slot-value item 'font)) 2))
+  (+ (string-hei (get-menu-item-font item)) 2))
 
 (defmethod set-menu-item-check-mark ((item menu-item) check-mark)
   (setf (slot-value item 'checked?) check-mark))
