@@ -79,49 +79,6 @@
                                            (CHANGE-CHA-AT-CHA-NO ROW CHA-NO
                                                                  (funcall FCN (CHA-AT-CHA-NO ROW CHA-NO)))))))))
 
-
-
-
-;;;; lower level utilities for handling fonts
-;; perhaps these belong in a lower level file like draw-low-xxx ?
-
-(defun normal-font? (font-no)
-  (not (font-style font-no)))
-
-(defun bold-font? (font-no)
-  (member :bold (font-style font-no)))
-
-(defun italic-font? (font-no)
-  (member :italic (font-style font-no)))
-
-(defun font-styles (boxer-font)
-  ; TODO sgithens
-  (break "Fix for updated font refactoring")
-  (let ((style-byte (font-style boxer-font))
-        (return-styles nil))
-    (do* ((pos 1 (ash pos 1))
-          (styles '(:bold :italic :underline)
-                  (cdr styles))
-          (style (car styles) (car styles)))
-      ((null style))
-      (unless (zerop& (logand& style-byte pos)) (push style return-styles)))
-    (nreverse return-styles)))
-
-
-(defun set-font-style (font-no style to-on?)
-  (let* ((font (find-cached-font font-no))
-         (fontspec (bw::opengl-font-font-triple font)))
-    (cond ((eq style :plain)
-           (make-boxer-font (subseq fontspec 0 2)))
-          ((eq style :bold)
-           (if to-on?
-               (make-boxer-font (append (remove :BOLD fontspec) '(:BOLD)))
-               (make-boxer-font (remove :BOLD fontspec))))
-          ((eq style :italic)
-           (if to-on?
-               (make-boxer-font (append (remove :ITALIC fontspec) '(:ITALIC)))
-               (make-boxer-font (remove :ITALIC fontspec)))))))
-
 ;; look for the bfd which specifies the font info for the position
 (defun closest-bfd (row cha-no) (closest-bfd-internal (row-fds row) cha-no))
 

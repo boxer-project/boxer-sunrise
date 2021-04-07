@@ -187,6 +187,8 @@
 ;;;; Font Vars....
 
 (defvar %drawing-font-cha-hei)
+(defvar %drawing-font-cha-ascent)
+
 
 (defvar *redisplay-id* 0)
 (defvar *redisplay-in-progress?* nil)

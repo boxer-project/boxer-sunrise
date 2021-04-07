@@ -30,6 +30,7 @@
   (:shadow :once-only)
   (:export :symbol-format :set-font-info
            :*boxer-frame*
+           :*current-opengl-font*
            :with-collection
            :collect
            :sheet-inside-left :sheet-inside-top
@@ -69,6 +70,7 @@
            :%drawing-font :%drawing-fit
            :%drawing-font-cha-wid
            :%drawing-font-cha-hei
+           :%drawing-font-cha-ascent
            :%drawing-font-cha-wid-table
            ;; inits
            :def-redisplay-initialization

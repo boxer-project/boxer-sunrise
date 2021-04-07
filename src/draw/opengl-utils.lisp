@@ -174,24 +174,27 @@ Modification History (most recent at the top)
 
 ;;;; FONTS
 
-(defvar *capogi-font-directory* nil)
-
-(defvar *current-opengl-font* nil
-  "set-font sets, char drawing uses this value")
-
-(defstruct (opengl-font (:constructor %make-opengl-font)
-                        (:print-function %print-opengl-font))
-  (font-triple nil))
-
-(defun %print-opengl-font (font stream level)
-  (declare (ignore level))
-  (format stream "#<OGLFont ~A >"
-             (opengl-font-font-triple font)))
 
 (defstruct (ogl-graphics-state (:constructor %make-ogl-graphics-state))
   (color nil)
   (font  nil))
 
+;; this handles font parameter filling in the editor
+;; font parameter filling in sprite graphics is handled by change-graphics-font
+;; I believe this is only being used in ogl-set-font... below and can probably be removed
+(defun ogl-set-font (font)
+  (setq *current-opengl-font* font))
+
+(defun set-font-info (x)
+  (let* ((font-no (if x x *normal-font-no*))
+         (system-font (boxer::find-cached-font font-no)))
+    (ogl-set-font system-font)
+    (multiple-value-bind (ascent height  leading)
+                         (ogl-font-info system-font)
+                         (setq %drawing-font-cha-ascent ascent
+                               %drawing-font-cha-hei (+ height leading)))
+    font-no))
+
 ;;; External Interface
 ;; ogl-set-font
 ;; ogl-font-height
@@ -199,11 +202,6 @@ Modification History (most recent at the top)
 ;; ogl-draw-character
 ;; ogl-draw-string
 ;; ogl-string-width, height  (font string)
-
-;; this handles font parameter filling in the editor
-;; font parameter filling in sprite graphics is handled by change-graphics-font
-(defun ogl-set-font (font)
-  (setq *current-opengl-font* font))
 
 (defmacro with-ogl-font ((font) &body body)
   (let ((oldfont (gensym)))
@@ -223,12 +221,6 @@ Modification History (most recent at the top)
   (when *include-font-debugging*
     `(when *debug-font-caching*
        . ,forms)))
-
-;; returns ascent, height and leading (space between rows)
-;; maybe shopuld return width info ?
-;; need to figure out what width info is used...
-(defun ogl-font-info (font)
-  (values (ogl-font-ascent font) (ogl-font-height font) 1))
 
 ;; Note: last value is "leading" which is the recommended space between lines
 
@@ -250,6 +242,12 @@ Modification History (most recent at the top)
 (defun ogl-font-ascent (font)
   "sgithens TODO: temporary hack see ogl-font-height, the math for this should be even more different"
   (ogl-font-height font))
+
+;; returns ascent, height and leading (space between rows)
+;; maybe shopuld return width info ?
+;; need to figure out what width info is used...
+(defun ogl-font-info (font)
+  (values (ogl-font-ascent font) (ogl-font-height font) 1))
 
 (defun ogl-string-width (string &optional (font *current-opengl-font*))
   (let* ((cha-pixmap (boxer::find-freetype-pixmap string font *ogl-current-color-vector*))

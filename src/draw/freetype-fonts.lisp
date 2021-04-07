@@ -28,7 +28,7 @@
   "Hash table of cached pixmaps for drawing.")
 
 (defun make-freetype-face (font-file)
-  (freetype2::new-face (merge-pathnames bw::*capogi-font-directory* font-file)))
+  (freetype2::new-face (merge-pathnames *capogi-font-directory* font-file)))
 
 (defun load-freetype-faces ()
   "Load initial set of fonts"
@@ -65,8 +65,7 @@
   The current font sizes are:
       9, 10, 12, 14, 16, 20, 24
   "
-  (let* (; (cur-font-triple (bw::opengl-font-font-triple current-font))
-         (capi-font-triple (check-font-triple (bw::opengl-font-font-triple current-font)))
+  (let* ((capi-font-triple (check-font-triple (opengl-font-font-triple current-font)))
          (name (car capi-font-triple))
          (size (cadr capi-font-triple))
          (style (cddr capi-font-triple))
@@ -133,8 +132,7 @@
   "Returns a pixmap ready for rendering. Needs to cache pixmaps based on the following:
    CAPI Font List, Color, Char/String
   "
-  (let* (; (cur-font-triple (bw::opengl-font-font-triple current-font))
-         (capi-font-triple (check-font-triple (bw::opengl-font-font-triple current-font)))
+  (let* ((capi-font-triple (check-font-triple (opengl-font-font-triple current-font)))
          (cur-color (current-rgba-percents cur-ogl-color))
          (cache-key `(,capi-font-triple ,cur-color ,char-string))
          (cached-pixmap (gethash cache-key *freetype-pixmap-cache*)))
