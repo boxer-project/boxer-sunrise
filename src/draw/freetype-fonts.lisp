@@ -49,7 +49,7 @@
   (setf (gethash "LiberationSerif-Italic" *freetype-faces*) (make-freetype-face "LiberationSerif-Italic.ttf"))
   (setf (gethash "LiberationSerif-BoldItalic" *freetype-faces*) (make-freetype-face "LiberationSerif-BoldItalic.ttf")))
 
-(defun check-font-triple (triple)
+(defun check-fontspec (triple)
   "While we are continuing to refactor fonts in the system, sometimes the font size comes in as zero,
   for now we will reset it to 12."
   (if (equal (cadr triple) 0)
@@ -65,10 +65,10 @@
   The current font sizes are:
       9, 10, 12, 14, 16, 20, 24
   "
-  (let* ((capi-font-triple (check-font-triple (opengl-font-font-triple current-font)))
-         (name (car capi-font-triple))
-         (size (cadr capi-font-triple))
-         (style (cddr capi-font-triple))
+  (let* ((capi-fontspec (check-fontspec (opengl-font-fontspec current-font)))
+         (name (car capi-fontspec))
+         (size (cadr capi-fontspec))
+         (style (cddr capi-fontspec))
          (face-family-name nil) ; ie. LiberationSerif
          (face-style-name nil) ; ie. Regular, Bold, Italic, BoldItalic
          (face-full-name) ; ie. LiberationSans-Bold
@@ -132,9 +132,9 @@
   "Returns a pixmap ready for rendering. Needs to cache pixmaps based on the following:
    CAPI Font List, Color, Char/String
   "
-  (let* ((capi-font-triple (check-font-triple (opengl-font-font-triple current-font)))
+  (let* ((capi-fontspec (check-fontspec (opengl-font-fontspec current-font)))
          (cur-color (current-rgba-percents cur-ogl-color))
-         (cache-key `(,capi-font-triple ,cur-color ,char-string))
+         (cache-key `(,capi-fontspec ,cur-color ,char-string))
          (cached-pixmap (gethash cache-key *freetype-pixmap-cache*)))
     (unless cached-pixmap
       (setf cached-pixmap (make-freetype-pixmap char-string current-font (current-rgba-percents cur-ogl-color)))

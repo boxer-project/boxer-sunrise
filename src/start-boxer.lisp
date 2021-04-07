@@ -93,7 +93,7 @@
 
     ;; Adding the fonts directory based on whereever this MacOS application happens to
     ;; be running from.
-    (setf boxer-window::*capogi-font-directory* (make-pathname
+    (setf *capogi-font-directory* (make-pathname
                                                   :host (pathname-host (lw:lisp-image-name))
                                                   :directory (append (base-install-folder) '("Resources" "Fonts"))))
 

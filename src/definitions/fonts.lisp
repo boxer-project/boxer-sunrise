@@ -1,3 +1,21 @@
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                           +-Data--+
+;;;;                  This file is part of the | BOXER | system
+;;;;                                           +-------+
+;;;;
+;;;;    Structures and routines for implementation independent font information, such as Font Face, Size, and Styles.
+;;;;
 (in-package :boxer)
 
 (defvar *capogi-font-directory* nil)
@@ -7,26 +25,20 @@
 
 (defstruct (opengl-font (:constructor %make-opengl-font)
                         (:print-function %print-opengl-font))
-  (font-triple nil))
+  (fontspec nil))
 
 (defun %print-opengl-font (font stream level)
   (declare (ignore level))
   (format stream "#<OGLFont ~A >"
-             (opengl-font-font-triple font)))
-
-;;; Fonts
+             (opengl-font-fontspec font)))
 
 ;; stub
 (defun sheet-font-map (w) (declare (ignore w)) nil)
 
-(defvar *menu-font-sizes* '(5 6 7 8 9 10 11 12 14 16 18 20 22 24 26 28 36 48 72)
-;; '(9 10 12 14 16 20 24)
+(defvar *menu-font-sizes* '(9 10 11 12 14 16 18 20 22 24 26 28 36 48 72)
   "We support fonts of any size now, but these are the sizes that will be
   available from the drop down menu in the UI.")
 
-
-
-
 (defvar *font-size-baseline* 1 )
 
 (defun max-font-size-baseline-value ()
@@ -45,7 +57,7 @@
 (defvar *default-font-family* (car *font-families*))
 
 (defun %font-size-idx (font-no)
-  (cadr (opengl-font-font-triple (find-cached-font font-no))))
+  (cadr (opengl-font-fontspec (find-cached-font font-no))))
 
 ;; available sizes are: 6,8,10,12,14,16,18,24
 ;; NOTE: we an get size 7 when loading old mac boxes...
@@ -76,8 +88,6 @@
 
 (defun %font-size-idx-to-size (sidx) (svref *font-sizes* sidx))
 
-
-
 ;; size resolution happens here. The relative size is resolved along with *font-size-baseline*
 (defun find-cached-font (font-no &optional (translate-size t))
   (nth font-no *font-cache*);; TODO sgithens: fixup the translate size for zooming
@@ -93,16 +103,9 @@
 
                             ;;  )
 
-
-
 (defun fontspec->font-no (fontspec)
-  (position-if #'(lambda (x) (equal fontspec (opengl-font-font-triple x))) *font-cache*))
+  (position-if #'(lambda (x) (equal fontspec (opengl-font-fontspec x))) *font-cache*))
 
-;; this is the main hook for hacking cross platform fonts
-;; need to think more deeply about rejecting "obviously" bogus font names
-;; currently, we rely on gp:find-best-font which just returns a "default" for
-;; unhandled names (looks like it's "MS Serif")
-;;
 ;; use an alist for now, we may have to get more complicated if it looks like
 ;; the number of "foreign" fonts will be large
 (defvar *font-family-aliases*
@@ -112,7 +115,6 @@
 (defun font-family-alias (family-name)
   (cdr (assoc family-name *font-family-aliases* :test #'string-equal)))
 
-;; always "calculate parameters" because they are already available in the capogi font structure
 (defun make-boxer-font (rawfontspec)
   (let* ((alias (font-family-alias (car rawfontspec)))
          (fontspec (if alias (list* alias (cdr rawfontspec)) rawfontspec))
@@ -120,50 +122,42 @@
          (oglfont nil))
     (if font-no
       font-no
-      (progn (format t "~%make-boxer-font rawfontspec: ~a alias: ~a fontspec: ~a font-no: ~a" rawfontspec alias fontspec font-no)
-        (setf oglfont (%make-opengl-font :font-triple fontspec))
+      (progn
+        (setf oglfont (%make-opengl-font :fontspec fontspec))
         (setf *font-cache* (append *font-cache* (list oglfont)))
         (if (null *current-opengl-font*)
           (setf *current-opengl-font* oglfont))
-        (1- (length *font-cache*))))
-    ))
+        (1- (length *font-cache*))))))
 
 ;; the external interface, see comsf.lisp for usage
 (defun font-style (font-no)
-  (cddr (opengl-font-font-triple (find-cached-font font-no))))
+  (cddr (opengl-font-fontspec (find-cached-font font-no))))
 
 ;; returns absolute font size
 (defun font-size (font-no)
   (let* ((font (find-cached-font font-no))
-         (fontspec (opengl-font-font-triple font)))
+         (fontspec (opengl-font-fontspec font)))
     (cadr fontspec)))
 
 (defun font-name (font-no)
   (let* ((font (find-cached-font font-no))
-         (fontspec (opengl-font-font-triple font)))
+         (fontspec (opengl-font-fontspec font)))
     (car fontspec)))
 
 ;; these next 3 take a font code and should return a new font code
 (defun %set-font (font-no face-name)
   (let* ((font (find-cached-font font-no))
-         (fontspec (opengl-font-font-triple font)))
+         (fontspec (opengl-font-fontspec font)))
     (make-boxer-font (cons face-name (cdr fontspec)))))
 
 (defun %set-font-size (font-no size)
   (format t "~% %set-font-size font-no: ~a size: ~a" font-no size)
   (let* ((font (find-cached-font font-no))
-         (fontspec (opengl-font-font-triple font)))
+         (fontspec (opengl-font-fontspec font)))
     (make-boxer-font (append (list (car fontspec) size) (cddr fontspec)))))
 
 (defun %set-font-style (font-no style)
   (format t "~% %set-font-style font-no: ~a style: ~a" font-no style))
-
-;; not currently called anywhere... although it looks useful
-;; (defun set-font (boxer-font)
-;;   (let ((system-font (find-cached-font boxer-font)))
-;;     (if (null system-font)
-;;       (error "No cached font for ~X" boxer-font)
-;;       (bw::ogl-set-font system-font))))
 
 (defun normal-font? (font-no)
   (not (font-style font-no)))
@@ -176,22 +170,10 @@
 
 (defun font-styles (font-no)
   (font-style font-no))
-  ; TODO sgithens
-  ;; (break "Fix for updated font refactoring")
-  ;; (let ((style-byte (font-style boxer-font))
-  ;;       (return-styles nil))
-  ;;   (do* ((pos 1 (ash pos 1))
-  ;;         (styles '(:bold :italic :underline)
-  ;;                 (cdr styles))
-  ;;         (style (car styles) (car styles)))
-  ;;     ((null style))
-  ;;     (unless (zerop& (logand& style-byte pos)) (push style return-styles)))
-  ;;   (nreverse return-styles)))
-
 
 (defun set-font-style (font-no style to-on?)
   (let* ((font (find-cached-font font-no))
-         (fontspec (opengl-font-font-triple font)))
+         (fontspec (opengl-font-fontspec font)))
     (cond ((eq style :plain)
            (make-boxer-font (subseq fontspec 0 2)))
           ((eq style :bold)
