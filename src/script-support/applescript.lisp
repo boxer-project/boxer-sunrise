@@ -87,9 +87,13 @@ close-movie
     (let* ((applescript-app (get-applescript-app (xref-pathname xref)))
            (quoted-app-name (as-quote applescript-app))
            (ai (applescript-command :string
-                                    (format nil "tell application ~A" quoted-app-name)
-                                    (format nil "open ~A" (as-quote (namestring (xref-pathname xref))))
-                                    "end tell")))
+                                    (format nil "tell app \"Finder\" to open POSIX file \"~A\""
+                                      (namestring (xref-pathname xref)))
+                                    ;; TODO In-Progress Boxer-bugs-52 Add various filename tests.
+                                    ;; (format nil "tell application ~A" quoted-app-name)
+                                    ;; (format nil "open ~A" (as-quote (namestring (xref-pathname xref))))
+                                    )
+                                    ))
       (cond ((search "document " ai)
              (setf (xref-active-info xref)
                    (format nil "~A of application ~A"
@@ -126,7 +130,7 @@ close-movie
   (loop (if (listen *applescript-stream*) (read-line *applescript-stream* nil nil) (return)))
   (let ((command-string "/usr/bin/osascript "))
     (dolist (command commands)
-      (setq command-string (concatenate 'string command-string " -e " "\"" command "\"")))
+      (setq command-string (concatenate 'string command-string " -e " "'" command "'")))
     (log-applescript-text command-string)
     (write-line command-string *applescript-stream*)
     (force-output *applescript-stream*))

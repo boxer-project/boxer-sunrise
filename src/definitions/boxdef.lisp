@@ -802,6 +802,10 @@ Modification History (most recent at top)
 (defvar *only-shrink-wrap-text-boxes* nil)
 
 ;; From draw folder
+;; These specify how to combine bits already there with the drawing bits
+;; The common lisp boole-xxx constants are the right thing
+;; (see LispWorks User Guide 15.3, pg 126)
+
 (defconstant alu-andca boole-andc1   "Erase")
 (defconstant alu-seta  boole-1       "Drawing bits have priority")
 (defconstant alu-xor   boole-xor     "XORs the bits")
@@ -809,5 +813,7 @@ Modification History (most recent at top)
 (defconstant alu-ior   boole-ior     "ORs the bits")
 (defconstant alu-setz  boole-clr     "Set to Zero")
 
+;;; **** used in sprite graphics for parameter checking
+;;; **** are these the right numbers for MCL ?
 (defun max-window-coord () #.(expt 2 15))
 (defun min-window-coord () #.(- (expt 2 15)))

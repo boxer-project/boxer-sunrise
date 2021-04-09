@@ -115,18 +115,6 @@ notes:: check points arg on draw-poly
 
 ;;;; Constants and Variables
 
-;; These specify how to combine bits already there with the drawing bits
-;; The common lisp boole-xxx constants are the right thing
-;; (see LispWorks User Guide 15.3, pg 126)
-
-(defconstant alu-andca boole-andc1   "Erase")
-(defconstant alu-seta  boole-1       "Drawing bits have priority")
-(defconstant alu-xor   boole-xor     "XORs the bits")
-(defconstant alu-and   boole-and     "ANDs the bits")
-(defconstant alu-ior   boole-ior     "ORs the bits")
-(defconstant alu-setz  boole-clr     "Set to Zero")
-
-
 (defvar *boxer-frame* nil
   "This frame contains *turtle-pane* *boxer-pane* etc.")
 
@@ -359,11 +347,6 @@ notes:: check points arg on draw-poly
                  (push (list (x-handler (car pt)) (y-handler (cdr pt))) trans)))))
 
 ;;; Real Primitives
-
-;;; **** used in sprite graphics for parameter checking
-;;; **** are these the right numbers for MCL ?
-(defun max-window-coord () #.(expt 2 15))
-(defun min-window-coord () #.(- (expt 2 15)))
 
 ;;; Font is managed by set-font-info.  Note that anything else that might change
 ;;; the window font (ie, draw-string) has to change it back for this to work.
