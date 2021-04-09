@@ -25,11 +25,15 @@
                  (:file "definitions/storage")
                  (:file "definitions/boxdef")
                  (:file "definitions/vrtdef")
+                 (:file "definitions/fonts")
+
 
                  ;; Begining of `redisplay` module
                  (:file "disdcl/disdcl")
 
                  ;; Beginning of `DRAW` module
+                 (:file "boxwin/lw-capi/platform-utils")
+                ;;  (:file "draw/agnostic-renderer")
                  #+lispworks (:file "draw/opengl-utils")
                  #+(and lispworks freetype-fonts (not delivering)) (:file "draw/freetype-fonts")
                  (:file "draw/draw-low-opengl")
@@ -70,6 +74,7 @@
                  ;; "The interface between the Boxer Editor and the window system"
                  ;; these are also window system specific
                  #+lispworks (:file "boxwin/boxwin-opengl")
+                 #+lispworks (:file "boxwin/lw-capi/clipboard")
                  (:file "boxwin/hardcopy-lw")
                  (:file "boxwin/mousedoc")
                  (:file "boxwin/boxapp-data")
@@ -217,7 +222,7 @@
                  (:file "utilities/mcl-utils")
                  ;; Beginning of `printer` module
                  ;; 	   "Utilities for printing out boxes in various ways"
-                 (:file "printer/ps")
+                 ;;  (:file "printer/ps")
                  (:file "printer/deep-print")
                  ;; Beginning of `site` modules
                  ;; 	   "Utilities for Site specific customizations"

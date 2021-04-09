@@ -1861,6 +1861,14 @@
          boxer-eval::*novalue*)))
 
 ;;;;
+;;;; FILE: disdcl.lisp
+;;;;
+
+(DEFVAR %DRAWING-FONT-MAP NIL
+        "Inside of a drawing-on-window, this variable is bound to %drawing-window's
+   font-map.")
+
+;;;;
 ;;;; FILE: disply.lisp
 ;;;;
 
@@ -2103,6 +2111,20 @@
             ((OR (NULL CHA)(= INDEX CHA-NO)) X-COORD)
             (SETQ X-COORD (+ X-COORD (SCREEN-OBJECT-WIDTH CHA)))))
 |#
+
+;;;;
+;;;; FILE: draw-high-common.lisp
+;;;;
+
+;;; WITH-FONT-MAP-BOUND is meant to be used by all those functions
+;;; (like BOX-BORDER-FN's that have to be called in an environment where the
+;;; font map is supposed to be bound but nothing else (like all those
+;;; wonderful drawing type things and stuff) needs to be bound
+
+(defmacro with-font-map-bound ((window) &body body)
+  `(let ((%drawing-font-map (sheet-font-map ,window)))
+     %drawing-font-map				;bound but never used etc.
+     . ,body))
 
 ;;;;
 ;;;; FILE: draw-high-hardware-clip.lisp
@@ -3832,6 +3854,9 @@ to the :TEXT-STRING method of boxes. "
 ;;;;
 ;;;; FILE: opengl-utils.lisp
 ;;;;
+
+;; stub
+(defun sheet-font-map (w) (declare (ignore w)) nil)
 
 ;; conversion from a native font to an OpenGL font
 ;; 1) get a LW font from a boxer font spec

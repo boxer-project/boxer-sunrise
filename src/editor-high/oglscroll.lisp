@@ -193,7 +193,10 @@ Modification History (most recent at top)
                  (screen-obj-hei screen-box)))
       nil) ; extra close paren for emacs' puny mind
     |#
-    (cond ((eq row (slot-value box 'closets))
+    (cond
+      ((and (not screen-row) (not box))
+        nil) ;; 2021-03-23 sgithens This is a crash fix for bad cases.
+      ((eq row (slot-value box 'closets))
            (unless (row-row-no box row)
              ;; if the closet is not opened, open it
              (insert-row-at-row-no box row 0 t)
