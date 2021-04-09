@@ -398,7 +398,7 @@ notes:: check points arg on draw-poly
        (unwind-protect
         (progn
          (opengl::gl-line-stipple ,factor ,pattern)
-         (opengl::gl-enable opengl:*gl-line-stipple*)
+         (opengl::gl-enable opengl::*gl-line-stipple*)
          . ,body)
         (unless ,stipplevar (opengl::gl-disable opengl::*gl-line-stipple*))))))
 
