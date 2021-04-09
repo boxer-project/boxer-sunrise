@@ -18,6 +18,62 @@
 ;;;;  This file contains the package declarations and other symbol import/exports for Boxer.
 ;;;;
 
+(proclaim '(optimize (debug 3)))
+
+#-lispworks
+(defpackage :opengl (:use :common-lisp)
+  (:export
+    :*GL-AUX-BUFFERS*
+    :*GL-AUX1*
+    :*GL-BACK*
+    :*GL-BLEND*
+    :*GL-COLOR-BUFFER-BIT*
+    :*GL-CURRENT-COLOR*
+    :*GL-LINES*
+    :*GL-LINE-LOOP*
+    :*GL-LINE-SMOOTH-HINT*
+    :*GL-LINE-SMOOTH*
+    :*GL-LINE-STIPPLE*
+    :*GL-LINE-STRIP*
+    :*GL-LINE-WIDTH*
+    :*GL-NICEST*
+    :*GL-ONE-MINUS-SRC-ALPHA*
+    :*GL-POLYGON*
+    :*GL-POLYGON-SMOOTH*
+    :*GL-PROJECTION*
+    :*GL-SCISSOR-TEST*
+    :*GL-SRC-ALPHA*
+    :free-gl-vector
+    :gl-begin
+    :gl-blend-func
+    :gl-clear
+    :gl-clear-color
+    :gl-color4-fv
+    :gl-disable
+    :gl-draw-buffer
+    :gl-enable
+    :gl-end
+    :gl-flush
+    :gl-get-booleanv
+    :gl-get-floatv
+    :gl-get-integerv
+    :gl-hint
+    :gl-is-enabled
+    :gl-line-width
+    :gl-load-identity
+    :gl-matrix-mode
+    :gl-ortho
+    :gl-point-size
+    :gl-rectf
+    :gl-scissor
+    :gl-translatef
+    :gl-vector-aref
+    :gl-vertex2-f
+    :gl-viewport
+    :make-gl-vector
+    :rendering-on
+))
+
 (defpackage :boxer-user
   (:use)
   (:nicknames :bu :boxer-users :pkg-bu-package :pkg-boxer-user-package)
@@ -25,7 +81,7 @@
   )
 
 (defpackage :boxer
-  (:use :common-lisp :boxer-user)
+  (:use :common-lisp ); :boxer-user)
   (:nicknames :box)
   (:shadow :once-only)
   (:export :symbol-format :set-font-info
@@ -220,7 +276,7 @@
            :outermost-screen-box
            :*foreground-color* :*background-color*
            :main-screen :sheet-screen-array :prepare-sheet
-           :sheet-font-map :make-pattern
+           :make-pattern
            :window-inside-size
            :window-pixel
            :%bitblt-in-screen :%bitblt-to-screen :%bitblt-from-screen
@@ -288,6 +344,9 @@
            ;; functions that let the windows do the walking
            :BOXER-TOP-OF-STACK-GROUP-BINDINGS
            ))
+
+(defpackage :boxer-lw-capi
+  (:use :common-lisp))
 
 (in-package :boxer)
 
