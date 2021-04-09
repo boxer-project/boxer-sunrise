@@ -210,7 +210,9 @@
                  (list (make-instance 'capi:menu-component
                                       :interaction :multiple-selection
                                       :popup-callback 'set-font-style-menu-selection
-                                      :items '(:plain :bold :italic)
+                                      :items (list (make-instance 'capi:menu-item :data :plain)
+                                                   (make-instance 'capi:menu-item :data :bold :accelerator #\b)
+                                                   (make-instance 'capi:menu-item :data :italic :accelerator #\i))
                                       :callback 'font-style-menu-action))))
 
 (defvar *font-sub-color-menu*
@@ -499,6 +501,7 @@
                          ))
                        (:component
                         (("Select Box" :callback 'menu-select-box-contents
+                                       :accelerator #\a
                                        :enabled-function 'box-check-menu-item-enabled?)))
                        (:component (("Preferences..." :callback 'menu-prefs)))
                        ("Find" :accelerator #\f :callback 'menu-find)))
