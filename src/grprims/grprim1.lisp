@@ -1,56 +1,46 @@
-;; -*- Mode:LISP; Syntax:Common-Lisp; Package:BOXER; -*-
-#|
-
-
- $Header: grprim.lisp,v 1.0 90/01/24 22:12:52 boxer Exp $
-
- $Log:	grprim.lisp,v $
-;;;Revision 1.0  90/01/24  22:12:52  boxer
-;;;Initial revision
-;;;
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                      +-Data--+
-             This file is part of the | BOXER | system
-                                      +-------+
-
-
-
-   This file contains boxer functions which use the
-   graphics subsystem via sprites
-
-
-Modification History (most recent at top)
-
- 6/15/10 *signal-error-for-sprite-pen-XOR* for PX, PR, PENXOR, PENREVERSE to signal
-         an error
- 1/01/10 clearscreen-internal, clean-internal changed to handle private graphics
-10/06/07 Opengl changes to set-background
- 7/16/04 Fixed Copyright error message in CLEAR-GRAPHICS, CLEARGRAPHICS, CG
- 4/19/03 merged current LW and MCL sources
- 9/03/02 UC free version of CLEAR-GRAPHICS, CLEARGRAPHICS & CG
- 2/27/02 font-from-box allows uninstalled font families for lwwin because of
-         the possiblility of being passed mac font names, need a better more
-         general mechanism (eventually)
- 2/26/02 font-from-box now allows a box for 1st item to handle fonts which have
-         space characters in their names
- 2/12/02 added bitmap dirty? handling to set-background
- 3/26/00 font-from-box fixes for LW
-
- 5/05/98 set-type-font now parses font specs
- 5/05/98 started logging: source = Boxer version 2.3
-
-|#
+;;;;  ;; -*- Mode:LISP; Syntax:Common-Lisp; Package:BOXER; -*-
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                        +-Data--+
+;;;;               This file is part of the | BOXER | system
+;;;;                                        +-------+
+;;;;
+;;;;
+;;;;
+;;;;     This file contains boxer functions which use the
+;;;;     graphics subsystem via sprites
+;;;;
+;;;;
+;;;;  Modification History (most recent at top)
+;;;;
+;;;;   6/15/10 *signal-error-for-sprite-pen-XOR* for PX, PR, PENXOR, PENREVERSE to signal
+;;;;           an error
+;;;;   1/01/10 clearscreen-internal, clean-internal changed to handle private graphics
+;;;;  10/06/07 Opengl changes to set-background
+;;;;   7/16/04 Fixed Copyright error message in CLEAR-GRAPHICS, CLEARGRAPHICS, CG
+;;;;   4/19/03 merged current LW and MCL sources
+;;;;   9/03/02 UC free version of CLEAR-GRAPHICS, CLEARGRAPHICS & CG
+;;;;   2/27/02 font-from-box allows uninstalled font families for lwwin because of
+;;;;           the possiblility of being passed mac font names, need a better more
+;;;;           general mechanism (eventually)
+;;;;   2/26/02 font-from-box now allows a box for 1st item to handle fonts which have
+;;;;           space characters in their names
+;;;;   2/12/02 added bitmap dirty? handling to set-background
+;;;;   3/26/00 font-from-box fixes for LW
+;;;;
+;;;;   5/05/98 set-type-font now parses font specs
+;;;;   5/05/98 started logging: source = Boxer version 2.3
+;;;;
 
 (in-package :boxer)
 
