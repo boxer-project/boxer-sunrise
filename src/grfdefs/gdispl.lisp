@@ -1571,19 +1571,18 @@ Modification History (most recent at the top)
                          ;						  (/ new-wid 2)))))
                          )
                        ;; if there is a window-shape cache, invalidate it
-                       #-gl (flush-window-shape-cache obj)))
+                       (flush-window-shape-cache obj)))
                 (t
                  (dolist (obj (graphics-sheet-object-list sheet))
                    (when (not (eq (graphics-sheet-draw-mode sheet) ':clip))
                      (set-x-position obj (* (x-position obj) wid-scale))
                      (set-y-position obj (* (y-position obj) hei-scale)))
                    ;; if there is a window-shape cache, invalidate it
-                   #-gl (flush-window-shape-cache obj)))))))
+                   (flush-window-shape-cache obj)))))))
     (setf (graphics-sheet-draw-wid sheet) new-wid)
     (setf (graphics-sheet-draw-hei sheet) new-hei)))
 
 
-#-gl
 (defun flush-window-shape-cache (turtle)
   (let ((ws (slot-value turtle 'window-shape)))
     (setf (turtle-window-shape-valid ws) nil)

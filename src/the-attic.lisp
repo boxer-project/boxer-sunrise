@@ -2882,6 +2882,229 @@
          boxer-eval::*novalue*)))
 
 ;;;;
+;;;; FILE: gcmeth.lisp
+;;;;
+
+;;;
+;;; ****************   NOTE   ****************
+;;;
+;;; The SGI version stamps the rectangle in turtle coordinates
+;;; NOT array/window coordinates
+;;;
+;;; ****************   NOTE   ****************
+;;;
+#+gl
+(defmethod turtle-rect ((self graphics-cursor) wid hei
+                                               &optional (orientation :centered))
+  (declare (ignore orientation))	; a hook for later
+  (let ((alu (get-alu-from-pen
+              (box-interface-value (slot-value self 'pen)))))
+    (cond ((null alu))
+      ((not (null %learning-shape?))
+       (record-boxer-graphics-command-centered-rectangle
+        (x-position self) (y-position self)
+        (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
+      ((not (no-graphics?))
+       (let ((abs-x (absolute-x-position self))
+             (abs-y (absolute-y-position self)))
+         (record-boxer-graphics-command-centered-rectangle
+          abs-x abs-y wid hei)
+         (with-graphics-screen-parameters
+           (centered-rectangle abs-x abs-y wid hei)))))))
+
+;;;;
+;;;; FILE: grfdfs.lisp
+;;;;
+
+    #+gl
+    (setf (graphics-sheet-draw-mode new-gs) ':window)
+
+    #+gl
+    (setf (graphics-sheet-draw-mode new-gs) ':window)
+
+
+;;;;
+;;;; FILE: grmeth.lisp
+;;;;
+
+;;;
+;;; ****************   NOTE   ****************
+;;;
+;;; The SGI version does NO transformations.  Instead, the coordinates
+;;; are left in turtle space and the hardware performs the transformations
+;;; whenever it renders the graphics box
+;;;
+;;; ****************   NOTE   ****************
+;;;
+
+#+gl
+(defmethod move-to ((self graphics-object) x-dest y-dest
+		    &optional dont-update-box)
+  (let ((x-position (slot-value self 'x-position))
+	(y-position (slot-value self 'y-position))
+	(pen-alu (get-alu-from-pen (pen self))))
+    (cond  ((not (and (numberp x-dest) (numberp y-dest)))
+	    (error "one of the args, ~s or ~s, was not a number"
+		   x-dest y-dest))
+	   (t
+	    (unless (typep x-dest 'boxer-float)
+	      (setq x-dest (coerce x-dest 'boxer-float)))
+	    (unless (typep y-dest 'boxer-float)
+	      (setq y-dest (coerce y-dest 'boxer-float)))
+	    (cond ((not (null %learning-shape?))
+		   ;; don't draw while learning shape.
+		   (unless (null pen-alu)
+		     (record-boxer-graphics-command-line-segment
+		      (box-interface-value x-position)
+		      (box-interface-value y-position)
+		      x-dest y-dest))
+		   ;; While in learning-shape, don't update any boxes
+		   (setf (box-interface-value x-position) x-dest)
+		   (setf (box-interface-value y-position) y-dest))
+		  ;; Have to make fence mode work some other time
+		  ((and (eq %draw-mode ':fence)
+			(not (point-in-array? array-x-dest array-y-dest)))
+		   (error "you hit the fence"))
+		  (t
+		   (cond ((no-graphics?)
+			  ;; this means we can't even do any wrapping
+			  ;; calculations, so just set values
+			  (set-xy self x-dest y-dest dont-update-box))
+			 (t
+			  (multiple-value-bind (abs-x-dest abs-y-dest)
+			      (make-absolute self x-dest y-dest)
+			    (let ((abs-x (absolute-x-position self))
+				  (abs-y (absolute-y-position self)))
+			      (without-interrupts
+			       (when (and (null (slot-value self
+							    'superior-turtle))
+					  (eq %draw-mode ':wrap))
+				 (setq x-dest (wrap-x-coordinate x-dest)
+				       y-dest (wrap-y-coordinate y-dest)))
+			       ;; this may have to change...
+			       (cond ( %mouse-usurped
+				      ;; don't update boxes during follow-mouse
+				      (setf (box-interface-value x-position)
+					    x-dest)
+				      (setf (box-interface-value y-position)
+					    y-dest))
+				     (
+				      (set-xy self x-dest y-dest
+					      dont-update-box)))
+			       (when (and (not (null pen-alu))
+					  (not (zerop (pen-width self))))
+				 (record-boxer-graphics-command-line-segment
+				  abs-x abs-y abs-x-dest abs-y-dest)
+				 (with-graphics-screen-parameters
+				     (line-segment
+				      abs-x abs-y abs-x-dest abs-y-dest))))
+			      ;; invalidate the shape and extent caches
+					;(invalidate-window-shape-and-extent-caches self)
+			      ))))))))))
+
+;;;
+;;; ****************   NOTE   ****************
+;;;
+;;; In the SGI version, only 'overlay will be supported
+;;; because both XOR-REDRAW and SAVE-UNDER will be comparatively
+;;; SLOW.  This should eventually be changed but there are too many
+;;; places right now that depend on (not (eq 'xor-redraw)) to mean
+;;; use a save-under which isn't supported in the SGI version.
+;;;
+;;; At some point, this needs to change to 'OVERLAY and all those
+;;; other places fixed...
+;;;
+;;; ****************   NOTE   ****************
+;;;
+#+gl
+(defmethod update-save-under ((button button))
+  (setf (slot-value button 'save-under) 'xor-redraw))
+
+;;;
+;;; ****************   NOTE   ****************
+;;;
+;;; The SGI version doesn't use window shape caches
+;;; so this is NOOPed out
+;;;
+;;; ****************   NOTE   ****************
+;;;
+#+gl
+(defmethod invalidate-window-shape-and-extent-caches ((self button))
+  nil)
+
+
+;;;
+;;; ****************   NOTE   ****************
+;;;
+;;; The SGI version doesn't cache the transformed shape
+;;; instead, the shape list is left in turtle centered
+;;; (and turtle oriented) space and we instruct the hardware
+;;; to render the turtle with the appropriate transformations
+;;;
+;;; ****************   NOTE   ****************
+;;;
+
+#+gl
+(defmethod draw ((self button))
+  (unless (null (shown? self))
+    (unwind-protect
+	 (progn
+	   ;; save away old transformation state
+	   (bw::drawmode gl::overdraw)
+	   (bw::pushmatrix)
+	   ;; now transform
+	   (bw::translate (x-position self) (y-position self) 0.0)
+	   ;;   should evetually be (z-position self) -----^
+	   (bw::rotate (- (* 10 (round (heading self)))) #\z)
+	   (playback-graphics-list-internal (shape self))
+	   (unless (eq (shown? self) ':no-subsprites)
+	     (dolist (subs (slot-value self 'subsprites))
+	       (draw subs))))
+      (bw::popmatrix)
+      (bw::drawmode gl::normaldraw))))
+
+;;;
+;;; ****************   NOTE   ****************
+;;;
+;;; This should actually be called slow-erase
+;;; Anyways, this just blanks the overlay plane
+;;; at some point, a finer grained version of this
+;;; ought to be written.  ALternatively, rewrite the
+;;; various macros (like with-sprite-primitive-environment
+;;; in grfdfs.lisp to just blank the overlay plane
+;;; once and NOT loop through the list of sprites
+;;;
+;;; ****************   NOTE   ****************
+;;;
+#+gl
+(defmethod fast-erase ((turtle button))
+  (bw::clear-overlay-planes))
+
+
+;;;
+;;; ****************   NOTE   ****************
+;;;
+;;; Punting on enclosing-rectangle for the SGI for now.  Need
+;;; to think about what hardware resources are available and
+;;; how fast they wil be.  The alternative is to use a cache
+;;; like the generic version and cycle through the transformed
+;;; shape except that the cache can be
+;;; a lot smaller since it doesn't have to hold the window
+;;; coordinate version of the sprite's shape.
+;;;
+;;; ****************   NOTE   ****************
+;;;
+
+#+gl
+(defmethod enclosing-rectangle ((self button))
+  (warn "Enclosing-Rectangle is not implemented")
+  (values 0 0 0 0))
+
+    ;; on the SGI version we don't use it because we let the hardware
+    ;; draw the turtle directly from the turtle's shape
+    #-gl
+
+;;;;
 ;;;; FILE: grobjs.lisp
 ;;;;
 

@@ -358,8 +358,6 @@ parameters of the graphics box are bound. "
 (defun make-graphics-sheet (wid hei &optional box)
   (let ((new-gs (%make-graphics-sheet-with-graphics-list wid hei box)))
     (setf (graphics-sheet-graphics-list new-gs) (make-graphics-command-list))
-    #+gl
-    (setf (graphics-sheet-draw-mode new-gs) ':window)
     new-gs))
 
 (defun make-graphics-sheet-with-graphics-list (wid
@@ -370,8 +368,6 @@ parameters of the graphics box are bound. "
 						(make-graphics-command-list)))
   (let ((new-gs (%make-graphics-sheet-with-graphics-list wid hei box)))
     (setf (graphics-sheet-graphics-list new-gs) sheet)
-    #+gl
-    (setf (graphics-sheet-draw-mode new-gs) ':window)
     new-gs))
 
 

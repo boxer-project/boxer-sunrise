@@ -666,7 +666,6 @@ Modification History (most recent at top)
 
 ;;;general rects
 
-#-gl
 (defmethod turtle-rect ((self graphics-cursor) wid hei
                                                &optional (orientation :centered))
   (declare (ignore orientation))	; a hook for later
@@ -704,36 +703,6 @@ Modification History (most recent at top)
          #-opengl
          (with-graphics-screen-parameters
            (hollow-rectangle array-x array-y wid hei)))))))
-
-;;;
-;;; ****************   NOTE   ****************
-;;;
-;;; The SGI version stamps the rectangle in turtle coordinates
-;;; NOT array/window coordinates
-;;;
-;;; ****************   NOTE   ****************
-;;;
-#+gl
-(defmethod turtle-rect ((self graphics-cursor) wid hei
-                                               &optional (orientation :centered))
-  (declare (ignore orientation))	; a hook for later
-  (let ((alu (get-alu-from-pen
-              (box-interface-value (slot-value self 'pen)))))
-    (cond ((null alu))
-      ((not (null %learning-shape?))
-       (record-boxer-graphics-command-centered-rectangle
-        (x-position self) (y-position self)
-        (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
-      ((not (no-graphics?))
-       (let ((abs-x (absolute-x-position self))
-             (abs-y (absolute-y-position self)))
-         (record-boxer-graphics-command-centered-rectangle
-          abs-x abs-y wid hei)
-         (with-graphics-screen-parameters
-           (centered-rectangle abs-x abs-y wid hei)))))))
-
-
-
 
 ;;; Circle, Ellipses and Arcs
 

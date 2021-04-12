@@ -588,8 +588,6 @@ CLOSED for renovations until I fix the string/font situation
 |#
 
 
-
-#-gl
 (defmethod move-to ((self graphics-object) x-dest y-dest
 		    &optional dont-update-box)
   (let ((x-position (slot-value self 'x-position))
@@ -662,84 +660,6 @@ CLOSED for renovations until I fix the string/font situation
 			       self)))))))))))
 
 
-;;;
-;;; ****************   NOTE   ****************
-;;;
-;;; The SGI version does NO transformations.  Instead, the coordinates
-;;; are left in turtle space and the hardware performs the transformations
-;;; whenever it renders the graphics box
-;;;
-;;; ****************   NOTE   ****************
-;;;
-
-#+gl
-(defmethod move-to ((self graphics-object) x-dest y-dest
-		    &optional dont-update-box)
-  (let ((x-position (slot-value self 'x-position))
-	(y-position (slot-value self 'y-position))
-	(pen-alu (get-alu-from-pen (pen self))))
-    (cond  ((not (and (numberp x-dest) (numberp y-dest)))
-	    (error "one of the args, ~s or ~s, was not a number"
-		   x-dest y-dest))
-	   (t
-	    (unless (typep x-dest 'boxer-float)
-	      (setq x-dest (coerce x-dest 'boxer-float)))
-	    (unless (typep y-dest 'boxer-float)
-	      (setq y-dest (coerce y-dest 'boxer-float)))
-	    (cond ((not (null %learning-shape?))
-		   ;; don't draw while learning shape.
-		   (unless (null pen-alu)
-		     (record-boxer-graphics-command-line-segment
-		      (box-interface-value x-position)
-		      (box-interface-value y-position)
-		      x-dest y-dest))
-		   ;; While in learning-shape, don't update any boxes
-		   (setf (box-interface-value x-position) x-dest)
-		   (setf (box-interface-value y-position) y-dest))
-		  ;; Have to make fence mode work some other time
-		  ((and (eq %draw-mode ':fence)
-			(not (point-in-array? array-x-dest array-y-dest)))
-		   (error "you hit the fence"))
-		  (t
-		   (cond ((no-graphics?)
-			  ;; this means we can't even do any wrapping
-			  ;; calculations, so just set values
-			  (set-xy self x-dest y-dest dont-update-box))
-			 (t
-			  (multiple-value-bind (abs-x-dest abs-y-dest)
-			      (make-absolute self x-dest y-dest)
-			    (let ((abs-x (absolute-x-position self))
-				  (abs-y (absolute-y-position self)))
-			      (without-interrupts
-			       (when (and (null (slot-value self
-							    'superior-turtle))
-					  (eq %draw-mode ':wrap))
-				 (setq x-dest (wrap-x-coordinate x-dest)
-				       y-dest (wrap-y-coordinate y-dest)))
-			       ;; this may have to change...
-			       (cond ( %mouse-usurped
-				      ;; don't update boxes during follow-mouse
-				      (setf (box-interface-value x-position)
-					    x-dest)
-				      (setf (box-interface-value y-position)
-					    y-dest))
-				     (
-				      (set-xy self x-dest y-dest
-					      dont-update-box)))
-			       (when (and (not (null pen-alu))
-					  (not (zerop (pen-width self))))
-				 (record-boxer-graphics-command-line-segment
-				  abs-x abs-y abs-x-dest abs-y-dest)
-				 (with-graphics-screen-parameters
-				     (line-segment
-				      abs-x abs-y abs-x-dest abs-y-dest))))
-			      ;; invalidate the shape and extent caches
-					;(invalidate-window-shape-and-extent-caches self)
-			      ))))))))))
-
-
-
-
 ;;;;;;;; Graphics BUTTON methods
 
 (defmethod initialize-instance ((self button) &rest init-plist)
@@ -750,9 +670,6 @@ CLOSED for renovations until I fix the string/font situation
     (setf (slot-value self 'shape)
 	  (%make-sv-box-interface new-shape 'shape nil 'shape-box-updater))
     ;; the window shape is is used as a graphics cache
-    ;; on the SGI version we don't use it because we let the hardware
-    ;; draw the turtle directly from the turtle's shape
-    #-gl
     (setf (slot-value self 'window-shape)
 	  (make-turtle-window-shape new-shape)))
   self)
@@ -799,7 +716,6 @@ CLOSED for renovations until I fix the string/font situation
 ;;; Need to put in support for overlay planes
 ;;;
 
-#-gl
 (defmethod update-save-under ((self button))
   (let ((shape (shape self))
 	(save-under (slot-value self 'save-under))
@@ -866,25 +782,6 @@ CLOSED for renovations until I fix the string/font situation
 							       size size)
 					(round size 2) size)))))))))
 
-
-;;;
-;;; ****************   NOTE   ****************
-;;;
-;;; In the SGI version, only 'overlay will be supported
-;;; because both XOR-REDRAW and SAVE-UNDER will be comparatively
-;;; SLOW.  This should eventually be changed but there are too many
-;;; places right now that depend on (not (eq 'xor-redraw)) to mean
-;;; use a save-under which isn't supported in the SGI version.
-;;;
-;;; At some point, this needs to change to 'OVERLAY and all those
-;;; other places fixed...
-;;;
-;;; ****************   NOTE   ****************
-;;;
-#+gl
-(defmethod update-save-under ((button button))
-  (setf (slot-value button 'save-under) 'xor-redraw))
-
 (defmethod update-window-shape-allocation ((self button))
   (let ((window-shape (slot-value self 'window-shape))
 	(shape (box-interface-value (slot-value self 'shape))))
@@ -905,7 +802,6 @@ CLOSED for renovations until I fix the string/font situation
 ;;; When a window shape is invalidated, we have to recurse through the
 ;;; inferiors as well
 
-#-gl
 (defmethod invalidate-window-shape-and-extent-caches ((self button))
   (setf (turtle-window-shape-valid (slot-value self 'window-shape))
 	nil
@@ -916,21 +812,9 @@ CLOSED for renovations until I fix the string/font situation
   (dolist (ss (slot-value self 'subsprites))
     (invalidate-window-shape-and-extent-caches ss)))
 
-;;;
-;;; ****************   NOTE   ****************
-;;;
-;;; The SGI version doesn't use window shape caches
-;;; so this is NOOPed out
-;;;
-;;; ****************   NOTE   ****************
-;;;
-#+gl
-(defmethod invalidate-window-shape-and-extent-caches ((self button))
-  nil)
 
 ;;;; drawing
 
-#-gl
 (defmethod draw ((self button))
   (unless (or (eq self *current-active-sprite*) (null (shown? self)))
     (let (;(*supress-graphics-recording?* (not stamp?))
@@ -977,63 +861,12 @@ CLOSED for renovations until I fix the string/font situation
       (dolist (subs (slot-value self 'subsprites))
         (draw-update subs)))))
 
-
-;;;
-;;; ****************   NOTE   ****************
-;;;
-;;; The SGI version doesn't cache the transformed shape
-;;; instead, the shape list is left in turtle centered
-;;; (and turtle oriented) space and we instruct the hardware
-;;; to render the turtle with the appropriate transformations
-;;;
-;;; ****************   NOTE   ****************
-;;;
-
-#+gl
-(defmethod draw ((self button))
-  (unless (null (shown? self))
-    (unwind-protect
-	 (progn
-	   ;; save away old transformation state
-	   (bw::drawmode gl::overdraw)
-	   (bw::pushmatrix)
-	   ;; now transform
-	   (bw::translate (x-position self) (y-position self) 0.0)
-	   ;;   should evetually be (z-position self) -----^
-	   (bw::rotate (- (* 10 (round (heading self)))) #\z)
-	   (playback-graphics-list-internal (shape self))
-	   (unless (eq (shown? self) ':no-subsprites)
-	     (dolist (subs (slot-value self 'subsprites))
-	       (draw subs))))
-      (bw::popmatrix)
-      (bw::drawmode gl::normaldraw))))
-
-
 ;;; need to support overlay here...
-#-gl
 (defmethod fast-erase ((turtle button))
   (unless (eq turtle *current-active-sprite*)
     (if (eq (turtle-save-under turtle) 'xor-redraw)
         (draw turtle)
         (restore-under-turtle turtle))))
-
-;;;
-;;; ****************   NOTE   ****************
-;;;
-;;; This should actually be called slow-erase
-;;; Anyways, this just blanks the overlay plane
-;;; at some point, a finer grained version of this
-;;; ought to be written.  ALternatively, rewrite the
-;;; various macros (like with-sprite-primitive-environment
-;;; in grfdfs.lisp to just blank the overlay plane
-;;; once and NOT loop through the list of sprites
-;;;
-;;; ****************   NOTE   ****************
-;;;
-#+gl
-(defmethod fast-erase ((turtle button))
-  (bw::clear-overlay-planes))
-
 
 (defmethod erase ((self button))
   (when (absolute-shown? self) (fast-erase self)))
@@ -1049,33 +882,11 @@ CLOSED for renovations until I fix the string/font situation
   (set-shown? self nil nil nil))
 
 
-
-
 
 ;;; stuff for mouse-sensitivity
 
 ;;;; These return values in WINDOW coordinates
 
-;;;
-;;; ****************   NOTE   ****************
-;;;
-;;; Punting on enclosing-rectangle for the SGI for now.  Need
-;;; to think about what hardware resources are available and
-;;; how fast they wil be.  The alternative is to use a cache
-;;; like the generic version and cycle through the transformed
-;;; shape except that the cache can be
-;;; a lot smaller since it doesn't have to hold the window
-;;; coordinate version of the sprite's shape.
-;;;
-;;; ****************   NOTE   ****************
-;;;
-
-#+gl
-(defmethod enclosing-rectangle ((self button))
-  (warn "Enclosing-Rectangle is not implemented")
-  (values 0 0 0 0))
-
-#-gl
 (defmethod enclosing-rectangle ((self button))
   ;; first insure the validity of the window-shape
   (let ((ws (slot-value self 'window-shape)))
