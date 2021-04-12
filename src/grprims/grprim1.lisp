@@ -94,8 +94,8 @@ Modification History (most recent at top)
 (defun extract-item-from-editor-box (box)
   (let ((vcrs (car (slot-value box 'virtual-copy-rows))))
     (let ((item (if (null vcrs)
-		    (car (chunks (car (data-rows box))))
-		    (car (evrow-pointers (car (vc-rows-entry-rows vcrs)))))))
+        (car (chunks (car (data-rows box))))
+        (car (evrow-pointers (car (vc-rows-entry-rows vcrs)))))))
       (and item (access-evrow-element nil item)))))
 
 ;;;; Graphics functions for Objects (especially turtles)
@@ -106,32 +106,32 @@ Modification History (most recent at top)
 (defun clean-internal (&optional (surface :foreground))
   (let ((gb (get-relevant-graphics-box)))
     (cond ((null gb)
-	   (boxer-eval::primitive-signal-error :graphics "No Sprite or Graphics Box"))
-	  ((eq gb :no-graphics)
-	   ;; do nothing here since it is ok to give this command
-	   ;; to a sprite even if it is not in a graphics box
-	   )
+     (boxer-eval::primitive-signal-error :graphics "No Sprite or Graphics Box"))
+    ((eq gb :no-graphics)
+     ;; do nothing here since it is ok to give this command
+     ;; to a sprite even if it is not in a graphics box
+     )
           ((and (eq surface :foreground) (not (null %private-graphics-list)))
            (clear-graphics-list %private-graphics-list))
-	  (t (clearscreen gb surface))))
+    (t (clearscreen gb surface))))
   boxer-eval::*novalue*)
 
 (defun clearscreen-internal (&optional (surface :foreground))
   (multiple-value-bind (gb sb)
       (get-relevant-graphics-box)
     (cond ((null gb)
-	   (boxer-eval::primitive-signal-error :graphics
-					 "No Sprite or Graphics Box to Clear"))
+     (boxer-eval::primitive-signal-error :graphics
+           "No Sprite or Graphics Box to Clear"))
           ((and (eq surface :foreground) (not (null %private-graphics-list)))
            (clear-graphics-list %private-graphics-list))
-	  (t
-	   (let ((turtle (get-sprite-turtle sb)))
-	     (unless (null turtle)
-	       (let ((old-pen (pen turtle)))
-		 (setf (box-interface-value (slot-value turtle 'pen)) 'up)
-		 (with-graphics-vars-bound (gb) (go-home turtle))
-		 (setf (box-interface-value (slot-value turtle 'pen)) old-pen))))
-	   (unless (eq gb :no-graphics) (clearscreen gb surface)))))
+    (t
+     (let ((turtle (get-sprite-turtle sb)))
+       (unless (null turtle)
+         (let ((old-pen (pen turtle)))
+     (setf (box-interface-value (slot-value turtle 'pen)) 'up)
+     (with-graphics-vars-bound (gb) (go-home turtle))
+     (setf (box-interface-value (slot-value turtle 'pen)) old-pen))))
+     (unless (eq gb :no-graphics) (clearscreen gb surface)))))
   boxer-eval::*novalue*)
 
 (boxer-eval::defboxer-primitive bu::cs ()
@@ -154,34 +154,34 @@ Modification History (most recent at top)
 (boxer-eval::defboxer-primitive bu::set-background (color)
   (let ((gb (get-relevant-graphics-box)))
     (cond ((or (null gb) (eq gb :no-graphics))
-	   (boxer-eval::primitive-signal-error :graphics-error "No Sprite or Graphics Box"))
-	  (t
-	   (let ((pix (get-color-from-color-box color))
-		 (gs (get-graphics-sheet gb)))
-	     (cond ((null pix)
-		    (boxer-eval::primitive-signal-error :graphics
-						  "No color in: " color))
-		   ((not (null (graphics-sheet-bit-array gs)))
-		    ;; there is already a bitmapped background
-		    ;; we'll draw the color on the background -- alternatively,
-		    ;; we could do nothing, preferring to give bitmaps precedence
+     (boxer-eval::primitive-signal-error :graphics-error "No Sprite or Graphics Box"))
+    (t
+     (let ((pix (get-color-from-color-box color))
+     (gs (get-graphics-sheet gb)))
+       (cond ((null pix)
+        (boxer-eval::primitive-signal-error :graphics
+              "No color in: " color))
+       ((not (null (graphics-sheet-bit-array gs)))
+        ;; there is already a bitmapped background
+        ;; we'll draw the color on the background -- alternatively,
+        ;; we could do nothing, preferring to give bitmaps precedence
                     #-opengl
-		    (drawing-on-bitmap ((graphics-sheet-bit-array gs))
-		       (with-pen-color (pix)
-			 (draw-rectangle alu-seta
-					 (graphics-sheet-draw-wid gs)
-					 (graphics-sheet-draw-hei gs) 0 0)))
+        (drawing-on-bitmap ((graphics-sheet-bit-array gs))
+           (with-pen-color (pix)
+       (draw-rectangle alu-seta
+           (graphics-sheet-draw-wid gs)
+           (graphics-sheet-draw-hei gs) 0 0)))
                     #+opengl
                     (opengl::clear-ogl-pixmap (graphics-sheet-bit-array gs)
                                       (opengl::color->pixel pix))
                     ;; mark the dirty? flag
                     (setf (graphics-sheet-bit-array-dirty? gs) t)
-		    (modified-graphics gb))
-		   (t
-		    ;; first, set the color
-		    (setf (graphics-sheet-background gs) pix)
-		    ;; then show it (if its on the screen)
-		    (when (box? gb) (clearscreen gb :none)))))))
+        (modified-graphics gb))
+       (t
+        ;; first, set the color
+        (setf (graphics-sheet-background gs) pix)
+        ;; then show it (if its on the screen)
+        (when (box? gb) (clearscreen gb :none)))))))
     boxer-eval::*novalue*))
 
 ;; clean leave sprites where they are....
@@ -195,9 +195,9 @@ Modification History (most recent at top)
 ;; domain check, they should already be numbers from the numerizing input
 (defun steps-arg-check (arg)
   (unless (or (typep arg 'fixnum)
-	      (< (- (max-window-coord) arg (max-window-coord))))
+        (< (- (max-window-coord) arg (max-window-coord))))
     (boxer-eval::primitive-signal-error :graphics-error
-				  arg " is Too many turtle steps")))
+          arg " is Too many turtle steps")))
 
 ;;;; Movement
 
@@ -208,28 +208,28 @@ Modification History (most recent at top)
   boxer-eval::*novalue*)
 
 (defsprite-function bu::forward ((boxer-eval::numberize steps))
-		    (sprite turtle)
+        (sprite turtle)
   (steps-arg-check steps)
   (with-sprites-hidden t
       (forward turtle steps))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::bk ((boxer-eval::numberize steps))
-		    (sprite turtle)
+        (sprite turtle)
   (steps-arg-check steps)
   (with-sprites-hidden t
       (forward turtle (- steps)))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::back ((boxer-eval::numberize steps))
-		    (sprite turtle)
+        (sprite turtle)
   (steps-arg-check steps)
   (with-sprites-hidden t
       (forward turtle (- steps)))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::setxy ((boxer-eval::numberize x) (boxer-eval::numberize y))
-		    (sprite turtle)
+        (sprite turtle)
   (steps-arg-check x) (steps-arg-check y)
   (with-sprites-hidden t
       (move-to turtle x y))
@@ -238,16 +238,16 @@ Modification History (most recent at top)
 (defun get-position-values (box)
   (let ((n (flat-box-items box)))
     (cond ((and (numberp (car n)) (numberp (cadr n)))
-	   (steps-arg-check (car n))
-	   (steps-arg-check (cadr n))
-	   (values (car n) (cadr n)))
-	  (t (boxer-eval::primitive-signal-error
+     (steps-arg-check (car n))
+     (steps-arg-check (cadr n))
+     (values (car n) (cadr n)))
+    (t (boxer-eval::primitive-signal-error
               :sprite-error box " should be a box with 2 numbers")))))
 
 (defsprite-function bu::position ()
   (sprite turtle)
   (make-vc (list (make-evrow-from-entries (list (x-position turtle)
-						(y-position turtle))))))
+            (y-position turtle))))))
 
 
 (defsprite-function bu::setpos ((boxer-eval::dont-copy position))
@@ -387,19 +387,19 @@ Modification History (most recent at top)
 (defsprite-function bu::set-pen-width ((boxer-eval::numberize width))
   (sprite turtle)
   (cond ((and (numberp width) (not (minusp width)))
-	 (set-pen-width turtle width)
-	 boxer-eval::*novalue*)
-	(t (boxer-eval::primitive-signal-error :sprite-error
-					 "The Pen Width Argument, " width
-					 ", should be a positive number"))))
+   (set-pen-width turtle width)
+   boxer-eval::*novalue*)
+  (t (boxer-eval::primitive-signal-error :sprite-error
+           "The Pen Width Argument, " width
+           ", should be a positive number"))))
 
 
 (defsprite-function bu::set-pen-color ((boxer-eval::dont-copy new-color))
   (sprite turtle)
   (let ((color (get-color-from-color-box new-color)))
     (if (null color)
-	(boxer-eval::primitive-signal-error :graphics "No color in: " new-color)
-	(set-pen-color turtle color)))
+  (boxer-eval::primitive-signal-error :graphics "No color in: " new-color)
+  (set-pen-color turtle color)))
   boxer-eval::*novalue*)
 ;; )
 ;;; temporary hack until we have a better scheme for
@@ -531,22 +531,22 @@ Modification History (most recent at top)
 (defsprite-function bu::set-sprite-size ((boxer-eval::numberize size))
   (sprite turtle)
   (cond ((and (numberp size) (> size 0))
-	 (with-sprites-hidden nil
-	     (set-sprite-size turtle size))
-	 boxer-eval::*novalue*)
-	(t (boxer-eval::primitive-signal-error :sprite-error
-					 "The Sprite Size Argument, " size
-					 ", should be a positive number"))))
+   (with-sprites-hidden nil
+       (set-sprite-size turtle size))
+   boxer-eval::*novalue*)
+  (t (boxer-eval::primitive-signal-error :sprite-error
+           "The Sprite Size Argument, " size
+           ", should be a positive number"))))
 
 (defsprite-function bu::setshape ((bu::port-to shape))
   (sprite turtle)
   (let ((shape-box (box-or-port-target shape)))
     (with-sprites-hidden :change-shape
       (if (or (sprite-box? shape-box)
-	      (graphics-box? shape-box)
-	      (and (virtual-copy? shape-box)
-		   (not (null (vc-graphics shape-box)))))
-	  (set-shape turtle shape-box)
-	  (boxer-eval::primitive-signal-error :sprite-error "Can't find a shape in: "
-					shape))))
+        (graphics-box? shape-box)
+        (and (virtual-copy? shape-box)
+       (not (null (vc-graphics shape-box)))))
+    (set-shape turtle shape-box)
+    (boxer-eval::primitive-signal-error :sprite-error "Can't find a shape in: "
+          shape))))
   boxer-eval::*novalue*)
