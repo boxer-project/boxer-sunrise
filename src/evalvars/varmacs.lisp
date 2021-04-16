@@ -45,13 +45,13 @@ Modification History (most recent at the top)
 ;;; :GLOBAL-INITIAL-VALUE sets its value once (a la DEFVAR).
 
 (defstruct (eval-state-vars-info
-	    (:constructor make-eval-state-vars-info
-			  (variable-name
-			     local-p
-			     local-initial-value
-			     global-p
-			     global-initial-value))
-	    (:conc-name evsi-))
+      (:constructor make-eval-state-vars-info
+        (variable-name
+           local-p
+           local-initial-value
+           global-p
+           global-initial-value))
+      (:conc-name evsi-))
   variable-name
   local-p
   local-initial-value
@@ -61,18 +61,18 @@ Modification History (most recent at the top)
 (defvar *original-dvbsv*)
 
 (defun dummy-make-eval-state-vars-info (variable-name
-					local-p
-					local-initial-value
-					global-p
-					global-initial-value)
+          local-p
+          local-initial-value
+          global-p
+          global-initial-value)
   (let ((new (make-eval-state-vars-info variable-name
-			     local-p
-			     local-initial-value
-			     global-p
-			     global-initial-value)))
+           local-p
+           local-initial-value
+           global-p
+           global-initial-value)))
     (if (eq variable-name '*dynamic-variables-bottom*)
-	(setq *original-dvbsv* new)
-	new)))
+  (setq *original-dvbsv* new)
+  new)))
 
 ;;; Eval state vars live in a sorted list, so re-ordering the
 ;;; definitions won't matter.  Changing their names, however
@@ -100,23 +100,23 @@ Modification History (most recent at the top)
   nil)
 
 (defun record-eval-var (variable-name local-p local-initial-value
-				      global-p global-initial-value)
+              global-p global-initial-value)
   (let ((existing-entry (find variable-name *eval-state-vars*
-			      :key #'evsi-variable-name)))
+            :key #'evsi-variable-name)))
     (cond ((not (null existing-entry))
-	   (setf (evsi-local-p existing-entry) local-p)
-	   (setf (evsi-local-initial-value existing-entry) local-initial-value)
-	   (setf (evsi-global-p existing-entry) global-p)
-	   (setf (evsi-global-initial-value existing-entry)
-		 global-initial-value))
-	  (t
-	   (cond (*eval-state-vars-definitions-closed*
-		  (warn "Attempt to define a new eval-var when definitions were closed."))
-		 (t (incf *number-of-eval-state-vars*)
-		    (push (dummy-make-eval-state-vars-info
-			   variable-name local-p local-initial-value
-			   global-p global-initial-value)
-			  *eval-state-vars*))))))
+     (setf (evsi-local-p existing-entry) local-p)
+     (setf (evsi-local-initial-value existing-entry) local-initial-value)
+     (setf (evsi-global-p existing-entry) global-p)
+     (setf (evsi-global-initial-value existing-entry)
+     global-initial-value))
+    (t
+     (cond (*eval-state-vars-definitions-closed*
+      (warn "Attempt to define a new eval-var when definitions were closed."))
+     (t (incf *number-of-eval-state-vars*)
+        (push (dummy-make-eval-state-vars-info
+         variable-name local-p local-initial-value
+         global-p global-initial-value)
+        *eval-state-vars*))))))
   variable-name)
 
 (defun eval-var-defined? (variable-name)
@@ -124,16 +124,16 @@ Modification History (most recent at the top)
 
 (eval-when (compile load eval)
 (defmacro define-eval-var (name &key
-				(local nil local-specified-p)
-				(global nil global-specified-p))
+        (local nil local-specified-p)
+        (global nil global-specified-p))
   (when (and local-specified-p global-specified-p)
     (error "~%DEFINE-EVAL-VAR ~S: You may not specify both LOCAL and GLOBAL values"
-	   name))
+     name))
   `(progn
      ,(if global-specified-p
-	  ;; we don't put the global value into the defvar
-	  ;; because the initializer might not be defined at this point.
-	  `(defvar ,name))
+    ;; we don't put the global value into the defvar
+    ;; because the initializer might not be defined at this point.
+    `(defvar ,name))
      (record-eval-var ',name ',local-specified-p ',local ',global-specified-p ',global)))
 )
 
@@ -147,7 +147,7 @@ Modification History (most recent at the top)
     (setf (symbol-value (evsi-variable-name var))
           ;; this is supposed to replace (eval (evsi-global-initial-value var))
           ;; for the limited domain of evsi-global-initial-values
-	  (let ((global (evsi-global-initial-value var)))
+    (let ((global (evsi-global-initial-value var)))
             (cond ((null global) nil)
                   ((numberp global) global)
                   ((symbolp global) (symbol-value global))
@@ -175,7 +175,7 @@ Modification History (most recent at the top)
 (defmacro boxer::add-sprite-update-function (slot-name name-descriptor)
   `(progn
      (when (and (symbolp ',name-descriptor)
-		(not (member ',name-descriptor
-			     boxer::*sprite-update-functions*)))
+    (not (member ',name-descriptor
+           boxer::*sprite-update-functions*)))
        (setf (get ',slot-name 'boxer::update-function-name)
-	     ',name-descriptor))))
+       ',name-descriptor))))
