@@ -484,7 +484,9 @@
                         (("Link to File" :callback 'open-xref)))
                        (:component
                         (("Print" :accelerator #\p :callback 'window-hardcopy
-                                  :callback-type :interface)))
+                                  :callback-type :interface
+                                  ;; 2021-04-17 Disabling printing as it's completely broken.
+                                  :enabled-function (lambda (menu-item) nil))))
                        #+win32 ; Macs hang this on the application menu
                        (:component
                         (("Quit" :callback 'lw-quit)))))
