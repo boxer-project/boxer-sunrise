@@ -431,7 +431,7 @@ notes:: check points arg on draw-poly
                       (/ alpha 100.0)))
 
 ;;; neccessary but not sufficient...
-(Defun color? (thing) (typep thing 'bw::gl-vector))
+(Defun color? (thing) (typep thing 'opengl::gl-vector))
 
 ;; we are comparing WIN32::COLORREF's not COLOR:COLOR-SPEC's
 ;; so use WIN32:COLOR= instead of COLOR:COLORS=
