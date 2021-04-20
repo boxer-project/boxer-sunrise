@@ -4705,6 +4705,128 @@ to the :TEXT-STRING method of boxes. "
                         (t number))
 
 ;;;;
+;;;; FILE: region.lisp
+;;;;
+
+;;; The fast track
+#|
+
+(defun update-tracking-blinkers (blinkers screen-box start-row stop-row
+                      start-x stop-x context-x context-y)
+  (let ((remaining-blinkers blinkers)
+    (return-blinkers blinkers)
+    (sr-x (+ context-x (screen-obj-x-offset screen-box)
+                  (slot-value screen-box 'scroll-x-offset)))
+    (sr-y (+ context-y (screen-obj-y-offset screen-box)
+                  (slot-value screen-box 'scroll-y-offset))))
+    (do-self-and-next-sv-contents (screen-row
+                   (slot-value screen-box 'screen-rows)
+                   start-row)
+      (let ((blinker (or (car remaining-blinkers)
+             ;; if we have run out, add them onto the
+             ;; end of the return-blinkers list
+             (let ((new (allocate-region-row-blinker screen-row)))
+               (nconc return-blinkers (list new))
+               new))))
+    ;; next in line...
+    ;; do this now because ww may RETURN from the next expression
+    (setq remaining-blinkers (cdr remaining-blinkers))
+    (let ((bl-y (+ sr-y (screen-obj-y-offset screen-row)))
+          (bl-hei (screen-obj-hei screen-row)))
+      ;; now handle specific case
+      (cond ((and (eq screen-row start-row) (eq screen-row stop-row))
+         (update-blinker-values blinker screen-row
+                    (+ sr-x
+                        (screen-obj-x-offset screen-row)
+                        (min start-x stop-x))
+                    bl-y
+                    (abs (- stop-x start-x)) bl-hei)
+         ;; pop out of the loop now that we have gotten to the last row
+         (return))
+        ((eq screen-row start-row)
+         (update-blinker-values blinker screen-row
+                    (+ sr-x
+                        (screen-obj-x-offset screen-row)
+                        start-x)
+                    bl-y
+                    (- (screen-obj-wid screen-row)
+                        start-x)
+                    bl-hei))
+        ((eq screen-row stop-row)
+         (update-blinker-values blinker screen-row
+                    (+ sr-x
+                        (screen-obj-x-offset screen-row))
+                    bl-y stop-x bl-hei)
+         (return))
+        (t
+         (update-blinker-values blinker screen-row
+                    (+ sr-x
+                        (screen-obj-x-offset screen-row))
+                    bl-y
+                    (screen-obj-wid screen-row) bl-hei))))))
+    ;; if there are any extra blinkers in the list, turn them
+    ;; off, we can stop when we have found one that is already turned off
+    (dolist (bl remaining-blinkers)
+      (cond ((null (region-row-blinker-visibility bl)) (return))
+        (t (with-open-blinker (bl #+clx nil)
+         (setf (region-row-blinker-visibility bl) nil
+               (region-row-blinker-uid bl) nil)))))
+    #+clx (bw::display-finish-output bw::*display*)
+    return-blinkers))
+
+(defun update-blinker-values (blinker uid x y wid hei)
+  (cond ((and (eq uid (region-row-blinker-uid blinker))
+          (not (null (region-row-blinker-visibility blinker)))
+          (= y (region-row-blinker-y blinker))
+          (= hei (region-row-blinker-hei blinker))
+          (or (not (= x (region-row-blinker-x blinker)))
+          (not (= wid (region-row-blinker-wid blinker)))))
+     ;; check for and optimize the common case of moving
+     ;; back and forth along the same row
+     #+clx
+     ;; this stuff really belongs in boxwin-xxx
+     (progn
+       ;; we know that either the wid or x or both have changed
+       (unless (= (region-row-blinker-x blinker) x)
+         (%draw-rectangle (abs (- (bw::blinker-x blinker) x))
+                  (bw::blinker-height blinker)
+                  (min x (bw::blinker-x blinker))
+                  (bw::blinker-y blinker)
+                  alu-xor (bw::blinker-window blinker)))
+       (let ((new-right (+ x wid))
+         (old-right (+ (bw::blinker-x blinker)
+                (bw::blinker-width blinker))))
+         (unless (= new-right old-right)
+           (%draw-rectangle (abs (- new-right old-right))
+                (bw::blinker-height blinker)
+                (min& new-right old-right)
+                (bw::blinker-y blinker)
+                alu-xor (bw::blinker-window blinker))))
+       (setf (region-row-blinker-x blinker) x
+         (region-row-blinker-wid blinker) wid)
+       )
+     #-clx
+     (with-open-blinker (blinker #+clx nil)
+       (setf (region-row-blinker-x blinker) x
+         (region-row-blinker-wid blinker) wid))
+     )
+     ((or (not (eq uid (region-row-blinker-uid blinker)))
+          (null (region-row-blinker-visibility blinker))
+          (not (=& x (region-row-blinker-x blinker)))
+          (not (=& y (region-row-blinker-y blinker)))
+          (not (=& wid (region-row-blinker-wid blinker)))
+          (not (=& hei (region-row-blinker-hei blinker))))
+      (with-open-blinker (blinker #+clx nil)
+        (setf (region-row-blinker-visibility blinker) t
+          (region-row-blinker-uid blinker) uid
+          (region-row-blinker-x blinker) x
+          (region-row-blinker-y blinker) y
+          (region-row-blinker-wid blinker) wid
+          (region-row-blinker-hei blinker) hei)))))
+|#
+
+
+;;;;
 ;;;; FILE: sysprims.lisp
 ;;;;
 #+mcl
