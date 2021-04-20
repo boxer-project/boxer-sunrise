@@ -1,44 +1,33 @@
-;; -*- Mode:LISP; Syntax: Common-Lisp; Package:BOXER ;-*-
-
-#|
-
-
- $Header: region.lisp,v 1.0 90/01/24 22:16:43 boxer Exp $
-
- $Log:	region.lisp,v $
-;;;Revision 1.0  90/01/24  22:16:43  boxer
-;;;Initial revision
-;;;
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                          +-Data--+
-                 This file is part of the | BOXER | system
-                                          +-------+
-
-
- This file defines Boxer editor REGIONS
-
-
-Modification History (most recent at top)
-
- 9/23/12 fixnum assumption lossage in update-region-row-blinker &
-         {{left,right}-half,both-ends}-blinker-trim
-12/01/10 #-opengl (flush-port-buffer) for region redisplay
- 2/15/03 merged current LW and MCL files, no changes, copyright updated
- 5/03/98 changed copy-interval to hack fonts
- 5/03/98 started logging: source = boxer version 2.3
-
-|#
+;;;; -*- Mode:LISP; Syntax: Common-Lisp; Package:BOXER ;-*-
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                            +-Data--+
+;;;;                   This file is part of the | BOXER | system
+;;;;                                            +-------+
+;;;;
+;;;;
+;;;;   This file defines Boxer editor REGIONS
+;;;;
+;;;;
+;;;;  Modification History (most recent at top)
+;;;;
+;;;;   9/23/12 fixnum assumption lossage in update-region-row-blinker &
+;;;;           {{left,right}-half,both-ends}-blinker-trim
+;;;;  12/01/10 #-opengl (flush-port-buffer) for region redisplay
+;;;;   2/15/03 merged current LW and MCL files, no changes, copyright updated
+;;;;   5/03/98 changed copy-interval to hack fonts
+;;;;   5/03/98 started logging: source = boxer version 2.3
+;;;;
 
 (in-package :boxer)
 
