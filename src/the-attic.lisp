@@ -3224,6 +3224,70 @@
 ;;;; FILE: grprim2.lisp
 ;;;;
 
+;(defsprite-function bu::stamp-partial-bitmap ((bu::port-to graphics-box)
+;					      (boxer-eval::numberize src-x)
+;					      (boxer-eval::numberize src-y)
+;					      (boxer-eval::numberize width)
+;					      (boxer-eval::numberize height))
+;  (sprite turtle)
+;  (with-sprites-hidden t
+;    (stamp-partial-bitmap-for-turtle ...))
+;  boxer-eval::*novalue*)
+
+;;;; mousing around...
+;; #-opengl
+;; (defsprite-function bu::follow-mouse () (sprite turtle)
+;;   (let ((screen-box (or (car (fast-memq (bp-screen-box *mouse-bp*)
+;;                                         ;; is *mouse-bp* valid ?
+;;                                         (get-visible-screen-objs
+;;                                          (slot-value turtle 'assoc-graphics-box))))
+;;                         (car (displayed-screen-objs
+;; 			      ;; this is wrong but ignore ports for the moment
+;; 			      (slot-value turtle 'assoc-graphics-box))))))
+;;     (multiple-value-bind (window-x-offset window-y-offset)
+;; 	(xy-position screen-box)
+;;       (multiple-value-bind (left top right bottom)
+;; 	  (box-borders-widths (box-type screen-box) screen-box)
+;; 	(let* ((min-x (+& window-x-offset left))
+;; 	       (min-y (+& window-y-offset top))
+;;                (superior-turtle (superior-turtle turtle))
+;;                (sup-x (if (null superior-turtle) 0
+;;                           (absolute-x-position superior-turtle)))
+;;                (sup-y (if (null superior-turtle) 0
+;;                           (absolute-y-position superior-turtle))))
+;; 	  (flet ((translate-x (window-x)
+;; 			      (- (user-coordinate-x (-& window-x min-x))
+;;                                  sup-x))
+;; 		 (translate-y (window-y)
+;; 			      (- (user-coordinate-y (-& window-y min-y))
+;;                                  sup-y)))
+;; 	    (warp-pointer *boxer-pane*
+;; 			  (+ window-x-offset left (fix-array-coordinate-x
+;; 						   (absolute-x-position turtle)))
+;; 			  (+ window-y-offset top  (fix-array-coordinate-y
+;; 						   (absolute-y-position turtle))))
+;; 	    (multiple-value-bind (final-x final-y moved?)
+;; 		(let ((%mouse-usurped t))
+;; 		  (with-mouse-tracking-inside ((mouse-x min-x) (mouse-y min-y)
+;; 					       min-x min-y
+;; 					       (-& (+& window-x-offset
+;; 						       (screen-obj-wid
+;; 							screen-box))
+;; 						   right 1)
+;; 					       (-& (+& window-y-offset
+;; 						       (screen-obj-hei
+;; 							screen-box))
+;; 						   bottom 1)
+;; 					       #+MCL :view #+MCL *boxer-pane*)
+;; 		  (with-sprites-hidden t
+;; 		    (move-to turtle
+;; 			     (translate-x mouse-x) (translate-y mouse-y)))))
+;; 	      (when moved?
+;; 		(with-sprites-hidden t
+;; 		  (move-to turtle
+;; 			   (translate-x final-x) (translate-y final-y))))))))))
+;;     boxer-eval::*novalue*)
+
 (defsprite-function bu::stamp-wedge ((boxer-eval::numberize radius)
                                      (boxer-eval::numberize sweep-angle))
                     (sprite turtle)
