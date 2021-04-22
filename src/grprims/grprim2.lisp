@@ -1,55 +1,48 @@
-;; -*- Mode:LISP; Syntax:Common-Lisp; Package:BOXER; -*-
-#|
-
-
- $Header$
-
- $Log$
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                      +-Data--+
-             This file is part of the | BOXER | system
-                                      +-------+
-
-
-
-   This file contains boxer functions which use the
-   graphics subsystem via sprites
-
-
-
-Modification History (most recent at the top)
-
- 1/25/11 fixed bug in touching? which still used sprite-box's "associated-turtle" mechanism
-         {screen,background}-{pixel,color}-from-turtle, color-under?
-11/15/09 changed (off)screen-pixel-from-turtle to (off)screen-color-from-turtle to clarify pixel/color
-         issues
-         color-under prims all rewritten
- 6/02/07 mouse throttling for opengl version of follow-mouse
- 7/16/04 Fixed Copyright error message in STAMP-WEDGE, STAMP-ARC
- 4/19/03 merged current LW and MCL files
-11/10/02 added STAMP-PIE and STAMP-CRUST
- 9/03/02 UC free version of STAMP-WEDGE/ARC, new DRAW-WEDGE/ARC
- 2/09/02 append-graphics-sheet-at now will splice in colored backgrounds as
-         centered-rectangles
- 2/15/01 merged current LW and MCL files
- 4/09/99 added bu::stamp-wedge and bu::stamp-arc
-10/02/98 bu::follow-mouse is smarter about choosing the correct screen-box
- 6/24/98 changed the input flavor for STAMP from port-to to dont-copy to avoid
-         unhelpful porting to copies warnings
- 6/24/98 Start logging changes: source = boxer version 2.3
-
-|#
+;;;; -*- Mode:LISP; Syntax:Common-Lisp; Package:BOXER; -*-
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                        +-Data--+
+;;;;               This file is part of the | BOXER | system
+;;;;                                        +-------+
+;;;;
+;;;;
+;;;;
+;;;;     This file contains boxer functions which use the
+;;;;     graphics subsystem via sprites
+;;;;
+;;;;
+;;;;
+;;;;  Modification History (most recent at the top)
+;;;;
+;;;;   1/25/11 fixed bug in touching? which still used sprite-box's "associated-turtle" mechanism
+;;;;           {screen,background}-{pixel,color}-from-turtle, color-under?
+;;;;  11/15/09 changed (off)screen-pixel-from-turtle to (off)screen-color-from-turtle to clarify pixel/color
+;;;;           issues
+;;;;           color-under prims all rewritten
+;;;;   6/02/07 mouse throttling for opengl version of follow-mouse
+;;;;   7/16/04 Fixed Copyright error message in STAMP-WEDGE, STAMP-ARC
+;;;;   4/19/03 merged current LW and MCL files
+;;;;  11/10/02 added STAMP-PIE and STAMP-CRUST
+;;;;   9/03/02 UC free version of STAMP-WEDGE/ARC, new DRAW-WEDGE/ARC
+;;;;   2/09/02 append-graphics-sheet-at now will splice in colored backgrounds as
+;;;;           centered-rectangles
+;;;;   2/15/01 merged current LW and MCL files
+;;;;   4/09/99 added bu::stamp-wedge and bu::stamp-arc
+;;;;  10/02/98 bu::follow-mouse is smarter about choosing the correct screen-box
+;;;;   6/24/98 changed the input flavor for STAMP from port-to to dont-copy to avoid
+;;;;           unhelpful porting to copies warnings
+;;;;   6/24/98 Start logging changes: source = boxer version 2.3
+;;;;
 
 (in-package :boxer)
 
@@ -64,13 +57,10 @@ Modification History (most recent at the top)
   (turtle-distance turtle x y))
 
 
-#|
-
-(defsprite-function bu::flash-name ()
-        (sprite turtle)
-  (flash-name turtle)
-  boxer-eval::*novalue*)
-|#
+;;; (defsprite-function bu::flash-name ()
+;;;         (sprite turtle)
+;;;   (flash-name turtle)
+;;;   boxer-eval::*novalue*)
 
 (defsprite-function bu::touching? ((bu::port-to other-sprite))
                                   (sprite turtle)
