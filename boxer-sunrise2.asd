@@ -64,7 +64,7 @@
 
                  ;; Beginning of `EVALPRIMS` module
                  ;; "Evaluator Primitives"
-                 (:file "evalprims/prims")
+                 (:file "primitives/prims")
 
                  ;; Beginning of `PROCESSES` module
                  ;; "Macros and functions for creating processes"
@@ -175,25 +175,25 @@
                  (:file "script-support/applescript")
                  ;; Beginning of `RPRIMS` module
                  ;; 	   "Recursive primititives (only Update-Shape for now)"
-                 (:file "rprims/recursive-prims")
+                 (:file "primitives/recursive-prims")
                  ;; Beginning of `MATHPRIMS` module
                  ;; "Math primitives"
-                 (:file "mathprims/math-prims")
+                 (:file "primitives/math-prims")
                  ;; Beginning of `GRPRIMS` module
                  ;; "Graphics Primitives"
-                 (:file "grprims/grupfn")
-                 (:file "grprims/grprim1")
-                 (:file "grprims/grprim2")
-                 (:file "grprims/grprim3")
+                 (:file "primitives/grupfn")
+                 (:file "primitives/grprim1")
+                 (:file "primitives/grprim2")
+                 (:file "primitives/grprim3")
                  ;; Beginning of `FILEPRIMS` module
                  ;; 	    "File System Primitives"
-                 (:file "fileprims/file-prims")
+                 (:file "primitives/file-prims")
                  ;; Beginning of `NETPRIMS` module
                  ;; "Network Primitives"
-                 (:file "netprims/net-prims")
+                 (:file "primitives/net-prims")
                  ;; Beginning of `PROCESSPRIMS` module
                  ;; "Process Primitives"
-                 (:file "processprims/process-prims")
+                 (:file "primitives/process-prims")
                  ;; Beginning of `primitives` module
                  ;; "Data Manipulators"
                  (:file "primitives/dataprims")
@@ -236,8 +236,8 @@
                  ;;    "Primitives and support code for controlling VCR's from Mac Boxer"
                  (:file "av/av-stubs")
                  ;; Beginning of `SYSPRIMS` module
-                 ;; 	   "Primitives to tweak default system parameters"
-                 (:file "sysprims/sysprims")
+                 ;;    "Primitives to tweak default system parameters"
+                 (:file "primitives/sysprims")
                  ;; Bootstrap methods to startup boxer
                  (:file "start-boxer")
                 )))
