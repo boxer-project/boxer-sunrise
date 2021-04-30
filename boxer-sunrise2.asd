@@ -139,7 +139,7 @@
                  (:file "evaluator/eval-eval")
                  ;; Beginning of `EVAL-INTERFACE` module
                  ;; "Interface to the evaluator"
-                 (:file "eval-interface/ev-int")
+                 (:file "evaluator/ev-int")
                  ;; Beginning of `COMPILER` module
                  ;; ""
                  (:file "compiler/comp")
