@@ -29,7 +29,7 @@
 
 
                  ;; Begining of `redisplay` module
-                 (:file "disdcl/disdcl")
+                 (:file "definitions/disdcl")
 
                  ;; Beginning of `DRAW` module
                  (:file "boxwin/lw-capi/platform-utils")
@@ -42,7 +42,7 @@
 
                  ;; Beginning of `DISPLAYDEFS` module
                  ;; "Some more Definitions for Drawing things"
-                 (:file "displaydefs/disdef")
+                 (:file "definitions/disdef")
 
                  ;; Beginning of `RELATIONSHIPS` module
                  ;; "The basic underlying structure of the Editor is defined here"
