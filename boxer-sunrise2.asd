@@ -50,17 +50,17 @@
 
                  ;; Beginning of `evalvars` module
                  ;; "Definitions necessary for describing evaluator state variables"
-                 (:file "evalvars/varmacs")
-                 (:file "evalvars/vars")
+                 (:file "evaluator/varmacs")
+                 (:file "evaluator/vars")
 
                  ;; Beginning of `EVALDEFS` module
                  ;; "Basic Defs and Macros used by the evaluator including how variables work."
-                 (:file "evaldefs/evalmacs")
-                 (:file "evaldefs/funs")
-                 (:file "evaldefs/fdeval")
-                 (:file "evaldefs/stacks")
-                 (:file "evaldefs/bind")
-                 (:file "evaldefs/eval")
+                 (:file "evaluator/evalmacs")
+                 (:file "evaluator/funs")
+                 (:file "evaluator/fdeval")
+                 (:file "evaluator/stacks")
+                 (:file "evaluator/bind")
+                 (:file "evaluator/eval")
 
                  ;; Beginning of `EVALPRIMS` module
                  ;; "Evaluator Primitives"
