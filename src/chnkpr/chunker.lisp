@@ -1,55 +1,41 @@
-;;;-*- Mode:Lisp; Syntax: Common-Lisp;package:Boxer; -*-
-#|
-
- $Header: chunker.lisp,v 1.0 90/01/24 22:08:06 boxer Exp $
-
- $Log:	chunker.lisp,v $
-;;;Revision 1.0  90/01/24  22:08:06  boxer
-;;;Initial revision
-;;;
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                         +-Data--+
-                This file is part of the | BOXER | system
-                                         +-------+
-
-
-      This file contains the interface between Boxer Editor Structure and
-      the Virtual copy mechanism.  The file contains the code for
-      converting Editor structure to Virtual Copy Structure (referred to
-      as the CHUNKER).
-
-
-
-
-Modification History (most recent at top)
-
-10/ 2/12 get-dots-value gets substring's element type from the string instead of guessing
- 1/ 8/12 new %get-chunking-syntax handles non-ascii chars for use in chunk-handle-char & get-chunking-syntax
-         SETF for get-chunking-syntax warns if charcode > table size
- 7/13/09 removed #+lispworks stanrdard-char from get-dots-values to enter the unicode world..
- 2/15/03 merg current LW and MCL file
- 2/12/01 merged with current MCL file
- 1/23/01 added #+lispworks to get-dots-values
- 4/06/00 new and improved #+ccl ignoring-number-read-errors
- 2/15/99 started Harlequin Lispworks changes (LW reader doesn't support #,)
- 9/02/98 moved *test-box* to commented out test code to delay 1st call to make-box
- 9/02/98 Started Logging changes: source = boxer version 2.3beta
-
-
-
-|#
-
+;;;;  -*- Mode:Lisp; Syntax: Common-Lisp;package:Boxer; -*-
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                           +-Data--+
+;;;;                  This file is part of the | BOXER | system
+;;;;                                           +-------+
+;;;;
+;;;;
+;;;;        This file contains the interface between Boxer Editor Structure and
+;;;;        the Virtual copy mechanism.  The file contains the code for
+;;;;        converting Editor structure to Virtual Copy Structure (referred to
+;;;;        as the CHUNKER).
+;;;;
+;;;;
+;;;;  Modification History (most recent at top)
+;;;;
+;;;;  10/ 2/12 get-dots-value gets substring's element type from the string instead of guessing
+;;;;   1/ 8/12 new %get-chunking-syntax handles non-ascii chars for use in chunk-handle-char & get-chunking-syntax
+;;;;           SETF for get-chunking-syntax warns if charcode > table size
+;;;;   7/13/09 removed #+lispworks stanrdard-char from get-dots-values to enter the unicode world..
+;;;;   2/15/03 merg current LW and MCL file
+;;;;   2/12/01 merged with current MCL file
+;;;;   1/23/01 added #+lispworks to get-dots-values
+;;;;   4/06/00 new and improved #+ccl ignoring-number-read-errors
+;;;;   2/15/99 started Harlequin Lispworks changes (LW reader doesn't support #,)
+;;;;   9/02/98 moved *test-box* to commented out test code to delay 1st call to make-box
+;;;;   9/02/98 Started Logging changes: source = boxer version 2.3beta
+;;;;
 (in-package :boxer)
 
 
