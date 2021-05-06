@@ -185,29 +185,6 @@
 (define-eval-var *for-each-box*     :global nil)
 (define-eval-var *for-each-list*    :global nil)
 
-#|
-;;; FOR-EACH-ITEM
-(define-eval-var *for-each-item-variable-object* :global nil)
-(define-eval-var *for-each-item-counter* :global nil)
-(define-eval-var *for-each-item-length* :global nil)
-(define-eval-var *for-each-item-box* :global nil)
-(define-eval-var *for-each-item-list* :global nil)
-
-;;; FOR-EACH-BOX
-(define-eval-var *for-each-box-variable-object* :global nil)
-(define-eval-var *for-each-box-counter* :global nil)
-(define-eval-var *for-each-box-length* :global nil)
-(define-eval-var *for-each-box-box* :global nil)
-(define-eval-var *for-each-box-list* :global nil)
-
-;;; FOR-EACH-ROW
-(define-eval-var *for-each-row-variable-object* :global nil)
-(define-eval-var *for-each-row-counter* :global nil)
-(define-eval-var *for-each-row-length* :global nil)
-(define-eval-var *for-each-row-box* :global nil)
-(define-eval-var *for-each-row-list* :global nil)
-|#
-
 ;;; RECURSIVE DOIT
 (define-eval-var *recursive-doit?* :global nil)
 
