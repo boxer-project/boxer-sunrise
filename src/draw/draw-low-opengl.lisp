@@ -1,112 +1,110 @@
-; -*- MODE:LISP; Syntax: Common-Lisp; Package:Boxer; -*-
-
-#|
-
-
-
-             COPYRIGHT 1998 - 2014 PyxiSystems LLC
-
-
-                                         +-Data--+
-                This file is part of the | BOXER | system
-                                         +-------+
-
-
-
- This file contains the low level window system dependent interface to
- the mac.
-
-
-Modification History (most recent at top)
-
- 4/23/14 added string-ascent
- 3/20/14 changed *font-families*: moved "arial" to the default and added "verdana"
-11/09/13 added ("Helvetica" . "Arial") to *font-family-aliases*
-10/16/13 make-boxer-font-{ogl,capogi}
- 9/25/13 fontspec->font-values,
- 8/02/13 removed warnings
- 7/26/13 Relative Font size utilities: *font-size-baseline*, *bfd-font-size-names*,
-         bfd-font-size-name, %font-size-to-idx, *font-sizes*,  font-size-to-idx,
-         %font-size-idx-to-size, find-cached-font, cache-font, font-size,
-         init-bootstrapping-font-vars, fill-bootstrapped-font-caches
- 1/23/13 functions which use pixblt must convert to fixnums before calling
-11/21/12 find-filled-font = find-cached-font + bw::ensure-oglfont-parameters
-         used by string-{wid,hei}
- 9/15/12 my-clip-rect now has to coerce its args to fixnums
- 8/27/12 functions with explicit calls to opengl prims now refer to another layer of prims
-         in opengl-utils.lisp which can (optionally) type check and/or coerce
-         %draw-line, %draw-rect, %set-pen-size,
- 3/ 6/11 added *boxtop-text-font* init to init-bootstrapping-font-vars
- 2/28/11 changed with-system-dependent-bitmap-drawing to use the back buffer instead of an aux buffer
- 2/15/11 fill-bootstrapped-font-caches fills for ALL glut fonts
- 2/13/11 string-{wid,hei} now use bw::with-ogl-font to insure fonts are filled
- 2/ 6/11 auxiliary-buffer-{count,exists?}, with-system-dependent-bitmap-drawing
- 4/27/10 added ogl-reshape to with-drawing-port
- 4/20/10 %draw-circle %draw-arc using new opengl-draw-xxx functions
- 4/17/10 font caching mechanism changed: make-boxer-font, fill-bootstrapped-font-caches,
-         cache-on-startup?
-12/13/09 copy-image-to-bitmap & uncolor->pixel utilities for converting images (from capi:clipboard)
-         to OpenGL bitmaps
-11/27/09 Added *closet-color* and it's init's
-11/13/09 Added screen-pixel-color & offscreen-pixel-color to sharpen distinction between pixels & colors
-         which have become muddled in higher level code
- 9/05/09 maintaining-drawing-font
- 3/13/09 boxer-points->window-system-points for OpenGL
- 2/22/09 copy-offscreen-bitmap
- 3/02/08 pixel-dump-value handles possible non 1.0 alpha values
- 1/13/08 my-clip-rect, x & y off by 1
- 5/22/07 border colors added:*default-border-color*, *border-gui-color*
- GPU configuration: parameters and initialization
- 5/13/06 prelim version done
- 1/23/05 added flush-port-buffer stub
- 1/04/05 %erase-rectangle
- 3/01/02 fixed bug in %draw-xor-string
- 2/22/02 font aliasing
- 2/19/02 %font-name-to-idx, fontspec->font-no, make-boxer-font
- 2/17/02 added pixel-dump-value-internal used by dump-true-color-pixmap for
-         platform independence of pixels in offscreen pixmaps
- 2/16/02 %draw-xor-string makes sure we have plusp wid & hei before blitting
- 1/12/02 %draw-xor-string now hacks clipping
-10/10/01 %draw-string window arg changed to %drawing-array to handle bitmap binding
-10/06/01 pixel-dump-value now swaps Red and Blue bytes
- 9/06/01 %set-image-pixel no longer needs to coerce to a colorref
- 5/08/01 %draw-rectangle checks clipping state for unusual cases which don't seem
-         to be handled by the window system
- 4/30/01 %bitblt functions now do clipping in software because pixblt doe'sn't
-         pay attention to the mask
- 2/26/01 %draw-point, %draw-poly XOR case :foreground changed to #xffffff
- 2/20/01 fixed %draw-arc & %draw-filled-arc
- 2/13/01 merged current LW and MCL files (draw-low-mcl.lisp)
- 2/13/01 maintaining-drawing-font folded into rebind-font-info
- 2/04/01 fixed typos in %draw-arc, %draw-filled-arc & draw-point
-11/01/00 with-system-dependent-bitmap-drawing now binds %graphics-state
-         so (current-graphics-state) can win
-10/04/00 changed image-pixel to return a fixnum instead of a win32::colorref
-         because that is what the dumping functions expect
-         %set-image-pixel also changed
- 8/22/00 added %make-color-from-bytes/100s
- 7/09/00 defined %get-pixel using gp:get-point and ported pixel handling functions
-         :foreground #xffffff for XOR ops (was #xffff) 5/31/00 relaxed %font-size-to-idx to handle values (like 1) actually found in files
- 5/08/00 fixed deferred my-clip-rect
- 5/03/00 fixed X/Y reversal in boxer-points->window-system-points
- 3/24/00 make-boxer-font changed to return encoded numeric value instead of
-         internal system font
- 2/02/00 added full font caching to fill-bootstrapped-font-caches
-12/15/99 added 7 to %font-size-to-idx to support loadingof old mac files
-11/29/99 fixed string-wid & string-hei: documentation for gp:get-string-extent had
-         the order of returned values wrong (pg 136)
-11/16/99 %erase-rectangle changed to use gp::draw-rectangle because gp::clear-rectangle
-         ignores the offset state of the graphics state's transform which causes it to
-         lose for inferior boxes during redisplay
- 3/29/99 new fonts finished ??
-11/02/98 Copied from draw-low-mcl.lisp and reduced to function & args stubs
-         for conversion to CAPI, GP lispworks
-
-notes:: check points arg on draw-poly
-        search for &&& which marks stubs
-
-|#
-
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;                                               +-Data--+
+;;;;                      This file is part of the | BOXER | system
+;;;;                                               +-------+
+;;;;
+;;;;   This file contains the low level window system dependent interface to
+;;;;   the OpenGL library calls.
+;;;;
+;;;;
+;;;;  Modification History (most recent at top)
+;;;;
+;;;;   4/23/14 added string-ascent
+;;;;   3/20/14 changed *font-families*: moved "arial" to the default and added "verdana"
+;;;;  11/09/13 added ("Helvetica" . "Arial") to *font-family-aliases*
+;;;;  10/16/13 make-boxer-font-{ogl,capogi}
+;;;;   9/25/13 fontspec->font-values,
+;;;;   8/02/13 removed warnings
+;;;;   7/26/13 Relative Font size utilities: *font-size-baseline*, *bfd-font-size-names*,
+;;;;           bfd-font-size-name, %font-size-to-idx, *font-sizes*,  font-size-to-idx,
+;;;;           %font-size-idx-to-size, find-cached-font, cache-font, font-size,
+;;;;           init-bootstrapping-font-vars, fill-bootstrapped-font-caches
+;;;;   1/23/13 functions which use pixblt must convert to fixnums before calling
+;;;;  11/21/12 find-filled-font = find-cached-font + bw::ensure-oglfont-parameters
+;;;;           used by string-{wid,hei}
+;;;;   9/15/12 my-clip-rect now has to coerce its args to fixnums
+;;;;   8/27/12 functions with explicit calls to opengl prims now refer to another layer of prims
+;;;;           in opengl-utils.lisp which can (optionally) type check and/or coerce
+;;;;           %draw-line, %draw-rect, %set-pen-size,
+;;;;   3/ 6/11 added *boxtop-text-font* init to init-bootstrapping-font-vars
+;;;;   2/28/11 changed with-system-dependent-bitmap-drawing to use the back buffer instead of an aux buffer
+;;;;   2/15/11 fill-bootstrapped-font-caches fills for ALL glut fonts
+;;;;   2/13/11 string-{wid,hei} now use bw::with-ogl-font to insure fonts are filled
+;;;;   2/ 6/11 auxiliary-buffer-{count,exists?}, with-system-dependent-bitmap-drawing
+;;;;   4/27/10 added ogl-reshape to with-drawing-port
+;;;;   4/20/10 %draw-circle %draw-arc using new opengl-draw-xxx functions
+;;;;   4/17/10 font caching mechanism changed: make-boxer-font, fill-bootstrapped-font-caches,
+;;;;           cache-on-startup?
+;;;;  12/13/09 copy-image-to-bitmap & uncolor->pixel utilities for converting images (from capi:clipboard)
+;;;;           to OpenGL bitmaps
+;;;;  11/27/09 Added *closet-color* and it's init's
+;;;;  11/13/09 Added screen-pixel-color & offscreen-pixel-color to sharpen distinction between pixels & colors
+;;;;           which have become muddled in higher level code
+;;;;   9/05/09 maintaining-drawing-font
+;;;;   3/13/09 boxer-points->window-system-points for OpenGL
+;;;;   2/22/09 copy-offscreen-bitmap
+;;;;   3/02/08 pixel-dump-value handles possible non 1.0 alpha values
+;;;;   1/13/08 my-clip-rect, x & y off by 1
+;;;;   5/22/07 border colors added:*default-border-color*, *border-gui-color*
+;;;;   GPU configuration: parameters and initialization
+;;;;   5/13/06 prelim version done
+;;;;   1/23/05 added flush-port-buffer stub
+;;;;   1/04/05 %erase-rectangle
+;;;;   3/01/02 fixed bug in %draw-xor-string
+;;;;   2/22/02 font aliasing
+;;;;   2/19/02 %font-name-to-idx, fontspec->font-no, make-boxer-font
+;;;;   2/17/02 added pixel-dump-value-internal used by dump-true-color-pixmap for
+;;;;           platform independence of pixels in offscreen pixmaps
+;;;;   2/16/02 %draw-xor-string makes sure we have plusp wid & hei before blitting
+;;;;   1/12/02 %draw-xor-string now hacks clipping
+;;;;  10/10/01 %draw-string window arg changed to %drawing-array to handle bitmap binding
+;;;;  10/06/01 pixel-dump-value now swaps Red and Blue bytes
+;;;;   9/06/01 %set-image-pixel no longer needs to coerce to a colorref
+;;;;   5/08/01 %draw-rectangle checks clipping state for unusual cases which don't seem
+;;;;           to be handled by the window system
+;;;;   4/30/01 %bitblt functions now do clipping in software because pixblt doe'sn't
+;;;;           pay attention to the mask
+;;;;   2/26/01 %draw-point, %draw-poly XOR case :foreground changed to #xffffff
+;;;;   2/20/01 fixed %draw-arc & %draw-filled-arc
+;;;;   2/13/01 merged current LW and MCL files (draw-low-mcl.lisp)
+;;;;   2/13/01 maintaining-drawing-font folded into rebind-font-info
+;;;;   2/04/01 fixed typos in %draw-arc, %draw-filled-arc & draw-point
+;;;;  11/01/00 with-system-dependent-bitmap-drawing now binds %graphics-state
+;;;;           so (current-graphics-state) can win
+;;;;  10/04/00 changed image-pixel to return a fixnum instead of a win32::colorref
+;;;;           because that is what the dumping functions expect
+;;;;           %set-image-pixel also changed
+;;;;   8/22/00 added %make-color-from-bytes/100s
+;;;;   7/09/00 defined %get-pixel using gp:get-point and ported pixel handling functions
+;;;;           :foreground #xffffff for XOR ops (was #xffff) 5/31/00 relaxed %font-size-to-idx to handle values (like 1) actually found in files
+;;;;   5/08/00 fixed deferred my-clip-rect
+;;;;   5/03/00 fixed X/Y reversal in boxer-points->window-system-points
+;;;;   3/24/00 make-boxer-font changed to return encoded numeric value instead of
+;;;;           internal system font
+;;;;   2/02/00 added full font caching to fill-bootstrapped-font-caches
+;;;;  12/15/99 added 7 to %font-size-to-idx to support loadingof old mac files
+;;;;  11/29/99 fixed string-wid & string-hei: documentation for gp:get-string-extent had
+;;;;           the order of returned values wrong (pg 136)
+;;;;  11/16/99 %erase-rectangle changed to use gp::draw-rectangle because gp::clear-rectangle
+;;;;           ignores the offset state of the graphics state's transform which causes it to
+;;;;           lose for inferior boxes during redisplay
+;;;;   3/29/99 new fonts finished ??
+;;;;  11/02/98 Copied from draw-low-mcl.lisp and reduced to function & args stubs
+;;;;           for conversion to CAPI, GP lispworks
+;;;;
+;;;;  notes:: check points arg on draw-poly
+;;;;          search for &&& which marks stubs
+;;;;
 
 (in-package :boxer)
 
