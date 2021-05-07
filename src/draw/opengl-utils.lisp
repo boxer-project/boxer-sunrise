@@ -226,7 +226,7 @@ Modification History (most recent at the top)
 
 ;;; sizes, this can be all done on the CPU side
 (defun ogl-char-width (cha &optional (font *current-opengl-font*))
-  (let* ((cha-pixmap (boxer::find-freetype-pixmap cha font *ogl-current-color-vector*))
+  (let* ((cha-pixmap (boxer::find-freetype-pixmap cha font *ogl-current-color-vector* boxer::*font-size-baseline*))
         (width (opengl::ogl-pixmap-width cha-pixmap)))
     ;; TODO This could potentially be the glyph advance value, but so far the value of
     ;; that and the pixmap widths seem the same.
@@ -235,7 +235,7 @@ Modification History (most recent at the top)
 ;; the same for both char,string-height
 (defun ogl-font-height (font)
   "sgithens TODO: temporary hack until we draw the proper values from freetype"
-  (let* ((cha-pixmap (boxer::find-freetype-pixmap "A" font *ogl-current-color-vector*))
+  (let* ((cha-pixmap (boxer::find-freetype-pixmap "A" font *ogl-current-color-vector* boxer::*font-size-baseline*))
         (height (opengl::ogl-pixmap-height cha-pixmap)))
     height))
 
@@ -250,16 +250,16 @@ Modification History (most recent at the top)
   (values (ogl-font-ascent font) (ogl-font-height font) 1))
 
 (defun ogl-string-width (string &optional (font *current-opengl-font*))
-  (let* ((cha-pixmap (boxer::find-freetype-pixmap string font *ogl-current-color-vector*))
+  (let* ((cha-pixmap (boxer::find-freetype-pixmap string font *ogl-current-color-vector* boxer::*font-size-baseline*))
         (width (opengl::ogl-pixmap-width cha-pixmap)))
     ;; TODO This should actually be the glyph advance value
     width))
 
 (defun ogl-draw-char (char x y)
-  (boxer::freetype-draw-char char x y *current-opengl-font* *ogl-current-color-vector* t))
+  (boxer::freetype-draw-char char x y *current-opengl-font* *ogl-current-color-vector* boxer::*font-size-baseline* t))
 
 (defun ogl-draw-string (text x y)
-  (boxer::freetype-draw-char text (floor x) (floor y) *current-opengl-font* *ogl-current-color-vector*))
+  (boxer::freetype-draw-char text (floor x) (floor y) *current-opengl-font* *ogl-current-color-vector* boxer::*font-size-baseline*))
 
 ;;;; COLORS
 

@@ -615,14 +615,14 @@ Modification History (most recent at top)
 
 (defun menu-font-bigger (data interface)
   (declare (ignore data interface))
-  (unless (= boxer::*font-size-baseline* (boxer::max-font-size-baseline-value))
-    (setq boxer::*font-size-baseline* (1+ boxer::*font-size-baseline*)))
+  (unless (>= boxer::*font-size-baseline* 4)
+    (setq boxer::*font-size-baseline* (+ 0.25 boxer::*font-size-baseline*)))
   (boxer::repaint))
 
 (defun menu-font-smaller (data interface)
   (declare (ignore data interface))
-  (unless (zerop  boxer::*font-size-baseline*)
-    (setq boxer::*font-size-baseline* (1- boxer::*font-size-baseline*)))
+  (unless (<=  boxer::*font-size-baseline* 0.50)
+    (setq boxer::*font-size-baseline* (- boxer::*font-size-baseline* 0.25)))
   (boxer::repaint))
 
 (defun get-current-font ()

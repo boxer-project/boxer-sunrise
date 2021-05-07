@@ -56,7 +56,7 @@
     (list (car triple) 12 (cddr triple))
     triple))
 
-(defun current-freetype-font (current-font)
+(defun current-freetype-font (current-font &optional (font-zoom 1.0))
   "Returns the current face and size based on the values in *current-font-descriptor*
   The current fonts are:
       'Arial' 'Courier New' 'Times New Roman' 'Verdana'
@@ -88,7 +88,9 @@
           (t
            (setf face-style-name "Regular")))
     (setf face (gethash (concatenate 'string face-family-name "-" face-style-name) *freetype-faces*))
-    (freetype2:set-char-size face (* size 64) 0 72 72)
+    ;; floor'ing the result as even though freetype specifies decimal font sizes right now, our current
+    ;; opengl methods require whole numbers
+    (freetype2:set-char-size face (floor (* font-zoom (* size 64))) 0 72 72)
     face))
 
 (defun current-rgba-percents (ogl-color)
@@ -106,10 +108,10 @@
     (setf final-color (dpb (floor (* (car cur-color) 255)) (byte 8 0) final-color)) ; red
     final-color))
 
-(defun make-freetype-pixmap (char-to-draw current-font cur-color)
+(defun make-freetype-pixmap (char-to-draw current-font cur-color &optional (font-zoom 1.0))
   #+lispworks  ;TODO factor out :fli calls...
-  (let* ((rendered-array (freetype2::toy-string-to-array (current-freetype-font current-font) (string char-to-draw) :left-right))
-         (advances (freetype2::get-string-advances (current-freetype-font current-font) (string char-to-draw)))
+  (let* ((rendered-array (freetype2::toy-string-to-array (current-freetype-font current-font font-zoom) (string char-to-draw) :left-right))
+         (advances (freetype2::get-string-advances (current-freetype-font current-font font-zoom) (string char-to-draw)))
          (width (freetype2::array-dimension rendered-array 1))
          (height (freetype2::array-dimension rendered-array 0))
          (fli-data (fli:allocate-foreign-object :type :unsigned
@@ -128,24 +130,24 @@
                         :data fli-data ))
     *mypixmap*))
 
-(defun find-freetype-pixmap (char-string current-font cur-ogl-color)
+(defun find-freetype-pixmap (char-string current-font cur-ogl-color &optional (font-zoom 1.0))
   "Returns a pixmap ready for rendering. Needs to cache pixmaps based on the following:
    CAPI Font List, Color, Char/String
   "
   (let* ((capi-fontspec (check-fontspec (opengl-font-fontspec current-font)))
          (cur-color (current-rgba-percents cur-ogl-color))
-         (cache-key `(,capi-fontspec ,cur-color ,char-string))
+         (cache-key `(,capi-fontspec ,cur-color ,char-string ,font-zoom))
          (cached-pixmap (gethash cache-key *freetype-pixmap-cache*)))
     (unless cached-pixmap
-      (setf cached-pixmap (make-freetype-pixmap char-string current-font (current-rgba-percents cur-ogl-color)))
+      (setf cached-pixmap (make-freetype-pixmap char-string current-font (current-rgba-percents cur-ogl-color) font-zoom))
       (setf (gethash cache-key *freetype-pixmap-cache*) cached-pixmap)
       (setf *freetype-pixmap-generate-count* (1+ *freetype-pixmap-generate-count*)))
     cached-pixmap))
 
-(defun freetype-draw-char (char-to-draw xcoord ycoord current-font cur-ogl-color &optional (adjust-baseline nil))
+(defun freetype-draw-char (char-to-draw xcoord ycoord current-font cur-ogl-color &optional (font-zoom 1.0) (adjust-baseline nil))
   (bw::ogl-current-color) ; This is necessary to update the global ogl variable from the gl state
   (opengl:rendering-on (bw::*boxer-pane*)
-    (let* ((glyph-pixmap (find-freetype-pixmap char-to-draw current-font cur-ogl-color))
+    (let* ((glyph-pixmap (find-freetype-pixmap char-to-draw current-font cur-ogl-color font-zoom))
            (height (opengl::ogl-pixmap-height glyph-pixmap))
            (widgth (opengl::ogl-pixmap-width glyph-pixmap)))
       (if adjust-baseline
