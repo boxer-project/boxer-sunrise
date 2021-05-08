@@ -68,7 +68,7 @@
 
                  ;; Beginning of `PROCESSES` module
                  ;; "Macros and functions for creating processes"
-                 (:file "processes/process")
+                 (:file "evaluator/process")
 
                  ;; Beginning of `BOXWIN` module
                  ;; "The interface between the Boxer Editor and the window system"
