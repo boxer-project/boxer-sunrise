@@ -2182,6 +2182,19 @@
 ;;;; FILE: draw-low-opengl.lisp
 ;;;;
 
+;; stub
+(defun sheet-font-map (w) (declare (ignore w)) nil)
+
+(defun max-font-size-baseline-value ()
+  (- (length *font-sizes*) 7 1))
+
+(defvar *current-font-family-index* 0)
+
+(defun max-font-size-baseline-value ()
+  (- (length *font-sizes*) 7 1))
+
+(defvar *current-font-family-index* 0)
+
 ;;
 ;;  o fonts remain a fixnum but we use a caching mechanism
 ;;    fields of a fontspec are used as indices into simple arrays

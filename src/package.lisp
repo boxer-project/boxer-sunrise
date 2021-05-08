@@ -119,7 +119,6 @@
            :string-case :char-case
            :once-only :control-character-display-prefix
            :%drawing-window :%drawing-array
-           :%drawing-font-map
            :scale-x :scale-y
            :x-out-of-bounds? :y-out-of-bounds?
            ;; font vars

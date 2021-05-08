@@ -163,10 +163,6 @@
    screen-array (Note that this value is valid because drawing-on-window does
    a prepare-sheet of drawing-window.")
 
-(DEFVAR %DRAWING-FONT-MAP NIL
-        "Inside of a drawing-on-window, this variable is bound to %drawing-window's
-   font-map.")
-
 (DEFVAR %ORIGIN-X-OFFSET 0
         "Inside of a drawing-on-window, this variable is bound to x-offset of the
    current drawing origin from the screen's actual x origin. With-origin-at

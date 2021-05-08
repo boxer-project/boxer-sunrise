@@ -731,7 +731,14 @@ Modification History (most recent at the top)
 ;;
 ;; The more correct thing to do will be to bump the version of the boxer file format and use that as a check, which I
 ;; should look at. But for now this works pretty well.
-(defvar *dump-relative-font-sizes?* nil)
+;;
+;; May 08, 2021 A further update. As of now, we are no longer using relative font sizes in the Boxer font infrastructure.
+;; Font sizes are now stored as their actual sizes, so we can always write out the fonts name, size, and styles as is.
+;; We will keep this dump relative variable commented out here for future reference, and remember that to support older
+;; saved files we still only allow fonts sized 8 or larger, as sizes 1 thru 7 were indexes into the list of supported
+;; font sizes, which for a while we will still check when loading fonts. But for now, we will always save the actual size.
+;;
+;; (defvar *dump-relative-font-sizes?* nil)
 
 (defun dump-font (font stream)
   (let ((font-id (assoc font *dumping-font-alist* :test #'=)))
@@ -742,10 +749,7 @@ Modification History (most recent at the top)
              ;; fake a dump list
              (dump-list-preamble (+ 2 (length styles)) stream)
              (dump-boxer-thing (font-name font) stream)
-             (dump-boxer-thing (if *dump-relative-font-sizes?*
-                                 (%font-size-idx font)
-                                 (font-size font))
-                               stream)
+             (dump-boxer-thing (font-size font) stream)
              (dolist (style styles) (dump-boxer-thing style stream))))
       (t
        (dump-table-lookup stream (cdr font-id))))))

@@ -662,7 +662,7 @@ Modification History (most recent at top)
 ;; should be in this function
 (defun set-font-size-menu-selection (menu)
   (let* ((current-font (boxer::bfd-font-no (get-current-font)))
-         (font-size (boxer::%font-size-idx current-font)))
+         (font-size (boxer::font-size current-font)))
     (setf (capi::choice-selection menu) (position font-size boxer::*menu-font-sizes*))))
 
 (defun font-size-menu-action (data int)

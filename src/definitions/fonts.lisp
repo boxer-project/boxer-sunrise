@@ -32,19 +32,13 @@
   (format stream "#<OGLFont ~A >"
              (opengl-font-fontspec font)))
 
-;; stub
-(defun sheet-font-map (w) (declare (ignore w)) nil)
-
 (defvar *menu-font-sizes* '(9 10 11 12 14 16 18 20 22 24 26 28 36 48 72)
   "We support fonts of any size now, but these are the sizes that will be
   available from the drop down menu in the UI.")
 
-(defvar *font-size-baseline* 1 )
-
-(defun max-font-size-baseline-value ()
-  (- (length *font-sizes*) 7 1))
-
-(defvar *current-font-family-index* 0)
+(defvar *font-size-baseline* 1
+  "This is the font zoom percentage. Default is 1, 100% In practice we are allowing this to be somewhere between .5
+  and 4... 50% to 400% zooming.")
 
 (defvar *font-cache* nil ;
   "This is a regular list of `opengl-font` structs. Order is important during boxer execution
@@ -55,9 +49,6 @@
 (defvar *font-families* '("Arial" "Courier New" "Times New Roman" "Verdana"))
 
 (defvar *default-font-family* (car *font-families*))
-
-(defun %font-size-idx (font-no)
-  (cadr (opengl-font-fontspec (find-cached-font font-no))))
 
 ;; available sizes are: 6,8,10,12,14,16,18,24
 ;; NOTE: we an get size 7 when loading old mac boxes...
@@ -81,27 +72,8 @@
 
 (defvar *font-sizes* (vector 8 9 10 12 14 16 20 24 28 32 40 48 56 64)) ;(vector 6 8 10 12 14 16 18 24)
 
-;; "size" is the size value returned from font-values of a relative font (used in BFD's)
-;; abstract through this function to allow for more complicated translations, perhaps skipping
-;; entries in the master cache to get the correct size ratios
-(defun font-size-to-idx (size) (+& size *font-size-baseline* -1)) ;; sgithens boxer-bugs-39 -1))
-
-(defun %font-size-idx-to-size (sidx) (svref *font-sizes* sidx))
-
-;; size resolution happens here. The relative size is resolved along with *font-size-baseline*
-(defun find-cached-font (font-no &optional (translate-size t))
-  (nth font-no *font-cache*);; TODO sgithens: fixup the translate size for zooming
-)
-  ;; (multiple-value-bind (fam size face)
-  ;;                      (font-values font-no)
-  ;;                      (let ((size-cache (svref& *font-cache* fam)))
-  ;;                        (unless (null size-cache)
-  ;;                          (let ((face-cache (svref& size-cache (if translate-size
-  ;;                                                                 (font-size-to-idx size)
-  ;;                                                                 size))))
-  ;;                            (unless (null face-cache) (svref& face-cache face))))))
-
-                            ;;  )
+(defun find-cached-font (font-no)
+  (nth font-no *font-cache*))
 
 (defun fontspec->font-no (fontspec)
   (position-if #'(lambda (x) (equal fontspec (opengl-font-fontspec x))) *font-cache*))

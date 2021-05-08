@@ -69,9 +69,8 @@
 (defmacro drawing-on-window-without-prepare-sheet ((window) &body body)
   (once-only (window)
     `(let ((%drawing-window ,window)
-	   (%drawing-array (sheet-screen-array ,window))
-	   (%drawing-font-map (sheet-font-map ,window)))
-       %drawing-window %drawing-array %drawing-font-map	   ;bound but never...
+	   (%drawing-array (sheet-screen-array ,window)))
+       %drawing-window %drawing-array    ;bound but never...
        (drawing-on-window-bootstrap-clipping-and-scaling
 	((sheet-inside-left ,window) (sheet-inside-top  ,window)
 	 (sheet-inside-width ,window) (sheet-inside-height ,window))
@@ -83,8 +82,7 @@
 ;;; wonderful drawing type things and stuff) needs to be bound
 
 (defmacro with-font-map-bound ((window) &body body)
-  `(let ((%drawing-font-map (sheet-font-map ,window)))
-     %drawing-font-map				;bound but never used etc.
+  `(let ()
      . ,body))
 
 
