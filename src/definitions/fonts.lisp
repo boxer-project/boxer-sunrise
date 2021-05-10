@@ -32,7 +32,7 @@
   (format stream "#<OGLFont ~A >"
              (opengl-font-fontspec font)))
 
-(defvar *menu-font-sizes* '(9 10 11 12 14 16 18 20 22 24 26 28 36 48 72)
+(defvar *menu-font-sizes* '(8 9 10 11 12 14 16 18 20 22 24 26 28 36 48 72)
   "We support fonts of any size now, but these are the sizes that will be
   available from the drop down menu in the UI.")
 
@@ -70,7 +70,8 @@
         ((<=& size 64) 13)
         (t 14)))
 
-(defvar *font-sizes* (vector 8 9 10 12 14 16 20 24 28 32 40 48 56 64)) ;(vector 6 8 10 12 14 16 18 24)
+(defvar *font-sizes* (vector 8 9 10 12 14 16 20 24 28 32 40 48 56 64)
+  "Historic font sizes from before the complete transition from relative to absolute font sizes.") ;(vector 6 8 10 12 14 16 18 24)
 
 (defun find-cached-font (font-no)
   (nth font-no *font-cache*))
@@ -87,9 +88,19 @@
 (defun font-family-alias (family-name)
   (cdr (assoc family-name *font-family-aliases* :test #'string-equal)))
 
-(defun make-boxer-font (rawfontspec)
+(defun make-boxer-font (rawfontspec &key (translate-relative-sizes t))
+  "Makes a boxer font using the fontspec, or returns the existing font from the cache. The returned value is an integer
+  with the key for the font during this runtime. These keys can change between executions of Boxer and are only meant
+  for runtime. Fonts should always be persists as their fontspec.
+
+  In historic versions of Boxer, the integer was an index in to a list of relative font sizes. The keyword parameter
+  `translate-relative-sizes` will perform this translation for sizes 1-7. Any sizes about 7 will be their usual size."
   (let* ((alias (font-family-alias (car rawfontspec)))
-         (fontspec (if alias (list* alias (cdr rawfontspec)) rawfontspec))
+         (fontname (or alias (car rawfontspec)))
+         (fontsize (if (and translate-relative-sizes (< (cadr rawfontspec) 8))
+                     (aref *font-sizes* (cadr rawfontspec))
+                     (cadr rawfontspec)))
+         (fontspec (list* fontname fontsize (cddr rawfontspec)))
          (font-no (fontspec->font-no fontspec))
          (oglfont nil))
     (if font-no
