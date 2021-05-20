@@ -8,6 +8,25 @@
 
 (defvar *uc-copyright-free* t)
 
+;; sgithens 2021-05-07 Oddly it doesn't look like these three are used anymore...
+
+(DEFVAR *CURRENT-SCREEN-BOX* NIL
+  "The Lowest Level Screen Box Which Contains the *Point*")
+
+(DEFVAR *MARKED-SCREEN-BOX* NIL
+  "The Lowest Level Scren Box Which Contains the *mark*")
+
+(DEFVAR *OUTERMOST-BOX* NIL
+  "Inside of REDISPLAYING-WINDOW, this variable is bound to the window
+   being redisplayed's outermost-box. This is the box which currently
+   fills that window.")
+
+(defvar *egc-enabled?* nil)
+
+(DEFVAR *CONTROL-CHARACTER-DISPLAY-PREFIX* #\
+  "For display of control characters (all of them until we decide on different prefixes")
+
+
 ;;;;
 ;;;; FILE: boxwin-opengl.lisp
 ;;;;

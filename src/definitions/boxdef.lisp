@@ -194,12 +194,6 @@ Modification History (most recent at top)
   "The initial box the editor starts with, this box cannot be deleted
    killed etc.")
 
-(DEFVAR *CURRENT-SCREEN-BOX* NIL
-  "The Lowest Level Screen Box Which Contains the *Point*")
-
-(DEFVAR *MARKED-SCREEN-BOX* NIL
-  "The Lowest Level Scren Box Which Contains the *mark*")
-
 (DEFVAR *BOXER-FUNCTIONS* NIL
   "This variable contains a list of symbols for all the
    lisp functions imported to Boxer.")
@@ -230,11 +224,6 @@ Modification History (most recent at top)
   "Inside of REDISPLAYING-WINDOW, this variable is bound to the window
    being redisplayed.")
 
-(DEFVAR *OUTERMOST-BOX* NIL
-  "Inside of REDISPLAYING-WINDOW, this variable is bound to the window
-   being redisplayed's outermost-box. This is the box which currently
-   fills that window.")
-
 (DEFVAR *OUTERMOST-SCREEN-BOX* NIL
   "Inside of REDISPLAYING-WINDOW, this variable is bound to the window
    being redisplayed's outermost-screen-box. This is the screen box which
@@ -262,11 +251,6 @@ Modification History (most recent at top)
 
 (DEFVAR *BOX-ZOOM-WAITING-TIME* 0.1
   "The amount of time spent waiting between the individual steps when zooming a box. ")
-
-(defvar *egc-enabled?* nil)
-
-(DEFVAR *CONTROL-CHARACTER-DISPLAY-PREFIX* #\
-  "For display of control characters (all of them until we decide on different prefixes")
 
 (defun tick (&optional how-many)
   (declare (ignore how-many))
