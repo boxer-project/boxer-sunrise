@@ -5112,3 +5112,12 @@ to the :TEXT-STRING method of boxes. "
 (define-eval-var *for-each-row-box* :global nil)
 (define-eval-var *for-each-row-list* :global nil)
 |#
+
+;;;;
+;;;; FILE: vrtdef.lisp
+;;;;
+
+;; sgithens This doesn't seem to be used anywhere... what do we currently look at to determine if eval is in progress???
+(DEFVAR *EVAL-IN-PROGRESS* NIL
+  "Bound by top level eval functions and used by the :MODIFIED message to
+   decide when to flush old eval structure. ")

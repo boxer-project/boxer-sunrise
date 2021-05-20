@@ -726,10 +726,6 @@ Modification History (most recent at top)
 
 ;;;; variables
 
-(DEFVAR *EVAL-IN-PROGRESS* NIL
-  "Bound by top level eval functions and used by the :MODIFIED message to
-   decide when to flush old eval structure. ")
-
 (DEFVAR *FUNNY-FUNCTION-ARGLIST-TABLE* (MAKE-HASH-TABLE))
 
 (DEFVAR *SYMBOLS-FOR-INPUT-LINE* '(BU::INPUT BU::INPUTS))
