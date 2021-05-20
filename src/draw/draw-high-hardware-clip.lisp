@@ -69,9 +69,6 @@
 (defmacro scale-x (x) x)
 (defmacro scale-y (y) y)
 
-(defmacro clip-x (scaled-x) scaled-x)
-(defmacro clip-y (scaled-y) scaled-y)
-
 ;; Since we have hardware clipping we'll just go ahead an draw stuff even
 ;; if it is out of bounds
 (defmacro x-out-of-bounds? (scaled-x)

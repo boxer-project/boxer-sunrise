@@ -2149,6 +2149,10 @@
 ;;;; FILE: draw-high-hardware-clip.lisp
 ;;;;
 
+(defmacro clip-x (scaled-x) scaled-x)
+(defmacro clip-y (scaled-y) scaled-y)
+
+
 (defun bitblt-within-screen (alu full-wid full-hei from-x from-y to-x to-y)
   (let (;; hardware clipping is only performed on the destination
         ;; rect, so we have to make sure we don't pull in any
