@@ -567,7 +567,8 @@ Modification History (most recent at top)
                              ;; ok need to draw vertical scroll GUI
                              (draw-vertical-elevator vert-x it (- inner-hei 0) ;sbe)
                                                      (/ visible-rows total-rows)
-                                                     (if (null scroll-to-actual-row) 0
+                                                     (if (or (null scroll-to-actual-row)
+                                                             (null (row-row-no actual-obj scroll-to-actual-row))) 0
                                                        (/ (row-row-no actual-obj scroll-to-actual-row) total-rows)))
                              (draw-vertical-scroll-buttons vert-x (- hei ib sbe)))
                            (when (h-scrollable? self)
