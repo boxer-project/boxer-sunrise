@@ -488,14 +488,11 @@ Modification History (most recent at top)
     (let* ((slot (slot-value self 'type-font))
            (box (box-interface-box slot)))
       (when (and (null dont-update-box) (not (null box)))
-        #+mcl
         (bash-box-to-list-value box
-                                (list* (font-name new-value)
-                                       (font-size new-value)
-                                       (font-styles new-value)))
-        #-mcl
-        (bash-box-to-single-value box
-                                  (font-name-from-font-no new-value)))))
+                               (list* (make-box (list (list (font-name new-value))))
+                                      (font-size new-value)
+                                      (font-styles new-value)))
+  )))
   (setf (box-interface-value (slot-value self 'type-font)) new-value)
   ;; Record appropriate changes into the graphics list
   (unless (null %graphics-list)

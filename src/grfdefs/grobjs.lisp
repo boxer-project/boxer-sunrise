@@ -103,6 +103,19 @@
 
 ;;;; This has the capability to draw lines when it moves
 
+(defun type-font-box-updater (bi)
+  "This is the special-box-interface-update-function for the 'type-font box-interface."
+  (let* ((font-no (box-interface-value bi))
+         (box (box-interface-box bi))
+         (font-name-box (boxer::make-box `((,(font-name font-no))))))
+    (bash-box-to-list-value box
+                          (list* (font-size font-no)
+                                (font-styles font-no)))
+    ;; This is a small hack since we can't insert box with the list bashing...
+    (insert-cha-at-cha-no (first-inferior-row box) font-name-box 0)
+    (flush-editor-box-caches box) (queue-editor-object-for-mutation bi)
+))
+
 (defclass graphics-cursor
   (button)
   ((shown?    :initform (%make-iv-box-interface T 'shown?))
@@ -111,8 +124,10 @@
    (pen-color :initform (%make-sv-box-interface
                          *foreground-color* 'pen-color
                          nil 'pen-color-box-updater))
-   (type-font :initform (%make-iv-box-interface
-                         *sprite-type-font-no* 'type-font)))
+   (type-font :initform (%make-sv-box-interface
+                         *sprite-type-font-no* 'type-font
+                         nil 'type-font-box-updater))
+  )
   (:metaclass block-compile-class))
 
 ;;;; Our friend the turtle...

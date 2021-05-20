@@ -176,15 +176,21 @@
        (sprite-update-warning "Bad Pen Font,~D, changing to 4" arg)
        (values 4 t)))))
 
+;; This is the trigger actually used in the modified-trigger box in type-font in a sprite:
 (defsprite-trigger-function bu::update-type-font () (sprite turtle)
   (when (inside-sprite? sprite)
     (let* ((slot (slot-value turtle 'type-font))
            (box (box-interface-box slot)))
       (if (null box)
         (no-interface-box-error 'type-font turtle)
-        (multiple-value-bind (new-type-font fix?)
-                             (check-and-get-type-font-arg box)
-                             (set-type-font turtle new-type-font (not fix?))))))
+        (set-type-font turtle (font-from-box box))
+        ;; sgithens 2021-05-20 check-and-get-type-font-arg from above is still used in the
+        ;; slot binding for certain condiditions, this handling of legacy font integers needs
+        ;; to be moved somewhere and also used in font-from-box, set-type-font, etc.
+        ;; (multiple-value-bind (new-type-font fix?)
+        ;;                     (check-and-get-type-font-arg box)
+        ;;                     (set-type-font turtle new-type-font (not fix?)))
+)))
   boxer-eval::*novalue*)
 
 (add-sprite-update-function type-font bu::update-type-font)

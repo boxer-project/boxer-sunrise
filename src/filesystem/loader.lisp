@@ -1752,11 +1752,11 @@ should ignore it.")
                (%make-sv-box-interface (reallocate-pixel-color value) 'pen-color
                                        nil 'pen-color-box-updater)))
 	(type-font (setf (slot-value self 'type-font)
-			(%make-iv-box-interface
+			(%make-sv-box-interface
                          (if (>=& *version-number* 12)
                              (make-font-from-file-value value)
                              value)
-                         'type-font)))
+                         'type-font nil 'type-font-box-updater)))
 	;; compatibility blues...
 	(pen-font (setf (slot-value self 'type-font)
 			(%make-iv-box-interface value 'type-font)))
