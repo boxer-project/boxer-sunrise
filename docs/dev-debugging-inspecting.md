@@ -10,3 +10,19 @@ be accessed from a REPL.
 - boxer::*point* This contains a structure which includes the current row and screen-box of the cursor/point which can
   be inspected.
 
+## Restarting the boxer canvas after investigating an error
+
+After debugging/inspecting an issue stopped execution while running Boxer in Lispworks, the world canvas can
+be restarted at the REPL with:
+
+```
+(bw::boxer-process-top-level-fn bw::*boxer-pane*)
+```
+
+## Dumping the contents of a Box file
+
+Dumping the version and opcodes of a `.box` file can be done at the REPL with:
+
+```
+
+```
