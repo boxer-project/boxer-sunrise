@@ -1497,9 +1497,12 @@
                                                                               (timed-body (body-time)
                                                                                           (let ((vel (get-velocity)))
                                                                                             (setq vel (pixel-scroll-screen-box screen-box vel))
-                                                                                            (erase-scroll-buttons *last-scrolled-box* t)
-                                                                                            (scroll-move-contents screen-box vel))
-                                                                                          (draw-scroll-buttons screen-box t)
+                                                                                            ;; sgithens TODO 2021-04-21 Crash fix, these don't exist anymore.
+                                                                                            ;; Can we remove this entire timed-body section?
+                                                                                            ;; (erase-scroll-buttons *last-scrolled-box* t)
+                                                                                            ;; (scroll-move-contents screen-box vel)
+                                                                                            )
+                                                                                          ;; (draw-scroll-buttons screen-box t)
                                                                                           (force-graphics-output)))
                                                                             ;; now maybe move the point so it is still visible after scrolling...
                                                                             (let ((scroll-row (scroll-to-actual-row screen-box)))
