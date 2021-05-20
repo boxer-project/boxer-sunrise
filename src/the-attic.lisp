@@ -4822,6 +4822,62 @@ to the :TEXT-STRING method of boxes. "
 ;;;; FILE: region.lisp
 ;;;;
 
+;; sgithens TODO I don't believe this is ever called or referenced...
+(defun interval-update-repaint-current-rows (region &optional
+                                                      (window *boxer-pane*))
+  (cond ((not (row-connected? (bp-row (interval-start-bp region))))
+         ;; No BP's mean that there is not any screen structure.
+         ;; Probably a region got wiped
+         (dolist (blinker (interval-blinker-list region))
+           (remove-region-row-blinker blinker))
+         (setf (interval-blinker-list region) nil))
+        (t
+         (with-region-top-level-bps (region :start-bp-name region-start-bp
+                                            :stop-bp-name region-stop-bp)
+           ;; First we do "allocation" that is, make sure that there is a
+           ;; blinker for every screen row and vice versa.  Note that
+           ;; blinker list will be ordered from top to bottom
+           (setf (interval-blinker-list region)
+                 (update-row-blinker-list
+                  (interval-blinker-list region)
+                  (with-collection
+                    (do-region-rows (row region)
+                      (collect (current-screen-row row))))))
+           (if (interval-visibility region)
+               (make-interval-visible region)
+               (make-interval-invisible region))
+           (let ((starting-row (bp-row region-start-bp))
+                 (starting-cha-no (bp-cha-no region-start-bp))
+                 (stopping-row (bp-row region-stop-bp))
+                 (stopping-cha-no (bp-cha-no region-stop-bp)))
+             (dolist (blinker (interval-blinker-list region))
+               (let* ((blinker-row (region-row-blinker-uid blinker))
+                      (editor-row (screen-obj-actual-obj blinker-row)))
+                 (cond ((and (eq starting-row editor-row)
+                             (eq stopping-row editor-row))
+                        ;; the row is both the first and last one in a
+                        ;; region so we should trim both ends of it
+                        (both-ends-blinker-trim blinker starting-cha-no
+                                                stopping-cha-no))
+                       ((eq starting-row editor-row)
+                        ;; If the row is the first one in a region then it
+                        ;; needs to be trimmed to correspond to where
+                        ;; the BP is pointing
+                        (left-half-blinker-trim blinker starting-cha-no))
+                       ((eq stopping-row editor-row)
+                        ;; If the row is the last one in the region, then
+                        ;; it ALSO needs to be trimmed to correspond to
+                        ;; where the BP is pointing
+                        (right-half-blinker-trim blinker stopping-cha-no))
+                       (t
+                        ;; finally, take care of all the other rows
+                        (update-region-row-blinker blinker)))))))))
+  ;; @ this point all the blinkers are the correct size and inthe right place...
+  (drawing-on-window (window)
+    (dolist (blinker (interval-blinker-list region)) (draw-blinker blinker)))
+  #-opengl
+  (flush-port-buffer window))
+
 ;;; The fast track
 #|
 
