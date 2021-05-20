@@ -621,7 +621,8 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
       (pen-color (let ((nc (graphics-sheet-background (graphics-sheet box))))
                    (when (color? nc) (setf (box-interface-value slot) nc))))
       (sprite-size (setf (box-interface-value slot)
-                         (check-and-get-size-arg box)))
+                         (check-and-get-size-arg box))) ;; sgithens TODO boxer-bugs-49 I think this
+                                                        ;; needs to get fixed up...
       (home-position (setf (box-interface-value slot)
                            (check-and-get-number-args box)))
       ;; does NOT hack recursive eval since we are trying to phase that out
