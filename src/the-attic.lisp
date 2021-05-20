@@ -2205,6 +2205,20 @@
 ;;;; FILE: draw-low-opengl.lisp
 ;;;;
 
+(defmacro clip-x (scaled-x) `(max& %clip-lef (min& ,scaled-x %clip-rig)))
+(defmacro clip-y (scaled-y) `(max& %clip-top (min& ,scaled-y %clip-bot)))
+
+;; sgithens 2021-05-07 This doesn't appear to be used anywhere
+(defun %bitblt-in-screen (alu wid hei array fx fy tx ty)
+  (declare (ignore alu array))
+  (opengl::%pixblt-in-screen (round wid) (round hei)
+                             (round fx) (round fy) (round tx) (round ty)))
+
+
+;; sgithens 2021-05-07 This doesn't appear to be used anywhere
+;; &&&& stub
+(defun %bitblt-icon-to-screen (icon tx ty) (declare (ignore icon tx ty)) )
+
 ;; stub
 (defun sheet-font-map (w) (declare (ignore w)) nil)
 

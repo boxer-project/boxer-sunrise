@@ -578,8 +578,6 @@
 ;; NOTE: pixblt does not honor the graphics context mask so we have to
 ;; do the clipping in software
 
-(defmacro clip-x (scaled-x) `(max& %clip-lef (min& ,scaled-x %clip-rig)))
-(defmacro clip-y (scaled-y) `(max& %clip-top (min& ,scaled-y %clip-bot)))
 (defmacro sign-of-no (x) `(if (plusp& ,x) 1 -1))
 
 ;; bw::gl-draw-pixels (w h
@@ -596,16 +594,6 @@
                                ;; not quite right especially with a translated fy
                                (round (- (sheet-inside-height *boxer-pane*) (+ fy hei)))
                                (round wid) (round hei) tx ty))
-
-(defun %bitblt-in-screen (alu wid hei array fx fy tx ty)
-  (declare (ignore alu array))
-  (opengl::%pixblt-in-screen (round wid) (round hei)
-                             (round fx) (round fy) (round tx) (round ty)))
-
-
-;; &&&& stub
-(defun %bitblt-icon-to-screen (icon tx ty) (declare (ignore icon tx ty)) )
-
 
 ;;;; Boxer bitmaps
 
