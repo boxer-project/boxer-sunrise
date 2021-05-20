@@ -521,7 +521,10 @@
                                                    (slot-value self 'baseline) (max base (cha-ascent)))))
                          (setf (slot-value self 'x-got-clipped?) nxc)
                          (setf (slot-value self 'y-got-clipped?) nyc)
-                         (cond ((not (null nxc))
+                         (cond
+                           ;; sgithens crash fix. Sometimes we get here and there is no screen-box on the screen-row
+                           ((null (screen-box self)))
+                           ((not (null nxc))
                                 ;; if the row is clipped, update the max-scroll-wid slot
                                 (update-scroll-wid (screen-box self) total-wid))
                            ((not (zerop (slot-value (screen-box self) 'scroll-x-offset)))
