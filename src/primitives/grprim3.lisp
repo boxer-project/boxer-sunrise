@@ -421,39 +421,6 @@ Modification History (most recent at top)
 		       (sv-append new-gl command-copy)))))))))
     newvc))
 
-#-opengl
-(boxer-eval::defboxer-primitive bu::freeze ()
-  (let ((gb (get-relevant-graphics-box)))
-    (if (or (null gb) (eq gb :no-graphics))
-	(boxer-eval::primitive-signal-error :graphics "No graphics to FREEZE")
-	(let* ((graphics-sheet
-		(if (box? gb)
-		    (graphics-info gb)
-		    (graphics-info-graphics-sheet (vc-graphics gb))))
-	       (wid (graphics-sheet-draw-wid graphics-sheet))
-	       (hei (graphics-sheet-draw-hei graphics-sheet))
-	       (display-list (graphics-sheet-graphics-list graphics-sheet))
-	       (bitmap (graphics-sheet-bit-array graphics-sheet)))
-	  (when (null bitmap)
-	    ;; make sure there IS a backing store
-	    (let ((new (make-offscreen-bitmap *boxer-pane* wid hei)))
-	      ;; clear the bitmap if it's a new one
-	      (drawing-on-bitmap (new)
-	        (with-pen-color ((or (graphics-sheet-background graphics-sheet)
-				     *background-color*))
-		  (draw-rectangle alu-seta wid hei 0 0))
-		(setf (graphics-sheet-bit-array graphics-sheet) new))))
-	  ;; Now play the list into the backing store
-	  (drawing-on-bitmap ((graphics-sheet-bit-array graphics-sheet))
-	     (with-graphics-vars-bound-internal graphics-sheet
-	       (playback-graphics-list-internal display-list)))
-	  ;; now clear the display list
-	  (clear-graphics-list display-list)
-          ;; mark the dirty? flag
-          (setf (graphics-sheet-bit-array-dirty? graphics-sheet) t)
-	  (modified-graphics gb)
-	  boxer-eval::*novalue*))))
-
 
 ;;; this should play the GB's graphics list into an auxiliary OpenGL buffer and then
 ;;; grab the pixels from it instead of using the main screen...
