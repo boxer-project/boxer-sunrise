@@ -277,8 +277,27 @@
 
 (defvar *last-repaint-duration* 0)
 
+;;; Things for measuring repaint times
+(defvar *last-framerate-time* (get-universal-time))
+(defvar *number-of-frames* 0)
+(defvar *current-framerate* 0)
+
+(defun update-framerate ()
+  "Register a repaint to update the statistics for the repaint rate."
+  ;; https://www.opengl-tutorial.org/miscellaneous/an-fps-counter
+  (let* ((current-time (get-universal-time))
+        (diff (- current-time *last-framerate-time*)))
+    (setq *number-of-frames* (1+ *number-of-frames*))
+    (when (>= diff 1)
+      (setq *current-framerate* (/ 1000.0 *number-of-frames*))
+      (setq *number-of-frames* 0)
+      (setq *last-framerate-time* (get-universal-time)))
+  ))
+
 ;;; stub for double buffering window systems
 (defun flush-port-buffer (&optional (pane *boxer-pane*))
+  (update-framerate)
+
   (opengl::rendering-on (pane) (opengl::gl-flush))
   (opengl::swap-buffers pane))
 

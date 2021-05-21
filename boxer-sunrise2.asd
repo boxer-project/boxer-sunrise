@@ -91,6 +91,7 @@
                  ;; "The redisplay for the Editor"
                  (:file "redisplay/disply")
                  (:file "redisplay/lodisp")
+                 (:file "redisplay/dev-overlay")
                  (:file "redisplay/repaint")
                  (:file "redisplay/new-borders")
 

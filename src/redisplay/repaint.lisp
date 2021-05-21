@@ -984,7 +984,7 @@
 
 
 
-(defun repaint-window (&OPTIONAL (WINDOW *BOXER-PANE*) (flush-buffer? t))
+(defun repaint-window (&OPTIONAL (WINDOW *BOXER-PANE*) (flush-buffer? t) &KEY (process-state-label "stopped"))
   (REDISPLAYING-WINDOW (WINDOW)
                        (LET ((*COMPLETE-REDISPLAY-IN-PROGRESS?*
                               (OR *COMPLETE-REDISPLAY-IN-PROGRESS?*
@@ -994,6 +994,7 @@
                             (clear-window window)
                             (repaint-guts)
                             (repaint-mouse-docs)
+                            (repaint-dev-overlay process-state-label)
                             (when flush-buffer? (flush-port-buffer window)))))
 
 ;;; called also by printing routines.
@@ -1036,6 +1037,7 @@
        ;; to 'scroll-x-changed TAG
        (unless just-windows?
          (repaint-cursor *point* nil)))
+     (repaint-dev-overlay)
      ;; swap buffers here, after all drawing is complete
      (flush-port-buffer *boxer-pane*))))
 
@@ -1201,7 +1203,7 @@
          (process-editor-mutation-queue-within-eval)
          (unless (null bw::*suppressed-actions*)
            (funcall (pop bw::*suppressed-actions*)))
-         (repaint-window *boxer-pane*)
+         (repaint-window *boxer-pane* t :process-state-label "eval")
          (setq *last-repaint-duration* (- (get-internal-real-time) now)))))))
 
 
