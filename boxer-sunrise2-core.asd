@@ -8,7 +8,7 @@
 |#
 
 (defsystem "boxer-sunrise2-core"
-  :version "3.4.3"
+  :version "3.4.4"
   :author "Steven Githens"
   :license ""
   :depends-on ("uiop")
@@ -26,9 +26,13 @@
                  (:file "disdcl/disdcl")
 
                  ;; DRAW
+                 #-lispworks (:file "boxwin/libre/opengl")
+                 (:file "boxwin/lw-capi/platform-utils")
                  ;;   OPEN / CANVAS Specific items
-                 (:file "draw/draw-low-stubs")
-
+                ;;  (:file "draw/draw-low-stubs")
+                 (:file "draw/opengl-utils")
+                 (:file "draw/freetype-fonts")
+                 (:file "draw/draw-low-opengl")
                  (:file "draw/draw-high-common")
                  (:file "draw/draw-high-hardware-clip")
 
@@ -52,6 +56,35 @@
 
                  ;; EVALPRIMS
                  (:file "evalprims/prims")
+
+                 ;; PROCESSES
+                 (:file "processes/process")
+
+                 ;; BOXWIN
+                 ;; boxwin-opengl....
+                 ;; skip hardcopy print support for windows.
+                ;;  (:file "boxwin/mousedoc") ;; package 'mp' does not exist
+                 (:file "boxwin/boxapp-data")
+
+                 ;; BOXNET
+                 (:file "boxnet/boxnet")
+
+                 ;; EDITOR
+                 (:file "editor/editor")
+
+                 ;; REDISPLAY
+                 (:file "redisplay/disply")
+                 (:file "redisplay/lodisp")
+                ;;  (:file "redisplay/repaint") requires CAPI...s
+                ;;  (:file "redisplay/new-borders")
+
+                 ;; GRFDEFS
+                 (:file "filesystem/fildfs")
+                 (:file "grfdefs/grobjs")
+                 (:file "grfdefs/grfdfs")
+                 (:file "grfdefs/gdispl")
+                ;; graphics-clear
+
                 )))
   :description ""
   :long-description
