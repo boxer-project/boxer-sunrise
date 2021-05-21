@@ -726,19 +726,7 @@ Modification History (most recent at top)
 
 ;;;; variables
 
-(DEFVAR *FUNNY-FUNCTION-ARGLIST-TABLE* (MAKE-HASH-TABLE))
-
 (DEFVAR *SYMBOLS-FOR-INPUT-LINE* '(BU::INPUT BU::INPUTS))
-
-(DEFVAR *EVALUATOR-COPYING-ON?* T
-  "A Flag which controls the automatic copying of objects in the evaluator.  ")
-
-(DEFVAR *EVALUATOR-COPYING-FUNCTION* 'SHALLOW-COPY-FOR-EVALUATOR)
-
-(DEFVAR *MULTIPLE-ROW-TOP-LEVEL-UNBOX-ACTION* :FLATTEN
-  "What happens when we unbox a box with multiple rows at top level. Valid
-   values are :ERROR (signal an error), :TRUNCATE (use only the top row)
-   and :FLATTEN (use each row sequentially). ")
 
 (DEFVAR *CURRENT-EVALUATION-START-TIME* 0
   "Global time that the current Eval was initiated.  Used by the VC
@@ -746,12 +734,6 @@ Modification History (most recent at top)
 
 (DEFVAR *MUTATE-EDITOR-BOXES-DURING-EVAL?* NIL
   "Should Editor boxes be mutated in the middle of an evaluation ? ")
-
-(DEFVAR *TRIM-EMPTY-ROWS?* T
-  "Should empty rows be removed from a box BEFORE it is returned ?")
-
-
-
 
 ;;;; Accessor and Mutator Substs
 

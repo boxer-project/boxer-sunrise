@@ -5232,3 +5232,18 @@ to the :TEXT-STRING method of boxes. "
 (DEFVAR *EVAL-IN-PROGRESS* NIL
   "Bound by top level eval functions and used by the :MODIFIED message to
    decide when to flush old eval structure. ")
+
+(DEFVAR *FUNNY-FUNCTION-ARGLIST-TABLE* (MAKE-HASH-TABLE))
+
+(DEFVAR *EVALUATOR-COPYING-ON?* T
+  "A Flag which controls the automatic copying of objects in the evaluator.  ")
+
+(DEFVAR *EVALUATOR-COPYING-FUNCTION* 'SHALLOW-COPY-FOR-EVALUATOR)
+
+(DEFVAR *MULTIPLE-ROW-TOP-LEVEL-UNBOX-ACTION* :FLATTEN
+  "What happens when we unbox a box with multiple rows at top level. Valid
+   values are :ERROR (signal an error), :TRUNCATE (use only the top row)
+   and :FLATTEN (use each row sequentially). ")
+
+(DEFVAR *TRIM-EMPTY-ROWS?* T
+  "Should empty rows be removed from a box BEFORE it is returned ?")
