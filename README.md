@@ -25,11 +25,39 @@ as node and a possible server side Boxer).
 - Quicklisp loaded
   Quicklisp should be installed and available. The personal version of lispworks may require you to load it
   manually on each startup.
+  ```lisp
+  ; windows
+  (load "Z:/quicklisp/setup.lisp")
+  ```
 - Freetype2 Dev libraries
   The freetype2 development headers and libraries need to be installed. On MacOS this can be installed with
   homebrew as `brew install freetype2`
+- Currently, Boxer (and lispworks in general) depends on some fixes we've made to `cl-freetype2`.
+  Clone the below `lispworks-fixup` branch and place it in your `quicklisp/local-projects` directory for it to
+  be used rathan the current version quicklisp will pull down automatically.
+  https://github.com/sgithens/cl-freetype2/tree/lispworks-fixup
 
-With the above installed and a lispworks Listener open, the following will compile and startup Boxer (adjusting the
+##### Dependencies on MacOS
+
+##### Dependencies on Windows 10
+
+There are a number of ways to install dependencies on Windows, here we will document one possible setup using msys2.
+
+- Install MSYS2 64-bit from https://www.msys2.org/
+
+- From msys2 install freetype2
+
+  ```
+  pacman -S mingw-w64-x86_64-toolchain
+  pacman -S mingw-w64-x86_64-freetype
+  ```
+
+- Add `C:\msys64\mingw64\bin` to the windows `PATH` environment variable.
+
+
+#### Running Boxer
+
+With the above dependencies installed and a lispworks Listener open, the following will compile and startup Boxer (adjusting the
 path accordingly to your system.)
 
 ```lisp
