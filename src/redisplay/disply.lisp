@@ -369,6 +369,9 @@
 (defun set-screen-obj-offsets (screen-obj new-x-offset new-y-offset)
   (setf (screen-obj-x-offset screen-obj) new-x-offset)
   (setf (screen-obj-y-offset screen-obj) new-y-offset))
+  ;; sgithens TODO debugging boxer-sunrise-22
+  ;; (setf (screen-obj-x-offset screen-obj) (floor new-x-offset))
+  ;; (setf (screen-obj-y-offset screen-obj) (floor new-y-offset)))
 
 (defun screen-obj-size (screen-obj)
   (values (screen-obj-wid screen-obj)

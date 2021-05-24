@@ -902,7 +902,9 @@ Modification History (most recent at the top)
                                           (incf idx)
                                           (list arg `(svref& .graphics-command. ,idx)))
                                 args))
-                  (declare (type boxer-float . ,',(numeric-declaration-args)))
+                  ;; sgithens TODO boxer-sunrise-22 Currently looking in to some issues where this comes
+                  ;; in as a fixnum rather than a float.
+                  ;; (declare (type boxer-float . ,',(numeric-declaration-args)))
                   ;; prevent bound but never used errors
                   (progn . ,',args)
                   ;; define local mutators...

@@ -250,8 +250,8 @@
             (+ *border-outside-space* (border-name-protrusion name) ; top
                border-thickness *border-inside-space*)
             vert-width ; right
-            (+ *border-outside-space* (border-label-protrusion type)
-               border-thickness *border-inside-space*))))
+            (floor (+ *border-outside-space* (border-label-protrusion type) ;; sgithens TODO boxer-sunrise-22 debugging fixnum issues
+               border-thickness *border-inside-space*)))))
 
 (defun port-borders-widths (screen-box)
   (if (screen-obj-actual-obj screen-box)
