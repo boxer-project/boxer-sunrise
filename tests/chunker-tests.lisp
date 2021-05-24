@@ -3,6 +3,9 @@
 (plan nil)
 
 (defparameter *empty-box* (make-instance 'boxer::data-box))
+(let ((row (make-instance 'boxer::row)))
+  (setf (boxer::chas-array row) (boxer::make-chas-array))
+  (boxer::set-first-inferior-row *empty-box* row))
 
 ;; Each entry in this list will contain an associative list with the following keys:
 ;;  name - Name of test
@@ -138,9 +141,9 @@
                         #(BOXER-EVAL::SPECIAL-EVAL-TOKEN BOXER-USER::EVAL-IT BOXER-USER::FOO))))
    (:input . "label : @! foo "))
 
-  ;;  ((:name . "Beginning Label, box element, no spaces")
-  ;;  (:expected-eval . ())
-  ;;  (:input . (" Foo:" :empty-box)))
+   ((:name . "Beginning Label, box element, no spaces")
+   (:expected-eval . ())
+   (:input . (:empty-box)))
   ;; ((:name . )
   ;;  (:expected-eval . )
   ;;  (:input . ))
