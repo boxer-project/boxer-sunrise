@@ -1678,14 +1678,17 @@ Modification History (most recent at the top)
          ;; compatibility with old files...
          (make-boxer-font
           (ecase file-font
-                 (0 '("Courier" 10))
-                 (1 '("Courier" 10 :bold))
-                 (2 '("Courier" 10 :italic))
-                 (3 '("Courier" 10 :bold :italic))
-                 (4 '("Geneva" 7))
-                 (5 '("Geneva" 7 :bold))
-                 (6 '("Geneva" 7 :italic))
-                 (7 '("Geneva" 7 :bold :italic)))))
+                 (0 '("Courier New" 10))
+                 (1 '("Courier New" 10 :bold))
+                 (2 '("Courier New" 10 :italic))
+                 (3 '("Courier New" 10 :bold :italic))
+                 (4 '("Arial" 10))
+                 (5 '("Arial" 10 :bold))
+                 (6 '("Arial" 10 :italic))
+                 (7 '("Arial" 10 :bold :italic)))))
+    ((typep file-font 'fixnum)
+      ;; If the number isn't between 1 and 7 we'll return this
+      '("Arial" 10 :bold))
     (t (make-boxer-font file-font))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
