@@ -756,19 +756,19 @@
                     (opengl::gl-blend-func opengl::*gl-src-alpha* opengl::*gl-one-minus-src-alpha*)
                     (opengl::gl-hint opengl::*gl-line-smooth-hint* opengl::*gl-nicest*))
       ;; (boxer::fill-bootstrapped-font-caches)
-      (let ((arial-9  (boxer::make-boxer-font '("Arial" 9)))
-            (arial-12 (boxer::make-boxer-font '("Arial" 12)))
-            (arial-12-bold (boxer::make-boxer-font '("Arial" 12 :bold))))
-        (setq  boxer::*normal-font-no*           arial-12
-               boxer::*default-font*             arial-12
-               boxer::*box-border-label-font-no* arial-9
-               boxer::*border-label-font*        arial-9
-               boxer::*box-border-name-font-no*  arial-12-bold
-               boxer::*border-name-font*         arial-12-bold
-               boxer::*sprite-type-font-no*      arial-12-bold
-               boxer::*initial-graphics-state-current-font-no* arial-12-bold
-               boxer::*graphics-state-current-font-no* arial-12-bold
-               boxer::*boxtop-text-font*         arial-12-bold
+      (let ((arial-12 (boxer::make-boxer-font '("Arial" 12)))
+            (arial-16 (boxer::make-boxer-font '("Arial" 16)))
+            (arial-16-bold (boxer::make-boxer-font '("Arial" 16 :bold))))
+        (setq  boxer::*normal-font-no*           arial-16
+               boxer::*default-font*             arial-16
+               boxer::*box-border-label-font-no* arial-12
+               boxer::*border-label-font*        arial-12
+               boxer::*box-border-name-font-no*  arial-16-bold
+               boxer::*border-name-font*         arial-16-bold
+               boxer::*sprite-type-font-no*      arial-16-bold
+               boxer::*initial-graphics-state-current-font-no* arial-16-bold
+               boxer::*graphics-state-current-font-no* arial-16-bold
+               boxer::*boxtop-text-font*         arial-16-bold
         ))
       ;; #+freetype-fonts
       (boxer::load-freetype-faces)
