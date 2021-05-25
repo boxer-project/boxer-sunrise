@@ -17,15 +17,19 @@
 ;;;;        various bits of helpful information.
 (in-package :boxer)
 
+(defvar *show-dev-overlay* nil
+  "Whether or not paint the development and debug overlay in the corner.")
+
 (defun repaint-dev-overlay (&optional (process-state ""))
   "Debug information overlay on top of drawing canvas for things like framerate and zoom level"
-  (drawing-on-window (*boxer-pane*)
-    (let* ((code-font (make-boxer-font '("Courier New" 14)))
-          (maxish-width (string-wid code-font "Repaint: 1000.00ms/fr"))
-          (line-height (string-hei code-font))
-          (x (- (slot-value *boxer-pane* 'graphics-ports::width) (+ maxish-width 40)))
-          (y (- (slot-value *boxer-pane* 'graphics-ports::height) 120)))
-     (with-pen-color (*blue*)
-       (draw-string alu-seta code-font (format nil "Repaint:   ~$ms/fr" *current-framerate*) x 30)
-       (draw-string alu-seta code-font (format nil "Font Zoom: ~A%" (* *font-size-baseline* 100)) x (+ 30 line-height))
-       (draw-string alu-seta code-font (format nil "Process:   ~A" process-state) x (+ 30 (* 2 line-height)))))))
+  (if *show-dev-overlay*
+    (drawing-on-window (*boxer-pane*)
+      (let* ((code-font (make-boxer-font '("Courier New" 14)))
+            (maxish-width (string-wid code-font "Repaint: 1000.00ms/fr"))
+            (line-height (string-hei code-font))
+            (x (- (slot-value *boxer-pane* 'graphics-ports::width) (+ maxish-width 40)))
+            (y (- (slot-value *boxer-pane* 'graphics-ports::height) 120)))
+      (with-pen-color (*blue*)
+        (draw-string alu-seta code-font (format nil "Repaint:   ~$ms/fr" *current-framerate*) x 30)
+        (draw-string alu-seta code-font (format nil "Font Zoom: ~A%" (* *font-size-baseline* 100)) x (+ 30 line-height))
+        (draw-string alu-seta code-font (format nil "Process:   ~A" process-state) x (+ 30 (* 2 line-height))))))))
