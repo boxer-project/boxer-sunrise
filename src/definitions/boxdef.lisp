@@ -52,9 +52,14 @@ Modification History (most recent at top)
 
 (defun boxer::valid-boxer-license? () t)
 
+(defvar *boxer-version* "3.4.5")
+
 (defun boxer-component-version ()
   "Returns the current semver version of boxer based on it's asdf configuration."
-  (slot-value (asdf/system:find-system :boxer-sunrise2) 'asdf/component:version))
+  ;; Oddly this value seems to get cached sometimes in asdf such that it sometimes returns the wrong version
+  ;; if there are multiple boxers on the system.
+  ;; (slot-value (asdf/system:find-system :boxer-sunrise2) 'asdf/component:version)
+  *boxer-version*)
 
 (defun system-version ()
   "Returns a version string for boxer that looks like:
