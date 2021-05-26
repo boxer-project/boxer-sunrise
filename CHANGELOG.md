@@ -1,9 +1,99 @@
 # Change Log
 
-## 3.4.4 2020-03-12
+## 3.4.5 2021-05-25
+
+- boxer-bugs-38 Updating default font sizes to be closer to Boxer pre 2014.
+
+- boxer-sunrise-49 Fixing up type-font behavior
+  - Moving back to MCL era of having type-font box in sprites contain the actual human readable
+    fontspec rather than an internal integer.
+  - Transitioning type-font from an invalid-value boxer-interface static variable to a special-value
+    boxer-interface slot with a type-font-box-updater update function
+  - Fixed update-type-font trigger to behave the same as if you were calling set-type-font
+  - Adding an extra check for loading in font information from saved box files.
+
+- boxer-sunrise-22 In-progress comments and work arounds.
+
+- boxer-sunrise-26 Improved gesture scrolling
+  - Looking possibly all the way to the *outermost-screen-box* now for a box to scroll
+  - Going outward if current box does not have scrollbars
+  - Going outward if mouse is over a :shrunk :supershrunk or :boxtop rendered box.
+
+- boxer-sunrise-25 Preparatory HUD information for perf and rendering fixups.
+
+- boxer-bugs-55
+  - Fixing namespace on gl-vectors usage
+
+- boxer-bugs-52 Initial fix-up of launching xref links with default Finder actions.
+
+- Binding accel-a, accel-b, accel-i to Select Box (All), Toggle Bold, Toggle Italics
+
+- boxer-sunrise-21 Major set of work reworking how font-ids are stored and work.
+  - Removes the bit-field implementation and replaces that with a simple list of
+    opengl-fonts, and some simple operators over that list.
+  - Removes any limitations on having different font sizes, faces, etc.
+  - Cleanup of outdated font comments
+  - Renaming boxer-font params to font-no, removing unused font-stylep function.
+  - Fixing font lookup on boxer::menu-item
+    - Currenty the popup menu items are being created before the *default-font*
+      is bound at startup.
+    - Added an accessor for slot-value 'font to lookup the *default-font* in case
+      it was nil during creation.
+  - Fixing up font-style, font-size, and font-name functions
+  - Fixing up font zooming to use a percentage as the multiplier, rather than a sliding list of
+    predefined font sizes.
+  - Updating the font bigger/smaller menus to incremenet/decrement in .25 chunks with a minimum
+    of 0.5 zoom and a maximum of 4x zoom.
+  - Updating freetype and opengl rendering methods to take an optional font-zoom parameter.
+  - Removing %font-size-idx as font-size does the same thing
+  - Removing relative saving var from dumper as all fonts are actual sizes now.
+  - Removing never used drawing-font-map, sheet-font-map
+  - Among other leftover debt bits from fonts.lisp
+  - Adding back size translations for historic relative font size saves.
+
+- boxer-sunrise-20
+  - Moving graphics Macros definitions above their first usage.
+  - Adding define-constant macro to work around oddities in CL defconstant behavior
+  - Internal namespace accessors on opengl items and removing use of lispworks color module.
+  - More seperation of platform specific libraries
+
+- boxer-sunrise-18
+  - Swapping out lw color module for regular vectors
+  - Moving clipboard functionality (including last usage of color: ) to a lw-capi specific folder.
+  - Removing last used graphics-port references from draw-low-opengl and bitmap functions
+
+- crash-fixes
+  - Disabling printing right now since it's broken, and hangs the system
+  - Some undefined functions were getting called causing crashes.
+  - Adding an extra null check
+  - Sometimes we get here and there is no screen-box on the screen-row
+
+- tests In-progress modernizing existing chunker tests to run as real unit tests and add more
+  for pipes and other characters.
+
+- re-org
+  - Moving all the primitives into the unified primitives directory.
+  - Moving (re)display definitions into the common definitions folder.
+  - Starting to co-locate parts of the evaluator.
+  - Merging evaldefs folder with evaluator
+  - Merging evalvars folder with evaluator folder
+  - Moving process.lisp to evaluator folder
+
+- documentation Starting to fill out various README's and information on bits of the system.
+
+- Continued formatting fixes and improvements across source.
+
+- the-attic
+  - Removed old `pkg.lisp`, `update-blinker-function`, more `#-opengl` code, `window-depth` function,
+    old `trig` definitions, `#+3600` code, old `*uc-copyright-free*` decprecated features, `com-fat`,
+    `com-nutri-system`, old SGI versions of drawing methods, old `define-eval-var` forms, unused variables
+    from `boxdef` and `vrtdef`, unused `clip-x` and `clip-y` functions,
+    `interval-update-repaint-current-rows`
+
+## 3.4.4 2021-03-12
 
 - Installer updates and expansions
-  - This release we are including an experimental windows binary which requires installing the 
+  - This release we are including an experimental windows binary which requires installing the
     "Microsoft Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019". Future releases
     will properly include these in the installer itself.
     https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0
@@ -66,7 +156,7 @@
   - Moving lots of pre-opengl drawing routines from `new-borders.lisp`, `disply.lisp`, `popup.lisp` to the attic.
   - Lots of other minor removals from deprecated platforms.
 
-## 3.4.3 2020-01-27
+## 3.4.3 2021-01-27
 
 - boxer-sunrise-3 First set of work on JSON export format
 
