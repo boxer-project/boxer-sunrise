@@ -99,4 +99,6 @@ You will now find a double-clickable MacOS application in `boxer-sunrise/data/bo
 * Gregor Kiczales
 * Edward H. Lay
 * Leigh Klotz
+* Jeremy Roschelle
+* Maurice Anchor
 * Steven W. Githens
