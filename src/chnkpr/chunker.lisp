@@ -100,40 +100,8 @@
   '(#\space #\newline #\tab #\page #\linefeed))
 
 (defvar *implementation-dependent-largest-reasonable-char-code*
-  #+symbolics 256 ;; ?
-  #-symbolics (min 256 char-code-limit)
-  )
-
-;; these next to vars are obsoleted by the above
-
-(defvar *non-alphanumeric-characters*
-  '(#\< #\> #\, #\. #\\ #\/ #\? #\; #\' #\" #\( #\)
-    #\[ #\] #\# #\$ #\% #\& #\* #\- #\_ #\+ #\=
-    #\~ #\` #\{ #\}))
-
-(defvar *extended-characters*
-  #+3600 `(#\Center-Dot #\Down-Arrow #\Alpha #\Beta #\And-sign
-                        #\Not-sign #\Epsilon #\Pi #\Lambda #\Gamma
-                        #\Delta #\Up-Arrow #\Plus-Minus #\Circle-Plus
-                        #\Infinity #\Partial-Delta #\Left-Horseshoe
-                        #\Right-Horseshoe #\Up-Horseshoe #\Down-Horseshoe
-                        #\Universal-Quantifier #\Existential-Quantifier
-                        #\Circle-X #\Double-Arrow #\Left-Arrow
-                        #\Right-Arrow #\Not-Equals #\Lozenge
-                        #\Less-Or-Equal #\Greater-Or-Equal
-                        #\Equivalence #\Or-sign)
-  #+TI    `(#\Center-Dot #\Down-Arrow #\Alpha #\Beta #\And-sign
-                         #\Not-sign #\Epsilon #\Pi #\Lambda #\Gamma
-                         #\Delta #\Up-Arrow #\Plus-Minus #\Circle-Plus
-                         #\Infinity #\Partial-Delta #\Left-Horseshoe
-                         #\Right-Horseshoe #\Up-Horseshoe
-                         #\Down-Horseshoe #\Universal-Quantifier
-                         #\Existential-Quantifier #\Circle-X
-                         #\Double-Arrow #\Left-Arrow #\Right-Arrow
-                         #\Not-Equals #\Lozenge #\Less-Or-Equal
-                         #\Greater-Or-Equal #\Equivalence #\Or-sign)
-  #+(or lwwin mcl SUN)   `()
-  "Non ASCII characters specific to particular machine keyboards." )
+  (min 256 char-code-limit)
+)
 
 (defvar *initial-unbox-char*   #\@)
 (defvar *initial-eval-char*    #\!)
@@ -190,26 +158,6 @@
 
 ;; AppGen lossage with complex form of defsetf...
 
-#+mcl
-(defun %set-chunking-syntax (char chunking-table ns)
-  (let ((defined-handler
-          (cdr (fast-assq ns (chunk-table-handler-translation-alist
-                              chunking-table)))))
-    (cond ((and (null defined-handler)
-                (not (old-functionp ns)))
-           (error "~A is not a valid syntax" ns))
-          (t
-           (setf (svref& (chunk-table-handlers chunking-table)
-                         (char-code char))
-                 (if (null defined-handler)
-                     ns
-                     defined-handler)))))
-  ns)
-
-#+mcl
-(defsetf get-chunking-syntax %set-chunking-syntax)
-
-#-mcl
 (defsetf get-chunking-syntax (char &optional
                                      (chunking-table *chunking-syntax-table*))
     (ns)
