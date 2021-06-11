@@ -490,8 +490,7 @@ Modification History (most recent at top)
         (boxer::save-modified-box-dialog boxer::*initial-box*
                                   :prompt-start "The World box,"
                                   :no-zoom-offered? t :no-unstore-offered? t))))
-    #-lispworks6 (lispworks::quit)
-    #+lispworks6 (capi:destroy interface)
+    (lispworks::quit)
   boxer-eval::*novalue*)
 
 (boxer::defboxer-command com-LW-quit ()
