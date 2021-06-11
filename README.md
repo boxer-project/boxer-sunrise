@@ -15,6 +15,12 @@ Work is in progress to run Boxer against fully open source versions of common li
 Additionally the ability to run the core boxer evaluator separately to integrate with new web ecosystems (such
 as node and a possible server side Boxer).
 
+### Release Downloads
+
+Packaged binary releases can be found on the Github Releases page:
+
+https://github.com/boxer-project/boxer-sunrise/releases
+
 ### Running the unit tests and UI in development
 
 #### Dependencies
