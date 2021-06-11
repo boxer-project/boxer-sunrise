@@ -398,7 +398,6 @@ If the box was not entered with EDIT-BOX, just insert a return."
 
 (defun handle-input-epilogue-handler ()
   (boxer::process-editor-mutation-queue-within-eval)
-  (boxer::redisplay)
   nil)
 
 ;;; very much like TELL
