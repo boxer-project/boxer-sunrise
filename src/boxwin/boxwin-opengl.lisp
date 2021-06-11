@@ -823,11 +823,6 @@
                                         *default-starting-box-file*)
                                        T)))))))
 
-(defun start-box-copyright-warning ()
-  (boxer::make-box '(("Warning: start.box file detected")
-                     ("The name of the initial box file has been changed")
-                     ("to boxer-init.box"))))
-
 
 ;;; We would like to make the editor somewhat reentrant for things like
 ;;; recursive edit levels this allows us to do things like call the
@@ -1821,11 +1816,6 @@
   blinker
   `(progn . ,body))
 
-;; this looks unused ?
-(defmacro with-open-blinkers (blinker-list &body body)
-  blinker-list
-  `(progn . ,body))
-
 (defun set-cursor-visibility (blinker new-vis)
   (setf (blinker-visibility blinker) new-vis))
 
@@ -1851,20 +1841,6 @@
 ;;;
 (defun window-system-dependent-redraw-status-line (string)
   (setf (capi::title-pane-text *name-pane*) string))
-
-
-;;; following copied from boxwin-clx.
-
-(defun redisplayable-window? (x)
-  (member x *redisplayable-windows*))
-
-(defun kill-redisplayable-window (window)
-;  (Destroy-Window window)
-  (setq *redisplayable-windows* (delete window *redisplayable-windows*))
-  (let ((pair (assoc window *redisplayable-window-outermost-box-alist*)))
-    (unless (null pair)
-      (setq *redisplayable-window-outermost-box-alist*
-      (delete pair *redisplayable-window-outermost-box-alist*)))))
 
 (defun outermost-screen-box (&optional (window *boxer-pane*))
   (cdr (assoc window *redisplayable-window-outermost-box-alist*)))

@@ -130,6 +130,28 @@
       (values bim wid hei))))
 |#
 
+(defun start-box-copyright-warning ()
+  (boxer::make-box '(("Warning: start.box file detected")
+                     ("The name of the initial box file has been changed")
+                     ("to boxer-init.box"))))
+
+(defmacro with-open-blinkers (blinker-list &body body)
+  blinker-list
+  `(progn . ,body))
+
+;;; following copied from boxwin-clx.
+
+(defun redisplayable-window? (x)
+  (member x *redisplayable-windows*))
+
+(defun kill-redisplayable-window (window)
+;  (Destroy-Window window)
+  (setq *redisplayable-windows* (delete window *redisplayable-windows*))
+  (let ((pair (assoc window *redisplayable-window-outermost-box-alist*)))
+    (unless (null pair)
+      (setq *redisplayable-window-outermost-box-alist*
+      (delete pair *redisplayable-window-outermost-box-alist*)))))
+
 ;;;;
 ;;;; FILE: capogi.lisp
 ;;;;
