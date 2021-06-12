@@ -874,6 +874,7 @@
           (cond ((null ev) (return nil))
                 ((mouse-event? ev) (return ev))
                 ((key-event?   ev) (return ev))
+                ((system:gesture-spec-p ev) (return ev))
                 (t (pop *boxer-eval-queue*))))))
 
 ;;; Mouse handling, mostly copied from clx
@@ -1423,13 +1424,19 @@
   (declare (ignore window))
   (let ((*literal-input?* t))
     (mp::process-wait "Input" #'(lambda () (not (null *boxer-eval-queue*)))))
+
   (loop (let ((ev (pop *boxer-eval-queue*)))
-          (when (or (key-event? ev) (mouse-event? ev))
+          (when (or (key-event? ev) (mouse-event? ev) (system:gesture-spec-p ev))
             (return ev)))))
 
 (defun get-character-input (window &key (plain-char-wanted? nil))
   (let ((input (get-boxer-input)))
-    (cond ((key-event? input)
+    (cond ((system:gesture-spec-p input)
+           (let* ((data (sys::gesture-spec-data input))
+                  (charcode (input-gesture->char-code input))
+                  (charbits (convert-gesture-spec-modifier input)))
+              (values charcode charbits)))
+          ((key-event? input)
            (if (and plain-char-wanted?
                     (or (not (zerop (input-bits input)))
                         #+win32
