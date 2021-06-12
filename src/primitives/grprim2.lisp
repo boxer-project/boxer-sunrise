@@ -439,7 +439,10 @@
                                 (> (abs (- new-y turtle-y))
                                    *follow-mouse-movement-threshold*))
                         (with-sprites-hidden t (move-to turtle new-x new-y))
-                        (repaint)))))
+                        ;; sgithens 2021-06-12 Here we use repaint-internal rather than repaint, which will call
+                        ;; repaint-internal using apply-in-pane-process, but as the mouse is dragging we are already
+                        ;; in that process and can just repaint-internal.
+                        (repaint-internal)))))
               (when moved?
                 (with-sprites-hidden t
                   (move-to turtle
