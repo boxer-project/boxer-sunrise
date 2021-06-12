@@ -1099,6 +1099,151 @@
 |#
 
 ;;;;
+;;;; FILE: comsa.lisp
+;;;;
+
+#| ;; old version
+(defboxer-command filling-com-space ()
+  "check margin, com-space, com-return, or format-line"
+  (set-a-fill-margin (point-box))
+  (if (equal (/ (auto-margin) (cha-wid #\a)) (bp-cha-no *point*))
+      (com-return)
+      (if (> (/ (auto-margin) (cha-wid #\a)) (bp-cha-no *point*))
+          (nonfilling-com-space)
+          (format-line))))
+|#
+
+;; it doesn't look like anyone uses this AND it conflicts with the name of a method
+;(defun delete-cha (bp &optional (force-bp-type nil))
+;  (action-at-bp-internal
+;    (let* ((row (bp-row bp))
+;	   (row-length-in-chas (length-in-chas row))
+;	   (cha-no (bp-cha-no bp)))
+;      (cond ((< cha-no row-length-in-chas)
+;	     (delete-cha-at-cha-no row cha-no))
+;	    ((next-row row)
+;	     (let* ((box (bp-box bp))
+;		    (row-row-no (row-row-no box row))
+;		    (row-next-row (row-at-row-no box (+ row-row-no 1))))
+;	       (delete-row-at-row-no box (+ row-row-no 1))
+;	       (insert-row-chas-at-cha-no row row-next-row row-length-in-chas)))))))
+
+;;old stuff
+;(DEFUN RUBOUT-OVER-VALUES (BP DIRECTION DELIMITER-CHAS)
+;  (LET ((NOT-FIRST-CHA? NIL))
+;    (MAP-OVER-CHAS-IN-LINE (BP DIRECTION)
+;      (LET ((DELIMITER-CHA? (char-member cha delimiter-chas))
+;	    (FORCE-BP-TYPE ':MOVING))
+;	(COND ((AND (NULL CHA)(NULL NEXT-OR-PREVIOUS-ROW));end/beginning of box
+;	       (RETURN (VALUES ROW CHA-NO)))
+;	      ((AND NOT-FIRST-CHA? (NULL CHA))      ;end/beginning of the line
+;	       (RETURN (VALUES ROW CHA-NO)))
+;	      ((AND NOT-FIRST-CHA? DELIMITER-CHA?)           ;end of the word
+;	       (RETURN (VALUES ROW CHA-NO)))
+;	      ((NOT DELIMITER-CHA?)                          ;beginning of word
+;	       (SETQ NOT-FIRST-CHA? T)
+;	       (ACTION-AT-BP-INTERNAL
+;		 (kill-buffer-push (cha-at-cha-no row (1- cha-no)) ':backward)
+;		 (DELETE-CHA-AT-CHA-NO ROW (1- CHA-NO))))
+;	      (T                                    ;delimiter chas before word
+;	       (ACTION-AT-BP-INTERNAL
+;		 (kill-buffer-push (cha-at-cha-no row (1- cha-no)) ':backward)
+;		 (DELETE-CHA-AT-CHA-NO ROW (1- CHA-NO)))))))))
+
+;;old stuff
+;(DEFUN DELETE-OVER-VALUES (BP DELIMITER-CHAS)
+;  (DO* ((ROW (BP-ROW BP) ROW)
+;	(NEXT-ROW (UNLESS (NULL ROW) (NEXT-ROW ROW))
+;		  (UNLESS (NULL ROW) (NEXT-ROW ROW)))
+;	(CHA-NO (BP-CHA-NO BP)
+;		(BP-CHA-NO BP))
+;	(CHA (CHA-AT-CHA-NO ROW CHA-NO)
+;	     (CHA-AT-CHA-NO ROW CHA-NO))
+;	(NOT-FIRST-CHA?))
+;       (NIL)
+;    (COND ((AND (NULL NOT-FIRST-CHA?)
+;		(NULL CHA)
+;		(NOT-NULL NEXT-ROW))
+;	   (SETQ ROW NEXT-ROW
+;		 CHA-NO 0))
+;	  (T (LET ((DELIMITER-CHA? (char-member cha delimiter-chas))
+;		   (FORCE-BP-TYPE ':MOVING))
+;	       (COND ((AND (NULL CHA) (NULL NEXT-ROW));end/beginning of the box
+;		      (RETURN (VALUES ROW CHA-NO)))
+;		     ((AND NOT-FIRST-CHA? (NULL CHA));end/beginning of the line
+;		      (RETURN (VALUES ROW CHA-NO)))
+;		     ((AND NOT-FIRST-CHA? DELIMITER-CHA?)  ;end of the word
+;		      (RETURN (VALUES ROW CHA-NO)))
+;		     ((NOT DELIMITER-CHA?)                 ;beginning of word
+;		      (SETQ NOT-FIRST-CHA? T)
+;		      (ACTION-AT-BP-INTERNAL
+;			(kill-buffer-push (cha-at-cha-no row cha-no) ':forward)
+;			(DELETE-CHA-AT-CHA-NO ROW CHA-NO )))
+;		     (T                            ;delimiter chas before word
+;		      (ACTION-AT-BP-INTERNAL
+;			(kill-buffer-push (cha-at-cha-no row cha-no) ':forward)
+;			(DELETE-CHA-AT-CHA-NO ROW CHA-NO)))))))))
+
+#| ;; the old character based place naming scheme
+  (status-line-display 'boxer-editor-error "Type a character to name place:")
+  (multiple-value-bind (char bits)
+      (get-character-input *boxer-pane* :plain-char-wanted? t)
+    #-mcl (declare (ignore bits))
+    (let ((existing (assoc char *recorded-place-alist* :test #'char-equal)))
+      (cond ((editor-abort-char? char #+mcl bits)
+             (boxer-editor-warning "Cancelled !"))
+      ((null existing)
+             (status-line-display 'boxer-editor-error
+                (format nil "This place recorded as register:~C"
+                                          (char-upcase char)))
+       (push (cons char (%record-current-place)) *recorded-place-alist*))
+      (t
+             (status-line-display 'boxer-editor-error
+                (format nil "Register ~C changed to this place"
+                                          (char-upcase char)))
+       (setf (cdr existing) (%record-current-place))))))
+|#
+
+#|
+  (status-line-display 'boxer-editor-error
+                       "Type a character to name place register:")
+  (multiple-value-bind (char bits)
+      (get-character-input *boxer-pane* :plain-char-wanted? t)
+    #-mcl (declare (ignore bits))
+    (let ((existing (assoc char *recorded-place-alist* :test #'char-equal)))
+      (cond ((editor-abort-char? char #+mcl bits)
+             (boxer-editor-warning "Cancelled !"))
+      ((null existing)
+       (boxer-editor-warning "Register ~C is undefined" (char-upcase char)))
+      (t
+             (status-line-display 'boxer-editor-error
+                (format nil "Moving to Place in Register ~C"
+                                          (char-upcase char)))
+             (let ((status (move-to-place (cdr existing))))
+               (when (eq status ':error)
+                 (setq *recorded-place-alist*
+                       (fast-delq existing *recorded-place-alist*))
+                 (boxer-editor-warning "Place ~C is no longer in the editor"
+                                       char)))))))
+|#
+
+#|
+  (status-line-display 'boxer-editor-error "Register to Point:")
+  (multiple-value-bind (char bits)
+      (get-character-input *boxer-pane*)
+    #-mcl (declare (ignore bits))
+    (let ((existing (assoc char *recorded-place-alist* :test #'char-equal)))
+      (status-line-display 'boxer-editor-error
+         (format nil "Register to Point: ~C" char))
+      (cond ((editor-abort-char? char #+mcl bits)
+             (boxer-editor-warning "Cancelled !"))
+      ((null existing)
+       (boxer-editor-warning "No place in Register ~C !" char))
+      (t (setq *recorded-place-alist*
+                     (fast-delq existing *recorded-place-alist*))))))
+|#
+
+;;;;
 ;;;; FILE: comsb.lisp
 ;;;;
 
