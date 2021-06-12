@@ -133,11 +133,11 @@ many copies of the character. "
   (status-line-display 'com-quote-self-insert "Press any key...")
   (let ((cha (get-character-input *boxer-pane*)))
     (with-multiple-execution
-  ;; should this be in or out of the loop  ?
-  #-opengl(add-redisplay-clue (point-row) ':insert)
+      ;; should this be in or out of the loop  ?
+      #-opengl(add-redisplay-clue (point-row) ':insert)
       (insert-cha *point*
-      cha
-      :moving)))
+                  cha
+                  :moving)))
   (mark-file-box-dirty (point-row))
   (status-line-undisplay 'com-quote-self-insert)
   boxer-eval::*novalue*)
@@ -158,8 +158,8 @@ many copies of the character. "
 argument (n), inserts n spaces. "
   (reset-region)
   (with-multiple-execution
-      #-opengl(add-redisplay-clue (point-row) ':insert)
-      (insert-cha *point* #\space :moving))
+    #-opengl(add-redisplay-clue (point-row) ':insert)
+    (insert-cha *point* #\space :moving))
   (mark-file-box-dirty (point-row))
   boxer-eval::*novalue*)
 
@@ -227,11 +227,11 @@ box itself. "
   (COND ((NAME-ROW? (POINT-ROW))
          (unshrink (point-box))
          (move-point (box-first-bp-values (point-box)))
-   (RESET-EDITOR-NUMERIC-ARG))
-  (T
-   (WITH-MULTIPLE-EXECUTION
-           (let ((new-row (make-initialized-row)))
-       (INSERT-ROW *POINT* new-row ':MOVING)))))
+         (RESET-EDITOR-NUMERIC-ARG))
+        (T
+         (WITH-MULTIPLE-EXECUTION
+             (let ((new-row (make-initialized-row)))
+               (INSERT-ROW *POINT* new-row ':MOVING)))))
   (SETQ *COLUMN* 0)
   (ensure-row-is-displayed (point-row) (point-screen-box) 1)
   (mark-file-box-dirty (point-row))
@@ -243,11 +243,11 @@ with a numeric arg (n), inserts n blank lines. "
   (reset-region)
   (cond ((name-row? (point-row))
          (with-multiple-execution
-           (insert-row-at-row-no (point-box) (make-initialized-row) 0))
+             (insert-row-at-row-no (point-box) (make-initialized-row) 0))
          (modified (point-box)))
         (t
          (WITH-MULTIPLE-EXECUTION
-           (INSERT-ROW *POINT* (MAKE-INITIALIZED-ROW) ':MOVING)
+             (INSERT-ROW *POINT* (MAKE-INITIALIZED-ROW) ':MOVING)
            (MOVE-POINT (BP-BACKWARD-CHA-VALUES *POINT*)))))
   (mark-file-box-dirty (point-row))
   boxer-eval::*novalue*)
@@ -264,23 +264,23 @@ with a numeric arg (n), inserts n blank lines. "
 (defun rubout-cha (bp &optional (force-bp-type nil))
   (action-at-bp-internal
    (let* ((row (bp-row bp))
-    (box (bp-box bp))
-    (row-no (when (not-null box)(row-row-no box row)))
-    (cha-no (bp-cha-no bp))
-    (cha-to-delete (unless (= cha-no 0)
-         (cha-at-cha-no row (1- cha-no)))))
+          (box (bp-box bp))
+          (row-no (when (not-null box)(row-row-no box row)))
+          (cha-no (bp-cha-no bp))
+          (cha-to-delete (unless (= cha-no 0)
+                           (cha-at-cha-no row (1- cha-no)))))
      (cond ((> cha-no 0)
-      #-opengl(add-redisplay-clue row :delete)
-      (delete-cha-at-cha-no row (- cha-no 1)))
-     ((or (name-row? row) (zerop row-no)))
-     (t
-      (let* ((previous-row (row-at-row-no box (- row-no 1)))
-       (previous-row-length-in-chas (length-in-chas previous-row))
-       (*boxes-being-temporarily-deleted* t))
-        (delete-row-at-row-no box row-no)
-        #-opengl(add-redisplay-clue previous-row :insert)
-        (insert-row-chas-at-cha-no
-         previous-row row previous-row-length-in-chas)
+            #-opengl(add-redisplay-clue row :delete)
+            (delete-cha-at-cha-no row (- cha-no 1)))
+           ((or (name-row? row) (zerop row-no)))
+           (t
+            (let* ((previous-row (row-at-row-no box (- row-no 1)))
+                   (previous-row-length-in-chas (length-in-chas previous-row))
+                   (*boxes-being-temporarily-deleted* t))
+              (delete-row-at-row-no box row-no)
+              #-opengl(add-redisplay-clue previous-row :insert)
+              (insert-row-chas-at-cha-no
+               previous-row row previous-row-length-in-chas)
               (ensure-row-is-displayed previous-row (point-screen-box) -1))))
      cha-to-delete)))
 
@@ -309,39 +309,39 @@ with a numeric arg (n), inserts n blank lines. "
 (DEFBOXER-COMMAND COM-RUBOUT ()
   "Rubs out one character.  With numeric
 argument (n), rubs out n characters. "
-;;  (reset-region)
-;; instead, we'll make it Mac Like
+  ;;  (reset-region)
+  ;; instead, we'll make it Mac Like
   (let ((existing-region (or *region-being-defined* (get-current-region))))
     (cond ((not (null existing-region))
-     (reset-editor-numeric-arg)
-     (editor-kill-region existing-region))
-    (t
-     (with-multiple-execution
-         (let ((deleted-cha (rubout-cha *point* :moving)))
-     (kill-buffer-push deleted-cha :backward)
-     (setq *column* (bp-cha-no *point*)))))))
+           (reset-editor-numeric-arg)
+           (editor-kill-region existing-region))
+          (t
+           (with-multiple-execution
+               (let ((deleted-cha (rubout-cha *point* :moving)))
+                 (kill-buffer-push deleted-cha :backward)
+                 (setq *column* (bp-cha-no *point*)))))))
   (mark-file-box-dirty (point-row))
   boxer-eval::*novalue*)
 
 (DEFBOXER-COMMAND COM-DELETE ()
   "deletes one character.  with numeric
 argument (n), delete n characters. "
-;;  (reset-region)
-;; instead, we'll make it Mac Like
+  ;;  (reset-region)
+  ;; instead, we'll make it Mac Like
   (let ((existing-region (or *region-being-defined* (get-current-region))))
     (cond ((not (null existing-region))
-     (reset-editor-numeric-arg)
+           (reset-editor-numeric-arg)
            (editor-kill-region existing-region))
-    (t
-     (WITH-MULTIPLE-EXECUTION
-         (LET ((OLD-ROW (BP-ROW *POINT*))
-         (OLD-CHA-NO (BP-CHA-NO *POINT*)))
-     (MOVE-POINT (BP-FORWARD-CHA-VALUES *POINT*))
-     (when (OR (NOT (EQ OLD-ROW (BP-ROW *POINT*)))
-         (NOT (EQ OLD-CHA-NO (BP-CHA-NO *POINT*))))
-       (kill-buffer-push
-        (RUBOUT-CHA *POINT* ':MOVING)
-        ':forward)))))))
+          (t
+           (WITH-MULTIPLE-EXECUTION
+               (LET ((OLD-ROW (BP-ROW *POINT*))
+                     (OLD-CHA-NO (BP-CHA-NO *POINT*)))
+                 (MOVE-POINT (BP-FORWARD-CHA-VALUES *POINT*))
+                 (when (OR (NOT (EQ OLD-ROW (BP-ROW *POINT*)))
+                           (NOT (EQ OLD-CHA-NO (BP-CHA-NO *POINT*))))
+                   (kill-buffer-push
+                    (RUBOUT-CHA *POINT* ':MOVING)
+                    ':forward)))))))
   (mark-file-box-dirty (point-row))
   boxer-eval::*novalue*)
 
@@ -349,11 +349,11 @@ argument (n), delete n characters. "
   "moves forward one character.  with
 numeric argument (n), moves forward
 n characters. "
-    ;; if there is a region, get rid of it
+  ;; if there is a region, get rid of it
   (reset-region)
   (let ((start-row (point-row)))
     (with-multiple-execution
-      (move-point (bp-forward-cha-values *point*)))
+        (move-point (bp-forward-cha-values *point*)))
     (unless (eq start-row (point-row)) (ensure-row-is-displayed (point-row) (point-screen-box))))
   boxer-eval::*novalue*)
 
@@ -365,7 +365,7 @@ n characters. "
   (reset-region)
   (let ((start-row (point-row)))
     (with-multiple-execution
-      (move-point (bp-backward-cha-values *point*)))
+        (move-point (bp-backward-cha-values *point*)))
     (unless (eq start-row (point-row)) (ensure-row-is-displayed (point-row) (point-screen-box))))
   boxer-eval::*novalue*)
 
@@ -397,7 +397,7 @@ n characters. "
   (move-point (box-first-bp-values (box-point-is-in)))
   (dolist (screen-box (screen-objs (box-screen-point-is-in)))
     (set-scroll-to-actual-row screen-box
-            (first-inferior-row (box-point-is-in))))
+                              (first-inferior-row (box-point-is-in))))
   boxer-eval::*novalue*)
 
 (defboxer-command COM-END-OF-BOX ()
@@ -417,25 +417,25 @@ possible to the original column. "
   ;; if there is a region, get rid of it
   (reset-region)
   (with-multiple-execution
-    (let* ((row (bp-row *point*))
-     (previous-row (unless (null row) (previous-row row)))
-     (previous-row-length-in-chas
-       (unless (null previous-row) (length-in-chas previous-row)))
-     (cha-no (bp-cha-no *point*))
-     (current-row-length-in-chas (length-in-chas row)))
-      (cond ((null previous-row) (com-name-box))
-      ((< cha-no current-row-length-in-chas)
-       (setq *column* cha-no)
-       (move-point-1 previous-row
-         (min previous-row-length-in-chas *column*)))
-      ((< *column* cha-no)
-       (setq *column* cha-no)
-       (move-point-1 previous-row
-         (min previous-row-length-in-chas *column*)))
-      (t
-       (move-point-1 previous-row
-         (min previous-row-length-in-chas *column*))))
-      (ensure-row-is-displayed (point-row) (point-screen-box) -1)))
+      (let* ((row (bp-row *point*))
+             (previous-row (unless (null row) (previous-row row)))
+             (previous-row-length-in-chas
+               (unless (null previous-row) (length-in-chas previous-row)))
+             (cha-no (bp-cha-no *point*))
+             (current-row-length-in-chas (length-in-chas row)))
+        (cond ((null previous-row) (com-name-box))
+              ((< cha-no current-row-length-in-chas)
+               (setq *column* cha-no)
+               (move-point-1 previous-row
+                             (min previous-row-length-in-chas *column*)))
+              ((< *column* cha-no)
+               (setq *column* cha-no)
+               (move-point-1 previous-row
+                             (min previous-row-length-in-chas *column*)))
+              (t
+               (move-point-1 previous-row
+                             (min previous-row-length-in-chas *column*))))
+        (ensure-row-is-displayed (point-row) (point-screen-box) -1)))
   boxer-eval::*novalue*)
 
 
@@ -448,26 +448,26 @@ possible to the original column. "
   ;; if there is a region, get rid of it
   (reset-region)
   (with-multiple-execution
-    (let* ((row (bp-row *point*))
-     (previous-row (unless (null row) (previous-row row)))
-     (previous-row-length-in-chas
-       (unless (null previous-row) (length-in-chas previous-row)))
-     (cha-no (bp-cha-no *point*))
-     (current-row-length-in-chas (length-in-chas row)))
-      (cond ((null previous-row)
-       (com-name-box))
-      ((< cha-no current-row-length-in-chas)
-       (setq *column* cha-no)
-       (move-point-1 previous-row
-         (min previous-row-length-in-chas *column*)))
-      ((< *column* cha-no)
-       (setq *column* cha-no)
-       (move-point-1 previous-row
-         (min previous-row-length-in-chas *column*)))
-      (t
-       (move-point-1 previous-row
-         (min previous-row-length-in-chas *column*))))
-      (ensure-row-is-displayed (point-row) (point-screen-box))))
+      (let* ((row (bp-row *point*))
+             (previous-row (unless (null row) (previous-row row)))
+             (previous-row-length-in-chas
+               (unless (null previous-row) (length-in-chas previous-row)))
+             (cha-no (bp-cha-no *point*))
+             (current-row-length-in-chas (length-in-chas row)))
+        (cond ((null previous-row)
+               (com-name-box))
+              ((< cha-no current-row-length-in-chas)
+               (setq *column* cha-no)
+               (move-point-1 previous-row
+                             (min previous-row-length-in-chas *column*)))
+              ((< *column* cha-no)
+               (setq *column* cha-no)
+               (move-point-1 previous-row
+                             (min previous-row-length-in-chas *column*)))
+              (t
+               (move-point-1 previous-row
+                             (min previous-row-length-in-chas *column*))))
+        (ensure-row-is-displayed (point-row) (point-screen-box))))
   boxer-eval::*novalue*)
 
 
@@ -480,29 +480,29 @@ possible to the original column. "
   ;; if there is a region, get rid of it
   (reset-region)
   (with-multiple-execution
-    (let* ((row (bp-row *point*))
-     (next-row (unless (null row) (next-row row)))
-     (next-row-length-in-chas (unless (null next-row)
-              (length-in-chas next-row)))
-     (cha-no (bp-cha-no *point*))
-     (current-row-length-in-chas (length-in-chas row)))
-      (cond ((null next-row)
-       (com-end-of-row)
-       (com-return)
-;	     (ensure-row-is-displayed (point-row) (point-screen-box) 1)
-;	     (com-return) already calls this
-       )
-      ((< cha-no current-row-length-in-chas)
-       (setq *column* cha-no)
-       (move-point-1 next-row (min next-row-length-in-chas *column*))
-       (ensure-row-is-displayed (point-row) (point-screen-box) 1))
-      ((< *column* cha-no)
-       (setq *column* cha-no)
-       (move-point-1 next-row (min next-row-length-in-chas *column*))
-       (ensure-row-is-displayed (point-row) (point-screen-box) 1))
-      (t
-       (move-point-1 next-row (min next-row-length-in-chas *column*))
-       (ensure-row-is-displayed (point-row) (point-screen-box) 1)))))
+      (let* ((row (bp-row *point*))
+             (next-row (unless (null row) (next-row row)))
+             (next-row-length-in-chas (unless (null next-row)
+                                        (length-in-chas next-row)))
+             (cha-no (bp-cha-no *point*))
+             (current-row-length-in-chas (length-in-chas row)))
+        (cond ((null next-row)
+               (com-end-of-row)
+               (com-return)
+                                        ;	     (ensure-row-is-displayed (point-row) (point-screen-box) 1)
+                                        ;	     (com-return) already calls this
+               )
+              ((< cha-no current-row-length-in-chas)
+               (setq *column* cha-no)
+               (move-point-1 next-row (min next-row-length-in-chas *column*))
+               (ensure-row-is-displayed (point-row) (point-screen-box) 1))
+              ((< *column* cha-no)
+               (setq *column* cha-no)
+               (move-point-1 next-row (min next-row-length-in-chas *column*))
+               (ensure-row-is-displayed (point-row) (point-screen-box) 1))
+              (t
+               (move-point-1 next-row (min next-row-length-in-chas *column*))
+               (ensure-row-is-displayed (point-row) (point-screen-box) 1)))))
   boxer-eval::*novalue*)
 
 
@@ -511,22 +511,22 @@ possible to the original column. "
   ;; if there is a region, get rid of it
   (reset-region)
   (let* ((current-port (box-screen-point-is-in))
-   (target (ports current-port))
-   (row (point-row)) (cha-no (point-cha-no)))
+         (target (ports current-port))
+         (row (point-row)) (cha-no (point-cha-no)))
     (cond ((not (port-box? current-port))
-     ;; make sure we have a target
-     (boxer-editor-error "You can only zoom from a Port"))
-    ((and (box? target)
-    ;; make sure the target is still in the hierarchy
-    (superior? target *initial-box*))
-     (with-temporary-bp (target-bp (box-self-bp-values target))
-       (move-to-bp target-bp))
-     ;; now that we are outside the target,
-     ;; move into it and go back to the original row/cha-no
-     (com-enter-box)
-     (move-point-1 row cha-no)
-     (ensure-row-is-displayed (point-row) (point-screen-box)))
-    (t (boxer-editor-error "could not move to ~a" target))))
+           ;; make sure we have a target
+           (boxer-editor-error "You can only zoom from a Port"))
+          ((and (box? target)
+                ;; make sure the target is still in the hierarchy
+                (superior? target *initial-box*))
+           (with-temporary-bp (target-bp (box-self-bp-values target))
+             (move-to-bp target-bp))
+           ;; now that we are outside the target,
+           ;; move into it and go back to the original row/cha-no
+           (com-enter-box)
+           (move-point-1 row cha-no)
+           (ensure-row-is-displayed (point-row) (point-screen-box)))
+          (t (boxer-editor-error "could not move to ~a" target))))
   boxer-eval::*novalue*)
 
 
@@ -547,16 +547,16 @@ possible to the original column. "
      (BP DIRECTION)
      (LET ((DELIMITER-CHA? (char-member cha delimiter-chas)))
        (COND ((AND (NULL CHA)
-       (NULL NEXT-OR-PREVIOUS-ROW))	;end/beginning of the box
-        (RETURN (VALUES ROW CHA-NO)))
-       ((AND (NULL CHA) NOT-FIRST-CHA?) ;end/beginning of the line
-        (RETURN (VALUES ROW CHA-NO)))
-       ((AND NOT-FIRST-CHA? (BOX? CHA)) ;go only one box at a time
-        (RETURN (VALUES ROW CHA-NO)))
-       ((AND NOT-FIRST-CHA? DELIMITER-CHA?) ;end of the word
-        (RETURN (VALUES ROW CHA-NO)))
-       ((NOT DELIMITER-CHA?)	;beginning of word
-        (SETQ NOT-FIRST-CHA? T)))))))
+                   (NULL NEXT-OR-PREVIOUS-ROW))	;end/beginning of the box
+              (RETURN (VALUES ROW CHA-NO)))
+             ((AND (NULL CHA) NOT-FIRST-CHA?) ;end/beginning of the line
+              (RETURN (VALUES ROW CHA-NO)))
+             ((AND NOT-FIRST-CHA? (BOX? CHA)) ;go only one box at a time
+              (RETURN (VALUES ROW CHA-NO)))
+             ((AND NOT-FIRST-CHA? DELIMITER-CHA?) ;end of the word
+              (RETURN (VALUES ROW CHA-NO)))
+             ((NOT DELIMITER-CHA?)	;beginning of word
+              (SETQ NOT-FIRST-CHA? T)))))))
 #| ; old stuff
 (DEFUN BP-OVER-VALUES (BP DIRECTION DELIMITER-CHAS)
   (LET ((NOT-FIRST-CHA? NIL))
@@ -585,7 +585,7 @@ argument (n), moves forward n words. "
   ;; if there is a region, get rid of it
   (reset-region)
   (with-multiple-execution
-    (move-point (bp-forward-word-values *point*)))
+      (move-point (bp-forward-word-values *point*)))
   boxer-eval::*novalue*)
 
 (defboxer-command COM-BACKWARD-WORD ()
@@ -594,7 +594,7 @@ argument (n), moves backward n words. "
   ;; if there is a region, get rid of it
   (reset-region)
   (with-multiple-execution
-    (move-point (bp-backward-word-values *point*)))
+      (move-point (bp-backward-word-values *point*)))
   boxer-eval::*novalue*)
 
 
@@ -606,33 +606,33 @@ argument (n), moves backward n words. "
 (defun rubout-over-values (bp direction delimiter-chas)
   (let ((not-first-cha? nil))
     (map-over-chas-in-line (bp direction)
-      (let ((delimiter-cha? (char-member cha delimiter-chas))
-      (force-bp-type ':moving))
-  (cond ((and (null cha) (null next-or-previous-row))
-         ;; end/beginning of the box
-         (return (values row cha-no)))
-        ((and not-first-cha? (null cha))
-         ;; end/beginning of the line
-         (return (values row cha-no)))
-        ((and not-first-cha? (box? cha))
-         ;; go only one box at a time
-         (return (values row cha-no)))
-        ((and not-first-cha? delimiter-cha?)
-         ;; end of the word
-         (return (values row cha-no)))
-        ((not delimiter-cha?)
-         ;; beginning of word
-         (setq not-first-cha? t)
-         (action-at-bp-internal
-     (kill-buffer-push (cha-at-cha-no row (1- cha-no)) ':backward)
-     #-opengl(add-redisplay-clue (bp-row bp) ':delete)
-     (delete-cha-at-cha-no row (1- cha-no))))
-        (t
-         ;; Delimiter Chas Before Word
-         (action-at-bp-internal
-     (kill-buffer-push (cha-at-cha-no row (1- cha-no)) ':backward)
-     #-opengl(add-redisplay-clue (bp-row bp) ':delete)
-     (delete-cha-at-cha-no row (1- cha-no)))))))))
+                           (let ((delimiter-cha? (char-member cha delimiter-chas))
+                                 (force-bp-type ':moving))
+                             (cond ((and (null cha) (null next-or-previous-row))
+                                    ;; end/beginning of the box
+                                    (return (values row cha-no)))
+                                   ((and not-first-cha? (null cha))
+                                    ;; end/beginning of the line
+                                    (return (values row cha-no)))
+                                   ((and not-first-cha? (box? cha))
+                                    ;; go only one box at a time
+                                    (return (values row cha-no)))
+                                   ((and not-first-cha? delimiter-cha?)
+                                    ;; end of the word
+                                    (return (values row cha-no)))
+                                   ((not delimiter-cha?)
+                                    ;; beginning of word
+                                    (setq not-first-cha? t)
+                                    (action-at-bp-internal
+                                     (kill-buffer-push (cha-at-cha-no row (1- cha-no)) ':backward)
+                                     #-opengl(add-redisplay-clue (bp-row bp) ':delete)
+                                     (delete-cha-at-cha-no row (1- cha-no))))
+                                   (t
+                                    ;; Delimiter Chas Before Word
+                                    (action-at-bp-internal
+                                     (kill-buffer-push (cha-at-cha-no row (1- cha-no)) ':backward)
+                                     #-opengl(add-redisplay-clue (bp-row bp) ':delete)
+                                     (delete-cha-at-cha-no row (1- cha-no)))))))))
 
 ;;old stuff
 ;(DEFUN RUBOUT-OVER-VALUES (BP DIRECTION DELIMITER-CHAS)
@@ -662,45 +662,45 @@ argument (n), moves backward n words. "
 
 (DEFUN DELETE-OVER-VALUES (BP DELIMITER-CHAS)
   (DO* ((ROW (BP-ROW BP) ROW)
-  (NEXT-ROW (UNLESS (NULL ROW) (NEXT-ROW ROW))
-      (UNLESS (NULL ROW) (NEXT-ROW ROW)))
-  (CHA-NO (BP-CHA-NO BP))
-  (CHA (CHA-AT-CHA-NO ROW CHA-NO)
-       (CHA-AT-CHA-NO ROW CHA-NO))
-  (NOT-FIRST-CHA?))
+        (NEXT-ROW (UNLESS (NULL ROW) (NEXT-ROW ROW))
+                  (UNLESS (NULL ROW) (NEXT-ROW ROW)))
+        (CHA-NO (BP-CHA-NO BP))
+        (CHA (CHA-AT-CHA-NO ROW CHA-NO)
+             (CHA-AT-CHA-NO ROW CHA-NO))
+        (NOT-FIRST-CHA?))
        (NIL)
     (COND ((AND (NULL NOT-FIRST-CHA?)
-    (NULL CHA)
-    (NOT-NULL NEXT-ROW))
-     (SETQ ROW NEXT-ROW
-     CHA-NO 0))
-    (T (LET ((DELIMITER-CHA? (char-member cha delimiter-chas))
-       (FORCE-BP-TYPE ':MOVING))
-         (COND ((AND (NULL CHA) (NULL NEXT-ROW))
-          ;; end/beginning of the box
-          (RETURN (VALUES ROW CHA-NO)))
-         ((AND NOT-FIRST-CHA? (NULL CHA))
-          ;; end/beginning of the line
-          (RETURN (VALUES ROW CHA-NO)))
-         ((and not-first-cha? (box? cha))
-          ;; go only one box at a time
-          (RETURN (VALUES ROW CHA-NO)))
-         ((AND NOT-FIRST-CHA? DELIMITER-CHA?)
-          ;; end of the word
-          (RETURN (VALUES ROW CHA-NO)))
-         ((NOT DELIMITER-CHA?)
-          ;; beginning of word
-          (SETQ NOT-FIRST-CHA? T)
-          (ACTION-AT-BP-INTERNAL
-      (kill-buffer-push (cha-at-cha-no row cha-no) ':forward)
-      #-opengl(add-redisplay-clue row ':delete)
-      (DELETE-CHA-AT-CHA-NO ROW CHA-NO )))
-         (T
-          ;; delimiter chas before word
-          (ACTION-AT-BP-INTERNAL
-      (kill-buffer-push (cha-at-cha-no row cha-no) ':forward)
-      #-opengl(add-redisplay-clue row ':delete)
-      (DELETE-CHA-AT-CHA-NO ROW CHA-NO)))))))))
+                (NULL CHA)
+                (NOT-NULL NEXT-ROW))
+           (SETQ ROW NEXT-ROW
+                 CHA-NO 0))
+          (T (LET ((DELIMITER-CHA? (char-member cha delimiter-chas))
+                   (FORCE-BP-TYPE ':MOVING))
+               (COND ((AND (NULL CHA) (NULL NEXT-ROW))
+                      ;; end/beginning of the box
+                      (RETURN (VALUES ROW CHA-NO)))
+                     ((AND NOT-FIRST-CHA? (NULL CHA))
+                      ;; end/beginning of the line
+                      (RETURN (VALUES ROW CHA-NO)))
+                     ((and not-first-cha? (box? cha))
+                      ;; go only one box at a time
+                      (RETURN (VALUES ROW CHA-NO)))
+                     ((AND NOT-FIRST-CHA? DELIMITER-CHA?)
+                      ;; end of the word
+                      (RETURN (VALUES ROW CHA-NO)))
+                     ((NOT DELIMITER-CHA?)
+                      ;; beginning of word
+                      (SETQ NOT-FIRST-CHA? T)
+                      (ACTION-AT-BP-INTERNAL
+                       (kill-buffer-push (cha-at-cha-no row cha-no) ':forward)
+                       #-opengl(add-redisplay-clue row ':delete)
+                       (DELETE-CHA-AT-CHA-NO ROW CHA-NO )))
+                     (T
+                      ;; delimiter chas before word
+                      (ACTION-AT-BP-INTERNAL
+                       (kill-buffer-push (cha-at-cha-no row cha-no) ':forward)
+                       #-opengl(add-redisplay-clue row ':delete)
+                       (DELETE-CHA-AT-CHA-NO ROW CHA-NO)))))))))
 
 ;;old stuff
 ;(DEFUN DELETE-OVER-VALUES (BP DELIMITER-CHAS)
@@ -747,14 +747,14 @@ argument (n), moves backward n words. "
 argument (n), kills backward n words. "
   (let ((existing-region (or *region-being-defined* (get-current-region))))
     (cond ((not (null existing-region))
-     (reset-editor-numeric-arg)
-     (kill-buffer-push (kill-region existing-region) ':forward)
-     ;; need to figure out where and what redisplay clues to add here
-     (flush-region existing-region)
-     (exiting-region-mode))
-    (t
-     (with-multiple-execution
-         (move-point (rubout-word *point*))))))
+           (reset-editor-numeric-arg)
+           (kill-buffer-push (kill-region existing-region) ':forward)
+           ;; need to figure out where and what redisplay clues to add here
+           (flush-region existing-region)
+           (exiting-region-mode))
+          (t
+           (with-multiple-execution
+               (move-point (rubout-word *point*))))))
   (mark-file-box-dirty (point-row))
   boxer-eval::*novalue*)
 
@@ -766,14 +766,14 @@ argument (n), kills backward n words. "
 argument (n), kills forward n words. "
   (let ((existing-region (or *region-being-defined* (get-current-region))))
     (cond ((not (null existing-region))
-     (reset-editor-numeric-arg)
-     (kill-buffer-push (kill-region existing-region) ':forward)
-     ;; need to figure out where and what redisplay clues to add here
-     (flush-region existing-region)
-     (exiting-region-mode))
-    (t
-     (with-multiple-execution
-         (move-point (delete-word *point*))))))
+           (reset-editor-numeric-arg)
+           (kill-buffer-push (kill-region existing-region) ':forward)
+           ;; need to figure out where and what redisplay clues to add here
+           (flush-region existing-region)
+           (exiting-region-mode))
+          (t
+           (with-multiple-execution
+               (move-point (delete-word *point*))))))
   (mark-file-box-dirty (point-row))
   boxer-eval::*novalue*)
 
@@ -793,22 +793,22 @@ argument (n), kills forward n words. "
   (let ((row-to-move-to nil))
     (dolist (screen-box screen-boxs)
       (let ((screen-box-new-scroll-row (scroll-dn-one-screen-box screen-box)))
-  (when (row? screen-box-new-scroll-row)
-    (setq row-to-move-to
-    (cond ((null row-to-move-to)
-           screen-box-new-scroll-row)
-          ((row-> screen-box-new-scroll-row row-to-move-to)
-           screen-box-new-scroll-row)
-          (t row-to-move-to))))))
+        (when (row? screen-box-new-scroll-row)
+          (setq row-to-move-to
+                (cond ((null row-to-move-to)
+                       screen-box-new-scroll-row)
+                      ((row-> screen-box-new-scroll-row row-to-move-to)
+                       screen-box-new-scroll-row)
+                      (t row-to-move-to))))))
     (unless (null row-to-move-to)
       (move-point-1 row-to-move-to (min (length-in-chas row-to-move-to)
-          (bp-cha-no *point*)))))
+                                        (bp-cha-no *point*)))))
   boxer-eval::*novalue*)
 
 (defboxer-command COM-SCROLL-UP-ONE-SCREEN-BOX (&optional
                                                 (screen-boxs
                                                  (unless (null (box-point-is-in))
-                                       (displayed-screen-objs
+                                                   (displayed-screen-objs
                                                     (box-point-is-in)))))
   "displays the previous box of text. "
   ;; if there is a region, get rid of it
@@ -818,30 +818,30 @@ argument (n), kills forward n words. "
     (dolist (screen-box screen-boxs)
       (scroll-up-one-screen-box screen-box)
       (let ((screen-box-new-scroll-row
-       (screen-obj-actual-obj (first-screen-row screen-box))))
-  (when (row? screen-box-new-scroll-row)
-    (setq row-to-move-to
-    (cond ((null row-to-move-to)
-           screen-box-new-scroll-row)
-          ((row-< screen-box-new-scroll-row row-to-move-to)
-           screen-box-new-scroll-row)
-          (t row-to-move-to))))))
+              (screen-obj-actual-obj (first-screen-row screen-box))))
+        (when (row? screen-box-new-scroll-row)
+          (setq row-to-move-to
+                (cond ((null row-to-move-to)
+                       screen-box-new-scroll-row)
+                      ((row-< screen-box-new-scroll-row row-to-move-to)
+                       screen-box-new-scroll-row)
+                      (t row-to-move-to))))))
     (when (row? row-to-move-to)
       (move-point-1 row-to-move-to (min (length-in-chas row-to-move-to)
-          (bp-cha-no *point*)))))
+                                        (bp-cha-no *point*)))))
   boxer-eval::*novalue*)
 
 (defboxer-command COM-SCROLL-DN-ROW (&optional
                                      (screen-box (screen-box-point-is-in)))
   "Scrolls the box down by <numeric arg> rows."
   (let* ((box (screen-obj-actual-obj screen-box))
-   (row-length (length-in-rows box))
-   (scroll-row (scroll-to-actual-row screen-box))
-   (new-scroll-no (+ (if (null scroll-row) 0 (row-row-no box scroll-row))
-         (or *editor-numeric-argument* 1)))
-   (new-scroll-row (if (>= new-scroll-no row-length)
-           (row-at-row-no box (1- row-length))
-           (row-at-row-no box new-scroll-no))))
+         (row-length (length-in-rows box))
+         (scroll-row (scroll-to-actual-row screen-box))
+         (new-scroll-no (+ (if (null scroll-row) 0 (row-row-no box scroll-row))
+                           (or *editor-numeric-argument* 1)))
+         (new-scroll-row (if (>= new-scroll-no row-length)
+                             (row-at-row-no box (1- row-length))
+                             (row-at-row-no box new-scroll-no))))
     (set-scroll-to-actual-row screen-box new-scroll-row)
     ;; make sure the point is still visible
     (when (row-> new-scroll-row (point-row))
@@ -854,12 +854,12 @@ argument (n), kills forward n words. "
                                      (screen-box (screen-box-point-is-in)))
   "Scrolls the box up by <numeric arg> rows."
   (let* ((box (screen-obj-actual-obj screen-box))
-   (scroll-row (scroll-to-actual-row screen-box))
-   (new-scroll-no (if (null scroll-row)
-          0
-          (max& 0 (-& (row-row-no box scroll-row)
-          (or *editor-numeric-argument* 1)))))
-   (new-scroll-row (row-at-row-no box new-scroll-no)))
+         (scroll-row (scroll-to-actual-row screen-box))
+         (new-scroll-no (if (null scroll-row)
+                            0
+                            (max& 0 (-& (row-row-no box scroll-row)
+                                        (or *editor-numeric-argument* 1)))))
+         (new-scroll-row (row-at-row-no box new-scroll-no)))
     (set-scroll-to-actual-row screen-box new-scroll-row)
     ;; make sure the point is still visible
     (when (row-< new-scroll-row (point-row))
@@ -882,20 +882,20 @@ argument, deletes that many lines."
   (IF (NOT (NULL *EDITOR-NUMERIC-ARGUMENT*))
       (SET-EDITOR-NUMERIC-ARG (* 2 *EDITOR-NUMERIC-ARGUMENT*)))
   (WITH-MULTIPLE-EXECUTION
-    (LET* ((ROW (BP-ROW *POINT*))
-     (NEXT-ROW (NEXT-ROW ROW))
-     (ROW-LENGTH-IN-CHAS (LENGTH-IN-CHAS ROW))
-     (CHA-NO (BP-CHA-NO *POINT*)))
-      (COND ((< CHA-NO ROW-LENGTH-IN-CHAS)
-       #-opengl(add-redisplay-clue row ':delete)
-       (kill-buffer-push (DELETE-CHAS-TO-END-OF-ROW *POINT* :FIXED)
-             :FORWARD))
-      ((NULL NEXT-ROW))
-      (T (MOVE-POINT (BP-FORWARD-CHA-VALUES *POINT*))
-         ;; if we are at the end of the row,
-         ;; join the next row to the current one
-         #-opengl(add-redisplay-clue row ':insert)
-         (kill-buffer-push (rubout-cha *point* :moving) :forward)))))
+      (LET* ((ROW (BP-ROW *POINT*))
+             (NEXT-ROW (NEXT-ROW ROW))
+             (ROW-LENGTH-IN-CHAS (LENGTH-IN-CHAS ROW))
+             (CHA-NO (BP-CHA-NO *POINT*)))
+        (COND ((< CHA-NO ROW-LENGTH-IN-CHAS)
+               #-opengl(add-redisplay-clue row ':delete)
+               (kill-buffer-push (DELETE-CHAS-TO-END-OF-ROW *POINT* :FIXED)
+                                 :FORWARD))
+              ((NULL NEXT-ROW))
+              (T (MOVE-POINT (BP-FORWARD-CHA-VALUES *POINT*))
+                 ;; if we are at the end of the row,
+                 ;; join the next row to the current one
+                 #-opengl(add-redisplay-clue row ':insert)
+                 (kill-buffer-push (rubout-cha *point* :moving) :forward)))))
   (mark-file-box-dirty (point-row))
   boxer-eval::*novalue*)
 
@@ -904,20 +904,20 @@ argument, deletes that many lines."
   (reset-region)
   (with-multiple-execution
       (let* ((delete-row (point-row))
-       (next-row (next-row delete-row))
-       (prev-row (previous-row delete-row))
-       (cha-no (point-cha-no)))
-  (cond ((and (null next-row) (null prev-row))
-         ;; the delete-row is the ONLY row in the box
-         #-opengl(add-redisplay-clue delete-row ':delete)
-         (move-point-1 delete-row 0)
-         (kill-buffer-push (delete-chas-to-end-of-row *point* :fixed) :forward))
-        (t
-         (if (null next-row)
-       (move-point-1 prev-row (min (length-in-chas prev-row) cha-no))
-       (move-point-1 next-row (min (length-in-chas next-row) cha-no)))
-         (delete-row (point-box) delete-row)
-         (kill-buffer-push delete-row :forward)))))
+             (next-row (next-row delete-row))
+             (prev-row (previous-row delete-row))
+             (cha-no (point-cha-no)))
+        (cond ((and (null next-row) (null prev-row))
+               ;; the delete-row is the ONLY row in the box
+               #-opengl(add-redisplay-clue delete-row ':delete)
+               (move-point-1 delete-row 0)
+               (kill-buffer-push (delete-chas-to-end-of-row *point* :fixed) :forward))
+              (t
+               (if (null next-row)
+                   (move-point-1 prev-row (min (length-in-chas prev-row) cha-no))
+                   (move-point-1 next-row (min (length-in-chas next-row) cha-no)))
+               (delete-row (point-box) delete-row)
+               (kill-buffer-push delete-row :forward)))))
   (mark-file-box-dirty (point-box))
   (modified (point-box))
   boxer-eval::*novalue*)
@@ -926,24 +926,24 @@ argument, deletes that many lines."
   "Selects the contents of a box as the current region"
   (reset-region)
   (drawing-on-window-without-prepare-sheet (*boxer-pane*)
-    (with-drawing-port *boxer-pane*
-      ;; this is essentially all of drawing-on-window EXCEPT
-      ;; blinker management, probably should have a separate macro
-      ;; for this eventually
-      (multiple-value-bind (start-row start-cha-no)
-          (box-first-bp-values (point-box))
-        (multiple-value-bind (stop-row stop-cha-no)
-            (box-last-bp-values (point-box))
-          (let ((start-bp (make-bp ':fixed))
-                (stop-bp  (make-bp ':fixed)))
-            (setf (bp-row start-bp) start-row (bp-cha-no start-bp) start-cha-no
-                  (bp-row stop-bp) stop-row (bp-cha-no stop-bp) stop-cha-no)
-            (setq *region-being-defined*
-                  (make-editor-region start-bp stop-bp))
-            #-opengl (turn-on-interval *region-being-defined*)
-            (push *region-being-defined* *region-list*)
-            #-opengl (interval-update-redisplay-all-rows *region-being-defined*)
-            (entering-region-mode))))))
+                                           (with-drawing-port *boxer-pane*
+                                             ;; this is essentially all of drawing-on-window EXCEPT
+                                             ;; blinker management, probably should have a separate macro
+                                             ;; for this eventually
+                                             (multiple-value-bind (start-row start-cha-no)
+                                                 (box-first-bp-values (point-box))
+                                               (multiple-value-bind (stop-row stop-cha-no)
+                                                   (box-last-bp-values (point-box))
+                                                 (let ((start-bp (make-bp ':fixed))
+                                                       (stop-bp  (make-bp ':fixed)))
+                                                   (setf (bp-row start-bp) start-row (bp-cha-no start-bp) start-cha-no
+                                                         (bp-row stop-bp) stop-row (bp-cha-no stop-bp) stop-cha-no)
+                                                   (setq *region-being-defined*
+                                                         (make-editor-region start-bp stop-bp))
+                                                   #-opengl (turn-on-interval *region-being-defined*)
+                                                   (push *region-being-defined* *region-list*)
+                                                   #-opengl (interval-update-redisplay-all-rows *region-being-defined*)
+                                                   (entering-region-mode))))))
   boxer-eval::*novalue*)
 
 (defboxer-command COM-COPY-REGION ()
@@ -957,13 +957,13 @@ argument, deletes that many lines."
               (write-system-scrap region)
               region)
             ':forward)
-     ;; should we flush the region here ?
-     ;; on one hand, what else would we want to do with it ?
-     ;; on the other hand, "It's not like the Mac"
-     (flush-region existing-region)
-     (exiting-region-mode))
-    (t
-     (boxer-editor-error "There is no region"))))
+           ;; should we flush the region here ?
+           ;; on one hand, what else would we want to do with it ?
+           ;; on the other hand, "It's not like the Mac"
+           (flush-region existing-region)
+           (exiting-region-mode))
+          (t
+           (boxer-editor-error "There is no region"))))
   boxer-eval::*novalue*)
 
 (defboxer-command COM-CUT-REGION ()
@@ -983,14 +983,14 @@ argument, deletes that many lines."
 (defboxer-command COM-YANK ()
   "Inserts the last piece of text that was killed
 and makes a copy of it for further yanking."
-  ;(reset-region)
+                                        ;(reset-region)
   (with-multiple-execution
-    (let ((item (kill-buffer-top)))
-      (setf (kill-buffer-top) (copy-thing item))
-      ;; mac, replacing region behavior
-      (let ((r (or *region-being-defined* (get-current-region))))
-        (unless (null r) (editor-kill-region r)))
-      (top-level-insert-things item)))
+      (let ((item (kill-buffer-top)))
+        (setf (kill-buffer-top) (copy-thing item))
+        ;; mac, replacing region behavior
+        (let ((r (or *region-being-defined* (get-current-region))))
+          (unless (null r) (editor-kill-region r)))
+        (top-level-insert-things item)))
   (mark-file-box-dirty (point-row))
   boxer-eval::*novalue*)
 
@@ -1023,7 +1023,7 @@ removes it from the kill buffer.  No copy is made."
     ;; the BP's should be in the right place now
     (unless (bp-= start-bp stop-bp)
       (setq *region-being-defined* (make-editor-region start-bp stop-bp)
-      *last-retrieved-region* *region-being-defined*)
+            *last-retrieved-region* *region-being-defined*)
       (turn-on-interval *region-being-defined*)
       (push *region-being-defined* *region-list*)
       (entering-region-mode))
@@ -1042,23 +1042,23 @@ removes it from the kill buffer.  No copy is made."
 
 (defun name-row-insert-things (things)
   (cond ((null things))
-  ((box? things)
-   (boxer-editor-error "Tried to Insert a box into a name row"))
-  ((cha? things)
-   (if (or (char= things #\return) (char= things #\newline))
-       (throw 'name-row-insert-done nil)
-       (insert-cha *point* things :moving)))
-  ((row? things)
-   (insert-row-chas *point* things :moving)
-   (throw 'name-row-insert-done nil))
-  ((interval? things)
-   (do-interval-chas (cha things :output-newlines? t)
-     (name-row-insert-things cha)))
-  ((eq things :newline) (throw 'name-row-insert-done nil))
-  ((listp things)
-   (dolist (thing things) (name-row-insert-things thing)))
-  (t
-   (boxer-editor-error "Unusual Object Found In Boxer Kill Buffer"))))
+        ((box? things)
+         (boxer-editor-error "Tried to Insert a box into a name row"))
+        ((cha? things)
+         (if (or (char= things #\return) (char= things #\newline))
+             (throw 'name-row-insert-done nil)
+             (insert-cha *point* things :moving)))
+        ((row? things)
+         (insert-row-chas *point* things :moving)
+         (throw 'name-row-insert-done nil))
+        ((interval? things)
+         (do-interval-chas (cha things :output-newlines? t)
+           (name-row-insert-things cha)))
+        ((eq things :newline) (throw 'name-row-insert-done nil))
+        ((listp things)
+         (dolist (thing things) (name-row-insert-things thing)))
+        (t
+         (boxer-editor-error "Unusual Object Found In Boxer Kill Buffer"))))
 
 
 (defun insert-list-of-things (things)
@@ -1069,44 +1069,44 @@ removes it from the kill buffer.  No copy is made."
 ;;;FROM coms
 (defun insert-thing (thing)
   (cond ((null thing))
-  ((or (box? thing) (cha? thing))
-   #-opengl(add-redisplay-clue (point-row) ':insert)
-   (insert-cha *point* thing :moving))
-  ((row? thing) (if (zerop (length-in-chas thing))
-        (insert-row *point* thing :moving)
-        (progn
-          #-opengl(add-redisplay-clue (point-row) ':insert)
-          (insert-row-chas *point* thing :moving))))
-  ((interval? thing)
-   (yank-region *point* thing)
-   #-opengl(add-redisplay-clue (point-row) ':insert)
-   (unless *highlight-yanked-region*
-     (turn-off-interval thing))
-   (setq *current-editor-region* thing))
-  ((eq thing :newline)
-   (insert-row *point* (make-initialized-row) :moving))
-  ((listp thing) (insert-list-of-things thing))
-  (t (boxer-editor-error "Unusual Object Found In Boxer Kill Buffer"))))
+        ((or (box? thing) (cha? thing))
+         #-opengl(add-redisplay-clue (point-row) ':insert)
+         (insert-cha *point* thing :moving))
+        ((row? thing) (if (zerop (length-in-chas thing))
+                          (insert-row *point* thing :moving)
+                          (progn
+                            #-opengl(add-redisplay-clue (point-row) ':insert)
+                            (insert-row-chas *point* thing :moving))))
+        ((interval? thing)
+         (yank-region *point* thing)
+         #-opengl(add-redisplay-clue (point-row) ':insert)
+         (unless *highlight-yanked-region*
+           (turn-off-interval thing))
+         (setq *current-editor-region* thing))
+        ((eq thing :newline)
+         (insert-row *point* (make-initialized-row) :moving))
+        ((listp thing) (insert-list-of-things thing))
+        (t (boxer-editor-error "Unusual Object Found In Boxer Kill Buffer"))))
 
 
 (defun kill-buffer-push (item direction)
   (when (null item) (setq item :newline))
   (if (<= *number-of-non-kill-commands-executed* 1)
       (if (eq direction *kill-buffer-last-direction*)
-    (cond ((eq direction ':forward)
-     (ensure-list item)
-     (ensure-list (car *kill-buffer*))
-     (setf (car *kill-buffer*)
-           (nconc (car *kill-buffer*) item)))
-    ((eq direction ':backward)
-     (ensure-list (car *kill-buffer*))
-     (setf (car *kill-buffer*)
-           (cons item (car *kill-buffer*)))))
-    (push item *kill-buffer*))
+          (cond ((eq direction ':forward)
+                 (ensure-list item)
+                 (ensure-list (car *kill-buffer*))
+                 (setf (car *kill-buffer*)
+                       (nconc (car *kill-buffer*) item)))
+                ((eq direction ':backward)
+                 (ensure-list (car *kill-buffer*))
+                 (setf (car *kill-buffer*)
+                       (cons item (car *kill-buffer*)))))
+          (push item *kill-buffer*))
       (push item *kill-buffer*))
   ;; We don't want every deleted char to be in the clipboard, so adding to the
   ;; clipboard is now limited to the kill-region and copy-region commands
-;  (write-system-scrap (car *kill-buffer*))
+                                        ;  (write-system-scrap (car *kill-buffer*))
   (when (> (length *kill-buffer*) *kill-buffer-length*)
     (let ((objs-for-deallocation (car (nthcdr *kill-buffer-length* *kill-buffer*))))
       (rplacd (nthcdr (1- *kill-buffer-length*) *kill-buffer*) nil)
@@ -1115,17 +1115,17 @@ removes it from the kill buffer.  No copy is made."
   (setq *number-of-non-kill-commands-executed* 0)
   *kill-buffer*)
 
-;for control-meta-y, sort of.
+                                        ;for control-meta-y, sort of.
 (defboxer-command COM-ROTATE-KILL-BUFFER ()
   "rotates the kill buffer. "
   (with-multiple-execution
       (let ((rots 0))
-  (loop
-   (setq *kill-buffer* (nconc (cdr *kill-buffer*) (list (car *kill-buffer*))))
-   (incf& rots)
-   (when (or (not (null (car *kill-buffer*)))
-       (>=& rots *kill-buffer-length*))
-     (return)))))
+        (loop
+          (setq *kill-buffer* (nconc (cdr *kill-buffer*) (list (car *kill-buffer*))))
+          (incf& rots)
+          (when (or (not (null (car *kill-buffer*)))
+                    (>=& rots *kill-buffer-length*))
+            (return)))))
   (write-system-scrap (car *kill-buffer*))
   boxer-eval::*novalue*)
 
@@ -1139,66 +1139,66 @@ removes it from the kill buffer.  No copy is made."
       #+lispworks (capi::set-clipboard *boxer-frame* thing text)
       ;; NOTE:for LW and X, use capi::set-selection
       #-(or mcl lispworks) (warn "Write System Scrap undefined for ~A on ~A"
-                             (lisp-implementation-type) (machine-type)))))
+                                 (lisp-implementation-type) (machine-type)))))
 
 
 (defun textify-thing (thing &optional stream)
   (if (not stream)
-    (let ((togo-string (make-array '(0) :element-type 'character
-                               :fill-pointer 0 :adjustable t)))
-       (with-output-to-string (stream togo-string)
-         (textify-thing thing stream))
-       togo-string)
-    (flet ((textify-row (row)
-             (let* ((chas (chas-array row))
-                    (length (chas-array-active-length chas)))
-               (dotimes (n length)
-                 (let ((char (chas-array-get-cha chas n)))
-                   (textify-thing char stream))))))
-      (typecase thing
-        (interval
-         (with-region-top-level-bps (thing :start-bp-name start-bp
-                                           :stop-bp-name  stop-bp)
-           (flet ((first-row? (row) (eq row (bp-row start-bp)))
-                  (last-row?  (row) (eq row (bp-row stop-bp)))
-                  )
-             (do-region-rows (rr thing)
-               (textify-row rr)
-               (unless (last-row? rr)
-                 (terpri stream))))))
-        (row
-         (textify-row thing))
-        (port-box
-         (format stream "[PORT-BOX]"))
-        (box
-         (write-char #\[ stream)
-         (do-box-rows ((row thing))
-           (textify-row row)
-           (when (next-row  row) (terpri stream)))
-         (write-char #\] stream))
-        (character (write-char thing stream))
-        (list (dolist (elem thing)
-                (textify-thing elem stream)))
-        (symbol
-         (case thing
-           (:newline (write-char #\newline stream))
-           (t (error "Couldn't translate ~A to text" thing))))
-        (t (error "Couldn't translate ~A to text" thing)
+      (let ((togo-string (make-array '(0) :element-type 'character
+                                          :fill-pointer 0 :adjustable t)))
+        (with-output-to-string (stream togo-string)
+          (textify-thing thing stream))
+        togo-string)
+      (flet ((textify-row (row)
+               (let* ((chas (chas-array row))
+                      (length (chas-array-active-length chas)))
+                 (dotimes (n length)
+                   (let ((char (chas-array-get-cha chas n)))
+                     (textify-thing char stream))))))
+        (typecase thing
+          (interval
+           (with-region-top-level-bps (thing :start-bp-name start-bp
+                                             :stop-bp-name  stop-bp)
+             (flet ((first-row? (row) (eq row (bp-row start-bp)))
+                    (last-row?  (row) (eq row (bp-row stop-bp)))
+                    )
+               (do-region-rows (rr thing)
+                 (textify-row rr)
+                 (unless (last-row? rr)
+                   (terpri stream))))))
+          (row
+           (textify-row thing))
+          (port-box
+           (format stream "[PORT-BOX]"))
+          (box
+           (write-char #\[ stream)
+           (do-box-rows ((row thing))
+             (textify-row row)
+             (when (next-row  row) (terpri stream)))
+           (write-char #\] stream))
+          (character (write-char thing stream))
+          (list (dolist (elem thing)
+                  (textify-thing elem stream)))
+          (symbol
+           (case thing
+             (:newline (write-char #\newline stream))
+             (t (error "Couldn't translate ~A to text" thing))))
+          (t (error "Couldn't translate ~A to text" thing)
            nil)))))
 
 
 
-;this function copys things if they're boxer structures that have uniqueness.
-;This should probably return a PRE-BOX but I can't figure out how they work.
+;;this function copys things if they're boxer structures that have uniqueness.
+;;This should probably return a PRE-BOX but I can't figure out how they work.
 (defun copy-thing (boxer-thing)
   (bw::with-mouse-cursor (:processing)
     (let ((boxer-eval::*warn-about-primitive-shadowing* nil))
       (cond ((box? boxer-thing) (copy-top-level-box boxer-thing :name))
-      ((row? boxer-thing) (copy-row boxer-thing nil nil :name))
-      ((cha? boxer-thing) boxer-thing)
-      ((interval? boxer-thing) (copy-interval boxer-thing :name))
-      ((listp boxer-thing) (mapcar #'copy-thing boxer-thing))
-      (t boxer-thing)))))		;aw, who cares?
+            ((row? boxer-thing) (copy-row boxer-thing nil nil :name))
+            ((cha? boxer-thing) boxer-thing)
+            ((interval? boxer-thing) (copy-interval boxer-thing :name))
+            ((listp boxer-thing) (mapcar #'copy-thing boxer-thing))
+            (t boxer-thing)))))		;aw, who cares?
 
 ;; This is called by the function which handles keystrokes every time it
 ;; executes a command.  If, when we execute a killing/saving command
@@ -1297,7 +1297,7 @@ removes it from the kill buffer.  No copy is made."
   (reset-region)
   (reset-editor-numeric-arg)
   (move-point (all-bp-values (box-first-bp-values *initial-box*)
-           (car (screen-objs *initial-box*))))
+                             (car (screen-objs *initial-box*))))
   (setq *outermost-screen-box-stack* nil)
   (set-outermost-box *initial-box* (car (screen-objs *initial-box*)))
   (enter (point-box))
@@ -1307,7 +1307,7 @@ removes it from the kill buffer.  No copy is made."
   "make a temporary ps file, and spool. Remove the temp file."
   (let ((*print-outermost-box* (null *editor-numeric-argument*)))
     (when (status-line-y-or-n-p (format nil "Print the screen on ~A (y or n) ?"
-          *ps-postscript-printer*))
+                                        *ps-postscript-printer*))
       (status-line-clear)
       (make-ps-file (outermost-screen-box) nil))
     boxer-eval::*novalue*))
@@ -1317,7 +1317,7 @@ removes it from the kill buffer.  No copy is made."
   "make a temporary ps file, and spool. Remove the temp file."
   (let ((*print-outermost-box* nil))
     (when (status-line-y-or-n-p (format nil "Print the screen on ~A (y or n) ?"
-          *ps-postscript-printer*))
+                                        *ps-postscript-printer*))
       (status-line-clear)
       (make-ps-file (outermost-screen-box) nil))
     boxer-eval::*novalue*))
@@ -1327,7 +1327,7 @@ removes it from the kill buffer.  No copy is made."
    specified by Postscript-Filename"
   (let ((*print-outermost-box* (null *editor-numeric-argument*)))
     (when (status-line-y-or-n-p (format nil "Print the screen to file ~A: ?"
-          *ps-file*))
+                                        *ps-file*))
       (status-line-clear)
       (make-ps-file (outermost-screen-box) *ps-file*))
     boxer-eval::*novalue*))
@@ -1338,7 +1338,7 @@ removes it from the kill buffer.  No copy is made."
    specified by Postscript-Filename"
   (let ((*print-outermost-box* nil))
     (when (status-line-y-or-n-p (format nil "Print the screen to file ~A: ?"
-          *ps-file*))
+                                        *ps-file*))
       (status-line-clear)
       (make-ps-file (outermost-screen-box) *ps-file*))
     boxer-eval::*novalue*))
@@ -1352,11 +1352,11 @@ removes it from the kill buffer.  No copy is made."
   "Makes all keys use the original bindings"
   (reset-region) ; flush region because we'll be rebinding region special keys
   (cond ((fast-memq *global-top-level-mode* *active-modes*)
-   (remove-mode *global-top-level-mode*)
-   (boxer-editor-warning "Leaving Top Level Mode"))
-  (t
-   (add-mode *global-top-level-mode*)
-   (boxer-editor-warning "Entering Top Level Mode")))
+         (remove-mode *global-top-level-mode*)
+         (boxer-editor-warning "Leaving Top Level Mode"))
+        (t
+         (add-mode *global-top-level-mode*)
+         (boxer-editor-warning "Entering Top Level Mode")))
   boxer-eval::*novalue*)
 
 (defboxer-command com-reset-modes ()
@@ -1409,59 +1409,59 @@ removes it from the kill buffer.  No copy is made."
 (defun move-to-place (position-object)
   (let ((start-box (point-box))
         (to-box (process-doit-cursor-position-box position-object))
-  (to-row (process-doit-cursor-position-row position-object))
-  (to-cha-no (process-doit-cursor-position-cha-no position-object))
-  (to-row-no (process-doit-cursor-position-row-no position-object))
-  (to-box-stack (process-doit-cursor-position-box-stack position-object))
-  (to-screen-box (process-doit-cursor-position-screen-box
-      position-object)))
+        (to-row (process-doit-cursor-position-row position-object))
+        (to-cha-no (process-doit-cursor-position-cha-no position-object))
+        (to-row-no (process-doit-cursor-position-row-no position-object))
+        (to-box-stack (process-doit-cursor-position-box-stack position-object))
+        (to-screen-box (process-doit-cursor-position-screen-box
+                        position-object)))
     (declare (ignore to-screen-box))
     (cond ((superior? to-box *initial-box*)
-     ;; looks like the box is still in the hierarchy
-     (cond ((eq (superior-box to-row) to-box)
-            ;; if the row is still a part of the box, we can go right there
-            (move-to-bp-values *point*
-             (values to-row
-               (min to-cha-no
-                    (length-in-chas to-row))))
+           ;; looks like the box is still in the hierarchy
+           (cond ((eq (superior-box to-row) to-box)
+                  ;; if the row is still a part of the box, we can go right there
+                  (move-to-bp-values *point*
+                                     (values to-row
+                                             (min to-cha-no
+                                                  (length-in-chas to-row))))
                   ;; make sure to ENTER the destination box
                   (enter to-box (not (superior? start-box to-box))))
-                  (t
-             ;; use the row-no instead
-             (let ((row (row-at-row-no to-box
-               (min to-row-no
-                    (1- (length-in-rows to-box))))))
-                     (move-to-bp-values *point*
-                (values row
-                  (min to-cha-no
-                 (length-in-chas row))))
-                     (let ((dest-box (superior-box row)))
-                       (enter dest-box (not (superior? start-box dest-box)))))))
+                 (t
+                  ;; use the row-no instead
+                  (let ((row (row-at-row-no to-box
+                                            (min to-row-no
+                                                 (1- (length-in-rows to-box))))))
+                    (move-to-bp-values *point*
+                                       (values row
+                                               (min to-cha-no
+                                                    (length-in-chas row))))
+                    (let ((dest-box (superior-box row)))
+                      (enter dest-box (not (superior? start-box dest-box)))))))
            ;; check if we need to fill other slots
            (when (eq to-box-stack :unfilled)
              (setf (process-doit-cursor-position-screen-box position-object)
                    (point-screen-box)
                    (process-doit-cursor-position-box-stack position-object)
                    (with-collection
-               (do* ((screen-box (point-screen-box)
-                     (unless (null screen-box)
-                 (superior-screen-box screen-box)))
-               (box (if (null screen-box)
-                (point-box)
-                (screen-obj-actual-obj screen-box))
-                    (if (null screen-box)
-                (superior-box box)
-                (screen-obj-actual-obj screen-box))))
-              ((or (eq box *initial-box*)
-                   (when (null box)
-                     (warn "The *point* is not in the editor hierarchy")
-                     t)))
-                 (collect box))))))
-    (t
-     ;; if the box isn't in the editor, we could use the box
-     ;; stack to try and get close or else just punt
-     ;; for now, we'll punt by returning an ':error value
-     ':error))))
+                       (do* ((screen-box (point-screen-box)
+                                         (unless (null screen-box)
+                                           (superior-screen-box screen-box)))
+                             (box (if (null screen-box)
+                                      (point-box)
+                                      (screen-obj-actual-obj screen-box))
+                                  (if (null screen-box)
+                                      (superior-box box)
+                                      (screen-obj-actual-obj screen-box))))
+                            ((or (eq box *initial-box*)
+                                 (when (null box)
+                                   (warn "The *point* is not in the editor hierarchy")
+                                   t)))
+                         (collect box))))))
+          (t
+           ;; if the box isn't in the editor, we could use the box
+           ;; stack to try and get close or else just punt
+           ;; for now, we'll punt by returning an ':error value
+           ':error))))
 
 (defboxer-command com-set-mark ()
   "Records the current location on the previous place stack"
@@ -1472,7 +1472,7 @@ removes it from the kill buffer.  No copy is made."
 (defboxer-command com-goto-previous-place ()
   "Go to the previous recorded place that is still in the editor"
   (cond ((null *previous-place-stack*))
-  (t (let ((tos (pop *previous-place-stack*)))
+        (t (let ((tos (pop *previous-place-stack*)))
              (move-to-place tos)
              (setq *previous-place-stack*
                    (nconc *previous-place-stack* (list tos))))))
@@ -1499,12 +1499,12 @@ Argument is a character, naming the register."
              (status-line-display
               'boxer-editor-error
               (format nil "This place saved by the name:~A" string))
-       (push (cons string (%record-current-place)) *recorded-place-alist*))
-      (t
+             (push (cons string (%record-current-place)) *recorded-place-alist*))
+            (t
              (status-line-display
               'boxer-editor-error
               (format nil "Place ~A changed to this place" string))
-       (setf (cdr existing) (%record-current-place))))))
+             (setf (cdr existing) (%record-current-place))))))
   boxer-eval::*novalue*)
 
 #| ;; the old character based place naming scheme
@@ -1539,9 +1539,9 @@ Argument is a character, naming the register."
              (status-line-display
               'boxer-editor-error
               (format nil "Place ~A is undefined" string)))
-      (t
+            (t
              (status-line-display 'boxer-editor-error
-                (format nil "Moving to Place in Register ~A"
+                                  (format nil "Moving to Place in Register ~A"
                                           string))
              (let ((status (move-to-place (cdr existing))))
                (when (eq status ':error)
@@ -1549,7 +1549,7 @@ Argument is a character, naming the register."
                        (fast-delq existing *recorded-place-alist*))
                  (boxer-editor-warning "Place ~A is no longer in the editor"
                                        string)))))))
-    boxer-eval::*novalue*)
+  boxer-eval::*novalue*)
 
 #|
   (status-line-display 'boxer-editor-error
@@ -1590,9 +1590,9 @@ Argument is a character, naming the register."
 (defun bp-place= (bp place)
   (and (eq (bp-row bp)    (process-doit-cursor-position-row place))
        (=  (bp-cha-no bp) (process-doit-cursor-position-cha-no place))
-       ;(or (null (bp-screen-box bp))
-       ;    (eq (bp-screen-box bp)
-       ;        (process-doit-cursor-position-screen-box place)))
+           ;;(or (null (bp-screen-box bp))
+           ;;    (eq (bp-screen-box bp)
+           ;;        (process-doit-cursor-position-screen-box place)))
        ))
 
 ;; stubbified for "UC clean" reimplementation
