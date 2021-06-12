@@ -1,90 +1,77 @@
-;; -*- Mode:LISP;Syntax:Common-Lisp; Package:BOXER; Base:8. -*-
-
-#|
-
-
- $Header: comsa.lisp,v 1.0 90/01/24 22:08:49 boxer Exp $
-
-
- $Log:	comsa.lisp,v $
-;;;Revision 1.0  90/01/24  22:08:49  boxer
-;;;Initial revision
-;;;
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                         +-Data--+
-                This file is part of the | BOXER | system
-                                         +-------+
-
-
-     This file contains top level definitions for
-     the basic set of BOXER Editor Commands.
-
-     Most of the commands here are BOXER versions of
-     EMACS commands.  The file COMSB.LISP has the set
-     of Box manipulation commands.  Various other
-     COMSx.LISP files have other sets of commands grouped
-     by functionality.
-
-The basics:
-  COM-ABORT COM-INCREMENT-NUMERIC-ARG-BY-~D COM-QUADRUPLE-NUMERIC-ARG
-  COM-QUOTE-SELF-INSERT COM-SPACE COM-RETURN COM-OPEN-LINE
-Single Character Commands:
-  COM-RUBOUT COM-DELETE COM-FORWARD-CHA COM-BACKWARD-CHA
-Cursor Movement:
-  COM-BEGINNING-OF-ROW COM-END-OF-ROW COM-BEGINNING-OF-BOX COM-END-OF-BOX
-  COM-PREVIOUS-ROW COM-PREVIOUS-ROW-OR-NAME COM-NEXT-ROW
-  COM-MOVE-TO-PORT-TARGET
-Word Commands:
- COM-FORWARD-WORD COM-BACKWARD-WORD COM-RUBOUT-WORD COM-DELETE-WORD
-Scrolling:
- COM-SCROLL-DN-ONE-SCREEN-BOX COM-SCROLL-UP-ONE-SCREEN-BOX
-Killing Stuff:
- COM-KILL-TO-END-OF-ROW COM-YANK COM-YANK-NO-COPY COM-ROTATE-KILL-BUFFER
-Random useful things:
- COM-FORCE-REDISPLAY COM-BREAK COM-BUG COM-GOTO-TOP-LEVEL
-
-
-
-Modification History (most recent at the top)
-
- 7/02/09 com-forward/backward-cha now call ensure-row-is-displayed when needed
- 4/13/08 com-select-box-contents
- 4/17/08 write-system-scrap for intel macs
- 8/21/05 com-retrieve checks for null region after yank and only goes into region mode
-         if the yank produced a change
- 5/22/05 fixed com-bug so it can work from menus as well as keys
- 5/20/05 new com-bug mechanism bug-mail-template, bu::(boxer-)bug-report-template
- 4/21/02 merged current LW and MCl files
-12/02/02 generalized write-mac-scrap to write-system-scrap which is extended to
-         handle Windows clipboard
-10/23/02 com-forget-place stubbified in preparation for reimplementation for
-         a "UC Clean" release
- 2/12/01 merged with current MCL file
-12/19/00 added ensure-row-is-displayed to rubout-cha to handle obscure
-         scrolling bugs
- 4/11/00 move-to-place now calls ENTER to get triggers and binding root correct
-11/07/99 make sure cursor movement only follows spaces in filling-com-space
-10/17/99 autofill functions reorganized, lot of stuff moved to comsb.lisp
-10/12/99 new functions: point-position & friends (estimate-box/row-width)
-         used by new autofill mechanism
- 9/08/99 COM-SELECT-BOX-CONTENTS: reset (possibly) existing region 1st
- 6/25/99 %record-box-place added
-         move-to-place fills :unfilled slots in position vector
- 6/24/99 added com-forget-place
- 7/30/98 Started Logging changes: source = boxer version 2.3beta
-
-|#
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                           +-Data--+
+;;;;                  This file is part of the | BOXER | system
+;;;;                                           +-------+
+;;;;
+;;;;
+;;;;       This file contains top level definitions for
+;;;;       the basic set of BOXER Editor Commands.
+;;;;
+;;;;       Most of the commands here are BOXER versions of
+;;;;       EMACS commands.  The file COMSB.LISP has the set
+;;;;       of Box manipulation commands.  Various other
+;;;;       COMSx.LISP files have other sets of commands grouped
+;;;;       by functionality.
+;;;;
+;;;;  The basics:
+;;;;    COM-ABORT COM-INCREMENT-NUMERIC-ARG-BY-~D COM-QUADRUPLE-NUMERIC-ARG
+;;;;    COM-QUOTE-SELF-INSERT COM-SPACE COM-RETURN COM-OPEN-LINE
+;;;;  Single Character Commands:
+;;;;    COM-RUBOUT COM-DELETE COM-FORWARD-CHA COM-BACKWARD-CHA
+;;;;  Cursor Movement:
+;;;;    COM-BEGINNING-OF-ROW COM-END-OF-ROW COM-BEGINNING-OF-BOX COM-END-OF-BOX
+;;;;    COM-PREVIOUS-ROW COM-PREVIOUS-ROW-OR-NAME COM-NEXT-ROW
+;;;;    COM-MOVE-TO-PORT-TARGET
+;;;;  Word Commands:
+;;;;   COM-FORWARD-WORD COM-BACKWARD-WORD COM-RUBOUT-WORD COM-DELETE-WORD
+;;;;  Scrolling:
+;;;;   COM-SCROLL-DN-ONE-SCREEN-BOX COM-SCROLL-UP-ONE-SCREEN-BOX
+;;;;  Killing Stuff:
+;;;;   COM-KILL-TO-END-OF-ROW COM-YANK COM-YANK-NO-COPY COM-ROTATE-KILL-BUFFER
+;;;;  Random useful things:
+;;;;   COM-FORCE-REDISPLAY COM-BREAK COM-BUG COM-GOTO-TOP-LEVEL
+;;;;
+;;;;
+;;;;
+;;;;  Modification History (most recent at the top)
+;;;;
+;;;;   7/02/09 com-forward/backward-cha now call ensure-row-is-displayed when needed
+;;;;   4/13/08 com-select-box-contents
+;;;;   4/17/08 write-system-scrap for intel macs
+;;;;   8/21/05 com-retrieve checks for null region after yank and only goes into region mode
+;;;;           if the yank produced a change
+;;;;   5/22/05 fixed com-bug so it can work from menus as well as keys
+;;;;   5/20/05 new com-bug mechanism bug-mail-template, bu::(boxer-)bug-report-template
+;;;;   4/21/02 merged current LW and MCl files
+;;;;  12/02/02 generalized write-mac-scrap to write-system-scrap which is extended to
+;;;;           handle Windows clipboard
+;;;;  10/23/02 com-forget-place stubbified in preparation for reimplementation for
+;;;;           a "UC Clean" release
+;;;;   2/12/01 merged with current MCL file
+;;;;  12/19/00 added ensure-row-is-displayed to rubout-cha to handle obscure
+;;;;           scrolling bugs
+;;;;   4/11/00 move-to-place now calls ENTER to get triggers and binding root correct
+;;;;  11/07/99 make sure cursor movement only follows spaces in filling-com-space
+;;;;  10/17/99 autofill functions reorganized, lot of stuff moved to comsb.lisp
+;;;;  10/12/99 new functions: point-position & friends (estimate-box/row-width)
+;;;;           used by new autofill mechanism
+;;;;   9/08/99 COM-SELECT-BOX-CONTENTS: reset (possibly) existing region 1st
+;;;;   6/25/99 %record-box-place added
+;;;;           move-to-place fills :unfilled slots in position vector
+;;;;   6/24/99 added com-forget-place
+;;;;   7/30/98 Started Logging changes: source = boxer version 2.3beta
+;;;;
 
 (in-package :boxer)
 
