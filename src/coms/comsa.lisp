@@ -134,7 +134,6 @@ many copies of the character. "
   (let ((cha (get-character-input *boxer-pane*)))
     (with-multiple-execution
       ;; should this be in or out of the loop  ?
-      #-opengl(add-redisplay-clue (point-row) ':insert)
       (insert-cha *point*
                   cha
                   :moving)))
@@ -158,7 +157,6 @@ many copies of the character. "
 argument (n), inserts n spaces. "
   (reset-region)
   (with-multiple-execution
-    #-opengl(add-redisplay-clue (point-row) ':insert)
     (insert-cha *point* #\space :moving))
   (mark-file-box-dirty (point-row))
   boxer-eval::*novalue*)
@@ -246,7 +244,6 @@ with a numeric arg (n), inserts n blank lines. "
 
 (defun simple-delete-cha (bp &optional (force-bp-type nil))
   (action-at-bp-internal
-   #-opengl(add-redisplay-clue (bp-row bp) :delete)
    (delete-cha-at-cha-no (bp-row bp) (bp-cha-no bp))))
 
 (defun rubout-cha (bp &optional (force-bp-type nil))
@@ -258,7 +255,6 @@ with a numeric arg (n), inserts n blank lines. "
           (cha-to-delete (unless (= cha-no 0)
                            (cha-at-cha-no row (1- cha-no)))))
      (cond ((> cha-no 0)
-            #-opengl(add-redisplay-clue row :delete)
             (delete-cha-at-cha-no row (- cha-no 1)))
            ((or (name-row? row) (zerop row-no)))
            (t
@@ -266,7 +262,6 @@ with a numeric arg (n), inserts n blank lines. "
                    (previous-row-length-in-chas (length-in-chas previous-row))
                    (*boxes-being-temporarily-deleted* t))
               (delete-row-at-row-no box row-no)
-              #-opengl(add-redisplay-clue previous-row :insert)
               (insert-row-chas-at-cha-no
                previous-row row previous-row-length-in-chas)
               (ensure-row-is-displayed previous-row (point-screen-box) -1))))
@@ -598,13 +593,11 @@ argument (n), moves backward n words. "
                                     (setq not-first-cha? t)
                                     (action-at-bp-internal
                                      (kill-buffer-push (cha-at-cha-no row (1- cha-no)) ':backward)
-                                     #-opengl(add-redisplay-clue (bp-row bp) ':delete)
                                      (delete-cha-at-cha-no row (1- cha-no))))
                                    (t
                                     ;; Delimiter Chas Before Word
                                     (action-at-bp-internal
                                      (kill-buffer-push (cha-at-cha-no row (1- cha-no)) ':backward)
-                                     #-opengl(add-redisplay-clue (bp-row bp) ':delete)
                                      (delete-cha-at-cha-no row (1- cha-no)))))))))
 
 
@@ -645,13 +638,11 @@ argument (n), moves backward n words. "
                       (SETQ NOT-FIRST-CHA? T)
                       (ACTION-AT-BP-INTERNAL
                        (kill-buffer-push (cha-at-cha-no row cha-no) ':forward)
-                       #-opengl(add-redisplay-clue row ':delete)
                        (DELETE-CHA-AT-CHA-NO ROW CHA-NO )))
                      (T
                       ;; delimiter chas before word
                       (ACTION-AT-BP-INTERNAL
                        (kill-buffer-push (cha-at-cha-no row cha-no) ':forward)
-                       #-opengl(add-redisplay-clue row ':delete)
                        (DELETE-CHA-AT-CHA-NO ROW CHA-NO)))))))))
 
 
@@ -803,14 +794,12 @@ argument, deletes that many lines."
              (ROW-LENGTH-IN-CHAS (LENGTH-IN-CHAS ROW))
              (CHA-NO (BP-CHA-NO *POINT*)))
         (COND ((< CHA-NO ROW-LENGTH-IN-CHAS)
-               #-opengl(add-redisplay-clue row ':delete)
                (kill-buffer-push (DELETE-CHAS-TO-END-OF-ROW *POINT* :FIXED)
                                  :FORWARD))
               ((NULL NEXT-ROW))
               (T (MOVE-POINT (BP-FORWARD-CHA-VALUES *POINT*))
                  ;; if we are at the end of the row,
                  ;; join the next row to the current one
-                 #-opengl(add-redisplay-clue row ':insert)
                  (kill-buffer-push (rubout-cha *point* :moving) :forward)))))
   (mark-file-box-dirty (point-row))
   boxer-eval::*novalue*)
@@ -825,7 +814,6 @@ argument, deletes that many lines."
              (cha-no (point-cha-no)))
         (cond ((and (null next-row) (null prev-row))
                ;; the delete-row is the ONLY row in the box
-               #-opengl(add-redisplay-clue delete-row ':delete)
                (move-point-1 delete-row 0)
                (kill-buffer-push (delete-chas-to-end-of-row *point* :fixed) :forward))
               (t
@@ -856,9 +844,7 @@ argument, deletes that many lines."
                                                          (bp-row stop-bp) stop-row (bp-cha-no stop-bp) stop-cha-no)
                                                    (setq *region-being-defined*
                                                          (make-editor-region start-bp stop-bp))
-                                                   #-opengl (turn-on-interval *region-being-defined*)
                                                    (push *region-being-defined* *region-list*)
-                                                   #-opengl (interval-update-redisplay-all-rows *region-being-defined*)
                                                    (entering-region-mode))))))
   boxer-eval::*novalue*)
 
@@ -948,7 +934,6 @@ removes it from the kill buffer.  No copy is made."
 
 
 (defun insert-string-chas (string)
-  #-opengl(add-redisplay-clue (point-row) ':insert)
   (map nil #'(lambda (cha) (insert-cha *point* cha)) string))
 
 (defun top-level-insert-things (things)
@@ -986,16 +971,13 @@ removes it from the kill buffer.  No copy is made."
 (defun insert-thing (thing)
   (cond ((null thing))
         ((or (box? thing) (cha? thing))
-         #-opengl(add-redisplay-clue (point-row) ':insert)
          (insert-cha *point* thing :moving))
         ((row? thing) (if (zerop (length-in-chas thing))
                           (insert-row *point* thing :moving)
                           (progn
-                            #-opengl(add-redisplay-clue (point-row) ':insert)
                             (insert-row-chas *point* thing :moving))))
         ((interval? thing)
          (yank-region *point* thing)
-         #-opengl(add-redisplay-clue (point-row) ':insert)
          (unless *highlight-yanked-region*
            (turn-off-interval thing))
          (setq *current-editor-region* thing))
@@ -1051,10 +1033,8 @@ removes it from the kill buffer.  No copy is made."
 (defun write-system-scrap (thing)
   (let ((text (textify-thing thing)))
     (when text
-      #+mcl (ccl:put-scrap :text text)
       #+lispworks (capi::set-clipboard *boxer-frame* thing text)
-      ;; NOTE:for LW and X, use capi::set-selection
-      #-(or mcl lispworks) (warn "Write System Scrap undefined for ~A on ~A"
+      #-lispworks (warn "Write System Scrap undefined for ~A on ~A"
                                  (lisp-implementation-type) (machine-type)))))
 
 
@@ -1135,7 +1115,6 @@ removes it from the kill buffer.  No copy is made."
 (defboxer-command COM-FORCE-REDISPLAY (&optional redraw-status-line?)
   "clears and then redisplays the screen. "
   (reset-editor-numeric-arg)
-  #-opengl(add-redisplay-clue (outermost-box) :clear-screen)
   (when redraw-status-line? (redraw-status-line))
   (force-repaint)
   boxer-eval::*novalue*)
@@ -1149,8 +1128,7 @@ removes it from the kill buffer.  No copy is made."
   "enters a LISP breakpoint. "
   (reset-editor-numeric-arg)
   (let ((*inside-lisp-breakpoint-p* t))
-    #+Symbolics (si:break-internal 'boxer)
-    #-Symbolics (break "Boxer"))
+    (break "Boxer"))
   (bw::flush-input)
   boxer-eval::*novalue*)
 
