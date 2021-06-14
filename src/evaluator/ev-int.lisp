@@ -1,92 +1,78 @@
-;;;-*- Mode:Lisp; Syntax: Common-Lisp; Base: 10.;package: (Boxer :use (lisp sm pcl) :nicknames (box));-*-
-
-
-#|
-
-
- $Header: ev-int.lisp,v 1.0 90/01/24 22:11:08 boxer Exp $
-
- $Log:	ev-int.lisp,v $
-;;;Revision 1.0  90/01/24  22:11:08  boxer
-;;;Initial revision
-;;;
-
-    Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
-
-    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
-    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
-
-    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
-
-    https://opensource.org/licenses/BSD-3-Clause
-
-
-                                         +-Data--+
-                This file is part of the | BOXER | system
-                                         +-------+
-
-  This file contains functions which the evaluator needs to call but
-  which have to be defined in the BOXER package, or functions which
-  the evaluator defines in the EVAL package but which the editor
-  needs to call.
-
-
-Modification History (most recent at top)
-
-11/09/10 don't force-graphics-output in top-level-eval-wrapper for opengl
-11/23/09 top-level-eval-wrapper
- 3/02/07 added with-screen-box-modification-tracking to top-level-eval-wrapper
-11/15/03 fill-doit-cursor-position-vector changed to take &optional bp arg so we
-         can use it to record mouse-bp's as well as the *point*
-         fixes to restore-point-position to make it more general purpose
-10/15/03 display-force-output changed to force-graphics-output in *-eval-wrapper's
- 2/15/03 merged current LW and MCl files
- 1/15/03 restore-point-position more robust to handle cases where program cursor control
-         has hidden the point
-         fill-doit-cursor-position-vector now only warns when *boxer-system-hacker* is T
-10/17/02 ALTERNATE-PLATFORM-CLICK-NAMES for mouse, HANDLE-BOXER-MOUSE-CLICK uses it
-10/12/02 ALTERNATE-PLATFORM-INPUT-NAMES smart about multiple platform names
-         HANDLE-BOXER-KEY uses it to check all possibilities
-10/07/02 stubbified ALTERNATE-PLATFORM-INPUT-NAME in preparation for clean
-         reimplementation of platform independent key/click handling
-         Saved version of this file as ev-int-10-7-2002.lisp as a stubbified
-         reference and ev-int-original.lisp
- 1/18/02 handle-boxer-{key,mouse-click} changed to pass a VC of the doit box
-         instead of the NAME of the doit box when handling doit boxes
- 1/06/02 convert-doit-result-for-printing binds font to default
-10/29/01 fixed handle-boxer-mouse-click to recognized shifted mouse clicks
- 3/04/01 changed the search order to check for alternate name binding BEFORE
-         regular click name.  This was put in to cover the case of mouse bindings
-         in mac worlds being ignored because of useless (beeping) defaults
- 2/14/01 merged current LW and MCL files
-10/17/02 ALTERNATE-PLATFORM-CLICK-NAMES for mouse, HANDLE-BOXER-MOUSE-CLICK uses it
-10/12/02 ALTERNATE-PLATFORM-INPUT-NAMES smart about multiple platform names
-         HANDLE-BOXER-KEY uses it to check all possibilities
-10/07/02 stubbified ALTERNATE-PLATFORM-INPUT-NAME in preparation for clean
-         reimplementation of platform independent key/click handling
-         Saved version of this file as ev-int-10-7-2002.lisp as a stubbified
-         reference and ev-int-original.lisp
- 1/18/02 handle-boxer-{key,mouse-click} changed to pass a VC of the doit box
-         instead of the NAME of the doit box when handling doit boxes
- 1/06/02 convert-doit-result-for-printing binds font to default
-10/29/01 fixed handle-boxer-mouse-click to recognized shifted mouse clicks
- 3/04/01 changed the search order to check for alternate name binding BEFORE
-         regular click name.  This was put in to cover the case of mouse bindings
-         in mac worlds being ignored because of useless (beeping) defaults
- 2/14/01 merged current LW and MCL files
-11/17/00 made fill-doit-cursor-position-vector more robust for possible
-         null (point-box)
- 7/03/00 eval wrappers for lispworks now explicitly setq *EVALUATION-IN-PROGRESS*
-         instead of LET binding it
- 3/21/00 added alternate platform name lookup to handle-boxer-key/mouse-click
- 6/23/98 Change handle-boxer-key-doit-box to always report errors via status line
-         because inserting error boxes (especially for mouse clicks) can mess
-         things up
- 6/23/98 started logging changes: source = Boxer version 2.3
-
-
-|#
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                           +-Data--+
+;;;;                  This file is part of the | BOXER | system
+;;;;                                           +-------+
+;;;;
+;;;;    This file contains functions which the evaluator needs to call but
+;;;;    which have to be defined in the BOXER package, or functions which
+;;;;    the evaluator defines in the EVAL package but which the editor
+;;;;    needs to call.
+;;;;
+;;;;
+;;;;  Modification History (most recent at top)
+;;;;
+;;;;  11/09/10 don't force-graphics-output in top-level-eval-wrapper for opengl
+;;;;  11/23/09 top-level-eval-wrapper
+;;;;   3/02/07 added with-screen-box-modification-tracking to top-level-eval-wrapper
+;;;;  11/15/03 fill-doit-cursor-position-vector changed to take &optional bp arg so we
+;;;;           can use it to record mouse-bp's as well as the *point*
+;;;;           fixes to restore-point-position to make it more general purpose
+;;;;  10/15/03 display-force-output changed to force-graphics-output in *-eval-wrapper's
+;;;;   2/15/03 merged current LW and MCl files
+;;;;   1/15/03 restore-point-position more robust to handle cases where program cursor control
+;;;;           has hidden the point
+;;;;           fill-doit-cursor-position-vector now only warns when *boxer-system-hacker* is T
+;;;;  10/17/02 ALTERNATE-PLATFORM-CLICK-NAMES for mouse, HANDLE-BOXER-MOUSE-CLICK uses it
+;;;;  10/12/02 ALTERNATE-PLATFORM-INPUT-NAMES smart about multiple platform names
+;;;;           HANDLE-BOXER-KEY uses it to check all possibilities
+;;;;  10/07/02 stubbified ALTERNATE-PLATFORM-INPUT-NAME in preparation for clean
+;;;;           reimplementation of platform independent key/click handling
+;;;;           Saved version of this file as ev-int-10-7-2002.lisp as a stubbified
+;;;;           reference and ev-int-original.lisp
+;;;;   1/18/02 handle-boxer-{key,mouse-click} changed to pass a VC of the doit box
+;;;;           instead of the NAME of the doit box when handling doit boxes
+;;;;   1/06/02 convert-doit-result-for-printing binds font to default
+;;;;  10/29/01 fixed handle-boxer-mouse-click to recognized shifted mouse clicks
+;;;;   3/04/01 changed the search order to check for alternate name binding BEFORE
+;;;;           regular click name.  This was put in to cover the case of mouse bindings
+;;;;           in mac worlds being ignored because of useless (beeping) defaults
+;;;;   2/14/01 merged current LW and MCL files
+;;;;  10/17/02 ALTERNATE-PLATFORM-CLICK-NAMES for mouse, HANDLE-BOXER-MOUSE-CLICK uses it
+;;;;  10/12/02 ALTERNATE-PLATFORM-INPUT-NAMES smart about multiple platform names
+;;;;           HANDLE-BOXER-KEY uses it to check all possibilities
+;;;;  10/07/02 stubbified ALTERNATE-PLATFORM-INPUT-NAME in preparation for clean
+;;;;           reimplementation of platform independent key/click handling
+;;;;           Saved version of this file as ev-int-10-7-2002.lisp as a stubbified
+;;;;           reference and ev-int-original.lisp
+;;;;   1/18/02 handle-boxer-{key,mouse-click} changed to pass a VC of the doit box
+;;;;           instead of the NAME of the doit box when handling doit boxes
+;;;;   1/06/02 convert-doit-result-for-printing binds font to default
+;;;;  10/29/01 fixed handle-boxer-mouse-click to recognized shifted mouse clicks
+;;;;   3/04/01 changed the search order to check for alternate name binding BEFORE
+;;;;           regular click name.  This was put in to cover the case of mouse bindings
+;;;;           in mac worlds being ignored because of useless (beeping) defaults
+;;;;   2/14/01 merged current LW and MCL files
+;;;;  11/17/00 made fill-doit-cursor-position-vector more robust for possible
+;;;;           null (point-box)
+;;;;   7/03/00 eval wrappers for lispworks now explicitly setq *EVALUATION-IN-PROGRESS*
+;;;;           instead of LET binding it
+;;;;   3/21/00 added alternate platform name lookup to handle-boxer-key/mouse-click
+;;;;   6/23/98 Change handle-boxer-key-doit-box to always report errors via status line
+;;;;           because inserting error boxes (especially for mouse clicks) can mess
+;;;;           things up
+;;;;   6/23/98 started logging changes: source = Boxer version 2.3
+;;;;
 
 (in-package :boxer)
 
