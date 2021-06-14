@@ -544,11 +544,8 @@
                                            (or bits (input-bits input)))))
               (unhandled-boxer-input key-name))))
          ((mouse-event? input)
-          (let ((handler (get (mouse-event-type input) ':boxer-input)))
-            (record-mouse-input input)
-            (if (or (null handler)
-                    (not (funcall handler input)))
-              (unhandled-boxer-input (get-mouse-click-name input)))))
+          (record-mouse-input input)
+          (mouse-click-boxer-input-handler input))
          (t (unhandled-boxer-input input)))))
 
 ;;; The following comment is preserved for posterity.
@@ -586,10 +583,6 @@
                                                   (mouse-event-bits blip)
                                                   area)
                                mouse-bp local-x local-y)))
-
-
-(setf (get :mouse-click :boxer-input) 'mouse-click-boxer-input-handler)
-(setf (get :mouse-hold  :boxer-input) 'mouse-click-boxer-input-handler)
 
 
 ;;; Documentation Support

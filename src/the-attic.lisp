@@ -3726,6 +3726,26 @@
 |#
 
 ;;;;
+;;;; FILE: keydef-high.lisp
+;;;;
+
+;; sgithens 2021-06-14 We used to have these mouse handlers parameterized
+;; by setting them on a symbol, however there has never been more than one,
+;; I don't plan on adding more, and I'm trying to reduce complexity of the
+;; system when we can.
+
+;; from defun handle-boxer-input
+((mouse-event? input)
+          (let ((handler (get (mouse-event-type input) ':boxer-input)))
+            (record-mouse-input input)
+            (if (or (null handler)
+                    (not (funcall handler input)))
+              (unhandled-boxer-input (get-mouse-click-name input)))))
+
+(setf (get :mouse-click :boxer-input) 'mouse-click-boxer-input-handler)
+(setf (get :mouse-hold  :boxer-input) 'mouse-click-boxer-input-handler)
+
+;;;;
 ;;;; FILE: keys-new.lisp
 ;;;;
 (boxer-eval::defboxer-key (bu::>-key 2) com-fat)
