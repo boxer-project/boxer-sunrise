@@ -3055,6 +3055,22 @@
 |#
 
 ;;;;
+;;;; FILE: ev-int.lisp
+;;;;
+
+#+symbolics
+(defun Fwc (&optional exp)
+  (top-level-eval-wrapper
+   (when (null exp) (setq exp (eval-objs (point-row))))
+   (time (boxer-eval::boxer-eval exp) t)))
+
+#+symbolics
+(defun Fwm (&optional exp)
+  (top-level-eval-wrapper
+   (when (null exp) (setq exp (eval-objs (point-row))))
+   (meter:with-monitoring  t (boxer-eval::boxer-eval exp))))
+
+;;;;
 ;;;; FILE: evalmacs.lisp
 ;;;;
 
