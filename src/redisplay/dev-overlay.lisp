@@ -32,4 +32,5 @@
       (with-pen-color (*blue*)
         (draw-string alu-seta code-font (format nil "Repaint:   ~$ms/fr" *current-framerate*) x 30)
         (draw-string alu-seta code-font (format nil "Font Zoom: ~A%" (* *font-size-baseline* 100)) x (+ 30 line-height))
-        (draw-string alu-seta code-font (format nil "Process:   ~A" process-state) x (+ 30 (* 2 line-height))))))))
+        (draw-string alu-seta code-font (format nil "Process:   ~A" process-state) x (+ 30 (* 2 line-height)))
+        (draw-string alu-seta code-font (format nil "x: ~A y: ~A d: ~A" bw::*track-mouse-x* bw::*track-mouse-y* bw::*mouse-down-p*) x (+ 30 (* 3 line-height))))))))
