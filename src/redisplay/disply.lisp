@@ -335,9 +335,11 @@
   (when (storage-vector? (slot-value self 'screen-rows))
     ;; check because it could be a box ellipsis
     (do-vector-contents (screen-row-to-da (slot-value self 'screen-rows))
-      ;; we have to sever the superior pointer before we call deallocate
-      (setf (screen-box screen-row-to-da) nil)
-      (deallocate-self screen-row-to-da))
+      ;; crash-fix Sometimes these vectors are padded with nil's
+      (unless (null screen-row-to-da)
+        ;; we have to sever the superior pointer before we call deallocate
+        (setf (screen-box screen-row-to-da) nil)
+        (deallocate-self screen-row-to-da)))
     (kill-screen-rows-from self 0)))
 
 (defmethod deallocate-inferiors ((self screen-row))
