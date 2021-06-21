@@ -156,7 +156,7 @@
                  (:file "filesystem/bfsforeign")
                  (:file "filesystem/client")
                  (:file "filesystem/base64")
-                 (:file "filesystem/binhex")
+                ;;  (:file "filesystem/binhex")
                  (:file "filesystem/applefile")
                  (:file "filesystem/surf")
                  (:file "filesystem/http")
