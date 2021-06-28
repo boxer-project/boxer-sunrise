@@ -832,15 +832,6 @@
 
 ;;; what about *generic-port* and *suitcase-region* ?
 
-(defmacro boxer-editor-bindings (recursive-p &body body)
-  `(progv '(*region-being-defined* boxer::*editor-numeric-argument*
-      boxer::*propagate-modified-messages?*)
-          `(nil nil ,',recursive-p)
-     (unwind-protect
-   (progn . ,body)
-;       (when (not (null *region-being-defined*))
-;       (flush-region *region-being-defined*))
-)))
 
 (defun boxer-process-top-level-fn (window)
   (declare (ignore window))
@@ -848,269 +839,43 @@
   (boxer::force-repaint)
   (boxer-command-loop))
 
-(defun boxer-command-loop ()
-  (boxer-system-error-restart-loop
-    (boxer-editor-bindings nil
-      (boxer-command-loop-internal))))
-
-(defvar just-redisplayed? nil)
-
-(defvar *boxer-command-loop-event-handlers-queue* nil
-  "A list of functions to funcall at the bottom of boxer-command-loop.")
-
-(defvar *typeahead-during-eval* nil)
-
-(defvar *double-click-pause-time* 0.4 "Time to wait for a possible second click")
-
-(defvar *double-click-wander* 5
-  "Number of pixels the mouse is allowed to shift between clicks")
-
-(defun user-event-in-queue? ()
-  (dolist (ev *boxer-eval-queue*)
-    (when (or (mouse-event? ev) (key-event? ev)) (return T))))
-
-(defun peek-next-key-or-mouse-event ()
-  (loop (let ((ev (car *boxer-eval-queue*)))
-          (cond ((null ev) (return nil))
-                ((mouse-event? ev) (return ev))
-                ((key-event?   ev) (return ev))
-                ((system:gesture-spec-p ev) (return ev))
-                (t (pop *boxer-eval-queue*))))))
-
-;;; Mouse handling, mostly copied from clx
-(defstruct (mouse-event (:conc-name mouse-event-)
-      (:predicate mouse-event?))
-  ;; these are required slots that handle-boxer-input uses
-  (type :mouse-click) ;; other option is :mouse-hold
-  (window *boxer-pane*)
-  (x-pos 0)
-  (y-pos 0)
-  ;; The current values for click are:
-  ;;  0 - Primary Button, usualy left click
-  ;;  1 - Third Button
-  ;;  2 - Secondary Button, usually right click
-  (click 0)
-  ;; The current values for bits are:
-  ;;  0 - No modifier keys
-  ;;  1 - Control Key
-  ;;  2 - Option Key
-  ;;  3 - Control + Option Key
-  ;; 2021-02-10 Double check these on windows. Currently on Mac, Shift-click and
-  ;; Command click don't register anything.
-  (bits 0)  ;; which shift bits are down
-  ;; these are (+++ not) used in click processing
-  (last-time-stamp 0)
-  (number-of-clicks 1))
-
-;; pause and wait for another possible click
-(defun maybe-unify-mouse-click (click)
-  (let ((button (mouse-event-click click))
-        (bits   (mouse-event-bits  click))
-        (x-pos  (mouse-event-x-pos click))
-        (y-pos  (mouse-event-y-pos click))
-        ;(time  (mouse-event-last-time-stamp click))
-        )
-    #-win32 (declare (ignore button))
-    (mp::process-wait-with-timeout "Double Click Wait" *double-click-pause-time*
-                                   #'(lambda () (user-event-in-queue?)))
-    (let ((new-input (peek-next-key-or-mouse-event)))
-      (cond ((mouse-event? new-input)
-             (cond ((and #+win32 (= (mod button 3) (mod (mouse-event-click new-input) 3))
-                         ;; only need to button match for PC (3) button mouse
-                         (= bits (mouse-event-bits new-input))
-                         (boxer::<& (boxer::abs& (boxer::-& x-pos (mouse-event-x-pos
-                                                                   new-input)))
-                                    *double-click-wander*)
-                         (boxer::<& (boxer::abs& (boxer::-& y-pos (mouse-event-y-pos
-                                                                   new-input)))
-                                    *double-click-wander*))
-                    ;; looks like a double click
-                    (cond ((> (mouse-event-number-of-clicks new-input) 1)
-                           (handle-boxer-input (pop *boxer-eval-queue*)))
-                          (t ;; looks like the event system recorded it as
-                             ;; a pair of single clicks, throw out the second
-                             ;; one and bash fields in the 1st one
-                             (pop *boxer-eval-queue*)
-                             (setf (mouse-event-click click)
-                                   (+ (mouse-event-click click) 3)
-                                   ;; if we allow wandering, should we use the pos
-                                   ;; of the 1st or 2nd click
-                                   (mouse-event-last-time-stamp click)
-                                   (mouse-event-last-time-stamp new-input))
-                             (incf (mouse-event-number-of-clicks click))
-                             (handle-boxer-input click))))
-                   (t (handle-boxer-input click))))
-            (t (handle-boxer-input click))))))
-
-(defun boxer-command-loop-internal ()
-;  (setf (ccl::window-process *boxer-frame*) boxer::*boxer-process*)
-  (flush-input)
-  (loop
-    (catch 'boxer::boxer-editor-top-level
-      (let ((input (pop *boxer-eval-queue*)))
-        (cond ((null input)
-               (unless just-redisplayed?
-                 (boxer::repaint-with-cursor-relocation) (setq just-redisplayed? t))
-               (mp::process-allow-scheduling)
-               (when (no-more-input?)
-                 (boxer-idle-function)
-                 ;; be a good multi-processing citizen
-                 ;; NOTE: when the idle function is fixed to actually document
-                 ;; the mouse, we will need to change this to
-                 ;; mp::process-allow-scheduling so it can run continously...
-                 (mp::process-wait "Boxer Input"
-                                   #'(lambda ()
-                                       (not (null (car *boxer-eval-queue*)))))))
-              ((system:gesture-spec-p input)
-               ;; We are adding this gesture condition in addition to the key-event? because at some point
-               ;; during a lispworks major version change, the ability to encode the modifier keys as part of
-               ;; the reader char seems to have gone away.  By adding an option to push an entire gesture-spec
-               ;; to the *boxer-eval-queue* we can just manually pick out the char-code and input bits.
-               (let* ((data (sys::gesture-spec-data input))
-                      (charcode (input-gesture->char-code input))
-                      (charbits (convert-gesture-spec-modifier input)))
-                     (handle-boxer-input charcode charbits)
-                     (setq just-redisplayed? nil)))
-              ((key-event? input)
-               (handle-boxer-input (input-code input) (input-bits input))
-               (setq just-redisplayed? nil))
-              ((mouse-event? input)
-               ;; be sure to call redisplay BEFORE the
-               ;; processing of any mouse actions to
-               ;; insure that we have an up to date view
-               ;; of the editor
-               ;;
-               ;; also check for double click by pausing and looking for a
-               ;; double click event
-               (when (null just-redisplayed?) (boxer::repaint))
-               (maybe-unify-mouse-click input)
-               (setq just-redisplayed? nil))
-              ((and (symbolp input) (not (null (symbol-function input))))
-               (when (null just-redisplayed?) (boxer::repaint-with-cursor-relocation))
-               (funcall input)
-               (setq just-redisplayed? nil))
-              ((and (consp input)
-                    (or (functionp (car input))
-                        (and (symbolp (car input))
-                             (not (null (symbol-function (car input)))))))
-               (apply (car input) (cdr input)))
-              ((not (null boxer::*boxer-system-hacker*))
-               (error "Unknown object, ~A, in event queue" input)))))))
+;; sgithens TODO I don't believe this is used anymore
+;; (defvar *typeahead-during-eval* nil)
 
 (defun beep () (capi::beep-pane))
 
 (defun click-sound () (capi::beep-pane))
 
-(defvar *boxer-eval-queue* nil)
-
-(defun queue-event (event)
- ; (when (characterp event) (setq *dribble* (nconc (list event) *dribble*)))
-  (setq *boxer-eval-queue* (nconc *boxer-eval-queue* (list event))))
-
-(defvar *double-click-wait-interval* .3
-  "Number of seconds to wait for another (possible) mouse click")
+;; sgithens TODO this doesn't appear to be used. Looks to have been replaced by
+;;               *double-click-pause-time*
+;; (defvar *double-click-wait-interval* .3
+;;   "Number of seconds to wait for another (possible) mouse click")
 
 (defvar *literal-input?* nil)
-(defvar *literal-input*  nil)
 
-(defmacro boxer-system-error-restart (&body body)
-  (let ((warned-about-error-already-gensym (gensym)))
-    `(let ((,warned-about-error-already-gensym nil))
-       (restart-bind
-  ((BOXER-CONTINUE
-    #'(lambda () (throw 'system-error-restart-loop nil))
-    :report-function
-    #'(lambda (stream)
-        (unless (or ,warned-about-error-already-gensym
-        boxer::*boxer-system-hacker*
-        boxer::*inside-lisp-breakpoint-p*)
-    (beep) (beep) (beep)
-    ;; this mechanism is a crock.
-    (setq ,warned-about-error-already-gensym t))
-        (format stream "--> Return to Boxer <--")))
-   (BOXER-TOP-LEVEL
-    #'(lambda () (boxer::com-goto-top-level)
-             (throw 'system-error-restart-loop nil))
-    :report-function
-    #'(lambda (stream)
-        (format stream "--> GOTO Top Level then return to Boxer <--"))))
-  (handler-bind
-   ((error
-     #'(lambda (c)
-         (cond ((or ,warned-about-error-already-gensym
-        (not *automagic-lisp-error-handling*))
-          (invoke-debugger c))
-         (t
-          (dotimes (i 3) (beep))
-          ;(format t "~%Lisp Error:~A" c)
-                      (when *report-crash* (write-crash-report))
-          (boxer::boxer-editor-error "Lisp Error:~A" c)
-          (invoke-restart 'BOXER-CONTINUE))))))
-    (catch 'system-error-restart-loop
-      . ,body)
-    (setq ,warned-about-error-already-gensym nil))))))
+;; sgithens TODO this doesn't appear to be used anywhere...
+;;(defvar *literal-input*  nil)
 
-(defmacro boxer-system-error-restart-loop (&body body)
-  (let ((warned-about-error-already-gensym (gensym)))
-    `(let ((,warned-about-error-already-gensym nil))
-       (restart-bind
-   ((BOXER-CONTINUE
-     #'(lambda () (throw 'system-error-restart-loop nil))
-     :report-function
-     #'(lambda (stream)
-         (unless (or ,warned-about-error-already-gensym
-         boxer::*boxer-system-hacker*
-         boxer::*inside-lisp-breakpoint-p*)
-     (beep) (beep) (beep)
-     ;; this mechanism is a crock.
-     (setq ,warned-about-error-already-gensym t))
-         (format stream "--> Return to Boxer <--")))
-    (BOXER-TOP-LEVEL
-     #'(lambda () (boxer::com-goto-top-level)
-              (throw 'system-error-restart-loop nil))
-     :report-function
-     #'(lambda (stream)
-         (format stream "--> GOTO Top Level then return to Boxer <--")))
-          (ABORT
-           #'(lambda () (boxer::com-abort))
-           :report-function
-           #'(lambda (stream) (format stream "Aborted"))))
-   (handler-bind
-     ((error
-       #'(lambda (c)
-           (cond ((or ,warned-about-error-already-gensym
-          (not *automagic-lisp-error-handling*))
-            (invoke-debugger c))
-           (t
-            (dotimes (i 3) (beep))
-            ;(format t "~%Lisp Error:~A" c)
-                        (when *report-crash* (write-crash-report))
-            (boxer::boxer-editor-error "Lisp Error:~A" c)
-            (invoke-restart 'BOXER-CONTINUE))))))
-     (loop (catch 'system-error-restart-loop
-                   (progn ,@body)
-                   (flush-input)
-             (setq ,warned-about-error-already-gensym nil))))))))
+;; TODO sgithens This doesn't appear to be used anywhere...
+;; (defun handle-event-internal (event &optional bits)
+;;   (boxer-system-error-restart
+;; ;    (boxer-editor-bindings nil
+;;     ;  Wrong place, this needs to be wrapped around the top level loop
+;;       (catch 'boxer::boxer-editor-top-level
+;;         (handle-boxer-input event bits)
+;;         (setq just-redisplayed? nil)
+;;         ;; if there is no more input, then redisplay
+;;         (when (no-more-input?)
+;;           (boxer::repaint)
+;;           (setq just-redisplayed? t)
+;;           (boxer-idle-function)))))
 
-;; a hook for other stuff, on the mac, this ensures heap size
-(defun boxer-idle-function ()
-  #+mcl (ensure-macheap)
-  )
+;; sgithens TODO: I don't believe this is used any more...
+;; (defvar *suppress-event-queueing?* nil)
 
-(defun handle-event-internal (event &optional bits)
-  (boxer-system-error-restart
-;    (boxer-editor-bindings nil
-    ;  Wrong place, this needs to be wrapped around the top level loop
-      (catch 'boxer::boxer-editor-top-level
-        (handle-boxer-input event bits)
-        (setq just-redisplayed? nil)
-        ;; if there is no more input, then redisplay
-        (when (no-more-input?)
-          (boxer::repaint)
-          (setq just-redisplayed? t)
-          (boxer-idle-function)))))
-
-(defvar *suppress-event-queueing?* nil)
+;; TODO 2021-06-28 TODO Investigate that there is a matching set of event-id
+;; declarations, but prefixed with boxer- in keydef-high.lisp. What is the relationship
+;; and do we need both sets of them for something?
 
 ;; input handlers
 (defvar *event-id* 0)
@@ -1690,31 +1455,6 @@
         (unless (and (= obwid (box::screen-obj-wid osb))
                      (= obhei (box::screen-obj-hei osb)))
           (box::set-fixed-size osb obwid obhei))))))
-
-;; ****stubs
-
-;; on the mac, this checks to OS event queue to look for pending unhandled events
-;; which might not
-(defun no-more-input? () (not (peek-next-key-or-mouse-event)))
-(defun valid-input? () (not (no-more-input?)))
-
-(defun flush-input () (setq *boxer-eval-queue* nil))
-
-(defvar *noisy-abort-key-chars* nil)
-
-(defvar *interrupt-flag* nil)
-
-(defun boxer-interrupt () (setq *interrupt-flag* t *boxer-eval-queue* nil))
-
-;; this may need to force a process switch to give the input handlers a chance
-;; to run
-(defun keyboard-interrupt? (window)
-  (declare (ignore window))
-  (if *interrupt-flag*
-       (progn (setq *interrupt-flag* nil) t)
-       (values nil (valid-input?))))
-
-;; ****more stubs
 
 (defun set-mouse-cursor (cursor)
   "Changes the current style of the mouse cursor using a keyword. Currently supported keywords are:

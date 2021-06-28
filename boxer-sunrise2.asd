@@ -73,6 +73,7 @@
                  ;; Beginning of `BOXWIN` module
                  ;; "The interface between the Boxer Editor and the window system"
                  ;; these are also window system specific
+                 (:file "boxwin/eval-command-loop")
                  #+lispworks (:file "boxwin/boxwin-opengl")
                  #+lispworks (:file "boxwin/lw-capi/clipboard")
                  (:file "boxwin/hardcopy-lw")
