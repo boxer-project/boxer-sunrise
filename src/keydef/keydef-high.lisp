@@ -303,7 +303,7 @@
 (defconstant *maximum-number-of-desired-mouse-clicks* 2)
 
 (defsubst maximum-mouse-button-encoding ()
-  (-& (*& *number-of-mouse-buttons* *maximum-number-of-desired-mouse-clicks*) 1))
+  (-& (array-dimension *default-mouse-click-name-translation-table* 0) 1))
 
 (defun make-mouse-click-name-translation-table (platform)
   (make-array `(,(length (input-device-mouse-string platform))
