@@ -163,7 +163,6 @@
                  (:file "filesystem/http")
                  ;; (:file "filesystem/ftp")
                  ;; (:file "filesystem/gopher")
-                 ;; (:file "filesystem/mailfile")
                  ;; Beginning of `TRIGGER` module
                  ;; "Box triggers for Constraint Propagation and Other Fun Stuff"
                  (:file "trigger/trigger")
