@@ -418,32 +418,109 @@ Modification History (most recent at top)
   (boxer::com-close-box)
   (boxer::repaint))
 
-(defun menu-file-toggle (data interface)
+;; 2021-06-30 boxer-bugs-46
+;; This ideally will replace both menu-file-toggle and save-box-as
+;; by simplifying the single menu to 2 states, either:
+;;  - Save Box as File   or
+;;  - Unmark This Box as File
+;;
+;; Once we've tested this out and like it, I'll remove the other options
+;; from this clutter. - sgithens
+(defun menu-file-box-as-file (data interface)
   (declare (ignore data interface))
   (let ((spb (safe-point-box)))
     (cond ((null spb))
+          ;; Box already saved as file
           ((box::storage-chunk? spb)
            (boxer::mark-file-box-clean spb)
            (boxer::unmark-box-as-file spb)
            (boxer::modified spb))
+          ;; Box not yet marked/saved as file
           (t
-           (boxer::mark-box-as-file spb)
-           (boxer::mark-file-box-dirty spb)
-           (boxer::modified spb))))
+           (save-box-as data interface))
+           ))
   (boxer::repaint))
 
-(defun menu-file-toggle-print (mi)
+(defun menu-file-box-as-file-print (mi)
   (declare (ignore mi))
-  (let ((spb (safe-point-box)))
-    (cond ((null spb))
-          ((box::storage-chunk? spb) "Unmark Box as File")
-          (t "Mark Box as File"))))
+    (let ((spb (safe-point-box)))
+      (cond ((null spb))
+            ((box::storage-chunk? spb) "Unmark Box as File")
+            (t "Save Box as File"))))
+
+;; These can be removed once boxer-bugs-46 is finalized
+;; (defun menu-file-toggle (data interface)
+;;   (declare (ignore data interface))
+;;   (let ((spb (safe-point-box)))
+;;     (cond ((null spb))
+;;           ((box::storage-chunk? spb)
+;;            (boxer::mark-file-box-clean spb)
+;;            (boxer::unmark-box-as-file spb)
+;;            (boxer::modified spb))
+;;           (t
+;;            (boxer::mark-box-as-file spb)
+;;            (boxer::mark-file-box-dirty spb)
+;;            (boxer::modified spb))))
+;;   (boxer::repaint))
+
+;; (defun menu-file-toggle-print (mi)
+;;   (declare (ignore mi))
+;;   (let ((spb (safe-point-box)))
+;;     (cond ((null spb))
+;;           ((box::storage-chunk? spb) "Unmark Box as File")
+;;           (t "Mark Box as File"))))
 
 (defun save-document (data interface)
+  "There are 4 possibilities here:
+     1. We aren't in any type of saved box.
+        Label: Saved...  Action: Save As
+     2. This should be filtered out by the dis/enabled function, but if we're in a file
+        box that is read-only, we won't do anything.
+     3. We are inside some heirarchy of a file box that has no changes
+        Label: Save      Action: Save that file box
+     4. We are inside some heirarchy of a file box that has changes
+        Label: Save      Action: Save that file box
+
+     The actions for 3 and 4 may diverge at some point..."
   (declare (ignore data interface))
-  (boxer::com-save-document)
+  (let* ((filebox (boxer::current-file-box))
+        (read-only (boxer::read-only-box? filebox))
+        (modified (boxer::file-modified? filebox))
+        (has-file (not (null (boxer::getprop filebox :associated-file))))) ; TODO should this include :url?
+    (cond ((not has-file) 1. Not in any type of saved box.
+           (save-document-as data interface))
+          ((and has-file read-only) 2. Read-only File
+           nil)
+          ((and has-file (not modified))
+           (boxer::com-save-document))
+          ((and has-file modified)
+           (boxer::com-save-document))))
   (boxer::repaint))
 
+;; boxer-bugs-46. We are changing "Save" to act as "Save..." (Save As) rather
+;; than be greyed out and disabled
+(defun save-document-title-function (mi)
+  (let* ((filebox (boxer::current-file-box))
+        (read-only (boxer::read-only-box? filebox))
+        (modified (boxer::file-modified? filebox))
+        (has-file (not (null (boxer::getprop filebox :associated-file))))) ; TODO should this include :url?
+    (cond ((not has-file)
+           "Save...")
+          ((and has-file read-only)
+           "Save (RO)")
+          (t
+           "Save"))))
+
+(defun save-document-enabled-function (mi)
+  "We only want the Save menu to be disabled if we're in a Read-Only file box."
+  (declare (ignore mi))
+  (let* ((filebox (boxer::current-file-box))
+        (read-only (boxer::read-only-box? filebox))
+        (modified (boxer::file-modified? filebox))
+        (has-file (not (null (boxer::getprop filebox :associated-file))))) ; TODO should this include :url?
+    (not read-only)))
+
+;; Keeping here just for note-taking until we've finalized the menus.
 (defun save-menu-item-enabled-function (save-item)
   (declare (ignore save-item))
   ;; grey out File menu items if they are redundant or not applicable

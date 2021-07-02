@@ -473,13 +473,19 @@
                        ;; The Open and Open Recent components are generated and inserted programatically at runtime.
                        (:component
                         (("Save" :accelerator #\s :callback 'save-document
-                                 :enabled-function 'save-menu-item-enabled-function)
+                                ;;  :enabled-function 'save-menu-item-enabled-function boxer-bugs-46
+                                 :enabled-function 'save-document-enabled-function
+                                 :title-function 'save-document-title-function)
                          ("Save As..." :callback 'save-document-as)
                          ("Close" :callback 'close-file-box)))
                        (:component
-                        (("File Toggle" :callback 'menu-file-toggle  ;; Mark box as file
-                                        :title-function 'menu-file-toggle-print)
-                         ("Mark Box as File, Save..." :callback 'save-box-as) )) ; Previously "Save Box As..."
+                        (;;("File Toggle" :callback 'menu-file-toggle  ;; Mark box as file
+                         ;;               :title-function 'menu-file-toggle-print)
+                         ;;("Save Box as File" :callback 'save-box-as) ; Previously "Save Box As...", then "Mark Box as File, Save..."
+                         ;; new from boxer-bugs-46
+                         ("Save Box as File Toggle" :callback 'menu-file-box-as-file
+                                                    :title-function 'menu-file-box-as-file-print)
+                         ))
                        (:component
                         (("Link to File" :callback 'open-xref)))
                        (:component
