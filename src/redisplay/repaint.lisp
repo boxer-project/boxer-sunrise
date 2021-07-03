@@ -1054,16 +1054,6 @@
     (repaint)))
 
 
-#|
-;; unused ?
-(defun force-repaint-window (&optional (window *boxer-pane*))
-  (let ((*complete-redisplay-in-progress?* t))
-    (repaint-window window)))
-|#
-
-
-
-
 ;;;; Ephemera: cursors, regions
 (defun repaint-cursor (&optional (cursor *point*)(flush-buffer? T))
   (drawing-on-window (*boxer-pane*)

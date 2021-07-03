@@ -7865,6 +7865,19 @@ to the :TEXT-STRING method of boxes. "
           (region-row-blinker-hei blinker) hei)))))
 |#
 
+;;;;
+;;;; FILE: repaint.lisp
+;;;;
+
+
+#|
+;; unused ?
+(defun force-repaint-window (&optional (window *boxer-pane*))
+  (let ((*complete-redisplay-in-progress?* t))
+    (repaint-window window)))
+|#
+
+
 
 ;;;;
 ;;;; FILE: sysprims.lisp
