@@ -19,8 +19,8 @@
 ;;;;  been removed from the system, such as support for managing email.
 
 
-;; 2021-06-30 It hasn't been included in the asdf component for a while, but properly
-;; retiring email functionality for now.
+;;; 2021-06-30 It hasn't been included in the asdf component for a while, but properly
+;;; retiring email functionality for now.
 
 (defboxer-primitive bu::mail ((boxer-eval::dont-copy address) (bu::port-to message))
   (boxer-eval::primitive-signal-error :obsolete
@@ -52,7 +52,7 @@
                                       "Email functionality is not currently supported.")
   boxer-eval::*novalue*)
 
-;; from mailfile.lisp
+;;; from mailfile.lisp
 
 (defboxer-primitive bu::new-get-mail ((eval::dont-copy mailbox) delete-messages?)
   (boxer-eval::primitive-signal-error :obsolete
@@ -68,3 +68,17 @@
   (boxer-eval::primitive-signal-error :obsolete
                                       "Email functionality is not currently supported.")
   boxer-eval::*novalue*)
+
+;;; 2021-07-03 Obsoleted primitives from gopher.lisp
+
+(defboxer-primitive bu::telnet (host)
+  (boxer-eval::primitive-signal-error :obsolete
+                                      "Telnet is not currently supported.")
+  boxer-eval::*novalue*)
+
+(defboxer-primitive bu::gopher-search (host (boxer-eval::numberize port)
+                                            select-string search-string)
+  (boxer-eval::primitive-signal-error :obsolete
+                                      "Gopher web functionality is not currently supported.")
+  boxer-eval::*novalue*)
+
