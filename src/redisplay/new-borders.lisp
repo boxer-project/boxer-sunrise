@@ -1078,7 +1078,7 @@
          (half-y (+ y (floor *mouse-corner-highlight-size* 2)))
          (full-x (+ x *mouse-corner-highlight-size*))
          (full-y (+ y *mouse-corner-highlight-size*)))
-    (with-pen-color (*yellow*)
+    (with-pen-color (*mouse-shrink-corner--background-color*)
       (%draw-circle half-x half-y (* *mouse-corner-highlight-size* 0.7)  t))
     (with-pen-color (*mouse-doc-highlight-color*)
       (%draw-circle half-x half-y (* *mouse-corner-highlight-size* 0.7)  nil)

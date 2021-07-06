@@ -40,6 +40,8 @@
                  (:file "draw/draw-high-common")
                  (:file "draw/draw-high-hardware-clip")
 
+                 (:file "definitions/boxer-styles")
+
                  ;; Beginning of `DISPLAYDEFS` module
                  ;; "Some more Definitions for Drawing things"
                  (:file "definitions/disdef")

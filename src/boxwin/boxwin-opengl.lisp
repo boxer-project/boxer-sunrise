@@ -751,7 +751,7 @@
                     (initialize-ogl-color-pool)
                     (boxer::initialize-gray-patterns)
                     (boxer::initialize-colors)
-                    (ogl-set-color box::*foreground-color*)
+                    (%set-pen-color box::*foreground-color*)
                     ;; do other OpenGL inits...
                     (setq *ogl-current-color-vector* (make-ogl-color 0.0 0.0 0.0)
                           *blinker-color* (make-ogl-color .3 .3 .9 .5))

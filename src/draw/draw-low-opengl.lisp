@@ -455,16 +455,24 @@
 (defun color= (c1 c2)  (bw::ogl-color= c1 c2))
 
 (defun %set-pen-color (color)
-  (bw::ogl-set-color color))
+  "This expects either an already allocated GL 4 vector that represents a color, or an RGB percentage vector
+  of the form #(:RGB 0.0 0.0 1.0) (for blue)."
+  (cond ((and (vectorp color) (eq :RGB (aref color 0)))
+         (bw::ogl-set-color (bw::ogl-convert-color color)))
+        ((color? color)
+         (bw::ogl-set-color color))
+        (t
+         (error "Bad color passed to %set-pen-color: ~A " color))))
 
-(defun %pen-color= (color)
-  (color= color
-          (bw::ogl-current-color)))
+;; sgithens TODO This doesn't appear to be used anywhere
+;; (defun %pen-color= (color)
+;;   (color= color
+;;           (bw::ogl-current-color)))
 
 ;;; How's this?
 (defmacro with-pen-color ((color) &body body)
   `(bw::maintaining-ogl-color
-    (bw::ogl-set-color ,color)
+    (bw::%set-pen-color ,color)
     . ,body))
 
 ;; figure out if we are using this for convert-color specs or not
