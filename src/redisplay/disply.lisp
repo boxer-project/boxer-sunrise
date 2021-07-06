@@ -305,8 +305,9 @@
 (defmethod deallocate-self ((self screen-row))
   (when (null (slot-value self 'screen-box))
     (deallocate-inferiors self)
-    (delete-screen-obj (screen-obj-actual-obj self) self)
-    (deallocate-screen-obj-internal self)))
+    (unless (null (screen-obj-actual-obj self))
+      (delete-screen-obj (screen-obj-actual-obj self) self)
+      (deallocate-screen-obj-internal self))))
 
 (defmethod deallocate-self ((self screen-box))
   (when (null (slot-value self 'screen-row))
