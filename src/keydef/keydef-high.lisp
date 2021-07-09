@@ -317,13 +317,9 @@
      ((null place)
       (symbol-format nil "~A-MOUSE-~A" shift button))
      ((null shift)
-      (case platform
-        ((:mac :ibm-pc :lwm) (symbol-format nil "MOUSE-~A-ON-~A" button place))
-        (t    (symbol-format nil "~A-MOUSE-~A" place button))))
+      (symbol-format nil "MOUSE-~A-ON-~A" button place))
      (t
-      (case platform
-        ((:mac :ibm-pc :lwm) (symbol-format nil "~A-MOUSE-~A-ON-~A" shift button place))
-        (t (symbol-format nil "~A-~A-MOUSE-~A" shift place button)))))))
+      (symbol-format nil "~A-MOUSE-~A-ON-~A" shift button place)))))
 
 (defun current-mouse-click-name (button shift &optional place)
   (let ((button-names (input-device-mouse-string
