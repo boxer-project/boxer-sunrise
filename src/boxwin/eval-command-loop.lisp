@@ -19,6 +19,12 @@
 
 (in-package :boxer-window)
 
+(defvar *use-mouse2021* nil
+  "Should we use the new 2021 Mouse clicks? This updates the mouse handling behavior in boxer to use
+   true clicks with release, and adds events for mouse-down, mouse-up. This behavior may require some
+   changes to legacy microworlds that have used mouse-click rather than mouse-down for dragging and
+   other behaviors.")
+
 ;; 2021-06-28 sgithens I'm not sure if this is really used anymore.. there is a reference to it in the
 ;; currently broken dribbler
 (defvar *boxer-command-loop-event-handlers-queue* nil
@@ -63,7 +69,7 @@
   (x-pos 0)
   (y-pos 0)
   ;; The current values for click are:
-  ;;  0 - Primary Button, usualy left click
+  ;;  0 - Primary Button, usually left click
   ;;  1 - Third Button
   ;;  2 - Secondary Button, usually right click
   (click 0)
@@ -175,12 +181,19 @@
                 ((system:gesture-spec-p ev) (return ev))
                 (t (pop *boxer-eval-queue*))))))
 
+(defun modern-clicking-2021 (click)
+  "New 2021 Click handling where clicks aren't delayed, clicks happen when the
+  mouse comes up, and we support mouse-down, and mouse-up"
+  (handle-boxer-input click)
+)
+
 ;; pause and wait for another possible click
 (defun maybe-unify-mouse-click (click)
   (let ((button (mouse-event-click click))
         (bits   (mouse-event-bits  click))
         (x-pos  (mouse-event-x-pos click))
         (y-pos  (mouse-event-y-pos click))
+        ;(num-clicks (mouse-event-number-of-clicks click))
         ;(time  (mouse-event-last-time-stamp click))
         )
     #-win32 (declare (ignore button))
@@ -261,7 +274,9 @@
                ;; also check for double click by pausing and looking for a
                ;; double click event
                (when (null just-redisplayed?) (boxer::repaint))
-               (maybe-unify-mouse-click input)
+               (if *use-mouse2021*
+                 (modern-clicking-2021 input)
+                 (maybe-unify-mouse-click input))
                (setq just-redisplayed? nil))
               ((and (symbolp input) (not (null (symbol-function input))))
                (when (null just-redisplayed?) (boxer::repaint-with-cursor-relocation))

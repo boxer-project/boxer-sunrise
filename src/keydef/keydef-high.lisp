@@ -175,15 +175,14 @@
 
            (define-input-devices :lwm  ; mac's under lispworks opengl port
              ("CTRL" "COMMAND" "OPTION" "COMMAND-OPTION" )
-            ;;  ("CLICK" "DOUBLE-CLICK")
-            ("CLICK" "MIDDLE-CLICK" "RIGHT-CLICK" "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK")
+             ("CLICK" "MIDDLE-CLICK" "RIGHT-CLICK" "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK" "DOWN" "UP")
              *lwm-keyboard-key-name-alist*)
 
            ;; pick names to maximize compatibility with mac code
            ;; assign to left button to be plain "CLICK"
            (define-input-devices :ibm-pc
              ("CTRL" "ALT" "CTRL-ALT")
-             ("CLICK" "MIDDLE-CLICK" "RIGHT-CLICK" "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK")
+             ("CLICK" "MIDDLE-CLICK" "RIGHT-CLICK" "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK" "DOWN" "UP")
              *lwm-keyboard-key-name-alist*)
 )
 

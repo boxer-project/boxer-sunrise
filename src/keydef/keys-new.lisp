@@ -502,3 +502,40 @@
 (eval-when (load)
   (boxer-eval::boxer-toplevel-set 'bu::new-box-properties (make-new-box-properties-box))
   )
+
+
+(defun use-mouse2021-keybindings (use-mouse2021)
+  "During this Work In Progress phase we are supported both the old mouse behavior and the
+   new. This switches the mouse bindings back and forth based on the input boolean, T being
+   the new bindings."
+  (cond (use-mouse2021
+         ;; "Setting up 2021 Mouse bindings"
+         (boxer-eval::defboxer-key bu::mouse-down com-mouse-define-region)
+         (boxer-eval::defboxer-key bu::mouse-click com-noop)
+         (boxer-eval::defboxer-key bu::mouse-up com-noop)
+
+         (boxer-eval::defboxer-key bu::mouse-down-on-graphics com-noop)
+         (boxer-eval::defboxer-key bu::mouse-up-on-graphics com-noop)
+
+         (boxer-eval::defboxer-key bu::mouse-down-on-sprite com-sprite-follow-mouse)
+         (boxer-eval::defboxer-key bu::mouse-down-on-bottom-right com-mouse-br-resize-box)
+
+         (boxer-eval::defboxer-key bu::mouse-click-on-sprite com-noop)
+         (boxer-eval::defboxer-key bu::mouse-click-on-bottom-right com-noop)
+        )
+        (t
+         ;; "Using old school mouse bindings"
+         (boxer-eval::defboxer-key bu::mouse-down com-noop)
+         (boxer-eval::defboxer-key bu::mouse-click com-mouse-define-region)
+         (boxer-eval::defboxer-key bu::mouse-up com-noop)
+
+         (boxer-eval::defboxer-key bu::mouse-down-on-graphics com-noop)
+         (boxer-eval::defboxer-key bu::mouse-up-on-graphics com-noop)
+
+         (boxer-eval::defboxer-key bu::mouse-down-on-sprite com-noop)
+         (boxer-eval::defboxer-key bu::mouse-down-on-bottom-right com-noop)
+
+         (boxer-eval::defboxer-key bu::mouse-click-on-sprite com-sprite-follow-mouse)
+         (boxer-eval::defboxer-key bu::mouse-click-on-bottom-right com-mouse-br-resize-box)
+        ))
+)

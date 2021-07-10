@@ -811,6 +811,9 @@
         (setq *pending-osx-events* nil))
       (start-boxer-progress "Starting Command Loop ~D" (get-internal-real-time) 100)
       (sleep 1)
+
+      (boxer::switch-use-mouse2021 *use-mouse2021*)
+
       (capi:destroy progress-bar)
       (boxer-process-top-level-fn *boxer-pane*))))
 
@@ -897,11 +900,23 @@
 (defconstant *click-2-byte-selector* (byte 1 1))
 (defconstant *click-3-byte-selector* (byte 1 2))
 
+(defvar *modern-press-no* 0
+  "This will determine which press we're on, so we can emit click or double click
+   on the release. Possible values are:
+   - 0    Nothing is going on with the mouse
+   - 1    The mouse has been pressed once
+   - 2    The mouse has been pressed twice
+
+   This supports the new Mouse 2021 Click Events.")
+
 (defun boxer-click-1-handler (w x y)
   (declare (ignore w))
+  (setq *modern-press-no* 1)
   (cond ((null *mouse-down-p*) (setq *mouse-down-p* 1))
         (t (setq *mouse-down-p* (dpb 1 *click-1-byte-selector* *mouse-down-p*))))
-  (boxer-click-handler x y 0))
+  (if *use-mouse2021*
+    (boxer-click-handler x y 6)
+    (boxer-click-handler x y 0)))
 
 (defun boxer-click-2-handler (w x y)
   (declare (ignore w))
@@ -951,7 +966,12 @@
 
 ;; double clicks
 (defun boxer-dclick-1-handler (w x y)
-  (declare (ignore w)) (setq *mouse-down-p* 1) (boxer-click-handler x y 0 t))
+  (declare (ignore w))
+  (setq *mouse-down-p* 1)
+  (setq *modern-press-no* 2)
+  (if *use-mouse2021*
+    (boxer-click-handler x y 6)
+    (boxer-click-handler x y 0 t)))
 
 (defun boxer-dclick-2-handler (w x y)
   (declare (ignore w)) (setq *mouse-down-p* 2) (boxer-click-handler x y 1 t))
@@ -1009,6 +1029,15 @@
 ;; this is called by the (:button :release) input type
 (defun boxer-mouse-release-1-handler (w x y)
   (declare (ignore w x y))
+  (when *use-mouse2021*
+    (boxer-click-handler x y 7)
+    (cond ((= *modern-press-no* 1)
+           (boxer-click-handler x y 0))
+          ((= *modern-press-no* 2)
+           (setq *modern-press-no* 0)
+           (boxer-click-handler x y 0)
+           (boxer-click-handler x y 0 t))
+          (t nil)))
   (cond ((null *mouse-down-p*))
         ((box::=& *mouse-down-p* 1) (setq *mouse-down-p* nil))
         (t (setq *mouse-down-p* (dpb 0 *click-1-byte-selector* *mouse-down-p*)))))
@@ -1026,7 +1055,8 @@
         (t (setq *mouse-down-p* (dpb 0 *click-3-byte-selector* *mouse-down-p*)))))
 
 (defun boxer-pane-mouse-down? ()
-  (flush-input)
+  (unless *use-mouse2021*
+    (flush-input))
   ;; flush any pending input because if we are checking the state of the mouse
   ;; buttons, we don't want any mouse down state to appear as a click
   *mouse-down-p*)

@@ -544,7 +544,9 @@
 ;; input name which would, in all likelyhood not be bound so we would then
 ;; come to these functions which would take the ALT-MOUSE-CLICK name and then
 ;; produce the OPTION-MOUSE-CLICK
-(defvar *try-alternate-platform-names* T)
+(defvar *try-alternate-platform-names* nil) ;; sgithens 2021-07-07 Currently this fills up as
+                                            ;; empty and doens't seem to get the new correct
+                                            ;; size for mouse clicks 2021
 
 ;; stubbified in anticipation of "clean" reimplementation (10/07/02)
 ;; "clean" replacement should take a key/click name and return the
