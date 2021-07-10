@@ -1,5 +1,118 @@
 # Change Log
 
+## 3.4.6 2021-07-??
+
+### Release Notes
+
+This release fixes the following Boxer primitives: `follow-mouse`, `handle-input`,
+and `status-line-y-or-n`, as well as other primitives that depended on status line
+input.
+
+We're continuing to work on simplifying the File Menu, and have collaposed the Box Marking
+portion to just option depending on whether the box is already saved to a file.  Additionally,
+the Save option will perform a Save As on the World if nothing is saved yet, and prompt
+for a file name (rather than be greyed out). As of now the only time the `Save` menu item
+will be greyed out is if you are in a read-only file box.
+
+This release includes in progress work of updating the way that the mouse clicks are triggered
+and handled in boxer. This is currently experimental and subject to change.  On start up, the
+old behavior is used, but the new 2021 Mouse Clicks can be enabled in the User Preferences
+under the Editor section.  Previously all combinations of mouse clicks in Boxer had a single
+`MOUSE-CLICK` magic name that could be overwritten, along with a `MOUSE-DOUBLE-CLICK`. This
+used a delay on clicking to see if it would be a double click or not. Additionally, `MOUSE-CLICK`
+behaved as a mouse press since you didn't have to let up on the mouse for it to register.
+
+The new version of mouse clicks add `MOUSE-DOWN`, `MOUSE-UP` and trigger them accordingly along
+with click on the way to a double click. There is no lag when clicking now. There is some work to
+do on this behavior still, as it stands if you were using `MOUSE-CLICK` for dragging, you would
+now use `MOUSE-DOWN`. In the end there may be some way to preserve this by changing names, or
+legacy worlds may just need to be updated, or switched in to old click mode.  This work is in progress.
+
+As part of the mouse clicks and general event loop handling improvement, this release includes a
+refactoring that begins decoupling the Boxer Event Queue from the Lispworks CAPI Opengl handling. This is a first
+small step towards an independent Boxer Evaluation engine that could be used with other rendering
+implementations (Metal, Audio representation for hearing impaired, server side engine for use with
+WebGL or the DOM, or another independent OpenGL implementation, etc)
+
+The background color of the top left box corner was changed to a more subtle shade of yellow. As
+part of this we created a new `boxer-styles.lisp` to beging centralizing all the colors, thicknesses,
+and font style variables which are scattered around the source. Long term this should evovle into
+a boxer style sheets type of utility to create themes, dark mode version of the boxer canvas etc.
+
+More contributors from Boxer history were added to the top level readme.
+
+As usual lots more code for old lisp platforms and machines was moved to the attic.  Another small
+handful of crash fixes were put in.
+
+### Full Change Log
+
+- boxer-bugs-57 Updating background corner on top left shrink corner
+    - Updated background color to RGB 1.0 0.9 0.0. A sort of dark yellow.
+    - Created new file boxer-styles to start collecting styles in.
+    - Updating some of the ogl color hooks to take an RGB vector, so we
+      don't have to rely on in-memory opengl vectors in order to set
+      preferences.
+
+- boxer-bugs-46 Updating behavior of File Save menus
+    - Rename "Mark Box as File, Save..." to "Save Box as File”
+    - Collapse the "Mark box" section on the menu to just
+        "Unmark This Box As File" or"Save Box as File"
+            (Currently: "Mark Box as File, Save…")
+    - Change "Save" to not be disabled, but if a box is not a file box,
+      then have it invoke either "Save As..."      or "Save Box as File”
+
+- boxer-bugs-51
+  - Changing maximum-mouse-button-encoding to use length of defined mouse actions.
+  - Removing old ~A-~A-MOUSE-~A and ~A-MOUSE-~A-ON-~A click names for platforms that
+    no longer exist.
+  - Updated the :lwm and :ibm-pc platforms to have mouse-up and down
+  - Added a sysprims preference for switching between new and old mouse behavior
+  - Added hooks in capi click methods to click depending on preference
+  - Added method in keys-new to swap the set of mouse key bindings for the two
+
+- boxer-sunrise-25 Adding mouse x, y, and down? status to dev overlay.
+
+- boxer-sunrise-31 boxer-sunrise-19 Fixed primitives handle-input and status-line-y-or-n
+    - Adding checks for gesture-specs in several places as these are what are
+      generating the key events now. We should look and see if the key-event?
+      conditions are even necessary anymore at some point.
+
+- boxer-sunrise-33 Fixed follow-mouse primitive
+  Fixing follow-mouse by repainting-internal since we are already inside the pane
+  process which is following the mouse drag.
+
+- boxer-sunrise-32 Added binary releases page to top-level readme.
+
+- crash-fix
+  - Null checking screen-rows array
+  - Check for null  before de-allocating them
+
+- refactor
+  - Removing :boxer-input mouse parameterization.
+  - Moving boxer-eval-queue and related command loops to separate file to
+    allow usage outside of CAPI/opengl
+  - See boxer-bugs-57 for the beginning of boxer styles centralization
+
+- doco
+  - Added more contributors to the README
+
+
+- the-attic
+  - Removing lispworks6 version of quit
+  - Removed more old 3600, TI, and MCL code
+  - Removing unused methods start-box-copyright-warning, with-open-blinkers,
+    redisplayable-window?, kill-redisplayable-window from boxwin-opengl
+  - Moved out old versions of commands in comsa
+  - Removing old -opengl redisplay cues, and minor Symbolics and MCL calls.
+  - Moving Symbolics lisp machine specific functions in ev-int to the attic.
+  - Removed binhex from asdf components
+  - Properly deprecating mail primitives from mail.lisp and removing to the attic.
+  - Properly deprecating mailfile primitives from mailfile.lisp and removing to the attic.
+  - Properly decprecating gopher support and the 2 primitives gopher.lisp provided.
+    (telnet, gopher-search)
+  - Move commented out force-repaint-window to the attic.
+  -
+
 ## 3.4.5 2021-05-25
 
 - boxer-bugs-38 Updating default font sizes to be closer to Boxer pre 2014.
