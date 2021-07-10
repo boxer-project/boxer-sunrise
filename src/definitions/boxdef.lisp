@@ -295,8 +295,6 @@ Modification History (most recent at top)
 
 (defvar *sprite-type-font-no* nil)
 
-(defvar *default-font-map-length* 10)
-
 (defvar *boxtop-text-font* nil)
 
 

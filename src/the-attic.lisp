@@ -26,6 +26,7 @@
 (DEFVAR *CONTROL-CHARACTER-DISPLAY-PREFIX* #\
   "For display of control characters (all of them until we decide on different prefixes")
 
+(defvar *default-font-map-length* 10)
 
 ;;;;
 ;;;; FILE: boxwin-opengl.lisp
