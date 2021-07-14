@@ -78,4 +78,5 @@
         0 :interface :capi
         :keep-pretty-printer t
         :startup-bitmap-file nil
+        :split t
         )

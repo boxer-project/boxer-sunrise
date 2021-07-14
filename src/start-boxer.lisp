@@ -35,7 +35,7 @@
     ;; which will libfreetype.6.dylib, as well as any other *.dylib and *.dll files.
     (pushnew
         (make-pathname :host (pathname-host (lw:lisp-image-name))
-                       :directory(append (base-install-folder) '("Resources" "libs")))
+                       :directory(append (base-install-folder) '("Frameworks")))
         cffi:*foreign-library-directories* :test #'equal)
 
     ;; This adds the directory where we are keeping the compiled version of freetype2,
@@ -46,7 +46,7 @@
                (list* '*default-pathname-defaults*
                       (make-pathname :directory
                         (append (butlast (pathname-directory (lw:lisp-image-name)))
-                        '("Resources" "cl-deps" "cl-freetype2")))
+                        '("PlugIns" "cl-freetype2")))
                 asdf:*central-registry*))
 
 
@@ -64,7 +64,7 @@
     ;; (asdf:load-system :cl-freetype2)
     (let ((freetype-deps-dir (make-pathname
                                :host (pathname-host (lw:lisp-image-name))
-                               :directory (append (base-install-folder) '("Resources" "cl-deps" "cl-freetype2" "src"))))
+                               :directory (append (base-install-folder) '("PlugIns" "cl-freetype2" "src"))))
           (freetype-source-parts '("package"
                                    "ffi/grovel/grovel-freetype2"
                                    "ffi/cffi-cwrap"
@@ -101,7 +101,7 @@
     ;; here, because the freetype package is not yet declared when we build our system.
     (load (make-pathname
             :host (pathname-host (lw:lisp-image-name))
-            :directory (append (base-install-folder) '("Resources" "cl-deps"))
+            :directory (append (base-install-folder) '("PlugIns"))
             :name "freetype-fonts" :type "lisp"))
 
     (boxer-window::window-system-specific-make-boxer)
