@@ -1,6 +1,6 @@
 # Change Log
 
-## 3.4.6 2021-07-??
+## 3.4.6 2021-07-16
 
 ### Release Notes
 
@@ -39,12 +39,22 @@ part of this we created a new `boxer-styles.lisp` to beging centralizing all the
 and font style variables which are scattered around the source. Long term this should evovle into
 a boxer style sheets type of utility to create themes, dark mode version of the boxer canvas etc.
 
+This release includes some initial changes to allow codesigning and using Apples Notarization
+process.  While it is possible to notarize now successfully using the service, some small
+changes still need to be made with our entitlements to allow it successfully start up on Big Sur.
+Fingers crossed, the next binary release with be signed and notarized. For now, you still need
+to try opening it twice using right click Open after initial download.
+
 More contributors from Boxer history were added to the top level readme.
 
 As usual lots more code for old lisp platforms and machines was moved to the attic.  Another small
 handful of crash fixes were put in.
 
 ### Full Change Log
+
+- boxer-sunrise-38 Initial changes to allow codesigning and Apple Notarization
+  - Moved binary assets (dylibs, xfasls) out of Contents/Resources and in to
+    Contents/Frameworks and Contents/PlugIns
 
 - boxer-bugs-57 Updating background corner on top left shrink corner
     - Updated background color to RGB 1.0 0.9 0.0. A sort of dark yellow.
