@@ -340,40 +340,6 @@
   (set-pen turtle 'bu::erase)
   boxer-eval::*novalue*)
 
-(defvar *signal-error-for-sprite-pen-XOR* t)
-
-(defsprite-function bu::px ()
-  (sprite turtle)
-  (if *signal-error-for-sprite-pen-XOR*
-      (boxer-eval::primitive-signal-error :obsolete
-                                    "XOR pens are no longer supported")
-    (set-pen turtle 'bu::reverse))
-  boxer-eval::*novalue*)
-
-(defsprite-function bu::penxor ()
-  (sprite turtle)
-  (if *signal-error-for-sprite-pen-XOR*
-      (boxer-eval::primitive-signal-error :obsolete
-                                    "XOR pens are no longer supported")
-    (set-pen turtle 'bu::reverse))
-  boxer-eval::*novalue*)
-
-(defsprite-function bu::penreverse ()
-  (sprite turtle)
-    (if *signal-error-for-sprite-pen-XOR*
-      (boxer-eval::primitive-signal-error :obsolete
-                                    "XOR pens are no longer supported")
-      (set-pen turtle 'bu::reverse))
-  boxer-eval::*novalue*)
-
-(defsprite-function bu::pr ()
-  (sprite turtle)
-    (if *signal-error-for-sprite-pen-XOR*
-      (boxer-eval::primitive-signal-error :obsolete
-                                    "XOR pens are no longer supported")
-      (set-pen turtle 'bu::reverse))
-  boxer-eval::*novalue*)
-
 (defsprite-function bu::set-pen-width ((boxer-eval::numberize width))
   (sprite turtle)
   (cond ((and (numberp width) (not (minusp width)))
