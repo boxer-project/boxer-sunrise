@@ -37,7 +37,8 @@
       (gp::image-access-transfer-from-image ia)
       (dotimes (y h)
         (dotimes (x w)
-          (setf (fli:dereference bdata :index (+ x (* (- h y 1) w)))
+          (setf
+            (cffi:mem-aref bdata opengl::*pixmap-ffi-type* (+ x (* (- h y 1) w)))
                 (uncolor->pixel
                   (color:unconvert-color bw::*boxer-pane* (gp:image-access-pixel ia x y)))))))
      (gp:free-image-access ia))))

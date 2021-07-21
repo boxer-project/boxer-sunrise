@@ -36,6 +36,8 @@ Modification History (most recent at top)
 
 (defvar *pixmap-data-type* *gl-rgba*)
 (defvar *pixmap-data-format* *gl-unsigned-byte*)
+(defvar *pixmap-ffi-type* :unsigned-int
+  "The pointer type for foreign-alloc and reference of pixmap data")
 
 (defconstant *gl-rgba-rev-alpha-byte* (byte 8 24))
 (defconstant *gl-rgba-rev-blue-byte* (byte 8 16))
@@ -51,15 +53,16 @@ Modification History (most recent at top)
   (cond ((and (integerp width)  (not (minusp width))
               (integerp height) (not (minusp height)))
          (%make-ogl-pixmap :width width :height height
-                           :data (fli:allocate-foreign-object :type :unsigned-int
-                                                              :initial-element 0
-                                                              :nelems (* width height))))
+                           :data (cffi:foreign-alloc *pixmap-ffi-type*
+                                                     :initial-element 0
+                                                     :count (* width height))))
         (t (error "Pixmap dimensions, (~S, ~S) must be non-negative integers"
                   width height))))
 
 (defun ogl-free-pixmap (pixmap)
   (when (ogl-pixmap-p pixmap)
-    (fli::free-foreign-object (ogl-pixmap-data pixmap))))
+    (cffi:foreign-free (ogl-pixmap-data pixmap))
+    ))
 
 ;; gak !
 (defun ogl-pixmap-depth (pm) (declare (ignore pm)) 32)
@@ -120,14 +123,14 @@ Modification History (most recent at top)
          (pwid (opengl::ogl-pixmap-width pixmap))
          (phei (opengl::ogl-pixmap-height pixmap))
          (ogl-y (- phei y 1)))
-    (fli::dereference data :index (+ x (* ogl-y pwid)))))
+    (cffi:mem-aref data *pixmap-ffi-type* (+ x (* ogl-y pwid)))))
 
 (defun set-pixmap-pixel (newpixel pixmap x y)
   (let* ((data (opengl::ogl-pixmap-data pixmap))
          (pwid (opengl::ogl-pixmap-width pixmap))
          (phei (opengl::ogl-pixmap-height pixmap))
          (ogl-y (- phei y 1)))
-    (setf (fli::dereference data :index (+ x (* ogl-y pwid))) newpixel)))
+    (setf (cffi:mem-aref data *pixmap-ffi-type* (+ x (* ogl-y pwid))) newpixel)))
 
 ;; to "clear" a pixmap means to write the particular pixel in entire data field
 (defun clear-ogl-pixmap (pixmap pixel-value)
@@ -137,7 +140,7 @@ Modification History (most recent at top)
           (data (ogl-pixmap-data pixmap)))
       (declare (fixnum w h))
       (dotimes (i (* w h))
-        (setf (fli::dereference data :index i) pixel-value)))))
+        (setf (cffi:mem-aref data *pixmap-ffi-type* i) pixel-value)))))
 
 ;; basic basic, probably a good candidate form optimization but currently only used by copy-graphics-sheet
 (defun %copy-pixmap-data (wid hei from-pixmap from-x from-y to-pixmap to-x to-y)
@@ -152,5 +155,6 @@ Modification History (most recent at top)
            (actual-hei (min hei (- th to-y) (- fh from-y))))
       (dotimes (y actual-hei)
         (dotimes (x actual-wid)
-          (setf (fli::dereference tdata :index (+ (+ x to-x)   (* (- th (+ y to-y)   1) tw)))
-                (fli::dereference fdata :index (+ (+ x from-x) (* (- fh (+ y from-y) 1) fw)))))))))
+          (setf
+              (cffi:mem-aref tdata *pixmap-ffi-type* (+ (+ x to-x)   (* (- th (+ y to-y)   1) tw)))
+              (cffi:mem-aref fdata *pixmap-ffi-type* (+ (+ x from-x) (* (- fh (+ y from-y) 1) fw)))))))))

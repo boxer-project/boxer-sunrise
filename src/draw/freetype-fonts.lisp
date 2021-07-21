@@ -109,21 +109,21 @@
     final-color))
 
 (defun make-freetype-pixmap (char-to-draw current-font cur-color &optional (font-zoom 1.0))
-  #+lispworks  ;TODO factor out :fli calls...
   (let* ((rendered-array (freetype2::toy-string-to-array (current-freetype-font current-font font-zoom) (string char-to-draw) :left-right))
          (advances (freetype2::get-string-advances (current-freetype-font current-font font-zoom) (string char-to-draw)))
          (width (freetype2::array-dimension rendered-array 1))
          (height (freetype2::array-dimension rendered-array 0))
-         (fli-data (fli:allocate-foreign-object :type :unsigned
-                                                :initial-element 0
-                                                :nelems (* width height)))
+         (fli-data
+           (cffi:foreign-alloc opengl::*pixmap-ffi-type* :initial-element 0 :count (* width height)))
          (*count* 0)
          (*mypixmap* nil)
          (*origval* nil))
     (loop for y downfrom (- height 1) to 0 by 1 do                   ;dotimes (y height)
       (dotimes (x width)
         (setf *origval* (aref rendered-array y x))
-        (setf (fli:dereference fli-data :type :unsigned :index (+ (* *count* width) x)) (font-pixel-color-alpha *origval* cur-color)))
+        (setf
+          (cffi:mem-aref fli-data opengl::*pixmap-ffi-type* (+ (* *count* width) x))
+          (font-pixel-color-alpha *origval* cur-color)))
         (setf *count* (1+ *count*)))
 
     (setf *mypixmap* (opengl::%make-ogl-pixmap :width width :height height

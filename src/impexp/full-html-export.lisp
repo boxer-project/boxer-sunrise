@@ -128,7 +128,7 @@
         (zpng:start-png png stream)
         (dotimes (y height)
           (dotimes (x width)
-            (setf cur-pixel (fli::dereference data :index (+ x (* (- height y 1) width))))
+            (setf cur-pixel (cffi:mem-aref data opengl::*pixmap-ffi-type* (+ x (* (- height y 1) width))))
             (zpng:write-pixel (get-rgba-values-from-pixmap-pixel cur-pixel) png)))
         (zpng:finish-png png))
       (setf togo (get-output-stream-string s)))
