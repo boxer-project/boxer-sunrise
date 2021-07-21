@@ -511,31 +511,7 @@ Modification History (most recent at top)
                    (inclusive-between? top2 top1 bottom1))))
         (and (horiz-touch?) (vert-touch?))))))
 
-#| ;;how did this ever work ????
-(defmethod touching? ((self graphics-object) other-turtle)
-  (multiple-value-bind (left1 top1 right1 bottom1)
-      (enclosing-rectangle self)
-    (multiple-value-bind (left2 top2 right2 bottom2)
-	(enclosing-rectangle other-turtle)
-      ;;; Check an edge at a time
-      (or (and (inclusive-between? left1 left2 right2)
-	       (or (and (>= top1 top2) (<= bottom1 top2))
-		   (and (>= top1 bottom2) (<= bottom1 bottom2))))
-	  (and (inclusive-between? right1 left2 right2)
-	       (or (and (>= top1 top2) (<= bottom1 top2))
-		   (and (>= top1 bottom2) (<= bottom1 bottom2))))
-	  (and (inclusive-between? top1 top2 bottom2)
-	       (or (and (>= right1 right2) (<= left1 right2))
-		   (and (>= right1 left2) (<= left1 left2))))
-	  (and (inclusive-between? bottom1 top2 bottom2)
-	       (or (and (>= right1 right2) (<= left1 right2))
-		   (and (>= right1 left2) (<= left1 left2))))
-	  ;; Finally check a single point in each
-	  (and (inclusive-between? left2 left1 right1)
-	       (inclusive-between? top2 top1 bottom1))
-	  (and (inclusive-between? left1 left2 right2)
-	       (inclusive-between? top1 top2 bottom2))))))
-|#
+
 
 (defmethod all-sprites-in-contact ((self graphics-object))
   (let ((objects (graphics-object-list (slot-value self 'assoc-graphics-box)))
