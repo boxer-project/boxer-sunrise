@@ -2829,6 +2829,16 @@ Modification History (most recent at top)
 ;;;; FILE: draw-high-hardware-clip.lisp
 ;;;;
 
+;; Since we have hardware clipping we'll just go ahead an draw stuff even
+if it is out of bounds
+(defmacro x-out-of-bounds? (scaled-x)
+  (declare (ignore scaled-x))
+  nil)
+
+(defmacro y-out-of-bounds? (scaled-y)
+  (declare (ignore scaled-y))
+  nil)
+
 (defmacro clip-x (scaled-x) scaled-x)
 (defmacro clip-y (scaled-y) scaled-y)
 

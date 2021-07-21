@@ -69,16 +69,6 @@
 (defmacro scale-x (x) x)
 (defmacro scale-y (y) y)
 
-;; Since we have hardware clipping we'll just go ahead an draw stuff even
-;; if it is out of bounds
-(defmacro x-out-of-bounds? (scaled-x)
-  (declare (ignore scaled-x))
-  nil)
-
-(defmacro y-out-of-bounds? (scaled-y)
-  (declare (ignore scaled-y))
-  nil)
-
 ;;; Interface functions WINDOW-PARAMETERS-CHANGED, WITH-DRAWING.  UPDATE-WINDOW-SYSTEM-STATE
 ;;; must be defined by the window system code.
 
