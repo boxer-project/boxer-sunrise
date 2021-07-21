@@ -4801,6 +4801,18 @@ Modification History (most recent at top)
 ;;;; FILE: grmeth.lisp
 ;;;;
 
+#|
+(defmethod save-state-and-reset ((self graphics-object))
+  (setq %turtle-state
+	(list (x-position self) (y-position self)))
+  (set-x-position self 0.0)
+  (set-y-position self 0.0))
+
+(defmethod restore-state ((self graphics-object))
+  (set-x-position self (first %turtle-state))
+  (set-y-position self (second %turtle-state)))
+|#
+
 #| ;;how did this ever work ????
 (defmethod touching? ((self graphics-object) other-turtle)
   (multiple-value-bind (left1 top1 right1 bottom1)

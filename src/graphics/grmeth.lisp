@@ -435,18 +435,6 @@ Modification History (most recent at top)
 
 ;;; turtle state
 
-#|
-(defmethod save-state-and-reset ((self graphics-object))
-  (setq %turtle-state
-	(list (x-position self) (y-position self)))
-  (set-x-position self 0.0)
-  (set-y-position self 0.0))
-
-(defmethod restore-state ((self graphics-object))
-  (set-x-position self (first %turtle-state))
-  (set-y-position self (second %turtle-state)))
-|#
-
 (defmethod return-state ((self graphics-object))
   (list (x-position self) (y-position self)))
 
