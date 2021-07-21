@@ -538,7 +538,6 @@ Modification History (most recent at top)
 CLOSED for renovations until I fix the string/font situation
 
 (defmethod flash-name ((self turtle))
-  (with-font-map-bound (*boxer-pane*)
     (let* ((print-name (name sprite-box))
 	   (name-length (sting-wid ))) ;;; fix this
       (multiple-value-bind (left top right bottom)
@@ -547,7 +546,7 @@ CLOSED for renovations until I fix the string/font situation
 	      (Y-POS (CALC-NAME-POSITION-Y *FONT-HEIGHT* TOP BOTTOM)))
 	  (DRAW-STRING-TO-GBOX PRINT-NAME X-POS Y-POS)
 	  (PROCESS-SLEEP 120 "Pausing to flash name")
-	  (DRAW-STRING-TO-GBOX PRINT-NAME X-POS Y-POS))))))
+	  (DRAW-STRING-TO-GBOX PRINT-NAME X-POS Y-POS)))))
 
 |#
 

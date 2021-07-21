@@ -1281,9 +1281,8 @@
         (multiple-value-bind (current-wid current-hei)
                              (screen-obj-size screen-box)
                              (multiple-value-bind (l-wid t-wid r-wid b-wid)
-                                                  (with-font-map-bound (*boxer-pane*)
-                                                    (box-borders-widths (box-type  (screen-box-point-is-in))
-                                                                        (screen-box-point-is-in)))
+                                                  (box-borders-widths (box-type  (screen-box-point-is-in))
+                                                                      (screen-box-point-is-in))
                                                   (set-fixed-size edbox
                                                                   (- current-wid l-wid r-wid)
                                                                   (- current-hei t-wid b-wid)))))

@@ -223,7 +223,6 @@
 
 
 ;; best guess for character width and height for the current font
-;; what about (with-drawing-port *boxer-pane* (with-font-map-bound (*boxer-pane*)
 
 (defun current-font-values (&optional (cha #\M))
   (rebind-font-info ((bfd-font-no *current-font-descriptor*))

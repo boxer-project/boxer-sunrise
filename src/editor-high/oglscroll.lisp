@@ -97,7 +97,6 @@ Modification History (most recent at top)
                                                              (declare (ignore left right))
                                                              (deallocate-screen-obj-internal screen-box)
                                                              (+ top bottom)))))
-        (with-font-map-bound (*boxer-pane*)
           (setq *data-box-horizontal-border-thickness*
                 (horizontal-border-thickness (make-instance 'data-box))
                 *doit-box-horizontal-border-thickness*
@@ -106,7 +105,7 @@ Modification History (most recent at top)
                 (horizontal-border-thickness (let ((box (make-instance 'port-box)))
                                                (setf (ports box)
                                                      (make-instance 'data-box))
-                                               box))))))
+                                               box)))))
 
 (defun horizontal-border-height (box)
   (case (class-name (class-of box))

@@ -255,7 +255,6 @@
   (declare (values mouse-bp local-x local-y))
   (let ((screen-obj (outermost-screen-box window)))
     ;; sgithens TODO (check-screen-obj-arg screen-obj)
-    (with-font-map-bound (*boxer-pane*)
       (multiple-value-bind (mouse-row mouse-cha-no mouse-screen-box
                                       local-x local-y border-area)
                            (find-bp-values screen-obj x y window)
@@ -265,7 +264,7 @@
                            (setf (bp-row        *mouse-bp*) mouse-row
                                  (bp-cha-no     *mouse-bp*) mouse-cha-no
                                  (bp-screen-box *mouse-bp*) mouse-screen-box)
-                           (values *mouse-bp* local-x local-y border-area)))))
+                           (values *mouse-bp* local-x local-y border-area))))
 
 
 ;;; Tracking for mouse documentation
@@ -273,10 +272,9 @@
 (defun mouse-documentation-area (x y &optional (window *boxer-pane*))
   (let ((screen-obj (outermost-screen-box window)))
     ;; sgithens TODO (check-screen-obj-arg screen-obj)
-    (with-font-map-bound (window)
       (mouse-doc-place screen-obj
                        (- x (screen-obj-x-offset screen-obj))
-                       (- y (screen-obj-y-offset screen-obj))))))
+                       (- y (screen-obj-y-offset screen-obj)))))
 
 (defmethod mouse-doc-place ((self screen-box) x y)
   (let ((area (get-area-of-box self x y)))

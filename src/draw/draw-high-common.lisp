@@ -76,29 +76,19 @@
 	 (sheet-inside-width ,window) (sheet-inside-height ,window))
 	 . ,body))))
 
-;;; WITH-FONT-MAP-BOUND is meant to be used by all those functions
-;;; (like BOX-BORDER-FN's that have to be called in an environment where the
-;;; font map is supposed to be bound but nothing else (like all those
-;;; wonderful drawing type things and stuff) needs to be bound
-
-(defmacro with-font-map-bound ((window) &body body)
-  `(let ()
-     . ,body))
-
 
 ;;; Used instead of DRAWING-ON-WINDOW for bitmaps
 
 (defmacro drawing-on-bitmap ((bitmap) &body body)
   (let ((bwidth-var (gensym)) (bheight-var (gensym)))
-    `(with-font-map-bound (*boxer-pane*)
-       (let ((%drawing-window ,bitmap) (%drawing-array ,bitmap)
+    `(let ((%drawing-window ,bitmap) (%drawing-array ,bitmap)
              (,bwidth-var (offscreen-bitmap-width ,bitmap))
              (,bheight-var (offscreen-bitmap-height ,bitmap)))
          %drawing-window %drawing-array ; bound but never used errors....
          (drawing-on-window-bootstrap-clipping-and-scaling
            (0 0 ,bwidth-var ,bheight-var)
            (with-system-dependent-bitmap-drawing (,bitmap ,bwidth-var ,bheight-var)
-	     . ,body))))))
+	     . ,body)))))
 
 ;;; Drawing functions which don't respect the clipping environment.
 ;;; They expect the hardware to do the clipping.  These are mostly

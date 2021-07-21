@@ -129,7 +129,6 @@ Modification History (most recent at top)
             (* 2 (1+ (max (abs min-y) (abs max-y)))))))
 
 (defun shape-box-updater-internal (box shape)
-  (with-font-map-bound (*boxer-pane*);;in case there are TYPE commands in the shape
     ;; first make sure there is a graphics sheet
     ;; don't worry about the size, we'll be adjusting it...
     (when (null (graphics-info box))
@@ -148,7 +147,7 @@ Modification History (most recent at top)
           (sv-append %graphics-list
                      (allocate-boxer->window-command shape-gc)))))
     ;; make sure we are in graphics mode
-    (setf (display-style-graphics-mode? (display-style-list box)) t)))
+    (setf (display-style-graphics-mode? (display-style-list box)) t))
 
 (defun shape-box-updater (bi)
   (let ((value (box-interface-value bi)) (box (box-interface-box bi)))
