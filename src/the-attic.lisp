@@ -4494,6 +4494,63 @@ if it is out of bounds
            (centered-rectangle abs-x abs-y wid hei)))))))
 
 ;;;;
+;;;; FILE: gcmeth.lisp
+;;;;
+
+;; sgithens 2021-07-23 This was another version of the :COMMAND-BODY section for
+;;   (defstandard-graphics-handlers (line-segment 3)
+    #|(let ((sx0 (scale-x x0)) (sy0 (scale-y y0))
+                              (sx1 (scale-x x1)) (sy1 (scale-y y1)))
+        (%draw-line (ensure-legal-window-coordinate sx0)
+                    (ensure-legal-window-coordinate sy0)
+                    (ensure-legal-window-coordinate sx1)
+                    (ensure-legal-window-coordinate sy1)
+                    *graphics-state-current-alu* t %drawing-array))|#
+
+#|
+;;; old (non caching) implementation
+;;; check out the :sprite-xxx args which used to expand into calls to
+;;; defgraphics-handler
+(defstandard-graphics-handlers (line-segment 3)
+    :COMMAND-ARGS (x0 y0 x1 y1)
+    :EXTENTS-FORM (values (min x0 x1) (min y0 y1) (max x0 x1) (max y0 y1))
+    :TRANSFORMATION-TEMPLATE
+    (:x-transform :y-transform :x-transform :y-transform)
+    :COMMAND-BODY
+    (%draw-line (scale-x x0) (scale-y y0) (scale-x x1) (scale-y y1)
+    *graphics-state-current-alu* t %drawing-array)
+    :TRANSLATION-ARGS
+    (trans-x trans-y)
+    :TRANSLATION-BODY
+    (progn (set-x0 (+& x0 trans-x)) (set-y0 (+& y0 trans-y))
+     (set-x1 (+& x1 trans-x)) (set-y1 (+& y1 trans-y)))
+    ;; translation and scaling
+    :TRANSLATION-AND-SCALING-ARGS
+    (trans-x trans-y scale-x scale-y)
+    :TRANSLATION-AND-SCALING-BODY
+    (progn (set-x0 (+& (fixr (* x0 scale-x)) trans-x))
+     (set-y0 (+& (fixr (* y0 scale-y)) trans-y))
+     (set-x1 (+& (fixr (* x1 scale-x)) trans-x))
+     (set-y1 (+& (fixr (* y1 scale-y)) trans-y)))
+    ;; sprite shape drawing
+    :SPRITE-HANDLER-ARGS
+    (trans-x trans-y cos-scale sin-scale scale)
+    :SPRITE-HANDLER-BODY
+    (line-segment (fixr (+ trans-x (+ (* cos-scale x0) (* sin-scale y0))))
+      (fixr (+ trans-y (- (* sin-scale x0) (* cos-scale y0))))
+      (fixr (+ trans-x (+ (* cos-scale x1) (* sin-scale y1))))
+      (fixr (+ trans-y (- (* sin-scale x1) (* cos-scale y1)))))
+    :SPRITE-EXTENTS-BODY
+    (let ((start-x (fixr (+ trans-x (+ (* cos-scale x0) (* sin-scale y0)))))
+    (start-y (fixr (+ trans-y (- (* sin-scale x0) (* cos-scale y0)))))
+    (stop-x  (fixr (+ trans-x (+ (* cos-scale x1) (* sin-scale y1)))))
+    (stop-y  (fixr (+ trans-y (- (* sin-scale x1) (* cos-scale y1))))))
+      (values (min& start-x stop-x) (min& start-y stop-y)
+        (max& start-x stop-x) (max& start-y stop-y))))
+
+|#
+
+;;;;
 ;;;; FILE: gopher.lisp
 ;;;;
 ;;;; --entire-file--
