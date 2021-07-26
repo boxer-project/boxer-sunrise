@@ -353,7 +353,7 @@ Modification History (most recent at the top)
 (defmacro process-graphics-command-marker (graphics-command &rest args)
   `(let ((handler (svref& *graphics-command-dispatch-table*
                           (svref& ,graphics-command 0))))
-     (unless (null  handler)
+     (unless (null  handler) ;; (break "sgithen command marker")
        (funcall handler ,graphics-command ,@args))))
 
 (defun graphics-command-extents (graphics-command)
@@ -1673,6 +1673,8 @@ Modification History (most recent at the top)
                                                     scale)
   ())
 
+;; sgithens TODO we should make this is not called anymore, and it used the other make font from file
+;; methods we coalesced last release
 (defun make-font-from-file-value (file-font)
   (cond ((and (typep file-font 'fixnum) (<=& 0 file-font 7))
          ;; compatibility with old files...
@@ -1827,7 +1829,10 @@ Modification History (most recent at the top)
   (:x-transform :y-transform :x-transform :y-transform)
   :COMMAND-BODY
   (unless (zerop *graphics-state-current-pen-width*)
+    (setf boxer::*gl-collect-lines* t)
     (ck-mode-draw-line x0 y0 x1 y1 *graphics-state-current-alu*)
+    (setf boxer::*gl-collect-lines* nil)
+
   )
   :sprite-command
   (cond ((and (= x0 last-x) (= y0 last-y))
@@ -2669,11 +2674,57 @@ Modification History (most recent at the top)
 
 ;; this is used by the redisplay...
 
+(defvar *gl-collect-lines* nil)
+(defvar *gl-collect-lines2* nil)
+
+(defvar *gl-lines-memory* nil
+  "Prototyping: I will use this to alloc the memory for the line segments array.")
+
+(defvar *gl-lines-size* 0
+  "Total size of the array to pass to glDrawArray. This will be incremented as we build up
+   the array.")
+
+(defvar *gl-segments-count* 0)
+
 (defmacro playback-graphics-list-internal (gl &rest args)
+
   `(with-graphics-state (,gl t)
      (with-blending-on
-       (do-vector-contents (command ,gl)
-         (process-graphics-command-marker command . ,args)))))
+      ;;  (format t "~%storage vec length: ~A"  (storage-vector-active-length ,gl))
+      ;;  (setf boxer::*gl-collect-lines* t)
+       (setf boxer::*gl-collect-lines2* t)
+       (unless boxer::*gl-lines-memory*
+         (setf boxer::*gl-lines-memory* (cffi:foreign-alloc :int :initial-element 0
+                                       ;; every line segment has 4 vertices
+                                      ;;  :count (* 10 (storage-vector-active-length ,gl))
+                                        :count 10000240
+                                       ))
+         (opengl::gl-enable-client-state opengl::*gl-vertex-array*)
+         (opengl::gl-disable-client-state opengl::*gl-color-array*)
+         (opengl::gl-vertex-pointer 2 opengl::*gl-int* 0 boxer::*gl-lines-memory*)
+       )
+       (do-vector-contents (command ,gl :start boxer::*gl-segments-count*)
+        ;;  (format t "~%do command: ~A" command)
+
+         (process-graphics-command-marker command . ,args)
+         (setf boxer::*gl-segments-count* (1+ boxer::*gl-segments-count*))
+
+
+         )
+
+      ;;  (format t "~%About to enable states")
+
+      ;;  (format t "~%Just set the vertex pointer")
+       (opengl::gl-draw-arrays opengl::*gl-lines* 0 boxer::*gl-lines-size*)
+      ;;  (format t "~%Just Draw Arrays")
+
+      ;;  (cffi:foreign-free boxer::*gl-lines-memory*)
+      ;;  (format t "~%Just freed memory")
+      ;;  (setf boxer::*gl-lines-memory* nil)
+      ;;  (setf boxer::*gl-collect-lines* nil)
+      (setf boxer::*gl-collect-lines2* nil)
+      ;;  (setf boxer::*gl-lines-size* 0)
+        )))
 
 (defun redisplay-graphics-sheet (gs graphics-screen-box)
   (with-graphics-vars-bound ((screen-obj-actual-obj graphics-screen-box))

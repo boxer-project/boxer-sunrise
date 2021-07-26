@@ -1019,6 +1019,28 @@
 ;; if not fullscreen, pass-1 should clear changed areas
 ;; Note: should scrolling ops, pass in the box being scrolled as the changed area ?
 
+(defun sgithens-perf-prototyping ()
+  (drawing-on-window (*boxer-pane*)
+    (draw-line 10 10 500 500 alu-seta t)
+
+
+  (let ((data (cffi:foreign-alloc :unsigned-int :initial-contents '(20 30 100 30 400 20 40 200)))
+        (color-data (cffi:foreign-alloc :float :initial-contents
+                    '(1.0 0.2 0.2
+                      0.2 0.2 1.0
+                      0.8 1.0 0.2
+                      0.75 0.75 0.75))))
+        ;; TODO is there an array we can use for pen width? Otherwise we'll need to split these up
+    ;; https://www.common-lisp.net/project/cffi/manual/cffi-manual.html#Allocating-Foreign-Memory
+    (opengl::gl-enable-client-state opengl::*gl-vertex-array*)
+    (opengl::gl-enable-client-state opengl::*gl-color-array*)
+    (opengl::gl-vertex-pointer 2 opengl::*gl-int* 0 data)
+    (opengl::gl-color-pointer 3 opengl::*gl-float* 0 color-data)
+    (opengl::gl-draw-arrays opengl::*gl-lines* 0 4)
+  )
+  )
+)
+
 (defun repaint-internal (&optional just-windows?)
   (let ((*complete-redisplay-in-progress?* t))
     (redisplaying-unit
@@ -1038,6 +1060,9 @@
        (unless just-windows?
          (repaint-cursor *point* nil)))
      (repaint-dev-overlay)
+
+    ;;  (sgithens-perf-prototyping)
+
      ;; swap buffers here, after all drawing is complete
      (flush-port-buffer *boxer-pane*))))
 

@@ -131,10 +131,23 @@ Modification History (most recent at the top)
 ;;; new layer of opengl drawing primitives which (optional) check & coerce parameter type
 
 (defun ogl-draw-line (x0 y0 x1 y1)
-  (opengl:gl-begin opengl:*gl-lines*)
-  (opengl:gl-vertex2-f (ogl-type x0 'float) (ogl-type y0 'float))
-  (opengl:gl-vertex2-f (ogl-type x1 'float) (ogl-type y1 'float))
-  (opengl:gl-end))
+  (cond ((and boxer::*gl-collect-lines* boxer::*gl-collect-lines2*)
+        ;;  (format t "~% ogl-draw-line meomory: Size: ~A" boxer::*gl-lines-size*)
+         (setf (cffi:mem-aref boxer::*gl-lines-memory* :int boxer::*gl-lines-size*) x0)
+         (setf (cffi:mem-aref boxer::*gl-lines-memory* :int (+ boxer::*gl-lines-size* 1)) y0)
+         (setf (cffi:mem-aref boxer::*gl-lines-memory* :int (+ boxer::*gl-lines-size* 2)) x1)
+         (setf (cffi:mem-aref boxer::*gl-lines-memory* :int (+ boxer::*gl-lines-size* 3)) y1)
+         (setf boxer::*gl-lines-size* (+ boxer::*gl-lines-size* 4))
+
+        ;;  (format t "~% ogl-draw-line meomory: NEXT Size: ~A" boxer::*gl-lines-size*)
+        )
+        (t
+          (opengl:gl-begin opengl:*gl-lines*)
+          (opengl:gl-vertex2-f (ogl-type x0 'float) (ogl-type y0 'float))
+          (opengl:gl-vertex2-f (ogl-type x1 'float) (ogl-type y1 'float))
+          (opengl:gl-end))
+  )
+)
 
 (defun ogl-set-pen-size (new)
   (opengl:gl-point-size (ogl-type new 'float))
