@@ -91,22 +91,14 @@
 (defvar *no-label-mouse-tracking-width* 10
   "Amount of space to allocate for mouse tracking of border type labels when the lable is hidden")
 
-;; this calls for macrology...
-(defun border-type-label (box-type)
-  (case box-type
-    (data-box "Data")
-    (doit-box "Doit")
-    (port-box "Port")
-    (t "")))
-
 (defun border-thickness (border-style)
   (if (fast-memq border-style '(:thick :thick-dashed))
       (+ *basic-border-width* 1)
     *basic-border-width*))
 
-(defun border-label-width (box-type)
+(defun border-label-width (label)
  (if *show-border-type-labels*
-     (string-wid *border-label-font* (border-type-label box-type))
+     (string-wid *border-label-font* label)
    0))
 
 (defun border-label-height (box-type)
@@ -117,8 +109,7 @@
 
 ;; "protrusion" describes the extension beyond where the border would
 ;; otherwise be
-(defun border-label-protrusion (box-type)
-  (declare (ignore box-type))
+(defun border-label-protrusion ()
   (if *show-border-type-labels*
       (1- (ffloor (string-hei *border-label-font*) 2))
     0))
@@ -175,11 +166,11 @@
 (defun plain-borders-minimum-size (screen-box)
   (let ((box (screen-obj-actual-obj screen-box)))
     (plain-borders-minimum-size-1 (name-string-or-null box)
-                                  (class-name (class-of box))
+                                  (box-type-label box)
                                   (display-style-border-style (display-style-list
                                                                screen-box)))))
 
-(defun plain-borders-minimum-size-1 (name type border-style)
+(defun plain-borders-minimum-size-1 (name type-label border-style)
   (let ((border-thickness (border-thickness border-style)))
     (values (max *minimum-box-wid*
                  (+ (* 2 (+ *border-outside-space* *border-inside-space*
@@ -187,13 +178,13 @@
                      (ceiling (border-name-width name)))
                  (+ (* 2 (+ *border-outside-space* *border-inside-space*
                                border-thickness))
-                     (border-label-width type)))
+                     (border-label-width type-label)))
             (max *minimum-box-hei*
                  (+ (+ *border-outside-space* (border-name-protrusion name)
                          border-thickness *border-inside-space*)
                      ;; the top border's thickness and
                      ;; the bottom border's thickness..
-                     (+ *border-outside-space* (border-label-protrusion type)
+                     (+ *border-outside-space* (border-label-protrusion)
                          *border-inside-space*))))))
 
 (defun port-borders-minimum-size (screen-box)
@@ -218,7 +209,7 @@
                          (border-name-protrusion (name-string-or-null port))
                          p-border-thickness *port-box-gap*)
                       (+ *border-outside-space*
-                         (border-label-protrusion 'port-box)
+                         (border-label-protrusion)
                          *port-box-gap*)))))))
 
 ;;;; Border widths
@@ -250,7 +241,7 @@
             (+ *border-outside-space* (border-name-protrusion name) ; top
                border-thickness *border-inside-space*)
             vert-width ; right
-            (floor (+ *border-outside-space* (border-label-protrusion type) ;; sgithens TODO boxer-sunrise-22 debugging fixnum issues
+            (floor (+ *border-outside-space* (border-label-protrusion) ;; sgithens TODO boxer-sunrise-22 debugging fixnum issues
                border-thickness *border-inside-space*)))))
 
 (defun port-borders-widths (screen-box)
@@ -271,7 +262,7 @@
                  p-border-thickness *border-outside-space*)
               (+ t-rig *port-box-gap* p-border-thickness *border-outside-space*)
               (+ t-bot *port-box-gap* p-border-thickness
-                 (border-label-protrusion 'port-box) *border-outside-space*))))
+                 (border-label-protrusion) *border-outside-space*))))
     0))
 
 (defun port-frame-widths (port)
@@ -282,7 +273,7 @@
                p-border-thickness *border-outside-space*)
             (+ *port-box-gap* p-border-thickness *border-outside-space*)
             (+ *port-box-gap* p-border-thickness
-               (border-label-protrusion 'port-box) *border-outside-space*))))
+               (border-label-protrusion) *border-outside-space*))))
 
 
 
@@ -341,7 +332,7 @@
          ;; space that a corner takes up
          (box-right (- (+ x outer-wid) border-thickness *border-outside-space*))
          (box-bottom (- (+ y outer-hei)
-                        border-thickness (border-label-protrusion box-type)
+                        border-thickness (border-label-protrusion)
                         *border-outside-space*))
          (inner-left (+ box-left corner-size))
          (inner-top (+ box-top corner-size))
@@ -351,7 +342,7 @@
          (label-end-x 0)) ; this 2
     (with-border-drawing-styles (actual-obj)
       (setq name-end-x (draw-borders-name name inner-left box-top name-top))
-      (setq label-end-x (draw-borders-label box-type inner-left box-bottom))
+      (setq label-end-x (draw-borders-label (box-type-label actual-obj) inner-left box-bottom))
       (draw-borders-walls box-left box-right inner-top inner-bottom box-top
                           box-bottom name-end-x label-end-x inner-right
                           border-style border-thickness)
@@ -399,15 +390,14 @@
       (draw-line current-x lower-slant-y end-x name-mid-y alu-seta t)
       end-x)))
 
-(defun draw-borders-label (box-type inner-left box-bottom)
+(defun draw-borders-label (label inner-left box-bottom)
   (cond ((null *show-border-type-labels*)
          inner-left)
         (t
-         (let ((label (border-type-label box-type)))
            (draw-string alu-seta *border-label-font* label
                         inner-left (- box-bottom
                                        (1+ (ffloor (string-hei *border-label-font*) 2))))
-           (+ inner-left (string-wid *border-label-font* label))))))
+           (+ inner-left (string-wid *border-label-font* label)))))
 
 ;; dashed and thick has to be handled @ this level because we
 ;; don't want the name border to be dashed or thick...
@@ -642,7 +632,7 @@
          (box-right (- (screen-obj-wid screen-box)
                        border-thickness *border-outside-space*))
          (box-bottom (- (screen-obj-hei screen-box)
-                        border-thickness (border-label-protrusion box-type)
+                        border-thickness (border-label-protrusion)
                         *border-outside-space*))
          (corner-size (+ border-thickness *border-inside-space*))
          (inner-right (- box-right *border-inside-space*))
@@ -656,7 +646,7 @@
          (border-thickness (border-thickness border-style))
          (box-left *border-outside-space*)
          (box-bottom (- (screen-obj-hei screen-box)
-                        border-thickness (border-label-protrusion box-type)
+                        border-thickness (border-label-protrusion)
                         *border-outside-space*))
          (corner-size (+ border-thickness *border-inside-space*))
          (inner-bottom (- box-bottom *border-inside-space*)))
@@ -664,12 +654,11 @@
 
 (defun type-tab-tracking-info (screen-box)
   (let* ((actual-obj (screen-obj-actual-obj screen-box))
-         (box-type (class-name (class-of actual-obj)))
          (border-style (display-style-border-style (display-style-list actual-obj)))
          (border-thickness (border-thickness border-style))
-         (label (border-type-label box-type))
+         (label (box-type-label actual-obj))
          (box-bottom (- (screen-obj-hei screen-box)
-                          border-thickness (border-label-protrusion box-type)
+                          border-thickness (border-label-protrusion)
                           *border-outside-space*))
          (corner-size (+ border-thickness *border-inside-space*))
          (inner-left (+ *border-outside-space* corner-size)))
@@ -983,7 +972,7 @@
                        ((<= left x
                             ;; this perhaps ought to call string-wid of the
                             ;; type label instead of using a variable
-                            (+ left (max (border-label-width box-type)
+                            (+ left (max (border-label-width (box-type-label actual-obj))
                                          *no-label-mouse-tracking-width*)))
                         :type)
                        ((and (h-scrollable? self) ; horizontal scroll bar area

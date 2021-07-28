@@ -434,6 +434,7 @@ Modification History (most recent at top)
 
 (defgeneric port-box? (x) (:method (x) nil) (:method ((x port-box)) t))
 
+;; A sprite box has a graphics-object as the graphics-info. See grobjs.lisp
 (defun sprite-box? (thing)
   (and (box? thing)
        (graphics-object? (slot-value thing 'graphics-info))))
@@ -442,6 +443,25 @@ Modification History (most recent at top)
 (defun graphics-box? (thing)
   (and (box? thing)
        (graphics-sheet? (slot-value thing 'graphics-info))))
+
+
+;;; Box type labels These are usually used for the labels on the borders, but
+;;; could be used elsewhere.
+
+(defun box-type-label (input-box)
+  "Returns a label for the type of box, such as Doit, Sprite, Data, Graphics, etc.
+   These are typically used when rendering the labels on box borders, but could be
+   useful for other situations."
+   ;; I was going to implement this as a set of generic methods, but becuase of the odd
+   ;; way graphics and sprites currently are, this is simpler. Also graphics boxes can
+   ;; flipped from Doit<->Data as well, so they need to be checked first.
+   (cond ((sprite-box? input-box) "Sprite")
+         ((graphics-box? input-box) "Graphics")
+         ((doit-box? input-box) "Doit")
+         ((data-box? input-box) "Data")
+         ((port-box? input-box) "Port")
+         (t ""))
+   )
 
 ;; for delineating regions in the editor...
 

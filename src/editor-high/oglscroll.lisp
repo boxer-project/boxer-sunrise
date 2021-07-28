@@ -559,7 +559,7 @@ Modification History (most recent at top)
                                 (visible-rows (screen-rows-length self))
                                 (inner-wid (- wid il ir))
                                 (inner-hei (- hei it ib))
-                                (type-label-width (border-label-width box-type))
+                                (type-label-width (border-label-width (box-type-label actual-obj)))
                                 (vert-x (- wid ir (- (border-thickness (border-style actual-obj)) 1)))
                                 (sbe (scroll-buttons-extent)))
                            (when (v-scrollable? self)
@@ -588,12 +588,12 @@ Modification History (most recent at top)
 ;; useful info for h-scroll tracking, returns the elevator's  min-x, max-x and
 ;; current left x-pos relative to the box
 (defmethod h-scroll-info ((self screen-box))
-  (with-slots (wid box-type scroll-x-offset max-scroll-wid)
+  (with-slots (actual-obj wid box-type scroll-x-offset max-scroll-wid)
     self
     (multiple-value-bind (il it ir ib)
                          (box-borders-widths box-type self)
                          (declare (ignore it ib))
-                         (let* ((type-label-width (border-label-width box-type))
+                         (let* ((type-label-width (border-label-width (box-type-label actual-obj)))
                                 (s-start (+ type-label-width il) )
                                 (s-width (- wid il ir type-label-width (scroll-buttons-extent))))
                            (values s-start
