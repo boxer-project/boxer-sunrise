@@ -158,8 +158,8 @@
                  (:file "filesystem/bfslocal")
                  (:file "filesystem/bfsforeign")
                  (:file "filesystem/client")
-                 (:file "filesystem/base64")
-                 (:file "filesystem/applefile")
+                ;;  (:file "filesystem/base64")
+                ;;  (:file "filesystem/applefile") sgithens TODO It looks like this can be completely archived
                  (:file "filesystem/surf")
                  (:file "filesystem/http")
                  ;; Beginning of `TRIGGER` module
@@ -198,6 +198,9 @@
                  (:file "primitives/dataprims")
                  (:file "primitives/build")
                  (:file "primitives/misc-prims")
+
+                 (:file "primitives/obsolete")
+
                  ;; Beginning of `KEYDEF`
                  ;; "How Boxer handles Input"
                  (:file "keydef/keydef-lwm")
