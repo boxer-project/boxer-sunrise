@@ -26,3 +26,18 @@ Dumping the version and opcodes of a `.box` file can be done at the REPL with:
 ```
 
 ```
+
+## Changing the keybindings at runtime
+
+The `make-input-devices` defun from `keydef-high.lisp` is what sets up all the keybindings and
+can optionally rebind all the keys (if being run again after the initial boxer load and setup).
+This is also what is called when we have the machine platform option in the user preferences
+accessible from the top menu.
+
+```lisp
+;; Using in initial setup:
+(make-input-devices *initial-platform* nil)
+
+;; Rebinding later in the application:
+(make-input-devices canonicalized-name) ; such as :LWM
+```
