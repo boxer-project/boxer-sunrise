@@ -1063,7 +1063,7 @@ Modification History (most recent at the top)
            (when (>= handler-opcode (svlength value))
              (error "The table, ~A, is too short for an opcode of ~D"
                     table handler-opcode))
-           (error "Hey, ~A doesn't look like a handler table"))))
+           (error "Hey, ~A doesn't look like a handler table" table))))
       (t (error "fooey !")))
     (cond ((null body)
            ;; a null body means that we should copy the default handler
@@ -1123,7 +1123,7 @@ Modification History (most recent at the top)
           (when (>= handler-opcode (svlength value))
             (error "The table, ~A, is too short for an opcode of ~D"
                     table handler-opcode))
-          (error "Hey, ~A doesn't look like a handler table"))))
+          (error "Hey, ~A doesn't look like a handler table" table))))
       (t (error "fooey !")))
     `(progn
       (defun ,handler-name (from-gc to-gc . ,extra-args)

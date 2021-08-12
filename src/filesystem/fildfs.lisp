@@ -166,48 +166,48 @@ Modification History (most recent at the top)
 (defconstant %utf-8-4byte-start #b11110000)
 (defconstant %utf-8-more-bytes  #b10000000)
 
-(defconstant %utf-8-last-byte-bytespec (byte 6 0))
-(defconstant %utf-8-2byte-1stbyte-src-bytespec (byte 5 6))
-(defconstant %utf-8-2byte-1stbyte-dst-bytespec (byte 5 0))
+(defvar %utf-8-last-byte-bytespec (byte 6 0))
+(defvar %utf-8-2byte-1stbyte-src-bytespec (byte 5 6))
+(defvar %utf-8-2byte-1stbyte-dst-bytespec (byte 5 0))
 
-(defconstant %utf-8-3byte-1stbyte-src-bytespec (byte 4 12))
-(defconstant %utf-8-3byte-1stbyte-dst-bytespec (byte 4 0))
-(defconstant %utf-8-3byte-2ndbyte-src-bytespec (byte 6 6))
-(defconstant %utf-8-3byte-2ndbyte-dst-bytespec (byte 6 0))
+(defvar %utf-8-3byte-1stbyte-src-bytespec (byte 4 12))
+(defvar %utf-8-3byte-1stbyte-dst-bytespec (byte 4 0))
+(defvar %utf-8-3byte-2ndbyte-src-bytespec (byte 6 6))
+(defvar %utf-8-3byte-2ndbyte-dst-bytespec (byte 6 0))
 
-(defconstant %utf-8-4byte-1stbyte-src-bytespec (byte 3 18))
-(defconstant %utf-8-4byte-1stbyte-dst-bytespec (byte 3 0))
-(defconstant %utf-8-4byte-2ndbyte-src-bytespec (byte 6 12))
-(defconstant %utf-8-4byte-2ndbyte-dst-bytespec (byte 6 0))
-(defconstant %utf-8-4byte-3rdbyte-src-bytespec (byte 6 6))
-(defconstant %utf-8-4byte-3rdbyte-dst-bytespec (byte 6 0))
+(defvar %utf-8-4byte-1stbyte-src-bytespec (byte 3 18))
+(defvar %utf-8-4byte-1stbyte-dst-bytespec (byte 3 0))
+(defvar %utf-8-4byte-2ndbyte-src-bytespec (byte 6 12))
+(defvar %utf-8-4byte-2ndbyte-dst-bytespec (byte 6 0))
+(defvar %utf-8-4byte-3rdbyte-src-bytespec (byte 6 6))
+(defvar %utf-8-4byte-3rdbyte-dst-bytespec (byte 6 0))
 
-(defconstant %utf-8-1byte-id-bytespec (byte 1 7))
-(defconstant %utf-8-2byte-id-bytespec (byte 3 5))
-(defconstant %utf-8-3byte-id-bytespec (byte 4 4))
-(defconstant %utf-8-4byte-id-bytespec (byte 5 3))
-(defconstant %utf-8-more-byte-id-bytespec (byte 2 6))
+(defvar %utf-8-1byte-id-bytespec (byte 1 7))
+(defvar %utf-8-2byte-id-bytespec (byte 3 5))
+(defvar %utf-8-3byte-id-bytespec (byte 4 4))
+(defvar %utf-8-4byte-id-bytespec (byte 5 3))
+(defvar %utf-8-more-byte-id-bytespec (byte 2 6))
 
 (defconstant %utf-8-1byte-id-value 0)
-(defconstant %utf-8-2byte-id-value (ldb %utf-8-2byte-id-bytespec %utf-8-2byte-start))
-(defconstant %utf-8-3byte-id-value (ldb %utf-8-3byte-id-bytespec %utf-8-3byte-start))
-(defconstant %utf-8-4byte-id-value (ldb %utf-8-4byte-id-bytespec %utf-8-4byte-start))
-(defconstant %utf-8-more-byte-id-value (ldb %utf-8-more-byte-id-bytespec
+(defvar %utf-8-2byte-id-value (ldb %utf-8-2byte-id-bytespec %utf-8-2byte-start))
+(defvar %utf-8-3byte-id-value (ldb %utf-8-3byte-id-bytespec %utf-8-3byte-start))
+(defvar %utf-8-4byte-id-value (ldb %utf-8-4byte-id-bytespec %utf-8-4byte-start))
+(defvar %utf-8-more-byte-id-value (ldb %utf-8-more-byte-id-bytespec
                                             %utf-8-more-bytes))
 
 ;;; Opcode definitions
 (eval-when (compile load eval)
-(defconstant %%bin-op-high (byte #o4 #o14))
+(defvar %%bin-op-high (byte #o4 #o14))
 )
-(defconstant %%bin-op-low (byte #o14 #o0))
+(defvar %%bin-op-low (byte #o14 #o0))
 
 ;;; other useful byte specifiers
-(defconstant %%bin-op-low-half (byte #o10 #o0))
-(defconstant %%bin-op-top-half (byte #o10 #o10))
-(defconstant %%bin-im-arg-msb (byte #o1 #o13))
+(defvar %%bin-op-low-half (byte #o10 #o0))
+(defvar %%bin-op-top-half (byte #o10 #o10))
+(defvar %%bin-im-arg-msb (byte #o1 #o13))
 
-(defconstant %%bin-op-char-code (byte #o10 #o0))
-(defconstant %%bin-op-im-cha-bits (byte #o4 #o10))
+(defvar %%bin-op-char-code (byte #o10 #o0))
+(defvar %%bin-op-im-cha-bits (byte #o4 #o10))
 ;; should be able to crank the control bits up to 4
 ;; now that we've flushed fonts from characters
 ;(defconstant %%bin-op-im-cha-style (byte #o2 #o12))
@@ -217,9 +217,9 @@ Modification History (most recent at the top)
 
 (defconstant %%bin-op-odd-char-placeholder-code 255)
 
-(defconstant %%bin-op-im-arg-size (ash 1 12.))
-(defconstant %%bin-op-arg-size (ash 1 16.))
-(defconstant %%bin-op-im-number-size (ash 1 11.))
+(defvar %%bin-op-im-arg-size (ash 1 12.))
+(defvar %%bin-op-arg-size (ash 1 16.))
+(defvar %%bin-op-im-number-size (ash 1 11.))
 
 ;;; Currently supported version number
 (defvar *version-number* 12.)

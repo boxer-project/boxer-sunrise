@@ -499,9 +499,9 @@
 ;; Opengl: this is supposed to return an RGB 24 bit value
 ;; Opengl color are stored as 0.0 to 1.0 floats, so we normalize to 255 and deposit the bytes
 ;; (what about the alpha (potential) value ??)
-(defconstant *red-byte-position* (byte 8 16))
-(defconstant *green-byte-position* (byte 8 8))
-(defconstant *blue-byte-position* (byte 8 0))
+(defvar *red-byte-position* (byte 8 16))
+(defvar *green-byte-position* (byte 8 8))
+(defvar *blue-byte-position* (byte 8 0))
 
 ;; need to deal with possible alpha values...
 (defun pixel-dump-value (pixel)

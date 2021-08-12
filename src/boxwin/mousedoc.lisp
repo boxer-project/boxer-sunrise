@@ -208,7 +208,7 @@
 (defun popup-doc-delay ()
   (let ((original-event-id (1+ (event-id))))
     (or
-     (mp:process-wait-with-timeout "Mouse Documentation"
+     #+lispworks (mp:process-wait-with-timeout "Mouse Documentation"
                                    *mouse-doc-wait-time*
                                    #'(lambda ()
                                        (> (event-id) original-event-id)))

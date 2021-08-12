@@ -39,10 +39,10 @@ Modification History (most recent at top)
 (defvar *pixmap-ffi-type* :unsigned-int
   "The pointer type for foreign-alloc and reference of pixmap data")
 
-(defconstant *gl-rgba-rev-alpha-byte* (byte 8 24))
-(defconstant *gl-rgba-rev-blue-byte* (byte 8 16))
-(defconstant *gl-rgba-rev-green-byte* (byte 8 8))
-(defconstant *gl-rgba-rev-red-byte* (byte 8 0))
+(defvar *gl-rgba-rev-alpha-byte* (byte 8 24))
+(defvar *gl-rgba-rev-blue-byte* (byte 8 16))
+(defvar *gl-rgba-rev-green-byte* (byte 8 8))
+(defvar *gl-rgba-rev-red-byte* (byte 8 0))
 
 (defstruct (ogl-pixmap (:constructor %make-ogl-pixmap))
   (width 0)
