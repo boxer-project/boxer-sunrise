@@ -21,6 +21,10 @@
 (defconstant *GL-SCISSOR-TEST*                     #x0C11)
 (defconstant *GL-SRC-ALPHA*                        #x0302)
 
+(defconstant *GL-RGBA*                             #x1908)
+(defconstant *GL-UNSIGNED-BYTE*                    #x1401)
+
+
 (defun free-gl-vector (object))
 (defun gl-begin (mode))
 (defun gl-blend-func (sfactor dfactor))
