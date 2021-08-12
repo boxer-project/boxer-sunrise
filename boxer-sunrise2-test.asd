@@ -15,7 +15,8 @@
                  (:test-file "boxdef-tests")
                  (:test-file "stacks-tests")
                  (:test-file "boxapp-data-tests")
-                 (:test-file "chunker-tests"))))
+                ;;  (:test-file "chunker-tests")
+                 )))
   :description "Test system for boxer-sunrise2"
 
   :perform (test-op (op c) (symbol-call :prove-asdf :run-test-system c)))
