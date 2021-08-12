@@ -313,6 +313,48 @@ argument (n), delete n characters. "
   (mark-file-box-dirty (point-row))
   boxer-eval::*novalue*)
 
+(defboxer-command com-forward-cha-define-region ()
+  "moves forward one character.  with
+numeric argument (n), moves forward
+n characters. "
+  ;; if there is a region, get rid of it
+  ;; (reset-region)
+  (let ((start-row (point-row))
+        (start-point (copy-bp  *point*)))
+    (with-multiple-execution
+        (move-point (bp-forward-cha-values *point*)))
+    (unless (eq start-row (point-row)) (ensure-row-is-displayed (point-row) (point-screen-box)))
+    ;; sgithens Region, if there is an existing region update it, otherwise create a new one.
+    (cond (*region-being-defined*
+           (set-interval-bps *region-being-defined* (interval-start-bp *region-being-defined*) *point*))
+          (t
+           (setq *region-being-defined* (make-editor-region start-point *point*))
+           (push *region-being-defined* *region-list*)))
+    )
+  boxer-eval::*novalue*
+)
+
+(defboxer-command com-backward-cha-define-region ()
+  "moves forward one character.  with
+numeric argument (n), moves forward
+n characters. "
+  ;; if there is a region, get rid of it
+  ;; (reset-region)
+  (let ((start-row (point-row))
+        (start-point (copy-bp  *point*)))
+    (with-multiple-execution
+        (move-point (bp-backward-cha-values *point*)))
+    (unless (eq start-row (point-row)) (ensure-row-is-displayed (point-row) (point-screen-box)))
+    ;; sgithens Region, if there is an existing region update it, otherwise create a new one.
+    (cond (*region-being-defined*
+           (set-interval-bps *region-being-defined* (interval-start-bp *region-being-defined*) *point*))
+          (t
+           (setq *region-being-defined* (make-editor-region start-point *point*))
+           (push *region-being-defined* *region-list*)))
+    )
+  boxer-eval::*novalue*
+)
+
 (defboxer-command COM-FORWARD-CHA ()
   "moves forward one character.  with
 numeric argument (n), moves forward
@@ -377,6 +419,44 @@ n characters. "
   (ensure-row-is-displayed (point-row) (point-screen-box) 1)
   boxer-eval::*novalue*)
 
+(defboxer-command com-previous-row-define-region ()
+  "moves up vertically to the previous
+row.  With numeric argument (n), moves
+up n rows.  Tries to stay as close as
+possible to the original column. "
+  ;; if there is a region, get rid of it
+  ;; (reset-region)
+  (with-multiple-execution
+      (let* ((start-point (copy-bp  *point*))
+             (row (bp-row *point*))
+             (previous-row (unless (null row) (previous-row row)))
+             (previous-row-length-in-chas
+               (unless (null previous-row) (length-in-chas previous-row)))
+             (cha-no (bp-cha-no *point*))
+             (current-row-length-in-chas (length-in-chas row)))
+        (cond ((null previous-row) (com-name-box))
+              ((< cha-no current-row-length-in-chas)
+               (setq *column* cha-no)
+               (move-point-1 previous-row
+                             (min previous-row-length-in-chas *column*)))
+              ((< *column* cha-no)
+               (setq *column* cha-no)
+               (move-point-1 previous-row
+                             (min previous-row-length-in-chas *column*)))
+              (t
+               (move-point-1 previous-row
+                             (min previous-row-length-in-chas *column*))))
+        (ensure-row-is-displayed (point-row) (point-screen-box) -1)
+
+        (cond (*region-being-defined*
+           (set-interval-bps *region-being-defined* (interval-start-bp *region-being-defined*) *point*))
+          (t
+           (setq *region-being-defined* (make-editor-region start-point *point*))
+           (push *region-being-defined* *region-list*)))
+        ))
+
+  boxer-eval::*novalue*)
+
 (defboxer-command COM-PREVIOUS-ROW ()
   "moves up vertically to the previous
 row.  With numeric argument (n), moves
@@ -438,7 +518,47 @@ possible to the original column. "
         (ensure-row-is-displayed (point-row) (point-screen-box))))
   boxer-eval::*novalue*)
 
-
+(defboxer-command com-next-row-define-region ()
+  "moves up vertically down the next
+row.  with numeric argument (n), moves
+down n rows.  tries to stay as close as
+possible to the original column. "
+  ;; if there is a region, get rid of it
+  (reset-region)
+  (with-multiple-execution
+      (let* ((start-point (copy-bp  *point*))
+             (row (bp-row *point*))
+             (next-row (unless (null row) (next-row row)))
+             (next-row-length-in-chas (unless (null next-row)
+                                        (length-in-chas next-row)))
+             (cha-no (bp-cha-no *point*))
+             (current-row-length-in-chas (length-in-chas row)))
+        (cond ((null next-row)
+               (com-end-of-row)
+               (com-return)
+                                        ;	     (ensure-row-is-displayed (point-row) (point-screen-box) 1)
+                                        ;	     (com-return) already calls this
+               )
+              ((< cha-no current-row-length-in-chas)
+               (setq *column* cha-no)
+               (move-point-1 next-row (min next-row-length-in-chas *column*))
+               (ensure-row-is-displayed (point-row) (point-screen-box) 1))
+              ((< *column* cha-no)
+               (setq *column* cha-no)
+               (move-point-1 next-row (min next-row-length-in-chas *column*))
+               (ensure-row-is-displayed (point-row) (point-screen-box) 1))
+              (t
+               (move-point-1 next-row (min next-row-length-in-chas *column*))
+               (ensure-row-is-displayed (point-row) (point-screen-box) 1)))
+
+        (cond (*region-being-defined*
+           (set-interval-bps *region-being-defined* (interval-start-bp *region-being-defined*) *point*))
+          (t
+           (setq *region-being-defined* (make-editor-region start-point *point*))
+           (push *region-being-defined* *region-list*)))
+               ))
+
+  boxer-eval::*novalue*)
 
 (defboxer-command COM-NEXT-ROW ()
   "moves up vertically down the next
