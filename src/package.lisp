@@ -43,6 +43,7 @@
     :*GL-PROJECTION*
     :*GL-SCISSOR-TEST*
     :*GL-SRC-ALPHA*
+    :*gl-rgba*
     :free-gl-vector
     :gl-begin
     :gl-blend-func
