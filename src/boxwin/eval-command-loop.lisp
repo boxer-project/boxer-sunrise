@@ -178,7 +178,7 @@
           (cond ((null ev) (return nil))
                 ((mouse-event? ev) (return ev))
                 ((key-event?   ev) (return ev))
-                ((system:gesture-spec-p ev) (return ev))
+                #+lispworks ((system:gesture-spec-p ev) (return ev))
                 (t (pop *boxer-eval-queue*))))))
 
 (defun modern-clicking-2021 (click)
@@ -197,7 +197,7 @@
         ;(time  (mouse-event-last-time-stamp click))
         )
     #-win32 (declare (ignore button))
-    (mp::process-wait-with-timeout "Double Click Wait" *double-click-pause-time*
+    #+lispworks (mp::process-wait-with-timeout "Double Click Wait" *double-click-pause-time*
                                    #'(lambda () (user-event-in-queue?)))
     (let ((new-input (peek-next-key-or-mouse-event)))
       (cond ((mouse-event? new-input)
@@ -242,17 +242,17 @@
         (cond ((null input)
                (unless just-redisplayed?
                  (boxer::repaint-with-cursor-relocation) (setq just-redisplayed? t))
-               (mp::process-allow-scheduling)
+               #+lispworks (mp::process-allow-scheduling)
                (when (no-more-input?)
                  (boxer-idle-function)
                  ;; be a good multi-processing citizen
                  ;; NOTE: when the idle function is fixed to actually document
                  ;; the mouse, we will need to change this to
                  ;; mp::process-allow-scheduling so it can run continously...
-                 (mp::process-wait "Boxer Input"
+                 #+lispworks (mp::process-wait "Boxer Input"
                                    #'(lambda ()
                                        (not (null (car *boxer-eval-queue*)))))))
-              ((system:gesture-spec-p input)
+              #+lispworks ((system:gesture-spec-p input)
                ;; We are adding this gesture condition in addition to the key-event? because at some point
                ;; during a lispworks major version change, the ability to encode the modifier keys as part of
                ;; the reader char seems to have gone away.  By adding an option to push an entire gesture-spec
