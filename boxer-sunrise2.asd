@@ -18,6 +18,7 @@
                  (:file "package")
                 ;; Stuff from previous OpenGL/opengl directory that was added by
                  ;; boxer
+                 #-lispworks (:file "boxwin/libre/opengl")
                  (:file "pixmap")
 
                  ;; Beginning of `DEFINITIONS` module
@@ -34,7 +35,7 @@
                  ;; Beginning of `DRAW` module
                  (:file "boxwin/lw-capi/platform-utils")
                 ;;  (:file "draw/agnostic-renderer")
-                 #+lispworks (:file "draw/opengl-utils")
+                 (:file "draw/opengl-utils")
                  #+(and lispworks freetype-fonts (not delivering)) (:file "draw/freetype-fonts")
                  (:file "draw/draw-low-opengl")
                  (:file "draw/draw-high-common")
@@ -78,7 +79,7 @@
                  (:file "boxwin/eval-command-loop")
                  #+lispworks (:file "boxwin/boxwin-opengl")
                  #+lispworks (:file "boxwin/lw-capi/clipboard")
-                 (:file "boxwin/hardcopy-lw")
+                ;;  (:file "boxwin/hardcopy-lw")
                  (:file "boxwin/mousedoc")
                  (:file "boxwin/boxapp-data")
 
