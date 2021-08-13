@@ -444,8 +444,9 @@ the box if it is shrunken."
                                ;; in which case, do nothing
                                (unless (or (null box) (cha? box))
                                  (enter box)
-                                 (move-point (all-bp-values (box-first-bp-values box) screen-box)))
-                               (when (shrunken? box) (com-expand-box)))))
+                                 (move-point (all-bp-values (box-first-bp-values box) screen-box))
+                                 (when (shrunken? box) (com-expand-box)))
+                               )))
     (t (with-multiple-execution
          (com-enter-next-box))))
   boxer-eval::*novalue*)
