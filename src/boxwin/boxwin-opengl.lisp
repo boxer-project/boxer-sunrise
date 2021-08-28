@@ -969,8 +969,7 @@
   (declare (ignore w))
   (setq *mouse-down-p* 1)
   (setq *modern-press-no* 2)
-  (if *use-mouse2021*
-    (boxer-click-handler x y 6)
+  (if (not *use-mouse2021*)
     (boxer-click-handler x y 0 t)))
 
 (defun boxer-dclick-2-handler (w x y)
@@ -1030,12 +1029,11 @@
 (defun boxer-mouse-release-1-handler (w x y)
   (declare (ignore w x y))
   (when *use-mouse2021*
-    (boxer-click-handler x y 7)
     (cond ((= *modern-press-no* 1)
+           (boxer-click-handler x y 7)
            (boxer-click-handler x y 0))
           ((= *modern-press-no* 2)
            (setq *modern-press-no* 0)
-           (boxer-click-handler x y 0)
            (boxer-click-handler x y 0 t))
           (t nil)))
   (cond ((null *mouse-down-p*))
