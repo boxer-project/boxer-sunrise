@@ -77,9 +77,9 @@
                  ;; "The interface between the Boxer Editor and the window system"
                  ;; these are also window system specific
                  (:file "boxwin/eval-command-loop")
-                 #+lispworks (:file "boxwin/boxwin-opengl")
+                 #+lispworks (:file "boxwin/lw-capi/boxwin-opengl")
                  #+lispworks (:file "boxwin/lw-capi/clipboard")
-                ;;  (:file "boxwin/hardcopy-lw")
+                ;;  (:file "boxwin/lw-capi/hardcopy-lw")
                  (:file "boxwin/mousedoc")
                  (:file "boxwin/boxapp-data")
 
@@ -233,7 +233,7 @@
                  (:file "site/xten")
                  ;; Beginning of `menu` module
                  ;;    "Menus for Harlequin Lispworks on the PC"
-                 (:file "boxwin/lw-menu")
+                 (:file "boxwin/lw-capi/lw-menu")
 
                  ;; Beginning of `av` module
                  ;;    "Primitives and support code for controlling VCR's from Mac Boxer"
