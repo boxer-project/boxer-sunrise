@@ -1214,6 +1214,10 @@ Modification History (most recent at top)
 ;;;; FILE: coms-oglmouse.lisp
 ;;;;
 
+;; there is only room to display 2 digits of row #'s
+;; (defun elevator-row-string (n)
+;;   (format nil "~D" n))
+
 #|  ; unused ?
 (defun reconcile-region-blinker-list (region blinker-list)
   (let ((existing-blinkers (interval-blinker-list region)))

@@ -1580,11 +1580,6 @@
                             (new-elevator-scrolled-row ed-box
                                                        (floor (* fraction (1-& no-of-rows))))))
 
-
-;; there is only room to display 2 digits of row #'s
-(defun elevator-row-string (n)
-  (format nil "~D" n))
-
 ;; we need to make sure that we don't leave just a single row for unfixed size
 ;; boxes because that makes it hard to use the scrolling machinery
 ;; should be smarter and estimate row heights so the lowest we go is still a boxful
