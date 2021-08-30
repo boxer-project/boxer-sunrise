@@ -1345,20 +1345,6 @@
   (warp-pointer *boxer-pane* ,original-x-variable ,max-y))
        (t (progn . ,body)))))
 
-
-
-;;; should go into opengl-utils.lisp if it ends up working....
-(defun ogl-init (width height)
-  (opengl:gl-matrix-mode opengl:*gl-projection*)
-  (opengl:gl-load-identity)
-  ;; orthographic projection, 0,0 = top,left
-  ;; Note:GL-Ortho wants double-floats as args (and insists on the mac)
-  (opengl:gl-ortho (coerce 0.0 'double-float)            (coerce (float width) 'double-float)
-            (coerce (float height) 'double-float) (coerce 0.0 'double-float)
-            (coerce -1.0 'double-float)           (coerce 1.0 'double-float)))
-
-
-
 ;; ?? is this called as a result of a display ?
 ;; might have to funcall through a symbol which changes
 ;; at the end of the graphics variable bootstrapping process

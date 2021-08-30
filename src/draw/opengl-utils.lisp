@@ -50,6 +50,15 @@ Modification History (most recent at the top)
 
 (in-package :boxer-window)
 
+(defun ogl-init (width height)
+  (opengl:gl-matrix-mode opengl:*gl-projection*)
+  (opengl:gl-load-identity)
+  ;; orthographic projection, 0,0 = top,left
+  ;; Note:GL-Ortho wants double-floats as args (and insists on the mac)
+  (opengl:gl-ortho (coerce 0.0 'double-float)            (coerce (float width) 'double-float)
+            (coerce (float height) 'double-float) (coerce 0.0 'double-float)
+            (coerce -1.0 'double-float)           (coerce 1.0 'double-float)))
+
 ;;; State management (see Red Book appendix B for state vars)
 ;; Note, type can be either an atomic type of a list of type and length
 ;; valid types are: :SIGNED-8 :SIGNED-16 :SIGNED-32 :UNSIGNED-8 :UNSIGNED-16
