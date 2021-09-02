@@ -604,7 +604,7 @@
                       :print-function #'string-capitalize
                       :callback #'menu-boxtop-callback)
     )
-   (:menu-bar file-menu edit-menu make-menu box-menu do-menu font-menu place-menu help-menu)
+   (:menu-bar file-menu edit-menu make-menu box-menu do-menu font-menu place-menu window-menu help-menu)
 ;;; ;  (:menu-bar file-menu)
   (:default-initargs
    :title "Boxer"
