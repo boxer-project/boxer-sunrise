@@ -580,6 +580,9 @@
                           (:component (("Remember Here" :accelerator #\/
                                                         :callback 'menu-remember-here))))
                 :items-function 'calculate-places)
+    #+macosx
+    (window-menu "Window" ((:component (("Minimize" :accelerator #\m
+                                         :callback 'menu-window-minimize)))))
     (help-menu "Help" ((:component (("Inputs" :callback 'menu-inputs-help)
                                     ("Find Functions..." :accelerator #\?
                                                      :callback 'menu-name-spelling-help)

@@ -1015,6 +1015,15 @@ Modification History (most recent at top)
            (boxer::boxer-editor-warning "Place ~C is no longer in the editor" data))
           (t (boxer::repaint)))))
 
+;;; **** MacOS Window Menu ****
+
+#+macosx
+(defun menu-window-minimize (data interface)
+  "Currently we only have one window, so we can just operate on *boxer-frame*.
+   But when we begin supporting multiple windows we'll need to list them all and
+   operate on the currently focused window."
+   (objc:invoke (slot-value (slot-value bw::*boxer-frame* 'capi-internals:representation) 'capi-cocoa-library::window)
+                "miniaturize:" nil))
 
 ;;; **** Help Menu ****
 
