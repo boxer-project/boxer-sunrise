@@ -92,6 +92,13 @@
             padding: 0px;
         }
 
+        .closet-row {
+            background-color: #F2F2F8;
+        }
+
+        .closet-row legend {
+            background-color: #F2F2F8;
+        }
     </style>
   </head><body>"))
 
@@ -269,10 +276,14 @@
                         (bfd-color cur-bfd)
                         *foreground-color*))
          (cur-css-color (ogl-color-to-css-hex cur-color)))
+
+    (when (closet-row? row (superior-box row))
+      (format stream "<div class=\"closet-row\">")
+    )
+
     (do-row-chas ((cha row) (cha-no 0 (+ cha-no 1)))
-      ;; TODO: Keeping track of fonts needs a bit more work. Right now we are only recording the font color, and
-      ;; literally putting each character in a span tag. We need to add font size, family, and style, and then check
-      ;; for changes to avoid so many spans.
+      ;; TODO: Keeping track of fonts needs a bit more work. This is ludicrously inefficient since we're wrapping
+      ;; each letter in a span. We'll need to do a bit of work on traversing the rows to put consective cha's together.
       (when (and cur-bfd (equal cha-no (bfd-cha-no cur-bfd)))
         (setf cur-color (bfd-color cur-bfd))
         (setf cur-css-color (ogl-color-to-css-hex cur-color))
@@ -282,8 +293,42 @@
       (cond ((box? cha)
              (write-foreign-file-box ffc cha stream))
             (t
-             (format stream "<span style=\"color: ~a\">~a</span>" cur-css-color cha) ;; TODO: escape HTML chars
-             )))))
+
+             (format stream "<span style=\"color: ~a" cur-css-color)
+
+             (when (not (null cur-bfd))
+               (cond ((equal "Arial" (font-name (bfd-font-no cur-bfd)))
+                      (format stream "; font-family: 'Arial'"))
+                     ((equal "Courier New" (font-name (bfd-font-no cur-bfd)))
+                      (format stream "; font-family: 'Courier New'"))
+                     ((equal "Times New Roman" (font-name (bfd-font-no cur-bfd)))
+                      (format stream "; font-family: 'Times New Roman'"))
+                     ((equal "Verdana" (font-name (bfd-font-no cur-bfd)))
+                      (format stream "; font-family: 'Verdana'")))
+               (format stream "; font-size: ~apx " (font-size (bfd-font-no cur-bfd))))
+
+             (format stream "\">")
+
+             (when (not (null cur-bfd))
+               (if (bold-font? (bfd-font-no cur-bfd))
+                 (format stream "<strong>"))
+               (if (italic-font? (bfd-font-no cur-bfd))
+                 (format stream "<em>")))
+
+             (if (equal #\space cha)
+               (format stream "&nbsp;")
+               (format stream "~a" (html-entities:encode-entities (string cha))))
+
+             (when (not (null cur-bfd))
+               (if (bold-font? (bfd-font-no cur-bfd))
+                 (format stream "</strong>"))
+               (if (italic-font? (bfd-font-no cur-bfd))
+                 (format stream "</em>")))
+
+             (format stream "</span>"))))
+
+         (when (closet-row? row (superior-box row))
+            (format stream "</div>"))))
 
 (defmethod end-foreign-stream ((ffc full-html-file-class)
                                &optional (stream *standard-output*))

@@ -23,6 +23,7 @@
 |#
 (require "asdf")
 (ql:quickload :drakma)
+(ql:quickload :html-entities)
 (ql:quickload :cl-freetype2)
 
 

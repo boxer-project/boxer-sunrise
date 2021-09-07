@@ -47,6 +47,7 @@
 (ql:quickload :cl-json)
 (ql:quickload :zpng)
 (ql:quickload :qbase64)
+(ql:quickload :html-entities)
 ;; Loading these freetype2 dependencies so they are available when we manually
 ;; load the freetype compiles filed during startup.
 (ql:quickload :alexandria)

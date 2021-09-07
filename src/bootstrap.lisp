@@ -31,6 +31,7 @@
 (ql:quickload :cl-json)
 (ql:quickload :zpng)
 (ql:quickload :qbase64)
+(ql:quickload :html-entities)
 
 (ql:quickload :cffi)
 #+win32 (pushnew #P"Z:/code/boxer-sunrise2/"
