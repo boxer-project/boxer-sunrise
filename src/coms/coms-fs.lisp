@@ -395,9 +395,10 @@ Modification History (most recent at top)
                                           :if-does-not-exist :ok
                                           :owner *boxer-frame*)))
       ;; choose export type...
-      (with-hilited-box ((point-box))
-        (writing-foreign-file (stream ffc filename)
-          (export-box-internal (point-box) ffc stream))))))
+      (unless (null filename) ;; If the user hit cancel on the file dialog, filename is nil
+        (with-hilited-box ((point-box))
+          (writing-foreign-file (stream ffc filename)
+            (export-box-internal (point-box) ffc stream)))))))
 
 ;; if we are closing a box with a boxtop, need to put the boxtop onto the
 ;; :cached-boxtop prop for the box since the inferiors will get deallocated

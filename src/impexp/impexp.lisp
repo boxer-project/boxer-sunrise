@@ -139,6 +139,8 @@ writing-foreign-file (stream-var ffc filename)
 (defmacro writing-foreign-file ((stream-var ffc filename) &body body)
   `(with-open-file (,stream-var ,filename
                                 :direction ':output
+                                :if-does-not-exist :create
+                                :if-exists :supersede
                                 :element-type (foreign-file-element-type ,ffc))
      . ,body))
 
