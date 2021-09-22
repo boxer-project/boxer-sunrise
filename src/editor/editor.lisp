@@ -1678,7 +1678,7 @@ points to the Box which contains the lower BP,then the superior BP is returned"
                                   NIL))))
              (set-superior-box cr box)
              (boxer-eval::set-box-transparency exporting-box t)
-             (set-name exporting-box (make-name-row '(bu::closet)))
+             (set-name exporting-box (make-name-row '(bu::drawer)))
              (setf (slot-value box 'closets) cr)
              (do-row-chas ((cha cr))
                (when (box? cha) (insert-self-action cha box)))
