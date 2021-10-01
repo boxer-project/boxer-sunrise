@@ -1,4 +1,3 @@
-
 ;;;;
 ;;;;      Boxer
 ;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
@@ -532,7 +531,7 @@
                               ;((#\g :control :press) boxer-abort-handler)
                               (:gesture-spec gesture-spec-handler))
                :display-callback 'boxer-expose-window-handler
-               :resize-callback 'resize-handler
+              ;  :resize-callback 'resize-handler
                ;; The following 4 params are for scrolling gestures (two finger scroll, mouse wheels, etc)
                :coordinate-origin :fixed-graphics
                :vertical-scroll :without-bar
@@ -1454,10 +1453,11 @@
   (cond ((not (null *display-bootstrapping-no-boxes-yet*))
          ;(rendering-on (pane) (ogl-init wid hei))
          )
-        (t
+        ((null *suppress-expose-handler*)
          (opengl:rendering-on (pane) (ogl-init wid hei))  ;(ogl-reshape wid hei)
          (redraw-status-line)
-         (boxer::force-repaint))))
+         (boxer::force-repaint))
+        (t nil)))
 
 (defun bootstrap-expose-window-function (wid hei)
   (declare (ignore wid hei))
@@ -1565,6 +1565,18 @@
         (unless (and (= obwid (box::screen-obj-wid osb))
                      (= obhei (box::screen-obj-hei osb)))
           (box::set-fixed-size osb obwid obhei))))))
+
+(defun check-for-window-resize ()
+  ;; fill up the *boxer-pane* width/height caches
+  ;; reset the outermost screen box
+  (let ((osb (outermost-screen-box)))
+    (unless (null osb)
+      (multiple-value-bind (obwid obhei)
+          (box::outermost-screen-box-size *boxer-pane*)
+        (unless (and (= obwid (box::screen-obj-wid osb))
+                     (= obhei (box::screen-obj-hei osb)))
+          (box::set-fixed-size osb obwid obhei)))))
+)
 
 (defun set-mouse-cursor (cursor)
   "Changes the current style of the mouse cursor using a keyword. Currently supported keywords are:

@@ -985,6 +985,7 @@
 
 
 (defun repaint-window (&OPTIONAL (WINDOW *BOXER-PANE*) (flush-buffer? t) &KEY (process-state-label "stopped"))
+  (bw::check-for-window-resize)
   (REDISPLAYING-WINDOW (WINDOW)
                        (LET ((*COMPLETE-REDISPLAY-IN-PROGRESS?*
                               (OR *COMPLETE-REDISPLAY-IN-PROGRESS?*
@@ -1019,31 +1020,49 @@
 ;; if not fullscreen, pass-1 should clear changed areas
 ;; Note: should scrolling ops, pass in the box being scrolled as the changed area ?
 
+(defparameter *currently-repainting* nil
+  "Doing some testing to see if this is really a problem... simple nil/t values should be atomic.")
+
 (defun repaint-internal (&optional just-windows?)
-  (let ((*complete-redisplay-in-progress?* t))
-    (redisplaying-unit
-     (dolist (redisplayable-window *redisplayable-windows*)
-       (repaint-window redisplayable-window (not (eq redisplayable-window
-                                                     *boxer-pane*))))
-     (dolist (region *region-list*)
-       (when (not (null region)) (interval-update-repaint-all-rows region)))
-     (setq *redisplay-clues* nil)
-     ;; comment out next line for outermost box save document, updates will
-     ;; occur inside of set-outermost-box instead...
-     (when (bp? *point*)
-       (set-window-name (current-file-status (point-box)))
-       ;; repaint-cursor can now cause horizontal scrolling of the box
-       ;; neccessitating an additional repaint, if so, it will throw
-       ;; to 'scroll-x-changed TAG
-       (unless just-windows?
-         (repaint-cursor *point* nil)))
-     (repaint-dev-overlay)
-     ;; swap buffers here, after all drawing is complete
-     (flush-port-buffer *boxer-pane*))))
+  ; (when *currently-repainting*
+  ;   (format t "Why are we double repainting??"))
+
+  (unless *currently-repainting*
+    (setf *currently-repainting* t)
+    (let ((*complete-redisplay-in-progress?* t))
+      (redisplaying-unit
+      (dolist (redisplayable-window *redisplayable-windows*)
+        (repaint-window redisplayable-window (not (eq redisplayable-window
+                                                      *boxer-pane*))))
+      (dolist (region *region-list*)
+        (when (not (null region)) (interval-update-repaint-all-rows region)))
+      (setq *redisplay-clues* nil)
+      ;; comment out next line for outermost box save document, updates will
+      ;; occur inside of set-outermost-box instead...
+      (when (bp? *point*)
+        (set-window-name (current-file-status (point-box)))
+        ;; repaint-cursor can now cause horizontal scrolling of the box
+        ;; neccessitating an additional repaint, if so, it will throw
+        ;; to 'scroll-x-changed TAG
+        (unless just-windows?
+          (repaint-cursor *point* nil)))
+      ;; swap buffers here, after all drawing is complete
+      (flush-port-buffer *boxer-pane*)))
+      (setf *currently-repainting* nil)
+      )
+     )
 
 (defun repaint (&optional just-windows?)
-  #+opengl (capi:apply-in-pane-process *boxer-pane* #'repaint-internal just-windows?)
-  #-opengl (repaint-internal just-windows?))
+  ;; #+opengl (capi:apply-in-pane-process *boxer-pane* #'repaint-internal just-windows?)
+  ;; #-opengl (repaint-internal just-windows?)
+
+  ; (unless  (equal "CAPI Execution Listener 1" (mp:process-name mp:*current-process*))
+  ;   (format t "~%what process is this2: ~A" (mp:process-name mp:*current-process*))
+  ; )
+
+  ;; sgithens hacking
+  (unless (not (null bw::*suppress-expose-handler*)) (repaint-internal just-windows?))
+  )
 
 (defun repaint-with-cursor-relocation ()
   (let ((*allow-redisplay-encore? t))
@@ -1180,21 +1199,24 @@
 ;;;
 (defun repaint-in-eval (&optional force?)
   ;; if fast enuff...
-  (let ((now (get-internal-real-time)))
-    (when (or force?
-              (and (>& now (+ *last-eval-repaint* *eval-repaint-quantum*))
-                   (>& now (+ *last-eval-repaint* (* *eval-repaint-ratio*
-                                                     *last-repaint-duration*)))))
-      (cond ((or (eq *repaint-during-eval?* :never)
-                 (and (eq *repaint-during-eval?* :changed-graphics)
-                      (null *screen-boxes-modified*))))
-        (t
-         (setq *last-eval-repaint* now)
-         (process-editor-mutation-queue-within-eval)
-         (unless (null bw::*suppressed-actions*)
-           (funcall (pop bw::*suppressed-actions*)))
-         (repaint-window *boxer-pane* t :process-state-label "eval")
-         (setq *last-repaint-duration* (- (get-internal-real-time) now)))))))
+  (unless *currently-repainting*
+    (setf *currently-repainting* t)
+    (let ((now (get-internal-real-time)))
+      (when (or force?
+                (and (>& now (+ *last-eval-repaint* *eval-repaint-quantum*))
+                    (>& now (+ *last-eval-repaint* (* *eval-repaint-ratio*
+                                                      *last-repaint-duration*)))))
+        (cond ((or (eq *repaint-during-eval?* :never)
+                  (and (eq *repaint-during-eval?* :changed-graphics)
+                        (null *screen-boxes-modified*))))
+          (t
+          (setq *last-eval-repaint* now)
+          (process-editor-mutation-queue-within-eval)
+          (unless (null bw::*suppressed-actions*)
+            (funcall (pop bw::*suppressed-actions*)))
+          (repaint-window *boxer-pane* t :process-state-label "eval")
+          (setq *last-repaint-duration* (- (get-internal-real-time) now))))))
+    (setf *currently-repainting* nil)))
 
 
 
