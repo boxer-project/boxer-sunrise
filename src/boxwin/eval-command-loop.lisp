@@ -288,7 +288,8 @@
                              (not (null (symbol-function (car input)))))))
                (apply (car input) (cdr input)))
               ((not (null boxer::*boxer-system-hacker*))
-               (error "Unknown object, ~A, in event queue" input)))))))
+               (error "Unknown object, ~A, in event queue" input))))
+      (update-toolbar-font-buttons))))
 
 (defmacro boxer-editor-bindings (recursive-p &body body)
   `(progv '(*region-being-defined* boxer::*editor-numeric-argument*

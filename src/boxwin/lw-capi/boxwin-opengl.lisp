@@ -360,10 +360,89 @@
 (capi:define-interface boxer-frame ()
   ()
   (:panes
+   (text-toolbar
+    capi:toolbar
+    :enabled nil
+    :items (list ;; Font Selection
+                 (make-instance 'capi:toolbar-component
+                                :items (list change-font-toolbar-button
+                                             change-fontsize-toolbar-button
+                                             change-fontcolor-toolbar-button))
+                 (make-instance 'capi:toolbar-component
+                                :items (list change-bold-toolbar-button change-italics-toolbar-button)
+                                :interaction :multiple-selection)
+                 (make-instance 'capi:toolbar-component
+                                :items (list (make-instance
+                                              'capi:toolbar-button
+                                              :text "Run"
+                                              :callback (lambda (frame)
+                                                          (menu-do-line nil nil)))
+                                             (make-instance
+                                              'capi:toolbar-button
+                                              :text "Stop"
+                                              :callback (lambda (frame)
+                                                          (menu-stop nil nil))
+                                              ))))
+    :callback-type :interface
+   )
+   (change-italics-toolbar-button
+    capi:toolbar-button
+    :text "I"
+    :selection-callback #'(lambda (self) (font-style-menu-action :italic 0))
+    :retract-callback #'(lambda (self) (font-style-menu-action :italic 0))
+   )
+   (change-bold-toolbar-button
+    capi:toolbar-button
+    :text "B"
+    :selection-callback #'(lambda (self) (font-style-menu-action :bold 0))
+    :retract-callback #'(lambda (self) (font-style-menu-action :bold 0))
+   )
+   (change-font-toolbar-button
+    capi:option-pane
+    :items boxer::*font-families*
+    :visible-max-width '(:character 20)
+    :selection-callback #'(lambda (font interface)
+                            (font-menu-action font 0)))
+   (change-fontsize-toolbar-button
+    capi:option-pane
+    :items '("8" "9" "10" "11" "12" "14" "16" "18" "20" "22" "24" "26" "28" "36" "48" "72")
+    :visible-max-width '(:character 3)
+    :selection-callback #'(lambda (size interface)
+                            (font-size-menu-action (parse-integer size) 0)))
+   (change-fontcolor-toolbar-button
+    capi:option-pane
+    ;; We use the symbols for the colors, rather than the colors themselves since they
+    ;; are likely not created yet at this point.
+    :items (list (make-instance 'capi::menu-item
+                                 :title "Black" :data 'boxer::*black*)
+                 (make-instance 'capi::menu-item
+                                 :title "White" :data 'boxer::*white*)
+                 (make-instance 'capi::menu-item
+                                 :title "Red" :data 'boxer::*red*)
+                 (make-instance 'capi::menu-item
+                                 :title "Green" :data 'boxer::*green*)
+                 (make-instance 'capi::menu-item
+                                 :title "Blue" :data 'boxer::*blue*)
+                 (make-instance 'capi::menu-item
+                                 :title "Cyan" :data 'boxer::*cyan*)
+                 (make-instance 'capi::menu-item
+                                 :title "Magenta" :data 'boxer::*magenta*)
+                 (make-instance 'capi::menu-item
+                                 :title "Yellow" :data 'boxer::*yellow*)
+                 (make-instance 'capi::menu-item
+                                 :title "Orange" :data 'boxer::*orange*)
+                 (make-instance 'capi::menu-item
+                                 :title "Purple" :data 'boxer::*purple*)
+                 (make-instance 'capi::menu-item
+                                 :title "Gray" :data 'boxer::*gray*))
+    :visible-max-width '(:character 8)
+    :selection-callback #'(lambda (color interface)
+                            (font-color-menu-action (symbol-value color) nil)))
    (name-pane capi:title-pane :text "status line"
               :min-width nil :max-width :screen-width
               :visible-min-height *boxer-status-pane-height*
               :visible-max-height *boxer-status-pane-height*)
+   (status-bar-pane capi:title-pane :text "")
    (boxer-pane opengl::opengl-pane
                :configuration #-linux '(:rgba t :depth nil :double-buffered t :aux 1)
                               #+linux '(:rgba t :depth nil :double-buffered t ) ;:aux 1) TODO This aux option crashes LW on linux
@@ -465,7 +544,7 @@
                ))
   (:layouts
    (boxer-layout capi:column-layout
-                 '(name-pane boxer-pane)
+                 '(text-toolbar name-pane boxer-pane status-bar-pane)
                  :columns 1 :rows 2 :y-gap 1 :x-uniform-size-p t))
   ;; menu item actions are defined in lw-menu.lisp
   (:menus
@@ -808,6 +887,7 @@
       ;; wait a sec
       ;; now that everything is defined, we can safely run redisplay
       (resize-handler-utility)
+      (update-toolbar-font-buttons)
       ;; and check for initial double clicked file box
       (when (eq :open-file (caar *pending-osx-events*))
         (safe-open-double-clicked-file (cdar *pending-osx-events*))

@@ -310,10 +310,17 @@ Modification History (most recent at the top)
 
 (defun ogl-set-color (color) (opengl:gl-color4-fv color))
 
+(defun float-precision= (a b &optional (precision 0.001))
+  (if (zerop a) (zerop b)  (< (abs (/ (- a b) a)) precision)))
+
 (defun ogl-color= (c1 c2)
-  (and (= (opengl:gl-vector-aref c1 0) (opengl:gl-vector-aref c2 0))
-       (= (opengl:gl-vector-aref c1 1) (opengl:gl-vector-aref c2 1))
-       (= (opengl:gl-vector-aref c1 2) (opengl:gl-vector-aref c2 2))
+  "Compares an ogl-color to one another to see if they are the same.
+  For all practical purposes we're using the usual color range of 0 - 255 (a bit larger than that),
+  so only that portion of a float will be considered, regardless of how
+  many trailing decimal points each RGB float component as it has."
+  (and (float-precision= (opengl:gl-vector-aref c1 0) (opengl:gl-vector-aref c2 0))
+       (float-precision= (opengl:gl-vector-aref c1 1) (opengl:gl-vector-aref c2 1))
+       (float-precision= (opengl:gl-vector-aref c1 2) (opengl:gl-vector-aref c2 2))
        ;; compare alpha values ?
        ))
 
