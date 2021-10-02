@@ -54,6 +54,7 @@
 (setf *features* (cons :freetype-fonts *features*))
 (asdf:load-system :boxer-sunrise2)
 (setf boxer::*capogi-font-directory* (merge-pathnames "data/boxersunrise.app/Contents/Resources/Fonts/" *boxer-project-dir*))
+(setf boxer::*resources-dir* (merge-pathnames "data/boxersunrise.app/Contents/Resources/" *boxer-project-dir*))
 
 #+win32(setf boxer::*capogi-font-directory* #P"Z:/code/boxer-sunrise2/data/boxersunrise.app/Contents/Resources/Fonts/")
 
