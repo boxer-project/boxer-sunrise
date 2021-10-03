@@ -68,6 +68,8 @@ Modification History (most recent at top)
   TODO: What was the passed in box argument used for previously?"
   (concatenate 'string "Boxer version " (boxer-component-version) " BSD License OpenGL Release"))
 
+(defvar *resources-dir* nil
+  "This is the directory on disc where we can expect to find things like the Fonts and Images directories.")
 
 ;;
 ;; this could be a lot faster, we should be able to do a compile time

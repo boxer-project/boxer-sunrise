@@ -102,3 +102,8 @@ You will now find a double-clickable MacOS application in `boxer-sunrise/data/bo
 * Jeremy Roschelle
 * Maurice Anchor
 * Steven W. Githens
+
+## Source Acknowledgements
+
+The start and stop icons are adapted from the Scratch project and subject to the BSD/Creative Commons License per
+the rest of Scratch.

@@ -90,6 +90,9 @@
         #+mac (load (merge-pathnames (concatenate 'string source-part ".64xfasl") freetype-deps-dir))
         #+win32 (load (merge-pathnames (concatenate 'string source-part ".64ofasl") freetype-deps-dir))))
 
+    (setf *resources-dir* (make-pathname
+                                                  :host (pathname-host (lw:lisp-image-name))
+                                                  :directory (append (base-install-folder) '("Resources"))))
 
     ;; Adding the fonts directory based on whereever this MacOS application happens to
     ;; be running from.

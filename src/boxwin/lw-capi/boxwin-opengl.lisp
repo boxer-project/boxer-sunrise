@@ -362,6 +362,7 @@
    (text-toolbar
     capi:toolbar
     :enabled nil
+    :image-width 32 :image-height 32
     :items (list ;; Font Selection
                  (make-instance 'capi:toolbar-component
                                 :items (list change-font-toolbar-button
@@ -371,14 +372,16 @@
                                 :items (list change-bold-toolbar-button change-italics-toolbar-button)
                                 :interaction :multiple-selection)
                  (make-instance 'capi:toolbar-component
+                                :min-width 32
+                                :min-height 32
                                 :items (list (make-instance
                                               'capi:toolbar-button
-                                              :text "Run"
+                                              :image (merge-pathnames "./images/scratch-run.bmp" boxer::*resources-dir*)
                                               :callback (lambda (frame)
                                                           (menu-do-line nil nil)))
                                              (make-instance
                                               'capi:toolbar-button
-                                              :text "Stop"
+                                              :image (merge-pathnames "./images/scratch-stop.bmp" boxer::*resources-dir*)
                                               :callback (lambda (frame)
                                                           (menu-stop nil nil))
                                               ))))
