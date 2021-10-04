@@ -32,6 +32,8 @@
          ;; (font-color we're going to have to peek in to the ogl colors, see the html export for examples)
          (bold-font (boxer::bold-font? current-font))
          (italic-font (boxer::italic-font? current-font))
+         (run-button (slot-value *boxer-frame* 'run-toolbar-button))
+         (stop-button (slot-value *boxer-frame* 'stop-toolbar-button))
          (font-button (slot-value *boxer-frame* 'change-font-toolbar-button))
          (size-button (slot-value *boxer-frame* 'change-fontsize-toolbar-button))
          (color-button (slot-value *boxer-frame* 'change-fontcolor-toolbar-button))
@@ -54,6 +56,14 @@
     (if bold-font
       (setf (capi:item-selected (slot-value *boxer-frame* 'change-bold-toolbar-button)) t)
       (setf (capi:item-selected (slot-value *boxer-frame* 'change-bold-toolbar-button)) nil))
+
+    ;; Set the appropriate run/stop icons depending on if we are in eval
+    (cond (*suppress-expose-handler*
+           (setf (capi:toolbar-button-image run-button) 1)
+           (setf (capi:toolbar-button-image stop-button) 3))
+          (t
+           (setf (capi:toolbar-button-image run-button) 0)
+           (setf (capi:toolbar-button-image stop-button) 2)))
 
     ;; Bottom Status Line
     (setf (capi:title-pane-text status-bar)

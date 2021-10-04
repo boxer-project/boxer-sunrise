@@ -1201,6 +1201,7 @@
 (defun repaint-in-eval (&optional force?)
   ;; if fast enuff...
   (unless *currently-repainting*
+    (bw::update-toolbar-font-buttons)
     (setf *currently-repainting* t)
     (let ((now (get-internal-real-time)))
       (when (or force?

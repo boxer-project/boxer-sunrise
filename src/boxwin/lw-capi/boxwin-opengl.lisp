@@ -363,6 +363,9 @@
     capi:toolbar
     :enabled nil
     :image-width 32 :image-height 32
+    :default-image-set (capi:make-general-image-set
+                        :id 'toolbar-scratch-images
+                        :image-count 4)
     :items (list ;; Font Selection
                  (make-instance 'capi:toolbar-component
                                 :items (list change-font-toolbar-button
@@ -374,19 +377,19 @@
                  (make-instance 'capi:toolbar-component
                                 :min-width 32
                                 :min-height 32
-                                :items (list (make-instance
-                                              'capi:toolbar-button
-                                              :image (merge-pathnames "./images/scratch-run.bmp" boxer::*resources-dir*)
-                                              :callback (lambda (frame)
-                                                          (menu-do-line nil nil)))
-                                             (make-instance
-                                              'capi:toolbar-button
-                                              :image (merge-pathnames "./images/scratch-stop.bmp" boxer::*resources-dir*)
-                                              :callback (lambda (frame)
-                                                          (menu-stop nil nil))
-                                              ))))
+                                :items (list run-toolbar-button stop-toolbar-button)))
     :callback-type :interface
    )
+   (run-toolbar-button
+    capi:toolbar-button
+    :image 0
+    :callback (lambda (frame)
+                (menu-do-line nil nil)))
+   (stop-toolbar-button
+    capi:toolbar-button
+    :image 2
+    :callback (lambda (frame)
+                (menu-stop nil nil)))
    (change-italics-toolbar-button
     capi:toolbar-button
     :text "I"
@@ -782,6 +785,10 @@
 (defvar *display-bootstrapping-no-boxes-yet* t)
 
 (defun window-system-specific-start-boxer ()
+  (gp:register-image-translation
+  'toolbar-scratch-images
+  (gp:read-external-image (merge-pathnames "./images/scratch-icons.bmp" boxer::*resources-dir*)))
+
   (let ((boot-start-time (get-internal-real-time))
         (progress-bar (make-instance 'load-progress-frame)))
     (flet ((start-boxer-progress (fstring time percentage)
