@@ -462,6 +462,24 @@
   (setq bw::*starting-window-height* w)
   boxer-eval::*novalue*)
 
+(defboxer-preference bu::boxer-window-show-toolbar (true-or-false)
+  ((bw::*boxer-window-show-toolbar-p* :boolean
+                              (boxer-eval::boxer-boolean bw::*boxer-window-show-toolbar-p*))
+   #+capi editor #-capi editor-settings
+   ("Display the toolbar on the boxer editor window?"))
+  (setq bw::*boxer-window-show-toolbar-p* true-or-false)
+  (bw::update-visible-editor-panes)
+  boxer-eval::*novalue*)
+
+(defboxer-preference bu::boxer-window-show-statusbar (true-or-false)
+  ((bw::*boxer-window-show-statusbar-p* :boolean
+                              (boxer-eval::boxer-boolean bw::*boxer-window-show-statusbar-p*))
+   #+capi editor #-capi editor-settings
+   ("Display the toolbar on the boxer editor window?"))
+  (setq bw::*boxer-window-show-statusbar-p* true-or-false)
+  (bw::update-visible-editor-panes)
+  boxer-eval::*novalue*)
+
 ;; This should be changed to :choice after the :choice pref is implemented
 #+(and (not opengl) capi) ; dont offer until it works...
 (defboxer-preference bu::popup-mouse-documentation (true-or-false)

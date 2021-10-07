@@ -776,6 +776,12 @@
 (defvar *starting-window-width*  0)
 (defvar *starting-window-height* 0)
 
+(defvar *boxer-window-show-toolbar-p* t
+  "Determines whether or not the toolbar on the boxer editor window is shown.")
+(defvar *boxer-window-show-statusbar-p* t
+  "Determines whether or not the status bar on the boxer editor window is shown.")
+
+
 (defvar *setup-editor-with-news?* t)
 
 (defvar *uc-free-starting-box-file* "boxer-init.box")
@@ -783,6 +789,19 @@
 (defvar *default-starting-box-file* "start.box")
 
 (defvar *display-bootstrapping-no-boxes-yet* t)
+
+(defun update-visible-editor-panes ()
+  "This function takes into account the current user preferences for dispalying the toolbar and
+  status bar, and re-lays out the main boxer-frame layout taking those in to account"
+  (let ((layout (slot-value *boxer-frame* 'capi:layout))
+        (new-desc '()))
+     (if *boxer-window-show-statusbar-p*
+                (push 'status-bar-pane new-desc))
+     (push 'boxer-pane new-desc)
+     (push 'name-pane new-desc)
+     (if *boxer-window-show-toolbar-p*
+                (push 'text-toolbar new-desc))
+     (setf (capi:layout-description layout) new-desc)))
 
 (defun window-system-specific-start-boxer ()
   (gp:register-image-translation
@@ -904,6 +923,7 @@
       (start-boxer-progress "Starting Command Loop ~D" (get-internal-real-time) 100)
       (sleep 1)
 
+      (update-visible-editor-panes)
       (boxer::switch-use-mouse2021 *use-mouse2021*)
 
       (capi:destroy progress-bar)
