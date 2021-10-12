@@ -629,6 +629,13 @@ Modification History (most recent at top)
       (funcall fun)))
   (boxer::repaint))
 
+;; **** View Menu ****
+
+(defun show-toolbar-popup-callback (menu)
+  (setf (capi:item-selected menu) *boxer-window-show-toolbar-p*))
+
+(defun show-statusbar-popup-callback (menu)
+  (setf (capi:item-selected menu) *boxer-window-show-statusbar-p*))
 
 ;; **** Do Menu ****
 

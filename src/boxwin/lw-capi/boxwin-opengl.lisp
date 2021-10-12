@@ -597,6 +597,34 @@
                                        :enabled-function 'box-check-menu-item-enabled?)))
                        (:component (("Preferences..." :callback 'menu-prefs)))
                        ("Find" :accelerator #\f :callback 'menu-find)))
+    (boxer-view-menu "View" ((:component
+                              (("Show Toolbar" :popup-callback 'show-toolbar-popup-callback
+                                          :callback-type :element
+                                          :callback #'(lambda (element)
+                                                        (setf *boxer-window-show-toolbar-p* (capi:item-selected element))
+                                                        (update-visible-editor-panes)
+                                                        (boxer::write-preferences)))
+                               ("Show Statusbar" :popup-callback 'show-statusbar-popup-callback
+                                            :callback-type :element
+                                            :callback #'(lambda (element)
+                                                        (setf *boxer-window-show-statusbar-p* (capi:item-selected element))
+                                                        (update-visible-editor-panes)
+                                                        (boxer::write-preferences)))
+                               ("Show Border Type Labels"
+                                 :popup-callback #'(lambda (menu)
+                                                     (setf (capi:item-selected menu) boxer::*show-border-type-labels*))
+                                 :callback-type :element
+                                 :callback #'(lambda (element)
+                                               (setf boxer::*show-border-type-labels* (capi:item-selected element))
+                                               (boxer::write-preferences)) )
+                               ("Show Empty Name Rows"
+                                 :popup-callback #'(lambda (menu)
+                                                     (setf (capi:item-selected menu) boxer::*show-empty-name-rows*))
+                                 :callback-type :element
+                                 :callback #'(lambda (element)
+                                               (setf boxer::*show-empty-name-rows* (capi:item-selected element))
+                                               (boxer::write-preferences))))
+                              :interaction :multiple-selection)))
     (make-menu "Make" ((:component
                         (("Data	{" :callback 'menu-data-box)
                          ("Doit	[" :callback 'menu-doit-box)))
@@ -688,7 +716,7 @@
                       :print-function #'string-capitalize
                       :callback #'menu-boxtop-callback)
     )
-   (:menu-bar file-menu edit-menu make-menu box-menu do-menu font-menu place-menu window-menu help-menu)
+   (:menu-bar file-menu edit-menu boxer-view-menu make-menu box-menu do-menu font-menu place-menu #+macosx window-menu help-menu)
 ;;; ;  (:menu-bar file-menu)
   (:default-initargs
    :title "Boxer"
@@ -805,8 +833,8 @@
 
 (defun window-system-specific-start-boxer ()
   (gp:register-image-translation
-  'toolbar-scratch-images
-  (gp:read-external-image (merge-pathnames "./images/scratch-icons.bmp" boxer::*resources-dir*)))
+    'toolbar-scratch-images
+    (gp:read-external-image (merge-pathnames "./images/scratch-icons.png" boxer::*resources-dir*)))
 
   (let ((boot-start-time (get-internal-real-time))
         (progress-bar (make-instance 'load-progress-frame)))

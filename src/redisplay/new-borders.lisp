@@ -316,6 +316,10 @@
       (+ y *border-outside-space* *noname-extension*)
     (+ y (border-name-protrusion name) *border-outside-space*)))
 
+(defvar *show-empty-name-rows* t
+  "Determines whether or not we render the name tabs on boxes when their names are zero length.
+  (ie. They don't have a name.)")
+
 (defun plain-borders-draw-1 (actual-obj x y outer-wid outer-hei)
   (let* ((name (name-string-or-null actual-obj) )
          (box-type (class-name (class-of actual-obj)))
@@ -341,7 +345,14 @@
          (name-end-x 0) ; this will get set later
          (label-end-x 0)) ; this 2
     (with-border-drawing-styles (actual-obj)
-      (setq name-end-x (draw-borders-name name inner-left box-top name-top))
+      ;; We only render the name rows if the preference for rendering them is true, or they aren't empty,
+      ;; or the cursor is currently in the name row.
+      (if (or *show-empty-name-rows*
+              (> (length name) 0)
+              (and (eq actual-obj (screen-obj-actual-obj (cadddr *point*)))
+                   (name-row? (cadr *point*))))
+        (setq name-end-x (draw-borders-name name inner-left box-top name-top))
+        (setq name-end-x inner-left))
       (setq label-end-x (draw-borders-label (box-type-label actual-obj) inner-left box-bottom))
       (draw-borders-walls box-left box-right inner-top inner-bottom box-top
                           box-bottom name-end-x label-end-x inner-right
@@ -1048,7 +1059,6 @@
    Default is 0 meaning zoom as fast as the machine will go.")
 
 (defvar *show-border-type-labels* t)
-
 
 
 

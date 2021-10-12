@@ -57,6 +57,8 @@
 (setf boxer::*resources-dir* (merge-pathnames "data/boxersunrise.app/Contents/Resources/" *boxer-project-dir*))
 
 #+win32(setf boxer::*capogi-font-directory* #P"Z:/code/boxer-sunrise2/data/boxersunrise.app/Contents/Resources/Fonts/")
+#+win32(setf boxer::*resources-dir* #P"Z:/code/boxer-sunrise2/data/boxersunrise.app/Contents/Resources/")
+
 
 ;; (load (merge-pathnames "run-tests.lisp" *boxer-project-dir*))
 

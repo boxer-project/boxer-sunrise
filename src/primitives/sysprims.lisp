@@ -382,6 +382,14 @@
   (force-repaint)
   boxer-eval::*novalue*)
 
+(defboxer-preference bu::show-empty-name-rows (true-or-false)
+  ((*show-empty-name-rows* :boolean (boxer-eval::boxer-boolean *show-empty-name-rows*))
+   #+capi editor #-capi editor-settings
+   ("Should we show name rows that are empty?"))
+  (setq *show-empty-name-rows* true-or-false)
+  (force-repaint)
+  boxer-eval::*novalue*)
+
 (defboxer-preference bu::smooth-scrolling (true-or-false)
   ((*smooth-scrolling?* :boolean (boxer-eval::boxer-boolean *smooth-scrolling?*))
    #+capi editor #-capi editor-settings
@@ -468,7 +476,7 @@
    #+capi editor #-capi editor-settings
    ("Display the toolbar on the boxer editor window?"))
   (setq bw::*boxer-window-show-toolbar-p* true-or-false)
-  (bw::update-visible-editor-panes)
+  (capi::apply-in-pane-process *boxer-pane* #'bw::update-visible-editor-panes)
   boxer-eval::*novalue*)
 
 (defboxer-preference bu::boxer-window-show-statusbar (true-or-false)
@@ -477,7 +485,7 @@
    #+capi editor #-capi editor-settings
    ("Display the toolbar on the boxer editor window?"))
   (setq bw::*boxer-window-show-statusbar-p* true-or-false)
-  (bw::update-visible-editor-panes)
+  (capi::apply-in-pane-process *boxer-pane* #'bw::update-visible-editor-panes)
   boxer-eval::*novalue*)
 
 ;; This should be changed to :choice after the :choice pref is implemented
