@@ -4872,6 +4872,34 @@ if it is out of bounds
 ;;;; FILE: grmeth.lisp
 ;;;;
 
+;; 2021-10-15 This was the #-opengl version of the body for `set-assoc-graphics-box`
+#-opengl
+(drawing-on-window (*boxer-pane*)
+    (break "sgithens I don't believe this should ever be called... 13411")
+    ;; need to bind the window here since the local methods no longer do
+    ;; so themselves (window is usually bound around calls to top-level-doit)
+    (when (not-null (slot-value self 'assoc-graphics-box))
+      (with-graphics-vars-bound ((slot-value self 'assoc-graphics-box))
+	(with-graphics-screen-parameters
+	    (erase self))))
+    (set-assoc-graphics-box-instance-var self new-box)
+    (when (and (not-null new-box)
+	       (absolute-shown? self))
+      (with-graphics-vars-bound (new-box gr-sheet)
+	(with-graphics-screen-parameters
+	    (dolist (ttl (graphics-sheet-object-list gr-sheet))
+	      (when (shown? ttl) (fast-erase ttl))))
+	  ;; first, hide any sprites that are visible
+	  ;; note that the new sprite has NOT been pushed onto the
+	  ;; graphics-box's list of objects yet
+	(with-graphics-screen-parameters-once
+	    (save-under-turtle self))
+	;; now redraw any hidden sprites
+	(with-graphics-screen-parameters
+	    (dolist (ttl (graphics-sheet-object-list gr-sheet))
+	      (when (shown? ttl) (draw ttl)))
+	  (draw self)))))
+
 #|
 (defmethod save-state-and-reset ((self graphics-object))
   (setq %turtle-state

@@ -69,34 +69,7 @@ Modification History (most recent at top)
     (set-assoc-graphics-box-instance-var subs new-box)))
 
 (defmethod set-assoc-graphics-box ((self graphics-object) new-box)
-  #+opengl
-  (set-assoc-graphics-box-instance-var self new-box)
-  #-opengl
-  (drawing-on-window (*boxer-pane*)
-    ;; need to bind the window here since the local methods no longer do
-    ;; so themselves (window is usually bound around calls to top-level-doit)
-    (when (not-null (slot-value self 'assoc-graphics-box))
-      (with-graphics-vars-bound ((slot-value self 'assoc-graphics-box))
-	(with-graphics-screen-parameters
-	    (erase self))))
-    (set-assoc-graphics-box-instance-var self new-box)
-    (when (and (not-null new-box)
-	       (absolute-shown? self))
-      (with-graphics-vars-bound (new-box gr-sheet)
-	(with-graphics-screen-parameters
-	    (dolist (ttl (graphics-sheet-object-list gr-sheet))
-	      (when (shown? ttl) (fast-erase ttl))))
-	  ;; first, hide any sprites that are visible
-	  ;; note that the new sprite has NOT been pushed onto the
-	  ;; graphics-box's list of objects yet
-	(with-graphics-screen-parameters-once
-	    (save-under-turtle self))
-	;; now redraw any hidden sprites
-	(with-graphics-screen-parameters
-	    (dolist (ttl (graphics-sheet-object-list gr-sheet))
-	      (when (shown? ttl) (draw ttl)))
-	  (draw self)))))
-  )
+  (set-assoc-graphics-box-instance-var self new-box))
 
 ;;; Hierarchical Graphics Objects (which mirror (possible)
 ;;; hierarchical boxer structure)
