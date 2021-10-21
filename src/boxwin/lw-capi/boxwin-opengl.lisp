@@ -1032,118 +1032,10 @@
 (defun event-id () *event-id*)
 (defun next-event-id () (incf *event-id*))
 
-;; these are interface stubs, the main work is done after
-;; Single Clicks...
-;; the only work done here is to setup *mouse-down-p* for use by MOUSE-BUTTONS
-
-(defconstant *click-1-byte-selector* (byte 1 0))
-(defconstant *click-2-byte-selector* (byte 1 1))
-(defconstant *click-3-byte-selector* (byte 1 2))
-
-(defvar *modern-press-no* 0
-  "This will determine which press we're on, so we can emit click or double click
-   on the release. Possible values are:
-   - 0    Nothing is going on with the mouse
-   - 1    The mouse has been pressed once
-   - 2    The mouse has been pressed twice
-
-   This supports the new Mouse 2021 Click Events.")
-
-(defun boxer-click-1-handler (w x y)
-  (declare (ignore w))
-  (setq *modern-press-no* 1)
-  (cond ((null *mouse-down-p*) (setq *mouse-down-p* 1))
-        (t (setq *mouse-down-p* (dpb 1 *click-1-byte-selector* *mouse-down-p*))))
-  (if *use-mouse2021*
-    (boxer-click-handler x y 6)
-    (boxer-click-handler x y 0)))
-
-(defun boxer-click-2-handler (w x y)
-  (declare (ignore w))
-  (cond ((null *mouse-down-p*) (setq *mouse-down-p* 2))
-        (t (setq *mouse-down-p* (dpb 1 *click-2-byte-selector* *mouse-down-p*))))
-  (boxer-click-handler x y 1))
-
-(defun boxer-click-3-handler (w x y)
-  (declare (ignore w))
-  (cond ((null *mouse-down-p*) (setq *mouse-down-p* 4))
-        (t (setq *mouse-down-p* (dpb 1 *click-3-byte-selector* *mouse-down-p*))))
-  (boxer-click-handler x y 2))
-
-;; shifted singled clicks...
-
-(defun boxer-c-click-1-handler (w x y)
-  (declare (ignore w))
-  (setq *mouse-down-p* 1) (boxer-click-handler x y 0 nil 1))
-
-(defun boxer-c-click-2-handler (w x y)
-  (declare (ignore w))
-  (setq *mouse-down-p* 2) (boxer-click-handler x y 1 nil 1))
-
-(defun boxer-c-click-3-handler (w x y)
-  (declare (ignore w))
-  (setq *mouse-down-p* 4) (boxer-click-handler x y 2 nil 1))
-
-(defun boxer-a-click-1-handler (w x y)
-  (declare (ignore w))
-  (setq *mouse-down-p* 1) (boxer-click-handler x y 0 nil 2))
-
-(defun boxer-a-click-2-handler (w x y)
-  (declare (ignore w))
-  (setq *mouse-down-p* 2) (boxer-click-handler x y 1 nil 2))
-
-(defun boxer-a-click-3-handler (w x y)
-  (declare (ignore w))
-  (setq *mouse-down-p* 4) (boxer-click-handler x y 2 nil 2))
-
-(defun boxer-c-a-click-1-handler (w x y)
-  (declare (ignore w)) (setq *mouse-down-p* 1) (boxer-click-handler x y 0 nil 3))
-(defun boxer-c-a-click-2-handler (w x y)
-  (declare (ignore w)) (setq *mouse-down-p* 2) (boxer-click-handler x y 1 nil 3))
-(defun boxer-c-a-click-3-handler (w x y)
-  (declare (ignore w)) (setq *mouse-down-p* 4) (boxer-click-handler x y 2 nil 3))
-
-
-;; double clicks
-(defun boxer-dclick-1-handler (w x y)
-  (declare (ignore w))
-  (setq *mouse-down-p* 1)
-  (setq *modern-press-no* 2)
-  (if (not *use-mouse2021*)
-    (boxer-click-handler x y 0 t)))
-
-(defun boxer-dclick-2-handler (w x y)
-  (declare (ignore w)) (setq *mouse-down-p* 2) (boxer-click-handler x y 1 t))
-(defun boxer-dclick-3-handler (w x y)
-  (declare (ignore w)) (setq *mouse-down-p* 4) (boxer-click-handler x y 2 t))
-
-;; shifted double clicks
-(defun boxer-c-dclick-1-handler (w x y)
-  (declare (ignore w)) (setq *mouse-down-p* 1) (boxer-click-handler x y 0 t 1))
-(defun boxer-c-dclick-2-handler (w x y)
-  (declare (ignore w)) (setq *mouse-down-p* 2) (boxer-click-handler x y 1 t 1))
-(defun boxer-c-dclick-3-handler (w x y)
-  (declare (ignore w)) (setq *mouse-down-p* 4) (boxer-click-handler x y 2 t 1))
-
-(defun boxer-a-dclick-1-handler (w x y)
-  (declare (ignore w)) (setq *mouse-down-p* 1) (boxer-click-handler x y 0 t 2))
-(defun boxer-a-dclick-2-handler (w x y)
-  (declare (ignore w)) (setq *mouse-down-p* 2) (boxer-click-handler x y 1 t 2))
-(defun boxer-a-dclick-3-handler (w x y)
-  (declare (ignore w)) (setq *mouse-down-p* 4) (boxer-click-handler x y 2 t 2))
-
-(defun boxer-c-a-dclick-1-handler (w x y)
-  (declare (ignore w)) (setq *mouse-down-p* 1) (boxer-click-handler x y 0 t 3))
-(defun boxer-c-a-dclick-2-handler (w x y)
-  (declare (ignore w)) (setq *mouse-down-p* 2) (boxer-click-handler x y 1 t 3))
-(defun boxer-c-a-dclick-3-handler (w x y)
-  (declare (ignore w)) (setq *mouse-down-p* 4) (boxer-click-handler x y 2 t 3))
-
-
 ;; mouse motion
 (defvar *track-mouse-x* 0)
 (defvar *track-mouse-y* 0)
-(defvar *mouse-down-p* nil)
+
 
 ;; this is called by the :motion input type
 (defun boxer-track-and-doc-mouse-handler (w x y)
@@ -1164,33 +1056,6 @@
 
 (defun boxer-pane-mouse-x ()  (mp::process-allow-scheduling) *track-mouse-x*)
 (defun boxer-pane-mouse-y ()  (mp::process-allow-scheduling) *track-mouse-y*)
-
-;; this is called by the (:button :release) input type
-(defun boxer-mouse-release-1-handler (w x y)
-  (declare (ignore w x y))
-  (when *use-mouse2021*
-    (cond ((= *modern-press-no* 1)
-           (boxer-click-handler x y 7)
-           (boxer-click-handler x y 0))
-          ((= *modern-press-no* 2)
-           (setq *modern-press-no* 0)
-           (boxer-click-handler x y 0 t))
-          (t nil)))
-  (cond ((null *mouse-down-p*))
-        ((box::=& *mouse-down-p* 1) (setq *mouse-down-p* nil))
-        (t (setq *mouse-down-p* (dpb 0 *click-1-byte-selector* *mouse-down-p*)))))
-
-(defun boxer-mouse-release-2-handler (w x y)
-  (declare (ignore w x y))
-  (cond ((null *mouse-down-p*))
-        ((box::=& *mouse-down-p* 2) (setq *mouse-down-p* nil))
-        (t (setq *mouse-down-p* (dpb 0 *click-2-byte-selector* *mouse-down-p*)))))
-
-(defun boxer-mouse-release-3-handler (w x y)
-  (declare (ignore w x y))
-  (cond ((null *mouse-down-p*))
-        ((box::=& *mouse-down-p* 4) (setq *mouse-down-p* nil))
-        (t (setq *mouse-down-p* (dpb 0 *click-3-byte-selector* *mouse-down-p*)))))
 
 (defun boxer-pane-mouse-down? ()
   (unless *use-mouse2021*
