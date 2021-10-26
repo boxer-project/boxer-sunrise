@@ -72,6 +72,15 @@
   ;;  0 - Primary Button, usually left click
   ;;  1 - Third Button
   ;;  2 - Secondary Button, usually right click
+  ;;  3 - Primary Double Click
+  ;;  4 - Middle Double Click
+  ;;  5 - Right Double Click
+  ;;  6 - Primary Down
+  ;;  7 - Middle Down
+  ;;  8 - Right Down
+  ;;  9 - Primary Up
+  ;; 10 - Middle Up
+  ;; 11 - Right Up
   (click 0)
   ;; The current values for bits are:
   ;;  0 - No modifier keys

@@ -13,6 +13,7 @@
 (ql:quickload :cl-json)
 (ql:quickload :zpng)
 (ql:quickload :qbase64)
+(ql:quickload :html-entities)
 
 (ql:quickload :cffi)
 (ql:quickload :cl-freetype2)
