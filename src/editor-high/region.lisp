@@ -519,7 +519,7 @@
                                         ;     (SETF ,Y (+ ,Y (SEND SHEET :TOP-MARGIN-SIZE)))))
 
 ;; used to make rows with 0 characters highlighted.
-(defvar *minimum-row-blinker-wid* 10)
+(defvar *minimum-row-blinker-wid* 0)
 
 (defun update-region-row-blinker (region-row-blinker)
   (let* ((screen-row (region-row-blinker-uid region-row-blinker))

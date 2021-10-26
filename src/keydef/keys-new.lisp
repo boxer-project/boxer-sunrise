@@ -511,7 +511,8 @@
   (cond (use-mouse2021
          ;; "Setting up 2021 Mouse bindings"
          (boxer-eval::defboxer-key bu::mouse-down com-mouse-define-region)
-         (boxer-eval::defboxer-key bu::mouse-click com-noop)
+        ;  (boxer-eval::defboxer-key bu::mouse-click com-noop)
+         (boxer-eval::defboxer-key bu::mouse-click com-mouse-expand-box)
          (boxer-eval::defboxer-key bu::mouse-up com-noop)
 
          (boxer-eval::defboxer-key bu::mouse-down-on-graphics com-noop)
@@ -522,6 +523,16 @@
 
          (boxer-eval::defboxer-key bu::mouse-click-on-sprite com-noop)
          (boxer-eval::defboxer-key bu::mouse-click-on-bottom-right com-noop)
+
+         ;; Context menus
+         (boxer-eval::defboxer-key bu::ctrl-mouse-down-on-top-right  com-mouse-boxsize-closet-properties-pop-up)
+         (boxer-eval::defboxer-key bu::mouse-right-down-on-top-right  com-mouse-boxsize-closet-properties-pop-up)
+
+         (boxer-eval::defboxer-key bu::mouse-right-down-on-top-left com-mouse-boxsize-closet-properties-pop-up)
+         (boxer-eval::defboxer-key bu::ctrl-mouse-down-on-top-left com-mouse-boxsize-closet-properties-pop-up)
+
+         (boxer-eval::defboxer-key bu::mouse-right-down-on-bottom-left com-mouse-box-types-pop-up)
+         (boxer-eval::defboxer-key bu::ctrl-mouse-down-on-bottom-left com-mouse-box-types-pop-up)
         )
         (t
          ;; "Using old school mouse bindings"
@@ -537,5 +548,15 @@
 
          (boxer-eval::defboxer-key bu::mouse-click-on-sprite com-sprite-follow-mouse)
          (boxer-eval::defboxer-key bu::mouse-click-on-bottom-right com-mouse-br-resize-box)
+
+         ;; Context menus
+         (boxer-eval::defboxer-key bu::ctrl-mouse-click-on-top-right  com-mouse-boxsize-closet-properties-pop-up)
+         (boxer-eval::defboxer-key bu::mouse-right-click-on-top-right  com-mouse-boxsize-closet-properties-pop-up)
+
+         (boxer-eval::defboxer-key bu::mouse-right-click-on-top-left com-mouse-boxsize-closet-properties-pop-up)
+         (boxer-eval::defboxer-key bu::ctrl-mouse-click-on-top-left com-mouse-boxsize-closet-properties-pop-up)
+
+         (boxer-eval::defboxer-key bu::mouse-right-click-on-bottom-left com-mouse-box-types-pop-up)
+         (boxer-eval::defboxer-key bu::ctrl-mouse-click-on-bottom-left com-mouse-box-types-pop-up)
         ))
 )

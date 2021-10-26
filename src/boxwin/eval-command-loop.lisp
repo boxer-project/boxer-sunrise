@@ -19,7 +19,7 @@
 
 (in-package :boxer-window)
 
-(defvar *use-mouse2021* nil
+(defvar *use-mouse2021* t
   "Should we use the new 2021 Mouse clicks? This updates the mouse handling behavior in boxer to use
    true clicks with release, and adds events for mouse-down, mouse-up. This behavior may require some
    changes to legacy microworlds that have used mouse-click rather than mouse-down for dragging and
