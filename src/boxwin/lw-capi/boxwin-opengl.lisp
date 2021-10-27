@@ -464,6 +464,11 @@
                               ((:button-1 :press :control :meta) boxer-c-a-click-1-handler)
                               ((:button-2 :press :control :meta) boxer-c-a-click-2-handler)
                               ((:button-3 :press :control :meta) boxer-c-a-click-3-handler)
+
+                              ((:button-1 :press :hyper) boxer-os-click-1-handler)
+                              ((:button-2 :press :hyper) boxer-os-click-2-handler)
+                              ((:button-3 :press :hyper) boxer-os-click-3-handler)
+
                               ;; double clicks
                               ((:button-1 :second-press) boxer-dclick-1-handler)
                               ((:button-2 :second-press) boxer-dclick-2-handler)
@@ -487,6 +492,11 @@
                                boxer-c-a-dclick-2-handler)
                               ((:button-3 :second-press :control :meta)
                                boxer-c-a-dclick-3-handler)
+
+                              ((:button-1 :second-press :hyper) boxer-os-dclick-1-handler)
+                              ((:button-2 :second-press :hyper) boxer-os-dclick-2-handler)
+                              ((:button-3 :second-press :hyper) boxer-os-dclick-3-handler)
+
                               ;; mouse button release
                               ((:button-1 :release) boxer-mouse-release-1-handler)
                               ((:button-2 :release) boxer-mouse-release-2-handler)
@@ -509,6 +519,11 @@
                                boxer-mouse-release-2-handler)
                               ((:button-3 :release :control :meta)
                                boxer-mouse-release-3-handler)
+
+                              ((:button-1 :release :hyper) boxer-mouse-release-1-handler)
+                              ((:button-2 :release :hyper) boxer-mouse-release-2-handler)
+                              ((:button-3 :release :hyper) boxer-mouse-release-3-handler)
+
                               ;; updates the mouse tracking vars
                               (:motion boxer-track-and-doc-mouse-handler)
                               ;; have to track while the mouse is down too...

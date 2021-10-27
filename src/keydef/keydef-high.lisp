@@ -174,7 +174,7 @@
              nil)
 
            (define-input-devices :lwm  ; mac's under lispworks opengl port
-             ("CTRL" "COMMAND" "OPTION" "COMMAND-OPTION" )
+             ("CTRL" "OPTION" "CTRL-OPTION" "COMMAND")
              ("CLICK" "MIDDLE-CLICK" "RIGHT-CLICK"                       ;; 0  1  2
               "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK"  ;; 3  4  5
               "DOWN" "MIDDLE-DOWN" "RIGHT-DOWN"                          ;; 6  7  8
