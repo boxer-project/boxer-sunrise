@@ -454,71 +454,62 @@
                :input-model '(((:button-1 :press) boxer-click-1-handler)
                               ((:button-2 :press) boxer-click-2-handler)
                               ((:button-3 :press) boxer-click-3-handler)
-                              ;;shifted single clicks
-                              ((:button-1 :press :control) boxer-c-click-1-handler)
-                              ((:button-2 :press :control) boxer-c-click-2-handler)
-                              ((:button-3 :press :control) boxer-c-click-3-handler)
-                              ((:button-1 :press :meta)    boxer-a-click-1-handler)
-                              ((:button-2 :press :meta)    boxer-a-click-2-handler)
-                              ((:button-3 :press :meta)    boxer-a-click-3-handler)
-                              ((:button-1 :press :control :meta) boxer-c-a-click-1-handler)
-                              ((:button-2 :press :control :meta) boxer-c-a-click-2-handler)
-                              ((:button-3 :press :control :meta) boxer-c-a-click-3-handler)
 
-                              ((:button-1 :press :hyper) boxer-os-click-1-handler)
-                              ((:button-2 :press :hyper) boxer-os-click-2-handler)
-                              ((:button-3 :press :hyper) boxer-os-click-3-handler)
+                              ;;shifted single clicks
+                              ((:button-1 :press :control) boxer-click-1-handler :bits 1)
+                              ((:button-2 :press :control) boxer-click-2-handler :bits 1)
+                              ((:button-3 :press :control) boxer-click-3-handler :bits 1)
+
+                              ((:button-1 :press :meta)    boxer-click-1-handler :bits 2)
+                              ((:button-2 :press :meta)    boxer-click-2-handler :bits 2)
+                              ((:button-3 :press :meta)    boxer-click-3-handler :bits 2)
+
+                              ((:button-1 :press :control :meta) boxer-click-1-handler :bits 3)
+                              ((:button-2 :press :control :meta) boxer-click-2-handler :bits 3)
+                              ((:button-3 :press :control :meta) boxer-click-3-handler :bits 3)
+
+                              ((:button-1 :press :hyper) boxer-click-1-handler :bits 4)
+                              ((:button-2 :press :hyper) boxer-click-2-handler :bits 4)
+                              ((:button-3 :press :hyper) boxer-click-3-handler :bits 4)
 
                               ;; double clicks
                               ((:button-1 :second-press) boxer-dclick-1-handler)
                               ((:button-2 :second-press) boxer-dclick-2-handler)
                               ((:button-3 :second-press) boxer-dclick-3-handler)
-                              ;; shifted double clicks
-                              ((:button-1 :second-press :control)
-                               boxer-c-dclick-1-handler)
-                              ((:button-2 :second-press :control)
-                               boxer-c-dclick-2-handler)
-                              ((:button-3 :second-press :control)
-                               boxer-c-dclick-3-handler)
-                              ((:button-1 :second-press :meta)
-                               boxer-a-dclick-1-handler)
-                              ((:button-2 :second-press :meta)
-                               boxer-a-dclick-2-handler)
-                              ((:button-3 :second-press :meta)
-                               boxer-a-dclick-3-handler)
-                              ((:button-1 :second-press :control :meta)
-                               boxer-c-a-dclick-1-handler)
-                              ((:button-2 :second-press :control :meta)
-                               boxer-c-a-dclick-2-handler)
-                              ((:button-3 :second-press :control :meta)
-                               boxer-c-a-dclick-3-handler)
 
-                              ((:button-1 :second-press :hyper) boxer-os-dclick-1-handler)
-                              ((:button-2 :second-press :hyper) boxer-os-dclick-2-handler)
-                              ((:button-3 :second-press :hyper) boxer-os-dclick-3-handler)
+                              ;; shifted double clicks
+                              ((:button-1 :second-press :control) boxer-dclick-1-handler :bits 1)
+                              ((:button-2 :second-press :control) boxer-dclick-2-handler :bits 1)
+                              ((:button-3 :second-press :control) boxer-dclick-3-handler :bits 1)
+
+                              ((:button-1 :second-press :meta) boxer-dclick-1-handler :bits 2)
+                              ((:button-2 :second-press :meta) boxer-dclick-2-handler :bits 2)
+                              ((:button-3 :second-press :meta) boxer-dclick-3-handler :bits 2)
+
+                              ((:button-1 :second-press :control :meta) boxer-dclick-1-handler :bits 3)
+                              ((:button-2 :second-press :control :meta) boxer-dclick-2-handler :bits 3)
+                              ((:button-3 :second-press :control :meta) boxer-dclick-3-handler :bits 3)
+
+                              ((:button-1 :second-press :hyper) boxer-dclick-1-handler :bits 4)
+                              ((:button-2 :second-press :hyper) boxer-dclick-2-handler :bits 4)
+                              ((:button-3 :second-press :hyper) boxer-dclick-3-handler :bits 4)
 
                               ;; mouse button release
                               ((:button-1 :release) boxer-mouse-release-1-handler)
                               ((:button-2 :release) boxer-mouse-release-2-handler)
                               ((:button-3 :release) boxer-mouse-release-3-handler)
-                              ((:button-1 :release :control)
-                               boxer-mouse-release-1-handler)
-                              ((:button-2 :release :control)
-                               boxer-mouse-release-2-handler)
-                              ((:button-3 :release :control)
-                               boxer-mouse-release-3-handler)
-                              ((:button-1 :release :meta)
-                               boxer-mouse-release-1-handler)
-                              ((:button-2 :release :meta)
-                               boxer-mouse-release-2-handler)
-                              ((:button-3 :release :meta)
-                               boxer-mouse-release-3-handler)
-                              ((:button-1 :release :control :meta)
-                               boxer-mouse-release-1-handler)
-                              ((:button-2 :release :control :meta)
-                               boxer-mouse-release-2-handler)
-                              ((:button-3 :release :control :meta)
-                               boxer-mouse-release-3-handler)
+
+                              ((:button-1 :release :control) boxer-mouse-release-1-handler)
+                              ((:button-2 :release :control) boxer-mouse-release-2-handler)
+                              ((:button-3 :release :control) boxer-mouse-release-3-handler)
+
+                              ((:button-1 :release :meta) boxer-mouse-release-1-handler)
+                              ((:button-2 :release :meta) boxer-mouse-release-2-handler)
+                              ((:button-3 :release :meta) boxer-mouse-release-3-handler)
+
+                              ((:button-1 :release :control :meta) boxer-mouse-release-1-handler)
+                              ((:button-2 :release :control :meta) boxer-mouse-release-2-handler)
+                              ((:button-3 :release :control :meta) boxer-mouse-release-3-handler)
 
                               ((:button-1 :release :hyper) boxer-mouse-release-1-handler)
                               ((:button-2 :release :hyper) boxer-mouse-release-2-handler)
@@ -526,26 +517,24 @@
 
                               ;; updates the mouse tracking vars
                               (:motion boxer-track-and-doc-mouse-handler)
+
                               ;; have to track while the mouse is down too...
                               ((:button-1 :motion) boxer-track-mouse-handler)
                               ((:button-2 :motion) boxer-track-mouse-handler)
                               ((:button-3 :motion) boxer-track-mouse-handler)
+
                               ;; track shifted mouse down...
-                              ((:button-1 :motion :control)
-                               boxer-track-mouse-handler)
-                              ((:button-2 :motion :control)
-                               boxer-track-mouse-handler)
-                              ((:button-3 :motion :control)
-                               boxer-track-mouse-handler)
+                              ((:button-1 :motion :control) boxer-track-mouse-handler)
+                              ((:button-2 :motion :control) boxer-track-mouse-handler)
+                              ((:button-3 :motion :control) boxer-track-mouse-handler)
+
                               ((:button-1 :motion :meta) boxer-track-mouse-handler)
                               ((:button-2 :motion :meta) boxer-track-mouse-handler)
                               ((:button-3 :motion :meta) boxer-track-mouse-handler)
-                              ((:button-1 :motion :control :meta)
-                               boxer-track-mouse-handler)
-                              ((:button-2 :motion :control :meta)
-                               boxer-track-mouse-handler)
-                              ((:button-3 :motion :control :meta)
-                               boxer-track-mouse-handler)
+
+                              ((:button-1 :motion :control :meta) boxer-track-mouse-handler)
+                              ((:button-2 :motion :control :meta) boxer-track-mouse-handler)
+                              ((:button-3 :motion :control :meta) boxer-track-mouse-handler)
                               ;; what are keys ?
                               ;((:key :press)  boxer-key-handler)
                               ;((#\. :control :press) boxer-abort-handler)

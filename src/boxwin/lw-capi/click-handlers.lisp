@@ -91,51 +91,9 @@
     (boxer-click-handler x y 8 nil bits)  ;; right down
     (boxer-click-handler x y 2 nil bits)))
 
-;; shifted singled clicks...
-
-(defun boxer-c-click-1-handler (w x y)
-  (boxer-click-1-handler w x y :bits 1))
-
-(defun boxer-c-click-2-handler (w x y)
-  (boxer-click-2-handler w x y :bits 1))
-
-(defun boxer-c-click-3-handler (w x y)
-  (boxer-click-3-handler w x y :bits 1))
-
-(defun boxer-a-click-1-handler (w x y)
-  (boxer-click-1-handler w x y :bits 2))
-
-(defun boxer-a-click-2-handler (w x y)
-  (boxer-click-2-handler w x y :bits 2))
-
-(defun boxer-a-click-3-handler (w x y)
-  (boxer-click-3-handler w x y :bits 2))
-
-(defun boxer-c-a-click-1-handler (w x y)
-  (boxer-click-1-handler w x y :bits 3))
-
-(defun boxer-c-a-click-2-handler (w x y)
-  (boxer-click-2-handler w x y :bits 3))
-
-(defun boxer-c-a-click-3-handler (w x y)
-  (boxer-click-3-handler w x y :bits 3))
-
-;; The `os` click handler will be the Command key on MacOS, and
-;; Window key on Win10.
-(defun boxer-os-click-1-handler (w x y)
-  (boxer-click-1-handler w x y :bits 4))
-
-(defun boxer-os-click-2-handler (w x y)
-  (boxer-click-2-handler w x y :bits 4))
-
-(defun boxer-os-click-3-handler (w x y)
-  (boxer-click-3-handler w x y :bits 4))
-
-
 (defun control-log (w x y) (format t "~%Control Click"))
 (defun meta-log (w x y) (format t "~%Meta Click"))
 (defun hyper-log (w x y) (format t "~%Hyper Click"))
-
 
 ;; double clicks
 (defun boxer-dclick-1-handler (w x y &key (bits 0))
@@ -161,43 +119,6 @@
   (setq *modern-press-bits-3* bits)
   (if (not *use-mouse2021*)
     (boxer-click-handler x y 2 t bits)))
-
-;; shifted double clicks
-(defun boxer-c-dclick-1-handler (w x y)
-  (boxer-dclick-1-handler w x y :bits 1))
-
-(defun boxer-c-dclick-2-handler (w x y)
-  (boxer-dclick-2-handler w x y :bits 1))
-
-(defun boxer-c-dclick-3-handler (w x y)
-  (boxer-dclick-3-handler w x y :bits 1))
-
-(defun boxer-a-dclick-1-handler (w x y)
-  (boxer-dclick-1-handler w x y :bits 2))
-
-(defun boxer-a-dclick-2-handler (w x y)
-  (boxer-dclick-2-handler w x y :bits 2))
-
-(defun boxer-a-dclick-3-handler (w x y)
-  (boxer-dclick-3-handler w x y :bits 2))
-
-(defun boxer-c-a-dclick-1-handler (w x y)
-  (boxer-dclick-1-handler w x y :bits 3))
-
-(defun boxer-c-a-dclick-2-handler (w x y)
-  (boxer-dclick-2-handler w x y :bits 3))
-
-(defun boxer-c-a-dclick-3-handler (w x y)
-  (boxer-dclick-3-handler w x y :bits 3))
-
-(defun boxer-os-dclick-1-handler (w x y)
-  (boxer-dclick-1-handler w x y :bits 4))
-
-(defun boxer-os-dclick-2-handler (w x y)
-  (boxer-dclick-2-handler w x y :bits 4))
-
-(defun boxer-os-dclick-3-handler (w x y)
-  (boxer-dclick-3-handler w x y :bits 4))
 
 ;; this is called by the (:button :release) input type
 (defun boxer-mouse-release-1-handler (w x y)
