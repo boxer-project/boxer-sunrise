@@ -172,14 +172,17 @@
   ;; Note that this is designed to be called in the Boxer process,
   ;; not in the Mouse Process -- This is important!!!
   window x y click-only? ;  (declare (ignore window x y click-only?))
-  ;; first, if there already is an existing region, flush it
-  (reset-region)
+
   (let ((new-box (bp-box mouse-bp))
         (old-box (point-box))
         (new-row (bp-row mouse-bp))
         (mouse-screen-box (bp-screen-box mouse-bp))
         (new-cha-no (bp-cha-no mouse-bp)))
-    (when (and (not-null new-row) (box? new-box))
+    ;; If the mouse cursor isn't over some type of shrunken box, we aren't going to
+    ;; do anything. This prevents the region being reset after dragging to select some
+    ;; text, which is bound to mouse-down.  - sgithens 2021-10-18
+    (when (and (not-null new-row) (box? new-box) (shrunken? new-box))
+      (reset-region)
       (unless (eq old-box new-box)
         (send-exit-messages new-box mouse-screen-box)
         (enter new-box (not (superior? old-box new-box))))
@@ -262,7 +265,8 @@
                                                (make-process-doit-cursor-position) mouse-bp)))
     (when (and (not shift?)
                ;; if the shift key is pressed, don't move the point...
-               (not-null new-row) (not-null new-cha-no) (not-null new-box))
+               (not-null new-row) (not-null new-cha-no) (not-null new-box)
+               (not (shrunken? new-box)))
       (unless (eq old-box new-box)
         (send-exit-messages new-box mouse-screen-box t )
         (enter new-box (not (superior? old-box new-box))))
@@ -275,11 +279,12 @@
              (restore-point-position mouse-position t))
         (t
          (move-point-1 new-row new-cha-no mouse-screen-box))))
-    (when (and (not (name-row? new-row))
+    (when (and (not bw::*use-mouse2021*)
+               (not (name-row? new-row))
                (shrunken? (screen-obj-actual-obj (screen-box-point-is-in))))
       (com-expand-box)
       (repaint)))
-  (when (or (null click-only?) shift?)
+  (when (and (or (null click-only?) shift?)  (not (shrunken? (bp-box mouse-bp))))
     ;; now go about dragging a region defined by *point* and the mouse-bp
     ;; unless the user is no longer holding the mouse button down
     ; (repaint-cursor)
