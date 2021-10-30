@@ -218,7 +218,7 @@
 (boxer-eval::defboxer-key (bu::t-key 1) com-toggle-box-transparency)
 
 ;; Print Screen
-(boxer-eval::defboxer-key (bu::p-key 1) com-print-screen)
+; (boxer-eval::defboxer-key (bu::p-key 1) com-print-screen) ;; currently printing is broken, also assigning to emacs style previous line
 
 ;; Zoom
 (boxer-eval::defboxer-key (bu::z-key 1) com-move-to-port-target)
@@ -239,7 +239,11 @@
 
 ;; Lines
 (boxer-eval::defboxer-key bu::up-arrow-key com-previous-row)
+(boxer-eval::defboxer-key (bu::p-key 1) com-previous-row)
+
 (boxer-eval::defboxer-key bu::down-arrow-key com-next-row)
+(boxer-eval::defboxer-key (bu::n-key 1) com-next-row)
+
 (boxer-eval::defboxer-key (bu::Left-Arrow-key 2) com-beginning-of-row)
 (boxer-eval::defboxer-key (bu::Right-Arrow-key 2) com-end-of-row)
 
