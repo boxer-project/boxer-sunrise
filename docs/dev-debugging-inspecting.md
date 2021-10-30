@@ -19,6 +19,10 @@ be restarted at the REPL with:
 (bw::boxer-process-top-level-fn bw::*boxer-pane*)
 ```
 
+## Using `trace`
+
+ (trace (boxer::reset-region :break (equal boxer::*debug-reset-region* t)))
+
 ## Dumping the contents of a Box file
 
 Dumping the version and opcodes of a `.box` file can be done at the REPL with:
