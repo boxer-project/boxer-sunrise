@@ -198,7 +198,6 @@
 (defmacro prepare-sheet ((window) &body body)
   `(with-drawing-port ,window
      ;; make sure things are the way they should be
-     ;(bw::with-open-blinkers (bw::sheet-blinker-list ,window)
      ,@body))
 
 ;;; This is called to make sure the quickdraw clipping is set up to match the boxer clipping.

@@ -535,12 +535,11 @@
                 (not (= y   (region-row-blinker-y   region-row-blinker))))
         ;; might be better to use timestamps (we might
         ;; have to use timestamps in addition anyway)
-        (with-open-blinker (region-row-blinker)
-          (setf (region-row-blinker-wid region-row-blinker)
-                (if (zerop wid) *minimum-row-blinker-wid* wid))
-          (setf (region-row-blinker-hei region-row-blinker) hei)
-          (setf (region-row-blinker-x region-row-blinker) x)
-          (setf (region-row-blinker-y region-row-blinker) y))))))
+        (setf (region-row-blinker-wid region-row-blinker)
+              (if (zerop wid) *minimum-row-blinker-wid* wid))
+        (setf (region-row-blinker-hei region-row-blinker) hei)
+        (setf (region-row-blinker-x region-row-blinker) x)
+        (setf (region-row-blinker-y region-row-blinker) y)))))
 
 (defun left-half-blinker-trim (blinker cha-no)
   (let* ((screen-row (region-row-blinker-uid blinker))

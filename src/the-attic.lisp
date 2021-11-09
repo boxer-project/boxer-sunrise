@@ -524,6 +524,10 @@ Modification History (most recent at top)
    (setf (cdr entry) ,new-list))))
 |#
 
+(defmacro with-open-blinker ((blinker) &body body)
+  blinker
+  `(progn . ,body))
+
 #|
 (defmacro with-open-blinker ((blinker) &body body)
   `(macrolet ((draw-generic-blinker (blinker)
@@ -2570,6 +2574,16 @@ Modification History (most recent at top)
 (DEFVAR %DRAWING-FONT-MAP NIL
         "Inside of a drawing-on-window, this variable is bound to %drawing-window's
    font-map.")
+
+;;;;
+;;;; FILE: disdef.lisp
+;;;;
+
+(DEFMACRO ALTERING-REGION ((REGION) &BODY BODY)
+          (WARN "ALTERING-REGION is obsolete.  Use with-open-blinker instead.")
+          `(WITHOUT-INTERRUPTS
+            (OPEN-BLINKER ,REGION)
+            (PROGN . ,BODY)))
 
 ;;;;
 ;;;; FILE: disply.lisp

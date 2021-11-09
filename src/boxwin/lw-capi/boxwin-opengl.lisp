@@ -1608,10 +1608,6 @@
 
 ;; In OpenGL, just draw, no need to erase as we are double buffering...
 
-(defmacro with-open-blinker ((blinker) &body body)
-  blinker
-  `(progn . ,body))
-
 (defun set-cursor-visibility (blinker new-vis)
   (setf (blinker-visibility blinker) new-vis))
 

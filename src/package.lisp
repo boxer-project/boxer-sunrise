@@ -330,7 +330,6 @@
            :warp-pointer
            :make-blinker :draw-blinker
            :make-region-row-blinker :draw-region-row-blinker
-           :with-open-blinker :with-open-blinkers
            :set-cursorpos :set-cursor-size
            :set-cursor-visibility :set-window-name
 

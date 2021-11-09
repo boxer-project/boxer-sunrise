@@ -337,12 +337,6 @@ Modification History (most recent at the top)
 
 (DEFVAR *BOX-ELLIPSIS-CURRENT-STYLE* 'BOX-ELLIPSIS-SOLID-LINES)
 
-(DEFMACRO ALTERING-REGION ((REGION) &BODY BODY)
-          (WARN "ALTERING-REGION is obsolete.  Use with-open-blinker instead.")
-          `(WITHOUT-INTERRUPTS
-            (OPEN-BLINKER ,REGION)
-            (PROGN . ,BODY)))
-
 (defmacro with-real-time (&body body)
   `(progn . ,body))
 
