@@ -69,20 +69,6 @@
 (defmacro scale-x (x) x)
 (defmacro scale-y (y) y)
 
-;;; Interface functions WINDOW-PARAMETERS-CHANGED, WITH-DRAWING.  UPDATE-WINDOW-SYSTEM-STATE
-;;; must be defined by the window system code.
-
-; **** no longer used, see draw-low-mcl for details
-;(defmacro with-drawing (&body body)
-;  `(progn
-;     (update-window-system-state)
-;     ,@body))
-
-;;; Wrap this around the body of let forms that bind clipping variables.
-;;; Now a no-op, but a more efficient implementation might make use of this.
-;(defmacro with-clip-bindings (&body body)
-;  `(progn ,@body))
-
 ;;; Macros from draw-high, slightly altered
 
 (defmacro drawing-on-window-bootstrap-clipping-and-scaling ((x y wid hei) &body body)

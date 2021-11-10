@@ -200,9 +200,6 @@
      ;; make sure things are the way they should be
      ,@body))
 
-;;; This is called to make sure the quickdraw clipping is set up to match the boxer clipping.
-(defun update-window-system-state () )
-
 ;; gl-scissor uses OpenGL coords (0,0) = bottom,left
 ;; 1/13/2008 - fine tuned X  (- lef 1) => lef  &
 ;; Y   (- (sheet-inside-height box::%drawing-array) bot) =>

@@ -2847,6 +2847,21 @@ Modification History (most recent at top)
 ;;;; FILE: draw-high-hardware-clip.lisp
 ;;;;
 
+;;; Interface functions WINDOW-PARAMETERS-CHANGED, WITH-DRAWING.  UPDATE-WINDOW-SYSTEM-STATE
+;;; must be defined by the window system code.
+
+; **** no longer used, see draw-low-mcl for details
+;(defmacro with-drawing (&body body)
+;  `(progn
+;     (update-window-system-state)
+;     ,@body))
+
+;;; Wrap this around the body of let forms that bind clipping variables.
+;;; Now a no-op, but a more efficient implementation might make use of this.
+;(defmacro with-clip-bindings (&body body)
+;  `(progn ,@body))
+
+
 ;; Since we have hardware clipping we'll just go ahead an draw stuff even
 if it is out of bounds
 (defmacro x-out-of-bounds? (scaled-x)
@@ -2912,6 +2927,10 @@ if it is out of bounds
 ;;;;
 ;;;; FILE: draw-low-opengl.lisp
 ;;;;
+
+;;; This is called to make sure the quickdraw clipping is set up to match the boxer clipping.
+(defun update-window-system-state () )
+
 
 (defmacro clip-x (scaled-x) `(max& %clip-lef (min& ,scaled-x %clip-rig)))
 (defmacro clip-y (scaled-y) `(max& %clip-top (min& ,scaled-y %clip-bot)))
