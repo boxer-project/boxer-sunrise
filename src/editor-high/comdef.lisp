@@ -743,16 +743,10 @@ Modification History (most recent at top)
   ;; ;; MCL can't encode shift bits in character objects
   ;; #+mcl (list #\Bell))
 
-#+mcl
-(defvar *unshifted-mac-editor-abort-chars* (list #\g #\.))
-
 (defun editor-abort-char? (char &optional bits)
-  #-mcl(declare (ignore bits))
+  (declare (ignore bits))
   (and (characterp char)
-       (or (member char *editor-abort-chars* :test #'char-equal)
-           #+mcl (and (=& bits 1)
-                      (member char *unshifted-mac-editor-abort-chars*
-                              :test #'char-equal)))))
+       (or (member char *editor-abort-chars* :test #'char-equal))))
 
 ;; used in keydef-high
 (defvar *defined-input-device-platforms* nil

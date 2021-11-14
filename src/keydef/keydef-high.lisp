@@ -311,7 +311,6 @@
     (boxer-eval::defboxer-key-internal ',key-name
                                        #'(lambda ()
                                                  (with-multiple-execution
-                                                   #-opengl (add-redisplay-clue (point-row) ':insert)
                                                    (insert-cha *point* ,char :moving))
                                                  (mark-file-box-dirty (point-row))
                                                  boxer-eval::*novalue*))

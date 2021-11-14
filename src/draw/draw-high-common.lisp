@@ -111,16 +111,3 @@
   (unless (null points)
     (%draw-poly (boxer-points->window-system-points points (x x) (y y))
 		alu %drawing-window)))
-
-;;; +++ maybe these are supposed to be the same, maybe not
-(defvar char-bits-limit 4096)
-
-
-;; Support for displaying control characters
-(DEFVAR *CONTROL-CHARACTER-PREFIX-TABLE* (MAKE-ARRAY CHAR-BITS-LIMIT
-						     :ELEMENT-TYPE 'CHARACTER
-						     :INITIAL-ELEMENT #\^))
-
-(DEFUN CONTROL-CHARACTER-DISPLAY-PREFIX (BITS)
-  (AREF *CONTROL-CHARACTER-PREFIX-TABLE* BITS))
-

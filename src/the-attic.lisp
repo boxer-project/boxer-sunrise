@@ -2843,6 +2843,19 @@ Modification History (most recent at top)
      %drawing-font-map				;bound but never used etc.
      . ,body))
 
+; sgithens 2021-11-09 I don't believe the below are used anymore.
+
+;;; +++ maybe these are supposed to be the same, maybe not
+(defvar char-bits-limit 4096)
+
+;; Support for displaying control characters
+(DEFVAR *CONTROL-CHARACTER-PREFIX-TABLE* (MAKE-ARRAY CHAR-BITS-LIMIT
+						     :ELEMENT-TYPE 'CHARACTER
+						     :INITIAL-ELEMENT #\^))
+
+(DEFUN CONTROL-CHARACTER-DISPLAY-PREFIX (BITS)
+  (AREF *CONTROL-CHARACTER-PREFIX-TABLE* BITS))
+
 ;;;;
 ;;;; FILE: draw-high-hardware-clip.lisp
 ;;;;
