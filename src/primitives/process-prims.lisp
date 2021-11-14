@@ -412,7 +412,7 @@ If the box was not entered with EDIT-BOX, just insert a return."
                            (progn (if (system:gesture-spec-p input)
                                       (let* ((data (sys::gesture-spec-data input))
                                           (charcode (bw::input-gesture->char-code input))
-                                          (charbits (bw::convert-gesture-spec-modifier input)))
+                                          (charbits (sys:gesture-spec-modifiers input)))
                                         (boxer::lookup-key-name (boxer::input-code charcode) charbits))
                                       (boxer::lookup-key-name (boxer::input-code input)
                                                               (boxer::input-bits input))))
