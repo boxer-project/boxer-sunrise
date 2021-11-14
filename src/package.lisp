@@ -118,7 +118,7 @@
            :fast-delq :fast-memq :fast-assq
            :between :inclusive-between? :intern-keyword :symbol-format
            :string-case :char-case
-           :once-only :control-character-display-prefix
+           :once-only
            :%drawing-window :%drawing-array
            :scale-x :scale-y
            :x-out-of-bounds? :y-out-of-bounds?
