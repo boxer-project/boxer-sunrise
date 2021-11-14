@@ -60,7 +60,7 @@
 
 (defvar *initial-platform* #+macosx  :lwm
                            #+win32   :ibm-pc
-                           #+linux   :ibm-pc)
+                           #+linux   :linux)
 
 (defconstant *key-name-lookup-array-size* 328
   "For most implementations, this really ought to be based on char-code-limit
@@ -117,7 +117,6 @@
     (t
      (error "~S is a completely unknown type of Boxer Input." key-code))))
 
-
 (defun lookup-key-name (key-code key-bits)
   (and (array-in-bounds-p *key-names* key-code key-bits)
        (aref *key-names* key-code key-bits )))
@@ -166,15 +165,12 @@
 ;;;; define known input devices platforms
 
 (eval-when (eval load)
-           ;; assume the default is more likely to be some kind of unix machine
-           ;; with a 3 button mouse, ignore possible function keys
-           (define-input-devices :default
-             ("CTRL" "META" "CTRL-META")
-             ("LEFT" "MIDDLE" "RIGHT" "LEFT-TWICE" "MIDDLE-TWICE" "RIGHT-TWICE")
-             nil)
-
            (define-input-devices :lwm  ; mac's under lispworks opengl port
-             ("CTRL" "OPTION" "CTRL-OPTION" "COMMAND")
+             ("SHIFT" "CONTROL" "CONTROL-SHIFT" "OPTION"                                      ;;  1  2  3  4
+             "SHIFT-OPTION" "CONTROL-OPTION" "CONTROL-SHIFT-OPTION" "COMMAND"                 ;;  5  6  7  8
+             "SHIFT-COMMAND" "CONTROL-COMMAND" "CONTROL-SHIFT-COMMAND" "OPTION-COMMAND"       ;;  9 10 11 12
+             "SHIFT-OPTION-COMMAND" "CONTROL-OPTION-COMMAND" "CONTROL-SHIFT-OPTION-COMMAND")  ;;    13 14 15
+
              ("CLICK" "MIDDLE-CLICK" "RIGHT-CLICK"                       ;; 0  1  2
               "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK"  ;; 3  4  5
               "DOWN" "MIDDLE-DOWN" "RIGHT-DOWN"                          ;; 6  7  8
@@ -184,7 +180,27 @@
            ;; pick names to maximize compatibility with mac code
            ;; assign to left button to be plain "CLICK"
            (define-input-devices :ibm-pc
-             ("CTRL" "ALT" "CTRL-ALT")
+            ("SHIFT"
+            "CTRL" "CTRL-SHIFT"
+            "ALT" "SHIFT-ALT" "CTRL-ALT" "CTRL-SHIFT-ALT"
+            "WIN" "SHIFT-WIN" "CTRL-WIN" "CTRL-SHIFT-WIN"
+            "ALT-WIN" "SHIFT-ALT-WIN" "CTRL-ALT-WIN"
+            "CTRL-SHIFT-ALT-WIN")
+
+             ("CLICK" "MIDDLE-CLICK" "RIGHT-CLICK"                       ;; 0  1  2
+              "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK"  ;; 3  4  5
+              "DOWN" "MIDDLE-DOWN" "RIGHT-DOWN"                          ;; 6  7  8
+              "UP" "MIDDLE-UP" "RIGHT-UP")                               ;; 9 10 11
+             *lwm-keyboard-key-name-alist*)
+
+           (define-input-devices :linux
+            ("SHIFT"
+            "CTRL" "CTRL-SHIFT"
+            "ALT" "SHIFT-ALT" "CTRL-ALT" "CTRL-SHIFT-ALT"
+            "META" "SHIFT-META" "CTRL-META" "CTRL-SHIFT-META"
+            "ALT-META" "SHIFT-ALT-META" "CTRL-ALT-META"
+            "CTRL-SHIFT-ALT-META")
+
              ("CLICK" "MIDDLE-CLICK" "RIGHT-CLICK"                       ;; 0  1  2
               "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK"  ;; 3  4  5
               "DOWN" "MIDDLE-DOWN" "RIGHT-DOWN"                          ;; 6  7  8
@@ -199,11 +215,18 @@
 ;; defines keys (like function keys) which are specific to particular
 ;; kinds of keyboards
 
-;; first, common alphanumeric keys and their shifted names...
 (defun define-basic-keys (platform)
-  ;; Give names to all the standard character keys.  Alphabetic
-  ;; keys are by given the lowercase meaning, with "CAPITAL"
-  ;; defined as a shift key.
+  "Give names to all the standard character keys.  Alphabetic
+  keys are by given the lowercase meaning, with "CAPITAL"
+  defined as a shift key.
+
+  This handles most alphanumeric keys and special symbols.
+  "
+
+  ;; #o101 (65) is Capitol A in ascii/unicode and we loop until #o133 (91) which
+  ;; is #\[ the character right after Z. We define this character, and the character
+  ;; #o40 (32) which translates us to the lower case letters in ascii starting at
+  ;; 97 for #\a.
   (do* ((key-code #o101 (1+ key-code))
         (key-name (intern-in-bu-package
                    (format nil "~A-KEY" (string-upcase
@@ -222,9 +245,9 @@
   ;; symbol things on the keyboard like ! @ # ~ : etc.
 
   (do* ((key-code 0 (1+ key-code)))
-    ((= key-code #o177))
-    (unless (or (and (>= key-code #o101) (<= key-code #o132))
-                (and (>= key-code #o141) (<= key-code #o172)))
+    ((= key-code #o177))                                       ; Stops at the DEL key
+    (unless (or (and (>= key-code #o101) (<= key-code #o132))  ; Capitol A-Z in ascii
+                (and (>= key-code #o141) (<= key-code #o172))) ; Lower case a-z
       (define-key-and-all-its-shifted-key-names
         (intern-in-bu-package
          (format nil "~A-KEY" (string-upcase

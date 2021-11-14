@@ -60,6 +60,8 @@
 
 (defvar just-redisplayed? nil)
 
+
+
 ;;; Mouse handling, mostly copied from clx
 (defstruct (mouse-event (:conc-name mouse-event-)
       (:predicate mouse-event?))
@@ -89,6 +91,19 @@
   ;;  3 - Control + Option Key
   ;; 2021-02-10 Double check these on windows. Currently on Mac, Shift-click and
   ;; Command click don't register anything.
+  ;; 2021-11-11 We are going to adopt the bits conventions from LW and propagate
+  ;; them through. These will be the same for keyboard events
+  ;; 0 - none                8 - command
+  ;; 1 - shift               9 - shift-command
+  ;; 2 - ctrl               10 - ctrl-command
+  ;; 3 - ctrl-shift         11 - ctrl-shift-command
+  ;; 4 - option             12 - option-command
+  ;; 5 - shift-option       13 - shift-option-command
+  ;; 6 - ctrl-option        14 - ctrl-option-command
+  ;; 7 - ctrl-shift-option  15 - ctrl-shift-option-command
+  ;;
+  ;; Alt = Option, Ctrl = Control, Command = Meta = Windows
+  ;;
   (bits 0)  ;; which shift bits are down
   ;; these are (+++ not) used in click processing
   (last-time-stamp 0)
@@ -261,14 +276,15 @@
                  #+lispworks (mp::process-wait "Boxer Input"
                                    #'(lambda ()
                                        (not (null (car *boxer-eval-queue*)))))))
-              #+lispworks ((system:gesture-spec-p input)
+              #+lispworks
+              ((system:gesture-spec-p input)
                ;; We are adding this gesture condition in addition to the key-event? because at some point
                ;; during a lispworks major version change, the ability to encode the modifier keys as part of
                ;; the reader char seems to have gone away.  By adding an option to push an entire gesture-spec
                ;; to the *boxer-eval-queue* we can just manually pick out the char-code and input bits.
                (let* ((data (sys::gesture-spec-data input))
                       (charcode (input-gesture->char-code input))
-                      (charbits (convert-gesture-spec-modifier input)))
+                      (charbits (sys:gesture-spec-modifiers input)))
                      (handle-boxer-input charcode charbits)
                      (setq just-redisplayed? nil)))
               ((key-event? input)

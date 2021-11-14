@@ -455,46 +455,167 @@
                               ((:button-2 :press) boxer-click-2-handler)
                               ((:button-3 :press) boxer-click-3-handler)
 
+                              ;; shift
+                              ((:button-1 :press :shift) boxer-click-1-handler :bits 1)
+                              ((:button-2 :press :shift) boxer-click-2-handler :bits 1)
+                              ((:button-3 :press :shift) boxer-click-3-handler :bits 1)
+
                               ;;shifted single clicks
-                              ((:button-1 :press :control) boxer-click-1-handler :bits 1)
-                              ((:button-2 :press :control) boxer-click-2-handler :bits 1)
-                              ((:button-3 :press :control) boxer-click-3-handler :bits 1)
+                              ((:button-1 :press :control) boxer-click-1-handler :bits 2)
+                              ((:button-2 :press :control) boxer-click-2-handler :bits 2)
+                              ((:button-3 :press :control) boxer-click-3-handler :bits 2)
 
-                              ((:button-1 :press :meta)    boxer-click-1-handler :bits 2)
-                              ((:button-2 :press :meta)    boxer-click-2-handler :bits 2)
-                              ((:button-3 :press :meta)    boxer-click-3-handler :bits 2)
+                              ;; control-shift
+                              ((:button-1 :press :control :shift) boxer-click-1-handler :bits 3)
+                              ((:button-2 :press :control :shift) boxer-click-2-handler :bits 3)
+                              ((:button-3 :press :control :shift) boxer-click-3-handler :bits 3)
 
-                              ((:button-1 :press :control :meta) boxer-click-1-handler :bits 3)
-                              ((:button-2 :press :control :meta) boxer-click-2-handler :bits 3)
-                              ((:button-3 :press :control :meta) boxer-click-3-handler :bits 3)
+                              ; option
+                              ((:button-1 :press :meta)  boxer-click-1-handler :bits 4)
+                              ((:button-2 :press :meta)  boxer-click-2-handler :bits 4)
+                              ((:button-3 :press :meta)  boxer-click-3-handler :bits 4)
 
-                              ((:button-1 :press :hyper) boxer-click-1-handler :bits 4)
-                              ((:button-2 :press :hyper) boxer-click-2-handler :bits 4)
-                              ((:button-3 :press :hyper) boxer-click-3-handler :bits 4)
+                              ; shift-option
+                              ((:button-1 :press :meta :shift)    boxer-click-1-handler :bits 5)
+                              ((:button-2 :press :meta :shift)    boxer-click-2-handler :bits 5)
+                              ((:button-3 :press :meta :shift)    boxer-click-3-handler :bits 5)
 
+                              ;; control-option
+                              ((:button-1 :press :control :meta) boxer-click-1-handler :bits 6)
+                              ((:button-2 :press :control :meta) boxer-click-2-handler :bits 6)
+                              ((:button-3 :press :control :meta) boxer-click-3-handler :bits 6)
+
+                              ; control-shift-option
+                              ((:button-1 :press :control :meta :shift)    boxer-click-1-handler :bits 7)
+                              ((:button-2 :press :control :meta :shift)    boxer-click-2-handler :bits 7)
+                              ((:button-3 :press :control :meta :shift)    boxer-click-3-handler :bits 7)
+
+                              ; command
+                              ((:button-1 :press :hyper) boxer-click-1-handler :bits 8)
+                              ((:button-2 :press :hyper) boxer-click-2-handler :bits 8)
+                              ((:button-3 :press :hyper) boxer-click-3-handler :bits 8)
+
+                              ; shift command
+                              ((:button-1 :press :shift :hyper) boxer-click-1-handler :bits 9)
+                              ((:button-2 :press :shift :hyper) boxer-click-2-handler :bits 9)
+                              ((:button-3 :press :shift :hyper) boxer-click-3-handler :bits 9)
+
+                              ; control command
+                              ((:button-1 :press :control :hyper) boxer-click-1-handler :bits 10)
+                              ((:button-2 :press :control :hyper) boxer-click-2-handler :bits 10)
+                              ((:button-3 :press :control :hyper) boxer-click-3-handler :bits 10)
+
+                              ; control shift command
+                              ;; TODO sgithens: This is currently triggering :bits 15...
+                              ((:button-1 :press :control :shift :hyper) boxer-click-1-handler :bits 11)
+                              ((:button-2 :press :control :shift :hyper) boxer-click-2-handler :bits 11)
+                              ((:button-3 :press :control :shift :hyper) boxer-click-3-handler :bits 11)
+
+                              ; option command
+                              ((:button-1 :press :meta :hyper) boxer-click-1-handler :bits 12)
+                              ((:button-2 :press :meta :hyper) boxer-click-2-handler :bits 12)
+                              ((:button-3 :press :meta :hyper) boxer-click-3-handler :bits 12)
+
+                              ; shift option command
+                              ((:button-1 :press :shift :meta :hyper) boxer-click-1-handler :bits 13)
+                              ((:button-2 :press :shift :meta :hyper) boxer-click-2-handler :bits 13)
+                              ((:button-3 :press :shift :meta :hyper) boxer-click-3-handler :bits 13)
+
+                              ; control option command
+                              ((:button-1 :press :control :meta :hyper) boxer-click-1-handler :bits 14)
+                              ((:button-2 :press :control :meta :hyper) boxer-click-2-handler :bits 14)
+                              ((:button-3 :press :control :meta :hyper) boxer-click-3-handler :bits 14)
+
+                              ; control shift option command
+                              ((:button-1 :press :control :shift :option :hyper) boxer-click-1-handler :bits 15)
+                              ((:button-2 :press :control :shift :option :hyper) boxer-click-2-handler :bits 15)
+                              ((:button-3 :press :control :shift :option :hyper) boxer-click-3-handler :bits 15)
+
+                              ;;
                               ;; double clicks
+                              ;;
                               ((:button-1 :second-press) boxer-dclick-1-handler)
                               ((:button-2 :second-press) boxer-dclick-2-handler)
                               ((:button-3 :second-press) boxer-dclick-3-handler)
 
-                              ;; shifted double clicks
-                              ((:button-1 :second-press :control) boxer-dclick-1-handler :bits 1)
-                              ((:button-2 :second-press :control) boxer-dclick-2-handler :bits 1)
-                              ((:button-3 :second-press :control) boxer-dclick-3-handler :bits 1)
+                              ;; shift double click
+                              ((:button-1 :second-press :shift) boxer-dclick-1-handler :bits 1)
+                              ((:button-2 :second-press :shift) boxer-dclick-2-handler :bits 1)
+                              ((:button-3 :second-press :shift) boxer-dclick-3-handler :bits 1)
 
-                              ((:button-1 :second-press :meta) boxer-dclick-1-handler :bits 2)
-                              ((:button-2 :second-press :meta) boxer-dclick-2-handler :bits 2)
-                              ((:button-3 :second-press :meta) boxer-dclick-3-handler :bits 2)
+                              ;; control double click
+                              ((:button-1 :second-press :control) boxer-dclick-1-handler :bits 2)
+                              ((:button-2 :second-press :control) boxer-dclick-2-handler :bits 2)
+                              ((:button-3 :second-press :control) boxer-dclick-3-handler :bits 2)
 
-                              ((:button-1 :second-press :control :meta) boxer-dclick-1-handler :bits 3)
-                              ((:button-2 :second-press :control :meta) boxer-dclick-2-handler :bits 3)
-                              ((:button-3 :second-press :control :meta) boxer-dclick-3-handler :bits 3)
+                              ;; control shift double click
+                              ((:button-1 :second-press :control :shift) boxer-dclick-1-handler :bits 3)
+                              ((:button-2 :second-press :control :shift) boxer-dclick-2-handler :bits 3)
+                              ((:button-3 :second-press :control :shift) boxer-dclick-3-handler :bits 3)
 
-                              ((:button-1 :second-press :hyper) boxer-dclick-1-handler :bits 4)
-                              ((:button-2 :second-press :hyper) boxer-dclick-2-handler :bits 4)
-                              ((:button-3 :second-press :hyper) boxer-dclick-3-handler :bits 4)
+                              ;; option double click
+                              ((:button-1 :second-press :meta) boxer-dclick-1-handler :bits 4)
+                              ((:button-2 :second-press :meta) boxer-dclick-2-handler :bits 4)
+                              ((:button-3 :second-press :meta) boxer-dclick-3-handler :bits 4)
 
+                              ;; shift option double click
+                              ((:button-1 :second-press :shift :meta) boxer-dclick-1-handler :bits 5)
+                              ((:button-2 :second-press :shift :meta) boxer-dclick-2-handler :bits 5)
+                              ((:button-3 :second-press :shift :meta) boxer-dclick-3-handler :bits 5)
+
+                              ;; control-option double click
+                              ((:button-1 :second-press :control :meta) boxer-dclick-1-handler :bits 6)
+                              ((:button-2 :second-press :control :meta) boxer-dclick-2-handler :bits 6)
+                              ((:button-3 :second-press :control :meta) boxer-dclick-3-handler :bits 6)
+
+                              ;; control shift option double click
+                              ((:button-1 :second-press :control :shift :meta) boxer-dclick-1-handler :bits 7)
+                              ((:button-2 :second-press :control :shift :meta) boxer-dclick-2-handler :bits 7)
+                              ((:button-3 :second-press :control :shift :meta) boxer-dclick-3-handler :bits 7)
+
+                              ;; command double click
+                              ((:button-1 :second-press :hyper) boxer-dclick-1-handler :bits 8)
+                              ((:button-2 :second-press :hyper) boxer-dclick-2-handler :bits 8)
+                              ((:button-3 :second-press :hyper) boxer-dclick-3-handler :bits 8)
+
+                              ;; shift command double click
+                              ((:button-1 :second-press :shift :hyper) boxer-dclick-1-handler :bits 9)
+                              ((:button-2 :second-press :shift :hyper) boxer-dclick-2-handler :bits 9)
+                              ((:button-3 :second-press :shift :hyper) boxer-dclick-3-handler :bits 9)
+
+                              ;; control command double click
+                              ((:button-1 :second-press :control :hyper) boxer-dclick-1-handler :bits 10)
+                              ((:button-2 :second-press :control :hyper) boxer-dclick-2-handler :bits 10)
+                              ((:button-3 :second-press :control :hyper) boxer-dclick-3-handler :bits 10)
+
+                              ;; control shift command double click
+                              ((:button-1 :second-press :control :shift :hyper) boxer-dclick-1-handler :bits 11)
+                              ((:button-2 :second-press :control :shift :hyper) boxer-dclick-2-handler :bits 11)
+                              ((:button-3 :second-press :control :shift :hyper) boxer-dclick-3-handler :bits 11)
+
+                              ;; option command double click
+                              ((:button-1 :second-press :meta :hyper) boxer-dclick-1-handler :bits 12)
+                              ((:button-2 :second-press :meta :hyper) boxer-dclick-2-handler :bits 12)
+                              ((:button-3 :second-press :meta :hyper) boxer-dclick-3-handler :bits 12)
+
+                              ;; shift option command double click
+                              ((:button-1 :second-press :shift :meta :hyper) boxer-dclick-1-handler :bits 13)
+                              ((:button-2 :second-press :shift :meta :hyper) boxer-dclick-2-handler :bits 13)
+                              ((:button-3 :second-press :shift :meta :hyper) boxer-dclick-3-handler :bits 13)
+
+                              ;; control option command double click
+                              ((:button-1 :second-press :control :meta :hyper) boxer-dclick-1-handler :bits 14)
+                              ((:button-2 :second-press :control :meta :hyper) boxer-dclick-2-handler :bits 14)
+                              ((:button-3 :second-press :control :meta :hyper) boxer-dclick-3-handler :bits 14)
+
+                              ;; control shift option command double click
+                              ((:button-1 :second-press :control :shift :meta :hyper) boxer-dclick-1-handler :bits 15)
+                              ((:button-2 :second-press :control :shift :meta :hyper) boxer-dclick-2-handler :bits 15)
+                              ((:button-3 :second-press :control :shift :meta :hyper) boxer-dclick-3-handler :bits 15)
+
+                              ;;
                               ;; mouse button release
+                              ;;
                               ((:button-1 :release) boxer-mouse-release-1-handler)
                               ((:button-2 :release) boxer-mouse-release-2-handler)
                               ((:button-3 :release) boxer-mouse-release-3-handler)
@@ -536,10 +657,13 @@
                               ((:button-2 :motion :control :meta) boxer-track-mouse-handler)
                               ((:button-3 :motion :control :meta) boxer-track-mouse-handler)
                               ;; what are keys ?
-                              ;((:key :press)  boxer-key-handler)
+                              ((:key :press)  boxer-key-handler)
                               ;((#\. :control :press) boxer-abort-handler)
                               ;((#\g :control :press) boxer-abort-handler)
-                              (:gesture-spec gesture-spec-handler))
+                              ;; We are binding this empty gesture spec hander... because if we don't then non graphic
+                              ;; keys like return, backspace, and arrows make a beeping sound.  sgithens - 2021-11-06
+                              (:gesture-spec gesture-spec-handler)
+                              )
                :display-callback 'boxer-expose-window-handler
               ;  :resize-callback 'resize-handler
                ;; The following 4 params are for scrolling gestures (two finger scroll, mouse wheels, etc)
@@ -1214,18 +1338,43 @@
 
 ;; the main key handler
 
-(defun gesture-spec-handler (w x y gesture)
-  (declare (ignore w x y))
+(defun handle-gesture (gesture)
   ;; reset any popup docs...
   (next-event-id)
   (undocument-mouse)
   (save-key gesture)
   (cond ((abort-gesture? gesture)
-         (if (or boxer::*evaluation-in-progress?*
-                 boxer-eval::*enable-interrupt-polling-in-editor*)
-             (boxer-interrupt)
-           (queue-event gesture)))
-        (t (queue-event gesture)))
+        (if (or boxer::*evaluation-in-progress?*
+                boxer-eval::*enable-interrupt-polling-in-editor*)
+            (boxer-interrupt)
+          (queue-event gesture)))
+        (t (queue-event gesture))))
+
+(defun boxer-key-handler (pane x y gesture)
+  (declare (ignore pane x y))
+
+  (let ((data (system:gesture-spec-data gesture))
+        (modifiers (system:gesture-spec-modifiers gesture))
+        (final-gesture gesture))
+
+    ;; - If we are shifting a lower case character, submit a gesture that is the upper-cased char
+    ;;   with no modifiers.
+    ;; - However, if this is a gesture that is not case'able, and the modifier is only the shift
+    ;;   key, submit the key alone with no gestures. Currently on LW this is what we need to do
+    ;;   for typing special characters like #\+ otherwise it gets sent to SHIFT-+-KEY by the system.
+    (cond ((and (equal (system:gesture-spec-modifiers gesture) 1)
+                (lower-case-p (code-char (system:gesture-spec-data gesture))))
+           (setf final-gesture (system:make-gesture-spec (char-code (char-upcase (code-char data))) 0)))
+          ((equal (system:gesture-spec-modifiers gesture) 1)
+           (setf final-gesture (system:make-gesture-spec data 0))))
+
+    (handle-gesture final-gesture)))
+
+(defun gesture-spec-handler-skip (w x y gesture)
+  (declare (ignore w x y))
+  ;; Currently we are handling everything with the low level key-handler, but binding this
+  ;; is still necessary to avoid system beeps for some reason on Lispworks...
+  ; (handle-gesture final-gesture)
   )
 
 (defun get-boxer-input (&optional (window *boxer-pane*))
@@ -1242,7 +1391,7 @@
     (cond ((system:gesture-spec-p input)
            (let* ((data (sys::gesture-spec-data input))
                   (charcode (input-gesture->char-code input))
-                  (charbits (convert-gesture-spec-modifier input)))
+                  (charbits (sys:gesture-spec-modifiers input)))
               (values charcode charbits)))
           ((key-event? input)
            (if (and plain-char-wanted?
