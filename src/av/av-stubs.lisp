@@ -239,7 +239,7 @@
 
 ;; here temporarily
 ;; as in option-a-key (a for av ? can't use "v" because it's already taken)
-(boxer-eval::defboxer-key (bu::a-key 2) com-make-av-box)
+(boxer-eval::defboxer-key (bu::a-key 4) com-make-av-box)
 
 ;; Primitives
 (boxer-eval::defboxer-primitive bu::set-av-file ((bu::port-to av-box)

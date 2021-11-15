@@ -1370,7 +1370,7 @@
 
     (handle-gesture final-gesture)))
 
-(defun gesture-spec-handler-skip (w x y gesture)
+(defun gesture-spec-handler (w x y gesture)
   (declare (ignore w x y))
   ;; Currently we are handling everything with the low level key-handler, but binding this
   ;; is still necessary to avoid system beeps for some reason on Lispworks...

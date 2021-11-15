@@ -544,61 +544,10 @@
 ;; input name which would, in all likelyhood not be bound so we would then
 ;; come to these functions which would take the ALT-MOUSE-CLICK name and then
 ;; produce the OPTION-MOUSE-CLICK
-(defvar *try-alternate-platform-names* nil) ;; sgithens 2021-07-07 Currently this fills up as
+(defvar *try-alternate-platform-names* t) ;; sgithens 2021-07-07 Currently this fills up as
                                             ;; empty and doens't seem to get the new correct
                                             ;; size for mouse clicks 2021
 
-;; stubbified in anticipation of "clean" reimplementation (10/07/02)
-;; "clean" replacement should take a key/click name and return the
-;; analogous key/click name in another platform
-;; in addition, we should try and link up with DEFINE-INPUT-DEVICES & friends
-;; in keydef-high.lisp
-
-;(defun alternate-platform-input-name (name) name)
-
-;; alternate platform names should return a list instead to allow for the
-;; future possibility of multiple alternate platforms...
-;; In addition, we have handle-boxer-input (keydef-high.lisp) pass key codes
-;; and shift bits to handle-boxer-key to make this work better
-;;
-;; We don't want to precons all the possible alternate input names, but we will
-;; use a lookup array as a cache of alternate names
-;; Note: We also look for alternative names HERE, instead of producing the entire
-;; list of possible names for handle-boxer-input in order to limit the check
-;; for alternatives to the case where an existing binding is missing
-
-(defun alternate-platform-input-names (code bits)
-  (let ((existing (aref *alternate-key-names* code bits)))
-    (cond ((eq existing :no-alternates) nil)
-      ((not (null existing)) ; cached alternates...
-                             existing)
-      (t
-       ;; calculate and cache
-       (let ((handled-shifts
-              (unless (zerop& bits)
-                (list (nth (1-& bits) (input-device-shift-list
-                                       *current-input-device-platform*)))))
-             (alternates nil))
-         (dolist (platform *defined-input-device-platforms*)
-           (let ((other-shift (unless (zerop& bits)
-                                (nth (1-& bits)
-                                     (input-device-shift-list platform)))))
-             (unless (or (null other-shift)
-                         (member other-shift handled-shifts
-                                 :test #'string-equal))
-               (push other-shift handled-shifts)
-               (push (intern-in-bu-package
-                      (concatenate 'string
-                                   other-shift "-"
-                                   ;; get the plain (unshifted) key name
-                                   (string (lookup-key-name code 0))))
-                     alternates))))
-         (cond ((null alternates)
-                (setf (aref *alternate-key-names* code bits)
-                      :no-alternates)
-                nil)
-           (t (setf (aref *alternate-key-names* code bits)
-                    alternates))))))))
 
 ;;; Boxer keys are functions that take no arguments, or data boxes.
 ;;; Primitives get funcalled, data boxes get copied&inserted,
@@ -647,41 +596,7 @@
        t)
       (t nil))))
 
-;; mostly right, it still doesn't hack the translation of the actual click
-;; name i.e. GRAPHICS-MOUSE-MIDDLE <==> MOUSE-CLICK-ON-GRAPHICS but since we
-;; are unlikely to be looking at any (working) LispM code, it's probably OK
-(defun alternate-platform-click-names (click bits area)
-  (let* ((lookup-table (if (null area)
-                         *alternate-mouse-click-name-translation-table*
-                         (get area 'alternate-click-name-table)))
-         (existing (aref lookup-table click bits)))
-    (cond ((eq existing :no-alternates) nil)
-      ((not (null existing)) ; cached alternates...
-                             existing)
-      (t
-       ;; calculate and cache
-       (let ((handled-shifts
-              (unless (zerop& bits)
-                (list (nth (1-& bits) (input-device-shift-list
-                                       *current-input-device-platform*)))))
-             (alternates nil))
-         (dolist (platform *defined-input-device-platforms*)
-           (let ((other-shift (unless (zerop& bits)
-                                (nth (1-& bits)
-                                     (input-device-shift-list platform)))))
-             (unless (or (null other-shift)
-                         (member other-shift handled-shifts
-                                 :test #'string-equal))
-               (push other-shift handled-shifts)
-               (push (intern-in-bu-package
-                      (concatenate 'string
-                                   other-shift "-"
-                                   (string (lookup-click-name click 0 area))))
-                     alternates))))
-         (cond ((null alternates)
-                (setf (aref lookup-table click bits) :no-alternates)
-                nil)
-           (t (setf (aref lookup-table click bits) alternates))))))))
+
 
 ;;; Look up the key click in the box where the mouse button was pressed.
 ;;; If the button definition is a data box or doit box, then move

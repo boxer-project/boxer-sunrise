@@ -17,6 +17,7 @@
                  (:test-file "boxapp-data-tests")
                  (:test-file "comdef-tests")
                  (:test-file "click-handlers-tests")
+                 (:test-file "alternate-names-tests")
                 ;;  (:test-file "chunker-tests")
                  )))
   :description "Test system for boxer-sunrise2"
