@@ -193,34 +193,6 @@ Modification History (most recent at top)
  (define-lwm-function-key BU::HELP-KEY COCOA:NS-HELP-FUNCTION-KEY)
  (define-lwm-function-key BU::MODE-SWITCH-KEY COCOA:NS-MODE-SWITCH-FUNCTION-KEY))
 
-;; The test for whether a system level key code needs to be remapped is:
-(defun remap-char? (char) (>= (char-code char) #xf700))
-
-;; the remapping is performed by:
-(defun remap-char (char)
-  (code-char (+ (- (char-code char) #xf700) *boxer-function-key-code-start*)))
-
-;; the external interface (from boxwin)
-;; the key-handler in boxwin-lw uses this to generate the correct input event
-
-(defun convert-gesture-spec-modifier (gesture)
-  "This takes a gesture-spec, looks at the modifiers field on it and converts them to the
-  internal boxer codes for modifier keys.
-  The gesture-spec modifiers are:
-      1 = SHIFT, 2 = CONTROL, 4 = META, 8 = HYPER (the apple command key)
-  The internal codes we use in boxer are:
-      0 = Plain Key, 1 = COMMAND, 2 = OPTION, 3 = COMMAND-OPTION
-      (translating Command and Option to your modern OS key equivalents. Most likely
-      Ctrl and Alt)
-  "
-  (let ((rawgm (sys:gesture-spec-modifiers gesture)))
-    ;; effectively ignoring the shift bit, but keeping the hyper bit distinct
-    ;(ash rawgm -1)
-    ;; we could convert the command key to control here....
-    ;; lookup table is fastest, we can bit shift the gesture modifiers since they are
-    ;; specified in powers of two
-    (svref #(0 1 2 3 1 1 2 3) (ash rawgm -1))
-    ))
 
 (defun input-gesture->char-code (gesture)
   "This function takes a gesture-spec structure, looks at it's data field and returns
