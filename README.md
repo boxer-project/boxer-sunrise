@@ -2,11 +2,21 @@
 
 This is the current interation of the historic Boxer project.
 
+## Release Downloads
+
+Packaged binary releases can be found on the Github Releases page:
+
+https://github.com/boxer-project/boxer-sunrise/releases
+
 ## Supported Platforms
 
-Currently Boxer is tested on Intel versions of MacOS 10.13 High Sierra, 10.14 Mojave, 10.15 Catalina, and
-11 Big Sur. These all use Lispworks 7.1.2. The Windows version on Lispworks is not far behind, and is expected
-to be added the tested platforms in March 2021. Some work remains for Linux on Lispworks.
+Currently Boxer is tested on the following platforms:
+
+- Apple Intel: macOS 10.14 Mojave through macOS 12 Monterey
+- Apple M1: macOS 11 Big Sur and macOS 12 Monterey
+- x86 Windows 10
+
+These all use Lispworks 7.1.2.
 
 Boxer can be run and developed against using the freely available version of Lispworks. However, in order to
 build deliverable binaries a professional license is required.
@@ -15,39 +25,31 @@ Work is in progress to run Boxer against fully open source versions of common li
 Additionally the ability to run the core boxer evaluator separately to integrate with new web ecosystems (such
 as node and a possible server side Boxer).
 
-### Release Downloads
+## Setting up your Development environment
 
-Packaged binary releases can be found on the Github Releases page:
+### macOS
 
-https://github.com/boxer-project/boxer-sunrise/releases
+- Install Lispworks 7.1.2, including the most up to date patches for macOS Big Sur and Monterey
+- Install Quicklisp
+- Install our patched cl-freetype project
 
-### Running the unit tests and UI in development
-
-#### Dependencies
-
-- Lispworks 7.1.2
-  Lispworks should be fully patches, and for Big Sur, require the extra private-patches addition from lispworks.
-  (as of 2021-01-27)
-- Quicklisp loaded
-  Quicklisp should be installed and available. The personal version of lispworks may require you to load it
-  manually on each startup.
-  ```lisp
-  ; windows
-  (load "Z:/quicklisp/setup.lisp")
   ```
-- Freetype2 Dev libraries
-  The freetype2 development headers and libraries need to be installed. On MacOS this can be installed with
-  homebrew as `brew install freetype2`
-- Currently, Boxer (and lispworks in general) depends on some fixes we've made to `cl-freetype2`.
-  Clone the below `lispworks-fixup` branch and place it in your `quicklisp/local-projects` directory for it to
-  be used rathan the current version quicklisp will pull down automatically.
-  https://github.com/sgithens/cl-freetype2/tree/lispworks-fixup
+  cd ~/quicklisp/local-projects
+  git clone git@github.com:sgithens/cl-freetype2.git
+  cd cl-freetype2
+  git checkout -b lispworks-fixup origin/lispworks-fixup
+  ```
+- Install freetype2 libraries, headers, etc
+  ```
+  brew install freetype2
+  ```
+- `git clone git@github.com:boxer-project/boxer-sunrise.git`
 
-##### Dependencies on MacOS
 
-##### Dependencies on Windows 10
+### Windows 10
 
-There are a number of ways to install dependencies on Windows, here we will document one possible setup using msys2.
+These are the same as the above with the exception of the freetype2 libraries. Here is one way to install them using
+MSYS2. You may choose to use a different build system for Windows.
 
 - Install MSYS2 64-bit from https://www.msys2.org/
 
@@ -60,8 +62,16 @@ There are a number of ways to install dependencies on Windows, here we will docu
 
 - Add `C:\msys64\mingw64\bin` to the windows `PATH` environment variable.
 
+### Notes
 
-#### Running Boxer
+The personal version of lispworks may require you to load quicklisp manually on each startup, as it does not support
+init files.
+```lisp
+; windows
+(load "Z:/quicklisp/setup.lisp")
+```
+
+### Running Boxer
 
 With the above dependencies installed and a lispworks Listener open, the following will compile and startup Boxer (adjusting the
 path accordingly to your system.)
