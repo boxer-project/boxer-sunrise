@@ -93,24 +93,25 @@
 ;; 2nd cut, get smarter (need to hack deep active sprite problem)
 ;; if no deep active sprite, then use timestamps or force-repaint flag
 (defmethod needs-repaint-pass-1? ((self screen-obj)
-                                  &optional (max-wid nil) (max-hei nil))
-  (cond ((or (<= (slot-value self 'tick)
-                 (actual-obj-tick (screen-obj-actual-obj self)))
-             ;; actual obj has changed
-             (not (null *complete-redisplay-in-progress?*))
-             ;; got less room...
-             (and (not-null max-wid) (< max-wid (slot-value self 'wid)))
-             (and (not-null max-hei) (< max-hei (slot-value self 'hei)))
-             ;; was clipped but got more room...
-             (and (not-null (slot-value self 'x-got-clipped?))
-                  (not-null max-wid) (> max-wid (slot-value self 'wid)))
-             (and (not-null (slot-value self 'y-got-clipped?))
-                  (not-null max-hei) (> max-hei (slot-value self 'hei)))
-             ;; deep active sprite
-             ;             (active-sprite-inside? self)
-             )
-         t)
-    (t nil)))
+                                  &optional (max-wid nil) (max-hei nil)) t)
+  ;; sgithens 2021-11-19 Experiementing with just always repainting pass 1
+  ;; (cond ((or (<= (slot-value self 'tick)
+  ;;                (actual-obj-tick (screen-obj-actual-obj self)))
+  ;;            ;; actual obj has changed
+  ;;            (not (null *complete-redisplay-in-progress?*))
+  ;;            ;; got less room...
+  ;;            (and (not-null max-wid) (< max-wid (slot-value self 'wid)))
+  ;;            (and (not-null max-hei) (< max-hei (slot-value self 'hei)))
+  ;;            ;; was clipped but got more room...
+  ;;            (and (not-null (slot-value self 'x-got-clipped?))
+  ;;                 (not-null max-wid) (> max-wid (slot-value self 'wid)))
+  ;;            (and (not-null (slot-value self 'y-got-clipped?))
+  ;;                 (not-null max-hei) (> max-hei (slot-value self 'hei)))
+  ;;            ;; deep active sprite
+  ;;            ;             (active-sprite-inside? self)
+  ;;            )
+  ;;        t)
+  ;;   (t nil)))
 
 ;(defmethod needs-repaint-pass-1? ((self screen-obj)
 ;                                  &optional (max-wid nil) (max-hei nil))
@@ -340,9 +341,7 @@
                                         (first-inf-y-offset 0))
   (with-slots (wid hei actual-obj screen-chas)
     self
-    (let* ((*complete-redisplay-in-progress?*
-            (or *complete-redisplay-in-progress?*
-                (slot-value self 'force-redisplay-infs?)))
+    (let* ((*complete-redisplay-in-progress?* t)
            (infs-new-wid 0)
            (infs-new-hei 0)
            (infs-new-x-got-clipped? nil)
@@ -673,7 +672,6 @@
       (when (not-null actual-obj)
         (setf (slot-value self 'scroll-to-actual-row) new-value)
         (record-scroll-info actual-obj self new-value)
-        ;(set-force-redisplay-infs? self t)
         (setf (slot-value self 'scroll-y-offset) 0)
         T))))
 
@@ -917,7 +915,7 @@
                 (graphics-screen-sheet-actual-obj (screen-sheet self)))
       (setf (graphics-screen-sheet-actual-obj (screen-sheet self))
             graphics-sheet)
-      (set-force-redisplay-infs? self))
+      )
     ;; error check, remove this SOON !!!!!!!
     (IF (NOT (GRAPHICS-SCREEN-SHEET? (SCREEN-ROWS SELF)))
         (BARF "The object ~S, inside of ~S is not a GRAPHICS-SHEET. "
@@ -931,9 +929,7 @@
                 (> desired-hei infs-new-max-hei)))))	;y-got-clipped?
 
 (defmethod repaint-inferiors-pass-2-sb ((SELF GRAPHICS-SCREEN-BOX))
-  (LET ((*COMPLETE-REDISPLAY-IN-PROGRESS?*
-         (OR *COMPLETE-REDISPLAY-IN-PROGRESS?*
-             (SCREEN-OBJ-FORCE-REDISPLAY-INFS? SELF)))
+  (LET ((*COMPLETE-REDISPLAY-IN-PROGRESS?* t)
         (GRAPHICS-SHEET (GRAPHICS-SCREEN-SHEET-ACTUAL-OBJ
                          (SCREEN-SHEET SELF)))
         (av-info (av-info (slot-value self 'actual-obj))))
@@ -987,16 +983,12 @@
 (defun repaint-window (&OPTIONAL (WINDOW *BOXER-PANE*) (flush-buffer? t) &KEY (process-state-label "stopped"))
   (bw::check-for-window-resize)
   (REDISPLAYING-WINDOW (WINDOW)
-                       (LET ((*COMPLETE-REDISPLAY-IN-PROGRESS?*
-                              (OR *COMPLETE-REDISPLAY-IN-PROGRESS?*
-                                  (rassoc ':CLEAR-SCREEN *REDISPLAY-CLUES*))))
-                            ;       (COND ((NOT-NULL *COMPLETE-REDISPLAY-IN-PROGRESS?*)
-                            ;	      (CLEAR-WINDOW WINDOW)))
-                            (clear-window window)
-                            (repaint-guts)
-                            (repaint-mouse-docs)
-                            (repaint-dev-overlay process-state-label)
-                            (when flush-buffer? (flush-port-buffer window)))))
+                       (LET ((*COMPLETE-REDISPLAY-IN-PROGRESS?* t))
+                         (clear-window window)
+                         (repaint-guts)
+                         (repaint-mouse-docs)
+                         (repaint-dev-overlay process-state-label)
+                         (when flush-buffer? (flush-port-buffer window)))))
 
 ;;; called also by printing routines.
 (defun repaint-guts ()
@@ -1219,26 +1211,3 @@
           (repaint-window *boxer-pane* t :process-state-label "eval")
           (setq *last-repaint-duration* (- (get-internal-real-time) now))))))
     (setf *currently-repainting* nil)))
-
-
-
-;;; redisp refugees...
-;; should try to remove the need for these when there's more time
-;; make sure to check if the border opcode stuff is still needed
-
-(defmethod set-force-redisplay-infs? ((self screen-obj) &rest ignore)
-  (declare (ignore ignore))
-  (setf (slot-value self 'force-redisplay-infs?) t)
-  (set-needs-redisplay-pass-2? self t))
-
-(defmethod set-needs-redisplay-pass-2? ((self screen-obj) new-value)
-  (setf (slot-value self 'needs-redisplay-pass-2?)
-        ;; try an preserve any existing border opcode
-        (if (or (null new-value) (typep new-value 'fixnum))
-          new-value
-          (or (slot-value self 'needs-redisplay-pass-2?) new-value)))
-  (when (not-null new-value)
-    (let ((superior (superior self)))
-      (when (screen-obj? superior)
-        (set-needs-redisplay-pass-2? superior t)))))
-

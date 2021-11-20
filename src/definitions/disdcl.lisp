@@ -77,9 +77,7 @@
    ;   (new-hei :initform 0 :accessor screen-obj-new-hei)
    ;   (new-x-got-clipped? :initform nil :accessor screen-obj-new-x-got-clipped?)
    ;   (new-y-got-clipped? :initform nil :accessor screen-obj-new-y-got-clipped?)
-   (tick :initform -1 :accessor screen-obj-tick)
-   (needs-redisplay-pass-2? :initform nil :accessor screen-obj-needs-redisplay-pass-2?)
-   (force-redisplay-infs? :initform nil :accessor screen-obj-force-redisplay-infs?))
+   (tick :initform -1 :accessor screen-obj-tick))
   (:metaclass block-compile-class))
 
 (defgeneric screen-obj? (x) (:method (x) nil) (:method ((x screen-obj)) t))

@@ -261,7 +261,6 @@ Modification History (most recent at top)
         (if (minusp direction)
           (let* ((new-row (assure-head-room-in-box row screen-box))
                  (prev-row (previous-row new-row)))
-            (set-force-redisplay-infs? screen-box)
             (if (and scroll-anyway
                      (eq new-row (scroll-to-actual-row screen-box))
                      (not (null prev-row)))

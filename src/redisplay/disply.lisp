@@ -98,9 +98,7 @@
         (screen-obj-hei self) 0
         (screen-obj-x-got-clipped? self) nil
         (screen-obj-y-got-clipped? self) nil
-        (screen-obj-tick self) -1
-        (screen-obj-needs-redisplay-pass-2? self) nil
-        (screen-obj-force-redisplay-infs? self) nil))
+        (screen-obj-tick self) -1))
 
 
 ;;; temporary hack to debug screen-box allocation problem
@@ -183,8 +181,7 @@
 
 (defmethod re-init ((self graphics-screen-box) new-actual-obj)
   (declare (ignore new-actual-obj))
-  (call-next-method)
-  (setf (slot-value self 'force-redisplay-infs?) t))
+  (call-next-method))
 
 ;; sprite-screen-box RE-INIT: inherit from screen-box for now...
 
@@ -193,8 +190,7 @@
   ;; should this restore the original size ?
   (clear-storage-vector (slot-value self 'screen-chas))
   (setf (screen-chas-array-fds (slot-value self 'screen-chas)) nil)
-  (setf (screen-obj-force-redisplay-infs? self) nil
-        (slot-value self 'baseline) 0
+  (setf (slot-value self 'baseline) 0
         (slot-value self 'screen-box) nil))
 
 
@@ -436,8 +432,12 @@
          (setq erase-height (max erase-height (screen-obj-hei cha)))
          ;; now do all the things erase-screen-box would have done
          ;(screen-obj-zero-size cha) ; huh ? this seems to break things
-         (set-needs-redisplay-pass-2? cha t)
-         (set-force-redisplay-infs?   cha t))
+         ;; sgithens 2021-11-18 Removing these un-needed slots below.
+         ;; The next question is, are any of these erase methods even
+         ;; necessary anymore in the OpenGL double buffer version? TODO
+         ;;  (set-needs-redisplay-pass-2? cha t)
+         ;;  (set-force-redisplay-infs?   cha t)
+         )
         (t
          ;; looks like we hit a box, and we want to preserve the box
          ;; erase from the current-x-offset to the beginning of the box
@@ -463,9 +463,7 @@
   (multiple-value-bind (wid hei)
                        (screen-obj-size screen-box)
                        (erase-rectangle wid hei x-offset y-offset))
-  (screen-obj-zero-size screen-box)
-  (set-needs-redisplay-pass-2? screen-box t)
-  (set-force-redisplay-infs? screen-box t))
+  (screen-obj-zero-size screen-box))
 
 (defun erase-screen-chas (chas start-cha-no x-offset y-offset
                                &optional stop-cha-no)
@@ -490,9 +488,7 @@
                          (multiple-value-bind (x-offset y-offset)
                                               (screen-obj-offsets screen-obj)
                                               (erase-rectangle wid hei x-offset y-offset)
-                                              (screen-obj-zero-size screen-obj)
-                                              (set-needs-redisplay-pass-2? screen-obj t)
-                                              (set-force-redisplay-infs? screen-obj t)))))
+                                              (screen-obj-zero-size screen-obj)))))
 
 
 
@@ -538,8 +534,6 @@
                                    hei (+  hei (screen-obj-hei screen-row)))
                              ;; dunno why these next 3 should be here but leave it in for now...
                              (screen-obj-zero-size screen-row)
-                             (set-needs-redisplay-pass-2? screen-row t)
-                             (set-force-redisplay-infs?  screen-row t)
                              (queue-screen-obj-for-deallocation screen-row))
                            ;; finally do the actual erasing
                            (unless no-erase? (erase-rectangle wid hei x y))
@@ -551,8 +545,6 @@
     (do-vector-contents (screen-row sv :start from :stop to)
       ;; dunno why these next 3 should be here but leave it in for now...
       (screen-obj-zero-size screen-row)
-      ;     (set-needs-redisplay-pass-2? screen-row t)
-      ;     (set-force-redisplay-infs?  screen-row t)
       (queue-screen-obj-for-deallocation screen-row))))
 
 
@@ -595,9 +587,7 @@
         (numberp (display-style-fixed-hei ds)))))
 
 (defmethod set-display-style ((self box) new-value)
-  (setf (display-style-style (slot-value self 'display-style-list)) new-value)
-  (dolist (screen-box (screen-objs self))
-    (set-force-redisplay-infs? screen-box t)))
+  (setf (display-style-style (slot-value self 'display-style-list)) new-value))
 
 
 ;; boxes dimensions are now floats !
@@ -691,8 +681,7 @@
 
 (defmethod set-display-style ((self screen-box) new-value)
   (setf (display-style-style (slot-value self 'display-style-list))
-        new-value)
-  (set-force-redisplay-infs? self t))
+        new-value))
 
 (defmethod border-style ((self screen-box))
   (display-style-border-style (slot-value self 'display-style-list)))

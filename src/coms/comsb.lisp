@@ -1094,8 +1094,7 @@ Does Nothing if There is No Defined BoxTop"
                (or (graphics-screen-box? (car screen-objs))
                    (not-null graphics-sheet)))
       (dolist (sb screen-objs)
-        (toggle-type sb)
-        (set-force-redisplay-infs? sb t))
+        (toggle-type sb))
       (modified (box-screen-point-is-in)))))
 
 

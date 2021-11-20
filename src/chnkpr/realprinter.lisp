@@ -122,8 +122,7 @@
       (when (null (graphics-sheet newbox))
         (setf (display-style-graphics-mode? dsl) nil)
         (dolist (sb (screen-objs port))
-          (toggle-type sb)
-          (set-force-redisplay-infs? sb t)))))
+          (toggle-type sb)))))
   ;; this will uncrack any cracked ports...
   (inform-port-that-target-has-returned port)
   ;; if the port has been scrolled, we need to reset that info

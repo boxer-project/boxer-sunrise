@@ -9380,6 +9380,25 @@ to the :TEXT-STRING method of boxes. "
     (repaint-window window)))
 |#
 
+;;; redisp refugees...
+;; should try to remove the need for these when there's more time
+;; make sure to check if the border opcode stuff is still needed
+
+(defmethod set-force-redisplay-infs? ((self screen-obj) &rest ignore)
+  (declare (ignore ignore))
+  (setf (slot-value self 'force-redisplay-infs?) t)
+  (set-needs-redisplay-pass-2? self t))
+
+(defmethod set-needs-redisplay-pass-2? ((self screen-obj) new-value)
+  (setf (slot-value self 'needs-redisplay-pass-2?)
+        ;; try an preserve any existing border opcode
+        (if (or (null new-value) (typep new-value 'fixnum))
+          new-value
+          (or (slot-value self 'needs-redisplay-pass-2?) new-value)))
+  (when (not-null new-value)
+    (let ((superior (superior self)))
+      (when (screen-obj? superior)
+        (set-needs-redisplay-pass-2? superior t)))))
 
 
 ;;;;

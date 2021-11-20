@@ -58,12 +58,13 @@ Modification History (most recent at top)
   ;; were hacked (to speed up sprites)
   ;; we need to explicity set the FORCE-REDISPLAY-INFS? flag in
   ;; any existing graphics-screen boxes
-  (queue-object-to-be-modified box)
-  (dolist (port (ports box))
-    (dolist (sb (screen-objs port))
-      (when (graphics-screen-box? sb) (set-force-redisplay-infs? sb t))))
-  (dolist (sb (screen-objs box))
-    (when (graphics-screen-box? sb) (set-force-redisplay-infs? sb t))))
+  (queue-object-to-be-modified box))
+;;   (dolist (port (ports box))
+;;     (dolist (sb (screen-objs port))
+;;       (when (graphics-screen-box? sb) (set-force-redisplay-infs? sb t))))
+;;   (dolist (sb (screen-objs box))
+;;     (when (graphics-screen-box? sb) (set-force-redisplay-infs? sb t)))
+	;; )
 
 ;;; should new-graphics being empty = clear graphics ?
 ;;; or should there be a separate clear-graphics primitive ?
@@ -165,7 +166,6 @@ Modification History (most recent at top)
 	     ;; graphics to redisplay because of the hack to avoid gratuitous
 	     ;; redisplays when returning from sprite graphics
 	     (dolist (screen-box (screen-objs gb))
-               (set-force-redisplay-infs? screen-box t)
                ;; clear the abs cache because they also hold onto wid and hei
 	       (let ((poscache (cached-absolute-pos screen-box)))
                  (unless (null poscache)
