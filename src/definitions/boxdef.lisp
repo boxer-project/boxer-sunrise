@@ -240,11 +240,6 @@ Modification History (most recent at top)
   "A list of redisplay-clues. This are hints left behind by the editor
    to help the redisplay code figure out what is going on.")
 
-(DEFVAR *COMPLETE-REDISPLAY-IN-PROGRESS?* NIL
-  "Binding this variable to T around a call to redisplay will 'force'
-   the redisplay. That is it will cause a complete redisplay of the
-   screen. FORCE-REDISPLAY-WINDOW uses this.")
-
 (DEFVAR *SPACE-AROUND-OUTERMOST-SCREEN-BOX* #-mcl 9.  #+mcl 3.
   "This is the number of pixels between the outside of the outermost screen
    box and the inside of the window. This space exists to allow the user to

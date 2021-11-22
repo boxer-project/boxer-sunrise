@@ -464,6 +464,11 @@ Modification History (most recent at top)
 ;;;; FILE: boxdef.lisp
 ;;;;
 
+(DEFVAR *COMPLETE-REDISPLAY-IN-PROGRESS?* NIL
+  "Binding this variable to T around a call to redisplay will 'force'
+   the redisplay. That is it will cause a complete redisplay of the
+   screen. FORCE-REDISPLAY-WINDOW uses this.")
+
 (defvar *uc-copyright-free* t)
 
 ;; sgithens 2021-05-07 Oddly it doesn't look like these three are used anymore...

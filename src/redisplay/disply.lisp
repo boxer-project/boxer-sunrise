@@ -951,8 +951,7 @@
                                     (ERASE-SCREEN-OBJ *OUTERMOST-SCREEN-BOX*)
                                     (SETQ *OUTERMOST-SCREEN-BOX* NEW-OUTERMOST-SCREEN-BOX)))
        (SETQ *OUTERMOST-SCREEN-BOX* (boxer-window::outermost-screen-box)) ; why ??
-       (LET ((*COMPLETE-REDISPLAY-IN-PROGRESS?* T)
-             (OLD-SCREEN-ROW (UNLESS (NULL NEW-OUTERMOST-SCREEN-BOX)
+       (LET ((OLD-SCREEN-ROW (UNLESS (NULL NEW-OUTERMOST-SCREEN-BOX)
                                      (SCREEN-ROW NEW-OUTERMOST-SCREEN-BOX))))
             (WHEN (SCREEN-ROW? OLD-SCREEN-ROW)
                   ;; we need to break up the screen-structure

@@ -341,16 +341,13 @@
                                         (first-inf-y-offset 0))
   (with-slots (wid hei actual-obj screen-chas)
     self
-    (let* ((*complete-redisplay-in-progress?* t)
-           (infs-new-wid 0)
+    (let* ((infs-new-wid 0)
            (infs-new-hei 0)
            (infs-new-x-got-clipped? nil)
            (infs-new-y-got-clipped? nil)
            (new-baseline 0)
            (inf-x-offset first-inf-x-offset)
            (inf-y-offset first-inf-y-offset))
-      ;; if we aren't already erasing everything, erase the row
-      (unless *complete-redisplay-in-progress?* (erase-rectangle wid hei 0 0))
       ;; Watch out, this is a little flaky since we aren't going through the
       ;; normal deletion protocol for inferior screen boxes
       (clear-storage-vector screen-chas)
@@ -929,11 +926,9 @@
                 (> desired-hei infs-new-max-hei)))))	;y-got-clipped?
 
 (defmethod repaint-inferiors-pass-2-sb ((SELF GRAPHICS-SCREEN-BOX))
-  (LET ((*COMPLETE-REDISPLAY-IN-PROGRESS?* t)
-        (GRAPHICS-SHEET (GRAPHICS-SCREEN-SHEET-ACTUAL-OBJ
-                         (SCREEN-SHEET SELF)))
+  (LET ((GRAPHICS-SHEET (GRAPHICS-SCREEN-SHEET-ACTUAL-OBJ
+                          (SCREEN-SHEET SELF)))
         (av-info (av-info (slot-value self 'actual-obj))))
-       (when *complete-redisplay-in-progress?*
          (multiple-value-bind (x y)
                               (graphics-screen-sheet-offsets (screen-sheet self))
                               (multiple-value-bind (il it ir ib)
@@ -960,7 +955,7 @@
                                                                ba 0 0 0 0)))
                                                          ;; then handle any sprite graphics...
                                                          (unless (null (graphics-sheet-graphics-list graphics-sheet))
-                                                           (redisplay-graphics-sheet graphics-sheet self))))))))))
+                                                           (redisplay-graphics-sheet graphics-sheet self)))))))))
 
 
 
@@ -983,12 +978,11 @@
 (defun repaint-window (&OPTIONAL (WINDOW *BOXER-PANE*) (flush-buffer? t) &KEY (process-state-label "stopped"))
   (bw::check-for-window-resize)
   (REDISPLAYING-WINDOW (WINDOW)
-                       (LET ((*COMPLETE-REDISPLAY-IN-PROGRESS?* t))
                          (clear-window window)
                          (repaint-guts)
                          (repaint-mouse-docs)
                          (repaint-dev-overlay process-state-label)
-                         (when flush-buffer? (flush-port-buffer window)))))
+                         (when flush-buffer? (flush-port-buffer window))))
 
 ;;; called also by printing routines.
 (defun repaint-guts ()
@@ -1021,7 +1015,6 @@
 
   (unless *currently-repainting*
     (setf *currently-repainting* t)
-    (let ((*complete-redisplay-in-progress?* t))
       (redisplaying-unit
       (dolist (redisplayable-window *redisplayable-windows*)
         (repaint-window redisplayable-window (not (eq redisplayable-window
@@ -1039,7 +1032,7 @@
         (unless just-windows?
           (repaint-cursor *point* nil)))
       ;; swap buffers here, after all drawing is complete
-      (flush-port-buffer *boxer-pane*)))
+      (flush-port-buffer *boxer-pane*))
       (setf *currently-repainting* nil)
       )
      )
@@ -1062,8 +1055,7 @@
     (repaint)))
 
 (defun force-repaint ()
-  (let ((*complete-redisplay-in-progress?* t))
-    (repaint)))
+  (repaint))
 
 
 ;;;; Ephemera: cursors, regions
