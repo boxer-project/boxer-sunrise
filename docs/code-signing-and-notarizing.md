@@ -16,6 +16,27 @@ the entire bundle and signs all the binaries. Occasionally this is known to not 
 in the correct order, forcing you to run it for each binary inside from lowest to furthest out,
 but in general as worked fine for boxer so far.
 
+### Developer Certificates
+
+The `-s` option in `codesign` below needs to be the actual name of the certificate as it is
+displayed in the Keychain Access application. The following steps can be used to create a local
+signing certificate if one does not exist yet. This requires a paid Apple Developer Program account.
+
+- Follow these steps to create a certificate request:
+
+  https://help.apple.com/developer-account/#/devbfa00fef7
+- Create a new "Developer ID Application" certificate on this page using the certificate
+  request created in the previous step.
+
+  https://developer.apple.com/account/resources/certificates/list
+- After creating the certificate, download it to your Keychain Access and use it's name in
+  the `codesign` `-s` option.
+
+You may need to create a separate request and certificate for each build machine to avoid
+codesign generating a "The specified item could not be found in the keychain" error.
+
+### Command line examples
+
 ```sh
 # Signing the entire application bundle
 codesign --force --verbose --entitlements ~/code/boxer-sunrise2/data/boxersunrise.app/Contents/Resources/boxer.entitlements --option runtime --deep -s "Developer ID Application" ./current-test-build/boxersunrise-wip.app
