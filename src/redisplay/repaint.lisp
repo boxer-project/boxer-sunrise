@@ -1018,7 +1018,7 @@
       ;; comment out next line for outermost box save document, updates will
       ;; occur inside of set-outermost-box instead...
       (when (bp? *point*)
-        (set-window-name (current-file-status (point-box)))
+        ; (set-window-name (current-file-status (point-box)))
         ;; repaint-cursor can now cause horizontal scrolling of the box
         ;; neccessitating an additional repaint, if so, it will throw
         ;; to 'scroll-x-changed TAG
