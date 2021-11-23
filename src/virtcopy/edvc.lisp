@@ -144,7 +144,7 @@ average datastructure.
 ;      (set-name port new-name-row))
     ;; quick redisplay hack, should really fix up
     ;; CHECK-AND-HANDLE-BORDER-CHANGES to recognize changes in port crackness
-    (dolist (sb (screen-objs port)) (set-force-redisplay-infs? sb))
+    ;; (dolist (sb (screen-objs port)) (set-force-redisplay-infs? sb))
     (modified port)))
 
 ;;; the converse...
@@ -171,7 +171,7 @@ average datastructure.
 ;		(cracked?
 ;		 ;; the port didn't have a previous name so remove the name tab
 ;		 (set-name port nil))))))
-    (dolist (sb (screen-objs port)) (set-force-redisplay-infs? sb))
+    ;; (dolist (sb (screen-objs port)) (set-force-redisplay-infs? sb))
     (modified port)))
 
 (defun cracked-port? (port)

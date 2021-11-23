@@ -93,24 +93,25 @@
 ;; 2nd cut, get smarter (need to hack deep active sprite problem)
 ;; if no deep active sprite, then use timestamps or force-repaint flag
 (defmethod needs-repaint-pass-1? ((self screen-obj)
-                                  &optional (max-wid nil) (max-hei nil))
-  (cond ((or (<= (slot-value self 'tick)
-                 (actual-obj-tick (screen-obj-actual-obj self)))
-             ;; actual obj has changed
-             (not (null *complete-redisplay-in-progress?*))
-             ;; got less room...
-             (and (not-null max-wid) (< max-wid (slot-value self 'wid)))
-             (and (not-null max-hei) (< max-hei (slot-value self 'hei)))
-             ;; was clipped but got more room...
-             (and (not-null (slot-value self 'x-got-clipped?))
-                  (not-null max-wid) (> max-wid (slot-value self 'wid)))
-             (and (not-null (slot-value self 'y-got-clipped?))
-                  (not-null max-hei) (> max-hei (slot-value self 'hei)))
-             ;; deep active sprite
-             ;             (active-sprite-inside? self)
-             )
-         t)
-    (t nil)))
+                                  &optional (max-wid nil) (max-hei nil)) t)
+  ;; sgithens 2021-11-19 Experiementing with just always repainting pass 1
+  ;; (cond ((or (<= (slot-value self 'tick)
+  ;;                (actual-obj-tick (screen-obj-actual-obj self)))
+  ;;            ;; actual obj has changed
+  ;;            (not (null *complete-redisplay-in-progress?*))
+  ;;            ;; got less room...
+  ;;            (and (not-null max-wid) (< max-wid (slot-value self 'wid)))
+  ;;            (and (not-null max-hei) (< max-hei (slot-value self 'hei)))
+  ;;            ;; was clipped but got more room...
+  ;;            (and (not-null (slot-value self 'x-got-clipped?))
+  ;;                 (not-null max-wid) (> max-wid (slot-value self 'wid)))
+  ;;            (and (not-null (slot-value self 'y-got-clipped?))
+  ;;                 (not-null max-hei) (> max-hei (slot-value self 'hei)))
+  ;;            ;; deep active sprite
+  ;;            ;             (active-sprite-inside? self)
+  ;;            )
+  ;;        t)
+  ;;   (t nil)))
 
 ;(defmethod needs-repaint-pass-1? ((self screen-obj)
 ;                                  &optional (max-wid nil) (max-hei nil))
@@ -340,18 +341,13 @@
                                         (first-inf-y-offset 0))
   (with-slots (wid hei actual-obj screen-chas)
     self
-    (let* ((*complete-redisplay-in-progress?*
-            (or *complete-redisplay-in-progress?*
-                (slot-value self 'force-redisplay-infs?)))
-           (infs-new-wid 0)
+    (let* ((infs-new-wid 0)
            (infs-new-hei 0)
            (infs-new-x-got-clipped? nil)
            (infs-new-y-got-clipped? nil)
            (new-baseline 0)
            (inf-x-offset first-inf-x-offset)
            (inf-y-offset first-inf-y-offset))
-      ;; if we aren't already erasing everything, erase the row
-      (unless *complete-redisplay-in-progress?* (erase-rectangle wid hei 0 0))
       ;; Watch out, this is a little flaky since we aren't going through the
       ;; normal deletion protocol for inferior screen boxes
       (clear-storage-vector screen-chas)
@@ -673,7 +669,6 @@
       (when (not-null actual-obj)
         (setf (slot-value self 'scroll-to-actual-row) new-value)
         (record-scroll-info actual-obj self new-value)
-        ;(set-force-redisplay-infs? self t)
         (setf (slot-value self 'scroll-y-offset) 0)
         T))))
 
@@ -917,7 +912,7 @@
                 (graphics-screen-sheet-actual-obj (screen-sheet self)))
       (setf (graphics-screen-sheet-actual-obj (screen-sheet self))
             graphics-sheet)
-      (set-force-redisplay-infs? self))
+      )
     ;; error check, remove this SOON !!!!!!!
     (IF (NOT (GRAPHICS-SCREEN-SHEET? (SCREEN-ROWS SELF)))
         (BARF "The object ~S, inside of ~S is not a GRAPHICS-SHEET. "
@@ -931,13 +926,9 @@
                 (> desired-hei infs-new-max-hei)))))	;y-got-clipped?
 
 (defmethod repaint-inferiors-pass-2-sb ((SELF GRAPHICS-SCREEN-BOX))
-  (LET ((*COMPLETE-REDISPLAY-IN-PROGRESS?*
-         (OR *COMPLETE-REDISPLAY-IN-PROGRESS?*
-             (SCREEN-OBJ-FORCE-REDISPLAY-INFS? SELF)))
-        (GRAPHICS-SHEET (GRAPHICS-SCREEN-SHEET-ACTUAL-OBJ
-                         (SCREEN-SHEET SELF)))
+  (LET ((GRAPHICS-SHEET (GRAPHICS-SCREEN-SHEET-ACTUAL-OBJ
+                          (SCREEN-SHEET SELF)))
         (av-info (av-info (slot-value self 'actual-obj))))
-       (when *complete-redisplay-in-progress?*
          (multiple-value-bind (x y)
                               (graphics-screen-sheet-offsets (screen-sheet self))
                               (multiple-value-bind (il it ir ib)
@@ -964,7 +955,7 @@
                                                                ba 0 0 0 0)))
                                                          ;; then handle any sprite graphics...
                                                          (unless (null (graphics-sheet-graphics-list graphics-sheet))
-                                                           (redisplay-graphics-sheet graphics-sheet self))))))))))
+                                                           (redisplay-graphics-sheet graphics-sheet self)))))))))
 
 
 
@@ -987,16 +978,11 @@
 (defun repaint-window (&OPTIONAL (WINDOW *BOXER-PANE*) (flush-buffer? t) &KEY (process-state-label "stopped"))
   (bw::check-for-window-resize)
   (REDISPLAYING-WINDOW (WINDOW)
-                       (LET ((*COMPLETE-REDISPLAY-IN-PROGRESS?*
-                              (OR *COMPLETE-REDISPLAY-IN-PROGRESS?*
-                                  (rassoc ':CLEAR-SCREEN *REDISPLAY-CLUES*))))
-                            ;       (COND ((NOT-NULL *COMPLETE-REDISPLAY-IN-PROGRESS?*)
-                            ;	      (CLEAR-WINDOW WINDOW)))
-                            (clear-window window)
-                            (repaint-guts)
-                            (repaint-mouse-docs)
-                            (repaint-dev-overlay process-state-label)
-                            (when flush-buffer? (flush-port-buffer window)))))
+                         (clear-window window)
+                         (repaint-guts)
+                         (repaint-mouse-docs)
+                         (repaint-dev-overlay process-state-label)
+                         (when flush-buffer? (flush-port-buffer window))))
 
 ;;; called also by printing routines.
 (defun repaint-guts ()
@@ -1020,16 +1006,8 @@
 ;; if not fullscreen, pass-1 should clear changed areas
 ;; Note: should scrolling ops, pass in the box being scrolled as the changed area ?
 
-(defparameter *currently-repainting* nil
-  "Doing some testing to see if this is really a problem... simple nil/t values should be atomic.")
 
 (defun repaint-internal (&optional just-windows?)
-  ; (when *currently-repainting*
-  ;   (format t "Why are we double repainting??"))
-
-  (unless *currently-repainting*
-    (setf *currently-repainting* t)
-    (let ((*complete-redisplay-in-progress?* t))
       (redisplaying-unit
       (dolist (redisplayable-window *redisplayable-windows*)
         (repaint-window redisplayable-window (not (eq redisplayable-window
@@ -1040,16 +1018,14 @@
       ;; comment out next line for outermost box save document, updates will
       ;; occur inside of set-outermost-box instead...
       (when (bp? *point*)
-        (set-window-name (current-file-status (point-box)))
+        ; (set-window-name (current-file-status (point-box)))
         ;; repaint-cursor can now cause horizontal scrolling of the box
         ;; neccessitating an additional repaint, if so, it will throw
         ;; to 'scroll-x-changed TAG
         (unless just-windows?
           (repaint-cursor *point* nil)))
       ;; swap buffers here, after all drawing is complete
-      (flush-port-buffer *boxer-pane*)))
-      (setf *currently-repainting* nil)
-      )
+      (flush-port-buffer *boxer-pane*))
      )
 
 (defun repaint (&optional just-windows?)
@@ -1070,8 +1046,7 @@
     (repaint)))
 
 (defun force-repaint ()
-  (let ((*complete-redisplay-in-progress?* t))
-    (repaint)))
+  (repaint))
 
 
 ;;;; Ephemera: cursors, regions
@@ -1200,45 +1175,20 @@
 ;;;
 (defun repaint-in-eval (&optional force?)
   ;; if fast enuff...
-  (unless *currently-repainting*
-    (bw::update-toolbar-font-buttons)
-    (setf *currently-repainting* t)
-    (let ((now (get-internal-real-time)))
-      (when (or force?
-                (and (>& now (+ *last-eval-repaint* *eval-repaint-quantum*))
-                    (>& now (+ *last-eval-repaint* (* *eval-repaint-ratio*
-                                                      *last-repaint-duration*)))))
-        (cond ((or (eq *repaint-during-eval?* :never)
-                  (and (eq *repaint-during-eval?* :changed-graphics)
-                        (null *screen-boxes-modified*))))
-          (t
-          (setq *last-eval-repaint* now)
-          (process-editor-mutation-queue-within-eval)
-          (unless (null bw::*suppressed-actions*)
-            (funcall (pop bw::*suppressed-actions*)))
-          (repaint-window *boxer-pane* t :process-state-label "eval")
-          (setq *last-repaint-duration* (- (get-internal-real-time) now))))))
-    (setf *currently-repainting* nil)))
-
-
-
-;;; redisp refugees...
-;; should try to remove the need for these when there's more time
-;; make sure to check if the border opcode stuff is still needed
-
-(defmethod set-force-redisplay-infs? ((self screen-obj) &rest ignore)
-  (declare (ignore ignore))
-  (setf (slot-value self 'force-redisplay-infs?) t)
-  (set-needs-redisplay-pass-2? self t))
-
-(defmethod set-needs-redisplay-pass-2? ((self screen-obj) new-value)
-  (setf (slot-value self 'needs-redisplay-pass-2?)
-        ;; try an preserve any existing border opcode
-        (if (or (null new-value) (typep new-value 'fixnum))
-          new-value
-          (or (slot-value self 'needs-redisplay-pass-2?) new-value)))
-  (when (not-null new-value)
-    (let ((superior (superior self)))
-      (when (screen-obj? superior)
-        (set-needs-redisplay-pass-2? superior t)))))
-
+  (bw::update-toolbar-font-buttons)
+  (let ((now (get-internal-real-time)))
+    (when (or force?
+              (and (>& now (+ *last-eval-repaint* *eval-repaint-quantum*))
+                  (>& now (+ *last-eval-repaint* (* *eval-repaint-ratio*
+                                                    *last-repaint-duration*)))))
+      (cond ((or (eq *repaint-during-eval?* :never)
+                (and (eq *repaint-during-eval?* :changed-graphics)
+                      (null *screen-boxes-modified*))))
+        (t
+        (setq *last-eval-repaint* now)
+        (process-editor-mutation-queue-within-eval)
+        (unless (null bw::*suppressed-actions*)
+          (funcall (pop bw::*suppressed-actions*)))
+        (repaint-window *boxer-pane* t :process-state-label "eval")
+        (setq *last-repaint-duration* (- (get-internal-real-time) now))))))
+)

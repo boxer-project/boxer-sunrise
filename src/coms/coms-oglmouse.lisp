@@ -1171,7 +1171,7 @@
          (setf (display-style-graphics-mode? display-style) t))
        ;; then handle changes to the screen boxes
        (dolist (sb screen-objs)
-         (toggle-type sb) (set-force-redisplay-infs? sb t))
+         (toggle-type sb))
        (modified (box-screen-point-is-in)))))
   boxer-eval::*novalue*)
 

@@ -202,10 +202,7 @@ row instead. "
                                  (not new?))
            (modified (box-point-is-in))
            ;; now put the point in the closet
-           (move-point (row-first-bp-values closet-row))
-           (unless new?
-             (dolist (sr (screen-objs closet-row))
-               (set-force-redisplay-infs? sr))))
+           (move-point (row-first-bp-values closet-row)))
           (t
            ;; we must be partially scrolled, so insert the
            ;; closet-row as the 1st VISISBLE row
@@ -217,10 +214,7 @@ row instead. "
                                  (not new?))
            (set-scroll-to-actual-row (screen-box-point-is-in)
                                      closet-row)
-           (modified (box-point-is-in))
-           (unless new?
-             (dolist (sr (screen-objs closet-row))
-               (set-force-redisplay-infs? sr))))))
+           (modified (box-point-is-in)))))
   boxer-eval::*novalue*)
 
 (defboxer-command com-close-closets ()
@@ -297,14 +291,7 @@ row instead. "
                  (modified box)
                  ;; now put the point in the closet, If there is only one box
                  (when (eq box (box-point-is-in))
-                   (move-point (row-first-bp-values closet-row)))
-                 (let* ((bir (boxes-in-row closet-row))
-                        (sos (and bir (screen-objs (car bir)))))
-                   (unless (null sos)
-                     ;; don't need to set this if there were not any
-                     ;; screen objs BEFORE the explicit call to redisplay
-                     (dolist (sr (screen-objs closet-row))
-                       (set-force-redisplay-infs? sr)))))
+                   (move-point (row-first-bp-values closet-row))))
                 (t
                  ;; we must be partially scrolled, so insert the
                  ;; closet-row as the 1st VISISBLE row
@@ -313,12 +300,7 @@ row instead. "
                                         box (scroll-to-actual-row screen-box))
                                        (not new?))
                  (set-scroll-to-actual-row screen-box closet-row)
-                 (modified box)
-                 (let* ((bir (boxes-in-row closet-row))
-                        (sos (and bir (screen-objs (car bir)))))
-                   (unless (null sos)
-                     (dolist (sr (screen-objs closet-row))
-                       (set-force-redisplay-infs? sr))))))))
+                 (modified box)))))
             ((row-row-no box closet-row)
              ;; the closet row must be visible so we should remove it
              ;; moving the *point* out of the way if we have to...
