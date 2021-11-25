@@ -414,7 +414,8 @@
 ;; (boxer-eval::defboxer-key bu::mouse-click       com-mouse-move-point)
 
 ;; sprite clicks
-(boxer-eval::defboxer-key bu::mouse-click-on-sprite com-sprite-follow-mouse)
+;; boxer-bugs-87 We don't want the default action to be moving around sprites.
+;; (boxer-eval::defboxer-key bu::mouse-click-on-sprite com-sprite-follow-mouse)
 
 ;;;
 ;;; Box Border Mouse Commands
@@ -526,7 +527,8 @@
          (boxer-eval::defboxer-key bu::mouse-down-on-graphics com-noop)
          (boxer-eval::defboxer-key bu::mouse-up-on-graphics com-noop)
 
-         (boxer-eval::defboxer-key bu::mouse-down-on-sprite com-sprite-follow-mouse)
+         ;; boxer-bugs-87 We don't want the default action to be moving around sprites.
+         ;;  (boxer-eval::defboxer-key bu::mouse-down-on-sprite com-sprite-follow-mouse)
          (boxer-eval::defboxer-key bu::mouse-down-on-bottom-right com-mouse-br-resize-box)
 
          (boxer-eval::defboxer-key bu::mouse-click-on-sprite com-noop)
@@ -554,7 +556,8 @@
          (boxer-eval::defboxer-key bu::mouse-down-on-sprite com-noop)
          (boxer-eval::defboxer-key bu::mouse-down-on-bottom-right com-noop)
 
-         (boxer-eval::defboxer-key bu::mouse-click-on-sprite com-sprite-follow-mouse)
+         ;; boxer-bugs-87 We don't want the default action to be moving around sprites.
+         ;;  (boxer-eval::defboxer-key bu::mouse-click-on-sprite com-sprite-follow-mouse)
          (boxer-eval::defboxer-key bu::mouse-click-on-bottom-right com-mouse-br-resize-box)
 
          ;; Context menus
