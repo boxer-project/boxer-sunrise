@@ -152,46 +152,88 @@ Modification History (most recent at top)
 
 (define-lwm-function-key BU::CLEAR-LINE-KEY nil :clear-line)
 
-#+cocoa
-(progn
- (define-lwm-function-key BU::INSERT-KEY COCOA:NS-INSERT-FUNCTION-KEY)
- (define-lwm-function-key BU::DELETE-KEY COCOA:NS-DELETE-FUNCTION-KEY)
+(define-lwm-function-key BU::HELP-KEY nil :help)
 
- (define-lwm-function-key BU::BEGIN-KEY COCOA:NS-BEGIN-FUNCTION-KEY)
+(define-lwm-function-key BU::BEGIN-KEY nil :begin)
+(define-lwm-function-key BU::SELECT-KEY nil :select)
+(define-lwm-function-key BU::PRINT-KEY nil :print)
+(define-lwm-function-key BU::EXECUTE-KEY nil :execute)
+(define-lwm-function-key BU::INSERT-KEY nil :insert)
+(define-lwm-function-key BU::UNDO-KEY nil :undo)
+(define-lwm-function-key BU::REDO-KEY nil :redo)
+(define-lwm-function-key BU::MENU-KEY nil :menu)
+(define-lwm-function-key BU::FIND-KEY nil :find)
+(define-lwm-function-key BU::CANCEL-KEY nil :cancel)
+(define-lwm-function-key BU::BREAK-KEY nil :break)
+(define-lwm-function-key BU::CLEAR-KEY nil :clear)
+(define-lwm-function-key BU::PAUSE-KEY nil :pause)
+(define-lwm-function-key BU::PRINT-SCREEN-KEY nil :print-screen)
+(define-lwm-function-key BU::SCROLL-LOCK-KEY nil :scroll-lock)
+(define-lwm-function-key BU::SYS-REQ-KEY nil :sys-req)
+(define-lwm-function-key BU::RESET-KEY nil :reset)
+(define-lwm-function-key BU::STOP-KEY nil :stop)
+(define-lwm-function-key BU::USER-KEY nil :user)
+(define-lwm-function-key BU::SYSTEM-KEY nil :system)
+(define-lwm-function-key BU::CLEAR-DISPLAY-KEY nil :clear-display)
+(define-lwm-function-key BU::INSERT-LINE-KEY nil :insert-line)
+(define-lwm-function-key BU::DELETE-LINE-KEY nil :delete-line)
+(define-lwm-function-key BU::INSERT-CHAR-KEY nil :insert-char)
+(define-lwm-function-key BU::DELETE-CHAR-KEY nil :delete-char)
+(define-lwm-function-key BU::PREV-ITEM-KEY nil :prev-item)
+(define-lwm-function-key BU::NEXT-ITEM-KEY nil :next-item)
 
- (define-lwm-function-key BU::PRINT-SCREEN-KEY COCOA:NS-PRINT-SCREEN-FUNCTION-KEY)
- (define-lwm-function-key BU::SCROLL-LOCK-KEY COCOA:NS-SCROLL-LOCK-FUNCTION-KEY)
- (define-lwm-function-key BU::PAUSE-KEY COCOA:NS-PAUSE-FUNCTION-KEY)
+;;; What are the following and do we need them?...
+;;; www.lispworks.com/documentation/lw71/LW/html/lw-1399.htm#95339
+;;; :kp-f1
+;;; :kp-f2
+;;; :kp-f3
+;;; :kp-f4
+;;; :kp-enter ; this is defined above in the init as 13, but could likely be replaced
+;;; :applications-menu
 
- (define-lwm-function-key BU::SYS-REQ-KEY COCOA:NS-SYS-REQ-FUNCTION-KEY)
- (define-lwm-function-key BU::BREAK-KEY COCOA:NS-BREAK-FUNCTION-KEY)
- (define-lwm-function-key BU::RESET-KEY COCOA:NS-RESET-FUNCTION-KEY)
- (define-lwm-function-key BU::STOP-KEY COCOA:NS-STOP-FUNCTION-KEY)
 
- (define-lwm-function-key BU::MENU-KEY COCOA:NS-MENU-FUNCTION-KEY)
- (define-lwm-function-key BU::USER-KEY COCOA:NS-USER-FUNCTION-KEY)
- (define-lwm-function-key BU::SYSTEM-KEY COCOA:NS-SYSTEM-FUNCTION-KEY)
- (define-lwm-function-key BU::PRINT-KEY COCOA:NS-PRINT-FUNCTION-KEY)
-
- (define-lwm-function-key BU::CLEAR-DISPLAY-KEY COCOA:NS-CLEAR-DISPLAY-FUNCTION-KEY)
-
- (define-lwm-function-key BU::INSERT-LINE-KEY COCOA:NS-INSERT-LINE-FUNCTION-KEY)
- (define-lwm-function-key BU::DELETE-LINE-KEY COCOA:NS-DELETE-LINE-FUNCTION-KEY)
-
- (define-lwm-function-key BU::INSERT-CHAR-KEY COCOA:NS-INSERT-CHAR-FUNCTION-KEY)
- (define-lwm-function-key BU::DELETE-CHAR-KEY COCOA:NS-DELETE-CHAR-FUNCTION-KEY)
-
- (define-lwm-function-key BU::PREV-KEY COCOA:NS-PREV-FUNCTION-KEY)
- (define-lwm-function-key BU::NEXT-KEY COCOA:NS-NEXT-FUNCTION-KEY)
-
- (define-lwm-function-key BU::SELECT-KEY COCOA:NS-SELECT-FUNCTION-KEY)
- (define-lwm-function-key BU::EXECUTE-KEY COCOA:NS-EXECUTE-FUNCTION-KEY)
- (define-lwm-function-key BU::UNDO-KEY COCOA:NS-UNDO-FUNCTION-KEY)
- (define-lwm-function-key BU::REDO-KEY COCOA:NS-REDO-FUNCTION-KEY)
-
- (define-lwm-function-key BU::FIND-KEY COCOA:NS-FIND-FUNCTION-KEY)
- (define-lwm-function-key BU::HELP-KEY COCOA:NS-HELP-FUNCTION-KEY)
- (define-lwm-function-key BU::MODE-SWITCH-KEY COCOA:NS-MODE-SWITCH-FUNCTION-KEY))
+;;;; sgithens boxer-sunrise-51 2021-11-29 Wait a build or too and make sure these
+;;;; have been properly replaced, then delete them.
+;;;; #+cocoa
+;;;; (progn
+;;;; ;  (define-lwm-function-key BU::INSERT-KEY COCOA:NS-INSERT-FUNCTION-KEY)
+;;;; ;  (define-lwm-function-key BU::DELETE-KEY COCOA:NS-DELETE-FUNCTION-KEY)
+;;;
+;;;; ;  (define-lwm-function-key BU::BEGIN-KEY COCOA:NS-BEGIN-FUNCTION-KEY)
+;;;
+;;;; ;  (define-lwm-function-key BU::PRINT-SCREEN-KEY COCOA:NS-PRINT-SCREEN-FUNCTION-KEY)
+;;;; ;  (define-lwm-function-key BU::SCROLL-LOCK-KEY COCOA:NS-SCROLL-LOCK-FUNCTION-KEY)
+;;;; ;  (define-lwm-function-key BU::PAUSE-KEY COCOA:NS-PAUSE-FUNCTION-KEY)
+;;;
+;;;; ;  (define-lwm-function-key BU::SYS-REQ-KEY COCOA:NS-SYS-REQ-FUNCTION-KEY)
+;;;; ;  (define-lwm-function-key BU::BREAK-KEY COCOA:NS-BREAK-FUNCTION-KEY)
+;;;; ;  (define-lwm-function-key BU::RESET-KEY COCOA:NS-RESET-FUNCTION-KEY)
+;;;; ;  (define-lwm-function-key BU::STOP-KEY COCOA:NS-STOP-FUNCTION-KEY)
+;;;
+;;;; ;  (define-lwm-function-key BU::MENU-KEY COCOA:NS-MENU-FUNCTION-KEY)
+;;;; ;  (define-lwm-function-key BU::USER-KEY COCOA:NS-USER-FUNCTION-KEY)
+;;;; ;  (define-lwm-function-key BU::SYSTEM-KEY COCOA:NS-SYSTEM-FUNCTION-KEY)
+;;;; ;  (define-lwm-function-key BU::PRINT-KEY COCOA:NS-PRINT-FUNCTION-KEY)
+;;;
+;;;; ;  (define-lwm-function-key BU::CLEAR-DISPLAY-KEY COCOA:NS-CLEAR-DISPLAY-FUNCTION-KEY)
+;;;
+;;;; ;  (define-lwm-function-key BU::INSERT-LINE-KEY COCOA:NS-INSERT-LINE-FUNCTION-KEY)
+;;;; ;  (define-lwm-function-key BU::DELETE-LINE-KEY COCOA:NS-DELETE-LINE-FUNCTION-KEY)
+;;;
+;;;; ;  (define-lwm-function-key BU::INSERT-CHAR-KEY COCOA:NS-INSERT-CHAR-FUNCTION-KEY)
+;;;; ;  (define-lwm-function-key BU::DELETE-CHAR-KEY COCOA:NS-DELETE-CHAR-FUNCTION-KEY)
+;;;
+;;;; ;  (define-lwm-function-key BU::PREV-KEY COCOA:NS-PREV-FUNCTION-KEY)
+;;;; ;  (define-lwm-function-key BU::NEXT-KEY COCOA:NS-NEXT-FUNCTION-KEY)
+;;;
+;;;; ;  (define-lwm-function-key BU::SELECT-KEY COCOA:NS-SELECT-FUNCTION-KEY)
+;;;; ;  (define-lwm-function-key BU::EXECUTE-KEY COCOA:NS-EXECUTE-FUNCTION-KEY)
+;;;; ;  (define-lwm-function-key BU::UNDO-KEY COCOA:NS-UNDO-FUNCTION-KEY)
+;;;; ;  (define-lwm-function-key BU::REDO-KEY COCOA:NS-REDO-FUNCTION-KEY)
+;;;
+;;;; ;  (define-lwm-function-key BU::FIND-KEY COCOA:NS-FIND-FUNCTION-KEY)
+;;;; ;  (define-lwm-function-key BU::HELP-KEY COCOA:NS-HELP-FUNCTION-KEY)
+;;;; ;  (define-lwm-function-key BU::MODE-SWITCH-KEY COCOA:NS-MODE-SWITCH-FUNCTION-KEY))
 
 
 (defun input-gesture->char-code (gesture)
