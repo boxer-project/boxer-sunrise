@@ -182,7 +182,7 @@ Modification History (most recent at top)
 (define-lwm-function-key BU::PREV-ITEM-KEY nil :prev-item)
 (define-lwm-function-key BU::NEXT-ITEM-KEY nil :next-item)
 
-;;; What are the following and do we need them?...
+;;; sgithens boxer-sunrise-51 2021-11-29 What are the following and do we need them?...
 ;;; www.lispworks.com/documentation/lw71/LW/html/lw-1399.htm#95339
 ;;; :kp-f1
 ;;; :kp-f2
