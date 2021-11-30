@@ -4,6 +4,100 @@
 
 ### Release Notes
 
+#### Overview and major update work for macOS Monteray
+
+This release features some relatively major changes and refactorings. There has been a larger
+gap of time than usual between this build and the previous one, and some of that can be
+attributed to fixing some showstoppers that kept Boxer from running on macOS Monteray and
+caused more frequent crashed on Big Sur. Additionally, this release binary is the first to
+be signed and notarized by Apple, making ease of download and usage less jarring for those
+users.
+
+#### Toolbarrs, Rendering, UI changes.
+
+This release for the first time adds a toolbar at the top that includes menus and icons
+for adjusting the font family and styling, as well as icons for starting and stopping
+evaluation. The icons will change to reflect if a microworld is currently evaluating.
+Additionally, we have also added a status bar on the bottom displaying the current font zoom
+and interaction mode.
+
+These toolbars and status bar and be enabled/disabled from the View Menu. Additionally, the View menu has a new option for hiding the name rows if they empty. (Otherwise they are displayed as
+tiny stubs). These are also saved as preferences under the Editor section. This is the first iteration of them, and then will likely continue to change and go through
+refinement.
+
+The box labels, if turned on, now mark graphics and sprite boxes as "Graphics" and "Sprites"
+respectively, rather than just a "Data" or "Doit" box. Additionaly, the default exported box generated the first time opening a closet is now named "Drawer" rather than "Closet".
+
+Less of a visible change, but a fair portion of renderer cleanup has started as part of this,
+including many pieces that were causing frequent lockups on macOS Monteray.  Added some more
+standard keyboard accelerators, such as Command-m to minimize the window on macOS.
+
+#### Modifier keys
+
+This release brings back the ability to use the Option/Alt, Command/Win/Meta, and Shift keys
+in addition to Control, and fixes most of the issues related to overriding these. You can now
+use magic names like "control-option-mouse-click" or "option-command-u-key".
+
+Basic substitutions of modifier keys are done between platforms at the moment, such as Control
+<-> Ctrl and Option <-> Alt, though more sophistication will likely be added to this in the
+future.
+
+There may be another iteration of work to stabilize the use of the shift key modifier in situations outside of the basic latin character set, which we are looking in to still.
+
+#### Mouse Clicks
+
+This release features a major iteration on mouse clicks, bringing them up to modern speed.
+Previously Boxer handled double clicks by including a timeout mechanism to only fire a single
+or double click. However, this created a lag time with every mouse click operation, the
+result being that Boxers UI felt perpetually "Slow".  Clicks by default are now handled as in
+most modern applications. There is no delay, and a double click emits a mouse down, up, click,
+and double click. As a minor simplification we have left out emitting the mouse down/up from the
+second click of a double click.  There is an option in the preferences to switch back to the
+old behavior if needed for the support of older microworlds, but in general, the newer behavior
+is much more responsive and should be used.
+
+This change introduces the new magic name methods "mouse-up" and "mouse-down" in addition
+to "mouse-click" and "mouse-double-click". On a double click a single click is fired ahead of
+time, so you'll want to consider modern UI design when assigning handlers. ie. A single click
+method should be something somewhat harmless that when added with a double click doesn't
+interfere with the action. Consider double clicking on a line in boxer. The first click event
+moves the cursor to the mouse position, and the double click executes the line. As an
+external operation, consider double clicking on an entry in any modern file manager such as
+the Windows Explorer, macOS Finder, or Linux Nautilus. The first click emitted highlights the
+file, and the double click event opens the file. The single click doesn't contain any side effects
+that would disrupt the double click.  Obviously this is only a concern if you plan on overriding
+both the single and double  click mechanism for a box.
+
+In updating older microworlds to these new mouse clicks the only major changes have been
+changing mouse-click operations to mouse-down, when the function of the UI was to initiate
+some type of mouse dragging operation, such as a color picker drag and drop, or drawing on a
+turtle graphics box.
+
+#### Other Changes
+
+Reverted an old commit that had drastically slowed down the performance of the Diffusion
+Microworld. (Was testing adding hundred more points in circle generation, which slipped in
+and wasn't reverted as meant to be earlier.)
+
+Some visual improvements to the HTML5 export. Fixed an issue that crashed when exporting to
+replace an already existing filename.
+
+Follow-mouse has been removed as the default operation on mouse-down-on-sprite to avoid making it
+too easy to muck up turtle programs.
+
+Lots more archiving of code no longer called/used on modern platforms, as well as continuing to
+wall off and refactoring pieces of code specific to a given platform or lispworks.
+
+#### Known Issues
+
+These are some known issues introduced in this version that should be fixed in the next build.
+
+- There is currently some lag in the display of various windows and decorations, primarily on
+  macOS Monteray. The startup progress dialogue, as well as percentage progress when loading
+  large file may be laggy.
+- The window bar is temporarily static, due to a lockup issue when displaying the current box file
+  in the bar. This will be fixed in the next release.
+
 ### Full Change Log
 
 boxer-bugs-66
