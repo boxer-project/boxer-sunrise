@@ -19,9 +19,7 @@
 ;;;;
 (in-package :boxer-window)
 
-(defun update-toolbar-font-buttons ())
-
-(defun update-toolbar-font-buttons-skip ()
+(defun update-toolbar-font-buttons ()
   "This will look at the current font descriptor and update all the toolbar items, for style, font
   family, size, color etc for the toolbars.
 

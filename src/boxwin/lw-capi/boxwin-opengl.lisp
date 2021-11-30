@@ -447,7 +447,10 @@
               :min-width nil :max-width :screen-width
               :visible-min-height *boxer-status-pane-height*
               :visible-max-height *boxer-status-pane-height*)
-  ;;  (status-bar-pane capi:title-pane :text "")
+   (status-bar-pane capi:title-pane :text ""
+              :min-width nil :max-width :screen-width
+              :visible-min-height *boxer-status-pane-height*
+              :visible-max-height *boxer-status-pane-height*)
    (boxer-pane opengl::opengl-pane
                :configuration #-linux '(:rgba t :depth nil :double-buffered t :aux 1)
                               #+linux '(:rgba t :depth nil :double-buffered t ) ;:aux 1) TODO This aux option crashes LW on linux
@@ -677,8 +680,7 @@
                ))
   (:layouts
    (boxer-layout capi:column-layout
-                ;;  '(text-toolbar name-pane boxer-pane status-bar-pane)
-                '(name-pane boxer-pane)
+                '(text-toolbar name-pane boxer-pane status-bar-pane)
                  :columns 1 :rows 2 :y-gap 1 :x-uniform-size-p t))
   ;; menu item actions are defined in lw-menu.lisp
   (:menus
@@ -947,9 +949,7 @@
 
 (defvar *display-bootstrapping-no-boxes-yet* t)
 
-(defun update-visible-editor-panes ())
-
-(defun update-visible-editor-panes-skip ()
+(defun update-visible-editor-panes ()
   "This function takes into account the current user preferences for dispalying the toolbar and
   status bar, and re-lays out the main boxer-frame layout taking those in to account"
   (let ((layout (slot-value *boxer-frame* 'capi:layout))
@@ -1785,7 +1785,9 @@
 
 ;;;
 (defun window-system-dependent-redraw-status-line (string)
-  (setf (capi::title-pane-text *name-pane*) string))
+  (capi:apply-in-pane-process *name-pane* #'(lambda ()
+                                             (setf (capi::title-pane-text *name-pane*) string)))
+  )
 
 (defun outermost-screen-box (&optional (window *boxer-pane*))
   (cdr (assoc window *redisplayable-window-outermost-box-alist*)))
