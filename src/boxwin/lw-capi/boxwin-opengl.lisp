@@ -1365,10 +1365,11 @@
     ;; - However, if this is a gesture that is not case'able, and the modifier is only the shift
     ;;   key, submit the key alone with no gestures. Currently on LW this is what we need to do
     ;;   for typing special characters like #\+ otherwise it gets sent to SHIFT-+-KEY by the system.
-    (cond ((and (equal (system:gesture-spec-modifiers gesture) 1)
-                (lower-case-p (code-char (system:gesture-spec-data gesture))))
+    (cond ((and (equal modifiers 1)
+                (integerp data) ;; may be a symbol like :LEFT or :HELP and not an integer
+                (lower-case-p (code-char data)))
            (setf final-gesture (system:make-gesture-spec (char-code (char-upcase (code-char data))) 0)))
-          ((equal (system:gesture-spec-modifiers gesture) 1)
+          ((equal modifiers 1)
            (setf final-gesture (system:make-gesture-spec data 0))))
 
     (handle-gesture final-gesture)))
