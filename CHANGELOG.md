@@ -1,5 +1,147 @@
 # Change Log
 
+## 3.4.7 2021-11-??
+
+### Release Notes
+
+### Full Change Log
+
+boxer-bugs-66
+  - Reducing the raw number of events that are fired on a double click.
+  - Removing the up,down, and click that are generated on the second click before
+    the double click is fire.
+  - Moved the repetitive click handlers for the capi :input-handlers into
+    click-handlers.lisp
+  - Added the new mouse2021 down/up/click versions for middle and right
+    mouse buttons.
+  - Adding unit tests for comdef abort chars crash and mouse pixel wander
+  - Fixing interactions with selecting regions on mouse downs.
+  - Adding more keydef high bindings for new interactions.
+  - Updating click handlers for middle and right clicks and modifier bits.
+  - Added handlers for Command key (:hyper in capi)
+  - Rearranged macOS define-input-devices to match the bit order
+    used everywhere else for the modifiers.
+  - Reducing number of redundtant click functions.
+  - Fixing up some issues when dragging across graphics, lines, to more closely
+    match things like Word if you begin the click on a graphic it's not a drag
+    selection. (also part of boxer-sunrise-13)
+  - crashfix Adding integer check for char-code use
+
+boxer-bugs-68 First version of a toolbar and status bar
+  - Adding Icons for Run/Stop from Scratch
+  - Making a single bitmap to load images from for performance
+  - Prototyping some bits to update the eval versions of the icons.
+  - Adding the icons bitmap
+  - Adding preferences for showing/hide toolbars and statusbars.
+  - Changing the icons image to a png so it loads on both Windows and macOS
+  - Changing hide empty name rows pref to Show Empty Name Tabs
+  - Adding everything to the View menu
+
+boxer-bugs-72 Improved HTML5 Export
+  - Adding size, font name, and styling to output
+  - Changed spaces to non-breaking spaces
+  - Encoded HTML entities
+  - Added background color for closet rows.
+
+boxer-bugs-73 Allowing ability to export over an existing file.
+  - Add a check for nil filenames, which usually means the user hit cancel
+    on the choose file dialog.
+  - Add :supercede option to with-open-file to allow exporting over a file,
+    by this point the choose file dialog has likely already warned the user
+    about this.
+
+boxer-bugs-74 Renaming transparent closet box from 'closet' to 'drawer'
+
+boxer-bugs-87 Removing follow-mouse as default action for mouse-down-on-sprite
+
+boxer-sunrise-20
+  - Moving pixmap library calls from fli to cffi for portability
+  - Adjusting components for both lispworks and sbcl
+  - Adding more opengl constants used in the source.
+  - Changing some defconstants to defvars for sbcl
+  - Adding required arguments on calls to error with formatting strings
+  - Adding #+lispworks reader macros for specific library usage
+
+boxer-sunrise-23
+  - Adding Window menu and minimize accelerator for MacOS
+  - Adding window-menu to :menu-bar
+
+boxer-sunrise-31 Temporarily disabling scroll gestures during evaluation to prevent locking up.
+
+boxer-sunrise-37 Adding Graphics and Sprite as specific border type labels.
+
+boxer-sunrise-38
+  - Docs for how to sign and notarize binaries with Apple.
+  - Shell script for build and notarization process.
+  - In-progress entitlements and adding code signing leftovers to .gitignore
+  - Docs on generating certificates and minor script improvements
+
+boxer-sunrise-44 Testing boxer styles by applying solarized dark palette
+
+boxer-sunrise-46 Updating Alternate Platform Names code
+  - refactoring out of ev-int to keydefs module area
+  - starting to add tests
+  - Updated defboxer-key invocation to use updated bits.
+
+boxer-sunrise-47
+  - Removing needs-redisplay-pass-2? and force-redisplay-infs?
+  - Completely removing *COMPLETE-REDISPLAY-IN-PROGRESS?*
+    - Removed *COMPLETE-REDISPLAY-IN-PROGRESS?* and all instances where
+      we use it.
+  - Removing *currently-repainting* variable
+  - Updates to toolbar displays for macOS Monterey
+    A few updates to where the toolbars are refreshed during render and
+    apply in pane processes. Removing toolbar updates for now from the
+    repaint-in-eval for speed reasons.
+
+boxer-sunrise-50 Initial commit of historic landscapes extension code.
+
+boxer-sunrise-51 Converting cocoa special keys to standard gesture symbols.
+
+documentation
+  - Rebinding keys at runtime during development
+  - Minor comment improvement and ql library needed for the tests to run
+  - Small docs additions and reference diagnostic outputs
+  - Updating build instructions
+
+performance
+  - Reverting original num-slices size which was causing dramatic slow downs in the diffusion simulation.
+
+key-bindings Removing broken printing key, and adding emacs style prev/next line
+
+crash-fixes
+  - boxer-sunrise-40 Minor crash fix for nil boxes
+
+tests
+  - Fixing up tests for lispworks/sbcl
+  - Commenting out the chunker tests until they are completed.
+
+refactor
+  - Moving lw capi source for boxwin in to the lw-capi specific folder
+
+the-attic
+  - Moving obsolete XOR primitives to obsolete prims area
+  - Archiving currently broken ftp support
+  - Removing binhex methods that are no longer used.
+  - Archiving clearly unworking version of touching?
+  - Removing commented out save-state-and-reset and restore-state for graphics-object
+  - Removing usage of empty with-font-map-bound macro
+  - Moving unused x-out-of-bounds? and y-out-of-bounds? macros to the attic.
+  - Archiving old version of defstandard-graphics-handlers (line-segment 3)
+  - Test removing base64 and applefile lisp files, plus including the obsolete primitives file.
+  - Moving unused elevator-row-string out of coms-oglmouse.lisp
+  - Moving ogl-init from boxwin-opengl to opengl-utils
+  - Archiving pre-opengl version of set-assoc-graphics-box
+  - Removing unused with-open-blinker and altering-region
+  - Removing unused drawing macros with-drawing, with-clip-bindings, update-window-system-state
+  - Removing used vars, defs, and #-opengl lines
+    - char-bits-limit
+    - *CONTROL-CHARACTER-PREFIX-TABLE*
+    - CONTROL-CHARACTER-DISPLAY-PREFIX
+    - *unshifted-mac-editor-abort-chars*
+  - Removing :control-character-display-prefix from package
+  - Removing remap-char?, remap-char, convert-gesture-spec-modifier
+
 ## 3.4.6 2021-07-16
 
 ### Release Notes
