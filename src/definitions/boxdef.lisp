@@ -52,7 +52,7 @@ Modification History (most recent at top)
 
 (defun boxer::valid-boxer-license? () t)
 
-(defvar *boxer-version* "3.4.6")
+(defvar *boxer-version* "3.4.7")
 
 (defun boxer-component-version ()
   "Returns the current semver version of boxer based on it's asdf configuration."
