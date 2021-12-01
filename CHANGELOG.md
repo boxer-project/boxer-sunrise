@@ -97,6 +97,7 @@ These are some known issues introduced in this version that should be fixed in t
   large file may be laggy.
 - The window bar is temporarily static, due to a lockup issue when displaying the current box file
   in the bar. This will be fixed in the next release.
+- Full screening on macOS causes a hang.
 
 ### Full Change Log
 
