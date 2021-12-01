@@ -1,6 +1,6 @@
 # Change Log
 
-## 3.4.7 2021-11-??
+## 3.4.7 2021-11-30
 
 ### Release Notes
 
@@ -8,7 +8,7 @@
 
 This release features some relatively major changes and refactorings. There has been a larger
 gap of time than usual between this build and the previous one, and some of that can be
-attributed to fixing some showstoppers that kept Boxer from running on macOS Monteray and
+attributed to fixing  showstoppers that kept Boxer from running on macOS Monteray and
 caused more frequent crashed on Big Sur. Additionally, this release binary is the first to
 be signed and notarized by Apple, making ease of download and usage less jarring for those
 users.
