@@ -161,8 +161,6 @@
                  (:file "filesystem/bfslocal")
                  (:file "filesystem/bfsforeign")
                  (:file "filesystem/client")
-                ;;  (:file "filesystem/base64")
-                ;;  (:file "filesystem/applefile") sgithens TODO It looks like this can be completely archived
                  (:file "filesystem/surf")
                  (:file "filesystem/http")
                  ;; Beginning of `TRIGGER` module
