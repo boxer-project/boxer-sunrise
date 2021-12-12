@@ -118,3 +118,38 @@
                                     "XOR pens are no longer supported")
       (set-pen turtle 'bu::reverse))
   boxer-eval::*novalue*)
+
+;; 2021-12-12  Primitives from net-prims for sending boxes back and forth between different
+;; computers. It's actually pretty cool, and would be nice to modernize some day, but the
+;; current implementation is built on a socket implementation from when Boxer was being
+;; used on Sun machines.
+
+(boxer-eval::defboxer-primitive bu::send-box ((boxer-eval::dont-copy where)(bu::port-to box))
+  (boxer-eval::primitive-signal-error :obsolete
+                                      "Socket based sending features are not currently supported.")
+  boxer-eval::*novalue*)
+
+(boxer-eval::defboxer-primitive bu::enable-boxer-send-polling ()
+  (boxer-eval::primitive-signal-error :obsolete
+                                      "Socket based sending features are not currently supported.")
+  boxer-eval::*novalue*)
+
+(boxer-eval::defboxer-primitive bu::disable-boxer-send-polling ()
+  (boxer-eval::primitive-signal-error :obsolete
+                                      "Socket based sending features are not currently supported.")
+  boxer-eval::*novalue*)
+
+(boxer-eval::defboxer-primitive bu::enable-boxer-send-interrupts ()
+  (boxer-eval::primitive-signal-error :obsolete
+                                      "Socket based sending features are not currently supported.")
+  boxer-eval::*novalue*)
+
+(boxer-eval::defboxer-primitive bu::disable-boxer-send-interrupts ()
+  (boxer-eval::primitive-signal-error :obsolete
+                                      "Socket based sending features are not currently supported.")
+  boxer-eval::*novalue*)
+
+(boxer-eval::defboxer-primitive bu::receive-boxer-send ()
+  (boxer-eval::primitive-signal-error :obsolete
+                                      "Socket based sending features are not currently supported.")
+  boxer-eval::*novalue*)

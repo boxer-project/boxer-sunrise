@@ -1,6 +1,12 @@
 ;;;;
 ;;;; The attic
 ;;;;
+;;;; Interesting bits:
+;;;;   - Boxer Send Server: boxnet.lisp and net-prims.lisp
+;;;;     These contain the legendary code for sending boxes between computers based on
+;;;;     a socket implementation on Sun boxes using Lucid.
+;;;;     net-prims has an interesting defun `safe-load-binary-box-from-stream-internal`
+;;;;     to consider in the future as a reference for sending boxes around.
 
 ;;;;
 ;;;; FILE: applefile.lisp
@@ -1576,6 +1582,245 @@ Modification History (most recent at top)
   "For display of control characters (all of them until we decide on different prefixes")
 
 (defvar *default-font-map-length* 10)
+
+;;;;
+;;;; FILE: boxnet.lisp
+;;;;
+;;;; --entire-file--
+
+;;;-*-LISP-*-
+
+
+;;; $Header: boxnet.lisp,v 1.0 90/01/24 22:07:00 boxer Exp $
+
+;;; $Log:	boxnet.lisp,v $
+;;;Revision 1.0  90/01/24  22:07:00  boxer
+;;;Initial revision
+;;;
+
+#|
+
+    Boxer
+    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+
+    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+
+    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+
+    https://opensource.org/licenses/BSD-3-Clause
+
+
+                                      +-------+
+             This file is part of the | Boxer | System
+                                      +-Data--+
+
+
+Modification History (most recent at top)
+
+ 2/13/03 merged current LW and MCL files, no differences, copyright updated
+
+
+|#
+
+(in-package :boxnet)
+
+;;; Call setup-server.
+;;; Then call either SETUP-CONNECTION-WAITING-PROCESS
+;;; or ENABLE-POLLING with a function which receives
+;;; a stream as input.  That function should deal with the stream,
+;;; but should not interact with the display or anything.
+;;; It should use the bw::*boxer-command-loop-event-handlers-queue*
+;;; mechanism for getting things to run later.
+;;;
+;;; We should macroize all that and relax the restrictions and
+;;; probably just settle on polling and punt the interrupt stuff
+;;; and regularize the names.
+
+#|
+(eval-when (load eval)
+           #+(and (not solaris) Lucid) (progn
+                                        #+sparc   (lcl:load-foreign-files
+                                                   (merge-pathnames
+                                                    (getf (sm::system-properties
+                                                           (find-system-named 'boxer))
+                                                          :pathname-default)
+                                                    "receive.sun4.o"))
+                                        #+MC68000 (lcl:load-foreign-files
+                                                   (merge-pathnames
+                                                    (getf (sm::system-properties
+                                                           (find-system-named 'boxer))
+                                                          :pathname-default)
+                                                    "receive.sun3.o"))
+                                        #+sparc   (lcl:load-foreign-files
+                                                   (merge-pathnames
+                                                    (getf (sm::system-properties
+                                                           (find-system-named 'boxer))
+                                                          :pathname-default)
+                                                    "send.sun4.o"))
+                                        #+MC68000 (lcl:load-foreign-files
+                                                   (merge-pathnames
+                                                    (getf (sm::system-properties
+                                                           (find-system-named 'boxer))
+                                                          :pathname-default)
+                                                    "send.sun3.o")))
+           )
+
+;;; At least remind during compilation....
+
+(eval-when (compile)
+           (format t "~%***~%NOTE:You may have to recompile the C files send.c ~%~
+             and receive.c for this architecture~%***")
+           )
+
+|#
+
+(defvar *foreign-netsocket-file*
+  #+(and sparc (not solaris)) "netsocket.sun4.o"
+  #+(and sparc solaris)       nil ; "netsocket.solaris.o"
+  #+MC68000                   "netsocket.sun3.o")
+
+(eval-when (eval load)
+           #+lucid (unless (null *foreign-netsocket-file*)
+                     (lcl::load-foreign-files
+                      (merge-pathnames
+                       (getf (sm::system-properties (find-system-named 'boxer))
+                             :pathname-default)
+                       *foreign-netsocket-file*)))
+           )
+
+;;;; compilation reminder (shouldn't the defsystem do this ?)
+(eval-when (compile)
+           (format t "~%***~%NOTE:You may have to recompile the C files netsocket.c ~%~
+             for this architecture~%***")
+           )
+
+
+;;returns the file descriptor bits to give to select-and-accept.
+#+(and Lucid (not solaris))
+(lcl:define-c-function (socket-listen-and-bind "_socket_listen_and_bind")
+                       ((port-number :integer))
+                       :result-type :integer)
+
+;; returns a unix file handle for make-lisp-stream.
+#+(and Lucid (not solaris))
+(lcl:define-c-function (select-and-accept "_select_and_accept")
+                       ((socket-object :integer)
+                        (poll-time-in-usec :integer))
+                       :result-type :integer)
+
+
+#+(and Lucid (not solaris))
+(lcl:define-c-function (%close-socket "_close") ((fd :integer)) :result-type :integer)
+
+;; returns a unix file handle for make-lisp-stream.
+#+(and Lucid (not solaris))
+(lcl:define-c-function (socket-open-and-connect "_socket_open_and_connect")
+                       ((hostname :string) (port-number :integer))
+                       :result-type :integer)
+
+
+
+
+(defvar *socket* nil)
+(defvar *boxer-port-number* 7000)
+
+(defvar *connection-waiting-process* nil)
+(defvar *connection-port* nil)
+
+(defun setup-server ()
+  (when (or (null *socket*) (not (plusp *socket*)))
+    (let ((socket (socket-listen-and-bind *boxer-port-number*)))
+      (when (minusp socket)
+        (warn "Failed to set up for remote connection:"))
+      (setq *socket* socket))))
+
+#+Lucid
+(defun setup-connection-waiting-process (handler-function)
+  (setq *connection-waiting-process*
+        (lcl::make-process
+         :function #'handle-connection :args (list handler-function)
+         :wait-function (let ((socket *socket*)
+                              (process lcl::*current-process*))
+                          #'(lambda ()
+                                    ;; can't use global variables in the wait function.
+                                    (let ((port (select-and-accept socket 100)))
+                                      (if (not (zerop port))
+                                        (progn
+                                         (setf (lcl::symbol-process-value
+                                                '*connection-port* process) port)
+                                         t)
+                                        nil)))))))
+
+;;; the server process calls this on the stream when the connection is made.
+(defun handle-connection (handler-function)
+  (cond ((minusp *connection-port*)
+         (when (eq boxer::*boxer-send-server-status* :interrupt)
+           (close-server)
+           (format t "<error: connection lost -- killing process>~%")))
+    (t
+     (let ((stream nil))
+       (unwind-protect
+        (progn (setq stream
+                     #+Lucid (lcl::make-lisp-stream :input-handle  *connection-port*
+                                                    :output-handle  *connection-port*
+                                                    :element-type '(unsigned-byte 16))
+                     #-Lucid (warn "~S undefined in this Lisp" 'make-lisp-stream))
+               (funcall handler-function stream))
+        (close stream)
+        (setq *connection-port* nil))))))
+
+(defun close-server ()
+  (when (and *socket* (plusp *socket*))
+    (%close-socket *socket*)
+    (setq *socket* nil))
+  (when (and *connection-port* (plusp *connection-port*))
+    (close *connection-port*)
+    (setq *connection-port* nil))
+  (when *connection-waiting-process*
+    #+Lucid (lcl::kill-process *connection-waiting-process*)
+    #-Lucid (warn "~S undefined in this Lisp" 'kill-process)
+    (setq *connection-waiting-process* nil)))
+
+
+;;; polling
+(defvar *polling-handler* nil)
+(defvar *net-connection-toplevel-polling-time* #+Lucid 200)
+
+#+Lucid
+(defun net-connection-toplevel-polling-function ()
+  (when (not (null *polling-handler*))
+    (let ((port (select-and-accept *socket*  *net-connection-toplevel-polling-time*)))
+      (when (not (zerop port))
+        (setq *socket* nil)
+        (setq *connection-port* port)
+        (handle-connection *polling-handler*)))))
+
+
+(defun enable-polling (function)
+  (setq *polling-handler* function))
+
+(defun disable-polling ()
+  (setq *polling-handler* nil))
+
+
+
+;;; send
+(defmacro with-open-port-stream ((stream-var hostname) &body body)
+  `(with-open-stream
+     (,stream-var (let ((fd (socket-open-and-connect ,hostname)))
+                    (when (minusp fd)
+                      (boxer-eval::primitive-signal-error
+                       "Couldn't connect to host:" ,hostname))
+                    #+Lucid (lcl:make-lisp-stream :input-handle fd
+                                                  :output-handle fd
+                                                  :element-type '(unsigned-byte 16))
+                    #-Lucid (warn "~S undefined for this Lisp" 'MAKE-LISP-STREAM)))
+     .,BODY))
+
+
+
+
 
 ;;;;
 ;;;; FILE: boxwin-opengl.lisp
@@ -9595,6 +9840,161 @@ to the :TEXT-STRING method of boxes. "
       (:name-handle)
       (:graphics (boxer::popup-undoc-graphics screen-box))
       (:sprite))))
+
+;;;;
+;;;; FILE: net-prims.lisp
+;;;;
+;;;; --entire-file--
+
+;; -*- Mode:LISP; Syntax:Common-Lisp; Package:BOXER; -*-
+#|
+
+ $Header: net-prims.lisp,v 1.0 90/01/24 22:15:07 boxer Exp $
+
+ $Log:	net-prims.lisp,v $
+;;;Revision 1.0  90/01/24  22:15:07  boxer
+;;;Initial revision
+;;;
+
+    Boxer
+    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+
+    Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+    used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+
+    Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+
+    https://opensource.org/licenses/BSD-3-Clause
+
+
+                                      +-Data--+
+             This file is part of the | BOXER | system
+                                      +-------+
+
+
+
+   This file contains all of the boxer functions which use the
+   file system.
+
+
+Modification History (most recent at top)
+
+ 4/21/03 merged current LW and MCL files, no diffs, updated copyright
+
+|#
+
+(in-package :boxer)
+
+(boxer-eval::defboxer-primitive bu::send-box ((boxer-eval::dont-copy where)(bu::port-to box))
+  (let ((hostname (box-text-string where))
+	(box (get-port-target box)))
+    (let ((guaranteed-editor-box (if (box? box) box (top-level-print-vc box))))
+      (boxnet::with-open-port-stream (stream hostname)
+	(dump-top-level-box-to-stream guaranteed-editor-box stream)))
+    boxer-eval::*novalue*))
+
+(defvar *net-boxes-to-be-inserted* nil)
+
+;;; Two low-level implementations: polling and processes
+;;; polling happens inside BOXER-COMMAND-LOOP.  If you have
+;;; a brain-damaged implementation that won't let you do that,
+;;; or if you feel it's really important to receive those sends
+;;; while Boxer programs are running (even though you won't
+;;; actually GET the sends), then use processes.
+;;; Processes will probably go away, because no one can be
+;;; that brain damaged and still get the sends, since we
+;;; use the same mechanism.
+;;;
+;;; But we need the polling to happen more often at toplevel.
+;;;
+;;; Also, we need some error trapping around the receive thing.
+
+;;; NIL means off.
+;;; :POLL means polling
+;;; :INTERRUPT means processes.
+(defvar *boxer-send-server-status* nil)
+
+;;; This function is called from setup-evaluator.  Make it
+;;; do whatever you want.
+(defun setup-boxer-send ()
+  (enable-boxer-send-polling))
+
+(boxer-eval::defboxer-primitive bu::enable-boxer-send-polling ()
+  (enable-boxer-send-polling)
+  boxer-eval::*novalue*)
+
+(defun enable-boxer-send-polling ()
+  (when (eq *boxer-send-server-status* :interrupt) (boxnet::close-server))
+  (boxnet::setup-server)
+  (boxnet::enable-polling 'net-interrupt-function)
+  (setq *boxer-send-server-status* :poll))
+
+(boxer-eval::defboxer-primitive bu::disable-boxer-send-polling ()
+  (disable-boxer-send-polling)
+  boxer-eval::*novalue*)
+
+(defun disable-boxer-send-polling ()
+  (boxnet::disable-polling)
+  (boxnet::close-server)
+  (setq *boxer-send-server-status* nil))
+
+(boxer-eval::defboxer-primitive bu::enable-boxer-send-interrupts ()
+  (enable-boxer-send-interrupts)
+  boxer-eval::*novalue*)
+
+(defun enable-boxer-send-interrupts ()
+  (when (eq *boxer-send-server-status* :poll) (boxnet::disable-polling))
+  (boxnet::setup-server)
+  (boxnet::setup-connection-waiting-process 'net-interrupt-function)
+  (setq *boxer-send-server-status* :interrupt))
+
+(boxer-eval::defboxer-primitive bu::disable-boxer-send-interrupts ()
+  (disable-boxer-send-interrupts)
+  boxer-eval::*novalue*)
+
+(defun disable-boxer-send-interrupts ()
+  (boxnet::close-server)
+  (setq *boxer-send-server-status* nil))
+
+(boxer-eval::defboxer-primitive bu::receive-boxer-send ()
+  (receive-boxer-send))
+
+(defun receive-boxer-send ()
+  (let ((box (pop *net-boxes-to-be-inserted*)))
+    (when (null *net-boxes-to-be-inserted*) (status-line-undisplay 'handle-net-interrupt))
+    (or box boxer-eval::*novalue*)))
+
+;;;runs at interrupt time or at poll time, when we first read the message itself
+;;; from the network.
+(defun net-interrupt-function (stream)
+  (let ((box (safe-load-binary-box-from-stream-internal stream)))
+    (unless (null box)
+      (push box *net-boxes-to-be-inserted*)
+      (push 'handle-net-interrupt bw::*boxer-command-loop-event-handlers-queue*))))
+
+;;; we don't want errors (like EOF) to trash the Boxer.  Just give up for now.
+(defun safe-load-binary-box-from-stream-internal (stream)
+  (let ((result (#+Lucid lcl::ignore-errors #-Lucid progn
+			 (load-binary-box-from-stream-internal stream))))
+    (cond ((null result)
+	   ;; we would like to complain here but since we're running at an
+	   ;; interrupt time we can't do a boxer-editor-error.
+	   (restart-send-server)
+	   nil)
+	  (t result))))
+
+;;;Runs inside BOXER-COMMAND-LOOP.
+(defun handle-net-interrupt ()
+  (beep) (beep)
+  (status-line-display 'handle-net-interrupt
+		       "*** Incoming Box Send --- Type META-R to Receive ***")
+  (restart-send-server))
+
+(defun restart-send-server ()
+  (boxnet::setup-server)
+  (when (eq *boxer-send-server-status* :interrupt)
+    (boxnet::setup-connection-waiting-process 'net-interrupt-function)))
+
 
 ;;;;
 ;;;; FILE: new-borders.lisp

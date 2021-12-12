@@ -85,10 +85,6 @@
                  (:file "boxwin/mousedoc")
                  (:file "boxwin/boxapp-data")
 
-                 ;; Beginning of `BOXNET` module
-                 ;; operating-system and window-system and lisp-system dependent
-                 (:file "boxnet/boxnet")
-
                  ;; Beginning of `EDITOR` module
                  ;; "The Basic Structure of the Boxer Editor. "
                  (:file "editor/editor")
@@ -188,9 +184,7 @@
                  ;; Beginning of `FILEPRIMS` module
                  ;; 	    "File System Primitives"
                  (:file "primitives/file-prims")
-                 ;; Beginning of `NETPRIMS` module
-                 ;; "Network Primitives"
-                 (:file "primitives/net-prims")
+
                  ;; Beginning of `PROCESSPRIMS` module
                  ;; "Process Primitives"
                  (:file "primitives/process-prims")
