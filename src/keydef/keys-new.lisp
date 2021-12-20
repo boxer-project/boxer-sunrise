@@ -543,6 +543,8 @@
 
          (boxer-eval::defboxer-key bu::mouse-right-down-on-bottom-left com-mouse-box-types-pop-up)
          (boxer-eval::defboxer-key bu::ctrl-mouse-down-on-bottom-left com-mouse-box-types-pop-up)
+
+         (boxer-eval::defboxer-key bu::mouse-down-on-scroll-bar                com-mouse-scroll-box)
         )
         (t
          ;; "Using old school mouse bindings"
@@ -569,5 +571,7 @@
 
          (boxer-eval::defboxer-key bu::mouse-right-click-on-bottom-left com-mouse-box-types-pop-up)
          (boxer-eval::defboxer-key bu::ctrl-mouse-click-on-bottom-left com-mouse-box-types-pop-up)
+
+         (boxer-eval::defboxer-key bu::mouse-click-on-scroll-bar                com-mouse-scroll-box)
         ))
 )
