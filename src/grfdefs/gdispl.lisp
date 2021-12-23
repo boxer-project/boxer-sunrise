@@ -2348,7 +2348,8 @@ Modification History (most recent at the top)
 
 ;; the default copy functions only copy slots. For bitmaps, we need
 ;; a separate copy of the bitmap as well
-(defun copy-window-graphics-command-centered-bitmap (command)
+;; sgithens TODO fix these duplicate def warnings for sbcl
+#-sbcl(defun copy-window-graphics-command-centered-bitmap (command)
   (make-window-graphics-command-centered-bitmap
    (new-offscreen-copy (window-graphics-command-centered-bitmap-bitmap command))
    (window-graphics-command-centered-bitmap-x command)
@@ -2356,7 +2357,7 @@ Modification History (most recent at the top)
    (window-graphics-command-centered-bitmap-width command)
    (window-graphics-command-centered-bitmap-height command)))
 
-(defun copy-boxer-graphics-command-centered-bitmap (command)
+#-sbcl(defun copy-boxer-graphics-command-centered-bitmap (command)
   (make-boxer-graphics-command-centered-bitmap
    (new-offscreen-copy (boxer-graphics-command-centered-bitmap-bitmap command))
    (boxer-graphics-command-centered-bitmap-x command)

@@ -22,7 +22,8 @@
 
 (defun repaint-dev-overlay (&optional (process-state ""))
   "Debug information overlay on top of drawing canvas for things like framerate and zoom level"
-  (if *show-dev-overlay*
+  #+lispworks
+  (if *show-dev-overlay*  ;; factor out lispworks specific graphics-ports calls
     (drawing-on-window (*boxer-pane*)
       (let* ((code-font (make-boxer-font '("Courier New" 14)))
             (maxish-width (string-wid code-font "Repaint: 1000.00ms/fr"))

@@ -314,7 +314,7 @@
                (apply (car input) (cdr input)))
               ((not (null boxer::*boxer-system-hacker*))
                (error "Unknown object, ~A, in event queue" input))))
-      (capi:apply-in-pane-process *boxer-pane* 'update-toolbar-font-buttons)
+      #+lispworks(capi:apply-in-pane-process *boxer-pane* 'update-toolbar-font-buttons)
       )))
 
 (defmacro boxer-editor-bindings (recursive-p &body body)
