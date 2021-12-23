@@ -329,10 +329,3 @@ If started in the middle of a word, capitalizes the current letter."
   (mark-file-box-dirty (point-row))
   boxer-eval::*novalue*)
 
-
-;;; Network stuff
-
-(defboxer-command com-receive-boxer-send ()
-  "Inserts box received from a remote Boxer user"
-  (mark-file-box-dirty (point-row))
-  (receive-boxer-send))

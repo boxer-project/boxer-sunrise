@@ -3890,6 +3890,13 @@ Modification History (most recent at top)
            #-opengl(add-redisplay-clue (outermost-box) :clear-screen))))
   boxer-eval::*novalue*)
 
+;;; Network stuff
+
+(defboxer-command com-receive-boxer-send ()
+  "Inserts box received from a remote Boxer user"
+  (mark-file-box-dirty (point-row))
+  (receive-boxer-send))
+
 ;;;;
 ;;;; FILE: dataprims.lisp
 ;;;;
