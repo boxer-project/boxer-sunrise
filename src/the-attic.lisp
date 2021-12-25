@@ -5019,6 +5019,23 @@ if it is out of bounds
 ;;;; FILE: file-prims.lisp
 ;;;;
 
+
+;;; save now saves to a gensym'd name and then renames if no errors
+;;; occur.  Also mv's an existing file of the same name to a backup name
+#|
+(boxer-eval::defboxer-primitive bu::save ((bu::port-to box) (boxer-eval::dont-copy filename))
+  (catch 'cancel-boxer-file-dialog
+    (save-generic (box-or-port-target box) (box-text-string filename)))
+  boxer-eval::*novalue*)
+
+(boxer-eval::defboxer-primitive bu::really-save ((bu::port-to box)
+             (boxer-eval::dont-copy filename))
+  (catch 'cancel-boxer-file-dialog
+    (save-generic (box-or-port-target box) (box-text-string filename)
+                  :always-save? t))
+  boxer-eval::*novalue*)
+|#
+
 (boxer-eval::defboxer-primitive bu::mark-for-saving ()
   (cond ((not (null *uc-copyright-free*))
          (boxer-eval::primitive-signal-error :copyright
@@ -5029,6 +5046,40 @@ if it is out of bounds
          (when (box? boxer-eval::*lexical-variables-root*)
            (mark-file-box-dirty boxer-eval::*lexical-variables-root*))
          boxer-eval::*novalue*)))
+
+
+
+;;; diagnostic tool
+#+mcl
+(boxer-eval::defboxer-primitive bu::show-file-info ()
+  (let* ((pathname (boxer-open-file-dialog :prompt "Show File Information for:"))
+         (2nd-word nil)
+         (1st-word (with-open-file (s pathname :direction :input
+                                      :element-type '(unsigned-byte 8.))
+                     (read-file-word-from-stream s)
+                     (setq 2nd-word (read-file-word-from-stream s)))))
+    (make-box (list (list (namestring pathname))
+                    (list (format nil "Finder File Type is: ~S"
+                                  (ccl::mac-file-type pathname)))
+                    (list (format nil "File Creator is: ~S"
+                                  (ccl::mac-file-creator pathname)))
+                    (list (format nil "Boxer File type is: ~A" (file-type pathname)))
+                    (list
+                     (cond ((=& 1st-word bin-op-format-version)
+                            (format nil "1st word is BOFV (~X), 2nd is ~D"
+                                    1st-word 2nd-word))
+                           ((=& 1st-word *swapped-bin-op-format-version*)
+                            (format nil "1st word is swapped BOFV (~X), 2nd is ~D"
+                                    1st-word 2nd-word))
+                           (t (format nil "1st word is ~4X(~D), 2nd is ~4X(~D)"
+                                      1st-word 1st-word 2nd-word 2nd-word))))))))
+
+
+#+mcl
+(boxer-eval::defboxer-primitive bu::set-boxer-file-info ()
+  (let ((pathname (boxer-open-file-dialog :prompt "Set Boxer File Info for:")))
+    (ccl::set-mac-file-type pathname :boxr)
+    (ccl::set-mac-file-creator pathname :boxr)))
 
 ;;;;
 ;;;; FILE: ftp.lisp
