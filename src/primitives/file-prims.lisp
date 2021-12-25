@@ -462,7 +462,6 @@ Modification History (most recent at top)
         (cond ((box? box)
                ;(boxnet::read-box-postamble box) ;(Boxer Server stuff) no longer used
                (mark-box-as-file box pathname)
-               ; (record-file-box-place box) ; removed for UC "clean" version
                (mark-file-box-clean box)
                ;; keep track of the file properties so that we can check
                (record-boxer-file-properties pathname
@@ -471,17 +470,6 @@ Modification History (most recent at top)
                box)
               (t
                (boxer-eval::primitive-signal-error :file-error "Unable to READ " name))))))
-
-;; stubbified in preparation for "UC clean" reimplentation
-(defun record-file-box-place (box)
-  (declare (ignore box)) ; suppress warning
-  )
-
-;; stubbified in preparation for "UC clean" reimplentation
-(defun record-url-box-place (box)
-  (declare (ignore box)) ;suppress warning
-  )
-
 
 
 ;; Note: read-internal-1 does NOT do the bookeeping ops because some of
@@ -1523,41 +1511,6 @@ Modification History (most recent at top)
              (t (append dir2 dir1)))
        (if (null name1) name2 name1)
        (if (or (null type1) (eq type1 :unspecific)) type2 type1)))))
-
-
-
-
-
-#|
-(boxer-eval::defboxer-primitive bu::mail ((boxer-eval::dont-copy to) (boxer-eval::dont-copy text))
-  (let ((to-box-rows (get-box-rows to)))
-    (let ((recipient (evrow-text-string (car to-box-rows) to))
-    (subject (and (cdr to-box-rows)
-      (evrow-text-string (cadr to-box-rows) to)))
-    (message (box-text-string text))
-    (mail-in-file (make-temporary-filename "mail-in"))
-    (mail-out-file (make-temporary-filename "mail-out")))
-      (unwind-protect
-    (progn
-      (with-open-file (stream mail-in-file :direction :output
-            :if-exists :error)
-        (and subject (format stream "~~s ~a~%" subject))
-        (write-string message stream))
-      #+Lucid (lcl::run-unix-program "/usr/ucb/mail"
-             :arguments (list recipient)
-             :input mail-in-file
-             :output mail-out-file)
-      (with-open-file (stream mail-out-file :direction :input
-            :if-does-not-exist nil)
-        (if (or (null stream)
-          (zerop& (file-length stream)))
-      boxer-eval::*novalue*
-      (read-text-stream-internal stream))))
-  (when (probe-file mail-in-file)
-    (delete-file mail-in-file))
-  (when (probe-file mail-out-file)
-    (delete-file mail-out-file))))))
-|#
 
 
 ;;; This is just a crock, but at least it will work on the Suns as long

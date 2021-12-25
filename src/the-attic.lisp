@@ -5036,6 +5036,16 @@ if it is out of bounds
   boxer-eval::*novalue*)
 |#
 
+;; stubbified in preparation for "UC clean" reimplentation
+(defun record-file-box-place (box)
+  (declare (ignore box)) ; suppress warning
+  )
+
+;; stubbified in preparation for "UC clean" reimplentation
+(defun record-url-box-place (box)
+  (declare (ignore box)) ;suppress warning
+  )
+
 (boxer-eval::defboxer-primitive bu::mark-for-saving ()
   (cond ((not (null *uc-copyright-free*))
          (boxer-eval::primitive-signal-error :copyright
@@ -5046,6 +5056,37 @@ if it is out of bounds
          (when (box? boxer-eval::*lexical-variables-root*)
            (mark-file-box-dirty boxer-eval::*lexical-variables-root*))
          boxer-eval::*novalue*)))
+
+#|
+(boxer-eval::defboxer-primitive bu::mail ((boxer-eval::dont-copy to) (boxer-eval::dont-copy text))
+  (let ((to-box-rows (get-box-rows to)))
+    (let ((recipient (evrow-text-string (car to-box-rows) to))
+    (subject (and (cdr to-box-rows)
+      (evrow-text-string (cadr to-box-rows) to)))
+    (message (box-text-string text))
+    (mail-in-file (make-temporary-filename "mail-in"))
+    (mail-out-file (make-temporary-filename "mail-out")))
+      (unwind-protect
+    (progn
+      (with-open-file (stream mail-in-file :direction :output
+            :if-exists :error)
+        (and subject (format stream "~~s ~a~%" subject))
+        (write-string message stream))
+      #+Lucid (lcl::run-unix-program "/usr/ucb/mail"
+             :arguments (list recipient)
+             :input mail-in-file
+             :output mail-out-file)
+      (with-open-file (stream mail-out-file :direction :input
+            :if-does-not-exist nil)
+        (if (or (null stream)
+          (zerop& (file-length stream)))
+      boxer-eval::*novalue*
+      (read-text-stream-internal stream))))
+  (when (probe-file mail-in-file)
+    (delete-file mail-in-file))
+  (when (probe-file mail-out-file)
+    (delete-file mail-out-file))))))
+|#
 
 
 

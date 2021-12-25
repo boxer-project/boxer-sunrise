@@ -522,7 +522,6 @@ Modification History (most recent at top)
               (unless (null bm) (box::deallocate-bitmap bm))))
           (removeprop box :cached-boxtop)))
       (boxer::modified box)
-      ;; removed boxer::record-url-box-place
       (boxer::mark-file-box-clean box))))
 
 ;;; Basic required methods for all URL's
