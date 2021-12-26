@@ -110,6 +110,6 @@
 
 ;; should'nt transform the points because translation is done @ hardware level in OpenGL
 (defun draw-poly (alu points)
+  (declare (ignore alu))
   (unless (null points)
-    (%draw-poly (boxer-points->window-system-points points (x x) (y y))
-		alu %drawing-window)))
+    (%draw-poly (boxer-points->window-system-points points (x x) (y y)))))

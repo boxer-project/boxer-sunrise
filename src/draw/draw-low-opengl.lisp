@@ -521,8 +521,7 @@
          (dpb bluebyte (byte 8 0)   ; move blue to low byte
               returnpixel))))
 
-(defun %draw-poly (points alu array)
-  (declare (ignore alu array))
+(defun %draw-poly (points)
   (bw::ogl-draw-poly points))
 
 ;; CLX like version
