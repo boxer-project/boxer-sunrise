@@ -95,8 +95,7 @@
 ;;; used by sprite graphics and should NOT be used in the redisplay
 ;;; without careful consideration
 
-(defun draw-point (alu x y)
-  (declare (ignore alu))
+(defun draw-point (x y)
   (%draw-point x y))
 
 (defun draw-arc (alu x y wid hei start-angle sweep-angle)
