@@ -163,7 +163,7 @@
 ;; row, the common reference point will be the baseline instead of the top
 ;; edge
 (defun draw-cha (alu char x y)
-  (%draw-cha alu x y char))
+  (%draw-cha x y char))
 
 (defun draw-string (alu font-no string region-x region-y &optional window)
   (declare (ignore window))

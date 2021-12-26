@@ -363,8 +363,7 @@
 ;;; Font is managed by set-font-info.  Note that anything else that might change
 ;;; the window font (ie, draw-string) has to change it back for this to work.
 ;;; 5/11/98 draw to baseline instead of top left
-(defun %draw-cha (alu x y char)
-  (declare (ignore alu))
+(defun %draw-cha (x y char)
   (bw::ogl-draw-char char x y))
 
 (defun %draw-line (x0 y0 x1 y1 alu end-point? window)
