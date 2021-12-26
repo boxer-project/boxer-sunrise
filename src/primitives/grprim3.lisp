@@ -385,7 +385,7 @@ Modification History (most recent at top)
                      ;; the original
                      (with-pen-color ((or (graphics-sheet-background graphics-sheet)
                                           *background-color*))
-                       (draw-rectangle alu-seta width height 0 0))
+                       (draw-rectangle width height 0 0))
                      (unless (or (>=& orig-x %drawing-width)
                                  (>=& orig-y %drawing-height))
                        (bitblt-to-screen alu-seta
@@ -453,7 +453,7 @@ Modification History (most recent at top)
           ;; start with the "background" color
           (cond ((null bitmap) ;; note that bitmap refers to a pre-existing bit-array
                  (with-pen-color ((or (graphics-sheet-background graphics-sheet) *background-color*))
-                   (draw-rectangle alu-seta wid hei 0 0)))
+                   (draw-rectangle wid hei 0 0)))
                 (t (bitblt-to-screen alu-seta wid hei bitmap 0 0 0 0)))
           ;; now play the graphics list into the same area
           (with-graphics-vars-bound-internal graphics-sheet
@@ -668,7 +668,7 @@ Modification History (most recent at top)
 	      (drawing-on-bitmap (new)
                  (with-pen-color ((or (graphics-sheet-background gs)
 				      *background-color*))
-		   (draw-rectangle alu-seta wid hei 0 0))
+		   (draw-rectangle wid hei 0 0))
 		 (setq bit-array new)
 		 (setf (graphics-sheet-bit-array gs) new))))
 	  ;; now we draw a pixel in both the backing store and on the screen

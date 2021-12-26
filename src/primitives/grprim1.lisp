@@ -158,7 +158,7 @@
                     #-opengl
         (drawing-on-bitmap ((graphics-sheet-bit-array gs))
            (with-pen-color (pix)
-       (draw-rectangle alu-seta
+       (draw-rectangle
            (graphics-sheet-draw-wid gs)
            (graphics-sheet-draw-hei gs) 0 0)))
                     #+opengl

@@ -1335,12 +1335,12 @@
          (>= y (+ y-coord (floor (/ *box-ellipsis-wid* 2.))))
          (<= wid 0)
          (<= hei 0)))
-    (draw-rectangle alu-seta *box-ellipsis-thickness* hei x y)
-    (draw-rectangle alu-seta wid *box-ellipsis-thickness*
+    (draw-rectangle *box-ellipsis-thickness* hei x y)
+    (draw-rectangle wid *box-ellipsis-thickness*
                     (+ x *box-ellipsis-thickness*) y)
-    (draw-rectangle alu-seta *box-ellipsis-thickness* hei
+    (draw-rectangle *box-ellipsis-thickness* hei
                     (+ x wid *box-ellipsis-thickness*) y)
-    (draw-rectangle alu-seta wid *box-ellipsis-thickness*
+    (draw-rectangle wid *box-ellipsis-thickness*
                     (+ x *box-ellipsis-thickness*)
                     (+ y hei (- *box-ellipsis-thickness*)))))
 
@@ -1360,13 +1360,13 @@
          (>= y (+ y-coord (floor (/ *box-ellipsis-wid* 2.))))
          (<= wid 0)
          (<= hei 0)))
-    (draw-rectangle alu-seta *box-ellipsis-thickness* *box-ellipsis-thickness*
+    (draw-rectangle *box-ellipsis-thickness* *box-ellipsis-thickness*
                     x y)
-    (draw-rectangle alu-seta *box-ellipsis-thickness* *box-ellipsis-thickness*
+    (draw-rectangle *box-ellipsis-thickness* *box-ellipsis-thickness*
                     (+ x wid *box-ellipsis-thickness*) y)
-    (draw-rectangle alu-seta *box-ellipsis-thickness* *box-ellipsis-thickness*
+    (draw-rectangle *box-ellipsis-thickness* *box-ellipsis-thickness*
                     x (+ y hei (- *box-ellipsis-thickness*)))
-    (draw-rectangle alu-seta *box-ellipsis-thickness* *box-ellipsis-thickness*
+    (draw-rectangle *box-ellipsis-thickness* *box-ellipsis-thickness*
                     (+ x wid *box-ellipsis-thickness*)
                     (+ y hei (- *box-ellipsis-thickness*)))))
 

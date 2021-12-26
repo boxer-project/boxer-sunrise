@@ -796,7 +796,7 @@
     (with-drawing-inside-region (x-offset y-offset wid hei)
       (when (closet-row? actual-obj (superior-box actual-obj))
         ;; this should get the inner width from the superior box
-        (with-pen-color (*closet-color*) (draw-rectangle alu-seta wid hei 0 0)))
+        (with-pen-color (*closet-color*) (draw-rectangle wid hei 0 0)))
       (repaint-inferiors-pass-2-sr self)
       (got-repainted self))))
 
@@ -853,7 +853,7 @@
   (with-pen-color ((bw::make-ogl-color (+ .3 (random .7))
                                        (random 1.0)
                                        (+ .3 (random .7)) .2))
-    (draw-rectangle alu-seta w h x y)))
+    (draw-rectangle w h x y)))
 
 
 
@@ -876,7 +876,7 @@
                                      *filegray*
                                      (gray-self self))))
                          (with-pen-color (*gray*)
-                           (draw-rectangle alu-seta inside-wid inside-hei il it)))))
+                           (draw-rectangle inside-wid inside-hei il it)))))
 
 
 
@@ -945,7 +945,7 @@
                                                                                       inner-width inner-height))
                                                            ((not (null (graphics-sheet-background graphics-sheet)))
                                                             (with-pen-color ((graphics-sheet-background graphics-sheet))
-                                                              (draw-rectangle alu-seta inner-width inner-height 0 0))))
+                                                              (draw-rectangle inner-width inner-height 0 0))))
                                                          (let ((ba (graphics-sheet-bit-array graphics-sheet)))
                                                            (unless (null ba)
                                                              (#-X BITBLT-TO-SCREEN #+(and SUN X) bitblt-pixrect-to-screen

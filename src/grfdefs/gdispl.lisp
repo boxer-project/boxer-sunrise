@@ -2803,14 +2803,14 @@ Modification History (most recent at the top)
              (+ x (*& 2 *folder-graphic-tab-delta*) *folder-graphic-tab-width*)
              (+ y *folder-graphic-tab-height*))
   ;; the main rectangle (l,t,r,b)
-  (draw-rectangle alu-seta 1 *folder-graphic-height*
+  (draw-rectangle 1 *folder-graphic-height*
                   x (+ y *folder-graphic-tab-height*))
-  (draw-rectangle alu-seta *folder-graphic-width* 1
+  (draw-rectangle *folder-graphic-width* 1
                   x (+ y *folder-graphic-tab-height*))
-  (draw-rectangle alu-seta 1 *folder-graphic-height*
+  (draw-rectangle 1 *folder-graphic-height*
                   (+ x *folder-graphic-width* -1)
                   (+ y *folder-graphic-tab-height*))
-  (draw-rectangle alu-seta *folder-graphic-width* 1
+  (draw-rectangle *folder-graphic-width* 1
                   x (+ y *folder-graphic-tab-height* *folder-graphic-height*)))
 
 ;; Note that the clipping, and origin has already been setup inside the redisplay
@@ -2828,10 +2828,10 @@ Modification History (most recent at the top)
 
 ;; text is always framed (for now)
 (defun draw-text-boxtop (text x y wid hei)
-  (draw-rectangle alu-seta 1 hei x y) ; left
-  (draw-rectangle alu-seta wid 1 x y) ; top
-  (draw-rectangle alu-seta 1 hei (+ x wid -1) y) ; right
-  (draw-rectangle alu-seta wid 1 x (+ y hei -2)) ; bottom ( -2 ?)
+  (draw-rectangle 1 hei x y) ; left
+  (draw-rectangle wid 1 x y) ; top
+  (draw-rectangle 1 hei (+ x wid -1) y) ; right
+  (draw-rectangle wid 1 x (+ y hei -2)) ; bottom ( -2 ?)
   (draw-string alu-seta *boxtop-text-font* text (+ x 2) (+ y 2)))
 
 (defun draw-folder-boxtop (text x y)
@@ -2858,16 +2858,16 @@ Modification History (most recent at the top)
            )
       ((not (null mt))
        ;; no icon, so try and do somthing reasonable from the MIME info
-       (draw-rectangle alu-seta 32 32 (+ x horiz-fudge) y))
+       (draw-rectangle 32 32 (+ x horiz-fudge) y))
       (t ; no icon, no mime info
-         (draw-rectangle alu-seta 32 32 (+ x horiz-fudge) y)))
+         (draw-rectangle 32 32 (+ x horiz-fudge) y)))
     ;; and now, the name
     (draw-string alu-seta *boxtop-text-font* name x (+ y 32))))
 
 (defun draw-graphics-boxtop-internal (boxtop x y wid hei)
   (unless (null (graphics-sheet-background boxtop))
     (with-pen-color ((graphics-sheet-background boxtop))
-      (draw-rectangle alu-seta wid hei x y)))
+      (draw-rectangle wid hei x y)))
   (unless (null (graphics-sheet-bit-array boxtop))
     (#-x bitblt-to-screen #+(and sun x) bitblt-pixrect-to-screen
       alu-seta wid hei (graphics-sheet-bit-array boxtop) 0 0 x y))
@@ -2882,17 +2882,17 @@ Modification History (most recent at the top)
          ;; just do the graphics
          (draw-graphics-boxtop-internal boxtop x y wid hei))
     (t ; there is a frame so handle that first (l,t,r,b)
-       (draw-rectangle alu-seta 1 hei x y)
-       (draw-rectangle alu-seta wid 1 x y)
-       (draw-rectangle alu-seta 1 hei (+ x wid -1) y)
-       (draw-rectangle alu-seta wid 1 x (+ y hei -1))
+       (draw-rectangle 1 hei x y)
+       (draw-rectangle wid 1 x y)
+       (draw-rectangle 1 hei (+ x wid -1) y)
+       (draw-rectangle wid 1 x (+ y hei -1))
        ;; then move the origin over before graphics
        (with-drawing-inside-region (1 1 (- wid 2) (- hei 2))
          (draw-graphics-boxtop-internal boxtop x y (- wid 2) (- hei 2))))))
 
 (defun draw-file-boxtop (boxtop x y wid)
   (let ((horiz-offset (floor (- wid 32) 2)))
-    (draw-rectangle alu-seta 32 32 (+ x horiz-offset) y)
+    (draw-rectangle 32 32 (+ x horiz-offset) y)
     ;; now, the name
     (draw-string alu-seta *boxtop-text-font* boxtop x (+ y 32))))
 

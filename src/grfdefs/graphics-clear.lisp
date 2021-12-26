@@ -50,7 +50,7 @@
                                        ((color? bg)
                                         ;; looks like a color so draw a rectangle of that color
                                         (with-pen-color (bg)
-                                          (draw-rectangle alu-seta gswid gshei 0 0)))
+                                          (draw-rectangle gswid gshei 0 0)))
                                        ;; check for tiling pattern here
                                        )
                                      ;; now, if only one of the drawing sufaces has been cleared,

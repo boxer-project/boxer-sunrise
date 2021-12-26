@@ -140,8 +140,7 @@
 (defun draw-line (x0 y0 x1 y1)
   (%draw-line x0 y0 x1 y1))
 
-(defun draw-rectangle (alu w h x y)
-  (declare (ignore alu))
+(defun draw-rectangle (w h x y)
   (%draw-rectangle w h x y))
 
 (defun erase-rectangle (w h x y)

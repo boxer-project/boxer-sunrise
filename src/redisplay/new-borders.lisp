@@ -372,7 +372,7 @@
         (top-y (+ box-top border-thickness)))
     (unless (null cr)
       (with-pen-color (*closet-color*)
-        (draw-rectangle alu-seta (- inner-right name-end-x) (- inner-top top-y 1)
+        (draw-rectangle (- inner-right name-end-x) (- inner-top top-y 1)
                         name-end-x top-y)))))
 
 (defun draw-borders-name (name name-x name-mid-y name-top-y)
@@ -731,7 +731,7 @@
 
 (defun default-gui-fun (x y wid hei)
   (with-pen-color (*border-gui-color*)
-    (draw-rectangle alu-seta wid hei x y)))
+    (draw-rectangle wid hei x y)))
 
 
 
@@ -757,7 +757,7 @@
                           (inex (- endx 2)) (iney (- endy 2)))
                       (multiline2 insx insy inex insy inex iney insx iney insx insy)))
           (data-box (outer-box)
-                    (draw-rectangle alu-seta (- wid 7) (- hei 7)(+ startx 2) (+ starty 2)))
+                    (draw-rectangle (- wid 7) (- hei 7)(+ startx 2) (+ starty 2)))
           (port-box (outer-box)
                     (draw-line startx starty endx endy)
                     (draw-line startx endy endx starty)))))))

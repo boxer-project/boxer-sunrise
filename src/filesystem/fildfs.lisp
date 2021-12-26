@@ -819,7 +819,7 @@ Modification History (most recent at the top)
                                                    #+opengl
                                                    (with-pen-color (bw::*blinker-color*)
                                                      (box::with-blending-on
-                                                      (draw-rectangle alu-seta
+                                                      (draw-rectangle
                                                                       ,screen-box-wid ,screen-box-hei
                                                                       ,screen-box-x ,screen-box-y)))
                                                    #-opengl

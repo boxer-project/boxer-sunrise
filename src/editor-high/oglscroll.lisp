@@ -646,7 +646,7 @@ Modification History (most recent at top)
     (opengl::gl-enable opengl::*gl-line-smooth*)
   ))
   (with-pen-color (*scroll-elevator-color*)
-    (draw-rectangle alu-seta *scroll-elevator-thickness* (round (* height size))
+    (draw-rectangle *scroll-elevator-thickness* (round (* height size))
                     (+ x *scroll-info-offset*) (+ y (round (* pos height))))))
 
 ;; and up arrow and a down arrow, highlight describes which arrow to to hightlight (when the mouse is on it)
@@ -659,7 +659,7 @@ Modification History (most recent at top)
 ;; pos is also expressed as a rational 0 <= pos <= 1
 (defun draw-horizontal-elevator (x y width size pos)
   (with-pen-color (*scroll-elevator-color*)
-    (draw-rectangle alu-seta (round (* width size)) *scroll-elevator-thickness*
+    (draw-rectangle (round (* width size)) *scroll-elevator-thickness*
                     (+ x (round (* pos width))) (+ y *scroll-info-offset*))))
 
 (defun draw-horizontal-scroll-buttons (x y) ;; sgithen 2021-03-08 Removing these buttons for now.

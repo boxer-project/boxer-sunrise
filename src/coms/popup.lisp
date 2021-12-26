@@ -192,14 +192,14 @@ Modification History (most recent at top)
       (dolist (item (slot-value menu 'items))
         (setq acc-y (+ acc-y (draw-item item x acc-y)))))
     ;; draw the top & left borders
-    (draw-rectangle alu-seta (- mwid 2) 1 x y)
-    (draw-rectangle alu-seta 1 (- mhei 2) x y)
+    (draw-rectangle (- mwid 2) 1 x y)
+    (draw-rectangle 1 (- mhei 2) x y)
     ;; and the bottom & right stubs
-    (draw-rectangle alu-seta 4 1 x (+ y (- mhei 2)))
-    (draw-rectangle alu-seta 1 4 (+ x (- mwid 2)) y)
+    (draw-rectangle 4 1 x (+ y (- mhei 2)))
+    (draw-rectangle 1 4 (+ x (- mwid 2)) y)
     ;; draw the shadow rects
-    (draw-rectangle alu-seta (- mwid 4) 2 (+ x 4) (+ y (- mhei 2)))
-    (draw-rectangle alu-seta 2 (- mhei 4) (+ x (- mwid 2)) (+ y 4))))
+    (draw-rectangle (- mwid 4) 2 (+ x 4) (+ y (- mhei 2)))
+    (draw-rectangle 2 (- mhei 4) (+ x (- mwid 2)) (+ y 4))))
 
 ;; the check for valid local coords should have already been made
 (defmethod track-item ((menu popup-menu) local-y)
@@ -263,7 +263,7 @@ Modification History (most recent at top)
                                (draw-menu menu real-x real-y)
                                (with-pen-color (bw::*blinker-color*)
                                  (with-blending-on
-                                   (draw-rectangle alu-seta (- mwid 3) ih
+                                   (draw-rectangle (- mwid 3) ih
                                                    (1+ real-x) (+ real-y iy))))
                                (force-graphics-output))
                               ((eq ti current-item)) ; no change, do nothing
@@ -278,7 +278,7 @@ Modification History (most recent at top)
                                ;; highlight selected item...
                                (with-pen-color (bw::*blinker-color*)
                                  (with-blending-on
-                                   (draw-rectangle alu-seta (- mwid 3) ih
+                                   (draw-rectangle (- mwid 3) ih
                                                    (1+ real-x) (+ real-y iy))))
                                (force-graphics-output)
                                ;; set vars
@@ -297,7 +297,7 @@ Modification History (most recent at top)
                     (force-graphics-output) (snooze .05)
                     (with-pen-color (bw::*blinker-color*)
                       (with-blending-on
-                        (draw-rectangle alu-seta (- mwid 3) current-height
+                        (draw-rectangle (- mwid 3) current-height
                                         (1+ real-x) (+ real-y current-y))))
                     (force-graphics-output) (snooze .05)))))))
         ;; funcall the action (note we are OUTSIDE of the drawing-on-window
@@ -332,15 +332,15 @@ Modification History (most recent at top)
          (full-wid (+ swid full-pad))
          (full-hei (+ shei full-pad)))
     ;; frame (left, top, right and bottom)
-    (draw-rectangle alu-seta *popup-doc-border-width* full-hei x y)
-    (draw-rectangle alu-seta full-wid *popup-doc-border-width* x y)
-    (draw-rectangle alu-seta *popup-doc-border-width* full-hei
+    (draw-rectangle *popup-doc-border-width* full-hei x y)
+    (draw-rectangle full-wid *popup-doc-border-width* x y)
+    (draw-rectangle *popup-doc-border-width* full-hei
                     (- (+ x full-wid) *popup-doc-border-width*) y)
-    (draw-rectangle alu-seta full-wid *popup-doc-border-width*
+    (draw-rectangle full-wid *popup-doc-border-width*
                     x (- (+ y full-hei) *popup-doc-border-width*))
     ;; background
     (with-pen-color (*popup-doc-color*)
-      (draw-rectangle alu-seta
+      (draw-rectangle
                       (+ swid (* *popup-doc-padding* 2))
                       (+ shei (* *popup-doc-padding* 2))
                       (+ x *popup-doc-border-width*)
