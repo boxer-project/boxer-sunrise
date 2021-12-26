@@ -50,7 +50,6 @@ Modification History (most recent at top)
 
 (in-package :boxer)
 
-(defun boxer::valid-boxer-license? () t)
 
 (defvar *boxer-version* "3.4.7")
 
@@ -71,23 +70,15 @@ Modification History (most recent at top)
 (defvar *resources-dir* nil
   "This is the directory on disc where we can expect to find things like the Fonts and Images directories.")
 
-;;
-;; this could be a lot faster, we should be able to do a compile time
-;; check to see if TYPE is a class and then put in the appropriate code instead
-;; of the OR which is there now.
-(defmacro fast-iwmc-class-p (thing)
-  (warn "You need to define a version of FAST-IWMC-CLASS-P for ~A of ~A"
-        (lisp-implementation-version) (lisp-implementation-type))
-  `(typep ,thing 'structure))
-
-(defvar *include-compiled-type-checking* t)
-
 ;; now does the compile time check for PCL-ness
 ;; sgithens - 2019-11-17 This is currently used once in this file,
 ;; 4 times in grobjs.lisp, many times in optimize-classes.lisp,
 ;; and once in simple-stream.lisp. I'm not sure it will still be necessary
 ;; for a modern SBCL CLOS type implementation. Not quite ready to delete it
 ;; though...
+;;
+; (defvar *include-compiled-type-checking* t)
+;;
 ;; (defmacro deftype-checking-macros (type type-string)
 ;;   (let ((predicate-name (intern (symbol-format nil "~a?" type)))
 ;; 	(check-arg-name (intern (symbol-format nil "CHECK-~a-ARG" type)))
@@ -169,30 +160,17 @@ Modification History (most recent at top)
 
 (DEFVAR *POINT* NIL)
 
-(DEFVAR *MARK* NIL)
-
-(DEFVAR *CURSOR-BLINKER-WID* 3.)
-
-(DEFVAR *CURSOR-BLINKER-MIN-HEI* 12.)
-
-(DEFVAR *MINIMUM-CURSOR-HEIGHT* 12.
-  "The minimum height to draw the cursor so that it doesn't dissapear.")
-
 (DEFVAR *MINIMUM-BOX-WID* 35. ; 25. ; changed to allow room for type label
   "The minimum width any box will be drawn on the screen.")
 
 ;;; +++ This depends on the height of the default font.  An alternative would be to change
 ;;; box-borders-minimum-size or whatever to look at the font, but I wasn't sure of that.
-(DEFVAR *MINIMUM-BOX-HEI* #+MCL 30. #-MCL 25
+(DEFVAR *MINIMUM-BOX-HEI* 25
   "The minimum height any box will be drawn on the screen.")
-
-(DEFVAR *MULTIPLICATION* 1)
 
 (DEFVAR *COM-MAKE-PORT-CURRENT-PORT* NIL
   "This variable is used to store newly created ports until they are inserted into the
    World. ")
-
-(DEFVAR *BOXER-READTABLE* (COPY-READTABLE nil))
 
 (defvar *print-boxer-structure* nil
   "Controls how verbose to print boxer structures (like *print-array*)")
@@ -200,10 +178,6 @@ Modification History (most recent at top)
 (DEFVAR *INITIAL-BOX* NIL
   "The initial box the editor starts with, this box cannot be deleted
    killed etc.")
-
-(DEFVAR *BOXER-FUNCTIONS* NIL
-  "This variable contains a list of symbols for all the
-   lisp functions imported to Boxer.")
 
 (DEFVAR *EDITOR-NUMERIC-ARGUMENT* NIL
   "Stores the value of whatever numeric argument for an editor function has accumalated. ")

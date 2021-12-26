@@ -1556,12 +1556,40 @@ Modification History (most recent at top)
 ;;;; FILE: boxdef.lisp
 ;;;;
 
+(defun boxer::valid-boxer-license? () t)
+
+;;
+;; this could be a lot faster, we should be able to do a compile time
+;; check to see if TYPE is a class and then put in the appropriate code instead
+;; of the OR which is there now.
+(defmacro fast-iwmc-class-p (thing)
+  (warn "You need to define a version of FAST-IWMC-CLASS-P for ~A of ~A"
+        (lisp-implementation-version) (lisp-implementation-type))
+  `(typep ,thing 'structure))
+
 (DEFVAR *COMPLETE-REDISPLAY-IN-PROGRESS?* NIL
   "Binding this variable to T around a call to redisplay will 'force'
    the redisplay. That is it will cause a complete redisplay of the
    screen. FORCE-REDISPLAY-WINDOW uses this.")
 
 (defvar *uc-copyright-free* t)
+
+(DEFVAR *MARK* NIL)
+
+(DEFVAR *CURSOR-BLINKER-WID* 3.)
+
+(DEFVAR *CURSOR-BLINKER-MIN-HEI* 12.)
+
+(DEFVAR *MINIMUM-CURSOR-HEIGHT* 12.
+  "The minimum height to draw the cursor so that it doesn't dissapear.")
+
+(DEFVAR *MULTIPLICATION* 1)
+
+(DEFVAR *BOXER-READTABLE* (COPY-READTABLE nil))
+
+(DEFVAR *BOXER-FUNCTIONS* NIL
+  "This variable contains a list of symbols for all the
+   lisp functions imported to Boxer.")
 
 ;; sgithens 2021-05-07 Oddly it doesn't look like these three are used anymore...
 
