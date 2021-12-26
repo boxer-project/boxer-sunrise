@@ -2870,7 +2870,7 @@ Modification History (most recent at the top)
       (draw-rectangle wid hei x y)))
   (unless (null (graphics-sheet-bit-array boxtop))
     (#-x bitblt-to-screen #+(and sun x) bitblt-pixrect-to-screen
-      alu-seta wid hei (graphics-sheet-bit-array boxtop) 0 0 x y))
+      wid hei (graphics-sheet-bit-array boxtop) 0 0 x y))
   ;; then handle any sprite graphics...
   (unless (null (graphics-sheet-graphics-list boxtop))
     (with-graphics-vars-bound-internal boxtop

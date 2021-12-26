@@ -949,7 +949,6 @@
                                                          (let ((ba (graphics-sheet-bit-array graphics-sheet)))
                                                            (unless (null ba)
                                                              (#-X BITBLT-TO-SCREEN #+(and SUN X) bitblt-pixrect-to-screen
-                                                               ALU-SETA
                                                                (min inner-width  (offscreen-bitmap-width  ba))
                                                                (min inner-height (offscreen-bitmap-height ba))
                                                                ba 0 0 0 0)))

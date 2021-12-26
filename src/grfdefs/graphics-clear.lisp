@@ -61,7 +61,7 @@
                                        (playback-graphics-list-internal graphics-list))
                                      (when (and (not bitmap-p) graphics-list-p bit-array)
                                        ;; regenerate the background
-                                       (bitblt-to-screen alu-seta gswid gshei bit-array
+                                       (bitblt-to-screen gswid gshei bit-array
                                                          0 0 0 0)))))))))
 
 

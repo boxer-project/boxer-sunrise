@@ -800,28 +800,28 @@ parameters of the graphics box are bound. "
                     (mode (graphics-sheet-draw-mode gs))
                     (sub (save-under-bitmap save-under)))
                (flet ((restore-corner-wrap (lefx rigx topy boty)
-                        (bitblt-to-screen alu-seta lefx topy sub 0 0 0 0)
-                        (bitblt-to-screen alu-seta (-& %drawing-width rigx) topy
+                        (bitblt-to-screen lefx topy sub 0 0 0 0)
+                        (bitblt-to-screen (-& %drawing-width rigx) topy
                                             sub lefx 0 rigx 0)
-                        (bitblt-to-screen alu-seta lefx (-& %drawing-height boty)
+                        (bitblt-to-screen lefx (-& %drawing-height boty)
                                             sub 0 topy 0 boty)
-                        (bitblt-to-screen alu-seta (-& %drawing-width rigx)
+                        (bitblt-to-screen (-& %drawing-width rigx)
                                             (-& %drawing-height boty) sub
                                             lefx topy rigx boty))
                       (restore-horiz-wrap (lefx rigx)
                         (let* ((cminy (max& miny 0))
                                (cmaxy (min& maxy %drawing-height))
                                (hei (-& cmaxy cminy)))
-                          (bitblt-to-screen alu-seta lefx hei sub 0 0 0 cminy)
-                          (bitblt-to-screen alu-seta (-& %drawing-width rigx) hei
+                          (bitblt-to-screen lefx hei sub 0 0 0 cminy)
+                          (bitblt-to-screen (-& %drawing-width rigx) hei
                                               sub lefx 0 rigx cminy)))
                       (restore-vert-wrap (topy boty)
                         (let* ((cminx (max& minx 0))
                                ;; clipped vars...
                                (cmaxx (min& maxx %drawing-width))
                                (wid (-& cmaxx cminx)))
-                          (bitblt-to-screen alu-seta wid topy sub 0 0 cminx 0)
-                          (bitblt-to-screen alu-seta wid (-& %drawing-height boty)
+                          (bitblt-to-screen wid topy sub 0 0 cminx 0)
+                          (bitblt-to-screen wid (-& %drawing-height boty)
                                               sub 0 topy cminx boty))))
                  ;; should we check for :wrap mode ?
                  ;; what if the user moves to the edge and then changes modes ?
@@ -844,7 +844,7 @@ parameters of the graphics box are bound. "
                                  (cmaxy (min& maxy %drawing-height))
                                  (cwid (-& cmaxx cminx)) (chei (-& cmaxy cminy)))
                             (unless (or (zerop& cwid) (zerop& chei))
-                              (bitblt-to-screen alu-seta cwid chei sub
+                              (bitblt-to-screen cwid chei sub
                                                 0 0 cminx cminy)))))
                        ((minusp& miny)
                         ;; top wrap, bind useful vars and check for corners
@@ -891,7 +891,7 @@ parameters of the graphics box are bound. "
                                                %drawing-width)
                                          (max& minx 0)))
                        (t ;; vanilla case
-                        (bitblt-to-screen alu-seta
+                        (bitblt-to-screen
                                             (-& (min& maxx %drawing-width)
                                                 (max& minx 0))
                                             (-& (min& maxy %drawing-height)

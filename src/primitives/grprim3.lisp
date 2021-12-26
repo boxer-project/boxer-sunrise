@@ -388,7 +388,7 @@ Modification History (most recent at top)
                        (draw-rectangle width height 0 0))
                      (unless (or (>=& orig-x %drawing-width)
                                  (>=& orig-y %drawing-height))
-                       (bitblt-to-screen alu-seta
+                       (bitblt-to-screen
                                          (if (minusp& orig-x)
                                              (max& 0
                                                    (min& %drawing-width
@@ -454,7 +454,7 @@ Modification History (most recent at top)
           (cond ((null bitmap) ;; note that bitmap refers to a pre-existing bit-array
                  (with-pen-color ((or (graphics-sheet-background graphics-sheet) *background-color*))
                    (draw-rectangle wid hei 0 0)))
-                (t (bitblt-to-screen alu-seta wid hei bitmap 0 0 0 0)))
+                (t (bitblt-to-screen wid hei bitmap 0 0 0 0)))
           ;; now play the graphics list into the same area
           (with-graphics-vars-bound-internal graphics-sheet
             (playback-graphics-list-internal display-list)))
