@@ -1918,12 +1918,10 @@ Modification History (most recent at the top)
         (wx (fixr (- x (/ width 2))) (fixr (- x (/ width 2))))
         (wy (fixr y) (+& wy height)))
     ((not (position #\newline s))
-    (%draw-string *graphics-state-current-alu*
-                  *graphics-state-current-font-no* trimmed-string
+    (%draw-string *graphics-state-current-font-no* trimmed-string
                   (ensure-legal-window-coordinate (scale-x wx))
                   (ensure-legal-window-coordinate (scale-y wy))))
-    (%draw-string *graphics-state-current-alu*
-                  *graphics-state-current-font-no* trimmed-string
+    (%draw-string *graphics-state-current-font-no* trimmed-string
                   (ensure-legal-window-coordinate (scale-x wx))
                   (ensure-legal-window-coordinate (scale-y wy))))
   :SPRITE-COMMAND
@@ -1974,8 +1972,7 @@ Modification History (most recent at the top)
   :COMMAND-BODY
   (let ((current-y y) (s string))
     (loop
-      (%draw-string *graphics-state-current-alu*
-                    *graphics-state-current-font-no*
+      (%draw-string *graphics-state-current-font-no*
                     (subseq s 0 (position #\newline s))
                     (ensure-legal-window-coordinate (scale-x(fixr x)))
                     (ensure-legal-window-coordinate (scale-y(fixr current-y))))
@@ -2036,8 +2033,7 @@ Modification History (most recent at the top)
     (loop
       (setq trimmed-string (subseq s 0 (position #\newline s))
             width (string-wid *graphics-state-current-font-no* trimmed-string))
-      (%draw-string *graphics-state-current-alu*
-                    *graphics-state-current-font-no*
+      (%draw-string *graphics-state-current-font-no*
                     trimmed-string
                     (ensure-legal-window-coordinate
                     (scale-x (fixr (- x width))))

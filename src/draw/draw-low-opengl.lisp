@@ -338,8 +338,7 @@
 
 (defun cha-hei () %drawing-font-cha-hei)
 
-(defun %draw-string (alu font string x y &optional (window %drawing-array))
-  (declare (ignore alu window))
+(defun %draw-string (font string x y)
   (let ((system-font (find-cached-font font)))
     (if (null system-font)
       (error "Can't find cached font for ~X" font)

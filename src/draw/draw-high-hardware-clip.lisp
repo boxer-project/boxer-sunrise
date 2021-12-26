@@ -167,4 +167,4 @@
 
 (defun draw-string (alu font-no string region-x region-y &optional window)
   (declare (ignore window))
-  (%draw-string alu font-no string region-x region-y %drawing-window))
+  (%draw-string font-no string region-x region-y))
