@@ -366,8 +366,7 @@
 (defun %draw-cha (x y char)
   (bw::ogl-draw-char char x y))
 
-(defun %draw-line (x0 y0 x1 y1 alu end-point? window)
-  (declare (ignore alu end-point? window))
+(defun %draw-line (x0 y0 x1 y1)
   (bw::ogl-draw-line x0 y0 x1 y1))
 
 (defun %set-pen-size (v)

@@ -138,7 +138,8 @@
 ;;; sure there were no intervening clipping operations.
 
 (defun draw-line (x0 y0 x1 y1 alu end-point?)
-  (%draw-line x0 y0 x1 y1 alu end-point? %drawing-window))
+  (declare (ignore alu end-point?))
+  (%draw-line x0 y0 x1 y1))
 
 (defun draw-rectangle (alu w h x y)
   (%draw-rectangle w h x y alu %drawing-window))
