@@ -604,8 +604,7 @@
 
 ;; bw::gl-read-pixels
 ;; (bw::gl-read-buffer bw::*gl-front*) ; read from the (visible) front buffer
-(defun %bitblt-from-screen (alu wid hei to-array fx fy tx ty)
-  (declare (ignore alu))
+(defun %bitblt-from-screen (wid hei to-array fx fy tx ty)
   (opengl::%pixblt-from-screen to-array (round fx)
                                ;; not quite right especially with a translated fy
                                (round (- (sheet-inside-height *boxer-pane*) (+ fy hei)))
@@ -682,7 +681,7 @@
 
 (defun %get-pixel (port x y)
   (declare (ignore port))
-  (%bitblt-from-screen alu-seta 1 1 *screen-pixel-buffer* x y 0 0)
+  (%bitblt-from-screen 1 1 *screen-pixel-buffer* x y 0 0)
   (offscreen-pixel 0 0 *screen-pixel-buffer*))
 
 ;; **** Look here !!! ****
