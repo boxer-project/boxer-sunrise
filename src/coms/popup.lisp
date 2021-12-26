@@ -140,11 +140,11 @@ Modification History (most recent at top)
                    (draw-cha alu-seta check (+ x 2) (+ y (cha-ascent))))
                   (t (draw-cha alu-seta *default-check-char*
                                (+ x 2)  (+ y (cha-ascent)))))))
-        (draw-string alu-seta (get-menu-item-font item) (slot-value item 'title)
+        (draw-string (get-menu-item-font item) (slot-value item 'title)
                      (+ x *menu-item-margin*) (1+ y)))
       (progn
         (with-pen-color (*black*)
-          (draw-string alu-seta (get-menu-item-font item) (slot-value item 'title)
+          (draw-string (get-menu-item-font item) (slot-value item 'title)
                        (+ x *menu-item-margin*) (1+ y))
           (let ((check (slot-value item 'checked?)))
             (rebind-font-info ((get-menu-item-font item))
@@ -346,7 +346,7 @@ Modification History (most recent at top)
                       (+ x *popup-doc-border-width*)
                       (+ y *popup-doc-border-width*)))
     ;; doc string
-    (draw-string alu-seta *popup-doc-font* (slot-value self 'string)
+    (draw-string *popup-doc-font* (slot-value self 'string)
                  (+ x pad) (+ y pad)))
   ;; set the flag
   (setq *popup-doc-on?* t))

@@ -165,6 +165,5 @@
 (defun draw-cha (alu char x y)
   (%draw-cha x y char))
 
-(defun draw-string (alu font-no string region-x region-y &optional window)
-  (declare (ignore window))
+(defun draw-string (font-no string region-x region-y)
   (%draw-string font-no string region-x region-y))

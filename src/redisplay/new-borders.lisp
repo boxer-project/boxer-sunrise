@@ -389,7 +389,7 @@
     (let ((end-x (+ current-x inside-name-width (* *border-name-padding* 2))))
       ;; the name string itself
       (unless (null name)
-        (draw-string alu-seta *border-name-font* name current-x
+        (draw-string *border-name-font* name current-x
                      (+ name-top-y *border-name-padding* *basic-border-width*)))
       ;; the top & bottom
       (draw-line current-x name-top-y end-x name-top-y)
@@ -405,7 +405,7 @@
   (cond ((null *show-border-type-labels*)
          inner-left)
         (t
-           (draw-string alu-seta *border-label-font* label
+           (draw-string *border-label-font* label
                         inner-left (- box-bottom
                                        (1+ (ffloor (string-hei *border-label-font*) 2))))
            (+ inner-left (string-wid *border-label-font* label)))))
@@ -554,7 +554,7 @@
     (let ((end-x (+ current-x inside-name-width (* *border-name-padding* 2))))
       ;; the name string itself
       (unless (null name)
-        (draw-string alu-seta *border-name-font* name current-x
+        (draw-string *border-name-font* name current-x
                      (+ name-top-y *border-name-padding* *basic-border-width*)))
       ;; the top & bottom
       (draw-line current-x name-top-y end-x name-top-y)

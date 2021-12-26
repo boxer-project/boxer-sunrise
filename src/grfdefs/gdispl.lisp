@@ -2832,13 +2832,13 @@ Modification History (most recent at the top)
   (draw-rectangle wid 1 x y) ; top
   (draw-rectangle 1 hei (+ x wid -1) y) ; right
   (draw-rectangle wid 1 x (+ y hei -2)) ; bottom ( -2 ?)
-  (draw-string alu-seta *boxtop-text-font* text (+ x 2) (+ y 2)))
+  (draw-string *boxtop-text-font* text (+ x 2) (+ y 2)))
 
 (defun draw-folder-boxtop (text x y)
   (let* ((stringw (ceiling (String-wid *boxtop-text-font* text)))
          (wdiff (- stringw (folder-graphics-wid))))
     (draw-folder-graphic (if (plusp wdiff) (+ x (/ wdiff 2)) x) y)
-    (draw-string alu-seta *boxtop-text-font* text
+    (draw-string *boxtop-text-font* text
                  x (+ y (folder-graphics-hei)))))
 
 ;;
@@ -2862,7 +2862,7 @@ Modification History (most recent at the top)
       (t ; no icon, no mime info
          (draw-rectangle 32 32 (+ x horiz-fudge) y)))
     ;; and now, the name
-    (draw-string alu-seta *boxtop-text-font* name x (+ y 32))))
+    (draw-string *boxtop-text-font* name x (+ y 32))))
 
 (defun draw-graphics-boxtop-internal (boxtop x y wid hei)
   (unless (null (graphics-sheet-background boxtop))
@@ -2894,7 +2894,7 @@ Modification History (most recent at the top)
   (let ((horiz-offset (floor (- wid 32) 2)))
     (draw-rectangle 32 32 (+ x horiz-offset) y)
     ;; now, the name
-    (draw-string alu-seta *boxtop-text-font* boxtop x (+ y 32))))
+    (draw-string *boxtop-text-font* boxtop x (+ y 32))))
 
 
 ;;; Debugging fun...
