@@ -773,7 +773,7 @@
                                                    :cha-drawing? t)
       (cond ((screen-cha? inf-screen-obj)
              ;; draw the char
-             (draw-cha alu-seta inf-screen-obj
+             (draw-cha inf-screen-obj
                        inf-x-offset (+ row-baseline inf-y-offset))
              ;; update the inf-x-offset
              (incf inf-x-offset (cha-wid inf-screen-obj)))

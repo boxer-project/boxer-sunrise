@@ -137,8 +137,8 @@ Modification History (most recent at top)
           (rebind-font-info ((get-menu-item-font item))
             (cond ((null check))
                   ((characterp check)
-                   (draw-cha alu-seta check (+ x 2) (+ y (cha-ascent))))
-                  (t (draw-cha alu-seta *default-check-char*
+                   (draw-cha check (+ x 2) (+ y (cha-ascent))))
+                  (t (draw-cha *default-check-char*
                                (+ x 2)  (+ y (cha-ascent)))))))
         (draw-string (get-menu-item-font item) (slot-value item 'title)
                      (+ x *menu-item-margin*) (1+ y)))
@@ -150,8 +150,8 @@ Modification History (most recent at top)
             (rebind-font-info ((get-menu-item-font item))
               (cond ((null check))
                     ((characterp check)
-                     (draw-cha alu-seta check (+ x 2)  (+ y (cha-ascent))))
-                    (t (draw-cha alu-seta *default-check-char*
+                     (draw-cha check (+ x 2)  (+ y (cha-ascent))))
+                    (t (draw-cha *default-check-char*
                                  (+ x 2)  (+ y (cha-ascent))))))))))
   ;; return height used up
   (+ (string-hei (get-menu-item-font item)) 2))

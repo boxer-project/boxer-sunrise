@@ -162,7 +162,7 @@
 ;; baseline rather than the top left corner.  This is because in a multifont
 ;; row, the common reference point will be the baseline instead of the top
 ;; edge
-(defun draw-cha (alu char x y)
+(defun draw-cha (char x y)
   (%draw-cha x y char))
 
 (defun draw-string (font-no string region-x region-y)
