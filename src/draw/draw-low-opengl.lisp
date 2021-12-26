@@ -526,8 +526,7 @@
   (bw::ogl-draw-poly points))
 
 ;; CLX like version
-(defun %draw-rectangle (width height x y alu bit-array) ; &key (xor-color #xffffff)
-  (declare (ignore alu bit-array))
+(defun %draw-rectangle (width height x y)
   (unless (or (>= %clip-lef %clip-rig) (>= %clip-top %clip-bot))
     (bw::ogl-draw-rect x y (+ x width) (+ y height))))
 
@@ -539,7 +538,7 @@
 (defun %erase-rectangle (w h x y window)
   (unless (null window)
     (with-pen-color (*background-color*)
-      (%draw-rectangle w h x y alu-seta window))))
+      (%draw-rectangle w h x y))))
 
 ;;; These take topleft coordinates
 ;; the angle args are like CLX, start at 3 oclock and positive sweep is

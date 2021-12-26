@@ -2116,8 +2116,7 @@ Modification History (most recent at the top)
                     (ensure-legal-window-coordinate
                       (scale-x (-& x (floor (the fixnum width) 2))))
                     (ensure-legal-window-coordinate
-                      (scale-y (-& y (floor (the fixnum height) 2))))
-                    *graphics-state-current-alu* %drawing-array))
+                      (scale-y (-& y (floor (the fixnum height) 2))))))
   :TRANSLATION-ARGS
   (trans-x trans-y)
   :TRANSLATION-BODY
@@ -2180,8 +2179,7 @@ Modification History (most recent at the top)
                                   (floor
                                     (the fixnum
                                         *graphics-state-current-pen-width*)
-                                    2))))
-                    *graphics-state-current-alu* %drawing-array))
+                                    2))))))
   :TRANSLATION-ARGS
   (trans-x trans-y)
   :TRANSLATION-BODY
@@ -2234,22 +2232,17 @@ Modification History (most recent at the top)
       (cond ((or (>=& (*& thick 2) wid)
                 (>=& (*& thick 2) hei))
             ;; degenerate cases where walls touch
-            (%draw-rectangle wid hei xxx yyy
-                              *graphics-state-current-alu* %drawing-array))
+            (%draw-rectangle wid hei xxx yyy))
         (t
         ;; left wall
-        (%draw-rectangle thick hei xxx yyy
-                          *graphics-state-current-alu* %drawing-array)
+        (%draw-rectangle thick hei xxx yyy)
         ;; top
-        (%draw-rectangle (-& wid (*& 2 thick)) thick (+& xxx thick) yyy
-                          *graphics-state-current-alu* %drawing-array)
+        (%draw-rectangle (-& wid (*& 2 thick)) thick (+& xxx thick) yyy)
         ;; right
-        (%draw-rectangle thick hei (+& xxx (-& wid thick)) yyy
-                          *graphics-state-current-alu* %drawing-array)
+        (%draw-rectangle thick hei (+& xxx (-& wid thick)) yyy)
         ;; bottom
         (%draw-rectangle (-& wid (*& 2 thick)) thick (+& xxx thick)
-                          (+& yyy (-& hei thick))
-                          *graphics-state-current-alu* %drawing-array)))))
+                          (+& yyy (-& hei thick)))))))
   :TRANSLATION-ARGS
   (trans-x trans-y)
   :TRANSLATION-BODY

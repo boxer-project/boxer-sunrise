@@ -142,7 +142,8 @@
   (%draw-line x0 y0 x1 y1))
 
 (defun draw-rectangle (alu w h x y)
-  (%draw-rectangle w h x y alu %drawing-window))
+  (declare (ignore alu))
+  (%draw-rectangle w h x y))
 
 (defun erase-rectangle (w h x y)
   (%erase-rectangle w h x y %drawing-window))
@@ -150,7 +151,7 @@
 ;; useful for debugging erase-rectangle lossage
 (defun flash-rectangle (w h x y)
   (dotimes (i 6)
-    (%draw-rectangle w h x y  alu-xor %drawing-window)
+    (%draw-rectangle w h x y)
     (sleep .1)))
 
 (defun bitblt-to-screen (alu wid hei from-array from-x from-y to-x to-y)

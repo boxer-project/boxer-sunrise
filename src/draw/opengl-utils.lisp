@@ -443,7 +443,7 @@ Modification History (most recent at the top)
 #|
 
 (drawing-on-window (*boxer-pane*)
-    (%draw-rectangle 30 20 100 100 alu-seta *boxer-pane*)
+    (%draw-rectangle 30 20 100 100)
     (bw::swap-buffers *boxer-pane*))
 
 |#
