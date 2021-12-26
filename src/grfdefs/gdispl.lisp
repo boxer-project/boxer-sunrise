@@ -2304,7 +2304,7 @@ Modification History (most recent at the top)
     (dump-boxer-thing width stream)
     (dump-boxer-thing height stream)))
   :COMMAND-BODY
-  (%bitblt-to-screen *graphics-state-current-alu* (fixr width) (fixr height)
+  (%bitblt-to-screen (fixr width) (fixr height)
                     bitmap 0 0
                     (ensure-legal-window-coordinate
                       (scale-x (-& x (floor (the fixnum width) 2))))
@@ -2853,7 +2853,7 @@ Modification History (most recent at the top)
     (cond ((not (null ic))
            ;; if there is a mac icon, prefer it...
            #-carbon-compat
-           (%bitblt-to-screen alu-seta 32 32 ic 0 0 (+ x horiz-fudge) y)
+           (%bitblt-to-screen 32 32 ic 0 0 (+ x horiz-fudge) y)
            #+carbon-compat
            (draw-iconref ic (+ x horiz-fudge) y)
            )

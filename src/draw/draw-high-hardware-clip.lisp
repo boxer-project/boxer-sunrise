@@ -155,7 +155,8 @@
     (sleep .1)))
 
 (defun bitblt-to-screen (alu wid hei from-array from-x from-y to-x to-y)
-  (%bitblt-to-screen alu wid hei from-array from-x from-y to-x to-y))
+  (declare (ignore alu))
+  (%bitblt-to-screen wid hei from-array from-x from-y to-x to-y))
 
 (defun bitblt-from-screen (alu wid hei to-array from-x from-y to-x to-y)
   (%bitblt-from-screen alu wid hei to-array from-x from-y to-x to-y))

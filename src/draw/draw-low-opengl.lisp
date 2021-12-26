@@ -599,8 +599,7 @@
 
 ;; bw::gl-draw-pixels (w h
 ;; remember that  we are drawing from the lower left....
-(defun %bitblt-to-screen (alu wid hei from-array fx fy tx ty)
-  (declare (ignore alu))
+(defun %bitblt-to-screen (wid hei from-array fx fy tx ty)
   (opengl::%pixblt-to-screen from-array (round tx) (round ty) (round wid) (round hei) fx fy))
 
 ;; bw::gl-read-pixels
