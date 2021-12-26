@@ -686,28 +686,28 @@ parameters of the graphics box are bound. "
                     (mode (graphics-sheet-draw-mode gs))
                     (sub (save-under-bitmap save-under)))
                (flet ((save-corner-wrap (lefx rigx topy boty)
-                        (bitblt-from-screen alu-seta lefx topy sub 0 0 0 0)
-                        (bitblt-from-screen alu-seta (-& %drawing-width rigx) topy
+                        (bitblt-from-screen lefx topy sub 0 0 0 0)
+                        (bitblt-from-screen (-& %drawing-width rigx) topy
                                             sub rigx 0 lefx 0)
-                        (bitblt-from-screen alu-seta lefx (-& %drawing-height boty)
+                        (bitblt-from-screen lefx (-& %drawing-height boty)
                                             sub 0 boty 0 topy)
-                        (bitblt-from-screen alu-seta (-& %drawing-width rigx)
+                        (bitblt-from-screen (-& %drawing-width rigx)
                                             (-& %drawing-height boty) sub
                                             rigx boty lefx topy))
                       (save-horiz-wrap (lefx rigx)
                         (let* ((cminy (max& miny 0))
                                (cmaxy (min& maxy %drawing-height))
                                (hei (-& cmaxy cminy)))
-                          (bitblt-from-screen alu-seta lefx hei sub 0 cminy 0 0)
-                          (bitblt-from-screen alu-seta (-& %drawing-width rigx) hei
+                          (bitblt-from-screen lefx hei sub 0 cminy 0 0)
+                          (bitblt-from-screen (-& %drawing-width rigx) hei
                                               sub rigx cminy lefx 0)))
                       (save-vert-wrap (topy boty)
                         (let* ((cminx (max& minx 0))
                                ;; clipped vars...
                                (cmaxx (min& maxx %drawing-width))
                                (wid (-& cmaxx cminx)))
-                          (bitblt-from-screen alu-seta wid topy sub cminx 0 0 0)
-                          (bitblt-from-screen alu-seta wid (-& %drawing-height boty)
+                          (bitblt-from-screen wid topy sub cminx 0 0 0)
+                          (bitblt-from-screen wid (-& %drawing-height boty)
                                               sub cminx boty 0 topy))))
                  ;; should we check for :wrap mode ?
                  ;; what if the user moves to the edge and then changes modes ?
@@ -730,7 +730,7 @@ parameters of the graphics box are bound. "
                                  (cmaxy (min& maxy %drawing-height))
                                  (cwid (-& cmaxx cminx)) (chei (-& cmaxy cminy)))
                             (unless (or (zerop& cwid) (zerop& chei))
-                              (bitblt-from-screen alu-seta cwid chei sub
+                              (bitblt-from-screen cwid chei sub
                                                   cminx cminy 0 0)))))
                        ((minusp& miny)
                         ;; top wrap, bind useful vars and check for corners
@@ -777,7 +777,7 @@ parameters of the graphics box are bound. "
                                                %drawing-width)
                                          (max& minx 0)))
                        (t ;; vanilla case
-                        (bitblt-from-screen alu-seta
+                        (bitblt-from-screen
                                             (-& (min& maxx %drawing-width)
                                                 (max& minx 0))
                                             (-& (min& maxy %drawing-height)

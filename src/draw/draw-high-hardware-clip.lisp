@@ -155,8 +155,7 @@
 (defun bitblt-to-screen (wid hei from-array from-x from-y to-x to-y)
   (%bitblt-to-screen wid hei from-array from-x from-y to-x to-y))
 
-(defun bitblt-from-screen (alu wid hei to-array from-x from-y to-x to-y)
-  (declare (ignore alu))
+(defun bitblt-from-screen (wid hei to-array from-x from-y to-x to-y)
   (%bitblt-from-screen wid hei to-array from-x from-y to-x to-y))
 
 ;; NOTE: in the new multi font world, draw-cha needs to draw at the char's
