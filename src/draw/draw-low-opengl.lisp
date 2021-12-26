@@ -533,8 +533,7 @@
 
 ;;; **** NEW: draw a single pixel at window's X,Y
 ;;; just drawing a little rect for now,there's probably a better way to do this
-(defun %draw-point (x y alu window)
-  (declare (ignore alu window))
+(defun %draw-point (x y)
   (bw::ogl-draw-point x y))
 
 (defun %erase-rectangle (w h x y window)
