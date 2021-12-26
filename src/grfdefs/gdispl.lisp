@@ -2796,13 +2796,12 @@ Modification History (most recent at the top)
 (defun draw-folder-graphic (x y)
   ;; the tab
   (draw-line x (+ y *folder-graphic-tab-height*)
-             (+ x *folder-graphic-tab-delta*) y alu-seta nil)
+             (+ x *folder-graphic-tab-delta*) y)
   (draw-line (+ x *folder-graphic-tab-delta*) y
-             (+ x *folder-graphic-tab-delta* *folder-graphic-tab-width*) y
-             alu-seta nil)
+             (+ x *folder-graphic-tab-delta* *folder-graphic-tab-width*) y)
   (draw-line (+ x *folder-graphic-tab-delta* *folder-graphic-tab-width*) y
              (+ x (*& 2 *folder-graphic-tab-delta*) *folder-graphic-tab-width*)
-             (+ y *folder-graphic-tab-height*) alu-seta nil)
+             (+ y *folder-graphic-tab-height*))
   ;; the main rectangle (l,t,r,b)
   (draw-rectangle alu-seta 1 *folder-graphic-height*
                   x (+ y *folder-graphic-tab-height*))

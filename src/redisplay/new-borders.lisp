@@ -383,8 +383,8 @@
         (lower-slant-y (+ name-mid-y *border-inside-space*)))
     (let ((end-x (+ current-x *border-name-slant-offset*)))
       ;; the left "<" of the name
-      (draw-line current-x name-mid-y end-x name-top-y alu-seta t)
-      (draw-line current-x name-mid-y end-x lower-slant-y alu-seta t)
+      (draw-line current-x name-mid-y end-x name-top-y)
+      (draw-line current-x name-mid-y end-x lower-slant-y)
       (setq current-x end-x))
     (let ((end-x (+ current-x inside-name-width (* *border-name-padding* 2))))
       ;; the name string itself
@@ -392,13 +392,13 @@
         (draw-string alu-seta *border-name-font* name current-x
                      (+ name-top-y *border-name-padding* *basic-border-width*)))
       ;; the top & bottom
-      (draw-line current-x name-top-y end-x name-top-y alu-seta t)
-      (draw-line current-x lower-slant-y end-x lower-slant-y alu-seta t)
+      (draw-line current-x name-top-y end-x name-top-y)
+      (draw-line current-x lower-slant-y end-x lower-slant-y)
       (setq current-x end-x))
     (let ((end-x (+ current-x *border-name-slant-offset*)))
       ;; the right ">"
-      (draw-line current-x name-top-y end-x name-mid-y alu-seta t)
-      (draw-line current-x lower-slant-y end-x name-mid-y alu-seta t)
+      (draw-line current-x name-top-y end-x name-mid-y)
+      (draw-line current-x lower-slant-y end-x name-mid-y)
       end-x)))
 
 (defun draw-borders-label (label inner-left box-bottom)
@@ -432,13 +432,13 @@
                                       box-top box-bottom name-end-x label-end-x
                                       inner-right)
   ;; left
-  (draw-line box-left inner-top box-left inner-bottom alu-seta t)
+  (draw-line box-left inner-top box-left inner-bottom)
   ;; top
-  (draw-line name-end-x box-top inner-right box-top alu-seta t)
+  (draw-line name-end-x box-top inner-right box-top)
   ;; right
-  (draw-line box-right inner-top box-right inner-bottom alu-seta t)
+  (draw-line box-right inner-top box-right inner-bottom)
   ;; bottom
-  (draw-line label-end-x box-bottom inner-right box-bottom alu-seta t))
+  (draw-line label-end-x box-bottom inner-right box-bottom))
 
 (defun draw-borders-corners (box-type border-thickness
                                       box-left inner-left box-top inner-top
@@ -484,10 +484,10 @@
                                     box-right inner-right box-bottom inner-bottom
                                     border-thickness)
   (with-pen-size (border-thickness)
-    (draw-line box-left inner-top inner-left box-top alu-seta t) ; top left
-    (draw-line inner-right box-top box-right inner-top alu-seta t) ; top right
-    (draw-line inner-right box-bottom box-right inner-bottom alu-seta t);bottom right
-    (draw-line box-left inner-bottom inner-left box-bottom alu-seta t)) ; bot left
+    (draw-line box-left inner-top inner-left box-top) ; top left
+    (draw-line inner-right box-top box-right inner-top) ; top right
+    (draw-line inner-right box-bottom box-right inner-bottom);bottom right
+    (draw-line box-left inner-bottom inner-left box-bottom)) ; bot left
   (values (+ box-left 3) (+ box-top 3) (- box-right 3) (- box-bottom 3)))
 
 (defun port-borders-draw (screen-box)
@@ -529,16 +529,16 @@
             (draw-port-name name name-start-x box-top name-top))
       ;; walls
       (with-pen-size (border-thickness)
-        (draw-line box-left box-top box-left box-bottom alu-seta t) ; left
-        (draw-line box-left box-top name-start-x box-top alu-seta t) ; top
-        (draw-line name-end-x box-top box-right box-top alu-seta t) ; top, after name
-        (draw-line box-right box-top box-right box-bottom alu-seta t) ; right
-        (draw-line box-left box-bottom box-right box-bottom alu-seta t)) ; bottom
+        (draw-line box-left box-top box-left box-bottom) ; left
+        (draw-line box-left box-top name-start-x box-top) ; top
+        (draw-line name-end-x box-top box-right box-top) ; top, after name
+        (draw-line box-right box-top box-right box-bottom) ; right
+        (draw-line box-left box-bottom box-right box-bottom)) ; bottom
       ;; struts
-      (draw-line box-left box-top i-strut-left i-strut-top alu-seta t)
-      (draw-line box-right box-top i-strut-right i-strut-top alu-seta t)
-      (draw-line box-right box-bottom i-strut-right i-strut-bottom alu-seta t)
-      (draw-line box-left box-bottom i-strut-left i-strut-bottom alu-seta t))))
+      (draw-line box-left box-top i-strut-left i-strut-top)
+      (draw-line box-right box-top i-strut-right i-strut-top)
+      (draw-line box-right box-bottom i-strut-right i-strut-bottom)
+      (draw-line box-left box-bottom i-strut-left i-strut-bottom))))
 
 (defun draw-port-name (name name-x name-mid-y name-top-y)
   (let ((current-x name-x)
@@ -548,8 +548,8 @@
         (lower-slant-y (+ name-mid-y *border-inside-space*)))
     (let ((end-x (+ current-x *border-name-slant-offset*)))
       ;; the left "<" of the name
-      (draw-line current-x name-mid-y end-x name-top-y alu-seta t)
-      (draw-line current-x name-mid-y end-x lower-slant-y alu-seta t)
+      (draw-line current-x name-mid-y end-x name-top-y)
+      (draw-line current-x name-mid-y end-x lower-slant-y)
       (setq current-x end-x))
     (let ((end-x (+ current-x inside-name-width (* *border-name-padding* 2))))
       ;; the name string itself
@@ -557,13 +557,13 @@
         (draw-string alu-seta *border-name-font* name current-x
                      (+ name-top-y *border-name-padding* *basic-border-width*)))
       ;; the top & bottom
-      (draw-line current-x name-top-y end-x name-top-y alu-seta t)
-      (draw-line current-x lower-slant-y end-x lower-slant-y alu-seta t)
+      (draw-line current-x name-top-y end-x name-top-y)
+      (draw-line current-x lower-slant-y end-x lower-slant-y)
       (setq current-x end-x))
     (let ((end-x (+ current-x *border-name-slant-offset*)))
       ;; the right ">"
-      (draw-line current-x name-top-y end-x name-mid-y alu-seta t)
-      (draw-line current-x lower-slant-y end-x name-mid-y alu-seta t)
+      (draw-line current-x name-top-y end-x name-mid-y)
+      (draw-line current-x lower-slant-y end-x name-mid-y)
       end-x)))
 
 
@@ -696,12 +696,12 @@
 (defun toggle-corner-fun (x y wid hei)
   (let ((rx (- (+ x wid) 2)) (by (- (+ y hei) 2)))
     (with-pen-color (*border-gui-color*)
-      (draw-line (+ x 2) y rx y alu-seta t) ; top arrow horizontal
-      (draw-line rx y rx by alu-seta t) ; top arrow right
-      (draw-line (+ x 1) (+ by 1) (- rx 1) (+ by 1) alu-seta t) ; bottom arrow horizontal
-      (draw-line (+ x 1) (+ y 2) (+ x 1) (+ by 1) alu-seta t) ; bottom arrow left
-      (draw-line x (+ y 3) (+ x 3) (+ y 3) alu-seta t) ; cross the bottom arrow head
-      (draw-line (- rx 1) (- by 2) (+ rx 2) (- by 2) alu-seta t)))) ; cross the top arrow head
+      (draw-line (+ x 2) y rx y) ; top arrow horizontal
+      (draw-line rx y rx by) ; top arrow right
+      (draw-line (+ x 1) (+ by 1) (- rx 1) (+ by 1)) ; bottom arrow horizontal
+      (draw-line (+ x 1) (+ y 2) (+ x 1) (+ by 1)) ; bottom arrow left
+      (draw-line x (+ y 3) (+ x 3) (+ y 3)) ; cross the bottom arrow head
+      (draw-line (- rx 1) (- by 2) (+ rx 2) (- by 2))))) ; cross the top arrow head
 
 (defun shrink-corner-fun (x y wid hei)
   (let ((fx (1- x)) (fy (1- y)) (lx (+ x wid)) (ly (+ y hei))
@@ -759,8 +759,8 @@
           (data-box (outer-box)
                     (draw-rectangle alu-seta (- wid 7) (- hei 7)(+ startx 2) (+ starty 2)))
           (port-box (outer-box)
-                    (draw-line startx starty endx endy alu-seta t)
-                    (draw-line startx endy endx starty alu-seta t)))))))
+                    (draw-line startx starty endx endy)
+                    (draw-line startx endy endx starty)))))))
 
 
 
@@ -1117,13 +1117,12 @@
                  (- (+ x *mouse-corner-highlight-size*) 3)
                  (- (+ y *mouse-corner-highlight-size*) 2))
     ;; bottom arrow head
-    (draw-line x (+ y 4) (+ x 3) (+ y 4) alu-seta t)
+    (draw-line x (+ y 4) (+ x 3) (+ y 4))
     ;; top arrow head
     (draw-line (+ x *mouse-corner-highlight-size*)
                (- (+ y *mouse-corner-highlight-size*) 4)
                (- (+ x *mouse-corner-highlight-size*) 3)
-               (- (+ y *mouse-corner-highlight-size*) 4)
-               alu-seta t)))
+               (- (+ y *mouse-corner-highlight-size*) 4))))
 
 (defun draw-mouse-resize-corner (x-in y-in)
   "Currently a set of arrows pointing NW to SE on a white circle with black border."
@@ -1144,7 +1143,7 @@
       ;; BR arrowhead
       (draw-poly alu-seta (list (cons full-x full-y) (cons (- full-x half) full-y)
                                 (cons full-x (- full-y half)) (cons full-x full-y)))
-      (draw-line x y full-x full-y alu-seta t))))
+      (draw-line x y full-x full-y))))
 
 ;;; OpenGL just adds things to be redrawn during regular redisplay
 
