@@ -115,7 +115,17 @@
 ;; OpenGL uses 2 slots which cache the X,Y coords of where to draw the
 ;; highlighting
 
-(defvar *mouse-doc-status* (make-array 7))
+(defvar *mouse-doc-status* (make-array 7)
+  "This is currently a boxer storage vector of size 7 with the following components:
+    - 0 Place Symbol: :INSIDE :OUTSIDE :NAME :SCROLL-BAR :TYPE :BOTTOM-RIGHT :BOTTOM-LEFT
+                      :TOP-RIGHT :TOP-LEFT
+    - 1 Screen Box
+    - 2 x
+    - 3 y
+    - 4 popup-doc
+    - 5 popup-x
+    - 6 popup-y
+")
 
 ;; mouse status is a vector
 (defun mouse-doc-status () *mouse-doc-status*)
