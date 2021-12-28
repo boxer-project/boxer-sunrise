@@ -455,37 +455,6 @@ Modification History (most recent at top)
 
 
 
-#| ;; no longer used?
-;;; These should expand into constants.  This also means that this
-;;; file can only be compiled AFTER the appropriate borders file is loaded
-
-(defmacro box-border-outside-space ()
-  (cadr (assoc 'border-outside-space (get 'data-box 'box-borders-constants))))
-
-(defmacro box-border-inside-space ()
-  (cadr (assoc 'border-inside-space (get 'data-box 'box-borders-constants))))
-
-(defmacro box-border-border-width ()
-  (cadr (assoc 'border-width (get 'data-box 'box-borders-constants))))
-
-(defmacro port-border-port-box-gap ()
-  (cadr (assoc 'port-box-gap (get 'port-box 'box-borders-constants))))
-
-(defvar *last-scrolled-box* nil)
-(defvar *last-scrolled-dims* (make-array 4 :element-type 'fixnum
-                                         :initial-element 0))
-
-(defun fill-button-memory (x y wid hei
-                             &optional (button-vector *last-scrolled-dims*))
-  (setf (aref button-vector 0) x (aref button-vector 1) y
-        (aref button-vector 2) wid (aref button-vector 3) hei))
-
-(defun button-memory-match? (x y wid hei
-                               &optional (button-vector *last-scrolled-dims*))
-  (and (=& (aref button-vector 0) x) (=& (aref button-vector 1) y)
-       (=& (aref button-vector 2) wid) (=& (aref button-vector 3) hei)))
-
-|#
 
 (defun dont-show-scroll-buttons? (screen-box)
   (or ;(null screen-box)  ; should already have been checked
@@ -501,12 +470,6 @@ Modification History (most recent at top)
       ;    ((null sb) t)
       ;  (when (outermost-screen-box? sb) (return nil)))
       ))
-
-;; don't need to show corner spots now that we have mouse tracking documentation
-(defun dont-show-resize-hotspots? (screen-box)
-  ; (or (eq *initial-box* (screen-obj-actual-obj screen-box)))
-  (declare (ignore screen-box)) t)
-
 
 ;; this is a hook for a later time when we might want to have
 ;; the ability to lock unlock individual boxes
