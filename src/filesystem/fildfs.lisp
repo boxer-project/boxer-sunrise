@@ -816,23 +816,15 @@ Modification History (most recent at the top)
                                                (unwind-protect
                                                 (progn
                                                  (unless (null ,screen-box-x)
-                                                   #+opengl
                                                    (with-pen-color (bw::*blinker-color*)
                                                      (box::with-blending-on
                                                       (draw-rectangle
                                                                       ,screen-box-wid ,screen-box-hei
                                                                       ,screen-box-x ,screen-box-y)))
-                                                   #-opengl
-                                                   (draw-rectangle alu-xor ,screen-box-wid ,screen-box-hei
-                                                                   ,screen-box-x ,screen-box-y)
                                                    (force-graphics-output))
                                                  . ,body)
                                                 (unless (null ,screen-box-x)
-                                                  #+opengl
                                                   (repaint)
-                                                  #-opengl
-                                                  (draw-rectangle alu-xor ,screen-box-wid ,screen-box-hei
-                                                                  ,screen-box-x ,screen-box-y)
                                                   (force-graphics-output))))))))
 
 ;;;

@@ -59,14 +59,6 @@
       (let ((bm (make-offscreen-bitmap *boxer-pane* wid hei)))
         (setf (graphics-sheet-bit-array new-sheet) bm)
         (with-graphics-vars-bound-internal from-sheet
-          #-opengl
-          (drawing-on-bitmap (bm)
-                             (with-pen-color ((or (graphics-sheet-background from-sheet)
-                                                  *background-color*))
-                               (draw-rectangle alu-seta %drawing-width %drawing-height 0 0))
-                             (bitblt-to-screen alu-seta wid hei (graphics-sheet-bit-array from-sheet)
-                                               0 0 0 0))
-          #+opengl
           (copy-offscreen-bitmap alu-seta wid hei (graphics-sheet-bit-array from-sheet) 0 0 bm 0 0)
           ;; mark the dirty? flag
           (setf (graphics-sheet-bit-array-dirty? new-sheet) t)

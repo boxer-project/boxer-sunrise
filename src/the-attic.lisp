@@ -9595,6 +9595,18 @@ Modification History (most recent at top)
 ;;;; FILE: makcpy.lisp
 ;;;;
 
+;; From inside copy-graphics-sheet -> with-graphics-vars-bound-internal...
+          #-opengl
+          (drawing-on-bitmap (bm)
+                             (with-pen-color ((or (graphics-sheet-background from-sheet)
+                                                  *background-color*))
+                               (draw-rectangle alu-seta %drawing-width %drawing-height 0 0))
+                             (bitblt-to-screen alu-seta wid hei (graphics-sheet-bit-array from-sheet)
+                                               0 0 0 0))
+          #+opengl
+          (copy-offscreen-bitmap alu-seta wid hei (graphics-sheet-bit-array from-sheet) 0 0 bm 0 0)
+
+
 #|
 ;; Yuck, this is an example of how NOT to do this, it iterates over
 ;; the characters at least 4 (!) times
