@@ -1854,6 +1854,29 @@ Modification History (most recent at top)
 ;;;; FILE: boxwin-opengl.lisp
 ;;;;
 
+(defvar *typeahead-during-eval* nil)
+
+;; sgithens TODO this doesn't appear to be used. Looks to have been replaced by
+;;               *double-click-pause-time*
+(defvar *double-click-wait-interval* .3
+  "Number of seconds to wait for another (possible) mouse click")
+
+(defvar *literal-input*  nil)
+
+(defun handle-event-internal (event &optional bits)
+  (boxer-system-error-restart
+;    (boxer-editor-bindings nil
+    ;  Wrong place, this needs to be wrapped around the top level loop
+      (catch 'boxer::boxer-editor-top-level
+        (handle-boxer-input event bits)
+        (setq just-redisplayed? nil)
+        ;; if there is no more input, then redisplay
+        (when (no-more-input?)
+          (boxer::repaint)
+          (setq just-redisplayed? t)
+          (boxer-idle-function)))))
+
+(defvar *suppress-event-queueing?* nil)
 
 (defvar *blinker-alpha-value* .3)
 

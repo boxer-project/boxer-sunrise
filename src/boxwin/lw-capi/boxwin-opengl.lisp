@@ -1008,7 +1008,6 @@
                                 :height (- (capi:screen-height screen) 120)))))
       (start-boxer-progress "Setting Hints ~D" (get-internal-real-time) 40)
       (capi:display *boxer-frame*)
-;     (break "After Display...")
       (start-boxer-progress "Display ~D" (get-internal-real-time) 50)
       (when (member "-debug" sys:*line-arguments-list* :test #'string-equal)
         (opengl:describe-configuration *boxer-pane*))
@@ -1030,7 +1029,7 @@
                     (opengl::gl-enable opengl::*gl-blend*)
                     (opengl::gl-blend-func opengl::*gl-src-alpha* opengl::*gl-one-minus-src-alpha*)
                     (opengl::gl-hint opengl::*gl-line-smooth-hint* opengl::*gl-nicest*))
-      ;; (boxer::fill-bootstrapped-font-caches)
+
       (let ((arial-12 (boxer::make-boxer-font '("Arial" 12)))
             (arial-16 (boxer::make-boxer-font '("Arial" 16)))
             (arial-16-bold (boxer::make-boxer-font '("Arial" 16 :bold))))
@@ -1119,39 +1118,12 @@
   (boxer::force-repaint)
   (boxer-command-loop))
 
-;; sgithens TODO I don't believe this is used anymore
-;; (defvar *typeahead-during-eval* nil)
-
 (defun beep () (capi::beep-pane))
 
 (defun click-sound () (capi::beep-pane))
 
-;; sgithens TODO this doesn't appear to be used. Looks to have been replaced by
-;;               *double-click-pause-time*
-;; (defvar *double-click-wait-interval* .3
-;;   "Number of seconds to wait for another (possible) mouse click")
 
 (defvar *literal-input?* nil)
-
-;; sgithens TODO this doesn't appear to be used anywhere...
-;;(defvar *literal-input*  nil)
-
-;; TODO sgithens This doesn't appear to be used anywhere...
-;; (defun handle-event-internal (event &optional bits)
-;;   (boxer-system-error-restart
-;; ;    (boxer-editor-bindings nil
-;;     ;  Wrong place, this needs to be wrapped around the top level loop
-;;       (catch 'boxer::boxer-editor-top-level
-;;         (handle-boxer-input event bits)
-;;         (setq just-redisplayed? nil)
-;;         ;; if there is no more input, then redisplay
-;;         (when (no-more-input?)
-;;           (boxer::repaint)
-;;           (setq just-redisplayed? t)
-;;           (boxer-idle-function)))))
-
-;; sgithens TODO: I don't believe this is used any more...
-;; (defvar *suppress-event-queueing?* nil)
 
 ;; TODO 2021-06-28 TODO Investigate that there is a matching set of event-id
 ;; declarations, but prefixed with boxer- in keydef-high.lisp. What is the relationship
