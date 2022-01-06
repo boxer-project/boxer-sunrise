@@ -1731,7 +1731,7 @@
 (defun draw-blinker (blinker)
   (with-pen-color (*blinker-color*)
     (box::with-blending-on
-      (box::draw-rectangle alu-seta
+      (box::draw-rectangle
                            (blinker-width blinker) (blinker-height blinker)
                            (blinker-x blinker)     (blinker-y blinker)))))
 
@@ -1752,7 +1752,7 @@
     blinker))
 
 (defun draw-region-row-blinker (blinker)
-  (box::draw-rectangle alu-xor
+  (box::draw-rectangle
    (blinker-width blinker) (blinker-height blinker)
    (blinker-x blinker)     (blinker-y blinker)))
 
