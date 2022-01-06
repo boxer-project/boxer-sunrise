@@ -1854,6 +1854,147 @@ Modification History (most recent at top)
 ;;;; FILE: boxwin-opengl.lisp
 ;;;;
 
+;; 2022-01-06 A copy of window-system-specifc-boxer before major refactoring
+(defun window-system-specific-start-boxer ()
+  (gp:register-image-translation
+    'toolbar-scratch-images
+    (gp:read-external-image (merge-pathnames "./images/scratch-icons.png" boxer::*resources-dir*)))
+
+  (let ((boot-start-time (get-internal-real-time))
+        (progress-bar (make-instance 'load-progress-frame)))
+    (flet ((start-boxer-progress (fstring time percentage)
+             (incr-bar progress-bar percentage
+                       (format nil fstring (- time boot-start-time)))))
+      (capi:display progress-bar)
+      (start-boxer-progress "Starting ~D" (get-internal-real-time) 10)
+      (when (member "-debug" sys:*line-arguments-list* :test #'string-equal)
+        (break "Start Boxer"))
+      (when (boxer::box? *old-world*)
+        (setf (boxer::slot-value *old-world* 'boxer::screen-objs) nil))
+      (setq boxer-eval::*current-process* nil)
+      (setq *old-world* boxer::*initial-box*)
+      ;; extensions
+      (setq boxer::*starting-directory-pathname* (lw:lisp-image-name))
+      ;; sgithens TODO - Removing extensions for now March 7, 2020
+      ;; (boxer::load-boxer-extensions)
+      ;; (start-boxer-progress "Loaded Extensions ~D" (get-internal-real-time) 20)
+
+      ;; load prefs if they exists
+      (let ((pf (boxer::default-lw-pref-file-name)))
+        (when (and pf (probe-file pf))
+          (boxer::handle-preference-initializations pf)))
+      (start-boxer-progress "Initialized Preferences ~D"
+                            (get-internal-real-time) 30)
+      ;; maybe set the size of the boxer window...
+      ;; check window size prefs, they will be overidden by the following
+      ;; fullscreen-window check
+      (let ((screen (capi:convert-to-screen)))
+        (when (> *starting-window-width* 0)
+          (capi:set-hint-table *boxer-frame* (list :width *starting-window-width*)))
+        (when (> *starting-window-height* 0)
+          (capi:set-hint-table *boxer-frame* (list :height *starting-window-height*)))
+        ;; fullscreen check AFTER prefs are loaded but BEFORE display ?
+        (when *fullscreen-window-p*
+          (capi:set-hint-table *boxer-frame*
+                          (list :x 0 :y 0
+                                :width (- (capi:screen-width screen) 10)
+                                :height (- (capi:screen-height screen) 120)))))
+      (start-boxer-progress "Setting Hints ~D" (get-internal-real-time) 40)
+      (capi:display *boxer-frame*)
+      (start-boxer-progress "Display ~D" (get-internal-real-time) 50)
+      (when (member "-debug" sys:*line-arguments-list* :test #'string-equal)
+        (opengl:describe-configuration *boxer-pane*))
+      ;; move to inits
+;     (let ((gs (gp::get-graphics-state *boxer-pane*)))
+;     (setf (gp::graphics-state-foreground gs) boxer::*foreground-color*))
+      ;; opengl equivalent would be...
+      (opengl:rendering-on (*boxer-pane*)
+                    (initialize-ogl-color-pool)
+                    (boxer::initialize-gray-patterns)
+                    (boxer::initialize-colors)
+                    (%set-pen-color box::*foreground-color*)
+                    ;; do other OpenGL inits...
+                    (setq *ogl-current-color-vector* (make-ogl-color 0.0 0.0 0.0)
+                          *blinker-color* (make-ogl-color .3 .3 .9 .5))
+                    (opengl:gl-enable opengl:*gl-scissor-test*)
+                    (opengl::gl-enable opengl::*gl-line-smooth*)
+                    (opengl::gl-enable opengl::*gl-polygon-smooth*)
+                    (opengl::gl-enable opengl::*gl-blend*)
+                    (opengl::gl-blend-func opengl::*gl-src-alpha* opengl::*gl-one-minus-src-alpha*)
+                    (opengl::gl-hint opengl::*gl-line-smooth-hint* opengl::*gl-nicest*))
+
+      (let ((arial-12 (boxer::make-boxer-font '("Arial" 12)))
+            (arial-16 (boxer::make-boxer-font '("Arial" 16)))
+            (arial-16-bold (boxer::make-boxer-font '("Arial" 16 :bold))))
+        (setq  boxer::*normal-font-no*           arial-16
+               boxer::*default-font*             arial-16
+               boxer::*box-border-label-font-no* arial-12
+               boxer::*border-label-font*        arial-12
+               boxer::*box-border-name-font-no*  arial-16-bold
+               boxer::*border-name-font*         arial-16-bold
+               boxer::*sprite-type-font-no*      arial-16-bold
+               boxer::*initial-graphics-state-current-font-no* arial-16-bold
+               boxer::*graphics-state-current-font-no* arial-16-bold
+               boxer::*boxtop-text-font*         arial-16-bold
+        ))
+      ;; #+freetype-fonts
+      (boxer::load-freetype-faces)
+      (let ((boxer::%private-graphics-list nil))
+        ;; needed by shape-box updater in the redisplay inits but not set until
+        ;; (boxer-eval::setup-evaluator) farther down
+        (run-redisplay-inits))
+
+      (start-boxer-progress "RDP inits ~D" (get-internal-real-time) 60)
+      (boxer::load-appdata)
+      (fixup-menus)
+      (setup-editor *old-world*)
+      (setq *display-bootstrapping-no-boxes-yet* nil)
+      (start-boxer-progress "Editor ~D" (get-internal-real-time) 70)
+      (boxer-eval::setup-evaluator)
+      (start-boxer-progress "Eval ~D" (get-internal-real-time) 80)
+      ;; should handle double clicked files here...
+      (multiple-value-bind (start-box as-world?)
+          (load-startup-file)
+        (when (boxer::box? start-box)
+          (cond ((not (null as-world?))
+                 (setup-editor start-box))
+                (t (setup-editor (boxer::make-box (list (list start-box))))))))
+      (unless boxer::*boxer-version-info*
+        (setq boxer::*boxer-version-info*
+              (format nil "~:(~A~) Boxer" (machine-instance))))
+      (set-cursor-visibility *point-blinker* t)
+      ;; wait a sec
+      ;; now that everything is defined, we can safely run redisplay
+      (resize-handler-utility)
+      (update-toolbar-font-buttons)
+      ;; and check for initial double clicked file box
+      (when (eq :open-file (caar *pending-osx-events*))
+        (safe-open-double-clicked-file (cdar *pending-osx-events*))
+        (setq *pending-osx-events* nil))
+      (start-boxer-progress "Starting Command Loop ~D" (get-internal-real-time) 100)
+      (sleep 1)
+
+      (update-visible-editor-panes)
+      (boxer::switch-use-mouse2021 *use-mouse2021*)
+
+      (capi:destroy progress-bar)
+      (boxer-process-top-level-fn *boxer-pane*))))
+
+;; sgithens 2022-01-06 Not sure what this *old-world* var was ever used for,
+;; maybe to cache some previous instance or something, but going forward we'll
+;; just pass the *initial-box* into setup-editor
+(defvar *old-world* nil)
+
+;; inside window-system-specific-start-boxer
+      (when (boxer::box? *old-world*)
+        (setf (boxer::slot-value *old-world* 'boxer::screen-objs) nil))
+
+      (setq *old-world* boxer::*initial-box*)
+
+      (setup-editor *old-world*)
+
+
+
 (defvar *typeahead-during-eval* nil)
 
 ;; sgithens TODO this doesn't appear to be used. Looks to have been replaced by

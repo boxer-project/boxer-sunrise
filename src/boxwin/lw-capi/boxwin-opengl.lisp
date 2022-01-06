@@ -926,8 +926,6 @@
   (declare (ignore number-vectors))
   )
 
-(defvar *old-world* nil)
-
 (defvar *fullscreen-window-p* T
   "Should boxer occupy the entire screen when starting up ?")
 
@@ -976,10 +974,7 @@
       (start-boxer-progress "Starting ~D" (get-internal-real-time) 10)
       (when (member "-debug" sys:*line-arguments-list* :test #'string-equal)
         (break "Start Boxer"))
-      (when (boxer::box? *old-world*)
-        (setf (boxer::slot-value *old-world* 'boxer::screen-objs) nil))
       (setq boxer-eval::*current-process* nil)
-      (setq *old-world* boxer::*initial-box*)
       ;; extensions
       (setq boxer::*starting-directory-pathname* (lw:lisp-image-name))
       ;; sgithens TODO - Removing extensions for now March 7, 2020
@@ -1054,7 +1049,7 @@
       (start-boxer-progress "RDP inits ~D" (get-internal-real-time) 60)
       (boxer::load-appdata)
       (fixup-menus)
-      (setup-editor *old-world*)
+      (setup-editor boxer::*initial-box*)
       (setq *display-bootstrapping-no-boxes-yet* nil)
       (start-boxer-progress "Editor ~D" (get-internal-real-time) 70)
       (boxer-eval::setup-evaluator)
