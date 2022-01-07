@@ -130,8 +130,6 @@
 #+cocoa
 (defvar *cocoa-boxer-interface* nil)
 
-(defconstant *number-of-mouse-buttons* 3)
-
 (defvar *redisplayable-windows* nil
   "This is a list of all the windows which should be redisplayed when
    REDISPLAY is called." )

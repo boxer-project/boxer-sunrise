@@ -1846,13 +1846,11 @@ Modification History (most recent at top)
                     #-Lucid (warn "~S undefined for this Lisp" 'MAKE-LISP-STREAM)))
      .,BODY))
 
-
-
-
-
 ;;;;
 ;;;; FILE: boxwin-opengl.lisp
 ;;;;
+
+(defconstant *number-of-mouse-buttons* 3)
 
 ;; 2022-01-06 A copy of window-system-specifc-boxer before major refactoring
 (defun window-system-specific-start-boxer ()
