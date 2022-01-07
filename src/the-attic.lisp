@@ -1850,6 +1850,59 @@ Modification History (most recent at top)
 ;;;; FILE: boxwin-opengl.lisp
 ;;;;
 
+(eval-when (compile load eval)
+  (capi:define-interface load-progress-frame ()
+    ()
+    (:panes
+    (loadbar-pane capi::progress-bar)
+    (message-pane capi:display-pane))
+    (:layouts
+    (progree-layout capi:column-layout
+                    '(loadbar-pane message-pane)
+                    :columns 1 :rows 2 :x-uniform-size-p t))
+  ;  (:menus
+  ;   (min-menu ""
+  ;             ((:component
+  ;               (
+  ;                ("Quit"
+  ;                 :callback 'capi:destroy))))))
+    ;(:menu-bar min-menu)
+    (:default-initargs
+    :title "Loading Boxer..."
+    :auto-menus nil
+    :best-x 250 :best-y 500 :best-width 500 :best-height 50
+    :window-styles '(:borderless :always-on-top :ignores-keyboard-input)))
+)
+
+;; might have to go to ignore-errors if problems continue
+(defmethod incr-bar ((self load-progress-frame) percentage
+                     &optional newtext (cr? T))
+  (let ((loadbar-pane (slot-value self 'loadbar-pane)))
+    (capi::apply-in-pane-process loadbar-pane
+                                 #'(setf capi:range-slug-start)
+                                 percentage loadbar-pane))
+  (when (not (null newtext))
+    (let* ((message-pane (slot-value self 'message-pane))
+           (existing-text (capi:display-pane-text message-pane))
+           (new-text (progn
+                       (cond ((listp existing-text))
+                             ((stringp existing-text)
+                              (cond ((string= existing-text "")
+                                     (setq existing-text nil))
+                                    (t (setq existing-text (list existing-text))))))
+                       (cond ((null existing-text)
+                              (list newtext))
+                             ((null cr?)
+                              (append (butlast existing-text)
+                                      (list
+                                       (concatenate 'string (car (last existing-text))
+                                                    " " newtext))))
+                             (t
+                              (append existing-text (list newtext)))))))
+      (capi::apply-in-pane-process message-pane
+                                   #'(setf capi::display-pane-text)
+                                   new-text message-pane))))
+
 (defconstant *number-of-mouse-buttons* 3)
 
 ;; 2022-01-06 A copy of window-system-specifc-boxer before major refactoring

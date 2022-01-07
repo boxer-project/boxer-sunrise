@@ -300,58 +300,6 @@
    ;;:message-callback 'handle-OSX-events
    ))
 
-(eval-when (compile load eval)
-  (capi:define-interface load-progress-frame ()
-    ()
-    (:panes
-    (loadbar-pane capi::progress-bar)
-    (message-pane capi:display-pane))
-    (:layouts
-    (progree-layout capi:column-layout
-                    '(loadbar-pane message-pane)
-                    :columns 1 :rows 2 :x-uniform-size-p t))
-  ;  (:menus
-  ;   (min-menu ""
-  ;             ((:component
-  ;               (
-  ;                ("Quit"
-  ;                 :callback 'capi:destroy))))))
-    ;(:menu-bar min-menu)
-    (:default-initargs
-    :title "Loading Boxer..."
-    :auto-menus nil
-    :best-x 250 :best-y 500 :best-width 500 :best-height 50
-    :window-styles '(:borderless :always-on-top :ignores-keyboard-input)))
-)
-
-;; might have to go to ignore-errors if problems continue
-(defmethod incr-bar ((self load-progress-frame) percentage
-                     &optional newtext (cr? T))
-  (let ((loadbar-pane (slot-value self 'loadbar-pane)))
-    (capi::apply-in-pane-process loadbar-pane
-                                 #'(setf capi:range-slug-start)
-                                 percentage loadbar-pane))
-  (when (not (null newtext))
-    (let* ((message-pane (slot-value self 'message-pane))
-           (existing-text (capi:display-pane-text message-pane))
-           (new-text (progn
-                       (cond ((listp existing-text))
-                             ((stringp existing-text)
-                              (cond ((string= existing-text "")
-                                     (setq existing-text nil))
-                                    (t (setq existing-text (list existing-text))))))
-                       (cond ((null existing-text)
-                              (list newtext))
-                             ((null cr?)
-                              (append (butlast existing-text)
-                                      (list
-                                       (concatenate 'string (car (last existing-text))
-                                                    " " newtext))))
-                             (t
-                              (append existing-text (list newtext)))))))
-      (capi::apply-in-pane-process message-pane
-                                   #'(setf capi::display-pane-text)
-                                   new-text message-pane))))
 
 (eval-when (compile load eval)
 (capi:define-interface boxer-frame ()
@@ -963,13 +911,9 @@
     'toolbar-scratch-images
     (gp:read-external-image (merge-pathnames "./images/scratch-icons.png" boxer::*resources-dir*)))
 
-  (let ((boot-start-time (get-internal-real-time))
-        (progress-bar (make-instance 'load-progress-frame)))
-    (flet ((start-boxer-progress (fstring time percentage)
-             (incr-bar progress-bar percentage
-                       (format nil fstring (- time boot-start-time)))))
-      (capi:display progress-bar)
-      (start-boxer-progress "Starting ~D" (get-internal-real-time) 10)
+  (let ()
+    (flet ()
+
       (when (member "-debug" sys:*line-arguments-list* :test #'string-equal)
         (break "Start Boxer"))
       (setq boxer-eval::*current-process* nil)
@@ -977,14 +921,12 @@
       (setq boxer::*starting-directory-pathname* (lw:lisp-image-name))
       ;; sgithens TODO - Removing extensions for now March 7, 2020
       ;; (boxer::load-boxer-extensions)
-      ;; (start-boxer-progress "Loaded Extensions ~D" (get-internal-real-time) 20)
 
       ;; load prefs if they exists
       (let ((pf (boxer::default-lw-pref-file-name)))
         (when (and pf (probe-file pf))
           (boxer::handle-preference-initializations pf)))
-      (start-boxer-progress "Initialized Preferences ~D"
-                            (get-internal-real-time) 30)
+
       ;; maybe set the size of the boxer window...
       ;; check window size prefs, they will be overidden by the following
       ;; fullscreen-window check
@@ -999,14 +941,12 @@
                           (list :x 0 :y 0
                                 :width (- (capi:screen-width screen) 10)
                                 :height (- (capi:screen-height screen) 120)))))
-      (start-boxer-progress "Setting Hints ~D" (get-internal-real-time) 40)
+
       (capi:display *boxer-frame*)
-      (start-boxer-progress "Display ~D" (get-internal-real-time) 50)
+
       (when (member "-debug" sys:*line-arguments-list* :test #'string-equal)
         (opengl:describe-configuration *boxer-pane*))
-      ;; move to inits
-;     (let ((gs (gp::get-graphics-state *boxer-pane*)))
-;     (setf (gp::graphics-state-foreground gs) boxer::*foreground-color*))
+
       ;; opengl equivalent would be...
       (opengl:rendering-on (*boxer-pane*)
                     (initialize-ogl-color-pool)
@@ -1044,14 +984,13 @@
         ;; (boxer-eval::setup-evaluator) farther down
         (run-redisplay-inits))
 
-      (start-boxer-progress "RDP inits ~D" (get-internal-real-time) 60)
       (boxer::load-appdata)
       (fixup-menus)
       (setup-editor boxer::*initial-box*)
       (setq *display-bootstrapping-no-boxes-yet* nil)
-      (start-boxer-progress "Editor ~D" (get-internal-real-time) 70)
+
       (boxer-eval::setup-evaluator)
-      (start-boxer-progress "Eval ~D" (get-internal-real-time) 80)
+
       ;; should handle double clicked files here...
       (multiple-value-bind (start-box as-world?)
           (load-startup-file)
@@ -1071,13 +1010,10 @@
       (when (eq :open-file (caar *pending-osx-events*))
         (safe-open-double-clicked-file (cdar *pending-osx-events*))
         (setq *pending-osx-events* nil))
-      (start-boxer-progress "Starting Command Loop ~D" (get-internal-real-time) 100)
-      (sleep 1)
 
       (update-visible-editor-panes)
       (boxer::switch-use-mouse2021 *use-mouse2021*)
 
-      (capi:destroy progress-bar)
       (boxer-process-top-level-fn *boxer-pane*))))
 
 ;; check cdr of SYSTEM:*LINE-ARGUMENTS-LIST*
