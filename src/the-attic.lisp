@@ -1854,6 +1854,15 @@ Modification History (most recent at top)
 ;;;; FILE: boxwin-opengl.lisp
 ;;;;
 
+#+cocoa
+(defvar *cocoa-boxer-interface* nil)
+
+;; *** should be acceptable to (setf (graphics-state-pattern ...
+;; the number vectors are lists of either 1 or 0
+(defun make-pattern (number-vectors)
+  (declare (ignore number-vectors))
+  )
+
 (eval-when (compile load eval)
   (capi:define-interface load-progress-frame ()
     ()

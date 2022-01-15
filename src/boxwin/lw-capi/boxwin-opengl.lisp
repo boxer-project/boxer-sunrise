@@ -122,13 +122,7 @@
 
 (in-package :boxer-window)
 
-;(load (example-file "opengl/examples/load"))
-;(use-package :opengl)
-
 ;; Vars
-
-#+cocoa
-(defvar *cocoa-boxer-interface* nil)
 
 (defvar *redisplayable-windows* nil
   "This is a list of all the windows which should be redisplayed when
@@ -862,15 +856,7 @@
   (push *boxer-pane* *redisplayable-windows*)
   (setq *point-blinker* (make-blinker *boxer-pane*))
   #+cocoa
-  (capi:set-application-interface (setq *cocoa-boxer-interface*
-                                        (make-instance 'cocoa-boxer-interface)))
-  )
-
-;; *** should be acceptable to (setf (graphics-state-pattern ...
-;; the number vectors are lists of either 1 or 0
-(defun make-pattern (number-vectors)
-  (declare (ignore number-vectors))
-  )
+  (capi:set-application-interface (make-instance 'cocoa-boxer-interface)))
 
 (defvar *fullscreen-window-p* T
   "Should boxer occupy the entire screen when starting up ?")

@@ -277,7 +277,6 @@
            :outermost-screen-box
            :*foreground-color* :*background-color*
            :main-screen :sheet-screen-array :prepare-sheet
-           :make-pattern
            :window-inside-size
            :window-pixel
            :%bitblt-in-screen :%bitblt-to-screen :%bitblt-from-screen
@@ -321,7 +320,6 @@
            :get-character-input :get-boxer-input
            :get-any-event;; not used by boxer but useful for debugging
            ;; cursor and blinker manipulation
-           :*number-of-mouse-buttons*
            :with-mouse-tracking
            :with-mouse-tracking-inside;; these  bind...
            :mouse-x :mouse-y
