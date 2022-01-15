@@ -295,8 +295,7 @@
    ))
 
 
-(eval-when (compile load eval)
-(capi:define-interface boxer-frame ()
+(capi:define-interface boxer-frame (capi:interface)
   ()
   (:panes
    (text-toolbar
@@ -607,7 +606,11 @@
                               ;; keys like return, backspace, and arrows make a beeping sound.  sgithens - 2021-11-06
                               (:gesture-spec gesture-spec-handler)
                               )
-               :display-callback 'boxer-expose-window-handler
+              ;;  :display-callback 'boxer-expose-window-handler
+              ;;  :create-callback
+               :display-callback 'boxer-window::boxer-pane-display-callback
+               :resize-callback 'boxer-window::boxer-pane-display-callback
+
               ;  :resize-callback 'resize-handler
                ;; The following 4 params are for scrolling gestures (two finger scroll, mouse wheels, etc)
                :coordinate-origin :fixed-graphics
@@ -798,7 +801,7 @@
                          (declare (ignore args ))
                          (user::quit))
    ))
-)
+
 
 (defvar *osx-events-log* nil)
 (defvar *pending-osx-events* nil)
@@ -856,7 +859,13 @@
   (push *boxer-pane* *redisplayable-windows*)
   (setq *point-blinker* (make-blinker *boxer-pane*))
   #+cocoa
-  (capi:set-application-interface (make-instance 'cocoa-boxer-interface)))
+  (capi:set-application-interface (make-instance 'cocoa-boxer-interface))
+
+  (gp:register-image-translation
+     'bw::toolbar-scratch-images
+     (gp:read-external-image (merge-pathnames "./images/scratch-icons.png" boxer::*resources-dir*)))
+
+  (capi:display boxer-window::*boxer-frame*))
 
 (defvar *fullscreen-window-p* T
   "Should boxer occupy the entire screen when starting up ?")
@@ -893,9 +902,6 @@
      (setf (capi:layout-description layout) new-desc)))
 
 (defun window-system-specific-start-boxer ()
-  (gp:register-image-translation
-    'toolbar-scratch-images
-    (gp:read-external-image (merge-pathnames "./images/scratch-icons.png" boxer::*resources-dir*)))
 
   (when (member "-debug" sys:*line-arguments-list* :test #'string-equal)
     (break "Start Boxer"))
@@ -925,47 +931,10 @@
                             :width (- (capi:screen-width screen) 10)
                             :height (- (capi:screen-height screen) 120)))))
 
-  (capi:display *boxer-frame*)
+  ;; (capi:display *boxer-frame*)
 
   (when (member "-debug" sys:*line-arguments-list* :test #'string-equal)
     (opengl:describe-configuration *boxer-pane*))
-
-  ;; opengl equivalent would be...
-  (opengl:rendering-on (*boxer-pane*)
-                (initialize-ogl-color-pool)
-                (boxer::initialize-gray-patterns)
-                (boxer::initialize-colors)
-                (%set-pen-color box::*foreground-color*)
-                ;; do other OpenGL inits...
-                (setq *ogl-current-color-vector* (make-ogl-color 0.0 0.0 0.0)
-                      *blinker-color* (make-ogl-color .3 .3 .9 .5))
-                (opengl:gl-enable opengl:*gl-scissor-test*)
-                (opengl::gl-enable opengl::*gl-line-smooth*)
-                (opengl::gl-enable opengl::*gl-polygon-smooth*)
-                (opengl::gl-enable opengl::*gl-blend*)
-                (opengl::gl-blend-func opengl::*gl-src-alpha* opengl::*gl-one-minus-src-alpha*)
-                (opengl::gl-hint opengl::*gl-line-smooth-hint* opengl::*gl-nicest*))
-
-  (let ((arial-12 (boxer::make-boxer-font '("Arial" 12)))
-        (arial-16 (boxer::make-boxer-font '("Arial" 16)))
-        (arial-16-bold (boxer::make-boxer-font '("Arial" 16 :bold))))
-    (setq  boxer::*normal-font-no*           arial-16
-            boxer::*default-font*             arial-16
-            boxer::*box-border-label-font-no* arial-12
-            boxer::*border-label-font*        arial-12
-            boxer::*box-border-name-font-no*  arial-16-bold
-            boxer::*border-name-font*         arial-16-bold
-            boxer::*sprite-type-font-no*      arial-16-bold
-            boxer::*initial-graphics-state-current-font-no* arial-16-bold
-            boxer::*graphics-state-current-font-no* arial-16-bold
-            boxer::*boxtop-text-font*         arial-16-bold
-    ))
-  ;; #+freetype-fonts
-  (boxer::load-freetype-faces)
-  (let ((boxer::%private-graphics-list nil))
-    ;; needed by shape-box updater in the redisplay inits but not set until
-    ;; (boxer-eval::setup-evaluator) farther down
-    (run-redisplay-inits))
 
   (boxer::load-appdata)
   (fixup-menus)
