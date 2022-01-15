@@ -71,71 +71,6 @@ Modification History (most recent at the top)
 ;  "The font number that specifies the font for names and variables. ")
 
 
-;;;; GRAY PATTERNS
-
-;; the default in the code is *gray* which should be bound to one of
-;; the particular grays defined below
-;; These are useful for drawing gray areas on the screen.
-;;
-;; We break these into compile-time definitions and load-type assignments
-;; so we don't have to have the window system loaded during compilation.
-;;
-;; The numeric grays are bound to patterns.  The other grays should
-;; be set up to be bound to particular numeric grays
-
-(defvar *gray0*)
-
-(defvar *gray1*)
-
-(defvar *gray2*)
-
-(defvar *gray3*)
-
-(defvar *gray4*)
-
-(defvar *gray5*)
-
-(defvar *filegray* nil)
-
-(defvar *graphicsgray* nil)
-
-;; Note: 0,1 and 5 look good 2,3 and 4 could use some tweaking...
-
-(defun initialize-gray-patterns ()
-  (setq *GRAY0* (boxer-window::make-pattern
-                 '((1 0 0 0 0 1 0 0 0 0)
-                   (0 0 1 0 0 0 0 1 0 0)
-                   (0 0 0 0 1 0 0 0 0 1)
-                   (0 1 0 0 0 0 1 0 0 0)
-                   (0 0 0 1 0 0 0 0 1 0))))
-  (setq *GRAY1* (boxer-window::make-pattern
-                 '((1 0 0 0 1 0 0 0)
-                   (0 1 0 0 0 1 0 0)
-                   (0 0 0 1 0 0 0 1)
-                   (0 0 1 0 0 0 1 0))))
-  (setq *GRAY2* (boxer-window::make-pattern
-                 '((1 0 0 0)
-                   (0 0 1 0)
-                   (0 1 0 0))))
-  (setq *GRAY3* (boxer-window::make-pattern
-                 '((1 0 0 0 1 0 1 0)
-                   (0 1 0 1 0 0 0 1)
-                   (1 0 0 0 1 0 1 0)
-                   (0 1 0 1 0 0 0 1))))
-  (setq *GRAY4* (boxer-window::make-pattern
-                 '((1 0 1 0 1 0 1 0)
-                   (0 1 0 0 0 1 0 0)
-                   (1 0 1 0 1 0 1 0))))
-  (setq *GRAY5* (boxer-window::make-pattern
-                 '((1 0 1 0 1 0 1 0)
-                   (0 1 0 1 0 1 0 1)
-                   (1 0 1 0 1 0 1 0)
-                   (0 1 0 1 0 1 0 1))))
-  ;; finally set up *gray* to be one of the grays we just defined
-  (setq *GRAY* *GRAY0*
-        *filegray* (boxer-window::make-pattern '((1 1) (1 1)))
-        *graphicsgray* *gray1*))
-
 ;;; Graphics defs and macros
 
 (DEFVAR *DEFAULT-GRAPHICS-SHEET-WIDTH* 320.)
@@ -176,8 +111,7 @@ Modification History (most recent at the top)
 ;;; The X implementation requires that the font map stuff be set
 ;;; up BEFORE the redisplay inits are run but we better check first...
 (def-redisplay-initialization
-  (progn (initialize-gray-patterns)
-         (initialize-colors)
+  (progn (initialize-colors)
          ;; moved here because FD's need init'd colors
          (setq *default-font-descriptor* (make-bfd -1 *default-font*)
                *current-font-descriptor* (make-bfd -1 *default-font*))

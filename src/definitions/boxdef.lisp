@@ -235,9 +235,6 @@ Modification History (most recent at top)
 (DEFVAR *OUTERMOST-SCREEN-BOX-STACK* NIL
   "Keeps track of the previous outermost screen boxes so that they can be returned to. ")
 
-(DEFVAR *GRAY* nil
-  "Bound to a window system specific tiling pattern used for drawing shrunken boxes")
-
 ;;;; Fonts
 
 ;;; The editor interface to fonts is via font numbers (small fixnums) are

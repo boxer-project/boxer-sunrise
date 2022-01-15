@@ -1611,6 +1611,10 @@ Modification History (most recent at top)
 
 (defvar *default-font-map-length* 10)
 
+(DEFVAR *GRAY* nil
+  "Bound to a window system specific tiling pattern used for drawing shrunken boxes")
+
+
 ;;;;
 ;;;; FILE: boxnet.lisp
 ;;;;
@@ -4170,6 +4174,71 @@ Modification History (most recent at top)
           `(WITHOUT-INTERRUPTS
             (OPEN-BLINKER ,REGION)
             (PROGN . ,BODY)))
+
+;;;; GRAY PATTERNS
+
+;; the default in the code is *gray* which should be bound to one of
+;; the particular grays defined below
+;; These are useful for drawing gray areas on the screen.
+;;
+;; We break these into compile-time definitions and load-type assignments
+;; so we don't have to have the window system loaded during compilation.
+;;
+;; The numeric grays are bound to patterns.  The other grays should
+;; be set up to be bound to particular numeric grays
+
+(defvar *gray0*)
+
+(defvar *gray1*)
+
+(defvar *gray2*)
+
+(defvar *gray3*)
+
+(defvar *gray4*)
+
+(defvar *gray5*)
+
+(defvar *filegray* nil)
+
+(defvar *graphicsgray* nil)
+
+;; Note: 0,1 and 5 look good 2,3 and 4 could use some tweaking...
+
+(defun initialize-gray-patterns ()
+  (setq *GRAY0* (boxer-window::make-pattern
+                 '((1 0 0 0 0 1 0 0 0 0)
+                   (0 0 1 0 0 0 0 1 0 0)
+                   (0 0 0 0 1 0 0 0 0 1)
+                   (0 1 0 0 0 0 1 0 0 0)
+                   (0 0 0 1 0 0 0 0 1 0))))
+  (setq *GRAY1* (boxer-window::make-pattern
+                 '((1 0 0 0 1 0 0 0)
+                   (0 1 0 0 0 1 0 0)
+                   (0 0 0 1 0 0 0 1)
+                   (0 0 1 0 0 0 1 0))))
+  (setq *GRAY2* (boxer-window::make-pattern
+                 '((1 0 0 0)
+                   (0 0 1 0)
+                   (0 1 0 0))))
+  (setq *GRAY3* (boxer-window::make-pattern
+                 '((1 0 0 0 1 0 1 0)
+                   (0 1 0 1 0 0 0 1)
+                   (1 0 0 0 1 0 1 0)
+                   (0 1 0 1 0 0 0 1))))
+  (setq *GRAY4* (boxer-window::make-pattern
+                 '((1 0 1 0 1 0 1 0)
+                   (0 1 0 0 0 1 0 0)
+                   (1 0 1 0 1 0 1 0))))
+  (setq *GRAY5* (boxer-window::make-pattern
+                 '((1 0 1 0 1 0 1 0)
+                   (0 1 0 1 0 1 0 1)
+                   (1 0 1 0 1 0 1 0)
+                   (0 1 0 1 0 1 0 1))))
+  ;; finally set up *gray* to be one of the grays we just defined
+  (setq *GRAY* *GRAY0*
+        *filegray* (boxer-window::make-pattern '((1 1) (1 1)))
+        *graphicsgray* *gray1*))
 
 ;;;;
 ;;;; FILE: disply.lisp
@@ -11281,6 +11350,20 @@ Modification History (most recent at top)
       (when (screen-obj? superior)
         (set-needs-redisplay-pass-2? superior t)))))
 
+(defmethod gray-self ((self screen-box))  *gray*)
+(defmethod gray-self ((self graphics-screen-box)) *graphicsgray*)
+
+;; sgithens 2022-01-15 from inside defmethod gray-body (self screen-box)
+                             #-(or lwwin opengl)
+                             (gray (if (or (and (storage-chunk? (slot-value self 'actual-obj))
+                                                (null (slot-value (slot-value self 'actual-obj)
+                                                                  'first-inferior-row)))
+                                           (and (port-box? (slot-value self 'actual-obj))
+                                                (null (ports (slot-value self 'actual-obj)))
+                                                (boxnet::cross-file-port-branch-links
+                                                 (slot-value self 'actual-obj))))
+                                     *filegray*
+                                     (gray-self self)))
 
 ;;;;
 ;;;; FILE: sysprims.lisp

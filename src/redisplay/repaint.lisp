@@ -856,25 +856,11 @@
     (draw-rectangle w h x y)))
 
 
-
-(defmethod gray-self ((self screen-box))  *gray*)
-(defmethod gray-self ((self graphics-screen-box)) *graphicsgray*)
-
 (defmethod gray-body ((self screen-box))
   (multiple-value-bind (il it ir ib)
                        (box-borders-widths (class-name (class-of (screen-obj-actual-obj self))) self)
                        (let ((inside-wid (- (slot-value self 'wid) (+ ir il)))
-                             (inside-hei (- (slot-value self 'hei) (+ ib it)))
-                             #-(or lwwin opengl)
-                             (gray (if (or (and (storage-chunk? (slot-value self 'actual-obj))
-                                                (null (slot-value (slot-value self 'actual-obj)
-                                                                  'first-inferior-row)))
-                                           (and (port-box? (slot-value self 'actual-obj))
-                                                (null (ports (slot-value self 'actual-obj)))
-                                                (boxnet::cross-file-port-branch-links
-                                                 (slot-value self 'actual-obj))))
-                                     *filegray*
-                                     (gray-self self))))
+                             (inside-hei (- (slot-value self 'hei) (+ ib it))))
                          (with-pen-color (*gray*)
                            (draw-rectangle inside-wid inside-hei il it)))))
 
