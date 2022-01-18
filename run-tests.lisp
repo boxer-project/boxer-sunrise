@@ -14,6 +14,10 @@
 (ql:quickload :zpng)
 (ql:quickload :qbase64)
 (ql:quickload :html-entities)
+(ql:quickload :md5)
+
+(ql:quickload :alexandria)
+(ql:quickload :trivial-garbage)
 
 (ql:quickload :cffi)
 (ql:quickload :cl-freetype2)

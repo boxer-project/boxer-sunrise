@@ -164,12 +164,13 @@ Modification History (most recent at the top)
 ;; of the LISP package as "LISP"
 ;; we have this hack installed for files created (usually on the mac)
 ;; before the dumper fix was installed
-(defvar *hack-symbol-package-names* nil)
+(defvar *hack-symbol-package-names* t)
 
 (define-load-command-for-value bin-op-package-symbol (stream)
   (let* ((package-string (let ((name (bin-next-value stream)))
-			   (if (and *hack-symbol-package-names* (string= name
-									 "COMMON-LISP"))
+			   (if (and *hack-symbol-package-names*
+                  (or (string= name "LUCID-COMMON-LISP")
+                      (string= name "COMMON-LISP")))
 			       "LISP"
 			       name)))
 	 (package (find-package package-string))
@@ -991,10 +992,10 @@ should ignore it.")
       (unless (eq exports boxer-eval::*exporting-all-variables-marker*)
 	(setf (slot-value box 'exports) exports))))
   (setf (slot-value box 'closets) (getf plist :closets))
-  (setf (slot-value box 'graphics-sheet) (getf plist :graphics-sheet))
+  (setf (slot-value box 'graphics-info) (getf plist :graphics-sheet))
   ;; restore the backpointer from the graphics sheet
-  (unless (null (slot-value box 'graphics-sheet))
-    (setf (graphics-sheet-superior-box (slot-value box 'graphics-sheet)) box))
+  (unless (null (slot-value box 'graphics-info))
+    (setf (graphics-sheet-superior-box (slot-value box 'graphics-info)) box))
   (when (row? (name-row box))
     (setf (superior-box (name-row box)) box))
   (let* ((rows (getf plist :rows))

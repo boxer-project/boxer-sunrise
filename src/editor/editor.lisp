@@ -1388,6 +1388,13 @@ points to the Box which contains the lower BP,then the superior BP is returned"
 (defvar *boxer-status-string-alist* nil
   "An alist of unique ids or symbols and strings")
 
+(defvar *draw-status-line* t
+  "A boolean indicating whether we should draw the status line.
+
+  The initial usage of this is displabling the status line for
+  unit tests, during which the entire pane/editor is not brought
+  up.")
+
 (defun status-line-display (who what)
   (setq *boxer-status-string-alist*
         (delete who *boxer-status-string-alist* :key #'car))
@@ -1422,8 +1429,9 @@ points to the Box which contains the lower BP,then the superior BP is returned"
 
 (defun redraw-status-line (&rest ignore)
   (declare (ignore ignore))
-  (window-system-dependent-redraw-status-line
-   (get-boxer-status-string)))
+  (when *draw-status-line*
+    (window-system-dependent-redraw-status-line
+      (get-boxer-status-string))))
 
 ;;; use 'boxer-editor-error for status-line ID so it will get
 ;; flushed on subsequent keyboard input

@@ -20,6 +20,7 @@
                  (:test-file "alternate-names-tests")
                 ;;  (:test-file "chunker-tests")
                 (:test-file "vrtdef-tests")
+                (:test-file "loader-tests")
                  )))
   :description "Test system for boxer-sunrise2"
 
