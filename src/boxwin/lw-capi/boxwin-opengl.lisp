@@ -1207,18 +1207,19 @@
         (t (queue-event gesture))))
 
 (defun boxer-key-handler (pane x y gesture)
-  (declare (ignore pane x y))
-
+  (declare (ignore x y))
   (let ((data (system:gesture-spec-data gesture))
         (modifiers (system:gesture-spec-modifiers gesture))
         (final-gesture gesture))
 
+    ;; - Check if caps lock is on, and if it's an uppercasable character upper case it.
     ;; - If we are shifting a lower case character, submit a gesture that is the upper-cased char
     ;;   with no modifiers.
     ;; - However, if this is a gesture that is not case'able, and the modifier is only the shift
     ;;   key, submit the key alone with no gestures. Currently on LW this is what we need to do
     ;;   for typing special characters like #\+ otherwise it gets sent to SHIFT-+-KEY by the system.
-    (cond ((and (equal modifiers 1)
+    (cond ((and (or (logtest (capi:pane-modifiers-state pane) sys:gesture-spec-caps-lock-bit)
+                    (equal modifiers 1))
                 (integerp data) ;; may be a symbol like :LEFT or :HELP and not an integer
                 (lower-case-p (code-char data)))
            (setf final-gesture (system:make-gesture-spec (char-code (char-upcase (code-char data))) 0)))
