@@ -1612,6 +1612,5 @@
       (drawing-on-window (*boxer-pane*)
                          (let ((*current-sprite* box))
                            (bu::follow-mouse)
-                           ;(follow-mouse-internal (sprite-box-associated-turtle box))
                            ))))
   boxer-eval::*novalue*)
