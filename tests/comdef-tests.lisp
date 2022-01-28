@@ -12,9 +12,11 @@
 
 (is (boxer::editor-abort-char? #\c 1) nil)
 
-(is (boxer::editor-abort-char? #\g 1) t)
+(is (boxer::editor-abort-char? #\c 2) nil)
 
-(is (boxer::editor-abort-char? #\. 1) t)
+(is (boxer::editor-abort-char? #\g 2) t)
+
+(is (boxer::editor-abort-char? #\. 2) t)
 
 
 (finalize)

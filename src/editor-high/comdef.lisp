@@ -735,18 +735,11 @@ Modification History (most recent at top)
 ;  (reset-mouse-cursor)
 ;  (setq *suitcase-mode* nil))
 
-(defvar *editor-abort-chars* #\c) ; sgithens TODO March 7, 2020
-  ;; #-mcl (list (make-char #\g 1) (make-char #\. 1)
-  ;;             ;; 200. is the STOP key on Suns
-  ;;             #+sun (make-char (code-char 200))
-  ;;             #+sun (make-char (code-char 200) 1))
-  ;; ;; MCL can't encode shift bits in character objects
-  ;; #+mcl (list #\Bell))
+(defvar *editor-abort-chars* '((#\g 2) (#\. 2)))
 
-(defun editor-abort-char? (char &optional bits)
-  (declare (ignore bits))
-  (and (characterp char)
-       (or (member char *editor-abort-chars* :test #'char-equal))))
+(defun editor-abort-char? (ch &optional (bits 0))
+  (let ((keystroke (list ch bits)))
+    (if (member keystroke *editor-abort-chars* :test #'equal) t nil)))
 
 ;; used in keydef-high
 (defvar *defined-input-device-platforms* nil
