@@ -1019,7 +1019,7 @@ Modification History (most recent at top)
     (cond ((eq status ':error)
            (setq boxer::*recorded-place-alist*
                  (delete register boxer::*recorded-place-alist*))
-           (boxer::boxer-editor-warning "Place ~C is no longer in the editor" data))
+           (boxer::boxer-editor-warning "Place ~A is no longer in the editor" data))
           (t (boxer::repaint)))))
 
 ;;; **** MacOS Window Menu ****
