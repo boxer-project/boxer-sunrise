@@ -1468,8 +1468,7 @@ points to the Box which contains the lower BP,then the superior BP is returned"
     (catch *input-throw-tag*
       (loop (multiple-value-bind (char bits)
                                  (get-character-input *boxer-pane*)
-                                 (declare (ignore bits))
-                                 (cond ((editor-abort-char? char)
+                                 (cond ((editor-abort-char? char bits)
                                         (status-line-undisplay 'boxer-editor-error)
                                         (return-from get-string-from-status-line (values "" T)))
                                    (t
