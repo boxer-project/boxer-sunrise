@@ -43,6 +43,7 @@
   (when (probe-file quicklisp-init)
     (load quicklisp-init)))
 
+(ql:quickload :log4cl)
 (ql:quickload :drakma)
 (ql:quickload :cl-json)
 (ql:quickload :zpng)

@@ -31,13 +31,18 @@
    #+win32 (pathname-directory (lw:lisp-image-name)))
 
 (defun start-boxer ()
+    ;; TODO sgithens Get this proper logging location set up for each OS
+    ;; (log:config :daily "/Users/sgithens/boxlog.txt")
+    (log:info "Starting boxer")
     ;; Here we are adding the Resources/libs directory of the application bundle
     ;; which will libfreetype.6.dylib, as well as any other *.dylib and *.dll files.
     (pushnew
         (make-pathname :host (pathname-host (lw:lisp-image-name))
-                       :directory(append (base-install-folder) '("Frameworks")))
+                       :directory(append (base-install-folder)
+                                         '("Frameworks"
+                                           #+(and lispworks8 arm64) "lw8-macos-arm")))
         cffi:*foreign-library-directories* :test #'equal)
-
+    (log:debug "Foreign-Library Dirs: ~A" cffi:*foreign-library-directories*)
     ;; This adds the directory where we are keeping the compiled version of freetype2,
     ;; such that it can be included eventually using asdf:load-system.
 
@@ -46,9 +51,11 @@
                (list* '*default-pathname-defaults*
                       (make-pathname :directory
                         (append (butlast (pathname-directory (lw:lisp-image-name)))
-                        '("PlugIns" "cl-freetype2")))
+                        '("PlugIns"
+                          #+(and lispworks8 arm64) "lw8-macos-arm"
+                          "cl-freetype2")))
                 asdf:*central-registry*))
-
+    (log:debug "ASDF Registry: ~A" asdf:*central-registry*)
 
     ;; sgithens 2020-12-09 This requires some explanation. We are currently manually loading
     ;; the entire cl-freetype2 system, rather than using asdf because:
@@ -64,7 +71,7 @@
     ;; (asdf:load-system :cl-freetype2)
     (let ((freetype-deps-dir (make-pathname
                                :host (pathname-host (lw:lisp-image-name))
-                               :directory (append (base-install-folder) '("PlugIns" "cl-freetype2" "src"))))
+                               :directory (append (base-install-folder) '("PlugIns" "lw8-macos-arm" "cl-freetype2" "src"))))
           (freetype-source-parts '("package"
                                    "ffi/grovel/grovel-freetype2"
                                    "ffi/cffi-cwrap"
@@ -87,8 +94,13 @@
       (dolist (source-part freetype-source-parts)
         ;; Currently the file extensions for 64-bit x86 compiled lisp files on MacOS and Windows
         ;; are .64xfasl and 64ofasl respectively
-        #+mac (load (merge-pathnames (concatenate 'string source-part ".64xfasl") freetype-deps-dir))
+        (log:debug "About to load: ~A" source-part)
+        #+(and lispworks8 arm64 mac) (log:info (merge-pathnames (concatenate 'string source-part ".64yfasl") freetype-deps-dir))
+        #+(and lispworks8 arm64 mac) (load (merge-pathnames (concatenate 'string source-part ".64yfasl") freetype-deps-dir))
+        #+(and mac (not arm64)) (load (merge-pathnames (concatenate 'string source-part ".64xfasl") freetype-deps-dir))
         #+win32 (load (merge-pathnames (concatenate 'string source-part ".64ofasl") freetype-deps-dir))))
+
+    (log:debug "Finished loading compiled cl-freetype2 libs")
 
     (setf *resources-dir* (make-pathname
                                                   :host (pathname-host (lw:lisp-image-name))
@@ -106,6 +118,8 @@
             :host (pathname-host (lw:lisp-image-name))
             :directory (append (base-install-folder) '("PlugIns"))
             :name "freetype-fonts" :type "lisp"))
+
+    (log:debug "Finished loading our freetype-fonts code")
 
     (boxer-window::window-system-specific-make-boxer)
     (boxer-window::window-system-specific-start-boxer)

@@ -33,6 +33,10 @@
 (ql:quickload :qbase64)
 (ql:quickload :html-entities)
 
+(ql:quickload :alexandria)
+(ql:quickload :trivial-garbage)
+(ql:quickload :log4cl)
+
 (ql:quickload :cffi)
 #+win32 (pushnew #P"Z:/code/boxer-sunrise2/"
         cffi:*foreign-library-directories* :test #'equal)
