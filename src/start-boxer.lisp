@@ -71,7 +71,10 @@
     ;; (asdf:load-system :cl-freetype2)
     (let ((freetype-deps-dir (make-pathname
                                :host (pathname-host (lw:lisp-image-name))
-                               :directory (append (base-install-folder) '("PlugIns" "lw8-macos-arm" "cl-freetype2" "src"))))
+                               :directory (append (base-install-folder) '("PlugIns"
+                                                                          #+(and lispworks8 arm64 mac) "lw8-macos-arm"
+                                                                          #+(and lispworks8 x86-64 mac) "lw8-macos-x86"
+                                                                          "cl-freetype2" "src"))))
           (freetype-source-parts '("package"
                                    "ffi/grovel/grovel-freetype2"
                                    "ffi/cffi-cwrap"
@@ -91,13 +94,13 @@
                                    "render"
                                    "outline"
                                    "toy")))
+      (log:debug "Freetype deps dir: ~A" freetype-deps-dir)
       (dolist (source-part freetype-source-parts)
         ;; Currently the file extensions for 64-bit x86 compiled lisp files on MacOS and Windows
         ;; are .64xfasl and 64ofasl respectively
         (log:debug "About to load: ~A" source-part)
-        #+(and lispworks8 arm64 mac) (log:info (merge-pathnames (concatenate 'string source-part ".64yfasl") freetype-deps-dir))
         #+(and lispworks8 arm64 mac) (load (merge-pathnames (concatenate 'string source-part ".64yfasl") freetype-deps-dir))
-        #+(and mac (not arm64)) (load (merge-pathnames (concatenate 'string source-part ".64xfasl") freetype-deps-dir))
+        #+(and lispworks mac x86-64) (load (merge-pathnames (concatenate 'string source-part ".64xfasl") freetype-deps-dir))
         #+win32 (load (merge-pathnames (concatenate 'string source-part ".64ofasl") freetype-deps-dir))))
 
     (log:debug "Finished loading compiled cl-freetype2 libs")
