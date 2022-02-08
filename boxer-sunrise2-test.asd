@@ -21,6 +21,7 @@
                 ;;  (:test-file "chunker-tests")
                 (:test-file "vrtdef-tests")
                 (:test-file "loader-tests")
+                (:test-file "keydef-high-tests")
                  )))
   :description "Test system for boxer-sunrise2"
 

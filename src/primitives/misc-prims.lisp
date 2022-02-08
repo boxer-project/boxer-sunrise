@@ -933,19 +933,7 @@
 (boxer-eval::defboxer-primitive bu::show-key-name ()
   (status-line-display 'show-key-name "Press a key or click the mouse...")
   (let* ((input (get-boxer-input *boxer-pane*))
-          (key-name (if (key-event? input)
-                      (lookup-key-name (input-code input)(input-bits input))
-                      (let ((click  (mouse-event-click  input))
-                            (x-pos  (mouse-event-x-pos  input))
-                            (y-pos  (mouse-event-y-pos  input))
-                            (bits   (mouse-event-bits   input)))
-                        ;; now call the mouse tracker to see if we
-                        ;; are on a border area
-                        (multiple-value-bind (mouse-bp local-x local-y
-                                                      area)
-                                            (mouse-position-values x-pos y-pos)
-                                            (declare (ignore mouse-bp local-x local-y))
-                                            (lookup-click-name click bits area))))))
+         (key-name (lookup-input-name input)))
     (status-line-undisplay 'show-key-name)
     (make-vc (list (make-evrow-from-entry key-name)))))
 

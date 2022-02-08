@@ -607,6 +607,28 @@
                                                   area)
                                mouse-bp local-x local-y)))
 
+(defun lookup-input-name (data)
+  "Takes a character/number (key-event?), mouse-event, or gesture-spec and returns
+  the boxer-user symbol for the input such as `A-KEY` or `MOUSE-CLICK`"
+  (cond ((characterp data)
+         (lookup-key-name (char-code data) 0))
+        ((numberp data)
+         (lookup-key-name data 0))
+        ((mouse-event? data)
+         (let ((click  (mouse-event-click  data))
+                       (x-pos  (mouse-event-x-pos  data))
+                       (y-pos  (mouse-event-y-pos  data))
+                       (bits   (mouse-event-bits   data)))
+                       ;; now call the mouse tracker to see if we
+                       ;; are on a border area
+                       (multiple-value-bind (mouse-bp local-x local-y
+                                                      area)
+                    (mouse-position-values x-pos y-pos)
+                         (declare (ignore mouse-bp local-x local-y))
+                         (lookup-click-name click bits area))))
+        ((sys:gesture-spec-p data)
+         (lookup-key-name (sys:gesture-spec-data data) (sys:gesture-spec-modifiers data)))
+        (t nil)))
 
 ;;; Documentation Support
 
