@@ -711,14 +711,8 @@ Modification History (most recent at top)
 ;;; rebinds various mouse keys
 
 (defun entering-region-mode ()
-  (let ((main-cut-name #+(or apple win32) (current-mouse-click-name 0 2)
-                       #-(or apple win32) (current-mouse-click-name 0 0))
-        (main-copy-name #+(or apple win32) (current-mouse-click-name 0 1)
-                        #-(or apple win32 )(current-mouse-click-name 2 0)))
-    (boxer-editor-message "~A to cut, or ~A to copy the region"
-                          main-cut-name main-copy-name)
     (set-mouse-cursor :region-mode)
-    (add-mode (region-mode))))
+    (add-mode (region-mode)))
 
 (defun exiting-region-mode (&optional (reset-mouse-cursor? t))
   (when reset-mouse-cursor? (reset-mouse-cursor))

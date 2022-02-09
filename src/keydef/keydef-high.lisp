@@ -348,18 +348,6 @@
      (t
       (symbol-format nil "~A-MOUSE-~A-ON-~A" shift button place)))))
 
-(defun current-mouse-click-name (button shift &optional place)
-  (let ((button-names (input-device-mouse-string
-                       *current-input-device-platform*))
-        (shift-names (input-device-shift-list
-                      *current-input-device-platform*)))
-    (unless (or (>= button (length button-names))
-                (> shift (length shift-names)))
-      (mouse-click-name-string (nth button button-names)
-                               (if (zerop& shift) nil
-                                 (nth (1-& shift) shift-names))
-                               place *current-input-device-platform*))))
-
 (defun setup-mouse-translation-table (platform
                                       &optional
                                       place-name

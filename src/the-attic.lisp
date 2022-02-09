@@ -2647,6 +2647,18 @@ Modification History (most recent at top)
 ;;;; FILE: comdef.lisp
 ;;;;
 
+;; sgithens 2022-02-08 Removing the boxer-editor-message bit from entering-region-mode
+(defun entering-region-mode ()
+  (let ((main-cut-name #+(or apple win32) (current-mouse-click-name 0 2)
+                       #-(or apple win32) (current-mouse-click-name 0 0))
+        (main-copy-name #+(or apple win32) (current-mouse-click-name 0 1)
+                        #-(or apple win32 )(current-mouse-click-name 2 0)))
+    (boxer-editor-message "~A to cut, or ~A to copy the region"
+                          main-cut-name main-copy-name)
+    (set-mouse-cursor :region-mode)
+    (add-mode (region-mode))))
+
+
 ;; #-opengl
 ;; (defun track-mouse-area (hilight-fun &key x y width height)
 ;;   (let ((backing-store (allocate-backing-store width height)))
@@ -7296,6 +7308,18 @@ if it is out of bounds
 ;;;;
 ;;;; FILE: keydef-high.lisp
 ;;;;
+
+(defun current-mouse-click-name (button shift &optional place)
+  (let ((button-names (input-device-mouse-string
+                       *current-input-device-platform*))
+        (shift-names (input-device-shift-list
+                      *current-input-device-platform*)))
+    (unless (or (>= button (length button-names))
+                (> shift (length shift-names)))
+      (mouse-click-name-string (nth button button-names)
+                               (if (zerop& shift) nil
+                                 (nth (1-& shift) shift-names))
+                               place *current-input-device-platform*))))
 
 ;; sgithens 2021-06-14 We used to have these mouse handlers parameterized
 ;; by setting them on a symbol, however there has never been more than one,
