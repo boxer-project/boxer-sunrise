@@ -561,12 +561,3 @@ followed by a return."
       (shrink filebox)
       (setf (first-inferior-row filebox) nil)
       filebox)))
-
-;; is (point-box) the right thing ?
-#+mcl
-(defboxer-command com-edit-mac-link ()
-  "Change the file a link points to"
-  (boxer-editor-message "Change the link's file...")
-  (ccl::catch-cancel (edit-mac-file-ref (point-box)))
-  (when (eq :normal (display-style (point-box))) (com-shrink-box))
-  boxer-eval::*novalue*)
