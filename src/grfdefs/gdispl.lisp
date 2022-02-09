@@ -1795,14 +1795,12 @@ Modification History (most recent at the top)
 ;;;
 (defun ensure-legal-window-coordinate (n)
   (cond ((< n #.(min-window-coord))
-         (at-user-level
-          (warn "window system coordinate ~D too small, changing to ~D"
-                n #.(min-window-coord)))
+         (warn "window system coordinate ~D too small, changing to ~D"
+               n #.(min-window-coord))
          #.(min-window-coord))
     ((>= n #.(max-window-coord))
-     (at-user-level
-      (warn "window system coordinate ~D too large, changing to ~D"
-            n #.(max-window-coord)))
+     (warn "window system coordinate ~D too large, changing to ~D"
+           n #.(max-window-coord))
      #.(max-window-coord))
     (t n)))
 

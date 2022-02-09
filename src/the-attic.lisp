@@ -7530,6 +7530,11 @@ if it is out of bounds
 ;;;; FILE: macros.lisp
 ;;;;
 
+;;; do nothing in other implementations
+;;; #-mcl
+(defmacro at-user-level (&body body)
+  `(progn ,@body))
+
 ;;; Trig in Degrees
 ;; There are 3 flavors of trig here, use the one which works best in
 ;; your implementation.  The three flavors are:

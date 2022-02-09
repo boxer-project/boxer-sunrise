@@ -717,11 +717,6 @@
   `(let ((*print-case* :upcase))
      (format ,stream ,string ,@args)))
 
-;;; do nothing in other implementations
-;;; #-mcl
-(defmacro at-user-level (&body body)
-  `(progn ,@body))
-
 ;;;; keyboard input event selectors
 
 ;; for keyboard events which are characters, we can use the usual

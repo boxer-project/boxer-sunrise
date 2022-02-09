@@ -22,6 +22,7 @@
                 (:test-file "vrtdef-tests")
                 (:test-file "loader-tests")
                 (:test-file "keydef-high-tests")
+                (:test-file "gdispl-tests")
                  )))
   :description "Test system for boxer-sunrise2"
 
