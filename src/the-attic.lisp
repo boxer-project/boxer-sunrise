@@ -3790,6 +3790,23 @@ Modification History (most recent at top)
 
 
 ;;;;
+;;;; FILE: comse.lisp
+;;;;
+
+#+mcl
+(defboxer-command com-link-to-mac-file ()
+  "Make a Link to a non boxer Macintosh file"
+  (boxer-editor-message "Choose a file to link to...")
+  (ccl::catch-cancel
+    (let* ((linkfile (ccl::choose-file-dialog :button-string "Link"))
+           (xbox (if (box-file? linkfile)
+                     (make-file-box linkfile)
+                     (make-xfile-box linkfile))))
+      (when (box? xbox) (insert-cha *point* xbox))))
+  (clear-editor-message)
+  boxer-eval::*novalue*)
+
+;;;;
 ;;;; FILE: comsf.lisp
 ;;;;
 

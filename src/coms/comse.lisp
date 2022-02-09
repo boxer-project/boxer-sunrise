@@ -536,21 +536,6 @@ followed by a return."
   (com-return)
   boxer-eval::*novalue*)
 
-
-
-#+mcl
-(defboxer-command com-link-to-mac-file ()
-  "Make a Link to a non boxer Macintosh file"
-  (boxer-editor-message "Choose a file to link to...")
-  (ccl::catch-cancel
-    (let* ((linkfile (ccl::choose-file-dialog :button-string "Link"))
-           (xbox (if (box-file? linkfile)
-                     (make-file-box linkfile)
-                     (make-xfile-box linkfile))))
-      (when (box? xbox) (insert-cha *point* xbox))))
-  (clear-editor-message)
-  boxer-eval::*novalue*)
-
 (defun box-file? (pathname)
   (or #+mcl (eq (ccl:mac-file-type pathname) :BOXR)
       ;; peek at the beginning bytes...
