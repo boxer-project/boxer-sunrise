@@ -9,6 +9,8 @@
 (ql:quickload "cl-ppcre")
 (ql:quickload "prove")
 
+(ql:quickload :cl-fad)
+(ql:quickload :log4cl)
 (ql:quickload :drakma)
 (ql:quickload :cl-json)
 (ql:quickload :zpng)
@@ -20,6 +22,18 @@
 (ql:quickload :trivial-garbage)
 
 (ql:quickload :cffi)
+
+(defvar *boxer-project-dir* (make-pathname :directory (pathname-directory *load-truename*)))
+
+(pushnew
+  (cl-fad:merge-pathnames-as-directory *boxer-project-dir* "data/boxersunrise.app/Contents/Frameworks/")
+  cffi:*foreign-library-directories* :test #'equal)
+
+(setf asdf:*central-registry*
+            (list* '*default-pathname-defaults*
+                    *boxer-project-dir*
+                    asdf:*central-registry*))
+
 (ql:quickload :cl-freetype2)
 
 ;; This turns off the terminal color sequences and simplifies the characters in the
@@ -27,19 +41,8 @@
 (setf prove:*enable-colors* nil)
 (setf prove::*default-reporter* :tap)
 
-;; TODO fix this to preserve the windows logical drive
-(defvar *boxer-project-dir* (make-pathname :directory (butlast (pathname-directory *load-truename*))))
-
-
-(setf asdf:*central-registry*
-            (list* '*default-pathname-defaults*
-                    *boxer-project-dir*
-                    #P"/Users/sgithens/code/boxer-sunrise2/"
-                asdf:*central-registry*))
-
 #+lispworks (load (example-file "opengl/examples/load"))
 (setf *features* (cons :opengl *features*))
 (setf *features* (cons :freetype-fonts *features*))
-
 
 (asdf:test-system :boxer-sunrise2 :reporter :list)
