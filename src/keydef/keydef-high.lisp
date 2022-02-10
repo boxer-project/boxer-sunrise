@@ -530,34 +530,41 @@
 ;;;;  Main dispatch function called by system dependent input loops or
 ;;;;  event handlers
 
+(defun remove-shift-bit (bits)
+  "Temporary function to remove the shift bit (see boxer-bugs-107) until we figure
+   out all the semantics of keyboard layouts and when to include/remove shift for
+   magic names."
+   (logandc2 bits 1))
+
 ;;; Hacked up to handle MCL's crippled character system
-(defun handle-boxer-input (input &optional bits)
-  ;;;	(increment-key-tick)		;for use with multiple-kill hack
-  (status-line-undisplay 'boxer-editor-error)
-  ;; increment the event counter
-  (next-boxer-event)
-  (boxer-eval::report-eval-errors-in-editor
-   ;; net prims in particular may signal eval errors as a response to
-   ;; an editor command, catch it at this level so the entire command
-   ;; gets aborted rather than just the net loading piece.
-   (COND ((key-event? input)
-          ;; Some sort of  key code. Try to lookup a name for it. If it
-          ;; has a name call boxer-eval:handle-boxer-key with the name.
-          (let ((key-name (lookup-key-name (if (numberp input)
-                                             input
-                                             (char-code input))
-                                           (or bits (input-bits input)))))
-            (record-key-input input (or bits (input-bits input)))
-            (if (or (null key-name)
-                    (not (handle-boxer-key key-name
-                                           (if (numberp input) input
-                                             (char-code input))
-                                           (or bits (input-bits input)))))
-              (unhandled-boxer-input key-name))))
-         ((mouse-event? input)
-          (record-mouse-input input)
-          (mouse-click-boxer-input-handler input))
-         (t (unhandled-boxer-input input)))))
+(defun handle-boxer-input (input &optional (raw-bits 0))
+  (let ((bits (remove-shift-bit raw-bits)))
+    ;;;	(increment-key-tick)		;for use with multiple-kill hack
+    (status-line-undisplay 'boxer-editor-error)
+    ;; increment the event counter
+    (next-boxer-event)
+    (boxer-eval::report-eval-errors-in-editor
+    ;; net prims in particular may signal eval errors as a response to
+    ;; an editor command, catch it at this level so the entire command
+    ;; gets aborted rather than just the net loading piece.
+    (COND ((key-event? input)
+            ;; Some sort of  key code. Try to lookup a name for it. If it
+            ;; has a name call boxer-eval:handle-boxer-key with the name.
+            (let ((key-name (lookup-key-name (if (numberp input)
+                                              input
+                                              (char-code input))
+                                            (or bits (input-bits input)))))
+              (record-key-input input (or bits (input-bits input)))
+              (if (or (null key-name)
+                      (not (handle-boxer-key key-name
+                                            (if (numberp input) input
+                                              (char-code input))
+                                            (or bits (input-bits input)))))
+                (unhandled-boxer-input key-name))))
+          ((mouse-event? input)
+            (record-mouse-input input)
+            (mouse-click-boxer-input-handler input))
+          (t (unhandled-boxer-input input))))))
 
 ;;; The following comment is preserved for posterity.
 ;; For now just be obnoxious
