@@ -28,9 +28,12 @@
 (load-all-patches)
 (require :asdf)
 (require :uiop)
+
+(defvar *boxer-project-dir* (make-pathname :directory (butlast (pathname-directory *load-truename*))))
+
 (setf asdf:*central-registry*
                (list* '*default-pathname-defaults*
-                      (uiop:getcwd)
+                      *boxer-project-dir*
                       #+win32 #P"z:/code/boxer-sunrise2/" ; TODO Sorting out path functions on win32...
                       asdf:*central-registry*))
 
@@ -43,6 +46,7 @@
   (when (probe-file quicklisp-init)
     (load quicklisp-init)))
 
+(ql:quickload :cl-fad)
 (ql:quickload :log4cl)
 (ql:quickload :drakma)
 (ql:quickload :cl-json)
@@ -76,7 +80,7 @@
 
         ;; TODO still working on getting these paths sorted out on win32, unfortunately hardcoded at the moment.
         #+win32 #P"z:/code/boxer-sunrise2/data/boxer-sunrise/boxersunrise.exe"
-        #+mac (merge-pathnames "./data/boxersunrise.app/Contents/MacOS/boxersunrise" (uiop:getcwd))
+        #+mac (merge-pathnames *boxer-project-dir* "boxersunrise")
         0 :interface :capi
         :keep-pretty-printer t
         :startup-bitmap-file nil
