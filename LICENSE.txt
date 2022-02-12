@@ -1,4 +1,4 @@
-Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
