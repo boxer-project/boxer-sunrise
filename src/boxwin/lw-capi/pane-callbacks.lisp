@@ -61,4 +61,6 @@
       (resize-handler-utility)
       (setf *boxer-pane-initialized* t))
 
+  (unless boxer::*evaluation-in-progress?*
+    (resize-handler canvas x y wid hei))
 )
