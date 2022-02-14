@@ -258,11 +258,14 @@
   ;; first, if there already is an existing region, flush it
   (reset-region) ; might want to reposition instead when shift-clicking
   ;; then go to where the mouse is pointing
-  (let ((old-box (point-box)) (new-box (bp-box mouse-bp)) (new-row (bp-row mouse-bp))
-                              (mouse-screen-box (bp-screen-box mouse-bp)) (new-cha-no (bp-cha-no mouse-bp))
-                              ;; should probably eventually make this a global var...
-                              (mouse-position (fill-doit-cursor-position-vector
-                                               (make-process-doit-cursor-position) mouse-bp)))
+  (let ((old-box (point-box))
+        (new-box (bp-box mouse-bp))
+        (new-row (bp-row mouse-bp))
+        (mouse-screen-box (bp-screen-box mouse-bp))
+        (new-cha-no (bp-cha-no mouse-bp))
+        ;; should probably eventually make this a global var...
+        (mouse-position (fill-doit-cursor-position-vector
+                          (make-process-doit-cursor-position) mouse-bp)))
     (when (and (not shift?)
                ;; if the shift key is pressed, don't move the point...
                (not-null new-row) (not-null new-cha-no) (not-null new-box)
