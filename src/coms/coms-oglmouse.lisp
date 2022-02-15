@@ -181,13 +181,37 @@
     ;; If the mouse cursor isn't over some type of shrunken box, we aren't going to
     ;; do anything. This prevents the region being reset after dragging to select some
     ;; text, which is bound to mouse-down.  - sgithens 2021-10-18
-    (when (and (not-null new-row) (box? new-box) (shrunken? new-box))
-      (reset-region)
-      (unless (eq old-box new-box)
-        (send-exit-messages new-box mouse-screen-box)
-        (enter new-box (not (superior? old-box new-box))))
-      (move-point-1 new-row new-cha-no mouse-screen-box)
-      (com-expand-box)))
+    (cond ((and (not-null new-row) (box? new-box) (shrunken? new-box)
+           ;; This handles the case of when you are on the top level box targetted by a port.
+           ;; Since com-mouse-expand-box is currently bound to mouse-click, if we click in a port, we
+           ;; don't want the expand message to be sent to the actual box that is targetted by the box.
+           ;; boxer-bugs-102
+           ;; 1. The box is not a port box
+           ;; 2. The screen-obj type is port
+           ;; TODO what if it's a port that's pointing to a port?
+           (eq mouse-screen-box (car (screen-objs new-box)))
+           )
+           (reset-region)
+           (unless (eq old-box new-box)
+             (send-exit-messages new-box mouse-screen-box)
+             (enter new-box (not (superior? old-box new-box))))
+           (move-point-1 new-row new-cha-no mouse-screen-box)
+           (com-expand-box))
+          ((and (not-null new-row) (box? new-box) (shrunken? new-box))
+           (reset-region)
+           (unless (eq old-box new-box)
+             (send-exit-messages new-box mouse-screen-box)
+             (enter new-box (not (superior? old-box new-box))))
+           (move-point-1 new-row new-cha-no mouse-screen-box)
+           ;; If this top level port is actually shrunk (not the box it point to),
+           ;; go ahead and exand it
+           (let* ((new-actual (screen-obj-actual-obj mouse-screen-box))
+                  (new-style-list (display-style-list new-actual))
+                  (new-style (display-style-style new-style-list)))
+             (when (member new-style '(:SHRUNK :SUPERSHRUNK))
+               (com-expand-box)
+             ))
+           )))
   boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-set-outermost-box (&optional (window *boxer-pane*)
