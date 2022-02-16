@@ -81,9 +81,9 @@
 
 (defun start-boxer ()
     ;; TODO sgithens Get this proper logging location set up for each OS
-    (log:config :daily "/Users/sgithens/boxlog.txt")
-    (log:config :debug)
-    (log:info "Starting boxer 3")
+    ; (log:config :daily "/Users/sgithens/boxlog.txt")
+    ; (log:config :debug)
+    (log:info "Starting boxer")
     ;; Here we are adding the Resources/libs directory of the application bundle
     ;; which will libfreetype.6.dylib, as well as any other *.dylib and *.dll files.
     (pushnew
