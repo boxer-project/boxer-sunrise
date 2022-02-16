@@ -293,7 +293,8 @@
     (when (and (not shift?)
                ;; if the shift key is pressed, don't move the point...
                (not-null new-row) (not-null new-cha-no) (not-null new-box)
-               (not (shrunken? new-box)))
+               (not (shrunken? mouse-screen-box))
+               )
       (unless (eq old-box new-box)
         (send-exit-messages new-box mouse-screen-box t )
         (enter new-box (not (superior? old-box new-box))))
@@ -311,7 +312,7 @@
                (shrunken? (screen-obj-actual-obj (screen-box-point-is-in))))
       (com-expand-box)
       (repaint)))
-  (when (and (or (null click-only?) shift?)  (not (shrunken? (bp-box mouse-bp))))
+  (when (and (or (null click-only?) shift?)  (not (shrunken? (bp-screen-box mouse-bp))))
     ;; now go about dragging a region defined by *point* and the mouse-bp
     ;; unless the user is no longer holding the mouse button down
     ; (repaint-cursor)

@@ -618,6 +618,10 @@
   (let ((style (display-style-style (slot-value self 'display-style-list))))
     (or (eq style :shrunk) (eq style :supershrunk))))
 
+(defmethod shrunken? ((self screen-box))
+  (let ((style (display-style-style (slot-value self 'display-style-list))))
+    (or (eq style :shrunk) (eq style :supershrunk))))
+
 ;;; border styles
 
 (defmethod border-style ((self box))
