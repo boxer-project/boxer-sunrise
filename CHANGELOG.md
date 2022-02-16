@@ -1,5 +1,134 @@
 # Change Log
 
+## 3.4.8 2022-???
+
+### Overview
+
+This is largely under the hood tuning release, although it does fix some annoying things from the
+last build, such as scroll bars not working with the mouse and the hanging progress dialog on startup.
+It's also the first build on Lispworks 8.0 which is a major Lispworks release.  This build for macOS
+is still Intel only, running under Rosetta on Apple Silicon, but a number of changes have been made
+under the hood to bring it up to Silicon. There are still a few bugs preventing this native build though.
+However, the LW 8.0 Intel build does run faster under Rosetta than the LW 7.1.2 one did.
+
+Other minor visible fixes include:
+- Fixed the caps lock key.
+- Fixed the Key/name help menu item.
+- Fixed more issues with the modern mouse updates
+- Fixed some issues with the canvas not repainting frequently enough.
+- Fixed some issues loading older v5 .box format files from the SunOS version of Boxer.
+
+This cut of code includes a large amount of refactoring and clean-up of legacy repaint/drawing code as
+well, making way for a round of performance and "prettiness" work on the renderer.
+
+### Full Change Log
+
+boxer-bugs-35 Fixing Key/name help menu plus refactoring copied bits
+  - Fixes:
+    com-document-key
+    com-insert-key-name
+    primitive show-key-name
+    Menu item Help -> Key/Mouse
+  - Added “lookup-input-name” to replace duplicated sections that checked
+    if the input was a keyboard event or mouse event to get the magic name,
+    plus unit tests
+boxer-bugs-37 Removing status line region select copy/paste docs
+  - Removing status line updates from entering-region-mode
+  - Removing now unused current-mouse-click-name to the attic
+boxer-bugs-66 Updating mouse click -> down for com-mouse-scroll-box
+boxer-bugs-102
+  - Adding checks for various levels of portness to com-expand-box
+  - Moving shrunken? check to mouse-screen-box for defining regions.
+boxer-bugs-104 Fixing the caps lock key
+boxer-bugs-107 temporarily removing SHIFT from magic bindings until we work out the logic correctly
+boxer-bugs-108 Adding extra repaint to ensure the canvas is updated after clicking.
+
+boxer-sunrise-25 Add mouse-doc entries to dev-overlay
+boxer-sunrise-42
+  Fixing editor-abort-char? and test cases
+  Adding bits to editor-abort-char? invocation
+boxer-sunrise-44 Adding test default-light-theme and solarized-light-theme
+boxer-sunrise-53
+  Changes to eval-when for vc-rows-entry, predicate, and unit tests.
+  Reworking init and opengl calls for LW8.0 Apple Silicon
+    - Refactoring boxwin-opengl to be cleaner and make sure all the opengl:rendering-on
+      happens in some callback of the *boxer-pane*
+  Adding freetype load paths for LW8.0 Intel
+boxer-sunrise-54
+  Fixes and test case for opening old v5 box files from Sun machines.
+  Adding box test file case from Henri.
+  Extra nil check for rendering the result of these sun files to html5
+boxer-sunrise-55 Initial logging support and startup log messages.
+
+minor-fix
+  - Fixing format string when a marked place no longer exists
+    (when trying to move to the register mark)
+
+documentation
+  - Docstring for *mouse-doc-status*
+  - Adding some initial documentation for display-style defstruct
+
+refactor
+  - Removing some absolute paths in deliver-script
+
+crash-fix
+  - Fixing a regression that locks up when resizing the window during evaluation.
+
+copyright
+  - Updating copyright year to 2022
+
+the-attic
+  - Archiving Sun based Boxer Sending Server/Client
+    - boxnet.lisp and net-prims.lisp have some really cool features
+      for sending boxes between machines using a binary streaming
+      mechanism
+    - But it's based on a pretty old Sun/Lucid socket implementation
+    - Someday this will be resurrected either using a modern sockets
+      library, or some sort of proper server implementation using
+      maybe json, or still binary streaming over websockets or something.
+  - Removing applefile.lisp, moving to attic
+    - This has been commented out for several releases from asdf
+    - Everything should just use standard cross platform file
+      operations now.
+  - Removing base64.lisp, adding to attic
+    - This has been commented out of asdf for a while now.
+    - We are using the qbase64 library from quicklisp now.
+  - Moving defboxer-command com-receive-boxer-send to the attic
+  - Moving MCL Specific show-file-info, set-boxer-file-info, and commented out really-save to attic
+  - Moving record-file-box-place, record-url-box-place, mail to the-attic
+    - record-file-box-place, record-url-box-place were stubs
+    - this particular version of prim bu::mail was pretty old and relied on
+      unix mailer daemons
+  - Removing valid-boxer-license?, fast-iwmc-class-p, *MARK*, *CURSOR-BLINKER-WID*,
+      *CURSOR-BLINKER-MIN-HEI*, *MINIMUM-CURSOR-HEIGHT*, *MULTIPLICATION*,
+      *BOXER-READTABLE*, *BOXER-FUNCTIONS*
+  - Removing unused params 'alu' and 'window' from %draw-string, %draw-cha, %draw-line,
+    %draw-rectangle, %draw-poly, %bitblt-to-screen, %bitblt-from-screen, draw-line, draw-rectangle,
+    bitblt-to-screen, bitblt-from-screen, draw-string, draw-cha, draw-point, draw-poly,
+  - Moving #-opengl usages of drawing-on-bitmap and draw-rectangle to attic
+  - Removing box-border-outside-space, box-border-inside-space, box-border-border-width,
+      port-border-port-box-gap, *last-scrolled-box*, *last-scrolled-dims*, fill-button-memory,
+      button-memory-match?, dont-show-resize-hotspots?
+  - No longer used:
+    - Call to fill-bootstrapped-font-caches
+    - *typeahead-during-eval*
+    - *double-click-wait-interval*
+    - *literal-input*
+    - handle-event-internal
+    - *suppress-event-queueing?*
+  - Removing *old-world* and making an archive copy of window-system-specific-start-boxer
+  - Moving unused constant *number-of-mouse-buttons* to the attic
+  - Moving progress dialog to the attic since boxer starts up pretty quickly these days.
+  - Removing unused gray shade defvar's and initialization
+    - Removing *gray0* through *gray5*, *filegray*, *graphicsgray*
+    - Removing repaint code that used these before lwwin and opengl
+  - Removing unneeded *cocoa-boxer-interface* and commented out opengl lib loads
+  - Removing comment out call to deleted follow-mouse-internal
+  - Removing menu item check for underline style, which is not currently supported.
+  - Archiving mcl specific com-link-to-mac-file
+  - Removing empty bodied at-user-level macro.
+  - Removing mcl specific com-edit-mac-link
+
 ## 3.4.7 2021-11-30
 
 ### Release Notes
