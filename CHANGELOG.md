@@ -32,32 +32,42 @@ boxer-bugs-35 Fixing Key/name help menu plus refactoring copied bits
   - Added “lookup-input-name” to replace duplicated sections that checked
     if the input was a keyboard event or mouse event to get the magic name,
     plus unit tests
+
 boxer-bugs-37 Removing status line region select copy/paste docs
   - Removing status line updates from entering-region-mode
   - Removing now unused current-mouse-click-name to the attic
+
 boxer-bugs-66 Updating mouse click -> down for com-mouse-scroll-box
+
 boxer-bugs-102
   - Adding checks for various levels of portness to com-expand-box
   - Moving shrunken? check to mouse-screen-box for defining regions.
+
 boxer-bugs-104 Fixing the caps lock key
+
 boxer-bugs-107 temporarily removing SHIFT from magic bindings until we work out the logic correctly
+
 boxer-bugs-108 Adding extra repaint to ensure the canvas is updated after clicking.
 
 boxer-sunrise-25 Add mouse-doc entries to dev-overlay
+
 boxer-sunrise-42
   Fixing editor-abort-char? and test cases
   Adding bits to editor-abort-char? invocation
+
 boxer-sunrise-44 Adding test default-light-theme and solarized-light-theme
+
 boxer-sunrise-53
-  Changes to eval-when for vc-rows-entry, predicate, and unit tests.
-  Reworking init and opengl calls for LW8.0 Apple Silicon
-    - Refactoring boxwin-opengl to be cleaner and make sure all the opengl:rendering-on
-      happens in some callback of the *boxer-pane*
-  Adding freetype load paths for LW8.0 Intel
+  - Changes to eval-when for vc-rows-entry, predicate, and unit tests.
+  - Reworking init and opengl calls for LW8.0 Apple Silicon
+  - Refactoring boxwin-opengl to be cleaner and make sure all the opengl:rendering-on happens in some callback of the *boxer-pane*
+  - Adding freetype load paths for LW8.0 Intel
+
 boxer-sunrise-54
-  Fixes and test case for opening old v5 box files from Sun machines.
-  Adding box test file case from Henri.
-  Extra nil check for rendering the result of these sun files to html5
+  - Fixes and test case for opening old v5 box files from Sun machines.
+    Adding box test file case from Henri.
+    Extra nil check for rendering the result of these sun files to html5
+
 boxer-sunrise-55 Initial logging support and startup log messages.
 
 minor-fix
