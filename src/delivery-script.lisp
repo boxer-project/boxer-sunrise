@@ -80,7 +80,7 @@
 
         ;; TODO still working on getting these paths sorted out on win32, unfortunately hardcoded at the moment.
         #+win32 #P"z:/code/boxer-sunrise2/data/boxer-sunrise/boxersunrise.exe"
-        #+mac (merge-pathnames *boxer-project-dir* "boxersunrise")
+        #+mac (cl-fad:merge-pathnames-as-file *boxer-project-dir* "data/boxersunrise.app/Contents/MacOS/boxersunrise")
         0 :interface :capi
         :keep-pretty-printer t
         :startup-bitmap-file nil
