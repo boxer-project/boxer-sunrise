@@ -92,4 +92,5 @@
   :long-description
   #.(read-file-string
      (subpathname *load-pathname* "README.md"))
+  :in-order-to ((test-op (test-op "boxer-sunrise-core-test")))
 )

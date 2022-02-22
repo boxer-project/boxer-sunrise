@@ -354,6 +354,22 @@ Modification History (most recent at top)
   ()
   (:metaclass block-compile-class))
 
+(defstruct (display-style (:predicate display-style?))
+  "
+  Display style is used primarily as a slot on `box` and `screenbox` classes, and contains
+  information about various aspects of it's current display.
+
+  - `style` The style slot takes a symbol which is one of :supershrunk, :shrunk, or :normal to
+    indicate the current size of the box. Note that when a box is full screened, it will retain
+    the style that it was before being full screened. This means the style could still be :shrunk
+    while the box is full screened, especially if the box property 'Shrink on Exit' is set.
+  "
+  (style :normal)
+  (fixed-wid nil)
+  (fixed-hei nil)
+  (graphics-mode? nil)
+  (border-style nil))
+
 ;; changed graphics-sheet to graphics-info to hold all graphical
 ;; objects - name change should help catch undone things
 

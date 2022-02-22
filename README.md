@@ -99,6 +99,26 @@ lispworks -build src/delivery-script.lisp
 
 You will now find a double-clickable MacOS application in `boxer-sunrise/data/boxersunrise.app`.
 
+## Boxer Core
+
+Parts of Boxer that should run on most common lisp implementation are being slowly factored in to the
+`boxer-sunrise-core` asdf system.
+
+Examples of running the unit tests on ECL, SBCL, and Lispworks are below:
+
+```sh
+# I like to wrap these in rlwrap in case I need to use the REPL, but it's optional
+
+#ECL
+rlwrap ecl --load ./run-core-tests.lisp
+
+#SBCL
+rlwrap sbcl --load ~/code/boxer-sunrise/run-core-tests.lisp
+
+#Lispworks
+# From the editor run:
+(load #P"~/path/to/boxer-sunrise/run-core-tests.lisp")
+```
 
 ## Authors through the years
 
