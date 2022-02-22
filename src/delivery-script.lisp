@@ -34,7 +34,7 @@
 (setf asdf:*central-registry*
                (list* '*default-pathname-defaults*
                       *boxer-project-dir*
-                      #+win32 #P"z:/code/boxer-sunrise2/" ; TODO Sorting out path functions on win32...
+                      #+win32 #P"z:/code/boxer-sunrise/" ; TODO Sorting out path functions on win32...
                       asdf:*central-registry*))
 
 (load (example-file "opengl/examples/load"))
@@ -60,7 +60,7 @@
 (ql:quickload :cffi)
 ;; (ql:quickload :cl-freetype2)
 
-(asdf:load-system :boxer-sunrise2)
+(asdf:load-system :boxer-sunrise)
 
 (deliver 'boxer::start-boxer
         ;; We are currently using a custom tailored application folder template, that was
@@ -79,7 +79,7 @@
         ;;   )
 
         ;; TODO still working on getting these paths sorted out on win32, unfortunately hardcoded at the moment.
-        #+win32 #P"z:/code/boxer-sunrise2/data/boxer-sunrise/boxersunrise.exe"
+        #+win32 #P"z:/code/boxer-sunrise/data/boxer-sunrise/boxersunrise.exe"
         #+mac (cl-fad:merge-pathnames-as-file *boxer-project-dir* "data/boxersunrise.app/Contents/MacOS/boxersunrise")
         0 :interface :capi
         :keep-pretty-printer t

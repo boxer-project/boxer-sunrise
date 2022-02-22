@@ -1,10 +1,10 @@
-(defpackage boxer-sunrise2-test
+(defpackage boxer-sunrise-test
   (:use :cl
-        :boxer-sunrise2
+        :boxer-sunrise
         :prove))
-(in-package :boxer-sunrise2-test)
+(in-package :boxer-sunrise-test)
 
-;; NOTE: To run this test file, execute `(asdf:test-system :boxer-sunrise2)' in your Lisp.
+;; NOTE: To run this test file, execute `(asdf:test-system :boxer-sunrise)' in your Lisp.
 (plan nil)
 
 (finalize)

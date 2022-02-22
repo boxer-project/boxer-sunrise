@@ -45,4 +45,4 @@
 (setf *features* (cons :opengl *features*))
 (setf *features* (cons :freetype-fonts *features*))
 
-(asdf:test-system :boxer-sunrise2 :reporter :list)
+(asdf:test-system :boxer-sunrise :reporter :list)

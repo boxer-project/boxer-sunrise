@@ -1,4 +1,4 @@
-(in-package :boxer-sunrise2-test)
+(in-package :boxer-sunrise-test)
 
 (plan nil)
 

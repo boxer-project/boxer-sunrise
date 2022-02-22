@@ -1,5 +1,5 @@
 #|
-  This file is a part of boxer-sunrise2 project.
+  This file is a part of boxer-sunrise project.
   Copyright (c) 2019 Steven Githens (steve@githens.org)
 |#
 
@@ -7,25 +7,25 @@
   Author: Steven Githens (steve@githens.org)
 |#
 
-(defsystem "boxer-sunrise2"
+(defsystem "boxer-sunrise"
   :version "3.4.8"
   :author "Steven Githens"
   :license ""
-  :depends-on ("uiop")
+  :depends-on ("uiop"
+               "boxer-sunrise-core")
   :components ((:module "src"
                 :components
-                ((:file "boxer-sunrise2")
-                 (:file "package")
+                (
                 ;; Stuff from previous OpenGL/opengl directory that was added by
                  ;; boxer
                  #-lispworks (:file "boxwin/libre/opengl")
                  (:file "pixmap")
 
                  ;; Beginning of `DEFINITIONS` module
-                 (:file "definitions/macros")
-                 (:file "definitions/storage")
-                 (:file "definitions/boxdef")
-                 (:file "definitions/vrtdef")
+                ;  (:file "definitions/macros")
+                ;  (:file "definitions/storage")
+                ;  (:file "definitions/boxdef")
+                ;  (:file "definitions/vrtdef")
                  (:file "definitions/fonts")
 
 
@@ -245,4 +245,4 @@
   :long-description
   #.(read-file-string
      (subpathname *load-pathname* "README.md"))
-  :in-order-to ((test-op (test-op "boxer-sunrise2-test"))))
+  :in-order-to ((test-op (test-op "boxer-sunrise-test"))))

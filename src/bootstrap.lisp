@@ -46,7 +46,7 @@
   (cl-fad:merge-pathnames-as-directory *boxer-project-dir* "data/boxersunrise.app/Contents/Frameworks/")
   cffi:*foreign-library-directories* :test #'equal)
 
-#+win32 (pushnew #P"Z:/code/boxer-sunrise2/"
+#+win32 (pushnew #P"Z:/code/boxer-sunrise/"
         cffi:*foreign-library-directories* :test #'equal)
 
 (setf asdf:*central-registry*
@@ -61,12 +61,10 @@
 
 (ql:quickload :cl-freetype2)
 
-(defvar *boxer-project-dir* (make-pathname :directory (butlast (pathname-directory *load-truename*))))
-
 (setf asdf:*central-registry*
                (list* '*default-pathname-defaults*
                       *boxer-project-dir*
-                      #+win32 #P"Z:/code/boxer-sunrise2/"
+                      #+win32 #P"Z:/code/boxer-sunrise/"
                 asdf:*central-registry*))
 
 #+(and lispworks x64) (load (example-file "opengl/examples/load"))
@@ -79,12 +77,12 @@
 
 (setf *features* (cons :opengl *features*))
 (setf *features* (cons :freetype-fonts *features*))
-(asdf:load-system :boxer-sunrise2)
+(asdf:load-system :boxer-sunrise)
 (setf boxer::*capogi-font-directory* (merge-pathnames "data/boxersunrise.app/Contents/Resources/Fonts/" *boxer-project-dir*))
 (setf boxer::*resources-dir* (merge-pathnames "data/boxersunrise.app/Contents/Resources/" *boxer-project-dir*))
 
-#+win32(setf boxer::*capogi-font-directory* #P"Z:/code/boxer-sunrise2/data/boxersunrise.app/Contents/Resources/Fonts/")
-#+win32(setf boxer::*resources-dir* #P"Z:/code/boxer-sunrise2/data/boxersunrise.app/Contents/Resources/")
+#+win32(setf boxer::*capogi-font-directory* #P"Z:/code/boxer-sunrise/data/boxersunrise.app/Contents/Resources/Fonts/")
+#+win32(setf boxer::*resources-dir* #P"Z:/code/boxer-sunrise/data/boxersunrise.app/Contents/Resources/")
 
 (boxer-window::window-system-specific-make-boxer)
 

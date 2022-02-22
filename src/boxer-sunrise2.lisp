@@ -1,5 +1,5 @@
-(defpackage boxer-sunrise2
+(defpackage boxer-sunrise
   (:use :cl))
-(in-package :boxer-sunrise2)
+(in-package :boxer-sunrise)
 
 ;; blah blah blah.

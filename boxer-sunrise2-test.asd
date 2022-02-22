@@ -1,17 +1,17 @@
 #|
-  This file is a part of boxer-sunrise2 project.
+  This file is a part of boxer-sunrise project.
   Copyright (c) 2019 Steven Githens (steve@githens.org)
 |#
 
-(defsystem "boxer-sunrise2-test"
+(defsystem "boxer-sunrise-test"
   :defsystem-depends-on ("prove-asdf")
   :author "Steven Githens"
   :license ""
-  :depends-on ("boxer-sunrise2"
+  :depends-on ("boxer-sunrise"
                "prove")
   :components ((:module "tests"
                 :components
-                ((:test-file "boxer-sunrise2")
+                ((:test-file "boxer-sunrise")
                  (:test-file "boxdef-tests")
                  (:test-file "stacks-tests")
                  (:test-file "boxapp-data-tests")
@@ -24,6 +24,6 @@
                 (:test-file "keydef-high-tests")
                 (:test-file "gdispl-tests")
                  )))
-  :description "Test system for boxer-sunrise2"
+  :description "Test system for boxer-sunrise"
 
   :perform (test-op (op c) (symbol-call :prove-asdf :run-test-system c)))

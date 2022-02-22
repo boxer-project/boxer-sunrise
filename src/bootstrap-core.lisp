@@ -33,9 +33,9 @@
 (setf asdf:*central-registry*
                (list* '*default-pathname-defaults*
                       *boxer-project-dir*
-                      #+win32 #P"Z:/code/boxer-sunrise2/"
+                      #+win32 #P"Z:/code/boxer-sunrise/"
                 asdf:*central-registry*))
 
 (setf *features* (cons :opengl *features*))
 (setf *features* (cons :freetype-fonts *features*))
-(asdf:load-system :boxer-sunrise2-core)
+(asdf:load-system :boxer-sunrise-core)
