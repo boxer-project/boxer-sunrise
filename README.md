@@ -113,7 +113,7 @@ Examples of running the unit tests on ECL, SBCL, and Lispworks are below:
 rlwrap ecl --load ./run-core-tests.lisp
 
 #SBCL
-rlwrap sbcl --load ~/code/boxer-sunrise/run-core-tests.lisp
+rlwrap sbcl --load ./run-core-tests.lisp
 
 #Lispworks
 # From the editor run:
