@@ -4562,6 +4562,46 @@ Modification History (most recent at top)
 ;;;; FILE: draw-high-hardware-clip.lisp
 ;;;;
 
+;; sgithens 2022-02-24
+;; Preserving top level comments from draw-high-hardware-clip.lisp before merging it
+;; with draw-high-common.lisp
+
+;;;;     This file contains the low level drawing primitives for the REDISPLAY
+;;;;     which are machine independent but expect to do any clipping in software.
+;;;;     The clipping calculations are done BEFORE any drawing and only unclipped
+;;;;     parts are actually drawn.
+;;;;
+;;;;     The complement of this file is the the draw-high-software-clipping.lisp
+;;;;
+;;;;     All window coordinate parameters in this file are "local".  That is
+;;;;     they are relative to the containing screen structure (screen-row or
+;;;;     screen-box) and should only be called within the proper clipping and
+;;;;     scaling macros.
+;;;;
+;;;;     This file should be used by on top of draw-low-xxx files which
+;;;;     support fast hardware clipping.  The redisplay will setup a
+;;;;     new clipping environment for EVERY level of box and row.
+;;;;
+;;;;     It should be possible to recompile the system after changing which
+;;;;     draw-high-xxx-clipping.lisp file to use in the boxsys.lisp file
+;;;;     to see which version is faster.
+;;;;
+;;;;     This file is meant to coexist with various
+;;;;     "xxx-draw-low" files which are the machine specific primitives.
+;;;;
+;;;;
+;;;;  Modification History (most recent at top)
+;;;;
+;;;;   2/11/03 merged current LW and MCL source
+;;;;   5/02/01 allow for software clipping in %bitblt ops for LWWIN in bitblt-move-region
+;;;;   4/03/01 draw-string now calls %draw-string with explicit parameter %drawing-window
+;;;;           this fixes bug where draw-string inside drawing-on-bitmap on PC would
+;;;;           draw to the screen instead of the bitmap
+;;;;   6/05/00 with-turtle-clipping changed for LW port
+;;;;   5/11/98 added comment describing change to interpretation of x,y in draw-cha
+;;;;   5/11/98 started logging: source = boxer version 2.3
+;;;;
+
 ;;; Interface functions WINDOW-PARAMETERS-CHANGED, WITH-DRAWING.  UPDATE-WINDOW-SYSTEM-STATE
 ;;; must be defined by the window system code.
 

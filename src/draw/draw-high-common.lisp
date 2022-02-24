@@ -111,3 +111,111 @@
 (defun draw-poly (points)
   (unless (null points)
     (%draw-poly (boxer-points->window-system-points points (x x) (y y)))))
+
+;;;; Scaling and Clipping Macros
+
+;;; origin gets reset in hardware by scaling macros so these are no ops
+;;; They need to be defined because other functions (usually sprite graphics)
+;;; will use them explicitly to convert coords.
+
+(defmacro scale-x (x) x)
+(defmacro scale-y (y) y)
+
+;;; Macros from draw-high, slightly altered
+
+(defmacro drawing-on-window-bootstrap-clipping-and-scaling ((x y wid hei) &body body)
+  `(let* ((%origin-x-offset ,x) (%origin-y-offset ,y)
+          ;; absolute clipping parameters
+          (%clip-lef ,x) (%clip-top ,y)
+    (%clip-rig (+& %clip-lef ,wid)) (%clip-bot (+& %clip-top ,hei))
+          ;; relative clipping parameters
+          (%local-clip-lef 0)    (%local-clip-top 0)
+          (%local-clip-rig ,wid) (%local-clip-bot ,hei))
+     %clip-rig %clip-bot %origin-x-offset %origin-y-offset ;bound but never...
+     %local-clip-lef %local-clip-top %local-clip-rig %local-clip-bot
+;     ;; **** since we are letting the hardware do the clipping, be sure
+;     ;; to include the forms that invoke the hardware
+;     (unwind-protect
+;         (progn (window-system-dependent-set-origin %origin-x-offset
+;                                                    %origin-y-offset)
+                ,@body))
+;      ;; return to some canonical state
+;       (window-system-dependent-set-origin 0 0))))
+
+
+;; **** this is the reverse of the software version because the
+;; WITH-CLIPPING-INSIDE macro should use the new coordinate system
+;; set by WITH-ORIGIN-AT
+(defmacro with-drawing-inside-region ((x y wid hei) &body body)
+  `(with-origin-at (,x ,y)
+     (with-clipping-inside (0 0 ,wid ,hei)
+       . ,body)))
+
+;; **** changed, see draw-low-mcl for details...
+;; Opengl set-origin is RELATIVE !
+(defmacro with-origin-at ((x y) &body body)
+  (let ((fx (gensym)) (fy (gensym)) (ux (gensym)) (uy (gensym)))
+    `(let* ((,fx (float ,x)) (,fy (float ,y))
+            (,ux (float-minus ,fx)) (,uy (float-minus ,fy))
+            ;; keep track of scaling because bitblt doesn't respect OpenGL translation
+            (%origin-x-offset (+ %origin-x-offset ,x))
+            (%origin-y-offset (+ %origin-y-offset ,y)))
+       (unwind-protect
+           (progn
+             (window-system-dependent-set-origin ,fx ,fy)
+             . ,body)
+         (window-system-dependent-set-origin ,ux ,uy)))))
+
+;; **** changed, see draw-low-mcl for details...
+(defmacro with-clipping-inside ((x y wid hei) &body body)
+  `(with-window-system-dependent-clipping (,x ,y ,wid ,hei) . ,body))
+
+;; do we need to readjust the clip region here ????
+(defmacro with-scrolling-origin ((scroll-x scroll-y) &body body)
+  `(with-origin-at (,scroll-x ,scroll-y)
+     . ,body))
+
+;;; This MUST use the hardware clipping regardless of speed.
+;;; It is used only around bodies which do sprite graphics
+;;; so the frequency of use is MUCH less than it is in the redisplay
+;;;
+;;; this adjusts the clipping to be width and height AT the current
+;;; scaled origin
+;;;
+(defmacro with-turtle-clipping ((wid hei . args) &body body)
+  `(with-window-system-dependent-clipping (0 0 ,wid ,hei . ,args) . ,body))
+
+;;; Drawing functions
+
+;;; sure there were no intervening clipping operations.
+
+(defun draw-line (x0 y0 x1 y1)
+  (%draw-line x0 y0 x1 y1))
+
+(defun draw-rectangle (w h x y)
+  (%draw-rectangle w h x y))
+
+(defun erase-rectangle (w h x y)
+  (%erase-rectangle w h x y %drawing-window))
+
+;; useful for debugging erase-rectangle lossage
+(defun flash-rectangle (w h x y)
+  (dotimes (i 6)
+    (%draw-rectangle w h x y)
+    (sleep .1)))
+
+(defun bitblt-to-screen (wid hei from-array from-x from-y to-x to-y)
+  (%bitblt-to-screen wid hei from-array from-x from-y to-x to-y))
+
+(defun bitblt-from-screen (wid hei to-array from-x from-y to-x to-y)
+  (%bitblt-from-screen wid hei to-array from-x from-y to-x to-y))
+
+;; NOTE: in the new multi font world, draw-cha needs to draw at the char's
+;; baseline rather than the top left corner.  This is because in a multifont
+;; row, the common reference point will be the baseline instead of the top
+;; edge
+(defun draw-cha (char x y)
+  (%draw-cha x y char))
+
+(defun draw-string (font-no string region-x region-y)
+  (%draw-string font-no string region-x region-y))

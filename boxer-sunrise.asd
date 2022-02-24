@@ -39,7 +39,6 @@
                  #+(and lispworks freetype-fonts (not delivering)) (:file "draw/freetype-fonts")
                  (:file "draw/draw-low-opengl")
                  (:file "draw/draw-high-common")
-                 (:file "draw/draw-high-hardware-clip")
 
                  (:file "definitions/boxer-styles")
 
