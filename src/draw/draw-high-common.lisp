@@ -69,12 +69,12 @@
 (defmacro drawing-on-window-without-prepare-sheet ((window) &body body)
   (once-only (window)
     `(let ((%drawing-window ,window)
-	   (%drawing-array (sheet-screen-array ,window)))
+           (%drawing-array (sheet-screen-array ,window)))
        %drawing-window %drawing-array    ;bound but never...
        (drawing-on-window-bootstrap-clipping-and-scaling
-	((sheet-inside-left ,window) (sheet-inside-top  ,window)
-	 (sheet-inside-width ,window) (sheet-inside-height ,window))
-	 . ,body))))
+         ((sheet-inside-left ,window) (sheet-inside-top  ,window)
+          (sheet-inside-width ,window) (sheet-inside-height ,window))
+          . ,body))))
 
 
 ;;; Used instead of DRAWING-ON-WINDOW for bitmaps
@@ -88,7 +88,7 @@
          (drawing-on-window-bootstrap-clipping-and-scaling
            (0 0 ,bwidth-var ,bheight-var)
            (with-system-dependent-bitmap-drawing (,bitmap ,bwidth-var ,bheight-var)
-	     . ,body)))))
+       . ,body)))))
 
 ;;; Drawing functions which don't respect the clipping environment.
 ;;; They expect the hardware to do the clipping.  These are mostly
@@ -100,12 +100,12 @@
 
 (defun draw-arc (alu x y wid hei start-angle sweep-angle)
   (%draw-arc %drawing-window alu (scale-x x) (scale-y y)
-	     wid hei start-angle sweep-angle))
+             wid hei start-angle sweep-angle))
 
 
 (defun draw-filled-arc (alu x y wid hei start-angle sweep-angle)
   (%draw-filled-arc %drawing-window alu (scale-x x) (scale-y y)
-		    wid hei start-angle sweep-angle))
+                    wid hei start-angle sweep-angle))
 
 ;; should'nt transform the points because translation is done @ hardware level in OpenGL
 (defun draw-poly (points)
