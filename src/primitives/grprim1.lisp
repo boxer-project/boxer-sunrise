@@ -152,20 +152,10 @@
         (boxer-eval::primitive-signal-error :graphics
               "No color in: " color))
        ((not (null (graphics-sheet-bit-array gs)))
-        ;; there is already a bitmapped background
-        ;; we'll draw the color on the background -- alternatively,
-        ;; we could do nothing, preferring to give bitmaps precedence
-                    #-opengl
-        (drawing-on-bitmap ((graphics-sheet-bit-array gs))
-           (with-pen-color (pix)
-       (draw-rectangle
-           (graphics-sheet-draw-wid gs)
-           (graphics-sheet-draw-hei gs) 0 0)))
-                    #+opengl
-                    (opengl::clear-ogl-pixmap (graphics-sheet-bit-array gs)
-                                      (opengl::color->pixel pix))
-                    ;; mark the dirty? flag
-                    (setf (graphics-sheet-bit-array-dirty? gs) t)
+        (opengl::clear-ogl-pixmap (graphics-sheet-bit-array gs)
+                                  (opengl::color->pixel pix))
+        ;; mark the dirty? flag
+        (setf (graphics-sheet-bit-array-dirty? gs) t)
         (modified-graphics gb))
        (t
         ;; first, set the color

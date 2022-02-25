@@ -7149,6 +7149,14 @@ if it is out of bounds
 ;;;; FILE: grprim1.lisp
 ;;;;
 
+;; sgithens 2022-02-25 from defboxer-primitive set-background
+#-opengl
+(drawing-on-bitmap ((graphics-sheet-bit-array gs))
+           (with-pen-color (pix)
+       (draw-rectangle
+           (graphics-sheet-draw-wid gs)
+           (graphics-sheet-draw-hei gs) 0 0)))
+
 (boxer-eval::defboxer-primitive bu::clear-graphics ()
   (cond ((not (null *uc-copyright-free*))
          (boxer-eval::primitive-signal-error :copyright
