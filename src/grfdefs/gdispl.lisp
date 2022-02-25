@@ -2581,7 +2581,7 @@ Modification History (most recent at the top)
             (list 'bu::stamp-circle radius))))
   :COMMAND-BODY
   (when (plusp radius)
-    (%draw-circle (ensure-legal-window-coordinate (scale-x x))
+    (draw-circle (ensure-legal-window-coordinate (scale-x x))
                   (ensure-legal-window-coordinate (scale-y y))
                   radius
                   T)
@@ -2627,7 +2627,7 @@ Modification History (most recent at the top)
             (list 'bu::stamp-hollow-circle radius))))
   :COMMAND-BODY
   (unless (zerop radius)
-    (%draw-circle (ensure-legal-window-coordinate (scale-x x))
+    (draw-circle (ensure-legal-window-coordinate (scale-x x))
                   (ensure-legal-window-coordinate (scale-y y))
                   radius
                   nil)

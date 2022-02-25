@@ -219,3 +219,6 @@
 
 (defun draw-string (font-no string region-x region-y)
   (%draw-string font-no string region-x region-y))
+
+(defun draw-circle (x y radius &optional filled?)
+  (%draw-circle x y radius filled?))
