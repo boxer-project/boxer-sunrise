@@ -243,7 +243,7 @@ Modification History (most recent at top)
             (progn
               ;; draw menu
               (draw-menu menu real-x real-y)
-              (force-graphics-output)
+              (swap-graphics-buffers)
               ;; loop
               (let ((current-y 0) (current-height 0))
                 (boxer-window::with-mouse-tracking ((mouse-x real-x) (mouse-y real-y))
@@ -265,12 +265,12 @@ Modification History (most recent at top)
                                  (with-blending-on
                                    (draw-rectangle (- mwid 3) ih
                                                    (1+ real-x) (+ real-y iy))))
-                               (force-graphics-output))
+                               (swap-graphics-buffers))
                               ((eq ti current-item)) ; no change, do nothing
                               ((not (slot-value ti 'enabled?))
                                ;; redraw menu with nothing selected
                                (draw-menu menu real-x real-y)
-                               (force-graphics-output)
+                               (swap-graphics-buffers)
                                (setq current-item nil))
                               (t ; must be a new item selected,
                                ;; redraw menu
@@ -280,26 +280,26 @@ Modification History (most recent at top)
                                  (with-blending-on
                                    (draw-rectangle (- mwid 3) ih
                                                    (1+ real-x) (+ real-y iy))))
-                               (force-graphics-output)
+                               (swap-graphics-buffers)
                                ;; set vars
                                (setq current-item ti current-y iy current-height ih))))
                       ;; we are OUT of the popup
                       (cond ((null current-item)) ; nothing already selected
                             (t ; redraw menu with nothing selected
                              (draw-menu menu real-x real-y)
-                             (force-graphics-output)
+                             (swap-graphics-buffers)
                              (setq current-item nil))))))
                 ;; loop is done, either we are in and item or not
                 (unless (null current-item)
                   ;; if we are in an item, flash and erase the highlighting
                   (dotimes (i 5)
                     (draw-menu menu real-x real-y)
-                    (force-graphics-output) (snooze .05)
+                    (swap-graphics-buffers) (snooze .05)
                     (with-pen-color (bw::*blinker-color*)
                       (with-blending-on
                         (draw-rectangle (- mwid 3) current-height
                                         (1+ real-x) (+ real-y current-y))))
-                    (force-graphics-output) (snooze .05)))))))
+                    (swap-graphics-buffers) (snooze .05)))))))
         ;; funcall the action (note we are OUTSIDE of the drawing-on-window
         (unless (null current-item)
           (let ((action (slot-value current-item 'action)))

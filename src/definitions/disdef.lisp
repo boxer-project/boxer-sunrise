@@ -453,11 +453,3 @@ Modification History (most recent at the top)
                                :index-var-name ,index-name)
            (check-and-handle-font-changes ,index-name)
            . ,body)))))
-
-;;; for systems which buffer graphics
-;;; this applies equally to command buffering a la X or
-;;; double buffering a la OpenGL, OSX Quickdraw
-
-(defun force-graphics-output ()
-  ;; this is the new paradigm, defined in the draw-low- files
-  (flush-port-buffer))

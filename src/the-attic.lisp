@@ -4216,6 +4216,13 @@ Modification History (most recent at top)
 ;;;; FILE: disdef.lisp
 ;;;;
 
+;;; for systems which buffer graphics
+;;; this applies equally to command buffering a la X or
+;;; double buffering a la OpenGL, OSX Quickdraw
+(defun force-graphics-output ()
+  ;; this is the new paradigm, defined in the draw-low- files
+  (flush-port-buffer))
+
 (DEFMACRO ALTERING-REGION ((REGION) &BODY BODY)
           (WARN "ALTERING-REGION is obsolete.  Use with-open-blinker instead.")
           `(WITHOUT-INTERRUPTS

@@ -967,7 +967,7 @@
                          (repaint-guts)
                          (repaint-mouse-docs)
                          (repaint-dev-overlay process-state-label)
-                         (when flush-buffer? (flush-port-buffer window))))
+                         (when flush-buffer? (swap-graphics-buffers window))))
 
 ;;; called also by printing routines.
 (defun repaint-guts ()
@@ -1010,7 +1010,7 @@
         (unless just-windows?
           (repaint-cursor *point* nil)))
       ;; swap buffers here, after all drawing is complete
-      (flush-port-buffer *boxer-pane*))
+      (swap-graphics-buffers *boxer-pane*))
      )
 
 (defun repaint (&optional just-windows?)
@@ -1041,7 +1041,7 @@
                      (repaint-cursor-internal cursor)
                      ;; now draw it
                      (draw-blinker *point-blinker*)
-                     (when flush-buffer? (flush-port-buffer *boxer-pane*))))
+                     (when flush-buffer? (swap-graphics-buffers *boxer-pane*))))
 
 (defun repaint-cursor-internal (&optional (cursor *point*))
   (ignore-errors  ;; without this, errors here will generate endless beeping

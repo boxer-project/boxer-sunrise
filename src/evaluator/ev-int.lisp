@@ -377,7 +377,7 @@
                                ;; for the benefit of turtle graphics
                                ;; do drawing-on-window once instead of with EVERY draw line
                                #-opengl
-                               (force-graphics-output)
+                               (swap-graphics-buffers)
                                ;; do the force-output so the cursor will disappear immediately.
                                (with-port-retargetting
                                  (unwind-protect
@@ -402,7 +402,7 @@
                           ;; for the benefit of turtle graphics
                           ;; do drawing-on-window once instead of with EVERY
                           ;; draw line
-                          (force-graphics-output)
+                          (swap-graphics-buffers)
                           ;; do the force-output so the cursor will
                           ;; disappear immediately.
                           (with-port-retargetting

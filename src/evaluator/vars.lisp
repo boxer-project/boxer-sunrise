@@ -84,12 +84,10 @@
 ;;; that context
 (defvar *background-poll-count* 20)
 
-;;; a hook for actions to be called inside the evaluator more often than
-;;; the polling function, for now, we use it to force screen updates in
-;;; double buffered systems
-(defvar *periodic-eval-action* #+carbon-compat 'boxer::flush-port-buffer
-                               #+opengl 'boxer::repaint-in-eval
-                               #-(or opengl carbon-compat) nil)
+(defvar *periodic-eval-action* 'boxer::repaint-in-eval
+  "A hook for actions to be called inside the evaluator more often than
+the polling function, for now, we use it to repain the screen during eval.
+Can be nil if no action is desired.")
 
 ;; this number should be less than *initial-poll-count*
 (defvar *periodic-eval-times*  '(100))

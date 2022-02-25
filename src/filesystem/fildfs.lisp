@@ -821,11 +821,11 @@ Modification History (most recent at the top)
                                                       (draw-rectangle
                                                                       ,screen-box-wid ,screen-box-hei
                                                                       ,screen-box-x ,screen-box-y)))
-                                                   (force-graphics-output))
+                                                   (swap-graphics-buffers))
                                                  . ,body)
                                                 (unless (null ,screen-box-x)
                                                   (repaint)
-                                                  (force-graphics-output))))))))
+                                                  (swap-graphics-buffers))))))))
 
 ;;;
 

@@ -130,10 +130,8 @@ scaled origin"
              wid hei start-angle sweep-angle))
 
 (defun draw-cha (char x y)
-  "NOTE: in the new multi font world, draw-cha needs to draw at the char's
-baseline rather than the top left corner.  This is because in a multifont
-row, the common reference point will be the baseline instead of the top
-edge"
+  "Draw-cha needs to draw at the char's baseline rather than the top left corner.  In a
+multifont row, the common reference point will be the baseline instead of the top edge"
   (%draw-cha x y char))
 
 (defun draw-circle (x y radius &optional filled?)
@@ -171,4 +169,6 @@ edge"
   (%bitblt-from-screen wid hei to-array from-x from-y to-x to-y))
 
 
+(defun swap-graphics-buffers (&optional (pane *boxer-pane*))
+  (%flush-port-buffer pane))
 

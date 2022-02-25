@@ -291,7 +291,7 @@
   ))
 
 ;;; stub for double buffering window systems
-(defun flush-port-buffer (&optional (pane *boxer-pane*))
+(defun %flush-port-buffer (&optional (pane *boxer-pane*))
   (update-framerate)
 
   (opengl::rendering-on (pane) (opengl::gl-flush))

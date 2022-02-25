@@ -1535,7 +1535,7 @@
                                                                                             ;; (scroll-move-contents screen-box vel)
                                                                                             )
                                                                                           ;; (draw-scroll-buttons screen-box t)
-                                                                                          (force-graphics-output)))
+                                                                                          (swap-graphics-buffers)))
                                                                             ;; now maybe move the point so it is still visible after scrolling...
                                                                             (let ((scroll-row (scroll-to-actual-row screen-box)))
                                                                               (cond ((null scroll-row)

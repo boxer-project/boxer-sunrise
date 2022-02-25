@@ -714,9 +714,7 @@
                         (update-region-row-blinker blinker)))))))))
   ;; @ this point all the blinkers are the correct size and inthe right place...
   (drawing-on-window (window)
-    (dolist (blinker (interval-blinker-list region)) (draw-blinker blinker)))
-  #-opengl
-  (flush-port-buffer window))
+    (dolist (blinker (interval-blinker-list region)) (draw-blinker blinker))))
 
 
 ;; these need to have with-drawing-port's wrapped around them because
