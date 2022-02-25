@@ -101,7 +101,6 @@
            :setup-editor
            :svref&
            :cross-file-link-insert-self-action
-           :run-redisplay-inits
            :fast-assq
            :block-compile-class
            :deffile-property-handler
