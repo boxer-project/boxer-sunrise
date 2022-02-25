@@ -4535,6 +4535,40 @@ Modification History (most recent at top)
 ;;;; FILE: draw-high-common.lisp
 ;;;;
 
+;; sgithens 2022-02-24 Some fairly historic comments about clipping from the top
+;; header comments
+    ;;;;   Only the primitives and macros which do not respect clipping are
+    ;;;;   in this file.  The files draw-high-software/hardware-clip.lisp
+    ;;;;   contain the low level functions and macros (predominately used
+    ;;;;   in the redisplay) which pay attention to the clipping state.
+
+;; sgithens 2022-02-24 Removing these commented out lines from this macro:
+(defmacro drawing-on-window-bootstrap-clipping-and-scaling ((x y wid hei) &body body)
+  `(let* ((%origin-x-offset ,x) (%origin-y-offset ,y)
+          ;; absolute clipping parameters
+          (%clip-lef ,x) (%clip-top ,y)
+    (%clip-rig (+& %clip-lef ,wid)) (%clip-bot (+& %clip-top ,hei))
+          ;; relative clipping parameters
+          (%local-clip-lef 0)    (%local-clip-top 0)
+          (%local-clip-rig ,wid) (%local-clip-bot ,hei))
+     %clip-rig %clip-bot %origin-x-offset %origin-y-offset ;bound but never...
+     %local-clip-lef %local-clip-top %local-clip-rig %local-clip-bot
+;     ;; **** since we are letting the hardware do the clipping, be sure
+;     ;; to include the forms that invoke the hardware
+;     (unwind-protect
+;         (progn (window-system-dependent-set-origin %origin-x-offset
+;                                                    %origin-y-offset)
+                ,@body))
+;      ;; return to some canonical state
+;       (window-system-dependent-set-origin 0 0))))
+
+
+;; useful for debugging erase-rectangle lossage
+(defun flash-rectangle (w h x y)
+  (dotimes (i 6)
+    (%draw-rectangle w h x y)
+    (sleep .1)))
+
 ;;; WITH-FONT-MAP-BOUND is meant to be used by all those functions
 ;;; (like BOX-BORDER-FN's that have to be called in an environment where the
 ;;; font map is supposed to be bound but nothing else (like all those
