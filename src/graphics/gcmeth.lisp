@@ -873,15 +873,6 @@ Modification History (most recent at top)
 (defmethod stamp ((self graphics-cursor))
   (let ((pen-mode (get-alu-from-pen (pen self))))
     (when (and pen-mode (not (no-graphics?)))
-      #-opengl
-      (with-graphics-screen-parameters
-        (let ((*currently-moving-sprite* :go-ahead-and-draw-anyway))
-          ;; shouldn't need this binding anymore now that this mechanism
-          ;; is limited to ONLY inside the with-sprite-prim-env macro
-          (draw self ; pen-mode   need to figure out how to set up state info
-                ; for the drawing of the shape....
-                )))
-      #+opengl
       (draw-update self)
       ;; the call to draw will insure the validity of the window-shape
       (dub-graphics-list (slot-value self 'window-shape))

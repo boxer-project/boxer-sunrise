@@ -6434,6 +6434,8 @@ if it is out of bounds
 
 |#
 
+
+
 ;;;;
 ;;;; FILE: gopher.lisp
 ;;;;
@@ -6740,6 +6742,21 @@ if it is out of bounds
 ;;;;
 ;;;; FILE: grfdfs.lisp
 ;;;;
+
+;; defined in vars.lisp
+;; (defvar %learning-shape-graphics-list nil)
+
+#| (defvar *hide-ALL-sprites-when-drawing* t) |#
+
+;; This is bound by the erase/redraw pass in With-Sprite-Primitive-Environment
+;; to the active sprite.  The possibility of the moving sprite being a
+;; subsprite make the old method (checking for EQ inside of the erase all
+;; other sprites loop) unworkable.  The eq check now has to be made inside
+;; of the erase method (since it can be recursively invoked by superior
+;; sprites)
+;;
+
+(defvar *currently-moving-sprite* nil)
 
     #+gl
     (setf (graphics-sheet-draw-mode new-gs) ':window)

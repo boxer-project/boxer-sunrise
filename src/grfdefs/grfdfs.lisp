@@ -73,24 +73,9 @@ Modification History (most recent at top)
 (defvar %graphics-list 'i-bet-you-forgot-to-bind-%graphics-list
   "graphics-list of the graphics box in which we are allowed to draw")
 
-;; defined in vars.lisp
-;; (defvar %learning-shape-graphics-list nil)
-
-#| (defvar *hide-ALL-sprites-when-drawing* t) |#
-
 (defvar %drawing-half-width 150.0)
 
 (defvar %drawing-half-height 100.0)
-
-;; This is bound by the erase/redraw pass in With-Sprite-Primitive-Environment
-;; to the active sprite.  The possibility of the moving sprite being a
-;; subsprite make the old method (checking for EQ inside of the erase all
-;; other sprites loop) unworkable.  The eq check now has to be made inside
-;; of the erase method (since it can be recursively invoked by superior
-;; sprites)
-;;
-
-(defvar *currently-moving-sprite* nil)
 
 ;; this is set to Nil for the mac because of the bug which causes
 ;; allocation of new bitmaps to take a LONG time
