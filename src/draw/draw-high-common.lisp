@@ -125,20 +125,9 @@ scaled origin"
 ;;; Drawing functions
 ;;;
 
-(defun draw-line (x0 y0 x1 y1)
-  (%draw-line x0 y0 x1 y1))
-
-(defun draw-rectangle (w h x y)
-  (%draw-rectangle w h x y))
-
-(defun erase-rectangle (w h x y)
-  (%erase-rectangle w h x y %drawing-window))
-
-(defun bitblt-to-screen (wid hei from-array from-x from-y to-x to-y)
-  (%bitblt-to-screen wid hei from-array from-x from-y to-x to-y))
-
-(defun bitblt-from-screen (wid hei to-array from-x from-y to-x to-y)
-  (%bitblt-from-screen wid hei to-array from-x from-y to-x to-y))
+(defun draw-arc (alu x y wid hei start-angle sweep-angle)
+  (%draw-arc %drawing-window alu (scale-x x) (scale-y y)
+             wid hei start-angle sweep-angle))
 
 (defun draw-cha (char x y)
   "NOTE: in the new multi font world, draw-cha needs to draw at the char's
@@ -147,24 +136,39 @@ row, the common reference point will be the baseline instead of the top
 edge"
   (%draw-cha x y char))
 
-(defun draw-string (font-no string region-x region-y)
-  (%draw-string font-no string region-x region-y))
-
 (defun draw-circle (x y radius &optional filled?)
   (%draw-circle x y radius filled?))
-
-(defun draw-point (x y)
-  (%draw-point x y))
-
-(defun draw-arc (alu x y wid hei start-angle sweep-angle)
-  (%draw-arc %drawing-window alu (scale-x x) (scale-y y)
-             wid hei start-angle sweep-angle))
 
 (defun draw-filled-arc (alu x y wid hei start-angle sweep-angle)
   (%draw-filled-arc %drawing-window alu (scale-x x) (scale-y y)
                     wid hei start-angle sweep-angle))
 
+(defun draw-line (x0 y0 x1 y1)
+  (%draw-line x0 y0 x1 y1))
+
+(defun draw-point (x y)
+  (%draw-point x y))
+
 (defun draw-poly (points)
   ;; should'nt transform the points because translation is done @ hardware level in OpenGL
   (unless (null points)
     (%draw-poly (boxer-points->window-system-points points (x x) (y y)))))
+
+(defun draw-rectangle (w h x y)
+  (%draw-rectangle w h x y))
+
+(defun erase-rectangle (w h x y)
+  (%erase-rectangle w h x y %drawing-window))
+
+(defun draw-string (font-no string region-x region-y)
+  (%draw-string font-no string region-x region-y))
+
+
+(defun bitblt-to-screen (wid hei from-array from-x from-y to-x to-y)
+  (%bitblt-to-screen wid hei from-array from-x from-y to-x to-y))
+
+(defun bitblt-from-screen (wid hei to-array from-x from-y to-x to-y)
+  (%bitblt-from-screen wid hei to-array from-x from-y to-x to-y))
+
+
+
