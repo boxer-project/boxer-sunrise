@@ -1916,10 +1916,10 @@ Modification History (most recent at the top)
         (wx (fixr (- x (/ width 2))) (fixr (- x (/ width 2))))
         (wy (fixr y) (+& wy height)))
     ((not (position #\newline s))
-    (%draw-string *graphics-state-current-font-no* trimmed-string
+    (draw-string *graphics-state-current-font-no* trimmed-string
                   (ensure-legal-window-coordinate (scale-x wx))
                   (ensure-legal-window-coordinate (scale-y wy))))
-    (%draw-string *graphics-state-current-font-no* trimmed-string
+    (draw-string *graphics-state-current-font-no* trimmed-string
                   (ensure-legal-window-coordinate (scale-x wx))
                   (ensure-legal-window-coordinate (scale-y wy))))
   :SPRITE-COMMAND
@@ -1970,7 +1970,7 @@ Modification History (most recent at the top)
   :COMMAND-BODY
   (let ((current-y y) (s string))
     (loop
-      (%draw-string *graphics-state-current-font-no*
+      (draw-string *graphics-state-current-font-no*
                     (subseq s 0 (position #\newline s))
                     (ensure-legal-window-coordinate (scale-x(fixr x)))
                     (ensure-legal-window-coordinate (scale-y(fixr current-y))))
@@ -2031,7 +2031,7 @@ Modification History (most recent at the top)
     (loop
       (setq trimmed-string (subseq s 0 (position #\newline s))
             width (string-wid *graphics-state-current-font-no* trimmed-string))
-      (%draw-string *graphics-state-current-font-no*
+      (draw-string *graphics-state-current-font-no*
                     trimmed-string
                     (ensure-legal-window-coordinate
                     (scale-x (fixr (- x width))))
@@ -2110,7 +2110,7 @@ Modification History (most recent at the top)
             (list 'bu::stamp-rect width height))))
   :COMMAND-BODY
   (unless (or (zerop width) (zerop height))
-    (%draw-rectangle (fixr width) (fixr height)
+    (draw-rectangle (fixr width) (fixr height)
                     (ensure-legal-window-coordinate
                       (scale-x (-& x (floor (the fixnum width) 2))))
                     (ensure-legal-window-coordinate
@@ -2164,7 +2164,7 @@ Modification History (most recent at the top)
             (list 'bu::dot))))
   :COMMAND-BODY
   (unless (zerop *graphics-state-current-pen-width*)
-    (%draw-rectangle *graphics-state-current-pen-width*
+    (draw-rectangle *graphics-state-current-pen-width*
                     *graphics-state-current-pen-width*
                     (ensure-legal-window-coordinate
                       (scale-x (-& x
@@ -2230,16 +2230,16 @@ Modification History (most recent at the top)
       (cond ((or (>=& (*& thick 2) wid)
                 (>=& (*& thick 2) hei))
             ;; degenerate cases where walls touch
-            (%draw-rectangle wid hei xxx yyy))
+            (draw-rectangle wid hei xxx yyy))
         (t
         ;; left wall
-        (%draw-rectangle thick hei xxx yyy)
+        (draw-rectangle thick hei xxx yyy)
         ;; top
-        (%draw-rectangle (-& wid (*& 2 thick)) thick (+& xxx thick) yyy)
+        (draw-rectangle (-& wid (*& 2 thick)) thick (+& xxx thick) yyy)
         ;; right
-        (%draw-rectangle thick hei (+& xxx (-& wid thick)) yyy)
+        (draw-rectangle thick hei (+& xxx (-& wid thick)) yyy)
         ;; bottom
-        (%draw-rectangle (-& wid (*& 2 thick)) thick (+& xxx thick)
+        (draw-rectangle (-& wid (*& 2 thick)) thick (+& xxx thick)
                           (+& yyy (-& hei thick)))))))
   :TRANSLATION-ARGS
   (trans-x trans-y)

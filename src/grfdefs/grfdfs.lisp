@@ -503,7 +503,7 @@ parameters of the graphics box are bound. "
 (defun draw-clip-line (from-x from-y to-x to-y alu)
   ;(draw-line from-x from-y to-x to-y alu t)
   ;; draw-line will clip the coordinates making the slope wrong...
-  (%draw-line (scale-x from-x) (scale-y from-y) (scale-x to-x) (scale-y to-y)))
+  (draw-line (scale-x from-x) (scale-y from-y) (scale-x to-x) (scale-y to-y)))
 
 (defun draw-wrap-line (from-x from-y to-x to-y alu)
   (let* ((delta-x (- to-x from-x))
@@ -534,24 +534,24 @@ parameters of the graphics box are bound. "
 		       beyond-top? beyond-bottom? beyond-right? beyond-left?))
 
       (flet ((line-right-then-continue (y-intercept)
-	       (%draw-line (scale-x from-x) (scale-y from-y)
+	       (draw-line (scale-x from-x) (scale-y from-y)
 			   (scale-x (1- %drawing-width))
 			   (scale-y y-intercept))
 	       ;; now recurse
 	       (draw-wrap-line 0 y-intercept
 			       (wrap-x-coord-right to-x) to-y alu))
 	     (line-top-then-continue (x-intercept)
-	       (%draw-line (scale-x from-x) (scale-y from-y)
+	       (draw-line (scale-x from-x) (scale-y from-y)
 			               (scale-x x-intercept) (scale-y 0))
 	       (draw-wrap-line x-intercept (1- %drawing-height)
 			       to-x (wrap-y-coord-top to-y) alu))
 	     (line-left-then-continue (y-intercept)
-	       (%draw-line (scale-x from-x) (scale-y from-y)
+	       (draw-line (scale-x from-x) (scale-y from-y)
 			               (scale-x 0) (scale-y y-intercept))
 	       (draw-wrap-line (1- %drawing-width) y-intercept
 			       (wrap-x-coord-left to-x) to-y alu))
 	     (line-bottom-then-continue (x-intercept)
-	       (%draw-line (scale-x from-x) (scale-y from-y)
+	       (draw-line (scale-x from-x) (scale-y from-y)
 			               (scale-x x-intercept) (scale-y (1- %drawing-height)))
 	       (draw-wrap-line x-intercept 0
 			       to-x (wrap-y-coord-bottom to-y) alu))
@@ -577,7 +577,7 @@ parameters of the graphics box are bound. "
 	       ;; to optimize the common case
 	       (cond ((point-in-array? to-x to-y)
 		      ;; the simple, simple case
-		      (%draw-line (scale-x from-x) (scale-y from-y)
+		      (draw-line (scale-x from-x) (scale-y from-y)
 				              (scale-x to-x)   (scale-y to-y)))
 		     ((beyond-right? to-x)
 		      ;; note that if the line extends beyond a
