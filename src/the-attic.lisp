@@ -4724,6 +4724,35 @@ if it is out of bounds
 ;;;; FILE: draw-low-opengl.lisp
 ;;;;
 
+;; not currently used, leave here to document calling convention
+(defun %draw-arc (bit-array alu x y width height th1 th2)
+  (declare (ignore bit-array alu x y width height th1 th2))
+#|
+  (if (=& alu alu-xor)
+      (gp:draw-arc bit-array x y width height (* (- 90 th1) +degs->rads+)
+                   (* th2 +degs->rads+ -1)
+               :operation alu :filled nil :foreground #xffffff)
+    (gp:draw-arc bit-array x y width height (* (- 90 th1) +degs->rads+)
+                 (* th2 +degs->rads+ -1)
+               :operation alu :filled nil))
+|#
+)
+
+;; not currently used, leave here to document calling convention
+(defun %draw-filled-arc (bit-array alu x y width height th1 th2)
+  (declare (ignore bit-array alu x y width height th1 th2))
+#|
+  (if (=& alu alu-xor)
+      (gp:draw-arc bit-array x y width height (* (- 90 th1) +degs->rads+)
+                   (* th2 +degs->rads+ -1)
+               :operation alu :filled t :foreground #xffffff)
+    (gp:draw-arc bit-array x y width height (* (- 90 th1) +degs->rads+)
+                 (* th2 +degs->rads+ -1)
+                 :operation alu :filled t))
+|#
+)
+
+
 ;;; This is called to make sure the quickdraw clipping is set up to match the boxer clipping.
 (defun update-window-system-state () )
 

@@ -562,34 +562,15 @@
                          (* +degs->rads+ sweep-angle)
                          filled?)))
 
-
-;; not currently used, leave here to document calling convention
 (defun %draw-arc (bit-array alu x y width height th1 th2)
-  (declare (ignore bit-array alu x y width height th1 th2))
-#|
-  (if (=& alu alu-xor)
-      (gp:draw-arc bit-array x y width height (* (- 90 th1) +degs->rads+)
-                   (* th2 +degs->rads+ -1)
-               :operation alu :filled nil :foreground #xffffff)
-    (gp:draw-arc bit-array x y width height (* (- 90 th1) +degs->rads+)
-                 (* th2 +degs->rads+ -1)
-               :operation alu :filled nil))
-|#
-)
+  "See the-attic for the previous lispworks GP library version of this function.
+It's not clear yet whether we'll need to re-implement this for the future."
+  (declare (ignore bit-array alu x y width height th1 th2)))
 
-;; not currently used, leave here to document calling convention
 (defun %draw-filled-arc (bit-array alu x y width height th1 th2)
-  (declare (ignore bit-array alu x y width height th1 th2))
-#|
-  (if (=& alu alu-xor)
-      (gp:draw-arc bit-array x y width height (* (- 90 th1) +degs->rads+)
-                   (* th2 +degs->rads+ -1)
-               :operation alu :filled t :foreground #xffffff)
-    (gp:draw-arc bit-array x y width height (* (- 90 th1) +degs->rads+)
-                 (* th2 +degs->rads+ -1)
-                 :operation alu :filled t))
-|#
-)
+  "See the-attic for the previous lispworks GP library version of this function.
+It's not clear yet whether we'll need to re-implement this for the future."
+  (declare (ignore bit-array alu x y width height th1 th2)))
 
 ;; BITBLT Operations
 ;; NOTE: pixblt does not honor the graphics context mask so we have to
