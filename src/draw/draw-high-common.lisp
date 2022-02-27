@@ -53,7 +53,7 @@ PREPARE-SHEET of the window. Unless you really know what you are doing
 you should only use this inside the :BLINK method for a blinker."
   (once-only (window)
     `(let ((%drawing-window ,window)
-           (%drawing-array (sheet-screen-array ,window)))
+           (%drawing-array  ,window))
        %drawing-window %drawing-array    ;bound but never...
        (drawing-on-window-bootstrap-clipping-and-scaling
          (0 0

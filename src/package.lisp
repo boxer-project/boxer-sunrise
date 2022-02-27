@@ -274,7 +274,7 @@
   (:export :*glyph-pane*
            :outermost-screen-box
            :*foreground-color* :*background-color*
-           :main-screen :sheet-screen-array :prepare-sheet
+           :main-screen :prepare-sheet
            :window-inside-size
            :window-pixel
            :%bitblt-in-screen :%bitblt-to-screen :%bitblt-from-screen

@@ -28,3 +28,5 @@
   #+lispworks(gp:port-width  window)
   #-lispworks 1000) ; TODO
 
+(defun window-inside-size (w)
+  (values (sheet-inside-width  w) (sheet-inside-height w)))

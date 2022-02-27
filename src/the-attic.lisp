@@ -4724,6 +4724,29 @@ if it is out of bounds
 ;;;; FILE: draw-low-opengl.lisp
 ;;;;
 
+;; sgithens 2022-02-26 Removing these commented out bits, putting here as a possible future
+;; reference
+(defun clear-window (w)
+  (opengl::rendering-on (w)
+    ;; sets the clearing color
+    ;; shouldn't need to do this EVERY time
+    (opengl::gl-clear-color (bw::ogl-color-red *background-color*)
+                        (bw::ogl-color-green *background-color*)
+                        (bw::ogl-color-blue *background-color*)
+                        0.0)
+    ;(gl-clear-depth d)
+    ;(gl-clear-accum r g b alpha)
+    ;(gl-clear-stencil s)
+    ;; clears the screen to the clearing color
+    ;; 2nd arg is logior of possible:
+    ;; *gl-color-buffer-bit*
+    ;; *GL-depth-BUFFER-BIT*
+    ;; *GL-accum-BUFFER-BIT*
+    ;; *GL-stencil-BUFFER-BIT*
+    (opengl::gl-clear opengl::*gl-color-buffer-bit*)))
+
+(defun sheet-screen-array (window) window)
+
 ;;; In the new regime, coordinates are relative to the grafport (window) rather than the pane.
 (defun sheet-inside-top (window) (declare (ignore window)) 0)
 (defun sheet-inside-left (window) (declare (ignore window)) 0)

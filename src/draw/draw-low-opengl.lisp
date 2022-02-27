@@ -108,10 +108,9 @@
 
 (in-package :boxer)
 
-;;; skinable support (move to box-borders ?)
-;;; corners, sides, trans sides, labels, names
-
-;;;; Constants and Variables
+;;;
+;;; Constants and Variables
+;;;
 
 (defvar *boxer-frame* nil
   "This frame contains *turtle-pane* *boxer-pane* etc.")
@@ -148,8 +147,9 @@
 (defvar *border-gui-color*)  ; color of temporary interface elements when mouse is held
 
 
-;; must be called AFTER *boxer-pane* has been created
 (defun initialize-colors ()
+  "This must be called AFTER *boxer-pane* has been created, as it depends on several
+some opengl features to be available first."
   (setq *black*   (bw::ogl-convert-color #(:RGB 0.0 0.0 0.0))
         *white*   (bw::ogl-convert-color #(:RGB 1.0 1.0 1.0))
         *red*     (bw::ogl-convert-color #(:RGB 1.0 0.0 0.0))
@@ -167,11 +167,49 @@
         *closet-color* (bw::make-ogl-color .94 .94 .97)
         *border-gui-color* *default-border-color*))
 
-;;; &&&& stub
 ;;; **** returns pixel value(window system dependent) at windw coords (x,y)
 ;;; see BU::COLOR-AT in grprim3.lisp
 (defun window-pixel (x y &optional (view *boxer-pane*)) (%get-pixel view x y))
 (defun window-pixel-color (x y &optional (view *boxer-pane*)) (opengl::pixel->color (%get-pixel view x y)))
+
+;;;
+;;; Drawing and Geometry layout type Macros
+;;
+;
+(defun %set-pen-size (v)
+  (bw::ogl-set-pen-size v))
+
+;; needs to be happening inside a drawing-on-window (actually rendering-on)
+(defmacro with-pen-size ((newsize) &body body)
+  (let ((oldpsvar (gensym)) (nochangevar (gensym)) (newsizevar (gensym)))
+    `(let ((,oldpsvar (bw::get-opengl-state opengl::*gl-line-width* :float))
+           (,newsizevar (float ,newsize))
+           (,nochangevar nil))
+       (unwind-protect
+        (progn
+         (cond ((= ,newsizevar ,oldpsvar) (setq ,nochangevar t))
+           (t (%set-pen-size ,newsize)))
+         . ,body)
+        (unless ,nochangevar (%set-pen-size ,oldpsvar))))))
+
+(defmacro with-line-stippling ((pattern factor) &body body)
+  (let ((stipplevar (gensym)))
+    `(let ((,stipplevar (bw::get-opengl-state opengl::*gl-line-stipple* :boolean)))
+       (unwind-protect
+        (progn
+         (opengl::gl-line-stipple ,factor ,pattern)
+         (opengl::gl-enable opengl::*gl-line-stipple*)
+         . ,body)
+        (unless ,stipplevar (opengl::gl-disable opengl::*gl-line-stipple*))))))
+
+(defmacro maintaining-drawing-font (&body body)
+  (let ((font-var (gensym)))
+    `(let ((,font-var *current-opengl-font*))
+       (unwind-protect
+        (progn . ,body)
+        ;; NOTE: fonts aren't necessarily EQ
+        (unless (eql *current-opengl-font* ,font-var)
+          (setq *current-opengl-font* ,font-var))))))
 
 (defmacro rebind-font-info ((font-no) &body body)
   `(let ((%drawing-font-cha-hei %drawing-font-cha-hei)
@@ -189,19 +227,28 @@
                            (opengl::gl-scissor 0 0 (sheet-inside-width ,view) (sheet-inside-height ,view))
                            . ,body)))
 
-;; **** added WITH-PORT
+(defmacro boxer-points->window-system-points (boxer-point-list (x-arg x-form)
+                                                               (y-arg y-form))
+  "this takes a set of boxer points and converts them into a form that
+the window system desires.  The x/y-function args will be funcalled
+on the coordinate as it is converted.
+
+OpenGL expects a list of X Y pairs"
+  `(macrolet ((x-handler (,x-arg) ,x-form)
+              (y-handler (,y-arg) ,y-form))
+             (let ((trans nil))
+               (dolist (pt ,boxer-point-list (nreverse trans))
+                 (push (list (x-handler (car pt)) (y-handler (cdr pt))) trans)))))
+
 (defmacro prepare-sheet ((window) &body body)
   `(with-drawing-port ,window
      ;; make sure things are the way they should be
      ,@body))
 
-;; gl-scissor uses OpenGL coords (0,0) = bottom,left
-;; 1/13/2008 - fine tuned X  (- lef 1) => lef  &
-;; Y   (- (sheet-inside-height box::%drawing-array) bot) =>
 (defun my-clip-rect (lef top rig bot)
-;  (format t "~&SCissor ~D, ~D, ~D ~D" lef (- (sheet-inside-height box::%drawing-array)
-;                         box::%origin-y-offset)
-;          (-& rig lef) (-& bot top))
+  ;; gl-scissor uses OpenGL coords (0,0) = bottom,left
+  ;; 1/13/2008 - fine tuned X  (- lef 1) => lef  &
+  ;; Y   (- (sheet-inside-height box::%drawing-array) bot) =>
   (opengl::gl-scissor (floor lef)
                   (floor (1+ (- (sheet-inside-height box::%drawing-array) bot)))
                   (ceiling (- rig (- lef 1)))
@@ -218,7 +265,6 @@
 
 (defvar %clip-total-height nil)
 
-;;; **** NEW, used in draw-high-highware-clip
 (defmacro with-window-system-dependent-clipping ((x y wid hei) &body body)
   `(unwind-protect
     (let ((%clip-lef (max %clip-lef (+ %origin-x-offset ,x)))
@@ -233,12 +279,6 @@
     (my-clip-rect %clip-lef %clip-top
                   %clip-rig %clip-bot)))
 
-(defun sheet-screen-array (window) window)
-
-;;; Note: naive implementation, see draw-low-clx.lisp for caching version
-(defun window-inside-size (w)
-  (values (sheet-inside-width  w) (sheet-inside-height w)))
-
 (defun clear-window (w)
   (opengl::rendering-on (w)
     ;; sets the clearing color
@@ -247,15 +287,6 @@
                         (bw::ogl-color-green *background-color*)
                         (bw::ogl-color-blue *background-color*)
                         0.0)
-    ;(gl-clear-depth d)
-    ;(gl-clear-accum r g b alpha)
-    ;(gl-clear-stencil s)
-    ;; clears the screen to the clearing color
-    ;; 2nd arg is logior of possible:
-    ;; *gl-color-buffer-bit*
-    ;; *GL-depth-BUFFER-BIT*
-    ;; *GL-accum-BUFFER-BIT*
-    ;; *GL-stencil-BUFFER-BIT*
     (opengl::gl-clear opengl::*gl-color-buffer-bit*)))
 
 ;;; used by repaint-in-eval
@@ -311,14 +342,6 @@
       (bw::with-ogl-font  (font)
                           (bw::ogl-font-ascent font)))))
 
-(defmacro maintaining-drawing-font (&body body)
-  (let ((font-var (gensym)))
-    `(let ((,font-var *current-opengl-font*))
-       (unwind-protect
-        (progn . ,body)
-        ;; NOTE: fonts aren't necessarily EQ
-        (unless (eql *current-opengl-font* ,font-var)
-          (setq *current-opengl-font* ,font-var))))))
 
 ;; proportional fonts
 (defun cha-wid (char)
@@ -328,46 +351,6 @@
 
 (defun cha-hei () %drawing-font-cha-hei)
 
-;;; this takes a set of boxer points and converts them into a form that
-;;; the window system desires.  The x/y-function args will be funcalled
-;;; on the coordinate as it is converted.
-;;;
-;;; OpenGL expects a list of X Y pairs
-(defmacro boxer-points->window-system-points (boxer-point-list (x-arg x-form)
-                                                               (y-arg y-form))
-  `(macrolet ((x-handler (,x-arg) ,x-form)
-              (y-handler (,y-arg) ,y-form))
-             (let ((trans nil))
-               (dolist (pt ,boxer-point-list (nreverse trans))
-                 (push (list (x-handler (car pt)) (y-handler (cdr pt))) trans)))))
-
-;;; Real Primitives
-
-(defun %set-pen-size (v)
-  (bw::ogl-set-pen-size v))
-
-;; needs to be happening inside a drawing-on-window (actually rendering-on)
-(defmacro with-pen-size ((newsize) &body body)
-  (let ((oldpsvar (gensym)) (nochangevar (gensym)) (newsizevar (gensym)))
-    `(let ((,oldpsvar (bw::get-opengl-state opengl::*gl-line-width* :float))
-           (,newsizevar (float ,newsize))
-           (,nochangevar nil))
-       (unwind-protect
-        (progn
-         (cond ((= ,newsizevar ,oldpsvar) (setq ,nochangevar t))
-           (t (%set-pen-size ,newsize)))
-         . ,body)
-        (unless ,nochangevar (%set-pen-size ,oldpsvar))))))
-
-(defmacro with-line-stippling ((pattern factor) &body body)
-  (let ((stipplevar (gensym)))
-    `(let ((,stipplevar (bw::get-opengl-state opengl::*gl-line-stipple* :boolean)))
-       (unwind-protect
-        (progn
-         (opengl::gl-line-stipple ,factor ,pattern)
-         (opengl::gl-enable opengl::*gl-line-stipple*)
-         . ,body)
-        (unless ,stipplevar (opengl::gl-disable opengl::*gl-line-stipple*))))))
 
 ;;;; COLOR (incomplete)
 
