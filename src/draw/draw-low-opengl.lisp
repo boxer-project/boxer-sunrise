@@ -175,7 +175,21 @@ some opengl features to be available first."
 ;;;
 ;;; Drawing and Geometry layout type Macros
 ;;
-;
+
+(defmacro with-blending-on (&body body)
+  ;;; should we pass blend functions in ? ((src-blend-func dst-blend-func) &body body)
+  (let ((current-blend-var (gensym)))
+    `(let ((,current-blend-var (bw::gl-enabled? opengl::*gl-blend*)))
+       (unwind-protect
+        (progn
+         (opengl::gl-enable opengl::*gl-line-smooth*)
+         (opengl::gl-enable opengl::*gl-polygon-smooth*)
+         (opengl::gl-enable opengl::*gl-blend*)
+         (opengl::gl-blend-func opengl::*gl-src-alpha* opengl::*gl-one-minus-src-alpha*)
+         (opengl::gl-hint opengl::*gl-line-smooth-hint* opengl::*gl-nicest*)
+         . ,body)
+        (unless ,current-blend-var (opengl::gl-disable opengl::*gl-blend*))))))
+
 (defun %set-pen-size (v)
   (bw::ogl-set-pen-size v))
 
@@ -544,7 +558,9 @@ It's not clear yet whether we'll need to re-implement this for the future."
                                (round (- (sheet-inside-height *boxer-pane*) (+ fy hei)))
                                (round wid) (round hei) tx ty))
 
+;;;;
 ;;;; Boxer bitmaps
+;;;;
 
 (defun make-offscreen-bitmap (window w h)
   (declare (ignore window))
@@ -657,23 +673,8 @@ It's not clear yet whether we'll need to re-implement this for the future."
 
 (defsetf image-pixel %set-image-pixel)
 
-
 (defun offscreen-pixel (x y pixmap)
    (opengl::pixmap-pixel pixmap x y))
 
 (defun offscreen-pixel-color (x y pixmap)
   (opengl::pixel->color (opengl::pixmap-pixel pixmap x y)))
-
-;;; should we pass blend functions in ? ((src-blend-func dst-blend-func) &body body)
-(defmacro with-blending-on (&body body)
-  (let ((current-blend-var (gensym)))
-    `(let ((,current-blend-var (bw::gl-enabled? opengl::*gl-blend*)))
-       (unwind-protect
-        (progn
-         (opengl::gl-enable opengl::*gl-line-smooth*)
-         (opengl::gl-enable opengl::*gl-polygon-smooth*)
-         (opengl::gl-enable opengl::*gl-blend*)
-         (opengl::gl-blend-func opengl::*gl-src-alpha* opengl::*gl-one-minus-src-alpha*)
-         (opengl::gl-hint opengl::*gl-line-smooth-hint* opengl::*gl-nicest*)
-         . ,body)
-        (unless ,current-blend-var (opengl::gl-disable opengl::*gl-blend*))))))
