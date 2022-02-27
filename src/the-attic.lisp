@@ -4724,6 +4724,20 @@ if it is out of bounds
 ;;;; FILE: draw-low-opengl.lisp
 ;;;;
 
+;;; In the new regime, coordinates are relative to the grafport (window) rather than the pane.
+(defun sheet-inside-top (window) (declare (ignore window)) 0)
+(defun sheet-inside-left (window) (declare (ignore window)) 0)
+
+;; figure out if we are using this for convert-color specs or not
+(defun normalize-color-component (value) (/ value 100.0))
+
+;; sgithens 2022-02-26 This doesn't appear to be used anywhere
+(defun %pen-color= (color)
+  (color= color
+          (bw::ogl-current-color)))
+
+(defmacro sign-of-no (x) `(if (plusp& ,x) 1 -1))
+
 ;; not currently used, leave here to document calling convention
 (defun %draw-arc (bit-array alu x y width height th1 th2)
   (declare (ignore bit-array alu x y width height th1 th2))

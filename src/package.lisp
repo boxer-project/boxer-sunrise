@@ -90,7 +90,6 @@
            :*current-opengl-font*
            :with-collection
            :collect
-           :sheet-inside-left :sheet-inside-top
            :sheet-inside-width :sheet-inside-height
            :alu-andca :alu-seta :alu-xor :alu-and :alu-ior :alu-setz
            :port-to

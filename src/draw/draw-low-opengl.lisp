@@ -167,11 +167,6 @@
         *closet-color* (bw::make-ogl-color .94 .94 .97)
         *border-gui-color* *default-border-color*))
 
-;;; In the new regime, coordinates are relative to the grafport (window) rather than the pane.
-
-(defun sheet-inside-top (window) (declare (ignore window)) 0)
-(defun sheet-inside-left (window) (declare (ignore window)) 0)
-
 ;;; &&&& stub
 ;;; **** returns pixel value(window system dependent) at windw coords (x,y)
 ;;; see BU::COLOR-AT in grprim3.lisp
@@ -290,10 +285,8 @@
       (setq *last-framerate-time* (get-universal-time)))
   ))
 
-;;; stub for double buffering window systems
 (defun %flush-port-buffer (&optional (pane *boxer-pane*))
   (update-framerate)
-
   (opengl::rendering-on (pane) (opengl::gl-flush))
   (opengl::swap-buffers pane))
 
@@ -318,9 +311,6 @@
       (bw::with-ogl-font  (font)
                           (bw::ogl-font-ascent font)))))
 
-
-
-
 (defmacro maintaining-drawing-font (&body body)
   (let ((font-var (gensym)))
     `(let ((,font-var *current-opengl-font*))
@@ -338,13 +328,6 @@
 
 (defun cha-hei () %drawing-font-cha-hei)
 
-(defun %draw-string (font string x y)
-  (let ((system-font (find-cached-font font)))
-    (if (null system-font)
-      (error "Can't find cached font for ~X" font)
-      (bw::with-ogl-font (system-font)
-                         (bw::ogl-draw-string string x y)))))
-
 ;;; this takes a set of boxer points and converts them into a form that
 ;;; the window system desires.  The x/y-function args will be funcalled
 ;;; on the coordinate as it is converted.
@@ -359,15 +342,6 @@
                  (push (list (x-handler (car pt)) (y-handler (cdr pt))) trans)))))
 
 ;;; Real Primitives
-
-;;; Font is managed by set-font-info.  Note that anything else that might change
-;;; the window font (ie, draw-string) has to change it back for this to work.
-;;; 5/11/98 draw to baseline instead of top left
-(defun %draw-cha (x y char)
-  (bw::ogl-draw-char char x y))
-
-(defun %draw-line (x0 y0 x1 y1)
-  (bw::ogl-draw-line x0 y0 x1 y1))
 
 (defun %set-pen-size (v)
   (bw::ogl-set-pen-size v))
@@ -457,27 +431,17 @@
         (t
          (error "Bad color passed to %set-pen-color: ~A " color))))
 
-;; sgithens TODO This doesn't appear to be used anywhere
-;; (defun %pen-color= (color)
-;;   (color= color
-;;           (bw::ogl-current-color)))
-
-;;; How's this?
 (defmacro with-pen-color ((color) &body body)
   `(bw::maintaining-ogl-color
     (bw::%set-pen-color ,color)
     . ,body))
 
-;; figure out if we are using this for convert-color specs or not
-(defun normalize-color-component (value) (/ value 100.0))
-
 (defmacro maintaining-pen-color (&body body)
   `(bw::maintaining-ogl-color . ,body))
 
-;;; returns a list of RGB values for the dumper
-;;; should return the values in the boxer 0->100 range (floats are OK)
-
 (defun pixel-rgb-values (pixel)
+  "Returns a list of RGB values for the dumper.
+Should return the values in the boxer 0->100 range (floats are OK)"
   (list (* (color-red pixel)   100)
         (* (color-green pixel) 100)
         (* (color-blue pixel)  100)
@@ -496,8 +460,8 @@
 (defvar *green-byte-position* (byte 8 8))
 (defvar *blue-byte-position* (byte 8 0))
 
-;; need to deal with possible alpha values...
 (defun pixel-dump-value (pixel)
+  "TODO need to deal with possible alpha values..."
   (let ((alpha (color-alpha pixel)))
     (cond ((< alpha 1.0)
            ;; a transparent color, so return a list with the alpha value since the
@@ -511,9 +475,9 @@
                  (dpb& greenbyte *green-byte-position*
                        bluebyte)))))))
 
-;; we need to shave off the alpha value because higher level code
-;; (dump-true-color-pixmap: dumper.lisp) assumes fixnum pixels
 (defun pixel-dump-value-internal (winpixel)
+  "we need to shave off the alpha value because higher level code
+(dump-true-color-pixmap: dumper.lisp) assumes fixnum pixels"
   (let* ((returnpixel (logand winpixel #xff00))
          (redbyte (ldb (byte 8 0) winpixel))
          (bluebyte (ldb (byte 8 16) winpixel)))
@@ -521,36 +485,19 @@
          (dpb bluebyte (byte 8 0)   ; move blue to low byte
               returnpixel))))
 
-(defun %draw-poly (points)
-  (bw::ogl-draw-poly points))
+;;;
+;;; Drawing functions
+;;;
 
-;; CLX like version
-(defun %draw-rectangle (width height x y)
-  (unless (or (>= %clip-lef %clip-rig) (>= %clip-top %clip-bot))
-    (bw::ogl-draw-rect x y (+ x width) (+ y height))))
+(defun %draw-arc (bit-array alu x y width height th1 th2)
+  "See the-attic for the previous lispworks GP library version of this function.
+It's not clear yet whether we'll need to re-implement this for the future."
+  (declare (ignore bit-array alu x y width height th1 th2)))
 
-;;; **** NEW: draw a single pixel at window's X,Y
-;;; just drawing a little rect for now,there's probably a better way to do this
-(defun %draw-point (x y)
-  (bw::ogl-draw-point x y))
-
-(defun %erase-rectangle (w h x y window)
-  (unless (null window)
-    (with-pen-color (*background-color*)
-      (%draw-rectangle w h x y))))
-
-;;; These take topleft coordinates
-;; the angle args are like CLX, start at 3 oclock and positive sweep is
-;; counterclockwise.  Need to convert to boxer sense where we start at
-;; 12oclock and positive sweep is clockwise and in degrees
-
-(defun %draw-circle (x y radius &optional filled?)
-  (bw::opengl-draw-circle x y radius filled?))
-
-;; circular arc, rather than the more generic elliptical arc
-;; opengl arc drawing routine starts at 3 oclock and sweeps clockwise in radians
-;; also, opengl-draw-arc expects positive angle args
 (defun %draw-c-arc (x y radius start-angle sweep-angle &optional filled?)
+  "circular arc, rather than the more generic elliptical arc
+opengl arc drawing routine starts at 3 oclock and sweeps clockwise in radians
+also, opengl-draw-arc expects positive angle args"
   (if (minusp sweep-angle)
     ;; change the start so that we can use ABS sweep
     (bw::opengl-draw-arc x y radius
@@ -562,30 +509,53 @@
                          (* +degs->rads+ sweep-angle)
                          filled?)))
 
-(defun %draw-arc (bit-array alu x y width height th1 th2)
-  "See the-attic for the previous lispworks GP library version of this function.
-It's not clear yet whether we'll need to re-implement this for the future."
-  (declare (ignore bit-array alu x y width height th1 th2)))
+(defun %draw-cha (x y char)
+  "Font is managed by set-font-info.  Note that anything else that might change
+the window font (ie, draw-string) has to change it back for this to work.
+5/11/98 draw to baseline instead of top left"
+  (bw::ogl-draw-char char x y))
+
+(defun %draw-circle (x y radius &optional filled?)
+  (bw::opengl-draw-circle x y radius filled?))
 
 (defun %draw-filled-arc (bit-array alu x y width height th1 th2)
   "See the-attic for the previous lispworks GP library version of this function.
 It's not clear yet whether we'll need to re-implement this for the future."
   (declare (ignore bit-array alu x y width height th1 th2)))
 
-;; BITBLT Operations
-;; NOTE: pixblt does not honor the graphics context mask so we have to
-;; do the clipping in software
+(defun %draw-line (x0 y0 x1 y1)
+  (bw::ogl-draw-line x0 y0 x1 y1))
 
-(defmacro sign-of-no (x) `(if (plusp& ,x) 1 -1))
+(defun %draw-point (x y)
+  (bw::ogl-draw-point x y))
 
-;; bw::gl-draw-pixels (w h
-;; remember that  we are drawing from the lower left....
+(defun %draw-poly (points)
+  (bw::ogl-draw-poly points))
+
+(defun %draw-rectangle (width height x y)
+  (unless (or (>= %clip-lef %clip-rig) (>= %clip-top %clip-bot))
+    (bw::ogl-draw-rect x y (+ x width) (+ y height))))
+
+(defun %erase-rectangle (w h x y window)
+  (unless (null window)
+    (with-pen-color (*background-color*)
+      (%draw-rectangle w h x y))))
+
+(defun %draw-string (font string x y)
+  (let ((system-font (find-cached-font font)))
+    (if (null system-font)
+      (error "Can't find cached font for ~X" font)
+      (bw::with-ogl-font (system-font)
+                         (bw::ogl-draw-string string x y)))))
+
 (defun %bitblt-to-screen (wid hei from-array fx fy tx ty)
+  ;; bw::gl-draw-pixels (w h
+  ;; remember that  we are drawing from the lower left....
   (opengl::%pixblt-to-screen from-array (round tx) (round ty) (round wid) (round hei) fx fy))
 
-;; bw::gl-read-pixels
-;; (bw::gl-read-buffer bw::*gl-front*) ; read from the (visible) front buffer
 (defun %bitblt-from-screen (wid hei to-array fx fy tx ty)
+  ;; bw::gl-read-pixels
+  ;; (bw::gl-read-buffer bw::*gl-front*) ; read from the (visible) front buffer
   (opengl::%pixblt-from-screen to-array (round fx)
                                ;; not quite right especially with a translated fy
                                (round (- (sheet-inside-height *boxer-pane*) (+ fy hei)))

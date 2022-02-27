@@ -56,7 +56,7 @@ you should only use this inside the :BLINK method for a blinker."
            (%drawing-array (sheet-screen-array ,window)))
        %drawing-window %drawing-array    ;bound but never...
        (drawing-on-window-bootstrap-clipping-and-scaling
-         ((sheet-inside-left ,window) (sheet-inside-top  ,window)
+         (0 0
           (sheet-inside-width ,window) (sheet-inside-height ,window))
           . ,body))))
 
