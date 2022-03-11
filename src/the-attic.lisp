@@ -5458,8 +5458,17 @@ if it is out of bounds
   `(vectorp ,thing))
 
 ;;;;
-;;;; FILE : gdispl.lisp
+;;;; FILE: gdispl.lisp
 ;;;;
+
+;; sgithens 2022-03-10 alu version of sprite-commands-for-new-position
+(defun sprite-commands-for-new-position (new-x new-y &optional (alu alu-seta))
+  (list 'bu::penup 'bu::setxy new-x new-y
+        (case alu
+          (#.alu-xor 'bu::penxor)
+          ((#.alu-seta #.alu-ior) 'bu::pendown)
+          ((#.alu-setz #.alu-andca) 'bu::penerase)
+          (t 'bu::pendown))))
 
     #-opengl
     (let ((diameter  (fixr (+ radius radius)))
@@ -11387,6 +11396,62 @@ Modification History (most recent at top)
                         (:minus-infinity most-negative-long-float)
                         (:plus-infinity most-positive-long-float)
                         (t number))
+
+;;;;
+;;;; FILE: recursive-prims.lisp
+;;;;
+
+;;; HOLDING-POSITION
+(defrecursive-funcall-primitive bu::holding-position ((list-rest what))
+  :STACK-FRAME-ALLOCATION (10 5 10 10)
+  :STATE-VARIABLES (boxer::*current-sprite* boxer::%turtle-state)
+  :BEFORE  (let* ((sprite (boxer::get-sprites))
+                 (turtle (slot-value sprite 'boxer::graphics-info))) ;'boxer::associated-turtle)))
+            (unless (boxer::sprite-box? sprite)
+              (primitive-signal-error :not-a-sprite sprite))
+            (set-and-save-state-variables
+             sprite
+             (boxer::return-state turtle))
+            (recursive-funcall-invoke
+             (make-interpreted-procedure-from-list (list what))))
+  :AFTER
+  (let* ((turtle (slot-value boxer::*current-sprite*
+                            'boxer::graphics-info)) ;'boxer::associated-turtle))
+        (assoc-graphics-box (slot-value turtle 'boxer::assoc-graphics-box)))
+    (when (not (null boxer::*current-sprite*))
+      (unless (null assoc-graphics-box)
+       ;; now we need to initialize the save under...
+       (boxer::with-graphics-vars-bound (assoc-graphics-box)
+         (boxer::with-graphics-screen-parameters-once
+             (unless (eq (boxer::turtle-save-under turtle)
+                         'boxer::xor-redraw)
+               (boxer::save-under-turtle turtle)))
+         (boxer::with-graphics-screen-parameters
+             (when (boxer::absolute-shown? turtle)
+               (boxer::erase turtle)
+               (boxer::restore-turtle-state turtle boxer::%turtle-state)
+               (boxer::draw turtle))))))
+    (restore-state-variables)
+    nil)
+  :UNWIND-PROTECT-FORM
+  (let* ((turtle (slot-value boxer::*current-sprite*
+                            'boxer::graphics-info)) ;'boxer::associated-turtle))
+        (assoc-graphics-box (slot-value turtle 'boxer::assoc-graphics-box)))
+    (when (not (null boxer::*current-sprite*))
+      (unless (null assoc-graphics-box)
+       ;; now we need to initialize the save under...
+       (boxer::with-graphics-vars-bound (assoc-graphics-box)
+         (boxer::with-graphics-screen-parameters-once
+             (unless (eq (boxer::turtle-save-under turtle)
+                        'boxer::xor-redraw)
+               (boxer::save-under-turtle turtle)))
+       (boxer::with-graphics-screen-parameters
+           (when (boxer::absolute-shown? turtle)
+             (boxer::erase turtle)
+             (boxer::restore-turtle-state turtle boxer::%turtle-state)
+             (boxer::draw turtle))))))
+    (restore-state-variables)
+    nil))
 
 ;;;;
 ;;;; FILE: region.lisp

@@ -195,60 +195,6 @@
 
 (boxer::add-sprite-update-function boxer::shape bu::update-shape)
 
-
-
-;;; HOLDING-POSITION
-(defrecursive-funcall-primitive bu::holding-position ((list-rest what))
-  :STACK-FRAME-ALLOCATION (10 5 10 10)
-  :STATE-VARIABLES (boxer::*current-sprite* boxer::%turtle-state)
-  :BEFORE  (let* ((sprite (boxer::get-sprites))
-                 (turtle (slot-value sprite 'boxer::graphics-info))) ;'boxer::associated-turtle)))
-            (unless (boxer::sprite-box? sprite)
-              (primitive-signal-error :not-a-sprite sprite))
-            (set-and-save-state-variables
-             sprite
-             (boxer::return-state turtle))
-            (recursive-funcall-invoke
-             (make-interpreted-procedure-from-list (list what))))
-  :AFTER
-  (let* ((turtle (slot-value boxer::*current-sprite*
-                            'boxer::graphics-info)) ;'boxer::associated-turtle))
-        (assoc-graphics-box (slot-value turtle 'boxer::assoc-graphics-box)))
-    (when (not (null boxer::*current-sprite*))
-      (unless (null assoc-graphics-box)
-       ;; now we need to initialize the save under...
-       (boxer::with-graphics-vars-bound (assoc-graphics-box)
-         (boxer::with-graphics-screen-parameters-once
-             (unless (eq (boxer::turtle-save-under turtle)
-                         'boxer::xor-redraw)
-               (boxer::save-under-turtle turtle)))
-         (boxer::with-graphics-screen-parameters
-             (when (boxer::absolute-shown? turtle)
-               (boxer::erase turtle)
-               (boxer::restore-turtle-state turtle boxer::%turtle-state)
-               (boxer::draw turtle))))))
-    (restore-state-variables)
-    nil)
-  :UNWIND-PROTECT-FORM
-  (let* ((turtle (slot-value boxer::*current-sprite*
-                            'boxer::graphics-info)) ;'boxer::associated-turtle))
-        (assoc-graphics-box (slot-value turtle 'boxer::assoc-graphics-box)))
-    (when (not (null boxer::*current-sprite*))
-      (unless (null assoc-graphics-box)
-       ;; now we need to initialize the save under...
-       (boxer::with-graphics-vars-bound (assoc-graphics-box)
-         (boxer::with-graphics-screen-parameters-once
-             (unless (eq (boxer::turtle-save-under turtle)
-                        'boxer::xor-redraw)
-               (boxer::save-under-turtle turtle)))
-       (boxer::with-graphics-screen-parameters
-           (when (boxer::absolute-shown? turtle)
-             (boxer::erase turtle)
-             (boxer::restore-turtle-state turtle boxer::%turtle-state)
-             (boxer::draw turtle))))))
-    (restore-state-variables)
-    nil))
-
 ;;; private drawing
 (defrecursive-funcall-primitive bu::draw-private ((list-rest what))
   :STACK-FRAME-ALLOCATION (1 1 1 1)

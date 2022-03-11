@@ -153,3 +153,9 @@
   (boxer-eval::primitive-signal-error :obsolete
                                       "Socket based sending features are not currently supported.")
   boxer-eval::*novalue*)
+
+;; Pretty wild stuff from recursive-prims
+(boxer-eval::defboxer-primitive bu::holding-position ((list-rest what))
+  (boxer-eval::primitive-signal-error :obsolete
+                                      "Holding-position is not currently supported.")
+  boxer-eval::*novalue*)
