@@ -6870,6 +6870,50 @@ if it is out of bounds
 ;;;; FILE: grfdfs.lisp
 ;;;;
 
+;;; this should use the pos-cache....
+(defmacro with-turtle-slate-origins (screen-box &body body)
+  ;; this macro sets x and y coordinates of top left of turtle array
+  ;; not that the a SCREEN-SHEET may NOT have been allocated if this has
+  ;; been called BEFORE Redisplay has had a chance to run
+  `(let* ((screen-sheet (when ,screen-box (screen-sheet ,screen-box)))
+	  (gs (graphics-screen-sheet-actual-obj screen-sheet)))
+     (unless (null screen-sheet)
+       (multiple-value-bind (box-x-offset box-y-offset)
+	   (xy-position ,screen-box)
+	 (multiple-value-bind (sheet-x sheet-y)
+	     (graphics-screen-sheet-offsets screen-sheet)
+	   (with-origin-at ((+& box-x-offset sheet-x)
+			    (+& box-y-offset sheet-y))
+	     . ,body))))))
+
+
+
+;; switch this to use ONLY symbols in the BOXER package
+(defvar *allowed-alus* '(up down erase xor :up :erase :down :xor))
+
+(defun vlist-alu? (thing)
+  ;; complain about bad alus but allow them for now
+  (cond ((fast-memq thing '(:up :erase :down :xor))
+	 (warn "~%The ALU, ~A, is not a valid alu, use symbols in the BOXER package" thing)
+	 t)
+	(t
+	 (fast-memq thing *allowed-alus*))))
+
+
+
+#|
+(defmacro defsprite-update-function (name-descriptor arglist
+				     (sprite-var turtle-var slot-name)
+				     &body body)
+  `(progn
+     (when (and (symbolp ',name-descriptor)
+		(not (fast-memq ',name-descriptor *sprite-update-functions*)))
+       (push ',name-descriptor *sprite-update-functions*))
+     (setf (get ',slot-name 'update-function-name) ',name-descriptor)
+     (defsprite-function ,name-descriptor ,arglist (,sprite-var ,turtle-var)
+       . ,body)))
+|#
+
 ;; defined in vars.lisp
 ;; (defvar %learning-shape-graphics-list nil)
 
