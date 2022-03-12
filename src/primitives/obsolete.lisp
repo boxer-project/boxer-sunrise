@@ -159,3 +159,9 @@
   (boxer-eval::primitive-signal-error :obsolete
                                       "Holding-position is not currently supported.")
   boxer-eval::*novalue*)
+
+(boxer-eval::defboxer-primitive bu::with-sprites-hidden ((bu::port-to graphics-box)
+                                                         (list-rest what))
+  (boxer-eval::primitive-signal-error :obsolete
+                                      "with-sprites-hidden is not currently supported.")
+  boxer-eval::*novalue*)
