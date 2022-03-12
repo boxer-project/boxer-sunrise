@@ -11445,6 +11445,76 @@ Modification History (most recent at top)
 ;;;; FILE: recursive-prims.lisp
 ;;;;
 
+;; Some interesting pre-opengl bits from defrecursive-funcall-primitive update-shape:
+(unless (null assoc-graphics-box)
+               #-opengl
+              (boxer::with-graphics-vars-bound (assoc-graphics-box gr-sheet)
+                 ;; make sure all the other sprites are erased so we get a clean
+                 ;; save-under image (i.e. no other sprite parts)
+                 (let ((xor-sprites nil) (opaque-sprites nil))
+                   (dolist (ttl (boxer::graphics-sheet-object-list gr-sheet))
+                     (cond ((eq ttl turtle))
+                           ((boxer::shown? ttl)
+                            (if (eq (boxer::turtle-save-under ttl)
+                                    'boxer::xor-redraw)
+                              (push ttl xor-sprites)
+                              (push ttl opaque-sprites)))))
+                  (boxer::with-graphics-screen-parameters
+                     (let ((boxer::*current-active-sprite* turtle))
+                       (dolist (xs xor-sprites) (boxer::fast-erase xs)))
+                    (boxer::erase turtle)
+                     (let ((boxer::*current-active-sprite* turtle))
+                       (dolist (os opaque-sprites) (boxer::fast-erase os)))))))
+
+;; now we need to initialize the save under...
+(unless (null assoc-graphics-box)
+        #-opengl
+        (boxer::with-graphics-vars-bound (assoc-graphics-box gr-sheet)
+          (boxer::with-graphics-screen-parameters-once
+            (unless (eq (boxer::turtle-save-under turtle)
+                        'boxer::xor-redraw)
+               (boxer::save-under-turtle turtle)))
+                        ;; make sure all the other sprites are erased so we get a clean
+              ;; save-under image (i.e. no other sprite parts)
+              (let ((xor-sprites nil) (opaque-sprites nil))
+                (dolist (ttl (boxer::graphics-sheet-object-list gr-sheet))
+                  (cond ((eq ttl turtle))
+                        ((boxer::shown? ttl)
+                         (if (eq (boxer::turtle-save-under ttl)
+                                 'boxer::xor-redraw)
+                             (push ttl xor-sprites)
+                             (push ttl opaque-sprites)))))
+                (boxer::with-graphics-screen-parameters
+                  (let ((boxer::*current-active-sprite* turtle))
+                    (dolist (os opaque-sprites) (boxer::draw os)))
+                 (when (boxer::absolute-shown? turtle) (boxer::draw turtle))
+                  (let ((boxer::*current-active-sprite* turtle))
+                    (dolist (xs xor-sprites) (boxer::draw xs)))))))
+
+(unless (null assoc-graphics-box)
+       ;; now we need to initialize the save under...
+        #-opengl
+       (boxer::with-graphics-vars-bound (assoc-graphics-box gr-sheet)
+         (boxer::with-graphics-screen-parameters-once
+             (unless (eq (boxer::turtle-save-under turtle) 'boxer::xor-redraw)
+               (boxer::save-under-turtle turtle)))
+          (let ((xor-sprites nil) (opaque-sprites nil))
+            (dolist (ttl (boxer::graphics-sheet-object-list gr-sheet))
+              (cond ((eq ttl turtle))
+                    ((boxer::shown? ttl)
+                     (if (eq (boxer::turtle-save-under ttl)
+                             'boxer::xor-redraw)
+                       (push ttl xor-sprites)
+                       (push ttl opaque-sprites)))))
+            (boxer::with-graphics-screen-parameters
+              (let ((boxer::*current-active-sprite* turtle))
+                (dolist (os opaque-sprites) (boxer::draw os)))
+              (when (boxer::absolute-shown? turtle) (boxer::draw turtle))
+              (let ((boxer::*current-active-sprite* turtle))
+                (dolist (xs xor-sprites) (boxer::draw xs))))))
+        )
+
+
 ;;; HOLDING-POSITION
 (defrecursive-funcall-primitive bu::holding-position ((list-rest what))
   :STACK-FRAME-ALLOCATION (10 5 10 10)

@@ -78,25 +78,6 @@
           (let* ((new-graphics-list (boxer::make-graphics-command-list))
                   (assoc-graphics-box (slot-value turtle
                           'boxer::assoc-graphics-box)))
-            (unless (null assoc-graphics-box)
-               #-opengl
-              (boxer::with-graphics-vars-bound (assoc-graphics-box gr-sheet)
-                 ;; make sure all the other sprites are erased so we get a clean
-                 ;; save-under image (i.e. no other sprite parts)
-                 (let ((xor-sprites nil) (opaque-sprites nil))
-                   (dolist (ttl (boxer::graphics-sheet-object-list gr-sheet))
-                     (cond ((eq ttl turtle))
-                           ((boxer::shown? ttl)
-                            (if (eq (boxer::turtle-save-under ttl)
-                                    'boxer::xor-redraw)
-                              (push ttl xor-sprites)
-                              (push ttl opaque-sprites)))))
-                  (boxer::with-graphics-screen-parameters
-                     (let ((boxer::*current-active-sprite* turtle))
-                       (dolist (xs xor-sprites) (boxer::fast-erase xs)))
-                    (boxer::erase turtle)
-                     (let ((boxer::*current-active-sprite* turtle))
-                       (dolist (os opaque-sprites) (boxer::fast-erase os)))))))
              (cond
 ;              ((not (null (boxer::graphics-sheet
 ;                           (boxer::box-interface-box
@@ -126,32 +107,7 @@
         (progn (setq boxer::%learning-shape? nil)
            #-opengl (boxer::update-save-under turtle))
       (boxer::update-window-shape-allocation turtle)
-      (boxer::restore-turtle-state turtle boxer::%turtle-state)
-      ;; now we need to initialize the save under...
-      (unless (null assoc-graphics-box)
-        #-opengl
-        (boxer::with-graphics-vars-bound (assoc-graphics-box gr-sheet)
-          (boxer::with-graphics-screen-parameters-once
-            (unless (eq (boxer::turtle-save-under turtle)
-                        'boxer::xor-redraw)
-               (boxer::save-under-turtle turtle)))
-                        ;; make sure all the other sprites are erased so we get a clean
-              ;; save-under image (i.e. no other sprite parts)
-              (let ((xor-sprites nil) (opaque-sprites nil))
-                (dolist (ttl (boxer::graphics-sheet-object-list gr-sheet))
-                  (cond ((eq ttl turtle))
-                        ((boxer::shown? ttl)
-                         (if (eq (boxer::turtle-save-under ttl)
-                                 'boxer::xor-redraw)
-                             (push ttl xor-sprites)
-                             (push ttl opaque-sprites)))))
-                (boxer::with-graphics-screen-parameters
-                  (let ((boxer::*current-active-sprite* turtle))
-                    (dolist (os opaque-sprites) (boxer::draw os)))
-                 (when (boxer::absolute-shown? turtle) (boxer::draw turtle))
-                  (let ((boxer::*current-active-sprite* turtle))
-                    (dolist (xs xor-sprites) (boxer::draw xs)))))))
-      )
+      (boxer::restore-turtle-state turtle boxer::%turtle-state))
       (restore-state-variables))
   :UNWIND-PROTECT-FORM
   (let* ((sprites (boxer::get-sprites))
@@ -166,31 +122,9 @@
       ;; the shape can be in an inconsistent state here so make
       ;; sure all the things that depend on the shape synchronize
       ;; themselves to the shape's current state
-      #-opengl (boxer::update-save-under turtle)
+      ; sgithens remove #-opengl (boxer::update-save-under turtle)
       (boxer::update-window-shape-allocation turtle)
-      (boxer::restore-turtle-state turtle old-state)
-      (unless (null assoc-graphics-box)
-       ;; now we need to initialize the save under...
-        #-opengl
-       (boxer::with-graphics-vars-bound (assoc-graphics-box gr-sheet)
-         (boxer::with-graphics-screen-parameters-once
-             (unless (eq (boxer::turtle-save-under turtle) 'boxer::xor-redraw)
-               (boxer::save-under-turtle turtle)))
-          (let ((xor-sprites nil) (opaque-sprites nil))
-            (dolist (ttl (boxer::graphics-sheet-object-list gr-sheet))
-              (cond ((eq ttl turtle))
-                    ((boxer::shown? ttl)
-                     (if (eq (boxer::turtle-save-under ttl)
-                             'boxer::xor-redraw)
-                       (push ttl xor-sprites)
-                       (push ttl opaque-sprites)))))
-            (boxer::with-graphics-screen-parameters
-              (let ((boxer::*current-active-sprite* turtle))
-                (dolist (os opaque-sprites) (boxer::draw os)))
-              (when (boxer::absolute-shown? turtle) (boxer::draw turtle))
-              (let ((boxer::*current-active-sprite* turtle))
-                (dolist (xs xor-sprites) (boxer::draw xs))))))
-        ))
+      (boxer::restore-turtle-state turtle old-state))
     (restore-state-variables)))
 
 (boxer::add-sprite-update-function boxer::shape bu::update-shape)
