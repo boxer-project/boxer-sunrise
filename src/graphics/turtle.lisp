@@ -148,17 +148,6 @@ Modification History (most recent at top)
 	(top-sprite superior-turtle)
 	self)))
 
-(defmethod scale-save-under ((self turtle) scale)
-  (let ((su (slot-value self 'save-under)))
-    (unless (or (null su) (eq su 'xor-redraw))
-      (let ((new-size (ceiling (* (save-under-size su) scale))))
-	(setf (save-under-size su) new-size
-	      (save-under-middle su) (round new-size 2))
-        (free-offscreen-bitmap (save-under-bitmap su))
-	(setf (save-under-bitmap su)
-	      (make-offscreen-bitmap *boxer-pane*
-				     new-size new-size))))))
-
 (defmethod set-sprite-size ((self turtle) new-size &optional dont-update-box)
   (cond ((<= new-size 0)
 	 (error
@@ -170,7 +159,6 @@ Modification History (most recent at top)
            (unless (= (box-interface-value slot) new-size)
 	     (when (and (null dont-update-box) (not (null box)))
 	       (bash-box-to-number box new-size))
-	     (scale-save-under self (/ new-size (box-interface-value slot)))
 	     (setf (box-interface-value slot) new-size))
 	   ;; invalidate the shape and extent caches
 	   (invalidate-window-shape-and-extent-caches self)))))

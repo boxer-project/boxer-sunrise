@@ -189,7 +189,6 @@ Modification History (most recent at top)
                (not (null (box-interface-box shape-slot))))
       (shape-box-updater shape-slot))
     ;; fixup other slots which depend on the shape...
-    (update-save-under self)
     (update-window-shape-allocation self)
     ;; now we need to initialize the save under...
     (let ((assoc-graphics-box (slot-value self 'assoc-graphics-box))
@@ -203,9 +202,7 @@ Modification History (most recent at top)
                                (absolute-y-position self)
                                (* (cosd ahead) asize) (* (sind ahead) asize)
                                asize)
-          (with-graphics-screen-parameters-once
-            (unless (eq (turtle-save-under self) 'xor-redraw)
-              (save-under-turtle self))))))))
+        )))))
 
 
 

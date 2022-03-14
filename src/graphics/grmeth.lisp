@@ -653,70 +653,9 @@ CLOSED for renovations until I fix the string/font situation
 ;;;
 
 (defmethod update-save-under ((self button))
-  (let ((shape (shape self))
-	(save-under (slot-value self 'save-under))
-	(scale (sprite-size self)))
-    (let ((size 0)
-	  (non-xor-graphics-occurred? nil)
-	  (in-xor? nil))
-      (with-graphics-state-bound
-        (do-vector-contents (com shape)
-	  ;; there really ought to be a more modular way to handle this...
-	  (when (and (not non-xor-graphics-occurred?)
-		     ;; no need to check if there has already been
-		     ;; graphics drawn in something other than XOR
-		     (=& (svref& com 0)
-		        ;;  sgithens TODO 2020-03-29 Why was this read operator syntax being used?
-				;; #.(boxer::graphics-command-opcode 'boxer-change-alu)))
-				(boxer::graphics-command-opcode 'boxer-change-alu)))
-	    (setq in-xor? (=& (svref& com 1) alu-xor)))
-	  (multiple-value-bind (lef top rig bot state-change?)
-	      (graphics-command-extents com)
-	    (unless state-change?
-	      (unless (and in-xor? (not non-xor-graphics-occurred?))
-	        (setq non-xor-graphics-occurred? t))
-	      (setq size
-		    (max size
-			 (let* ((max-x (max (abs lef) (abs rig)))
-			        (max-y (max (abs top) (abs bot)))
-			        (max-t (max max-x max-y)))
-			   (* 2 (* max-t max-t)))))))))
-      ;; size is now the largest of the sum of squares we take the square
-      ;; root of size to obtain the maximimum "radius" of the shape
-      ;; remember to multiply by scale since graphics-command-extents does
-      ;; not scale
-      (setq size (*& 2 (values (ceiling (sqrt (* scale size))))))
-      (cond ((null non-xor-graphics-occurred?)
-	     ;; if ALL the graphics in the shape have been drawn
-	     ;; in XOR, then we can use XOR-REDRAW
-	     (setf (slot-value self 'save-under) 'xor-redraw))
-	    ((or (null save-under) (eq save-under 'xor-redraw))
-	     ;; no existing bitmap save under so allocate a new one
-	     (setf (slot-value self 'save-under)
-		   (make-save-under (make-offscreen-bitmap *boxer-pane*
-							   size size)
-				    (floor size 2)
-				    size)))
-	    (t
-	     ;; at this point, we know we both have and want a bitmap backing
-	     ;; store now check sizes to see if what we already have is big
-	     ;; enough we may want to put in a shrinking bitmap clause but
-	     ;; for now, we just leave big bitmaps in place trying to
-	     ;; minimize more reallocation of bitmaps--trading space (extra
-	     ;; bitmap size) for speed (no need to
-	     ;; reallocate bitmaps in grow/shrink/grow cases)
-	     (let ((existing-bitmap (save-under-bitmap save-under)))
-	       (when (and (not (null existing-bitmap))
-			  ;; don't need this but be paranoid since
-			  ;; this is critical code
-			  (or (>& size
-				  (offscreen-bitmap-width  existing-bitmap))
-			      (>& size
-				  (offscreen-bitmap-height existing-bitmap))))
-		 (setf (slot-value self 'save-under)
-		       (make-save-under (make-offscreen-bitmap *boxer-pane*
-							       size size)
-					(round size 2) size)))))))))
+  (declare (ignore self))
+  (log:debug "Is update-save-under really necessary?")
+)
 
 (defmethod update-window-shape-allocation ((self button))
   (let ((window-shape (slot-value self 'window-shape))

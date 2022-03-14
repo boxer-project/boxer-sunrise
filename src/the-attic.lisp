@@ -6870,6 +6870,260 @@ if it is out of bounds
 ;;;; FILE: grfdfs.lisp
 ;;;;
 
+(defun save-under-turtle (turtle)
+  (let ((save-under (turtle-save-under turtle)))
+    (cond ((eq save-under 'xor-redraw))
+	  (t
+	   (when (null save-under)
+	     (warn "The turtle, ~S, does not have a backing store" turtle)
+	     (update-save-under turtle)
+	     (setq save-under (turtle-save-under turtle)))
+           (multiple-value-bind (minx miny maxx maxy)
+               (enclosing-rectangle turtle)
+             (let* ((gs (graphics-info (slot-value turtle 'assoc-graphics-box)))
+                    (mode (graphics-sheet-draw-mode gs))
+                    (sub (save-under-bitmap save-under)))
+               (flet ((save-corner-wrap (lefx rigx topy boty)
+                        (bitblt-from-screen lefx topy sub 0 0 0 0)
+                        (bitblt-from-screen (-& %drawing-width rigx) topy
+                                            sub rigx 0 lefx 0)
+                        (bitblt-from-screen lefx (-& %drawing-height boty)
+                                            sub 0 boty 0 topy)
+                        (bitblt-from-screen (-& %drawing-width rigx)
+                                            (-& %drawing-height boty) sub
+                                            rigx boty lefx topy))
+                      (save-horiz-wrap (lefx rigx)
+                        (let* ((cminy (max& miny 0))
+                               (cmaxy (min& maxy %drawing-height))
+                               (hei (-& cmaxy cminy)))
+                          (bitblt-from-screen lefx hei sub 0 cminy 0 0)
+                          (bitblt-from-screen (-& %drawing-width rigx) hei
+                                              sub rigx cminy lefx 0)))
+                      (save-vert-wrap (topy boty)
+                        (let* ((cminx (max& minx 0))
+                               ;; clipped vars...
+                               (cmaxx (min& maxx %drawing-width))
+                               (wid (-& cmaxx cminx)))
+                          (bitblt-from-screen wid topy sub cminx 0 0 0)
+                          (bitblt-from-screen wid (-& %drawing-height boty)
+                                              sub cminx boty 0 topy))))
+                 ;; should we check for :wrap mode ?
+                 ;; what if the user moves to the edge and then changes modes ?
+                 ;; for now, always save info to cover this case
+                 ;;
+                 ;; There are potentially 8 wrapping cases, we search for wrapping
+                 ;; cases as follows
+                 ;; top-left, top-right, top
+                 ;; bottom-left, bottom-right, bottom
+                 ;; left, then right
+                 ;; also remember that some sprites can be larger than
+                 ;; the graphics box itself
+                 (cond ((eq mode :clip)
+                        (unless (or (<=& maxx 0) (>=& minx %drawing-width)
+                                    (<=& maxy 0) (>=& miny %drawing-height))
+                          ;; unless completely off the graphics box
+                          ;; just draw what's visible
+                          (let* ((cminx (max& minx 0)) (cminy (max& miny 0))
+                                 (cmaxx (min& maxx %drawing-width))
+                                 (cmaxy (min& maxy %drawing-height))
+                                 (cwid (-& cmaxx cminx)) (chei (-& cmaxy cminy)))
+                            (unless (or (zerop& cwid) (zerop& chei))
+                              (bitblt-from-screen cwid chei sub
+                                                  cminx cminy 0 0)))))
+                       ((minusp& miny)
+                        ;; top wrap, bind useful vars and check for corners
+                        (let ((topy (min& maxy %drawing-height))
+                              (boty (max& 0 (+& miny %drawing-height))))
+                          (cond ((minusp& minx)
+                                 ;; top left corner
+                                 (save-corner-wrap (min& maxx %drawing-width)
+                                                   (max& 0 (+& minx %drawing-width))
+                                                   topy boty))
+                                ((>& maxx %drawing-width)
+                                 ;; top right corner
+                                 (save-corner-wrap (min& (-& maxx %drawing-width)
+                                                         %drawing-width)
+                                                   (min& minx %drawing-width)
+                                                   topy boty))
+                                (t ;; must be just the top
+                                 (save-vert-wrap topy boty)))))
+                       ((>& maxy %drawing-height)
+                        ;; bottom wrap, bind useful vars and check for corners
+                        (let ((topy (min& (-& maxy %drawing-height)
+                                          %drawing-height))
+                              (boty (max& miny 0)))
+                          (cond ((minusp& minx)
+                                 ;; bottom left corner
+                                 (save-corner-wrap (min& maxx %drawing-width)
+                                                   (max& 0 (+& minx %drawing-width))
+                                                   topy boty))
+                                ((>& maxx %drawing-width)
+                                 ;; bottom right corner
+                                 (save-corner-wrap (min& (-& maxx %drawing-width)
+                                                         %drawing-width)
+                                                   (min& minx %drawing-width)
+                                                   topy boty))
+                                (t ;; must be just the bottom
+                                 (save-vert-wrap topy boty)))))
+                       ((minusp& minx)
+                        ;; horizontal left wrap case
+                        (save-horiz-wrap (min& maxx %drawing-width)
+                                         (max& 0 (+& minx %drawing-width))))
+                       ((>& maxx %drawing-width)
+                        ;; horizontal right wrap case
+                        (save-horiz-wrap (min& (-& maxx %drawing-width)
+                                               %drawing-width)
+                                         (max& minx 0)))
+                       (t ;; vanilla case
+                        (bitblt-from-screen
+                                            (-& (min& maxx %drawing-width)
+                                                (max& minx 0))
+                                            (-& (min& maxy %drawing-height)
+                                                (max& miny 0))
+                                            sub
+                                            (max& minx 0) (max& miny 0)
+                                            0 0))))))))))
+
+(defun restore-under-turtle (turtle)
+  (let ((save-under (turtle-save-under turtle)))
+    (cond ((eq save-under 'xor-redraw))
+	  (t
+	   (when (null save-under)
+	     (cerror "Make a Save Under"
+		     "The turtle, ~S, does not have a backing store" turtle)
+	     (update-save-under turtle))
+           (multiple-value-bind (minx miny maxx maxy)
+               (enclosing-rectangle turtle)
+             (let* ((gs (graphics-info (slot-value turtle 'assoc-graphics-box)))
+                    (mode (graphics-sheet-draw-mode gs))
+                    (sub (save-under-bitmap save-under)))
+               (flet ((restore-corner-wrap (lefx rigx topy boty)
+                        (bitblt-to-screen lefx topy sub 0 0 0 0)
+                        (bitblt-to-screen (-& %drawing-width rigx) topy
+                                            sub lefx 0 rigx 0)
+                        (bitblt-to-screen lefx (-& %drawing-height boty)
+                                            sub 0 topy 0 boty)
+                        (bitblt-to-screen (-& %drawing-width rigx)
+                                            (-& %drawing-height boty) sub
+                                            lefx topy rigx boty))
+                      (restore-horiz-wrap (lefx rigx)
+                        (let* ((cminy (max& miny 0))
+                               (cmaxy (min& maxy %drawing-height))
+                               (hei (-& cmaxy cminy)))
+                          (bitblt-to-screen lefx hei sub 0 0 0 cminy)
+                          (bitblt-to-screen (-& %drawing-width rigx) hei
+                                              sub lefx 0 rigx cminy)))
+                      (restore-vert-wrap (topy boty)
+                        (let* ((cminx (max& minx 0))
+                               ;; clipped vars...
+                               (cmaxx (min& maxx %drawing-width))
+                               (wid (-& cmaxx cminx)))
+                          (bitblt-to-screen wid topy sub 0 0 cminx 0)
+                          (bitblt-to-screen wid (-& %drawing-height boty)
+                                              sub 0 topy cminx boty))))
+                 ;; should we check for :wrap mode ?
+                 ;; what if the user moves to the edge and then changes modes ?
+                 ;; for now, always save info to cover this case
+                 ;;
+                 ;; There are potentially 8 wrapping cases, we search for wrapping
+                 ;; cases as follows
+                 ;; top-left, top-right, top
+                 ;; bottom-left, bottom-right, bottom
+                 ;; left, then right
+                 ;; also remember that some sprites can be larger than
+                 ;; the graphics box itself
+                 (cond ((eq mode :clip)
+                        (unless (or (<=& maxx 0) (>=& minx %drawing-width)
+                                    (<=& maxy 0) (>=& miny %drawing-height))
+                          ;; unless completely off the graphics box
+                          ;; just draw what's visible
+                          (let* ((cminx (max& minx 0)) (cminy (max& miny 0))
+                                 (cmaxx (min& maxx %drawing-width))
+                                 (cmaxy (min& maxy %drawing-height))
+                                 (cwid (-& cmaxx cminx)) (chei (-& cmaxy cminy)))
+                            (unless (or (zerop& cwid) (zerop& chei))
+                              (bitblt-to-screen cwid chei sub
+                                                0 0 cminx cminy)))))
+                       ((minusp& miny)
+                        ;; top wrap, bind useful vars and check for corners
+                        (let ((topy (min& maxy %drawing-height))
+                              (boty (max& 0 (+& miny %drawing-height))))
+                          (cond ((minusp& minx)
+                                 ;; top left corner
+                                 (restore-corner-wrap (min& maxx %drawing-width)
+                                                   (max& 0 (+& minx %drawing-width))
+                                                   topy boty))
+                                ((>& maxx %drawing-width)
+                                 ;; top right corner
+                                 (restore-corner-wrap (min& (-& maxx %drawing-width)
+                                                         %drawing-width)
+                                                   (min& minx %drawing-width)
+                                                   topy boty))
+                                (t ;; must be just the top
+                                 (restore-vert-wrap topy boty)))))
+                       ((>& maxy %drawing-height)
+                        ;; bottom wrap, bind useful vars and check for corners
+                        (let ((topy (min& (-& maxy %drawing-height)
+                                          %drawing-height))
+                              (boty (max& miny 0)))
+                          (cond ((minusp& minx)
+                                 ;; bottom left corner
+                                 (restore-corner-wrap (min& maxx %drawing-width)
+                                                   (max& 0 (+& minx %drawing-width))
+                                                   topy boty))
+                                ((>& maxx %drawing-width)
+                                 ;; bottom right corner
+                                 (restore-corner-wrap (min& (-& maxx %drawing-width)
+                                                         %drawing-width)
+                                                   (min& minx %drawing-width)
+                                                   topy boty))
+                                (t ;; must be just the bottom
+                                 (restore-vert-wrap topy boty)))))
+                       ((minusp& minx)
+                        ;; horizontal left wrap case
+                        (restore-horiz-wrap (min& maxx %drawing-width)
+                                         (max& 0 (+& minx %drawing-width))))
+                       ((>& maxx %drawing-width)
+                        ;; horizontal right wrap case
+                        (restore-horiz-wrap (min& (-& maxx %drawing-width)
+                                               %drawing-width)
+                                         (max& minx 0)))
+                       (t ;; vanilla case
+                        (bitblt-to-screen
+                                            (-& (min& maxx %drawing-width)
+                                                (max& minx 0))
+                                            (-& (min& maxy %drawing-height)
+                                                (max& miny 0))
+                                            sub
+                                            0 0 (max& minx 0) (max& miny 0)))))))))))
+
+;;; The active sprite list lives on the Plist of the Box (for now)
+;(defun cache-active-sprites (box sprites)
+;  ;; arg check should happen higher up at the Boxer interface level
+;  (putprop box sprites 'active-sprites))
+
+;;; should cache the sprite info in the WHO box to avoid having to
+;;; walk throught the the box everytime.  Need to figure out a
+;;; fast way to flush the cache (that doesn't slow down ALL boxes)
+
+#| no longer used since WHO mechanism got flushed
+
+(defun extract-sprites (box)
+  (let ((sprites nil))
+    (multiple-value-bind (rows ignore1 ignore2 vcrs)
+	(if (virtual-copy? box) (vc-rows box) (virtual-copy-rows box))
+      (declare (ignore ignore1 ignore2))
+      (dolist (evrow rows)
+	(dolist (ptr (evrow-pointers evrow))
+	  (let ((value (access-evrow-element (or vcrs box) ptr)))
+	    (cond ((virtual-port? value)
+		   (push (vp-target value) sprites))
+		  ((port-box? value)
+		   (push (ports value) sprites))
+		  (t (error "~A was not a port" value)))))))
+    sprites))
+|#
+
 ;;; this should use the pos-cache....
 (defmacro with-turtle-slate-origins (screen-box &body body)
   ;; this macro sets x and y coordinates of top left of turtle array
@@ -6939,6 +7193,72 @@ if it is out of bounds
 ;;;;
 ;;;; FILE: grmeth.lisp
 ;;;;
+
+(defmethod update-save-under ((self button))
+  (let ((shape (shape self))
+	(save-under (slot-value self 'save-under))
+	(scale (sprite-size self)))
+    (let ((size 0)
+	  (non-xor-graphics-occurred? nil)
+	  (in-xor? nil))
+      (with-graphics-state-bound
+        (do-vector-contents (com shape)
+	  ;; there really ought to be a more modular way to handle this...
+	  (when (and (not non-xor-graphics-occurred?)
+		     ;; no need to check if there has already been
+		     ;; graphics drawn in something other than XOR
+		     (=& (svref& com 0)
+		        ;;  sgithens TODO 2020-03-29 Why was this read operator syntax being used?
+				;; #.(boxer::graphics-command-opcode 'boxer-change-alu)))
+				(boxer::graphics-command-opcode 'boxer-change-alu)))
+	    (setq in-xor? (=& (svref& com 1) alu-xor)))
+	  (multiple-value-bind (lef top rig bot state-change?)
+	      (graphics-command-extents com)
+	    (unless state-change?
+	      (unless (and in-xor? (not non-xor-graphics-occurred?))
+	        (setq non-xor-graphics-occurred? t))
+	      (setq size
+		    (max size
+			 (let* ((max-x (max (abs lef) (abs rig)))
+			        (max-y (max (abs top) (abs bot)))
+			        (max-t (max max-x max-y)))
+			   (* 2 (* max-t max-t)))))))))
+      ;; size is now the largest of the sum of squares we take the square
+      ;; root of size to obtain the maximimum "radius" of the shape
+      ;; remember to multiply by scale since graphics-command-extents does
+      ;; not scale
+      (setq size (*& 2 (values (ceiling (sqrt (* scale size))))))
+      (cond ((null non-xor-graphics-occurred?)
+	     ;; if ALL the graphics in the shape have been drawn
+	     ;; in XOR, then we can use XOR-REDRAW
+	     (setf (slot-value self 'save-under) 'xor-redraw))
+	    ((or (null save-under) (eq save-under 'xor-redraw))
+	     ;; no existing bitmap save under so allocate a new one
+	     (setf (slot-value self 'save-under)
+		   (make-save-under (make-offscreen-bitmap *boxer-pane*
+							   size size)
+				    (floor size 2)
+				    size)))
+	    (t
+	     ;; at this point, we know we both have and want a bitmap backing
+	     ;; store now check sizes to see if what we already have is big
+	     ;; enough we may want to put in a shrinking bitmap clause but
+	     ;; for now, we just leave big bitmaps in place trying to
+	     ;; minimize more reallocation of bitmaps--trading space (extra
+	     ;; bitmap size) for speed (no need to
+	     ;; reallocate bitmaps in grow/shrink/grow cases)
+	     (let ((existing-bitmap (save-under-bitmap save-under)))
+	       (when (and (not (null existing-bitmap))
+			  ;; don't need this but be paranoid since
+			  ;; this is critical code
+			  (or (>& size
+				  (offscreen-bitmap-width  existing-bitmap))
+			      (>& size
+				  (offscreen-bitmap-height existing-bitmap))))
+		 (setf (slot-value self 'save-under)
+		       (make-save-under (make-offscreen-bitmap *boxer-pane*
+							       size size)
+					(round size 2) size)))))))))
 
 ;; 2021-10-15 This was the #-opengl version of the body for `set-assoc-graphics-box`
 #-opengl
@@ -12026,6 +12346,21 @@ Modification History (most recent at top)
     (setq  *windows-draw-icon-options* new-option))
   boxer-eval::*novalue*)
 |#
+
+;;;;
+;;;; FILE: turtle.lisp
+;;;;
+
+(defmethod scale-save-under ((self turtle) scale)
+  (let ((su (slot-value self 'save-under)))
+    (unless (or (null su) (eq su 'xor-redraw))
+      (let ((new-size (ceiling (* (save-under-size su) scale))))
+	(setf (save-under-size su) new-size
+	      (save-under-middle su) (round new-size 2))
+        (free-offscreen-bitmap (save-under-bitmap su))
+	(setf (save-under-bitmap su)
+	      (make-offscreen-bitmap *boxer-pane*
+				     new-size new-size))))))
 
 ;;;;
 ;;;; FILE: vars.lisp

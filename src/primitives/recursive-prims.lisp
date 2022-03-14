@@ -102,10 +102,7 @@
     ;; no need to check for a null sprite since we did it in the :BEFORE clause
     (setq boxer::%learning-shape-graphics-list nil)
     (unwind-protect
-        ;; this protects against aborting out of errors
-        ;; inside of Update-Save-Under
-        (progn (setq boxer::%learning-shape? nil)
-           #-opengl (boxer::update-save-under turtle))
+      (setq boxer::%learning-shape? nil)
       (boxer::update-window-shape-allocation turtle)
       (boxer::restore-turtle-state turtle boxer::%turtle-state))
       (restore-state-variables))
@@ -122,7 +119,6 @@
       ;; the shape can be in an inconsistent state here so make
       ;; sure all the things that depend on the shape synchronize
       ;; themselves to the shape's current state
-      ; sgithens remove #-opengl (boxer::update-save-under turtle)
       (boxer::update-window-shape-allocation turtle)
       (boxer::restore-turtle-state turtle old-state))
     (restore-state-variables)))
