@@ -30,7 +30,7 @@ as node and a possible server side Boxer).
 ### macOS
 
 - Install Lispworks 7.1.2, including the most up to date patches for macOS Big Sur and Monterey
-- Install Quicklisp
+- [Install Quicklisp](https://www.quicklisp.org/beta/#installation)
 - Install our patched cl-freetype project
 
   ```
