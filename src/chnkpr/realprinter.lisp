@@ -550,7 +550,7 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
     ;; way so that any subsprites in the inferior rows can be hooked up
     ;; to the supersprite correctly.  After the rows have been articulated,
     ;; we will link the turtle to the sprite box in a more careful way
-    (when (eq (vc-type vc) 'sprite-box)
+    (when (and (listp (vc-graphics vc)) (graphics-object? (cadr (vc-graphics vc))))
       (let* ((old-go (graphics-info-turtle (vc-graphics vc)))
              (go (if (null old-go)
                    (make-instance *default-graphics-object-class*)
@@ -564,7 +564,7 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
     ;; now that the rows have been calculated, we link the turtle into the
     ;; sprite box, checking for the possibility that some of the turtle's
     ;; instance variables have box values
-    (when (eq (vc-type vc) 'sprite-box)
+    (when (and (listp (vc-graphics vc)) (graphics-object? (cadr (vc-graphics vc))))
       (link-graphics-object-to-box (graphics-info box) box))
     (unless (null (vc-name vc))
       (set-name box (make-name-row (list (canonicalize-vc-name (vc-name vc))))))
