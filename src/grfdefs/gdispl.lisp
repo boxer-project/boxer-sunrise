@@ -1774,13 +1774,8 @@ Modification History (most recent at the top)
 
 
 
-(defun sprite-commands-for-new-position (new-x new-y &optional (alu alu-xor))
-  (list 'bu::penup 'bu::setxy new-x new-y
-        (case alu
-          (#.alu-xor 'bu::penxor)
-          ((#.alu-seta #.alu-ior) 'bu::pendown)
-          ((#.alu-setz #.alu-andca) 'bu::penerase)
-          (t 'bu::pendown))))
+(defun sprite-commands-for-new-position (new-x new-y)
+  (list 'bu::penup 'bu::setxy new-x new-y 'bu::pendown))
 
 ;;;; Commands that draw
 
