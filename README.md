@@ -14,12 +14,12 @@ Currently Boxer is tested on the following platforms:
 
 - Apple Intel: macOS 10.14 Mojave through macOS 12 Monterey
 - Apple M1: macOS 11 Big Sur and macOS 12 Monterey
-- x86 Windows 10
+- x86 Windows 10 ( _2022-03-16 Still needs further testing on LW 8.0_ )
 
-These all use Lispworks 7.1.2.
+These all use Lispworks 8.0.
 
 Boxer can be run and developed against using the freely available version of Lispworks. However, in order to
-build deliverable binaries a professional license is required.
+build deliverable binaries a professional license is required. It's a known issue that the linux version of Lispworks runs out of heap when loading Boxer.
 
 Work is in progress to run Boxer against fully open source versions of common lisp, focused primarily on SBCL.
 Additionally the ability to run the core boxer evaluator separately to integrate with new web ecosystems (such
@@ -29,11 +29,21 @@ as node and a possible server side Boxer).
 
 ### macOS
 
-- Install Lispworks 7.1.2, including the most up to date patches for macOS Big Sur and Monterey
+- Install Lispworks 8.0, including any patches available from Lispworks.
 - Install Quicklisp
-- Install our patched cl-freetype project
 
+  Be sure to include Quicklisp as part of your init file. In the [Quicklisp install
+  instructions](https://www.quicklisp.org/beta/#installation) this happens during
+  `(ql:add-to-init-file)`.
+  Do note that the free version of Lispworks does not support init files, and you will
+  need to manually load `quicklisp/setup.lisp` from the location of your QL installation.
+  ```lisp
+  ; example on windows
+  (load "Z:/quicklisp/setup.lisp")
   ```
+- Install our patched cl-freetype project
+  ```
+  # substitute for your quicklisp install location
   cd ~/quicklisp/local-projects
   git clone git@github.com:sgithens/cl-freetype2.git
   cd cl-freetype2
@@ -62,15 +72,6 @@ MSYS2. You may choose to use a different build system for Windows.
 
 - Add `C:\msys64\mingw64\bin` to the windows `PATH` environment variable.
 
-### Notes
-
-The personal version of lispworks may require you to load quicklisp manually on each startup, as it does not support
-init files.
-```lisp
-; windows
-(load "Z:/quicklisp/setup.lisp")
-```
-
 ### Running Boxer
 
 With the above dependencies installed and a lispworks Listener open, the following will compile and startup Boxer (adjusting the
@@ -87,7 +88,7 @@ path accordingly to your system.)
 in the build*
 
 MacOS application bundles can be created with the following delivery script. This will assume you have lispworks
-installed and have the executable in the path. This has been tested with Lispworks 7.1. While you can run Boxer
+installed and have the executable in the path. This has been tested with Lispworks 8.0. While you can run Boxer
 from the personal edition of Lispworks, you will need on of the paid Profession versions that include the framework
 for creating application binaries. (In Lispworks this is called the `delivery` framework).
 
