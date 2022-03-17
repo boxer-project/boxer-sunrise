@@ -796,7 +796,9 @@
    :title "Boxer"
    :width  *boxer-frame-initial-width*
    :height *boxer-frame-initial-height*
-   :confirm-destroy-function 'check-for-unsaved-boxes
+   ; 20222-03-16 boxer-bugs-121 A function such as checking for unsaved boxes seems completely reasonble,
+   ; but at the moment it doesn't appear to exist in ANY of our source code archives...
+   ;  :confirm-destroy-function 'check-for-unsaved-boxes
    :destroy-callback #'(lambda (&rest args)
                          (declare (ignore args ))
                          (user::quit))
