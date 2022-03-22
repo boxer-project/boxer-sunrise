@@ -1,6 +1,6 @@
 # Boxer Sunrise
 
-This is the current interation of the historic Boxer project.
+This is the current iteration of the historic Boxer project.
 
 ## Release Downloads
 
