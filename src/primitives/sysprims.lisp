@@ -483,7 +483,7 @@
   ((bw::*boxer-window-show-statusbar-p* :boolean
                               (boxer-eval::boxer-boolean bw::*boxer-window-show-statusbar-p*))
    #+capi editor #-capi editor-settings
-   ("Display the toolbar on the boxer editor window?"))
+   ("Display the status bar on the boxer editor window?"))
   (setq bw::*boxer-window-show-statusbar-p* true-or-false)
   (capi::apply-in-pane-process *boxer-pane* #'bw::update-visible-editor-panes)
   boxer-eval::*novalue*)
