@@ -275,27 +275,6 @@
 
 ;;;; Stepper and Evaluator preferences...
 
-;; sgithens 2022-03-25 Removing these steppers preferences for now, since the stepper is currently
-;;                     out of commission.
-;; (defboxer-preference bu::step-wait-for-key-press (true-or-false)
-;;   ((boxer-eval::*step-wait-for-key-press* :boolean
-;;                                           (boxer-eval::boxer-boolean boxer-eval::*step-wait-for-key-press*))
-;;    #+capi evaluator #-capi evaluator-settings
-;;    ("Should the Stepper wait for a key press ")
-;;    ("before going on to the next step ?")
-;;    ("(The Stepper shows Boxer execution one step at a time.)"))
-;;   (setq boxer-eval::*step-wait-for-key-press* true-or-false)
-;;   boxer-eval::*novalue*)
-;;
-;; (defboxer-preference bu::step-time ((boxer-eval::numberize seconds))
-;;   ((boxer-eval::*step-sleep-time* :number boxer-eval::*step-sleep-time*)
-;;    #+capi evaluator #-capi evaluator-settings
-;;    ("How many seconds should the Stepper pause between steps")
-;;    ("(The Stepper shows Boxer execution one step at a time.)"))
-;;   (setq boxer-eval::*step-sleep-time* seconds)
-;;   boxer-eval::*novalue*)
-
-
 (defboxer-preference bu::evaluator-help (true-or-false)
   ((*evaluator-helpful* :boolean (boxer-eval::boxer-boolean *evaluator-helpful*))
    #+capi evaluator #-capi evaluator-settings
@@ -312,18 +291,6 @@
    ("Should you get a warning if you redefine a Boxer primitive ?"))
   (setq boxer-eval::*warn-about-primitive-shadowing* true-or-false)
   boxer-eval::*novalue*)
-
-;; sgithens 2022-03-25 Removing this for now, since optimally we should just always been repainting. There may be some
-;;                     use case for this variable in the future.
-;; (defboxer-preference bu::update-display-during-eval (true-or-false)
-;;   ((*repaint-during-eval?* :keyword
-;;                            (boxer-eval::boxer-boolean boxer-eval::*warn-about-primitive-shadowing*))
-;;    #+capi evaluator #-capi evaluator-settings
-;;    ("Should the screen be repainted during eval ? Valid entries are ALWAYS, NEVER and CHANGED-GRAPHICS"))
-;;   (setq *repaint-during-eval?* true-or-false)
-;;   boxer-eval::*novalue*)
-
-
 
 ;;; Graphics Preferences
 
@@ -411,25 +378,6 @@
   (setq *global-hotspot-control?* true-or-false)
   boxer-eval::*novalue*)
 
-;; sgithens 2021-03-28 Removing this for now as we are consolidating keyboards for all 3 platforms. This may or may not
-;;                     be useful again in the future.
-;;
-;; (defboxer-preference bu::input-device-names (machine-type)
-;;   ((*current-input-device-platform* :keyword
-;;                                     (make-box
-;;                                      `((,*current-input-device-platform*))))
-;;    #+capi editor #-capi editor-settings
-;;    ("Which set of names should be used to refer to ")
-;;    ("special (control) keys or mouse actions ?")
-;;    ("(Different platforms may use different names.)"))
-;;   (let ((canonicalized-name (intern (string-upcase machine-type)
-;;                                     (find-package 'keyword))))
-;;     (if (fast-memq canonicalized-name *defined-input-device-platforms*)
-;;       (make-input-devices canonicalized-name)
-;;       (boxer-eval::primitive-signal-error :preference
-;;                                           "The machine-type, " machine-type
-;;                                           ", does not have a defined set of input devices"))
-;;     boxer-eval::*novalue*))
 
 (defun switch-use-mouse2021 (use-mouse2021)
   "Takes a boolean deciding whether or not to use the new 2021 Mouse Click Events.
@@ -603,59 +551,6 @@
    ("file with ports that link outside the file ?"))
   (setq *warn-about-outlink-ports* true-or-false)
   boxer-eval::*novalue*)
-
-;;; Network stuff
-
-;; sgithens 2021-03-08 Removing these network email preferences as email support is currently broken
-;;                     and we aren't sure whether we will include this functionality going forward.
-;;
-;; (defboxer-preference bu::user-mail-address (address)
-;;   ((boxnet::*user-mail-address* :string
-;;                                 (make-box `((,boxnet::*user-mail-address*))))
-;;    #+capi network #-capi network-settings
-;;    ("What Internet address should identify you in various network dealings ?"))
-;;   (let* ((newname address)
-;;          (@pos (position #\@ newname)))
-;;     ;; need some sort of consistency checking on the name here
-;;     (if (null @pos)
-;;       (boxer-eval::primitive-signal-error :preferences-error
-;;                                           newname
-;;                                           " Does not look like a valid address")
-;;       (let ((user (subseq newname 0 @pos)) (host (subseq newname (1+ @pos))))
-;;         (setq boxnet::*user-mail-address* newname
-;;               boxnet::*pop-user* user
-;;               boxnet::*pop-host* host)))
-;;     boxer-eval::*novalue*))
-
-;; (defboxer-preference bu::mail-relay-host (host)
-;;   ((boxnet::*smtp-relay-host* :string (make-box `((,boxnet::*smtp-relay-host*))))
-;;    #+capi network #-capi network-settings
-;;    ("What computer should be responsible for ")
-;;    ("relaying mail to the Internet ?"))
-;;   (let ((newname host))
-;;     ;; need some sort of consistency checking on the name here
-;;     (setq boxnet::*smtp-relay-host* newname)
-;;     boxer-eval::*novalue*))
-
-;; ;; should have a hook to access the MIME type dialog
-
-;; (defboxer-preference bu::query-for-unkown-mime-type (true-or-false)
-;;   ((boxnet::*query-for-unknown-mime-type* :boolean
-;;                                           (boxer-eval::boxer-boolean boxnet::*query-for-unknown-mime-type*))
-;;    #+capi network #-capi network-settings
-;;    ("Should a dialog popup if an unknown")
-;;    ("MIME (mail attachment) type is encountered ?"))
-;;   (setq boxnet::*query-for-unknown-mime-type* true-or-false)
-;;   boxer-eval::*novalue*)
-
-;; (defboxer-preference bu::mail-inbox-file (filename)
-;;   ((boxnet::*inbox-pathname* :string (make-box `((,boxnet::*inbox-pathname*))))
-;;    #+capi network #-capi network-settings
-;;    ("Which File should new mail be placed in"))
-;;   (let ((newpath filename))
-;;     ;; should reality check here (at least directory should exist)
-;;     (setq boxnet::*inbox-pathname* newpath)
-;;     boxer-eval::*novalue*))
 
 ;;;; Putting it all together....
 
