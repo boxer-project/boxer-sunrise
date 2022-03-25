@@ -275,23 +275,25 @@
 
 ;;;; Stepper and Evaluator preferences...
 
-(defboxer-preference bu::step-wait-for-key-press (true-or-false)
-  ((boxer-eval::*step-wait-for-key-press* :boolean
-                                          (boxer-eval::boxer-boolean boxer-eval::*step-wait-for-key-press*))
-   #+capi evaluator #-capi evaluator-settings
-   ("Should the Stepper wait for a key press ")
-   ("before going on to the next step ?")
-   ("(The Stepper shows Boxer execution one step at a time.)"))
-  (setq boxer-eval::*step-wait-for-key-press* true-or-false)
-  boxer-eval::*novalue*)
-
-(defboxer-preference bu::step-time ((boxer-eval::numberize seconds))
-  ((boxer-eval::*step-sleep-time* :number boxer-eval::*step-sleep-time*)
-   #+capi evaluator #-capi evaluator-settings
-   ("How many seconds should the Stepper pause between steps")
-   ("(The Stepper shows Boxer execution one step at a time.)"))
-  (setq boxer-eval::*step-sleep-time* seconds)
-  boxer-eval::*novalue*)
+;; sgithens 2022-03-25 Removing these steppers preferences for now, since the stepper is currently
+;;                     out of commission.
+;; (defboxer-preference bu::step-wait-for-key-press (true-or-false)
+;;   ((boxer-eval::*step-wait-for-key-press* :boolean
+;;                                           (boxer-eval::boxer-boolean boxer-eval::*step-wait-for-key-press*))
+;;    #+capi evaluator #-capi evaluator-settings
+;;    ("Should the Stepper wait for a key press ")
+;;    ("before going on to the next step ?")
+;;    ("(The Stepper shows Boxer execution one step at a time.)"))
+;;   (setq boxer-eval::*step-wait-for-key-press* true-or-false)
+;;   boxer-eval::*novalue*)
+;;
+;; (defboxer-preference bu::step-time ((boxer-eval::numberize seconds))
+;;   ((boxer-eval::*step-sleep-time* :number boxer-eval::*step-sleep-time*)
+;;    #+capi evaluator #-capi evaluator-settings
+;;    ("How many seconds should the Stepper pause between steps")
+;;    ("(The Stepper shows Boxer execution one step at a time.)"))
+;;   (setq boxer-eval::*step-sleep-time* seconds)
+;;   boxer-eval::*novalue*)
 
 
 (defboxer-preference bu::evaluator-help (true-or-false)
@@ -311,13 +313,15 @@
   (setq boxer-eval::*warn-about-primitive-shadowing* true-or-false)
   boxer-eval::*novalue*)
 
-(defboxer-preference bu::update-display-during-eval (true-or-false)
-  ((*repaint-during-eval?* :keyword
-                           (boxer-eval::boxer-boolean boxer-eval::*warn-about-primitive-shadowing*))
-   #+capi evaluator #-capi evaluator-settings
-   ("Should the screen be repainted during eval ? Valid entries are ALWAYS, NEVER and CHANGED-GRAPHICS"))
-  (setq *repaint-during-eval?* true-or-false)
-  boxer-eval::*novalue*)
+;; sgithens 2022-03-25 Removing this for now, since optimally we should just always been repainting. There may be some
+;;                     use case for this variable in the future.
+;; (defboxer-preference bu::update-display-during-eval (true-or-false)
+;;   ((*repaint-during-eval?* :keyword
+;;                            (boxer-eval::boxer-boolean boxer-eval::*warn-about-primitive-shadowing*))
+;;    #+capi evaluator #-capi evaluator-settings
+;;    ("Should the screen be repainted during eval ? Valid entries are ALWAYS, NEVER and CHANGED-GRAPHICS"))
+;;   (setq *repaint-during-eval?* true-or-false)
+;;   boxer-eval::*novalue*)
 
 
 
