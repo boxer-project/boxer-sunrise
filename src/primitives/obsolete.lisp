@@ -166,8 +166,17 @@
                                       "with-sprites-hidden is not currently supported.")
   boxer-eval::*novalue*)
 
+;; Things from sysprims
 
+(boxer-eval::defboxer-primitive bu::show-font-info ()
+  (boxer-eval::primitive-signal-error :obsolete
+                                      "Fonts are just regular font files now.")
+  boxer-eval::*novalue*)
 
+(boxer-eval:defboxer-primitive bu::toggle-fonts ()
+  (boxer-eval::primitive-signal-error :obsolete
+                                      "Major font refactoring (bitmap -> vector) is done now.")
+  boxer-eval::*novalue*)
 
 ;;;
 ;;; Obsolete or currently unused System/User Preferences from sysprims.lisp

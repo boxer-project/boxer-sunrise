@@ -12186,6 +12186,27 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: sysprims.lisp
 ;;;;
+
+;; Temporarily, or perhaps permanently removing this while fonts are being
+;; reworked and simplified.
+(defboxer-command com-show-font-info ()
+  "Display font information"
+  (reset-region)
+  (reset-editor-numeric-arg)
+  (insert-cha *point* (make-box (mapcar #'list (bw::capogi-fonts-info))))
+  boxer-eval::*novalue*)
+
+(boxer-eval::defboxer-primitive bu::show-font-info ()
+  (virtual-copy (make-box (mapcar #'list (bw::capogi-fonts-info)))))
+
+(boxer-eval:defboxer-primitive bu::toggle-fonts ()
+  "A command for toggling between capi cfnt fonts and freetype fonts
+   until we're done with the transition."
+                               (if (member :freetype-fonts *features*)
+                                 (setf *features* (remove :freetype-fonts *features*))
+                                 (setf *features* (cons :freetype-fonts *features*)))
+                               boxer-eval::*novalue*)
+
 #+mcl
                (value ,(ecase value-type
                          (:boolean '(ccl::check-box-checked-p di))
