@@ -245,7 +245,7 @@
 
 (defboxer-preference bu::printing-precision ((boxer-eval::numberize new-precision))
   ((*decimal-print-precision* :number *decimal-print-precision*)
-   #+capi results #-capi result-appearance
+   results
    ("How many numerals should appear after")
    ("the decimal point in decimal numbers ?"))
   (cond ((and (integerp new-precision)
@@ -257,7 +257,7 @@
 
 (defboxer-preference bu::print-fractions (true-or-false)
   ((*print-rationals* :boolean (boxer-eval::boxer-boolean *print-rationals*))
-   #+capi results #-capi result-appearance
+   results
    ("Should fractional numbers (e.g., 1/2) appear as ")
    ("fractions (1/2), rather than decimals (0.5) ?"))
   (setq *print-rationals* true-or-false)
@@ -267,7 +267,7 @@
 (defboxer-preference bu::preserve-empty-lines-in-build (true-or-false)
   ((*interpolate-empty-rows-too?* :boolean
                                   (boxer-eval::boxer-boolean *interpolate-empty-rows-too?*))
-   #+capi results #-capi result-appearance
+   results
    ("Should empty lines in boxes referred to via @'s")
    ("in BUILD templates be preserved ? "))
   (setq *interpolate-empty-rows-too?* true-or-false)
@@ -277,7 +277,7 @@
 
 (defboxer-preference bu::evaluator-help (true-or-false)
   ((*evaluator-helpful* :boolean (boxer-eval::boxer-boolean *evaluator-helpful*))
-   #+capi evaluator #-capi evaluator-settings
+   evaluator
    ("Should the Evaluator print \"helpful\" messages")
    ("when it detects style problems ?")
    ("(E.g., if you port to the output of a primitive)"))
@@ -287,7 +287,7 @@
 (defboxer-preference bu::primitive-shadow-warnings (true-or-false)
   ((boxer-eval::*warn-about-primitive-shadowing* :boolean
                                                  (boxer-eval::boxer-boolean boxer-eval::*warn-about-primitive-shadowing*))
-   #+capi evaluator #-capi evaluator-settings
+   evaluator
    ("Should you get a warning if you redefine a Boxer primitive ?"))
   (setq boxer-eval::*warn-about-primitive-shadowing* true-or-false)
   boxer-eval::*novalue*)
@@ -297,7 +297,7 @@
 (defboxer-preference bu::make-transparent-graphics-boxes (true-or-false)
   ((*default-graphics-box-transparency* :boolean
                                         (boxer-eval::boxer-boolean *default-graphics-box-transparency*))
-   #+capi graphics #-capi graphics-settings
+   graphics
    ("Should newly made graphics boxes be transparent ?"))
   (setq *default-graphics-box-transparency* true-or-false)
   boxer-eval::*novalue*)
@@ -305,14 +305,14 @@
 (defboxer-preference bu::include-sprite-in-new-graphics (true-or-false)
   ((*include-sprite-box-in-new-graphics?* :boolean
                                           (boxer-eval::boxer-boolean *include-sprite-box-in-new-graphics?*))
-   #+capi graphics #-capi graphics-settings
+   graphics
    ("Should newly made graphics boxes include a sprite ?"))
   (setq *include-sprite-box-in-new-graphics?* true-or-false)
   boxer-eval::*novalue*)
 
 (defboxer-preference bu::name-new-sprites (true-or-false)
   ((*name-new-sprites?* :boolean (boxer-eval::boxer-boolean *name-new-sprites?*))
-   #+capi graphics #-capi graphics-settings
+   graphics
    ("Should the cursor be moved into")
    ("the name row of new sprite boxes ?"))
   (setq *name-new-sprites?* true-or-false)
@@ -321,7 +321,7 @@
 (defboxer-preference bu::make-diet-sprites (true-or-false)
   ((*new-sprites-should-be-diet-sprites?* :boolean
                                           (boxer-eval::boxer-boolean *new-sprites-should-be-diet-sprites?*))
-   #+capi graphics #-capi graphics-settings
+   graphics
    ("Should newly made sprite boxes include fewer")
    ("visible attributes to save memory ?"))
   (cond ((not (null true-or-false))
@@ -339,7 +339,7 @@
 
 (defboxer-preference bu::penerase-color-from-bit-array (true-or-false)
   ((*check-bit-array-color* :boolean (boxer-eval::boxer-boolean *check-bit-array-color*))
-   #+capi graphics #-capi graphics-settings
+   graphics
    ("Should the backing store of a frozen box be")
    ("checked for the penerase color if one exists ?"))
   (setq *check-bit-array-color* true-or-false)
@@ -347,7 +347,7 @@
 
 (defboxer-preference bu::show-border-type-labels (true-or-false)
   ((*show-border-type-labels* :boolean (boxer-eval::boxer-boolean *show-border-type-labels*))
-   #+capi editor #-capi editor-settings
+   editor
    ("Should the type label (e.g., doit, data) of boxes be shown ?"))
   (setq *show-border-type-labels* true-or-false)
   (force-repaint)
@@ -355,7 +355,7 @@
 
 (defboxer-preference bu::show-empty-name-rows (true-or-false)
   ((*show-empty-name-rows* :boolean (boxer-eval::boxer-boolean *show-empty-name-rows*))
-   #+capi editor #-capi editor-settings
+   editor
    ("Should we show name rows that are empty?"))
   (setq *show-empty-name-rows* true-or-false)
   (force-repaint)
@@ -363,7 +363,7 @@
 
 (defboxer-preference bu::smooth-scrolling (true-or-false)
   ((*smooth-scrolling?* :boolean (boxer-eval::boxer-boolean *smooth-scrolling?*))
-   #+capi editor #-capi editor-settings
+   editor
    ("Should scrolling be one pixel at a time ?")
    ("(This may be turned off for slow machines)"))
   (setq *smooth-scrolling?* true-or-false)
@@ -373,7 +373,7 @@
 (defboxer-preference bu::global-hotspot-controls (true-or-false)
   ((*global-hotspot-control?* :boolean
                               (boxer-eval::boxer-boolean *global-hotspot-control?*))
-   #+capi editor #-capi editor-settings
+   editor
    ("Should turning a hotspot off or on affect all hotspots ?"))
   (setq *global-hotspot-control?* true-or-false)
   boxer-eval::*novalue*)
@@ -393,7 +393,7 @@
 (defboxer-preference bu::use-mouse2021 (true-or-false)
   ((bw::*use-mouse2021* :boolean
                         (boxer-eval::boxer-boolean bw::*use-mouse2021*))
-   #+capi editor #-capi editor-settings
+   editor
    ("Should we use the new 2021 Mouse Click events?"))
   (switch-use-mouse2021 true-or-false)
   boxer-eval::*novalue*)
@@ -403,21 +403,21 @@
 (defboxer-preference bu::maximize-window (true-or-false)
   ((bw::*fullscreen-window-p* :boolean
                               (boxer-eval::boxer-boolean bw::*fullscreen-window-p*))
-   #+capi editor #-capi editor-settings
+   editor
    ("Should the boxer window occupy the entire screen ?"))
   (setq bw::*fullscreen-window-p* true-or-false)
   boxer-eval::*novalue*)
 
 (defboxer-preference bu::boxer-window-width ((boxer-eval::numberize w))
   ((bw::*starting-window-width* :number bw::*starting-window-width*)
-   #+capi editor #-capi editor-settings
+   editor
    ("The initial width of the Boxer window, 0 lets the computer decide"))
   (setq bw::*starting-window-width* w)
   boxer-eval::*novalue*)
 
 (defboxer-preference bu::boxer-window-height ((boxer-eval::numberize w))
   ((bw::*starting-window-height* :number bw::*starting-window-height*)
-   #+capi editor #-capi editor-settings
+   editor
    ("The initial height of the Boxer window, 0 lets the computer decide"))
   (setq bw::*starting-window-height* w)
   boxer-eval::*novalue*)
@@ -425,7 +425,7 @@
 (defboxer-preference bu::boxer-window-show-toolbar (true-or-false)
   ((bw::*boxer-window-show-toolbar-p* :boolean
                               (boxer-eval::boxer-boolean bw::*boxer-window-show-toolbar-p*))
-   #+capi editor #-capi editor-settings
+   editor
    ("Display the toolbar on the boxer editor window?"))
   (setq bw::*boxer-window-show-toolbar-p* true-or-false)
   (capi::apply-in-pane-process *boxer-pane* #'bw::update-visible-editor-panes)
@@ -434,7 +434,7 @@
 (defboxer-preference bu::boxer-window-show-statusbar (true-or-false)
   ((bw::*boxer-window-show-statusbar-p* :boolean
                               (boxer-eval::boxer-boolean bw::*boxer-window-show-statusbar-p*))
-   #+capi editor #-capi editor-settings
+   editor
    ("Display the status bar on the boxer editor window?"))
   (setq bw::*boxer-window-show-statusbar-p* true-or-false)
   (capi::apply-in-pane-process *boxer-pane* #'bw::update-visible-editor-panes)
@@ -443,7 +443,7 @@
 (defboxer-preference bu::report-crash (true-or-false)
   ((bw::*report-crash* :boolean
                        (boxer-eval::boxer-boolean bw::*report-crash*))
-   #+capi editor #-capi editor-settings
+   editor
    ("Should lisp errors be logged ?"))
   (setq bw::*report-crash* true-or-false)
   boxer-eval::*novalue*)
@@ -453,7 +453,7 @@
 (defboxer-preference bu::terse-file-status (true-or-false)
   ((*terse-file-status* :boolean
                         (boxer-eval::boxer-boolean *terse-file-status*))
-   #+capi Files #-capi File-System-Settings
+   Files
    ("Should file names use abbreviated form (as opposed to ")
    ("full pathnames) in the status line ?"))
   (setq *terse-file-status* true-or-false)
@@ -461,7 +461,7 @@
 
 (defboxer-preference bu::backup-file-suffix (suffix)
   ((*file-backup-suffix* :string (make-box `((,*file-backup-suffix*))))
-   #+capi Files #-capi File-System-Settings
+   Files
    ("Which character string should be appended to previous ")
    ("file version when Boxer saves ?"))
   (setq *file-backup-suffix* suffix)
@@ -470,7 +470,7 @@
 (defboxer-preference bu::name-link-boxes (true-or-false)
   ((*name-link-boxes* :boolean
                       (boxer-eval::boxer-boolean *name-link-boxes*))
-   #+capi Files #-capi File-System-Settings
+   Files
    ("Should box links to non boxer files be created with the same name as the file"))
   (setq *name-link-boxes* true-or-false)
   boxer-eval::*novalue*)
@@ -478,7 +478,7 @@
 (defboxer-preference bu::warn-about-outlink-ports (true-or-false)
   ((*warn-about-outlink-ports* :boolean
                                (boxer-eval::boxer-boolean *warn-about-outlink-ports*))
-   #+capi Files #-capi File-System-Settings
+   Files
    ("Should you receive a warning when trying to save a ")
    ("file with ports that link outside the file ?"))
   (setq *warn-about-outlink-ports* true-or-false)
