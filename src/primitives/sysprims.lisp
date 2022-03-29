@@ -440,17 +440,6 @@
   (capi::apply-in-pane-process *boxer-pane* #'bw::update-visible-editor-panes)
   boxer-eval::*novalue*)
 
-;; This should be changed to :choice after the :choice pref is implemented
-#+(and (not opengl) capi) ; dont offer until it works...
-(defboxer-preference bu::popup-mouse-documentation (true-or-false)
-  ((*popup-mouse-documentation?* :boolean
-                                 (boxer-eval::boxer-boolean
-                                  *popup-mouse-documentation?*))
-   #+capi editor #-capi editor-settings
-   ("Should mouse documentation popup after a short delay ?"))
-  (setq *popup-mouse-documentation* true-or-false)
-  boxer-eval::*novalue*)
-
 (defboxer-preference bu::report-crash (true-or-false)
   ((bw::*report-crash* :boolean
                        (boxer-eval::boxer-boolean bw::*report-crash*))
@@ -458,63 +447,6 @@
    ("Should lisp errors be logged ?"))
   (setq bw::*report-crash* true-or-false)
   boxer-eval::*novalue*)
-
-;;;; (Postscript) Printer Preferences (mostly unix based)
-
-#+(and unix (not macosx))
-(defboxer-preference bu::printer-name (printer-name)
-  ((*ps-postscript-printer* :string (make-box `((,*ps-postscript-printer*))))
-   #+capi printer #-capi printer-settings
-   ("The name of the printer used for")
-   ("Postscript output"))
-  (let ((newname  printer-name))
-    ;; need some sort of consistency checking on the name here
-    (setq *ps-postscript-printer* newname)
-    boxer-eval::*novalue*))
-
-#+(and unix (not macosx))
-(defboxer-preference bu::printer-host (machine-name)
-  ((*ps-postscript-printer-host* :String (make-box `((,*ps-postscript-printer-host*))))
-   #+capi printer #-capi printer-settings
-   ("The name of the machine attached to the")
-   ("printer used for Postscript output"))
-  (let ((newname machine-name))
-    ;; need some sort of consistency checking on the name here
-    (setq *ps-postscript-printer-host* newname)
-    boxer-eval::*novalue*))
-
-#+(and unix (not macosx))
-(defboxer-preference bu::printer-filename (filename)
-  ((*ps-file* :string (make-box `((,*ps-file*))))
-   #+capi printer #-capi printer-settings
-   ("The name of the file used by Com-Print-Screen-To-File")
-   ("for Postscript output"))
-  (let ((newname filename))
-    ;; need some sort of consistency checking on the name here
-    (setq *ps-file* newname)
-    boxer-eval::*novalue*))
-
-;;;; Serial Line Preferences
-
-#+(and unix (not macosx))
-(defboxer-preference bu::newline-after-serial-writes (true-or-false)
-  ((*add-newline-to-serial-writes* :boolean
-                                   (boxer-eval::boxer-boolean *add-newline-to-serial-writes*))
-   #+capi communication #-capi communication-settings
-   ("Should extra Carriage Returns be added")
-   ("at the end of each Serial-Write ? "))
-  (setq *add-newline-to-serial-writes* true-or-false)
-  boxer-eval::*novalue*)
-
-#+(and unix (not macosx))
-(defboxer-preference bu::serial-read-base ((boxer-eval::numberize radix))
-  ((*serial-read-base* :number *serial-read-base*)
-   #+capi communication #-capi communication-settings
-   ("The radix that the serial line will")
-   ("use to read in n (possible) numbers"))
-  (setq *serial-read-base* radix)
-  boxer-eval::*novalue*)
-
 
 ;; File system prefs
 
