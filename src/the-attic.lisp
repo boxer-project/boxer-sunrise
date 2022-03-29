@@ -7,6 +7,8 @@
 ;;;;     a socket implementation on Sun boxes using Lucid.
 ;;;;     net-prims has an interesting defun `safe-load-binary-box-from-stream-internal`
 ;;;;     to consider in the future as a reference for sending boxes around.
+;;;;   - bu::configuration-info is a nice example of creating a box of stuff programmatically
+;;;;     with lists
 
 ;;;;
 ;;;; FILE: applefile.lisp
@@ -12186,6 +12188,31 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: sysprims.lisp
 ;;;;
+
+;;; use this after the site file has been edited
+(boxer-eval::defboxer-primitive bu::reconfigure-system ()
+                                (handle-site-initializations)
+                                boxer-eval::*novalue*)
+
+
+;;; should specify all available slots, punt for now
+(defun empty-configuration-box () (make-box '(())))
+
+(boxer-eval::defboxer-primitive bu::configuration-info ()
+  (let* ((confile (merge-pathnames *default-configuration-file-name*
+                                    *default-site-directory*))
+          (conbox (if (probe-file confile)
+                    (read-text-file-internal confile)
+                    (empty-configuration-box))))
+    (shrink conbox)
+    (make-vc (list (list "Edit" "the" "following" "box:")
+                    (list "Write-Text-File" conbox
+                          (make-box `((,(namestring confile)))))
+                    (list "You" "need" "to" "write" "out" "your" "changes"
+                          "by" "evaluating" "the" "above" "line")
+                    (list "and" "then" "evaluate" "the" "next" "line"
+                          "to" "make" "the" "changes")
+                    (list "Reconfigure-System")))))
 
 ;; Temporarily, or perhaps permanently removing this while fonts are being
 ;; reworked and simplified.

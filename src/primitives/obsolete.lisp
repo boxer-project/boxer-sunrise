@@ -178,6 +178,17 @@
                                       "Major font refactoring (bitmap -> vector) is done now.")
   boxer-eval::*novalue*)
 
+(boxer-eval::defboxer-primitive bu::reconfigure-system ()
+  (boxer-eval::primitive-signal-error :obsolete
+                                      "Please use system-preferences and save-preferences to save your configuration.")
+  boxer-eval::*novalue*)
+
+(boxer-eval::defboxer-primitive bu::configuration-info ()
+  (boxer-eval::primitive-signal-error :obsolete
+                                      "Please use system-preferences and save-preferences to save your configuration.")
+  boxer-eval::*novalue*)
+
+
 ;;;
 ;;; Obsolete or currently unused System/User Preferences from sysprims.lisp
 ;;;

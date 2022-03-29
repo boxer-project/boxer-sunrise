@@ -606,28 +606,3 @@
 
 (boxer-eval::defboxer-primitive bu::system-preferences ()
                                 (virtual-copy (make-preferences-box)))
-
-;;; use this after the site file has been edited
-(boxer-eval::defboxer-primitive bu::reconfigure-system ()
-                                (handle-site-initializations)
-                                boxer-eval::*novalue*)
-
-
-;;; should specify all available slots, punt for now
-(defun empty-configuration-box () (make-box '(())))
-
-(boxer-eval::defboxer-primitive bu::configuration-info ()
-  (let* ((confile (merge-pathnames *default-configuration-file-name*
-                                    *default-site-directory*))
-          (conbox (if (probe-file confile)
-                    (read-text-file-internal confile)
-                    (empty-configuration-box))))
-    (shrink conbox)
-    (make-vc (list (list "Edit" "the" "following" "box:")
-                    (list "Write-Text-File" conbox
-                          (make-box `((,(namestring confile)))))
-                    (list "You" "need" "to" "write" "out" "your" "changes"
-                          "by" "evaluating" "the" "above" "line")
-                    (list "and" "then" "evaluate" "the" "next" "line"
-                          "to" "make" "the" "changes")
-                    (list "Reconfigure-System")))))
