@@ -1603,10 +1603,6 @@ Modification History (most recent at top)
     #+macosx (sys:get-folder-path :my-preferences)
     #+linux (uiop:xdg-config-home)))
 
-;; see sysprims for when this is used....
-(defvar boxer::*current-documentation-dialog-item* nil)
-(defvar boxer::*preference-dialog-last-doc-item* nil)
-
 (defvar boxer::*preference-dialog-change-list* nil)
 
 (defvar *prefs-subgroups* nil)
@@ -1616,9 +1612,9 @@ Modification History (most recent at top)
 (defun make-preferences-dialog ()
   (let ((groups nil) (tab-layout-groups nil)
         ;; dialog box claculated parameters
-        (tl-min-width #-apple 400 #+apple 600) (tl-min-height 100)
+        (tl-min-width 600) (tl-min-height 100)
         ;; dialog box constants
-        (doc-height 50) (padding 20) (tl-item-height 40))
+        (padding 20) (tl-item-height 40))
     ;; prepass to organize into groups
     (dolist (pref boxer::*boxer-preferences-list*)
       (let* ((di-info (get pref 'boxer::system-parameter-pref-dialog-info))
@@ -1669,7 +1665,7 @@ Modification History (most recent at top)
    ;; and now the main dialog
    (capi:make-container
     (make-instance
-     'capi:pinboard-layout :min-width tl-min-width :min-height (+ tl-min-height doc-height (* 3 padding))
+     'capi:pinboard-layout :min-width tl-min-width :min-height (+ tl-min-height  (* 3 padding))
      :description
      (list
       ;; here are the pieces of the prefs dialog
@@ -1678,83 +1674,68 @@ Modification History (most recent at top)
                      :print-function 'car :visible-child-function 'cadr
                      :combine-child-constraints t
                      :items tab-layout-groups)
-      ;; documentation
-      (setq boxer::*current-documentation-dialog-item*
-            (make-instance 'capi:display-pane :x 0 :y tl-min-height :width tl-min-width :height doc-height
-                           :text "Preference documentation in this box"))
       ;; buttons (cancel, Set, Set&Save)
-      (make-instance 'capi:push-button :x padding :y (+ tl-min-height doc-height padding)
+      (make-instance 'capi:push-button :x padding :y (+ tl-min-height  padding)
                      :width 50 :height 20
                      :text "Cancel" :selection-callback 'capi:abort-dialog)
-      (make-instance 'capi:push-button :x 160 :y (+ tl-min-height doc-height padding) :width 50 :height 20
+      (make-instance 'capi:push-button :x 160 :y (+ tl-min-height  padding) :width 50 :height 20
                      :text "Set" :selection-callback #'(lambda (&rest ignore)
                                                          (declare (ignore ignore))
                                                          (capi:exit-dialog t)))
-      (make-instance 'capi:push-button :x 280 :y (+ tl-min-height doc-height padding) :width 80 :height 20
+      (make-instance 'capi:push-button :x 280 :y (+ tl-min-height  padding) :width 80 :height 20
                      :text "Set & Save"
                      :selection-callback #'(lambda (&rest ignore)
                                              (declare (ignore ignore))
                                              (capi:exit-dialog :save))))))))
 
+(defun fixup-pref-name (name)
+  (substitute #\space #\- (string-capitalize name)))
+
 ;;; remember that the defboxer-preference macro in syspims.lisp automagically
 ;;; defines the action and doc functions and that these function expect to
 ;;; receive a single dialog-item as their argument
 (defun make-boolean-pref (name value action-function doc-function)
-  (make-instance 'capi:row-layout
+  (make-instance 'capi:column-layout
                  :description
                  (list
-                  (make-instance 'capi:check-button :text "" :selected value
+                  (make-instance 'capi:check-button :text (fixup-pref-name name)
+                  :selected value
                                  :callback-type :item
                                  :selection-callback #'(lambda (item)
-                                                         (funcall doc-function item)
                                                          (funcall action-function
                                                                   item))
                                  :retract-callback #'(lambda (item)
-                                                       (funcall doc-function item)
                                                        (funcall action-function
                                                                 item)))
-                  (make-instance 'capi:push-button
-                                 :visible-border nil
-                                 :text (string-capitalize name)
-                                 :callback-type :item
-                                 :selection-callback doc-function))))
+                  (make-instance 'capi:display-pane :text (funcall doc-function) :background :transparent))))
 
 (defun make-number-pref (name value action-function doc-function)
-  (make-instance 'capi:row-layout
+  (make-instance 'capi:column-layout
                  :description
                  (list
-                  (make-instance 'capi:text-input-pane :title ""
+                  (make-instance 'capi:text-input-pane :title (fixup-pref-name name)
                                  :text (format nil "~A" value)
-                                 :max-width 150
+                                 :max-width 75
                                  ; :best-width 150
                                  :change-callback-type :item
                                  :change-callback
                                  #'(lambda (item)
-                                     (funcall doc-function item)
                                      (funcall action-function item)))
-                  (make-instance 'capi:push-button :visible-border nil
-                                 :text (string-capitalize name)
-                                 :callback-type :item
-                                 :selection-callback doc-function))))
+                  (make-instance 'capi:display-pane :text (funcall doc-function) :background :transparent))))
 
 (defun make-string-pref (name value action-function doc-function)
-  (make-instance 'capi:row-layout
+  (make-instance 'capi:column-layout
                  :description
                  (list
-                  (make-instance 'capi:text-input-pane :title ""
-                                 :text (string value)
-                                 :max-width 150
+                  (make-instance 'capi:text-input-pane :title (fixup-pref-name name)
+                                 :text (format nil "~A" value)
+                                 :max-width 75
                                  ; :best-width 150
                                  :change-callback-type :item
                                  :change-callback
                                  #'(lambda (item)
-                                     (funcall doc-function item)
                                      (funcall action-function item)))
-                  (make-instance 'capi:push-button
-                                 :visible-border nil
-                                 :text (string-capitalize name)
-                                 :callback-type :item
-                                 :selection-callback doc-function))))
+                  (make-instance 'capi:display-pane :text (funcall doc-function) :background :transparent))))
 
 ; eventually...
 ;(defun make-choice-pref (name value action-function doc-function)
@@ -1769,7 +1750,6 @@ Modification History (most recent at top)
           (dolist (change boxer::*preference-dialog-change-list*)
             (funcall (car change) (cdr change))))
         (when (eq ok? :save) (boxer::write-preferences)))
-      (setq boxer::*preference-dialog-change-list*     nil
-            boxer::*current-documentation-dialog-item* nil
-            boxer::*preference-dialog-last-doc-item*   nil))
+      (setq boxer::*preference-dialog-change-list* nil)
+    )
     boxer-eval::*novalue*))
