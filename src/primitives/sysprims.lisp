@@ -337,13 +337,15 @@
                    pen pen-width type-font pen-color))))
   boxer-eval::*novalue*)
 
-(defboxer-preference bu::penerase-color-from-bit-array (true-or-false)
-  ((*check-bit-array-color* :boolean (boxer-eval::boxer-boolean *check-bit-array-color*))
-   graphics
-   ("Should the backing store of a frozen box be")
-   ("checked for the penerase color if one exists ?"))
-  (setq *check-bit-array-color* true-or-false)
-  boxer-eval::*novalue*)
+;; sgithens TODO 2022-03-30 This definately isn't needed anymore, but before I archive this preference I'd like
+;;                          to look at how to cleanly remove the variable the preference is bound to.
+;; (defboxer-preference bu::penerase-color-from-bit-array (true-or-false)
+;;   ((*check-bit-array-color* :boolean (boxer-eval::boxer-boolean *check-bit-array-color*))
+;;    graphics
+;;    ("Should the backing store of a frozen box be")
+;;    ("checked for the penerase color if one exists ?"))
+;;   (setq *check-bit-array-color* true-or-false)
+;;   boxer-eval::*novalue*)
 
 (defboxer-preference bu::show-border-type-labels (true-or-false)
   ((*show-border-type-labels* :boolean (boxer-eval::boxer-boolean *show-border-type-labels*))
@@ -361,14 +363,15 @@
   (force-repaint)
   boxer-eval::*novalue*)
 
-(defboxer-preference bu::smooth-scrolling (true-or-false)
-  ((*smooth-scrolling?* :boolean (boxer-eval::boxer-boolean *smooth-scrolling?*))
-   editor
-   ("Should scrolling be one pixel at a time ?")
-   ("(This may be turned off for slow machines)"))
-  (setq *smooth-scrolling?* true-or-false)
-  (force-repaint)
-  boxer-eval::*novalue*)
+;; sgithens TODO 2022-03-30 This may or may not come back soon when we fix up the scrolling...
+;; (defboxer-preference bu::smooth-scrolling (true-or-false)
+;;   ((*smooth-scrolling?* :boolean (boxer-eval::boxer-boolean *smooth-scrolling?*))
+;;    editor
+;;    ("Should scrolling be one pixel at a time ?")
+;;    ("(This may be turned off for slow machines)"))
+;;   (setq *smooth-scrolling?* true-or-false)
+;;   (force-repaint)
+;;   boxer-eval::*novalue*)
 
 (defboxer-preference bu::global-hotspot-controls (true-or-false)
   ((*global-hotspot-control?* :boolean
