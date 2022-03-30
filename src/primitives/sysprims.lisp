@@ -246,8 +246,8 @@
 (defboxer-preference bu::printing-precision ((boxer-eval::numberize new-precision))
   ((*decimal-print-precision* :number *decimal-print-precision*)
    results
-   ("How many numerals should appear after")
-   ("the decimal point in decimal numbers ?"))
+   ("How many numerals should appear after the decimal point in decimal numbers?")
+  )
   (cond ((and (integerp new-precision)
               (>=& new-precision 0))
          (set-decimal-printing-precision new-precision))
@@ -258,8 +258,8 @@
 (defboxer-preference bu::print-fractions (true-or-false)
   ((*print-rationals* :boolean (boxer-eval::boxer-boolean *print-rationals*))
    results
-   ("Should fractional numbers (e.g., 1/2) appear as ")
-   ("fractions (1/2), rather than decimals (0.5) ?"))
+   ("Should fractional numbers (e.g., 1/2) appear as fractions (1/2), rather than decimals (0.5)?")
+  )
   (setq *print-rationals* true-or-false)
   boxer-eval::*novalue*)
 
@@ -268,8 +268,8 @@
   ((*interpolate-empty-rows-too?* :boolean
                                   (boxer-eval::boxer-boolean *interpolate-empty-rows-too?*))
    results
-   ("Should empty lines in boxes referred to via @'s")
-   ("in BUILD templates be preserved ? "))
+   ("Should empty lines in boxes referred to via @'s in BUILD templates be preserved?")
+  )
   (setq *interpolate-empty-rows-too?* true-or-false)
   boxer-eval::*novalue*)
 
@@ -278,9 +278,8 @@
 (defboxer-preference bu::evaluator-help (true-or-false)
   ((*evaluator-helpful* :boolean (boxer-eval::boxer-boolean *evaluator-helpful*))
    evaluator
-   ("Should the Evaluator print \"helpful\" messages")
-   ("when it detects style problems ?")
-   ("(E.g., if you port to the output of a primitive)"))
+   ("Should the Evaluator print \"helpful\" messages when it detects style problems? (E.g., if you port to the output of a primitive)")
+  )
   (setq *evaluator-helpful* true-or-false)
   boxer-eval::*novalue*)
 
@@ -288,7 +287,7 @@
   ((boxer-eval::*warn-about-primitive-shadowing* :boolean
                                                  (boxer-eval::boxer-boolean boxer-eval::*warn-about-primitive-shadowing*))
    evaluator
-   ("Should you get a warning if you redefine a Boxer primitive ?"))
+   ("Should you get a warning if you redefine a Boxer primitive?"))
   (setq boxer-eval::*warn-about-primitive-shadowing* true-or-false)
   boxer-eval::*novalue*)
 
@@ -298,7 +297,7 @@
   ((*default-graphics-box-transparency* :boolean
                                         (boxer-eval::boxer-boolean *default-graphics-box-transparency*))
    graphics
-   ("Should newly made graphics boxes be transparent ?"))
+   ("Should newly made graphics boxes be transparent?"))
   (setq *default-graphics-box-transparency* true-or-false)
   boxer-eval::*novalue*)
 
@@ -306,15 +305,15 @@
   ((*include-sprite-box-in-new-graphics?* :boolean
                                           (boxer-eval::boxer-boolean *include-sprite-box-in-new-graphics?*))
    graphics
-   ("Should newly made graphics boxes include a sprite ?"))
+   ("Should newly made graphics boxes include a sprite?"))
   (setq *include-sprite-box-in-new-graphics?* true-or-false)
   boxer-eval::*novalue*)
 
 (defboxer-preference bu::name-new-sprites (true-or-false)
   ((*name-new-sprites?* :boolean (boxer-eval::boxer-boolean *name-new-sprites?*))
    graphics
-   ("Should the cursor be moved into")
-   ("the name row of new sprite boxes ?"))
+   ("Should the cursor be moved into the name row of new sprite boxes?")
+  )
   (setq *name-new-sprites?* true-or-false)
   boxer-eval::*novalue*)
 
@@ -322,8 +321,8 @@
   ((*new-sprites-should-be-diet-sprites?* :boolean
                                           (boxer-eval::boxer-boolean *new-sprites-should-be-diet-sprites?*))
    graphics
-   ("Should newly made sprite boxes include fewer")
-   ("visible attributes to save memory ?"))
+   ("Should newly made sprite boxes include fewer visible attributes to save memory?")
+  )
   (cond ((not (null true-or-false))
          (setq *new-sprites-should-be-diet-sprites?* t
                *graphics-interface-boxes-in-box* :default
@@ -350,7 +349,7 @@
 (defboxer-preference bu::show-border-type-labels (true-or-false)
   ((*show-border-type-labels* :boolean (boxer-eval::boxer-boolean *show-border-type-labels*))
    editor
-   ("Should the type label (e.g., doit, data) of boxes be shown ?"))
+   ("Should the type label (e.g., doit, data) of boxes be shown?"))
   (setq *show-border-type-labels* true-or-false)
   (force-repaint)
   boxer-eval::*novalue*)
@@ -377,7 +376,7 @@
   ((*global-hotspot-control?* :boolean
                               (boxer-eval::boxer-boolean *global-hotspot-control?*))
    editor
-   ("Should turning a hotspot off or on affect all hotspots ?"))
+   ("Should turning a hotspot off or on affect all hotspots?"))
   (setq *global-hotspot-control?* true-or-false)
   boxer-eval::*novalue*)
 
@@ -407,7 +406,7 @@
   ((bw::*fullscreen-window-p* :boolean
                               (boxer-eval::boxer-boolean bw::*fullscreen-window-p*))
    editor
-   ("Should the boxer window occupy the entire screen ?"))
+   ("Should the boxer window occupy the entire screen?"))
   (setq bw::*fullscreen-window-p* true-or-false)
   boxer-eval::*novalue*)
 
@@ -447,7 +446,7 @@
   ((bw::*report-crash* :boolean
                        (boxer-eval::boxer-boolean bw::*report-crash*))
    editor
-   ("Should lisp errors be logged ?"))
+   ("Should lisp errors be logged?"))
   (setq bw::*report-crash* true-or-false)
   boxer-eval::*novalue*)
 
@@ -457,16 +456,16 @@
   ((*terse-file-status* :boolean
                         (boxer-eval::boxer-boolean *terse-file-status*))
    Files
-   ("Should file names use abbreviated form (as opposed to ")
-   ("full pathnames) in the status line ?"))
+   ("Should file names use abbreviated form (as opposed to full pathnames) in the status line ?")
+  )
   (setq *terse-file-status* true-or-false)
   boxer-eval::*novalue*)
 
 (defboxer-preference bu::backup-file-suffix (suffix)
   ((*file-backup-suffix* :string (make-box `((,*file-backup-suffix*))))
    Files
-   ("Which character string should be appended to previous ")
-   ("file version when Boxer saves ?"))
+   ("Which character string should be appended to previous file version when Boxer saves?")
+  )
   (setq *file-backup-suffix* suffix)
   boxer-eval::*novalue*)
 
@@ -482,8 +481,8 @@
   ((*warn-about-outlink-ports* :boolean
                                (boxer-eval::boxer-boolean *warn-about-outlink-ports*))
    Files
-   ("Should you receive a warning when trying to save a ")
-   ("file with ports that link outside the file ?"))
+   ("Should you receive a warning when trying to save a file with ports that link outside the file?")
+  )
   (setq *warn-about-outlink-ports* true-or-false)
   boxer-eval::*novalue*)
 
