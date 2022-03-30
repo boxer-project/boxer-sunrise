@@ -1030,10 +1030,6 @@
   (let ((*allow-redisplay-encore? t))
     (repaint)))
 
-(defun force-repaint ()
-  (repaint))
-
-
 ;;;; Ephemera: cursors, regions
 (defun repaint-cursor (&optional (cursor *point*)(flush-buffer? T))
   (drawing-on-window (*boxer-pane*)

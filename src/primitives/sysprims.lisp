@@ -347,7 +347,7 @@
    editor
    ("Should the type label (e.g., doit, data) of boxes be shown?"))
   (setq *show-border-type-labels* true-or-false)
-  (force-repaint)
+  (repaint)
   boxer-eval::*novalue*)
 
 (defboxer-preference bu::show-empty-name-rows (true-or-false)
@@ -355,7 +355,7 @@
    editor
    ("Should we show name rows that are empty?"))
   (setq *show-empty-name-rows* true-or-false)
-  (force-repaint)
+  (repaint)
   boxer-eval::*novalue*)
 
 ;; sgithens TODO 2022-03-30 This may or may not come back soon when we fix up the scrolling...
@@ -365,7 +365,7 @@
 ;;    ("Should scrolling be one pixel at a time ?")
 ;;    ("(This may be turned off for slow machines)"))
 ;;   (setq *smooth-scrolling?* true-or-false)
-;;   (force-repaint)
+;;   (repaint)
 ;;   boxer-eval::*novalue*)
 
 (defboxer-preference bu::global-hotspot-controls (true-or-false)

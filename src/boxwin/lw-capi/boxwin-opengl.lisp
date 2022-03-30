@@ -998,7 +998,7 @@
 (defun boxer-process-top-level-fn (window)
   (declare (ignore window))
   (boxer::enter (boxer::point-box))
-  (boxer::force-repaint)
+  (boxer::repaint)
   (boxer-command-loop))
 
 (defun beep () (capi::beep-pane))
@@ -1392,7 +1392,7 @@
         ((null *suppress-expose-handler*)
          (opengl:rendering-on (pane) (ogl-init wid hei))  ;(ogl-reshape wid hei)
          (redraw-status-line)
-         (boxer::force-repaint))
+         (boxer::repaint))
         (t nil)))
 
 (defun bootstrap-expose-window-function (wid hei)
@@ -1404,7 +1404,7 @@
   (declare (ignore wid hei))
 ;  (unless *suppress-expose-handler*
     (redraw-status-line)
-    (boxer::force-repaint))
+    (boxer::repaint))
 ;)
 
 (defun scroll-handler (output-pane direction scroll-operation scroll-amount &key interactive)
@@ -1480,7 +1480,7 @@
            )
           ((null *suppress-expose-handler*)
            (resize-handler-utility width height)
-           (unless (null (Outermost-screen-box)) (boxer::force-repaint)))
+           (unless (null (Outermost-screen-box)) (boxer::repaint)))
           (t ; something is running (probably eval)
            (unless (member 'resize-handler-utility *suppressed-actions*)
              (push 'resize-handler-utility *suppressed-actions*))))))
