@@ -1610,11 +1610,8 @@ Modification History (most recent at top)
 ;; this is smarter than the mac version. it does a prepass so we no longer have
 ; to rely on the prefs being well ordered in the source
 (defun make-preferences-dialog ()
-  (let ((groups nil) (tab-layout-groups nil)
-        ;; dialog box claculated parameters
-        (tl-min-width 600) (tl-min-height 100)
-        ;; dialog box constants
-        (padding 20) (tl-item-height 40))
+  (let ((groups nil)
+        (tab-layout-groups nil))
     ;; prepass to organize into groups
     (dolist (pref boxer::*boxer-preferences-list*)
       (let* ((di-info (get pref 'boxer::system-parameter-pref-dialog-info))
@@ -1630,7 +1627,6 @@ Modification History (most recent at top)
      ;; subgroup name and the CDR is a list of prefs
      ;; when we are done, then tab-layout-groups will be a list of
      ;; title strings and layout instances suitable as :items for a capi:tab-layout
-     (let ((tl-acc-height 20))
        (setq tab-layout-groups
              (nconc tab-layout-groups
                     (list
@@ -1659,34 +1655,34 @@ Modification History (most recent at top)
                                          (make-string-pref
                                           pref (symbol-value value)
                                           ac-fun doc-fun)))))
-                           (incf tl-acc-height tl-item-height))))))))
-       (setq tl-min-height (max tl-min-height tl-acc-height))))
-   ;; shoud recalculate tl-min-width here based on group names...
+                           )))))))
+       )
    ;; and now the main dialog
    (capi:make-container
-    (make-instance
-     'capi:pinboard-layout :min-width tl-min-width :min-height (+ tl-min-height  (* 3 padding))
+    (make-instance 'capi:column-layout
      :description
      (list
       ;; here are the pieces of the prefs dialog
-      (make-instance 'capi:tab-layout  :x 0 :y 10 :width tl-min-width :height tl-min-height
-                     :min-width tl-min-width :min-height tl-min-height
+      (make-instance 'capi:tab-layout
                      :print-function 'car :visible-child-function 'cadr
-                     :combine-child-constraints t
+                    ;  :combine-child-constraints t
                      :items tab-layout-groups)
       ;; buttons (cancel, Set, Set&Save)
-      (make-instance 'capi:push-button :x padding :y (+ tl-min-height  padding)
-                     :width 50 :height 20
-                     :text "Cancel" :selection-callback 'capi:abort-dialog)
-      (make-instance 'capi:push-button :x 160 :y (+ tl-min-height  padding) :width 50 :height 20
-                     :text "Set" :selection-callback #'(lambda (&rest ignore)
-                                                         (declare (ignore ignore))
-                                                         (capi:exit-dialog t)))
-      (make-instance 'capi:push-button :x 280 :y (+ tl-min-height  padding) :width 80 :height 20
-                     :text "Set & Save"
-                     :selection-callback #'(lambda (&rest ignore)
-                                             (declare (ignore ignore))
-                                             (capi:exit-dialog :save))))))))
+      (make-instance 'capi:push-button-panel
+                         :items (list
+                           (make-instance 'capi:push-button
+                             :text "Cancel" :selection-callback 'capi:abort-dialog)
+                           (make-instance 'capi:push-button
+                             :text "Set" :selection-callback #'(lambda (&rest ignore)
+                                                                 (declare (ignore ignore))
+                                                                 (capi:exit-dialog t)))
+                           (make-instance 'capi:push-button
+                             :text "Set & Save"
+                             :selection-callback #'(lambda (&rest ignore)
+                                                     (declare (ignore ignore))
+                                                     (capi:exit-dialog :save)))
+                         ))
+  )))))
 
 (defun fixup-pref-name (name)
   (substitute #\space #\- (string-capitalize name)))
@@ -1718,9 +1714,8 @@ Modification History (most recent at top)
                                  :max-width 75
                                  ; :best-width 150
                                  :change-callback-type :item
-                                 :change-callback
-                                 #'(lambda (item)
-                                     (funcall action-function item)))
+                                 :change-callback #'(lambda (item)
+                                                      (funcall action-function item)))
                   (make-instance 'capi:display-pane :text (funcall doc-function) :background :transparent))))
 
 (defun make-string-pref (name value action-function doc-function)
@@ -1732,9 +1727,8 @@ Modification History (most recent at top)
                                  :max-width 75
                                  ; :best-width 150
                                  :change-callback-type :item
-                                 :change-callback
-                                 #'(lambda (item)
-                                     (funcall action-function item)))
+                                 :change-callback #'(lambda (item)
+                                                      (funcall action-function item)))
                   (make-instance 'capi:display-pane :text (funcall doc-function) :background :transparent))))
 
 ; eventually...
