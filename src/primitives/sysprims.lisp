@@ -116,7 +116,9 @@
                                  (member :mcl-appgen *features*))
                        (format t "~%Initializing System Variable ~A to ~A"
                                ',variable new-value))
-                     (setq ,variable new-value)))
+                     (setq ,variable new-value)
+                     new-value
+                     ))
                  (defun ,file-writer-name (filestream)
                    (format filestream "~A: ~A~%" ',name ,(cond ((eq value-type :boolean)
                                                                 `(if ,variable "True" "False"))
@@ -210,9 +212,18 @@
 
 (defun handle-preference-initialization (keyword value)
   (let ((handler-entry (assoc keyword *preference-read-handlers*)))
-    (if (null handler-entry)
-      (warn "~A is an obsolete pref. Save boxer prefs again to eliminate further warnings" keyword)
-      (funcall (cadr handler-entry) value))))
+    (cond ((null handler-entry)
+           (warn "~A is an obsolete pref. Save boxer prefs again to eliminate further warnings" keyword))
+          (t
+           ;; The inner funcall here is calling the prefs read method, which does coerce the value and set
+           ;; the variable bound to it. However, a small handful of prefs (like printing-precision for example)
+           ;; have a few other side effects that their primitive executes, but which are also captured in the prefs
+           ;; -q-function from the defboxer-preference macro, so we use the coerced fixed up value from the read
+           ;; function and use it after looking up the -q-function with a properly constructed symbol that it's bound to.
+           (funcall (symbol-function
+                      (find-symbol (uiop:strcat (symbol-name keyword) "-Q-FUNCTION") :boxer))
+                    (funcall (cadr handler-entry) value))
+                    ))))
 
 ;;; Writing out Preferences Files
 (defun write-preferences (&optional (file #+(and unix (not lispworks)) "~/.boxerrc"
