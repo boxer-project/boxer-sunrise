@@ -853,21 +853,6 @@
         (let ((fmis (capi::menu-items (slot-value *boxer-frame* 'bw::file-menu))))
           (append  (list bw::*file-open-recent-menu*) fmis))))
 
-(defun window-system-specific-make-boxer ()
-  (setq *boxer-frame* (make-instance 'boxer-frame))
-  ;; after creation, set some variables
-  (setq *boxer-pane* (slot-value *boxer-frame* 'boxer-pane)
-        *name-pane*  (slot-value *boxer-frame* 'name-pane))
-  (push *boxer-pane* *redisplayable-windows*)
-  (setq *point-blinker* (make-blinker *boxer-pane*))
-  #+cocoa
-  (capi:set-application-interface (make-instance 'cocoa-boxer-interface))
-
-  (gp:register-image-translation
-     'bw::toolbar-scratch-images
-     (gp:read-external-image (merge-pathnames "./images/scratch-icons.png" boxer::*resources-dir*)))
-
-  (capi:display boxer-window::*boxer-frame*))
 
 (defvar *fullscreen-window-p* T
   "Should boxer occupy the entire screen when starting up ?")
@@ -880,7 +865,6 @@
   "Determines whether or not the toolbar on the boxer editor window is shown.")
 (defvar *boxer-window-show-statusbar-p* t
   "Determines whether or not the status bar on the boxer editor window is shown.")
-
 
 (defvar *setup-editor-with-news?* t)
 
@@ -903,20 +887,20 @@
                 (push 'text-toolbar new-desc))
      (setf (capi:layout-description layout) new-desc)))
 
-(defun window-system-specific-start-boxer ()
-
-  (when (member "-debug" sys:*line-arguments-list* :test #'string-equal)
-    (break "Start Boxer"))
-  (setq boxer-eval::*current-process* nil)
-  ;; extensions
-  (setq boxer::*starting-directory-pathname* (lw:lisp-image-name))
-  ;; sgithens TODO - Removing extensions for now March 7, 2020
-  ;; (boxer::load-boxer-extensions)
-
+(defun window-system-specific-make-boxer ()
   ;; load prefs if they exists
   (let ((pf (boxer::default-lw-pref-file-name)))
     (when (and pf (probe-file pf))
       (boxer::handle-preference-initializations pf)))
+
+  (setq *boxer-frame* (make-instance 'boxer-frame))
+  ;; after creation, set some variables
+  (setq *boxer-pane* (slot-value *boxer-frame* 'boxer-pane)
+        *name-pane*  (slot-value *boxer-frame* 'name-pane))
+  (push *boxer-pane* *redisplayable-windows*)
+  (setq *point-blinker* (make-blinker *boxer-pane*))
+  #+cocoa
+  (capi:set-application-interface (make-instance 'cocoa-boxer-interface))
 
   ;; maybe set the size of the boxer window...
   ;; check window size prefs, they will be overidden by the following
@@ -933,7 +917,20 @@
                             :width (- (capi:screen-width screen) 10)
                             :height (- (capi:screen-height screen) 120)))))
 
-  ;; (capi:display *boxer-frame*)
+  (gp:register-image-translation
+     'bw::toolbar-scratch-images
+     (gp:read-external-image (merge-pathnames "./images/scratch-icons.png" boxer::*resources-dir*)))
+
+  (capi:display boxer-window::*boxer-frame*))
+
+(defun window-system-specific-start-boxer ()
+  (when (member "-debug" sys:*line-arguments-list* :test #'string-equal)
+    (break "Start Boxer"))
+  (setq boxer-eval::*current-process* nil)
+  ;; extensions
+  (setq boxer::*starting-directory-pathname* (lw:lisp-image-name))
+  ;; sgithens TODO - Removing extensions for now March 7, 2020
+  ;; (boxer::load-boxer-extensions)
 
   (when (member "-debug" sys:*line-arguments-list* :test #'string-equal)
     (opengl:describe-configuration *boxer-pane*))
