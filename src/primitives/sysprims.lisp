@@ -328,7 +328,7 @@
   ((*new-sprites-should-be-diet-sprites?* :boolean
                                           (boxer-eval::boxer-boolean *new-sprites-should-be-diet-sprites?*))
    graphics
-   ("Should newly made sprite boxes include fewer visible attributes to save memory?")
+   ("Should newly made sprite boxes include fewer visible attributes to reduce complexity?")
   )
   (cond ((not (null true-or-false))
          (setq *new-sprites-should-be-diet-sprites?* t

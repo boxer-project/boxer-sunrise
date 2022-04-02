@@ -129,7 +129,8 @@
                                  :retract-callback #'(lambda (item)
                                                        (funcall action-function
                                                                 item)))
-                  (make-instance 'capi:display-pane :text (funcall doc-function) :background :transparent))))
+                  (make-instance 'capi:display-pane :text (funcall doc-function) :background :transparent
+                                 :visible-min-width '(:character 100) :visible-min-height '(:character 2)))))
 
 (defun make-number-pref (name value action-function doc-function)
   (make-instance 'capi:column-layout
@@ -142,7 +143,8 @@
                                  :change-callback-type :item
                                  :change-callback #'(lambda (item)
                                                       (funcall action-function item)))
-                  (make-instance 'capi:display-pane :text (funcall doc-function) :background :transparent))))
+                  (make-instance 'capi:display-pane :text (funcall doc-function) :background :transparent
+                                 :visible-min-width '(:character 100) :visible-min-height '(:character 2)))))
 
 (defun make-string-pref (name value action-function doc-function)
   (make-instance 'capi:column-layout
@@ -155,7 +157,8 @@
                                  :change-callback-type :item
                                  :change-callback #'(lambda (item)
                                                       (funcall action-function item)))
-                  (make-instance 'capi:display-pane :text (funcall doc-function) :background :transparent))))
+                  (make-instance 'capi:display-pane :text (funcall doc-function) :background :transparent
+                                 :visible-min-width '(:character 100) :visible-min-height '(:character 2)))))
 
 ; eventually...
 ;(defun make-choice-pref (name value action-function doc-function)

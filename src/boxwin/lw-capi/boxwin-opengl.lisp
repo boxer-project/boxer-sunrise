@@ -885,13 +885,10 @@
      (push 'name-pane new-desc)
      (if *boxer-window-show-toolbar-p*
                 (push 'text-toolbar new-desc))
-     (setf (capi:layout-description layout) new-desc)))
+     (if layout
+       (setf (capi:layout-description layout) new-desc))))
 
 (defun window-system-specific-make-boxer ()
-  ;; load prefs if they exists
-  (let ((pf (boxer::default-lw-pref-file-name)))
-    (when (and pf (probe-file pf))
-      (boxer::handle-preference-initializations pf)))
 
   (setq *boxer-frame* (make-instance 'boxer-frame))
   ;; after creation, set some variables
@@ -901,6 +898,11 @@
   (setq *point-blinker* (make-blinker *boxer-pane*))
   #+cocoa
   (capi:set-application-interface (make-instance 'cocoa-boxer-interface))
+
+  ;; load prefs if they exists
+  (let ((pf (boxer::default-lw-pref-file-name)))
+    (when (and pf (probe-file pf))
+      (boxer::handle-preference-initializations pf)))
 
   ;; maybe set the size of the boxer window...
   ;; check window size prefs, they will be overidden by the following
