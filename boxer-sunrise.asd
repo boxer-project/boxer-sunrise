@@ -230,6 +230,7 @@
                  ;; Beginning of `menu` module
                  ;;    "Menus for Harlequin Lispworks on the PC"
                  (:file "boxwin/lw-capi/lw-menu")
+                 (:file "boxwin/lw-capi/preferences-dialog")
 
                  ;; Beginning of `av` module
                  ;;    "Primitives and support code for controlling VCR's from Mac Boxer"
