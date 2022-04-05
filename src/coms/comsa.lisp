@@ -1116,7 +1116,7 @@ removes it from the kill buffer.  No copy is made."
   "clears and then redisplays the screen. "
   (reset-editor-numeric-arg)
   (when redraw-status-line? (redraw-status-line))
-  (force-repaint)
+  (repaint)
   boxer-eval::*novalue*)
 
 (defboxer-command COM-FORCE-REDISPLAY-ALL ()
