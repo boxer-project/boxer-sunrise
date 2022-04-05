@@ -291,7 +291,7 @@
    :title "Boxer"
    ;; sgithens TODO -
    ;;:application-menu 'application-menu
-   ;;:message-callback 'handle-OSX-events
+   :message-callback 'handle-OSX-events
    ))
 
 
@@ -804,25 +804,24 @@
                          (user::quit))
    ))
 
-
-(defvar *osx-events-log* nil)
-(defvar *pending-osx-events* nil)
-
 (defun handle-OSX-events (interface message &rest args)
+  "This handles the messages from the lispworks cocoa-default-application-interface. The :open-file message is what
+allows users to double click a .box file and have it open up in boxer, or drag a box file on to the dock icon for Boxer.
+We throw the double click action on the event queue whether Boxer is fully started or not. If this double click is
+causing Boxer to open, the item on the queue will likely be the first thing there to do when the event loop starts up.
+
+  http://www.lispworks.com/documentation/lw80/capi-m/capi-capi-ref-38.htm#CAPI)cocoa-default-application-interface"
   (declare (ignore interface))
-  (push (cons message args) *osx-events-log*)
   (case message
     (:open-file
-     (if (null *display-bootstrapping-no-boxes-yet*)
-         ;; might want to do this if we are running in eval (e.g. long simulation) and the user
-         ;; double clicks a file
-         (safe-open-double-clicked-file args)
-       (push (cons message args) *pending-osx-events*)))
-    #+lispworks6.1 (:finished-launching)
+      (queue-event (list 'bw::safe-open-double-clicked-file args)))
+    (:finished-launching)
     (t (status-line-display 'boxer::boxer-editor-error
                             (format nil "Unhandled OSX event: ~A" message)))))
 
 (defun safe-open-double-clicked-file (args)
+  "This is used on the event queue to insert files that have been double clicked or dragged on to the boxer dock icon
+in macOS."
   (ignore-errors
     (cond ((not (null args))
            (if (listp (car args))
@@ -959,10 +958,6 @@
   ;; now that everything is defined, we can safely run redisplay
   (resize-handler-utility)
   (update-toolbar-font-buttons)
-  ;; and check for initial double clicked file box
-  (when (eq :open-file (caar *pending-osx-events*))
-    (safe-open-double-clicked-file (cdar *pending-osx-events*))
-    (setq *pending-osx-events* nil))
 
   (update-visible-editor-panes)
   (boxer::switch-use-mouse2021 *use-mouse2021*)
