@@ -305,7 +305,6 @@
                                 first-row
                                 (bp-cha-no region-start-bp)
                                 (bp-cha-no region-stop-bp))))
-               #-opengl (add-redisplay-clue first-row :delete)
                (set-bp-row (interval-start-bp region) killed-row)
                (set-bp-cha-no (interval-start-bp region) 0)
                (set-bp-row (interval-stop-bp region) killed-row)
@@ -328,8 +327,6 @@
                                  last-row
                                  0
                                  (bp-cha-no region-stop-bp))))
-                          ;; we can only remove from the last row
-                          #-opengl (add-redisplay-clue rr :delete)
                           ;; setup the stop-bp
                           (set-bp-row (interval-stop-bp region)
                                       region-last-row)

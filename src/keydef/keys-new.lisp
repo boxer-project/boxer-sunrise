@@ -70,7 +70,6 @@
                (let ((r (or *region-being-defined* (get-current-region))))
                  (unless (null r) (editor-kill-region r)))
          (with-multiple-execution
-       #-opengl(add-redisplay-clue (point-row) ':insert)
      (insert-cha *point* char-to-insert :moving))
                (mark-file-box-dirty (point-row))
                boxer-eval::*novalue*))

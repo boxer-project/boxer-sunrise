@@ -234,7 +234,6 @@
          (av-box (make-av-box info)))
     (when (av-file? pa) (set-av-info-from-file info pa))
     (unless (null av-box) (insert-cha *point* av-box))
-    (add-redisplay-clue (point-row) :insert)
     eval::*novalue*))
 
 ;; here temporarily

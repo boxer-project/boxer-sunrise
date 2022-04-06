@@ -342,7 +342,6 @@ region into a box. "
                       (t
                        (WITH-MULTIPLE-EXECUTION
                         (LET ((box (make-initialized-box-for-editor 'doit-box)))
-                             #-opengl(add-redisplay-clue (point-row) ':insert)
                              (INSERT-CHA *POINT* BOX ':FIXED)))
                        (mark-file-box-dirty (point-row)))))
                   boxer-eval::*novalue*)
@@ -369,7 +368,6 @@ Graphics-Data.  Ports toggle their targets. "
                       (t
                        (with-multiple-execution
                          (let ((box (make-initialized-box-for-editor)))
-                           #-opengl(add-redisplay-clue (point-row) ':insert)
                            (set-type box 'data-box)
                            (insert-cha *point* box ':fixed)))
                        (mark-file-box-dirty (point-row)))))
@@ -808,7 +806,6 @@ current height and width. "
           (status-line-undisplay 'com-make-toolbox))
         (set-type tool-box 'data-box)
         (boxer-eval::set-box-transparency tool-box t)
-        #-opengl(add-redisplay-clue (point-row) ':insert)
         ;; insert the box
         (insert-cha *point* tool-box ':fixed))))
   boxer-eval::*novalue*)
@@ -859,7 +856,6 @@ specified target. "
                   (if (PORT-BOX? *COM-MAKE-PORT-CURRENT-PORT*)
                     (progn
                      (INSERT-CHA *POINT* *COM-MAKE-PORT-CURRENT-PORT*)
-                     #-opengl(add-redisplay-clue (point-row) ':insert)
                      (SETQ *COM-MAKE-PORT-CURRENT-PORT* NIL))
                     (make-generic-port))
                   (mark-file-box-dirty (point-row))
@@ -890,7 +886,6 @@ specified target. "
                *default-graphics-view-on?*)
       (setf (display-style-graphics-mode? (display-style-list box)) t))
     ;; show the graphics side if thats what we think is right
-    #-opengl(add-redisplay-clue (point-row) ':insert)
     (setf (bottom-right-hotspot-active? box) t)
     (insert-cha *point* box (if (and *include-sprite-box-in-new-graphics?*
                                      *name-new-sprites?*)
@@ -899,8 +894,7 @@ specified target. "
     (mark-file-box-dirty (point-row))
     (when (not (null *include-sprite-box-in-new-graphics?*))
       (let ((g-row (first-inferior-row box)))
-        (append-cha g-row (make-sprite-box))
-        #-opengl(add-redisplay-clue g-row ':insert))
+        (append-cha g-row (make-sprite-box)))
       (when (not (null *name-new-sprites?*))
         (com-enter-box) (com-enter-box)	(com-name-box)))))
 
@@ -1107,7 +1101,6 @@ Does Nothing if There is No Defined BoxTop"
   (if (name-row? (point-row))
     (boxer-editor-error "You cannot make boxes on a name row. ")
     (progn
-     #-opengl(add-redisplay-clue (point-row) ':insert)
      (cond ((not (null *name-new-sprites?*))
             (insert-cha *point* (make-sprite-box) ':fixed)
             (com-enter-box)

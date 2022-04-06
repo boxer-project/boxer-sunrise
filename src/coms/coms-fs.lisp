@@ -316,7 +316,6 @@ Modification History (most recent at top)
            (let ((box (make-initialized-box :type 'data-box)))
              (set-file-box-properties box)
              (mark-box-as-file box)
-             #-opengl (add-redisplay-clue (point-row) ':insert)
              (set-type box 'data-box)
              (insert-cha *point* box ':fixed)
              ;; mark the containing box before entering

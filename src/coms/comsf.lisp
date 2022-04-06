@@ -175,8 +175,6 @@
                              (set-fds row (delete-if #'(lambda (rfd)
                                                                (fast-memq rfd redundant-fds))
                                                      (row-fds row))))
-                           ;; clue in the redisplay...
-                           #-opengl(add-redisplay-clue row :font-change)
                            (modified row)))
          (cond ((eq start-row stop-row)
                 (process-row-fds stop-row (bp-cha-no start-bp) stop-cha-no)

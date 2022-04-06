@@ -175,7 +175,6 @@ row instead. "
         (delete-cha-at-cha-no row i))
       (insert-row-chas bp (make-row '("   |")) :moving)))
      (when (not (null processed-returned-value))
-       #-opengl (add-redisplay-clue (bp-row bp) ':insert)
        (insert-row-chas bp (make-row `(,processed-returned-value)))))
       ;; make sure the bp used in printing gets deallocated
       (deallocate-bp bp))))
@@ -353,7 +352,6 @@ row instead. "
          (when (and (not (eq (car arglist)
            'boxer-eval::*ignoring-definition-object*))
         (not (boxer-eval::flavored-input-marker? (car arglist))))
-     #-opengl (add-redisplay-clue (point-row) ':insert)
      (boxer-eval::step-replace-token
       chunk-no (let ((new-box (make-box '(()))))
            (set-name new-box
@@ -368,7 +366,6 @@ row instead. "
         (arglist-for-prompter
          (chunk-chunk (get-pointer-value chunk nil)))))
          (unless (null arglist)
-           #-opengl (add-redisplay-clue (point-row) ':insert)
            (insert-prompter-arglist
       arglist
       (end-of-chunk-cha-no (point-row) chunk)))))))))
@@ -531,8 +528,7 @@ followed by a return."
     (status-line-undisplay 'com-insert-key-name)
     (unless (null key-name)
       (dotimes& (i (length key-string))
-  (insert-cha *point* (aref key-string i))))
-    #-opengl (add-redisplay-clue (point-row) ':insert))
+  (insert-cha *point* (aref key-string i)))))
   (com-return)
   boxer-eval::*novalue*)
 
