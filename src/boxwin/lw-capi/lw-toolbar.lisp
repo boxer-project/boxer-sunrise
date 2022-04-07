@@ -41,7 +41,11 @@
          (current-color (boxer::bfd-color (get-current-font))))
 
     (setf (capi:choice-selected-item font-button)
-          (capi:get-collection-item font-button (capi:find-string-in-collection font-button font-name))
+          ;; sgithens TODO 2022-04-06 We need to improve things to show arbitrary fonts in case there are fonts used
+          ;; that we don't have bundled.
+          (if (capi:find-string-in-collection font-button font-name)
+            (capi:get-collection-item font-button (capi:find-string-in-collection font-button font-name))
+            0)
 
           (capi:choice-selected-item size-button)
           (capi:get-collection-item size-button (capi:find-string-in-collection size-button (format nil "~A" font-size)))
