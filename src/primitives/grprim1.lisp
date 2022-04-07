@@ -356,8 +356,8 @@
          (old-style? (when (integerp (car items)) (car items)))
          ;; old-style? supports previous font-map implementation
          (font (cond ((and old-style? (< old-style? 4))
-                      #+mcl "Courier" #-mcl *default-font-family*)
-                     (old-style? #+mcl "Geneva" #-mcl *default-font-family*)
+                           *default-font-family*)
+                     (old-style? *default-font-family*)
                      ((or (virtual-copy? (car items)) (box? (car items)))
                       ;; allow the use of a box for fonts with spaces in the name
                       (box-text-string (car items)))
@@ -373,11 +373,8 @@
                      (3 '(:bold :italic)))
                    (cddr items))))
     ;; reality checking
-    (cond #-lwwin ;; can be passed other platform fonts, rethink this
-          ((not (member font
-                        #-mcl *font-families*
-                        #+mcl ccl::*font-list*
-                        :test #'string-equal))
+    (cond ;; can be passed other platform fonts, rethink this
+          ((not (member font *font-families* :test #'string-equal))
            (unless no-errorp
              (boxer-eval::primitive-signal-error
               :sprite-font font " is not an installed Font")))
@@ -386,12 +383,6 @@
            (unless no-errorp
              (boxer-eval::primitive-signal-error
               :sprite-font "The 2nd item should be a font size")))
-          ((and (not #+mcl (member size *supported-font-sizes*)
-                     #-mcl (find size *font-sizes*))
-                (not (= size 7))) ; for compatibility
-           (unless no-errorp
-             (boxer-eval::primitive-signal-error
-              :sprite-font size " is an usupported font size")))
           ;; styles check
           (t
            (catch 'bad-style
