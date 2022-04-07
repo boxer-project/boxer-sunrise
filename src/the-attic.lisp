@@ -12719,6 +12719,225 @@ Modification History (most recent at top)
 |#
 
 ;;;;
+;;;; FILE: virtcopy.lisp
+;;;;
+
+#|see the file eval/ev-int.lisp for the real defs
+(DEFUN EVAL-BOX? (THING)
+  ;; this is to avoid multiple calls to typep
+  (MEMBER (TYPE-OF THING) '(VIRTUAL-COPY VIRTUAL-PORT PORT-BOX DATA-BOX DOIT-BOX)))	;etc
+
+(DEFUN EVAL-DOIT? (THING)
+  (AND (VIRTUAL-COPY? THING) (EQ (VC-TYPE THING) ':DOIT-BOX)))
+
+(DEFUN EVAL-DATA? (THING)
+  (AND (VIRTUAL-COPY? THING) (EQ (VC-TYPE THING) ':DATA-BOX)))
+
+(DEFSUBST EVAL-PORT? (THING)
+  (VIRTUAL-PORT? THING))
+
+(DEFSUBST EVAL-NAMED? (THING)
+  (NOT (NULL (BOX-NAME THING))))
+
+|#
+
+#|
+(defun access-evrow-element (vc element
+				&optional
+				(need-exact-match nil) (chunk-too? nil))
+  (multiple-value-bind (item exact?)
+       (get-pointer-value element vc)
+     (let ((answer (if chunk-too? item (access-pointer-element item))))
+       (if (and need-exact-match (or (not exact?)
+				     (eq exact? ':default)
+				     (and (eq exact? 'single)
+					  ;;; aaacckkk!!!!
+					  (not (=& (length vc) 9))
+					  (not
+					   (vc-rows-entry-single-is-exact?
+					    vc)))))
+	   (let ((new-answer (virtual-copy answer :top-level? t)))
+	     (append-value-to-pointer element vc
+				      (vcis-creation-time vc) new-answer)
+	     new-answer)
+	   answer))))
+|#
+
+#|
+;; the old non-generic versions
+(defun get-port-target (thing)
+  (if (fast-port-box? thing)
+      (vp-target thing)
+      (error "~S is not an Evaluator Port" thing)))
+
+(defun box-or-port-target (thing)
+  (if (and (vectorp thing) (fast-port-box? thing))
+      (get-port-target thing)
+      thing))
+|#
+
+#|
+(defun port-to-item (ptr superior &optional keep-chunk)
+  (multiple-value-bind (item exact?)
+      (get-pointer-value ptr superior)
+    (let* ((chunk-p (fast-chunk? item))
+	   (value (if chunk-p (chunk-chunk item) item)))
+      (flet ((new-chunk (new-value)
+	       (if chunk-p
+		   (let ((nc (copy-chunk item)))
+		     (setf (chunk-chunk nc) new-value)
+		     nc)
+		   new-value)))
+	(cond ((or (numberp value) (symbolp value))
+	       item)
+	      ((or (fast-eval-port-box? value)
+		   (port-box? value))
+	       (if keep-chunk
+		   (new-chunk (virtual-copy value))
+		   (virtual-copy value)))
+	      ((not (null exact?))
+	       (if keep-chunk
+		   (new-chunk (port-to value))
+		   (port-to value)))
+	      ((and (box? superior)
+		    (box? value))
+	       (if keep-chunk
+		   (new-chunk (port-to value))
+		   (port-to value)))
+	      (t
+	       ;; need to cons a unique target
+	       (let* ((target (virtual-copy value))
+		      (nc (new-chunk target)))
+		 (extend-pointer ptr superior (now)
+				 (if chunk-p nc target))
+		 (if keep-chunk
+		     (new-chunk (port-to target))
+		     (port-to target)))))))))
+|#
+
+#| ;; too much CONSing !!!
+(defun evrow-text-string (row superior)
+  (let ((entries (evrow-pointers row)))
+    (flet ((chunk-string (chunk &optional last?)
+	     (if (null last?)
+		 (concatenate 'string
+			      (formatting-info-string (chunk-left-format
+						       chunk))
+			      (if (formatting-info? (chunk-pname chunk))
+				  (formatting-info-string (chunk-pname chunk))
+				  "[]"))
+		 (concatenate 'string
+			      (formatting-info-string (chunk-left-format
+						       chunk))
+			      (if (formatting-info? (chunk-pname chunk))
+				  (formatting-info-string (chunk-pname chunk))
+				  "[]")
+			      (formatting-info-string
+			       (chunk-right-format chunk)))))
+	   (value-string (value space?)
+	     (cond ((or (symbolp value) (stringp value) (numberp value))
+		    (format nil (if space? " ~A" "~A") value))
+		   (space? " []")
+		   (t "[]"))))
+      (cond ((not (null entries))
+	     (let ((return-string (make-string 0)))
+	       (dolist (p entries return-string)
+		 (let ((chunk (get-pointer-value p superior)))
+		   (setq return-string
+			 (concatenate
+			  'string
+			  return-string
+			  (cond ((chunk-p chunk)
+				 (chunk-string chunk
+					       (eq p (car (last entries)))))
+				((and (not (zerop& (length return-string)))
+				      (not (char= (char return-string
+							(1-& (length
+							      return-string)))
+						  #\space)))
+				 ;; add a space if there isn't already
+				 ;; one between items
+				 (value-string chunk t))
+				(t (value-string chunk nil)))))))))
+	    ((null (evrow-row-format row))
+	     "")
+	    (t (let ((format-chunk (evrow-row-format row))
+		     (return-string (make-string 0)))
+		 (when (formatting-info? (chunk-left-format format-chunk))
+		   (setq return-string
+			 (concatenate 'string
+				      return-string
+				      (formatting-info-string
+				       (chunk-left-format format-chunk)))))
+		 (when (formatting-info? (chunk-pname format-chunk))
+		   (setq return-string
+			 (concatenate 'string
+				      return-string
+				      (formatting-info-string
+				       (chunk-pname format-chunk)))))
+		 (when (formatting-info? (chunk-right-format format-chunk))
+		   (setq return-string
+			 (concatenate 'string
+				      return-string
+				      (formatting-info-string
+				       (chunk-right-format format-chunk)))))
+		 return-string))))))
+
+(defun box-text-string (box)
+  (cond ((numberp box) (format nil "~A" box))
+	(t
+	 (let ((return-string (make-string 0)))
+	   (dolist (r (get-box-rows box) (string-right-trim '(#\newline)
+							    return-string))
+	     (setq return-string (concatenate 'string
+					      return-string
+					      (evrow-text-string r box)
+					      (make-string 1
+							   :initial-element
+							   #\newline))))))))
+
+|#
+
+#|
+;seems to be unused as of 4/28/92
+
+;;;; How to Make new Evrows
+;; EVROW-CONSTRUCTOR is the established way of making new EVROWS used by the
+;; data manipulators. If we are making an EVROW for use in a constructor e.g.
+;; JOIN-RIGHT then All MP's must be disambiguated since the new row will NOT
+;; be in the a box which is ONLY a direct ancestor of the original row because
+;; multiple rows will be joined in some fashion which means we won't be able
+;; to just extend the pedigree due to the mutiple parents
+
+;; the thing arg should either be a evrow entry or a list of entries
+;; pointer should be disambiguted by this point
+;; Note that we pay a cost for CONSing new Single pointers
+
+(defun evrow-constructor (thing box)
+  (flet ((port-item-operator (item)
+	   (let ((val (get-pointer-value item box)))
+	     (if (box? val)	   ; should we be porting to numbers here ?
+		 (port-to-item item box)
+		 item)))
+	 (copy-item-operator (item)
+	   ;; we may have to copy here
+	   item)
+	 (thing-discriminator (item-op)
+	   (cond ((evrow? thing)
+		  (make-evrow :pointers (mapcar item-op (evrow-pointers thing))
+			      :row-format (evrow-row-format thing)))
+		 ((listp thing)
+		  (make-evrow-from-entries (mapcar item-op thing)))
+		 ((pointer? thing)
+		  (make-evrow-from-pointer  (funcall item-op thing)))
+		 (t (error "~S was not an EVROW, LIST or POINTER. " thing)))))
+    (etypecase box
+      (virtual-copy (thing-discriminator #'copy-item-operator))
+      (virtual-port (thing-discriminator #'port-item-operator)))))
+
+|#
+
+;;;;
 ;;;; FILE: vrtdef.lisp
 ;;;;
 
