@@ -31,23 +31,32 @@
                                  :visible-min-width 10
                                  :description '())
                   (make-instance 'capi:column-layout
-                                 :description (list (make-instance 'capi:title-pane 
+                                 :description (list (make-instance 'capi:message-pane
+                                                                   :visible-min-height '(:character 4)
                                                                    :text
-                                                                   (format nil "Do you want to save the changes made to the box: \"~A.~A\"?" 
+                                                                   (format nil "Do you want to save the
+changes made to the box:
+\"~A.~A\"?"
                                                                            (pathname-name box-file) (pathname-type box-file)))
-                                                    (make-instance 'capi:push-button 
+                                                    (make-instance 'capi:push-button
                                                                    :text "Save"
+                                                                   :visible-max-width 230
+                                                                   :visible-min-width 230
                                                                    :callback #'(lambda (data int)
                                                                                  (declare (ignore data int))
                                                                                  (capi:exit-dialog :save)))
                                                     (make-instance 'capi:push-button
                                                                    :text "Don't Save"
+                                                                   :visible-max-width 230
+                                                                   :visible-min-width 230
                                                                    :callback #'(lambda (data int)
                                                                                  (declare (ignore data int))
                                                                                  (capi:exit-dialog
                                                                                   :dont-save)))
                                                     (make-instance 'capi:push-button
                                                                    :text "Cancel"
+                                                                   :visible-max-width 230
+                                                                   :visible-min-width 230
                                                                    :callback 'capi:abort-dialog)))
                   (make-instance 'capi:column-layout
                                  :visible-max-width 10
@@ -72,8 +81,8 @@
       (otherwise (throw 'boxer::cancel-boxer-file-dialog nil)))))
 
 (defun lw-quit (interface)
-  (catch 'boxer::cancel-boxer-file-dialog 
-    (let* ((dialog (capi:make-container 
+  (catch 'boxer::cancel-boxer-file-dialog
+    (let* ((dialog (capi:make-container
                   (make-instance 'capi:row-layout
                                  :description (list
                                  (make-instance 'capi:column-layout
@@ -83,7 +92,7 @@
                                  (make-instance 'capi:column-layout
                                  :visible-max-width 230
                                  :visible-min-width 230
-                                 :description (list 
+                                 :description (list
                                                (make-instance 'capi:message-pane
                                                               :text (format nil "You have ~A file boxes with
 unsaved changes. Do you want to
@@ -101,7 +110,7 @@ your changes will be lost."
                                                               :callback #'(lambda (data int)
                                                                             (declare (ignore data int))
                                                                             (capi:exit-dialog :review)))
-                                               (make-instance 'capi:push-button 
+                                               (make-instance 'capi:push-button
                                                               :text "Discard Changes"
                                                               :visible-max-width 230
                                                               :visible-min-width 230
@@ -120,27 +129,13 @@ your changes will be lost."
                   ))
          (action (capi:display-dialog dialog :owner *boxer-frame*)))
     (case action
-      (:review 
+      (:review
        (boxer::close-box-prescan boxer::*initial-box*)
-       ;; If we get through the entire box prescan and none of the dialogs have thrown 
+       ;; If we get through the entire box prescan and none of the dialogs have thrown
        ;; cancel-boxer-file-dialog with nil we can exit with t
        t)
       (:discard t)
       (otherwise nil)))))
- 
-
-(defun lw-quit-skip (interface)
-  (catch 'boxer::cancel-boxer-file-dialog
-    (when (and (unsaved-boxes?)
-               (capi:prompt-for-confirmation "Warning: Some Boxes may not have been saved.  Do you want to review unsaved boxes before quitting?" :owner *boxer-frame*)
-               )
-      (boxer::close-box-prescan boxer::*initial-box*)
-      (when (boxer::file-modified? boxer::*initial-box*)
-        (boxer::save-modified-box-dialog boxer::*initial-box*
-                                  :prompt-start "The World box,"
-                                  :no-zoom-offered? t :no-unstore-offered? t))))
-    (lispworks::quit)
-  boxer-eval::*novalue*)
 
 ;; (boxer-eval::defboxer-key (bu::q-key 1) com-lw-quit) sgithens TODO March 7, 2020
 
