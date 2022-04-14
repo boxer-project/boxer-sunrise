@@ -163,59 +163,6 @@ Modification History (most recent at top)
 
 ;;; dialogs used for handling inferior file boxes (see boxer::close-box-prescan)
 
-;;; Save-Modified-Box-Dialog
-
-(defun boxer::save-modified-box-dialog (box &key (prompt-start "The box,")
-                                     no-zoom-offered?)
-  (let* ((box-file (boxer::getprop box :associated-file))
-         (dialog (capi:make-container
-                  (list (make-instance 'capi:title-pane :x 20 :y 20
-                                       :width 330 :height 60
-                                       :text
-                                       (format nil "~A ~A has been modified"
-                                               prompt-start
-                                               (boxer::current-file-status box t)))
-                           (make-instance 'capi:push-button :x 20 :y 70
-                                          :width 75 :height 20 :text "Save"
-                                          :callback #'(lambda (data int)
-                                                        (declare (ignore data int))
-                                                        (capi:exit-dialog :save)))
-                           (make-instance 'capi:push-button :x 20 :y 110
-                                          :width 75 :height 20 :text "Don't Save"
-                                          :callback #'(lambda (data int)
-                                                        (declare (ignore data int))
-                                                        (capi:exit-dialog
-                                                         :dont-save)))
-                           (make-instance 'capi:push-button :x 125 :y 90
-                                          :width 75 :height 20 :text "Zoom To"
-                                          :enabled (not no-zoom-offered?)
-                                          :callback #'(lambda (data int)
-                                                        (declare (ignore data int))
-                                                        (capi:exit-dialog :zoom)))
-                           (make-instance 'capi:push-button :x 250 :y 90
-                                          :width 75 :height 20 :text "Cancel"
-                                          :callback 'capi:abort-dialog))
-
-                     :title "Warning"
-                     :visible-border t))
-         (action (capi:display-dialog dialog :owner *boxer-frame*)))
-    (case action
-      ;; do we want to wrap the save-generic with
-      ;; a (catch 'cancel-boxer-file-dialog)
-      ;; this will allow cancels out of the individual file op, if not, a cancel
-      ;; out of the file op will cancel the top level quit operation
-      (:save (boxer::save-generic
-              box (or box-file
-                      (boxer::boxer-new-file-dialog
-                       :prompt (format nil "Save ~A box into file:"
-                                       (boxer::box-save-name box))
-                       :box box))))
-      (:dont-save (boxer::mark-file-box-clean box))
-      (:zoom (boxer::move-to-bp-values boxer::*point*
-                                       (boxer::box-first-bp-values box))
-       (throw 'boxer::cancel-boxer-file-dialog nil))
-      (otherwise (throw 'boxer::cancel-boxer-file-dialog nil)))))
-
 (defun boxer::outlink-port-dialog (box &key nports)
   (declare (ignore nports)) ; use this later to report # of ports
   (let* ((dialog (capi:make-container
@@ -556,37 +503,10 @@ Modification History (most recent at top)
 ;;    (window-hardcopy *boxer-frame*)
 ;;    boxer-eval::*novalue*)
 
-(defun lw-quit (data interface)
-  (declare (ignore data))
-  (catch 'boxer::cancel-boxer-file-dialog
-    (when (and (unsaved-boxes?)
-               (capi:prompt-for-confirmation "Warning: Some Boxes may not have been saved.  Do you want to review unsaved boxes before quitting?" :owner *boxer-frame*)
-               )
-      (boxer::close-box-prescan boxer::*initial-box*)
-      (when (boxer::file-modified? boxer::*initial-box*)
-        (boxer::save-modified-box-dialog boxer::*initial-box*
-                                  :prompt-start "The World box,"
-                                  :no-zoom-offered? t :no-unstore-offered? t))))
-    (lispworks::quit)
-  boxer-eval::*novalue*)
-
 (boxer::defboxer-command com-LW-quit ()
   "Quit Out of Boxer"
   (lw-quit nil *boxer-pane*)
   boxer-eval::*novalue*)
-
-;; (boxer-eval::defboxer-key (bu::q-key 1) com-lw-quit) sgithens TODO March 7, 2020
-
-(defun unsaved-boxes? ()
-  (catch 'unsaved
-    (boxer::do-dirty-file-boxes (fb)
-      (when (and (not (eq fb boxer::*initial-box*))   ; not the top
-                 (boxer::superior? fb boxer::*initial-box*)  ; is still connected
-                 (or (not (boxer::read-only-box? fb)) ;
-                     (and (null (boxer::getprop fb :associated-file))
-                          (null (boxer::getprop fb :url)))))
-        (throw 'unsaved t)))
-    nil))
 
 ;;; **** Edit Menu ****
 

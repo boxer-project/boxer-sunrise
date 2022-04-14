@@ -231,6 +231,8 @@
                  ;;    "Menus for Harlequin Lispworks on the PC"
                  (:file "boxwin/lw-capi/lw-menu")
                  (:file "boxwin/lw-capi/preferences-dialog")
+                 #+lispworks (:file "boxwin/lw-capi/confirm-quit-dialogs")
+
 
                  ;; Beginning of `av` module
                  ;;    "Primitives and support code for controlling VCR's from Mac Boxer"

@@ -332,6 +332,14 @@ Modification History (most recent at top)
     (cond ((null sb) local-string)
           (t (concatenate 'string (editor-location-string sb) "." local-string)))))
 
+(defun modified-boxes-for-close (&optional (box *initial-box*))
+  "Returns a subset of the boxes in *dirty-file-boxes*. Essentially, we only boxes which
+  are still connected hierarchicly below the *initial-box*. Occasionally the dirty file list
+  will contain some boxes which are no longer in the structure."
+  (remove-if-not #'(lambda (fb)
+                     (and (not (eq fb *initial-box*)) (superior? fb *initial-box*)))
+                 *dirty-file-boxes*))
+
 ;; look for modified inferior file boxes and offer to save them
 ;; should also look for RO boxes with no pathname
 (defun close-box-prescan (box)
