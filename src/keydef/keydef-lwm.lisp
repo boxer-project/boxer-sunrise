@@ -191,51 +191,6 @@ Modification History (most recent at top)
 ;;; :kp-enter ; this is defined above in the init as 13, but could likely be replaced
 ;;; :applications-menu
 
-
-;;;; sgithens boxer-sunrise-51 2021-11-29 Wait a build or too and make sure these
-;;;; have been properly replaced, then delete them.
-;;;; #+cocoa
-;;;; (progn
-;;;; ;  (define-lwm-function-key BU::INSERT-KEY COCOA:NS-INSERT-FUNCTION-KEY)
-;;;; ;  (define-lwm-function-key BU::DELETE-KEY COCOA:NS-DELETE-FUNCTION-KEY)
-;;;
-;;;; ;  (define-lwm-function-key BU::BEGIN-KEY COCOA:NS-BEGIN-FUNCTION-KEY)
-;;;
-;;;; ;  (define-lwm-function-key BU::PRINT-SCREEN-KEY COCOA:NS-PRINT-SCREEN-FUNCTION-KEY)
-;;;; ;  (define-lwm-function-key BU::SCROLL-LOCK-KEY COCOA:NS-SCROLL-LOCK-FUNCTION-KEY)
-;;;; ;  (define-lwm-function-key BU::PAUSE-KEY COCOA:NS-PAUSE-FUNCTION-KEY)
-;;;
-;;;; ;  (define-lwm-function-key BU::SYS-REQ-KEY COCOA:NS-SYS-REQ-FUNCTION-KEY)
-;;;; ;  (define-lwm-function-key BU::BREAK-KEY COCOA:NS-BREAK-FUNCTION-KEY)
-;;;; ;  (define-lwm-function-key BU::RESET-KEY COCOA:NS-RESET-FUNCTION-KEY)
-;;;; ;  (define-lwm-function-key BU::STOP-KEY COCOA:NS-STOP-FUNCTION-KEY)
-;;;
-;;;; ;  (define-lwm-function-key BU::MENU-KEY COCOA:NS-MENU-FUNCTION-KEY)
-;;;; ;  (define-lwm-function-key BU::USER-KEY COCOA:NS-USER-FUNCTION-KEY)
-;;;; ;  (define-lwm-function-key BU::SYSTEM-KEY COCOA:NS-SYSTEM-FUNCTION-KEY)
-;;;; ;  (define-lwm-function-key BU::PRINT-KEY COCOA:NS-PRINT-FUNCTION-KEY)
-;;;
-;;;; ;  (define-lwm-function-key BU::CLEAR-DISPLAY-KEY COCOA:NS-CLEAR-DISPLAY-FUNCTION-KEY)
-;;;
-;;;; ;  (define-lwm-function-key BU::INSERT-LINE-KEY COCOA:NS-INSERT-LINE-FUNCTION-KEY)
-;;;; ;  (define-lwm-function-key BU::DELETE-LINE-KEY COCOA:NS-DELETE-LINE-FUNCTION-KEY)
-;;;
-;;;; ;  (define-lwm-function-key BU::INSERT-CHAR-KEY COCOA:NS-INSERT-CHAR-FUNCTION-KEY)
-;;;; ;  (define-lwm-function-key BU::DELETE-CHAR-KEY COCOA:NS-DELETE-CHAR-FUNCTION-KEY)
-;;;
-;;;; ;  (define-lwm-function-key BU::PREV-KEY COCOA:NS-PREV-FUNCTION-KEY)
-;;;; ;  (define-lwm-function-key BU::NEXT-KEY COCOA:NS-NEXT-FUNCTION-KEY)
-;;;
-;;;; ;  (define-lwm-function-key BU::SELECT-KEY COCOA:NS-SELECT-FUNCTION-KEY)
-;;;; ;  (define-lwm-function-key BU::EXECUTE-KEY COCOA:NS-EXECUTE-FUNCTION-KEY)
-;;;; ;  (define-lwm-function-key BU::UNDO-KEY COCOA:NS-UNDO-FUNCTION-KEY)
-;;;; ;  (define-lwm-function-key BU::REDO-KEY COCOA:NS-REDO-FUNCTION-KEY)
-;;;
-;;;; ;  (define-lwm-function-key BU::FIND-KEY COCOA:NS-FIND-FUNCTION-KEY)
-;;;; ;  (define-lwm-function-key BU::HELP-KEY COCOA:NS-HELP-FUNCTION-KEY)
-;;;; ;  (define-lwm-function-key BU::MODE-SWITCH-KEY COCOA:NS-MODE-SWITCH-FUNCTION-KEY))
-
-
 (defun input-gesture->char-code (gesture)
   "This function takes a gesture-spec structure, looks at it's data field and returns
   the character code from the data bit.
