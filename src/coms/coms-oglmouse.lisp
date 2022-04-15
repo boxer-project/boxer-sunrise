@@ -172,8 +172,7 @@
   ;; Note that this is designed to be called in the Boxer process,
   ;; not in the Mouse Process -- This is important!!!
   window x y click-only? ;  (declare (ignore window x y click-only?))
-
-  (let ((new-box (bp-box mouse-bp))
+  (let ((new-box (screen-obj-actual-obj (bp-screen-box mouse-bp)))
         (old-box (point-box))
         (new-row (bp-row mouse-bp))
         (mouse-screen-box (bp-screen-box mouse-bp))
@@ -182,15 +181,14 @@
     ;; do anything. This prevents the region being reset after dragging to select some
     ;; text, which is bound to mouse-down.  - sgithens 2021-10-18
     (cond ((and (not-null new-row) (box? new-box) (shrunken? new-box)
-           ;; This handles the case of when you are on the top level box targetted by a port.
-           ;; Since com-mouse-expand-box is currently bound to mouse-click, if we click in a port, we
-           ;; don't want the expand message to be sent to the actual box that is targetted by the box.
-           ;; boxer-bugs-102
-           ;; 1. The box is not a port box
-           ;; 2. The screen-obj type is port
-           ;; TODO what if it's a port that's pointing to a port?
-           (eq mouse-screen-box (car (screen-objs new-box)))
-           )
+            ;; This handles the case of when you are on the top level box targetted by a port.
+            ;; Since com-mouse-expand-box is currently bound to mouse-click, if we click in a port, we
+            ;; don't want the expand message to be sent to the actual box that is targetted by the box.
+            ;; boxer-bugs-102
+            ;; 1. The box is not a port box
+            ;; 2. The screen-obj type is port
+            ;; TODO what if it's a port that's pointing to a port?
+            (eq mouse-screen-box (car (screen-objs new-box))))
            (reset-region)
            (unless (eq old-box new-box)
              (send-exit-messages new-box mouse-screen-box)
