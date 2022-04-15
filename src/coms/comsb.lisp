@@ -620,7 +620,8 @@ then it is shrunken first. "
   (let ((box-display-style (display-style box)))
     (cond ((or (eq box (outermost-box))
                (eq box *initial-box*)))
-      ((or (eq box-display-style ':normal) (always-zoom? box))
+      ((or (eq box-display-style ':normal) (and (always-zoom? box) (not (graphics-box? box))))
+       ;; TODO above: As soon as we support full screen graphics boxes, remove the graphics-box? check
        ;;store away the old outermost screen box
        (push *outermost-screen-box* *outermost-screen-box-stack*)
        (set-outermost-box box screen-box)
