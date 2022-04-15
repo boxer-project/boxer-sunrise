@@ -21,6 +21,8 @@
                  (:file "definitions/storage")
                  (:file "definitions/boxdef")
                  (:file "definitions/vrtdef")
+                 (:file "definitions/fonts")
+                 (:file "definitions/disdcl")
 
 
 

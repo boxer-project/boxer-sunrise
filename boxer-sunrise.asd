@@ -26,11 +26,11 @@
                 ;  (:file "definitions/storage")
                 ;  (:file "definitions/boxdef")
                 ;  (:file "definitions/vrtdef")
-                 (:file "definitions/fonts")
+                ;  (:file "definitions/fonts")
 
 
                  ;; Begining of `redisplay` module
-                 (:file "definitions/disdcl")
+                ;  (:file "definitions/disdcl")
 
                  ;; Beginning of `DRAW` module
                  (:file "boxwin/lw-capi/platform-utils")
