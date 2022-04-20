@@ -59,6 +59,15 @@ xcrun altool --username 'steve@githens.org' --password ******** --notarization-i
 xcrun stapler staple --file ./current-test-build/boxersunrise-wip.app
 ```
 
+#### Troubleshooting
+
+If some of the xcode command line tools, such as `altool` report as being missing you may need to reset the command
+line tools with:
+
+```sh
+sudo xcode-select -r
+```
+
 ### Current structure of binary dependencies
 
 The current (July 2021) layout of the binary dependencies is below.  `Resources` cannot contain any code
