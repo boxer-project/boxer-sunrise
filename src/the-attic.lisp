@@ -6874,6 +6874,97 @@ if it is out of bounds
 ;;;; FILE: grfdfs.lisp
 ;;;;
 
+;; 2022-04-20 with-graphics-screen-parameters-once doesn't seem to be actively used anywhere
+;; anymore, only in primitives that have been archived here
+
+;;; This is like the With-Graphics-Screen-Parameters Except that
+;;; the body is only executed once (or not at all) on the "most
+;;; acceptable screen-box". "Most appropriate" is defined as
+;;; not clipped or if they are ALL clipped, the largest.
+
+(defmacro with-graphics-screen-parameters-once (&body body)
+  `(let ((best-screen-box nil))
+     (unless (no-graphics?)
+       (dolist (screen-box (get-visible-screen-objs %graphics-box))
+	 (cond ((eq ':shrunk (display-style screen-box)))
+               ((not (graphics-screen-box? screen-box)))
+	       ((and (not (screen-obj-x-got-clipped? screen-box))
+		     (not (screen-obj-y-got-clipped? screen-box)))
+		(setq best-screen-box screen-box)
+		(return))
+	       ((null best-screen-box)
+		(setq best-screen-box screen-box))
+	       (t
+		;; If we get to here, then both the best-screen-box
+		;; and the current screen-box are clipped so pick the
+		;; bigger one.  We could be a little more sophisticated
+		;; about how we choose...
+		(cond ((screen-obj-y-got-clipped? best-screen-box)
+		       (cond ((null (screen-obj-y-got-clipped? screen-box))
+			      (setq best-screen-box screen-box))
+			     ((> (screen-obj-hei screen-box)
+				  (screen-obj-hei best-screen-box))
+			      (setq best-screen-box screen-box))))
+		      ((screen-obj-y-got-clipped? screen-box)
+		       ;;if the current box is clipped but the best one
+		       ;; isn't, then leave things alone
+		       )
+		      ((screen-obj-x-got-clipped? best-screen-box)
+		       (cond ((null (screen-obj-x-got-clipped? screen-box))
+			      (setq best-screen-box screen-box))
+			     ((> (screen-obj-wid screen-box)
+				  (screen-obj-wid best-screen-box))
+			      (setq best-screen-box screen-box))))))))
+       (unless (null best-screen-box)
+	 (drawing-on-turtle-slate best-screen-box ,@body)))))
+
+(defvar *scrunch-factor* 1
+  "the factor used to normalize the Y-coordinates so that squares really are")
+
+;; Note 2022-04-20 This scrunch factor was used in the following versions of things
+;; in grobjs.lisp. Reminds me of the Amiga which didn't have square pixels...
+(defun array-coordinate-y (user-y)
+  (float-minus %drawing-half-height
+               (float user-y) ; (* user-y *scrunch-factor*)
+               ))
+
+(defun user-coordinate-y (array-y)
+  ;(/ (- %drawing-half-height array-y) *scrunch-factor*)
+  (float-minus %drawing-half-height (float array-y)))
+
+(defun user-coordinate-fix-y (array-y)
+  (declare (fixnum array-y))
+  ;(/ (- %drawing-half-height array-y) *scrunch-factor*)
+  (float-minus %drawing-half-height (float array-y)))
+
+;; End scrunch-factor usage examples from grobjs.lisp
+
+(defvar *minimum-graphics-dimension* 15
+  "The smallest you can make a graphics box")
+
+;;; When a turtle is created, all of the boxes corresponding
+;;; to instance variables have also been created.  What needs
+;;; to be done here is to put the boxes inthe right place
+;;; At this time, that means the x-position, y-position and
+;;; heading boxes are in the box proper and all the other slots
+;;; live in the closet of the sprite-box.
+
+
+(defvar *initially-visible-sprite-instance-slots*
+	'(x-position y-position heading))
+
+
+(defvar *turtle-slots-that-need-boxes*
+	'(x-position y-position heading
+		     shown? pen
+		     home-position sprite-size shape))
+
+(defvar *name-flashing-pause-time* 2.
+  "Time in Seconds to Pause when flashing the name of a Sprite")
+
+(defvar %new-shape nil "The new shape vectors are collected here when doing a set-shape")
+
+
 (defun save-under-turtle (turtle)
   (let ((save-under (turtle-save-under turtle)))
     (cond ((eq save-under 'xor-redraw))
