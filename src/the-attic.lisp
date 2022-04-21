@@ -7726,6 +7726,45 @@ if it is out of bounds
 ;;;; FILE: grprim2.lisp
 ;;;;
 
+
+;; 2022-04-21 Some wild stuff from defsprite-function stamp directly above the usage
+;; of append-graphics-sheet-at
+            #| ; this is now handled inside of append-graphics-sheet-at
+            (when (not (null (graphics-sheet-bit-array gs)))
+            ;; if the graphics box has a bitmap, stamp it also...
+            (cond ((not (null tba))
+            (let* ((gs-wid (graphics-sheet-draw-wid gs))
+            (gs-hei (graphics-sheet-draw-hei gs))
+            (gs-half-wid (floor gs-wid 2))
+            (gs-half-hei (floor gs-hei 2))
+            (min-x (-& turtle-array-x gs-half-wid))
+            (max-x (+& turtle-array-x gs-half-wid))
+            (min-y (-& turtle-array-y gs-half-hei))
+            (max-y (+& turtle-array-y gs-half-hei)))
+            (drawing-on-bitmap (tba)
+            (bitblt-to-screen alu-seta
+            (-& (min& %drawing-width max-x)
+            (max& 0 min-x))
+            (-& (min& %drawing-height max-y)
+            (max& 0 min-y))
+            (graphics-sheet-bit-array gs)
+            (if (plusp& min-x) 0 (-& min-x))
+            (if (plusp& min-y) 0 (-& min-y))
+            (max& 0 min-x) (max& 0 min-y)))
+            (with-graphics-screen-parameters
+            (bitblt-to-screen alu-seta
+            (-& (min& %drawing-width max-x)
+            (max& 0 min-x))
+            (-& (min& %drawing-height max-y)
+            (max& 0 min-y))
+            (graphics-sheet-bit-array gs)
+            (if (plusp& min-x) 0 (-& min-x))
+            (if (plusp& min-y) 0 (-& min-y))
+            (max& 0 min-x) (max& 0 min-y)))))
+            ;; we could have a clause here that adds the bitmap to
+            ;; the display list
+            (t nil)))  |#
+
 ;(defsprite-function bu::stamp-partial-bitmap ((bu::port-to graphics-box)
 ;					      (boxer-eval::numberize src-x)
 ;					      (boxer-eval::numberize src-y)
