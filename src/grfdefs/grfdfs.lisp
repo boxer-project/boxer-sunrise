@@ -91,27 +91,27 @@ Modification History (most recent at top)
 
 (defun graphics-sheet-from-box (box)
   (cond ((eq box ':no-graphics) nil)
-	((virtual-copy? box) (graphics-info-graphics-sheet (vc-graphics box)))
-	(t (graphics-info box))))
+        ((virtual-copy? box) (graphics-info-graphics-sheet (vc-graphics box)))
+        (t (graphics-info box))))
 
 (defmacro with-graphics-vars-bound ((to-box &optional (gr-sheet (gensym)))
-				    &body body)
+                                    &body body)
   "This macro sets up an environment where commonly used
 parameters of the graphics box are bound. "
   `(let ((,gr-sheet (graphics-sheet-from-box ,to-box))
-	 ;; sometimes it is convenient to be able to access the box
-	 (%graphics-box ,to-box))
+         ;; sometimes it is convenient to be able to access the box
+         (%graphics-box ,to-box))
      (with-graphics-vars-bound-internal ,gr-sheet . ,body)))
 
 (defmacro with-graphics-vars-bound-internal (gr-sheet &body body)
   `(let ((%graphics-sheet ,gr-sheet)
-	 (%bit-array nil)
-	 (%drawing-width 0)
-	 (%drawing-height 0)
-	 ;; the command list
-	 (%graphics-list %learning-shape-graphics-list)
-	 ;; someday, maybe this will be useful
-	 (%draw-mode nil))
+         (%bit-array nil)
+         (%drawing-width 0)
+         (%drawing-height 0)
+         ;; the command list
+         (%graphics-list %learning-shape-graphics-list)
+         ;; someday, maybe this will be useful
+         (%draw-mode nil))
      (declare (fixnum %drawing-width %drawing-height))
      ;; should these be floats ???
      (let ((%drawing-half-width 0.0)
@@ -140,24 +140,24 @@ parameters of the graphics box are bound. "
 ;;; Set Up Clipping and Offsets
 
 (defun update-absolute-pos-cache (screen-box cache
-					     box-x-offset box-y-offset
-					     real-wid real-hei sheet-x sheet-y)
+                                             box-x-offset box-y-offset
+                                             real-wid real-hei sheet-x sheet-y)
   (cond ((null cache)
-	 (setf (cached-absolute-pos screen-box)
-	       (setq cache (make-ab-pos-cache box-x-offset box-y-offset
-					      real-wid     real-hei
-					      sheet-x      sheet-y))))
-	(t
-	 (setf (ab-pos-cache-x cache) box-x-offset
-	       (ab-pos-cache-y cache) box-y-offset
-	       (ab-pos-cache-iw cache) real-wid
-	       (ab-pos-cache-ih cache) real-hei
-	       (ab-pos-cache-sx cache) sheet-x
-	       (ab-pos-cache-sy cache) sheet-y
-	       (ab-pos-cache-valid cache) t)))
+         (setf (cached-absolute-pos screen-box)
+               (setq cache (make-ab-pos-cache box-x-offset box-y-offset
+                                              real-wid     real-hei
+                                              sheet-x      sheet-y))))
+        (t
+         (setf (ab-pos-cache-x cache) box-x-offset
+               (ab-pos-cache-y cache) box-y-offset
+               (ab-pos-cache-iw cache) real-wid
+               (ab-pos-cache-ih cache) real-hei
+               (ab-pos-cache-sx cache) sheet-x
+               (ab-pos-cache-sy cache) sheet-y
+               (ab-pos-cache-valid cache) t)))
   ;; now keep track of the cache so it can be flushed at the proper time
   (unless (or (eq *absolute-position-caches-filled* ':toplevel)
-	      (fast-memq cache *absolute-position-caches-filled*))
+              (fast-memq cache *absolute-position-caches-filled*))
     (push cache *absolute-position-caches-filled*))
   ;; finally return the cache
   cache)
@@ -167,48 +167,48 @@ parameters of the graphics box are bound. "
   (if (eq *absolute-position-caches-filled* ':toplevel)
       (warn "Can't invalidate absolute position caches from Top Level")
       (dolist (cache *absolute-position-caches-filled*)
-	(setf (ab-pos-cache-valid cache) nil))))
+        (setf (ab-pos-cache-valid cache) nil))))
 
 (defmacro drawing-on-turtle-slate (screen-box &body body)
   ;; first check the cache
   `(let ((pos-cache (cached-absolute-pos ,screen-box))
-	 (screen-sheet (when ,screen-box (screen-sheet ,screen-box))))
+         (screen-sheet (when ,screen-box (screen-sheet ,screen-box))))
      (cond ((null screen-sheet))
-	   (t
-	    (when (or (null pos-cache) (null (ab-pos-cache-valid pos-cache)))
-	      ;; If the cache is not valid, fix it
-	      (multiple-value-bind (box-x-offset box-y-offset)
-		  (xy-position ,screen-box)
-		(multiple-value-bind (inner-wid inner-hei)
-		    (graphics-sheet-size (screen-obj-actual-obj ,screen-box))
-		  (multiple-value-bind (sheet-x sheet-y)
-		      (graphics-screen-sheet-offsets screen-sheet)
-		    (multiple-value-bind (bl bt br bb)
-			(box-borders-widths (box-type ,screen-box) ,screen-box)
-		      (setq pos-cache
-			    (update-absolute-pos-cache
-			     ,screen-box pos-cache box-x-offset box-y-offset
-			     (min inner-wid
-				   (- (screen-obj-wid ,screen-box) bl br))
-			     (min inner-hei
-				   (- (screen-obj-hei ,screen-box) bt bb))
-			     sheet-x sheet-y)))))))
-	    ;; The position cache should now be valid....
-	    (with-drawing-inside-region ((+ (ab-pos-cache-x pos-cache)
-					     (ab-pos-cache-sx pos-cache))
-					 (+ (ab-pos-cache-y pos-cache)
-					     (ab-pos-cache-sy pos-cache))
-					 (ab-pos-cache-iw pos-cache)
-					 (ab-pos-cache-ih pos-cache))
-	      (with-turtle-clipping ((ab-pos-cache-iw pos-cache)
-				     (ab-pos-cache-ih pos-cache))
-		(unwind-protect
-		     (progn . ,body)
-		  (when (eq *absolute-position-caches-filled* ':toplevel)
-		    ;; if we are not inside the evaluator, then
-		    ;; make sure we mark the cache as invalid after we are
-		    ;; through using it
-		    (setf (ab-pos-cache-valid pos-cache) nil)))))))))
+           (t
+            (when (or (null pos-cache) (null (ab-pos-cache-valid pos-cache)))
+              ;; If the cache is not valid, fix it
+              (multiple-value-bind (box-x-offset box-y-offset)
+                  (xy-position ,screen-box)
+                (multiple-value-bind (inner-wid inner-hei)
+                    (graphics-sheet-size (screen-obj-actual-obj ,screen-box))
+                  (multiple-value-bind (sheet-x sheet-y)
+                      (graphics-screen-sheet-offsets screen-sheet)
+                    (multiple-value-bind (bl bt br bb)
+                        (box-borders-widths (box-type ,screen-box) ,screen-box)
+                      (setq pos-cache
+                            (update-absolute-pos-cache
+                             ,screen-box pos-cache box-x-offset box-y-offset
+                             (min inner-wid
+                                   (- (screen-obj-wid ,screen-box) bl br))
+                             (min inner-hei
+                                   (- (screen-obj-hei ,screen-box) bt bb))
+                             sheet-x sheet-y)))))))
+            ;; The position cache should now be valid....
+            (with-drawing-inside-region ((+ (ab-pos-cache-x pos-cache)
+                                             (ab-pos-cache-sx pos-cache))
+                                         (+ (ab-pos-cache-y pos-cache)
+                                             (ab-pos-cache-sy pos-cache))
+                                         (ab-pos-cache-iw pos-cache)
+                                         (ab-pos-cache-ih pos-cache))
+              (with-turtle-clipping ((ab-pos-cache-iw pos-cache)
+                                     (ab-pos-cache-ih pos-cache))
+                (unwind-protect
+                     (progn . ,body)
+                  (when (eq *absolute-position-caches-filled* ':toplevel)
+                    ;; if we are not inside the evaluator, then
+                    ;; make sure we mark the cache as invalid after we are
+                    ;; through using it
+                    (setf (ab-pos-cache-valid pos-cache) nil)))))))))
 
 ;;; this has to be INSIDE of a with-graphics-vars-bound
 ;;; note that we can't combine the 2 macros into one because
@@ -227,7 +227,7 @@ parameters of the graphics box are bound. "
      (dolist (screen-box (get-visible-screen-objs %graphics-box))
        (unless (or (eq ':shrunk (display-style screen-box))
                    (not (graphics-screen-box? screen-box)))
-	 (drawing-on-turtle-slate screen-box ,@body)))))
+         (drawing-on-turtle-slate screen-box ,@body)))))
 
 (defun make-graphics-sheet (wid hei &optional box)
   (let ((new-gs (%make-graphics-sheet-with-graphics-list wid hei box)))
@@ -235,11 +235,11 @@ parameters of the graphics box are bound. "
     new-gs))
 
 (defun make-graphics-sheet-with-graphics-list (wid
-					       hei
-					       &optional
-					       box
-					       (sheet
-						(make-graphics-command-list)))
+                                               hei
+                                               &optional
+                                               box
+                                               (sheet
+                                                (make-graphics-command-list)))
   (let ((new-gs (%make-graphics-sheet-with-graphics-list wid hei box)))
     (setf (graphics-sheet-graphics-list new-gs) sheet)
     new-gs))
@@ -251,12 +251,12 @@ parameters of the graphics box are bound. "
 
 
 (defun make-graphics-screen-sheet (actual-obj
-				   &optional (x-offset 0.) (y-offset 0.))
+                                   &optional (x-offset 0.) (y-offset 0.))
   (%make-g-screen-sheet actual-obj x-offset y-offset))
 
 (defun graphics-screen-sheet-offsets (graphics-screen-sheet)
   (values (graphics-screen-sheet-x-offset graphics-screen-sheet)
-	  (graphics-screen-sheet-y-offset graphics-screen-sheet)))
+          (graphics-screen-sheet-y-offset graphics-screen-sheet)))
 
 (defun set-graphics-screen-sheet-x-offset (graphics-screen-sheet new-x-offset)
   (setf (graphics-screen-sheet-x-offset graphics-screen-sheet) new-x-offset))
@@ -296,7 +296,7 @@ parameters of the graphics box are bound. "
   (let ((graphics-sheet (slot-value self 'graphics-info)))
     (unless (null graphics-sheet)
       (values (graphics-sheet-draw-wid graphics-sheet)
-	      (graphics-sheet-draw-hei graphics-sheet)))))
+              (graphics-sheet-draw-hei graphics-sheet)))))
 
 (defmethod draw-mode ((self box))
   (let ((gs (slot-value self 'graphics-info)))
@@ -351,18 +351,18 @@ parameters of the graphics box are bound. "
 (defun get-visible-screen-objs (graphics-box)
   (unless (null graphics-box)
     (or ;(getprop graphics-box 'cached-vis-objs) ; turn caching OFF for now...
-	(let ((sbs nil))
-	  ;; first check the Box proper
-	  (dolist (sb (displayed-screen-objs graphics-box))
-	    (when (graphics-screen-box? sb)
-	      (push sb sbs)))
-	  ;; then check any ports to the box
-	  (dolist (port (ports graphics-box))
-	    (dolist (sb (displayed-screen-objs port))
-	      (when (graphics-screen-box? sb)
-		(push sb sbs))))
-	  (putprop graphics-box sbs 'cached-vis-objs)
-	  sbs))))
+        (let ((sbs nil))
+          ;; first check the Box proper
+          (dolist (sb (displayed-screen-objs graphics-box))
+            (when (graphics-screen-box? sb)
+              (push sb sbs)))
+          ;; then check any ports to the box
+          (dolist (port (ports graphics-box))
+            (dolist (sb (displayed-screen-objs port))
+              (when (graphics-screen-box? sb)
+                (push sb sbs))))
+          (putprop graphics-box sbs 'cached-vis-objs)
+          sbs))))
 
 
 ;;; Here is the line drawing stuff
@@ -381,147 +381,147 @@ parameters of the graphics box are bound. "
 
 (defun draw-wrap-line (from-x from-y to-x to-y alu)
   (let* ((delta-x (- to-x from-x))
-	 (delta-y (- to-y from-y))
-	 (islope (unless (zerop delta-y) (/ delta-x delta-y)))
-	 (slope (unless (zerop delta-x) (/ delta-y delta-x))))
+         (delta-y (- to-y from-y))
+         (islope (unless (zerop delta-y) (/ delta-x delta-y)))
+         (slope (unless (zerop delta-x) (/ delta-y delta-x))))
     (flet ((wrap-y-coord-top (y) (+ y %drawing-height))
-	   (wrap-y-coord-bottom (y) (- y %drawing-height))
-	   (wrap-x-coord-left (x) (+ x %drawing-width))
-	   (wrap-x-coord-right (x) (- x %drawing-width))
-	   (beyond-top? (y) (minusp y))
-	   (beyond-bottom? (y) (>= y %drawing-height))
-	   (beyond-left? (x) (minusp x))
-	   (beyond-right? (x) (>= x %drawing-width))
-	   (top-x-intercept (x y) (unless (null islope)
-				    (+ x (round (* islope (- y))))))
-	   (bottom-x-intercept (x y) (unless (null islope)
-				       (+ x
-					   (round (* islope (- %drawing-height
-								y 1))))))
-	   (left-y-intercept (x y) (unless (null slope)
-				     (+ y (round (* slope (- x))))))
-	   (right-y-intercept (x y) (unless (null slope)
-				      (+ y (round (* slope (- %drawing-width
-								x 1)))))))
+           (wrap-y-coord-bottom (y) (- y %drawing-height))
+           (wrap-x-coord-left (x) (+ x %drawing-width))
+           (wrap-x-coord-right (x) (- x %drawing-width))
+           (beyond-top? (y) (minusp y))
+           (beyond-bottom? (y) (>= y %drawing-height))
+           (beyond-left? (x) (minusp x))
+           (beyond-right? (x) (>= x %drawing-width))
+           (top-x-intercept (x y) (unless (null islope)
+                                    (+ x (round (* islope (- y))))))
+           (bottom-x-intercept (x y) (unless (null islope)
+                                       (+ x
+                                           (round (* islope (- %drawing-height
+                                                                y 1))))))
+           (left-y-intercept (x y) (unless (null slope)
+                                     (+ y (round (* slope (- x))))))
+           (right-y-intercept (x y) (unless (null slope)
+                                      (+ y (round (* slope (- %drawing-width
+                                                                x 1)))))))
       (declare (inline wrap-y-coord-top wrap-y-coord-bottom
-		       wrap-x-coord-right wrap-x-coord-left
-		       beyond-top? beyond-bottom? beyond-right? beyond-left?))
+                       wrap-x-coord-right wrap-x-coord-left
+                       beyond-top? beyond-bottom? beyond-right? beyond-left?))
 
       (flet ((line-right-then-continue (y-intercept)
-	       (draw-line (scale-x from-x) (scale-y from-y)
-			   (scale-x (1- %drawing-width))
-			   (scale-y y-intercept))
-	       ;; now recurse
-	       (draw-wrap-line 0 y-intercept
-			       (wrap-x-coord-right to-x) to-y alu))
-	     (line-top-then-continue (x-intercept)
-	       (draw-line (scale-x from-x) (scale-y from-y)
-			               (scale-x x-intercept) (scale-y 0))
-	       (draw-wrap-line x-intercept (1- %drawing-height)
-			       to-x (wrap-y-coord-top to-y) alu))
-	     (line-left-then-continue (y-intercept)
-	       (draw-line (scale-x from-x) (scale-y from-y)
-			               (scale-x 0) (scale-y y-intercept))
-	       (draw-wrap-line (1- %drawing-width) y-intercept
-			       (wrap-x-coord-left to-x) to-y alu))
-	     (line-bottom-then-continue (x-intercept)
-	       (draw-line (scale-x from-x) (scale-y from-y)
-			               (scale-x x-intercept) (scale-y (1- %drawing-height)))
-	       (draw-wrap-line x-intercept 0
-			       to-x (wrap-y-coord-bottom to-y) alu))
-	     (break-line-left (y-intercept)
-	       (draw-wrap-line (wrap-x-coord-left from-x) from-y
-			       (1- %drawing-width) y-intercept alu)
-	       (draw-wrap-line 0 y-intercept to-x to-y alu))
-	     (break-line-top (x-intercept)
-	       (draw-wrap-line from-x (wrap-y-coord-top from-y)
-			       x-intercept (1- %drawing-height) alu)
-	       (draw-wrap-line x-intercept 0 to-x to-y alu))
-	     (break-line-right (y-intercept)
-	       (draw-wrap-line (wrap-x-coord-right from-x) from-y
-			       0 y-intercept alu)
-	       (draw-wrap-line (1- %drawing-width) y-intercept to-x to-y alu))
-	     (break-line-bottom (x-intercept)
-	       (draw-wrap-line from-x (wrap-y-coord-bottom from-y)
-			       x-intercept 0 alu)
-	       (draw-wrap-line x-intercept (1- %drawing-height)
-			       to-x to-y alu)))
-	(cond ((point-in-array? from-x from-y)
-	       ;; check for the simple cases instead of falling
-	       ;; to optimize the common case
-	       (cond ((point-in-array? to-x to-y)
-		      ;; the simple, simple case
-		      (draw-line (scale-x from-x) (scale-y from-y)
-				              (scale-x to-x)   (scale-y to-y)))
-		     ((beyond-right? to-x)
-		      ;; note that if the line extends beyond a
-		      ;; horizontal boundary, it can't be vertical
-		      (let ((y-intercept (right-y-intercept from-x from-y)))
-			(cond ((y-in-array? y-intercept)
-			       ;; we are sure it intersects a vertical edge
-			       (line-right-then-continue y-intercept))
-			      ((beyond-top? to-y) ; y-intercept ?
-			       ;; must intersect with the top edge instead
-			       (line-top-then-continue
-				(top-x-intercept from-x from-y)))
-			      (t
-			       ;; must intersect with the bottom edge
-			       (line-bottom-then-continue
-				(bottom-x-intercept from-x from-y))))))
-		     ((beyond-left? to-x)
-		      ;; if it's not inside, or beyond the right edge,
-		      ;; it must be beyond the left edge
-		      (let ((y-intercept (left-y-intercept from-x from-y)))
-			(cond ((y-in-array? y-intercept)
-			       ;; we are sure it intersects a vertical edge
-			       (line-left-then-continue y-intercept))
-			      ((beyond-top? to-y) ; y-intercept ?
-			       ;; must intersect with the top edge instead
-			       (line-top-then-continue
-				(top-x-intercept from-x from-y)))
-			      (t
-			       ;; must intersect with the bottom edge
-			       (line-bottom-then-continue
-				(bottom-x-intercept from-x from-y))))))
-		     ((beyond-top? to-y)
-		      (line-top-then-continue (top-x-intercept from-x from-y)))
-		     (t
-		      (line-bottom-then-continue (bottom-x-intercept from-x
-								     from-y)))))
-	      ((beyond-right? from-x)
-	       (let ((right-y-intercept (right-y-intercept to-x to-y)))
-		 (cond ((and (not (beyond-right? to-x))
+               (draw-line (scale-x from-x) (scale-y from-y)
+                           (scale-x (1- %drawing-width))
+                           (scale-y y-intercept))
+               ;; now recurse
+               (draw-wrap-line 0 y-intercept
+                               (wrap-x-coord-right to-x) to-y alu))
+             (line-top-then-continue (x-intercept)
+               (draw-line (scale-x from-x) (scale-y from-y)
+                                       (scale-x x-intercept) (scale-y 0))
+               (draw-wrap-line x-intercept (1- %drawing-height)
+                               to-x (wrap-y-coord-top to-y) alu))
+             (line-left-then-continue (y-intercept)
+               (draw-line (scale-x from-x) (scale-y from-y)
+                                       (scale-x 0) (scale-y y-intercept))
+               (draw-wrap-line (1- %drawing-width) y-intercept
+                               (wrap-x-coord-left to-x) to-y alu))
+             (line-bottom-then-continue (x-intercept)
+               (draw-line (scale-x from-x) (scale-y from-y)
+                                       (scale-x x-intercept) (scale-y (1- %drawing-height)))
+               (draw-wrap-line x-intercept 0
+                               to-x (wrap-y-coord-bottom to-y) alu))
+             (break-line-left (y-intercept)
+               (draw-wrap-line (wrap-x-coord-left from-x) from-y
+                               (1- %drawing-width) y-intercept alu)
+               (draw-wrap-line 0 y-intercept to-x to-y alu))
+             (break-line-top (x-intercept)
+               (draw-wrap-line from-x (wrap-y-coord-top from-y)
+                               x-intercept (1- %drawing-height) alu)
+               (draw-wrap-line x-intercept 0 to-x to-y alu))
+             (break-line-right (y-intercept)
+               (draw-wrap-line (wrap-x-coord-right from-x) from-y
+                               0 y-intercept alu)
+               (draw-wrap-line (1- %drawing-width) y-intercept to-x to-y alu))
+             (break-line-bottom (x-intercept)
+               (draw-wrap-line from-x (wrap-y-coord-bottom from-y)
+                               x-intercept 0 alu)
+               (draw-wrap-line x-intercept (1- %drawing-height)
+                               to-x to-y alu)))
+        (cond ((point-in-array? from-x from-y)
+               ;; check for the simple cases instead of falling
+               ;; to optimize the common case
+               (cond ((point-in-array? to-x to-y)
+                      ;; the simple, simple case
+                      (draw-line (scale-x from-x) (scale-y from-y)
+                                              (scale-x to-x)   (scale-y to-y)))
+                     ((beyond-right? to-x)
+                      ;; note that if the line extends beyond a
+                      ;; horizontal boundary, it can't be vertical
+                      (let ((y-intercept (right-y-intercept from-x from-y)))
+                        (cond ((y-in-array? y-intercept)
+                               ;; we are sure it intersects a vertical edge
+                               (line-right-then-continue y-intercept))
+                              ((beyond-top? to-y) ; y-intercept ?
+                               ;; must intersect with the top edge instead
+                               (line-top-then-continue
+                                (top-x-intercept from-x from-y)))
+                              (t
+                               ;; must intersect with the bottom edge
+                               (line-bottom-then-continue
+                                (bottom-x-intercept from-x from-y))))))
+                     ((beyond-left? to-x)
+                      ;; if it's not inside, or beyond the right edge,
+                      ;; it must be beyond the left edge
+                      (let ((y-intercept (left-y-intercept from-x from-y)))
+                        (cond ((y-in-array? y-intercept)
+                               ;; we are sure it intersects a vertical edge
+                               (line-left-then-continue y-intercept))
+                              ((beyond-top? to-y) ; y-intercept ?
+                               ;; must intersect with the top edge instead
+                               (line-top-then-continue
+                                (top-x-intercept from-x from-y)))
+                              (t
+                               ;; must intersect with the bottom edge
+                               (line-bottom-then-continue
+                                (bottom-x-intercept from-x from-y))))))
+                     ((beyond-top? to-y)
+                      (line-top-then-continue (top-x-intercept from-x from-y)))
+                     (t
+                      (line-bottom-then-continue (bottom-x-intercept from-x
+                                                                     from-y)))))
+              ((beyond-right? from-x)
+               (let ((right-y-intercept (right-y-intercept to-x to-y)))
+                 (cond ((and (not (beyond-right? to-x))
                              (y-in-array? right-y-intercept))
-			;; break the line on the right edge
-			(break-line-right right-y-intercept))
-		       (t;; otherwise wrap, and try again...
-			(draw-wrap-line (wrap-x-coord-right from-x) from-y
-					(wrap-x-coord-right to-x)   to-y   alu)))))
-	      ((beyond-left? from-x)
-	       (let ((left-y-intercept (left-y-intercept to-x to-y)))
-		 (cond ((and (not (beyond-left? to-x))
+                        ;; break the line on the right edge
+                        (break-line-right right-y-intercept))
+                       (t;; otherwise wrap, and try again...
+                        (draw-wrap-line (wrap-x-coord-right from-x) from-y
+                                        (wrap-x-coord-right to-x)   to-y   alu)))))
+              ((beyond-left? from-x)
+               (let ((left-y-intercept (left-y-intercept to-x to-y)))
+                 (cond ((and (not (beyond-left? to-x))
                              (y-in-array? left-y-intercept))
-			;; break the line on the right edge
-			(break-line-left left-y-intercept))
-		       (t;; just wrap both coords and try again
-			(draw-wrap-line (wrap-x-coord-left from-x) from-y
-					(wrap-x-coord-left to-x)   to-y   alu)))))
-	      ((beyond-top? from-y)
-	       (let ((top-x-intercept (top-x-intercept to-x to-y)))
-		 (cond ((and (not (beyond-top? to-y))
+                        ;; break the line on the right edge
+                        (break-line-left left-y-intercept))
+                       (t;; just wrap both coords and try again
+                        (draw-wrap-line (wrap-x-coord-left from-x) from-y
+                                        (wrap-x-coord-left to-x)   to-y   alu)))))
+              ((beyond-top? from-y)
+               (let ((top-x-intercept (top-x-intercept to-x to-y)))
+                 (cond ((and (not (beyond-top? to-y))
                              (x-in-array? top-x-intercept))
-			(break-line-top top-x-intercept))
-		       (t
-			(draw-wrap-line from-x (wrap-y-coord-top from-y)
-					to-x   (wrap-y-coord-top to-y)   alu)))))
-	      (t;; from-y must be beyond the bottom line
-	       (let ((bottom-x-intercept (bottom-x-intercept to-x to-y)))
-		 (cond ((and (not (beyond-bottom? to-y))
+                        (break-line-top top-x-intercept))
+                       (t
+                        (draw-wrap-line from-x (wrap-y-coord-top from-y)
+                                        to-x   (wrap-y-coord-top to-y)   alu)))))
+              (t;; from-y must be beyond the bottom line
+               (let ((bottom-x-intercept (bottom-x-intercept to-x to-y)))
+                 (cond ((and (not (beyond-bottom? to-y))
                              (x-in-array? bottom-x-intercept))
-			(break-line-bottom bottom-x-intercept))
-		       (t
-			(draw-wrap-line from-x (wrap-y-coord-bottom from-y)
-					to-x   (wrap-y-coord-bottom to-y) alu))))))))))
+                        (break-line-bottom bottom-x-intercept))
+                       (t
+                        (draw-wrap-line from-x (wrap-y-coord-bottom from-y)
+                                        to-x   (wrap-y-coord-bottom to-y) alu))))))))))
 
 
 ;; this tries to save/restore only the extents of the turtle rather than
@@ -555,17 +555,17 @@ parameters of the graphics box are bound. "
 (defun get-sprites ()
   (or *current-sprite*
       (do ((box (static-root) (when (box? box) (superior-box box))))
-	  ((or (null box) (sprite-box? box) (and (virtual-copy? box)
-						 (eq (vc-type box)
-						     'sprite-box)))
-	   box)
-	(let ((as (get-active-sprite box)))
-	  (unless (null as) (return as))))))
+          ((or (null box) (sprite-box? box) (and (virtual-copy? box)
+                                                 (eq (vc-type box)
+                                                     'sprite-box)))
+           box)
+        (let ((as (get-active-sprite box)))
+          (unless (null as) (return as))))))
 
 (defun get-graphics-box ()
   (do ((box (static-root) (when (box? box) (superior-box box))))
       ((or (null box) (graphics-box? box)
-	   (and (virtual-copy? box) (getf (vc-graphics box) 'graphics-sheet)))
+           (and (virtual-copy? box) (getf (vc-graphics box) 'graphics-sheet)))
        box)
     ))
 
@@ -589,12 +589,12 @@ parameters of the graphics box are bound. "
 
 (defun get-graphics-box-from-sprite-box (sb)
   (let* ((turtle (get-sprite-turtle sb))
-	 (gb (and turtle (assoc-graphics-box turtle))))
+         (gb (and turtle (assoc-graphics-box turtle))))
     (cond ((not (null gb)) gb)
-	  ((null turtle)
-	   (error "The Sprite Box, ~A, has no turtle" sb))
-	  ((null gb) ':no-graphics)
-	  (t (error "Can't get a Graphics Box out of ~S" sb)))))
+          ((null turtle)
+           (error "The Sprite Box, ~A, has no turtle" sb))
+          ((null gb) ':no-graphics)
+          (t (error "Can't get a Graphics Box out of ~S" sb)))))
 
 ;;; this is used by prims that implicitly apply to either sprites or
 ;;; graphics boxes such as CS or GRAPHICS-MODE
@@ -602,15 +602,15 @@ parameters of the graphics box are bound. "
   (if (not (null *current-sprite*))
       (get-graphics-box-from-sprite-box *current-sprite*)
       (do ((box (static-root) (when (box? box) (superior-box box))))
-	  ((null box) nil)
-	(cond ((or (sprite-box? box) (and (virtual-copy? box) (eq (vc-type box) 'sprite-box)))
-	       (return (values (get-graphics-box-from-sprite-box box) box)))
-	      ((or (graphics-box? box) (and (virtual-copy? box)
-					    (getf (vc-graphics box) 'graphics-sheet)))
-	       (return box))
-	      (t (let ((as (get-active-sprite box)))
-		   (unless (null as)
-		     (return (values (get-graphics-box-from-sprite-box as) as)))))))))
+          ((null box) nil)
+        (cond ((or (sprite-box? box) (and (virtual-copy? box) (eq (vc-type box) 'sprite-box)))
+               (return (values (get-graphics-box-from-sprite-box box) box)))
+              ((or (graphics-box? box) (and (virtual-copy? box)
+                                            (getf (vc-graphics box) 'graphics-sheet)))
+               (return box))
+              (t (let ((as (get-active-sprite box)))
+                   (unless (null as)
+                     (return (values (get-graphics-box-from-sprite-box as) as)))))))))
 
 
 ;;; ALL TURTLE functions are assumed to be called in an environment where the
@@ -621,17 +621,17 @@ parameters of the graphics box are bound. "
 ;;; that there is a sprite-box bound to sprite-var
 
 (defmacro defsprite-function (name-descriptor arglist (sprite-var turtle-var)
-			      &body body)
+                              &body body)
   `(boxer-eval::defboxer-primitive ,name-descriptor ,arglist
      (with-sprite-primitive-environment (,sprite-var ,turtle-var)
-	. ,body)))
+        . ,body)))
 
 (defmacro defsprite-trigger-function (name-descriptor arglist
-						      (sprite-var turtle-var)
-						      &body body)
+                                                      (sprite-var turtle-var)
+                                                      &body body)
   `(boxer-eval::defboxer-primitive ,name-descriptor ,arglist
      (with-sprite-primitive-environment (,sprite-var ,turtle-var t)
-	. ,body)))
+        . ,body)))
 
 ;; used to avoid redundant erases and draws of subsprites
 ;; which happen to be the current active sprite
@@ -642,10 +642,10 @@ parameters of the graphics box are bound. "
 ;;; graphics list is blasted out and then the sprites are redrawn (any existing
 ;;; background can also be draw first)
 (defmacro with-sprite-primitive-environment ((sprite-var turtle-var
-							 &optional
-							 no-sprite-error
-							 (gboxvar (gensym)))
-					     &body body)
+                                                         &optional
+                                                         no-sprite-error
+                                                         (gboxvar (gensym)))
+                                             &body body)
   `(let ((active-sprites (get-sprites)))
      (cond ((null active-sprites)
 	    ,(if (null no-sprite-error)
