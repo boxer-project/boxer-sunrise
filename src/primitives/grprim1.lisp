@@ -183,36 +183,31 @@
 
 (defsprite-function bu::fd ((boxer-eval::numberize steps)) (sprite turtle)
   (steps-arg-check steps)
-  (with-sprites-hidden t
-      (forward turtle steps))
+  (forward turtle steps)
   boxer-eval::*novalue*)
 
 (defsprite-function bu::forward ((boxer-eval::numberize steps))
         (sprite turtle)
   (steps-arg-check steps)
-  (with-sprites-hidden t
-      (forward turtle steps))
+  (forward turtle steps)
   boxer-eval::*novalue*)
 
 (defsprite-function bu::bk ((boxer-eval::numberize steps))
         (sprite turtle)
   (steps-arg-check steps)
-  (with-sprites-hidden t
-      (forward turtle (- steps)))
+  (forward turtle (- steps))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::back ((boxer-eval::numberize steps))
         (sprite turtle)
   (steps-arg-check steps)
-  (with-sprites-hidden t
-      (forward turtle (- steps)))
+  (forward turtle (- steps))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::setxy ((boxer-eval::numberize x) (boxer-eval::numberize y))
         (sprite turtle)
   (steps-arg-check x) (steps-arg-check y)
-  (with-sprites-hidden t
-      (move-to turtle x y))
+  (move-to turtle x y)
   boxer-eval::*novalue*)
 
 (defun get-position-values (box)
@@ -235,16 +230,14 @@
   (multiple-value-bind (new-x new-y)
       (get-position-values position)
     (steps-arg-check new-x)  (steps-arg-check new-y)
-    (with-sprites-hidden t
-      (move-to turtle new-x new-y))
+    (move-to turtle new-x new-y)
     boxer-eval::*novalue*))
 
 (defsprite-function bu::setposition (position)
   (sprite turtle)
   (multiple-value-bind (new-x new-y)
       (get-position-values position)
-    (with-sprites-hidden t
-      (move-to turtle new-x new-y))
+      (move-to turtle new-x new-y)
     boxer-eval::*novalue*))
 
 (defsprite-function bu::set-home-position ((boxer-eval::dont-copy position))
@@ -256,46 +249,39 @@
 
 (defsprite-function bu::home ()
   (sprite turtle)
-  (with-sprites-hidden t
-    (go-home turtle))
+  (go-home turtle)
   boxer-eval::*novalue*)
 
 ;;;; Turning
 
 (defsprite-function bu::rt ((boxer-eval::numberize turns))
   (sprite turtle)
-  (with-sprites-hidden nil
-    (right turtle turns))
+  (right turtle turns)
   boxer-eval::*novalue*)
 
 (defsprite-function bu::right ((boxer-eval::numberize turns))
   (sprite turtle)
-  (with-sprites-hidden nil
-    (right turtle turns))
+  (right turtle turns)
   boxer-eval::*novalue*)
 
 (defsprite-function bu::lt ((boxer-eval::numberize turns))
   (sprite turtle)
-  (with-sprites-hidden nil
-    (right turtle (- turns)))
+  (right turtle (- turns))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::left ((boxer-eval::numberize turns))
   (sprite turtle)
-  (with-sprites-hidden nil
-    (right turtle (- turns)))
+  (right turtle (- turns))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::seth ((boxer-eval::numberize heading))
   (sprite turtle)
-  (with-sprites-hidden nil
-    (set-heading turtle heading))
+  (set-heading turtle heading)
   boxer-eval::*novalue*)
 
 (defsprite-function bu::setheading ((boxer-eval::numberize heading))
   (sprite turtle)
-  (with-sprites-hidden nil
-    (set-heading turtle heading))
+  (set-heading turtle heading)
   boxer-eval::*novalue*)
 
 ;;;; Pens
@@ -421,19 +407,19 @@
 (defsprite-function bu::ht ()
   (sprite turtle)
   (when (absolute-shown? turtle)
-    (with-sprites-hidden nil (hide-turtle turtle)))
+    (hide-turtle turtle))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::hide ()
   (sprite turtle)
   (when (absolute-shown? turtle)
-    (with-sprites-hidden nil (hide-turtle turtle)))
+    (hide-turtle turtle))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::hideturtle ()
   (sprite turtle)
   (when (absolute-shown? turtle)
-    (with-sprites-hidden nil (hide-turtle turtle)))
+    (hide-turtle turtle))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::st ()
@@ -468,8 +454,7 @@
 (defsprite-function bu::set-sprite-size ((boxer-eval::numberize size))
   (sprite turtle)
   (cond ((and (numberp size) (> size 0))
-   (with-sprites-hidden nil
-       (set-sprite-size turtle size))
+   (set-sprite-size turtle size)
    boxer-eval::*novalue*)
   (t (boxer-eval::primitive-signal-error :sprite-error
            "The Sprite Size Argument, " size
@@ -478,12 +463,10 @@
 (defsprite-function bu::setshape ((bu::port-to shape))
   (sprite turtle)
   (let ((shape-box (box-or-port-target shape)))
-    (with-sprites-hidden :change-shape
       (if (or (sprite-box? shape-box)
-        (graphics-box? shape-box)
-        (and (virtual-copy? shape-box)
-       (not (null (vc-graphics shape-box)))))
-    (set-shape turtle shape-box)
-    (boxer-eval::primitive-signal-error :sprite-error "Can't find a shape in: "
-          shape))))
+              (graphics-box? shape-box)
+              (and (virtual-copy? shape-box)
+                   (not (null (vc-graphics shape-box)))))
+        (set-shape turtle shape-box)
+        (boxer-eval::primitive-signal-error :sprite-error "Can't find a shape in: " shape)))
   boxer-eval::*novalue*)
