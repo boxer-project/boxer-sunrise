@@ -116,31 +116,6 @@ parameters of the graphics box are bound. "
      ;; should these be floats ???
      (let ((%drawing-half-width 0.0)
 	   (%drawing-half-height 0.0))
-       ;; this macro is shadowed in with-sprite-primitive-environment
-       ;; they are here for the benefit of graphics functions which
-       ;; which do not use the sprite interface sprite
-       (macrolet ((with-sprites-hidden (draw-p &body body)
-                    ;; mostly a stub, we might want to use the command-can-draw?
-                    ;; arg in the future as a hint to propagate MODIFIED info
-                    `(progn
-                       (when ,draw-p (queue-modified-graphics-box
-                                      (graphics-sheet-superior-box ,',gr-sheet)))
-                       (progn . ,body))))
-;		    (declare (ignore draw-p))
-;		    `(unwind-protect
-;			  (progn
-;			    (dolist (ttl (graphics-sheet-object-list
-;					  ,',gr-sheet))
-;			      (when (shown? ttl) (fast-erase ttl)))
-;			    . ,body)
-;		       ;; All the turtles' save-unders
-;		       ;; have to updated since the moving turtle may
-;		       ;; have drawn on the portion of the screen
-;		       ;; where they are.
-;		       (dolist (ttl (graphics-sheet-object-list ,',gr-sheet))
-;			 (save-under-turtle ttl))
-;		       (dolist (ttl (graphics-sheet-object-list ,',gr-sheet))
-;			 (when (shown? ttl) (draw ttl))))))
 	 (unless (null ,gr-sheet)
 	   ;; set the variables if it is possible to do so.  We
 	   ;; bind them and set them separately in order to centralize
@@ -160,26 +135,7 @@ parameters of the graphics box are bound. "
 		 %drawing-half-width (/ %drawing-width 2.0)
 		 %drawing-half-height (/ %drawing-height 2.0)))
 	 ;; now do the rest
-	 . ,body))))
-
-;;; just in case...
-
-(defmacro with-sprites-hidden (draw-p &body body)
-  (declare (ignore draw-p body))
-  (warn
-   "WITH-SPRITES-HIDDEN being called outside of WITH-GRAPHICS-VARS-BOUND")
-  `(error
-    "WITH-SPRITES-HIDDEN being called outside of WITH-GRAPHICS-VARS-BOUND"))
-
-(defmacro with-sprites-hidden-always (draw-p &body body)
-  (declare (ignore draw-p body))
-  (warn
-   "WITH-ALL-SPRITES-HIDDEN being used outside of WITH-GRAPHICS-VARS-BOUND")
-  `(error
-    "WITH-ALL-SPRITES-HIDDEN being used outside of WITH-GRAPHICS-VARS-BOUND"))
-
-
-
+	 . ,body)))
 
 ;;; Set Up Clipping and Offsets
 
@@ -681,10 +637,6 @@ parameters of the graphics box are bound. "
 ;; which happen to be the current active sprite
 (defvar *current-active-sprite* nil)
 
-(defvar *sprites-hidden* nil)
-
-(defvar *prepared-graphics-box* nil)
-
 ;;; Cocoa drawing: sprites dont draw onto the screen, they just update the graphics
 ;;; list and periodically, the GB box space, on the screen is cleared, the
 ;;; graphics list is blasted out and then the sprites are redrawn (any existing
@@ -706,17 +658,9 @@ parameters of the graphics box are bound. "
 	      ;; get rid of bound but never used warnings
 	      ,sprite-var ,turtle-var
 	      (with-graphics-vars-bound (,gboxvar sheet)
-		(macrolet
-		    ((WITH-SPRITES-HIDDEN (command-can-draw? &body body)
-                       ;; mostly a stub, we might want to use the command-can-draw?
-                       ;; arg in the future as a hint to propagate MODIFIED info
-		       `(let* ((draw-p (and ,command-can-draw?
-                                            (not (eq (pen ,',turtle-var) 'bu::up)))))
-                          (when draw-p (queue-modified-graphics-box ,',gboxvar))
-                          (progn . ,body))))
 		  (prog1 (with-graphics-state (%graphics-list)
 			     (update-graphics-state ,turtle-var)
-			   ,@body)))))))))
+			   ,@body))))))))
 
 
 ;;; This is used by sprite update functions when they are passed an illegal arg

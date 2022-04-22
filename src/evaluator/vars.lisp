@@ -199,10 +199,6 @@ Can be nil if no action is desired.")
 ;; (unrelated) redisplay initializers
 (define-eval-var boxer::*supress-graphics-recording?* :global nil)
 
-;; used in with-sprites-hidden
-(define-eval-var boxer::*prepared-graphics-box* :global nil)
-(define-eval-var boxer::*sprites-hidden* :global nil)
-
 ;; error handling
 (define-eval-var *error-handler-list* :global nil)
 (define-eval-var *error-signalled?* :global nil)

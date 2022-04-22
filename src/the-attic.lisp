@@ -4220,6 +4220,20 @@ Modification History (most recent at top)
 ;;;; FILE: disdef.lisp
 ;;;;
 
+(defvar *screen-boxes-modified* ':toplevel
+  "Screen boxes modifed during eval")
+
+;; more stuff for the top-level-eval-wrapper....
+(defmacro with-screen-box-modification-tracking (&body body)
+  `(let ((*screen-boxes-modified* nil))
+     . ,body))
+
+(defun queue-modified-graphics-box (gb)
+  (unless (or (eq *screen-boxes-modified* ':toplevel) (eq gb ':no-graphics))
+    (dolist (sb (displayed-screen-objs gb))
+      (unless (fast-memq sb *screen-boxes-modified*)
+        (push sb *screen-boxes-modified*)))))
+
 ;;; for systems which buffer graphics
 ;;; this applies equally to command buffering a la X or
 ;;; double buffering a la OpenGL, OSX Quickdraw
@@ -6873,6 +6887,66 @@ if it is out of bounds
 ;;;;
 ;;;; FILE: grfdfs.lisp
 ;;;;
+
+(defvar *prepared-graphics-box* nil)
+(defvar *sprites-hidden* nil)
+
+
+;;; just in case...
+
+(defmacro with-sprites-hidden (draw-p &body body)
+  (declare (ignore draw-p body))
+  (warn
+   "WITH-SPRITES-HIDDEN being called outside of WITH-GRAPHICS-VARS-BOUND")
+  `(error
+    "WITH-SPRITES-HIDDEN being called outside of WITH-GRAPHICS-VARS-BOUND"))
+
+(defmacro with-sprites-hidden-always (draw-p &body body)
+  (declare (ignore draw-p body))
+  (warn
+   "WITH-ALL-SPRITES-HIDDEN being used outside of WITH-GRAPHICS-VARS-BOUND")
+  `(error
+    "WITH-ALL-SPRITES-HIDDEN being used outside of WITH-GRAPHICS-VARS-BOUND"))
+
+
+;; was in with-graphics-vars-bound-internal macrolet
+       ;; this macro is shadowed in with-sprite-primitive-environment
+       ;; they are here for the benefit of graphics functions which
+       ;; which do not use the sprite interface sprite
+      (with-sprites-hidden (draw-p &body body)
+                    ;; mostly a stub, we might want to use the command-can-draw?
+                    ;; arg in the future as a hint to propagate MODIFIED info
+                    `(progn
+                    ;    (when ,draw-p (queue-modified-graphics-box
+                    ;                   (graphics-sheet-superior-box ,',gr-sheet)))
+                       (progn . ,body)))
+      ;		    (declare (ignore draw-p))
+      ;		    `(unwind-protect
+      ;			  (progn
+      ;			    (dolist (ttl (graphics-sheet-object-list
+      ;					  ,',gr-sheet))
+      ;			      (when (shown? ttl) (fast-erase ttl)))
+      ;			    . ,body)
+      ;		       ;; All the turtles' save-unders
+      ;		       ;; have to updated since the moving turtle may
+      ;		       ;; have drawn on the portion of the screen
+      ;		       ;; where they are.
+      ;		       (dolist (ttl (graphics-sheet-object-list ,',gr-sheet))
+      ;			 (save-under-turtle ttl))
+      ;		       (dolist (ttl (graphics-sheet-object-list ,',gr-sheet))
+      ;			 (when (shown? ttl) (draw ttl))))))
+
+
+;; was in with-sprite-primitive-environment macrolet
+         (WITH-SPRITES-HIDDEN (command-can-draw? &body body)
+                       ;; mostly a stub, we might want to use the command-can-draw?
+                       ;; arg in the future as a hint to propagate MODIFIED info
+		       `(let* (
+				   		; (draw-p (and ,command-can-draw?
+                        ;                     (not (eq (pen ,',turtle-var) 'bu::up))))
+											)
+                        ;   (when draw-p (queue-modified-graphics-box ,',gboxvar))
+                          (progn . ,body)))
 
 ;; 2022-04-20 with-graphics-screen-parameters-once doesn't seem to be actively used anywhere
 ;; anymore, only in primitives that have been archived here
@@ -12867,6 +12941,9 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: vars.lisp
 ;;;;
+;; used in with-sprites-hidden
+(define-eval-var boxer::*prepared-graphics-box* :global nil)
+(define-eval-var boxer::*sprites-hidden* :global nil)
 
 #|
 ;;; FOR-EACH-ITEM
