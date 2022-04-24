@@ -1,5 +1,107 @@
 # Change Log
 
+## 3.4.9 2022-04-??
+
+### Overview
+
+First external contribution from chaals cleaning up some typos in the README
+
+### Full Change Log
+
+bugs-110 Looking at the actual obj of the screen mouse box to determine whether clicked box is shrunk.
+
+bugs-115 Removing penxor and other alus from sprite-commands-for-new-position
+
+bugs-116 Fixing virtual copied sprites as a top level in append-row
+  - The comparison when checking if a virtual-copy struct was of type sprite
+    was outdated, and updated this to look at the graphics-info member, similar
+    to the current check if something is a graphics-object? of a box's graphics-info
+    to determine spriteness.
+
+bugs-118 Fixing window dimensions preferences
+  - Re-arranged order of startup so the maximize-window, width, and height get
+    read in from the prefs before displaying the *boxer-frame*
+
+bugs-121 This 'check-for-unsaved-boxes function is nowwhere in the codebase
+
+bugs-123 Fixing up confirm modified boxes on quit dialogs
+
+bugs-124 Any size fonts can be used with set-type-font now.
+
+bugs-126 Adding a check for graphics boxes that got always-zoom set
+
+bugs-129 Adding check in case the current font name isn't in the option-pane collection
+
+sunrise-15
+  - Updated description of show status bar preference.
+  - Archiving prefs step-wait-for-key-press, step-time, update-display-during-eval
+    - The stepper prefs are being commented out until the stepper works again
+    - Ideally the display update pref won't be needed again in the future based
+      on current speed.
+  - Cleaning up leftover prims from font refactoring
+  - Removing separate site config from preferences
+    All preferences are still saved in the default user preferences file Boxer.prf
+    - Removing unused site config that used to be put in /usr/local by default
+      and never quite finished
+    - prims: configure-info, reconfigure-system
+    - *default-site-directory*, *default-configuration-file-name*, *site-initialization-handlers*,
+      def-site-var, handle-site-initializations, handle-site-initialization,
+    - Plus actual site inits
+  - Archiving unix postscript, serial, and mouse pop-up prefs.
+  - Temporarily commenting out smooth-scrolling penerase-color-from-bit-array prefs
+  - Collapsing pref docs to single lines in s-expressions.
+  - Removing buttons and seperate capi panel to show the prefs descriptions.
+  - Converting prefs dialogue pinboard layout to regular column layout.
+  - Fixing up prefs initialisation on startup
+    - Changing the prefs read function to also return the fixed up coerced value.
+    - Changing the initialization handler code to also call the -q-function for the
+      preference in case it has any side effects it needs to call on update.
+
+sunrise-25 Merging draw-high-hardware-clip in to draw-high-common
+
+sunrise-56 Updating instructions to LW 8.0 with more notes on quicklisp init
+
+sunrise-60 Fixing :message-callback to insert double clicked box files on to the event queue.
+
+refactor
+  - Fixing up usage of draw functions to not call internal % versions
+  - Adding public version of draw-circle
+  - Cleaning up draw-high.common.lisp
+    - Moved a few old things in to the attic.
+    - Moved many comments to be docstrings
+    - Organized functions into 3 sections, draw-on-window macros, scaling origin macros,
+      and draw function.
+  - Creating draw-high swap-graphics-buffers to replace internal %flush-port-buffer.
+    - Also removing old force-graphics-output
+  - CLeaning up draw-low-opengl.lisp
+    - Moving sheet-inside-top and sheet-inside-left to the attic, replacing
+      only usage with constant 0
+    - Removing old comments
+    - Rearranging %draw- methods to sort order
+    - Moving some comments inside of docstrings
+    - Removing unused %open-color=, normalize-color-component, sign-of-no
+  - refactor First stage of removing save-under code
+  - Moving to the attic but keeping stub functions for loader and
+    dumper of:
+      - update-date-under
+      - scale-save-under
+      - save-under-turtle
+      - restore-under-turtle
+      - extract-sprites (commented out previously)
+      - cache-active-sprites (commented out previously)
+  - Force-repaint is just repaint now.
+
+the-attic
+  - Moving pre-opengl *currently-moving-sprite* and usage to the-attic
+  - Removing #-opengl usage of *currently-moving-sprite*
+  - Removing #-opengl code from defboxer-primitive bu::set-background
+  - Moving lispworks graphics-ports version of arc drawing to the attic.
+  - Archiving defrecursive-funcall-primitive holding-position
+  - with-turtle-slate-origins, *allowed-alus*, vlist-alu?
+  - commented out defsprite-update-function
+  - Archiving primitive with-sprites-hidden
+
+
 ## 3.4.8 2022-02-16
 
 ### Overview
