@@ -99,8 +99,7 @@
   boxer-eval::*novalue*)
 
 (defsprite-function bu::dot () (sprite turtle)
-  (with-sprites-hidden t
-    (stamp-dot turtle))
+  (stamp-dot turtle)
   boxer-eval::*novalue*)
 
 (defsprite-function bu::stamp-rect ((boxer-eval::numberize width)
@@ -111,8 +110,7 @@
                                           "The width and the height,"
                                           width "," height
                                           ", should both be 0 or greater")
-      (with-sprites-hidden t
-        (turtle-rect turtle (fixr width) (fixr height))))
+      (turtle-rect turtle (fixr width) (fixr height)))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::stamp-rectangle ((boxer-eval::numberize width)
@@ -123,8 +121,7 @@
                                           "The width and the height,"
                                           width ","  height
                                           ", should both be 0 or greater")
-      (with-sprites-hidden t
-        (turtle-rect turtle (fixr width) (fixr height))))
+      (turtle-rect turtle (fixr width) (fixr height)))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::stamp-hollow-rect ((boxer-eval::numberize width)
@@ -135,8 +132,7 @@
                                           "The width and the height,"
                                           width ","  height
                                           ", should both be 0 or greater")
-      (with-sprites-hidden t
-        (hollow-turtle-rect turtle (fixr width) (fixr height))))
+      (hollow-turtle-rect turtle (fixr width) (fixr height)))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::stamp-hollow-rectangle ((boxer-eval::numberize width)
@@ -147,8 +143,7 @@
                                           "The width and the height,"
                                           width ","  height
                                           ", should both be 0 or greater")
-      (with-sprites-hidden t
-        (hollow-turtle-rect turtle (fixr width) (fixr height))))
+      (hollow-turtle-rect turtle (fixr width) (fixr height)))
   boxer-eval::*novalue*)
 
 
@@ -160,8 +155,7 @@
                                           "The width and the height,"
                                           width "," height
                                           ", should both be 0 or greater")
-      (with-sprites-hidden t
-        (stamp-ellipse turtle (fixr width) (fixr height))))
+      (stamp-ellipse turtle (fixr width) (fixr height)))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::stamp-hollow-ellipse ((boxer-eval::numberize width)
@@ -172,8 +166,7 @@
                                           "The width and the height,"
                                           width "," height
                                           ", should both be 0 or greater")
-      (with-sprites-hidden t
-        (stamp-hollow-ellipse turtle (fixr width) (fixr height))))
+      (stamp-hollow-ellipse turtle (fixr width) (fixr height)))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::stamp-circle ((boxer-eval::numberize radius))
@@ -183,8 +176,7 @@
                                           "The Radius, "
                                           radius
                                           "Should be 0 or greater")
-      (with-sprites-hidden t
-        (stamp-circle turtle radius)))
+      (stamp-circle turtle radius))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::stamp-hollow-circle ((boxer-eval::numberize radius))
@@ -194,8 +186,7 @@
                                           "The Radius, "
                                           radius
                                           "Should be a 0 or greater")
-      (with-sprites-hidden t
-        (stamp-hollow-circle turtle radius)))
+      (stamp-hollow-circle turtle radius))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::draw-wedge ((boxer-eval::numberize radius)
@@ -206,8 +197,7 @@
                                           "The Radius, "
                                           radius
                                           "Should be 0 or greater")
-      (with-sprites-hidden t
-        (stamp-wedge turtle radius sweep-angle)))
+      (stamp-wedge turtle radius sweep-angle))
   boxer-eval::*novalue*)
 
 ;; better name courtesy of Andy
@@ -219,8 +209,7 @@
                                           "The Radius, "
                                           radius
                                           "Should be 0 or greater")
-      (with-sprites-hidden t
-        (stamp-wedge turtle radius sweep-angle)))
+      (stamp-wedge turtle radius sweep-angle))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::draw-arc ((boxer-eval::numberize radius)
@@ -231,8 +220,7 @@
                                           "The Radius, "
                                           radius
                                           "Should be 0 or greater")
-      (with-sprites-hidden t
-        (stamp-arc turtle radius sweep-angle)))
+      (stamp-arc turtle radius sweep-angle))
   boxer-eval::*novalue*)
 
 ;; better name courtesy of Andy...
@@ -244,8 +232,7 @@
                                           "The Radius, "
                                           radius
                                           "Should be 0 or greater")
-      (with-sprites-hidden t
-        (stamp-arc turtle radius sweep-angle)))
+      (stamp-arc turtle radius sweep-angle))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::stamp-bitmap ((bu::port-to graphics-box)) (sprite turtle)
@@ -259,17 +246,14 @@
                                                "The Box, " graphics-box
                                                ", does not have a bitmap"))
           (t
-           (with-sprites-hidden t
-             (stamp-bitmap turtle
-                           (graphics-sheet-bit-array graphics-sheet)
-                           (graphics-sheet-draw-wid graphics-sheet)
-                           (graphics-sheet-draw-hei graphics-sheet))))))
+           (stamp-bitmap turtle
+                         (graphics-sheet-bit-array graphics-sheet)
+                         (graphics-sheet-draw-wid graphics-sheet)
+                         (graphics-sheet-draw-hei graphics-sheet)))))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::stamp-self () (sprite turtle)
-  (with-sprites-hidden t
-    (stamp turtle))
-  #+X (xlib::xflush)
+  (stamp turtle)
   boxer-eval::*novalue*)
 
 ;;; this loops through the graphics list and:
@@ -346,48 +330,12 @@
                (turtle-array-y (fix-array-coordinate-y
                                 (absolute-y-position turtle))))
 
-          (with-sprites-hidden t
-            #| ; this is now handled inside of append-graphics-sheet-at
-            (when (not (null (graphics-sheet-bit-array gs)))
-            ;; if the graphics box has a bitmap, stamp it also...
-            (cond ((not (null tba))
-            (let* ((gs-wid (graphics-sheet-draw-wid gs))
-            (gs-hei (graphics-sheet-draw-hei gs))
-            (gs-half-wid (floor gs-wid 2))
-            (gs-half-hei (floor gs-hei 2))
-            (min-x (-& turtle-array-x gs-half-wid))
-            (max-x (+& turtle-array-x gs-half-wid))
-            (min-y (-& turtle-array-y gs-half-hei))
-            (max-y (+& turtle-array-y gs-half-hei)))
-            (drawing-on-bitmap (tba)
-            (bitblt-to-screen alu-seta
-            (-& (min& %drawing-width max-x)
-            (max& 0 min-x))
-            (-& (min& %drawing-height max-y)
-            (max& 0 min-y))
-            (graphics-sheet-bit-array gs)
-            (if (plusp& min-x) 0 (-& min-x))
-            (if (plusp& min-y) 0 (-& min-y))
-            (max& 0 min-x) (max& 0 min-y)))
-            (with-graphics-screen-parameters
-            (bitblt-to-screen alu-seta
-            (-& (min& %drawing-width max-x)
-            (max& 0 min-x))
-            (-& (min& %drawing-height max-y)
-            (max& 0 min-y))
-            (graphics-sheet-bit-array gs)
-            (if (plusp& min-x) 0 (-& min-x))
-            (if (plusp& min-y) 0 (-& min-y))
-            (max& 0 min-x) (max& 0 min-y)))))
-            ;; we could have a clause here that adds the bitmap to
-            ;; the display list
-            (t nil)))  |#
-            (append-graphics-sheet-at
-             gs
-             turtle-array-x turtle-array-y
-             (floor (graphics-sheet-draw-wid gs) 2)
-             (floor (graphics-sheet-draw-hei gs) 2)))))
-    #+X (xlib::xflush))
+          (append-graphics-sheet-at
+            gs
+            turtle-array-x turtle-array-y
+            (floor (graphics-sheet-draw-wid gs) 2)
+            (floor (graphics-sheet-draw-hei gs) 2))))
+    )
   boxer-eval::*novalue*)
 
 (defvar *follow-mouse-movement-threshold* 2)
@@ -438,7 +386,7 @@
                                    *follow-mouse-movement-threshold*)
                                 (> (abs (- new-y turtle-y))
                                    *follow-mouse-movement-threshold*))
-                        (with-sprites-hidden t (move-to turtle new-x new-y))
+                        (move-to turtle new-x new-y)
                         ;; sgithens 2021-06-12 Here we use repaint-internal rather than repaint, which will call
                         ;; repaint-internal using apply-in-pane-process, but as the mouse is dragging we are already
                         ;; in that process and can just repaint-internal.
@@ -446,30 +394,25 @@
                         (repaint)
                         ))))
               (when moved?
-                (with-sprites-hidden t
-                  (move-to turtle
-                           (translate-x final-x) (translate-y final-y))))))))))
+                (move-to turtle
+                         (translate-x final-x) (translate-y final-y)))))))))
   boxer-eval::*novalue*)
 
 
 (defsprite-function bu::type ((bu::dont-copy box)) (sprite turtle)
-  (with-sprites-hidden t
-    (type-box turtle box))
+  (type-box turtle box)
   boxer-eval::*novalue*)
 
 (defsprite-function bu::ctype ((bu::dont-copy box)) (sprite turtle)
-  (with-sprites-hidden t
-    (type-box turtle box))
+  (type-box turtle box)
   boxer-eval::*novalue*)
 
 (defsprite-function bu::ltype ((bu::dont-copy box)) (sprite turtle)
-  (with-sprites-hidden t
-    (type-box turtle box :left))
+  (type-box turtle box :left)
   boxer-eval::*novalue*)
 
 (defsprite-function bu::rtype ((bu::dont-copy box)) (sprite turtle)
-  (with-sprites-hidden t
-    (type-box turtle box :right))
+  (type-box turtle box :right)
   boxer-eval::*novalue*)
 
 
@@ -558,27 +501,23 @@ sprites)))
                    :graphics "Pixel is not in the graphics box"))))))))
 
 (defsprite-function bu::color-under () (sprite turtle)
-  (with-sprites-hidden :change-shape ; not NIL because we need to FORCE all the
-                                        ; other sprites to erase
-    (make-color-box-from-pixel (screen-color-from-turtle turtle))))
+  (make-color-box-from-pixel (screen-color-from-turtle turtle)))
 
 (defsprite-function bu::bg-color-under () (sprite turtle)
   (make-color-box-from-pixel (background-color-from-turtle turtle)))
 
 (defsprite-function bu::bg-color-under? () (sprite turtle)
-  (with-sprites-hidden nil
-    (boxer-eval::boxer-boolean
-     (opengl::pixel= (screen-pixel-from-turtle turtle)
-                     (background-pixel-from-turtle turtle)))))
+  (boxer-eval::boxer-boolean
+   (opengl::pixel= (screen-pixel-from-turtle turtle)
+                   (background-pixel-from-turtle turtle))))
 
 (defsprite-function bu::color-under= ((bu::port-to color))
     (sprite turtle)
   (let ((c (color-from-box (box-or-port-target color))))
     (if (null c)
         (boxer-eval::primitive-signal-error :graphics color "is not a color box")
-        (with-sprites-hidden :change-shape
-          (boxer-eval::boxer-boolean
-           (color= c (screen-color-from-turtle turtle)))))))
+        (boxer-eval::boxer-boolean
+         (color= c (screen-color-from-turtle turtle))))))
 
 (defsprite-function bu::bg-color-under= ((bu::port-to color))
     (sprite turtle)

@@ -218,7 +218,7 @@
 
 (defun array-coordinate-y (user-y)
   (float-minus %drawing-half-height
-               (float user-y) ; (* user-y *scrunch-factor*)
+               (float user-y)
                ))
 
 ;;; ARRAY ==> USER
@@ -227,7 +227,6 @@
   (float-minus (float array-x) %drawing-half-width))
 
 (defun user-coordinate-y (array-y)
-  ;(/ (- %drawing-half-height array-y) *scrunch-factor*)
   (float-minus %drawing-half-height (float array-y)))
 
 (defun user-coordinate-fix-x (array-x)
@@ -236,7 +235,6 @@
 
 (defun user-coordinate-fix-y (array-y)
   (declare (fixnum array-y))
-  ;(/ (- %drawing-half-height array-y) *scrunch-factor*)
   (float-minus %drawing-half-height (float array-y)))
 
 ;;; these want ARRAY coordinates

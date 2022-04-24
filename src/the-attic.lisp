@@ -4220,6 +4220,20 @@ Modification History (most recent at top)
 ;;;; FILE: disdef.lisp
 ;;;;
 
+(defvar *screen-boxes-modified* ':toplevel
+  "Screen boxes modifed during eval")
+
+;; more stuff for the top-level-eval-wrapper....
+(defmacro with-screen-box-modification-tracking (&body body)
+  `(let ((*screen-boxes-modified* nil))
+     . ,body))
+
+(defun queue-modified-graphics-box (gb)
+  (unless (or (eq *screen-boxes-modified* ':toplevel) (eq gb ':no-graphics))
+    (dolist (sb (displayed-screen-objs gb))
+      (unless (fast-memq sb *screen-boxes-modified*)
+        (push sb *screen-boxes-modified*)))))
+
 ;;; for systems which buffer graphics
 ;;; this applies equally to command buffering a la X or
 ;;; double buffering a la OpenGL, OSX Quickdraw
@@ -6874,6 +6888,157 @@ if it is out of bounds
 ;;;; FILE: grfdfs.lisp
 ;;;;
 
+(defvar *prepared-graphics-box* nil)
+(defvar *sprites-hidden* nil)
+
+
+;;; just in case...
+
+(defmacro with-sprites-hidden (draw-p &body body)
+  (declare (ignore draw-p body))
+  (warn
+   "WITH-SPRITES-HIDDEN being called outside of WITH-GRAPHICS-VARS-BOUND")
+  `(error
+    "WITH-SPRITES-HIDDEN being called outside of WITH-GRAPHICS-VARS-BOUND"))
+
+(defmacro with-sprites-hidden-always (draw-p &body body)
+  (declare (ignore draw-p body))
+  (warn
+   "WITH-ALL-SPRITES-HIDDEN being used outside of WITH-GRAPHICS-VARS-BOUND")
+  `(error
+    "WITH-ALL-SPRITES-HIDDEN being used outside of WITH-GRAPHICS-VARS-BOUND"))
+
+
+;; was in with-graphics-vars-bound-internal macrolet
+       ;; this macro is shadowed in with-sprite-primitive-environment
+       ;; they are here for the benefit of graphics functions which
+       ;; which do not use the sprite interface sprite
+      (with-sprites-hidden (draw-p &body body)
+                    ;; mostly a stub, we might want to use the command-can-draw?
+                    ;; arg in the future as a hint to propagate MODIFIED info
+                    `(progn
+                    ;    (when ,draw-p (queue-modified-graphics-box
+                    ;                   (graphics-sheet-superior-box ,',gr-sheet)))
+                       (progn . ,body)))
+      ;		    (declare (ignore draw-p))
+      ;		    `(unwind-protect
+      ;			  (progn
+      ;			    (dolist (ttl (graphics-sheet-object-list
+      ;					  ,',gr-sheet))
+      ;			      (when (shown? ttl) (fast-erase ttl)))
+      ;			    . ,body)
+      ;		       ;; All the turtles' save-unders
+      ;		       ;; have to updated since the moving turtle may
+      ;		       ;; have drawn on the portion of the screen
+      ;		       ;; where they are.
+      ;		       (dolist (ttl (graphics-sheet-object-list ,',gr-sheet))
+      ;			 (save-under-turtle ttl))
+      ;		       (dolist (ttl (graphics-sheet-object-list ,',gr-sheet))
+      ;			 (when (shown? ttl) (draw ttl))))))
+
+
+;; was in with-sprite-primitive-environment macrolet
+         (WITH-SPRITES-HIDDEN (command-can-draw? &body body)
+                       ;; mostly a stub, we might want to use the command-can-draw?
+                       ;; arg in the future as a hint to propagate MODIFIED info
+		       `(let* (
+				   		; (draw-p (and ,command-can-draw?
+                        ;                     (not (eq (pen ,',turtle-var) 'bu::up))))
+											)
+                        ;   (when draw-p (queue-modified-graphics-box ,',gboxvar))
+                          (progn . ,body)))
+
+;; 2022-04-20 with-graphics-screen-parameters-once doesn't seem to be actively used anywhere
+;; anymore, only in primitives that have been archived here
+
+;;; This is like the With-Graphics-Screen-Parameters Except that
+;;; the body is only executed once (or not at all) on the "most
+;;; acceptable screen-box". "Most appropriate" is defined as
+;;; not clipped or if they are ALL clipped, the largest.
+
+(defmacro with-graphics-screen-parameters-once (&body body)
+  `(let ((best-screen-box nil))
+     (unless (no-graphics?)
+       (dolist (screen-box (get-visible-screen-objs %graphics-box))
+	 (cond ((eq ':shrunk (display-style screen-box)))
+               ((not (graphics-screen-box? screen-box)))
+	       ((and (not (screen-obj-x-got-clipped? screen-box))
+		     (not (screen-obj-y-got-clipped? screen-box)))
+		(setq best-screen-box screen-box)
+		(return))
+	       ((null best-screen-box)
+		(setq best-screen-box screen-box))
+	       (t
+		;; If we get to here, then both the best-screen-box
+		;; and the current screen-box are clipped so pick the
+		;; bigger one.  We could be a little more sophisticated
+		;; about how we choose...
+		(cond ((screen-obj-y-got-clipped? best-screen-box)
+		       (cond ((null (screen-obj-y-got-clipped? screen-box))
+			      (setq best-screen-box screen-box))
+			     ((> (screen-obj-hei screen-box)
+				  (screen-obj-hei best-screen-box))
+			      (setq best-screen-box screen-box))))
+		      ((screen-obj-y-got-clipped? screen-box)
+		       ;;if the current box is clipped but the best one
+		       ;; isn't, then leave things alone
+		       )
+		      ((screen-obj-x-got-clipped? best-screen-box)
+		       (cond ((null (screen-obj-x-got-clipped? screen-box))
+			      (setq best-screen-box screen-box))
+			     ((> (screen-obj-wid screen-box)
+				  (screen-obj-wid best-screen-box))
+			      (setq best-screen-box screen-box))))))))
+       (unless (null best-screen-box)
+	 (drawing-on-turtle-slate best-screen-box ,@body)))))
+
+(defvar *scrunch-factor* 1
+  "the factor used to normalize the Y-coordinates so that squares really are")
+
+;; Note 2022-04-20 This scrunch factor was used in the following versions of things
+;; in grobjs.lisp. Reminds me of the Amiga which didn't have square pixels...
+(defun array-coordinate-y (user-y)
+  (float-minus %drawing-half-height
+               (float user-y) ; (* user-y *scrunch-factor*)
+               ))
+
+(defun user-coordinate-y (array-y)
+  ;(/ (- %drawing-half-height array-y) *scrunch-factor*)
+  (float-minus %drawing-half-height (float array-y)))
+
+(defun user-coordinate-fix-y (array-y)
+  (declare (fixnum array-y))
+  ;(/ (- %drawing-half-height array-y) *scrunch-factor*)
+  (float-minus %drawing-half-height (float array-y)))
+
+;; End scrunch-factor usage examples from grobjs.lisp
+
+(defvar *minimum-graphics-dimension* 15
+  "The smallest you can make a graphics box")
+
+;;; When a turtle is created, all of the boxes corresponding
+;;; to instance variables have also been created.  What needs
+;;; to be done here is to put the boxes inthe right place
+;;; At this time, that means the x-position, y-position and
+;;; heading boxes are in the box proper and all the other slots
+;;; live in the closet of the sprite-box.
+
+
+(defvar *initially-visible-sprite-instance-slots*
+	'(x-position y-position heading))
+
+
+(defvar *turtle-slots-that-need-boxes*
+	'(x-position y-position heading
+		     shown? pen
+		     home-position sprite-size shape))
+
+(defvar *name-flashing-pause-time* 2.
+  "Time in Seconds to Pause when flashing the name of a Sprite")
+
+(defvar %new-shape nil "The new shape vectors are collected here when doing a set-shape")
+
+
 (defun save-under-turtle (turtle)
   (let ((save-under (turtle-save-under turtle)))
     (cond ((eq save-under 'xor-redraw))
@@ -7634,6 +7799,45 @@ if it is out of bounds
 ;;;;
 ;;;; FILE: grprim2.lisp
 ;;;;
+
+
+;; 2022-04-21 Some wild stuff from defsprite-function stamp directly above the usage
+;; of append-graphics-sheet-at
+            #| ; this is now handled inside of append-graphics-sheet-at
+            (when (not (null (graphics-sheet-bit-array gs)))
+            ;; if the graphics box has a bitmap, stamp it also...
+            (cond ((not (null tba))
+            (let* ((gs-wid (graphics-sheet-draw-wid gs))
+            (gs-hei (graphics-sheet-draw-hei gs))
+            (gs-half-wid (floor gs-wid 2))
+            (gs-half-hei (floor gs-hei 2))
+            (min-x (-& turtle-array-x gs-half-wid))
+            (max-x (+& turtle-array-x gs-half-wid))
+            (min-y (-& turtle-array-y gs-half-hei))
+            (max-y (+& turtle-array-y gs-half-hei)))
+            (drawing-on-bitmap (tba)
+            (bitblt-to-screen alu-seta
+            (-& (min& %drawing-width max-x)
+            (max& 0 min-x))
+            (-& (min& %drawing-height max-y)
+            (max& 0 min-y))
+            (graphics-sheet-bit-array gs)
+            (if (plusp& min-x) 0 (-& min-x))
+            (if (plusp& min-y) 0 (-& min-y))
+            (max& 0 min-x) (max& 0 min-y)))
+            (with-graphics-screen-parameters
+            (bitblt-to-screen alu-seta
+            (-& (min& %drawing-width max-x)
+            (max& 0 min-x))
+            (-& (min& %drawing-height max-y)
+            (max& 0 min-y))
+            (graphics-sheet-bit-array gs)
+            (if (plusp& min-x) 0 (-& min-x))
+            (if (plusp& min-y) 0 (-& min-y))
+            (max& 0 min-x) (max& 0 min-y)))))
+            ;; we could have a clause here that adds the bitmap to
+            ;; the display list
+            (t nil)))  |#
 
 ;(defsprite-function bu::stamp-partial-bitmap ((bu::port-to graphics-box)
 ;					      (boxer-eval::numberize src-x)
@@ -12737,6 +12941,9 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: vars.lisp
 ;;;;
+;; used in with-sprites-hidden
+(define-eval-var boxer::*prepared-graphics-box* :global nil)
+(define-eval-var boxer::*sprites-hidden* :global nil)
 
 #|
 ;;; FOR-EACH-ITEM

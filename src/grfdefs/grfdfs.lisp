@@ -115,71 +115,27 @@ parameters of the graphics box are bound. "
      (declare (fixnum %drawing-width %drawing-height))
      ;; should these be floats ???
      (let ((%drawing-half-width 0.0)
-           (%drawing-half-height 0.0))
-       ;; this macro is shadowed in with-sprite-primitive-environment
-       ;; they are here for the benefit of graphics functions which
-       ;; which do not use the sprite interface sprite
-       (macrolet ((with-sprites-hidden (draw-p &body body)
-                    ;; mostly a stub, we might want to use the command-can-draw?
-                    ;; arg in the future as a hint to propagate MODIFIED info
-                    `(progn
-                       (when ,draw-p (queue-modified-graphics-box
-                                      (graphics-sheet-superior-box ,',gr-sheet)))
-                       (progn . ,body))))
-;		    (declare (ignore draw-p))
-;		    `(unwind-protect
-;			  (progn
-;			    (dolist (ttl (graphics-sheet-object-list
-;					  ,',gr-sheet))
-;			      (when (shown? ttl) (fast-erase ttl)))
-;			    . ,body)
-;		       ;; All the turtles' save-unders
-;		       ;; have to updated since the moving turtle may
-;		       ;; have drawn on the portion of the screen
-;		       ;; where they are.
-;		       (dolist (ttl (graphics-sheet-object-list ,',gr-sheet))
-;			 (save-under-turtle ttl))
-;		       (dolist (ttl (graphics-sheet-object-list ,',gr-sheet))
-;			 (when (shown? ttl) (draw ttl))))))
-         (unless (null ,gr-sheet)
-           ;; set the variables if it is possible to do so.  We
-           ;; bind them and set them separately in order to centralize
-           ;; this check
-           (setq %bit-array (graphics-sheet-bit-array ,gr-sheet)
-                 %drawing-width (graphics-sheet-draw-wid ,gr-sheet)
-                 %drawing-height (graphics-sheet-draw-hei ,gr-sheet)
-                 %graphics-list (or %learning-shape-graphics-list
+	   (%drawing-half-height 0.0))
+	 (unless (null ,gr-sheet)
+	   ;; set the variables if it is possible to do so.  We
+	   ;; bind them and set them separately in order to centralize
+	   ;; this check
+	   (setq %bit-array (graphics-sheet-bit-array ,gr-sheet)
+		 %drawing-width (graphics-sheet-draw-wid ,gr-sheet)
+		 %drawing-height (graphics-sheet-draw-hei ,gr-sheet)
+		 %graphics-list (or %learning-shape-graphics-list
                                     %private-graphics-list
-                                    (graphics-sheet-graphics-list ,gr-sheet)
-                                    (let ((new-gl(make-graphics-command-list)))
-                                      (setf (graphics-sheet-graphics-list
-                                             ,gr-sheet)
-                                            new-gl)
-                                      new-gl))
-                 %draw-mode (graphics-sheet-draw-mode ,gr-sheet)
-                 %drawing-half-width (/ %drawing-width 2.0)
-                 %drawing-half-height (/ %drawing-height 2.0)))
-         ;; now do the rest
-         . ,body))))
-
-;;; just in case...
-
-(defmacro with-sprites-hidden (draw-p &body body)
-  (declare (ignore draw-p body))
-  (warn
-   "WITH-SPRITES-HIDDEN being called outside of WITH-GRAPHICS-VARS-BOUND")
-  `(error
-    "WITH-SPRITES-HIDDEN being called outside of WITH-GRAPHICS-VARS-BOUND"))
-
-(defmacro with-sprites-hidden-always (draw-p &body body)
-  (declare (ignore draw-p body))
-  (warn
-   "WITH-ALL-SPRITES-HIDDEN being used outside of WITH-GRAPHICS-VARS-BOUND")
-  `(error
-    "WITH-ALL-SPRITES-HIDDEN being used outside of WITH-GRAPHICS-VARS-BOUND"))
-
-
-
+				    (graphics-sheet-graphics-list ,gr-sheet)
+				    (let ((new-gl(make-graphics-command-list)))
+				      (setf (graphics-sheet-graphics-list
+					     ,gr-sheet)
+					    new-gl)
+				      new-gl))
+		 %draw-mode (graphics-sheet-draw-mode ,gr-sheet)
+		 %drawing-half-width (/ %drawing-width 2.0)
+		 %drawing-half-height (/ %drawing-height 2.0)))
+	 ;; now do the rest
+	 . ,body)))
 
 ;;; Set Up Clipping and Offsets
 
@@ -272,56 +228,6 @@ parameters of the graphics box are bound. "
        (unless (or (eq ':shrunk (display-style screen-box))
                    (not (graphics-screen-box? screen-box)))
          (drawing-on-turtle-slate screen-box ,@body)))))
-
-;;; This is like the With-Graphics-Screen-Parameters Except that
-;;; the body is only executed once (or not at all) on the "most
-;;; acceptable screen-box". "Most appropriate" is defined as
-;;; not clipped or if they are ALL clipped, the largest.
-
-(defmacro with-graphics-screen-parameters-once (&body body)
-  `(let ((best-screen-box nil))
-     (unless (no-graphics?)
-       (dolist (screen-box (get-visible-screen-objs %graphics-box))
-         (cond ((eq ':shrunk (display-style screen-box)))
-               ((not (graphics-screen-box? screen-box)))
-               ((and (not (screen-obj-x-got-clipped? screen-box))
-                     (not (screen-obj-y-got-clipped? screen-box)))
-                (setq best-screen-box screen-box)
-                (return))
-               ((null best-screen-box)
-                (setq best-screen-box screen-box))
-               (t
-                ;; If we get to here, then both the best-screen-box
-                ;; and the current screen-box are clipped so pick the
-                ;; bigger one.  We could be a little more sophisticated
-                ;; about how we choose...
-                (cond ((screen-obj-y-got-clipped? best-screen-box)
-                       (cond ((null (screen-obj-y-got-clipped? screen-box))
-                              (setq best-screen-box screen-box))
-                             ((> (screen-obj-hei screen-box)
-                                  (screen-obj-hei best-screen-box))
-                              (setq best-screen-box screen-box))))
-                      ((screen-obj-y-got-clipped? screen-box)
-                       ;;if the current box is clipped but the best one
-                       ;; isn't, then leave things alone
-                       )
-                      ((screen-obj-x-got-clipped? best-screen-box)
-                       (cond ((null (screen-obj-x-got-clipped? screen-box))
-                              (setq best-screen-box screen-box))
-                             ((> (screen-obj-wid screen-box)
-                                  (screen-obj-wid best-screen-box))
-                              (setq best-screen-box screen-box))))))))
-       (unless (null best-screen-box)
-         (drawing-on-turtle-slate best-screen-box ,@body)))))
-
-
-
-
-(defvar *scrunch-factor* 1
-  "the factor used to normalize the Y-coordinates so that squares really are")
-
-(defvar *minimum-graphics-dimension* 15
-  "The smallest you can make a graphics box")
 
 (defun make-graphics-sheet (wid hei &optional box)
   (let ((new-gs (%make-graphics-sheet-with-graphics-list wid hei box)))
@@ -731,10 +637,6 @@ parameters of the graphics box are bound. "
 ;; which happen to be the current active sprite
 (defvar *current-active-sprite* nil)
 
-(defvar *sprites-hidden* nil)
-
-(defvar *prepared-graphics-box* nil)
-
 ;;; Cocoa drawing: sprites dont draw onto the screen, they just update the graphics
 ;;; list and periodically, the GB box space, on the screen is cleared, the
 ;;; graphics list is blasted out and then the sprites are redrawn (any existing
@@ -746,27 +648,19 @@ parameters of the graphics box are bound. "
                                              &body body)
   `(let ((active-sprites (get-sprites)))
      (cond ((null active-sprites)
-            ,(if (null no-sprite-error)
-                 '(boxer-eval::signal-error :sprite-error "Don't have a Sprite to Talk to")
-                 'boxer-eval::*novalue*))
-           (t
-            (let* ((,sprite-var active-sprites)
-                   (,turtle-var (get-sprite-turtle ,sprite-var))
-                   (,gboxvar (get-graphics-box-from-sprite-box ,sprite-var)))
-              ;; get rid of bound but never used warnings
-              ,sprite-var ,turtle-var
-              (with-graphics-vars-bound (,gboxvar sheet)
-                (macrolet
-                    ((WITH-SPRITES-HIDDEN (command-can-draw? &body body)
-                       ;; mostly a stub, we might want to use the command-can-draw?
-                       ;; arg in the future as a hint to propagate MODIFIED info
-                       `(let* ((draw-p (and ,command-can-draw?
-                                            (not (eq (pen ,',turtle-var) 'bu::up)))))
-                          (when draw-p (queue-modified-graphics-box ,',gboxvar))
-                          (progn . ,body))))
-                  (prog1 (with-graphics-state (%graphics-list)
-                             (update-graphics-state ,turtle-var)
-                           ,@body)))))))))
+	    ,(if (null no-sprite-error)
+		 '(boxer-eval::signal-error :sprite-error "Don't have a Sprite to Talk to")
+		 'boxer-eval::*novalue*))
+	   (t
+	    (let* ((,sprite-var active-sprites)
+		   (,turtle-var (get-sprite-turtle ,sprite-var))
+		   (,gboxvar (get-graphics-box-from-sprite-box ,sprite-var)))
+	      ;; get rid of bound but never used warnings
+	      ,sprite-var ,turtle-var
+	      (with-graphics-vars-bound (,gboxvar sheet)
+		  (prog1 (with-graphics-state (%graphics-list)
+			     (update-graphics-state ,turtle-var)
+			   ,@body))))))))
 
 
 ;;; This is used by sprite update functions when they are passed an illegal arg
@@ -782,27 +676,7 @@ parameters of the graphics box are bound. "
 
 ;;;; Some useful variables
 
-;;; When a turtle is created, all of the boxes corresponding
-;;; to instance variables have also been created.  What needs
-;;; to be done here is to put the boxes inthe right place
-;;; At this time, that means the x-position, y-position and
-;;; heading boxes are in the box proper and all the other slots
-;;; live in the closet of the sprite-box.
-
-(defvar *initially-visible-sprite-instance-slots*
-        '(x-position y-position heading))
-
-(defvar *turtle-slots-that-need-boxes*
-        '(x-position y-position heading
-                     shown? pen
-                     home-position sprite-size shape))
-
-(defvar *name-flashing-pause-time* 2.
-  "Time in Seconds to Pause when flashing the name of a Sprite")
-
-
 (defvar %mouse-usurped nil "Used in move-to to prevent changing boxes")
-(defvar %new-shape nil "The new shape vectors are collected here when doing a set-shape")
 
 ;; defined in vars.lisp
 ;; (defvar %learning-shape? nil "This is t when doing a set-shape")

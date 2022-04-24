@@ -338,15 +338,6 @@ Modification History (most recent at the top)
   "Periodically update the screen during eval, valid values are :always,:changed-graphics, and :never")
 ; :changed-graphics simulates the old behavior
 
-(defvar *screen-boxes-modified* ':toplevel
-  "Screen boxes modifed during eval")
-
-(defun queue-modified-graphics-box (gb)
-  (unless (or (eq *screen-boxes-modified* ':toplevel) (eq gb ':no-graphics))
-    (dolist (sb (displayed-screen-objs gb))
-      (unless (fast-memq sb *screen-boxes-modified*)
-        (push sb *screen-boxes-modified*)))))
-
 ;;; right now these are flushed by the got-redisplayed
 ;;; method (probably not the best place)
 
@@ -362,12 +353,6 @@ Modification History (most recent at the top)
   (sy 0)
   (valid nil)
   )
-
-
-;; more stuff for the top-level-eval-wrapper....
-(defmacro with-screen-box-modification-tracking (&body body)
-  `(let ((*screen-boxes-modified* nil))
-     . ,body))
 
 ;; might have to propagate modified to EB's after eval for proper
 ;; final redisplay
