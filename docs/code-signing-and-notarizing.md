@@ -39,7 +39,7 @@ codesign generating a "The specified item could not be found in the keychain" er
 
 ```sh
 # Signing the entire application bundle
-codesign --force --verbose --entitlements ~/code/boxer-sunrise2/data/boxersunrise.app/Contents/Resources/boxer.entitlements --option runtime --deep -s "Developer ID Application" ./current-test-build/boxersunrise-wip.app
+codesign --force --verbose --entitlements ~/code/boxer-sunrise/data/boxersunrise.app/Contents/Resources/boxer.entitlements --option runtime --deep -s "Developer ID Application" ./current-test-build/boxersunrise-wip.app
 
 # Compress the app into a zip file
 cd data
