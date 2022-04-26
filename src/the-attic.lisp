@@ -11354,6 +11354,29 @@ Modification History (most recent at top)
 ;;;; FILE: new-borders.lisp
 ;;;;
 
+;;;; used in various border GUI's & popup docs
+;; these bitmaps are used to save *small* pieces of the screen before displaying
+;; popup menus or other GUI items
+;; we use an PDL allocation mechanism to prepare for a future which may include
+;; recursive walking menus
+
+(defvar *bitmap-backing-store* nil)
+
+(defun allocate-backing-store (w h)
+  (let ((existing (pop *bitmap-backing-store*)))
+    (cond ((null existing) (make-offscreen-bitmap *boxer-pane* w h))
+          ((or (< (offscreen-bitmap-width existing) w)
+               (< (offscreen-bitmap-height existing) h))
+           ;; existing bitmap is too small
+           (free-offscreen-bitmap existing)
+           ;; make a new one which is large enough. This should have the effect that
+           ;; the one bitmap will grow big enough to handle all situations
+           (make-offscreen-bitmap *boxer-pane* w h))
+          (t existing))))
+
+(defun deallocate-backing-store (bm)
+  (push bm *bitmap-backing-store*))
+
 ;; stub...
 (defun box-borders-zoom (box-type screen-box
           start-wid start-hei end-wid end-hei
