@@ -800,8 +800,6 @@
       (repaint-inferiors-pass-2-sr self)
       (got-repainted self))))
 
-(defun brand-new? (screen-obj) (=& (screen-obj-tick screen-obj) -1))
-
 (defvar *tutti-frutti* nil)
 
 (defmethod repaint-pass-2-sb ((self screen-box))

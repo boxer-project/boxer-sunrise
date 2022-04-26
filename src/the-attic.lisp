@@ -12483,6 +12483,7 @@ Modification History (most recent at top)
 ;;;; FILE: repaint.lisp
 ;;;;
 
+(defun brand-new? (screen-obj) (=& (screen-obj-tick screen-obj) -1))
 
 #|
 ;; unused ?
