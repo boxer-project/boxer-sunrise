@@ -1012,10 +1012,6 @@
   (when (>= acc-wid x)
     (return (1- cha-no)))))))
 
-
-;;; stuff from the old border-macros.lisp file
-
-
 (defvar *zoom-step-pause-time* 0
   "Seconds to pause between each step in zooming a box.
    Default is 0 meaning zoom as fast as the machine will go.")
