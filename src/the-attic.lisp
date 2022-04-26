@@ -7423,6 +7423,16 @@ if it is out of bounds
 ;;;; FILE: grmeth.lisp
 ;;;;
 
+;;; need to support overlay here...
+(defmethod fast-erase ((turtle button))
+  (unless (eq turtle *current-active-sprite*)
+    (if (eq (turtle-save-under turtle) 'xor-redraw)
+        (draw turtle)
+        (restore-under-turtle turtle))))
+
+(defmethod erase ((self button))
+  (when (absolute-shown? self) (fast-erase self)))
+
 (defmethod update-save-under ((self button))
   (let ((shape (shape self))
 	(save-under (slot-value self 'save-under))
@@ -7735,6 +7745,11 @@ if it is out of bounds
 ;;;;
 ;;;; FILE: grobjs.lisp
 ;;;;
+
+;; 2022-04-25 This was a slot on defclass button
+   (save-under :initform nil
+               :accessor turtle-save-under)
+
 
 ;;; The actual def-redisplay-initialization moved to gdispl.lisp
 ;;; for ordering reasons

@@ -530,13 +530,14 @@ parameters of the graphics box are bound. "
 ;;
 ;; Also, clip to the containing graphics-box's dimensions
 
-(defun save-under-turtle (turtle)
-  (declare (ignore turtle))
-  (log:debug "Is save-under-turtle really necessary?"))
-
-(defun restore-under-turtle (turtle)
-  (declare (ignore turtle))
-  (log:debug "Is restore-under-turtle really necessary?"))
+;; sgithens TODO Remove save-under
+; (defun save-under-turtle (turtle)
+;   (declare (ignore turtle))
+;   (log:debug "Is save-under-turtle really necessary?"))
+;
+; (defun restore-under-turtle (turtle)
+;   (declare (ignore turtle))
+;   (log:debug "Is restore-under-turtle really necessary?"))
 
 ;;;; Sprite Access
 

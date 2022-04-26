@@ -1724,16 +1724,20 @@ should ignore it.")
                       (when (<= *file-bin-version* 9)
                         (setf (slot-value self 'sprite-size)
                               (%make-iv-box-interface 1 'sprite-size)))
-                      (cond ((eq value 'save-under)
-                             (setf (slot-value self 'save-under) nil)
-                             ;; handle
-                             (update-save-under self))
-                            ((fast-memq value *valid-save-under-keywords*)
-                             (setf (slot-value self 'save-under) value))
-                            (t
-                             (warn "~S is a bad value for the save-under")
-                             (setf (slot-value self 'save-under) nil)
-                             (update-save-under self))))))))
+                    ;; sgithens TODO 2022-04-25 We don't keep any save-under slots around anymore
+                ;       (cond ((eq value 'save-under)
+                ;              (setf (slot-value self 'save-under) nil)
+                ;              ;; handle
+                ;         ;      (update-save-under self)
+                ;              )
+                ;             ((fast-memq value *valid-save-under-keywords*)
+                ;              (setf (slot-value self 'save-under) value))
+                ;             (t
+                ;              (warn "~S is a bad value for the save-under")
+                ;              (setf (slot-value self 'save-under) nil)
+                ;              (update-save-under self)))
+                             )
+                             ))))
 
 (defmethod partial-initialize ((self graphics-cursor) keyword value)
   (or (call-next-method)		; returns non NIL if already handled
@@ -1778,12 +1782,14 @@ should ignore it.")
                        ;; need to check to see if the save-under needs
                        ;; to be reitinitialized since it was created
                        ;; with an assumed sprite-size of 1
-                       (when (and  (<= *file-bin-version* 9)
-                                   (not (= value 1))
-                                   (slot-boundp self 'save-under)
-                                   (save-under-p (slot-value self
-                                                             'save-under)))
-                         (update-save-under self))))
+                       ;; sgithens TODO remove no more save-unders
+                ;        (when (and  (<= *file-bin-version* 9)
+                ;                    (not (= value 1))
+                ;                    (slot-boundp self 'save-under)
+                ;                    (save-under-p (slot-value self
+                ;                                              'save-under)))
+                ;          (update-save-under self))
+                         ))
         (private-gl (setf (slot-value self 'private-gl) value)))))
 
 
@@ -1815,7 +1821,8 @@ should ignore it.")
                         (car value))
                     'shape))
              ;(update-save-under turtle)
-             (setf (turtle-save-under turtle) 'xor-redraw))
+             ;(setf (turtle-save-under turtle) 'xor-redraw)
+             )
             ((and (not (null *check-for-and-convert-old-vlist-style*))
                   (eq slot 'size))
              (setf (slot-value turtle 'sprite-size)
@@ -1825,15 +1832,17 @@ should ignore it.")
              (setf (slot-value turtle 'home-position)
                    (%make-iv-box-interface (car value) 'home-position)))
             ((eq slot 'save-under)
-             (cond ((eq value 'xor-redraw)
-                    (setf (slot-value turtle slot) value))
-                   ((eq value 'save-under)
-                    (setf (slot-value turtle slot) nil)
-                    (update-save-under turtle))
-                   (t
-                    (warn "~S is a bad value for the save-under")
-                    (setf (slot-value turtle slot) nil)
-                    (update-save-under turtle))))
+             ;; sgithens TODO remove no more save-unders, just leave this condition empty
+        ;      (cond ((eq value 'xor-redraw)
+        ;             (setf (slot-value turtle slot) value))
+        ;            ((eq value 'save-under)
+        ;             (setf (slot-value turtle slot) nil)
+        ;             (update-save-under turtle))
+        ;            (t
+        ;             (warn "~S is a bad value for the save-under")
+        ;             (setf (slot-value turtle slot) nil)
+        ;             (update-save-under turtle)))
+                    )
             ((fast-memq slot
                         '(x-position y-position heading pen-width sprite-size))
              (setf (slot-value turtle slot)

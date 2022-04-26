@@ -95,8 +95,6 @@
 (defclass button
   (graphics-object)
   ((shape      :initform nil)
-   (save-under :initform nil
-               :accessor turtle-save-under)
    (window-shape :initform nil
                  :accessor turtle-window-shape))
   (:metaclass block-compile-class))
@@ -156,13 +154,15 @@
 (defun make-turtle ()
   (make-instance 'turtle))
 
+; sgithens TODO Remove
 ;; soon to be '(xor-redraw overlay)
-(defvar *valid-save-under-keywords* '(xor-redraw))
+; (defvar *valid-save-under-keywords* '(xor-redraw))
 
-(defstruct (save-under (:constructor make-save-under (bitmap middle size)))
-  (bitmap nil)
-  (middle 0)
-  (size))
+; sgithens TODO Remove
+; (defstruct (save-under (:constructor make-save-under (bitmap middle size)))
+;   (bitmap nil)
+;   (middle 0)
+;   (size))
 
 ;; sgithens TODO, for some reason this complains that graphics-object is unbound...
 ;; (deftype-checking-macros graphics-object "A Graphics Object")

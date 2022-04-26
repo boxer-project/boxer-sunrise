@@ -652,10 +652,11 @@ CLOSED for renovations until I fix the string/font situation
 ;;; Need to put in support for overlay planes
 ;;;
 
-(defmethod update-save-under ((self button))
-  (declare (ignore self))
-  (log:debug "Is update-save-under really necessary?")
-)
+; sgithens TODO Remove  along with the related comments above
+; (defmethod update-save-under ((self button))
+;   (declare (ignore self))
+;   (log:debug "Is update-save-under really necessary?")
+; )
 
 (defmethod update-window-shape-allocation ((self button))
   (let ((window-shape (slot-value self 'window-shape))
@@ -735,16 +736,6 @@ CLOSED for renovations until I fix the string/font situation
     (unless (eq (shown? self) ':no-subsprites)
       (dolist (subs (slot-value self 'subsprites))
         (draw-update subs)))))
-
-;;; need to support overlay here...
-(defmethod fast-erase ((turtle button))
-  (unless (eq turtle *current-active-sprite*)
-    (if (eq (turtle-save-under turtle) 'xor-redraw)
-        (draw turtle)
-        (restore-under-turtle turtle))))
-
-(defmethod erase ((self button))
-  (when (absolute-shown? self) (fast-erase self)))
 
 (defmethod show-turtle ((self button))
   (set-shown? self t))
