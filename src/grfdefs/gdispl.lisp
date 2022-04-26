@@ -1618,18 +1618,6 @@ Modification History (most recent at the top)
     (setq *graphics-state-current-alu* new-alu)))
 )
 
-; old (non-caching) implementation
-;(defgraphics-handler (change-alu *turtle-graphics-handlers*) (trans-x
-;							      trans-y
-;							      cos-scale
-;							      sin-scale
-;							      scale)
-;  ;; prevent bound but never used errors
-;  ;; we can't use declare because the body is expanded in the wrong place
-;  trans-x trans-y cos-scale sin-scale scale
-;  (unless (=& new-alu *graphics-state-current-alu*)
-;    (setq *graphics-state-current-alu* new-alu)))
-
 (defun canonicalize-file-alu (alu)
   (case alu
     (#.alu-andca 'alu-andca)
