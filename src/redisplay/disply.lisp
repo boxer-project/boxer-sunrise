@@ -853,52 +853,6 @@
                 (VALUES (SCREEN-OBJ-ACTUAL-OBJ PREVIOUS-OUTERMOST-SCREEN-BOX)
                         PREVIOUS-OUTERMOST-SCREEN-BOX))))
 
-(defun box-border-zoom-in (new-screen-box window)
-  (unless (null *zoom-step-pause-time*)
-    (drawing-on-window (window)
-                       (when (when (not-null new-screen-box)(visible? new-screen-box))
-                         (multiple-value-bind (new-screen-box-wid new-screen-box-hei)
-                                              (screen-obj-size new-screen-box)
-                                              (multiple-value-bind (new-screen-box-x new-screen-box-y)
-                                                                   (xy-position new-screen-box)
-                                                                   (multiple-value-bind (outermost-screen-box-wid
-                                                                                         outermost-screen-box-hei)
-                                                                                        (outermost-screen-box-size)
-                                                                                        (multiple-value-bind (outermost-screen-box-x
-                                                                                                              outermost-screen-box-y)
-                                                                                                             (outermost-screen-box-position)
-                                                                                                             (box-borders-zoom
-                                                                                                              (class-name (class-of (screen-obj-actual-obj new-screen-box)))
-                                                                                                              new-screen-box
-                                                                                                              outermost-screen-box-wid outermost-screen-box-hei
-                                                                                                              new-screen-box-wid new-screen-box-hei
-                                                                                                              outermost-screen-box-x outermost-screen-box-y
-                                                                                                              new-screen-box-x new-screen-box-y
-                                                                                                              20.)))))))))
-
-(defun box-border-zoom-out (old-screen-box window)
-  (unless (null *zoom-step-pause-time*)
-    (drawing-on-window (window)
-                       (when (when (not-null old-screen-box)(visible? old-screen-box))
-                         (multiple-value-bind (old-screen-box-wid old-screen-box-hei)
-                                              (screen-obj-size old-screen-box)
-                                              (multiple-value-bind (old-screen-box-x old-screen-box-y)
-                                                                   (xy-position old-screen-box)
-                                                                   (multiple-value-bind (outermost-screen-box-wid
-                                                                                         outermost-screen-box-hei)
-                                                                                        (outermost-screen-box-size)
-                                                                                        (multiple-value-bind (outermost-screen-box-x
-                                                                                                              outermost-screen-box-y)
-                                                                                                             (outermost-screen-box-position)
-                                                                                                             (box-borders-zoom
-                                                                                                              (class-name (class-of (screen-obj-actual-obj old-screen-box)))
-                                                                                                              old-screen-box
-                                                                                                              old-screen-box-wid old-screen-box-hei
-                                                                                                              outermost-screen-box-wid outermost-screen-box-hei
-                                                                                                              old-screen-box-x old-screen-box-y
-                                                                                                              outermost-screen-box-x outermost-screen-box-y
-                                                                                                              16.)))))))))
-
 (defun set-outermost-box (new-outermost-box
                           &optional (new-outermost-screen-box
                                      (car (when (not-null new-outermost-box)
@@ -921,13 +875,12 @@
        ;;;	   (redraw-status-line (name-string new-outermost-box))
        ;; outermost box based save document should uncomment next line...
        ;(set-window-name (current-file-status new-outermost-box))
-       (box-border-zoom-out new-outermost-screen-box window)
        (set-outermost-screen-box
         (allocate-outermost-screen-box-for-use-in new-outermost-box window
                                                   new-outermost-screen-box)
         window)
        (update-shrink-proof-display)
-       (box-border-zoom-in old-outermost-screen-box window)))))
+       ))))
 
 
 

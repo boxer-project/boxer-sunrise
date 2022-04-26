@@ -779,18 +779,6 @@
     (values x-pos
             (+ y *border-outside-space* *border-name-padding* *basic-border-width*))))
 
-;;; stub...
-(defun box-borders-zoom (box-type screen-box
-          start-wid start-hei end-wid end-hei
-          start-x start-y end-x end-y
-          steps)
-  (declare (ignore box-type screen-box start-wid start-hei end-wid end-hei
-                   start-x start-y end-x end-y steps))
-  )
-
-
-
-
 ;;;; Mousing around
 ;;;; Mouse support
 
