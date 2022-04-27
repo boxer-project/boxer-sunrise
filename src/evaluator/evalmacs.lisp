@@ -168,19 +168,6 @@
 (defmacro squid-token? (thing)
   `(eq (special-token-type ,thing) 'self-quoting-internal-datum))
 
-;;;
-;;; Compiler interface
-;;;
-(defvar *old-compilation-speed* 0)
-
-(defmacro compile-lambda-if-possible (name lambda-form)
-  `(cond ((null *compile-boxer-generated-lambda?*) ,lambda-form)
-     ((eq *compile-boxer-generated-lambda?* :fast-compile)
-      (proclaim '(optimize (compilation-speed 3)))
-      (unwind-protect (symbol-function (compile ,name ,lambda-form))
-                      (proclaim `(optimize (compilation-speed ,*old-compilation-speed*)))))
-     (t
-      (symbol-function (compile ,name ,lambda-form)))))
 
 ;;;
 ;;; Polling/Interrupts

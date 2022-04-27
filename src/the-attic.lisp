@@ -11,6 +11,9 @@
 ;;;;     with lists
 ;;;;   - sysprims.lisp contains a number of unused preferences, some of which we *may* want
 ;;;;     to bring back in the future, such as some options for the serial line interface
+;;;;   - compile-lambda-if-possible in evalmacs.lisp is an interesting usage of performing
+;;;;     optimizations to particular lambda optimizations
+
 
 ;;;;
 ;;;; FILE: applefile.lisp
@@ -5508,6 +5511,20 @@ if it is out of bounds
 ;;;; FILE: evalmacs.lisp
 ;;;;
 
+;;;
+;;; Compiler interface
+;;;
+(defvar *old-compilation-speed* 0)
+
+(defmacro compile-lambda-if-possible (name lambda-form)
+  `(cond ((null *compile-boxer-generated-lambda?*) ,lambda-form)
+     ((eq *compile-boxer-generated-lambda?* :fast-compile)
+      (proclaim '(optimize (compilation-speed 3)))
+      (unwind-protect (symbol-function (compile ,name ,lambda-form))
+                      (proclaim `(optimize (compilation-speed ,*old-compilation-speed*)))))
+     (t
+      (symbol-function (compile ,name ,lambda-form)))))
+
 ;;; POSSIBLE-EVAL-OBJECT? tells whether it is legal to look in slot 0.
 (defmacro possible-eval-object? (thing)
   #+(or lucid lispworks)
@@ -5714,6 +5731,30 @@ if it is out of bounds
   (let ((pathname (boxer-open-file-dialog :prompt "Set Boxer File Info for:")))
     (ccl::set-mac-file-type pathname :boxr)
     (ccl::set-mac-file-creator pathname :boxr)))
+
+;;;;
+;;;; FILE: funs.lisp
+;;;;
+
+(defun make-boxer-primitive-internal (arglist code)
+  (let ((name (gensym)))
+    (proclaim `(special ,name))
+    (let ((lisp-function-object
+           (compile-lambda-if-possible
+            name
+            `(lambda ()
+                     (let ,(mapcar
+                            #'(lambda (u) `(,u (vpdl-pop-no-test)))
+                            (reverse arglist))
+                       . ,code)))))
+      (boxer-toplevel-set
+       name
+       (make-compiled-boxer-function
+        :arglist arglist
+        :precedence 0
+        :infix-p nil
+        :object lisp-function-object)))
+    name))
 
 ;;;;
 ;;;; FILE: ftp.lisp
