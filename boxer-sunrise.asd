@@ -155,7 +155,9 @@
                  (:file "filesystem/loader")
                  (:file "filesystem/clientmacros")
                  (:file "filesystem/bfslocal")
-                 (:file "filesystem/bfsforeign")
+                 ; sgithens 2022-04-25 Test commenting this out as a grep of all the top level items
+                 ; seems that nothing is being used in here. Remove after a release or two.
+                 ; (:file "filesystem/bfsforeign")
                  (:file "filesystem/client")
                  (:file "filesystem/surf")
                  (:file "filesystem/http")
