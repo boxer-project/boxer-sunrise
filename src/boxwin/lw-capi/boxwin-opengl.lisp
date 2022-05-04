@@ -897,6 +897,9 @@ in macOS."
   (setq *point-blinker* (make-blinker *boxer-pane*))
   #+cocoa
   (capi:set-application-interface (make-instance 'cocoa-boxer-interface))
+  ;; This finishes starting the application so we don't get event queue errors on some versions of macOS
+  ;; for performing other thread tasks before application startup.
+  (capi:convert-to-screen nil)
 
   ;; load prefs if they exists
   (let ((pf (boxer::default-lw-pref-file-name)))
