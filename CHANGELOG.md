@@ -1,10 +1,21 @@
 # Change Log
 
-## 3.4.9 2022-04-??
+## 3.4.9 2022-05-05
 
 ### Overview
 
-First external contribution from chaals cleaning up some typos in the README
+This release fixes a large handful of small to medium sized bugs, includes some extensive under the hoods refactoring
+for future graphics performance improvements, and some desktop environment niceties. These include reviving the
+modified files dialog to allow saving/discarding modified file boxes before close, and the ability to launch Boxer by
+double clicking on a .box file in the Finder, or by dragging a box file on to the applications icon in the Dock. The
+Preferences dialog has gotten a first iteration overhaul as well, with a nicer looking dialog. We are planning for preferences to autosave in the next iteration.
+
+This release has been tested on macOS Catalina, Big Sur, and Monterey on Intel and M1.  There is a known bug with the
+open file dialog on Mojave, which will hopefully be addressed in a future build.  We do intend to start making Windows
+builds again soon, there has been some effort involved with the Intel/M1 work and other transitions, but these should
+return in a very cross platform way in the near future.
+
+This release features our first external contribution from @chaals cleaning up some typos in the README. Thanks @chaals!
 
 ### Full Change Log
 
@@ -100,7 +111,12 @@ the-attic
   - with-turtle-slate-origins, *allowed-alus*, vlist-alu?
   - commented out defsprite-update-function
   - Archiving primitive with-sprites-hidden
-
+  - Removing stub/usage of box-border-zoom-in, box-border-zoom-out, box-borders-zoom
+  - Archiving old commented out version of change-alu
+  - Archiving unused *bitmap-backing-store*, allocate-backing-store, deallocate-backing-store
+  - Removing unused brand-new? defun
+  - Archiving unused make-boxer-primitive-internal, compile-lambda-if-possible, *old-compilation-speed*
+  - Test commenting out bfsforeign.lisp
 
 ## 3.4.8 2022-02-16
 
