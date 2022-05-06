@@ -15,6 +15,9 @@ open file dialog on Mojave, which will hopefully be addressed in a future build.
 builds again soon, there has been some effort involved with the Intel/M1 work and other transitions, but these should
 return in a very cross platform way in the near future.
 
+It is a known issue that with certain small .box files that are double clicked to open Boxer may not be loaded on startup.
+Double clicking them in the finder will open them.  This is a timing issue that will be fixed in the build.
+
 This release features our first external contribution from @chaals cleaning up some typos in the README. Thanks @chaals!
 
 ### Full Change Log
