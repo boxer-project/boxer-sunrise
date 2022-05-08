@@ -29,6 +29,9 @@
     #+macosx (sys:get-folder-path :my-preferences)
     #+linux (uiop:xdg-config-home)))
 
+(defvar *preferences-dialog* nil
+  "This is the global instance of the capi:interface preferences dialog, so there is only 1 at any given time.")
+
 (defvar boxer::*preference-dialog-change-list* nil)
 
 (defvar *prefs-subgroups* nil)
@@ -60,6 +63,7 @@
                       (string-capitalize (car group))
                       (make-instance
                        'capi:column-layout
+                       :background :transparent
                        :description
                        (boxer::with-collection
                          (dolist (pref (cdr group))
@@ -85,30 +89,19 @@
        )
    ;; and now the main dialog
    (capi:make-container
-    (make-instance 'capi:column-layout
-     :description
-     (list
-      ;; here are the pieces of the prefs dialog
-      (make-instance 'capi:tab-layout
-                     :print-function 'car :visible-child-function 'cadr
-                    ;  :combine-child-constraints t
-                     :items tab-layout-groups)
-      ;; buttons (cancel, Set, Set&Save)
-      (make-instance 'capi:push-button-panel
-                         :items (list
-                           (make-instance 'capi:push-button
-                             :text "Cancel" :selection-callback 'capi:abort-dialog)
-                           (make-instance 'capi:push-button
-                             :text "Set" :selection-callback #'(lambda (&rest ignore)
-                                                                 (declare (ignore ignore))
-                                                                 (capi:exit-dialog t)))
-                           (make-instance 'capi:push-button
-                             :text "Set & Save"
-                             :selection-callback #'(lambda (&rest ignore)
-                                                     (declare (ignore ignore))
-                                                      (capi:exit-dialog :save)))
-                         ))
-  )))))
+     (make-instance 'capi:column-layout
+       :description
+       (list
+        ;; here are the pieces of the prefs dialog
+        (make-instance 'capi:tab-layout
+                       :print-function 'car :visible-child-function 'cadr
+                      ;  :combine-child-constraints t
+                       :items tab-layout-groups
+                         :background :transparent))
+      :background :transparent)
+     :title "Preferences"
+     :background :transparent
+  )))
 
 (defun fixup-pref-name (name)
   (substitute #\space #\- (string-capitalize name)))
@@ -166,13 +159,8 @@
 
 (boxer::defboxer-command boxer::com-boxer-preferences ()
   "Open the Preferences Dialog"
-  (let ((dialog (make-preferences-dialog)))
-    (unwind-protect
-      (let ((ok? (capi:display-dialog dialog :modal t :owner *boxer-frame*)))
-        (when ok?
-          (dolist (change boxer::*preference-dialog-change-list*)
-            (funcall (car change) (cdr change))))
-        (when (eq ok? :save) (boxer::write-preferences)))
-      (setq boxer::*preference-dialog-change-list* nil)
-    )
-    boxer-eval::*novalue*))
+  (unless *preferences-dialog*
+    (setf *preferences-dialog* (make-preferences-dialog)))
+  (capi:display *preferences-dialog*)
+  (capi:activate-pane *preferences-dialog*)
+  boxer-eval::*novalue*)

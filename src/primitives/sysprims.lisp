@@ -152,7 +152,17 @@
                      (cond ((not (null existing))
                             (setf (cdr existing) value))
                        (t (push (cons ',queued-pref-name value)
-                                *preference-dialog-change-list*)))))
+                                *preference-dialog-change-list*)))
+
+                     ;; sgithens 2022-05-07 Updating the functionality of the prefs dialog to save/update automatically,
+                     ;; rather than requiring Saving on dialog exit. The below used to be called when the dialog was
+                     ;; confirmed, now we are just calling it on each input change. This loop and entire thing can likely
+                     ;; be drastically cleaned up.
+                     (dolist (change boxer::*preference-dialog-change-list*)
+                      (funcall (car change) (cdr change)))
+                     (boxer::write-preferences)
+                     (setq boxer::*preference-dialog-change-list* nil)
+                   ))
                  #+(or mcl lispworks)
                  (defun ,dialog-item-doc-name ()
                    ',(unpack-documentation (cdr documentation))
