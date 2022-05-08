@@ -1172,7 +1172,7 @@
                            (slot-value box 'graphics-info)))
          (display-style (display-style-list box)))
     (cond ((and (not (display-style-graphics-mode? display-style))
-                (null graphics-sheet))
+                (not (graphics-box? box)))
            (boxer-editor-error "This box has no graphics"))
       ((eq screen-box *outermost-screen-box*)
        (boxer-editor-error "Can't toggle the view of the Outermost Box"))
