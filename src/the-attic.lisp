@@ -11,6 +11,9 @@
 ;;;;     with lists
 ;;;;   - sysprims.lisp contains a number of unused preferences, some of which we *may* want
 ;;;;     to bring back in the future, such as some options for the serial line interface
+;;;;   - compile-lambda-if-possible in evalmacs.lisp is an interesting usage of performing
+;;;;     optimizations to particular lambda optimizations
+
 
 ;;;;
 ;;;; FILE: applefile.lisp
@@ -4316,6 +4319,54 @@ Modification History (most recent at top)
 ;;;; FILE: disply.lisp
 ;;;;
 
+;; sgithens 2022-04-25 These are only calling a stub function, and hopefully can be done
+;; in a less complex fashion...
+(defun box-border-zoom-in (new-screen-box window)
+  (unless (null *zoom-step-pause-time*)
+    (drawing-on-window (window)
+                       (when (when (not-null new-screen-box)(visible? new-screen-box))
+                         (multiple-value-bind (new-screen-box-wid new-screen-box-hei)
+                                              (screen-obj-size new-screen-box)
+                                              (multiple-value-bind (new-screen-box-x new-screen-box-y)
+                                                                   (xy-position new-screen-box)
+                                                                   (multiple-value-bind (outermost-screen-box-wid
+                                                                                         outermost-screen-box-hei)
+                                                                                        (outermost-screen-box-size)
+                                                                                        (multiple-value-bind (outermost-screen-box-x
+                                                                                                              outermost-screen-box-y)
+                                                                                                             (outermost-screen-box-position)
+                                                                                                             (box-borders-zoom
+                                                                                                              (class-name (class-of (screen-obj-actual-obj new-screen-box)))
+                                                                                                              new-screen-box
+                                                                                                              outermost-screen-box-wid outermost-screen-box-hei
+                                                                                                              new-screen-box-wid new-screen-box-hei
+                                                                                                              outermost-screen-box-x outermost-screen-box-y
+                                                                                                              new-screen-box-x new-screen-box-y
+                                                                                                              20.)))))))))
+
+(defun box-border-zoom-out (old-screen-box window)
+  (unless (null *zoom-step-pause-time*)
+    (drawing-on-window (window)
+                       (when (when (not-null old-screen-box)(visible? old-screen-box))
+                         (multiple-value-bind (old-screen-box-wid old-screen-box-hei)
+                                              (screen-obj-size old-screen-box)
+                                              (multiple-value-bind (old-screen-box-x old-screen-box-y)
+                                                                   (xy-position old-screen-box)
+                                                                   (multiple-value-bind (outermost-screen-box-wid
+                                                                                         outermost-screen-box-hei)
+                                                                                        (outermost-screen-box-size)
+                                                                                        (multiple-value-bind (outermost-screen-box-x
+                                                                                                              outermost-screen-box-y)
+                                                                                                             (outermost-screen-box-position)
+                                                                                                             (box-borders-zoom
+                                                                                                              (class-name (class-of (screen-obj-actual-obj old-screen-box)))
+                                                                                                              old-screen-box
+                                                                                                              old-screen-box-wid old-screen-box-hei
+                                                                                                              outermost-screen-box-wid outermost-screen-box-hei
+                                                                                                              old-screen-box-x old-screen-box-y
+                                                                                                              outermost-screen-box-x outermost-screen-box-y
+                                                                                                              16.)))))))))
+
 #|
 
 (defun screen-object-new-width (screen-object)
@@ -5460,6 +5511,20 @@ if it is out of bounds
 ;;;; FILE: evalmacs.lisp
 ;;;;
 
+;;;
+;;; Compiler interface
+;;;
+(defvar *old-compilation-speed* 0)
+
+(defmacro compile-lambda-if-possible (name lambda-form)
+  `(cond ((null *compile-boxer-generated-lambda?*) ,lambda-form)
+     ((eq *compile-boxer-generated-lambda?* :fast-compile)
+      (proclaim '(optimize (compilation-speed 3)))
+      (unwind-protect (symbol-function (compile ,name ,lambda-form))
+                      (proclaim `(optimize (compilation-speed ,*old-compilation-speed*)))))
+     (t
+      (symbol-function (compile ,name ,lambda-form)))))
+
 ;;; POSSIBLE-EVAL-OBJECT? tells whether it is legal to look in slot 0.
 (defmacro possible-eval-object? (thing)
   #+(or lucid lispworks)
@@ -5478,6 +5543,18 @@ if it is out of bounds
 ;;;;
 ;;;; FILE: gdispl.lisp
 ;;;;
+
+; old (non-caching) implementation
+;(defgraphics-handler (change-alu *turtle-graphics-handlers*) (trans-x
+;							      trans-y
+;							      cos-scale
+;							      sin-scale
+;							      scale)
+;  ;; prevent bound but never used errors
+;  ;; we can't use declare because the body is expanded in the wrong place
+;  trans-x trans-y cos-scale sin-scale scale
+;  (unless (=& new-alu *graphics-state-current-alu*)
+;    (setq *graphics-state-current-alu* new-alu)))
 
 ;; sgithens 2022-03-10 alu version of sprite-commands-for-new-position
 (defun sprite-commands-for-new-position (new-x new-y &optional (alu alu-seta))
@@ -5654,6 +5731,30 @@ if it is out of bounds
   (let ((pathname (boxer-open-file-dialog :prompt "Set Boxer File Info for:")))
     (ccl::set-mac-file-type pathname :boxr)
     (ccl::set-mac-file-creator pathname :boxr)))
+
+;;;;
+;;;; FILE: funs.lisp
+;;;;
+
+(defun make-boxer-primitive-internal (arglist code)
+  (let ((name (gensym)))
+    (proclaim `(special ,name))
+    (let ((lisp-function-object
+           (compile-lambda-if-possible
+            name
+            `(lambda ()
+                     (let ,(mapcar
+                            #'(lambda (u) `(,u (vpdl-pop-no-test)))
+                            (reverse arglist))
+                       . ,code)))))
+      (boxer-toplevel-set
+       name
+       (make-compiled-boxer-function
+        :arglist arglist
+        :precedence 0
+        :infix-p nil
+        :object lisp-function-object)))
+    name))
 
 ;;;;
 ;;;; FILE: ftp.lisp
@@ -11294,6 +11395,38 @@ Modification History (most recent at top)
 ;;;; FILE: new-borders.lisp
 ;;;;
 
+;;;; used in various border GUI's & popup docs
+;; these bitmaps are used to save *small* pieces of the screen before displaying
+;; popup menus or other GUI items
+;; we use an PDL allocation mechanism to prepare for a future which may include
+;; recursive walking menus
+
+(defvar *bitmap-backing-store* nil)
+
+(defun allocate-backing-store (w h)
+  (let ((existing (pop *bitmap-backing-store*)))
+    (cond ((null existing) (make-offscreen-bitmap *boxer-pane* w h))
+          ((or (< (offscreen-bitmap-width existing) w)
+               (< (offscreen-bitmap-height existing) h))
+           ;; existing bitmap is too small
+           (free-offscreen-bitmap existing)
+           ;; make a new one which is large enough. This should have the effect that
+           ;; the one bitmap will grow big enough to handle all situations
+           (make-offscreen-bitmap *boxer-pane* w h))
+          (t existing))))
+
+(defun deallocate-backing-store (bm)
+  (push bm *bitmap-backing-store*))
+
+;; stub...
+(defun box-borders-zoom (box-type screen-box
+          start-wid start-hei end-wid end-hei
+          start-x start-y end-x end-y
+          steps)
+  (declare (ignore box-type screen-box start-wid start-hei end-wid end-hei
+                   start-x start-y end-x end-y steps))
+  )
+
 #|
 (defun scroll-up-tracking-info (screen-box)
   )
@@ -12391,6 +12524,7 @@ Modification History (most recent at top)
 ;;;; FILE: repaint.lisp
 ;;;;
 
+(defun brand-new? (screen-obj) (=& (screen-obj-tick screen-obj) -1))
 
 #|
 ;; unused ?

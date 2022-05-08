@@ -83,8 +83,8 @@ Modification History (most recent at the top)
   (declare (ignore ignore))
   (flet ((sign-extend-immediate-operand (number)
             (if (ldb-test %%bin-im-arg-msb number)
-		(- number %%bin-op-im-arg-size)
-		number)))
+                (- number %%bin-op-im-arg-size)
+                number)))
     (sign-extend-immediate-operand value)))
 
 
@@ -93,20 +93,20 @@ Modification History (most recent at the top)
     (unless (null *boxer-system-hacker*)
       (format t "~%Loading in Boxer File with version ~D..." version))
     (cond ((= version *version-number*)
-	   (setq *file-bin-version* version))
-	  ((member version *supported-obsolete-versions*)
-	   (setq *file-bin-version* version))
-	  (t
-	   (if (find-package 'boxer-compatibility-file-system)
-	       (error "File Format version is ~D, you MAY be able read~%~
+           (setq *file-bin-version* version))
+          ((member version *supported-obsolete-versions*)
+           (setq *file-bin-version* version))
+          (t
+           (if (find-package 'boxer-compatibility-file-system)
+               (error "File Format version is ~D, you MAY be able read~%~
                        this file in with the COMPATIBILITY-READ Command"
-		      version)
-	       (error "File Format version is ~D, which is not supported"
-		      version))))))
+                      version)
+               (error "File Format version is ~D, which is not supported"
+                      version))))))
 
 (define-load-command-for-effect bin-op-file-property-list (stream)
   (let* ((*package* (find-package 'boxer))
-	 (plist (bin-next-value stream)))
+         (plist (bin-next-value stream)))
     ;; first deal with the package
     (setq *load-package* (getf plist :package))
     ;; now handle the plist in a general way...
@@ -133,18 +133,18 @@ Modification History (most recent at the top)
   (format t "~%Value OK ? (y, n, or show) ")
   (let ((answer (read-line)))
     (cond ((string-equal "y" answer)
-	   (aref *bin-load-table* idx))
-	  ((string-equal "show" answer)
-	   (let ((offset (if (< idx 5) 0 (- idx 5))))
-	     (dotimes (i 10)
-	       (format t "~%~5o: ~S"
-		       (+ offset i)
-		       (aref *bin-load-table* (+ offset i)))))
-	   (format t "~%Value to Return: ")
-	   (eval (read-from-string (read-line))))
-	  (t
-	   (format t "~%Value to Return: ")
-	   (eval (read-from-string (read-line)))))))
+           (aref *bin-load-table* idx))
+          ((string-equal "show" answer)
+           (let ((offset (if (< idx 5) 0 (- idx 5))))
+             (dotimes (i 10)
+               (format t "~%~5o: ~S"
+                       (+ offset i)
+                       (aref *bin-load-table* (+ offset i)))))
+           (format t "~%Value to Return: ")
+           (eval (read-from-string (read-line))))
+          (t
+           (format t "~%Value to Return: ")
+           (eval (read-from-string (read-line)))))))
 |#
 
 (define-load-command bin-op-table-fetch-immediate (ignore index)
@@ -168,13 +168,13 @@ Modification History (most recent at the top)
 
 (define-load-command-for-value bin-op-package-symbol (stream)
   (let* ((package-string (let ((name (bin-next-value stream)))
-			   (if (and *hack-symbol-package-names*
+                           (if (and *hack-symbol-package-names*
                   (or (string= name "LUCID-COMMON-LISP")
                       (string= name "COMMON-LISP")))
-			       "LISP"
-			       name)))
-	 (package (find-package package-string))
-	 (pname (bin-next-value stream)))
+                               "LISP"
+                               name)))
+         (package (find-package package-string))
+         (pname (bin-next-value stream)))
     (intern pname package)))
 
 (define-load-command-for-value bin-op-string-immediate (stream length)
@@ -222,9 +222,9 @@ Modification History (most recent at the top)
 
 (defun load-list (stream &optional (length (bin-next-value stream)))
   (let* ((dotted (bin-next-value stream))
-	 (itl (if dotted (1- length) length))
-	 (list (make-list itl))
-	 (wl list))
+         (itl (if dotted (1- length) length))
+         (list (make-list itl))
+         (wl list))
     (dotimes (i itl)
       (rplaca wl (bin-next-value stream))
       (setq wl (cdr wl)))
@@ -444,19 +444,19 @@ Modification History (most recent at the top)
 ;; despite the name, fixnums are not lisp:fixnum, but lisp:integer.
 (defun load-fixnum (stream &optional (length (bin-next-value stream)))
   (cond ((= length 1) (bin-next-byte stream))
-	(t (let ((number 0))
-	     (dotimes (i length)
-	       ;; this should not use DPB& because we might load a
-	       ;; bignum, even thoush this function is called
-	       ;; load-fixnum.  Or am i wrong?
-	       (setq number (dpb (bin-next-byte stream)
-				 (byte 16. (* i 16.))
-				 number)))
-	     number))))
+        (t (let ((number 0))
+             (dotimes (i length)
+               ;; this should not use DPB& because we might load a
+               ;; bignum, even thoush this function is called
+               ;; load-fixnum.  Or am i wrong?
+               (setq number (dpb (bin-next-byte stream)
+                                 (byte 16. (* i 16.))
+                                 number)))
+             number))))
 
 (defun load-float (stream)
   (let ((mantissa (bin-next-value stream))
-	(exponent (bin-next-value stream)))
+        (exponent (bin-next-value stream)))
     (scale-float (float mantissa) exponent)))
 
 ;;(DEFUN TRANSPOSE-BIT-ARRAY (ARRAY)
@@ -469,12 +469,12 @@ Modification History (most recent at the top)
 
 (defun load-array (stream opt-length)
   (let ((dimensions (bin-next-value stream))
-	(options (make-list (* opt-length 2))))
+        (options (make-list (* opt-length 2))))
     (let ((l options))
       (dotimes (i opt-length)
-	(setf (car l)  (bin-next-value stream))	; keyword
-	(setf (cadr l) (bin-next-value stream))	; value
-	(setq l (cddr l))))
+        (setf (car l)  (bin-next-value stream))	; keyword
+        (setf (cadr l) (bin-next-value stream))	; value
+        (setq l (cddr l))))
     (apply #'make-array dimensions options)))
 
 ;;; We might want to use some array resources here to keep the consing down
@@ -484,28 +484,28 @@ Modification History (most recent at the top)
 
 (defun initialize-array (stream)
   (let* ((array (bin-next-value stream))
-	 (length (bin-next-value stream))
-	 (q-array (if (=& (array-rank array) 1) array
-		      (make-array length ':displaced-to array))))
+         (length (bin-next-value stream))
+         (q-array (if (=& (array-rank array) 1) array
+                      (make-array length ':displaced-to array))))
     (dotimes (i length)
       (setf (aref q-array i) (bin-next-value stream)))
     array))
 
 (defun initialize-numeric-array (stream)
   (let* ((array (bin-next-value stream))
-	 (length (bin-next-value stream))
-	 (flat-array (if (=& (array-rank array) 1) array
-			 (make-array length :displaced-to array)))
-	 (flat-length (length flat-array))
-	 (n-bits (array-bits-per-element array)))
+         (length (bin-next-value stream))
+         (flat-array (if (=& (array-rank array) 1) array
+                         (make-array length :displaced-to array)))
+         (flat-length (length flat-array))
+         (n-bits (array-bits-per-element array)))
     (flet ((unpack-word (word start-index)
-	     (dotimes (i (floor (/ 16. n-bits)))
-	       (let ((idx (+ start-index i)))
-		 (unless (>= idx flat-length)
-		   (setf (aref flat-array idx)
-			 (ldb (byte n-bits (* i n-bits)) word)))))))
+             (dotimes (i (floor (/ 16. n-bits)))
+               (let ((idx (+ start-index i)))
+                 (unless (>= idx flat-length)
+                   (setf (aref flat-array idx)
+                         (ldb (byte n-bits (* i n-bits)) word)))))))
       (dotimes (i length)
-	(unpack-word (bin-next-byte stream) (* i (floor 16 n-bits)))))
+        (unpack-word (bin-next-byte stream) (* i (floor 16 n-bits)))))
     array))
 
 
@@ -517,7 +517,7 @@ Modification History (most recent at the top)
 (define-load-command bin-op-cha-immediate (stream cha)
   (declare (ignore stream))
   (make-char (code-char (ldb& %%bin-op-char-code cha))
-	     (ldb& (byte #o2 #o10) cha)))
+             (ldb& (byte #o2 #o10) cha)))
 ;; should be %%bin-op-im-cha-bits but use (byte #o2 #o10) so that old
 ;; files with fonts in the chas have the font part stripped out on loading
 
@@ -554,27 +554,27 @@ Modification History (most recent at the top)
 (defmethod file-initialize ((row row) chas-array)
   (shared-initialize row t)
   (setf (slot-value row 'tick) -1
-	(slot-value row 'chas-array) chas-array))
+        (slot-value row 'chas-array) chas-array))
 
 
 ;; check for version, version 12 uses new row format with font info expected
 (defun load-row (stream &optional (length (bin-next-value stream)))
   (let ((chas-array  (make-chas-array length))
-	(new-row (allocate-instance (find-class 'row))))
+        (new-row (allocate-instance (find-class 'row))))
     (file-initialize new-row chas-array)
     ;; this is an abstraction violation but it's fast
     (with-fast-chas-array-manipulation (chas-array chas-array-chas)
       (cond ((< *file-bin-version* 12)
              ;; old style
              (dotimes& (i length)
-	       (let ((obj (bin-next-value stream)))
-	         (fast-chas-array-set-cha chas-array-chas i obj)
-	         ;; we don't do INSERT-SELF-ACTION because that needs
-	         ;; to be done when the row is put into the box, not
-	         ;; when the cha is put into the row.
-	         (cond ((box? obj) (set-superior-row obj new-row))
-		       ((cha? obj))
-		       (t (warn "~A was not a character or a box" obj))))))
+               (let ((obj (bin-next-value stream)))
+                 (fast-chas-array-set-cha chas-array-chas i obj)
+                 ;; we don't do INSERT-SELF-ACTION because that needs
+                 ;; to be done when the row is put into the box, not
+                 ;; when the cha is put into the row.
+                 (cond ((box? obj) (set-superior-row obj new-row))
+                       ((cha? obj))
+                       (t (warn "~A was not a character or a box" obj))))))
              (t ; new style, packed chars and look for fonts
               (let ((idx 0))
                 (unless (zerop length)
@@ -606,9 +606,9 @@ Modification History (most recent at the top)
 #|
 (defun load-name-row (stream &optional (length (bin-next-value stream)))
   (let* ((chas-array (make-chas-array length))
-	 (new-row (make-instance 'name-row
-				 :chas-array chas-array
-				 :cached-name (bin-next-value stream))))
+         (new-row (make-instance 'name-row
+                                 :chas-array chas-array
+                                 :cached-name (bin-next-value stream))))
     (dotimes& (i length)
       (append-cha new-row (bin-next-value stream)))
     new-row))
@@ -616,12 +616,12 @@ Modification History (most recent at the top)
 
 (defun load-name-row (stream &optional (length (bin-next-value stream)))
   (let* ((chas-array (make-chas-array length))
-	 (new-row (make-instance 'name-row
-				 :chas-array chas-array
-				 :cached-name (bin-next-value stream))))
+         (new-row (make-instance 'name-row
+                                 :chas-array chas-array
+                                 :cached-name (bin-next-value stream))))
     (with-fast-chas-array-manipulation (chas-array chas-array-chas)
       (dotimes& (i length)
-	(fast-chas-array-set-cha chas-array-chas i (bin-next-value stream))))
+        (fast-chas-array-set-cha chas-array-chas i (bin-next-value stream))))
     (setf (chas-array-active-length chas-array) length)
     new-row))
 
@@ -643,17 +643,17 @@ should ignore it.")
 (defun top-level-box-to-load-into ()
   (and *top-level-box-to-load-into*
        (prog1 *top-level-box-to-load-into*
-	 (setq *top-level-box-to-load-into* nil))))
+         (setq *top-level-box-to-load-into* nil))))
 
 (define-load-command bin-op-doit-box (stream)
   (load-box (or (top-level-box-to-load-into)
-		(make-uninitialized-box 'doit-box))
-	    stream))
+                (make-uninitialized-box 'doit-box))
+            stream))
 
 (define-load-command bin-op-data-box (stream)
   (load-box (or (top-level-box-to-load-into)
-		(make-uninitialized-box 'data-box))
-	    stream))
+                (make-uninitialized-box 'data-box))
+            stream))
 
 (define-load-command bin-op-port-box (stream)
   ;; ports can't be read into at top level.
@@ -674,9 +674,9 @@ should ignore it.")
            (let ((fp (file-position stream)))
              (when (numberp fp)
                (status-line-display 'loading-box
-			            (format nil *status-line-loading-format-string*
-				            fp (floor (* 100 fp)
-					              *current-file-length*))))))))
+                                    (format nil *status-line-loading-format-string*
+                                            fp (floor (* 100 fp)
+                                                      *current-file-length*))))))))
   #+mcl (ccl::update-cursor) ; hack to get moving cursor
   (boxer-eval::check-for-interrupt :interrupt "Stopped by User !")
   ;; now do the real work...
@@ -686,32 +686,32 @@ should ignore it.")
     ;; problems.  Specifically, for sprite-boxes, the turtle needs to
     ;; already be installed before any rows are appended
     (if (< *file-bin-version* 8)
-	(let ((plist (bin-next-value stream)))
-	  (init-box-from-file box plist))
-	;; Non Consing version of initializing from the PLIST in a file
-	(let ((current-keyword nil))
-	  (with-loading-list (stream item-no)
-	    (cond ((evenp item-no)
-		   ;; should be a keyword...
-		   (let ((next-keyword (bin-next-value stream)))
-		     (unless (symbolp next-keyword)
-		       (error "Expected a Keyword instead of ~S" next-keyword))
-		     (setq current-keyword next-keyword)))
-		  (t
-		   (partial-initialize box
-				       current-keyword
-				       (bin-next-value stream)))))))
+        (let ((plist (bin-next-value stream)))
+          (init-box-from-file box plist))
+        ;; Non Consing version of initializing from the PLIST in a file
+        (let ((current-keyword nil))
+          (with-loading-list (stream item-no)
+            (cond ((evenp item-no)
+                   ;; should be a keyword...
+                   (let ((next-keyword (bin-next-value stream)))
+                     (unless (symbolp next-keyword)
+                       (error "Expected a Keyword instead of ~S" next-keyword))
+                     (setq current-keyword next-keyword)))
+                  (t
+                   (partial-initialize box
+                                       current-keyword
+                                       (bin-next-value stream)))))))
     ;; this should THROW...
     (bin-next-command stream)
     ;; or else something is wrong
     (cerror "Continue trying to load"
-	    "Looks like there's some crud in the file after ~A" box))
+            "Looks like there's some crud in the file after ~A" box))
   ;; compatibility crocks...
   (when (and (= *file-bin-version* 5)
-	     *check-for-and-convert-old-vlist-style*
-	     (not (null (slot-value box 'closets))))
+             *check-for-and-convert-old-vlist-style*
+             (not (null (slot-value box 'closets))))
     (crock-fix-sprite-closet-for-changed-slot-names (slot-value box 'closets)
-						    box))
+                                                    box))
 ;    ;; add an empty row to keep things happy
 ;    ;; since ports get dumped with a NIL first-inferior-row
 ;    (when (port-box? box)
@@ -741,8 +741,8 @@ should ignore it.")
   ;;  (copy-special-box-properties from-box box T)
   ;; display style...
   (set-display-style-list box
-			  (copy-display-style
-			   (display-style-list from-box)))
+                          (copy-display-style
+                           (display-style-list from-box)))
   ;; there should be a better way to do this, like maybe
   ;; moving the dashed border attribute into a flag ?
   (setf (display-style-border-style (display-style-list box)) nil)
@@ -750,18 +750,18 @@ should ignore it.")
   ;; graphics...
   (when (not (null (graphics-info from-box)))
     (setf (graphics-info box)
-	  (copy-graphics-sheet (graphics-info from-box) box)))
+          (copy-graphics-sheet (graphics-info from-box) box)))
   ;; copy any export info
   (unless (null (exports from-box))
     (boxer-eval::set-exports box (exports from-box))
     ;; make sure the box looks right
     (setf (display-style-border-style (display-style-list box))
-	  ':dashed))
+          ':dashed))
   ;; and the name
   (let ((name (slot-value from-box 'name)))
     (unless (null name)
       (let ((new-name-row (make-name-row `(,(if (stringp name) name
-					        (text-string name))))))
+                                                (text-string name))))))
         ;; normally, this would be handled via update-bindings during an
         ;; insert-self-action, however, since we are modifying a box which
         ;; is already in the editor, we do it by hand
@@ -786,40 +786,40 @@ should ignore it.")
 (defmethod partial-initialize ((self box) keyword value)
   (case keyword
     (:name (setf (slot-value self 'name) value)
-	   (when (row? value)
-	     (setf (superior-box value) self))
-	   t)
+           (when (row? value)
+             (setf (superior-box value) self))
+           t)
     (:display-style-list (setf (slot-value self 'display-style-list)
-			       (restore-display-style value)))
+                               (restore-display-style value)))
     (:exports (unless (null value)
-		(boxer-eval::set-box-transparency self t)
-		(unless (eq value boxer-eval::*exporting-all-variables-marker*)
-		  (setf (slot-value self 'exports) value)))
-	      t)
+                (boxer-eval::set-box-transparency self t)
+                (unless (eq value boxer-eval::*exporting-all-variables-marker*)
+                  (setf (slot-value self 'exports) value)))
+              t)
     (:closets (setf (slot-value self 'closets) value)
-	      (when (row? value)
-		(setf (superior-box value) self)
-		(do-row-chas ((obj value))
-		  (unless (cha? obj)
-		    (set-superior-row obj value)
-		    (insert-self-action obj))))
-	      t)
+              (when (row? value)
+                (setf (superior-box value) self)
+                (do-row-chas ((obj value))
+                  (unless (cha? obj)
+                    (set-superior-row obj value)
+                    (insert-self-action obj))))
+              t)
     (:flags (setf (slot-value self 'flags) value)
-	    (when (and boxnet::*during-login-action?*
-		       (box-flag-load-box-on-login? value)
-		       (not (fast-memq self boxnet::*login-postpass-list*)))
-	      (push self boxnet::*login-postpass-list*))
+            (when (and boxnet::*during-login-action?*
+                       (box-flag-load-box-on-login? value)
+                       (not (fast-memq self boxnet::*login-postpass-list*)))
+              (push self boxnet::*login-postpass-list*))
             (when (and *in-autoload-environment*
                        (box-flag-autoload-file? value)
                        (not (fast-memq self *autoload-list*)))
               (push self *autoload-list*))
-	    t)
+            t)
     ;; these next 2 are for old files
     (:graphics-sheet (setf (slot-value self 'graphics-info) value)
-		     ;; restore the backpointer from the graphics sheet
-		     (if (null value)
-			 t
-			 (setf (graphics-sheet-superior-box value) self)))
+                     ;; restore the backpointer from the graphics sheet
+                     (if (null value)
+                         t
+                         (setf (graphics-sheet-superior-box value) self)))
     (:associated-turtle
      (cond ((graphics-object? value)
             (setf (slot-value self 'graphics-info) value)
@@ -837,12 +837,12 @@ should ignore it.")
             ;; restore the backpointer from the graphics sheet
             (setf (graphics-sheet-superior-box value) self))))
     (:rows (let ((prev-row (car value)))
-	     (unless (null value)
-	       (insert-row-at-row-no self (car value) 0)
-	       (dolist (row (cdr value))
-		 (insert-row-after-row self row prev-row)
-		 (setq prev-row row)))
-	     t))
+             (unless (null value)
+               (insert-row-at-row-no self (car value) 0)
+               (dolist (row (cdr value))
+                 (insert-row-after-row self row prev-row)
+                 (setq prev-row row)))
+             t))
     ;; box server specific keys...
     (:server-box-id (load-server-box-id self value) t)
     (:cross-file-contained-links
@@ -914,27 +914,27 @@ should ignore it.")
   (or (call-next-method)		; returns non NIL if already handled
       ;; try and handle it here...
       (case keyword
-	(:port-target
-	 (if (box? value)
-	     (set-port-to-box self value)
-	     (cerror "Try and continue to Load the File"
-		     "~A is not a valid target for a port"
-		     value)))
-	(:circular-port-ref
-	 ;; old style reference, flush soon.  Probably only affects ML
-	 (push (cons self value) *circular-ports*))
-	(:circular-port-reference
-	 (push (cons self value) *post-load-relink-ports*))
-	(:cracked-port
-	 (putprop self t :cracked-port))
-	;; Cross file port keys...
-	(:cross-file-link-id (load-cross-file-link-id self value) t)
-	;; obsolete, should probably warn
-	(:cross-file-port-target
-	 (warn "Old style cross file port reference")
-	 (putprop self (boxnet::translate-port-target-path value)
-		  :cross-file-port-target))
-	(t nil))))
+        (:port-target
+         (if (box? value)
+             (set-port-to-box self value)
+             (cerror "Try and continue to Load the File"
+                     "~A is not a valid target for a port"
+                     value)))
+        (:circular-port-ref
+         ;; old style reference, flush soon.  Probably only affects ML
+         (push (cons self value) *circular-ports*))
+        (:circular-port-reference
+         (push (cons self value) *post-load-relink-ports*))
+        (:cracked-port
+         (putprop self t :cracked-port))
+        ;; Cross file port keys...
+        (:cross-file-link-id (load-cross-file-link-id self value) t)
+        ;; obsolete, should probably warn
+        (:cross-file-port-target
+         (warn "Old style cross file port reference")
+         (putprop self (boxnet::translate-port-target-path value)
+                  :cross-file-port-target))
+        (t nil))))
 
 ;; functionality copied to regular box method to support old files
 #|
@@ -942,12 +942,12 @@ should ignore it.")
   (or (call-next-method)		; returns non NIL if already handled
       ;; try and handle it here...
       (when (eq keyword ':associated-turtle)
-	(cond ((graphics-object? value)
-	       (setf (slot-value self 'associated-turtle) value)
-	       (set-sprite-box value self))
-	      (t
-	       (warn "The sprite box, ~A, doesn't have a graphics object"
-		     self))))))
+        (cond ((graphics-object? value)
+               (setf (slot-value self 'associated-turtle) value)
+               (set-sprite-box value self))
+              (t
+               (warn "The sprite box, ~A, doesn't have a graphics object"
+                     self))))))
 |#
 
 ;; in the future, we may want to dump out graphics boxes with just the
@@ -959,11 +959,11 @@ should ignore it.")
 (defun restore-display-style (dds)
   (unless (null dds)
     (let ((ds (make-display-style :style     (first  dds)
-				  :fixed-wid (second dds)
-				  :fixed-hei (third  dds))))
+                                  :fixed-wid (second dds)
+                                  :fixed-hei (third  dds))))
       (when (> (length dds) 3)
         (setf (display-style-graphics-mode? ds) (fourth dds))
-	(setf (display-style-border-style   ds) (fifth  dds)))
+        (setf (display-style-border-style   ds) (fifth  dds)))
       ds)))
 
 ;;; Init-Box-From-File is ONLY used by the debugging version
@@ -984,13 +984,13 @@ should ignore it.")
 ;;;  (setf (slot-value box 'static-variables-alist)
 ;;;	(getf plist :static-variables-alist))
   (setf (slot-value box 'display-style-list)
-	(restore-display-style (getf plist :display-style-list)))
+        (restore-display-style (getf plist :display-style-list)))
   (let ((exports (getf plist :exports)))
     (unless (null exports)
       (boxer-eval::set-box-transparency box t)
       ;; there may be some of these still left?
       (unless (eq exports boxer-eval::*exporting-all-variables-marker*)
-	(setf (slot-value box 'exports) exports))))
+        (setf (slot-value box 'exports) exports))))
   (setf (slot-value box 'closets) (getf plist :closets))
   (setf (slot-value box 'graphics-info) (getf plist :graphics-sheet))
   ;; restore the backpointer from the graphics sheet
@@ -999,32 +999,32 @@ should ignore it.")
   (when (row? (name-row box))
     (setf (superior-box (name-row box)) box))
   (let* ((rows (getf plist :rows))
-	 (prev-row (car rows)))
+         (prev-row (car rows)))
     (unless (null rows)
       (insert-row-at-row-no box (car rows) 0)
       (dolist (row (cdr rows))
-	(insert-row-after-row box row prev-row)
-	(setq prev-row row))))
+        (insert-row-after-row box row prev-row)
+        (setq prev-row row))))
   (let ((closets (slot-value box 'closets)))
     (unless (null closets)
       (setf (superior-box closets) box)
       (do-row-chas ((obj closets))
-	(unless (cha? obj)
-	  (set-superior-row obj closets)
-	  (insert-self-action obj)))))
+        (unless (cha? obj)
+          (set-superior-row obj closets)
+          (insert-self-action obj)))))
   (dolist (var (slot-value box 'static-variables-alist))
     (let ((handler (get (boxer-eval::static-variable-name var) 'magic-name-insert)))
       (when (not (null handler))
-	(funcall handler (boxer-eval::static-variable-value var) box)))))
+        (funcall handler (boxer-eval::static-variable-value var) box)))))
 
 (defmethod init-box-from-file ((box port-box) plist)
   (call-next-method)
   (let ((target (getf plist :port-target)))
     (if (box? target)
-	(set-port-to-box box target)
-	(cerror "Try and continue to Load the File"
-		"~A is not a valid target for a port"
-		target)))
+        (set-port-to-box box target)
+        (cerror "Try and continue to Load the File"
+                "~A is not a valid target for a port"
+                target)))
   ;; add an empty row to keep things happy
   ;; since ports get dumped with a NIL first-inferior-row
   (let ((fir (make-row '())))
@@ -1036,20 +1036,20 @@ should ignore it.")
 ;  (setf (superior-box closet-row) sup-box)
   (do-row-chas ((cha closet-row))
     (when (and (box? cha)
-	       (not (null (name-row cha))))
+               (not (null (name-row cha))))
       (let ((name-row (name-row cha)))
-	(cond ((and (eq (slot-value name-row 'cached-name) 'bu::size)
-		    (fast-assq 'bu::sprite-size
-			       (slot-value sup-box
-					   'static-variables-alist)))
-	       (setf (slot-value name-row 'cached-name) 'bu::sprite-size)
-	       (update-bindings name-row))
-	      ((and (eq (slot-value name-row 'cached-name) 'bu::home)
-		    (fast-assq 'bu::home-position
-			       (slot-value sup-box
-					   'static-variables-alist)))
-	       (setf (slot-value name-row 'cached-name) 'bu::home-position)
-	       (update-bindings name-row))))))
+        (cond ((and (eq (slot-value name-row 'cached-name) 'bu::size)
+                    (fast-assq 'bu::sprite-size
+                               (slot-value sup-box
+                                           'static-variables-alist)))
+               (setf (slot-value name-row 'cached-name) 'bu::sprite-size)
+               (update-bindings name-row))
+              ((and (eq (slot-value name-row 'cached-name) 'bu::home)
+                    (fast-assq 'bu::home-position
+                               (slot-value sup-box
+                                           'static-variables-alist)))
+               (setf (slot-value name-row 'cached-name) 'bu::home-position)
+               (update-bindings name-row))))))
   ;; now disconnect the row again
 ;  (setf (superior-box closet-row) nil)
   )
@@ -1059,17 +1059,17 @@ should ignore it.")
 (defmethod init-box-from-file ((box sprite-box) plist)
   (let ((turtle (getf plist :associated-turtle)))
     (cond ((graphics-object? turtle)
-	   (setf (slot-value box 'associated-turtle) turtle)
-	   (set-sprite-box turtle box))
-	  (t
-	   (warn "The Sprite Box, ~A, doesn't have an associated turtle"
-		 box))))
+           (setf (slot-value box 'associated-turtle) turtle)
+           (set-sprite-box turtle box))
+          (t
+           (warn "The Sprite Box, ~A, doesn't have an associated turtle"
+                 box))))
   (call-next-method)
   (when (and (= *file-bin-version* 5)
-	     *check-for-and-convert-old-vlist-style*
-	     (not (null (slot-value box 'closets))))
+             *check-for-and-convert-old-vlist-style*
+             (not (null (slot-value box 'closets))))
     (crock-fix-sprite-closet-for-changed-slot-names (slot-value box 'closets)
-						    box)))
+                                                    box)))
 |#
 
 
@@ -1113,23 +1113,23 @@ should ignore it.")
   (if (< *file-bin-version* 11.)
       (old-style-load-graphics-sheet stream)
       (let* ((plist (bin-next-value stream))
-	     ;; plist values
-	     (background (getf plist :background))
-	     (graphics-list (getf plist :graphics-list))
-	     (bit-array (getf plist :pixmap))
-	     (new-sheet (make-graphics-sheet-from-file
-			 (getf plist :draw-wid) (getf plist :draw-hei)
-			 (getf plist :draw-mode))))
-	(unless (null graphics-list)
-	  (setf (graphics-sheet-graphics-list new-sheet) (post-load-process-graphics-list graphics-list)))
-	(unless (null bit-array)
-	  (setf (graphics-sheet-bit-array new-sheet) bit-array)
+             ;; plist values
+             (background (getf plist :background))
+             (graphics-list (getf plist :graphics-list))
+             (bit-array (getf plist :pixmap))
+             (new-sheet (make-graphics-sheet-from-file
+                         (getf plist :draw-wid) (getf plist :draw-hei)
+                         (getf plist :draw-mode))))
+        (unless (null graphics-list)
+          (setf (graphics-sheet-graphics-list new-sheet) (post-load-process-graphics-list graphics-list)))
+        (unless (null bit-array)
+          (setf (graphics-sheet-bit-array new-sheet) bit-array)
           ;; mark the dirty? flag
           (setf (graphics-sheet-bit-array-dirty? new-sheet) t))
-	(unless (null background)
-	  (setf (graphics-sheet-background new-sheet)
-		(reallocate-pixel-color background)))
-	new-sheet)))
+        (unless (null background)
+          (setf (graphics-sheet-background new-sheet)
+                (reallocate-pixel-color background)))
+        new-sheet)))
 
 #+mcl
 (defvar *use-mac-fast-bitmap-loaders* t)
@@ -1158,36 +1158,36 @@ should ignore it.")
 (defun load-8-bit-run-length-encoded-pixmap (stream)
   ;; first get the width and the height out
   (let ((width (bin-next-value stream)) (height (bin-next-value stream))
-	;; now the raw colormap
-	(colormap (bin-next-value stream)))
+        ;; now the raw colormap
+        (colormap (bin-next-value stream)))
     ;; now process the colormap to get a pixel remap
     (dotimes& (i (length colormap))
       (setf (aref colormap i) (reallocate-pixel-color (aref colormap i))))
     ;; now render the data
     (let* ((pixmap (make-offscreen-bitmap *boxer-pane* width height))
-	   (pixdata (offscreen-bitmap-image pixmap))
-	   (x 0) (y 0))
+           (pixdata (offscreen-bitmap-image pixmap))
+           (x 0) (y 0))
       #+opengl
       (loop
           (let* ((word (bin-next-byte stream))
-	         (count (ldb& %%bin-op-top-half word))
-	         (pixel (aref colormap (ldb& %%bin-op-low-half word))))
-	    (dotimes& (i count)
-	      (setf (image-pixel x y pixdata) pixel)
-	      (incf& x)
-	      (when (>=& x width) (setq x 0 y (1+& y))))
-	    (when (>=& y height) (return))))
+                 (count (ldb& %%bin-op-top-half word))
+                 (pixel (aref colormap (ldb& %%bin-op-low-half word))))
+            (dotimes& (i count)
+              (setf (image-pixel x y pixdata) pixel)
+              (incf& x)
+              (when (>=& x width) (setq x 0 y (1+& y))))
+            (when (>=& y height) (return))))
       #-opengl
       (drawing-on-bitmap (pixmap)
         (loop
           (let* ((word (bin-next-byte stream))
-	         (count (ldb& %%bin-op-top-half word))
-	         (pixel (aref colormap (ldb& %%bin-op-low-half word))))
-	    (dotimes& (i count)
-	      (setf (image-pixel x y pixdata) pixel)
-	      (incf& x)
-	      (when (>=& x width) (setq x 0 y (1+& y))))
-	    (when (>=& y height) (return)))))
+                 (count (ldb& %%bin-op-top-half word))
+                 (pixel (aref colormap (ldb& %%bin-op-low-half word))))
+            (dotimes& (i count)
+              (setf (image-pixel x y pixdata) pixel)
+              (incf& x)
+              (when (>=& x width) (setq x 0 y (1+& y))))
+            (when (>=& y height) (return)))))
       #-opengl
       (set-offscreen-bitmap-image pixmap pixdata)
       pixmap)))
@@ -1196,8 +1196,8 @@ should ignore it.")
 (defun fast-mac-load-8-bit-run-length-encoded-pixmap (stream)
   ;; first get the width and the height out
   (let* ((width (bin-next-value stream)) (height (bin-next-value stream))
-	 ;; now the raw colormap
-	 (colormap (bin-next-value stream))
+         ;; now the raw colormap
+         (colormap (bin-next-value stream))
          ;;
          (gworld (make-offscreen-bitmap *boxer-pane* width height))
          (depth (offscreen-bitmap-depth gworld))
@@ -1228,18 +1228,18 @@ should ignore it.")
           (drawing-on-bitmap (gworld)
             (loop
               (let* ((word (bin-next-byte stream))
-	             (count (ldb& %%bin-op-top-half word))
-	             (pixel (aref colormap (ldb& %%bin-op-low-half word))))
+                     (count (ldb& %%bin-op-top-half word))
+                     (pixel (aref colormap (ldb& %%bin-op-low-half word))))
                 (let ((newpixaddr (Get-Pix-Base-Addr pixmap)))
                   (unless (eql newpixaddr pix-addr)
                     (warn "Pixmap base address has moved from ~X to ~X"
                           pix-addr newpixaddr)
                     (setq pix-addr newpixaddr)))
-	        (dotimes& (i count)
+                (dotimes& (i count)
                   (funcall setpixfun pix-addr pixel x y row-bytes)
-	          (incf& x)
-	          (when (>=& x width) (setq x 0 y (1+& y))))
-	        (when (>=& y height) (return)))))
+                  (incf& x)
+                  (when (>=& x width) (setq x 0 y (1+& y))))
+                (when (>=& y height) (return)))))
           gworld))))
 
 ;; all the optional args are for the possibility that we come here via the
@@ -1415,144 +1415,144 @@ should ignore it.")
                                 (t newx)))
                       draw-wid (min& count (-& width x)))
                 (when (<=& count 0) (return)))
-	    (when (>=& y height) (return)))))
+            (when (>=& y height) (return)))))
     (set-offscreen-bitmap-image pixmap pixdata)
     pixmap))
 
 (defun put-picture-byte (pic x y byte &optional size)
   (declare (type (simple-array bit (* *)) pic)
-	   (fixnum x y byte))
+           (fixnum x y byte))
   (dotimes& (i (or size 8))
     (setf (image-pixel pic y (+& x i))
-	  ;; have to swap the bytes, blecchh...
-	  (if (zerop& (ldb& (byte 1 (-& 7 i)) byte))
-	      *background-color*
-	      *foreground-color*))))
+          ;; have to swap the bytes, blecchh...
+          (if (zerop& (ldb& (byte 1 (-& 7 i)) byte))
+              *background-color*
+              *foreground-color*))))
 
 (defun load-1-bit-run-length-encoded-pixmap (stream)
   ;; first get the width and the height out
   (let* ((width (bin-next-value stream)) (height (bin-next-value stream))
-	 (pixmap (make-offscreen-bitmap *boxer-pane* width height))
-	 (pixdata (offscreen-bitmap-image pixmap))
-	 ;; vars
-	 (current-byte 0) (rep-count 0) (data-count 0)
-	 (extra-data-p nil) (other-half 0))
+         (pixmap (make-offscreen-bitmap *boxer-pane* width height))
+         (pixdata (offscreen-bitmap-image pixmap))
+         ;; vars
+         (current-byte 0) (rep-count 0) (data-count 0)
+         (extra-data-p nil) (other-half 0))
     (labels ((handle-word ()
-	       ;; this should only be called if repeat AND count are 0
-	       ;; it will set up either a repeat or count situation
-	       (let* ((word (bin-next-byte stream))
-		      (top (ldb& %%bin-op-top-half word))
-		      (low (ldb& %%bin-op-low-half word)))
-		 (cond ((=& top *pic-data-count-prefix*)
-			;; looks like we should set up a count situation
-			(setq data-count low))
-		       (t
-			;; must be a repeat
-			(setq rep-count top current-byte low)))))
+               ;; this should only be called if repeat AND count are 0
+               ;; it will set up either a repeat or count situation
+               (let* ((word (bin-next-byte stream))
+                      (top (ldb& %%bin-op-top-half word))
+                      (low (ldb& %%bin-op-low-half word)))
+                 (cond ((=& top *pic-data-count-prefix*)
+                        ;; looks like we should set up a count situation
+                        (setq data-count low))
+                       (t
+                        ;; must be a repeat
+                        (setq rep-count top current-byte low)))))
 
-	     (get-count-data-word ()
-	       (let* ((word (bin-next-byte stream))
-		      (top (ldb& %%bin-op-top-half word))
-		      (low (ldb& %%bin-op-low-half word)))
-		 (setq extra-data-p t other-half top)
-		 low))
+             (get-count-data-word ()
+               (let* ((word (bin-next-byte stream))
+                      (top (ldb& %%bin-op-top-half word))
+                      (low (ldb& %%bin-op-low-half word)))
+                 (setq extra-data-p t other-half top)
+                 low))
 
-	     (get-count-data-bits ()
-	       (if (null extra-data-p)
-		   (get-count-data-word)
-		   (progn (setq extra-data-p nil) other-half)))
+             (get-count-data-bits ()
+               (if (null extra-data-p)
+                   (get-count-data-word)
+                   (progn (setq extra-data-p nil) other-half)))
 
-	     (get-bits ()
-	       (cond ((=& 1 data-count)
-		      (decf& data-count)
-		      (setq current-byte (get-count-data-bits)
-			    extra-data-p  nil)
-		      current-byte)
-		     ((not (zerop& data-count))
-		      (decf& data-count)
-		      (setq current-byte (get-count-data-bits)))
-		     ((not (zerop& rep-count))
-		      (decf& rep-count)
-		      current-byte)
-		     (t (handle-word) (get-bits)))))
+             (get-bits ()
+               (cond ((=& 1 data-count)
+                      (decf& data-count)
+                      (setq current-byte (get-count-data-bits)
+                            extra-data-p  nil)
+                      current-byte)
+                     ((not (zerop& data-count))
+                      (decf& data-count)
+                      (setq current-byte (get-count-data-bits)))
+                     ((not (zerop& rep-count))
+                      (decf& rep-count)
+                      current-byte)
+                     (t (handle-word) (get-bits)))))
       ;; Here's the body
       (multiple-value-bind (whole-words-per-row leftover-pixels)
-	  (floor width 16.)
+          (floor width 16.)
         (drawing-on-bitmap (pixmap)
-	  (dotimes& (row height)
-	    (dotimes& (rb whole-words-per-row)
-	      (put-picture-byte pixdata (ash& rb 4) row (get-bits) 8.)
-	      (put-picture-byte pixdata (+& (ash& rb 4) 8.) row (get-bits) 8.))
-	    ;; handle any protrusions
-	    (when (not (zerop& leftover-pixels))
-	      (put-picture-byte pixdata (ash& whole-words-per-row 4)
-			        row (get-bits) (min& 8 leftover-pixels))
-	      ;; remember that mutiples of 16 bit words are
-	      ;; being written out so that even if there was
-	      ;; nothing there, we still need to read in the padding
-	      (if (<& leftover-pixels 8.)
-		(get-bits)
-		(put-picture-byte pixdata (+& (ash& whole-words-per-row 4) 8)
-				  row (get-bits) (-& leftover-pixels 8))))))))
+          (dotimes& (row height)
+            (dotimes& (rb whole-words-per-row)
+              (put-picture-byte pixdata (ash& rb 4) row (get-bits) 8.)
+              (put-picture-byte pixdata (+& (ash& rb 4) 8.) row (get-bits) 8.))
+            ;; handle any protrusions
+            (when (not (zerop& leftover-pixels))
+              (put-picture-byte pixdata (ash& whole-words-per-row 4)
+                                row (get-bits) (min& 8 leftover-pixels))
+              ;; remember that mutiples of 16 bit words are
+              ;; being written out so that even if there was
+              ;; nothing there, we still need to read in the padding
+              (if (<& leftover-pixels 8.)
+                (get-bits)
+                (put-picture-byte pixdata (+& (ash& whole-words-per-row 4) 8)
+                                  row (get-bits) (-& leftover-pixels 8))))))))
     (set-offscreen-bitmap-image pixmap pixdata)
     pixmap))
 
 
 (defun old-style-load-graphics-sheet (stream)
   (let* ((plist (bin-next-value stream))
-	 (new-sheet (make-graphics-sheet-from-file (getf plist :draw-wid)
-						   (getf plist :draw-hei)
-						   (getf plist :draw-mode))))
+         (new-sheet (make-graphics-sheet-from-file (getf plist :draw-wid)
+                                                   (getf plist :draw-hei)
+                                                   (getf plist :draw-mode))))
     (cond ((not (null (getf plist :graphics-list)))
            (post-load-process-graphics-list (getf plist :graphics-list))
-	   (setf (graphics-sheet-graphics-list new-sheet)
-		 (getf plist :graphics-list)))
-	  ((= *file-bin-version* 5)
-	   (setf (graphics-sheet-graphics-list new-sheet)
-		 (make-graphics-command-list))))
+           (setf (graphics-sheet-graphics-list new-sheet)
+                 (getf plist :graphics-list)))
+          ((= *file-bin-version* 5)
+           (setf (graphics-sheet-graphics-list new-sheet)
+                 (make-graphics-command-list))))
     (let ((background (getf plist :background)))
       (unless (null background)
-	(setf (graphics-sheet-background new-sheet)
-	      (reallocate-pixel-color background))))
+        (setf (graphics-sheet-background new-sheet)
+              (reallocate-pixel-color background))))
     ;; now fill the bit array if we have bits to fill
     (unless (getf plist :picture-was-not-dumped)
       (let ((bitmap (when (load-picture?)
-		      (make-offscreen-bitmap *boxer-pane*
-					     (getf plist :draw-wid)
-					     (getf plist :draw-hei))))
-	    #+clx
-	    (image (bw::create-image :width  (getf plist :draw-wid)
-				     :height (getf plist :draw-hei)
-				     :depth 1
-				     :data (list
-					    (make-array
-					     `(,(getf plist :draw-hei)
-						,(getf plist :draw-wid))
-					     :element-type 'bit))
-				     :format :xy-pixmap)))
-	;; install the bitmap
-	(unless (and (= *file-bin-version* 5)
-		     (null *old-style-restore-bitmaps?*))
-	  (setf (graphics-sheet-bit-array new-sheet) bitmap))
-	(initialize-picture ;; need to dereference a few more pointers for X
-			    #+X (pixrect::mpr_data.md-image
-				    (pixrect::pixrect.pr-data
-				       (graphics-sheet-bit-array new-sheet)))
-			    #+CLX (car (bw::image-xy-bitmap-list image))
+                      (make-offscreen-bitmap *boxer-pane*
+                                             (getf plist :draw-wid)
+                                             (getf plist :draw-hei))))
+            #+clx
+            (image (bw::create-image :width  (getf plist :draw-wid)
+                                     :height (getf plist :draw-hei)
+                                     :depth 1
+                                     :data (list
+                                            (make-array
+                                             `(,(getf plist :draw-hei)
+                                                ,(getf plist :draw-wid))
+                                             :element-type 'bit))
+                                     :format :xy-pixmap)))
+        ;; install the bitmap
+        (unless (and (= *file-bin-version* 5)
+                     (null *old-style-restore-bitmaps?*))
+          (setf (graphics-sheet-bit-array new-sheet) bitmap))
+        (initialize-picture ;; need to dereference a few more pointers for X
+                            #+X (pixrect::mpr_data.md-image
+                                    (pixrect::pixrect.pr-data
+                                       (graphics-sheet-bit-array new-sheet)))
+                            #+CLX (car (bw::image-xy-bitmap-list image))
                             #-(or X CLX) bitmap
-			    (graphics-sheet-draw-wid  new-sheet)
-			    (graphics-sheet-draw-hei  new-sheet)
-			    stream)
-	#+clx
-	;; update the pixmap in the server
-	(when (load-picture?)
-	  (let ((gc (bw::create-gcontext :drawable bitmap :function alu-seta)))
-	    (bw::put-image bitmap GC image :x 0 :y 0
-			   :width (graphics-sheet-draw-wid  new-sheet)
-			   :height (graphics-sheet-draw-hei  new-sheet)
-			   :bitmap-p t)
-	    ;; IWBNI we could free the consed up image here
-	    (bw::free-gcontext gc))))
+                            (graphics-sheet-draw-wid  new-sheet)
+                            (graphics-sheet-draw-hei  new-sheet)
+                            stream)
+        #+clx
+        ;; update the pixmap in the server
+        (when (load-picture?)
+          (let ((gc (bw::create-gcontext :drawable bitmap :function alu-seta)))
+            (bw::put-image bitmap GC image :x 0 :y 0
+                           :width (graphics-sheet-draw-wid  new-sheet)
+                           :height (graphics-sheet-draw-hei  new-sheet)
+                           :bitmap-p t)
+            ;; IWBNI we could free the consed up image here
+            (bw::free-gcontext gc))))
       ;; mark the dirty? flag
       (setf (graphics-sheet-bit-array-dirty? new-sheet) t))
     new-sheet))
@@ -1566,59 +1566,59 @@ should ignore it.")
 
 (defun fix-alus (shape-slot)
   (rplaca shape-slot
-	  (mapcar #'(lambda (x) (if (fast-memq x '(:up :down :xor :rase))
-				    (intern (symbol-name x)
-					    (find-package 'boxer))
-				  x))
-		  (car shape-slot)))
+          (mapcar #'(lambda (x) (if (fast-memq x '(:up :down :xor :rase))
+                                    (intern (symbol-name x)
+                                            (find-package 'boxer))
+                                  x))
+                  (car shape-slot)))
   shape-slot)
 
 (defun convert-old-style-shape (shape turtle)
   (let* ((new-shape (make-graphics-command-list
-		     (expt 2 (+ 2 (integer-length
-				   (length (the list shape)))))))
-	 (%graphics-list new-shape))
+                     (expt 2 (+ 2 (integer-length
+                                   (length (the list shape)))))))
+         (%graphics-list new-shape))
     (flet ((new-shape-preamble (agent graphics-command-list)
-	     (setf (graphics-command-list-agent graphics-command-list) agent)
-	     ;; the  alu of old turtle's should be XOR
-	     (setf (graphics-command-list-alu graphics-command-list) alu-xor)
-	     (record-boxer-graphics-command-change-alu alu-xor)
-	     ;; the pen-width of old turtle's is 1
-	     (setf (graphics-command-list-pen-width graphics-command-list) 1)
-	     (setf (slot-value turtle 'pen-width)
-		   (%make-vv-box-interface 1 'pen-width))
-	     (record-boxer-graphics-command-change-pen-width 1)))
+             (setf (graphics-command-list-agent graphics-command-list) agent)
+             ;; the  alu of old turtle's should be XOR
+             (setf (graphics-command-list-alu graphics-command-list) alu-xor)
+             (record-boxer-graphics-command-change-alu alu-xor)
+             ;; the pen-width of old turtle's is 1
+             (setf (graphics-command-list-pen-width graphics-command-list) 1)
+             (setf (slot-value turtle 'pen-width)
+                   (%make-vv-box-interface 1 'pen-width))
+             (record-boxer-graphics-command-change-pen-width 1)))
       (if (not (eq (car shape) 'turtle-vector-list))
-	  (error "~S is not a valid turtle old style turtle shape" shape)
-	  (let ((current-x 0) (current-y 0) (pen 'down))
-	    ;; initial setup
-	    (new-shape-preamble turtle new-shape)
-	    (dolist (com (cdr shape))
-	      (cond ((symbolp com)
-		     (if (fast-memq com '(up down))
-			 (setq pen com)
-			 (warn "Ignoring ~S in shape" com)))
-		    ((and (consp com)
-			  (numberp (car com))
-			  (numberp (cdr com)))
-		     ;; looks like a turtle coordinate
-		     (let ((next-x (+& current-x (fixr (car com))))
-			   (next-y (+& current-y (fixr (- (cdr com))))))
-		       (when (eq pen 'down)
-			 (record-boxer-graphics-command-line-segment
-			  current-x current-y next-x next-y))
-		       (setq current-x next-x current-y next-y)))
-		    ((eq pen 'up))
-		    (t
-		     (case (car com)
-		       (c-rect
-			(record-boxer-graphics-command-centered-rectangle
-			 current-x current-y (cadr com) (caddr com)))
-		       (dot
-			(record-boxer-graphics-command-dot
-			 current-x current-y))
-		       (otherwise
-			(error "Don't know how to handle ~S" com)))))))))
+          (error "~S is not a valid turtle old style turtle shape" shape)
+          (let ((current-x 0) (current-y 0) (pen 'down))
+            ;; initial setup
+            (new-shape-preamble turtle new-shape)
+            (dolist (com (cdr shape))
+              (cond ((symbolp com)
+                     (if (fast-memq com '(up down))
+                         (setq pen com)
+                         (warn "Ignoring ~S in shape" com)))
+                    ((and (consp com)
+                          (numberp (car com))
+                          (numberp (cdr com)))
+                     ;; looks like a turtle coordinate
+                     (let ((next-x (+& current-x (fixr (car com))))
+                           (next-y (+& current-y (fixr (- (cdr com))))))
+                       (when (eq pen 'down)
+                         (record-boxer-graphics-command-line-segment
+                          current-x current-y next-x next-y))
+                       (setq current-x next-x current-y next-y)))
+                    ((eq pen 'up))
+                    (t
+                     (case (car com)
+                       (c-rect
+                        (record-boxer-graphics-command-centered-rectangle
+                         current-x current-y (cadr com) (caddr com)))
+                       (dot
+                        (record-boxer-graphics-command-dot
+                         current-x current-y))
+                       (otherwise
+                        (error "Don't know how to handle ~S" com)))))))))
     (when *boxer-system-hacker*
       (format t "~%Converted ~A to:" shape)
       (show-graphics-list new-shape))
@@ -1632,28 +1632,28 @@ should ignore it.")
 
 (defun coerce-turtle-values (turtle)
   (setf (box-interface-value (slot-value turtle 'x-position))
-	(float (box-interface-value (slot-value turtle 'x-position))))
+        (float (box-interface-value (slot-value turtle 'x-position))))
   (setf (box-interface-value (slot-value turtle 'y-position))
-	(float (box-interface-value (slot-value turtle 'y-position))))
+        (float (box-interface-value (slot-value turtle 'y-position))))
   (setf (box-interface-value (slot-value turtle 'home-position))
-	(let  ((old-hp
-		(box-interface-value (slot-value turtle 'home-position))))
-	  (list (float (car old-hp)) (float (cadr old-hp)))))
+        (let  ((old-hp
+                (box-interface-value (slot-value turtle 'home-position))))
+          (list (float (car old-hp)) (float (cadr old-hp)))))
   ;; fill in new instance slots (with reasonable values)
   (setf (slot-value turtle 'type-font)
-	(%make-iv-box-interface *sprite-type-font-no* 'type-font))
+        (%make-iv-box-interface *sprite-type-font-no* 'type-font))
   (setf (slot-value turtle 'pen-color)
-	(%make-iv-box-interface *foreground-color* 'pen-color))
+        (%make-iv-box-interface *foreground-color* 'pen-color))
   ;; a hack to convert the values of the graphics commands to
   (do-vector-contents (gc (shape turtle))
     (unless (>= (svref gc 0) 32.)
       (setf (svref gc 0) (+ (svref gc 0) 32)))
     (do* ((idx 1 (1+& idx))
-	  (tp-items (graphics-command-transform-template gc) (cdr tp-items))
-	  (tp-action (car tp-items) (car tp-items)))
-	 ((null tp-items))
+          (tp-items (graphics-command-transform-template gc) (cdr tp-items))
+          (tp-action (car tp-items) (car tp-items)))
+         ((null tp-items))
       (unless (null tp-action)
-	(setf (svref gc idx) (float (svref gc idx)))))))
+        (setf (svref gc idx) (float (svref gc idx)))))))
 
 ;;; this should be changed to check for the file bin version in order to
 ;;; move all the detailed checks into the old style file case
@@ -1667,31 +1667,31 @@ should ignore it.")
 ;; for a debugging version, we can CONS the list...
 (defun new-style-load-graphics-object (stream)
   (let ((graphics-object nil)
-	(current-keyword nil))
+        (current-keyword nil))
     (with-loading-list (stream item-no)
       (cond ((=& item-no 0)
-	     (unless (eq (setq current-keyword (bin-next-value stream)) 'type)
-	       ;; sanity check
-	       (error "Expected the TYPE keyword instead of ~S"
-		      current-keyword)))
-	    ((=& item-no 1)
-	     (let ((go-class (bin-next-value stream)))
-	       (unless (find-class go-class nil)
-		 (error "~S is not a valid class of graphics object" go-class))
-	       (setq graphics-object
-		     (let ((new (allocate-instance (find-class go-class))))
-		       (setf (slot-value new 'assoc-graphics-box) nil)
-		       (setf (slot-value new 'superior-turtle) nil)
-		       new))))
-	    ((evenp item-no)
-	     ;; expect a keyword next...
-	     (let ((next-keyword (bin-next-value stream)))
-	       (unless (symbolp next-keyword)
-		 (error "Expected a Keyword instead of ~S" next-keyword))
-	       (setq current-keyword next-keyword)))
-	    (t
-	     (partial-initialize graphics-object
-				 current-keyword (bin-next-value stream)))))
+             (unless (eq (setq current-keyword (bin-next-value stream)) 'type)
+               ;; sanity check
+               (error "Expected the TYPE keyword instead of ~S"
+                      current-keyword)))
+            ((=& item-no 1)
+             (let ((go-class (bin-next-value stream)))
+               (unless (find-class go-class nil)
+                 (error "~S is not a valid class of graphics object" go-class))
+               (setq graphics-object
+                     (let ((new (allocate-instance (find-class go-class))))
+                       (setf (slot-value new 'assoc-graphics-box) nil)
+                       (setf (slot-value new 'superior-turtle) nil)
+                       new))))
+            ((evenp item-no)
+             ;; expect a keyword next...
+             (let ((next-keyword (bin-next-value stream)))
+               (unless (symbolp next-keyword)
+                 (error "Expected a Keyword instead of ~S" next-keyword))
+               (setq current-keyword next-keyword)))
+            (t
+             (partial-initialize graphics-object
+                                 current-keyword (bin-next-value stream)))))
     ;; fixup any private graphics lists...
     (if (slot-boundp graphics-object 'private-gl)
         (setf (slot-value graphics-object 'private-gl)
@@ -1702,153 +1702,153 @@ should ignore it.")
 (defmethod partial-initialize ((self graphics-object) keyword value)
   (case keyword
     (x-position (setf (slot-value self 'x-position)
-		      (%make-vv-box-interface value 'x-position)))
+                      (%make-vv-box-interface value 'x-position)))
     (y-position (setf (slot-value self 'y-position)
-		      (%make-vv-box-interface value 'y-position)))
+                      (%make-vv-box-interface value 'y-position)))
     (subsprites  (setf (slot-value self 'subsprites) value))))
 
 (defmethod partial-initialize ((self button) keyword value)
   (or (call-next-method)		; returns non NIL if already handled
       ;; try and handle it here...
       (case keyword
-	(shape (setf (slot-value self 'shape)
+        (shape (setf (slot-value self 'shape)
                      (%make-sv-box-interface
                       (post-load-process-graphics-list value) 'shape nil 'shape-box-updater))
-	       ;; now that we have (or should have) a shape, fill in
-	       ;; the auxiliary data structures
-	       (setf (slot-value self 'window-shape)
-		     (make-turtle-window-shape (shape self))))
-	(save-under (progn
-		      ;; crock for initializing in save-unders
-		      ;; when sprite-size is undefined
-		      (when (<= *file-bin-version* 9)
-			(setf (slot-value self 'sprite-size)
-			      (%make-iv-box-interface 1 'sprite-size)))
-		      (cond ((eq value 'save-under)
-			     (setf (slot-value self 'save-under) nil)
-			     ;; handle
-			     (update-save-under self))
-			    ((fast-memq value *valid-save-under-keywords*)
-			     (setf (slot-value self 'save-under) value))
-			    (t
-			     (warn "~S is a bad value for the save-under")
-			     (setf (slot-value self 'save-under) nil)
-			     (update-save-under self))))))))
+               ;; now that we have (or should have) a shape, fill in
+               ;; the auxiliary data structures
+               (setf (slot-value self 'window-shape)
+                     (make-turtle-window-shape (shape self))))
+        (save-under (progn
+                      ;; crock for initializing in save-unders
+                      ;; when sprite-size is undefined
+                      (when (<= *file-bin-version* 9)
+                        (setf (slot-value self 'sprite-size)
+                              (%make-iv-box-interface 1 'sprite-size)))
+                      (cond ((eq value 'save-under)
+                             (setf (slot-value self 'save-under) nil)
+                             ;; handle
+                             (update-save-under self))
+                            ((fast-memq value *valid-save-under-keywords*)
+                             (setf (slot-value self 'save-under) value))
+                            (t
+                             (warn "~S is a bad value for the save-under")
+                             (setf (slot-value self 'save-under) nil)
+                             (update-save-under self))))))))
 
 (defmethod partial-initialize ((self graphics-cursor) keyword value)
   (or (call-next-method)		; returns non NIL if already handled
       ;; try and handle it here...
       (case keyword
-	(shown? (setf (slot-value self 'shown?)
-		      (%make-iv-box-interface value 'shown?)))
-	(pen (setf (slot-value self 'pen) (%make-iv-box-interface value 'pen)))
-	(pen-width (setf (slot-value self 'pen-width)
-			 (%make-vv-box-interface value 'pen-width)))
+        (shown? (setf (slot-value self 'shown?)
+                      (%make-iv-box-interface value 'shown?)))
+        (pen (setf (slot-value self 'pen) (%make-iv-box-interface value 'pen)))
+        (pen-width (setf (slot-value self 'pen-width)
+                         (%make-vv-box-interface value 'pen-width)))
         ;; as of 8/22/00 in the PC version, these values will have been
         ;; canonicalized (list of 3 RGB floats).  (mac) Files made earlier may have
         ;; a 24 bit RGB fixnum here instead. fortunately, reallocate-pixel-color
         ;; is smart enough to deal with both
-	(pen-color
+        (pen-color
          (setf (slot-value self 'pen-color)
                (%make-sv-box-interface (reallocate-pixel-color value) 'pen-color
                                        nil 'pen-color-box-updater)))
-	(type-font (setf (slot-value self 'type-font)
-			(%make-sv-box-interface
+        (type-font (setf (slot-value self 'type-font)
+                        (%make-sv-box-interface
                          (if (>=& *version-number* 12)
                              (make-font-from-file-value value)
                              value)
                          'type-font nil 'type-font-box-updater)))
-	;; compatibility blues...
-	(pen-font (setf (slot-value self 'type-font)
-			(%make-iv-box-interface value 'type-font)))
-	(shown-p (setf (slot-value self 'shown?)
-		       (%make-iv-box-interface value 'shown?))))))
+        ;; compatibility blues...
+        (pen-font (setf (slot-value self 'type-font)
+                        (%make-iv-box-interface value 'type-font)))
+        (shown-p (setf (slot-value self 'shown?)
+                       (%make-iv-box-interface value 'shown?))))))
 
 (defmethod partial-initialize ((self turtle) keyword value)
   (or (call-next-method)		; returns non NIL if already handled
       ;; try and handle it here...
       (case keyword
-	(heading (setf (slot-value self 'heading)
-		       (%make-vv-box-interface value 'heading)))
-	(home-position (setf (slot-value self 'home-position)
-			     (%make-iv-box-interface value 'home-position)))
-	(sprite-size (prog1
-			 (setf (slot-value self 'sprite-size)
-			       (%make-iv-box-interface value 'sprite-size))
-		       ;; need to check to see if the save-under needs
-		       ;; to be reitinitialized since it was created
-		       ;; with an assumed sprite-size of 1
-		       (when (and  (<= *file-bin-version* 9)
-				   (not (= value 1))
-				   (slot-boundp self 'save-under)
-				   (save-under-p (slot-value self
-							     'save-under)))
-			 (update-save-under self))))
+        (heading (setf (slot-value self 'heading)
+                       (%make-vv-box-interface value 'heading)))
+        (home-position (setf (slot-value self 'home-position)
+                             (%make-iv-box-interface value 'home-position)))
+        (sprite-size (prog1
+                         (setf (slot-value self 'sprite-size)
+                               (%make-iv-box-interface value 'sprite-size))
+                       ;; need to check to see if the save-under needs
+                       ;; to be reitinitialized since it was created
+                       ;; with an assumed sprite-size of 1
+                       (when (and  (<= *file-bin-version* 9)
+                                   (not (= value 1))
+                                   (slot-boundp self 'save-under)
+                                   (save-under-p (slot-value self
+                                                             'save-under)))
+                         (update-save-under self))))
         (private-gl (setf (slot-value self 'private-gl) value)))))
 
 
 (defun old-style-load-turtle (stream)
   (let ((plist (bin-next-value stream))
-	(turtle
-	 #+pcl
-	  (let ((pcl::*slot-unbound* nil))
-	    (allocate-instance (find-class 'turtle)))
-	  #+(or clos mcl)
-	  (let ((new (allocate-instance (find-class 'turtle))))
-	    (setf (slot-value new 'assoc-graphics-box) nil)
-	    (setf (slot-value new 'superior-turtle) nil)
-	    (setf (slot-value new 'type-font)
-		  *initial-graphics-state-current-font-no*)
-	    (setf (slot-value new 'pen-color)
-		  *initial-graphics-state-current-pen-color*)
-	    new)))
+        (turtle
+         #+pcl
+          (let ((pcl::*slot-unbound* nil))
+            (allocate-instance (find-class 'turtle)))
+          #+(or clos mcl)
+          (let ((new (allocate-instance (find-class 'turtle))))
+            (setf (slot-value new 'assoc-graphics-box) nil)
+            (setf (slot-value new 'superior-turtle) nil)
+            (setf (slot-value new 'type-font)
+                  *initial-graphics-state-current-font-no*)
+            (setf (slot-value new 'pen-color)
+                  *initial-graphics-state-current-pen-color*)
+            new)))
     (do* ((list plist (cddr list))
-	  (slot (car list) (car list))
-	  (value (cadr list) (cadr list)))
-	 ((null list))
+          (slot (car list) (car list))
+          (value (cadr list) (cadr list)))
+         ((null list))
       (cond ((and (not (null *check-for-and-convert-old-vlist-style*))
-		  (eq slot 'shape))
-	     (setf (slot-value turtle slot)
-		   (%make-iv-box-interface
-		    (if (listp (car value))
-			(convert-old-style-shape (car value) turtle)
-			(car value))
-		    'shape))
-	     ;(update-save-under turtle)
-	     (setf (turtle-save-under turtle) 'xor-redraw))
-	    ((and (not (null *check-for-and-convert-old-vlist-style*))
-		  (eq slot 'size))
-	     (setf (slot-value turtle 'sprite-size)
-		   (%make-iv-box-interface (float (car value)) 'sprite-size)))
-	    ((and (not (null *check-for-and-convert-old-vlist-style*))
-		  (eq slot 'home))
-	     (setf (slot-value turtle 'home-position)
-		   (%make-iv-box-interface (car value) 'home-position)))
-	    ((eq slot 'save-under)
-	     (cond ((eq value 'xor-redraw)
-		    (setf (slot-value turtle slot) value))
-		   ((eq value 'save-under)
-		    (setf (slot-value turtle slot) nil)
-		    (update-save-under turtle))
-		   (t
-		    (warn "~S is a bad value for the save-under")
-		    (setf (slot-value turtle slot) nil)
-		    (update-save-under turtle))))
-	    ((fast-memq slot
-			'(x-position y-position heading pen-width sprite-size))
-	     (setf (slot-value turtle slot)
-		   (%make-vv-box-interface (car value) slot)))
-	    ((eq slot 'shown-p)
-	     (setf (slot-value turtle 'shown?)
-		   (%make-iv-box-interface (car value) 'shown?)))
-	    ((eq slot 'pen-font)
-	     (setf (slot-value turtle 'type-font)
-		   (%make-iv-box-interface (car value) 'type-font)))
-	    ((fast-memq slot '(pen pen-color home-position))
-	     (setf (slot-value turtle slot)
-		   (%make-iv-box-interface (car value) slot)))
-	    (t
-	     (setf (slot-value turtle slot) value))))
+                  (eq slot 'shape))
+             (setf (slot-value turtle slot)
+                   (%make-iv-box-interface
+                    (if (listp (car value))
+                        (convert-old-style-shape (car value) turtle)
+                        (car value))
+                    'shape))
+             ;(update-save-under turtle)
+             (setf (turtle-save-under turtle) 'xor-redraw))
+            ((and (not (null *check-for-and-convert-old-vlist-style*))
+                  (eq slot 'size))
+             (setf (slot-value turtle 'sprite-size)
+                   (%make-iv-box-interface (float (car value)) 'sprite-size)))
+            ((and (not (null *check-for-and-convert-old-vlist-style*))
+                  (eq slot 'home))
+             (setf (slot-value turtle 'home-position)
+                   (%make-iv-box-interface (car value) 'home-position)))
+            ((eq slot 'save-under)
+             (cond ((eq value 'xor-redraw)
+                    (setf (slot-value turtle slot) value))
+                   ((eq value 'save-under)
+                    (setf (slot-value turtle slot) nil)
+                    (update-save-under turtle))
+                   (t
+                    (warn "~S is a bad value for the save-under")
+                    (setf (slot-value turtle slot) nil)
+                    (update-save-under turtle))))
+            ((fast-memq slot
+                        '(x-position y-position heading pen-width sprite-size))
+             (setf (slot-value turtle slot)
+                   (%make-vv-box-interface (car value) slot)))
+            ((eq slot 'shown-p)
+             (setf (slot-value turtle 'shown?)
+                   (%make-iv-box-interface (car value) 'shown?)))
+            ((eq slot 'pen-font)
+             (setf (slot-value turtle 'type-font)
+                   (%make-iv-box-interface (car value) 'type-font)))
+            ((fast-memq slot '(pen pen-color home-position))
+             (setf (slot-value turtle slot)
+                   (%make-iv-box-interface (car value) slot)))
+            (t
+             (setf (slot-value turtle slot) value))))
     ;; now that the slots have been filled from the file, handle
     ;; the remaining slots that were not dumped out but still need valid
     ;; values
@@ -1858,13 +1858,13 @@ should ignore it.")
     (when (null (slot-value turtle 'type-font))
       (warn "Null pen-font, fixing...")
       (setf (slot-value turtle 'type-font)
-	    (%make-iv-box-interface *sprite-type-font-no* 'type-font)))
+            (%make-iv-box-interface *sprite-type-font-no* 'type-font)))
     (when (null (slot-value turtle 'pen-color))
       (warn "Null pen-color, fixing...")
       (setf (slot-value turtle 'pen-color)
-	    (%make-iv-box-interface *foreground-color* 'pen-color)))
+            (%make-iv-box-interface *foreground-color* 'pen-color)))
     (setf (slot-value turtle 'window-shape)
-	  (make-turtle-window-shape (shape turtle)))
+          (make-turtle-window-shape (shape turtle)))
     turtle))
 
 ;(define-load-command bin-op-turtle (stream)
@@ -1879,17 +1879,17 @@ should ignore it.")
 #+clx
 (defun old-style-put-picture-byte (pic x y byte &optional size)
   (declare (type (simple-array bit (* *)) pic)
-	   (fixnum x y byte size))
+           (fixnum x y byte size))
   (dotimes& (i (or size 8))
     (setf (aref pic y (+& x i))
-	  ;; have to swap the bytes, blecchh...
-	  (ldb& (byte 1 (-& 7 i)) byte))))
+          ;; have to swap the bytes, blecchh...
+          (ldb& (byte 1 (-& 7 i)) byte))))
 
 #+X
 (defun old-style-put-picture-byte (pic x y byte &optional size bytes-per-row)
   (declare (ignore size))
   (setf (xlib::crefi-byte pic (+& (ash& x -3) (*& y bytes-per-row)))
-	byte))
+        byte))
 
 #+(or MCL OpenGL)
 (defun old-style-put-picture-byte (pic x y byte &optional size bytes-per-row)
@@ -1902,85 +1902,85 @@ should ignore it.")
   (if (/= (bin-next-byte stream) bin-op-picture)
       (error "Expected a picture to start here")
       (let ((current-byte 0)
-	    (rep-count 0)
-	    (data-count 0)
-	    (extra-data-p nil)
-	    (other-half 0))
-	(labels ((handle-word ()
-		   ;; this should only be called if repeat AND count are 0
-		   ;; it will set up either a repeat or count situation
-		   (let* ((word (bin-next-byte stream))
-			  (top (ldb& %%bin-op-top-half word))
-			  (low (ldb& %%bin-op-low-half word)))
-		     (cond ((=& top *pic-data-count-prefix*)
-			    ;; looks like we should set up a count situation
-			    (setq data-count low))
-			   (t
-			    ;; must be a repeat
-			    (setq rep-count    top
-				  current-byte low)))))
+            (rep-count 0)
+            (data-count 0)
+            (extra-data-p nil)
+            (other-half 0))
+        (labels ((handle-word ()
+                   ;; this should only be called if repeat AND count are 0
+                   ;; it will set up either a repeat or count situation
+                   (let* ((word (bin-next-byte stream))
+                          (top (ldb& %%bin-op-top-half word))
+                          (low (ldb& %%bin-op-low-half word)))
+                     (cond ((=& top *pic-data-count-prefix*)
+                            ;; looks like we should set up a count situation
+                            (setq data-count low))
+                           (t
+                            ;; must be a repeat
+                            (setq rep-count    top
+                                  current-byte low)))))
 
-		 (get-count-data-word ()
-		   (let* ((word (bin-next-byte stream))
-			  (top (ldb& %%bin-op-top-half word))
-			  (low (ldb& %%bin-op-low-half word)))
-		     (setq extra-data-p t
-			   other-half   top)
-		     low))
+                 (get-count-data-word ()
+                   (let* ((word (bin-next-byte stream))
+                          (top (ldb& %%bin-op-top-half word))
+                          (low (ldb& %%bin-op-low-half word)))
+                     (setq extra-data-p t
+                           other-half   top)
+                     low))
 
-		 (get-count-data-bits ()
-		   (if (null extra-data-p)
-		       (get-count-data-word)
-		       (progn (setq extra-data-p nil)
-			      other-half)))
+                 (get-count-data-bits ()
+                   (if (null extra-data-p)
+                       (get-count-data-word)
+                       (progn (setq extra-data-p nil)
+                              other-half)))
 
-		 (get-bits ()
-		   (cond ((=& 1 data-count)
-			  (decf& data-count)
-			  (setq current-byte (get-count-data-bits)
-				extra-data-p  nil)
-			  current-byte)
-			 ((not (zerop& data-count))
-			  (decf& data-count)
-			  (setq current-byte (get-count-data-bits)))
-			 ((not (zerop& rep-count))
-			  (decf& rep-count)
-			  current-byte)
-			 (t (handle-word)
-			    (get-bits)))))
-	  ;; Here's the body
-	  (multiple-value-bind (whole-words-per-row leftover-pixels
-						    #+X bytes-per-row)
-	      (floor width 16.)
-	    #+X (setq bytes-per-row (+& (*& 2 whole-words-per-row)
-					(if (zerop& leftover-pixels)
-					    0
-					    2)))
-	    (dotimes& (row height)
-		      (dotimes& (rb whole-words-per-row)
-				(old-style-put-picture-byte
-				 pic (ash& rb 4) ; (* rb 16)
-				 row (get-bits) 8.
-				 #+X bytes-per-row)
-				(old-style-put-picture-byte
-				 pic (+& (ash& rb 4) 8.)
-				 row (get-bits) 8.
-				 #+X bytes-per-row))
-		      ;; handle any protrusions
-		      (when (not (zerop& leftover-pixels))
-			(old-style-put-picture-byte
-			 pic (ash& whole-words-per-row 4)
-			 row (get-bits) (min& 8 leftover-pixels)
-			 #+X bytes-per-row)
-			;; remember that mutiples of 16 bit words are
-			;; being written out so that even if there was
-			;; nothing there, we still need to read in the padding
-			(if (<& leftover-pixels 8.)
-			    (get-bits)
-			    (old-style-put-picture-byte
-			     pic (+& (ash& whole-words-per-row 4) 8)
-			     row (get-bits) (-& leftover-pixels 8)
-			     #+X bytes-per-row)))))))))
+                 (get-bits ()
+                   (cond ((=& 1 data-count)
+                          (decf& data-count)
+                          (setq current-byte (get-count-data-bits)
+                                extra-data-p  nil)
+                          current-byte)
+                         ((not (zerop& data-count))
+                          (decf& data-count)
+                          (setq current-byte (get-count-data-bits)))
+                         ((not (zerop& rep-count))
+                          (decf& rep-count)
+                          current-byte)
+                         (t (handle-word)
+                            (get-bits)))))
+          ;; Here's the body
+          (multiple-value-bind (whole-words-per-row leftover-pixels
+                                                    #+X bytes-per-row)
+              (floor width 16.)
+            #+X (setq bytes-per-row (+& (*& 2 whole-words-per-row)
+                                        (if (zerop& leftover-pixels)
+                                            0
+                                            2)))
+            (dotimes& (row height)
+                      (dotimes& (rb whole-words-per-row)
+                                (old-style-put-picture-byte
+                                 pic (ash& rb 4) ; (* rb 16)
+                                 row (get-bits) 8.
+                                 #+X bytes-per-row)
+                                (old-style-put-picture-byte
+                                 pic (+& (ash& rb 4) 8.)
+                                 row (get-bits) 8.
+                                 #+X bytes-per-row))
+                      ;; handle any protrusions
+                      (when (not (zerop& leftover-pixels))
+                        (old-style-put-picture-byte
+                         pic (ash& whole-words-per-row 4)
+                         row (get-bits) (min& 8 leftover-pixels)
+                         #+X bytes-per-row)
+                        ;; remember that mutiples of 16 bit words are
+                        ;; being written out so that even if there was
+                        ;; nothing there, we still need to read in the padding
+                        (if (<& leftover-pixels 8.)
+                            (get-bits)
+                            (old-style-put-picture-byte
+                             pic (+& (ash& whole-words-per-row 4) 8)
+                             row (get-bits) (-& leftover-pixels 8)
+                             #+X bytes-per-row)))))))))
 
 
 
@@ -2042,15 +2042,15 @@ should ignore it.")
   (gethash pathname *file-properties-table*))
 
 (defun record-boxer-file-properties (pathname creation-date author box
-					      &rest other-props)
+                                              &rest other-props)
   (let ((existing-props (gethash pathname *file-properties-table*)))
     (cond ((null existing-props)
-	   (setf (gethash pathname *file-properties-table*)
-		 (apply #'make-boxer-file-property
-			creation-date author box other-props)))
-	  (t
-	   (set-boxer-file-creation-date existing-props creation-date)
-	   (set-boxer-file-author existing-props author)
+           (setf (gethash pathname *file-properties-table*)
+                 (apply #'make-boxer-file-property
+                        creation-date author box other-props)))
+          (t
+           (set-boxer-file-creation-date existing-props creation-date)
+           (set-boxer-file-author existing-props author)
            (set-boxer-file-box existing-props box)))))
 
 
@@ -2062,18 +2062,18 @@ should ignore it.")
   (with-open-file (filestream pathname :element-type '(unsigned-byte 8.))
     (with-mouse-cursor (:file-io)
       (if (null *file-system-verbosity*)
-	  (load-binary-box-from-stream-internal filestream)
-	  (unwind-protect
-	       (let ((*status-line-loading-format-string*
-		      (format nil "Reading ~A ~~D (~~D %)"
-			      (filename-for-format-string filestream))))
-		 (status-line-display 'loading-box
-				      (format nil
-					      "Loading Box from ~A"
-					      pathname))
-		 (let ((*current-file-length* (file-length filestream)))
-		   (load-binary-box-from-stream-internal filestream)))
-	    (status-line-undisplay 'loading-box))))))
+          (load-binary-box-from-stream-internal filestream)
+          (unwind-protect
+               (let ((*status-line-loading-format-string*
+                      (format nil "Reading ~A ~~D (~~D %)"
+                              (filename-for-format-string filestream))))
+                 (status-line-display 'loading-box
+                                      (format nil
+                                              "Loading Box from ~A"
+                                              pathname))
+                 (let ((*current-file-length* (file-length filestream)))
+                   (load-binary-box-from-stream-internal filestream)))
+            (status-line-undisplay 'loading-box))))))
 
 (defvar *verbose-filename-for-format-string* nil)
 
@@ -2085,33 +2085,33 @@ should ignore it.")
                      (if (or (null type) (eq type :unspecific))
                          (pathname-name raw-name)
                          (format nil "~A.~A" (pathname-name raw-name) type)))))
-	 (length (length name))
-	 (return-string (make-array length :element-type 'standard-char
-				    :adjustable t :fill-pointer 0)))
+         (length (length name))
+         (return-string (make-array length :element-type 'standard-char
+                                    :adjustable t :fill-pointer 0)))
     (dotimes (i length )
       (let ((char (char name i)))
-	(if (char= char #\~)
-	    (dotimes (i 2) (vector-push-extend #\~ return-string))
-	    (vector-push-extend char return-string))))
+        (if (char= char #\~)
+            (dotimes (i 2) (vector-push-extend #\~ return-string))
+            (vector-push-extend char return-string))))
     return-string))
 
 (defun load-binary-box-from-stream-internal (filestream)
   (with-post-load-autoloading (filestream)
     (loading-bin-file (filestream 'bin-load-next-command)
       (let ((*package* (find-package 'boxer))
-	    (boxer-eval::*primitive-shadow-warning-on?* nil))
+            (boxer-eval::*primitive-shadow-warning-on?* nil))
         (bin-load-top-level filestream nil)))))
 
 (defun bin-load-top-level (stream &optional skip-reading-property-list
-				  &aux box-to-return initial-word)
+                                  &aux box-to-return initial-word)
   (unless skip-reading-property-list
     (let ((word (bin-next-byte stream)))
       (setq initial-word word)
       (when (=& word bin-op-file-property-list)
-	;; if there is a PLIST, then process it
-	(bin-next-command stream word)
-	;; if we've used the initial word up, set it back to nil
-	(setq initial-word nil))))
+        ;; if there is a PLIST, then process it
+        (bin-next-command stream word)
+        ;; if we've used the initial word up, set it back to nil
+        (setq initial-word nil))))
   ;; presumably, the only thing left after the file's
   ;; plist will be the top level box
   (catch 'bin-load-done
@@ -2122,19 +2122,19 @@ should ignore it.")
 
 (defun decode-bin-opcode (word)
   (let ((high (ldb& %%bin-op-high word))
-	(low (ldb& %%bin-op-low word)))
+        (low (ldb& %%bin-op-low word)))
     (if (or (=& high bin-op-command-immediate) (=& high bin-op-box-immediate))
-	low
-	(values high low))))
+        low
+        (values high low))))
 
 (defun bin-load-start (stream)
   (let ((word (bin-next-byte stream)))
     (unless (or (=& word bin-op-format-version)
-	        (when (=& word *swapped-bin-op-format-version*)
-	          (warn "Toggling byte swapping of file words...")
-	          (toggle-reader-byte-swapping)
-	          (setq word bin-op-format-version)
-	          t))
+                (when (=& word *swapped-bin-op-format-version*)
+                  (warn "Toggling byte swapping of file words...")
+                  (toggle-reader-byte-swapping)
+                  (setq word bin-op-format-version)
+                  t))
       (boxer-eval::primitive-signal-error :bad-file-arg
                                     (if (typep stream 'file-stream)
                                         (namestring (truename stream))
@@ -2159,15 +2159,15 @@ should ignore it.")
       (decode-bin-opcode (or word (bin-next-byte stream)))
     (let ((function (bin-op-dispatch *bin-op-load-command-table* index)))
       (if extra-arg
-	  (funcall function stream extra-arg)
-	  (funcall function stream)))))
+          (funcall function stream extra-arg)
+          (funcall function stream)))))
 
 (defun bin-next-value (stream &optional word)
   (do (val1 val2 val3) (nil)
     (multiple-value-setq (val1 val2 val3)
       (bin-next-command stream word))
     (or (eq val1 *no-value-marker*)
-	(return (values val1 val2 val3)))))
+        (return (values val1 val2 val3)))))
 
 ;;; This is useful for interactively restoring stuff
 
@@ -2178,23 +2178,23 @@ should ignore it.")
       (decode-bin-opcode (or word (bin-next-byte stream)))
     (let ((function (bin-op-dispatch *bin-op-load-command-table* index)))
       (if (or (null *pause-on-load-command*)
-	      (y-or-n-p "Function is ~A. Continue to pause ?" function))
-	  (if extra-arg
-	      (funcall function stream extra-arg)
-	      (funcall function stream))
-	  (let ((*pause-on-load-command* nil))
-	    (format t "~%(~A)==>" function)
-	    (prog1
-		(prin1
-		 (if extra-arg
-		     (funcall function stream extra-arg)
-		     (funcall function stream)))
-	      (terpri)))))))
+              (y-or-n-p "Function is ~A. Continue to pause ?" function))
+          (if extra-arg
+              (funcall function stream extra-arg)
+              (funcall function stream))
+          (let ((*pause-on-load-command* nil))
+            (format t "~%(~A)==>" function)
+            (prog1
+                (prin1
+                 (if extra-arg
+                     (funcall function stream extra-arg)
+                     (funcall function stream)))
+              (terpri)))))))
 
 (defun interactive-load-binary-box-from-stream-internal (filestream)
   (with-post-load-autoloading (filestream)
     (loading-bin-file (filestream 'interactive-bin-load-next-command)
       (let ((*package* (find-package 'boxer))
-	    (boxer-eval::*primitive-shadow-warning-on?* nil))
+            (boxer-eval::*primitive-shadow-warning-on?* nil))
         (bin-load-top-level filestream nil)))))
 

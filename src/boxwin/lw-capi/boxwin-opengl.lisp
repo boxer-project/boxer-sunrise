@@ -281,7 +281,7 @@
                 (:component
                  (
                   ("Quit"
-                   :accelerator #\q :callback-type :interface :callback 'capi:destroy))
+                   :accelerator #\q :callback-type :interface :callback 'lw-menu-quit))
                  )))
   (file-menu "File" ((:component
                       (
@@ -290,7 +290,7 @@
   (:default-initargs
    :title "Boxer"
    ;; sgithens TODO -
-   ;;:application-menu 'application-menu
+   :application-menu 'application-menu
    :message-callback 'handle-OSX-events
    ))
 
@@ -796,12 +796,7 @@
    :title "Boxer"
    :width  *boxer-frame-initial-width*
    :height *boxer-frame-initial-height*
-   ; 20222-03-16 boxer-bugs-121 A function such as checking for unsaved boxes seems completely reasonble,
-   ; but at the moment it doesn't appear to exist in ANY of our source code archives...
    :confirm-destroy-function 'lw-quit
-   :destroy-callback #'(lambda (&rest args)
-                         (declare (ignore args ))
-                         (user::quit))
    ))
 
 (defun handle-OSX-events (interface message &rest args)
@@ -897,6 +892,9 @@ in macOS."
   (setq *point-blinker* (make-blinker *boxer-pane*))
   #+cocoa
   (capi:set-application-interface (make-instance 'cocoa-boxer-interface))
+  ;; This finishes starting the application so we don't get event queue errors on some versions of macOS
+  ;; for performing other thread tasks before application startup.
+  (capi:convert-to-screen nil)
 
   ;; load prefs if they exists
   (let ((pf (boxer::default-lw-pref-file-name)))

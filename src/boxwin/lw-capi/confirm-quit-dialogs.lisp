@@ -80,7 +80,24 @@ changes made to the box:
       (:dont-save nil)
       (otherwise (throw 'boxer::cancel-boxer-file-dialog nil)))))
 
+(defun lw-menu-quit (interface)
+  "Checks the return from lw-quit before calling destroy. Using for hooks where it doesn't appear the
+  'capi:confirm-destroy-function is being used."
+  (if (lw-quit interface)
+    (capi:destroy interface))
+)
+
 (defun lw-quit (interface)
+  "Checks if there are modified files and starts the dialogs for it if there are. Returns t if we should continue to
+  close the application."
+  (if (equal (length (boxer::modified-boxes-for-close)) 0)
+    t
+    (start-review-modified-files-dialog interface))
+)
+
+(defun start-review-modified-files-dialog (interface)
+  "Launches the workflow of dialog boxes for reviewing/discarding unsaved files. Returns t if we should continue
+  to close the application, nil if closing should be cancelled."
   (catch 'boxer::cancel-boxer-file-dialog
     (let* ((dialog (capi:make-container
                   (make-instance 'capi:row-layout
@@ -121,7 +138,10 @@ your changes will be lost."
                                                               :text "Cancel"
                                                               :visible-max-width 230
                                                               :visible-min-width 230
-                                                              :callback 'capi:abort-dialog)))
+                                                              ; :callback 'capi:abort-dialog)))
+                                                              :callback #'(lambda (data int)
+                                                                            (declare (ignore data int))
+                                                                            (capi:exit-dialog :cancel)))))
                                  (make-instance 'capi:column-layout
                                                 :visible-max-width 10
                                                 :visible-min-width 10
@@ -135,6 +155,7 @@ your changes will be lost."
        ;; cancel-boxer-file-dialog with nil we can exit with t
        t)
       (:discard t)
+      (:cancel nil)
       (otherwise nil)))))
 
 ;; (boxer-eval::defboxer-key (bu::q-key 1) com-lw-quit) sgithens TODO March 7, 2020

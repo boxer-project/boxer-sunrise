@@ -392,28 +392,6 @@
   (setq *sfun-continuation* '*run-list-sfun-continuation*)
   list)
 
-(defun make-boxer-primitive-internal (arglist code)
-  (let ((name (gensym)))
-    (proclaim `(special ,name))
-    (let ((lisp-function-object
-           (compile-lambda-if-possible
-            name
-            `(lambda ()
-                     (let ,(mapcar
-                            #'(lambda (u) `(,u (vpdl-pop-no-test)))
-                            (reverse arglist))
-                       . ,code)))))
-      (boxer-toplevel-set
-       name
-       (make-compiled-boxer-function
-        :arglist arglist
-        :precedence 0
-        :infix-p nil
-        :object lisp-function-object)))
-    name))
-
-
-
 ;;;; Functions which define keys.
 ;;;;
 ;; set in MAKE-INPUT-DEVICES (has to be declared here because the key
