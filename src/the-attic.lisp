@@ -5461,6 +5461,588 @@ if it is out of bounds
 |#
 
 ;;;;
+;;;; FILE: dumper.lisp
+;;;;
+
+
+
+;;;;;;;; THESE Comments are Obsolete !!!!!!!!!!!!!
+;;; The boxer world has three kinds of objects which must be dumped out
+;;; They are: CHARACTERS, ROWS, and BOXES.
+;;;
+;;; CHARACTERS are dumped out as themselves, that is, fixnums
+;;;
+;;; ROWS are essentially arrays of characters and are dumped out as such
+;;; keeping in mind that some of the characters may be BOXES
+;;;
+;;; BOXES come in three major types.  Regular, Port and Graphics.
+;;;    ALL boxes have to preserve their display info (i.e. desired size),
+;;;    their name, the superior row
+;;;
+;;;    GRAPHICS boxes have to dump out their bit-arrays (although in the
+;;;    case of turtle boxes it may be optional)
+;;;
+;;;    REGULAR boxes will have to keep track of their inferior rows,
+;;;    and Any pointers to PORTS
+;;;
+;;;    PORTS only have to keep track of the ported to box
+
+; from defun dump-top-level-box writing-bin-file
+    #+mcl (ccl::set-mac-file-type filename "BOXR")
+    #+mcl (ccl::set-mac-file-creator filename "BOXR")
+
+; from end of defun end-bin-file
+  ;; don't know about ExCl yet...
+  #+(or lucid lispm)
+  (and (system:file-stream-p stream) (truename stream))
+
+;;; The lisp package in Slime is called COMMON-LISP rather than LISP which
+;;; causes problems in loading the dumped symbol into another lisp
+;;; same problem for the mac....
+#+(or Symbolics mcl)
+(defvar *the-lisp-package* (find-package 'lisp))
+
+#+(or Symbolics mcl)
+(defun canonicalize-package-name (pkg)
+  (if (eq pkg *the-lisp-package*)
+    "LISP"
+    (package-name pkg)))
+
+; from defun dump-symbol
+#+(or Symbolics mcl)
+(canonicalize-package-name
+                            (symbol-package symbol))
+
+#+symbolics
+(defun array-bits-per-element (array)
+  (let ((et (si:array-type array)))
+    (cdr (fast-assq et si::array-bits-per-element))))
+
+; now we don't have to worry about bits - in fact they conflict with larger unicode chars
+;(defun dump-cha (cha stream)
+;  (unless (< (lisp::char-bits cha) 16)
+;    (warn "~C has more than 4 control-bits, only dumping out the low 4"))
+;  (write-file-word (dpb bin-op-cha-immediate
+;			%%bin-op-high
+;			(dpb (lisp::char-bits cha)
+;			     %%bin-op-im-cha-bits (char-code cha)))
+;		    stream))
+
+;;; we don't have to worry about fonts anymore
+;(defun dump-cha (cha stream)
+;  (flet ((im-char? (c)
+;	   (and (< (char-bits c)  4)
+;		(null (char-font-family c)))))
+;   (if (im-char? cha)
+;	(write-file-word (dpb bin-op-cha-immediate
+;			 %%bin-op-high
+;			 (dpb (map-style-to-index (char-style cha))
+;			      %%bin-op-im-cha-style
+;			      (dpb (char-bits cha)
+;				   %%bin-op-im-cha-bits
+;				   (char-code cha))))
+;		    stream)
+;	(progn
+;	  (write-file-word bin-op-fat-cha
+;		      stream)
+;	  (write-file-word (dpb (map-family-to-index (char-font-family cha))
+;			 %%bin-op-fat-cha-family
+;			 (dpb (map-style-to-index (char-style cha))
+;			      %%bin-op-fat-cha-style
+;			      (dpb (char-bits cha)
+;				   %%bin-op-fat-cha-bits
+;				   (char-code cha))))
+;		    stream)))))
+
+#|
+(eval-when (load)
+  (format t "~&~&Remember to flush dump font row toggling ~&~&")
+)
+
+(defun toggle-font-dumping ()
+  (cond ((null *dump-all-rows-using-fonts*)
+         (setq *version-number* 12 *dump-all-rows-using-fonts* t))
+        (t
+         (setq *version-number* 11 *dump-all-rows-using-fonts* nil))))
+|#
+
+#+mcl
+(defun file-stream-position (stream)
+  (etypecase stream
+             (ccl::file-stream (file-length stream))
+             (ccl::tcp-stream  (boxnet::writing-stream-position stream))))
+
+; was under defun flags-for-dumping
+#|
+  (if (or (eq box *outermost-dumping-box*) (in-bfs-environment?)
+          (box-flag-read-only-box? flags))
+|#
+
+;; Obsolete, use dump-canonicalized-display-style
+;(defun canonicalize-display-style (ds)
+;  (cond ((and (null (display-style-graphics-mode? ds))
+;	      (null (display-style-border-style ds)))
+;	 (list (display-style-style ds)
+;	       (display-style-fixed-wid ds)
+;	       (display-style-fixed-hei ds)))
+;	(t
+;	 (list (display-style-style ds)
+;	       (display-style-fixed-wid ds)
+;	       (display-style-fixed-hei ds)
+;	       (display-style-graphics-mode? ds)
+;	       (display-style-border-style ds)))))
+
+#|  no more sprtie boxes....
+(defmethod dump-self ((self sprite-box) stream)
+  (write-file-word bin-op-sprite-box stream)
+  (dump-box-plist self stream)
+  (write-file-word bin-op-end-of-box stream))
+|#
+
+
+
+
+; sgithens 2022-05-10 This was inside dump-graphics-sheet
+
+  ;;
+  ;; Pictures are now dumped in the plist
+  ;; leave this here so we know how things used to work if there
+  ;; are problems with the loading of old files
+;  (unless (dont-dump-picture? sheet)
+;    (dump-picture #+lispm (graphics-sheet-bit-array sheet)
+;		  ;; need to chase some pointers to
+;		  ;; get at the REAL data
+;		  #+X (pixrect::mpr_data.md-image
+;			 (pixrect::pixrect.pr-data
+;			     (graphics-sheet-bit-array sheet)))
+;		  #+clx
+;		  (car (bw::image-xy-bitmap-list
+;			(bw::get-image
+;			 (graphics-sheet-bit-array sheet)
+;			 :x 0 :y 0
+;			 :width (graphics-sheet-draw-wid sheet)
+;			 :height (graphics-sheet-draw-hei sheet)
+;			 :format :xy-pixmap)))
+;		  (graphics-sheet-draw-wid sheet)
+;		  (graphics-sheet-draw-hei sheet)
+;		  stream))
+
+;;
+;; sgithens 2022-05-10 While these may work, our pixmaps are hardcoded to always return a depth of 32 so these will never
+;; get called. If we were going to make any pixmap saving changes, we should just start using a standard png library or
+;; something.
+;;
+
+(defun dump-8-bit-pixmap (pixmap stream)
+  (dump-boxer-thing '8-bit-run-length-encoded stream)
+  (let ((pixdata (offscreen-bitmap-image pixmap))
+        (width (offscreen-bitmap-width pixmap))
+        (height (offscreen-bitmap-height pixmap))
+        (remap-idx 0)
+        (colormap nil))
+    (declare (list colormap) (fixnum width height remap-idx))
+    ;; dump out width and height.  This can usually be inferred from the
+    ;; containing graphics-sheet's draw-wid/hei but we do it here as
+    ;; well to support the future possibility of the underlying bitarray
+    ;; to be larger (to allow for smooth scrolling)
+    (dump-boxer-thing width stream) (dump-boxer-thing height stream)
+    ;; first pass through to generate the colormap
+    (dotimes& (y height)
+      (dotimes& (x width)
+        (let* ((pix (image-pixel x y pixdata))
+                (existing (assoc pix colormap :test #'=)))
+          (when (null existing)
+            (push (list pix (pixel-rgb-values pix) remap-idx) colormap)
+            (incf& remap-idx)))))
+    ;; now dump out the colormap (we fake a dump-array)
+    ;; first flip the colormap so it is ordered in increasing remap-idx's
+    (setq colormap (nreverse colormap))
+    (enter-table colormap)
+    (write-file-word bin-op-initialize-and-return-array stream)
+    (let ((lc (length colormap)))
+      (dump-array-1 stream lc nil) (dump-boxer-thing lc stream)
+      (do* ((j 0 (1+& j))
+            (colors colormap (cdr colors))
+            (color (cadr (car colors)) (cadr (car colors))))
+        ((>=& j lc))
+        (dump-boxer-thing color stream)))
+    ;; now dump out the pix data as run length encoded words
+    (let ((current-byte (image-pixel 0 0 pixdata)) (current-count 0))
+      (declare (fixnum current-byte current-count))
+      (dotimes& (y height)
+        (dotimes& (x width)
+          (let ((pix (image-pixel x y pixdata)))
+            (cond ((or (=& current-count 255)
+                        (not (=& pix current-byte)))
+                    ;; write out a word as high byte = count, low byte = pixel
+                    (write-file-word (dpb current-count %%bin-op-top-half
+                                          (caddr (assoc current-byte colormap)))
+                                    stream)
+                    (setq current-byte pix current-count 1))
+              ((=& pix current-byte) (incf& current-count))
+              (t (error "Bad case in dumping bitmap (byte = ~D, count = ~D"
+                        current-byte current-count))))))
+      ;; finally write out the last word
+      (write-file-word (dpb current-count %%bin-op-top-half
+                            (caddr (assoc current-byte colormap)))
+                        stream))))
+
+#+mcl
+(defun fast-mac-dump-8-bit-pixmap (pixmap stream)
+  (dump-boxer-thing '8-bit-run-length-encoded stream)
+  (let* ((width (offscreen-bitmap-width pixmap))
+          (height (offscreen-bitmap-height pixmap))
+          (pixdata (get-gworld-pixmap pixmap))
+          (row-bytes (ldb& #.(byte 14 0) (ccl::rref pixdata :pixmap.rowbytes)))
+          (pix-addr (get-pix-base-addr pixdata))
+          (remap-idx 0)
+          (colormap nil))
+    (declare (list colormap) (fixnum width height remap-idx))
+    ;; dump out width and height.  This can usually be inferred from the
+    ;; containing graphics-sheet's draw-wid/hei but we do it here as
+    ;; well to support the future possibility of the underlying bitarray
+    ;; to be larger (to allow for smooth scrolling)
+    (dump-boxer-thing width stream) (dump-boxer-thing height stream)
+    ;; first pass through to generate the colormap
+    (dotimes& (y height)
+      (dotimes& (x width)
+        (let* ((pix (%get-8pixel pix-addr x y row-bytes))
+                (existing (assoc pix colormap :test #'=)))
+          (when (null existing)
+            (if (>=& *version-number* 12)
+              (push (list pix (8pixel->dump-value pix) remap-idx) colormap)
+              (multiple-value-bind (r g b) (8pixel->boxer-rgb-values pix)
+                                    (push (list pix (list r g b) remap-idx) colormap)))
+            (incf& remap-idx)))))
+    ;; now dump out the colormap (we fake a dump-array)
+    ;; first flip the colormap so it is ordered in increasing remap-idx's
+    (setq colormap (nreverse colormap))
+    (enter-table colormap)
+    (write-file-word bin-op-initialize-and-return-array stream)
+    (let ((lc (length colormap)))
+      (dump-array-1 stream lc nil) (dump-boxer-thing lc stream)
+      (do* ((j 0 (1+& j))
+            (colors colormap (cdr colors))
+            (color (cadr (car colors)) (cadr (car colors))))
+        ((>=& j lc))
+        (dump-boxer-thing color stream)))
+    ;; now dump out the pix data as run length encoded words
+    (let ((current-byte (%get-8pixel pix-addr 0 0 row-bytes)) (current-count 0))
+      (declare (fixnum current-byte current-count))
+      (dotimes& (y height)
+        (dotimes& (x width)
+          (let ((pix (%get-8pixel pix-addr x y row-bytes)))
+            (cond ((or (=& current-count 255)
+                        (not (=& pix current-byte)))
+                    ;; write out a word as high byte = count, low byte = pixel
+                    (write-file-word (dpb current-count %%bin-op-top-half
+                                          (caddr (assoc current-byte colormap)))
+                                    stream)
+                    (setq current-byte pix current-count 1))
+              ((=& pix current-byte) (incf& current-count))
+              (t (error "Bad case in dumping bitmap (byte = ~D, count = ~D"
+                        current-byte current-count))))))
+      ;; finally write out the last word
+      (write-file-word (dpb current-count %%bin-op-top-half
+                            (caddr (assoc current-byte colormap)))
+                        stream))))
+
+;; The data for a boxer bitmap picture is run length encoded
+;; rows are padded out to 16-bit words
+;; The encoding is high-byte= repeat count, low-byte= data
+;; if the high byte = #x80, then the low byte will be a count
+;; specifying the next <count> bytes (high AND low) as pure data
+;; words
+;; This is superficially similiar to the run length encoding found in
+;; MacPaint files although byte ordering differences may make the files
+;; incompatible
+;;
+
+;; get a horizontal byte's worth of B&W pixels
+;;
+;; The byte ordering of the data is low order bits to the left
+;;
+(defun get-picture-byte (pic x y &optional size)
+  (declare (type (simple-array bit (* *)) pic)
+            (fixnum x y))
+  (let ((byte 0))
+    (dotimes& (i (or size 8))
+      (setq byte
+            (dpb& (image-pixel pic (+& x i) y) (byte 1 (-& 7 i)) byte)))
+    byte))
+
+(defconstant *max-pic-repeat-count* (1- (ash 1 7)))
+(defconstant *max-pic-count* (1- (ash 1 8)))
+
+
+;; could probably be smarter about when to switch from building a count
+;; list to building a repeat (and vice versa)
+;;
+
+(defun dump-1-bit-pixmap (pixmap stream)
+  (dump-boxer-thing '1-bit-run-length-encoded stream)
+  (let ((pixdata (offscreen-bitmap-image pixmap))
+        (width (offscreen-bitmap-width pixmap))
+        (height (offscreen-bitmap-height pixmap))
+        ;; vars
+        (current-byte 0)
+        (rep-count 0)
+        (data-count 0)
+        (current-data (make-storage-vector)))
+    ;; first dump width and height
+    (dump-boxer-thing width stream) (dump-boxer-thing height stream)
+    (flet ((write-repeat-word ()
+                              (write-file-word (dpb rep-count %%bin-op-top-half current-byte)
+                                                stream)
+                              (setq current-byte 0 rep-count 0))
+
+            (init-repeat (byte) (setq current-byte byte) (setq rep-count 1))
+
+            (add-count-data (byte)
+                            (setq current-byte byte) (sv-append current-data byte)
+                            (incf& data-count))
+
+            (write-count-data (data)
+                              (write-file-word (dpb *pic-data-count-prefix* %%bin-op-top-half
+                                                    data-count)
+                                              stream)
+                              ;; now write out the accumalated data
+                              ;; it is should be properly ordered at this point
+                              (do ((i 0 (+& i 2)))
+                                ((>=& i (storage-vector-active-length data)))
+                                (write-file-word
+                                (dpb& (if (>=& (1+& i) (storage-vector-active-length data))
+                                        0
+                                        (sv-nth (1+& i) data))
+                                      %%bin-op-top-half
+                                      (sv-nth i data))
+                                stream))))
+          (flet ((do-leftovers ()
+                    (cond ((not (zerop& rep-count)) (write-repeat-word))
+                      ((not (zerop& data-count)) (write-count-data
+                                                  current-data))))
+                  (handle-byte (byte)
+                              (cond ((=& byte current-byte)
+                                      ;; we have another byte of the same so, if we
+                                      ;; are building the count list, then it's time
+                                      ;; to send it out or else we incf
+                                      ;; the repeat counter unless it is maxed out
+                                      (cond ((not (zerop& (storage-vector-active-length
+                                                          current-data)))
+                                            ;; must be building a count list
+                                            (cond ((=& 1 data-count)
+                                                    ;; change from building a count list
+                                                    ;; to building a repeat
+                                                    (clear-storage-vector current-data)
+                                                    (setq data-count 0 rep-count 2))
+                                              (t
+                                                ;; write out what's there (except for
+                                                ;; the last one) and start
+                                                ;; building a repeat
+                                                (decf& data-count)
+                                                (sv-delete-at
+                                                current-data
+                                                (1-& (storage-vector-active-length
+                                                      current-data)))
+                                                (write-count-data current-data)
+                                                (clear-storage-vector current-data)
+                                                (setq data-count 0 rep-count  2))))
+                                        ;; must be building a repeat
+                                        ((=& rep-count *max-pic-repeat-count*)
+                                        (write-repeat-word)
+                                        (init-repeat byte))
+                                        (t (incf& rep-count))))
+                                (t
+                                  (cond ((not (zerop& rep-count))
+                                        ;; must be building a repeat
+                                        ;; so send the repeat out and start
+                                        ;; building a count list
+                                        (write-repeat-word)
+                                        (add-count-data byte))
+                                    ;; otherwise, we're building a count list
+                                    ((=& data-count *max-pic-count*)
+                                    (write-count-data current-data)
+                                    (init-repeat byte))
+                                    (t (add-count-data byte)))))))
+                (multiple-value-bind (whole-words-per-row leftover-pixels
+                                                          #+X bytes-per-row)
+                                      (floor width 16.)
+                                      #+X (setq bytes-per-row (+& (*& whole-words-per-row 2)
+                                                                  (if (zerop& leftover-pixels)
+                                                                    0
+                                                                    2)))
+                                      (dotimes& (row height)
+                                        (dotimes& (rb whole-words-per-row)
+                                          (handle-byte (get-picture-byte pixdata
+                                                                        (ash& rb 4)	; (* rb 16)
+                                                                        row
+                                                                        #+X 8.
+                                                                        #+X bytes-per-row))
+                                          (handle-byte (get-picture-byte pixdata
+                                                                        (+& (ash& rb 4) 8.)
+                                                                        row
+                                                                        #+X 8.
+                                                                        #+X bytes-per-row)))
+                                        (when (not (zerop& leftover-pixels))
+                                          (Handle-byte (get-picture-byte pixdata
+                                                                        (ash& whole-words-per-row 4)
+                                                                        row
+                                                                        (min& 8 leftover-pixels)
+                                                                        #+X bytes-per-row))
+                                          (handle-byte (if (<& leftover-pixels 8.)
+                                                        0
+                                                        (get-picture-byte pixdata
+                                                                          (+& (ash&
+                                                                                whole-words-per-row
+                                                                                4)
+                                                                              8)
+                                                                          row
+                                                                          (-& leftover-pixels 8)
+                                                                          #+X bytes-per-row)))))
+                                      (do-leftovers))))
+    (free-storage-vector current-data)))
+
+
+
+
+;;; Leave this here in case we have to debug loading of bitmaps in
+;;; pre file version 11 files
+
+#|
+(defun dump-picture (pic width height stream)
+  (write-file-word bin-op-picture stream)
+  (let ((current-byte 0)
+  (rep-count 0)
+  (data-count 0)
+  (current-data (make-storage-vector)))
+    (flet ((write-repeat-word ()
+       (write-file-word (dpb rep-count
+           %%bin-op-top-half
+           current-byte)
+            stream)
+       (setq current-byte 0
+       rep-count 0))
+
+     (init-repeat (byte)
+       (setq current-byte byte)
+       (setq rep-count 1))
+
+     (add-count-data (byte)
+       (setq current-byte byte)
+       (sv-append current-data byte)
+       (incf& data-count))
+
+     (write-count-data (data)
+       (write-file-word (dpb *pic-data-count-prefix*
+           %%bin-op-top-half
+           data-count)
+            stream)
+       ;; now write out the accumalated data
+       ;; it is should be properly ordered at this point
+       (do ((i 0 (+& i 2)))
+     ((>=& i (storage-vector-active-length data)))
+         (write-file-word (dpb& (if (>=& (1+& i)
+                 (storage-vector-active-length
+            data))
+            0
+            (sv-nth (1+& i) data))
+              %%bin-op-top-half
+              (sv-nth i data))
+        stream))))
+
+  (flet ((do-leftovers ()
+      (cond ((not (zerop& rep-count))
+       (write-repeat-word))
+      ((not (zerop& data-count))
+       (write-count-data current-data))))
+         (handle-byte (byte)
+     (cond ((=& byte current-byte)
+         ;; we have another byte of the same so, if we
+         ;; are building the count list, then it's time
+         ;; to send it out or else we incf
+         ;; the repeat counter unless it is maxed out
+         (cond ((not (zerop& (storage-vector-active-length
+            current-data)))
+          ;; must be building a count list
+          (cond ((=& 1 data-count)
+           ;; change from building a count list
+           ;; to building a repeat
+           (clear-storage-vector current-data)
+           (setq data-count 0
+           rep-count 2))
+          (t
+           ;; write out what's there (except for
+           ;; the last one) and start
+           ;; building a repeat
+           (decf& data-count)
+           (sv-delete-at
+            current-data
+            (1-& (storage-vector-active-length
+            current-data)))
+           (write-count-data current-data)
+           (clear-storage-vector current-data)
+           (setq data-count 0
+           rep-count  2))))
+         ;; must be building a repeat
+         ((=& rep-count *max-pic-repeat-count*)
+          (write-repeat-word)
+          (init-repeat byte))
+         (t (incf& rep-count))))
+        (t
+         (cond ((not (zerop& rep-count))
+          ;; must be building a repeat
+          ;; so send the repeat out and start
+          ;; building a count list
+          (write-repeat-word)
+          (add-count-data byte))
+         ;; otherwise, we're building a count list
+         ((=& data-count *max-pic-count*)
+          (write-count-data current-data)
+          (init-repeat byte))
+         (t (add-count-data byte)))))))
+    (multiple-value-bind (whole-words-per-row leftover-pixels
+                #+X bytes-per-row)
+        (floor width 16.)
+      #+X (setq bytes-per-row (+& (*& whole-words-per-row 2)
+          (if (zerop& leftover-pixels)
+              0
+              2)))
+      (dotimes& (row height)
+        (dotimes& (rb whole-words-per-row)
+    (handle-byte (get-picture-byte pic
+                 (ash& rb 4)	; (* rb 16)
+                 row
+                 #+X 8.
+                 #+X bytes-per-row))
+    (handle-byte (get-picture-byte pic
+                 (+& (ash& rb 4) 8.)
+                 row
+                 #+X 8.
+                 #+X bytes-per-row)))
+        (when (not (zerop& leftover-pixels))
+    (Handle-byte (get-picture-byte pic
+                 (ash& whole-words-per-row 4)
+                 row
+                 (min& 8 leftover-pixels)
+                 #+X bytes-per-row))
+    (handle-byte (if (<& leftover-pixels 8.)
+         0
+         (get-picture-byte pic
+               (+& (ash&
+              whole-words-per-row
+              4)
+                   8)
+               row
+               (-& leftover-pixels 8)
+               #+X bytes-per-row)))))
+      (do-leftovers))))
+    (free-storage-vector current-data)))
+|#
+
+
+
+
+;;;;
 ;;;; FILE: editor.lisp
 ;;;;
 
