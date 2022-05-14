@@ -615,13 +615,25 @@ Modification History (most recent at the top)
 |#
 
 (defun load-name-row (stream &optional (length (bin-next-value stream)))
+  (log:debug "load-name-row length: ~A" length)
   (let* ((chas-array (make-chas-array length))
          (new-row (make-instance 'name-row
                                  :chas-array chas-array
-                                 :cached-name (bin-next-value stream))))
-    (with-fast-chas-array-manipulation (chas-array chas-array-chas)
-      (dotimes& (i length)
-        (fast-chas-array-set-cha chas-array-chas i (bin-next-value stream))))
+                                 :cached-name (bin-next-value stream)))
+         )
+    (cond
+      ((>= *file-bin-version* 13.)
+        (let ((new-row-name (bin-next-value stream)))
+          (with-fast-chas-array-manipulation (chas-array chas-array-chas)
+            (dotimes& (i length)
+              (fast-chas-array-set-cha chas-array-chas i (elt new-row-name i))))
+        )
+      )
+      (t (with-fast-chas-array-manipulation (chas-array chas-array-chas)
+        (dotimes& (i length)
+          (let ((next-value (bin-next-value stream)))
+            (log:debug "  Name row i: ~A cha: ~A" i next-value)
+            (fast-chas-array-set-cha chas-array-chas i next-value))))))
     (setf (chas-array-active-length chas-array) length)
     new-row))
 

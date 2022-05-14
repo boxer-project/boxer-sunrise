@@ -496,6 +496,13 @@ Modification History (most recent at the top)
 ;;; chas
 
 (defun dump-cha (cha stream)
+  "NOTE: This methods put a cha into a single 16-bit dumper word, however the top 4 bits are used to record the
+  bin-op-cha-immediate code, which means the cha only has 12 bits. If you have a unicode character that requires more
+  than 12 bits, it's going to get chopped off and interpreted as something else."
+  (log:debug "  bin-op-cha-immediate: ~D ~X ~B ~%%%bin-op-high: ~D ~X ~B" bin-op-cha-immediate bin-op-cha-immediate bin-op-cha-immediate
+    %%bin-op-high %%bin-op-high %%bin-op-high)
+  (log:debug "  The calculated thing: ~D ~X ~B" (dpb bin-op-cha-immediate %%bin-op-high (char-code cha))
+        (dpb bin-op-cha-immediate %%bin-op-high (char-code cha)) (dpb bin-op-cha-immediate %%bin-op-high (char-code cha)))
   (write-file-word (dpb bin-op-cha-immediate %%bin-op-high (char-code cha))
                    stream))
 
@@ -659,7 +666,9 @@ Modification History (most recent at the top)
        (dump-table-lookup stream (cdr font-id))))))
 
 (defmethod dump-self ((self name-row) stream)
-  (let ((length (length-in-chas self)))
+  (log:debug "dump-self name-row")
+  (let ((length (length-in-chas self))
+        (namestr ""))
     (cond ((< length %%bin-op-im-arg-size)
            (write-file-word (dpb bin-op-name-row-immediate
                                  %%bin-op-high length)
@@ -669,9 +678,16 @@ Modification History (most recent at the top)
        (dump-boxer-thing length stream)))
     (dump-boxer-thing (cached-name self) stream)
     (do-row-chas ((cha self))
+      (log:debug "  name-row cha: ~A  cha?: ~A" cha (cha? cha))
+      (setf namestr (uiop:strcat namestr cha))
       (cond ((or (cha? cha) (box? cha))
-             (dump-boxer-thing cha stream))
-        (t (internal-dumping-error "Non char encountered in name-row"))))))
+            ;  (dump-boxer-thing cha stream)
+             )
+        (t (internal-dumping-error "Non char encountered in name-row"))))
+    (log:debug "  23The built-up namestr is: ~A" namestr)
+    (dump-boxer-thing namestr stream)
+    )
+  (log:debug "ending dump-self name-row")        )
 
 
 
