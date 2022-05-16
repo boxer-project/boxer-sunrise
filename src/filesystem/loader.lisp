@@ -113,7 +113,12 @@ Modification History (most recent at the top)
     (handle-file-property-list plist)))
 
 (define-load-command-for-effect bin-op-box-server-info-start (stream)
-  (boxnet::skip-box-server-info stream))
+  ;; sgithens 2022-05-16 This is currently the only function from bfslocal that was used outside of bfslocal and
+  ;; bfsforeign, which we are moving to the attic. If this error ever gets triggered, we will look at bringing the
+  ;; header method back in in order to load historic boxer files.
+  ;; (boxnet::skip-box-server-info stream)
+  (error "box-server-info-start is currently a deprecated load command, report this issue to repair loading.")
+  )
 
 (define-load-command-for-effect bin-op-eof (ignore)
   (declare (ignore ignore))
