@@ -6126,6 +6126,17 @@ if it is out of bounds
 ;;;; FILE: gdispl.lisp
 ;;;;
 
+; Commented out section from redisplay-graphics-sheet
+    ;; no more save-unders in OpenGL
+    ;    (dolist (turtle (graphics-sheet-object-list gs))
+    ;      ;; the save-under of the moving turtle has to be filled BEFORE ANY
+    ;      ;; turtles are drawn or else it might capture part of another
+    ;      ;; turtle's shape
+    ;      (save-under-turtle turtle))
+
+
+
+
 ; old (non-caching) implementation
 ;(defgraphics-handler (change-alu *turtle-graphics-handlers*) (trans-x
 ;							      trans-y

@@ -2651,12 +2651,6 @@ Modification History (most recent at the top)
     ;; first the items in the list
     (let ((gl (graphics-sheet-graphics-list gs)))
       (unless (graphics-command-list-hidden gl) (playback-graphics-list-internal gl)))
-    ;; no more save-unders in OpenGL
-    ;    (dolist (turtle (graphics-sheet-object-list gs))
-    ;      ;; the save-under of the moving turtle has to be filled BEFORE ANY
-    ;      ;; turtles are drawn or else it might capture part of another
-    ;      ;; turtle's shape
-    ;      (save-under-turtle turtle))
     ;; and then any sprites
     (let ((sprites (graphics-sheet-object-list gs)))
       (dolist (sprite sprites)
