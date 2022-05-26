@@ -1156,13 +1156,14 @@ should ignore it.")
                (load-8-bit-run-length-encoded-pixmap-by-strips stream))
        )
       (1-bit-run-length-encoded (load-1-bit-run-length-encoded-pixmap stream))
+      (true-color-rgba-encoded
+       (load-true-color-rgba-pixmap stream))
       (true-color-run-length-encoded
        #-mcl (load-true-color-run-length-encoded-pixmap stream)
        #+mcl (if *use-mac-fast-bitmap-loaders*
                (fast-mac-load-true-color-run-length-encoded-pixmap stream)
                (load-true-color-run-length-encoded-pixmap-by-strips stream)))
       (t (error "Don't know how to load ~A" dump-type)))))
-
 
 ;;; This relies upon reallocate-pixel-color to do the right thing so
 ;;; that the pixel values are valid for the current depth of *boxer-pane*
@@ -1292,6 +1293,35 @@ should ignore it.")
             (when (<=& count 0) (return)))
           (when (>=& y height) (return)))))
     (set-offscreen-bitmap-image pixmap pixdata)
+    pixmap))
+
+(defun load-true-color-rgba-pixmap (stream)
+  (let* ((width (bin-next-value stream))
+         (height (bin-next-value stream))
+         (pixmap (make-offscreen-bitmap *boxer-pane* width height))
+         (pixdata (offscreen-bitmap-image pixmap))
+         (x 0) (y 0))
+    (declare (fixnum width height x y))
+
+    (dotimes (y height)
+      (dotimes (x width)
+      (setf (ldb (byte 16 16) (image-pixel x y pixdata)) (bin-next-byte stream))
+      (setf (ldb (byte 16 0) (image-pixel x y pixdata)) (bin-next-byte stream))
+    ))
+
+    ;; Still buggy version that does the count compression, which may or may not
+    ;; be beneficial anymore
+    ; (loop
+    ;     (let* ((count (bin-next-byte stream))
+    ;            (1st-word (bin-next-byte stream))
+    ;            (2nd-word (bin-next-byte stream)))
+    ;       ; (log:debug "Doing this series of count: ~A" count)
+    ;       (dotimes& (i count)
+    ;         (setf (ldb (byte 16 16) (image-pixel x y pixdata)) 1st-word)
+    ;         (setf (ldb (byte 16 0) (image-pixel x y pixdata)) 2nd-word)
+    ;         (incf& x)
+    ;         (when (>=& x width) (setq x 0 y (1+& y))))
+    ;       (when (>=& y height) (return))))
     pixmap))
 
 (defun load-true-color-run-length-encoded-pixmap (stream)
