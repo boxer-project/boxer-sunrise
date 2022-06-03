@@ -1234,7 +1234,7 @@ Modification History (most recent at the top)
 (defvar *graphics-state-current-font-no*
   *initial-graphics-state-current-font-no* )
 
-(defvar *graphics-state-current-pen-color* #-lwwin *foreground-color*)
+(defvar *graphics-state-current-pen-color* *foreground-color*)
 
 ;;; the foreground color is usually undefined until boxer startup time
 (def-redisplay-initialization
@@ -2640,11 +2640,98 @@ Modification History (most recent at the top)
 
 ;; this is used by the redisplay...
 
+(defvar *glist-line-segs-c-buffer* nil)
+(defvar *glist-colors-c-buffer* nil)
+(defvar *use-glist-performance* t
+  "Whether or not to use the new c-buffering for the opengl drawing.")
+(defvar *inside-glist-perf-line-segs* nil)
+(defvar *glist-perf-pos* 0)
+(defvar *glist-colors-pos* 0)
+
+(def-redisplay-initialization
+  ; (setq *screen-pixel-buffer* (make-offscreen-bitmap *boxer-pane* 1 1))
+  (progn
+    ;; TODO Add the code for flushign if we actually fill this up and get to
+    ;; the top of it
+    (setf *glist-line-segs-c-buffer*
+          (cffi:foreign-alloc :int :count 25000000 :initial-element 0))
+    ; (setf *glist-colors-c-buffer*
+    ;       (cffi:foreign-alloc :int :count 50000000 :initial-element 0)
+  )
+)
+
+(defun process-glist-command (command gl)
+  (cond (*use-glist-performance*
+          (let ((cmd-op (aref command 0)))
+            ; (format t "~% cmd-op: ~A" cmd-op)
+            (cond
+              ;; 1 We are getting a line-segment and haven't started a buffering yet
+              ((and (equal 3 cmd-op) (not *inside-glist-perf-line-segs*) )
+                (setf *inside-glist-perf-line-segs* t)
+                (setf *glist-perf-pos* 0)
+                ; (setf *glist-colors-pos* 0)
+              )
+
+              ;; 2 We are getting a line-segment and are already in a buffering
+              ((and (equal 3 cmd-op) *inside-glist-perf-line-segs*)
+               ;; no-op for now
+              )
+
+              ;; 3 If this is NOT a line seqment and we're in one, then dump it
+              ((and (not (equal 3 cmd-op)) *inside-glist-perf-line-segs*)
+                (setf *inside-glist-perf-line-segs* nil)
+
+                ;; TODO dump this line segs buffer onto the GPU
+                (bw::flush-draw-line *glist-line-segs-c-buffer* *glist-perf-pos*) ; *glist-colors-c-buffer*)
+                (setf *glist-perf-pos* 0)
+                ; (setf *glist-colors-pos* 0)
+              )
+
+              ;; 4 If this is a color change and we're in a line segment, don't stop it
+              ;; just go ahead and run the color change
+              ;; TODO this is if we're using the color-buffer
+              ; ((and (equal 4 cmd-op) *inside-glist-perf-line-segs*)
+              ;   ;; no-op for now
+              ; )
+
+              ;; Else stop the line segment
+              (t
+                (setf *inside-glist-perf-line-segs* nil)
+                (setf *glist-perf-pos* 0)
+                ; (setf *glist-colors-pos* 0)
+              )
+
+            )
+          )
+          (process-graphics-command-marker command)
+
+        )
+        (t
+         (process-graphics-command-marker command)))
+)
+
 (defmacro playback-graphics-list-internal (gl &rest args)
   `(with-graphics-state (,gl t)
+     (setf *inside-glist-perf-line-segs* nil)
+     (setf *glist-perf-pos* 0)
+    ;  (setf *glist-colors-pos* 0)
+
+
      (with-blending-on
        (do-vector-contents (command ,gl)
-         (process-graphics-command-marker command . ,args)))))
+         (process-glist-command command ,gl)
+        ;  (process-graphics-command-marker command . ,args)
+         )
+
+     (when *inside-glist-perf-line-segs*
+       (setf *inside-glist-perf-line-segs* nil)
+       (bw::flush-draw-line *glist-line-segs-c-buffer* *glist-perf-pos*);  *glist-colors-c-buffer*)
+       (setf *glist-perf-pos* 0)
+      ;  (setf *glist-colors-pos* 0)
+     )
+
+         )
+     ))
 
 (defun redisplay-graphics-sheet (gs graphics-screen-box)
   (with-graphics-vars-bound ((screen-obj-actual-obj graphics-screen-box))

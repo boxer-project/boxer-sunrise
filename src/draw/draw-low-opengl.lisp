@@ -521,7 +521,15 @@ It's not clear yet whether we'll need to re-implement this for the future."
   (declare (ignore bit-array alu x y width height th1 th2)))
 
 (defun %draw-line (x0 y0 x1 y1)
-  (bw::ogl-draw-line x0 y0 x1 y1))
+  (if (and *use-glist-performance* *inside-glist-perf-line-segs*)
+    (progn
+      (bw::buffer-draw-line x0 y0 x1 y1 *glist-line-segs-c-buffer* *glist-perf-pos*)
+        ; *glist-colors-c-buffer* *glist-colors-pos*)
+      (setf *glist-perf-pos* (+ 4 *glist-perf-pos*))
+      ; (setf *glist-colors-pos* (+ 3 *glist-colors-pos*))
+      (if (> *glist-perf-pos* 25000000)
+        (error "glist-perf-pos is over 25000000 ")))
+    (bw::ogl-draw-line x0 y0 x1 y1)))
 
 (defun %draw-point (x y)
   (bw::ogl-draw-point x y))

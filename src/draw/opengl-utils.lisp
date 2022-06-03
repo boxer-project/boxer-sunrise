@@ -139,6 +139,41 @@ Modification History (most recent at the top)
 
 ;;; new layer of opengl drawing primitives which (optional) check & coerce parameter type
 
+(defun flush-draw-line (c-buffer buffer-pos) ; color-buffer)
+  (opengl::gl-enable-client-state opengl::*gl-vertex-array*)
+  ; (opengl::gl-enable-client-state opengl::*gl-color-array*)
+  (opengl::gl-disable-client-state opengl::*gl-color-array*)
+  (opengl::gl-vertex-pointer 2 opengl::*gl-int* 0 c-buffer)
+  ; (opengl::gl-color-pointer 4 opengl::*gl-float* 0 color-buffer)
+  (opengl::gl-draw-arrays opengl::*gl-lines* 0 (/ buffer-pos 2)))
+
+(defun buffer-draw-line (x0 y0 x1 y1 c-buffer buffer-pos) ; color-buffer color-pos)
+  (setf (cffi:mem-aref c-buffer :int buffer-pos) x0)
+  (setf (cffi:mem-aref c-buffer :int (+ buffer-pos 1)) y0)
+  (setf (cffi:mem-aref c-buffer :int (+ buffer-pos 2)) x1)
+  (setf (cffi:mem-aref c-buffer :int (+ buffer-pos 3)) y1)
+
+  ;; color
+  ; (setf (cffi:mem-aref color-buffer :float color-pos)
+  ;   (bw::ogl-color-red boxer::*graphics-state-current-pen-color*))
+  ; (setf (cffi:mem-aref color-buffer :float (+ color-pos 1))
+  ;   (bw::ogl-color-green boxer::*graphics-state-current-pen-color*))
+  ; (setf (cffi:mem-aref color-buffer :float (+ color-pos 2))
+  ;   (bw::ogl-color-blue boxer::*graphics-state-current-pen-color*))
+  ; (setf (cffi:mem-aref color-buffer :float (+ color-pos 3))
+  ;   (bw::ogl-color-alpha boxer::*graphics-state-current-pen-color*))
+
+  ; ;; We have to set the color twice, once for each vertice of each line segment
+  ; (setf (cffi:mem-aref color-buffer :float (+ color-pos 4))
+  ;   (bw::ogl-color-red boxer::*graphics-state-current-pen-color*))
+  ; (setf (cffi:mem-aref color-buffer :float (+ color-pos 5))
+  ;   (bw::ogl-color-green boxer::*graphics-state-current-pen-color*))
+  ; (setf (cffi:mem-aref color-buffer :float (+ color-pos 6))
+  ;   (bw::ogl-color-blue boxer::*graphics-state-current-pen-color*))
+  ; (setf (cffi:mem-aref color-buffer :float (+ color-pos 7))
+  ;   (bw::ogl-color-alpha boxer::*graphics-state-current-pen-color*))
+)
+
 (defun ogl-draw-line (x0 y0 x1 y1)
   (opengl:gl-begin opengl:*gl-lines*)
   (opengl:gl-vertex2-f (ogl-type x0 'float) (ogl-type y0 'float))
