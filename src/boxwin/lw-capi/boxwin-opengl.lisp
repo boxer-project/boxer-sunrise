@@ -958,7 +958,6 @@ in macOS."
   (update-toolbar-font-buttons)
 
   (update-visible-editor-panes)
-  (boxer::switch-use-mouse2021 *use-mouse2021*)
 
   (boxer-process-top-level-fn *boxer-pane*))
 
@@ -1036,10 +1035,6 @@ in macOS."
 (defun boxer-pane-mouse-y ()  (mp::process-allow-scheduling) *track-mouse-y*)
 
 (defun boxer-pane-mouse-down? ()
-  (unless *use-mouse2021*
-    (flush-input))
-  ;; flush any pending input because if we are checking the state of the mouse
-  ;; buttons, we don't want any mouse down state to appear as a click
   *mouse-down-p*)
 
 ;; VK_SHIFT   = #x10

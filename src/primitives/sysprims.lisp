@@ -394,27 +394,6 @@
   (setq *global-hotspot-control?* true-or-false)
   boxer-eval::*novalue*)
 
-
-(defun switch-use-mouse2021 (use-mouse2021)
-  "Takes a boolean deciding whether or not to use the new 2021 Mouse Click Events.
-  This can be called during runtime to toggle between the two versions of mouse clicks.
-
-  This function will:
-    - Update the value of bw::*use-mouse2021*
-    - Call use-mouse2021-keybindings to update the keybindings for various click/up/down items"
-  (setq bw::*use-mouse2021* use-mouse2021)
-  ;; Note, in the future we may want to change the platform with `make-input-devices`
-  (use-mouse2021-keybindings use-mouse2021))
-
-(defboxer-preference bu::use-mouse2021 (true-or-false)
-  ((bw::*use-mouse2021* :boolean
-                        (boxer-eval::boxer-boolean bw::*use-mouse2021*))
-   editor
-   ("Should we use the new 2021 Mouse Click events?"))
-  (switch-use-mouse2021 true-or-false)
-  boxer-eval::*novalue*)
-
-
 ;; added 9/08/02
 (defboxer-preference bu::maximize-window (true-or-false)
   ((bw::*fullscreen-window-p* :boolean

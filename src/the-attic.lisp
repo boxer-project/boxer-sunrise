@@ -1861,6 +1861,60 @@ Modification History (most recent at top)
 ;;;; FILE: boxwin-opengl.lisp
 ;;;;
 
+;; 2022-06-13 This is actually coming from eval-command-loop.lisp, but historically was in
+;; boxwin-opengl. We are finally retiring the old versions of these delayed mouse clicks.
+;; This comment covers the removal of *double-click-pause-time*, *use-mouse2021*,
+;; and maybe-unify-mouse-click.
+
+(defvar *double-click-pause-time* 0.4 "Time to wait for a possible second click")
+
+(defvar *use-mouse2021* t
+  "Should we use the new 2021 Mouse clicks? This updates the mouse handling behavior in boxer to use
+   true clicks with release, and adds events for mouse-down, mouse-up. This behavior may require some
+   changes to legacy microworlds that have used mouse-click rather than mouse-down for dragging and
+   other behaviors.")
+
+;; pause and wait for another possible click
+(defun maybe-unify-mouse-click (click)
+  (let ((button (mouse-event-click click))
+        (bits   (mouse-event-bits  click))
+        (x-pos  (mouse-event-x-pos click))
+        (y-pos  (mouse-event-y-pos click))
+        ;(num-clicks (mouse-event-number-of-clicks click))
+        ;(time  (mouse-event-last-time-stamp click))
+        )
+    #-win32 (declare (ignore button))
+    #+lispworks (mp::process-wait-with-timeout "Double Click Wait" *double-click-pause-time*
+                                   #'(lambda () (user-event-in-queue?)))
+    (let ((new-input (peek-next-key-or-mouse-event)))
+      (cond ((mouse-event? new-input)
+             (cond ((and #+win32 (= (mod button 3) (mod (mouse-event-click new-input) 3))
+                         ;; only need to button match for PC (3) button mouse
+                         (= bits (mouse-event-bits new-input))
+                         (boxer::<& (boxer::abs& (boxer::-& x-pos (mouse-event-x-pos
+                                                                   new-input)))
+                                    *double-click-wander*)
+                         (boxer::<& (boxer::abs& (boxer::-& y-pos (mouse-event-y-pos
+                                                                   new-input)))
+                                    *double-click-wander*))
+                    ;; looks like a double click
+                    (cond ((> (mouse-event-number-of-clicks new-input) 1)
+                           (handle-boxer-input (pop *boxer-eval-queue*)))
+                          (t ;; looks like the event system recorded it as
+                             ;; a pair of single clicks, throw out the second
+                             ;; one and bash fields in the 1st one
+                             (pop *boxer-eval-queue*)
+                             (setf (mouse-event-click click)
+                                   (+ (mouse-event-click click) 3)
+                                   ;; if we allow wandering, should we use the pos
+                                   ;; of the 1st or 2nd click
+                                   (mouse-event-last-time-stamp click)
+                                   (mouse-event-last-time-stamp new-input))
+                             (incf (mouse-event-number-of-clicks click))
+                             (handle-boxer-input click))))
+                   (t (handle-boxer-input click))))
+            (t (handle-boxer-input click))))))
+
 #+cocoa
 (defvar *cocoa-boxer-interface* nil)
 
