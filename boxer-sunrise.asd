@@ -119,7 +119,6 @@
                  ;; Beginning of `IMPEXP` module
                  ;; "This imports and exports boxer structure to/from other common file types"
                  (:file "impexp/impexp")
-                 (:file "impexp/html-export")
                  (:file "impexp/opml-export")
                  (:file "impexp/json-export")
                  (:file "impexp/full-html-export")
