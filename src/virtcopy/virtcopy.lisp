@@ -982,7 +982,7 @@ Modification History (most recent at top)
 (defun evrow-text-string (row superior
 			      &optional (return-string
 					 (make-array 32
-						     :element-type 'standard-char
+						     :element-type 'character
 						     :fill-pointer 0
 						     :adjustable t))
 			      (start-box-cha #\[) (stop-box-cha #\]))
@@ -1058,7 +1058,7 @@ Modification History (most recent at top)
 (defun box-text-string (box)
   (cond ((numberp box) (convert-number-to-string box))
 	(t
-	 (let ((return-string (make-array 64 :element-type 'standard-char
+	 (let ((return-string (make-array 64 :element-type 'character
 					  :fill-pointer 0 :adjustable t)))
 	   (multiple-value-bind (boxrows inlinks? new? vc-rows-entry)
 	       (get-box-rows box)
