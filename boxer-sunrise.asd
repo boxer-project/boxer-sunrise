@@ -153,11 +153,6 @@
                  (:file "filesystem/dumper")
                  (:file "filesystem/loader")
                  (:file "filesystem/clientmacros")
-                 ; sgithens 2022-04-25 Test commenting this out as a grep of all the top level items
-                 ; seems that nothing is being used in here. Remove after a release or two.
-                 ; 2022-05-16 adding bfslocal
-                 ; (:file "filesystem/bfslocal")
-                 ; (:file "filesystem/bfsforeign")
                  (:file "filesystem/client")
                  (:file "filesystem/surf")
                  (:file "filesystem/http")
