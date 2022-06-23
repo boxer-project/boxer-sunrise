@@ -1494,10 +1494,6 @@ points to the Box which contains the lower BP,then the superior BP is returned"
 
 ;;; Name Tab utilities
 
-;;  *FONT-NUMBER-FOR-NAMING* should be changed to...
-;; (defvar *name-tab-character-style* ':bold)
-;; this is now handled by the borders themselves
-
 (defmethod insert-cha-at-cha-no ((row name-row) cha cha-no)
   ;  "Gives the characters in the naming area a different font. "
   (if (box? cha)
