@@ -10377,6 +10377,53 @@ if it is out of bounds
 #+apple (boxer-eval::defboxer-key (bu::return-key 1) com-doit-now) ; should be com-step
 
 ;;;;
+;;;; FILE: loader.lisp
+;;;;
+
+;; Pre-opengl versions of code from load-8-bit-run-length-encoded-pixmap
+      #-opengl
+      (drawing-on-bitmap (pixmap)
+        (loop
+          (let* ((word (bin-next-byte stream))
+                 (count (ldb& %%bin-op-top-half word))
+                 (pixel (aref colormap (ldb& %%bin-op-low-half word))))
+            (dotimes& (i count)
+              (setf (image-pixel x y pixdata) pixel)
+              (incf& x)
+              (when (>=& x width) (setq x 0 y (1+& y))))
+            (when (>=& y height) (return)))))
+      #-opengl
+      (set-offscreen-bitmap-image pixmap pixdata)
+
+;; Pre-opengl versions of code from load-true-color-run-length-encoded-pixmap
+    #-opengl
+    (drawing-on-bitmap (pixmap)
+      (loop
+        (let* ((1st-word (bin-next-byte stream))
+               (2nd-word (bin-next-byte stream))
+               (count (ldb& %%bin-op-top-half 1st-word))
+               (red (ldb& %%bin-op-low-half 1st-word))
+               (green (ldb& %%bin-op-top-half 2nd-word))
+               (blue (ldb& %%bin-op-low-half 2nd-word))
+               (pixel (if true-color?
+                        #+mcl
+                        (dpb& red #.(byte 8 16) 2nd-word)
+                        #+lwwin
+                        (dpb& blue #.(byte 8 16)
+                              (dpb& green #.(byte 8 8) red))
+                        #-(or mcl lwwin opengl)
+                        (dpb& red (byte 8 16) 2nd-word)
+                        ;; we should stack cons this list...
+                        (reallocate-pixel-color (list red green blue)))))
+          (dotimes& (i count)
+            (setf (image-pixel x y pixdata) pixel)
+            (incf& x)
+            (when (>=& x width) (setq x 0 y (1+& y))))
+          (when (>=& y height) (return)))))
+    #-opengl
+    (set-offscreen-bitmap-image pixmap pixdata)
+
+;;;;
 ;;;; FILE: lw-menu.lisp
 ;;;;
 
