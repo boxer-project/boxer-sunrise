@@ -63,6 +63,11 @@ Modification History (most recent at the top)
 
 ;;; Graphics defs and macros
 
+(defvar *use-glist-performance* t
+  "Whether or not to use the new c-buffering for the opengl drawing, although this
+  can be used for other types of graphics command list performance work that is in
+  progress as well.")
+
 (DEFVAR *DEFAULT-GRAPHICS-SHEET-WIDTH* 320.)
 
 (DEFVAR *DEFAULT-GRAPHICS-SHEET-HEIGHT* 200.)

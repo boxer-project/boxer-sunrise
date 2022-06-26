@@ -353,6 +353,14 @@
                    pen pen-width type-font pen-color))))
   boxer-eval::*novalue*)
 
+(defboxer-preference bu::use-glist-performance (true-or-false)
+  ((*use-glist-performance* :boolean (boxer-eval::boxer-boolean *use-glist-performance*))
+   graphics
+   ("Should we use the in development graphics command list optimizations?")
+  )
+  (setq *use-glist-performance* true-or-false)
+  boxer-eval::*novalue*)
+
 ;; sgithens TODO 2022-03-30 This definately isn't needed anymore, but before I archive this preference I'd like
 ;;                          to look at how to cleanly remove the variable the preference is bound to.
 ;; (defboxer-preference bu::penerase-color-from-bit-array (true-or-false)
