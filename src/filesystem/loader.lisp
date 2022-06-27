@@ -113,7 +113,12 @@ Modification History (most recent at the top)
     (handle-file-property-list plist)))
 
 (define-load-command-for-effect bin-op-box-server-info-start (stream)
-  (boxnet::skip-box-server-info stream))
+  ;; sgithens 2022-05-16 This is currently the only function from bfslocal that was used outside of bfslocal and
+  ;; bfsforeign, which we are moving to the attic. If this error ever gets triggered, we will look at bringing the
+  ;; header method back in in order to load historic boxer files.
+  ;; (boxnet::skip-box-server-info stream)
+  (error "box-server-info-start is currently a deprecated load command, report this issue to repair loading.")
+  )
 
 (define-load-command-for-effect bin-op-eof (ignore)
   (declare (ignore ignore))
@@ -689,7 +694,6 @@ should ignore it.")
                                     (format nil *status-line-loading-format-string*
                                             fp (floor (* 100 fp)
                                                       *current-file-length*))))))))
-  #+mcl (ccl::update-cursor) ; hack to get moving cursor
   (boxer-eval::check-for-interrupt :interrupt "Stopped by User !")
   ;; now do the real work...
   (catch 'done-with-box
@@ -1143,26 +1147,16 @@ should ignore it.")
                 (reallocate-pixel-color background)))
         new-sheet)))
 
-#+mcl
-(defvar *use-mac-fast-bitmap-loaders* t)
-
 (define-load-command-for-value bin-op-pixmap (stream)
   (let ((dump-type (bin-next-value stream)))
     (case dump-type
       (8-bit-run-length-encoded
-       #-mcl (load-8-bit-run-length-encoded-pixmap stream)
-       #+mcl (if *use-mac-fast-bitmap-loaders*
-               (fast-mac-load-8-bit-run-length-encoded-pixmap stream)
-               (load-8-bit-run-length-encoded-pixmap-by-strips stream))
-       )
+        (load-8-bit-run-length-encoded-pixmap stream))
       (1-bit-run-length-encoded (load-1-bit-run-length-encoded-pixmap stream))
       (true-color-rgba-encoded
        (load-true-color-rgba-pixmap stream))
       (true-color-run-length-encoded
-       #-mcl (load-true-color-run-length-encoded-pixmap stream)
-       #+mcl (if *use-mac-fast-bitmap-loaders*
-               (fast-mac-load-true-color-run-length-encoded-pixmap stream)
-               (load-true-color-run-length-encoded-pixmap-by-strips stream)))
+        (load-true-color-run-length-encoded-pixmap stream))
       (t (error "Don't know how to load ~A" dump-type)))))
 
 ;;; This relies upon reallocate-pixel-color to do the right thing so
@@ -1180,7 +1174,6 @@ should ignore it.")
     (let* ((pixmap (make-offscreen-bitmap *boxer-pane* width height))
            (pixdata (offscreen-bitmap-image pixmap))
            (x 0) (y 0))
-      #+opengl
       (loop
           (let* ((word (bin-next-byte stream))
                  (count (ldb& %%bin-op-top-half word))
@@ -1190,70 +1183,7 @@ should ignore it.")
               (incf& x)
               (when (>=& x width) (setq x 0 y (1+& y))))
             (when (>=& y height) (return))))
-      #-opengl
-      (drawing-on-bitmap (pixmap)
-        (loop
-          (let* ((word (bin-next-byte stream))
-                 (count (ldb& %%bin-op-top-half word))
-                 (pixel (aref colormap (ldb& %%bin-op-low-half word))))
-            (dotimes& (i count)
-              (setf (image-pixel x y pixdata) pixel)
-              (incf& x)
-              (when (>=& x width) (setq x 0 y (1+& y))))
-            (when (>=& y height) (return)))))
-      #-opengl
-      (set-offscreen-bitmap-image pixmap pixdata)
       pixmap)))
-
-#+mcl
-(defun fast-mac-load-8-bit-run-length-encoded-pixmap (stream)
-  ;; first get the width and the height out
-  (let* ((width (bin-next-value stream)) (height (bin-next-value stream))
-         ;; now the raw colormap
-         (colormap (bin-next-value stream))
-         ;;
-         (gworld (make-offscreen-bitmap *boxer-pane* width height))
-         (depth (offscreen-bitmap-depth gworld))
-         (setpixfun (ecase depth
-                      (1 #'%set-1pixel) (8 #'%set-8pixel)
-                      (16 #'%set-16pixel) (32 #'%set-32pixel)))
-         (rgbpixfun (ecase depth
-                      (1 #'mcl-rgb->1pixel) (8 #'mcl-rgb->8pixel)
-                      (16 #'mcl-rgb->16pixel) (32 #'mcl-rgb->32pixel)))
-         (pixmap (Get-Gworld-Pixmap gworld))
-         (row-bytes (ldb& #.(byte 14 0) (ccl::rref pixmap :pixmap.rowbytes)))
-         (pix-addr (Get-Pix-Base-Addr pixmap))
-         (x 0) (y 0))
-    ;(format t "~&Filling ~D pixmap (~A) at ~A with row=~D colormap is ~D" depth pixmap pix-addr row-bytes (length colormap))
-    (if (not (unpacked-pixmap? gworld))
-        ;; use the all purpose (SLOWER) function
-        (load-8-bit-run-length-encoded-pixmap-by-strips stream width height
-                                                        colormap gworld)
-        (progn
-          ;; now process the colormap to get a pixel remap
-          (dotimes& (i (length colormap))
-            (setf (aref colormap i)
-                  ;; we could use the list of rgb values directly (a la
-                  ;; boxer-rgb-values->pixel) but go through
-                  ;; reallocate-pixel-color to hack fixnum values from old files
-                  (funcall rgbpixfun (reallocate-pixel-color (aref colormap i)))))
-          ;; now render the data
-          (drawing-on-bitmap (gworld)
-            (loop
-              (let* ((word (bin-next-byte stream))
-                     (count (ldb& %%bin-op-top-half word))
-                     (pixel (aref colormap (ldb& %%bin-op-low-half word))))
-                (let ((newpixaddr (Get-Pix-Base-Addr pixmap)))
-                  (unless (eql newpixaddr pix-addr)
-                    (warn "Pixmap base address has moved from ~X to ~X"
-                          pix-addr newpixaddr)
-                    (setq pix-addr newpixaddr)))
-                (dotimes& (i count)
-                  (funcall setpixfun pix-addr pixel x y row-bytes)
-                  (incf& x)
-                  (when (>=& x width) (setq x 0 y (1+& y))))
-                (when (>=& y height) (return)))))
-          gworld))))
 
 ;; all the optional args are for the possibility that we come here via the
 ;; fast-mac-load-xxx functions when all those parameters have already been
@@ -1332,7 +1262,6 @@ should ignore it.")
          (true-color? (>= (offscreen-bitmap-depth pixmap) 16.))
          (x 0) (y 0))
     (declare (fixnum width height x y))
-    #+opengl
     (loop
         (let* ((1st-word (bin-next-byte stream))
                (2nd-word (bin-next-byte stream))
@@ -1349,77 +1278,7 @@ should ignore it.")
             (incf& x)
             (when (>=& x width) (setq x 0 y (1+& y))))
           (when (>=& y height) (return))))
-    #-opengl
-    (drawing-on-bitmap (pixmap)
-      (loop
-        (let* ((1st-word (bin-next-byte stream))
-               (2nd-word (bin-next-byte stream))
-               (count (ldb& %%bin-op-top-half 1st-word))
-               (red (ldb& %%bin-op-low-half 1st-word))
-               (green (ldb& %%bin-op-top-half 2nd-word))
-               (blue (ldb& %%bin-op-low-half 2nd-word))
-               (pixel (if true-color?
-                        #+mcl
-                        (dpb& red #.(byte 8 16) 2nd-word)
-                        #+lwwin
-                        (dpb& blue #.(byte 8 16)
-                              (dpb& green #.(byte 8 8) red))
-                        #-(or mcl lwwin opengl)
-                        (dpb& red (byte 8 16) 2nd-word)
-                        ;; we should stack cons this list...
-                        (reallocate-pixel-color (list red green blue)))))
-          (dotimes& (i count)
-            (setf (image-pixel x y pixdata) pixel)
-            (incf& x)
-            (when (>=& x width) (setq x 0 y (1+& y))))
-          (when (>=& y height) (return)))))
-    #-opengl
-    (set-offscreen-bitmap-image pixmap pixdata)
     pixmap))
-
-#+mcl
-(defun fast-mac-load-true-color-run-length-encoded-pixmap (stream)
-  (let* ((width (bin-next-value stream)) (height (bin-next-value stream))
-         ;; first get the width and the height out
-         (gworld (make-offscreen-bitmap *boxer-pane* width height))
-         (depth (offscreen-bitmap-depth gworld))
-         (setpixfun (ecase depth
-                      (1 #'%set-1pixel) (8 #'%set-8pixel)
-                      (16 #'%set-16pixel) (32 #'%set-32pixel)))
-         (boxpixfun (ecase depth
-                      (1  #'byte-rgb-values->1pixel)
-                      (8  #'byte-rgb-values->8pixel)
-                      (16 #'byte-rgb-values->16pixel)
-                      (32 #'byte-rgb-values->32pixel)))
-         (pixmap (Get-Gworld-Pixmap gworld))
-         (row-bytes (ldb& #.(byte 14 0) (ccl::rref pixmap :pixmap.rowbytes)))
-         (pix-addr (Get-Pix-Base-Addr pixmap))
-         (x 0) (y 0))
-    (declare (fixnum width height x y))
-    (if (not (unpacked-pixmap? gworld))
-        ;; do the generic thing if the pixmap is packed in some way
-        (load-true-color-run-length-encoded-pixmap-by-strips stream width height
-                                                             gworld)
-        (drawing-on-bitmap (gworld)
-          (loop
-            (let* ((1st-word (bin-next-byte stream))
-                   (2nd-word (bin-next-byte stream))
-                   (count (ldb& %%bin-op-top-half 1st-word))
-                   (red (ldb& %%bin-op-low-half 1st-word))
-                   (green (ldb& %%bin-op-top-half 2nd-word))
-                   (blue  (ldb& %%bin-op-low-half 2nd-word))
-                   (pixel (funcall boxpixfun red green blue)))
-              (let ((newpixaddr (Get-Pix-Base-Addr (Get-Gworld-Pixmap gworld))))
-                  (unless (eql newpixaddr pix-addr)
-                    (warn "Pixmap base address has moved from ~X to ~X"
-                          pix-addr newpixaddr)
-                    (setq pix-addr newpixaddr)))
-              (dotimes& (i count)
-                (funcall setpixfun pix-addr pixel x y row-bytes)
-                (incf& x)
-                (when (>=& x width) (setq x 0 y (1+& y))))
-              (when (>=& y height) (return))))
-          gworld))))
 
 (defun load-true-color-run-length-encoded-pixmap-by-strips (stream
                                                             &optional

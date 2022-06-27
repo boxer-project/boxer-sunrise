@@ -88,17 +88,6 @@ Modification History (most recent at top)
 
 (in-package :boxnet)
 
-
-
-;;; TCP implementation for lispworks....
-
-;;now loaded in dumper.lisp
-;#+lispworks
-;(eval-when (load) (require "comm"))
-;#+carbon-compat
-;(eval-when (load) (require "OpenTransport"))
-
-
 ;;; Defvars and Macros...
 (defvar *default-mail-address* "nobody@soe.berkeley.edu")
 
@@ -106,168 +95,11 @@ Modification History (most recent at top)
 
 (defvar *net-verbose* t)
 
-(defvar *correct-password-retries* 3
-  "Number of times to retry getting a correct password in
-   situations where a login is required.")
-
 (defmacro surf-message (string &rest args)
   `(progn
      (debugging-message ,string . ,args)
      (when *net-verbose*
        (boxer::status-line-display 'surf-message (format nil ,string . ,args)))))
-
-;;; This is the interface to the underlying TCP support for a particular
-;;; implementation:
-;;; OPEN-TCP-STREAM, NET-READ-LINE and NET-WRITE-LINE
-;;; NIL host means to open a port for listening...
-
-(defun open-tcp-stream (host port
-                             &key (element-type #+mcl 'base-character
-                                                #+lispworks 'base-char)
-                             (timeout 30))
-  #+mcl
-  (let ((unresolved-host host))
-    (unless (null host)
-      (unless (integerp host)
-        (surf-message "Looking up Host ~A" host)
-        (setq host (ccl::tcp-host-address host))
-        (surf-message "Looking up Host ~A ==> ~A"
-                      unresolved-host (ccl::tcp-addr-to-str host))))
-    (if (null host)
-        (surf-message "Opening Data Connection")
-        (surf-message "Opening Connection to ~A..." unresolved-host))
-    (prog1
-      (ccl::open-tcp-stream host port :element-type element-type
-                            #+carbon-compat :connect-timeout
-                            #-carbon-compat :commandtimeout timeout)
-      (unless (null host)
-        (surf-message "Connected to ~A" unresolved-host))))
-  #+lispworks
-  (cond ((null host)
-         (error "No lispworks implentation for server streams"))
-;         (surf-message "Opening Data Connection")
-;         (cond ((member element-type '(base-char character))
-;                (start-char-server-stream port))
-;               ((or (eq element-type 'unsigned-byte)
-;                    (equal element-type '(unsigned-byte)))
-;                (start-binary-server-stream port))
-;               (t
-;               (error "Unhandled network stream element-type: ~S" element-type))))
-        (t
-         (surf-message "Opening Connection to ~A" host)
-         (comm::open-tcp-stream host port :element-type element-type
-                                :timeout timeout :direction :io)))
-  #-(or lispworks mcl) (error "TCP services undefined for ~A" (machine-type))
-  )
-
-;; needs better error checking
-#+lispworks
-(defun %get-ip-address (stream)
-  (comm::get-socket-address (slot-value stream 'comm::socket)))
-
-;; yuck
-;; We need to replace this mechanism that uses global *return-tcp-stream*
-;; after we find out how to do symbol-value-in-process we kind bind it
-;; around the calls to start-XXX-server-stream
-
-#+lispworks
-(progn
-  (defvar *return-tcp-stream* nil)
-
-  (defun start-char-server-stream (port)
-    (comm::start-up-server :function 'make-server-char-stream :service port)
-    (mp::process-wait-with-timeout "Net Wait" 10
-                                   #'(lambda () (not (null *return-tcp-stream*))))
-    (prog1 *return-tcp-stream*
-      (setq *return-tcp-stream* nil)))
-
-  (defun start-binary-server-stream (port)
-    (comm::start-up-server :function 'make-server-binary-stream :service port)
-    *return-tcp-stream*)
-
-  (defun make-server-char-stream (handle)
-    (let ((stream (make-instance 'comm:socket-stream
-                                 :socket handle :direction :io
-                                 :element-type 'base-char)))
-      (setq *return-tcp-stream* stream)
-      (mp:process-run-function "Net Char Data"
-                               '()
-                               'poll-for-close-stream stream)))
-
-  (defun make-server-binary-stream (handle)
-    (let ((stream (make-instance 'comm:socket-stream
-                                 :socket handle :direction :io
-                                 :element-type 'unsigned-byte)))
-      (setq *return-tcp-stream* stream)
-      (mp:process-run-function "Net Binary Data"
-                               '()
-                               'poll-for-close-stream stream)))
-
-  (defun poll-for-close-stream (stream)
-    (loop
-     (cond ((not (open-stream-p stream)) (return nil))
-           (t
-            (mp:process-wait-with-timeout "net wait" 10
-                                          #'(lambda () (listen stream)))))))
-
-
-)
-
-
-
-#|
-#+lispworks
-(defun make-ftp-data-stream (handle &optional (direction :io)
-                                    (element-type 'common-lisp:base-char))
-  (let ((stream (make-instance 'comm:socket-stream
-                               :socket handle
-                               :direction direction
-                               :element-type element-type)))
-    (mp:process-run-function "ftp-data"
-                           '()
-                           'check-for-net-eof stream)))
-
-(defun check-for-net-eof (stream)
-  (let ((eof-value (list 'eof)))
-    (unwind-protect
-        (loop for char = (peek-char nil stream nil eof-value)
-
-
-(defun blah (port)
- (comm:start-up-server :function 'make-ftp-data-stream
-                      :service port))
-
-|#
-
-;; same as below except for debugging
-;; once-only the args...
-(defmacro net-write-control-line (stream string &rest args)
-  (let ((string-arg (gensym))
-        (rest-args nil))
-    (dolist (arg args (setq rest-args (reverse rest-args)))
-      (push (list (gensym) arg) rest-args))
-    `(let ((,string-arg ,string)
-           ,@rest-args)
-       (debugging-message ,string-arg . ,(mapcar #'car rest-args))
-       #+mcl (ccl::telnet-write-line ,stream
-                                     ,string-arg . ,(mapcar #'car rest-args))
-       #-mcl (net-write-line ,stream ,string-arg . ,(mapcar #'car rest-args))
-       )))
-
-(defmacro net-write-line (stream string &rest args)
-  #+mcl `(ccl::telnet-write-line ,stream ,string . ,args)
-  #-mcl `(progn (format ,stream ,string . ,args)
-           (write-char #\return ,stream)
-           (write-char #\linefeed ,stream)
-           (force-output ,stream))
-  )
-
-(defun net-write-line-to-binary-stream (stream string)
-  (dotimes& (i (length string))
-    (write-byte (char-code (aref string i)) stream))
-  (write-byte #.(char-code #\return) stream)
-  (write-byte #.(char-code #\linefeed) stream)
-  (force-output stream))
 
 ;; this is supposed to read a CRLF terminated line from a "clear text" connection
 (defun net-read-line (stream &optional (wait? t))
@@ -302,17 +134,6 @@ Modification History (most recent at top)
             (incf& count)))))
     ))
 
-;; 4/12/00 - this doesn't seem to be called by anyone?
-;; removed 10/13/03, leave source until next system release just in case
-;(defun tcp-stream-local-port (s)
-;  #+mcl
-;  (ccl::rref (ccl::conn-pb (ccl::tcp-stream-conn s)) tcpioPB.status.localPort)
-;  #-mcl
-;  (error "TCP stream local port undefined for ~A" (machine-type))
-;  )
-
-
-
 
 ;;; Object definitions...
 
@@ -766,59 +587,6 @@ Modification History (most recent at top)
       (when last-dot
         (subseq path (1+& last-dot) semi)))))
 
-
-
-(defvar *tcp-error-handlers* nil)
-;; like CL HANDLER-BIND except that we match on FTP error codes
-;; handler-list is a list or lists of error code & handlers
-;; ftp errors check the handler list for a match to a handler otherwise,
-;; they signal boxer errors
-;; the handlers are searched in the order given so more specific handlers should
-;; appear before more general ones (see signal-tcp-error)
-
-
-(defmacro tcp-handler-bind (handler-list &body body)
-  `(let ((*tcp-error-handlers* ',handler-list))
-     . ,body))
-
-(defun signal-tcp-error (response-code error-string)
-  (let ((matching-handler (dolist (handler *tcp-error-handlers*)
-                            (let ((match? (search (car handler) response-code)))
-                              (when (and match? (zerop& match?))
-                                (return (cadr handler)))))))
-    (if (null matching-handler)
-        (boxer-eval::primitive-signal-error :net-error (copy-seq error-string))
-        (funcall matching-handler))))
-
-;;; should make this more table driven so we can specialize better
-;;; for different TCP operations like SMTP vs FTP
-(defun handle-tcp-response (control-stream &optional (wait? t))
-  (let* ((response (net-read-line control-stream wait?))
-         (code (and response (subseq response 0 3))))
-    (unless (null response)
-      (debugging-message response)
-      (cond ((char= #\- (char response 3)) ; multi-line?
-             ;; just pull out any extra lines in a multi line reply...
-             (do ((next-line (net-read-line control-stream wait?)
-                             (net-read-line control-stream wait?)))
-                 ((and (search code next-line) (char= #\space (char next-line 3))))
-               (debugging-message next-line)))
-            ((member (char response 0) '(#\4 #\5) :test #'char=) ; error?
-             (signal-tcp-error code response))
-            ((char= #\1 (char response 0))
-             ;; more messages to come
-             (handle-tcp-response control-stream nil))
-            ((listen control-stream)
-             ;(format t "recursive HANDLE-TCP-RESPONSE:")
-             (handle-tcp-response control-stream))
-            ))))
-
-
-(defun throw-to-retry-fill-tag () (throw 'retry-fill nil))
-
-;; this should be adaptive (larger values for PPP connections)
-(defvar *ftp-data-listen-timeout* 300000)
-
 ;; update function for boxer::*FILE-STATUS-LINE-UPDATE-FUNCTION*
 (defvar *ftp-message-dot-counter* 0)
 
@@ -836,18 +604,10 @@ Modification History (most recent at top)
     (setq *ftp-message-dot-counter* (mod (1+ *ftp-message-dot-counter*) 8))))
 
 (defun print-ftp-read-status (tcp-stream)
-  #+mcl
-  (surf-message "Reading ~D bytes of data"
-                (reading-stream-position tcp-stream))
-  #-mcl
   (surf-message "Reading from TCP connection ~A"
                 (ftp-message-dots-string)))
 
 (defun print-ftp-write-status (tcp-stream)
-  #+mcl
-  (surf-message "Writing ~D bytes of data"
-                (writing-stream-position tcp-stream))
-  #-mcl
   (surf-message "Writing TCP data ~A"
                 (ftp-message-dots-string)))
 

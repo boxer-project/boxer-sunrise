@@ -1357,3 +1357,21 @@ Load Function on any bin ops that are in the ops-to-process list"
                                                                     word)))))))))))))
   current-result)
 
+(defun get-box-file-format-version (filename &optional (stream *standard-output*))
+  "
+  Returns the format version of the .box file.  Typically this should be between 1 and like 15-ish.
+  In practice, the only versions we seem to have files from are version 5, which run on the old
+  Sun boxes, then version 12 which is was the primary version for most of the 2000's.
+  "
+    ;; In a binary .box file, the very first the first bin-opcode should be BIN-OP-FORMAT-VERSION
+    ;; followed by BIN-OP-NUMBER-IMMEDIATE which is the version number.
+    (with-open-file (s filename :direction :input :element-type '(unsigned-byte 8.))
+      (let ((word (read-file-word s nil))
+            (word2 (read-file-word s nil)))
+        (multiple-value-bind (opcode arg) (decode-bin-opcode word)
+          (if (not (eq bin-op-format-version word))
+            (error "Op Code is not bin-op-format-version, this doesn't appear to be a binary .box file."))
+          (format stream "~%~A: ~o" (decode-bin-op opcode) word))
+        (multiple-value-bind (opcode arg) (decode-bin-opcode word2)
+          (format stream "~%Processing5 ~A==> ~S" (decode-bin-op opcode) arg)
+          arg))))

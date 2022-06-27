@@ -305,11 +305,7 @@
              (restore-point-position mouse-position t))
         (t
          (move-point-1 new-row new-cha-no mouse-screen-box))))
-    (when (and (not bw::*use-mouse2021*)
-               (not (name-row? new-row))
-               (shrunken? (screen-obj-actual-obj (screen-box-point-is-in))))
-      (com-expand-box)
-      (repaint)))
+      )
   (when (and (or (null click-only?) shift?)  (not (shrunken? (bp-screen-box mouse-bp))))
     ;; now go about dragging a region defined by *point* and the mouse-bp
     ;; unless the user is no longer holding the mouse button down

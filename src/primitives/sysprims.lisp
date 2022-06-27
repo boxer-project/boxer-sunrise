@@ -353,6 +353,14 @@
                    pen pen-width type-font pen-color))))
   boxer-eval::*novalue*)
 
+(defboxer-preference bu::use-glist-performance (true-or-false)
+  ((*use-glist-performance* :boolean (boxer-eval::boxer-boolean *use-glist-performance*))
+   graphics
+   ("Should we use the in development graphics command list optimizations?")
+  )
+  (setq *use-glist-performance* true-or-false)
+  boxer-eval::*novalue*)
+
 ;; sgithens TODO 2022-03-30 This definately isn't needed anymore, but before I archive this preference I'd like
 ;;                          to look at how to cleanly remove the variable the preference is bound to.
 ;; (defboxer-preference bu::penerase-color-from-bit-array (true-or-false)
@@ -393,27 +401,6 @@
    ("Should turning a hotspot off or on affect all hotspots?"))
   (setq *global-hotspot-control?* true-or-false)
   boxer-eval::*novalue*)
-
-
-(defun switch-use-mouse2021 (use-mouse2021)
-  "Takes a boolean deciding whether or not to use the new 2021 Mouse Click Events.
-  This can be called during runtime to toggle between the two versions of mouse clicks.
-
-  This function will:
-    - Update the value of bw::*use-mouse2021*
-    - Call use-mouse2021-keybindings to update the keybindings for various click/up/down items"
-  (setq bw::*use-mouse2021* use-mouse2021)
-  ;; Note, in the future we may want to change the platform with `make-input-devices`
-  (use-mouse2021-keybindings use-mouse2021))
-
-(defboxer-preference bu::use-mouse2021 (true-or-false)
-  ((bw::*use-mouse2021* :boolean
-                        (boxer-eval::boxer-boolean bw::*use-mouse2021*))
-   editor
-   ("Should we use the new 2021 Mouse Click events?"))
-  (switch-use-mouse2021 true-or-false)
-  boxer-eval::*novalue*)
-
 
 ;; added 9/08/02
 (defboxer-preference bu::maximize-window (true-or-false)

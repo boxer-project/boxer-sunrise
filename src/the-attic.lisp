@@ -13,6 +13,9 @@
 ;;;;     to bring back in the future, such as some options for the serial line interface
 ;;;;   - compile-lambda-if-possible in evalmacs.lisp is an interesting usage of performing
 ;;;;     optimizations to particular lambda optimizations
+;;;;   - bfsforeign.lisp and bfslocal.lisp contains the unused remnants of a Boxer File System
+;;;;     that had usernames, passwords, and various types of transactional locking for apparently
+;;;;     sharing box files. This was all done on a filesystem directory.
 
 
 ;;;;
@@ -1100,6 +1103,1326 @@ Modification History (most recent at top)
       (format t "~X " (read-byte s)))))
 |#
 
+;;;;
+;;;; FILE: bfsforeign.lisp
+;;;;
+;;;; --entire-file--
+
+#|
+
+  An implementation of the Box File System which uses local
+  files.  That is, all box oriented commands will be built
+  out of vanilla common lisp functions which manipulate files.
+
+  This file contains support for access and
+  modification of other server worlds.
+
+
+Modification History (most recent at top)
+
+ 2/16/03 merged current LW and MCL files, no diffs, copyright updated
+
+|#
+
+(in-package :boxnet)
+
+
+
+
+;; returns 2 values, a server type symbol (useable by make-instance) and
+;; a world name string to be passed to that server
+
+;; use colon to delimit server type
+(defvar *server-world-delimiter-cha* #\:)
+(defun parse-foreign-world-name (namestring)
+  (let ((colpos (position *server-world-delimiter-cha* namestring)))
+    (cond ((null colpos)
+	   (values (default-foreign-server (get-server)) namestring))
+	  (t
+	   (values (case (intern (string-upcase (subseq namestring 0 colpos)))
+		     ((floppy tape) 'local-floppy-server)
+		     (local 'local-world-server)
+		     (t (default-foreign-server (get-server))))
+		   (subseq namestring (1+ colpos)))))))
+
+
+;; returns 2 values specifying people and files
+;; the first value can either be the keyword :ALL or a list of usernames
+;; the 2nd value can either be the keyword :ALL or a list of box
+;; specifiers.  A box specifier is a list whose CAR is a BId and whose
+;; CDR, (possibly NULL) is a plist acceptable to make-box-from-server-spec
+;; The 1st value can be NIL if the line is empty or a comment line
+
+(defun ex-eol? (char) (or (char= char #\return) (char= char #\newline)))
+(defun flush-remaining-chars-on-line (filestream)
+  (do* ((eof (list 'eof))
+	(char (read-char filestream nil eof) (read-char filestream nil eof)))
+      ((or (eq char eof) (ex-eol? char)))))
+
+(defvar keyword-package (find-package "KEYWORD"))
+
+(defun string->BId (buffer)
+  (let ((hi 0) (low 0) (where :start))
+    (dotimes (i (length buffer))
+      (let* ((char (aref buffer i))
+	     (digit (digit-char-p char)))
+	(cond ((and (eq where :start) (not digit)))
+	      ((eq where :start) (setq where :hi hi digit))
+	      ((and (eq where :hi) (not digit)) (setq where :low))
+	      ((not (null digit))
+	       (if (eq where :hi)
+		   (setq hi (+& digit (*& hi 10)))
+		   (setq low (+& digit (*& low 10))))))))
+    (make-bid hi low)))
+
+(defun handle-people-spec (spec)
+  (if (and (null (cdr spec)) (string-equal (car spec) "all"))
+      ':all
+      spec))
+
+(defun read-exports-file-line (filestream &optional (buffer *string-buffer*))
+  (buffer-clear buffer)
+  (do* ((eof (list 'eof))
+	(people-spec nil) (box-specs nil) (box-spec nil) (in-box-spec? nil) ;
+	(char (read-char filestream nil eof) (read-char filestream nil eof)))
+       ((or (eq char eof) (ex-eol? char))
+	(cond ((zerop& (fill-pointer buffer)))
+		 ((null in-box-spec?)
+		  (push (copy-seq buffer) people-spec) (buffer-clear buffer))
+		 ((null box-spec)
+		  ;; Looks like no plist, is the buffer a BId or "all"
+		  (if (string-equal buffer "all")
+		      (return (values (handle-people-spec people-spec)
+				      ':all))
+		      (push (string->BId buffer) box-specs))
+		  (buffer-clear buffer))
+		 (t (buffer-clear buffer)))
+	(values (handle-people-spec people-spec) box-specs))
+    (case char
+      ((#\space #\tab) ; keep whitespace to help separate BId components
+       (vector-push-extend #\space buffer))
+      ((#\; #\#)
+       (flush-remaining-chars-on-line filestream)
+       (return (values people-spec box-specs)))
+      (#\: (unless (zerop& (fill-pointer buffer))
+	     (push (copy-seq buffer) people-spec)
+	     (buffer-clear buffer))
+	   (when (null in-box-spec?) (setq in-box-spec? t)))
+      (#\( (cond ((null in-box-spec?)
+		  (warn "Found an Open Paren in the user spec of ~A"
+			filestream))
+		 (t
+		  (setq box-spec (string->BId buffer))
+		  (buffer-clear buffer)
+		  (push (cons box-spec
+			      (read-exports-file-box-plist filestream))
+			box-specs)
+		  (setq box-spec nil))))
+      (#\, (cond ((zerop& (fill-pointer buffer)))
+		 ((null in-box-spec?)
+		  (push (copy-seq buffer) people-spec) (buffer-clear buffer))
+		 ((null box-spec)
+		  ;; Looks like no plist, is the buffer a BId or "all"
+		  (if (string-equal buffer "all")
+		      (return (values (handle-people-spec people-spec)
+				      ':all))
+		      (push (string->BId buffer) box-specs))
+		  (buffer-clear buffer))
+		 (t (buffer-clear buffer))))
+      (t (vector-push-extend char buffer)))))
+
+
+(defun read-exports-file-box-plist (filestream &optional
+					       (buffer *string-buffer*))
+  (buffer-clear buffer)
+  (do* ((eof (list 'eof))
+	(plist nil)
+	(char (read-char filestream nil eof) (read-char filestream nil eof)))
+       ((or (eq char eof) (ex-eol? char) (char= char #\)))
+	(unless (zerop& (fill-pointer buffer))
+	  (push (copy-seq buffer) plist) (buffer-clear buffer))
+	(nreverse plist))
+    (case char
+      ((#\space #\tab)) ; ignore whitespace
+      (#\, (unless (zerop& (fill-pointer buffer))
+	     (push (copy-seq buffer) plist) (buffer-clear buffer)))
+      (#\: (unless (zerop& (fill-pointer buffer))
+	     (push (intern (string-upcase buffer) keyword-package) plist)
+	     (buffer-clear buffer)))
+      (t (vector-push-extend char buffer)))))
+
+
+(defmacro do-export-file-lines ((people-spec-var box-spec-var filestream)
+				&body body)
+  `(do* ((eof (list 'eof)) (test (peek-char nil ,filestream nil eof)
+				 (peek-char nil ,filestream nil eof)))
+	((eq test eof) nil)
+     (multiple-value-bind (,people-spec-var ,box-spec-var)
+	 (read-exports-file-line ,filestream)
+       . ,body)))
+
+(defun check-foreign-load-permissions (server username)
+  (let ((permission-file
+	 (make-pathname :name (format nil "~D" (slot-value server 'top-box-id))
+			:type (permission-file-extension server)
+			:directory (pathname-directory
+				    (slot-value server 'directory)))))
+    (unless (and (probe-file permission-file)
+		 (with-open-file (s permission-file)
+		   (do-export-file-lines (people box s)
+		     (declare (ignore box))
+		     (when (or (eq people :all)
+			       (and (listp people)
+				    (member username people
+					    :test #'string-equal)))
+		       (return T)))))
+      (server-error "Access to ~A denied for ~A"
+		    (slot-value server 'world-name) username))))
+
+
+;;;; Fake file ...
+
+(defun fake-file? (bid server)
+  (probe-file (make-pathname :name (bid-filename bid)
+			     :type (permission-file-extension server)
+			     :defaults (slot-value server 'directory))))
+
+
+(defun access-list (bid server)
+  (let ((perm-file (make-pathname :name (bid-filename bid)
+				  :type (permission-file-extension server)
+				  :defaults (slot-value server 'directory)))
+	(username (slot-value server 'login-name))
+	(all-list nil) (user-list nil))
+    (with-open-file (s perm-file :direction :input)
+      (do-export-file-lines (user access s)
+	(cond ((eq user :all) (setq all-list access))
+	      ((or (eq user username)
+		   (and (listp user)
+			(member username user :test #'string-equal)))
+	       (setq user-list access)))))
+    (or user-list all-list)))
+
+;;; these check the permission file and can  signal "permission denied" errors
+(defun fake-file-info (bid info server)
+  (let ((access-list (access-list bid server)))
+    (cond ((null access-list)
+	   (server-error "You do not have permission to access Box ~D" bid))
+	  ((eq access-list :all)
+	   (get-box-info-internal bid info (slot-value server 'directory)))
+	  (t
+	   (let ((vanilla-info (get-box-info-internal
+				bid info (slot-value server 'directory))))
+	     ;; change the irrelevant slots and return the new info
+	     (setf (sbi-inferiors vanilla-info) (mapcar #'car access-list))
+	     vanilla-info)))))
+
+(defun fake-file-size (bid server)
+  (let ((access-list (access-list bid server)))
+    (cond ((null access-list)
+	   (server-error "You do not have permission to access Box ~D" bid))
+	  ((eq access-list :all)
+	   (with-open-file (s (merge-pathnames (bid-filename bid)
+					       (slot-value server 'directory))
+			      :direction :input
+			      :element-type '(unsigned-byte 8))
+	     (file-length s)))
+	  (t (length access-list)))))
+
+;;; an access-spec is a list whose CAR is a BoxID and an
+;;; optional CDR plist
+(defun make-box-from-access-spec (spec)
+  (let ((fake-box (box::make-box '(())
+				 (or (getf (cdr spec) :type) 'boxer::data-box)
+				 (getf (cdr spec) :name))))
+    ;; now set the various slots and flags to make this a file box
+    (setf (slot-value fake-box 'boxer::first-inferior-row) nil)
+    (boxer::set-storage-chunk? fake-box t)
+    (boxer::putprop fake-box (car spec) :server-box-id)
+    (boxer::shrink fake-box)
+    fake-box))
+
+(defun fake-file-box-and-info (bid info server)
+  (let ((access-list (access-list bid server)))
+    (cond ((null access-list)
+	   (server-error "You do not have permission to access Box ~D" bid))
+	  ((eq access-list :all)
+	   (get-box-and-info-internal bid info (slot-value server 'directory)))
+	  (t
+	   (let ((vanilla-info (get-box-info-internal
+				bid info (slot-value server 'directory)))
+		 (return-box (boxer::make-box '(()))))
+	     ;; change the irrelevant slots and return the new info
+	     (setf (sbi-inferiors vanilla-info) (mapcar #'car access-list))
+	     ;; now synthesize a new box
+	     (dolist (spec access-list)
+	       (boxer::append-row return-box
+				  (boxer::make-row
+				   (list (make-box-from-access-spec spec)))))
+	     ;; fix up attributes of the return-box
+	     (set-fake-file-box-attributes return-box)
+	     (values return-box vanilla-info))))))
+
+;;;
+
+(defun set-fake-file-box-attributes (box)
+  ;; you can NEVER write out a fake file box
+  (boxer::set-read-only-box? box t)
+  (boxer::set-fake-file-box box t))
+
+(defun set-foreign-server-props (box server)
+  (boxer::set-foreign-server box t)
+  (unless (slot-value server 'shared?) (boxer::set-read-only-box? box t))
+  (boxer::putprop box server 'bfs-server))
+
+
+
+;;;;
+;;;; FILE: bfslocal.lisp
+;;;;
+;;;; --entire-file--
+
+#|
+
+  An implementation of the Box File System which uses local
+  files.  That is, all box oriented commands will be built
+  out of vanilla common lisp functions which manipulate files.
+
+
+Modification History (most recent at top)
+
+ 2/16/03 merged current LW and MCL files, no diffs, copyright updated
+
+
+|#
+
+(in-package :boxnet)
+
+
+
+;; This variable is a site init (see the file site.lisp for details)
+(defvar *local-server-directory* "/usr/local/lib/boxer/Server/")
+
+
+;;;; Utilities for reading and writing BFS file headers
+
+(defvar *box-file-system-header-termination-string*
+  "### End of Header info ### Binary Data Starts Next Line ###")
+
+(defvar *header-buffer* (make-array 100 :element-type '(unsigned-byte 8)
+				    :fill-pointer 0 :adjustable t))
+
+(defvar *string-buffer* (make-array 64 :element-type #-lucid 'character
+                                                     #+lucid 'string-char
+				    :fill-pointer 0 :adjustable t))
+
+;; remember that the stream will have been opened with an
+;; element-type of (unsigned-byte 8) for the binary data that follows
+;; that means we have to coerce the bytes to chars
+
+(defun bfs-eol? (byte)
+  (or (=& byte #.(char-code #\return)) (=& byte #.(char-code #\newline))))
+
+(defun buffer-clear (buffer) (setf (fill-pointer buffer) 0))
+
+(defun whitespace-byte? (byte)
+  (or (=& byte #.(char-code #\space)) (=& byte #.(char-code #\tab))))
+
+(defun end-of-header? (filestream &optional (skip-first-char t))
+  ;; the 1st byte has already been pulled out of the filestream
+  (do* ((eof (list 'eof))
+	(term-length (1-& (length
+			   *box-file-system-header-termination-string*)))
+	(byte (read-byte filestream nil eof)
+	      (read-byte filestream nil eof))
+	(eoh-idx (if skip-first-char 1 0) (1+& eoh-idx))
+	(eoh-char (aref *box-file-system-header-termination-string* eoh-idx)
+		  (aref *box-file-system-header-termination-string* eoh-idx)))
+       ((>=& eoh-idx term-length)
+	;; this means we really have gotten to the end
+	(unless (bfs-eol? byte) (flush-remaining-line filestream))
+	t)
+    (cond ((not (=& byte (char-code eoh-char)))
+	   ;; if there is ever a mismatch, return nil
+	   (flush-remaining-line filestream)
+	   (return nil))
+	  ((eq byte eof)
+	   ;; if we reach the end of the file,return an additional EOF value
+	   (return (values nil 'eof)))
+	  ((bfs-eol? byte)
+	   ;; if we reach the end of a line, return nil
+	   (return nil)))))
+
+(defun flush-remaining-line (filestream)
+  (do* ((eof (list 'eof))
+	(byte (read-byte filestream nil eof) (read-byte filestream nil eof)))
+      ((or (eq byte eof) (bfs-eol? byte)))))
+
+(defun read-bfs-header-line (filestream &optional (string *string-buffer*))
+  (declare (values key value))
+  (let ((eof (list 'eof)) (key nil))
+    (flet ((comment-byte? (byte)
+	     (or (=& byte #.(char-code #\#)) (=& byte #.(char-code #\;))))
+	   (separator-byte? (byte) (=& byte #.(char-code #\:))))
+      ;; first, clear the buffer
+      (buffer-clear string)
+      ;; now, try and form the key
+      (do ((byte (read-byte filestream nil eof)(read-byte filestream nil eof)))
+	  ((or (eq byte eof) (bfs-eol? byte))
+	   (unless (zerop (length string))
+	     (debugging-message "WARNING: incomplete header line [~A]" string))
+	   (return-from read-bfs-header-line nil))
+	(cond ((and (whitespace-byte? byte) (null key)
+		    (not (zerop& (fill-pointer string))))
+	       ;; 1st trailing whitespace
+	       (setq key (intern string)))
+	      ((whitespace-byte? byte)
+	       ;; ignore all other whitespace
+	       )
+	      ((and (separator-byte? byte) (null key))
+	       (setq key (intern string)) (return))
+	      ((separator-byte? byte) (return))
+	      ((comment-byte? byte)
+	       ;; check to see it this is the end of header comment
+	       ;; flush the rest of the line and return
+	       (return-from read-bfs-header-line
+		 (when (end-of-header? filestream) 'end-of-header)))
+	      (t
+	       (vector-push-extend (char-upcase (code-char byte)) string))))
+      ;; now that the key is complete and we are at a position
+      ;; immediately following the ":", use the key to get a value
+      (case key
+	((readdate accesslength writelength
+		   appendlength inferiors forwarding_table)
+	 ;; these keys want a number for their value
+	 (multiple-value-bind (number end?)
+	     (read-bfs-number-internal filestream)
+	   (cond ((null number)
+		  (error "Couldn't get a number from ~A for ~A"filestream key))
+		 ((null end?)
+		  (flush-remaining-line filestream)
+		  (values key number))
+		 (t (values key number)))))
+	((owner boxname)
+	 ;; these keys want a string for their value
+	 (buffer-clear string)
+	 (do ((byte (read-byte filestream nil eof)
+		    (read-byte filestream nil eof)))
+	     ((or (eq byte eof) (bfs-eol? byte))
+	      (values key (copy-seq string)))
+	   (unless (whitespace-byte? byte)
+	     (vector-push-extend (code-char byte) string))))
+	(superiorBID
+	 ;; this key wants a BId for its value
+	 (multiple-value-bind (number end?)
+	     (read-bfs-number-internal filestream)
+	   (cond ((not (null end?)) (values key number))
+		 (t
+		  (let ((top number))
+		    (multiple-value-bind (number end?)
+			(read-bfs-number-internal filestream)
+		      (when (null end?) (flush-remaining-line filestream))
+		      (if (null number)
+			  (values key top)
+			  (values key (make-bid top number)))))))))
+	(otherwise
+	 (debugging-message "Unhandled Key: ~A" key)
+	 nil)))))
+
+;;; specialized line readers (these also assume streams
+;;; which are :element-type '(unsigned-byte 8))
+
+;;; a BID line consists of 1 or more BID's layed out as
+;;; high 32bit value followed by low 32bit value separated
+;;; by whitespace.  If there is more than one BId, then they
+;;; should be comma separated.  BId's with only one value will
+;;; be assumed to have a high 32bit value of 0.
+
+(defun read-bfs-header-bid-line (filestream)
+  (let ((numlist nil) (top 0) (fill-top? t))
+    (loop
+     (multiple-value-bind (number end?)
+	 (read-bfs-number-internal filestream)
+       (cond ((not (null end?))
+	      ;; complete the numlist for various cases
+	      (cond ((and fill-top? (null number))
+		     ;; numlist looks good and we have nothing to add
+		     )
+		    ((and (null fill-top?) (not (null number)))
+		     ;; numlist needs another value and we have the last piece
+		     (push (make-bid top number) numlist))
+		    ((null number)
+		     ;; numlist is incomplete but we don't have any
+		     ;; more pieces so use what we have(assuming top is bottom)
+		     (debugging-message "Incomplete BId: using ~D as low 32"
+					top)
+		     (push top numlist))
+		    (t
+		     ;; somthing to add, but looks like no bid being formed to
+		     ;; add it to.  Use what we get as the entire BId
+		     (debugging-message "Incomplete BId: using ~D as low 32"
+					number)
+		     (push number numlist)))
+	      ;; finally return
+	      (if (null (cdr numlist)) ; only one entry
+		  (return (car numlist))
+		  (progn (setq numlist (nreverse numlist)) numlist)))
+	     ((null number)) ; perhaps a warning is appropriate ?
+	     ((null fill-top?)
+	      (push (make-bid top number) numlist)
+	      (setq fill-top? nil))
+	     (t
+	      (setq top number)
+	      (setq fill-top? nil)))))))
+
+(defun make-bid (high low) (dpb high (byte 32. 32.) low))
+
+(defun read-bfs-number-internal (filestream &optional (radix 16.))
+  (let ((num nil) (eof (list 'eof)))
+    (do ((byte (read-byte filestream nil eof) (read-byte filestream nil eof)))
+	((or (eq byte eof) (bfs-eol? byte))
+	 (values num t))
+      (cond ((and (null num) (or (whitespace-byte? byte)
+				 (=& byte #.(char-code #\,))))
+	     ;; leading whitespace or delimiter chars, ignore them
+	     )
+	    ((or (whitespace-byte? byte) (=& byte #.(char-code #\,)))
+	     ;; trailing whitespace or delimiter char, so return
+	     (return num))
+	    (t
+	     (let ((x (digit-char-p (code-char byte) radix)))
+	       (cond ((null x)
+		      (error "Got ~C instead of digit while forming number"
+			     (code-char byte)))
+		     ((null num) (setq num x))
+		     (t (setq num (+& (*& num 10) x))))))))))
+
+;;; reads one or more strings, multiple strings are delineated by
+;;;  either comma or whitespace
+;;; leading whitespace is ignored
+
+(defun read-bfs-header-string-line (filestream &optional
+					       (string-buffer *string-buffer*))
+  (let ((stringlist nil) (in-string? nil) (eof (list 'eof)))
+    (buffer-clear string-buffer)
+    (do ((byte (read-byte filestream nil eof) (read-byte filestream nil eof)))
+	((or (eq byte eof) (bfs-eol? byte))
+	 (cond ((and (null stringlist) in-string?)
+		;; we are in the middle of making a single string
+		(copy-seq string-buffer))
+	       (in-string?
+		;; we are in the middle of making the last of several strings
+		(push (copy-seq string-buffer) stringlist)
+		(nreverse stringlist)
+		stringlist)
+	       ((null stringlist)
+		;; reached EOL or EOF before we got any strings
+		nil)
+	       (t (nreverse stringlist) stringlist)))
+      (cond ((and in-string? (or (whitespace-byte? byte)
+				 (=& byte  #.(char-code #\,))))
+	     ;; end of a string
+	     (push (copy-seq string-buffer) stringlist)
+	     (buffer-clear string-buffer)
+	     (setq in-string? nil))
+	    ((whitespace-byte? byte)
+	     ;; if we are not in-string? then it must be
+	     ;; leading whitespace so ignore it
+	     )
+	    (t
+	     ;; it's not whitespace so add it to the buffer
+	     (vector-push-extend (code-char byte) string-buffer)
+	     (when (null in-string?) (setq in-string? t)))))))
+
+;;; the stream is an '(unsigned-byte 8) stream and is assumed to
+;;; have already been positioned to the right place
+(defun read-box-server-info (stream info)
+  (loop (multiple-value-bind (key value)
+	    (read-bfs-header-line stream)
+	  (unless (null key) ; ignore empty lines
+	    (case key
+	      (end-of-header (return))
+	      (OWNER (setf (sbi-owner info) value))
+	      (READDATE (setf (sbi-read-date info) value))
+	      (ACCESSLENGTH
+	       ;; obsolete slot, still need to pull out the data
+	       (dotimes (i value) (read-bfs-header-string-line stream)))
+	      (WRITELENGTH
+	       ;; obsolete slot, still need to pull out the data
+	       (dotimes (i value) (read-bfs-header-string-line stream)))
+	      (APPENDLENGTH
+	       ;; obsolete slot, still need to pull out the data
+	       (dotimes (i value) (read-bfs-header-string-line stream)))
+	      (SUPERIORBID (setf (sbi-superior-box-bid info) value))
+	      (INFERIORS (setf (sbi-inferiors info)
+			       (let ((bids nil))
+				 (dotimes (i value bids)
+				   (let ((bid (read-bfs-header-bid-line
+					       stream)))
+				     (setq bids
+					   (nconc bids (if (consp bid)
+							   bid
+							   (list bid)))))))))
+	      (BOXNAME nil) ; do nothing (a separate clause to avoid warning)
+	      (FORWARDING_TABLE
+	       (setf (sbi-forwarding-table info)
+		     (let ((bids nil))
+		       (dotimes (i value bids)
+			 (let ((bid (read-bfs-header-bid-line
+				     stream)))
+			   (setq bids
+				 (nconc bids (if (consp bid)
+						 bid
+						 (list bid)))))))))
+	      (OTHERWISE (debugging-message "Unhandled BFS Header Key:~A"
+					    key))))))
+  ;; set the write-date in the info, we get this directly from the file
+  (setf (sbi-write-date info) (file-write-date stream))
+  info)
+
+;;; grab the 1st to byte of an '(unsigned-byte 8) stream
+;;; and make sure they are the beginning of a header
+(defun header-start? (s)
+  (and (=& (read-byte s) (ldb boxer::%%bin-op-top-half
+			      boxer::bin-op-box-server-info-start))
+       (=& (read-byte s) (ldb boxer::%%bin-op-low-half
+			      boxer::bin-op-box-server-info-start))))
+
+;;; For use by the READ primitive which isn't interested in the header info
+;;; another '(unsigned-byte 8) stream
+(defun skip-box-server-info (stream)
+  (loop (when (end-of-header? stream nil) (return))))
+
+;;; these use streams with :element-type 'string-char
+;;; this will work because we can open the file once, write the header,
+;;; close it, then open it again with :append in a binary mode to
+;;; write the data
+
+(defun write-bsi-bid (stream bid)
+  (format stream "~D ~D" (ldb (byte 32. 32.) bid) (ldb (byte 32. 0.) bid)))
+
+(defun write-bsi-list (stream name list)
+  (declare (string name) (list list))
+  (format stream "~%~A: ~D" name (length list))
+  (cond ((null list))
+	((stringp (car list))
+	 (dolist (item list)  (format stream "~%~A" item)))
+	((numberp (car list))
+	 (dolist (item list) (terpri stream) (write-bsi-bid stream item)))
+	(t (error "The Box server list, ~A, doesn't have strings or BId's"))))
+
+(defun write-header-preamble (stream)
+  (write-char (code-char 240) stream)
+  (write-char (code-char 57)  stream)
+  (terpri stream))
+
+(defun write-header-finish (stream)
+  (format stream "~A~%" *box-file-system-header-termination-string*))
+
+(defun write-box-server-info (stream info)
+  ;; first, send the 16 bit header opcode
+  (write-header-preamble stream)
+  ;; now the header data
+  (format stream "readdate: ~A~%owner: ~A"
+	  (sbi-read-date info) (sbi-owner info))
+  (format stream "~%boxname: ~A" (sbi-boxname info))
+  (format stream "~%superiorBID: ")
+  (write-bsi-bid stream (sbi-superior-box-bid info))
+  (write-bsi-list stream "inferiors" (sbi-inferiors info))
+  (write-bsi-list stream "forwarding_table" (sbi-forwarding-table info))
+  ;; finally write out the end of header line
+  (terpri stream)
+  (write-header-finish stream))
+
+
+
+;;;; User file Utilities
+
+(defvar *line-buffer* (make-array 100 :element-type #-lucid 'character #+lucid 'string-char
+				  :fill-pointer 0 :adjustable t))
+
+;;; Searches for a particular user in the user file and
+;;; returns the password, pretty-name, directory and top-box-id
+(defun user-values (user)
+  (declare (values password pretty-name directory top-box-id))
+  (with-open-file (s (merge-pathnames "userfile" *local-server-directory*)
+		     :direction :input)
+    (catch 'eof
+      (loop
+       (multiple-value-bind (account password pretty-name directory
+				     uid top-box-id)
+	   (user-line-values s)
+	 (when (string-equal account user)
+	   (return (values password pretty-name directory
+			   uid top-box-id))))))))
+
+;;; Returns a unique user ID
+;;; found by scanning the userfile
+;;; for now, it just returns MAX+1, we might want to be more
+;;; clever in the future by looking for gaps
+(defun new-user-id ()
+  (with-open-file (s (merge-pathnames "userfile" *local-server-directory*)
+		     :direction :input)
+    (let ((max-id 0))
+      (catch 'eof
+	(loop
+	 (multiple-value-bind (account password pretty-name directory
+				       uid top-box-id)
+	     (user-line-values s)
+	   (declare (ignore account password pretty-name directory top-box-id))
+	   (setq max-id (max uid max-id)))))
+      (1+ max-id))))
+
+(defmacro do-server-users ((account password pretty-name
+				    directory uid top-box-id)
+			   &body body)
+  `(with-open-file (s (merge-pathnames "userfile" *local-server-directory*)
+		      :direction :input)
+     (catch 'eof
+       (loop
+	(multiple-value-bind (,account ,password ,pretty-name ,directory
+				       ,uid ,top-box-id)
+	    (user-line-values s)
+	  ,@body)))))
+
+;;; stream is supposed to be a char stream and is expected to be
+;;; positioned at the beginning of a line
+;;; A userfile line consists of colon separated fields.  The fileds are:
+;;; Username:Password:Pretty Name:Directory Name:UID:Top Level Box ID
+(defun user-line-values (stream)
+  (declare (values account password pretty-name directory top-box-id
+		   uid-prefix))
+  (let ((values (make-array 6)) (idx 0) (eof (list 'eof)))
+    (setf (fill-pointer *line-buffer*) 0)
+    (do ((char (read-char stream nil eof) (read-char stream nil eof)))
+	((or (eq char #\newline) (eq char #\return))
+	 (when (< idx (1-& (length values)))
+	   (warn "Incomplete user file line"))
+	 (setf (svref& values idx)
+	       ;; the last value should be coerced into a Box ID
+	       (string-to-bid *line-buffer*))
+	 (values (svref& values 0) (svref& values 1) (svref& values 2)
+		 (svref& values 3) (svref& values 4) (svref& values 5)))
+      (cond ((eq char eof)
+	     (throw 'eof nil))
+	    ((char-equal char #\:)
+	     (setf (svref& values idx)
+		   (if (=& idx 4) ; the UID needs to coerced into a number
+		       (string-to-number *line-buffer*)
+		       (copy-seq *line-buffer*)))
+	     (incf& idx)
+	     (setf (fill-pointer *line-buffer*) 0))
+	    (t (vector-push-extend char *line-buffer*))))))
+
+(defun string-to-number (string &optional (idx 0) (radix 10.))
+  (let ((number nil) (end-idx (1-& (length string))))
+    (do ((char (aref string idx) (aref string idx)))
+	((=& idx end-idx) (let ((last-digit (digit-char-p char radix)))
+			    (cond ((null last-digit)
+				   (values number idx))
+				  ((null number)
+				   (values last-digit idx))
+				  (t
+				   (values (+& (*& number radix) last-digit)
+					   idx)))))
+      (let ((digit (digit-char-p char radix)))
+	(cond ((and (null digit) (null number)))
+	      ;; whitespace or garbage, ignore it
+	      ((null digit)
+	       ;; number must be finished
+	       (return (values number idx)))
+	      ((null number)
+	       ;; we've hit the first digit
+	       (setq number digit))
+	      (t
+	       ;; in the middle of making a number
+	       (setq number (+& (*& radix number)
+				digit)))))
+      (incf& idx))))
+
+(defun string-to-bid (string)
+  (multiple-value-bind (top idx)
+      (string-to-number string 0 16.)
+    (cond ((null top) (error "can't get a BID out of ~S" string))
+	  (t (let ((bottom (string-to-number string idx 16.)))
+	       (if (null bottom) (make-bid 0 top) (make-bid top bottom)))))))
+
+
+
+;;;; Filename utilities
+
+;;; NO Leading 0's !!!!!
+
+(defun bid-filename (bid) (format nil "~D" bid))
+
+(defvar *backup-file-suffix* "~")
+
+(defun bid-backup-filename (bid) (format nil "~D~A" bid *backup-file-suffix*))
+
+(defun backup-pathname (pathname)
+  (merge-pathnames
+   (format nil "~A~A" (pathname-name pathname) *backup-file-suffix*)
+   pathname))
+
+(defun bid-file-name? (pathname)
+  (every #'digit-char-p (pathname-name pathname)))
+
+(defun backup-bid-file-name? (pathname)
+  (let ((name (pathname-name pathname)))
+    (and (char= (char name (1-& (length name))) (char *backup-file-suffix* 0))
+	 (dotimes (i (1-& (length name)) T)
+	   (unless (digit-char-p (char name i)) (return nil))))))
+
+;; probably want to make implementation specific versions of these for speed
+(defun get-file-size (pathname) (with-open-file (s pathname) (file-length s)))
+
+;;; this MUST not return until we are sure that the incremented
+;;; file count has been written back
+;;; This is to prevent possible duplication of allocated Box ID's
+;;; in case of a crash while writing.
+
+(defun increment-counter-file (counter-file)
+  (when (null (probe-file counter-file))
+    (error "The counter file, ~A, is missing" counter-file))
+  (let ((old-count 0))
+    (with-open-file (s counter-file :direction :input)
+      (setq old-count (string-to-number (read-line s))))
+    ;; now write back the new count
+    (with-open-file (s (merge-pathnames "newcount" counter-file)
+		       :direction :output :if-exists :supersede)
+      (format s "~D~%" (1+ old-count)))
+    ;; now backup the old counter file
+    (rename-file counter-file (merge-pathnames "oldcount" counter-file))
+    ;; install the new counter file
+    (rename-file (merge-pathnames "newcount" counter-file) counter-file)
+    (delete-file (merge-pathnames "oldcount" counter-file))
+    ;; now if all that has worked, we can safely return the new count
+    (1+ old-count)))
+
+;;; these are for locking individual files
+;;; for groups, see with-single-transaction
+;;; these should use gensyms or something to be able
+;;; to recognize who set the lock
+
+(defmacro with-write-lock ((file lock-string) &body body)
+  `(let ((lock-file (merge-pathnames ".LOCK" ,file)))
+     (if (probe-file lock-file)
+	 (server-error "The file, ~A, is locked for ~A"
+		       ,file (with-open-file (ls lock-file)
+			       (read-line ls nil nil)))
+	 (unwind-protect
+	      (progn
+		(with-open-file (ls lock-file :direction :output)
+		  (format ls "~A~%" ,lock-string))
+		. ,body)
+	   (delete-file lock-file)))))
+
+(defmacro with-lock-check (open-file-args &body body)
+  `(let ((lock-file (merge-pathnames ".LOCK" ,(cadr open-file-args))))
+     (if (probe-file lock-file)
+	 (server-error "The file, ~A, is locked for ~A"
+		       ,(cadr open-file-args)
+		       (with-open-file (ls lock-file) (read-line ls nil nil)))
+	 (with-open-file ,open-file-args . ,body))))
+
+
+
+;;; records all file activity so that it can be processed in
+;;; one chunk.  Any errors in the body should leave the state
+;;; of the file system untouched.
+
+;;; File transactions run in 3 phases
+;;;
+;;;   o in phase 1, boxer structure is dumped and info's are updated
+;;;     with any new info appearing in the temp directory.
+;;;     Phase 1 transactions, including recording, occur in the body
+;;;     of the code.
+;;;   o in phase 2, files are moved into the main directory,
+;;;     old files are backed up and files are deleted.
+;;;     Phase 2 transaction play through the *current-transactions*
+;;;     list and are handled in Finalize-transactions
+;;;   o If phase 1 and 2 complete, then the temp directory is cleared
+;;;     if we are losing, then we try and undo any transactions which
+;;;     have affected the main directory.  Phase 3 transaction run in
+;;;     an unwind-protect as Undo-Transactions and Clear-Transactions
+;;;
+
+(defvar *transaction-sub-directory* "temp")
+
+(defvar *transaction-log-file* "transactions.log")
+
+(defvar *log-transactions?* t)
+
+(defvar *inside-transaction-body* nil)
+
+(defvar *current-transactions* nil)
+
+(defvar *phase-2-transactions* nil)
+
+;; the last step of finalize-transactions should set this to T
+(defvar *transaction-complete* nil)
+
+(defun record-bfs-transaction (trans-type &rest args)
+  (if *inside-transaction-body*
+      (setq *current-transactions*
+	    (nconc *current-transactions* (list (cons trans-type args))))
+      (error "No context to record a File system transaction")))
+
+;;; possible transaction types that this might handle are:
+;;;  NEW-FILE (current-filename destination-filename)
+;;;  NEW-COPY (current-filename destination-filename)
+;;;  DELETE-FILE (current-filename)
+(defmacro with-single-bfs-local-transaction (&body body)
+  `(let ((*inside-transaction-body* t)
+	 (*current-transactions* nil)
+	 (*transaction-complete* nil)
+	 (*phase-2-transactions* nil))
+     (flet ((finalize-transactions ()
+	      (debugging-message "Performing Phase 2 transactions...")
+	      (dolist (trans *current-transactions*)
+		(ecase (car trans)
+		  (new-file
+		   (when (probe-file (caddr trans))
+		     ;; check for an existing file and back it up if there is
+		     (rename-file (caddr trans)
+				  (backup-pathname (caddr trans))))
+		   (rename-file (cadr trans) (caddr trans)))
+		  (new-copy
+		   ;; there should NOT be an existing file
+		   ; (when (probe-file (caddr trans)) (error "..."))
+		   (rename-file (cadr trans) (caddr trans)))
+		  (delete-file
+		   (delete-bid-box-internal-1 (cadr trans))))
+		;; after each successful, phase 2 operation, mark it down
+		(push trans *phase-2-transactions*))
+	      ;; finally mark that we are done and we can also clear teh
+	      ;; phase-2-transactions list
+	      (setq *transaction-complete* t
+		    *phase-2-transactions* nil))
+	    (undo-transactions ()
+	      ;; this tries to undo the effects of any phase 2 transactions
+	      ;; which may have been performed prior to an error condition
+	      (dolist (trans *phase-2-transactions*)
+		(ecase (car trans)
+		  (new-file
+		   ;; if there is a backup available, use it, otherwise
+		   ;; be satisfied with removing the file
+		   (let ((backup (merge-pathnames
+				  (format nil "~A~A"
+					  (pathname-name (caddr trans))
+					  *backup-file-suffix*)
+				  (caddr trans))))
+		     (if (probe-file backup)
+			 (rename-file backup (caddr trans))
+			 (delete-file (caddr trans)))))
+		  (new-copy
+		   ;; just remove the file
+		   (delete-file (caddr trans)))
+		  (delete-file
+		   ;; bring the file back from the delete dir
+		   (let ((del-file (make-pathname
+				    :name (pathname-name (cadr trans))
+				    :directory
+				    (append (pathname-directory (cadr trans))
+					    (list
+					     *delete-subdirectory-name*)))))
+		     (if (probe-file del-file)
+			 (rename-file del-file (cadr trans))
+			 (warn "Could not undo transaction: ~A" trans)))))))
+	    (clear-transactions ()
+	      ;; this removes all temp files
+	      (dolist (trans *current-transactions*)
+		(ecase (car trans)
+		  ((new-file new-copy) (delete-file (cadr trans)))
+		  (delete-file nil)))))
+     (unwind-protect
+	  (progn
+	    ;; perhaps we should write a descriptor file into the temp dir now
+	    (progn . ,body)
+	    (finalize-transactions))
+       (when (null *transaction-complete*) (undo-transactions))
+       (clear-transactions *current-transactions*)))))
+
+
+;;; it should be a big performance boost to carefully tune
+;;; this piece here for different implementations
+(defun %bfs-copy-stream (in out)
+  (do* ((eof (list 'eof))
+	(byte (read-byte in nil eof) (read-byte in nil eof)))
+       ((eq byte eof))
+    (write-byte byte out)))
+
+
+
+;;;; Top Level Utilities
+
+(defun get-box-info-internal (bid info directory)
+  (with-lock-check (s (merge-pathnames (bid-filename bid) directory)
+		      :direction :input :element-type '(unsigned-byte 8))
+    ;; first grab the 1st 2 bytes and make sure we have a header
+    (unless (header-start? s)
+      (error "~A does not have a File System Header"
+	     (merge-pathnames (bid-filename bid) directory)))
+    ;; we should now be positioned at the beginning of the header
+    (read-box-server-info s info)
+    info))
+
+(defun set-box-info-internal (bid new-info directory)
+  (let ((dest-path (merge-pathnames (bid-filename bid) directory))
+	(tmp-path (if (null *inside-transaction-body*)
+		      (merge-pathnames (gensym) directory)
+		      (make-pathname :name (bid-filename bid)
+				     :directory
+				     (append (pathname-directory (pathname
+								  directory))
+					     (list
+					      *transaction-sub-directory*))))))
+    (with-write-lock (dest-path (format nil "Setting info for ~A on ~A"
+					(unless (null *box-server-user*)
+					  (bsui-username *box-server-user*))
+					(unless (null *box-server-user*)
+					  (bsui-hostname *box-server-user*))))
+      (with-open-file (s dest-path :direction :input
+			 :element-type '(unsigned-byte 8))
+	;; first grab the 1st 2 bytes and make sure we have a header
+	(unless (header-start? s)
+	  (error "~A does not have a File System Header"
+		 (merge-pathnames (bid-filename bid) directory)))
+	;; we should now be positioned at the beginning of the header
+	(skip-box-server-info s)
+	;; we should now be positioned at the beginning of the data
+	;; now write the new header out into the temp file name
+	(with-open-file (out tmp-path :direction :output)
+	  (write-box-server-info out new-info))
+	;; now write the data out (the file had better be there)
+	(with-open-file (out tmp-path
+			     :direction :output
+			     :element-type '(unsigned-byte 8)
+			     :if-exists :append :if-does-not-exist :error)
+	  (%bfs-copy-stream s out)))
+      ;; now carefully put everything where it is supposed to go
+      ;; or else record the transaction and put it there later
+      (cond ((null *inside-transaction-body*)
+	     (rename-file dest-path (merge-pathnames (bid-backup-filename bid)
+						     directory))
+	     (rename-file tmp-path dest-path))
+	    (t
+	     (record-bfs-transaction 'new-file tmp-path dest-path))))))
+
+(defun get-box-and-info-internal (bid info directory)
+  (let ((file (merge-pathnames (bid-filename bid) directory)))
+    (when (null (probe-file file)) (box::maybe-uncompress-file file))
+    ;; if it STILL isn't here, then signal an error
+    (when (null (probe-file file)) (server-error "Couldn't find ~A" file))
+    (with-open-file (s file :direction :input
+		       :element-type '(unsigned-byte 8))
+      ;; We parse the header first
+      (unless (header-start? s)
+	;; make sure we have a header
+	(error "~A does not have a File System Header"
+	       (merge-pathnames (bid-filename bid) directory)))
+      ;; we should now be positioned at the beginning of the header
+      (read-box-server-info s info)
+      ;; the info slots should now be filled
+      ;; Now we read in the box, the stream should be at the start of
+      ;; binary data with a bin-op-format-version word coming next
+      ;; we do it in an environment where the forwarding table is bound
+      (let ((*loading-via-box-server?* T))
+	(let ((newbox (with-forwarding-table-bound (bid info)
+			(boxer::load-binary-box-from-stream-internal s))))
+	  (values newbox info))))))
+
+
+(defun set-box-and-info-internal (bid box info directory)
+  (let ((dest-path (merge-pathnames (bid-filename bid) directory))
+	(tmp-path (if (null *inside-transaction-body*)
+		      (merge-pathnames (gensym) directory)
+		      (make-pathname :name (bid-filename bid)
+				     :directory
+				     (append (pathname-directory (pathname
+								  directory))
+					     (list
+					      *transaction-sub-directory*)))))
+	(backup-path (merge-pathnames (bid-backup-filename bid) directory)))
+    (with-write-lock (dest-path (format nil "Writing box and info for ~A on ~A"
+					(unless (null *box-server-user*)
+					  (bsui-username *box-server-user*))
+					(unless (null *box-server-user*)
+					  (bsui-hostname *box-server-user*))))
+      ;; check for existence of file first
+      (cond ((not (null *inside-transaction-body*))
+	     (set-box-and-info-internal-1 tmp-path box info)
+	     (record-bfs-transaction 'new-file tmp-path dest-path))
+	    ((probe-file dest-path)
+	     (unwind-protect
+		  (progn
+		    (set-box-and-info-internal-1 tmp-path box info)
+		    ;; backup
+		    (rename-file dest-path backup-path)
+		    ;; install
+		    (rename-file tmp-path dest-path))
+	       ;; make sure the temporary file is removed
+	       (when (probe-file tmp-path) (delete-file tmp-path))
+	       ;; make sure that there is the original, if there isn't
+	       ;; bring the backup file back if we can
+	       (when (and (null (probe-file dest-path))
+			  (probe-file backup-path))
+		 (rename-file backup-path dest-path))))
+	    (t
+	     (set-box-and-info-internal-1 dest-path box info))))))
+
+(defun set-box-and-info-internal-1 (file box info)
+  ;; first, write out the header
+  (with-open-file (out file :direction :output)
+    (write-box-server-info out info))
+  ;; and now, dump out the box
+  (with-open-file (out file
+		       :direction :output :element-type '(unsigned-byte 8)
+		       :if-exists :append :if-does-not-exist :error)
+    (box::dump-top-level-box-to-stream box out)))
+
+
+;;; This needs to do the following:
+;;;   o copy all inferiors keeping track of the old and new BId's
+;;;   o update the header of the top level box reflecting the (possibly)
+;;;     new superior BId as well as a forwarding table for the inferiors
+;;;   o copy the data part of the top level box
+;;;   o Returns the BID of the copy
+(defun copy-bid-box-internal (bid superior-bid
+				  from-directory to-directory new-uid-prefix)
+  (let* ((new-bid (make-bid new-uid-prefix
+			    (increment-counter-file
+			     (merge-pathnames "counter" to-directory))))
+	 (temp-info (%make-server-box-info))
+	 (old-pathname (merge-pathnames (bid-filename bid) from-directory))
+	 (new-pathname (merge-pathnames (bid-filename new-bid) to-directory))
+	 (tmp-pathname (if (null *inside-transaction-body*)
+			   new-pathname
+			   (make-pathname :name (pathname-name new-pathname)
+					  :directory
+					  (append
+					   (pathname-directory new-pathname)
+					   (list
+					    *transaction-sub-directory*)))))
+	 (new-forwarding-table nil)
+	 (counter-file (merge-pathnames "counter" to-directory)))
+    (dolist (inf (get-all-bid-inferiors bid))
+      (let ((new-inf-bid (make-bid new-uid-prefix
+				   (increment-counter-file counter-file))))
+	(cond ((null *inside-transaction-body*)
+	       (bfs-copy-file (merge-pathnames (bid-filename inf)
+					       from-directory)
+			      (merge-pathnames (bid-filename new-inf-bid)
+					       to-directory)))
+	      (t
+	       (let* ((dest (merge-pathnames (bid-filename new-inf-bid)
+					       to-directory))
+		      (temp (make-pathname :name (pathname-name dest)
+					   :directory
+					   (append
+					    (pathname-directory dest)
+					    (list
+					     *transaction-sub-directory*)))))
+		 (bfs-copy-file (merge-pathnames (bid-filename inf)
+						 from-directory)
+				temp)
+		 (record-bfs-transaction 'new-copy temp dest))))
+	(setq new-forwarding-table (append new-forwarding-table
+					   (list bid new-inf-bid)))))
+    ;; write out new header info
+    (with-open-file (s old-pathname :direction :input
+		       :element-type '(unsigned-byte 8))
+      (unless (header-start? s)
+	;; make sure we have a header
+	(error "~A does not have a File System Header" old-pathname))
+      ;; we should now be positioned at the beginning of the header
+      (get-box-info-internal bid temp-info from-directory)
+      ;; we are now positioned at the beginning of the data in the old file
+      ;; change the relevant fields in the info
+      (setf (sbi-bid temp-info)              new-bid
+	    (sbi-superior-box-bid temp-info) superior-bid
+	    (sbi-forwarding-table temp-info) (combine-forwarding-tables
+					      (sbi-forwarding-table temp-info)
+					      new-forwarding-table))
+      ;; now write the new header out
+      (with-open-file (out tmp-pathname :direction :output)
+	(write-box-server-info out temp-info))
+      ;; now copy the data over
+      (with-open-file (out tmp-pathname :direction :output
+			   :element-type '(unsigned-byte 8)
+			   :if-exists :append :if-does-not-exist :error)
+	(%bfs-copy-stream s out)))
+    (unless (null *inside-transaction-body*)
+      (record-bfs-transaction 'new-copy tmp-pathname new-pathname))
+    new-bid))
+
+;; recurses through inferiors
+(defun get-all-bid-inferiors (bid &optional include-top?)
+  (let ((all-infs (when include-top? (list bid))))
+    (dolist (inf (get-bid-inferiors bid))
+      (setq all-infs (append all-infs (get-all-bid-inferiors inf t))))
+    all-infs))
+
+(defun bfs-copy-file (from to)
+  (with-open-file (in from :direction :input :element-type '(unsigned-byte 8))
+    (with-open-file(out to :direction :output :element-type '(unsigned-byte 8))
+      (%bfs-copy-stream in out))))
+
+;;; these 2 functions are identical to FIND-BID and MERGE-FORWARDING-TABLES
+;;; in the client part of the code.  We use 2 versions to preserve the
+;;; client/server abstraction
+(defun bfs-local-find-bid (bid table)
+  (do* ((remaining-pairs table (cddr remaining-pairs))
+	(current-bid (car remaining-pairs) (car remaining-pairs)))
+       ((null current-bid) nil)
+    (when (= current-bid bid)
+      (return (cadr remaining-pairs)))))
+
+(defun combine-forwarding-tables (old new)
+  (let ((newnew nil))
+    ;; loop through the old looking for an entry in the new
+    (do* ((remaining-pairs old (cddr remaining-pairs))
+	  (orig-bid  (car remaining-pairs) (car remaining-pairs))
+	  (trans-bid (cadr remaining-pairs) (cadr remaining-pairs))
+	  (new-trans (bfs-local-find-bid trans-bid new)))
+	 ((null orig-bid))
+      (cond ((bfs-local-find-bid orig-bid new)
+	    ;; old entry is handled in new table, so do nothing
+	     )
+	    ((not (null new-trans))
+	     ;; old translation is obsolete, convert it to a new one
+	     (setq newnew (append newnew (list orig-bid new-trans))))
+	    (t
+	     ;; old entry has nothing to do with the new table so preserve it
+	     (setq newnew (append newnew (list orig-bid trans-bid))))))
+    ;; now append the new table to the built up table of
+    ;; translated old references and return it
+    (append newnew new)))
+
+;; don't really delete the files, just move them to the
+;; deleted files directory.  We rely on some other mechanism to
+;; actually remove the files from the delete directory (an expunge primitive ?)
+;; Also needs to plice the deleted BId out of the inferiors of the
+;; superior file box.
+
+(defvar *delete-subdirectory-name* ".Deleted")
+
+;; moves the (possible) backup filename too
+(defun delete-bid-box-internal-1 (file &optional dir)
+  (let ((backup (backup-pathname file))
+	(del-dir (append (if dir
+			     (pathname-directory dir)
+			     (pathname-directory file))
+			 (list *delete-subdirectory-name*))))
+    (when (probe-file backup)
+      (rename-file backup
+		   (make-pathname :name (pathname-name backup)
+				  :directory del-dir)))
+    (rename-file file
+		 (make-pathname :name (pathname-name file)
+				:directory del-dir))))
+
+;; need to recurse through the inferiors as well
+(defun delete-bid-box-internal (bid directory)
+  (let ((file-to-delete (merge-pathnames (bid-filename bid) directory)))
+    (unless (null (probe-file file-to-delete))
+      ;; loop through the inferiors...
+      (dolist (inf (get-bid-inferiors bid))
+	(delete-bid-box-internal inf directory))
+      (if (null *inside-transaction-body*)
+	  ;; move the file right away
+	  (delete-bid-box-internal-1 file-to-delete (pathname directory))
+	  ;; or else record it for later handling
+	  (record-bfs-transaction 'delete-file file-to-delete)))))
+
+
+
+;;;; Ring out the old, ring in the new....
+;;; Only useful for converting old Sun Files so...
+
+#+sun
+(progn
+
+  (defvar *old-file-system-directory* "/usr/emstsun/boxer/user/bin/FILES/")
+
+  (defun convert-old-file (bid &optional (new-directory (lcl::pwd))(level 0))
+    (let* ((old-data-file-name (merge-pathnames
+				(string-downcase (format nil "~16,'0X" bid))
+				*old-file-system-directory*))
+	   (old-head-file-name (merge-pathnames ".d" old-data-file-name))
+	   (new-file-name (merge-pathnames (bid-filename bid) new-directory)))
+      (cond ((and (probe-file old-data-file-name)
+		  (probe-file old-head-file-name))
+	     (terpri) (dotimes (i (* 3 level)) (write-char #\space))
+	     (format t "Converting old ~X file to new ~D file" bid bid)
+	     ;; first generate the new header
+	     (with-open-file (new-s new-file-name :direction :output)
+	       (write-header-preamble new-s)
+	       ;; use the old info file
+	       (with-open-file (old-s old-head-file-name :direction :input)
+		 (do* ((eof (list 'eof))
+		       (char (read-char old-s nil eof)
+			     (read-char old-s nil eof)))
+		      ((eq char eof))
+		   (write-char char new-s)))
+	       (write-header-finish new-s))
+	     ;; now copy the old binary data
+	     (with-open-file (new-s new-file-name :direction :output
+				    :element-type '(unsigned-byte 8)
+				    :if-exists :append
+				    :if-does-not-exist :error)
+	       (with-open-file (old-s old-data-file-name :direction :input
+				      :element-type '(unsigned-byte 8))
+		 (do* ((eof (list 'eof))
+		       (byte (read-byte old-s nil eof)
+			     (read-byte old-s nil eof)))
+		      ((eq byte eof))
+		   (write-byte byte new-s))))
+	     t)
+	    (t
+	     (terpri) (dotimes (i (* 3 level)) (write-char #\space))
+	     (format t "~%Data or Header file missing for ~16,'0X" bid)
+	     nil))))
+
+  ;; you have to first,
+  ;; (1) make the new directory
+  ;; (2) convert the top level box by hand and place it in the new directory
+
+  ;; this uses internal functions in order to avoid having an active server
+
+  (defun convert-user-files (top-bid &optional (new-dir (lcl::pwd))(level 0))
+    (let ((info (%make-server-box-info)))
+      ;; read the info
+      (get-box-info-internal top-bid info new-dir)
+      (let ((infs (sbi-inferiors info)))
+	(dolist (bid infs)
+	  (if (convert-old-file bid new-dir level)
+	      (convert-user-files bid new-dir (1+ level))
+	      (progn
+		(format t "  ...Removing BID: ~D from inferiors" bid)
+		(setf (sbi-inferiors info)
+		      (delete bid (sbi-inferiors info) :test #'=)))))
+	;; now write out the new info if the inferiors have changed
+	(unless (equal infs (sbi-inferiors info))
+	  (set-box-info-internal top-bid info new-dir)))))
+
+) ; end of old sun specific conversion utilities
+
+
+
+
+;;;; Debugging Help
+
+(defun calculate-inferiors (box)
+  (let ((infs nil))
+    (box::map-over-all-inferior-boxes
+     box #'(lambda (b)
+	     (when (box::storage-chunk? b)
+	       (let ((id (box::getprop b :server-box-id)))
+		 (unless (null id) (push id infs))))))
+    infs))
+
+
 
 ;;;;
 ;;;; FILE: binhex.lisp
@@ -1860,6 +3183,60 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: boxwin-opengl.lisp
 ;;;;
+
+;; 2022-06-13 This is actually coming from eval-command-loop.lisp, but historically was in
+;; boxwin-opengl. We are finally retiring the old versions of these delayed mouse clicks.
+;; This comment covers the removal of *double-click-pause-time*, *use-mouse2021*,
+;; and maybe-unify-mouse-click.
+
+(defvar *double-click-pause-time* 0.4 "Time to wait for a possible second click")
+
+(defvar *use-mouse2021* t
+  "Should we use the new 2021 Mouse clicks? This updates the mouse handling behavior in boxer to use
+   true clicks with release, and adds events for mouse-down, mouse-up. This behavior may require some
+   changes to legacy microworlds that have used mouse-click rather than mouse-down for dragging and
+   other behaviors.")
+
+;; pause and wait for another possible click
+(defun maybe-unify-mouse-click (click)
+  (let ((button (mouse-event-click click))
+        (bits   (mouse-event-bits  click))
+        (x-pos  (mouse-event-x-pos click))
+        (y-pos  (mouse-event-y-pos click))
+        ;(num-clicks (mouse-event-number-of-clicks click))
+        ;(time  (mouse-event-last-time-stamp click))
+        )
+    #-win32 (declare (ignore button))
+    #+lispworks (mp::process-wait-with-timeout "Double Click Wait" *double-click-pause-time*
+                                   #'(lambda () (user-event-in-queue?)))
+    (let ((new-input (peek-next-key-or-mouse-event)))
+      (cond ((mouse-event? new-input)
+             (cond ((and #+win32 (= (mod button 3) (mod (mouse-event-click new-input) 3))
+                         ;; only need to button match for PC (3) button mouse
+                         (= bits (mouse-event-bits new-input))
+                         (boxer::<& (boxer::abs& (boxer::-& x-pos (mouse-event-x-pos
+                                                                   new-input)))
+                                    *double-click-wander*)
+                         (boxer::<& (boxer::abs& (boxer::-& y-pos (mouse-event-y-pos
+                                                                   new-input)))
+                                    *double-click-wander*))
+                    ;; looks like a double click
+                    (cond ((> (mouse-event-number-of-clicks new-input) 1)
+                           (handle-boxer-input (pop *boxer-eval-queue*)))
+                          (t ;; looks like the event system recorded it as
+                             ;; a pair of single clicks, throw out the second
+                             ;; one and bash fields in the 1st one
+                             (pop *boxer-eval-queue*)
+                             (setf (mouse-event-click click)
+                                   (+ (mouse-event-click click) 3)
+                                   ;; if we allow wandering, should we use the pos
+                                   ;; of the 1st or 2nd click
+                                   (mouse-event-last-time-stamp click)
+                                   (mouse-event-last-time-stamp new-input))
+                             (incf (mouse-event-number-of-clicks click))
+                             (handle-boxer-input click))))
+                   (t (handle-boxer-input click))))
+            (t (handle-boxer-input click))))))
 
 #+cocoa
 (defvar *cocoa-boxer-interface* nil)
@@ -6126,6 +7503,16 @@ if it is out of bounds
 ;;;; FILE: gdispl.lisp
 ;;;;
 
+; Commented out section from redisplay-graphics-sheet
+    ;; no more save-unders in OpenGL
+    ;    (dolist (turtle (graphics-sheet-object-list gs))
+    ;      ;; the save-under of the moving turtle has to be filled BEFORE ANY
+    ;      ;; turtles are drawn or else it might capture part of another
+    ;      ;; turtle's shape
+    ;      (save-under-turtle turtle))
+    ;; and then any sprites
+
+
 ; old (non-caching) implementation
 ;(defgraphics-handler (change-alu *turtle-graphics-handlers*) (trans-x
 ;							      trans-y
@@ -6206,6 +7593,120 @@ if it is out of bounds
                                                         (max& 0 (round (-& old-hei new-hei) 2))
                                                         (max& 0 (round (-& new-wid old-wid) 2))
                                                         (max& 0 (round (-& new-hei old-hei) 2))))))
+
+;;;;
+;;;; FILE: html-export.lisp
+;;;;
+;;;; --entire-file--
+
+;;;;                                         +-Data--+
+;;;;                This file is part of the | BOXER | system
+;;;;                                         +-------+
+;;;;
+;;;;         HTML Export
+;;;;
+
+(in-package :boxer)
+
+;;;; HTML
+
+(defclass html-file-class
+          (foreign-file-class)
+  ()
+  )
+
+(defmethod begin-foreign-stream ((ffc html-file-class)
+                                 &optional (stream *standard-output*))
+  (format stream "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" ~%~
+                   \"http://www.w3.org/TR/html4/strict.dtd\">~%~
+                  <html>~%~%"))
+
+
+;; optionally <title></title>
+;; maybe add boxer version number to description META tag
+(defmethod write-foreign-file-header ((ffc html-file-class) box
+                                      &optional (stream *standard-output*))
+  (format stream
+    "~%<head>~%~
+       <META http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\">~%~
+       <META name=\"description\" content=\"Exported from the Boxer System\">~%")
+  (let ((nr (name-row box)))
+    (unless (null nr)
+      (format stream "<TITLE>~A </TITLE>~%" (text-string nr))))
+  (format stream "</head>~%"))
+
+(defmethod write-foreign-file-box ((ffc html-file-class) box stream)
+  (let* ((*ffc-depth* (min 6 (1+ *ffc-depth*))) ;; maximum header depth is 6
+         (*export-properties* (merge-export-properties
+                               *export-properties*
+                               (get-export-format-properties box)))
+         (nr (name-row box))
+         (respect-line-breaks? (let ((local (getf *export-properties*
+                                                  :respect-line-breaks
+                                                  :not-specified)))
+                                 (cond ((eq local :not-specified)
+                                        (getf (slot-value ffc 'prefs)
+                                              :respect-line-breaks))
+                                       (t local)))))
+    (cond ((null nr)
+           ;; need some demarcation for a new box, <HR> or <p> ?
+           )
+          (t
+           (format stream "~%<H~D>~A </H~D>~%~%"
+                   *ffc-depth* (text-string nr) *ffc-depth*)))
+    (Do ((row (first-inferior-row box) (next-row row)))
+        ((null row))
+      (write-foreign-file-row ffc row stream)
+      (terpri stream)
+      (cond ((not (null respect-line-breaks?)) (format stream "<BR>~%"))
+            (t (format stream " "))))))
+
+(defmethod write-foreign-file-graphics-box ((ffc html-file-class) box stream)
+  (if (and (graphics-box? box)
+           (display-style-graphics-mode? (display-style-list box)))
+      (format stream "~A~%" *graphics-replacement-text*)
+    (write-foreign-file-box ffc box stream)))
+
+;; empty line should output a "<P>"
+(defmethod write-foreign-file-row ((ffc html-file-class) row stream)
+  (let ((cha-written? nil)
+        (empty? t))
+    (do-row-chas ((cha row))
+      (cond ((box? cha)
+             ;; if chas have been written, finish
+             (when cha-written? (format stream "<BR>~%"))
+             ;; CR's around boxes ?
+             (if (and (graphics-box? cha)
+                      (let ((ds (display-style-list cha)))
+                        (when ds (display-style-graphics-mode? ds))))
+                 (write-foreign-file-graphics-box ffc cha stream)
+               (write-foreign-file-box ffc cha stream))
+             (setq cha-written? nil empty? nil))
+            (t (write-xml-char cha stream)
+               (setq cha-written? t empty? nil))))
+    (when empty? (format stream "~%<P>~%"))))
+
+(defun write-xml-char (char stream)
+  (let ((cc (char-code char)))
+    (cond ((< cc 128) (write-char char stream))
+          (t (format stream " &#~D " cc)))))
+
+(defmethod begin-foreign-body ((ffc html-file-class)
+                               &optional (stream *standard-output*))
+  (format stream "~%<body>~%"))
+
+(defmethod end-foreign-body ((ffc html-file-class)
+                                 &optional (stream *standard-output*))
+  (format stream "~%</body>~%"))
+
+
+(defmethod end-foreign-stream ((ffc html-file-class)
+                                 &optional (stream *standard-output*))
+  (format stream "~%</html>~%"))
+
+(def-export-type html-file-class "HTML" "*.htm;*.html" :respect-line-breaks nil)
+
+
 
 ;;;;
 ;;;; FILE: file-prims.lisp
@@ -8874,6 +10375,167 @@ if it is out of bounds
 #+sun (boxer-eval::defboxer-key (bu::R2-key 2) com-print-screen-to-file)
 
 #+apple (boxer-eval::defboxer-key (bu::return-key 1) com-doit-now) ; should be com-step
+
+;;;;
+;;;; FILE: loader.lisp
+;;;;
+
+;; From defun load-box
+  #+mcl (ccl::update-cursor) ; hack to get moving cursor
+
+
+;;;
+;;; Versions of #+mcl code for using a different "fast" version of pixmap loaders
+;;;
+
+#+mcl
+(defvar *use-mac-fast-bitmap-loaders* t)
+
+;; From define-load-command-for-value bin-op-pixmap
+       #+mcl (if *use-mac-fast-bitmap-loaders*
+               (fast-mac-load-8-bit-run-length-encoded-pixmap stream)
+               (load-8-bit-run-length-encoded-pixmap-by-strips stream))
+
+       #+mcl (if *use-mac-fast-bitmap-loaders*
+               (fast-mac-load-true-color-run-length-encoded-pixmap stream)
+               (load-true-color-run-length-encoded-pixmap-by-strips stream))
+
+#+mcl
+(defun fast-mac-load-8-bit-run-length-encoded-pixmap (stream)
+  ;; first get the width and the height out
+  (let* ((width (bin-next-value stream)) (height (bin-next-value stream))
+         ;; now the raw colormap
+         (colormap (bin-next-value stream))
+         ;;
+         (gworld (make-offscreen-bitmap *boxer-pane* width height))
+         (depth (offscreen-bitmap-depth gworld))
+         (setpixfun (ecase depth
+                      (1 #'%set-1pixel) (8 #'%set-8pixel)
+                      (16 #'%set-16pixel) (32 #'%set-32pixel)))
+         (rgbpixfun (ecase depth
+                      (1 #'mcl-rgb->1pixel) (8 #'mcl-rgb->8pixel)
+                      (16 #'mcl-rgb->16pixel) (32 #'mcl-rgb->32pixel)))
+         (pixmap (Get-Gworld-Pixmap gworld))
+         (row-bytes (ldb& #.(byte 14 0) (ccl::rref pixmap :pixmap.rowbytes)))
+         (pix-addr (Get-Pix-Base-Addr pixmap))
+         (x 0) (y 0))
+    ;(format t "~&Filling ~D pixmap (~A) at ~A with row=~D colormap is ~D" depth pixmap pix-addr row-bytes (length colormap))
+    (if (not (unpacked-pixmap? gworld))
+        ;; use the all purpose (SLOWER) function
+        (load-8-bit-run-length-encoded-pixmap-by-strips stream width height
+                                                        colormap gworld)
+        (progn
+          ;; now process the colormap to get a pixel remap
+          (dotimes& (i (length colormap))
+            (setf (aref colormap i)
+                  ;; we could use the list of rgb values directly (a la
+                  ;; boxer-rgb-values->pixel) but go through
+                  ;; reallocate-pixel-color to hack fixnum values from old files
+                  (funcall rgbpixfun (reallocate-pixel-color (aref colormap i)))))
+          ;; now render the data
+          (drawing-on-bitmap (gworld)
+            (loop
+              (let* ((word (bin-next-byte stream))
+                     (count (ldb& %%bin-op-top-half word))
+                     (pixel (aref colormap (ldb& %%bin-op-low-half word))))
+                (let ((newpixaddr (Get-Pix-Base-Addr pixmap)))
+                  (unless (eql newpixaddr pix-addr)
+                    (warn "Pixmap base address has moved from ~X to ~X"
+                          pix-addr newpixaddr)
+                    (setq pix-addr newpixaddr)))
+                (dotimes& (i count)
+                  (funcall setpixfun pix-addr pixel x y row-bytes)
+                  (incf& x)
+                  (when (>=& x width) (setq x 0 y (1+& y))))
+                (when (>=& y height) (return)))))
+          gworld))))
+
+#+mcl
+(defun fast-mac-load-true-color-run-length-encoded-pixmap (stream)
+  (let* ((width (bin-next-value stream)) (height (bin-next-value stream))
+         ;; first get the width and the height out
+         (gworld (make-offscreen-bitmap *boxer-pane* width height))
+         (depth (offscreen-bitmap-depth gworld))
+         (setpixfun (ecase depth
+                      (1 #'%set-1pixel) (8 #'%set-8pixel)
+                      (16 #'%set-16pixel) (32 #'%set-32pixel)))
+         (boxpixfun (ecase depth
+                      (1  #'byte-rgb-values->1pixel)
+                      (8  #'byte-rgb-values->8pixel)
+                      (16 #'byte-rgb-values->16pixel)
+                      (32 #'byte-rgb-values->32pixel)))
+         (pixmap (Get-Gworld-Pixmap gworld))
+         (row-bytes (ldb& #.(byte 14 0) (ccl::rref pixmap :pixmap.rowbytes)))
+         (pix-addr (Get-Pix-Base-Addr pixmap))
+         (x 0) (y 0))
+    (declare (fixnum width height x y))
+    (if (not (unpacked-pixmap? gworld))
+        ;; do the generic thing if the pixmap is packed in some way
+        (load-true-color-run-length-encoded-pixmap-by-strips stream width height
+                                                             gworld)
+        (drawing-on-bitmap (gworld)
+          (loop
+            (let* ((1st-word (bin-next-byte stream))
+                   (2nd-word (bin-next-byte stream))
+                   (count (ldb& %%bin-op-top-half 1st-word))
+                   (red (ldb& %%bin-op-low-half 1st-word))
+                   (green (ldb& %%bin-op-top-half 2nd-word))
+                   (blue  (ldb& %%bin-op-low-half 2nd-word))
+                   (pixel (funcall boxpixfun red green blue)))
+              (let ((newpixaddr (Get-Pix-Base-Addr (Get-Gworld-Pixmap gworld))))
+                  (unless (eql newpixaddr pix-addr)
+                    (warn "Pixmap base address has moved from ~X to ~X"
+                          pix-addr newpixaddr)
+                    (setq pix-addr newpixaddr)))
+              (dotimes& (i count)
+                (funcall setpixfun pix-addr pixel x y row-bytes)
+                (incf& x)
+                (when (>=& x width) (setq x 0 y (1+& y))))
+              (when (>=& y height) (return))))
+          gworld))))
+
+;; Pre-opengl versions of code from load-8-bit-run-length-encoded-pixmap
+      #-opengl
+      (drawing-on-bitmap (pixmap)
+        (loop
+          (let* ((word (bin-next-byte stream))
+                 (count (ldb& %%bin-op-top-half word))
+                 (pixel (aref colormap (ldb& %%bin-op-low-half word))))
+            (dotimes& (i count)
+              (setf (image-pixel x y pixdata) pixel)
+              (incf& x)
+              (when (>=& x width) (setq x 0 y (1+& y))))
+            (when (>=& y height) (return)))))
+      #-opengl
+      (set-offscreen-bitmap-image pixmap pixdata)
+
+;; Pre-opengl versions of code from load-true-color-run-length-encoded-pixmap
+    #-opengl
+    (drawing-on-bitmap (pixmap)
+      (loop
+        (let* ((1st-word (bin-next-byte stream))
+               (2nd-word (bin-next-byte stream))
+               (count (ldb& %%bin-op-top-half 1st-word))
+               (red (ldb& %%bin-op-low-half 1st-word))
+               (green (ldb& %%bin-op-top-half 2nd-word))
+               (blue (ldb& %%bin-op-low-half 2nd-word))
+               (pixel (if true-color?
+                        #+mcl
+                        (dpb& red #.(byte 8 16) 2nd-word)
+                        #+lwwin
+                        (dpb& blue #.(byte 8 16)
+                              (dpb& green #.(byte 8 8) red))
+                        #-(or mcl lwwin opengl)
+                        (dpb& red (byte 8 16) 2nd-word)
+                        ;; we should stack cons this list...
+                        (reallocate-pixel-color (list red green blue)))))
+          (dotimes& (i count)
+            (setf (image-pixel x y pixdata) pixel)
+            (incf& x)
+            (when (>=& x width) (setq x 0 y (1+& y))))
+          (when (>=& y height) (return)))))
+    #-opengl
+    (set-offscreen-bitmap-image pixmap pixdata)
 
 ;;;;
 ;;;; FILE: lw-menu.lisp
@@ -13242,6 +14904,234 @@ Modification History (most recent at top)
 
 (def-site-var "Enable-Mouse-Toggle-Box-Type?" :boolean
   *enable-mouse-toggle-box-type?*)
+
+;;;;
+;;;; FILE: surf.lisp
+;;;;
+
+;;; TCP implementation for lispworks....
+
+;;now loaded in dumper.lisp
+;#+lispworks
+;(eval-when (load) (require "comm"))
+;#+carbon-compat
+;(eval-when (load) (require "OpenTransport"))
+
+
+(defvar *correct-password-retries* 3
+  "Number of times to retry getting a correct password in
+   situations where a login is required.")
+
+;;; This is the interface to the underlying TCP support for a particular
+;;; implementation:
+;;; OPEN-TCP-STREAM, NET-READ-LINE and NET-WRITE-LINE
+;;; NIL host means to open a port for listening...
+
+(defun open-tcp-stream (host port
+                             &key (element-type #+mcl 'base-character
+                                                #+lispworks 'base-char)
+                             (timeout 30))
+  #+mcl
+  (let ((unresolved-host host))
+    (unless (null host)
+      (unless (integerp host)
+        (surf-message "Looking up Host ~A" host)
+        (setq host (ccl::tcp-host-address host))
+        (surf-message "Looking up Host ~A ==> ~A"
+                      unresolved-host (ccl::tcp-addr-to-str host))))
+    (if (null host)
+        (surf-message "Opening Data Connection")
+        (surf-message "Opening Connection to ~A..." unresolved-host))
+    (prog1
+      (ccl::open-tcp-stream host port :element-type element-type
+                            #+carbon-compat :connect-timeout
+                            #-carbon-compat :commandtimeout timeout)
+      (unless (null host)
+        (surf-message "Connected to ~A" unresolved-host))))
+  #+lispworks
+  (cond ((null host)
+         (error "No lispworks implentation for server streams"))
+;         (surf-message "Opening Data Connection")
+;         (cond ((member element-type '(base-char character))
+;                (start-char-server-stream port))
+;               ((or (eq element-type 'unsigned-byte)
+;                    (equal element-type '(unsigned-byte)))
+;                (start-binary-server-stream port))
+;               (t
+;               (error "Unhandled network stream element-type: ~S" element-type))))
+        (t
+         (surf-message "Opening Connection to ~A" host)
+         (comm::open-tcp-stream host port :element-type element-type
+                                :timeout timeout :direction :io)))
+  #-(or lispworks mcl) (error "TCP services undefined for ~A" (machine-type))
+  )
+
+;; needs better error checking
+#+lispworks
+(defun %get-ip-address (stream)
+  (comm::get-socket-address (slot-value stream 'comm::socket)))
+
+;; yuck
+;; We need to replace this mechanism that uses global *return-tcp-stream*
+;; after we find out how to do symbol-value-in-process we kind bind it
+;; around the calls to start-XXX-server-stream
+
+#+lispworks
+(progn
+  (defvar *return-tcp-stream* nil)
+
+  (defun start-char-server-stream (port)
+    (comm::start-up-server :function 'make-server-char-stream :service port)
+    (mp::process-wait-with-timeout "Net Wait" 10
+                                   #'(lambda () (not (null *return-tcp-stream*))))
+    (prog1 *return-tcp-stream*
+      (setq *return-tcp-stream* nil)))
+
+  (defun start-binary-server-stream (port)
+    (comm::start-up-server :function 'make-server-binary-stream :service port)
+    *return-tcp-stream*)
+
+  (defun make-server-char-stream (handle)
+    (let ((stream (make-instance 'comm:socket-stream
+                                 :socket handle :direction :io
+                                 :element-type 'base-char)))
+      (setq *return-tcp-stream* stream)
+      (mp:process-run-function "Net Char Data"
+                               '()
+                               'poll-for-close-stream stream)))
+
+  (defun make-server-binary-stream (handle)
+    (let ((stream (make-instance 'comm:socket-stream
+                                 :socket handle :direction :io
+                                 :element-type 'unsigned-byte)))
+      (setq *return-tcp-stream* stream)
+      (mp:process-run-function "Net Binary Data"
+                               '()
+                               'poll-for-close-stream stream)))
+
+  (defun poll-for-close-stream (stream)
+    (loop
+     (cond ((not (open-stream-p stream)) (return nil))
+           (t
+            (mp:process-wait-with-timeout "net wait" 10
+                                          #'(lambda () (listen stream)))))))
+
+
+)
+
+#|
+#+lispworks
+(defun make-ftp-data-stream (handle &optional (direction :io)
+                                    (element-type 'common-lisp:base-char))
+  (let ((stream (make-instance 'comm:socket-stream
+                               :socket handle
+                               :direction direction
+                               :element-type element-type)))
+    (mp:process-run-function "ftp-data"
+                           '()
+                           'check-for-net-eof stream)))
+
+(defun check-for-net-eof (stream)
+  (let ((eof-value (list 'eof)))
+    (unwind-protect
+        (loop for char = (peek-char nil stream nil eof-value)
+
+
+(defun blah (port)
+ (comm:start-up-server :function 'make-ftp-data-stream
+                      :service port))
+
+|#
+
+;; same as below except for debugging
+;; once-only the args...
+(defmacro net-write-control-line (stream string &rest args)
+  (let ((string-arg (gensym))
+        (rest-args nil))
+    (dolist (arg args (setq rest-args (reverse rest-args)))
+      (push (list (gensym) arg) rest-args))
+    `(let ((,string-arg ,string)
+           ,@rest-args)
+       (debugging-message ,string-arg . ,(mapcar #'car rest-args))
+       #+mcl (ccl::telnet-write-line ,stream
+                                     ,string-arg . ,(mapcar #'car rest-args))
+       #-mcl (net-write-line ,stream ,string-arg . ,(mapcar #'car rest-args))
+       )))
+
+(defmacro net-write-line (stream string &rest args)
+  #+mcl `(ccl::telnet-write-line ,stream ,string . ,args)
+  #-mcl `(progn (format ,stream ,string . ,args)
+           (write-char #\return ,stream)
+           (write-char #\linefeed ,stream)
+           (force-output ,stream))
+  )
+
+(defun net-write-line-to-binary-stream (stream string)
+  (dotimes& (i (length string))
+    (write-byte (char-code (aref string i)) stream))
+  (write-byte #.(char-code #\return) stream)
+  (write-byte #.(char-code #\linefeed) stream)
+  (force-output stream))
+
+;; 4/12/00 - this doesn't seem to be called by anyone?
+;; removed 10/13/03, leave source until next system release just in case
+;(defun tcp-stream-local-port (s)
+;  #+mcl
+;  (ccl::rref (ccl::conn-pb (ccl::tcp-stream-conn s)) tcpioPB.status.localPort)
+;  #-mcl
+;  (error "TCP stream local port undefined for ~A" (machine-type))
+;  )
+
+(defvar *tcp-error-handlers* nil)
+;; like CL HANDLER-BIND except that we match on FTP error codes
+;; handler-list is a list or lists of error code & handlers
+;; ftp errors check the handler list for a match to a handler otherwise,
+;; they signal boxer errors
+;; the handlers are searched in the order given so more specific handlers should
+;; appear before more general ones (see signal-tcp-error)
+
+
+(defmacro tcp-handler-bind (handler-list &body body)
+  `(let ((*tcp-error-handlers* ',handler-list))
+     . ,body))
+
+(defun signal-tcp-error (response-code error-string)
+  (let ((matching-handler (dolist (handler *tcp-error-handlers*)
+                            (let ((match? (search (car handler) response-code)))
+                              (when (and match? (zerop& match?))
+                                (return (cadr handler)))))))
+    (if (null matching-handler)
+        (boxer-eval::primitive-signal-error :net-error (copy-seq error-string))
+        (funcall matching-handler))))
+
+;;; should make this more table driven so we can specialize better
+;;; for different TCP operations like SMTP vs FTP
+(defun handle-tcp-response (control-stream &optional (wait? t))
+  (let* ((response (net-read-line control-stream wait?))
+         (code (and response (subseq response 0 3))))
+    (unless (null response)
+      (debugging-message response)
+      (cond ((char= #\- (char response 3)) ; multi-line?
+             ;; just pull out any extra lines in a multi line reply...
+             (do ((next-line (net-read-line control-stream wait?)
+                             (net-read-line control-stream wait?)))
+                 ((and (search code next-line) (char= #\space (char next-line 3))))
+               (debugging-message next-line)))
+            ((member (char response 0) '(#\4 #\5) :test #'char=) ; error?
+             (signal-tcp-error code response))
+            ((char= #\1 (char response 0))
+             ;; more messages to come
+             (handle-tcp-response control-stream nil))
+            ((listen control-stream)
+             ;(format t "recursive HANDLE-TCP-RESPONSE:")
+             (handle-tcp-response control-stream))
+            ))))
+
+(defun throw-to-retry-fill-tag () (throw 'retry-fill nil))
+
+;; this should be adaptive (larger values for PPP connections)
+(defvar *ftp-data-listen-timeout* 300000)
+
 
 
 ;;;;

@@ -19,19 +19,11 @@
 
 (in-package :boxer-window)
 
-(defvar *use-mouse2021* t
-  "Should we use the new 2021 Mouse clicks? This updates the mouse handling behavior in boxer to use
-   true clicks with release, and adds events for mouse-down, mouse-up. This behavior may require some
-   changes to legacy microworlds that have used mouse-click rather than mouse-down for dragging and
-   other behaviors.")
 
 ;; 2021-06-28 sgithens I'm not sure if this is really used anymore.. there is a reference to it in the
 ;; currently broken dribbler
 (defvar *boxer-command-loop-event-handlers-queue* nil
   "A list of functions to funcall at the bottom of boxer-command-loop.")
-
-
-(defvar *double-click-pause-time* 0.4 "Time to wait for a possible second click")
 
 (defvar *double-click-wander* 5
   "Number of pixels the mouse is allowed to shift between clicks")
@@ -205,53 +197,6 @@
                 #+lispworks ((system:gesture-spec-p ev) (return ev))
                 (t (pop *boxer-eval-queue*))))))
 
-(defun modern-clicking-2021 (click)
-  "New 2021 Click handling where clicks aren't delayed, clicks happen when the
-  mouse comes up, and we support mouse-down, and mouse-up"
-  (handle-boxer-input click)
-)
-
-;; pause and wait for another possible click
-(defun maybe-unify-mouse-click (click)
-  (let ((button (mouse-event-click click))
-        (bits   (mouse-event-bits  click))
-        (x-pos  (mouse-event-x-pos click))
-        (y-pos  (mouse-event-y-pos click))
-        ;(num-clicks (mouse-event-number-of-clicks click))
-        ;(time  (mouse-event-last-time-stamp click))
-        )
-    #-win32 (declare (ignore button))
-    #+lispworks (mp::process-wait-with-timeout "Double Click Wait" *double-click-pause-time*
-                                   #'(lambda () (user-event-in-queue?)))
-    (let ((new-input (peek-next-key-or-mouse-event)))
-      (cond ((mouse-event? new-input)
-             (cond ((and #+win32 (= (mod button 3) (mod (mouse-event-click new-input) 3))
-                         ;; only need to button match for PC (3) button mouse
-                         (= bits (mouse-event-bits new-input))
-                         (boxer::<& (boxer::abs& (boxer::-& x-pos (mouse-event-x-pos
-                                                                   new-input)))
-                                    *double-click-wander*)
-                         (boxer::<& (boxer::abs& (boxer::-& y-pos (mouse-event-y-pos
-                                                                   new-input)))
-                                    *double-click-wander*))
-                    ;; looks like a double click
-                    (cond ((> (mouse-event-number-of-clicks new-input) 1)
-                           (handle-boxer-input (pop *boxer-eval-queue*)))
-                          (t ;; looks like the event system recorded it as
-                             ;; a pair of single clicks, throw out the second
-                             ;; one and bash fields in the 1st one
-                             (pop *boxer-eval-queue*)
-                             (setf (mouse-event-click click)
-                                   (+ (mouse-event-click click) 3)
-                                   ;; if we allow wandering, should we use the pos
-                                   ;; of the 1st or 2nd click
-                                   (mouse-event-last-time-stamp click)
-                                   (mouse-event-last-time-stamp new-input))
-                             (incf (mouse-event-number-of-clicks click))
-                             (handle-boxer-input click))))
-                   (t (handle-boxer-input click))))
-            (t (handle-boxer-input click))))))
-
 ;; on the mac, this checks to OS event queue to look for pending unhandled events
 ;; which might not
 (defun no-more-input? () (not (peek-next-key-or-mouse-event)))
@@ -299,9 +244,7 @@
                ;; also check for double click by pausing and looking for a
                ;; double click event
                (when (null just-redisplayed?) (boxer::repaint))
-               (if *use-mouse2021*
-                 (modern-clicking-2021 input)
-                 (maybe-unify-mouse-click input))
+               (handle-boxer-input input)
                (setq just-redisplayed? nil))
               ((and (symbolp input) (not (null (symbol-function input))))
                (when (null just-redisplayed?) (boxer::repaint-with-cursor-relocation))

@@ -26,6 +26,7 @@
                 This file is part of the | BOXER | system
                                          +-------+
 
+    This file contains variables and macros for the display code.
 
 Modification History (most recent at the top)
 
@@ -60,18 +61,12 @@ Modification History (most recent at the top)
 
 (in-package :boxer)
 
-;;;this file contains all the macro and defsubsts
-;;;for the display code
-
-;;; this should be phased out either when the redisplay is converted to
-;;; the new character scheme or when box boxers are re-implememented
-
-;(DEFVAR *FONT-NUMBER-FOR-NAMING* #-symbolics 2.
-;            	                 #+symbolics (si:backtranslate-font fonts:medfntb)
-;  "The font number that specifies the font for names and variables. ")
-
-
 ;;; Graphics defs and macros
+
+(defvar *use-glist-performance* t
+  "Whether or not to use the new c-buffering for the opengl drawing, although this
+  can be used for other types of graphics command list performance work that is in
+  progress as well.")
 
 (DEFVAR *DEFAULT-GRAPHICS-SHEET-WIDTH* 320.)
 

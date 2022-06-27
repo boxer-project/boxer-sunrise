@@ -82,7 +82,7 @@
   )
 
 (defpackage :boxer
-  (:use :common-lisp ); :boxer-user)
+  (:use :common-lisp )
   (:nicknames :box)
   (:shadow :once-only)
   (:export :symbol-format :set-font-info
@@ -91,6 +91,7 @@
            :with-collection
            :collect
            :sheet-inside-width :sheet-inside-height
+           :with-window-system-dependent-clipping :with-turtle-clipping
            :alu-andca :alu-seta :alu-xor :alu-and :alu-ior :alu-setz
            :port-to
            :getprop
@@ -120,6 +121,8 @@
            :%drawing-window :%drawing-array
            :scale-x :scale-y
            :x-out-of-bounds? :y-out-of-bounds?
+           :max-window-coord :min-window-coord
+
            ;; font vars
            :%drawing-font :%drawing-fit
            :%drawing-font-cha-wid
@@ -168,9 +171,6 @@
            :sprite-box? :port-box?
            ;; other predicates
            :named-box?
-           ;; PCL stuff
-           ;;   #+clos clos::slot-value #+clos clos::defmethod
-           ;;   #+clos clos::bcm-class-and-instantiable-superiors-symbol
            ;; Boxer/CL fixup
            :fast-assq :fast-delq
            :fast-del-if :fast-memq
@@ -190,16 +190,11 @@
            :*cursor-blinker-min-hei*
            :window-system-specific-make-boxer
            :window-system-specific-start-boxer
-           #+X
-           :*default-keymap-translation-filename*
            :status-line-display :redraw-status-line
            :force-redisplay
-           ;;
            :%local-clip-lef :%local-clip-top
            :%local-clip-rig :%local-clip-bot
            :%origin-x-offset :%origin-y-offset
-           ;;
-           ;;  :key-event? :mouse-event?
            :input-code :input-bits
            ;; dribble symbols
            :*dribble-playback*
@@ -271,13 +266,12 @@
 (defpackage :boxer-window
   (:use :common-lisp :boxer)
   (:nicknames :bw)
-  (:export :*glyph-pane*
-           :outermost-screen-box
+  (:export :outermost-screen-box
            :*foreground-color* :*background-color*
-           :main-screen :prepare-sheet
+           :prepare-sheet
            :window-inside-size
            :window-pixel
-           :%bitblt-in-screen :%bitblt-to-screen :%bitblt-from-screen
+           :%bitblt-to-screen :%bitblt-from-screen
            :%draw-point
            :%draw-rectangle :%erase-rectangle :%draw-line :%draw-poly
            :boxer-points->window-system-points :%draw-arc :%draw-filled-arc
@@ -285,7 +279,6 @@
            :draw-cha :cha-wid :cha-hei
            :%draw-cha :%draw-string
            :string-wid :string-hei
-           :font-char-height
            ;; bitmap functions
            :make-offscreen-bitmap :copy-offscreen-bitmap :free-offscreen-bitmap
            :offscreen-bitmap-width :offscreen-bitmap-height
@@ -293,30 +286,23 @@
            :with-drawing-port
            :offscreen-bitmap-image :set-offscreen-bitmap-image
            :offscreen-pixel :image-pixel
-           :with-window-system-dependent-clipping :with-turtle-clipping
-           :%draw-rectangle-on-offscreen-bitmap
-           :%draw-line-on-offscreen-bitmap
-           :draw-string-to-offscreen-bitmap
+
            :rebind-font-info
            :%make-color :color? :color= :with-pen-color :%set-pen-color
            :%set-pen-size :pixel-rgb-values
            :set-mouse-cursor :reset-mouse-cursor :with-mouse-cursor :beep
            :mouse-window-coords :mouse-button-state
-           :deallocate-system-dependent-structures
-           :max-window-coord :min-window-coord
 
            :*redisplayable-windows*
            :outermost-screen-box
            ;; useful variables...
            :*boxer-pane* :*name-pane* :*boxer-frame*
            :*point-blinker* :*mouse-blinker* :*sprite-blinker*
-           :mini-boxer-command-loop
            ;; Window operations
-           :set-outermost-screen-box-in-window :beep
+           :set-outermost-screen-box-in-window
            :window-system-dependent-redraw-status-line :clear-window
            ;; input functions
            :get-character-input :get-boxer-input
-           :get-any-event;; not used by boxer but useful for debugging
            ;; cursor and blinker manipulation
            :with-mouse-tracking
            :with-mouse-tracking-inside;; these  bind...
@@ -330,23 +316,15 @@
            :set-cursor-visibility :set-window-name
 
            :key-event? :mouse-event?
-           :key-or-button-event? :key-event-values
            :mouse-event-window :mouse-event-type
            :mouse-event-x-pos :mouse-event-y-pos
            :mouse-event-click :mouse-event-bits
-
-           REGION-X :REGION-Y
-           :REGION-WID :REGION-HEI :REGION-VISIBILITY
-           ;; functions that let the windows do the walking
-           :BOXER-TOP-OF-STACK-GROUP-BINDINGS
            ))
 
 (defpackage :boxer-lw-capi
   (:use :common-lisp))
 
 (in-package :boxer)
-
-
 
 #+(and clos (not pcl))
 (use-package 'clos)
@@ -366,55 +344,7 @@
 (defvar pkg-boxer-user-package (find-package 'boxer-user))
 (defvar pkg-bu-package (find-package 'boxer-user))
 
-
-
-
-;;;; Setting Up the Window System Package
-;;;
-;;;  This relies on the result of (get-window-system-info) defined
-;;;  and called in boxsys
-;;;
-;;;  All of this is done HERE to insure a consistent LOAD and COMPILE time
-;;;  package Environment.  Putting all this info in the relevant files leads
-;;;  to obscure package lossage.  Sigh.
-
 ;; Inherit External Symbols from BW
 (USE-PACKAGE 'BOXER-WINDOW)
-;; These symbols are the interface between the window system and BOXER
-;; Look at the beginning of the DRAW.LISP file for more interface and some
-;; definitions too.
-;; Most of the Boxer Redisplay talks to a virtual bitmap.  These functions
-;; are defined in the DRAW.LISP file.  The ones that actually talk to windows
-;; are shown here. Mouse functions need to added here also...
-
-
-
-;;; From the draw-low-xxx files
-
-;;; What we need from BOXER
-
-;;; shadow the symbol from SCL preferring the PCL one
-
-
-;;; From the boxwin-xxx files
-
-;;; from the keydef-low-xxx.lisp files
-
-
-;; (import '(bw::mouse-click-names bw::mouse-state-names bw::lookup-click-name)
-;;   (find-package 'boxer))
-
-;;; Set up package for the evaluator.
-
-;;; Set up package for the boxer network.
-
 
 (use-package 'boxnet)
-
-;; redefined in file-prims
-
-;;; The shadowing in-line in MCL-PRELUDE no longer works, so do it here.
-;; (shadow '(cl:defclass cl:defmethod cl:slot-value cl:with-slots))
-;; (shadowing-import '(box::defclass box::defmethod box::slot-value box::with-slots)
-                                    ;;    (find-package :boxnet))
-

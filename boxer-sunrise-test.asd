@@ -23,6 +23,7 @@
                 (:test-file "loader-tests")
                 (:test-file "keydef-high-tests")
                 (:test-file "gdispl-tests")
+                (:test-file "dumper-tests")
                  )))
   :description "Test system for boxer-sunrise"
 
