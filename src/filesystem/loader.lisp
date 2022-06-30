@@ -1233,25 +1233,16 @@ should ignore it.")
          (x 0) (y 0))
     (declare (fixnum width height x y))
 
-    (dotimes (y height)
-      (dotimes (x width)
-      (setf (ldb (byte 16 16) (image-pixel x y pixdata)) (bin-next-byte stream))
-      (setf (ldb (byte 16 0) (image-pixel x y pixdata)) (bin-next-byte stream))
-    ))
-
-    ;; Still buggy version that does the count compression, which may or may not
-    ;; be beneficial anymore
-    ; (loop
-    ;     (let* ((count (bin-next-byte stream))
-    ;            (1st-word (bin-next-byte stream))
-    ;            (2nd-word (bin-next-byte stream)))
-    ;       ; (log:debug "Doing this series of count: ~A" count)
-    ;       (dotimes& (i count)
-    ;         (setf (ldb (byte 16 16) (image-pixel x y pixdata)) 1st-word)
-    ;         (setf (ldb (byte 16 0) (image-pixel x y pixdata)) 2nd-word)
-    ;         (incf& x)
-    ;         (when (>=& x width) (setq x 0 y (1+& y))))
-    ;       (when (>=& y height) (return))))
+    (loop
+        (let* ((count (bin-next-byte stream))
+               (1st-word (bin-next-byte stream))
+               (2nd-word (bin-next-byte stream)))
+          (dotimes& (i count)
+            (setf (ldb (byte 16 16) (image-pixel x y pixdata)) 1st-word)
+            (setf (ldb (byte 16 0) (image-pixel x y pixdata)) 2nd-word)
+            (incf& x)
+            (when (>=& x width) (setq x 0 y (1+& y))))
+          (when (>=& y height) (return))))
     pixmap))
 
 (defun load-true-color-run-length-encoded-pixmap (stream)

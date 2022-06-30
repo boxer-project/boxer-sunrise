@@ -1145,36 +1145,29 @@ Modification History (most recent at the top)
 
     (dump-boxer-thing width stream) (dump-boxer-thing height stream)
 
-    (dotimes (y height)
-      (dotimes (x width)
-        (write-file-word (ldb (byte 16 16) (image-pixel x y pixdata)) stream)
-        (write-file-word (ldb (byte 16 0) (image-pixel x y pixdata)) stream)))
-
-    ;; Still buggy version that does the count compression, which may or may not
-    ;; be beneficial anymore
-    ; (let ((current-pixel (pixel-dump-value-internal (image-pixel 0 0 pixdata)))
-    ;       (current-count 0))
-    ;   (declare (fixnum current-pixel current-count))
-    ;   (dotimes& (y height)
-    ;     (dotimes& (x width)
-    ;       (let ((pix (image-pixel x y pixdata)))
-    ;         (cond
-    ;           ((or (=& current-count 255)
-    ;                (not (opengl::pixel= pix current-pixel)))
-    ;            (write-file-word current-count stream)
-    ;            (write-file-word (ldb (byte 16 16) (image-pixel x y pixdata)) stream)
-    ;            (write-file-word (ldb (byte 16 0) (image-pixel x y pixdata)) stream)
-    ;            ;; update the vars
-    ;            (setq current-pixel pix current-count 1))
-    ;           ((opengl::pixel= pix current-pixel)
-    ;             (incf& current-count))
-    ;           (t (error "Bad case in dumping bitmap (pixel = ~X, count = ~D"
-    ;                     current-pixel current-count))))))
-    ;   ;; finally write out the last word
-    ;   (write-file-word current-count stream)
-    ;   (write-file-word (ldb (byte 16 16) current-pixel) stream)
-    ;   (write-file-word (ldb (byte 16 0) current-pixel) stream)
-    ;   )
+    (let ((current-pixel (image-pixel 0 0 pixdata))
+          (current-count 0))
+      (declare (fixnum current-pixel current-count))
+      (dotimes& (y height)
+        (dotimes& (x width)
+          (let ((pix (image-pixel x y pixdata)))
+            (cond
+              ((or (=& current-count 65534) ;255)
+                   (not (opengl::pixel= pix current-pixel)))
+               (write-file-word current-count stream)
+               (write-file-word (ldb (byte 16 16) current-pixel) stream)
+               (write-file-word (ldb (byte 16 0) current-pixel) stream)
+               ;; update the vars
+               (setq current-pixel pix current-count 1))
+              ((opengl::pixel= pix current-pixel)
+                (incf& current-count))
+              (t (error "Bad case in dumping bitmap (pixel = ~X, count = ~D"
+                        current-pixel current-count))))))
+      ;; finally write out the last word
+      (write-file-word current-count stream)
+      (write-file-word (ldb (byte 16 16) current-pixel) stream)
+      (write-file-word (ldb (byte 16 0) current-pixel) stream)
+    )
   ))
 
 ;; sort of flaky, underlying 24 bit pixel format assumed even though
