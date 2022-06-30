@@ -10380,6 +10380,24 @@ if it is out of bounds
 ;;;; FILE: loader.lisp
 ;;;;
 
+#-lispworks
+(defun code-char-value (value) (code-char value))
+
+#+clx
+(defun old-style-put-picture-byte (pic x y byte &optional size)
+  (declare (type (simple-array bit (* *)) pic)
+           (fixnum x y byte size))
+  (dotimes& (i (or size 8))
+    (setf (aref pic y (+& x i))
+          ;; have to swap the bytes, blecchh...
+          (ldb& (byte 1 (-& 7 i)) byte))))
+
+#+X
+(defun old-style-put-picture-byte (pic x y byte &optional size bytes-per-row)
+  (declare (ignore size))
+  (setf (xlib::crefi-byte pic (+& (ash& x -3) (*& y bytes-per-row)))
+        byte))
+
 ;; From defun load-box
   #+mcl (ccl::update-cursor) ; hack to get moving cursor
 
@@ -10387,6 +10405,46 @@ if it is out of bounds
 ;;;
 ;;; Versions of #+mcl code for using a different "fast" version of pixmap loaders
 ;;;
+
+(defun load-true-color-run-length-encoded-pixmap-by-strips (stream
+                                                            &optional
+                                                            (width (bin-next-value
+                                                                    stream))
+                                                            (height (bin-next-value
+                                                                     stream))
+                                                            (pixmap
+                                                             (make-offscreen-bitmap
+                                                              *boxer-pane*
+                                                              width height)))
+  (let ((pixdata (offscreen-bitmap-image pixmap))
+        (true-color? (>= (offscreen-bitmap-depth pixmap) 16.))
+        (x 0) (y 0))
+    (declare (fixnum width height x y))
+    (drawing-on-bitmap (pixmap)
+      (loop
+        (let* ((1st-word (bin-next-byte stream))
+               (2nd-word (bin-next-byte stream))
+               (count (ldb& %%bin-op-top-half 1st-word))
+               (red (ldb& %%bin-op-low-half 1st-word))
+               (green (ldb& %%bin-op-top-half 2nd-word))
+               (blue (ldb& %%bin-op-low-half 2nd-word))
+               (pixel (if true-color?
+                        (dpb& red (byte 8 16) 2nd-word)
+                        ;; we should stack cons this list...
+                        (reallocate-pixel-color (list red green blue))))
+               (draw-wid (min& count (-& width x))))
+            (loop
+              (with-pen-color (pixel)
+                (draw-rectangle draw-wid 1 x y))
+                (setq count (-& count draw-wid)
+                      x (let ((newx (+& x draw-wid)))
+                          (cond ((>=& newx width) (setq y (1+& y)) 0)
+                                (t newx)))
+                      draw-wid (min& count (-& width x)))
+                (when (<=& count 0) (return)))
+            (when (>=& y height) (return)))))
+    (set-offscreen-bitmap-image pixmap pixdata)
+    pixmap))
 
 #+mcl
 (defvar *use-mac-fast-bitmap-loaders* t)
