@@ -809,8 +809,12 @@ causing Boxer to open, the item on the queue will likely be the first thing ther
   (declare (ignore interface))
   (case message
     (:open-file
-      (queue-event (list 'bw::safe-open-double-clicked-file args)))
-    (:finished-launching)
+      (setf *boxer-init-queue* (nconc *boxer-init-queue* (list (list 'bw::safe-open-double-clicked-file args)))))
+    (:finished-launching
+      (update-toolbar-font-buttons)
+      (update-visible-editor-panes)
+      (mapc #'queue-event *boxer-init-queue*)
+      (queue-event 'boxer::repaint))
     (t (status-line-display 'boxer::boxer-editor-error
                             (format nil "Unhandled OSX event: ~A" message)))))
 

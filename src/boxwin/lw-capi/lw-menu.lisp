@@ -620,13 +620,15 @@ Modification History (most recent at top)
   (declare (ignore data interface))
   (unless (>= boxer::*font-size-baseline* 4)
     (setq boxer::*font-size-baseline* (+ 0.25 boxer::*font-size-baseline*)))
-  (boxer::repaint))
+  (boxer::repaint)
+  (update-toolbar-font-buttons))
 
 (defun menu-font-smaller (data interface)
   (declare (ignore data interface))
   (unless (<=  boxer::*font-size-baseline* 0.50)
     (setq boxer::*font-size-baseline* (- boxer::*font-size-baseline* 0.25)))
-  (boxer::repaint))
+  (boxer::repaint)
+  (update-toolbar-font-buttons))
 
 (defun get-current-font ()
   (let ((region (or boxer::*region-being-defined* (boxer::get-current-region))))
@@ -659,7 +661,8 @@ Modification History (most recent at top)
            (setf (boxer::bfd-font-no boxer::*current-font-descriptor*)
                  (boxer::%set-font (boxer::bfd-font-no
                                     boxer::*current-font-descriptor*)
-                                   data))))))
+                                   data)))))
+  (update-toolbar-font-buttons))
 
 ;; support for displaying current (because of Zoom) absolute font sizes
 ;; should be in this function
@@ -679,7 +682,8 @@ Modification History (most recent at top)
            (setf (boxer::bfd-font-no boxer::*current-font-descriptor*)
                  (boxer::%set-font-size (boxer::bfd-font-no
                                          boxer::*current-font-descriptor*)
-                                        data))))))
+                                        data)))))
+  (update-toolbar-font-buttons))
 
 (defun set-font-style-menu-selection (menu)
   (let ((current-font (boxer::bfd-font-no (get-current-font))))
@@ -710,7 +714,8 @@ Modification History (most recent at top)
            (setf (boxer::bfd-font-no boxer::*current-font-descriptor*)
                  (boxer::set-font-style (boxer::bfd-font-no
                                          boxer::*current-font-descriptor*)
-                                        data (not attribute-on?)))))))
+                                        data (not attribute-on?))))))
+  (update-toolbar-font-buttons))
 
 (defun set-font-color-menu-selection (menu)
   (let* ((current-color (boxer::bfd-color (get-current-font)))
@@ -727,7 +732,8 @@ Modification History (most recent at top)
     (cond ((not (null region))
            (boxer::change-region-color region data)
            (boxer::repaint))
-          (t (setf (boxer::bfd-color boxer::*current-font-descriptor*) data)))))
+          (t (setf (boxer::bfd-color boxer::*current-font-descriptor*) data))))
+  (update-toolbar-font-buttons))
 
 (defun init-font-color-menu ()
   (setf (capi::menu-items *font-sub-color-menu*)
@@ -862,7 +868,8 @@ Modification History (most recent at top)
 
 (defun menu-key-mouse-mode (data interface)
   (declare (ignore data interface))
-  (boxer::com-toggle-vanilla-mode))
+  (boxer::com-toggle-vanilla-mode)
+  (update-toolbar-font-buttons))
 
 ;;; **** Places Menu ****
 

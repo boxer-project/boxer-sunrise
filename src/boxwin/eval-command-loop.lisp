@@ -30,6 +30,10 @@
 
 (defvar *boxer-eval-queue* nil)
 
+(defvar *boxer-init-queue* nil
+  "A queue for initialization items you want to be run after Boxer startup. Regular items
+  on the queue are flushed when the eval loop is started.")
+
 (defun queue-event (event)
  ; (when (characterp event) (setq *dribble* (nconc (list event) *dribble*)))
   (setq *boxer-eval-queue* (nconc *boxer-eval-queue* (list event))))
