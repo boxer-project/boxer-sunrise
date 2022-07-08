@@ -19,25 +19,19 @@
                 ;; Stuff from previous OpenGL/opengl directory that was added by
                  ;; boxer
                  #-lispworks (:file "boxwin/libre/opengl")
-                 (:file "pixmap")
 
-                 ;; Beginning of `DEFINITIONS` module
-                ;  (:file "definitions/macros")
-                ;  (:file "definitions/storage")
-                ;  (:file "definitions/boxdef")
-                ;  (:file "definitions/vrtdef")
-                ;  (:file "definitions/fonts")
-
-
-                 ;; Begining of `redisplay` module
-                ;  (:file "definitions/disdcl")
+                 #+lispworks
+                 (:module "draw-low-opengl-lispworks"
+                  :depends-on ()
+                  :components ((:file "platform-utils")
+                               (:file "pixmap")
+                               (:file "opengl-utils")
+                               #+(and freetype-fonts (not delivering))
+                               (:file "freetype-fonts")
+                               (:file "draw-low-opengl")
+                  ))
 
                  ;; Beginning of `DRAW` module
-                 (:file "boxwin/lw-capi/platform-utils")
-                ;;  (:file "draw/agnostic-renderer")
-                 (:file "draw/opengl-utils")
-                 #+(and lispworks freetype-fonts (not delivering)) (:file "draw/freetype-fonts")
-                 (:file "draw/draw-low-opengl")
                  (:file "draw/draw-high-common")
 
                  (:file "definitions/boxer-styles")
@@ -119,7 +113,6 @@
                  ;; Beginning of `IMPEXP` module
                  ;; "This imports and exports boxer structure to/from other common file types"
                  (:file "impexp/impexp")
-                 (:file "impexp/html-export")
                  (:file "impexp/opml-export")
                  (:file "impexp/json-export")
                  (:file "impexp/full-html-export")
@@ -154,11 +147,6 @@
                  (:file "filesystem/dumper")
                  (:file "filesystem/loader")
                  (:file "filesystem/clientmacros")
-                 ; sgithens 2022-04-25 Test commenting this out as a grep of all the top level items
-                 ; seems that nothing is being used in here. Remove after a release or two.
-                 ; 2022-05-16 adding bfslocal
-                 ; (:file "filesystem/bfslocal")
-                 ; (:file "filesystem/bfsforeign")
                  (:file "filesystem/client")
                  (:file "filesystem/surf")
                  (:file "filesystem/http")

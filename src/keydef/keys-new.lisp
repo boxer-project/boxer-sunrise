@@ -381,7 +381,12 @@
 ;; been binding to ctrl. Once we fix Command bindings, perhaps these bindings should be reviewed,
 ;; especially since ctrl-click is often used on MacOS to mimic a right click.
 
-(boxer-eval::defboxer-key bu::mouse-click com-mouse-define-region)
+(boxer-eval::defboxer-key bu::mouse-down com-mouse-define-region)
+
+;  (boxer-eval::defboxer-key bu::mouse-click com-noop)
+(boxer-eval::defboxer-key bu::mouse-click com-mouse-expand-box)
+
+(boxer-eval::defboxer-key bu::mouse-up com-noop)
 
 (boxer-eval::defboxer-key bu::ctrl-mouse-click  com-mouse-expand-box) ; was also previously listed as Command on MacOS
 
@@ -391,6 +396,8 @@
 (boxer-eval::defboxer-key bu::option-mouse-double-click com-mouse-shrink-box)
 (boxer-eval::defboxer-key bu::alt-mouse-double-click com-mouse-shrink-box)
 
+(boxer-eval::defboxer-key bu::mouse-down-on-graphics com-noop)
+(boxer-eval::defboxer-key bu::mouse-up-on-graphics com-noop)
 (boxer-eval::defboxer-key bu::mouse-double-click com-mouse-doit-now)
 
 (boxer-eval::defboxer-key bu::ctrl-mouse-double-click com-mouse-set-outermost-box) ; was also previously listed as Command on MacOS
@@ -407,14 +414,14 @@
 (boxer-eval::defboxer-key bu::option-mouse-double-click-on-graphics com-mouse-shrink-box)
 (boxer-eval::defboxer-key bu::alt-mouse-double-click-on-graphics com-mouse-shrink-box)
 
-(boxer-eval::defboxer-key bu::mouse-double-click com-mouse-doit-now)
-
-;; This was previously used in windows...
-;; (boxer-eval::defboxer-key bu::mouse-click       com-mouse-move-point)
-
 ;; sprite clicks
 ;; boxer-bugs-87 We don't want the default action to be moving around sprites.
-;; (boxer-eval::defboxer-key bu::mouse-click-on-sprite com-sprite-follow-mouse)
+;;  (boxer-eval::defboxer-key bu::mouse-down-on-sprite com-sprite-follow-mouse)
+(boxer-eval::defboxer-key bu::mouse-down-on-sprite com-noop)
+(boxer-eval::defboxer-key bu::mouse-click-on-sprite com-noop)
+
+
+(boxer-eval::defboxer-key bu::mouse-double-click com-mouse-doit-now)
 
 ;;;
 ;;; Box Border Mouse Commands
@@ -424,39 +431,51 @@
 ;;;    Double Click: Full Screen
 ;;;    Right Click: Context Menu
 
+(boxer-eval::defboxer-key bu::ctrl-mouse-down-on-top-right  com-mouse-boxsize-closet-properties-pop-up)
+(boxer-eval::defboxer-key bu::mouse-right-down-on-top-right  com-mouse-boxsize-closet-properties-pop-up)
+
+
 (boxer-eval::defboxer-key bu::mouse-click-on-top-right com-mouse-tr-corner-expand-box)
 (boxer-eval::defboxer-key bu::mouse-double-click-on-top-right com-mouse-set-outermost-box)
 
-(boxer-eval::defboxer-key bu::ctrl-mouse-click-on-top-right  com-mouse-boxsize-closet-properties-pop-up)
-(boxer-eval::defboxer-key bu::mouse-right-click-on-top-right  com-mouse-boxsize-closet-properties-pop-up)
+; (boxer-eval::defboxer-key bu::ctrl-mouse-click-on-top-right  com-mouse-boxsize-closet-properties-pop-up)
+; (boxer-eval::defboxer-key bu::mouse-right-click-on-top-right  com-mouse-boxsize-closet-properties-pop-up)
 
 ;;;  Top Left Corner:
 ;;;    Click: Shrink to next size down
 ;;;    Double Click: Supershrink
 ;;;    Right Click: Context Menu
 
+(boxer-eval::defboxer-key bu::mouse-right-down-on-top-left com-mouse-boxsize-closet-properties-pop-up)
+(boxer-eval::defboxer-key bu::ctrl-mouse-down-on-top-left com-mouse-boxsize-closet-properties-pop-up)
+
 (boxer-eval::defboxer-key bu::mouse-click-on-top-left com-mouse-tl-corner-collapse-box)
 (boxer-eval::defboxer-key bu::mouse-double-click-on-top-left com-mouse-super-shrink-box)
 
-(boxer-eval::defboxer-key bu::mouse-right-click-on-top-left com-mouse-boxsize-closet-properties-pop-up)
-(boxer-eval::defboxer-key bu::ctrl-mouse-click-on-top-left com-mouse-boxsize-closet-properties-pop-up)
+; (boxer-eval::defboxer-key bu::mouse-right-click-on-top-left com-mouse-boxsize-closet-properties-pop-up)
+; (boxer-eval::defboxer-key bu::ctrl-mouse-click-on-top-left com-mouse-boxsize-closet-properties-pop-up)
 
 ;;;  Bottom Left Corner:
 ;;;    Click: Flip to text/graphics. Currently requires holding
 ;;;    Double Click: Nothing
 ;;;    Right Click: Context Menu
 
+(boxer-eval::defboxer-key bu::mouse-right-down-on-bottom-left com-mouse-box-types-pop-up)
+(boxer-eval::defboxer-key bu::ctrl-mouse-down-on-bottom-left com-mouse-box-types-pop-up)
+
 (boxer-eval::defboxer-key bu::mouse-click-on-bottom-left com-mouse-bl-corner-toggle-box-view)
 
-(boxer-eval::defboxer-key bu::mouse-right-click-on-bottom-left com-mouse-box-types-pop-up)
-(boxer-eval::defboxer-key bu::ctrl-mouse-click-on-bottom-left com-mouse-box-types-pop-up)
+; (boxer-eval::defboxer-key bu::mouse-right-click-on-bottom-left com-mouse-box-types-pop-up)
+; (boxer-eval::defboxer-key bu::ctrl-mouse-click-on-bottom-left com-mouse-box-types-pop-up)
 
 ;;;  Bottom Right Corner:
 ;;;    Click/Drag: Resize
 ;;;    Double Click: Switch back to automatic size
 ;;;    Right Click: Context Menu
 
-(boxer-eval::defboxer-key bu::mouse-click-on-bottom-right com-mouse-br-resize-box)
+(boxer-eval::defboxer-key bu::mouse-down-on-bottom-right com-mouse-br-resize-box)
+(boxer-eval::defboxer-key bu::mouse-click-on-bottom-right com-noop)
+
 ;; (boxer-eval::defboxer-key bu::mouse-right-click-on-bottom-right com-mouse-br-pop-up)
 
 ;;;  Type Tab:
@@ -478,7 +497,7 @@
 ;;; Scrolling
 ;;;
 
-(boxer-eval::defboxer-key bu::mouse-click-on-scroll-bar                com-mouse-scroll-box)
+(boxer-eval::defboxer-key bu::mouse-down-on-scroll-bar                com-mouse-scroll-box)
 
 (boxer-eval::defboxer-key bu::ctrl-mouse-click-on-scroll-bar        com-mouse-page-scroll-box) ;; was previously Command on MacOS
 (boxer-eval::defboxer-key bu::option-mouse-click-on-scroll-bar         com-mouse-page-scroll-box)
@@ -510,67 +529,3 @@
 (eval-when (load)
   (boxer-eval::boxer-toplevel-set 'bu::new-box-properties (make-new-box-properties-box))
   )
-
-
-(defun use-mouse2021-keybindings (use-mouse2021)
-  "During this Work In Progress phase we are supported both the old mouse behavior and the
-   new. This switches the mouse bindings back and forth based on the input boolean, T being
-   the new bindings."
-  (cond (use-mouse2021
-         ;; "Setting up 2021 Mouse bindings"
-         (boxer-eval::defboxer-key bu::mouse-down com-mouse-define-region)
-        ;  (boxer-eval::defboxer-key bu::mouse-click com-noop)
-         (boxer-eval::defboxer-key bu::mouse-click com-mouse-expand-box)
-         (boxer-eval::defboxer-key bu::mouse-up com-noop)
-
-         (boxer-eval::defboxer-key bu::mouse-down-on-graphics com-noop)
-         (boxer-eval::defboxer-key bu::mouse-up-on-graphics com-noop)
-
-         ;; boxer-bugs-87 We don't want the default action to be moving around sprites.
-         ;;  (boxer-eval::defboxer-key bu::mouse-down-on-sprite com-sprite-follow-mouse)
-         (boxer-eval::defboxer-key bu::mouse-down-on-bottom-right com-mouse-br-resize-box)
-
-         (boxer-eval::defboxer-key bu::mouse-click-on-sprite com-noop)
-         (boxer-eval::defboxer-key bu::mouse-click-on-bottom-right com-noop)
-
-         ;; Context menus
-         (boxer-eval::defboxer-key bu::ctrl-mouse-down-on-top-right  com-mouse-boxsize-closet-properties-pop-up)
-         (boxer-eval::defboxer-key bu::mouse-right-down-on-top-right  com-mouse-boxsize-closet-properties-pop-up)
-
-         (boxer-eval::defboxer-key bu::mouse-right-down-on-top-left com-mouse-boxsize-closet-properties-pop-up)
-         (boxer-eval::defboxer-key bu::ctrl-mouse-down-on-top-left com-mouse-boxsize-closet-properties-pop-up)
-
-         (boxer-eval::defboxer-key bu::mouse-right-down-on-bottom-left com-mouse-box-types-pop-up)
-         (boxer-eval::defboxer-key bu::ctrl-mouse-down-on-bottom-left com-mouse-box-types-pop-up)
-
-         (boxer-eval::defboxer-key bu::mouse-down-on-scroll-bar                com-mouse-scroll-box)
-        )
-        (t
-         ;; "Using old school mouse bindings"
-         (boxer-eval::defboxer-key bu::mouse-down com-noop)
-         (boxer-eval::defboxer-key bu::mouse-click com-mouse-define-region)
-         (boxer-eval::defboxer-key bu::mouse-up com-noop)
-
-         (boxer-eval::defboxer-key bu::mouse-down-on-graphics com-noop)
-         (boxer-eval::defboxer-key bu::mouse-up-on-graphics com-noop)
-
-         (boxer-eval::defboxer-key bu::mouse-down-on-sprite com-noop)
-         (boxer-eval::defboxer-key bu::mouse-down-on-bottom-right com-noop)
-
-         ;; boxer-bugs-87 We don't want the default action to be moving around sprites.
-         ;;  (boxer-eval::defboxer-key bu::mouse-click-on-sprite com-sprite-follow-mouse)
-         (boxer-eval::defboxer-key bu::mouse-click-on-bottom-right com-mouse-br-resize-box)
-
-         ;; Context menus
-         (boxer-eval::defboxer-key bu::ctrl-mouse-click-on-top-right  com-mouse-boxsize-closet-properties-pop-up)
-         (boxer-eval::defboxer-key bu::mouse-right-click-on-top-right  com-mouse-boxsize-closet-properties-pop-up)
-
-         (boxer-eval::defboxer-key bu::mouse-right-click-on-top-left com-mouse-boxsize-closet-properties-pop-up)
-         (boxer-eval::defboxer-key bu::ctrl-mouse-click-on-top-left com-mouse-boxsize-closet-properties-pop-up)
-
-         (boxer-eval::defboxer-key bu::mouse-right-click-on-bottom-left com-mouse-box-types-pop-up)
-         (boxer-eval::defboxer-key bu::ctrl-mouse-click-on-bottom-left com-mouse-box-types-pop-up)
-
-         (boxer-eval::defboxer-key bu::mouse-click-on-scroll-bar                com-mouse-scroll-box)
-        ))
-)

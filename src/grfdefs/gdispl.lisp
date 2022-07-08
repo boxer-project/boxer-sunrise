@@ -1234,7 +1234,7 @@ Modification History (most recent at the top)
 (defvar *graphics-state-current-font-no*
   *initial-graphics-state-current-font-no* )
 
-(defvar *graphics-state-current-pen-color* #-lwwin *foreground-color*)
+(defvar *graphics-state-current-pen-color* *foreground-color*)
 
 ;;; the foreground color is usually undefined until boxer startup time
 (def-redisplay-initialization
@@ -2642,9 +2642,15 @@ Modification History (most recent at the top)
 
 (defmacro playback-graphics-list-internal (gl &rest args)
   `(with-graphics-state (,gl t)
+     (draw-before-graphics-list-playback ,gl)
+
      (with-blending-on
        (do-vector-contents (command ,gl)
-         (process-graphics-command-marker command . ,args)))))
+         (draw-before-graphics-command-marker command ,gl)
+         (process-graphics-command-marker command . ,args)
+         )
+
+     (draw-after-graphics-list-playback ,gl))))
 
 (defun redisplay-graphics-sheet (gs graphics-screen-box)
   (with-graphics-vars-bound ((screen-obj-actual-obj graphics-screen-box))

@@ -172,3 +172,21 @@ multifont row, the common reference point will be the baseline instead of the to
 (defun swap-graphics-buffers (&optional (pane *boxer-pane*))
   (%flush-port-buffer pane))
 
+;;;
+;;; Drawing operations to wrap Graphics List Playback to allow for varying performance
+;;; optimizations
+;;;
+;;; For instance, in OpenGL we can put a bunch of lines on a C buffer and then draw them
+;;; at once, and this requires keeping track of some state variables. The methods below
+;;; allow you to perform these initializations, drawing, finalizations before and after
+;;; iterating through a list of graphics commands, and before each graphic command is processed.
+;;;
+
+(defun draw-before-graphics-list-playback (gl)
+  (%draw-before-graphics-list-playback gl))
+
+(defun draw-after-graphics-list-playback (gl)
+  (%draw-after-graphics-list-playback gl))
+
+(defun draw-before-graphics-command-marker (command gl)
+  (%draw-before-graphics-command-marker command gl))
