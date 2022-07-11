@@ -112,7 +112,9 @@
 ;; a hook for other stuff, on the mac, this ensures heap size
 (defun boxer-idle-function ()
   #+mcl (ensure-macheap)
-  )
+  (when *clicked-startup-file*
+      (queue-event *clicked-startup-file*)
+      (setf *clicked-startup-file* nil)))
 
 (defmacro boxer-system-error-restart (&body body)
   (let ((warned-about-error-already-gensym (gensym)))
@@ -207,9 +209,11 @@
 (defun valid-input? () (not (no-more-input?)))
 
 (defun boxer-command-loop-internal ()
-;  (setf (ccl::window-process *boxer-frame*) boxer::*boxer-process*)
   (flush-input)
   (loop
+    (when *clicked-startup-file*
+      (queue-event *clicked-startup-file*)
+      (setf *clicked-startup-file* nil))
     (catch 'boxer::boxer-editor-top-level
       (let ((input (pop *boxer-eval-queue*)))
         (cond ((null input)
