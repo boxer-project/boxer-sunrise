@@ -2657,6 +2657,7 @@ Modification History (most recent at the top)
     ;; first the items in the list
     (let ((gl (graphics-sheet-graphics-list gs)))
       (unless (graphics-command-list-hidden gl) (playback-graphics-list-internal gl)))
+    ;; and then any sprites
     (let ((sprites (graphics-sheet-object-list gs)))
       (dolist (sprite sprites)
         (when (turtle? sprite)
