@@ -72,6 +72,9 @@
     ;; Bottom Status Line
     (setf (capi:title-pane-text status-bar)
       (format nil "~A ~40tFont Zoom ~A%"
-        (vanilla-menu-item-print nil)
+        ; (vanilla-menu-item-print nil)
+        (if (boxer::fast-memq boxer::*global-top-level-mode* boxer::*active-modes*)
+          "System Mouse/Key Actions"
+          "Mouse/Key Redefinitions Active")
         (round (* 100 boxer::*font-size-baseline*))))
   ))
