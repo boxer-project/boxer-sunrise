@@ -1,5 +1,95 @@
 # Change Log
 
+## 3.4.10 2022-07-xx
+
+### Full Change Log
+
+sunrise-15 Preferences dialog now autosaves
+  - Removed Cancel, Set, Set/Save buttons
+  - Moved the save code to the callback for each input widget
+  - Created a top level *preferences-dialog* to hold the dialog
+
+sunrise-25 First iteration of OpenGL graphics performance improvements
+  - Speeds up rendering of consecutive line segments of the same color in
+    graphics command lists.
+  - When inside a graphics list, keeps track of whether we are rendering line
+    segments without a color change and buffers vertices to a C array, then
+    uses glDrawArrays to draw the lines.
+  - Size of the array is configurable with a variable
+  - Added user preference to optionally turn off the in-progress performance
+    increases.  Default has it turned on.
+  - This is just the first of several openGL vertice speed improvements.
+
+sunrise-29 Disabling UI flipping of sprites so they aren't invisible.
+
+sunrise-34 Fixing virtcopy functions used in rtype, ltype to use type character
+    - box-text-string was still using standard-char as it's array type rather than
+      character, which failed to support higher level unicode points.
+
+sunrise-36 Adding function for getting the format version number of a .box file for
+           testing format increments.
+
+bugs-66 Removing old delayed mouse clicks
+  - After several releases of having both, we are now removing
+    the old delayed mouse clicks, and the preference that went
+    along with turning them on still.
+  - All of our working microworlds have been updated to the new
+    click magic names for doit boxes.
+
+bugs-130 bugs-137 sunrise-60 More fixes to mime Boxer launching and toolbar updates
+  - Added update-toolbar-font-buttons invocations to menu functions that adjust items on the
+    tool/statusbars
+  - Added an **boxer-init-queue* to put double clicked .box files on, so they can be queued when
+    the finished-launching message is sent. Previously these were getting flushed from the eval
+    loop because the eval loop starts before the application is finished launching.
+  - Also added toolbar updated to finished-launching to adjust the window geometry depending on user
+    prefs as to which toolbars are on or off.
+
+Upgraded from Lispworks 8.0 to 8.0.1
+
+doco
+
+refactor
+  - Cleaning up commented out parts in boxer-sunrise.core asdf
+  - Coalescing lispworks specific opengl code in to draw-low-opengl-lispworks module
+  - Minor cleanups in package.lisp
+
+
+format
+
+the-attic
+  - Removing commented out and #+'d out portions of dumper.lisp
+    - In addition to obsolete comments and partially commented out regions, removing:
+    - Symolics/mcl items *the-lisp-package*, canonicalize-package-name,
+      array-bits-per-element, file-stream-position, canonicalize-display-style,
+    - We always use 32 bit depth pixmaps now so the following are never called:
+      dump-8-bit-pixmap, fast-mac-dump-8-bit-pixmap, get-picture-byte,
+      dump-1-bit-pixmap, dump-picture
+  - Test removing bfslocal and it's one usage in the loader.
+  - Removing old version of html-export
+    - Now that the newer html5 of the html export does much more,
+      we are removing the previous version of html export.
+  - Archiving unused portions of surf/tcp stack
+    - defvars *correct-password-retries*, *return-tcp-stream*, *tcp-error-handlers*,
+      *ftp-data-listen-timeout*
+    - defuns open-tcp-stream, %get-ip-address, start-char-server-stream,
+      start-binary-server-stream, make-server-char-stream, make-server-binary-stream,
+      poll-for-close-stream, make-ftp-data-stream, check-for-net-eof,
+      net-write-line-to-binary-stream, tcp-stream-local-port, signal-tcp-error,
+      handle-tcp-response, throw-to-retry-fill-tag,
+    - defmacros net-write-control-line, net-write-line, tcp-handler-bind
+  - Moving bfsforeign.lisp and bfslocal.lisp to the attic
+  - Removing old comments on name-tab fonts in disdef and editor.
+  - Removing unused code from gdispl.lisp
+  - Removing #-opengl code in loader.lisp
+    - Removing #-opengl specific code from load-8-bit-run-length-encoded-pixmap and
+      load-true-color-run-length-encoded-pixmap that used `drawing-on-bitmap` and
+      `set-offscreen-bitmap-image`
+  - Removing #+mcl specific code in loader.lisp
+    - Removing #+mcl specific code including defvar *use-mac-fast-bitmap-loaders* and
+      defuns fast-mac-load-8-bit-run-length-encoded-pixmap and
+      fast-mac-load-true-color-run-length-encoded-pixmap
+
 ## 3.4.9 2022-05-05
 
 ### Overview

@@ -799,6 +799,14 @@
    :confirm-destroy-function 'lw-quit
    ))
 
+(defvar *macos-finished-launching* nil
+  "Boolean tracking whether or not macOS has fired the finished-launching message yet.")
+
+(defvar *clicked-startup-file* nil
+  "Because the initial delivery startup process has it's own thread, sometimes when we try to put
+  the double clicked file that started boxer on the event queue it gets lost, so we're hacking around this
+  for now by keeping just the file in this variable. Eventually we should fix up the event queue.")
+
 (defun handle-OSX-events (interface message &rest args)
   "This handles the messages from the lispworks cocoa-default-application-interface. The :open-file message is what
 allows users to double click a .box file and have it open up in boxer, or drag a box file on to the dock icon for Boxer.
@@ -809,8 +817,12 @@ causing Boxer to open, the item on the queue will likely be the first thing ther
   (declare (ignore interface))
   (case message
     (:open-file
-      (queue-event (list 'bw::safe-open-double-clicked-file args)))
-    (:finished-launching)
+      (if *macos-finished-launching*
+        (queue-event (list 'bw::safe-open-double-clicked-file args))
+        (setf *clicked-startup-file* (list 'bw::safe-open-double-clicked-file args))
+      ))
+    (:finished-launching
+      (setf *macos-finished-launching* t))
     (t (status-line-display 'boxer::boxer-editor-error
                             (format nil "Unhandled OSX event: ~A" message)))))
 
@@ -954,10 +966,12 @@ in macOS."
   (set-cursor-visibility *point-blinker* t)
   ;; wait a sec
   ;; now that everything is defined, we can safely run redisplay
-  (resize-handler-utility)
-  (update-toolbar-font-buttons)
 
-  (update-visible-editor-panes)
+  ;; When our macOS app has been delivered, the startup function runs in it's own
+  ;; "Initial Delivery" process, so we need to make sure these run in the gui process
+  (capi::apply-in-pane-process *boxer-pane* #'resize-handler-utility)
+  (capi::apply-in-pane-process *boxer-pane* #'bw::update-toolbar-font-buttons)
+  (capi::apply-in-pane-process *boxer-pane* #'bw::update-visible-editor-panes)
 
   (boxer-process-top-level-fn *boxer-pane*))
 
