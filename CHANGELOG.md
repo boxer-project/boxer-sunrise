@@ -45,6 +45,8 @@ bugs-130 bugs-137 sunrise-60 More fixes to mime Boxer launching and toolbar upda
   - Also added toolbar updated to finished-launching to adjust the window geometry depending on user
     prefs as to which toolbars are on or off.
 
+Upgraded from Lispworks 8.0 to 8.0.1
+
 doco
 
 refactor
