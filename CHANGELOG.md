@@ -1,6 +1,6 @@
 # Change Log
 
-## 3.4.10 2022-07-xx
+## 3.4.10 2022-07-11
 
 ### Full Change Log
 
@@ -26,8 +26,22 @@ sunrise-34 Fixing virtcopy functions used in rtype, ltype to use type character
     - box-text-string was still using standard-char as it's array type rather than
       character, which failed to support higher level unicode points.
 
-sunrise-36 Adding function for getting the format version number of a .box file for
-           testing format increments.
+sunrise-36
+  - Previously we cut out the alpha layer from RGBA pixels
+    and used it for a count value when saving, as a sort of
+    poor mans compression algorithm if 2 adjacent pixels were
+    the same color. Using both 16-bit words now to store the
+    32-bit color value. Adding one more to store the run-length
+    encoding.
+  - Adding function for getting the format version number of a .box file for
+    testing format increments.
+
+sunrise-52 Changing name rows to dump as strings
+  - Name rows were dumping as cha op codes in the dumper. However, because 4-bits
+    of the 16-bit words were taken up by the op code, any unicode code point larger
+    than 12-bits would get chopped off.
+  - Changed name rows to dump as strings.  Bumped file version to 13, and added a check
+    in the loader for older versions to still load the name rows as cha's.
 
 bugs-66 Removing old delayed mouse clicks
   - After several releases of having both, we are now removing
@@ -47,15 +61,10 @@ bugs-130 bugs-137 sunrise-60 More fixes to mime Boxer launching and toolbar upda
 
 Upgraded from Lispworks 8.0 to 8.0.1
 
-doco
-
 refactor
   - Cleaning up commented out parts in boxer-sunrise.core asdf
   - Coalescing lispworks specific opengl code in to draw-low-opengl-lispworks module
   - Minor cleanups in package.lisp
-
-
-format
 
 the-attic
   - Removing commented out and #+'d out portions of dumper.lisp
