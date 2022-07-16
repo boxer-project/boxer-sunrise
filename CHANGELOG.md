@@ -2,6 +2,46 @@
 
 ## 3.4.10 2022-07-11
 
+### Overview
+
+This release begins the refactoring to improve OpenGL graphics performance by modernizing
+the drawing the approach of graphics display lists to buffers and away from old school GL
+fixed functions. This currently improves performance of turtles with *large* numbers of line
+segments of a single color, setting the stage for future bits of geometry to be sped up in
+subsequent releases.
+
+UI updates include the preferences dialog now persists and apply changes automatically (you
+no longer need to hit apply or save). This now runs as a separate dialog that allows you go
+go back and forth between the preferences and boxer canvas as you update the preferences.
+
+Previously, when flipping sprite boxes, they just disappeared. For now they are no longer
+flippable, and won't disappear.
+
+Some bits of the the graphic primitives for turtles, as well as bits of the virtual copy
+mechanism, and name rows where updated to allow using characters outside of the ASCII range,
+allowing any unicode character. The name rows fix for this includes a small change to the
+file save format (see below).
+
+A number of fixes were made to double clicking .box files on macOS to open Boxer if it's not
+open already, or simple insert the double clicked box file at the cursor if Boxer is already
+open.  Also, a number of fixes were made to laggy toolbar and rendering updates when starting
+up boxer.
+
+We are trying out some new labels on the status bar to indicate whether or not mouse and keyboard
+redefinitions are active.
+
+This build updates to using Lispworks 8.0.1.
+
+Fixes a bug where the alpha layer of pixmaps wasn't saved, making impossible to save files with
+sprites that included alpha layers for animations and such. This allow with the name row
+fix mentioned above, bump the box file format from version 12 to 13. Box files with version 13
+will only open on this release and future releases. You can continue to open any previous versions,
+but on save they will be upgraded to version 13.
+
+As usual, a large amount of refactoring and removal of technical debt continues under the hood.
+Another portion of the codebase now loads under other lisps like SBCL and ECL, which continues
+to be a work in progress.
+
 ### Full Change Log
 
 sunrise-15 Preferences dialog now autosaves
