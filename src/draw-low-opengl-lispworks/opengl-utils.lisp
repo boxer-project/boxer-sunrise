@@ -205,9 +205,9 @@ Modification History (most recent at the top)
   (opengl:gl-end))
 
 ;; used directly
-(defun boxer::multiline2 (&rest x-and-y-s)
+(defun ogl-multiline2 (&rest x-and-y-s)
   (opengl:gl-begin opengl:*gl-line-strip*)
-  (do* ((vertices x-and-y-s (cddr vertices))
+  (do* ((vertices (car x-and-y-s) (cddr vertices))
         (x (car vertices)  (car vertices))
         (y (cadr vertices) (cadr vertices)))
     ((null y)

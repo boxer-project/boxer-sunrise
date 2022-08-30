@@ -20,6 +20,8 @@
                  ;; boxer
                  #-lispworks (:file "boxwin/libre/opengl")
 
+                 (:file "draw/draw-defs")
+
                  #+lispworks
                  (:module "draw-low-opengl-lispworks"
                   :depends-on ()
@@ -30,6 +32,8 @@
                                (:file "freetype-fonts")
                                (:file "draw-low-opengl")
                   ))
+
+                 (:file "draw-low-webgl/draw-low-webgl")
 
                  ;; Beginning of `DRAW` module
                  (:file "draw/draw-high-common")

@@ -33,6 +33,7 @@
 (ql:quickload :zpng)
 (ql:quickload :qbase64)
 (ql:quickload :html-entities)
+(ql:quickload :hunchensocket)
 
 (ql:quickload :alexandria)
 (ql:quickload :trivial-garbage)

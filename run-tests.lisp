@@ -23,6 +23,8 @@
 
 (ql:quickload :cffi)
 
+(ql:quickload :hunchensocket)
+
 (defvar *boxer-project-dir* (make-pathname :directory (pathname-directory *load-truename*)))
 
 (pushnew

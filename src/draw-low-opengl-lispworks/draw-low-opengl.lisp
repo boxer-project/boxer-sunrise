@@ -112,6 +112,8 @@
 ;;; Constants and Variables
 ;;;
 
+(defclass opengl-device (drawing-device) ())
+
 (defvar *boxer-frame* nil
   "This frame contains *turtle-pane* *boxer-pane* etc.")
 
@@ -335,6 +337,9 @@ OpenGL expects a list of X Y pairs"
   (opengl::rendering-on (pane) (opengl::gl-flush))
   (opengl::swap-buffers pane))
 
+(defmethod swap-buffers ((device opengl-device))
+  (%flush-port-buffer))
+
 (defun string-wid (font-no string)
   (let ((font (find-cached-font font-no)))
     (if (null font)
@@ -512,6 +517,9 @@ the window font (ie, draw-string) has to change it back for this to work.
 5/11/98 draw to baseline instead of top left"
   (bw::ogl-draw-char char x y))
 
+(defmethod add-cha ((device opengl-device) char x y)
+  (%draw-cha x y char))
+
 (defun %draw-circle (x y radius &optional filled?)
   (bw::opengl-draw-circle x y radius filled?))
 
@@ -538,6 +546,13 @@ It's not clear yet whether we'll need to re-implement this for the future."
       )
       (bw::ogl-draw-line x0 y0 x1 y1)))
 
+(defmethod add-line ((device opengl-device) x0 y0 x1 y1)
+  (%draw-line x0 y0 x1 y1))
+
+(defmethod add-lines ((device opengl-device) &rest x-and-y-s)
+  (bw::ogl-multiline2 (car x-and-y-s))
+)
+
 (defun %draw-point (x y)
   (bw::ogl-draw-point x y))
 
@@ -559,6 +574,9 @@ It's not clear yet whether we'll need to re-implement this for the future."
       (error "Can't find cached font for ~X" font)
       (bw::with-ogl-font (system-font)
                          (bw::ogl-draw-string string x y)))))
+
+(defmethod add-string ((device opengl-device) font string x y)
+  (%draw-string font string x y))
 
 (defun %bitblt-to-screen (wid hei from-array fx fy tx ty)
   ;; bw::gl-draw-pixels (w h
@@ -771,3 +789,12 @@ It's not clear yet whether we'll need to re-implement this for the future."
       )
     )
   ))
+
+(def-redisplay-initialization
+  ; (setf *drawing-device* (make-instance 'opengl-device))
+  (progn (setf *drawing-devices*
+           (list (make-instance 'opengl-device)
+                 (make-instance 'webgl-device)))
+         (setf *drawing-device* (make-instance 'multi-drawing-device)))
+
+  )

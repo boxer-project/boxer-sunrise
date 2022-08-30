@@ -132,7 +132,7 @@ scaled origin"
 (defun draw-cha (char x y)
   "Draw-cha needs to draw at the char's baseline rather than the top left corner.  In a
 multifont row, the common reference point will be the baseline instead of the top edge"
-  (%draw-cha x y char))
+  (add-cha *drawing-device* char x y))
 
 (defun draw-circle (x y radius &optional filled?)
   (%draw-circle x y radius filled?))
@@ -142,7 +142,10 @@ multifont row, the common reference point will be the baseline instead of the to
                     wid hei start-angle sweep-angle))
 
 (defun draw-line (x0 y0 x1 y1)
-  (%draw-line x0 y0 x1 y1))
+  (add-line *drawing-device* x0 y0 x1 y1))
+
+(defun multiline2 (&rest x-and-y-s)
+  (add-lines *drawing-device* x-and-y-s))
 
 (defun draw-point (x y)
   (%draw-point x y))
@@ -159,7 +162,7 @@ multifont row, the common reference point will be the baseline instead of the to
   (%erase-rectangle w h x y %drawing-window))
 
 (defun draw-string (font-no string region-x region-y)
-  (%draw-string font-no string region-x region-y))
+  (add-string *drawing-device* font-no string region-x region-y))
 
 
 (defun bitblt-to-screen (wid hei from-array from-x from-y to-x to-y)
@@ -170,7 +173,7 @@ multifont row, the common reference point will be the baseline instead of the to
 
 
 (defun swap-graphics-buffers (&optional (pane *boxer-pane*))
-  (%flush-port-buffer pane))
+  (swap-buffers *drawing-device*))
 
 ;;;
 ;;; Drawing operations to wrap Graphics List Playback to allow for varying performance

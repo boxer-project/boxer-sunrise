@@ -1,0 +1,101 @@
+<html>
+<head>
+    <script src="pixi.js"></script>
+</head>
+<body>
+    <!-- <h1>Hello Boxer</h1> -->
+    <ul id="output">
+
+    </ul>
+    <script>
+        let app = new PIXI.Application({
+  width: 256,
+  height: 256,
+  antialias: true,
+  transparent: false,
+  resolution: 1
+});
+document.body.appendChild(app.view);
+
+app.renderer.backgroundColor =   0xEEEEEE; //0x061639; //
+
+app.renderer.autoResize = true;
+app.renderer.resize(1000,1000);
+
+var lineGraphics = new PIXI.Graphics();
+lineGraphics.lineStyle(1, 0x000000, 1);
+// lineGraphics.moveTo(20,  20);
+// lineGraphics.lineTo(100, 100);
+app.stage.addChild(lineGraphics);
+
+var pixiStrings = [];
+
+var clearNext = false;
+window.onload = function () {
+
+    function receivedMessage(msg) {
+        if (clearNext) {
+            // document.getElementById("output").innerHTML = "";
+            lineGraphics.clear();
+            lineGraphics.lineStyle(1, 0x000000, 1);
+            for (var i = 0; i < pixiStrings.length; i++) {
+                pixiStrings[i].destroy();
+            }
+            pixiStrings = [];
+            clearNext = false;
+        }
+        let li = document.createElement("li");
+        li.textContent = msg.data;
+
+        // document.getElementById("output").appendChild(li);
+
+        var wow = JSON.parse(msg.data);
+        if (wow[0] === "line") {
+            lineGraphics.moveTo(wow[1], wow[2]);
+            lineGraphics.lineTo(wow[3], wow[4]);
+        }
+        else if (wow[0] === "string" || wow[0] === "cha") {
+            var message = new PIXI.Text(wow[1], {
+                fontSize: 16
+            });
+            message.position.set(wow[2], wow[3]);
+            app.stage.addChild(message);
+            pixiStrings.push(message)
+        }
+        else if (wow[0] === "swap") {
+        clearNext = true;
+        // animate();
+        }
+    }
+
+    const ws = new WebSocket("ws://localhost:12345/boxer");
+    ws.addEventListener('message', receivedMessage);
+
+    document.addEventListener('keydown', (event) => {
+        const keyName = event.key;
+        // alert(`Key pressed ${keyName} ${keyCode}`);
+        if (keyName === 'Control') {
+            return;
+        }
+        else {
+            if (event.ctrlKey) {
+                ws.send(`${keyName} Control`);
+            }
+            else {
+                ws.send(keyName);
+            }
+        }
+    })
+    // app.ticker.autoStart = false;
+    // app.ticker.stop();
+    // function animate(time) {
+    //     app.ticker.update(time);
+    //     app.renderer.render();
+    //     requestAnimateFrame(animate);
+    // }
+};
+
+    </script>
+
+</body>
+</html>
