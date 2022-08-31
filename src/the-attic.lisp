@@ -4031,6 +4031,54 @@ Modification History (most recent at top)
 ;;;; FILE: client.lisp
 ;;;;
 
+;;; Allocates an info struct for a NEW file box.
+;;; Fills whatever slots it can an then returns it.
+;;; NOTE: It does NOT write through to the server.  It assumes that
+;;; the caller will write out the slots to the server in some
+;;; bundled way.  Usually with Set-Box-And-Info
+
+(defun allocate-new-box-info (box)
+  (let ((new-info (make-server-box-info (or (box::getprop box :server-box-id)
+					    (get-new-bid (get-server)))
+					box))
+	(new-sup-bid (get-current-superior-bid box)))
+    (setf (sbi-superior-box-bid new-info) new-sup-bid)
+    (record-box-info new-info)
+    new-info))
+
+
+;;; Loading boxes from connections
+;; sgithens (break "This must not be called... it's a duplicate but in the boxnet package.")
+(defun load-binary-box-internal (bid &optional return-box)
+  (bw::with-mouse-cursor (:file-io)
+    (with-server (server)
+      (let ((box::*current-file-length* (get-box-size server bid)))
+	(unwind-protect
+	     (let ((box::*status-line-loading-format-string*
+		    (format nil "Loading Box ID ~D  ~~D (~~D %)" bid)))
+	       (unless (null boxer::*file-system-verbosity*)
+		 (box::status-line-display
+		  'box::loading-box
+		  (format nil "Loading ~D bytes from ~A for Box ~D"
+			  box::*current-file-length*
+			  (server-loading-string server)
+			  bid)))
+	       (multiple-value-bind (file-box info)
+		   (get-box-and-info server bid
+				     (and return-box
+					  (box-server-info return-box nil)))
+		 (if (null return-box)
+		     (setq return-box file-box)
+		     (box::initialize-box-from-box return-box file-box))
+		 ;; with the box, we can finish setting the slots in the info
+		 (setf (sbi-box info) return-box)
+		 (record-box-info info bid return-box)
+		 return-box))
+	  ;; Cleanup Forms
+	  (box::status-line-undisplay 'connection-error)
+	  (unless (null boxer::*file-system-verbosity*)
+	    (box::status-line-undisplay 'box::loading-box)))))))
+
 #|
 ;; this is called on a Port Target Translation Table prior to
 ;; dumping the table out.  It is (currently) the only way in
@@ -4404,6 +4452,54 @@ Modification History (most recent at top)
 	  (if (read-only-box? box)
 	      '("Changes made to this box will not be saved")
 	      '("Changes made to this box will be saved"))))))
+
+;; sgithens 2022-08-30 I don't think this is ever actually called...
+(defun file-box (box)
+  (let* ((info (or (box-server-info box nil) ; for boxes which have been filed
+		   (allocate-new-box-info box)))
+	 (bid (sbi-bid info)))
+    (when (not (box::storage-chunk? box))
+      ;; if the box is not already a storage chunk, make it one
+      (install-file-control-boxes box)
+      (mark-box-flags-as-file box))
+    (when (null (box::getprop box :server-box-id))
+      ;; the box may have been marked for storage but not saved out yet
+      (box::putprop box bid :server-box-id)
+      ;; If this is a new file box, we also need to save out the
+      ;; superior file box first in order to insure that there is
+      ;; a pointer to the new file box.  Otherwise a crash would
+      ;; orphan the new file box.  Also, the superior storage box
+      ;; may also be new (and therefore needs to be filed)
+      (let ((sup-box (superior-storage-box box t)))
+	(unless (null sup-box)
+	  (file-box sup-box)
+	  ;; make sure the superior's infs include the box we are filing
+	  ;; since the superior has already been filed, we know that
+	  ;; there should be an info
+	  (let ((sup-info (box-server-info sup-box)))
+	    (unless (member bid (sbi-inferiors sup-info) :test #'=)
+	      (push bid (sbi-inferiors sup-info))
+	      (set-bid-inferiors (sbi-bid sup-info)
+				 (sbi-inferiors sup-info)))))))
+    (bw::with-mouse-cursor (:file-io)
+      (with-bfs-standard-dumping-environment
+	  (set-box-and-info (get-server) bid box info)))
+    ;; finally, update the write date and other info
+    (refresh-box-bookkeeping box info)))
+
+;;; this must read in the box if the immediate inferiors are not
+;;; there yet...
+(defun unfile-box (box)
+  ;; read in the inferiors
+  (when (and (box::storage-chunk? box)
+	     (null (slot-value box 'box::first-inferior-row)))
+    (fill-box-from-server box))
+  ;; now unmark the box
+  (remove-file-control-boxes box)
+  (unmark-box-flags-as-file box)
+  ;; and queue for deletion from the server
+  (queue-for-server-deletion box))
+
 
 ;;;;
 ;;;; FILE: comdef.lisp
