@@ -924,62 +924,8 @@ Modification History (most recent at top)
 	   (push box *box-bid-delete-list*))
 	  (t (error "BID, ~A, is not a number" bid)))))
 
-;; should update the file-inferiors and possibly promote the
-;; cross file port target tables of the superior storage-chunk
-
-(defmethod storage-chunk-delete-self-action ((self box::box))
-  )
-
-(defmethod storage-chunk-insert-self-action ((self box::box))
-  )
 
 
 
-;;;; Box Server Primary Interface Functions
-;;;; to be used by Primitives and Editor Commands
-
-(defun mark-box-flags-as-file (box &optional
-			     (load-on-login? nil)
-			     (read-only? nil))
-  (setf (box::storage-chunk? box) t
-	;; setup some defaults...
-	(box::load-box-on-login? box) load-on-login?
-	(read-only-box? box) read-only?))
-
-(defun unmark-box-flags-as-file (box)
-  (setf (box::storage-chunk? box) nil
-	(box::load-box-on-login? box) nil
-	(read-only-box? box) nil
-	(box::copy-file? box) nil))
 
 
-(defun make-file-control-box (name current-value update-fn)
-  (let ((trigger (box::make-box `((,update-fn))
-				'box::doit-box
-				"Modified-Trigger"))
-	(interface-box (box::make-box `((,current-value))
-				      'box::data-box
-				      name)))
-    (box::add-closet-row interface-box (box::make-row `(,trigger)))
-    interface-box))
-
-
-(defun install-file-control-boxes (box)
-  (let ((closet (box::closet-row box nil)))
-    (unless (boxer-eval::lookup-static-variable-in-box-only box 'bu::load-on-login?)
-      (box::append-cha closet
-		       (make-file-control-box "Load-on-Login?"
-					      (if (box::load-box-on-login? box)
-						  "True" "False")
-					      "Update-Login-Action")))
-    (unless (boxer-eval::lookup-static-variable-in-box-only box 'bu::save-changes?)
-      (box::append-cha closet
-		       (make-file-control-box "Save-Changes?"
-					      (if (read-only-box? box)
-						  "False" "True")
-					      "Update-Save-Changes")))
-    box))
-
-(defun remove-file-control-boxes (box)
-  (declare (ignore box))
-  )
