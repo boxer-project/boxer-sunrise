@@ -77,16 +77,16 @@ Modification History (most recent at top)
 (defmethod add-subturtle ((self graphics-object) subturtle)
   (setf (superior-turtle subturtle) self)
   (set-assoc-graphics-box subturtle
-			  (slot-value self 'assoc-graphics-box))
+                          (slot-value self 'assoc-graphics-box))
   (unless (fast-memq subturtle (slot-value self 'subsprites))
     (setf (slot-value self 'subsprites)
-	  (cons subturtle (slot-value self 'subsprites)))))
+          (cons subturtle (slot-value self 'subsprites)))))
 
 (defmethod remove-subturtle ((self graphics-object) subturtle)
   (set-assoc-graphics-box subturtle nil)
   (setf (superior-turtle subturtle) nil)
   (setf (slot-value self 'subsprites)
-	(fast-delq subturtle (slot-value self 'subsprites))))
+        (fast-delq subturtle (slot-value self 'subsprites))))
 
 
 ;;; Methods that handle the connection of box-interfaces
@@ -94,34 +94,34 @@ Modification History (most recent at top)
 (defun install-interface-slot (interface box-name sprite-box)
   (setf (box-interface-sup-box interface) sprite-box)
   (let ((existing-box
-	 (boxer-eval::lookup-static-variable-in-box-only sprite-box box-name)))
+         (boxer-eval::lookup-static-variable-in-box-only sprite-box box-name)))
     (unless (null existing-box)
       (boxer-eval::remove-static-variable sprite-box box-name)
       (when (box? existing-box)
-	(setf (box-interface-box interface) existing-box)))
+        (setf (box-interface-box interface) existing-box)))
     (boxer-eval::add-static-variable-pair sprite-box box-name interface)))
 
 (defun uninstall-interface-slot (interface box-name sprite-box)
   (setf (box-interface-sup-box interface) nil)
   (cond ((box? (box-interface-box interface))
-	 (boxer-eval::remove-static-variable sprite-box box-name)
-	 (boxer-eval::add-static-variable-pair sprite-box box-name
-					 (box-interface-box interface)))))
+         (boxer-eval::remove-static-variable sprite-box box-name)
+         (boxer-eval::add-static-variable-pair sprite-box box-name
+                                         (box-interface-box interface)))))
 
 (defmethod all-interface-slots ((self graphics-object))
   (list 'x-position 'y-position))
 
 (defmethod link-interface-slots ((self graphics-object) sprite-box)
   (install-interface-slot (slot-value self 'x-position)
-			  'bu::x-position sprite-box)
+                          'bu::x-position sprite-box)
   (install-interface-slot (slot-value self 'y-position)
-			  'bu::y-position sprite-box))
+                          'bu::y-position sprite-box))
 
 (defmethod unlink-interface-slots ((self graphics-object) sprite-box)
   (uninstall-interface-slot (slot-value self 'x-position)
-			    'bu::x-position sprite-box)
+                            'bu::x-position sprite-box)
   (uninstall-interface-slot (slot-value self 'y-position)
-			    'bu::y-position sprite-box))
+                            'bu::y-position sprite-box))
 
 (defvar *default-graphics-object-interface-boxes* '(x-position y-position))
 
@@ -137,34 +137,34 @@ Modification History (most recent at top)
   (multiple-value-bind (default-in-box default-in-closet)
       (default-interface-boxes self)
     (values (if (eq *graphics-interface-boxes-in-box* ':default)
-		default-in-box
-		*graphics-interface-boxes-in-box*)
-	    (if (eq *graphics-interface-boxes-in-closet* ':default)
-		default-in-closet
-		*graphics-interface-boxes-in-closet*))))
+                default-in-box
+                *graphics-interface-boxes-in-box*)
+            (if (eq *graphics-interface-boxes-in-closet* ':default)
+                default-in-closet
+                *graphics-interface-boxes-in-closet*))))
 
 (defun link-box-into-interface (int box)
   (setf (box-interface-box int) box)
   (let ((value (box-interface-value int)))
     ;; change the box to conform to the current value of the slot
     (cond ((sv-box-interface? int)
-	   (funcall (special-box-interface-update-function int) int))
-	  (t
-	   (etypecase value
-	     (number (bash-box-to-number box value))
-	     (symbol (bash-box-to-single-value box value))
-	     (vector )
-	     (list (bash-box-to-list-value box value)))))
+           (funcall (special-box-interface-update-function int) int))
+          (t
+           (etypecase value
+             (number (bash-box-to-number box value))
+             (symbol (bash-box-to-single-value box value))
+             (vector )
+             (list (bash-box-to-list-value box value)))))
     ;; check if a trigger is there/is needed/needs to be installed
     (unless (boxer-eval::lookup-static-variable-in-box-only box
-						      'bu::modified-trigger)
+                                                      'bu::modified-trigger)
       (let ((closet? (slot-value box 'closets)))
-	(if (null closet?)
-	    (add-closet-row
-	     box (make-row `(,(make-sprite-instance-var-trigger
-			       (box-interface-slot-name int)))))
-	    (append-cha closet? (make-sprite-instance-var-trigger
-				 (box-interface-slot-name int))))))))
+        (if (null closet?)
+            (add-closet-row
+             box (make-row `(,(make-sprite-instance-var-trigger
+                               (box-interface-slot-name int)))))
+            (append-cha closet? (make-sprite-instance-var-trigger
+                                 (box-interface-slot-name int))))))))
 
 (defun unlink-box-interface (int)
   (setf (box-interface-box int) nil))
@@ -185,47 +185,47 @@ Modification History (most recent at top)
 (defmethod absolute-x-position ((self graphics-object))
   (let ((superior-turtle (slot-value self 'superior-turtle)))
     (if (null superior-turtle)
-	(box-interface-value (slot-value self 'x-position))
-	(let ((sup-heading (absolute-heading superior-turtle))
-	      (sup-xpos (absolute-x-position superior-turtle))
-	      (abs-size (absolute-size self)))
-	  (+ sup-xpos
-	     (* (cosd sup-heading)
-		(box-interface-value (slot-value self 'x-position))
-		abs-size)
-	     (* (sind sup-heading)
-		(box-interface-value (slot-value self 'y-position))
-		abs-size))))))
+        (box-interface-value (slot-value self 'x-position))
+        (let ((sup-heading (absolute-heading superior-turtle))
+              (sup-xpos (absolute-x-position superior-turtle))
+              (abs-size (absolute-size self)))
+          (+ sup-xpos
+             (* (cosd sup-heading)
+                (box-interface-value (slot-value self 'x-position))
+                abs-size)
+             (* (sind sup-heading)
+                (box-interface-value (slot-value self 'y-position))
+                abs-size))))))
 
 (defmethod make-absolute ((self graphics-object) xpos ypos)
   (let ((superior-turtle (slot-value self 'superior-turtle)))
     (if (null superior-turtle)
-	(values xpos ypos)
-	(let ((sup-heading (absolute-heading superior-turtle))
-	      (sup-xpos (absolute-x-position superior-turtle))
-	      (abs-size (absolute-size self))
-	      (sup-ypos (absolute-y-position superior-turtle)))
-	  (values (+ sup-xpos
-		     (* (cosd sup-heading) xpos abs-size)
-		     (* (sind sup-heading) ypos abs-size))
-		  (+ sup-ypos
-		     (* (- (sind sup-heading)) xpos abs-size)
-		     (* (cosd sup-heading) ypos abs-size)))))))
+        (values xpos ypos)
+        (let ((sup-heading (absolute-heading superior-turtle))
+              (sup-xpos (absolute-x-position superior-turtle))
+              (abs-size (absolute-size self))
+              (sup-ypos (absolute-y-position superior-turtle)))
+          (values (+ sup-xpos
+                     (* (cosd sup-heading) xpos abs-size)
+                     (* (sind sup-heading) ypos abs-size))
+                  (+ sup-ypos
+                     (* (- (sind sup-heading)) xpos abs-size)
+                     (* (cosd sup-heading) ypos abs-size)))))))
 
 (defmethod absolute-y-position ((self graphics-object))
   (let ((superior-turtle (slot-value self 'superior-turtle)))
     (if (null superior-turtle)
-	(box-interface-value (slot-value self 'y-position))
-	(let ((sup-heading (absolute-heading superior-turtle))
-	      (sup-ypos (absolute-y-position superior-turtle))
-	      (abs-size (absolute-size self)))
-	  (+ sup-ypos
-	     (* (- (sind sup-heading))
-		(box-interface-value (slot-value self 'x-position))
-		abs-size)
-	     (* (cosd sup-heading)
-		(box-interface-value (slot-value self 'y-position))
-		abs-size))))))
+        (box-interface-value (slot-value self 'y-position))
+        (let ((sup-heading (absolute-heading superior-turtle))
+              (sup-ypos (absolute-y-position superior-turtle))
+              (abs-size (absolute-size self)))
+          (+ sup-ypos
+             (* (- (sind sup-heading))
+                (box-interface-value (slot-value self 'x-position))
+                abs-size)
+             (* (cosd sup-heading)
+                (box-interface-value (slot-value self 'y-position))
+                abs-size))))))
 
 
 
@@ -245,11 +245,11 @@ Modification History (most recent at top)
     new-go))
 
 (defmethod copy-graphics-slots ((old-graphics-object graphics-object)
-				(new-graphics-object graphics-object))
+                                (new-graphics-object graphics-object))
   (setf (box-interface-value (slot-value new-graphics-object 'x-position))
-	(box-interface-value (slot-value old-graphics-object 'x-position)))
+        (box-interface-value (slot-value old-graphics-object 'x-position)))
   (setf (box-interface-value (slot-value new-graphics-object 'y-position))
-	(box-interface-value (slot-value old-graphics-object 'y-position))))
+        (box-interface-value (slot-value old-graphics-object 'y-position))))
 
 
 
@@ -298,19 +298,19 @@ Modification History (most recent at top)
 
 (defmethod draw ((self graphics-object))
   (error "You MUST define a DRAW method for the ~S class"
-	 (class-name (class-of self))))
+         (class-name (class-of self))))
 
 (defmethod fast-erase ((self graphics-object))
   (error "You MUST define a FAST-ERASE method for the ~S class"
-	 (class-name (class-of self))))
+         (class-name (class-of self))))
 
 (defmethod erase ((self graphics-object))
   (error "You MUST define a ERASE method for the ~S class"
-	 (class-name (class-of self))))
+         (class-name (class-of self))))
 
 (defmethod enclosing-rectangle ((self graphics-object))
   (error "You MUST define a ENCLOSING-RECTANGLE method for the ~S class"
-	 (class-name (class-of self))))
+         (class-name (class-of self))))
 
 
 
@@ -325,51 +325,51 @@ Modification History (most recent at top)
 (defun bash-box-to-single-value (box newvalue)
   (let ((value (convert-sprite-instance-symbol-value newvalue)))
     (cond ((null *evaluation-in-progress?*)
-	   (kill-box-contents box)
-	   (let ((new-row (make-initialized-row)))
-	     (fast-string-into-chas-array (string value)
-					  (chas-array new-row))
-	     (insert-row-at-row-no box new-row 0)
-	     (modified box)))
-	  (t
-	   (change-virtual-copy-rows box (list (make-evrow-from-entry value)))
-	   ;; handle the changes to the editor box
-	   (modify-editor-structure box t)))
+           (kill-box-contents box)
+           (let ((new-row (make-initialized-row)))
+             (fast-string-into-chas-array (string value)
+                                          (chas-array new-row))
+             (insert-row-at-row-no box new-row 0)
+             (modified box)))
+          (t
+           (change-virtual-copy-rows box (list (make-evrow-from-entry value)))
+           ;; handle the changes to the editor box
+           (modify-editor-structure box t)))
     value))
 
 (defvar *floating-point-box-printing-precision* 1000.)
 
 (defun bash-box-to-number (box value)
   (cond ((null *evaluation-in-progress?*)
-	 (kill-box-contents box)
-	 (let ((new-row (make-initialized-row)))
-	   (fast-string-into-chas-array (convert-number-to-string value)
-					(chas-array new-row))
-	   (insert-row-at-row-no box new-row 0)
-	   (modified box)))
-	(t
-	 (change-virtual-copy-rows box (list (make-evrow-from-entry value)))
-	 ;; handle the changes to the editor box
-	 (modify-editor-structure box t)))
+         (kill-box-contents box)
+         (let ((new-row (make-initialized-row)))
+           (fast-string-into-chas-array (convert-number-to-string value)
+                                        (chas-array new-row))
+           (insert-row-at-row-no box new-row 0)
+           (modified box)))
+        (t
+         (change-virtual-copy-rows box (list (make-evrow-from-entry value)))
+         ;; handle the changes to the editor box
+         (modify-editor-structure box t)))
   value)
 
 (defun bash-box-to-list-value (box value)
   (cond ((null *evaluation-in-progress?*)
-	 (kill-box-contents box)
-	 (let* ((new-row (make-initialized-row))
-		(chas-array (chas-array new-row)))
-	   (dolist (item value)
-	     (print-thing-into-chas-array item new-row chas-array)
-	     (fast-chas-array-append-cha chas-array #\space))
-	   (insert-row-at-row-no box new-row 0)
-	   (modified box)))
-	(t
-	 (change-virtual-copy-rows box
-				   (list (make-evrow :pointers
-						     (mapcar #'make-pointer
-							     value))))
-	 ;; handle the changes to the editor box
-	 (modify-editor-structure box t)))
+         (kill-box-contents box)
+         (let* ((new-row (make-initialized-row))
+                (chas-array (chas-array new-row)))
+           (dolist (item value)
+             (print-thing-into-chas-array item new-row chas-array)
+             (fast-chas-array-append-cha chas-array #\space))
+           (insert-row-at-row-no box new-row 0)
+           (modified box)))
+        (t
+         (change-virtual-copy-rows box
+                                   (list (make-evrow :pointers
+                                                     (mapcar #'make-pointer
+                                                             value))))
+         ;; handle the changes to the editor box
+         (modify-editor-structure box t)))
   value)
 
 
@@ -379,27 +379,27 @@ Modification History (most recent at top)
 
 (defmethod set-x-position ((self graphics-object) new-value)
   (let* ((x-slot (slot-value self 'x-position))
-	 (box (box-interface-box x-slot)))
+         (box (box-interface-box x-slot)))
     (when (not-null box)
       (bash-box-to-number box new-value))
     (setf (box-interface-value x-slot) new-value)))
 
 (defmethod set-y-position ((self graphics-object) new-value)
   (let* ((y-slot (slot-value self 'y-position))
-	 (box (box-interface-box y-slot)))
+         (box (box-interface-box y-slot)))
     (when (not-null box)
       (bash-box-to-number box new-value))
     (setf (box-interface-value y-slot) new-value)))
 
 (defmethod set-xy ((self graphics-object) new-x new-y
-		   &optional dont-update-box)
+                   &optional dont-update-box)
   (let* ((x-slot (slot-value self 'x-position))
-	 (box (box-interface-box x-slot)))
+         (box (box-interface-box x-slot)))
     (when (and (null dont-update-box) (not-null box))
       (bash-box-to-number box new-x))
     (setf (box-interface-value x-slot) new-x))
   (let* ((y-slot (slot-value self 'y-position))
-	 (box (box-interface-box y-slot)))
+         (box (box-interface-box y-slot)))
     (when (and (null dont-update-box) (not-null box))
       (bash-box-to-number box new-y))
     (setf (box-interface-value y-slot) new-y)))
@@ -427,41 +427,41 @@ Modification History (most recent at top)
 ;;;; Intersection Routines
 
 (defun update-turtle-window-extents (window-shape turtle
-						  &optional
-						  (array-x 0) (array-y 0))
+                                                  &optional
+                                                  (array-x 0) (array-y 0))
   (let ((min-x array-x) (min-y array-y) (max-x array-x) (max-y array-y)
-	(visible? (shown? turtle)))
+        (visible? (shown? turtle)))
     (unless (eq visible? ':subsprites)
       (with-graphics-state-bound
         (do-vector-contents (gc window-shape)
-	  (multiple-value-bind (gc-min-x gc-min-y gc-max-x gc-max-y
-				         state-change?)
-	                       (graphics-command-extents gc)
-	    (unless state-change?
-	      (setq min-x (min gc-min-x min-x)
-		    min-y (min gc-min-y min-y)
-		    max-x (max gc-max-x max-x)
-		    max-y (max gc-max-y max-y)))))))
+          (multiple-value-bind (gc-min-x gc-min-y gc-max-x gc-max-y
+                                         state-change?)
+                               (graphics-command-extents gc)
+            (unless state-change?
+              (setq min-x (min gc-min-x min-x)
+                    min-y (min gc-min-y min-y)
+                    max-x (max gc-max-x max-x)
+                    max-y (max gc-max-y max-y)))))))
     (unless (eq visible? ':no-subsprites)
       (dolist (subs (slot-value turtle 'subsprites))
-	(when (absolute-shown? subs)
-	  (multiple-value-bind (sub-min-x sub-min-y sub-max-x sub-max-y)
-	    (enclosing-rectangle subs)
-	    (setq min-x (min min-x sub-min-x)
-		  min-y (min min-y sub-min-y)
-		  max-x (max max-x sub-max-x)
-		  max-y (max max-y sub-max-y))))))
+        (when (absolute-shown? subs)
+          (multiple-value-bind (sub-min-x sub-min-y sub-max-x sub-max-y)
+            (enclosing-rectangle subs)
+            (setq min-x (min min-x sub-min-x)
+                  min-y (min min-y sub-min-y)
+                  max-x (max max-x sub-max-x)
+                  max-y (max max-y sub-max-y))))))
     (setf (turtle-window-shape-min-graphics-x-extent window-shape) min-x
-	  (turtle-window-shape-min-graphics-y-extent window-shape) min-y
-	  (turtle-window-shape-max-graphics-x-extent window-shape) max-x
-	  (turtle-window-shape-max-graphics-y-extent window-shape) max-y)
+          (turtle-window-shape-min-graphics-y-extent window-shape) min-y
+          (turtle-window-shape-max-graphics-x-extent window-shape) max-x
+          (turtle-window-shape-max-graphics-y-extent window-shape) max-y)
     (values min-x min-y max-x max-y)))
 
 (defmethod touching? ((self graphics-object) other-turtle)
   (multiple-value-bind (left1 top1 right1 bottom1)
       (enclosing-rectangle self)
     (multiple-value-bind (left2 top2 right2 bottom2)
-	(enclosing-rectangle other-turtle)
+        (enclosing-rectangle other-turtle)
       (flet ((horiz-touch? ()
                (or (inclusive-between? left1 left2 right2)
                    (inclusive-between? right1 left2 right2)
@@ -476,11 +476,11 @@ Modification History (most recent at top)
 
 (defmethod all-sprites-in-contact ((self graphics-object))
   (let ((objects (graphics-object-list (slot-value self 'assoc-graphics-box)))
-	turtles)
+        turtles)
     (setq objects (fast-delq (top-sprite self) (copy-seq objects)))
     (dolist (object objects)
       (when (touching? self object)
-	(setq turtles (cons object turtles))))
+        (setq turtles (cons object turtles))))
     turtles))
 
 
@@ -489,21 +489,21 @@ Modification History (most recent at top)
 
 (defmethod turtle-distance ((self graphics-object) x y)
   (let ((x-diff (- (x-position self) x))
-	(y-diff (- (y-position self) y)))
+        (y-diff (- (y-position self) y)))
     (sqrt (+ (* x-diff x-diff) (* y-diff y-diff)))))
 
 (defun calc-name-position-x (length left right)
   (setq left (array-coordinate-x left)
-	right (array-coordinate-x right))
+        right (array-coordinate-x right))
   (if (> (+ right length) %drawing-width)
       (fixr (- left length 3.))
       (fixr (+ right 5.))))
 
 (defun calc-name-position-y (height top bottom)
   (let ((center (+ (array-coordinate-y top)
-		   (/ (- top bottom) 2))))
+                   (/ (- top bottom) 2))))
     (fixr (min (max center 0)
-	       (- %drawing-height height 1.)))))
+               (- %drawing-height height 1.)))))
 
 ;;; Drawing the turtle's name
 
@@ -512,88 +512,88 @@ CLOSED for renovations until I fix the string/font situation
 
 (defmethod flash-name ((self turtle))
     (let* ((print-name (name sprite-box))
-	   (name-length (sting-wid ))) ;;; fix this
+           (name-length (sting-wid ))) ;;; fix this
       (multiple-value-bind (left top right bottom)
-	  (enclosing-rectangle self)
-	(let ((x-pos (calc-name-position-x name-length left RIGHT))
-	      (Y-POS (CALC-NAME-POSITION-Y *FONT-HEIGHT* TOP BOTTOM)))
-	  (DRAW-STRING-TO-GBOX PRINT-NAME X-POS Y-POS)
-	  (PROCESS-SLEEP 120 "Pausing to flash name")
-	  (DRAW-STRING-TO-GBOX PRINT-NAME X-POS Y-POS)))))
+          (enclosing-rectangle self)
+        (let ((x-pos (calc-name-position-x name-length left RIGHT))
+              (Y-POS (CALC-NAME-POSITION-Y *FONT-HEIGHT* TOP BOTTOM)))
+          (DRAW-STRING-TO-GBOX PRINT-NAME X-POS Y-POS)
+          (PROCESS-SLEEP 120 "Pausing to flash name")
+          (DRAW-STRING-TO-GBOX PRINT-NAME X-POS Y-POS)))))
 
 |#
 
 
 (defmethod move-to ((self graphics-object) x-dest y-dest
-		    &optional dont-update-box)
+                    &optional dont-update-box)
   (let ((x-position (slot-value self 'x-position))
-	(y-position (slot-value self 'y-position))
-	(pen-alu (get-alu-from-pen (pen self))))
+        (y-position (slot-value self 'y-position))
+        (pen-alu (get-alu-from-pen (pen self))))
     (cond  ((not (and (numberp x-dest) (numberp y-dest)))
-	    (error "one of the args, ~s or ~s, was not a number"
-		   x-dest y-dest))
-	   (t
-	    (unless (typep x-dest 'boxer-float)
-	      (setq x-dest (coerce x-dest 'boxer-float)))
-	    (unless (typep y-dest 'boxer-float)
-	      (setq y-dest (coerce y-dest 'boxer-float)))
-	    (cond ((not (null %learning-shape?))
-		   ;; don't draw while learning shape.
-		   (unless (null pen-alu)
-		     (record-boxer-graphics-command-line-segment
-		      (box-interface-value x-position)
-		      (box-interface-value y-position)
-		      x-dest y-dest))
-		   ;; While in learning-shape, don't update any boxes
-		   (setf (box-interface-value x-position) x-dest)
-		   (setf (box-interface-value y-position) y-dest))
-		  ;; Have to make fence mode work some other time
+            (error "one of the args, ~s or ~s, was not a number"
+                   x-dest y-dest))
+           (t
+            (unless (typep x-dest 'boxer-float)
+              (setq x-dest (coerce x-dest 'boxer-float)))
+            (unless (typep y-dest 'boxer-float)
+              (setq y-dest (coerce y-dest 'boxer-float)))
+            (cond ((not (null %learning-shape?))
+                   ;; don't draw while learning shape.
+                   (unless (null pen-alu)
+                     (record-boxer-graphics-command-line-segment
+                      (box-interface-value x-position)
+                      (box-interface-value y-position)
+                      x-dest y-dest))
+                   ;; While in learning-shape, don't update any boxes
+                   (setf (box-interface-value x-position) x-dest)
+                   (setf (box-interface-value y-position) y-dest))
+                  ;; Have to make fence mode work some other time
 ;		  ((and (eq %draw-mode ':fence)
 ;			(not (point-in-array? array-x-dest array-y-dest)))
 ;		   (error "you hit the fence"))
-		  (t
-		   (cond ((no-graphics?)
-			  ;; this means we can't even do any wrapping
-			  ;; calculations, so just set values
-			  (set-xy self x-dest y-dest dont-update-box))
-			 (t
-			  (multiple-value-bind (array-x-dest array-y-dest)
-			      (make-absolute self x-dest y-dest)
-			    (setq array-x-dest (fix-array-coordinate-x
-						array-x-dest)
-				  array-y-dest (fix-array-coordinate-y
-						array-y-dest))
-			    (let ((array-x (fix-array-coordinate-x
-					    (absolute-x-position self)))
-				  (array-y (fix-array-coordinate-y
-					    (absolute-y-position self))))
-			      (without-interrupts
-			       (when (and (null (slot-value self
-							    'superior-turtle))
-					  (eq %draw-mode ':wrap))
-				 (setq x-dest (wrap-x-coordinate x-dest)
-				       y-dest (wrap-y-coordinate y-dest)))
-			       ;; this may have to change...
-			       (cond ( %mouse-usurped
-				      ;; don't update boxes during follow-mouse
-				      (setf (box-interface-value x-position)
-					    x-dest)
-				      (setf (box-interface-value y-position)
-					    y-dest))
-				     (t
-				      (set-xy self x-dest y-dest
-					      dont-update-box)))
-			       (when (and (not (null pen-alu))
-					  (not (zerop (pen-width self))))
-				 (record-boxer-graphics-command-line-segment
-				  array-x array-y array-x-dest array-y-dest)
+                  (t
+                   (cond ((no-graphics?)
+                          ;; this means we can't even do any wrapping
+                          ;; calculations, so just set values
+                          (set-xy self x-dest y-dest dont-update-box))
+                         (t
+                          (multiple-value-bind (array-x-dest array-y-dest)
+                              (make-absolute self x-dest y-dest)
+                            (setq array-x-dest (fix-array-coordinate-x
+                                                array-x-dest)
+                                  array-y-dest (fix-array-coordinate-y
+                                                array-y-dest))
+                            (let ((array-x (fix-array-coordinate-x
+                                            (absolute-x-position self)))
+                                  (array-y (fix-array-coordinate-y
+                                            (absolute-y-position self))))
+                              (without-interrupts
+                               (when (and (null (slot-value self
+                                                            'superior-turtle))
+                                          (eq %draw-mode ':wrap))
+                                 (setq x-dest (wrap-x-coordinate x-dest)
+                                       y-dest (wrap-y-coordinate y-dest)))
+                               ;; this may have to change...
+                               (cond ( %mouse-usurped
+                                      ;; don't update boxes during follow-mouse
+                                      (setf (box-interface-value x-position)
+                                            x-dest)
+                                      (setf (box-interface-value y-position)
+                                            y-dest))
+                                     (t
+                                      (set-xy self x-dest y-dest
+                                              dont-update-box)))
+                               (when (and (not (null pen-alu))
+                                          (not (zerop (pen-width self))))
+                                 (record-boxer-graphics-command-line-segment
+                                  array-x array-y array-x-dest array-y-dest)
                                  #-opengl
-				 (with-graphics-screen-parameters
-				     (line-segment array-x array-y
-						   array-x-dest array-y-dest))))
-			      ;; invalidate the shape and extent caches
-			      (invalidate-window-shape-and-extent-caches
-			       self)))))))))))
+                                 (with-graphics-screen-parameters
+                                     (line-segment array-x array-y
+                                                   array-x-dest array-y-dest))))
+                              ;; invalidate the shape and extent caches
+                              (invalidate-window-shape-and-extent-caches
+                               self)))))))))))
 
 
 ;;;;;;;; Graphics BUTTON methods
@@ -602,12 +602,12 @@ CLOSED for renovations until I fix the string/font situation
   init-plist ;; (declare (ignore init-plist)) doesn't work
   (shared-initialize self t)
   (let ((new-shape (copy-graphics-command-list
-		    *default-graphics-object-shape*)))
+                    *default-graphics-object-shape*)))
     (setf (slot-value self 'shape)
-	  (%make-sv-box-interface new-shape 'shape nil 'shape-box-updater))
+          (%make-sv-box-interface new-shape 'shape nil 'shape-box-updater))
     ;; the window shape is is used as a graphics cache
     (setf (slot-value self 'window-shape)
-	  (make-turtle-window-shape new-shape)))
+          (make-turtle-window-shape new-shape)))
   self)
 
 (defmethod shape ((self button))
@@ -622,18 +622,18 @@ CLOSED for renovations until I fix the string/font situation
 (defmethod link-interface-slots ((self button) sprite-box)
   (call-next-method)
   (install-interface-slot (slot-value self 'shape)
-			  'bu::shape sprite-box))
+                          'bu::shape sprite-box))
 
 (defmethod unlink-interface-slots ((self button) sprite-box)
   (call-next-method)
   (uninstall-interface-slot (slot-value self 'shape)
-			    'bu::shape sprite-box))
+                            'bu::shape sprite-box))
 
 (defmethod copy-graphics-slots ((old-button button) (new-button button))
   (call-next-method)
   (setf (box-interface-value (slot-value new-button 'shape))
-	(copy-graphics-command-list
-	 (box-interface-value (slot-value old-button 'shape))))
+        (copy-graphics-command-list
+         (box-interface-value (slot-value old-button 'shape))))
   (update-window-shape-allocation new-button))
 
 
@@ -659,19 +659,19 @@ CLOSED for renovations until I fix the string/font situation
 
 (defmethod update-window-shape-allocation ((self button))
   (let ((window-shape (slot-value self 'window-shape))
-	(shape (box-interface-value (slot-value self 'shape))))
+        (shape (box-interface-value (slot-value self 'shape))))
     (unless (null window-shape)
       (clear-graphics-list window-shape))
     (do-vector-contents (gc shape)
       (sv-append window-shape (allocate-boxer->window-command gc)))))
 
 (defun update-window-shape (shape window-shape
-				  trans-x trans-y cos-scale sin-scale scale)
+                                  trans-x trans-y cos-scale sin-scale scale)
   (do-vector-contents (turtle-graphics-command shape :index-var-name idx)
     (translate-boxer->window-command turtle-graphics-command
-				     (sv-nth idx window-shape)
-				     trans-x trans-y cos-scale sin-scale
-				     scale))
+                                     (sv-nth idx window-shape)
+                                     trans-x trans-y cos-scale sin-scale
+                                     scale))
   (setf (turtle-window-shape-valid window-shape) t))
 
 ;;; When a window shape is invalidated, we have to recurse through the
@@ -679,10 +679,10 @@ CLOSED for renovations until I fix the string/font situation
 
 (defmethod invalidate-window-shape-and-extent-caches ((self button))
   (setf (turtle-window-shape-valid (slot-value self 'window-shape))
-	nil
-	(turtle-window-shape-min-graphics-x-extent
-	 (slot-value self 'window-shape))
-	nil)
+        nil
+        (turtle-window-shape-min-graphics-x-extent
+         (slot-value self 'window-shape))
+        nil)
   ;; now recurse
   (dolist (ss (slot-value self 'subsprites))
     (invalidate-window-shape-and-extent-caches ss)))
@@ -693,27 +693,27 @@ CLOSED for renovations until I fix the string/font situation
 (defmethod draw ((self button))
   (unless (or (eq self *current-active-sprite*) (null (shown? self)))
     (let (;(*supress-graphics-recording?* (not stamp?))
-	  (ahead (absolute-heading self))
-	  (asize (absolute-size self)))
+          (ahead (absolute-heading self))
+          (asize (absolute-size self)))
       ;; update the turtle-window-shape
       (unless (turtle-window-shape-valid (slot-value self 'window-shape))
-	;; minimal error checking...
-	(unless (= (storage-vector-active-length
-		    (box-interface-value (slot-value self 'shape)))
-		   (storage-vector-active-length (slot-value self
-							     'window-shape)))
-	  (warn "The shape and the window-shape are out of synch, fixing...")
-	  (update-window-shape-allocation self))
-	(update-window-shape (box-interface-value (slot-value self 'shape))
-			     (slot-value self 'window-shape)
-			     (absolute-x-position self)
-			     (absolute-y-position self)
-			     (* (cosd ahead) asize) (* (sind ahead) asize)
-			     asize))
+        ;; minimal error checking...
+        (unless (= (storage-vector-active-length
+                    (box-interface-value (slot-value self 'shape)))
+                   (storage-vector-active-length (slot-value self
+                                                             'window-shape)))
+          (warn "The shape and the window-shape are out of synch, fixing...")
+          (update-window-shape-allocation self))
+        (update-window-shape (box-interface-value (slot-value self 'shape))
+                             (slot-value self 'window-shape)
+                             (absolute-x-position self)
+                             (absolute-y-position self)
+                             (* (cosd ahead) asize) (* (sind ahead) asize)
+                             asize))
       (playback-graphics-list-internal (slot-value self 'window-shape))
       (unless (eq (shown? self) ':no-subsprites)
-	(dolist (subs (slot-value self 'subsprites))
-	  (draw subs))))))
+        (dolist (subs (slot-value self 'subsprites))
+          (draw subs))))))
 
 ;;; like draw but without the actual drawing
 (defmethod draw-update ((self button))
@@ -767,41 +767,41 @@ CLOSED for renovations until I fix the string/font situation
   (let ((ws (slot-value self 'window-shape)))
     (unless (turtle-window-shape-valid ws)
       (when *boxer-system-hacker*
-	(warn "Updating window shape inside of ENCLOSING-RECTANGLE"))
+        (warn "Updating window shape inside of ENCLOSING-RECTANGLE"))
       (let ((ahead (absolute-heading self))
-	    (asize (absolute-size self)))
-	(unless (= (storage-vector-active-length
-		    (box-interface-value (slot-value self 'shape)))
-		   (storage-vector-active-length (slot-value self
-							     'window-shape)))
-	  (warn "The shape and the window-shape are out of synch, fixing...")
-	  (update-window-shape-allocation self))
-	(update-window-shape (box-interface-value (slot-value self 'shape))
-			     ws
-			     (absolute-x-position self)
-			     (absolute-y-position self)
-			     (* (cosd ahead) asize) (* (sind ahead) asize)
-			     asize)))
+            (asize (absolute-size self)))
+        (unless (= (storage-vector-active-length
+                    (box-interface-value (slot-value self 'shape)))
+                   (storage-vector-active-length (slot-value self
+                                                             'window-shape)))
+          (warn "The shape and the window-shape are out of synch, fixing...")
+          (update-window-shape-allocation self))
+        (update-window-shape (box-interface-value (slot-value self 'shape))
+                             ws
+                             (absolute-x-position self)
+                             (absolute-y-position self)
+                             (* (cosd ahead) asize) (* (sind ahead) asize)
+                             asize)))
     ;; now fill the extents slots if needed
     (when (null (turtle-window-shape-min-graphics-x-extent ws))
       (update-turtle-window-extents ws self
-				    ;; ?? is this neccesary ??
-				    (fix-array-coordinate-x
-				     (absolute-x-position self))
-				    (fix-array-coordinate-y
-				     (absolute-y-position self))))
+                                    ;; ?? is this neccesary ??
+                                    (fix-array-coordinate-x
+                                     (absolute-x-position self))
+                                    (fix-array-coordinate-y
+                                     (absolute-y-position self))))
     ;; finally return the values
     (values (turtle-window-shape-min-graphics-x-extent ws)
-	    (turtle-window-shape-min-graphics-y-extent ws)
-	    (turtle-window-shape-max-graphics-x-extent ws)
-	    (turtle-window-shape-max-graphics-y-extent ws))))
+            (turtle-window-shape-min-graphics-y-extent ws)
+            (turtle-window-shape-max-graphics-x-extent ws)
+            (turtle-window-shape-max-graphics-y-extent ws))))
 
 (defun enclosing-sprite-coords (sprite)
   (multiple-value-bind (left top right bottom)
       (enclosing-rectangle sprite)
     (unless (no-graphics?)
       (values (user-coordinate-x left)  (user-coordinate-y top)
-	      (user-coordinate-x right) (user-coordinate-y bottom)))))
+              (user-coordinate-x right) (user-coordinate-y bottom)))))
 
 ;;; returns either NIL or the lowest sprite that contains the point
 (defmethod sprite-at-window-point ((self button) window-x window-y)
@@ -809,39 +809,39 @@ CLOSED for renovations until I fix the string/font situation
   (let ((ws (slot-value self 'window-shape)))
     (unless (turtle-window-shape-valid ws)
       (when *boxer-system-hacker*
-	(warn "Updating window shape inside of ENCLOSING-RECTANGLE"))
+        (warn "Updating window shape inside of ENCLOSING-RECTANGLE"))
       (let ((ahead (absolute-heading self))
-	    (asize (absolute-size self)))
-	(unless (= (storage-vector-active-length
-		    (box-interface-value (slot-value self 'shape)))
-		   (storage-vector-active-length (slot-value self
-							     'window-shape)))
-	  (warn "The shape and the window-shape are out of synch, fixing...")
-	  (update-window-shape-allocation self))
-	(update-window-shape (box-interface-value (slot-value self 'shape))
-			     ws
-			     (absolute-x-position self)
-			     (absolute-y-position self)
-			     (* (cosd ahead) asize) (* (sind ahead) asize)
-			     asize)))
+            (asize (absolute-size self)))
+        (unless (= (storage-vector-active-length
+                    (box-interface-value (slot-value self 'shape)))
+                   (storage-vector-active-length (slot-value self
+                                                             'window-shape)))
+          (warn "The shape and the window-shape are out of synch, fixing...")
+          (update-window-shape-allocation self))
+        (update-window-shape (box-interface-value (slot-value self 'shape))
+                             ws
+                             (absolute-x-position self)
+                             (absolute-y-position self)
+                             (* (cosd ahead) asize) (* (sind ahead) asize)
+                             asize)))
     ;; now fill the extents slots if needed
     (when (null (turtle-window-shape-min-graphics-x-extent ws))
       (update-turtle-window-extents ws self
-				    ;; ?? is this neccesary ??
-				    (fix-array-coordinate-x
-				     (absolute-x-position self))
-				    (fix-array-coordinate-y
-				     (absolute-y-position self))))
+                                    ;; ?? is this neccesary ??
+                                    (fix-array-coordinate-x
+                                     (absolute-x-position self))
+                                    (fix-array-coordinate-y
+                                     (absolute-y-position self))))
     ;; now we can use the cache values
     (when (and (<= (turtle-window-shape-min-graphics-x-extent ws)
-		    window-x
-		    (turtle-window-shape-max-graphics-x-extent ws))
-	       (<= (turtle-window-shape-min-graphics-y-extent ws)
-		    window-y
-		    (turtle-window-shape-max-graphics-y-extent ws)))
+                    window-x
+                    (turtle-window-shape-max-graphics-x-extent ws))
+               (<= (turtle-window-shape-min-graphics-y-extent ws)
+                    window-y
+                    (turtle-window-shape-max-graphics-y-extent ws)))
       ;; the point is within the sprite, now check any subsprites
       (or (dolist (sub (slot-value self 'subsprites))
-	    (let ((under? (sprite-at-window-point sub window-x window-y)))
-	      (when (not (null under?))
-		(return under?))))
-	  self))))
+            (let ((under? (sprite-at-window-point sub window-x window-y)))
+              (when (not (null under?))
+                (return under?))))
+          self))))
