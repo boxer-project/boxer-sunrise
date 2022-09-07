@@ -142,6 +142,8 @@
                  ;; Beginning of `STEPPER` module
                  ;; "The Movie Stepper"
                  (:file "stepper/stepper")
+                 (:file "stepper/stepper-eval")
+
                  ;; Beginning of `FILESYSTEM` module
                  ;; "Saving and Restoring Boxes To/From Files"
                  (:file "filesystem/dumper")
