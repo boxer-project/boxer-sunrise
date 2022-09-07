@@ -4405,6 +4405,44 @@ Modification History (most recent at top)
   (bw::with-mouse-cursor (:file-io)
     (dump-hierarchical-box-internal box bid file-attribute-list)))
 
+
+
+(defun fake-file-superior? (info)
+  (let* ((sup-bid (unless (null info) (sbi-superior-box-bid info)))
+         (sup-file-box (unless (null sup-bid) (bid-box sup-bid))))
+    (unless (null sup-file-box)
+      (boxer::fake-file-box sup-file-box))))
+
+(defun queue-for-server-deletion (box)
+  (let* ((info (box-server-info box nil))
+         (bid (if (null info)
+                  (box::getprop box :server-box-id)
+                  (sbi-bid info))))
+    (cond ((null bid))
+          ((box::superior? box box::*initial-box*)
+           (warn "~A is still connected to the hierarchy" box))
+          ((and info
+                ;; Watch out for inferiors of Read Only and Foreign Boxes
+                (or (and (foreign-world-server? (sbi-server info))
+                         (fake-file-superior? box))
+                    (not (writeable-server? (sbi-server info)))
+                    ;; if any superior is read-only, then don't delete
+                    (do ((fbox box
+                               ;; can't walk up box structure since it has
+                               ;; already been severed
+                               (let* ((info (box-server-info fbox))
+                                      (sup-bid (unless (null info)
+                                                 (sbi-superior-box-bid info))))
+                                 (and sup-bid (bid-box sup-bid)))))
+                        ((not (box? fbox)) nil)
+                      (when (read-only-box? fbox) (return T))))))
+          ((box::fast-memq box *box-bid-delete-list*))
+          ((numberp bid)
+           (unless (null box::*boxer-system-hacker*)
+             (format t "~%Queueing ~A (~D, #x~X)" box bid bid))
+           (push box *box-bid-delete-list*))
+          (t (error "BID, ~A, is not a number" bid)))))
+
 (defun update-file-control-interface (interface-symbol box value)
   (let ((int-box (boxer-eval::lookup-static-variable-in-box-only box
 							   interface-symbol)))
