@@ -7373,6 +7373,18 @@ if it is out of bounds
 ;;;; FILE: dumper.lisp
 ;;;;
 
+;; sgithens 2022-09-03 I believe this version was only used in the old bfs server setup
+(defun dump-top-level-box-to-stream (box stream
+                                         &optional stream-attribute-list)
+  (let ((dps (getprop box :dump-properties)))
+    (unless (null dps)
+      (setq stream-attribute-list (append stream-attribute-list dps))))
+  (unless (getf stream-attribute-list :package)
+    (setf (getf stream-attribute-list :package) ':boxer))
+  (writing-bin-stream (box stream)
+                      (dump-attribute-list stream-attribute-list stream)
+                      (dump-self box stream)))
+
 
 
 ;;;;;;;; THESE Comments are Obsolete !!!!!!!!!!!!!

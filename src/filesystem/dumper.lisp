@@ -102,17 +102,6 @@ Modification History (most recent at the top)
                       (dump-box box stream))
     ))
 
-(defun dump-top-level-box-to-stream (box stream
-                                         &optional stream-attribute-list)
-  (let ((dps (getprop box :dump-properties)))
-    (unless (null dps)
-      (setq stream-attribute-list (append stream-attribute-list dps))))
-  (unless (getf stream-attribute-list :package)
-    (setf (getf stream-attribute-list :package) ':boxer))
-  (writing-bin-stream (box stream)
-                      (dump-attribute-list stream-attribute-list stream)
-                      (dump-self box stream)))
-
 (defun start-bin-file (stream)
   (clrhash *bin-dump-table*)
   (write-file-word bin-op-format-version stream)
