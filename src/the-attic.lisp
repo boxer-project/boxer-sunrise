@@ -2886,6 +2886,10 @@ Modification History (most recent at top)
 ;;;; FILE: boxdef.lisp
 ;;;;
 
+(DEFVAR *REDISPLAY-CLUES* NIL
+  "A list of redisplay-clues. This are hints left behind by the editor
+   to help the redisplay code figure out what is going on.")
+
 (defun boxer::valid-boxer-license? () t)
 
 ;;
@@ -6265,6 +6269,17 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: disply.lisp
 ;;;;
+
+(DEFUN REDISPLAY-CLUE (TYPE &REST ARGS)
+       (LET ((HANDLER (GET TYPE ':REDISPLAY-CLUE)))
+            (IF (NOT-NULL HANDLER)
+                (APPLY HANDLER TYPE ARGS)
+                (BARF "~S is an unknown type of redisplay-clue." TYPE))))
+
+(setf (get ':clear-screen ':redisplay-clue)
+      #'(lambda (&rest ignore)
+                (declare (ignore ignore))
+                (push '(:clear-screen) *redisplay-clues*)))
 
 ;; sgithens 2022-04-25 These are only calling a stub function, and hopefully can be done
 ;; in a less complex fashion...

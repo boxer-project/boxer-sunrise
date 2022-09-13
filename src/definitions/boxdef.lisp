@@ -210,10 +210,6 @@ Modification History (most recent at top)
    being redisplayed's outermost-screen-box. This is the screen box which
    represents that window outermost-box.")
 
-(DEFVAR *REDISPLAY-CLUES* NIL
-  "A list of redisplay-clues. This are hints left behind by the editor
-   to help the redisplay code figure out what is going on.")
-
 (DEFVAR *SPACE-AROUND-OUTERMOST-SCREEN-BOX* #-mcl 9.  #+mcl 3.
   "This is the number of pixels between the outside of the outermost screen
    box and the inside of the window. This space exists to allow the user to

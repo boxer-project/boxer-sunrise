@@ -997,7 +997,6 @@
                                                       *boxer-pane*))))
       (dolist (region *region-list*)
         (when (not (null region)) (interval-update-repaint-all-rows region)))
-      (setq *redisplay-clues* nil)
       ;; comment out next line for outermost box save document, updates will
       ;; occur inside of set-outermost-box instead...
       (when (bp? *point*)
