@@ -356,9 +356,7 @@ Modification History (most recent at top)
 
 (defun open-file (data interface)
   (declare (ignore data interface))
-  (queue-event 'menu-open-box))
-
-(defun menu-open-box ()  (boxer::com-open-box-file t))
+  (queue-event 'boxer::com-open-box-file))
 
 (defun close-file-box (data interface)
   (declare (ignore data interface))

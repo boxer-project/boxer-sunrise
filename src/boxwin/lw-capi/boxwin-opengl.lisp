@@ -236,7 +236,7 @@
                    (make-instance 'capi::menu :title "Open Recent"
                                       :items-function 'open-recent-items
                                       :callback #'(lambda (data interface)
-                                        (boxer::com-open-box-file t data))))))
+                                        (boxer::com-open-box-file data))))))
 
 (defvar *file-export-menu*
   (make-instance 'capi::menu :title "Export..."
