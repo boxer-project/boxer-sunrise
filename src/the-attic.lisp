@@ -11214,6 +11214,14 @@ if it is out of bounds
 ;;;; FILE: lw-menu.lisp
 ;;;;
 
+;; On the mac, these read/wrote into the a file's resource fork
+(defun boxer::write-boxer-file-info (pathname &key read-only? world-box? flags)
+  (declare (ignore pathname read-only? world-box? flags))
+  nil)
+
+(defun boxer::boxer-file-info (pathname) (declare (ignore pathname)) nil)
+
+
 #|
 
 (defun menu-boxtop-standard (data interface)

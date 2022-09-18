@@ -311,11 +311,6 @@ Modification History (most recent at top)
       (:boxer (save-internal box dest-pathname))
       (:text (save-text-file-internal box dest-pathname))
       (t (save-internal box dest-pathname)))
-    ;; dump some useful properties into the resource fork
-    ;; (before) we record current file props since changing the resource fork
-    ;; might also change the file write date
-    #+mcl
-    (write-boxer-file-info box dest-pathname)
     ;; if everything worked, then update the file properties so we don't
     ;; get an error the next time we try and save out the file
     (record-boxer-file-properties dest-pathname
@@ -425,15 +420,9 @@ Modification History (most recent at top)
   (let* ((filename (box-text-string file))
          (box (read-internal filename)))
     ;; if the box was a world file, need to fix the NAME slot
-    (multiple-value-bind (ro? world-box?)
-        #+mcl (unless (url-string? filename)
-                (boxer-file-info filename)) ;; looks in resource fork
-        #-mcl (values nil nil)
-        (declare (ignore ro?))
-        (when (or world-box?
-                  (and (stringp (slot-value box 'name))
-                       (string= (slot-value box 'name) "WORLD")))
-          (setf (slot-value box 'name) nil)))
+    (when (and (stringp (slot-value box 'name))
+               (string= (slot-value box 'name) "WORLD"))
+      (setf (slot-value box 'name) nil))
     box))
 
 (boxer-eval::defboxer-primitive bu::READ ((boxer-eval::dont-copy filename))

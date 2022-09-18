@@ -333,16 +333,6 @@ Modification History (most recent at top)
          (throw 'boxer::cancel-boxer-file-dialog nil))
         (otherwise (throw 'boxer::cancel-boxer-file-dialog nil)))))
 
-
-;; On the mac, these read/wrote into the a file's resource fork
-(defun boxer::write-boxer-file-info (pathname &key read-only? world-box? flags)
-  (declare (ignore pathname read-only? world-box? flags))
-  nil)
-
-(defun boxer::boxer-file-info (pathname) (declare (ignore pathname)) nil)
-
-
-
 ;;; NOTE: Menu callback functions take 2 args (data interface)
 
 ;; Menu functions
