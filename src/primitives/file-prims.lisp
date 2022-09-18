@@ -206,11 +206,6 @@ Modification History (most recent at top)
                (make-vc '((bu::newer-other-box)))))
           (t boxer-eval::*true*))))
 
-
-(defvar *automatic-file-compression-on* nil)
-(defvar *file-compress-minimum-length* (* 64 1024)) ;empirical
-
-
 ;; this is used to catch pathnames which won't even parse
 
 (defun quote-wild-char (string quote-char)
@@ -376,14 +371,7 @@ Modification History (most recent at top)
     (setq *boxer-pathname-default*
     (make-pathname :directory (pathname-directory dest-pathname)
              :defaults *boxer-pathname-default*))))
-    (when *automatic-file-compression-on*
-      ;; Compress the file only if it's greater than
-      ;; *file-compress-minimum-length*.  Otherwise the time
-      ;; it takes won't be worth it.
-      (let ((length (with-open-file (stream dest-pathname :direction :input)
-           (file-length stream))))
-  (if (> length *file-compress-minimum-length*)
-      (compress-file dest-pathname))))))
+    ))
 
 (defun make-backup-if-necessary (dest-pathname)
   (when (probe-file dest-pathname)
@@ -470,7 +458,6 @@ Modification History (most recent at top)
 (defun read-internal-1 (filename &optional
                                  (pathname (check-valid-filename-for-primitive
                                 filename *boxer-pathname-default*)))
-  (when (null (probe-file pathname)) (maybe-uncompress-file pathname))
   (unless (probe-file pathname)
     (if *in-autoload-environment*
         (error "Autoload File not found: ~A" (namestring pathname))
@@ -517,7 +504,6 @@ Modification History (most recent at top)
 (boxer-eval::defboxer-primitive bu::probe-file ((boxer-eval::dont-copy filename))
   (let ((pathname (check-valid-filename-for-primitive
        (box-text-string filename) *boxer-pathname-default*)))
-    (when (null (probe-file pathname)) (maybe-uncompress-file pathname))
     (boxer-eval::boxer-boolean (probe-file pathname))))
 
 (boxer-eval::defboxer-primitive bu::toggle-modified-flag ()
@@ -689,7 +675,6 @@ Modification History (most recent at top)
          :defaults
          (check-valid-filename-for-primitive
           filestring))))
-    (when (null (probe-file pathname)) (maybe-uncompress-file pathname))
     (unless (probe-file pathname)
       (boxer-eval::primitive-signal-error :file-or-directory-not-found
             (namestring pathname)))
@@ -1512,48 +1497,6 @@ Modification History (most recent at top)
   stream
   boxer-eval::*novalue*)
 
-
-;;;
-;;; COMPRESS-FILE.
-;;;
-
-;;; These are for saving space on unix filesystems.  They should go away
-;;; when Ed rewrites the file system make smaller files.
-
-;;; The user can call COMPRESS-FILE.  READ will try to uncompress a file
-;;; if it doesn't exist.
-
-(defun compress-file (pathname)
-  #+Unix (progn
-     (make-backup-if-necessary (concatenate 'string (namestring pathname) ".Z"))
-     (boxer-run-unix-program "compress" (list "-f" (namestring pathname))))
-  #-Unix (progn pathname nil))
-
-(defun uncompress-file (pathname)
-  #+Unix (boxer-run-unix-program "uncompress" (list (namestring pathname)))
-  #-Unix (progn pathname nil))
-
-(defun maybe-uncompress-file (pathname)
-  #+Unix (when (and (null (probe-file pathname))
-        (probe-file (concatenate 'string (namestring pathname) ".Z")))
-     #+Lucid (uncompress-file pathname)
-     #-Lucid nil)
-  #-Unix (progn pathname nil))
-
-#-mcl
-(boxer-eval::defboxer-primitive bu::compress-file ((boxer-eval::dont-copy name))
-  (let ((filename (if (numberp name)
-          (format nil "~D" name)
-          (box-text-string name))))
-    (if (null (probe-file filename))
-  (boxer-eval::signal-error :FILE-NOT-FOUND (boxer-eval::copy-thing name))
-  (let ((error-string (compress-file filename)))
-    (if (null error-string)
-        boxer-eval::*novalue*
-        (boxer-eval::signal-error :COMPRESS-FILE error-string))))))
-
-
-
 ;;;
 ;;; boxer-run-unix-program
 ;;;

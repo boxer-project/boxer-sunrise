@@ -8454,6 +8454,61 @@ if it is out of bounds
     (ccl::set-mac-file-type pathname :boxr)
     (ccl::set-mac-file-creator pathname :boxr)))
 
+;; sgithens Apparently we used to have file compression that farmed
+;; out it's work to a unix command line invocation
+(defvar *automatic-file-compression-on* nil)
+(defvar *file-compress-minimum-length* (* 64 1024)) ;empirical
+
+;; was inside save-internal
+(when *automatic-file-compression-on*
+      ;; Compress the file only if it's greater than
+      ;; *file-compress-minimum-length*.  Otherwise the time
+      ;; it takes won't be worth it.
+      (let ((length (with-open-file (stream dest-pathname :direction :input)
+           (file-length stream))))
+  (if (> length *file-compress-minimum-length*)
+      (compress-file dest-pathname))))
+
+;;;
+;;; COMPRESS-FILE.
+;;;
+
+;;; These are for saving space on unix filesystems.  They should go away
+;;; when Ed rewrites the file system make smaller files.
+
+;;; The user can call COMPRESS-FILE.  READ will try to uncompress a file
+;;; if it doesn't exist.
+
+(defun compress-file (pathname)
+  #+Unix (progn
+     (make-backup-if-necessary (concatenate 'string (namestring pathname) ".Z"))
+     (boxer-run-unix-program "compress" (list "-f" (namestring pathname))))
+  #-Unix (progn pathname nil))
+
+(defun uncompress-file (pathname)
+  #+Unix (boxer-run-unix-program "uncompress" (list (namestring pathname)))
+  #-Unix (progn pathname nil))
+
+(defun maybe-uncompress-file (pathname)
+  #+Unix (when (and (null (probe-file pathname))
+        (probe-file (concatenate 'string (namestring pathname) ".Z")))
+     #+Lucid (uncompress-file pathname)
+     #-Lucid nil)
+  #-Unix (progn pathname nil))
+
+#-mcl
+(boxer-eval::defboxer-primitive bu::compress-file ((boxer-eval::dont-copy name))
+  (let ((filename (if (numberp name)
+          (format nil "~D" name)
+          (box-text-string name))))
+    (if (null (probe-file filename))
+  (boxer-eval::signal-error :FILE-NOT-FOUND (boxer-eval::copy-thing name))
+  (let ((error-string (compress-file filename)))
+    (if (null error-string)
+        boxer-eval::*novalue*
+        (boxer-eval::signal-error :COMPRESS-FILE error-string))))))
+
+
 ;;;;
 ;;;; FILE: funs.lisp
 ;;;;

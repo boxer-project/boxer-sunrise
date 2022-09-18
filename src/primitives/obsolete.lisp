@@ -187,3 +187,8 @@
   (boxer-eval::primitive-signal-error :obsolete
                                       "Please use system-preferences and save-preferences to save your configuration.")
   boxer-eval::*novalue*)
+
+(boxer-eval::defboxer-primitive bu::compress-file ((boxer-eval::dont-copy name))
+  (boxer-eval::primitive-signal-error :obsolete
+                                      "Compress file is deprecated and no longer available.")
+  boxer-eval::*novalue*)
