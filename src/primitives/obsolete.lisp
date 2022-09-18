@@ -192,3 +192,13 @@
   (boxer-eval::primitive-signal-error :obsolete
                                       "Compress file is deprecated and no longer available.")
   boxer-eval::*novalue*)
+
+(boxer-eval::defboxer-primitive bu::fix-sun-file-graphics ((bu::port-to box))
+  (boxer-eval::primitive-signal-error :obsolete
+                                      "fix-sun-file-graphics is deprecated and no longer available.")
+  boxer-eval::*novalue*)
+
+(boxer-eval::defboxer-primitive bu::fix-mac-file-graphics ((bu::port-to box))
+  (boxer-eval::primitive-signal-error :obsolete
+                                      "fix-mac-file-graphics is deprecated and no longer available.")
+  boxer-eval::*novalue*)

@@ -8508,6 +8508,100 @@ if it is out of bounds
         boxer-eval::*novalue*
         (boxer-eval::signal-error :COMPRESS-FILE error-string))))))
 
+;;; This is just a crock, but at least it will work on the Suns as long
+;;; as there's only one Boxer per machine.
+(defun make-temporary-filename (info)
+  (format nil "/tmp/boxer-~a" info))
+
+
+(defun read-box-from-text-stream (stream)
+  stream
+  boxer-eval::*novalue*)
+
+;;;
+;;; boxer-run-unix-program
+;;;
+
+
+;;; Returns NIL if succesful, otherwise a list of error strings.
+;;;
+;;; We have to run the program asynchronously in order to get the
+;;; error output into a stream.
+;;; Didn't do anything about stdout, though.
+(defun boxer-run-unix-program (program-name arguments)
+  #+Unix (let ((error-result
+    #+Lucid (multiple-value-bind
+            (stream error-output-stream exit-status process-id)
+          ;; We can't do both :error-output :stream
+          ;; and :wait t, so we have to assume that the process
+          ;; is finished when when we find out that the error-output-stream
+          ;; is done.
+          (system::run-program program-name
+             :arguments arguments
+             :wait nil
+             :if-error-output-exists nil
+             :error-output :stream)
+        (declare (ignore stream process-id))
+        (if error-output-stream
+            (prog1 (do* ((string (read-line error-output-stream
+                    nil
+                    nil)
+               (read-line error-output-stream
+                    nil
+                    nil))
+             (result nil))
+            ((null string) (nreverse result))
+               (unless (null string)
+           (push string result)))
+        (close error-output-stream))
+            (format nil "Unknown Unix Error ~D" exit-status)))
+    #-Lucid "BOXER-RUN-UNIX-PROGRAM not implemented on this system"))
+     (if (stringp error-result)
+         (boxer-eval::primitive-signal-error :UNIX-PROGRAM-ERROR error-result)
+         nil))
+  #-Unix (progn program-name arguments
+                "BOXER-RUN-UNIX-PROGRAM not implemented on this system"))
+
+(defun fix-file-alus (top-box &optional (sun->mac? t))
+  (labels ((fix-gl (gl)
+           (setf (graphics-command-list-alu gl)
+                 (convert-file-alu (graphics-command-list-alu gl) sun->mac?))
+           (do-vector-contents (gc gl)
+             (when (member (aref gc 0) '(0 32) :test #'=)
+               ;; if it is an CHANGE-ALU command....
+               (setf (aref gc 1) (convert-file-alu (aref gc 1) sun->mac?)))))
+           (fix-box (box)
+             (let ((graphics-sheet (graphics-sheet box)))
+               (when (not (null graphics-sheet))
+                 (let ((gl (graphics-sheet-graphics-list graphics-sheet)))
+                   (unless (null gl) (fix-gl gl)))))
+             (when (sprite-box? box)
+               (let* ((turtle (slot-value box 'associated-turtle))
+                      (shape (shape turtle))
+                      (ws (slot-value turtle 'window-shape)))
+                 (fix-gl shape) (fix-gl ws)))))
+    (fix-box top-box)
+    (do-for-all-inferior-boxes-fast (inf-box top-box) (fix-box inf-box))))
+
+;; order is (sun-alu . mac-alu)
+(defvar *file-conversion-alu-alist* '((2 . 3) ; alu-andca
+                                      (5 . 0) ; alu-seta
+                                      (6 . 2) ; alu-xor
+                                      (7 . 1) ; alu-ior
+                                      (0 . 11))) ; alu-setz
+
+(defun convert-file-alu (old-alu sun->mac?)
+  (if sun->mac?
+    (or (cdr (assoc  old-alu *file-conversion-alu-alist* :test #'=)) 0)
+    (or (car (rassoc old-alu *file-conversion-alu-alist* :test #'=)) 5)))
+
+(boxer-eval::defboxer-primitive bu::fix-sun-file-graphics ((bu::port-to box))
+  (fix-file-alus (box-or-port-target box))
+  boxer-eval::*novalue*)
+
+(boxer-eval::defboxer-primitive bu::fix-mac-file-graphics ((bu::port-to box))
+  (fix-file-alus (box-or-port-target box) nil)
+  boxer-eval::*novalue*)
 
 ;;;;
 ;;;; FILE: funs.lisp
