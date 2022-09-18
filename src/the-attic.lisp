@@ -5785,6 +5785,17 @@ Modification History (most recent at top)
   (when (eq :normal (display-style (point-box))) (com-shrink-box))
   boxer-eval::*novalue*)
 
+;; this should go somewhere else (file-prims.lisp ?)
+(defun make-file-box (pathname)
+  (multiple-value-bind (RO world maj min btype bname)
+      (boxer-file-info pathname)
+    (declare (ignore RO world maj min))
+    (let ((filebox (make-box '(()) btype bname)))
+      (mark-box-as-file filebox pathname)
+      (shrink filebox)
+      (setf (first-inferior-row filebox) nil)
+      filebox)))
+
 ;;;;
 ;;;; FILE: comsf.lisp
 ;;;;

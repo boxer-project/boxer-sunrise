@@ -546,14 +546,3 @@ followed by a return."
            (and (= b0 f0) (= b1 f1) (= f2 *version-number*) (= f3 0))
            ;; byte swapping version...
            (and (= b0 f1) (= b1 f0) (= f3 *version-number*) (= f2 0)))))))
-
-;; this should go somewhere else (file-prims.lisp ?)
-(defun make-file-box (pathname)
-  (multiple-value-bind (RO world maj min btype bname)
-      (boxer-file-info pathname)
-    (declare (ignore RO world maj min))
-    (let ((filebox (make-box '(()) btype bname)))
-      (mark-box-as-file filebox pathname)
-      (shrink filebox)
-      (setf (first-inferior-row filebox) nil)
-      filebox)))
