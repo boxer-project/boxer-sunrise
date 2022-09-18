@@ -16489,3 +16489,43 @@ Modification History (most recent at top)
 
 (DEFVAR *TRIM-EMPTY-ROWS?* T
   "Should empty rows be removed from a box BEFORE it is returned ?")
+
+;;;;
+;;;; FILE: xfile.lisp
+;;;;
+
+;; come here when single clicked on a file link
+;; check to see if the file is a box
+#+mcl
+(defun edit-mac-file-ref (box &optional (xref (getprop box :xref)))
+  (when (null xref)
+    (let ((new-xref (make-mac-file-ref)))
+      (putprop box new-xref :xref)  (setq xref new-xref)))
+  (case (mac-file-ref-dialog (mac-file-ref-pathname xref))
+    (:open (cond ((null (mac-file-ref-pathname xref))
+                  (boxer-eval::primitive-signal-error :mac-interface
+                                                "No file to launch"))
+                 ((not (probe-file (mac-file-ref-pathname xref)))
+                  (boxer-eval::primitive-signal-error :mac-interface
+                                                "File not Found"
+                                                (mac-file-ref-pathname xref)))
+                 (t
+                  (ccl::open-mac-file (mac-file-ref-pathname xref)))))
+    (:change
+     (let ((newpath (ccl::choose-file-dialog)))
+       ;; newpath can point to a boxer file which should be handled
+       ;; specially i.e. change to a file box
+       (cond ((box-file? newpath)
+              (remove-xfile-props box)
+              (mark-box-as-file box newpath))
+             (t
+              (setf (mac-file-ref-pathname xref) newpath)
+              (set-xref-boxtop-info box)))
+       (modified box)))
+    (:move
+     (let ((newpath (ccl::choose-new-file-dialog
+                     :directory (mac-file-ref-pathname xref))))
+       (rename-file (mac-file-ref-pathname xref) newpath)
+       (setf (mac-file-ref-pathname xref) newpath)))
+    (t ;; can come here if CANCELed from the dialog
+       )))
