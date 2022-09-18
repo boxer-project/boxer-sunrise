@@ -499,14 +499,10 @@ row instead. "
                   (let ((*current-font-descriptor*
                          (or *help-font-descriptor* *default-font-descriptor*)))
                     (make-box '(("To see inputs for a function")
-                                #-mcl(" press ctrl-<help> or ctrl-? after the name of the function.")
-                              ;#+mcl(" press cmd-<help> or cmd-? after the name of the function.")
-                                ;; option-shift-K is the apple glyph
-                                #+mcl(" press �-<help> or �-? after the name of the function.")
+                                (" press ctrl-<help> or ctrl-? after the name of the function.")
                                 ()
                                 ("To get help on a key stroke or mouse action")
-                                #-mcl(" press meta-<help> or meta-?")
-                                #+mcl(" press option-<help> or option-?")
+                                (" press meta-<help> or meta-?")
                                 ()
                                 ("To get help on the name or spelling of a command")
                                 ("use \"name-help <string>\", where string is a sequence")

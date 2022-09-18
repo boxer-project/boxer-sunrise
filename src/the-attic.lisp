@@ -5796,6 +5796,13 @@ Modification History (most recent at top)
       (setf (first-inferior-row filebox) nil)
       filebox)))
 
+;; sgithens Old mcl version of com-help text
+;#+mcl(" press cmd-<help> or cmd-? after the name of the function.")
+;; option-shift-K is the apple glyph
+#+mcl(" press �-<help> or �-? after the name of the function.")
+#+mcl(" press option-<help> or option-?")
+
+
 ;;;;
 ;;;; FILE: comsf.lisp
 ;;;;
