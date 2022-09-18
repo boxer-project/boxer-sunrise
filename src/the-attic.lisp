@@ -4600,6 +4600,30 @@ Modification History (most recent at top)
   ;; and queue for deletion from the server
   (queue-for-server-deletion box))
 
+;;; Editor Interface
+
+;; NOTE: server errors can be signalled from inside fill-box-from-server
+;; to be safe, callers must either wrap it in side a with-server-errors
+;; or else be underneath a primitive
+(defmethod fill-box-from-bfs-server ((self box::box))
+  (when (box::getprop self :server-box-id)
+    (let* ((id (box::getprop self :server-box-id))
+           (new-id (validate-server-box-id self id)))
+      (unless (null new-id)
+        (setq id new-id))
+      (load-binary-box-internal id self)
+      ;; need to patch up name row to avoid re-insertion of name/box into
+      ;; the superior binding alist
+      (when (box::name-row? (slot-value self 'box::name))
+        (setf (slot-value (slot-value self 'box::name) 'box::cached-name)
+              (box::get-box-name (slot-value self 'box::name))))
+      (box::modified self)
+      (mark-timestamp self))))
+
+(defun record-copy-file-info (from-box to-box)
+  (let ((old-file-id (boxer::getprop from-box :server-box-id)))
+    (unless (null old-file-id)
+      (boxer::putprop to-box old-file-id :copy-box-id))))
 
 ;;;;
 ;;;; FILE: comdef.lisp
