@@ -16,6 +16,8 @@
 ;;;;   - bfsforeign.lisp and bfslocal.lisp contains the unused remnants of a Boxer File System
 ;;;;     that had usernames, passwords, and various types of transactional locking for apparently
 ;;;;     sharing box files. This was all done on a filesystem directory.
+;;;;   - surf.lisp mailto-url and make-message-box show the email urls and how a new box was
+;;;;     created for composing a new email message.
 
 
 ;;;;
@@ -15986,6 +15988,54 @@ Modification History (most recent at top)
 ;; this should be adaptive (larger values for PPP connections)
 (defvar *ftp-data-listen-timeout* 300000)
 
+(defclass mailto-url
+  (url)
+  ((address :initform *default-mail-address* :accessor mailto-url-address))
+  ;; (:metaclass block-compile-class)
+  )
+
+;; this is for URL files possibly relative to some superior URL
+(defclass file-url
+  (url)
+  ((pathname :initform nil :accessor file-url-pathname))
+  ;; (:metaclass block-compile-class)
+  )
+
+;;; Mailto
+
+(defmethod initialize-instance ((url mailto-url) &rest initargs)
+  (call-next-method)
+  (setf (slot-value url 'address)
+        ;; should do some reality checking here
+        (slot-value url 'scheme-string)))
+
+(defvar *mail-instruction-box*
+        (make-box '(("Edit your message in this box")
+                    ("Exit the box to send the mail"))
+                  'boxer::Data-box
+                  "Instructions"))
+
+(defvar *include-instructions-in-new-message-boxes?* T)
+
+(defun make-message-box (from to &optional (subject ""))
+  (let ((header (make-box `(("From:" ,from)
+                            ("To:" ,to)
+                            ("Subject:" ,subject))
+                          'boxer::data-box
+                          "Header"))
+        (body (make-box '(()) 'boxer::data-box "Message")))
+    (if *include-instructions-in-new-message-boxes?*
+        (make-box (list (make-row (list *mail-instruction-box*))
+                        (make-row (list header))
+                        (make-row (list body))))
+        (make-box (list (make-row (list header))
+                        (make-row (list body)))))))
+
+;; still need to add a trigger for actually mailing the message
+;; not to mention the actual mechanism for sending the message
+(defmethod fill-box-using-url ((url mailto-url) box)
+  (append-row box (make-row (make-message-box *user-mail-address*
+                                              (mailto-url-address url)))))
 
 
 ;;;;

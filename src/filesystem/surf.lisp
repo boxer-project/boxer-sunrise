@@ -145,19 +145,6 @@ Modification History (most recent at top)
   ;; (:abstract-class t)
   (:documentation "Bare Bones url class-not meant to be instantiated"))
 
-(defclass mailto-url
-  (url)
-  ((address :initform *default-mail-address* :accessor mailto-url-address))
-  ;; (:metaclass block-compile-class)
-  )
-
-;; this is for URL files possibly relative to some superior URL
-(defclass file-url
-  (url)
-  ((pathname :initform nil :accessor file-url-pathname))
-  ;; (:metaclass block-compile-class)
-  )
-
 ;; this is for files on the local host, that is, files which can be accessed
 ;; with the usual file access mechanisms like open-file, so NFS (or Appleshare?)
 ;;mounted files are included in this category since their access is transparent
@@ -183,8 +170,6 @@ Modification History (most recent at top)
    (path :initform nil :accessor url-path))
   ;; (:metaclass block-compile-class)
   )
-
-
 
 ;;; These are the main hooks into the rest of boxer.
 
@@ -447,47 +432,6 @@ Modification History (most recent at top)
 
 (defmethod dump-plist-length ((self local-url))
   (+& (call-next-method) 2))
-
-
-
-;;; Mailto
-
-(defmethod initialize-instance ((url mailto-url) &rest initargs)
-  (call-next-method)
-  (setf (slot-value url 'address)
-        ;; should do some reality checking here
-        (slot-value url 'scheme-string)))
-
-(defvar *mail-instruction-box*
-        (make-box '(("Edit your message in this box")
-                    ("Exit the box to send the mail"))
-                  'boxer::Data-box
-                  "Instructions"))
-
-(defvar *include-instructions-in-new-message-boxes?* T)
-
-(defun make-message-box (from to &optional (subject ""))
-  (let ((header (make-box `(("From:" ,from)
-                            ("To:" ,to)
-                            ("Subject:" ,subject))
-                          'boxer::data-box
-                          "Header"))
-        (body (make-box '(()) 'boxer::data-box "Message")))
-    (if *include-instructions-in-new-message-boxes?*
-        (make-box (list (make-row (list *mail-instruction-box*))
-                        (make-row (list header))
-                        (make-row (list body))))
-        (make-box (list (make-row (list header))
-                        (make-row (list body)))))))
-
-;; still need to add a trigger for actually mailing the message
-;; not to mention the actual mechanism for sending the message
-(defmethod fill-box-using-url ((url mailto-url) box)
-  (append-row box (make-row (make-message-box *user-mail-address*
-                                              (mailto-url-address url)))))
-
-
-
 
 ;;; as defined in RFC 1738, URL's which involve the direct use of
 ;;; an IP-based protocol to a specific host on the internet use a

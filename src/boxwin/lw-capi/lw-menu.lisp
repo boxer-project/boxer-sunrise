@@ -333,6 +333,7 @@ Modification History (most recent at top)
          (throw 'boxer::cancel-boxer-file-dialog nil))
         (otherwise (throw 'boxer::cancel-boxer-file-dialog nil)))))
 
+
 ;;; NOTE: Menu callback functions take 2 args (data interface)
 
 ;; Menu functions
@@ -1195,13 +1196,7 @@ Modification History (most recent at top)
            (queue-box-prop-change
             (list :link data (capi:text-input-pane-text text-input-item))))
           ((eq data :url)
-           (set-link-file-props
-            text-input-item file-props
-            t (format nil "ftp://~A/~A"
-                      ;; not right, need better parameter than this host
-                      ;; *pop-host* might be more appropriate
-                      boxnet::*smtp-relay-host*
-                      "NewFile.box"))
+           (set-link-file-props text-input-item file-props t (format nil "http://"))
            (queue-box-prop-change
             (list :link data (capi:text-input-pane-text text-input-item)))))))
 
