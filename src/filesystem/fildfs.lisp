@@ -750,15 +750,6 @@ Modification History (most recent at the top)
         (or (= 1st-word bin-op-format-version)
             (= 1st-word *swapped-bin-op-format-version*))))))
 
-;; system dependent
-#+mcl
-(defvar *possible-boxer-file-mac-types* (list :text :???? :****
-                                              ;; OSX default for unknown
-                                              (intern
-                                               (make-string
-                                                4 :initial-element #\Null)
-                                               (find-package "KEYWORD"))))
-
 ;; this should eventually use /etc/magic
 (defun file-type (filename)
   (if (boxer-file-contents? filename) :boxer :text))

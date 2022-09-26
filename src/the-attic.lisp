@@ -8347,7 +8347,18 @@ if it is out of bounds
 
 (def-export-type html-file-class "HTML" "*.htm;*.html" :respect-line-breaks nil)
 
+;;;;
+;;;; FILE: fildfs.lisp
+;;;;
 
+;; system dependent
+#+mcl
+(defvar *possible-boxer-file-mac-types* (list :text :???? :****
+                                              ;; OSX default for unknown
+                                              (intern
+                                               (make-string
+                                                4 :initial-element #\Null)
+                                               (find-package "KEYWORD"))))
 
 ;;;;
 ;;;; FILE: file-prims.lisp
