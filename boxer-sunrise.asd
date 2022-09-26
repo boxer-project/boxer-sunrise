@@ -151,7 +151,11 @@
                  (:file "filesystem/clientmacros")
                  (:file "filesystem/client")
                  (:file "filesystem/surf")
-                 (:file "filesystem/http")
+                 (:file "filesystem/datasources/url")
+                 (:file "filesystem/datasources/net-url")
+                 (:file "filesystem/datasources/local-url")
+                 (:file "filesystem/datasources/http-url")
+                 (:file "filesystem/datasources/helpers")
                  ;; Beginning of `TRIGGER` module
                  ;; "Box triggers for Constraint Propagation and Other Fun Stuff"
                  (:file "trigger/trigger")
