@@ -1123,6 +1123,9 @@
                   (bw::mouse-doc-status-popup-y))))))
 
 (defmacro with-hilited-box ((box) &body body)
+  "Any operations inside this body will happen with box being hilighted. The default style is usually
+  a subtle blue background extending slightly beyond the borders. A typical use case of this is for
+  hilighting a box while it's being saved."
   (let ((screen-box (gensym))
         (screen-box-x (gensym))   (screen-box-y (gensym))
         (screen-box-wid (gensym)) (screen-box-hei (gensym)))
