@@ -829,11 +829,3 @@ Modification History (most recent at the top)
 
 ;;;
 
-;; these network packages are loaded here to define the network stream classes...
-;; most of the normal usage for network stuff is in surf.lisp
-
-;; they define packages and functions which will be used in dumper and base64 among others
-#+lispworks
-(eval-when (eval load) (require "comm"))
-#+carbon-compat
-(eval-when (eval load) (require "OpenTransport"))
