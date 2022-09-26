@@ -1122,3 +1122,30 @@
                   (bw::mouse-doc-status-popup-x)
                   (bw::mouse-doc-status-popup-y))))))
 
+(defmacro with-hilited-box ((box) &body body)
+  (let ((screen-box (gensym))
+        (screen-box-x (gensym))   (screen-box-y (gensym))
+        (screen-box-wid (gensym)) (screen-box-hei (gensym)))
+    `(drawing-on-window (*boxer-pane*)
+                        (let* ((,screen-box (or (car (displayed-screen-objs ,box))
+                                                (when (superior? (outermost-box) ,box)
+                                                  (outermost-screen-box))))
+                               ,screen-box-wid ,screen-box-hei)
+                          (multiple-value-bind (,screen-box-x ,screen-box-y)
+                                               (when (screen-box? ,screen-box)
+                                                 (setq ,screen-box-wid (screen-obj-wid ,screen-box)
+                                                        ,screen-box-hei (screen-obj-hei ,screen-box))
+                                                 (xy-position ,screen-box))
+                                               (unwind-protect
+                                                (progn
+                                                 (unless (null ,screen-box-x)
+                                                   (with-pen-color (bw::*blinker-color*)
+                                                     (box::with-blending-on
+                                                      (draw-rectangle
+                                                                      ,screen-box-wid ,screen-box-hei
+                                                                      ,screen-box-x ,screen-box-y)))
+                                                   (swap-graphics-buffers))
+                                                 . ,body)
+                                                (unless (null ,screen-box-x)
+                                                  (repaint)
+                                                  (swap-graphics-buffers))))))))
