@@ -97,7 +97,7 @@ Modification History (most recent at top)
 
 (defmacro surf-message (string &rest args)
   `(progn
-     (debugging-message ,string . ,args)
+     (log:debug ,string . ,args)
      (when *net-verbose*
        (boxer::status-line-display 'surf-message (format nil ,string . ,args)))))
 
