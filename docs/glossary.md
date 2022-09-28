@@ -1,4 +1,4 @@
-# glossery
+# glossary
 
 ## alu
 
@@ -25,11 +25,14 @@ From a user's perspective, what they see and edit on screen is not "source" that
     - Well, with slight complication for transparent boxes, but note how "transparent" metaphor and visualization as weaker dashed border focus on what you see.
 - After editing a variable or procedure (Doit box), you don't need to "reload the definition" — you've directly modified the variable/procedure.
 - The stepper is the pinnacle of naive realism, letting you see the execution unfold, and values flow.
-- The "Copy and execute" model makes it safe to mutate the currently executing box!
-    - Return values can be displayed inline.
-    - `input` primitive, is not just a declaration!  When executed, the names are replaced by actual named boxes, becoming local variables.
+- The current locus of execution when stepping is represented as a cursor.
+- The "Copy and execute" model made it safe to mutate the currently executing box!
+    - The copied function body _is_ the stack frame — local parameters/variables exist here as named boxes.
+    - `inputs` primitive is not just a declaration!  When executed, the names are replaced by actual named boxes, becoming local variables.
+    - Thus, the call stack materializes as nested copied boxes, and a recursive function expands into a fractal, each level with its own locals.
+    - Return values get shown inline in the calling box.
 
-This was achieved by:
+Naive realism was achieved by:
 
 1. Co-designing the language and environment from the start with this as a goal!
 2. Unusually tight integration between the evaluator and the environment.
@@ -39,17 +42,21 @@ This was achieved by:
 ## explicit control evaluator
 
 The `boxer-eval` state machine maintains its state in explicit global variables (one can think of them as registers) and stacks.
-Procedure calls in boxer grow boxer's stack, not the underlying Lisp's stack.
+Procedure calls in Boxer grow Boxer's stack, not the underlying Lisp's stack.
 
 This exposes the state for stepper / debugging / error handling.  It also allows some forms of context switching between "processes".
 
-### pdl (from archaic "Push Down List")
+### pdl [from archaic "Push Down List"]
 
 This is the main control stack.
 
-It consists of typed frames, each saving/restoring a different subset of state.
+It consists of frames of various types, each type saving/restoring a different subset of evaluator state.
+Frame types are created by `define-stack-frame` macro, which defines macros to push/pop specifically those global variables.
 
-### vpdl (from "Value Push Down List")
+Some general frame types (e.g. `ufun-frame`) serve the evaluator, and some serve specific primitives.
+For example `repeat` primitive keeps the remaining number of iterations in the global variable `*repeat-count*`, and that's one of the things the `repeat-special-frame` PDL frame saves/restores.
+
+### vpdl [from "Value Push Down List"]
 
 A stack of values which will become arguments to functions.
 
@@ -60,9 +67,10 @@ It's also the interface to primitives.  `defboxer-primitive` looks similar to `d
 
 ### recursive evaluation
 
-The evaluator calls primitives.  Primitives like `repeat` or `tell` that need to run boxer code can't just call the evaluator (that would grow the lisp stack and would be opaque to the stepper).
+The evaluator calls primitives.  Primitives like `repeat` or `tell` that need to run Boxer code can't just call the evaluator (that would grow the Lisp stack and would be opaque to the stepper).
 
-`defrecursive-eval-primitive` / `defrecursive-funcall-primitive` macros split each such primitive into a before, after, and cleanup parts, plus a custom PDL frame type.  Between the parts, control returns to the main eval loop, with state (e.g. `repeat`'s loop counter) retained in the PDL frame.
+`defrecursive-eval-primitive` / `defrecursive-funcall-primitive` macros split each such primitive into a before, after, and cleanup parts, plus a custom PDL frame type.
+Between the parts, control returns to the main eval loop, with state (e.g. `repeat`'s loop counter) kept in global variables, whose previous values are retained in the PDL frame.
 
 ### process
 
@@ -72,30 +80,56 @@ The evaluator calls primitives.  Primitives like `repeat` or `tell` that need to
 
 ## vc - virtual copy
 
+A persistent data structure representing boxes in a way optimized for the evaluator.  It simulates deep copying & subsequent mutations while still sharing data.
+
+### multiple pointer
+
+The central idea in VC data structure is it gets forked _at the point of mutation_. A "single pointer" gets promoted to a "multiple pointer" with slots retaining both original and new value(s), each slot tagged by "who" (usually an ancestor of the box) and "when" made the change.
+
+`get-pointer-value` disambiguates the relevant values for a particalur copy & timestamp.
+
+### mps
+
+multiple pointer slot.
+
 ## Variables in Boxer
 
 All this applies equally to variable and procedure lookup by name, the rules are the same.
 (Lookup finds a named box; only then you'll see if it's a data or doit box, and what to do with it.
 In this sense, Boxer falls into ["Lisp-1" camp](http://www.nhplace.com/kent/Papers/Technical-Issues.html).)
 
-### Static
+To avoid confusion here, it's helpful to distinguish (1) the model users learn—and can observe by stepping (2) the semantics that arise from the model (3) the optimized implementation.
 
-Under the "copy and execute" model, a called box is copied into the calling box.
-Names are looked up directly in the hierarchy of boxes containing the current box.
-This naturally resulting semantic is dynamic binding — free variables are can be bound by the caller.
+### model: Lookup follows box structure
 
-That's what "static" lookup refers to — search up the hierarchy of materialized boxes.
+To resolve a name, Boxer looks for a named box with same name (case insensitive).
+It first checks inside current box (including closet), and recursing into transparent boxes it contains.
+If not found, it checks in the box containing the current box, and so on.
 
-(The term has nothing to do with C/Java meaning of "static" lifetime.)
+### model: "Copy and execute"
 
-### Dynamic
+A called doit box is copied into the calling box (which itself is usually a copy) before execution.
 
-As an optimization, when not stepping, the called box may not be copied into the call site.
-But it has to resolve variables _as if_ it was there.  So a separate dynamic bindings stack is maintained, and "dynamic" lookup refers to checking that stack.
+### resulting semantics: Dynamic scoping
 
-### Transparent Boxes
+The above rules mean that free variables in a called box will be looked up from the place it was called, not the place it was defined.
 
-Boxes marked transparent "leak" all names defined there into the surrounding scope.
-This means static lookup can't just search up the ancestor chain, at each level it'd also need to recurse into any transparent siblings.
+### implementation: "dynamic" then "static" lookup
 
-TODO: is this the motivation for variable cache mechanism?
+Slow path: When stepping, we follow "Copy and execute" literally. A (virtual) copy is made, then mutated during execution.
+
+Fast path: When not stepping, the called box may not get copied at all (not even a virtual copy)!  The state it would track gets dispersed in multiple places, notably:
+
+* pdl stack tracks the chain of calls;
+* vpdl stack holds args / return values;
+* a separate "dynamic variables" stack of (name, value) pairs is maintained for name bindings in the non-existent temporary boxes.  Local bindings are pushed when entering a box, popped when returning.
+
+In this mode, there is some outer structure of actual boxes that changes little — so was dubbed "static", and the inner short-lived boxes that were not actually created got dubbed "dynamic".
+
+1. Name lookup first checks the dynamic variables stack.
+2. If not found, "static" lookup is done following the box structure.
+   Thanks to the structure changing little during execution, an additional cache was implemnted for this part.
+
+[These "dynamic"/"static" terms are unfortunately confusing. Both have nothing to with `static` lifetime of C/Java family, and *both* are parts of implementing the same dynamic-scoping semantics!]
+
+The slow path is sometimes implemented by running fast path, then adjusting. E.g. `step-replace-input-line-with-values` gets called after argument bindings were already pushed onto dynamic variables stack and has to pop them after creating actual named boxes.
