@@ -386,7 +386,6 @@ is shrunken."
   (multiple-value-bind (box-near before-or-after)
                        (box-point-is-near)
                        (let ((box (or box box-near)))
-                         (boxnet::with-server-errors
                           ;; can get a server error inside of the enter method
                           ;; in which case, do nothing
                           (cond ((null *editor-numeric-argument*)
@@ -399,7 +398,7 @@ is shrunken."
                                        (com-end-of-row)))
                                    (if (shrunken? box) (com-expand-box))))
                             (t (with-multiple-execution
-                                 (com-enter-box)))))))
+                                 (com-enter-box))))))
   boxer-eval::*novalue*)
 
 (defboxer-command COM-MOVE-TO-NEXT-BOX ()
@@ -437,14 +436,13 @@ the box if it is shrunken."
          (com-exit-box)
          (multiple-value-bind (box screen-box)
                               (point-next-box)
-                              (boxnet::with-server-errors
                                ;; can get a server error inside of the enter method
                                ;; in which case, do nothing
                                (unless (or (null box) (cha? box))
                                  (enter box)
                                  (move-point (all-bp-values (box-first-bp-values box) screen-box))
                                  (when (shrunken? box) (com-expand-box)))
-                               )))
+                               ))
     (t (with-multiple-execution
          (com-enter-next-box))))
   boxer-eval::*novalue*)
@@ -458,7 +456,6 @@ the box if it is shrunken."
          (com-exit-box) (com-backward-cha)
          (multiple-value-bind (box screen-box)
                               (point-previous-box)
-                              (boxnet::with-server-errors
                                ;; can get a server error inside of the enter method
                                ;; in which case, do nothing
 
@@ -468,7 +465,7 @@ the box if it is shrunken."
                                                             (box-first-bp-values box)
                                                             screen-box)))
                                    (com-end-of-row))
-                                 (when (shrunken? box) (com-expand-box))))))
+                                 (when (shrunken? box) (com-expand-box)))))
     (t (with-multiple-execution
          (com-enter-previous-box))))
   boxer-eval::*novalue*)

@@ -780,12 +780,7 @@ Modification History (most recent at the top)
 
 
     (defmethod dump-plist-internal ((self port-box) stream)
-      (cond ((and (in-bfs-environment?) (cross-file-port? self))
-             ;; should shrink it before dumping out display-style in the
-             ;; vanilla box dump-plist-internal method
-             (shrink self)
-             (call-next-method)
-             (dump-cross-file-port-reference self stream))
+      (cond
         ((circular-port? self)
          (call-next-method)
          (let* ((target (slot-value self 'ports))
@@ -800,7 +795,7 @@ Modification History (most recent at the top)
               (dump-boxer-thing (slot-value self 'ports) stream)))))
         (t
          (call-next-method)
-         (when (or (cracked-port? self) (cross-file-port? self))
+         (when (or (cracked-port? self))
            (dump-boxer-thing :cracked-port stream)
            (dump-boxer-thing T stream))
          (dump-boxer-thing :port-target stream)
@@ -835,8 +830,7 @@ Modification History (most recent at the top)
     (defmethod dump-plist-length ((self port-box))
       (+& (call-next-method)
           (if (and (not (circular-port? self))
-                   (not (and (in-bfs-environment?) (cross-file-port? self)))
-                   (or (cracked-port? self) (cross-file-port? self)))
+                   (or (cracked-port? self)))
             4 2)))
 
     ;; use this to avoid dumping display styles if we don't have to since even the

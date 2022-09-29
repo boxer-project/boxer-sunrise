@@ -798,9 +798,7 @@
 
 ;; mouse clicks on empty file boxes use this to trigger a read of the box
 (defun insure-box-contents-for-click (box)
-  (cond ((and (port-box? box) (not (null (cross-file-port-branch-links box))))
-         (articulate-target-branch (car (cross-file-port-branch-links box))))
-        ((and (port-box? box)
+  (cond ((and (port-box? box)
               (box? (ports box))
               (null (slot-value (ports box) 'first-inferior-row)))
          ;; fill the port target

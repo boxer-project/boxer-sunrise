@@ -184,10 +184,6 @@
     (maybe-run-trigger self 'bu::entry-trigger)))
 
 (defmethod enter ((self port-box) &optional (moved-p? t))
-  ;; if this is an unarticulated cross file port, relink it
-  (when (and (null (slot-value self 'ports))
-             (not (null (cross-file-port-branch-links self))))
-    (articulate-target-branch (car (cross-file-port-branch-links self))))
   (setq boxer-eval::*lexical-variables-root* (ports self))
   ;; is this appropriate ?
   (when (not (null moved-p?))
@@ -620,9 +616,6 @@
 ;;; inferior rows onto the queue for later processing
 
 (defmethod deallocate-self ((self box))
-  (when (storage-chunk? self)
-    ;; Inform the server that the box will be deleted
-    (boxnet::queue-for-server-deletion self))
   ;; should deallocate system dependent objects which have
   ;; been hung on the box
   (deallocate-system-dependent-structures self)

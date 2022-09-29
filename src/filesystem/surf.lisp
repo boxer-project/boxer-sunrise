@@ -247,3 +247,125 @@ Modification History (most recent at top)
     (append-row box (make-row (list doc-type "data" "saved" "in")))
     (append-row box (make-row (list (namestring file))))
     file))
+
+
+;;; Dumper/Loader utilities
+;;; The next 3 functions have to be in agreement about when and what to
+;;; dump.  They are used in the dumper.lisp file to control dumping of inferiors
+;;; as well as what extra info needs to be dumped out so that the box can
+;;; later be read in automatically
+;;; There are currently three types of auto reading boxes (black boxes)
+;;;    o Boxer Server Boxes: distinguished by numeric ID's in the :server-box-id
+;;;      plist property for the most part, these are obsolete
+;;;    o URL boxes: look for URL (Universal Resource Locator) Structs in the
+;;;      plist property.
+;;;    o File boxes: look for pathname (or string) in the :associated-file
+;;;      property in the plist
+;;;
+;;; 2022-09-28 All of the below have been moved here from client.lisp in the process
+;;;   of full deprecating the old Boxer Server code. Look there for the old full
+;;;   versions that contain the first check above for Boxer Server Boxes. Those have
+;;;   been removed from here.
+
+;; the dumper walks through all the inferiors of the box being dumped.  If an
+;; inferior box meets this test, then only its top level characteristics are
+;; dumped but we do not recurse through the inferior box's inferiors
+(defun no-inferiors-for-file? (box)
+  (let ((plist (plist box)))
+    (and (storage-chunk? box)
+         ;; storage-chunk boxes are the granularity of delayed loading
+         ;; we now test each of the three cases described above...
+         ;; we could probably streamline the logic but at least this way,
+         ;; the 3 cases are easily distinguished
+         (or (and (getf plist :url)
+                  (not (eq box *outermost-dumping-box*)))
+             (and (getf plist :associated-file)
+                  (not (eq box *outermost-dumping-box*)))))))
+
+;; sub box relocation table, branch file links, inf file links
+(defun storage-chunk-plist-half-length (box)
+  (let* ((half-length 0)
+         (boxtop-prop (getprop box :boxtop))
+         (boxtop (cond ((or (null boxtop-prop)
+                            (eq boxtop-prop :standard)
+                            (eq boxtop-prop :framed))
+                        (boxer::boxtop box))
+                       ((eq boxtop-prop :file)
+                        (let ((bt (boxer::boxtop box)))
+                          (when (boxer::graphics-sheet? bt) bt))))))
+    (cond
+     ((url-box? box) (incf& half-length) (when boxtop (incf& half-length)))
+     ((boxer::file-box? box)
+      ;(incf& half-length)
+      ;; 8/31/05 in addition to filename, we dump out dirs,name,type
+      (incf& half-length 4)
+      (when boxtop (incf& half-length))))
+    half-length))
+
+(defmethod dump-storage-chunk-plist-items ((self boxer::box) stream)
+  (let* ((boxtop-prop (getprop self :boxtop))
+         (boxtop (cond ((or (null boxtop-prop)
+                            (eq boxtop-prop :standard)
+                            (eq boxtop-prop :framed))
+                        (boxer::boxtop self))
+                       ((eq boxtop-prop :file)
+                        (let ((bt (boxer::boxtop self)))
+                          (when (boxer::graphics-sheet? bt) bt))))))
+    (cond
+     ((url-box? self)
+      (dump-boxer-thing :url stream)
+      (dump-box-url self stream)
+      (when boxtop
+        (dump-boxer-thing :cached-boxtop stream) (dump-boxer-thing boxtop stream)))
+     ((boxer::file-box? self)
+      (let* ((file (filename-for-file self))
+             (dirs (pathname-directory file))
+             (name (pathname-name      file))
+             (type (or (pathname-type file) :unspecific)))
+        (dump-boxer-thing :associated-file stream)
+        (dump-boxer-thing file stream)
+        ;; dump out the filename components as well for cross platform portability
+        (dump-boxer-thing :associated-file-dirs stream)
+        (dump-boxer-thing dirs stream)
+        (dump-boxer-thing :associated-file-name stream)
+        (dump-boxer-thing name stream)
+        (dump-boxer-thing :associated-file-type stream)
+        (dump-boxer-thing type stream))
+      (when boxtop
+        (dump-boxer-thing :cached-boxtop stream) (dump-boxer-thing boxtop stream)))
+     )))
+
+;; there are 4 case here, the relative filename flag can be on or off and
+;; the filename can already be either a relative one or an absolute one
+;; If the the filename matches the flag, we just return the filename otherwise
+;; we'll have to do some work
+(defmethod filename-for-file ((box boxer::box))
+  (let* ((local-flag (boxer::relative-filename? box))
+         (filename (getprop box :associated-file))
+         (relative? (and filename (eq (car (pathname-directory filename))
+                                      :relative))))
+    (if (or (and relative? local-flag)
+            (and (not relative?) (not local-flag)))
+        (namestring filename) ; we have what we want
+        (let* ((sup-file-box (boxer::current-file-box (superior-box box)))
+               (sup-file (getprop sup-file-box :associated-file)))
+          (cond ((null sup-file) ; save as absolute
+                 (if relative?
+                     (namestring (boxer::boxer-new-file-dialog
+                                  :prompt
+                                  "The Box has no superior filename to merge"
+                                  :directory filename
+                                  :box box))
+                     (namestring filename)))
+                ((and local-flag (not relative?))
+                 ;; we want to save relative, but have an absolute
+                 ;; use enough-namestring only for sorting directory
+                 ;; structure otherwise type info can get lost
+                 (namestring
+                  (make-pathname :directory (pathname-directory
+                                             (enough-namestring filename
+                                                                sup-file))
+                                 :name (pathname-name filename)
+                                 :type (pathname-type filename))))
+                (t ; must have relative, but want to save absolute
+                 (namestring (merge-pathnames filename sup-file))))))))
