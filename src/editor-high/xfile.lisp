@@ -245,7 +245,7 @@ Modification History (most recent at top)
      (let ((newpath (open-xref-file-dialog)))  ;; should we use :directory (xref-pathname xref)
        ;; newpath can point to a boxer file which should be handled
        ;; specially i.e. change to a file box
-       (cond ((box-file? newpath)
+       (cond ((boxer-file-contents? newpath)
               (remove-xfile-props box)
               (mark-box-as-file box newpath))
              (t

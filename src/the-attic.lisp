@@ -5789,6 +5789,23 @@ Modification History (most recent at top)
 ;;;; FILE: comse.lisp
 ;;;;
 
+
+;; sgithens 2022-09-29 This is duplicated by defun boxer-file-contents?
+(defun box-file? (pathname)
+  (or #+mcl (eq (ccl:mac-file-type pathname) :BOXR)
+      ;; peek at the beginning bytes...
+      (let ((b0 (ldb (byte 8 0) bin-op-format-version))
+            (b1 (ldb (byte 8 8) bin-op-format-version))
+            f0 f1 f2 f3)
+        (with-open-file (s pathname :element-type '(unsigned-byte 8))
+          (setq f0 (read-byte s nil nil) f1 (read-byte s nil nil)
+                f2 (read-byte s nil nil) f3 (read-byte s nil nil)))
+        (unless (or (null f0) (null f1) (null f2) (null f3))
+          (or
+           (and (= b0 f0) (= b1 f1) (= f2 *version-number*) (= f3 0))
+           ;; byte swapping version...
+           (and (= b0 f1) (= b1 f0) (= f3 *version-number*) (= f2 0)))))))
+
 #+mcl
 (defboxer-command com-link-to-mac-file ()
   "Make a Link to a non boxer Macintosh file"
