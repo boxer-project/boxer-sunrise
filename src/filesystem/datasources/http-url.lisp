@@ -45,6 +45,8 @@ Modification History (most recent at top)
   ;; (:metaclass block-compile-class)
   )
 
+(defclass https-url (http-url) ())
+
 (defvar *default-url-port* 80)
 
 (defmethod initialize-instance ((url http-url) &rest initargs)
