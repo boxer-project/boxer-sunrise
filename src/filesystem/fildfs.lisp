@@ -735,29 +735,6 @@ Modification History (most recent at the top)
         (or (= 1st-word bin-op-format-version)
             (= 1st-word *swapped-bin-op-format-version*))))))
 
-;; this should eventually use /etc/magic
-(defun file-type (filename)
-  (if (boxer-file-contents? filename) :boxer :text))
-
-(defvar *error-on-unknown-file-type* nil)
-
-(defvar *special-file-readers* nil)
-
-;; TYPE is a keyword returned by the file-type function
-;; FUNCTION is a function that takes 1 arg, a filename, and should return a box
-(defmacro deffile-type-reader (type function)
-  `(progn
-    (unless (fast-memq ',type *special-file-readers*)
-      (push ',type *special-file-readers*))
-    (setf (get ',type 'file-type-reader-function) ',function)))
-
-(defun get-special-file-reader (type)  (get type 'file-type-reader-function))
-
-;; the basic file readers...
-(deffile-type-reader :boxer load-binary-box-internal)
-
-(deffile-type-reader :text   read-text-file-internal)
-
 
 
 ;;; Hooks for file system interactions for loadable modules

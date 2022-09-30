@@ -154,6 +154,7 @@
                  (:file "filesystem/datasources/local-url")
                  (:file "filesystem/datasources/http-url")
                  (:file "filesystem/datasources/helpers")
+                 (:file "filesystem/formats")
                  ;; Beginning of `TRIGGER` module
                  ;; "Box triggers for Constraint Propagation and Other Fun Stuff"
                  (:file "trigger/trigger")
