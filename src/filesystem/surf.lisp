@@ -101,40 +101,6 @@ Modification History (most recent at top)
      (when *net-verbose*
        (boxer::status-line-display 'surf-message (format nil ,string . ,args)))))
 
-;; this is supposed to read a CRLF terminated line from a "clear text" connection
-(defun net-read-line (stream &optional (wait? t))
-  (when (or wait? (listen stream))
-    ;; this is an open coded version of ccl::telnet-read-line counting added
-    #+mcl
-    (unless (ccl:stream-eofp stream)
-      (let ((line (Make-Array 10 :Element-Type #+mcl 'base-Character
-                                               #+lispworks 'base-char
-                                               #-(or mcl lispworks) 'character
-                                 :Adjustable T :Fill-Pointer 0))
-            (count 0)
-            (char nil))
-        (do () ((or (null (setq char (ccl:stream-tyi stream)))
-                    (and (eq char #\CR) (eq (ccl:stream-peek stream) #\LF)))
-                (when char (ccl:stream-tyi stream))
-                (values line (null char) count))
-          (vector-push-extend char line)
-          (incf& count))))
-    #-mcl
-    (let ((eof-value (list 'eof)))
-      (unless (eq (peek-char nil stream nil eof-value) eof-value)
-        (let ((line (make-array 10 :element-type 'character
-                                :adjustable t :fill-pointer 0))
-              (count 0)
-              (char nil))
-          (do () ((or (null (setq char (read-char stream nil nil)))
-                      (and (eq char #\cr) (eq (peek-char nil stream nil nil) #\lf)))
-                  (when char (read-char stream))
-                  (values line (null char) count))
-            (vector-push-extend char line)
-            (incf& count)))))
-    ))
-
-
 ;;; Object definitions...
 
 
@@ -192,33 +158,21 @@ Modification History (most recent at top)
   (surf-message "Writing TCP data ~A"
                 (ftp-message-dots-string)))
 
-(defun save-net-data (stream box doc-type
-                             &optional
-                             (text-data? (member doc-type
-                                                 '(:text :binhex :uuencode)))
-                             pathname)
+(defun save-net-data (stream box doc-type &optional pathname)
   (let ((file (or pathname
-                  #+mcl
-                  (ccl::choose-new-file-dialog
-                   :prompt (format nil "Save ~A data in:" doc-type))
                   #+lispworks
                   (capi:prompt-for-file
                    "save MIME data in file:"
-                   :filter bw::*boxer-file-filters*
+                   :filters bw::*boxer-file-filters*
                    :operation :save :if-does-not-exist :ok
                    :owner bw::*boxer-frame*)))
         (eof-value (list 'eof)))
-    (if text-data?
-        (with-open-file (outstream file :direction :output)
-          (do ((line (net-read-line stream) (net-read-line stream)))
-              ((or (null line) (string= line ".")))
-            (write-line line outstream)))
-        (with-open-file (outstream file :direction :output
-                                   :element-type '(unsigned-byte 8))
-          (do ((byte (read-byte stream nil eof-value)
-                     (read-byte stream nil eof-value)))
-              ((eq byte eof-value))
-            (write-byte byte outstream))))
+    (with-open-file (outstream file :direction :output
+                                :element-type '(unsigned-byte 8))
+      (do ((byte (read-byte stream nil eof-value)
+                  (read-byte stream nil eof-value)))
+          ((eq byte eof-value))
+        (write-byte byte outstream)))
     ;; if we got here, make a box informing the user...
     (append-row box (make-row (list doc-type "data" "saved" "in")))
     (append-row box (make-row (list (namestring file))))

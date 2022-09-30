@@ -17493,6 +17493,39 @@ Modification History (most recent at top)
 ;;;; FILE: surf.lisp
 ;;;;
 
+;; this is supposed to read a CRLF terminated line from a "clear text" connection
+(defun net-read-line (stream &optional (wait? t))
+  (when (or wait? (listen stream))
+    ;; this is an open coded version of ccl::telnet-read-line counting added
+    #+mcl
+    (unless (ccl:stream-eofp stream)
+      (let ((line (Make-Array 10 :Element-Type #+mcl 'base-Character
+                                               #+lispworks 'base-char
+                                               #-(or mcl lispworks) 'character
+                                 :Adjustable T :Fill-Pointer 0))
+            (count 0)
+            (char nil))
+        (do () ((or (null (setq char (ccl:stream-tyi stream)))
+                    (and (eq char #\CR) (eq (ccl:stream-peek stream) #\LF)))
+                (when char (ccl:stream-tyi stream))
+                (values line (null char) count))
+          (vector-push-extend char line)
+          (incf& count))))
+    #-mcl
+    (let ((eof-value (list 'eof)))
+      (unless (eq (peek-char nil stream nil eof-value) eof-value)
+        (let ((line (make-array 10 :element-type 'character
+                                :adjustable t :fill-pointer 0))
+              (count 0)
+              (char nil))
+          (do () ((or (null (setq char (read-char stream nil nil)))
+                      (and (eq char #\cr) (eq (peek-char nil stream nil nil) #\lf)))
+                  (when char (read-char stream))
+                  (values line (null char) count))
+            (vector-push-extend char line)
+            (incf& count)))))
+    ))
+
 ;; use the suffix to try an infer some information about the content of the file
 (defun path-suffix (path)
   (unless (null path)
