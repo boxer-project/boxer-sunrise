@@ -9702,6 +9702,18 @@ if it is out of bounds
 ;;;; FILE: fildfs.lisp
 ;;;;
 
+;;;; Pathname Construction and manipulation...
+
+#+lispm
+(fs:define-canonical-type :box "Box"	;default type for SAVE/READ
+  (:tops-20 "Box")
+  (:unix42 "box")
+  (:vms "Box")
+  (:its "Box"))
+
+#+lispm
+(defprop :box 16. :binary-file-byte-size)
+
 ;; system dependent
 #+mcl
 (defvar *possible-boxer-file-mac-types* (list :text :???? :****
