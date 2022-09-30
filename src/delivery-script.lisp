@@ -53,6 +53,8 @@
 (ql:quickload :zpng)
 (ql:quickload :qbase64)
 (ql:quickload :html-entities)
+(ql:quickload :quri)
+
 ;; Loading these freetype2 dependencies so they are available when we manually
 ;; load the freetype compiles filed during startup.
 (ql:quickload :alexandria)

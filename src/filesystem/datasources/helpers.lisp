@@ -79,7 +79,7 @@
         (make-instance class
                        :scheme-string (if no-decode
                                           scheme-string
-                                          (decode-url-string scheme-string))))))
+                                          (quri:url-decode scheme-string))))))
 
 (defmethod fill-box-from-url ((box boxer::box))
   (let ((url (getf (slot-value box 'plist) :url)))
@@ -95,27 +95,7 @@
       (boxer::modified box)
       (boxer::mark-file-box-clean box))))
 
-;; decoding of unsafe characters is handled here
-;; look for "%" character encodings and convert them to characters
-(defun decode-url-string (string)
-  (let* ((slength (length string))
-         (decoded-string (make-array slength
-                                     :element-type #+mcl 'base-character
-                                                   #+lispworks 'base-char
-                                                   #-(or mcl lispworks) 'character
-                                     :fill-pointer 0)))
-    (do ((i 0 (1+& i)))
-        ((>=& i slength))
-      (let ((char (char string i)))
-        (cond ((char= char #\%)
-               ;; encoded character....
-               (vector-push (code-char (read-hex-pair (char string (+& i 1))
-                                                      (char string (+& i 2))))
-                            decoded-string)
-               (incf& i 2))
-              (t
-               (vector-push char decoded-string)))))
-    decoded-string))
+
 
 ;; this is basically boxer::initialize-box-from-box with extra
 ;; handling to reconcile the slots and properties in the embedded box

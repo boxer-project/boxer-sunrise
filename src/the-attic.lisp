@@ -17493,6 +17493,38 @@ Modification History (most recent at top)
 ;;;; FILE: surf.lisp
 ;;;;
 
+(defun read-hex-pair (char1 char2)
+  (flet ((char->number (char)
+           (case char
+             (#\0 0) (#\1 1) (#\2 2) (#\3 3) (#\4 4) (#\5 5) (#\6 6) (#\7 7)
+             (#\8 8) (#\9 9) ((#\a #\A) 10.) ((#\b #\B) 11.) ((#\c #\C 12.))
+             ((#\d #\D) 13.) ((#\e #\E) 14.) ((#\f #\F) 15.)
+             (otherwise (error "% in url's should be encoded as %25")))))
+    (+& (*& 16. (char->number char1)) (char->number char2))))
+
+;; decoding of unsafe characters is handled here
+;; look for "%" character encodings and convert them to characters
+(defun decode-url-string (string)
+  (let* ((slength (length string))
+         (decoded-string (make-array slength
+                                     :element-type #+mcl 'base-character
+                                                   #+lispworks 'base-char
+                                                   #-(or mcl lispworks) 'character
+                                     :fill-pointer 0)))
+    (do ((i 0 (1+& i)))
+        ((>=& i slength))
+      (let ((char (char string i)))
+        (cond ((char= char #\%)
+               ;; encoded character....
+               (vector-push (code-char (read-hex-pair (char string (+& i 1))
+                                                      (char string (+& i 2))))
+                            decoded-string)
+               (incf& i 2))
+              (t
+               (vector-push char decoded-string)))))
+    decoded-string))
+
+
 ;;; TCP implementation for lispworks....
 
 ;;now loaded in dumper.lisp
