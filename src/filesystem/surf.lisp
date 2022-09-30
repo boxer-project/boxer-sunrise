@@ -168,14 +168,6 @@ Modification History (most recent at top)
 
 ;; Boxer FS interface...
 
-;; use the suffix to try an infer some information about the content of the file
-(defun path-suffix (path)
-  (unless (null path)
-    (let ((last-dot (position #\. path :from-end t))
-          (semi (position #\; path :from-end t)))
-      (when last-dot
-        (subseq path (1+& last-dot) semi)))))
-
 ;; update function for boxer::*FILE-STATUS-LINE-UPDATE-FUNCTION*
 (defvar *ftp-message-dot-counter* 0)
 
