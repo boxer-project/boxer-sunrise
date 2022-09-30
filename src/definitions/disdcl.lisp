@@ -225,5 +225,5 @@
 
 
 (defun show-redisplay-init-code (fun)
-  (pp (nth (position fun *redisplay-initialization-list*)
+  (pprint (nth (position fun *redisplay-initialization-list*)
            *redisplay-related-initializations*)))

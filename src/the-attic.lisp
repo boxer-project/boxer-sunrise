@@ -14091,6 +14091,360 @@ to the :TEXT-STRING method of boxes. "
 |#
 
 ;;;;
+;;;; FILE: mcl-utils.lisp
+;;;;
+
+;; (defun cf (f)
+;;   (let* ((sysprops (sm::system-properties (sm::find-system-named 'boxer)))
+;;          (sp (getf sysprops :pathname-default))
+;;          (bp (getf sysprops :binary-pathname-default)))
+;;   (compile-file (merge-pathnames f sp)
+;;                 :output-file (merge-pathnames (sm::make-binary-pathname f)
+;;                                               (if (null bp) sp bp)))))
+
+(defun compops ()
+  (proclaim '(optimize (speed 3) (space 2) (compilation-speed 0)
+              ;; these next ones happen to be the defaults
+              (safety 1) (debug 1)))
+  (format t "~&Compiler Options are:~&")
+  #+mcl
+  (ccl::declaration-information 'optimize))
+
+(defun lcf (file-or-files &optional (load? t))
+  (cond ((and (listp file-or-files) load?)
+         (dolist (f file-or-files) (load (cf f))))
+        ((listp file-or-files)
+         (dolist (f file-or-files) (cf f)))
+        (load?
+         (load (cf file-or-files)))
+        (t (cf file-or-files))))
+
+;; printing help
+
+(defun pa (x) (let ((*print-array* t)) (print x)))
+(defun pp (x) (let ((*print-pretty* t)) (print x)))
+
+;;; this is general, but I don't know where to put it
+(defun whereis (command)
+  (get command :on-keys))
+
+(defun test-loop ()
+  (loop
+    (terpri)
+    (princ "Boxer> ")
+    (funcall (read))
+    (repaint)
+    ))
+
+;;; elsewhere
+;(setq *boxer-version-info* "Experimental Mac Boxer")
+
+#+mcl
+(defun keys-code ()
+  (format t "Press the key...")
+  (multiple-value-bind (message modifiers)
+                       (ccl::wait-key-event)
+    (let ((char-code (ldb (byte 8 0) message))
+          (key-code (ldb (byte 8 8) message)))
+      (format t "~&Char ~A (~C); Key ~A, Modifiers ~A" char-code
+              (code-char char-code) key-code modifiers))))
+
+;;; Editor support
+#+mcl
+(progn
+  (defun add-def-type (definer &optional (type 'function))
+      (when (boundp 'ccl::*define-type-alist*)
+  (pushnew (string-downcase (subseq (symbol-name definer) 3))
+     (cdr (assoc type ccl::*define-type-alist*))
+             :test #'equal)))
+
+  (add-def-type 'boxer-eval::defboxer-primitive 'function)
+  (add-def-type 'boxer-eval::defrecursive-funcall-primitive 'function)
+  (add-def-type 'boxer-eval::defrecursive-eval-primitive 'function)
+  (add-def-type 'box::defsprite-function 'function)
+  (add-def-type 'box::defboxer-command 'function)
+  )
+
+#|
+;; this was for pre 4.3 LWW
+#+lispworks
+(progn
+  (editor:define-top-level-form-parser boxer-eval::defboxer-primitive
+       editor::section-parse-name-only)
+  (editor:define-top-level-form-parser boxer-eval::defrecursive-funcall-primitive
+       editor::section-parse-name-only)
+  (editor:define-top-level-form-parser boxer-eval::defrecursive-eval-primitive
+       editor::section-parse-name-only)
+  (editor:define-top-level-form-parser defsprite-function
+       editor::section-parse-name-only)
+  (editor:define-top-level-form-parser defboxer-command
+       editor::section-parse-name-only)
+  ;; we have our own private version of defmethod so inform the editor
+  ;; this is the result of (editor::get-parser 'clos::defmethod)
+  (editor:define-top-level-form-parser defmethod
+      EDITOR::SECTION-PARSE-DEFMETHOD-TLF)
+)
+|#
+
+#+mcl
+(eval-when (load)
+  (format t "~&Changing control key mapping and Paste with styles")
+  (setq #-ccl-5.0 ccl::*control-key-mapping* #-ccl-5.0 :command
+        ccl::*autoload-traps* t
+        ccl::*paste-with-styles* nil)
+  )
+
+
+;; file header parsing
+(defun mod-history-start-line? (string)
+  (search "Modification History" string :test #'string-equal))
+
+(defun mod-history-end-line? (string)
+  (or (search "Start logging" string :test #'string-equal)
+      (search "Started " string :test #'string-equal)
+      (search "in-package" string :test #'string-equal)))
+
+(defun mod-history-date-line? (string)
+  (let ((month nil) (date nil) (year nil) (field :month) (1st-char nil))
+    (dotimes (i (length string))
+      (let ((char (char string i)))
+        (cond ((char= char #\space))
+              ((digit-char-p char)
+               (if (null 1st-char)
+                 (setq 1st-char (digit-char-p char))
+                 (case field
+                   (:month (setq month (+ (* 1st-char 10) (digit-char-p char))
+                                 1st-char nil))
+                   (:date (setq date (+ (* 1st-char 10) (digit-char-p char))
+                                1st-char nil))
+                   (:year (setq year (+ (* 1st-char 10) (digit-char-p char))
+                                1st-char nil)
+                          (return (values T month date year))))))
+              ((char= char #\/)
+               (case field
+                 (:month (cond ((and (null 1st-char) (null month)) (return nil))
+                               ((null month)
+                                (setq month 1st-char field :date))
+                               (t (setq field :date))))
+                 (:date (when (null date) (setq date 1st-char))
+                        (setq field :year)))
+               (setq 1st-char nil))
+              ((eq field :month) (return nil)))))))
+
+;; try and capture multiline entries which don't all start with a date...
+(defun get-mod-history-lines (file &optional
+                                   (outstream *standard-output*)
+                                   (show-filename? t))
+  (let ((eof-value (list 'eof))
+        (date-line? nil) (start? nil) (count 0))
+    (with-open-file (in file)
+      (loop
+       (let ((line (read-line in nil eof-value)))
+         (cond ((eq line eof-value) (return nil))
+               ((null start?)
+                (when (mod-history-start-line? line) (setq start? t)))
+               ((mod-history-end-line? line) (return count))
+               ((mod-history-date-line? line)
+                (setq date-line? t) (incf count)
+                (if show-filename?
+                    (format outstream "~&~A: ~A" (file-namestring  file) line)
+                  (format outstream "~&~A" line)))
+               ((not (null date-line?))
+                (if show-filename?
+                    (format outstream "~&~A: ~A" (file-namestring  file) line)
+                  (format outstream "~&~A" line)))))))))
+
+(defun get-mod-history-lines-after (file month date year
+                                         &optional
+                                         (outstream *standard-output*)
+                                         (show-filename? t))
+  (let ((eof-value (list 'eof))
+        (start? nil)
+        (date-line? nil)
+        (count 0))
+    (with-open-file (in file)
+      (loop
+       (let ((line (read-line in nil eof-value)))
+         (cond ((eq line eof-value) (return nil))
+               ((null start?)
+                (when (mod-history-start-line? line) (setq start? t)))
+               ((mod-history-end-line? line) (return count))
+               ((multiple-value-bind (is-date-line? lmonth ldate lyear)
+                    (mod-history-date-line? line)
+                  (and is-date-line?
+                       (let ((good-date?
+                              (or (> (mod (+ 50 lyear) 100) (mod (+ 50 year) 100))
+                                  (and (= (mod (+ 50 lyear) 100)
+                                          (mod (+ 50 year) 100))
+                                       (or (> lmonth month)
+                                           (and (= lmonth month)
+                                                (>= ldate date)))))))
+                         (unless good-date? (setq date-line? nil))
+                         good-date?)))
+                (setq date-line? t) (incf count)
+                (if show-filename?
+                    (format outstream "~&~A: ~A" (file-namestring  file) line)
+                  (format outstream "~&~A" line)))
+               ((not (null date-line?))
+                (if show-filename?
+                    (format outstream "~&~A: ~A" (file-namestring  file) line)
+                  (format outstream "~&~A" line)))))))
+    count))
+
+#|
+;; sgithens - no longer using the 'sm' version of package defining
+;; (dolist (file (sm::system-source-files (sm::find-system-named 'boxer)))
+;;   (get-mod-history-lines-after file 9 1 98))
+
+;; (with-open-file (out "C:\\Boxer\\ChangeLog" :direction :output
+;;                      :if-exists :supersede :if-does-not-exist :create)
+;;   (let ((total-changes 0))
+;;     (dolist (file (sm::system-source-files (sm::find-system-named 'boxer)))
+;;       (format out "~&     ~A   ~&" (enough-namestring file))
+;;       (format out "~&     ~D entries~&"
+;;               (let ((changes (get-mod-history-lines-after file 9 1 98 out nil)))
+;;                 (incf total-changes changes)
+;;                 changes)))
+;;     (format out "~&~&Total Changes = ~D" total-changes)))
+
+;; a histogram
+
+
+(defvar *modarray* (make-array 50 :initial-element 0))
+
+;; (dolist (file (sm::system-source-files (sm::find-system-named 'boxer)))
+;;   (let ((eof-value (list 'eof))
+;;         (start? nil))
+;;     (with-open-file (in file)(loop
+;;         (let ((line (read-line in nil eof-value)))
+;;           (cond ((eq line eof-value) (return nil))
+;;                 ((null start?)
+;;                  (when (mod-history-start-line? line) (setq start? t)))
+;;                 ((mod-history-end-line? line) (return nil))
+;;                 ((multiple-value-bind (date-line? lmonth ldate lyear)
+;;                      (mod-history-date-line? line)
+;;                    (and date-line?
+;;                         (incf (aref *modarray*
+;;                                     (cond ((zerop lyear) (+ lmonth 36))
+;;                                           ((< lyear 97) 0)
+;;                                           ((= lyear 97) lmonth)
+;;                                           ((= lyear 98) (+ lmonth 12))
+;;                                           ((= lyear 99) (+ lmonth 24))))))))))))))
+|#
+
+
+;;; source code utilities
+
+;; lines in PC files are CRLF terminated
+(defun mcl-file->pc-file (mac-file-in pc-file-out)
+  (with-open-file (in mac-file-in)
+    (with-open-file (out pc-file-out :direction :output :if-exists :supersede)
+      (let ((eof-value (list 'eof)))
+        (loop (let ((c (read-char in nil eof-value)))
+                (cond ((eq c eof-value) (return nil))
+                      ((char= c #\NewLine)
+                       (write-char #\NewLine out)
+                       (let ((nextchar (peek-char nil in nil nil)))
+                         (unless (and nextchar (char= nextchar #\LineFeed))
+                           (write-char #\LineFeed out))))
+                      (t (write-char c out))))))))
+  #+mcl
+  (ccl::set-file-write-date pc-file-out (file-write-date mac-file-in))
+  )
+
+;; lines in MCL files are only CR terminated
+;; lines in PC lisp are LF terminated, NOTE: meaning of #\NewLine is platform
+;; dependent !!!!
+(defun pc-file->mcl-file (pc-file-in mac-file-out)
+  (with-open-file (in pc-file-in)
+    (with-open-file (out mac-file-out :direction :output :if-exists :supersede)
+      (let ((eof-value (list 'eof)))
+        (loop (let ((c (read-char in nil eof-value)))
+                (cond ((eq c eof-value) (return nil))
+                      ((char= c #\cr)
+                       ;; make sure only 1 #\CR is issued for CRLF or CR
+                       (write-char #\cr out)
+                       (let ((nextchar (peek-char nil in nil nil)))
+                         (when (and nextchar (char= nextchar #\LineFeed))
+                           ;; if there is a LF, read it in an ignore it...
+                           (read-char in))))
+                      ((char= c #\lf) (write-char #\cr out))
+                      (t (write-char c out))))))))
+  ;; no equivalent in LW (sigh)
+  ;(ccl::set-file-write-date mac-file-out (file-write-date pc-file-in)))
+  )
+
+(defun no-convert (in-file out-file)
+  (with-open-file (in in-file)
+    (with-open-file (out out-file :direction ':output :if-exists ':overwrite :if-does-not-exist ':create)
+      (let ((eof-value (list 'eof)))
+        (loop (let ((c (read-char in nil eof-value)))
+                (cond ((eq c eof-value) (return nil))
+                      (t (write-char c out)))))))))
+
+;; need special handling for  "boxer.rsrc"
+(defvar *special-source-files* '("devlog" "plst.txt" "deliver-boxer.sh"))
+
+;; (defun update-source-files (synchfile dest-dir
+;;                                     &optional (file-conversion #'no-convert)
+;;                                     (system (sm::find-system-named 'boxer)))
+;;   (let* ((start-utime (cond ((listp synchfile)
+;;                              (prog1
+;;                                  (apply #'encode-universal-time (cdr synchfile))
+;;                                (setq synchfile (car synchfile))))
+;;                             (t
+;;                              (file-write-date synchfile))))
+;;          (source-dir (getf (sm::system-properties system) :pathname-default))
+;;          (all-source-files (append (directory (merge-pathnames "*.lisp" source-dir))
+;;                                    (with-collection
+;;                                      (dolist (sf *special-source-files*)
+;;                                        (collect (merge-pathnames sf source-dir))))))
+;;          (source-files (remove-if #'(lambda (f)
+;;                                       (let ((fwd (file-write-date f)))
+;;                                         (cond ((numberp fwd) (<= fwd start-utime))
+;;                                               (t (error "No write date for ~A" f)))))
+;;                                   all-source-files)))
+;;     (multiple-value-bind (sec min hou date month year)
+;;         (decode-universal-time start-utime)
+;;       (format t "~%Files changed since ~D:~D:~D on ~D/~D/~D"
+;;               hou min sec month date year))
+;;     (format t "~%Selected ~D of ~D files.  "
+;;             (length source-files) (length all-source-files))
+;;     (when (y-or-n-p "List ? ")
+;;       (dolist (f source-files) (print f)))
+;;     (when (y-or-n-p "Update changed files to ~S ?"
+;;                     (merge-pathnames "*.lisp" dest-dir))
+;;       (dolist (f source-files)
+;;         (let ((newpath (merge-pathnames (make-pathname :name (pathname-name f)
+;;                                                        :type (pathname-type f))
+;;                                         dest-dir)))
+;;           (format t "~%Updating ~S to ~S" f newpath)
+;;           (funcall file-conversion f newpath)))
+;;       (when (y-or-n-p "Update synch file ?")
+;;         (with-open-file (sfs synchfile :direction ':output :if-exists ':append)
+;;           (multiple-value-bind (sec min hou date month year)
+;;               (decode-universal-time (get-universal-time))
+;;             (declare (ignore sec min hou))
+;;             (format sfs "~%~D/~D/~D Synched source files~%" month date year)))
+;; ;        (funcall file-conversion synchfile (make-pathname :name (pathname-name synchfile)
+;; ;                                                          :type (pathname-type synchfile)
+;; ;                                                          :defaults dest-dir))
+;;         ))))
+
+#|
+
+
+(update-source-files "/Boxer/SRC/OpenGL/SYNCHROSTAMP" "/Users/edwardlay/Public/Drop Box/")
+
+(update-source-files "/Boxer/SRC/OpenGL/SYNCHROSTAMP" (capi::prompt-for-directory "Send Files) to: "))
+
+;; midnight feb 9 2011
+(update-source-files '("/Boxer/SRC/OpenGL/SYNCHROSTAMP" 0 0 0 9 2 2011) (capi::prompt-for-directory "Destination directory:"))
+
+|#
+
+
+;;;;
 ;;;; FILE: misc-prims.lisp
 ;;;;
 
