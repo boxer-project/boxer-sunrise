@@ -148,10 +148,6 @@
                  ;; "Saving and Restoring Boxes To/From Files"
                  (:file "filesystem/dumper")
                  (:file "filesystem/loader")
-                 ;; sgithen 2022-09-28 Removing old boxer server code. Fully archive
-                 ;; these two files if no issues come up over the next release
-                 ;;  (:file "filesystem/clientmacros")
-                 ;;  (:file "filesystem/client")
                  (:file "filesystem/surf")
                  (:file "filesystem/datasources/url")
                  (:file "filesystem/datasources/net-url")
