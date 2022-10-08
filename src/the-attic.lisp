@@ -9727,6 +9727,73 @@ if it is out of bounds
 ;;;; FILE: file-prims.lisp
 ;;;;
 
+(defvar *max-filename-length* 50)
+
+;; pathnames derived from other platforms wont parse into directories correctly
+(defun truncated-filename (pathname)
+  (unless (pathnamep pathname) (setq pathname (pathname pathname)))
+  (let* ((dirs (pathname-directory pathname))
+         (name (pathname-name pathname)) (type (pathname-type pathname))
+         (lname (length name)) (ltype (length type))
+         (ellipsis? t)
+         (endsize (cond ((and (null name) (or (null type) (eq type ':unspecific)))
+                         (setq ellipsis? nil) 0)
+                        ((or (null type) (eq type ':unspecific))
+                         (+ 3 lname))
+                        ((null name) (+ 3 ltype))
+                        (t (+ 3 lname 1 ltype))))
+         (return-string (make-string *max-filename-length*))
+         (dirstop (max& 0 (- *max-filename-length* endsize)))
+         (idx 0))
+    ;(declare (dynamic-extent return-string))
+    (flet ((add-char (&optional (char #+mcl #\: #-mcl #\/))
+             (when (= idx dirstop) (throw 'dir-exit nil))
+             (setf (char return-string idx) char)
+             (incf idx))
+           (add-string (string &optional (throw? t))
+             (let ((end (length string)))
+               (do ((i 0 (1+ i)))
+                   ((or (= i end) (= idx *max-filename-length*)))
+                 (when (and throw? (= idx dirstop)) (throw 'dir-exit nil))
+                 (setf (char return-string idx) (char string i))
+                 (incf idx))))
+           (add-ellipsis ()
+             (dotimes (i 3) (setf (char return-string idx) #\.) (incf idx))))
+      (when (eq (car dirs) :relative)  (add-char))
+      (catch 'dir-exit
+        (unless (zerop dirstop)
+          (dolist (dir (cdr dirs) (setq ellipsis? nil))
+            (add-string dir) (add-char))))
+      (unless (null ellipsis?)
+        (add-ellipsis))
+      (cond ((zerop dirstop)
+             ;; this means the name.type is already longer than the alloted space
+             (cond ((null type)
+                    (do ((nidx (+ (- lname *max-filename-length*) 3) (1+ nidx)))
+                        ((>= idx *max-filename-length*))
+                      (setf (char return-string idx) (char name nidx))
+                      (incf idx)))
+                   (t
+                    ;; truncated name
+                    (do ((nidx (+ (- lname *max-filename-length*) 3 1 ltype)
+                               (1+ nidx)))
+                        ((>= idx (- *max-filename-length* ltype 1)))
+                      (setf (char return-string idx) (char name nidx))
+                      (incf idx))
+                    (add-char #\.)
+                    ;; and now the type
+                    (do ((i 0 (1+ i)))
+                        ((or (= i ltype) (= idx *max-filename-length*)))
+                      (setf (char return-string idx) (char type i))
+                      (incf idx)))))
+            ((and (null name) (or (null type) (eq type ':unspecific))))
+            ((or (null type) (eq type ':unspecific))
+             (add-string name nil))
+            ((null name) (add-string type nil))
+            (t (add-string name nil) (add-char #\.) (add-string type nil))))
+    (if (< idx *max-filename-length*)
+        (subseq return-string 0 idx)
+        return-string)))
 
 ;;; save now saves to a gensym'd name and then renames if no errors
 ;;; occur.  Also mv's an existing file of the same name to a backup name
