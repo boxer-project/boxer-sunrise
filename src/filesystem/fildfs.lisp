@@ -102,8 +102,6 @@ Modification History (most recent at the top)
         . ,body)
       (deallocate-resource ',resource .resource-thing.))))
 
-
-
 ;;initializations...
 
 (defvar *boxer-pathname-default* (user-homedir-pathname)
@@ -723,19 +721,12 @@ Modification History (most recent at the top)
   "Whether to be forgiving about files ending with \".box\"")
 
 
-;;;; special file readers
-;; these can be platform specific (i.e. :pict for the mac) or
-;; they can work across platforms for defined standards like GIF
-;; EVERYTHING must support the types :boxer and :text
-
 (defun boxer-file-contents? (filename)
   (with-open-file (s filename :direction :input :element-type '(unsigned-byte 8.))
     (let ((1st-word (read-file-word-from-stream s nil nil)))  ; file can be empty
       (when 1st-word
         (or (= 1st-word bin-op-format-version)
             (= 1st-word *swapped-bin-op-format-version*))))))
-
-
 
 ;;; Hooks for file system interactions for loadable modules
 ;;; in general, function/methods get pushed onto these lists by the defs in
@@ -749,7 +740,3 @@ Modification History (most recent at the top)
    item to the stream")
 
 (defvar *load-module-init-keywords* nil)
-
-;;;
-
-
