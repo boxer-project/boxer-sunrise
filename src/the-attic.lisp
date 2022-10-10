@@ -9415,6 +9415,27 @@ if it is out of bounds
 ;;;; FILE: editor.lisp
 ;;;;
 
+;;; These are used ONLY by the comaptability loader and should
+;;; eventually be flushed or moved to compat-loader.lisp
+
+(DEFMETHOD SEMI-INIT ((SELF BOX) INIT-PLIST)
+           (SETF   ;;these come from box proper
+                   (FIRST-INFERIOR-ROW SELF) (GETF INIT-PLIST ':SUPERIOR-ROW)
+                   (CACHED-ROWS SELF)        NIL
+                   (NAME SELF)       (WHEN (GETF INIT-PLIST :NAME)
+                                           (MAKE-NAME-ROW `(,(GETF INIT-PLIST :NAME))))
+                   (DISPLAY-STYLE-LIST SELF) (OR (GETF INIT-PLIST ':DISPLAY-STYLE-LIST)
+                                                 (DISPLAY-STYLE-LIST SELF)))
+           (WHEN (NAME-ROW? (slot-value self 'name))
+                 (SET-SUPERIOR-BOX (slot-value self 'name) SELF))
+           (SET-TYPE SELF (OR (GETF INIT-PLIST ':TYPE) 'DOIT-BOX)))
+
+(DEFMETHOD RETURN-INIT-PLIST-FOR-FILING ((SELF BOX))
+           `(:TYPE ,(class-name (class-of SELF))
+                    :DISPLAY-STYLE-LIST ,(DISPLAY-STYLE-LIST SELF)))
+
+
+
 #|
 (defun get-boxer-status-string (outermost-box-name other-string)
   (flet ((get-boxer-version-string ()
