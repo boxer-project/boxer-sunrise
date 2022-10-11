@@ -225,8 +225,9 @@
                  (:file "site/xten")
                  ;; Beginning of `menu` module
                  ;;    "Menus for Harlequin Lispworks on the PC"
-                 (:file "boxwin/lw-capi/lw-menu")
-                 (:file "boxwin/lw-capi/preferences-dialog")
+                 #+lispworks (:file "boxwin/lw-capi/file-dialogs")
+                 #+lispworks (:file "boxwin/lw-capi/lw-menu")
+                 #+lispworks (:file "boxwin/lw-capi/preferences-dialog")
                  #+lispworks (:file "boxwin/lw-capi/confirm-quit-dialogs")
 
 
