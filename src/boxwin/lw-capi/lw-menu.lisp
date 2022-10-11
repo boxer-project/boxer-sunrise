@@ -86,17 +86,9 @@ Modification History (most recent at top)
 
 (in-package :boxer-window)
 
-
 ;;; File System Helpers
 
-;; capi:prompt-for-file chokes on raw mac filenames (with ":"'s)
-(defun massage-pathname (pathname)
-  (make-pathname :directory (pathname-directory pathname)
-                 :name      (pathname-name      pathname)
-                 :type      (pathname-type      pathname)))
-
 (defvar *boxer-file-filters* '("Box Files" "*.box;*.box~;*.box#" "All Files" "*.*"))
-
 
 ;; mac legacy vars, see boxer-new-file-dialog for usage
 (defvar *save-file-format* :BOXR)

@@ -12851,6 +12851,13 @@ if it is out of bounds
 ;;;; FILE: lw-menu.lisp
 ;;;;
 
+;; capi:prompt-for-file chokes on raw mac filenames (with ":"'s)
+(defun massage-pathname (pathname)
+  (make-pathname :directory (pathname-directory pathname)
+                 :name      (pathname-name      pathname)
+                 :type      (pathname-type      pathname)))
+
+
 ;; On the mac, these read/wrote into the a file's resource fork
 (defun boxer::write-boxer-file-info (pathname &key read-only? world-box? flags)
   (declare (ignore pathname read-only? world-box? flags))
