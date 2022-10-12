@@ -148,6 +148,7 @@
                  ;; "Saving and Restoring Boxes To/From Files"
                  (:file "filesystem/dumper")
                  (:file "filesystem/loader")
+                 (:file "filesystem/boxer-document-format")
                  (:file "filesystem/surf")
                  (:file "filesystem/datasources/url")
                  (:file "filesystem/datasources/net-url")

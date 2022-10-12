@@ -236,7 +236,10 @@ Modification History (most recent at top)
   (let* ((dest-pathname (check-valid-filename-for-primitive
                          filename *boxer-pathname-default*))
          (fps (get-boxer-file-properties dest-pathname))
-         (file-format (or format (getprop box :preferred-file-format) :boxer)))
+         (file-format (or format
+                          (getprop box :preferred-file-format)
+                          (file-type filename)
+                          :boxer)))
     ;; first perform various kinds of reality checking
     ;;
     ;; we can only save out top level boxes for now, I suppose it
@@ -304,7 +307,10 @@ Modification History (most recent at top)
     ;; need to make the appropriate file type save functions more uniform 1st
     (case file-format
       (:boxer (save-internal box dest-pathname))
+      (:application/box (save-internal box dest-pathname))
       (:text (save-text-file-internal box dest-pathname))
+      (:text/plain (save-text-file-internal box dest-pathname))
+      (:application/boxer.document (save-box-to-boxer-document-format-zipped box dest-pathname))
       (t (save-internal box dest-pathname)))
     ;; if everything worked, then update the file properties so we don't
     ;; get an error the next time we try and save out the file

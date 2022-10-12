@@ -24,6 +24,7 @@
 (ql:quickload :trivial-garbage)
 
 (ql:quickload :cffi)
+(ql:quickload :zip)
 
 (defvar *boxer-project-dir* (make-pathname :directory (pathname-directory *load-truename*)))
 

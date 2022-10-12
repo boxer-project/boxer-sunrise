@@ -18,7 +18,15 @@
 
 ;;; File System Helpers
 
-(defvar *boxer-file-filters* '("Box Files" "*.box;*.box~;*.box#" "All Files" "*.*"))
+(defvar *boxer-file-filters* '("Box Files" "*.box;*.box~;*.box#;*.boxer" "All Files" "*.*"))
+(defvar *boxer-save-file-filters*
+  '("Box File 98-2022" "*.box"
+    "Boxer Document" "*.boxer"
+    "All Files" "*.*")
+  "For saving files, we want to keep .box and .boxer separate so the user can choose
+  between them."
+  )
+
 
 ;; mac legacy vars, see boxer-new-file-dialog for usage
 (defvar *save-file-format* :BOXR)
@@ -62,7 +70,7 @@
                           1 0)))
   (multiple-value-bind (path success?)
         (capi:prompt-for-file prompt
-                              :filters *boxer-file-filters*
+                              :filters *boxer-save-file-filters*
                               :pathname (merge-pathnames
                                          (or directory "")
                                          boxer::*boxer-pathname-default*)
