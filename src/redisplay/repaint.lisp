@@ -836,7 +836,10 @@
               (multiple-value-bind (lef top rig bot)
                                    (box-borders-widths box-type self)
                                    (cond ((not (null *tutti-frutti*))
-                                          (colorit  (- wid rig lef) (- hei bot top) lef top)))))
+                                          (colorit  (- wid rig lef) (- hei bot top) lef top))
+                                         ((not (null (get-background-color actual-obj)))
+                                          (with-pen-color ((get-background-color actual-obj))
+                                            (draw-rectangle (- wid rig lef) (- hei bot top) lef top))) )))
             (repaint-inferiors-pass-2-sb self)
             ;; draw any scroll info no
             (draw-scroll-info self)

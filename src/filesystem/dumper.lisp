@@ -1201,7 +1201,13 @@ Modification History (most recent at the top)
               (push 'xref-dump-plist-length *dump-plist-length-hook*))
             (unless (member 'xref-dump-plist-internal *dump-plist-internal-hook*)
               (push 'xref-dump-plist-internal *dump-plist-internal-hook*))
-            )
+
+  (unless (member 'css-styles-dump-plist-length *dump-plist-length-hook*)
+    (push 'css-styles-dump-plist-length *dump-plist-length-hook*))
+  (unless (member 'css-styles-dump-plist-internal *dump-plist-internal-hook*)
+    (push 'css-styles-dump-plist-internal *dump-plist-internal-hook*))
+
+)
 
 ;;;; Debugging support
 

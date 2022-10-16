@@ -291,7 +291,17 @@
 ;; look in plist for now, probably not a good idea to use display-style-lists
 ;; unless colored borders become commonplace
 
-(defun get-border-color (box) (getprop box 'border-color *default-border-color*))
+(defun get-background-color (box)
+  (let ((color-rgb-hex (get-css-style box :background-color)))
+    (if color-rgb-hex
+      (bw::ogl-convert-color (rgb-hex->rgb color-rgb-hex))
+      nil)))
+
+(defun get-border-color (box)
+  (let ((color-rgb-hex (get-css-style box :border-color)))
+    (if color-rgb-hex
+      (bw::ogl-convert-color (rgb-hex->rgb color-rgb-hex))
+      *default-border-color*)))
 
 ;; hook for colored borders (fold transparency in here too ? (via line stipple))
 (defmacro with-border-drawing-styles ((actual-obj) &body body)

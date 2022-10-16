@@ -912,6 +912,7 @@ should ignore it.")
                   (putprop self (make-xref :pathname (pathname value))
                            :Xref)
                   (set-xref-boxtop-info self))))
+    (:css-styles (putprop self value :css-styles))
     (t (cond ((fast-memq keyword *load-module-init-keywords*)
               (funcall (get keyword 'load-module-function) self value))
              ((fast-memq keyword *subclass-file-init-keywords*) ; yuck

@@ -324,6 +324,19 @@ Modification History (most recent at top)
     (push 'vcvc-xref-hook *vcvc-special-structures-hook*))
   (unless (member 'print-vc-xref-hook *print-vc-special-structures-hook*)
     (push 'print-vc-xref-hook *print-vc-special-structures-hook*))
+
+  ;; 2022-10-16 TODO sgithens Eventually move these alongside the actual boxer-styles
+  ;; code. Currently, it's loaded before these hook lists exist, so we are
+  ;; keeping them here until I properly reorganize things.
+  ;; Same goes for the hooks registered in dumper.lisp.
+  (unless (member 'copy-css-styles-special-property *copy-special-box-properties-hook*)
+    (push 'copy-css-styles-special-property *copy-special-box-properties-hook*))
+  (unless (member 'edvc-css-styles-hook *edvc-special-structures-hook*)
+    (push 'edvc-css-styles-hook *edvc-special-structures-hook*))
+  (unless (member 'vcvc-css-styles-hook *vcvc-special-structures-hook*)
+    (push 'vcvc-css-styles-hook *vcvc-special-structures-hook*))
+  (unless (member 'print-vc-css-styles-hook *print-vc-special-structures-hook*)
+    (push 'print-vc-css-styles-hook *print-vc-special-structures-hook*))
   )
 
 
