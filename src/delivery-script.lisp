@@ -60,6 +60,8 @@
 (ql:quickload :alexandria)
 (ql:quickload :trivial-garbage)
 (ql:quickload :cffi)
+(ql:quickload :zip)
+
 ;; (ql:quickload :cl-freetype2)
 
 (asdf:load-system :boxer-sunrise)

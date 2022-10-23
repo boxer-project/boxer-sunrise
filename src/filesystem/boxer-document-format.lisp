@@ -19,6 +19,14 @@
 
 (in-package :boxer)
 
+(defun get-default-template ()
+  "We have this special function to generate our own template rather than use the default, because when we deliver
+  binaries on LispWorks, the system temporary directory from the image can get cached, and the folders for temporary
+  directory locations are always different between instances of users/machines. Using this forces a lookup of the
+  current temporary directory, rather than reusing the temporary directory root from the machine that the macOS/platform
+  Application was built on."
+  (format nil "~A%" (pathname (cl-fad::get-default-temporary-directory))))
+
 (defun save-box-to-boxer-document-format-zipped (box filename)
   "Saves a box to the zipped boxer document format.
   We are associating this format with the .boxer file extension.
@@ -31,7 +39,8 @@
   ;; 1. Create a zip manifest
   (zip:with-output-to-zipfile (zf filename :if-exists :supersede)
     ;; 2. Stream data to a temp file
-    (cl-fad:with-open-temporary-file (temp-stream :direction :io :element-type '(unsigned-byte 8))
+    (cl-fad:with-open-temporary-file (temp-stream :direction :io :element-type '(unsigned-byte 8)
+                                      :template (get-default-template))
       (dump-top-level-box box nil temp-stream)
       (close temp-stream)
       ;; 3. Add that temp-file as a zipfile entry
@@ -45,7 +54,8 @@
   boxer/document.box, open the file and return the box CLOS object for use."
   (zip:with-zipfile (zf filename)
     (let ((box-file-entry (zip:get-zipfile-entry "boxer/document.box" zf)))
-      (cl-fad:with-open-temporary-file (temp-stream :direction :io :element-type '(unsigned-byte 8))
+      (cl-fad:with-open-temporary-file (temp-stream :direction :io :element-type '(unsigned-byte 8)
+                                        :template (get-default-template))
         (zip:zipfile-entry-contents box-file-entry temp-stream)
         (close temp-stream)
         (load-binary-box-internal (pathname temp-stream))))))
