@@ -300,88 +300,15 @@
   (:panes
    (text-toolbar
     capi:toolbar
-    :enabled nil
-    :image-width 32 :image-height 32
-    :default-image-set (capi:make-general-image-set
-                        :id 'toolbar-scratch-images
-                        :image-count 4)
-    :items (list ;; Font Selection
-                 (make-instance 'capi:toolbar-component
-                                :items (list change-font-toolbar-button
-                                             change-fontsize-toolbar-button
-                                             change-fontcolor-toolbar-button))
-                 (make-instance 'capi:toolbar-component
-                                :items (list change-bold-toolbar-button change-italics-toolbar-button)
-                                :interaction :multiple-selection)
-                 (make-instance 'capi:toolbar-component
-                                :min-width 32
-                                :min-height 32
-                                :items (list run-toolbar-button stop-toolbar-button)))
-    :callback-type :interface
+    :image-width 16 :image-height 16
+    :flatp t
+    :items (make-toolbar-items)
+    :default-image-set
+                        (capi:make-general-image-set
+                         :image-count 10
+                         :id (gp:read-external-image
+                               (merge-pathnames "./images/boxer16x16icons.png" boxer::*resources-dir*)))
    )
-   (run-toolbar-button
-    capi:toolbar-button
-    :image 0
-    :callback (lambda (frame)
-                (menu-do-line nil nil)))
-   (stop-toolbar-button
-    capi:toolbar-button
-    :image 2
-    :callback (lambda (frame)
-                (menu-stop nil nil)))
-   (change-italics-toolbar-button
-    capi:toolbar-button
-    :text "I"
-    :selection-callback #'(lambda (self) (font-style-menu-action :italic 0))
-    :retract-callback #'(lambda (self) (font-style-menu-action :italic 0))
-   )
-   (change-bold-toolbar-button
-    capi:toolbar-button
-    :text "B"
-    :selection-callback #'(lambda (self) (font-style-menu-action :bold 0))
-    :retract-callback #'(lambda (self) (font-style-menu-action :bold 0))
-   )
-   (change-font-toolbar-button
-    capi:option-pane
-    :items boxer::*font-families*
-    :visible-max-width '(:character 20)
-    :selection-callback #'(lambda (font interface)
-                            (font-menu-action font 0)))
-   (change-fontsize-toolbar-button
-    capi:option-pane
-    :items '("8" "9" "10" "11" "12" "14" "16" "18" "20" "22" "24" "26" "28" "36" "48" "72")
-    :visible-max-width '(:character 3)
-    :selection-callback #'(lambda (size interface)
-                            (font-size-menu-action (parse-integer size) 0)))
-   (change-fontcolor-toolbar-button
-    capi:option-pane
-    ;; We use the symbols for the colors, rather than the colors themselves since they
-    ;; are likely not created yet at this point.
-    :items (list (make-instance 'capi::menu-item
-                                 :title "Black" :data 'boxer::*black*)
-                 (make-instance 'capi::menu-item
-                                 :title "White" :data 'boxer::*white*)
-                 (make-instance 'capi::menu-item
-                                 :title "Red" :data 'boxer::*red*)
-                 (make-instance 'capi::menu-item
-                                 :title "Green" :data 'boxer::*green*)
-                 (make-instance 'capi::menu-item
-                                 :title "Blue" :data 'boxer::*blue*)
-                 (make-instance 'capi::menu-item
-                                 :title "Cyan" :data 'boxer::*cyan*)
-                 (make-instance 'capi::menu-item
-                                 :title "Magenta" :data 'boxer::*magenta*)
-                 (make-instance 'capi::menu-item
-                                 :title "Yellow" :data 'boxer::*yellow*)
-                 (make-instance 'capi::menu-item
-                                 :title "Orange" :data 'boxer::*orange*)
-                 (make-instance 'capi::menu-item
-                                 :title "Purple" :data 'boxer::*purple*)
-                 (make-instance 'capi::menu-item
-                                 :title "Gray" :data 'boxer::*gray*))
-    :visible-max-width '(:character 8)
-    :selection-callback #'(lambda (color interface)
-                            (font-color-menu-action (symbol-value color) nil)))
    (name-pane capi:title-pane :text "status line"
               :min-width nil :max-width :screen-width
               :visible-min-height *boxer-status-pane-height*
@@ -797,6 +724,7 @@
    :width  *boxer-frame-initial-width*
    :height *boxer-frame-initial-height*
    :confirm-destroy-function 'lw-quit
+   ; :toolbar-items (make-toolbar-items)
    ))
 
 (defvar *macos-finished-launching* nil

@@ -99,11 +99,19 @@
     (setf (getf css-styles style-name) style-value)
     (putprop box css-styles :css-styles)))
 
+(defmethod get-css-style (obj style-name)
+  nil)
+
 (defmethod get-css-style ((box plist-subclass) style-name)
   "Sets the css style value by it's name on a box, row, or other plist-subclass"
   (let ((css-styles (getprop box :css-styles '())))
-    (getf css-styles style-name))
-  )
+    (getf css-styles style-name)))
+
+(defmethod remove-css-style ((box plist-subclass) style-name)
+  "Removes the css style value by it's name on a box, row, or other plist-subclass"
+  (let ((css-styles (getprop box :css-styles '())))
+    (remf css-styles style-name)
+    (putprop box css-styles :css-styles)))
 
 ;;;
 ;;; From looking at the primary other example, which is xref, there appear to be 6 total

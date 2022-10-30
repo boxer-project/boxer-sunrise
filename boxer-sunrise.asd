@@ -70,6 +70,7 @@
                  ;; "The interface between the Boxer Editor and the window system"
                  ;; these are also window system specific
                  (:file "boxwin/eval-command-loop")
+                 #+lispworks (:file "boxwin/lw-capi/color-picker-menu")
                  #+lispworks (:file "boxwin/lw-capi/lw-toolbar")
                  #+lispworks (:file "boxwin/lw-capi/click-handlers")
                  #+lispworks (:file "boxwin/lw-capi/pane-callbacks")
