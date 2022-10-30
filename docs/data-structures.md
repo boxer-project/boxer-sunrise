@@ -181,8 +181,11 @@ in the architecture.
 
 ### defboxer-primitive
 
-### defrecursive-eval-primitive
+Allows writing primitives in a style similar to `defun` but obeys the evaluator's calling convention: pops arguments off VPDL stack, supports flavoured arguments, and pushes result onto VPDL stack.
 
-### defrecursive-funcall-primitive
+### defrecursive-eval-primitive / defrecursive-funcall-primitive
+
+Necessary for creating primitives that can evaluate Boxer code (`if`, `loop` etc.).
+Such primitives can't call the evaluator, they must be split into before/after/cleanup parts; state between those parts may be kept in global variables that will get saved/restored in a custom PDL frame type that gets defined for each such primitive.
 
 ### defboxer-key
