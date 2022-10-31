@@ -1,5 +1,122 @@
 # Change Log
 
+## 3.4.11 2022-10-31
+
+### Overview
+
+Welcome to Boxer release 3.4.11 2022-10-31! This release includes a large amount of under the hood
+refactoring in the areas of the filesystem, redisplay and editor interaction, and other areas. Major
+features include the first iteration of the new Boxer Document format, a zipped archive similar to
+docx and other modern office document formats.  Also included are several additions to the toolbar as
+well as data structure updates to allow setting background and border colors on boxes. Future versions
+will allow arbitrary colors as soon as the drop down widget is expanded to support that.
+
+This release fixes and reintroduces the historically important Boxer Stepper in an initial
+very alpha form. Other minor item include fixes for crashing on horizontal scrolling and other
+iteractions, HTTPS support for opening boxes, lots of cleanup and refactoring, and documentation.
+
+Thank you to Beni Cherniavsky-Paskin ( @cben ) for contributing written documentation this release to
+the markdown files with descriptions of several Boxer concepts and internal details.
+
+### Full Change Log
+
+bugs-120 Ignoring horizontal scroll errors
+
+design-5 Adding closet, toplevel, run/stop, box border/background items to toolbar
+
+sunrise-44 Adding a centralized way to get/set styles and support for box background and border color.
+
+sunrise-62 First major iteration of work for the new Boxer Document File Format
+  - Moving special-file-readers to it's own formats.lisp for future work
+
+stepper
+  - Fixing up the historic Boxer Movie Stepper. Can now be bound to `com-step`
+  - Binding com-step to control-option-return
+
+HTTPS Support
+
+doco
+  - Adding documentation for the boxer save format
+  - Adding docstring for defmacro with-hilited-box
+  - Contributed glossary content from Beni Cherniavsky-Paskin @cben
+
+refactor
+  - Removing mcl specific checks for world box to com-open-box-file. Also, always repainting.
+  - Reorganizing url datasource code
+    - There is a class hierarchy in boxer for loading boxes from
+      various sources such as http or the filesystem. Cleaning
+      these up and reorganizing them in to clearer files.
+    - This commit is simply cut and pasting sections to different
+      files. Changes and cleanup will be done separately.
+  - Removing old comm and OpenTransport requires.
+  - Moving with-hilited-box from fildfs to new-borders.
+  - Switching to log:debug from BFS debugging-message.
+  - Removing last major sections of deprecated boxer server client code
+
+    Removes the last vestiges of the client properties that were kept on the plist
+    of boxes, most with the prefix of cross-file-*. This includes hooks for it in the
+    virtual copy, editor, loading/dumping, and other minor bits of architecture. This
+    removes a lot of older complex code that hasn't been used since probably the Sun
+    days.
+
+    - Completely commenting out client.lisp an clientmacros.lisp from our asdf modules.
+      Will completely archive the files after more testing and usage.
+    - Moved still necessary items to surf.lisp:
+        - defuns no-inferiors-for-file?, storage-chunk-plist-half-length
+        - defmethods dump-storage-chunk-plist-items, filename-for-file
+  - Replacing home grown decode-url-string with quri:url-decode
+  - Swapping out home grown path-suffix for CLHS pathname-type.
+  - Removing un-needed net-read-line, fixing defun save-net-data.
+  - Moving file dialogs to new file-dialogs.lisp
+  - Marginal improvement in the debug overlay generation.
+
+the-attic
+  - Archiving dump-top-level-box-to-stream from dumper.lisp
+  - Archiving things related to *redisplay-clues*
+    - defvar *REDISPLAY-CLUES*
+    - defun REDISPLAY-CLUE (and setf ':redisplay-clue)
+  - Moving unused defun make-file-box from comse.lisp to the attic.
+  - Removing old mcl version of com-help text.
+  - Moving unused #+mcl edit-mac-file-ref to the attic from xfile.lisp
+  - Removing last traces of boxer-file-info
+    - Removing write-boxer-file-info and boxer-file-info
+    - These were only used on old versions of macOS with data in
+      file resource forks
+  - Removing fill-box-from-bfs-server, record-copy-file-info
+    - These are some last bits of the BFS that appear to use box props
+      :boxer-server-id and :copy-box-id, neither of which show up when
+      egrepping through all our old .box files.
+  - Removing old file compression utils
+    - Removing defvars *automatic-file-compression-on*, *file-compress-minimum-length*
+    - Removing defuns compress-file, uncompress-file, maybe-uncompress-file
+    - Obsoleting primitive compress-file
+    - Apparently we used to have file compression that farmed out it's work to a unix
+      command line invocation
+  - Removing old unix command line utils, alus, and file stuff from Suns
+    - Removing defuns make-temporary-filename, read-box-from-text-stream, boxer-run-unix-program
+      fix-file-alus, convert-file-alu
+    - Removing defvar *file-conversion-alu-alist*
+    - Obsoleting primitives fix-sun-file-graphics, fix-mac-file-graphics
+  - Archiving mailto-url, file-url, make-message-box. Fixing starting url label in box properties dialog.
+  - Archiving unused mcl *possible-boxer-file-mac-types* defvar
+  - Archiving box-file?, replacing with duplicate defun boxer-file-contents?
+  - Archiving unused source code utilities and things from mcl-utils
+
+     Some of these were used for source code management before version control,
+     and before the asdf module system, parsing header comments on files.
+     Others are just utilities no longer of use.
+
+     - defuns cf, lcf, compops, pa, pp, whereis, test-loop, keys-code, mod-history-start-line?,
+       mod-history-end-line?, mod-history-date-line?, get-mod-history-lines, get-mod-history-lines-after,
+       mcl-file->pc-file, pc-file->mcl-file, no-convert,
+     - defvars *modarray*, *special-source-files*
+     - mcl editor support add-def-types
+  - Completely archiving client.lisp and clientmacros.lisp
+  - Archiving lisp machine box file type defs
+  - Archiving unused *max-filename-length* and defun truncated-filename from file-prims
+  - Archiving unused SEMI-INIT and RETURN-INIT-PLIST-FOR-FILING from editor.lisp
+  - Archiving used defun massage-pathname from lw-menu
+
 ## 3.4.10 2022-07-11
 
 ### Overview
