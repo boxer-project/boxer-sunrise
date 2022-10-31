@@ -25,18 +25,34 @@
     (list
     (make-instance 'capi:option-pane
       :toolbar-title "Font" :name "Font"
+      :title "Font"
+      :title-gap 0
+      :title-position :bottom
+      :title-font (gp:make-font-description :size 11)
+      :title-adjust :center
+      :background :transparent
       :items boxer::*font-families*
-      ; :visible-max-width '(:character 15)
+      :visible-max-width '(:character 15)
       :selection-callback #'(lambda (font interface)
                               (font-menu-action font 0)))
     (make-instance 'capi:option-pane
       :toolbar-title "Font Size" :name "FontSize"
+      :title "Size"
+      :title-font (gp:make-font-description :size 11)
+      :title-gap 0
+      :title-position :bottom
+      :title-adjust :center
       :items '("8" "9" "10" "11" "12" "14" "16" "18" "20" "22" "24" "26" "28" "36" "48" "72")
-      ; :visible-max-width '(:character 3)
+      :visible-max-width '(:character 3)
       :selection-callback #'(lambda (size interface)
                               (font-size-menu-action (parse-integer size) 0)))
     (make-instance 'color-picker-menu
       :toolbar-title "Font Color" :name "FontColor"
+      :title "Color"
+      :title-font (gp:make-font-description :size 11)
+      :title-gap 0
+      :title-position :bottom
+      :title-adjust :center
       :selection-callback #'(lambda (color interface)
                               (if color
                                 (font-color-menu-action (symbol-value color) nil))))
@@ -86,6 +102,8 @@
                                 (boxer::com-toggle-vanilla-mode)
                                 (boxer::repaint))
         ))
+
+
       :interaction :multiple-selection
       :default-image-set
                         (capi:make-general-image-set
@@ -95,6 +113,11 @@
     )
     (make-instance 'color-picker-menu
       :toolbar-title "Background" :name "BackgroundColor"
+      :title "Background"
+      :title-gap 0
+      :title-font (gp:make-font-description :size 11)
+      :title-position :bottom
+      :title-adjust :center
       :selection-callback #'(lambda (color interface)
                               (if color
                                 (let* ((hex-color (boxer::ogl-color-to-css-hex (symbol-value color)))
@@ -105,6 +128,11 @@
     )
     (make-instance 'color-picker-menu
       :toolbar-title "Border" :name "BorderColor"
+      :title "Border"
+      :title-gap 0
+      :title-font (gp:make-font-description :size 11)
+      :title-position :bottom
+      :title-adjust :center
       :selection-callback #'(lambda (color interface)
                               (if color
                                 (let* ((hex-color (boxer::ogl-color-to-css-hex (symbol-value color)))
@@ -131,6 +159,12 @@
          (border-color (boxer::get-css-style point-box :border-color)))
 
       (let ((name (slot-value item 'capi::name)))
+        (cond ((and *suppress-expose-handler* (not (equal name "RunStop")))
+              (setf (capi:simple-pane-enabled item) nil)
+              )
+              ((and (not *suppress-expose-handler*) (not (equal name "RunStop")))
+               (setf (capi:simple-pane-enabled item) t)))
+
         (cond ((equal name "Font")
                (setf (capi:choice-selected-item item)
                      ;; sgithens TODO 2022-04-06 We need to improve things to show arbitrary fonts in case there are fonts used
