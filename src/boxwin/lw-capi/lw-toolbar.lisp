@@ -190,7 +190,7 @@
                (setf (capi:item-selected item) *suppress-expose-handler*)
               )
               ((equal name "Closet")
-               (setf (capi:item-selected item) (boxer::closet-opened? point-box)))
+               (setf (capi:item-selected item) (and point-box (boxer::closet-opened? point-box))))
               ((equal name "TopLevel")
                (setf (capi:item-selected item)
                      (boxer::fast-memq boxer::*global-top-level-mode* boxer::*active-modes*)))
