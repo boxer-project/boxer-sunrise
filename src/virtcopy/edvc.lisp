@@ -277,8 +277,6 @@ average datastructure.
 
 
 (defmethod insert-self-link-action ((box box) &optional (superior (superior-box box)))
-  ;; first handle any cross file linkages (which MAY, create more links)
-  (cross-file-link-insert-self-action box superior)
   (let ((ports (slot-value box 'ports))
 	(saved-inferior-ports   (getprop box 'saved-inferior-ports))
 	(saved-inferior-targets (getprop box 'saved-inferior-targets)))
@@ -333,7 +331,6 @@ average datastructure.
 	(inform-port-that-target-has-returned p)))))
 
 (defmethod insert-self-link-action ((box port-box) &optional superior)
-  (cross-file-port-insert-self-action box superior)
   (let* ((ports (slot-value box 'ports))
 	 (common-node (and ports (find-lowest-common-superior-box box ports))))
     (cond ((not (null common-node))
@@ -426,7 +423,6 @@ average datastructure.
 
 (defmethod delete-self-link-action ((box box)
 				    &optional (superior (superior-box box)))
-  (cross-file-link-delete-self-action box superior)
   (let ((ports (slot-value box 'ports))
 	(branch-links (slot-value box 'branch-links)))
     ;; handle port link caching for the box itself...
@@ -475,7 +471,6 @@ average datastructure.
       (putprop box saved-inferior-targets 'saved-inferior-targets))))
 
 (defmethod delete-self-link-action ((box port-box) &optional superior)
-  (cross-file-port-delete-self-action box superior)
   (let ((ports (slot-value box 'ports)))
     ;; handle the port link caching for the port itself
     (let ((common-node (find-lowest-common-superior-box box ports)))

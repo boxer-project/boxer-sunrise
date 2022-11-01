@@ -291,7 +291,17 @@
 ;; look in plist for now, probably not a good idea to use display-style-lists
 ;; unless colored borders become commonplace
 
-(defun get-border-color (box) (getprop box 'border-color *default-border-color*))
+(defun get-background-color (box)
+  (let ((color-rgb-hex (get-css-style box :background-color)))
+    (if color-rgb-hex
+      (bw::ogl-convert-color (rgb-hex->rgb color-rgb-hex))
+      nil)))
+
+(defun get-border-color (box)
+  (let ((color-rgb-hex (get-css-style box :border-color)))
+    (if color-rgb-hex
+      (bw::ogl-convert-color (rgb-hex->rgb color-rgb-hex))
+      *default-border-color*)))
 
 ;; hook for colored borders (fold transparency in here too ? (via line stipple))
 (defmacro with-border-drawing-styles ((actual-obj) &body body)
@@ -798,9 +808,7 @@
 
 ;; mouse clicks on empty file boxes use this to trigger a read of the box
 (defun insure-box-contents-for-click (box)
-  (cond ((and (port-box? box) (not (null (cross-file-port-branch-links box))))
-         (articulate-target-branch (car (cross-file-port-branch-links box))))
-        ((and (port-box? box)
+  (cond ((and (port-box? box)
               (box? (ports box))
               (null (slot-value (ports box) 'first-inferior-row)))
          ;; fill the port target
@@ -1122,3 +1130,33 @@
                   (bw::mouse-doc-status-popup-x)
                   (bw::mouse-doc-status-popup-y))))))
 
+(defmacro with-hilited-box ((box) &body body)
+  "Any operations inside this body will happen with box being hilighted. The default style is usually
+  a subtle blue background extending slightly beyond the borders. A typical use case of this is for
+  hilighting a box while it's being saved."
+  (let ((screen-box (gensym))
+        (screen-box-x (gensym))   (screen-box-y (gensym))
+        (screen-box-wid (gensym)) (screen-box-hei (gensym)))
+    `(drawing-on-window (*boxer-pane*)
+                        (let* ((,screen-box (or (car (displayed-screen-objs ,box))
+                                                (when (superior? (outermost-box) ,box)
+                                                  (outermost-screen-box))))
+                               ,screen-box-wid ,screen-box-hei)
+                          (multiple-value-bind (,screen-box-x ,screen-box-y)
+                                               (when (screen-box? ,screen-box)
+                                                 (setq ,screen-box-wid (screen-obj-wid ,screen-box)
+                                                        ,screen-box-hei (screen-obj-hei ,screen-box))
+                                                 (xy-position ,screen-box))
+                                               (unwind-protect
+                                                (progn
+                                                 (unless (null ,screen-box-x)
+                                                   (with-pen-color (bw::*blinker-color*)
+                                                     (box::with-blending-on
+                                                      (draw-rectangle
+                                                                      ,screen-box-wid ,screen-box-hei
+                                                                      ,screen-box-x ,screen-box-y)))
+                                                   (swap-graphics-buffers))
+                                                 . ,body)
+                                                (unless (null ,screen-box-x)
+                                                  (repaint)
+                                                  (swap-graphics-buffers))))))))

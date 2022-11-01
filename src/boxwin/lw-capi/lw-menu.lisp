@@ -86,70 +86,6 @@ Modification History (most recent at top)
 
 (in-package :boxer-window)
 
-
-;;; File System Helpers
-
-;; capi:prompt-for-file chokes on raw mac filenames (with ":"'s)
-(defun massage-pathname (pathname)
-  (make-pathname :directory (pathname-directory pathname)
-                 :name      (pathname-name      pathname)
-                 :type      (pathname-type      pathname)))
-
-(defvar *boxer-file-filters* '("Box Files" "*.box;*.box~;*.box#" "All Files" "*.*"))
-
-
-;; mac legacy vars, see boxer-new-file-dialog for usage
-(defvar *save-file-format* :BOXR)
-(defvar *dialog-ro* 0)
-
-(defun boxer::boxer-open-file-dialog (&key (prompt "Open File:") directory)
-  (multiple-value-bind (path success?)
-      (capi:prompt-for-file prompt :filters *boxer-file-filters*
-                            :pathname (merge-pathnames
-                                         (or directory "")
-                                         boxer::*boxer-pathname-default*)
-                            :operation :open :owner *boxer-frame*)
-    (if (null success?)
-        (throw 'boxer::cancel-boxer-file-dialog nil)
-      path)))
-
-(defun boxer::boxer-open-lost-file-dialog (&key (prompt "Can't find") directory)
-  (let ((missing-text (or (and directory
-                               (format nil "~A ~A. Please locate file:"
-                                       prompt (file-namestring directory)))
-                          (format nil "~A box file. Please locate file:" prompt))))
-    (multiple-value-bind (path success?)
-        (capi:prompt-for-file missing-text :filters *boxer-file-filters*
-                              :operation :open
-                              :pathname (merge-pathnames
-                                         (or directory "")
-                                         boxer::*boxer-pathname-default*)
-                              :owner *boxer-frame*)
-      (if (null success?)
-          (throw 'boxer::cancel-boxer-file-dialog nil)
-          path))))
-
-;; on the mac, *save-file-format* and *dialog-ro* can be side-effected by the
-;; custom dialog
-(defun boxer::boxer-new-file-dialog (&key (prompt "Save As") directory box
-                                   no-read-only?)
-  (unless (null box)
-    (setq *save-file-format* (or (boxer::getprop box :preferred-file-format)
-                                 :boxer)
-          *dialog-ro* (if (and (null no-read-only?) (boxer::read-only-box? box))
-                          1 0)))
-  (multiple-value-bind (path success?)
-        (capi:prompt-for-file prompt
-                              :filters *boxer-file-filters*
-                              :pathname (merge-pathnames
-                                         (or directory "")
-                                         boxer::*boxer-pathname-default*)
-                              :operation :save
-                              :if-does-not-exist :ok :owner *boxer-frame*)
-    (if (null success?)
-          (throw 'boxer::cancel-boxer-file-dialog nil)
-          path)))
-
 (defun boxer::open-xref-file-dialog (&key (prompt "Link to file ") directory)
   (multiple-value-bind (path success?)
       (capi:prompt-for-file prompt :filters '("All Files" "*.*")
@@ -334,15 +270,6 @@ Modification History (most recent at top)
         (otherwise (throw 'boxer::cancel-boxer-file-dialog nil)))))
 
 
-;; On the mac, these read/wrote into the a file's resource fork
-(defun boxer::write-boxer-file-info (pathname &key read-only? world-box? flags)
-  (declare (ignore pathname read-only? world-box? flags))
-  nil)
-
-(defun boxer::boxer-file-info (pathname) (declare (ignore pathname)) nil)
-
-
-
 ;;; NOTE: Menu callback functions take 2 args (data interface)
 
 ;; Menu functions
@@ -356,9 +283,7 @@ Modification History (most recent at top)
 
 (defun open-file (data interface)
   (declare (ignore data interface))
-  (queue-event 'menu-open-box))
-
-(defun menu-open-box ()  (boxer::com-open-box-file t))
+  (queue-event 'boxer::com-open-box-file))
 
 (defun close-file-box (data interface)
   (declare (ignore data interface))
@@ -1207,13 +1132,7 @@ Modification History (most recent at top)
            (queue-box-prop-change
             (list :link data (capi:text-input-pane-text text-input-item))))
           ((eq data :url)
-           (set-link-file-props
-            text-input-item file-props
-            t (format nil "ftp://~A/~A"
-                      ;; not right, need better parameter than this host
-                      ;; *pop-host* might be more appropriate
-                      boxnet::*smtp-relay-host*
-                      "NewFile.box"))
+           (set-link-file-props text-input-item file-props t (format nil "http://"))
            (queue-box-prop-change
             (list :link data (capi:text-input-pane-text text-input-item)))))))
 

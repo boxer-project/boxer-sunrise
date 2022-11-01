@@ -499,14 +499,10 @@ row instead. "
                   (let ((*current-font-descriptor*
                          (or *help-font-descriptor* *default-font-descriptor*)))
                     (make-box '(("To see inputs for a function")
-                                #-mcl(" press ctrl-<help> or ctrl-? after the name of the function.")
-                              ;#+mcl(" press cmd-<help> or cmd-? after the name of the function.")
-                                ;; option-shift-K is the apple glyph
-                                #+mcl(" press �-<help> or �-? after the name of the function.")
+                                (" press ctrl-<help> or ctrl-? after the name of the function.")
                                 ()
                                 ("To get help on a key stroke or mouse action")
-                                #-mcl(" press meta-<help> or meta-?")
-                                #+mcl(" press option-<help> or option-?")
+                                (" press meta-<help> or meta-?")
                                 ()
                                 ("To get help on the name or spelling of a command")
                                 ("use \"name-help <string>\", where string is a sequence")
@@ -531,29 +527,3 @@ followed by a return."
   (insert-cha *point* (aref key-string i)))))
   (com-return)
   boxer-eval::*novalue*)
-
-(defun box-file? (pathname)
-  (or #+mcl (eq (ccl:mac-file-type pathname) :BOXR)
-      ;; peek at the beginning bytes...
-      (let ((b0 (ldb (byte 8 0) bin-op-format-version))
-            (b1 (ldb (byte 8 8) bin-op-format-version))
-            f0 f1 f2 f3)
-        (with-open-file (s pathname :element-type '(unsigned-byte 8))
-          (setq f0 (read-byte s nil nil) f1 (read-byte s nil nil)
-                f2 (read-byte s nil nil) f3 (read-byte s nil nil)))
-        (unless (or (null f0) (null f1) (null f2) (null f3))
-          (or
-           (and (= b0 f0) (= b1 f1) (= f2 *version-number*) (= f3 0))
-           ;; byte swapping version...
-           (and (= b0 f1) (= b1 f0) (= f3 *version-number*) (= f2 0)))))))
-
-;; this should go somewhere else (file-prims.lisp ?)
-(defun make-file-box (pathname)
-  (multiple-value-bind (RO world maj min btype bname)
-      (boxer-file-info pathname)
-    (declare (ignore RO world maj min))
-    (let ((filebox (make-box '(()) btype bname)))
-      (mark-box-as-file filebox pathname)
-      (shrink filebox)
-      (setf (first-inferior-row filebox) nil)
-      filebox)))

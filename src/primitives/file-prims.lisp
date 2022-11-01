@@ -206,11 +206,6 @@ Modification History (most recent at top)
                (make-vc '((bu::newer-other-box)))))
           (t boxer-eval::*true*))))
 
-
-(defvar *automatic-file-compression-on* nil)
-(defvar *file-compress-minimum-length* (* 64 1024)) ;empirical
-
-
 ;; this is used to catch pathnames which won't even parse
 
 (defun quote-wild-char (string quote-char)
@@ -241,7 +236,10 @@ Modification History (most recent at top)
   (let* ((dest-pathname (check-valid-filename-for-primitive
                          filename *boxer-pathname-default*))
          (fps (get-boxer-file-properties dest-pathname))
-         (file-format (or format (getprop box :preferred-file-format) :boxer)))
+         (file-format (or format
+                          (getprop box :preferred-file-format)
+                          (file-type filename)
+                          :boxer)))
     ;; first perform various kinds of reality checking
     ;;
     ;; we can only save out top level boxes for now, I suppose it
@@ -309,13 +307,11 @@ Modification History (most recent at top)
     ;; need to make the appropriate file type save functions more uniform 1st
     (case file-format
       (:boxer (save-internal box dest-pathname))
+      (:application/box (save-internal box dest-pathname))
       (:text (save-text-file-internal box dest-pathname))
+      (:text/plain (save-text-file-internal box dest-pathname))
+      (:application/boxer.document (save-box-to-boxer-document-format-zipped box dest-pathname))
       (t (save-internal box dest-pathname)))
-    ;; dump some useful properties into the resource fork
-    ;; (before) we record current file props since changing the resource fork
-    ;; might also change the file write date
-    #+mcl
-    (write-boxer-file-info box dest-pathname)
     ;; if everything worked, then update the file properties so we don't
     ;; get an error the next time we try and save out the file
     (record-boxer-file-properties dest-pathname
@@ -381,14 +377,7 @@ Modification History (most recent at top)
     (setq *boxer-pathname-default*
     (make-pathname :directory (pathname-directory dest-pathname)
              :defaults *boxer-pathname-default*))))
-    (when *automatic-file-compression-on*
-      ;; Compress the file only if it's greater than
-      ;; *file-compress-minimum-length*.  Otherwise the time
-      ;; it takes won't be worth it.
-      (let ((length (with-open-file (stream dest-pathname :direction :input)
-           (file-length stream))))
-  (if (> length *file-compress-minimum-length*)
-      (compress-file dest-pathname))))))
+    ))
 
 (defun make-backup-if-necessary (dest-pathname)
   (when (probe-file dest-pathname)
@@ -425,15 +414,9 @@ Modification History (most recent at top)
   (let* ((filename (box-text-string file))
          (box (read-internal filename)))
     ;; if the box was a world file, need to fix the NAME slot
-    (multiple-value-bind (ro? world-box?)
-        #+mcl (unless (url-string? filename)
-                (boxer-file-info filename)) ;; looks in resource fork
-        #-mcl (values nil nil)
-        (declare (ignore ro?))
-        (when (or world-box?
-                  (and (stringp (slot-value box 'name))
-                       (string= (slot-value box 'name) "WORLD")))
-          (setf (slot-value box 'name) nil)))
+    (when (and (stringp (slot-value box 'name))
+               (string= (slot-value box 'name) "WORLD"))
+      (setf (slot-value box 'name) nil))
     box))
 
 (boxer-eval::defboxer-primitive bu::READ ((boxer-eval::dont-copy filename))
@@ -481,7 +464,6 @@ Modification History (most recent at top)
 (defun read-internal-1 (filename &optional
                                  (pathname (check-valid-filename-for-primitive
                                 filename *boxer-pathname-default*)))
-  (when (null (probe-file pathname)) (maybe-uncompress-file pathname))
   (unless (probe-file pathname)
     (if *in-autoload-environment*
         (error "Autoload File not found: ~A" (namestring pathname))
@@ -528,7 +510,6 @@ Modification History (most recent at top)
 (boxer-eval::defboxer-primitive bu::probe-file ((boxer-eval::dont-copy filename))
   (let ((pathname (check-valid-filename-for-primitive
        (box-text-string filename) *boxer-pathname-default*)))
-    (when (null (probe-file pathname)) (maybe-uncompress-file pathname))
     (boxer-eval::boxer-boolean (probe-file pathname))))
 
 (boxer-eval::defboxer-primitive bu::toggle-modified-flag ()
@@ -700,7 +681,6 @@ Modification History (most recent at top)
          :defaults
          (check-valid-filename-for-primitive
           filestring))))
-    (when (null (probe-file pathname)) (maybe-uncompress-file pathname))
     (unless (probe-file pathname)
       (boxer-eval::primitive-signal-error :file-or-directory-not-found
             (namestring pathname)))
@@ -1093,74 +1073,6 @@ Modification History (most recent at top)
                      (add-string (boxnet::scheme-string url))))))))
       *file-status-string*)))))
 
-(defvar *max-filename-length* 50)
-
-;; pathnames derived from other platforms wont parse into directories correctly
-(defun truncated-filename (pathname)
-  (unless (pathnamep pathname) (setq pathname (pathname pathname)))
-  (let* ((dirs (pathname-directory pathname))
-         (name (pathname-name pathname)) (type (pathname-type pathname))
-         (lname (length name)) (ltype (length type))
-         (ellipsis? t)
-         (endsize (cond ((and (null name) (or (null type) (eq type ':unspecific)))
-                         (setq ellipsis? nil) 0)
-                        ((or (null type) (eq type ':unspecific))
-                         (+ 3 lname))
-                        ((null name) (+ 3 ltype))
-                        (t (+ 3 lname 1 ltype))))
-         (return-string (make-string *max-filename-length*))
-         (dirstop (max& 0 (- *max-filename-length* endsize)))
-         (idx 0))
-    ;(declare (dynamic-extent return-string))
-    (flet ((add-char (&optional (char #+mcl #\: #-mcl #\/))
-             (when (= idx dirstop) (throw 'dir-exit nil))
-             (setf (char return-string idx) char)
-             (incf idx))
-           (add-string (string &optional (throw? t))
-             (let ((end (length string)))
-               (do ((i 0 (1+ i)))
-                   ((or (= i end) (= idx *max-filename-length*)))
-                 (when (and throw? (= idx dirstop)) (throw 'dir-exit nil))
-                 (setf (char return-string idx) (char string i))
-                 (incf idx))))
-           (add-ellipsis ()
-             (dotimes (i 3) (setf (char return-string idx) #\.) (incf idx))))
-      (when (eq (car dirs) :relative)  (add-char))
-      (catch 'dir-exit
-        (unless (zerop dirstop)
-          (dolist (dir (cdr dirs) (setq ellipsis? nil))
-            (add-string dir) (add-char))))
-      (unless (null ellipsis?)
-        (add-ellipsis))
-      (cond ((zerop dirstop)
-             ;; this means the name.type is already longer than the alloted space
-             (cond ((null type)
-                    (do ((nidx (+ (- lname *max-filename-length*) 3) (1+ nidx)))
-                        ((>= idx *max-filename-length*))
-                      (setf (char return-string idx) (char name nidx))
-                      (incf idx)))
-                   (t
-                    ;; truncated name
-                    (do ((nidx (+ (- lname *max-filename-length*) 3 1 ltype)
-                               (1+ nidx)))
-                        ((>= idx (- *max-filename-length* ltype 1)))
-                      (setf (char return-string idx) (char name nidx))
-                      (incf idx))
-                    (add-char #\.)
-                    ;; and now the type
-                    (do ((i 0 (1+ i)))
-                        ((or (= i ltype) (= idx *max-filename-length*)))
-                      (setf (char return-string idx) (char type i))
-                      (incf idx)))))
-            ((and (null name) (or (null type) (eq type ':unspecific))))
-            ((or (null type) (eq type ':unspecific))
-             (add-string name nil))
-            ((null name) (add-string type nil))
-            (t (add-string name nil) (add-char #\.) (add-string type nil))))
-    (if (< idx *max-filename-length*)
-        (subseq return-string 0 idx)
-        return-string)))
-
 ;; walk up (backwards up the list) the path looking for a match in the
 ;; superior dirs
 ;; NOTE: not quite right, we should modify the sup-pathname as well to prune lower level
@@ -1511,141 +1423,3 @@ Modification History (most recent at top)
              (t (append dir2 dir1)))
        (if (null name1) name2 name1)
        (if (or (null type1) (eq type1 :unspecific)) type2 type1)))))
-
-
-;;; This is just a crock, but at least it will work on the Suns as long
-;;; as there's only one Boxer per machine.
-(defun make-temporary-filename (info)
-  (format nil "/tmp/boxer-~a" info))
-
-
-(defun read-box-from-text-stream (stream)
-  stream
-  boxer-eval::*novalue*)
-
-
-;;;
-;;; COMPRESS-FILE.
-;;;
-
-;;; These are for saving space on unix filesystems.  They should go away
-;;; when Ed rewrites the file system make smaller files.
-
-;;; The user can call COMPRESS-FILE.  READ will try to uncompress a file
-;;; if it doesn't exist.
-
-(defun compress-file (pathname)
-  #+Unix (progn
-     (make-backup-if-necessary (concatenate 'string (namestring pathname) ".Z"))
-     (boxer-run-unix-program "compress" (list "-f" (namestring pathname))))
-  #-Unix (progn pathname nil))
-
-(defun uncompress-file (pathname)
-  #+Unix (boxer-run-unix-program "uncompress" (list (namestring pathname)))
-  #-Unix (progn pathname nil))
-
-(defun maybe-uncompress-file (pathname)
-  #+Unix (when (and (null (probe-file pathname))
-        (probe-file (concatenate 'string (namestring pathname) ".Z")))
-     #+Lucid (uncompress-file pathname)
-     #-Lucid nil)
-  #-Unix (progn pathname nil))
-
-#-mcl
-(boxer-eval::defboxer-primitive bu::compress-file ((boxer-eval::dont-copy name))
-  (let ((filename (if (numberp name)
-          (format nil "~D" name)
-          (box-text-string name))))
-    (if (null (probe-file filename))
-  (boxer-eval::signal-error :FILE-NOT-FOUND (boxer-eval::copy-thing name))
-  (let ((error-string (compress-file filename)))
-    (if (null error-string)
-        boxer-eval::*novalue*
-        (boxer-eval::signal-error :COMPRESS-FILE error-string))))))
-
-
-
-;;;
-;;; boxer-run-unix-program
-;;;
-
-
-;;; Returns NIL if succesful, otherwise a list of error strings.
-;;;
-;;; We have to run the program asynchronously in order to get the
-;;; error output into a stream.
-;;; Didn't do anything about stdout, though.
-(defun boxer-run-unix-program (program-name arguments)
-  #+Unix (let ((error-result
-    #+Lucid (multiple-value-bind
-            (stream error-output-stream exit-status process-id)
-          ;; We can't do both :error-output :stream
-          ;; and :wait t, so we have to assume that the process
-          ;; is finished when when we find out that the error-output-stream
-          ;; is done.
-          (system::run-program program-name
-             :arguments arguments
-             :wait nil
-             :if-error-output-exists nil
-             :error-output :stream)
-        (declare (ignore stream process-id))
-        (if error-output-stream
-            (prog1 (do* ((string (read-line error-output-stream
-                    nil
-                    nil)
-               (read-line error-output-stream
-                    nil
-                    nil))
-             (result nil))
-            ((null string) (nreverse result))
-               (unless (null string)
-           (push string result)))
-        (close error-output-stream))
-            (format nil "Unknown Unix Error ~D" exit-status)))
-    #-Lucid "BOXER-RUN-UNIX-PROGRAM not implemented on this system"))
-     (if (stringp error-result)
-         (boxer-eval::primitive-signal-error :UNIX-PROGRAM-ERROR error-result)
-         nil))
-  #-Unix (progn program-name arguments
-                "BOXER-RUN-UNIX-PROGRAM not implemented on this system"))
-
-(defun fix-file-alus (top-box &optional (sun->mac? t))
-  (labels ((fix-gl (gl)
-           (setf (graphics-command-list-alu gl)
-                 (convert-file-alu (graphics-command-list-alu gl) sun->mac?))
-           (do-vector-contents (gc gl)
-             (when (member (aref gc 0) '(0 32) :test #'=)
-               ;; if it is an CHANGE-ALU command....
-               (setf (aref gc 1) (convert-file-alu (aref gc 1) sun->mac?)))))
-           (fix-box (box)
-             (let ((graphics-sheet (graphics-sheet box)))
-               (when (not (null graphics-sheet))
-                 (let ((gl (graphics-sheet-graphics-list graphics-sheet)))
-                   (unless (null gl) (fix-gl gl)))))
-             (when (sprite-box? box)
-               (let* ((turtle (slot-value box 'associated-turtle))
-                      (shape (shape turtle))
-                      (ws (slot-value turtle 'window-shape)))
-                 (fix-gl shape) (fix-gl ws)))))
-    (fix-box top-box)
-    (do-for-all-inferior-boxes-fast (inf-box top-box) (fix-box inf-box))))
-
-;; order is (sun-alu . mac-alu)
-(defvar *file-conversion-alu-alist* '((2 . 3) ; alu-andca
-                                      (5 . 0) ; alu-seta
-                                      (6 . 2) ; alu-xor
-                                      (7 . 1) ; alu-ior
-                                      (0 . 11))) ; alu-setz
-
-(defun convert-file-alu (old-alu sun->mac?)
-  (if sun->mac?
-    (or (cdr (assoc  old-alu *file-conversion-alu-alist* :test #'=)) 0)
-    (or (car (rassoc old-alu *file-conversion-alu-alist* :test #'=)) 5)))
-
-(boxer-eval::defboxer-primitive bu::fix-sun-file-graphics ((bu::port-to box))
-  (fix-file-alus (box-or-port-target box))
-  boxer-eval::*novalue*)
-
-(boxer-eval::defboxer-primitive bu::fix-mac-file-graphics ((bu::port-to box))
-  (fix-file-alus (box-or-port-target box) nil)
-  boxer-eval::*novalue*)

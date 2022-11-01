@@ -836,7 +836,10 @@
               (multiple-value-bind (lef top rig bot)
                                    (box-borders-widths box-type self)
                                    (cond ((not (null *tutti-frutti*))
-                                          (colorit  (- wid rig lef) (- hei bot top) lef top)))))
+                                          (colorit  (- wid rig lef) (- hei bot top) lef top))
+                                         ((not (null (get-background-color actual-obj)))
+                                          (with-pen-color ((get-background-color actual-obj))
+                                            (draw-rectangle (- wid rig lef) (- hei bot top) lef top))) )))
             (repaint-inferiors-pass-2-sb self)
             ;; draw any scroll info no
             (draw-scroll-info self)
@@ -961,10 +964,11 @@
 (defun repaint-window (&OPTIONAL (WINDOW *BOXER-PANE*) (flush-buffer? t) &KEY (process-state-label "stopped"))
   (bw::check-for-window-resize)
   (REDISPLAYING-WINDOW (WINDOW)
+                       (with-blending-on
                          (clear-window window)
                          (repaint-guts)
                          (repaint-mouse-docs)
-                         (repaint-dev-overlay process-state-label)
+                         (repaint-dev-overlay process-state-label))
                          (when flush-buffer? (swap-graphics-buffers window))))
 
 ;;; called also by printing routines.
@@ -997,7 +1001,6 @@
                                                       *boxer-pane*))))
       (dolist (region *region-list*)
         (when (not (null region)) (interval-update-repaint-all-rows region)))
-      (setq *redisplay-clues* nil)
       ;; comment out next line for outermost box save document, updates will
       ;; occur inside of set-outermost-box instead...
       (when (bp? *point*)
@@ -1160,6 +1163,7 @@
               (and (>& now (+ *last-eval-repaint* *eval-repaint-quantum*))
                   (>& now (+ *last-eval-repaint* (* *eval-repaint-ratio*
                                                     *last-repaint-duration*)))))
+        (bw::update-toolbar-font-buttons)
         (setq *last-eval-repaint* now)
         (process-editor-mutation-queue-within-eval)
         (unless (null bw::*suppressed-actions*)

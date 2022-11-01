@@ -45,6 +45,8 @@ Modification History (most recent at top)
   ;; (:metaclass block-compile-class)
   )
 
+(defclass https-url (http-url) ())
+
 (defvar *default-url-port* 80)
 
 (defmethod initialize-instance ((url http-url) &rest initargs)
@@ -54,7 +56,7 @@ Modification History (most recent at top)
   (when (null (slot-value url 'port))
     (setf (slot-value url 'port) *default-url-port*))
   (let* ((path (slot-value url 'path))
-         (suffix (path-suffix path))
+         (suffix (pathname-type path))
          (supplied-doc-type (getf initargs :doc-type)))
     (if (not (null supplied-doc-type))
         ;; if the doc-type is in the initargs, go with it (the slot will

@@ -147,31 +147,6 @@
   (call-next-method))
 
 
-
-;;; These are used ONLY by the comaptability loader and should
-;;; eventually be flushed or moved to compat-loader.lisp
-
-(DEFMETHOD SEMI-INIT ((SELF BOX) INIT-PLIST)
-           (SETF   ;;these come from box proper
-                   (FIRST-INFERIOR-ROW SELF) (GETF INIT-PLIST ':SUPERIOR-ROW)
-                   (CACHED-ROWS SELF)        NIL
-                   (NAME SELF)       (WHEN (GETF INIT-PLIST :NAME)
-                                           (MAKE-NAME-ROW `(,(GETF INIT-PLIST :NAME))))
-                   (DISPLAY-STYLE-LIST SELF) (OR (GETF INIT-PLIST ':DISPLAY-STYLE-LIST)
-                                                 (DISPLAY-STYLE-LIST SELF)))
-           (WHEN (NAME-ROW? (slot-value self 'name))
-                 (SET-SUPERIOR-BOX (slot-value self 'name) SELF))
-           (SET-TYPE SELF (OR (GETF INIT-PLIST ':TYPE) 'DOIT-BOX)))
-
-(DEFMETHOD RETURN-INIT-PLIST-FOR-FILING ((SELF BOX))
-           `(:TYPE ,(class-name (class-of SELF))
-                    :DISPLAY-STYLE-LIST ,(DISPLAY-STYLE-LIST SELF)))
-
-
-
-
-
-
 ;;;these are messages to boxes which are used for moving up and down levels
 ;;;in box structures
 
@@ -184,10 +159,6 @@
     (maybe-run-trigger self 'bu::entry-trigger)))
 
 (defmethod enter ((self port-box) &optional (moved-p? t))
-  ;; if this is an unarticulated cross file port, relink it
-  (when (and (null (slot-value self 'ports))
-             (not (null (cross-file-port-branch-links self))))
-    (articulate-target-branch (car (cross-file-port-branch-links self))))
   (setq boxer-eval::*lexical-variables-root* (ports self))
   ;; is this appropriate ?
   (when (not (null moved-p?))
@@ -620,9 +591,6 @@
 ;;; inferior rows onto the queue for later processing
 
 (defmethod deallocate-self ((self box))
-  (when (storage-chunk? self)
-    ;; Inform the server that the box will be deleted
-    (boxnet::queue-for-server-deletion self))
   ;; should deallocate system dependent objects which have
   ;; been hung on the box
   (deallocate-system-dependent-structures self)
@@ -844,7 +812,7 @@ higher level copy operation. ")
       (with-mouse-cursor (:wait)
         ;; this does a tree walk so it can take a while
         (boxer-eval::evaluator-delete-self-action self superior-box))
-      (boxnet::storage-chunk-delete-self-action self)
+      ;; sgithens 2022-08-31 TODO Remove (boxnet::storage-chunk-delete-self-action self)
       (when (not-null (exports self))
         (boxer-eval::remove-all-exported-bindings self superior-box)
         (boxer-eval::unexport-inferior-properties self superior-box)))))
@@ -877,7 +845,7 @@ higher level copy operation. ")
       (update-bindings (slot-value self 'name) t))
     (when (not (null (slot-value self 'exports)))
       (when (not-null superior)
-        (boxnet::storage-chunk-insert-self-action self)
+        ;; sgithens 2022-08-31 TODO Remove (boxnet::storage-chunk-insert-self-action self)
         (boxer-eval::propagate-all-exported-bindings self superior)
         (boxer-eval::export-inferior-properties self superior)))
     (when (and (sprite-box? self) (not-null superior))

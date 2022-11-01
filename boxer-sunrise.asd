@@ -74,6 +74,7 @@
                  ;; "The interface between the Boxer Editor and the window system"
                  ;; these are also window system specific
                  (:file "boxwin/eval-command-loop")
+                 #+lispworks (:file "boxwin/lw-capi/color-picker-menu")
                  #+lispworks (:file "boxwin/lw-capi/lw-toolbar")
                  #+lispworks (:file "boxwin/lw-capi/click-handlers")
                  #+lispworks (:file "boxwin/lw-capi/pane-callbacks")
@@ -146,14 +147,20 @@
                  ;; Beginning of `STEPPER` module
                  ;; "The Movie Stepper"
                  (:file "stepper/stepper")
+                 (:file "stepper/stepper-eval")
+
                  ;; Beginning of `FILESYSTEM` module
                  ;; "Saving and Restoring Boxes To/From Files"
                  (:file "filesystem/dumper")
                  (:file "filesystem/loader")
-                 (:file "filesystem/clientmacros")
-                 (:file "filesystem/client")
+                 (:file "filesystem/boxer-document-format")
                  (:file "filesystem/surf")
-                 (:file "filesystem/http")
+                 (:file "filesystem/datasources/url")
+                 (:file "filesystem/datasources/net-url")
+                 (:file "filesystem/datasources/local-url")
+                 (:file "filesystem/datasources/http-url")
+                 (:file "filesystem/datasources/helpers")
+                 (:file "filesystem/formats")
                  ;; Beginning of `TRIGGER` module
                  ;; "Box triggers for Constraint Propagation and Other Fun Stuff"
                  (:file "trigger/trigger")
@@ -224,8 +231,9 @@
                  (:file "site/xten")
                  ;; Beginning of `menu` module
                  ;;    "Menus for Harlequin Lispworks on the PC"
-                 (:file "boxwin/lw-capi/lw-menu")
-                 (:file "boxwin/lw-capi/preferences-dialog")
+                 #+lispworks (:file "boxwin/lw-capi/file-dialogs")
+                 #+lispworks (:file "boxwin/lw-capi/lw-menu")
+                 #+lispworks (:file "boxwin/lw-capi/preferences-dialog")
                  #+lispworks (:file "boxwin/lw-capi/confirm-quit-dialogs")
 
 

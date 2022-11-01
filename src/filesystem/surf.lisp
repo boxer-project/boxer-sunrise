@@ -97,110 +97,12 @@ Modification History (most recent at top)
 
 (defmacro surf-message (string &rest args)
   `(progn
-     (debugging-message ,string . ,args)
+     (log:debug ,string . ,args)
      (when *net-verbose*
        (boxer::status-line-display 'surf-message (format nil ,string . ,args)))))
 
-;; this is supposed to read a CRLF terminated line from a "clear text" connection
-(defun net-read-line (stream &optional (wait? t))
-  (when (or wait? (listen stream))
-    ;; this is an open coded version of ccl::telnet-read-line counting added
-    #+mcl
-    (unless (ccl:stream-eofp stream)
-      (let ((line (Make-Array 10 :Element-Type #+mcl 'base-Character
-                                               #+lispworks 'base-char
-                                               #-(or mcl lispworks) 'character
-                                 :Adjustable T :Fill-Pointer 0))
-            (count 0)
-            (char nil))
-        (do () ((or (null (setq char (ccl:stream-tyi stream)))
-                    (and (eq char #\CR) (eq (ccl:stream-peek stream) #\LF)))
-                (when char (ccl:stream-tyi stream))
-                (values line (null char) count))
-          (vector-push-extend char line)
-          (incf& count))))
-    #-mcl
-    (let ((eof-value (list 'eof)))
-      (unless (eq (peek-char nil stream nil eof-value) eof-value)
-        (let ((line (make-array 10 :element-type 'character
-                                :adjustable t :fill-pointer 0))
-              (count 0)
-              (char nil))
-          (do () ((or (null (setq char (read-char stream nil nil)))
-                      (and (eq char #\cr) (eq (peek-char nil stream nil nil) #\lf)))
-                  (when char (read-char stream))
-                  (values line (null char) count))
-            (vector-push-extend char line)
-            (incf& count)))))
-    ))
-
-
 ;;; Object definitions...
 
-;; generic
-(defclass url
-  ()
-  ((scheme-string :initform nil :accessor scheme-string :initarg :scheme-string))
-  ;; (:metaclass block-compile-class)
-  ;; (:abstract-class t)
-  (:documentation "Bare Bones url class-not meant to be instantiated"))
-
-(defclass mailto-url
-  (url)
-  ((address :initform *default-mail-address* :accessor mailto-url-address))
-  ;; (:metaclass block-compile-class)
-  )
-
-;; this is for URL files possibly relative to some superior URL
-(defclass file-url
-  (url)
-  ((pathname :initform nil :accessor file-url-pathname))
-  ;; (:metaclass block-compile-class)
-  )
-
-;; this is for files on the local host, that is, files which can be accessed
-;; with the usual file access mechanisms like open-file, so NFS (or Appleshare?)
-;;mounted files are included in this category since their access is transparent
-
-(defclass local-url
-  (url)
-  ((pathname :initform nil :accessor local-url-pathname)
-   (host-type :initform nil :accessor local-url-host-type :initarg :host-type))
-  ;; (:metaclass block-compile-class)
-  )
-
-;;; This is for URL's which involve the direct use of
-;;; an IP-based protocol to a specific host on the internet
-
-;; ??? is it worth breaking this into a host,port,path class and a separate
-;;     user, password class ???
-(defclass net-url
-  (url)
-  ((user :initform nil :accessor url-user)
-   (password :initform nil :accessor url-password)
-   (host :initform nil :accessor url-host)
-   (port :initform nil :accessor url-port)
-   (path :initform nil :accessor url-path))
-  ;; (:metaclass block-compile-class)
-  )
-
-
-
-;;; These are the main hooks into the rest of boxer.
-
-(defun read-internal-url (url-string)
-  (let ((box (make-box-from-url url-string)))
-    ;(boxer::foo)
-    (fill-box-from-url box)
-    box))
-
-(defun read-only-internal (path)
-  (let* ((url-string (concatenate 'string "local://" path))
-         (box (make-box-from-url url-string)))
-    (fill-box-from-url box)
-    ;; make sure it is Read Only
-    (setf (read-only-box? box) t)
-    box))
 
 ;;; When an empty box is accessed via VIRTUAL-COPY-ROWS(edvc.lisp) or
 ;;; the ENTER method (editor.lisp), an attempt is made to fill the contents
@@ -225,367 +127,12 @@ Modification History (most recent at top)
              (apply (car fill-call) (cdr fill-call))))
           ((getf plist :box-server-id)
            ;; this is the "old style" box server (make it last)
-           (fill-box-from-bfs-server box))
+           ;;(fill-box-from-bfs-server box))
+           (error "Trying to load an old bfs-server document."))
           (t (error "Don't know how to fill the box ~A" box)))
     (putprop box (boxer::boxer-event-id) :fill-for-event)))
 
-(defmethod url-box? ((box boxer::box))
-  (and (boxer::storage-chunk? box)
-       ;(read-only-box? box)
-       (getf (slot-value box 'boxer::plist) :url)))
-
-(defun url-string? (String)
-  (when (stringp string)
-    (let ((cc (position #\: string)))
-      (when cc
-        (find-class (intern (string-upcase (format nil "~A-URL"
-                                                   (subseq string 0 cc)))
-                            (find-package "BOXNET"))
-                    nil)))))
-
-
-
 ;; Boxer FS interface...
-
-;; this is called from dumper code
-(defmethod dump-box-url ((box boxer::box) stream)
-  (let ((url (getf (slot-value box 'boxer::plist) :url)))
-    (if (null url)
-        (error "~A does not have a url" box)
-        (dump-url url stream))))
-
-(defmethod dump-url ((url url) stream)
-  ;; fake a dump list
-  (dump-list-preamble (dump-plist-length url) stream)
-  (dump-plist-internal url stream))
-
-;; this is just like other boxer object dump methods
-;; with more specialized versions for particular url's
-;; note that the other methods should (call-next-method) first
-;; so that the type symbol comes up first
-(defmethod dump-plist-internal ((self url) stream)
-  (dump-boxer-thing (type-of self) stream)
-  (dump-boxer-thing :scheme-string stream)
-  (dump-boxer-thing (slot-value self 'scheme-string) stream))
-
-(defmethod dump-plist-length ((self url)) 3)
-
-(defmethod file-status-line-string ((self url))
-  (if (typep self 'local-url) :local :network))
-
-;; loading
-(defun load-url (url-list)
-  (apply #'make-instance (car url-list) (cdr url-list)))
-
-(defmethod protocol-string ((url url))
-  (let* ((rawtype (string (type-of url)))
-         (pos (search "-URL" rawtype)))
-    (if (null pos) rawtype (subseq rawtype 0 pos))))
-
-(defmethod urlstring ((url url))
-  (concatenate 'string (protocol-string url) ":"
-               (slot-value url 'scheme-string)))
-
-
-
-(defmethod set-url-flags ((box boxer::box))
-  (setf (slot-value box 'boxer::flags)
-        (boxer::set-box-flag-storage-chunk?
-         (boxer::set-box-flag-read-only-box? (slot-value box 'boxer::flags)
-                                             t)
-         t)))
-
-(defun make-box-from-url (url-string &optional (type 'boxer::data-box) name no-decode)
-  (let ((url (make-url-from-string url-string no-decode))
-        (box (boxer::make-uninitialized-box type)))
-    (shared-initialize box t)
-    ;; fix up various attributes of the box
-    (unless (null name)
-      (boxer::set-name box (boxer::make-name-row
-                            (list (if (and (typep name 'string)
-                                           (not (typep name 'simple-string)))
-                                      ;; adjustable strings blow out make-name-row
-                                      (copy-seq name)
-                                      name)))))
-    (shrink box)
-    (set-url-flags box)
-    (putprop box url :url)
-    (boxer::set-border-style box (if (not (null (boxer::exports box)))
-                                   :thick-dashed
-                                   :thick))
-    box))
-
-;;; Main function for making URL's
-(defun make-url-from-string (string &optional no-decode)
-  (let* ((place (position #\: string))
-         (type (subseq string 0 place))
-         (scheme-string (subseq string (1+& place)))
-         (class (find-class (intern
-                             (boxer::symbol-format nil "~A-URL"
-                                                   (string-upcase type))
-                            (find-package "BOXNET")))))
-    (if (null class)
-        (error "Don't know how to make a ~A url" type)
-        (make-instance class
-                       :scheme-string (if no-decode
-                                          scheme-string
-                                          (decode-url-string scheme-string))))))
-
-(defmethod fill-box-from-url ((box boxer::box))
-  (let ((url (getf (slot-value box 'plist) :url)))
-    (unless (null url)
-      (fill-box-using-url url box)
-      ;; if there is a cached boxtop, remove it
-      (let ((cb (getprop box :cached-boxtop)))
-        (unless (null cb)
-          (when (box::graphics-sheet? cb)
-            (let ((bm (box::graphics-sheet-bit-array cb)))
-              (unless (null bm) (box::deallocate-bitmap bm))))
-          (removeprop box :cached-boxtop)))
-      (boxer::modified box)
-      (boxer::mark-file-box-clean box))))
-
-;;; Basic required methods for all URL's
-;;;
-;;; ALL URL's should explicitly support the following methods:
-;;;   + INITIALIZE-INSTANCE
-;;;   + COPY-URL
-;;;   + FILL-BOX-USING-URL is the main interface function
-;;;   + DUMP-PLIST-INTERNAL and DUMP-PLIST-LENGTH for file system interface
-;;;
-
-;;; More specific methods should use the URL parsing rules for each
-;;; particular URL as defined in RFC 1738 on the scheme-string slot
-(defmethod initialize-instance ((url url) &rest initargs)
-  (shared-initialize url T)
-  (setf (slot-value url 'scheme-string) (getf initargs :scheme-string)))
-
-;; this should be faster since we just copy slots instead of decoding
-;; the scheme-string again
-(defmethod copy-url ((url url))
-  ;(make-instance (class-of url) :scheme-string (slot-value url 'scheme-string))
-  (let ((new (allocate-instance (class-of url))))
-    (setf (slot-value new 'scheme-string) (slot-value url 'scheme-string))
-    new))
-
-(defun read-hex-pair (char1 char2)
-  (flet ((char->number (char)
-           (case char
-             (#\0 0) (#\1 1) (#\2 2) (#\3 3) (#\4 4) (#\5 5) (#\6 6) (#\7 7)
-             (#\8 8) (#\9 9) ((#\a #\A) 10.) ((#\b #\B) 11.) ((#\c #\C 12.))
-             ((#\d #\D) 13.) ((#\e #\E) 14.) ((#\f #\F) 15.)
-             (otherwise (error "% in url's should be encoded as %25")))))
-    (+& (*& 16. (char->number char1)) (char->number char2))))
-
-;; decoding of unsafe characters is handled here
-;; look for "%" character encodings and convert them to characters
-(defun decode-url-string (string)
-  (let* ((slength (length string))
-         (decoded-string (make-array slength
-                                     :element-type #+mcl 'base-character
-                                                   #+lispworks 'base-char
-                                                   #-(or mcl lispworks) 'character
-                                     :fill-pointer 0)))
-    (do ((i 0 (1+& i)))
-        ((>=& i slength))
-      (let ((char (char string i)))
-        (cond ((char= char #\%)
-               ;; encoded character....
-               (vector-push (code-char (read-hex-pair (char string (+& i 1))
-                                                      (char string (+& i 2))))
-                            decoded-string)
-               (incf& i 2))
-              (t
-               (vector-push char decoded-string)))))
-    decoded-string))
-
-;; signals error by default, more specific classes of url's actually do the work
-(defmethod fill-box-using-url ((url url) box)
-  (declare (ignore box))
-  (error "Don't know how to fill box from ~A " url))
-
-
-
-;;; Local Files
-
-(defmethod initialize-instance ((url local-url) &rest initargs)
-  (call-next-method) ;; this initializes scheme-string
-  (setf (slot-value url 'pathname)
-        (let ((slash-pos (search "//" (slot-value url 'scheme-string))))
-          (if (and slash-pos (zerop slash-pos))
-              (subseq (slot-value url 'scheme-string) 2)
-              (slot-value url 'scheme-string))))
-  (setf (slot-value url 'host-type)
-        (or (getf initargs :host-type) (machine-type))))
-
-(defmethod copy-url ((url local-url))
-  (let ((new (call-next-method)))
-    (setf (slot-value new 'pathname) (slot-value url 'pathname))
-    new))
-
-(defmethod fill-box-using-url ((url local-url) box)
-  (let ((filebox (boxer::read-internal-1 (slot-value url 'pathname))))
-    (initialize-box-from-net-box box filebox)
-    ;; now do the box/file bookkeeping,
-    ;; NOTE: It has to be here AFTER the initialize-box-from-box
-    (when (box? box)
-      ;(boxnet::read-box-postamble box) ;(part of the Boxer Server) no longer used
-      (boxer::mark-box-as-file box (slot-value url 'pathname))
-      (boxer::mark-file-box-clean box))
-    ;; keep track of the file properties so that we can check
-    (boxer::record-boxer-file-properties
-     (slot-value url 'pathname)
-     (file-write-date (slot-value url 'pathname))
-     (file-author (slot-value url 'pathname)) box)
-    box))
-
-(defmethod dump-plist-internal ((self local-url) stream)
-  (call-next-method)
-  (dump-boxer-thing :host-type stream)
-  (dump-boxer-thing (slot-value self 'host-type) stream))
-
-(defmethod dump-plist-length ((self local-url))
-  (+& (call-next-method) 2))
-
-
-
-;;; Mailto
-
-(defmethod initialize-instance ((url mailto-url) &rest initargs)
-  (call-next-method)
-  (setf (slot-value url 'address)
-        ;; should do some reality checking here
-        (slot-value url 'scheme-string)))
-
-(defvar *mail-instruction-box*
-        (make-box '(("Edit your message in this box")
-                    ("Exit the box to send the mail"))
-                  'boxer::Data-box
-                  "Instructions"))
-
-(defvar *include-instructions-in-new-message-boxes?* T)
-
-(defun make-message-box (from to &optional (subject ""))
-  (let ((header (make-box `(("From:" ,from)
-                            ("To:" ,to)
-                            ("Subject:" ,subject))
-                          'boxer::data-box
-                          "Header"))
-        (body (make-box '(()) 'boxer::data-box "Message")))
-    (if *include-instructions-in-new-message-boxes?*
-        (make-box (list (make-row (list *mail-instruction-box*))
-                        (make-row (list header))
-                        (make-row (list body))))
-        (make-box (list (make-row (list header))
-                        (make-row (list body)))))))
-
-;; still need to add a trigger for actually mailing the message
-;; not to mention the actual mechanism for sending the message
-(defmethod fill-box-using-url ((url mailto-url) box)
-  (append-row box (make-row (make-message-box *user-mail-address*
-                                              (mailto-url-address url)))))
-
-
-
-
-;;; as defined in RFC 1738, URL's which involve the direct use of
-;;; an IP-based protocol to a specific host on the internet use a
-;;; common syntax for the scheme-specific data
-;;; The syntax is:     //<user>:<password>@<host>:<port>/<url-path>
-;;; where "<user>:<password>@", ":<password>", ":<port>" and "/<url-path>"
-;;; are all optional
-
-(defmethod initialize-instance ((url net-url) &rest initargs)
-  (call-next-method)
-  (multiple-value-bind (user password host port path canonicalized-scheme-string)
-      (decode-net-url-for-url url (slot-value url 'scheme-string))
-    (setf (slot-value url 'user) user
-          (slot-value url 'password) password
-          (slot-value url 'host) host
-          (slot-value url 'port) port
-          (slot-value url 'path) path)
-    (unless (null canonicalized-scheme-string)
-      (setf (slot-value url 'scheme-string) canonicalized-scheme-string))))
-
-(defmethod copy-url ((url net-url))
-  (let ((new (call-next-method)))
-    (setf (slot-value new 'user) (slot-value url 'user)
-          (slot-value new 'password) (slot-value url 'password)
-          (slot-value new 'host) (slot-value url 'host)
-          (slot-value new 'port) (slot-value url 'port)
-          (slot-value new 'path) (slot-value url 'path))
-    new))
-
-;; used by make-url-storage-info-box in file-prims
-(defmethod url-values ((url net-url))
-  (with-collection
-    (collect "URL-Type") (collect (string-capitalize (type-of url)))
-    (unless (null (slot-value url 'user))
-      (collect "User") (collect (slot-value url 'user)))
-    (unless (null (slot-value url 'host))
-      (collect "Host") (collect (slot-value url 'host)))
-    (unless (null (slot-value url 'port))
-      (collect "Port") (collect (slot-value url 'port)))
-    (unless (null (slot-value url 'path))
-      (collect "Path") (collect (slot-value url 'path)))))
-
-;; Base 10.
-(defun string->number (string &key start stop)
-  (let ((*read-base* 10.))
-    (read-from-string string nil nil :start start :end stop)))
-
-(defmethod decode-net-url-for-url ((url net-url) string)
-  (decode-net-url string))
-
-;; returns (values user password host port path)
-(defun decode-net-url (string &optional start-path-with-slash)
-  (let ((slash-start (search "//" string))
-        (fixed-scheme-string nil))
-    (if (or (null slash-start) (not (zerop& slash-start)))
-     (error "Bad URL scheme string (~S)" string)
-     (let* ((1st-slash (position #\/ string :start 2))
-            (@place (position #\@ string :start 2 :end 1st-slash))
-            (1st-colon (let ((maybe (position #\: string :start 2)))
-                         ;; don't be confused by dir names with :'s
-                         (unless (and maybe 1st-slash (> maybe 1st-slash)) maybe)))
-            (pass? (and @place 1st-colon (<& 1st-colon @place)))
-            (user (unless (null @place)
-                    ;; if there is no "@", then user and password are omitted
-                    (subseq string 2 (if pass? 1st-colon @place))))
-            (pass (when pass? (subseq string (1+& 1st-colon) @place)))
-            (next-colon (if pass?
-                            (position #\: string :start @place :end 1st-slash)
-                            1st-colon))
-            (host (subseq string (if @place (1+& @place) 2)
-                          (or next-colon 1st-slash)))
-            (port (unless (null next-colon)
-                    (string->number string
-                                    :start (1+& next-colon) :stop 1st-slash)))
-            (path (unless (null 1st-slash)
-                    (let ((path-string (subseq string
-                                               (if start-path-with-slash
-                                                   1st-slash
-                                                   (1+& 1st-slash)))))
-                      (if (every #'(lambda (c) (char= c #\/)) path-string)
-                          (progn (setq fixed-scheme-string
-                                       (subseq string 0
-                                               (1+& (position #\/ string
-                                                              :test-not #'char=
-                                                              :from-end t))))
-                                 nil)
-                          ;; trailing slashes are not according to
-                          ;; spec but a fairly common practice
-                        path-string)))))
-       (values user pass host port path fixed-scheme-string)))))
-
-
-;; use the suffix to try an infer some information about the content of the file
-(defun path-suffix (path)
-  (unless (null path)
-    (let ((last-dot (position #\. path :from-end t))
-          (semi (position #\; path :from-end t)))
-      (when last-dot
-        (subseq path (1+& last-dot) semi)))))
 
 ;; update function for boxer::*FILE-STATUS-LINE-UPDATE-FUNCTION*
 (defvar *ftp-message-dot-counter* 0)
@@ -611,60 +158,144 @@ Modification History (most recent at top)
   (surf-message "Writing TCP data ~A"
                 (ftp-message-dots-string)))
 
-;; this is basically boxer::initialize-box-from-box with extra
-;; handling to reconcile the slots and properties in the embedded box
-;; with the slots and properties in the box file being read in.
-(defmethod initialize-box-from-net-box ((box boxer::box) netbox)
-  (let ((old-ds (display-style box))
-        (old-flags (slot-value box 'boxer::flags)))
-    (boxer::initialize-box-from-box box netbox)
-    ;; the vanilla init will take the display style from the net box
-    (case old-ds
-      (:shrunk (shrink box))
-      (:supershrunk (boxer::supershrink box)))
-    ;; make sure certain flags in the existing box are preserved...
-    (when (and (boxer::box-flag-storage-chunk? old-flags)
-               (not (storage-chunk? box)))
-      (setf (storage-chunk? box) t))
-    (when (and (boxer::box-flag-read-only-box? old-flags)
-               (not (read-only-box? box)))
-      (setf (read-only-box? box) t))
-    ;; make sure the border is (or stays) thick because
-    ;; if the net box was not saved with thick borders, it will bash
-    ;; the existing border style to thin
-    (boxer::set-border-style box (if (not (null (boxer::exports box)))
-                                   :thick-dashed
-                                   :thick))
-  box))
-
-(defun save-net-data (stream box doc-type
-                             &optional
-                             (text-data? (member doc-type
-                                                 '(:text :binhex :uuencode)))
-                             pathname)
+(defun save-net-data (stream box doc-type &optional pathname)
   (let ((file (or pathname
-                  #+mcl
-                  (ccl::choose-new-file-dialog
-                   :prompt (format nil "Save ~A data in:" doc-type))
                   #+lispworks
                   (capi:prompt-for-file
                    "save MIME data in file:"
-                   :filter bw::*boxer-file-filters*
+                   :filters bw::*boxer-file-filters*
                    :operation :save :if-does-not-exist :ok
                    :owner bw::*boxer-frame*)))
         (eof-value (list 'eof)))
-    (if text-data?
-        (with-open-file (outstream file :direction :output)
-          (do ((line (net-read-line stream) (net-read-line stream)))
-              ((or (null line) (string= line ".")))
-            (write-line line outstream)))
-        (with-open-file (outstream file :direction :output
-                                   :element-type '(unsigned-byte 8))
-          (do ((byte (read-byte stream nil eof-value)
-                     (read-byte stream nil eof-value)))
-              ((eq byte eof-value))
-            (write-byte byte outstream))))
+    (with-open-file (outstream file :direction :output
+                                :element-type '(unsigned-byte 8))
+      (do ((byte (read-byte stream nil eof-value)
+                  (read-byte stream nil eof-value)))
+          ((eq byte eof-value))
+        (write-byte byte outstream)))
     ;; if we got here, make a box informing the user...
     (append-row box (make-row (list doc-type "data" "saved" "in")))
     (append-row box (make-row (list (namestring file))))
     file))
+
+
+;;; Dumper/Loader utilities
+;;; The next 3 functions have to be in agreement about when and what to
+;;; dump.  They are used in the dumper.lisp file to control dumping of inferiors
+;;; as well as what extra info needs to be dumped out so that the box can
+;;; later be read in automatically
+;;; There are currently three types of auto reading boxes (black boxes)
+;;;    o Boxer Server Boxes: distinguished by numeric ID's in the :server-box-id
+;;;      plist property for the most part, these are obsolete
+;;;    o URL boxes: look for URL (Universal Resource Locator) Structs in the
+;;;      plist property.
+;;;    o File boxes: look for pathname (or string) in the :associated-file
+;;;      property in the plist
+;;;
+;;; 2022-09-28 All of the below have been moved here from client.lisp in the process
+;;;   of full deprecating the old Boxer Server code. Look there for the old full
+;;;   versions that contain the first check above for Boxer Server Boxes. Those have
+;;;   been removed from here.
+
+;; the dumper walks through all the inferiors of the box being dumped.  If an
+;; inferior box meets this test, then only its top level characteristics are
+;; dumped but we do not recurse through the inferior box's inferiors
+(defun no-inferiors-for-file? (box)
+  (let ((plist (plist box)))
+    (and (storage-chunk? box)
+         ;; storage-chunk boxes are the granularity of delayed loading
+         ;; we now test each of the three cases described above...
+         ;; we could probably streamline the logic but at least this way,
+         ;; the 3 cases are easily distinguished
+         (or (and (getf plist :url)
+                  (not (eq box *outermost-dumping-box*)))
+             (and (getf plist :associated-file)
+                  (not (eq box *outermost-dumping-box*)))))))
+
+;; sub box relocation table, branch file links, inf file links
+(defun storage-chunk-plist-half-length (box)
+  (let* ((half-length 0)
+         (boxtop-prop (getprop box :boxtop))
+         (boxtop (cond ((or (null boxtop-prop)
+                            (eq boxtop-prop :standard)
+                            (eq boxtop-prop :framed))
+                        (boxer::boxtop box))
+                       ((eq boxtop-prop :file)
+                        (let ((bt (boxer::boxtop box)))
+                          (when (boxer::graphics-sheet? bt) bt))))))
+    (cond
+     ((url-box? box) (incf& half-length) (when boxtop (incf& half-length)))
+     ((boxer::file-box? box)
+      ;(incf& half-length)
+      ;; 8/31/05 in addition to filename, we dump out dirs,name,type
+      (incf& half-length 4)
+      (when boxtop (incf& half-length))))
+    half-length))
+
+(defmethod dump-storage-chunk-plist-items ((self boxer::box) stream)
+  (let* ((boxtop-prop (getprop self :boxtop))
+         (boxtop (cond ((or (null boxtop-prop)
+                            (eq boxtop-prop :standard)
+                            (eq boxtop-prop :framed))
+                        (boxer::boxtop self))
+                       ((eq boxtop-prop :file)
+                        (let ((bt (boxer::boxtop self)))
+                          (when (boxer::graphics-sheet? bt) bt))))))
+    (cond
+     ((url-box? self)
+      (dump-boxer-thing :url stream)
+      (dump-box-url self stream)
+      (when boxtop
+        (dump-boxer-thing :cached-boxtop stream) (dump-boxer-thing boxtop stream)))
+     ((boxer::file-box? self)
+      (let* ((file (filename-for-file self))
+             (dirs (pathname-directory file))
+             (name (pathname-name      file))
+             (type (or (pathname-type file) :unspecific)))
+        (dump-boxer-thing :associated-file stream)
+        (dump-boxer-thing file stream)
+        ;; dump out the filename components as well for cross platform portability
+        (dump-boxer-thing :associated-file-dirs stream)
+        (dump-boxer-thing dirs stream)
+        (dump-boxer-thing :associated-file-name stream)
+        (dump-boxer-thing name stream)
+        (dump-boxer-thing :associated-file-type stream)
+        (dump-boxer-thing type stream))
+      (when boxtop
+        (dump-boxer-thing :cached-boxtop stream) (dump-boxer-thing boxtop stream)))
+     )))
+
+;; there are 4 case here, the relative filename flag can be on or off and
+;; the filename can already be either a relative one or an absolute one
+;; If the the filename matches the flag, we just return the filename otherwise
+;; we'll have to do some work
+(defmethod filename-for-file ((box boxer::box))
+  (let* ((local-flag (boxer::relative-filename? box))
+         (filename (getprop box :associated-file))
+         (relative? (and filename (eq (car (pathname-directory filename))
+                                      :relative))))
+    (if (or (and relative? local-flag)
+            (and (not relative?) (not local-flag)))
+        (namestring filename) ; we have what we want
+        (let* ((sup-file-box (boxer::current-file-box (superior-box box)))
+               (sup-file (getprop sup-file-box :associated-file)))
+          (cond ((null sup-file) ; save as absolute
+                 (if relative?
+                     (namestring (boxer::boxer-new-file-dialog
+                                  :prompt
+                                  "The Box has no superior filename to merge"
+                                  :directory filename
+                                  :box box))
+                     (namestring filename)))
+                ((and local-flag (not relative?))
+                 ;; we want to save relative, but have an absolute
+                 ;; use enough-namestring only for sorting directory
+                 ;; structure otherwise type info can get lost
+                 (namestring
+                  (make-pathname :directory (pathname-directory
+                                             (enough-namestring filename
+                                                                sup-file))
+                                 :name (pathname-name filename)
+                                 :type (pathname-type filename))))
+                (t ; must have relative, but want to save absolute
+                 (namestring (merge-pathnames filename sup-file))))))))

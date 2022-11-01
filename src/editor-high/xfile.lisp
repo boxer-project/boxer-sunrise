@@ -224,43 +224,6 @@ Modification History (most recent at top)
                        sup-path)))
       (when (probe-file retry-path) (return retry-path)))))
 
-
-;; come here when single clicked on a file link
-;; check to see if the file is a box
-#+mcl
-(defun edit-mac-file-ref (box &optional (xref (getprop box :xref)))
-  (when (null xref)
-    (let ((new-xref (make-mac-file-ref)))
-      (putprop box new-xref :xref)  (setq xref new-xref)))
-  (case (mac-file-ref-dialog (mac-file-ref-pathname xref))
-    (:open (cond ((null (mac-file-ref-pathname xref))
-                  (boxer-eval::primitive-signal-error :mac-interface
-                                                "No file to launch"))
-                 ((not (probe-file (mac-file-ref-pathname xref)))
-                  (boxer-eval::primitive-signal-error :mac-interface
-                                                "File not Found"
-                                                (mac-file-ref-pathname xref)))
-                 (t
-                  (ccl::open-mac-file (mac-file-ref-pathname xref)))))
-    (:change
-     (let ((newpath (ccl::choose-file-dialog)))
-       ;; newpath can point to a boxer file which should be handled
-       ;; specially i.e. change to a file box
-       (cond ((box-file? newpath)
-              (remove-xfile-props box)
-              (mark-box-as-file box newpath))
-             (t
-              (setf (mac-file-ref-pathname xref) newpath)
-              (set-xref-boxtop-info box)))
-       (modified box)))
-    (:move
-     (let ((newpath (ccl::choose-new-file-dialog
-                     :directory (mac-file-ref-pathname xref))))
-       (rename-file (mac-file-ref-pathname xref) newpath)
-       (setf (mac-file-ref-pathname xref) newpath)))
-    (t ;; can come here if CANCELed from the dialog
-       )))
-
 ;; ==> Single click
 #+lispworks
 (defun edit-xref (box &optional (xref (getprop box :xref)))
@@ -282,7 +245,7 @@ Modification History (most recent at top)
      (let ((newpath (open-xref-file-dialog)))  ;; should we use :directory (xref-pathname xref)
        ;; newpath can point to a boxer file which should be handled
        ;; specially i.e. change to a file box
-       (cond ((box-file? newpath)
+       (cond ((boxer-file-contents? newpath)
               (remove-xfile-props box)
               (mark-box-as-file box newpath))
              (t
@@ -361,6 +324,19 @@ Modification History (most recent at top)
     (push 'vcvc-xref-hook *vcvc-special-structures-hook*))
   (unless (member 'print-vc-xref-hook *print-vc-special-structures-hook*)
     (push 'print-vc-xref-hook *print-vc-special-structures-hook*))
+
+  ;; 2022-10-16 TODO sgithens Eventually move these alongside the actual boxer-styles
+  ;; code. Currently, it's loaded before these hook lists exist, so we are
+  ;; keeping them here until I properly reorganize things.
+  ;; Same goes for the hooks registered in dumper.lisp.
+  (unless (member 'copy-css-styles-special-property *copy-special-box-properties-hook*)
+    (push 'copy-css-styles-special-property *copy-special-box-properties-hook*))
+  (unless (member 'edvc-css-styles-hook *edvc-special-structures-hook*)
+    (push 'edvc-css-styles-hook *edvc-special-structures-hook*))
+  (unless (member 'vcvc-css-styles-hook *vcvc-special-structures-hook*)
+    (push 'vcvc-css-styles-hook *vcvc-special-structures-hook*))
+  (unless (member 'print-vc-css-styles-hook *print-vc-special-structures-hook*)
+    (push 'print-vc-css-styles-hook *print-vc-special-structures-hook*))
   )
 
 

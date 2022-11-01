@@ -936,20 +936,6 @@
     (set-fixed-size screen-box nil nil)
     (set-offsets screen-box 0 0)))
 
-
-(DEFUN REDISPLAY-CLUE (TYPE &REST ARGS)
-       (LET ((HANDLER (GET TYPE ':REDISPLAY-CLUE)))
-            (IF (NOT-NULL HANDLER)
-                (APPLY HANDLER TYPE ARGS)
-                (BARF "~S is an unknown type of redisplay-clue." TYPE))))
-
-(setf (get ':clear-screen ':redisplay-clue)
-      #'(lambda (&rest ignore)
-                (declare (ignore ignore))
-                (push '(:clear-screen) *redisplay-clues*)))
-
-
-
 (DEFUN OUTERMOST-SCREEN-BOX? (SCREEN-OBJ)
        (AND (SCREEN-BOX? SCREEN-OBJ)
             (EQ SCREEN-OBJ (boxer-window::outermost-screen-box))))

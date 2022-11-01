@@ -191,6 +191,7 @@
 (boxer-eval::defboxer-key (bu::line-key 2) com-step)
 (boxer-eval::defboxer-key (bu::line-key 4) com-step) ; not approved
 (boxer-eval::defboxer-key (bu::return-key 2) com-doit-now)
+(boxer-eval::defboxer-key (bu::return-key 6) com-step)
 
 ;; Name-Tab
 (boxer-eval::defboxer-key bu::\|-key com-name-box)

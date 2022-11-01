@@ -256,31 +256,25 @@ Modification History (most recent at top)
         (mark-file-box-clean box))))
   boxer-eval::*novalue*)
 
-(defboxer-command com-open-box-file (&optional explicit-redisplay file-to-open)
+(defboxer-command com-open-box-file (&optional file-to-open)
   "Inserts the contents of a Boxer file"
   (if (name-row? (point-row))
     (boxer-editor-error "Can't insert a (file) box while in a name")
     (progn
       (catch 'cancel-boxer-file-dialog
         (boxer-eval::report-eval-errors-in-editor
-          ;; (with-drawing-port *boxer-pane*
           (let* ((filename (or file-to-open (boxer-open-file-dialog)))
                  (box (read-internal filename)))
             (when (box? box)
               ;; if this was previously, a saved world box, we need to
               ;; fix up the name slot
-              (multiple-value-bind (ro? world-box?)
-                  #+mcl (boxer-file-info filename) ;; looks in resource fork
-                #-mcl (values nil nil)
-                (declare (ignore ro?))
-                (when (or world-box?
-                          (and (stringp (slot-value box 'name))
-                               (string= (slot-value box 'name) "WORLD")))
-                  (setf (slot-value box 'name) nil)))
+              (when (and (stringp (slot-value box 'name))
+                         (string= (slot-value box 'name) "WORLD"))
+                (setf (slot-value box 'name) nil))
               (insert-cha *point* box)
               ;; Add the newly opened file to the recents list
               (add-recent-file filename)
-              (when explicit-redisplay (repaint))))))
+              (repaint)))))
       ;; this marks the box superior to the box being loaded
       (mark-file-box-dirty (point-row))))
   boxer-eval::*novalue*)

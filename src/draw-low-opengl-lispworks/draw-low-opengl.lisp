@@ -421,7 +421,9 @@ OpenGL expects a list of X Y pairs"
 
 ;; we are comparing WIN32::COLORREF's not COLOR:COLOR-SPEC's
 ;; so use WIN32:COLOR= instead of COLOR:COLORS=
-(defun color= (c1 c2)  (bw::ogl-color= c1 c2))
+(defun color= (c1 c2)
+  (if (and c1 c2) ; these  can't be nil
+    (bw::ogl-color= c1 c2)))
 
 (defun %set-pen-color (color)
   "This expects either an already allocated GL 4 vector that represents a color, or an RGB percentage vector

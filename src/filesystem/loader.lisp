@@ -746,6 +746,12 @@ should ignore it.")
             (box-flag-autoload-file? raw-flags))
            (box-flag-read-only-box? raw-flags)))))
 
+(defun no-cross-file-links? (box)
+  (let ((plist (box::plist box)))
+    (and (null (getf plist :cross-file-contained-links))
+         (null (getf plist :cross-file-port-branch-links))
+         (null (getf plist :cross-file-target-branch-links)))))
+
 (defmethod initialize-box-from-box ((box box) from-box)
   (set-class box (class-of from-box))
   ;;  (copy-special-box-properties from-box box T)
@@ -815,10 +821,6 @@ should ignore it.")
                     (insert-self-action obj))))
               t)
     (:flags (setf (slot-value self 'flags) value)
-            (when (and boxnet::*during-login-action?*
-                       (box-flag-load-box-on-login? value)
-                       (not (fast-memq self boxnet::*login-postpass-list*)))
-              (push self boxnet::*login-postpass-list*))
             (when (and *in-autoload-environment*
                        (box-flag-autoload-file? value)
                        (not (fast-memq self *autoload-list*)))
@@ -854,14 +856,16 @@ should ignore it.")
                  (setq prev-row row)))
              t))
     ;; box server specific keys...
-    (:server-box-id (load-server-box-id self value) t)
+    (:server-box-id
+     (warn "Trying to load unsupported server-box-id"))
     (:cross-file-contained-links
-     (load-cross-file-contained-links self value) t)
+     (warn "Trying to load unsupported cross-file-contained-link"))
     (:cross-file-port-branch-links
-     (load-cross-file-port-branch-links self value) t)
+     (warn "Trying to load unsupported cross-file-port-branch-links"))
     (:cross-file-target-branch-links
-     (load-cross-file-target-branch-links self value) t)
-    (:cross-file-target-ends (load-cross-file-target-ends self value) t)
+     (warn "Trying to load unsupported cross-file-target-branch-links"))
+    (:cross-file-target-ends
+     (warn "Trying to load unsupported cross-file-target-ends"))
     ;; obsolete, should warn...
     (:port-target-translation-table
      (warn "Old style cross file port target reference")
@@ -908,6 +912,7 @@ should ignore it.")
                   (putprop self (make-xref :pathname (pathname value))
                            :Xref)
                   (set-xref-boxtop-info self))))
+    (:css-styles (putprop self value :css-styles))
     (t (cond ((fast-memq keyword *load-module-init-keywords*)
               (funcall (get keyword 'load-module-function) self value))
              ((fast-memq keyword *subclass-file-init-keywords*) ; yuck
@@ -938,12 +943,12 @@ should ignore it.")
         (:cracked-port
          (putprop self t :cracked-port))
         ;; Cross file port keys...
-        (:cross-file-link-id (load-cross-file-link-id self value) t)
+        (:cross-file-link-id
+          (warn "Old BFS style cross-file-link-id"))
         ;; obsolete, should probably warn
         (:cross-file-port-target
          (warn "Old style cross file port reference")
-         (putprop self (boxnet::translate-port-target-path value)
-                  :cross-file-port-target))
+        )
         (t nil))))
 
 ;; functionality copied to regular box method to support old files

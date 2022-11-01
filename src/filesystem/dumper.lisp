@@ -90,28 +90,22 @@ Modification History (most recent at the top)
 ;;; Top level Dumping Function (this is called from BOXER and takes 2 args
 ;;;  a <box> and a <filename>)
 
-(defun dump-top-level-box (box filename &optional file-attribute-list)
-  (let ((dps (getprop box :dump-properties)))
-    (unless (null dps)
-      (setq file-attribute-list (append file-attribute-list dps))))
-  (unless (getf file-attribute-list :package)
-    (setf (getf file-attribute-list :package) ':boxer))
+(defun dump-top-level-box (box filename &optional output-stream file-attribute-list)
+  ;; sgithens I don't believe this is needed anymore
+  ; (let ((dps (getprop box :dump-properties)))
+  ;   (unless (null dps)
+  ;     (setq file-attribute-list (append file-attribute-list dps))))
+  ; (unless (getf file-attribute-list :package)
+  (setf (getf file-attribute-list :package) ':boxer)
+    ; )
   (with-mouse-cursor (:file-io)
-    (writing-bin-file (box stream filename)
+    (when filename (writing-bin-file (box stream filename)
                       (dump-attribute-list file-attribute-list stream)
-                      (dump-box box stream))
-    ))
-
-(defun dump-top-level-box-to-stream (box stream
-                                         &optional stream-attribute-list)
-  (let ((dps (getprop box :dump-properties)))
-    (unless (null dps)
-      (setq stream-attribute-list (append stream-attribute-list dps))))
-  (unless (getf stream-attribute-list :package)
-    (setf (getf stream-attribute-list :package) ':boxer))
-  (writing-bin-stream (box stream)
-                      (dump-attribute-list stream-attribute-list stream)
-                      (dump-self box stream)))
+                      (dump-box box stream)))
+    (when output-stream
+      (writing-bin-stream (box output-stream)
+        (dump-attribute-list file-attribute-list output-stream)
+        (dump-box box output-stream)))))
 
 (defun start-bin-file (stream)
   (clrhash *bin-dump-table*)
@@ -791,12 +785,7 @@ Modification History (most recent at the top)
 
 
     (defmethod dump-plist-internal ((self port-box) stream)
-      (cond ((and (in-bfs-environment?) (cross-file-port? self))
-             ;; should shrink it before dumping out display-style in the
-             ;; vanilla box dump-plist-internal method
-             (shrink self)
-             (call-next-method)
-             (dump-cross-file-port-reference self stream))
+      (cond
         ((circular-port? self)
          (call-next-method)
          (let* ((target (slot-value self 'ports))
@@ -811,7 +800,7 @@ Modification History (most recent at the top)
               (dump-boxer-thing (slot-value self 'ports) stream)))))
         (t
          (call-next-method)
-         (when (or (cracked-port? self) (cross-file-port? self))
+         (when (or (cracked-port? self))
            (dump-boxer-thing :cracked-port stream)
            (dump-boxer-thing T stream))
          (dump-boxer-thing :port-target stream)
@@ -846,8 +835,7 @@ Modification History (most recent at the top)
     (defmethod dump-plist-length ((self port-box))
       (+& (call-next-method)
           (if (and (not (circular-port? self))
-                   (not (and (in-bfs-environment?) (cross-file-port? self)))
-                   (or (cracked-port? self) (cross-file-port? self)))
+                   (or (cracked-port? self)))
             4 2)))
 
     ;; use this to avoid dumping display styles if we don't have to since even the
@@ -1213,7 +1201,13 @@ Modification History (most recent at the top)
               (push 'xref-dump-plist-length *dump-plist-length-hook*))
             (unless (member 'xref-dump-plist-internal *dump-plist-internal-hook*)
               (push 'xref-dump-plist-internal *dump-plist-internal-hook*))
-            )
+
+  (unless (member 'css-styles-dump-plist-length *dump-plist-length-hook*)
+    (push 'css-styles-dump-plist-length *dump-plist-length-hook*))
+  (unless (member 'css-styles-dump-plist-internal *dump-plist-internal-hook*)
+    (push 'css-styles-dump-plist-internal *dump-plist-internal-hook*))
+
+)
 
 ;;;; Debugging support
 

@@ -51,7 +51,7 @@ Modification History (most recent at top)
 (in-package :boxer)
 
 
-(defvar *boxer-version* "3.4.10 2022-07-11 .box_v13")
+(defvar *boxer-version* "3.4.11 2022-10-31")
 
 (defun boxer-component-version ()
   "Returns the current semver version of boxer based on it's asdf configuration."
@@ -209,10 +209,6 @@ Modification History (most recent at top)
   "Inside of REDISPLAYING-WINDOW, this variable is bound to the window
    being redisplayed's outermost-screen-box. This is the screen box which
    represents that window outermost-box.")
-
-(DEFVAR *REDISPLAY-CLUES* NIL
-  "A list of redisplay-clues. This are hints left behind by the editor
-   to help the redisplay code figure out what is going on.")
 
 (DEFVAR *SPACE-AROUND-OUTERMOST-SCREEN-BOX* #-mcl 9.  #+mcl 3.
   "This is the number of pixels between the outside of the outermost screen

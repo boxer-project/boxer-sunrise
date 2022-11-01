@@ -17,11 +17,14 @@
 (ql:quickload :qbase64)
 (ql:quickload :html-entities)
 (ql:quickload :md5)
+(ql:quickload :quri)
+
 
 (ql:quickload :alexandria)
 (ql:quickload :trivial-garbage)
 
 (ql:quickload :cffi)
+(ql:quickload :zip)
 
 (ql:quickload :hunchensocket)
 

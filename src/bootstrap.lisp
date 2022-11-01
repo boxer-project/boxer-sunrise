@@ -40,6 +40,9 @@
 (ql:quickload :log4cl)
 
 (ql:quickload :cffi)
+(ql:quickload :zip)
+(ql:quickload :quri)
+
 
 (defvar *boxer-project-dir* (make-pathname :directory (butlast (pathname-directory *load-truename*))))
 
