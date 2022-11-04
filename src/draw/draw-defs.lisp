@@ -28,6 +28,9 @@
 (defmethod add-cha ((device drawing-device) char x y)
 )
 
+(defmethod add-circle ((device drawing-device) x y radius &optional filled?)
+)
+
 (defmethod add-line ((device drawing-device) x0 y0 x1 y1)
 )
 
@@ -45,6 +48,11 @@
 (defmethod add-cha ((device multi-drawing-device) char x y)
   (dolist (dev *drawing-devices*)
     (add-cha dev char x y))
+)
+
+(defmethod add-circle ((device multi-drawing-device) x y radius &optional filled?)
+  (dolist (dev *drawing-devices*)
+    (add-circle dev x y radius filled?))
 )
 
 (defmethod add-line ((device multi-drawing-device) x0 y0 x1 y1)

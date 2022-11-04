@@ -49,6 +49,12 @@
       char (+ %origin-x-offset x) (+ %origin-y-offset y)))
 )
 
+(defmethod add-circle ((device webgl-device) x y radius &optional filled?)
+  (when (hunchentoot:started-p *boxer-server*)
+    (broadcast *boxer-client* "[\"circle\", ~a, ~a, ~a]"
+      radius (+ %origin-x-offset x) (+ %origin-y-offset y)))
+)
+
 (defmethod add-line ((device webgl-device) x0 y0 x1 y1)
   (when (hunchentoot:started-p *boxer-server*)
     (broadcast *boxer-client* "[\"line\", ~a, ~a, ~a, ~a]"

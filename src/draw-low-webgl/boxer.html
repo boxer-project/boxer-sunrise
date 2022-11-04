@@ -62,6 +62,9 @@ window.onload = function () {
             app.stage.addChild(message);
             pixiStrings.push(message)
         }
+        else if (wow[0] === "circle") {
+            lineGraphics.drawCircle(wow[2], wow[3], wow[1]);
+        }
         else if (wow[0] === "swap") {
         clearNext = true;
         // animate();
