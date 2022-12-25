@@ -160,6 +160,11 @@
 (defconstant ns-open-gl-pfa-accelerated-compute     97)  ; >= 10.6
 (defconstant ns-open-gl-pfa-virtual-screen-count   128)
 
+; sgithens openGL 3.2 core support
+(defconstant ns-open-gl-pfa-open-gl-profile 99)
+(defconstant ns-open-gl-profile-version-legacy #x1000)
+(defconstant ns-open-gl-profile-version-3_2-core #x3200)
+
 (defun ns-open-gl-pixel-format-attribute-type ()
   (if (> (floor (cocoa:ns-app-kit-version-number))
          cocoa:ns-app-kit-version-number-10_4)
@@ -176,7 +181,10 @@
   (declare (ignorable view))
   (fli:with-dynamic-foreign-objects ()
     (let* ((attributes-list
-            (nconc (and (or (getf configuration :double-buffer)
+            (nconc ;; sgithens - Adding the :modern flag to get an openGl 3.2 core context
+                   (when (getf configuration :modern)
+                     (list ns-open-gl-pfa-open-gl-profile ns-open-gl-profile-version-3_2-core))
+                   (and (or (getf configuration :double-buffer)
                             (getf configuration :double-buffered))
                         (list ns-open-gl-pfa-double-buffer))
                    (let ((depth-buffer (getf configuration :depth-buffer)))
