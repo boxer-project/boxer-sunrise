@@ -70,9 +70,9 @@
     (let ((nscontext (cocoa-context-context context)))
       (objc:invoke nscontext "update"))))
 
-;;; By returning NIL, this method blocks any redisplay calls, which 
+;;; By returning NIL, this method blocks any redisplay calls, which
 ;;; otherwise wil lproduce errors.
-(defmethod capi-cocoa-lib::output-pane-representation-draws-p 
+(defmethod capi-cocoa-lib::output-pane-representation-draws-p
             ((pane opengl-pane) representation &optional force-p)
    nil)
 
@@ -111,15 +111,14 @@
     (if collectp
         results
       (format stream
-              "~&Color buffer size : ~d~%Uses ~:[Color Index~;RGBA~]~%Is ~:[single~;double~]-buffered~@[~%Accumulator buffer size (per channel) = ~d bits~]~@[~%Depth buffer size = ~d bits~]~@[~%Stencil buffer size = ~d bits~]~@[~%Has ~d aux buffers~]" 
-              (getf results :buffer-size) 
+              "~&Color buffer size : ~d~%Uses ~:[Color Index~;RGBA~]~%Is ~:[single~;double~]-buffered~@[~%Accumulator buffer size (per channel) = ~d bits~]~@[~%Depth buffer size = ~d bits~]~@[~%Stencil buffer size = ~d bits~]~@[~%Has ~d aux buffers~]"
+              (getf results :buffer-size)
               (getf results :rgba)
               (getf results :double-buffer)
               (getf results :accum)
               (getf results :depth-buffer)
               (getf results :stencil-size)
               (getf results :aux)))))
-                                           
 
 ;; NSOpenGLPixelFormatAttribute
 (defconstant ns-open-gl-pfa-all-renderers      1)
@@ -170,13 +169,12 @@
          cocoa:ns-app-kit-version-number-10_4)
       '(:unsigned :int)
     ':int))
-  
 
 (defun choose-cocoa-pixel-format (view configuration)
-  "Returns the NSOpenGLPixelFormat for rep which supports the 
+  "Returns the NSOpenGLPixelFormat for rep which supports the
    requested configuration. Returns NIL if it fails.
    Configuration is a plist with the following allowed
-   indicators: 
+   indicators:
       :double-buffer, :double-buffered, - synonyms, value T or NIL."
   (declare (ignorable view))
   (fli:with-dynamic-foreign-objects ()
