@@ -294,14 +294,11 @@ OpenGL expects a list of X Y pairs"
                   %clip-rig %clip-bot)))
 
 (defun clear-window (w)
-  (opengl::rendering-on (w)
-    ;; sets the clearing color
-    ;; shouldn't need to do this EVERY time
-    (opengl::gl-clear-color (bw::ogl-color-red *background-color*)
-                        (bw::ogl-color-green *background-color*)
-                        (bw::ogl-color-blue *background-color*)
-                        0.0)
-    (opengl::gl-clear opengl::*gl-color-buffer-bit*)))
+  (gl::clear-color (bw::ogl-color-red *background-color*)
+                   (bw::ogl-color-green *background-color*)
+                   (bw::ogl-color-blue *background-color*)
+                   0.0)
+  (gl:clear :color-buffer-bit :depth-buffer-bit))
 
 ;;; used by repaint-in-eval
 (defvar *last-eval-repaint* 0)
