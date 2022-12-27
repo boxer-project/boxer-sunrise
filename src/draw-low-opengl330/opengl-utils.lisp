@@ -183,12 +183,6 @@ Modification History (most recent at the top)
   ;   (bw::ogl-color-alpha boxer::*graphics-state-current-pen-color*))
 )
 
-(defun ogl-draw-line (x0 y0 x1 y1)
-  (opengl:gl-begin opengl:*gl-lines*)
-  (opengl:gl-vertex2-f (ogl-type x0 'float) (ogl-type y0 'float))
-  (opengl:gl-vertex2-f (ogl-type x1 'float) (ogl-type y1 'float))
-  (opengl:gl-end))
-
 (defun ogl-set-pen-size (new)
   (opengl:gl-point-size (ogl-type new 'float))
   (opengl:gl-line-width (ogl-type new 'float)))
