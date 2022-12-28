@@ -552,7 +552,7 @@ It's not clear yet whether we'll need to re-implement this for the future."
 
 (defun %draw-rectangle (width height x y)
   (unless (or (>= %clip-lef %clip-rig) (>= %clip-top %clip-bot))
-    (bw::ogl-draw-rect x y (+ x width) (+ y height))))
+    (gl-add-rect bw::*boxgl-device* x y width height)))
 
 (defun %erase-rectangle (w h x y window)
   (unless (null window)
