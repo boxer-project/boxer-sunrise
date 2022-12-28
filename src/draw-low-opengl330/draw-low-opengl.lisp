@@ -268,9 +268,16 @@ OpenGL expects a list of X Y pairs"
                   (ceiling (- rig (- lef 1)))
                   (ceiling (- bot top))))
 
-;;; **** NEW, used in draw-high-highware-clip
 (defun window-system-dependent-set-origin (h v)
-  (opengl::gl-translatef h v 0.0))
+  "Translates the current transform matrix by an additional h and v distance.
+  Does not replace it from scratch. In the repaint code using this macro we typically
+  see the origin adjusted by some amount, and then un-adjusted by it with the negative
+  amounts to put it back."
+  (let* ((current-transform (3d-matrices:mat4 (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)))
+         (adjust-matrix (3d-matrices:mat4 (boxer::create-transform-matrix h v)))
+         (new-transform (3d-matrices:m* current-transform adjust-matrix)))
+    (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)
+          (3d-matrices:marr4 new-transform))))
 
 (defvar %local-clip-lef 0)
 (defvar %local-clip-top 0)
