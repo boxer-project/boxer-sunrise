@@ -214,10 +214,6 @@ Modification History (most recent at the top)
         (boxer::gl-add-line *boxgl-device* prev-x prev-y x y))
       (setf prev-x x prev-y y))))
 
-(defun ogl-draw-rect (x0 y0 x1 y1)
-  (opengl:gl-rectf (ogl-type x0 'float) (ogl-type y0 'float)
-            (ogl-type x1 'float) (ogl-type y1 'float)))
-
 (defun ogl-draw-point (x y)
   (opengl:gl-begin *gl-points*)
   (opengl:gl-vertex2-f (ogl-type x 'float) (ogl-type y 'float))
