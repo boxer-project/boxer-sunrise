@@ -200,15 +200,19 @@ Modification History (most recent at the top)
 
 ;; used directly
 (defun boxer::multiline2 (&rest x-and-y-s)
-  (opengl:gl-begin opengl:*gl-line-strip*)
-  (do* ((vertices x-and-y-s (cddr vertices))
-        (x (car vertices)  (car vertices))
-        (y (cadr vertices) (cadr vertices)))
-    ((null y)
-     (unless (null x) ; both run out @ same time
-       (error "Unpaired vertex in ~A" x-and-y-s)))
-    (opengl:gl-vertex2-f (ogl-type x 'float) (ogl-type y 'float)))
-  (opengl:gl-end))
+  ;; sgithens TODO 2022-12-30 Set this up properly to be a single draw arrays call rather
+  ;;                          than a series of single line draws.
+  (let ((prev-x nil)
+        (prev-y nil))
+    (do* ((vertices x-and-y-s (cddr vertices))
+          (x (car vertices)  (car vertices))
+          (y (cadr vertices) (cadr vertices)))
+      ((null y)
+      (unless (null x) ; both run out @ same time
+        (error "Unpaired vertex in ~A" x-and-y-s)))
+      (when prev-x
+        (boxer::gl-add-line *boxgl-device* prev-x prev-y x y))
+      (setf prev-x x prev-y y))))
 
 (defun ogl-draw-rect (x0 y0 x1 y1)
   (opengl:gl-rectf (ogl-type x0 'float) (ogl-type y0 'float)
