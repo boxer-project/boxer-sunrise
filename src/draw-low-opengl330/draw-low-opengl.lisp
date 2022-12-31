@@ -519,7 +519,7 @@ the window font (ie, draw-string) has to change it back for this to work.
   (gl-add-char bw::*boxgl-device* x y char))
 
 (defun %draw-circle (x y radius &optional filled?)
-  (bw::opengl-draw-circle x y radius filled?))
+  (gl-add-circle bw::*boxgl-device* x y radius filled?))
 
 (defun %draw-filled-arc (bit-array alu x y width height th1 th2)
   "See the-attic for the previous lispworks GP library version of this function.
