@@ -443,23 +443,6 @@ Modification History (most recent at the top)
 
 (defun num-slices (radius) (round (* 10 (sqrt radius))))
 
-(defun opengl-draw-circle (cx cy radius &optional filled?)
-  (let* ((num-slices (num-slices radius))
-         (theta (/ (* 2 pi) num-slices))
-         (tangent-factor (tan theta))
-         (radial-factor (cos theta))
-         (x radius) ; start 3 O'clock
-         (y 0))
-    (opengl:gl-begin (if filled? opengl:*gl-polygon* opengl:*gl-line-loop*))
-    (dotimes (i num-slices)
-      (opengl:gl-vertex2-f (coerce (+ x cx) 'single-float) (coerce (+ y cy) 'single-float))
-      (let ((tx (- y)) (ty x))
-        (setq x (+ x (* tx tangent-factor))
-              y (+ y (* ty tangent-factor)))
-        (setq x (* x radial-factor)
-              y (* y radial-factor))))
-    (opengl:gl-end)))
-
 (defun opengl-draw-arc (cx cy radius start-angle arc-angle &optional filled?)
   (let* ((num-slices (round (* (num-slices radius) (/ arc-angle (* 2 pi)))))
          (theta (/ arc-angle (1- num-slices)))
