@@ -67,26 +67,6 @@ Modification History (most recent at top)
 ;; gak !
 (defun ogl-pixmap-depth (pm) (declare (ignore pm)) 32)
 
-(defun %pixblt-to-screen (from-array tx ty wid hei fx fy &optional (buffer *gl-back*))
-  (let* ((data (ogl-pixmap-data from-array))
-         (pwid (ogl-pixmap-width from-array))
-         (phei (ogl-pixmap-height from-array))
-         ;; remember that OpenGL coords, starts from lower left
-         ;; these are the converted fy value for the array
-         (ofy (- phei (+ fy hei))))
-    ;; always set the pixel storage params as they may have been munged by previous
-    ;; operations
-    (gl-pixel-storei *gl-unpack-row-length* (if (= wid pwid) 0 pwid))
-    (gl-pixel-storei *gl-unpack-image-height* (if (= hei phei) 0 phei))
-    (gl-pixel-storei *gl-unpack-skip-pixels* fx)
-    (gl-pixel-storei *gl-unpack-skip-rows* ofy)
-    ;; draw into the back buffer
-    (gl-draw-buffer buffer)
-    ;; position, remeber y coord reversal...
-    (gl-raster-pos2-i tx (+ ty hei))
-    ;; finally, actuall move the pixels
-    (gl-draw-pixels wid hei *pixmap-data-type* *pixmap-data-format* data)))
-
 (defun %pixblt-from-screen (to-array fx fy wid hei tx ty &optional (buffer *gl-front*))
   (let* ((data (ogl-pixmap-data to-array))
          (pwid (ogl-pixmap-width to-array))
