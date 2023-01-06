@@ -305,8 +305,6 @@ Modification History (most recent at the top)
 (defun ogl-draw-char (char x y)
   (boxer::freetype-draw-char char x y *current-opengl-font* *ogl-current-color-vector* boxer::*font-size-baseline* t))
 
-(defun ogl-draw-string (text x y)
-  (boxer::freetype-draw-char text (floor x) (floor y) *current-opengl-font* *ogl-current-color-vector* boxer::*font-size-baseline*))
 
 ;;;; COLORS
 
