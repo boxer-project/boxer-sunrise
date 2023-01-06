@@ -560,16 +560,11 @@ It's not clear yet whether we'll need to re-implement this for the future."
       (%draw-rectangle w h x y))))
 
 (defun %draw-string (font string x y)
-  (let ((system-font (find-cached-font font)))
-    (if (null system-font)
-      (error "Can't find cached font for ~X" font)
-      (bw::with-ogl-font (system-font)
-                         (bw::ogl-draw-string string x y)))))
+  (gl-add-string bw::*boxgl-device* nil string x y))
 
 (defun %bitblt-to-screen (wid hei from-array fx fy tx ty)
-  ;; bw::gl-draw-pixels (w h
   ;; remember that  we are drawing from the lower left....
-  (opengl::%pixblt-to-screen from-array (round tx) (round ty) (round wid) (round hei) fx fy))
+  (gl-add-pixmap bw::*boxgl-device* from-array (round tx) (round ty) (round wid) (round hei) fx fy))
 
 (defun %bitblt-from-screen (wid hei to-array fx fy tx ty)
   ;; bw::gl-read-pixels
