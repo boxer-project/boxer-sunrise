@@ -93,63 +93,16 @@
     (freetype2:set-char-size face (floor (* font-zoom (* size 64))) 0 72 72)
     face))
 
-(defun current-rgba-percents (ogl-color)
-  `(,(bw::ogl-color-red ogl-color) ,(bw::ogl-color-green ogl-color)
-    ,(bw::ogl-color-blue ogl-color) ,(bw::ogl-color-alpha ogl-color)))
-
-(defun font-pixel-color-alpha (pixel-grayscale cur-color)
-  "Calculate the fonts pixel color keeping the same color, but using the gray scale to set the alpha value.
-   pixel-grayscale - 255 based value
-   cur-color - 0 to 1 based RGBA pixels. List of 4 values."
-  (let ((final-color 0))
-    (setf final-color (dpb pixel-grayscale (byte 8 24) final-color)) ; alpha
-    (setf final-color (dpb (floor (* (caddr cur-color) 255)) (byte 8 16) final-color)) ; blue
-    (setf final-color (dpb (floor (* (cadr cur-color) 255)) (byte 8 8) final-color))  ; green
-    (setf final-color (dpb (floor (* (car cur-color) 255)) (byte 8 0) final-color)) ; red
-    final-color))
-
-(defun make-freetype-pixmap (char-to-draw current-font cur-color &optional (font-zoom 1.0))
-  (let* ((rendered-array (freetype2::toy-string-to-array (current-freetype-font current-font font-zoom) (string char-to-draw) :left-right))
-         (advances (freetype2::get-string-advances (current-freetype-font current-font font-zoom) (string char-to-draw)))
-         (width (freetype2::array-dimension rendered-array 1))
-         (height (freetype2::array-dimension rendered-array 0))
-         (fli-data
-           (cffi:foreign-alloc opengl::*pixmap-ffi-type* :initial-element 0 :count (* width height)))
-         (*count* 0)
-         (*mypixmap* nil)
-         (*origval* nil))
-    (loop for y downfrom (- height 1) to 0 by 1 do                   ;dotimes (y height)
-      (dotimes (x width)
-        (setf *origval* (aref rendered-array y x))
-        (setf
-          (cffi:mem-aref fli-data opengl::*pixmap-ffi-type* (+ (* *count* width) x))
-          (font-pixel-color-alpha *origval* cur-color)))
-        (setf *count* (1+ *count*)))
-
-    (setf *mypixmap* (opengl::%make-ogl-pixmap :width width :height height
-                        :data fli-data ))
-    *mypixmap*))
-
-(defun find-freetype-pixmap (char-string current-font cur-ogl-color &optional (font-zoom 1.0))
-  "Returns a pixmap ready for rendering. Needs to cache pixmaps based on the following:
-   CAPI Font List, Color, Char/String
+(defun find-box-glyph (ch current-font &optional (font-zoom 1.0))
+  "Returns a box-glyph which includes the openGL texture id for rendering. Needs to cache glyphs based on the following:
+   CAPI Font List, Char/String
   "
   (let* ((capi-fontspec (check-fontspec (opengl-font-fontspec current-font)))
-         (cur-color (current-rgba-percents cur-ogl-color))
-         (cache-key `(,capi-fontspec ,cur-color ,char-string ,font-zoom))
-         (cached-pixmap (gethash cache-key *freetype-pixmap-cache*)))
-    (unless cached-pixmap
-      (setf cached-pixmap (make-freetype-pixmap char-string current-font (current-rgba-percents cur-ogl-color) font-zoom))
-      (setf (gethash cache-key *freetype-pixmap-cache*) cached-pixmap)
+         (font-face (current-freetype-font current-font (coerce font-zoom 'single-float)))
+         (cache-key `(,capi-fontspec ,ch ,(coerce font-zoom 'single-float)))
+         (cached-glyph (gethash cache-key *freetype-pixmap-cache*)))
+    (unless cached-glyph
+      (setf cached-glyph (create-box-glyph font-face ch))
+      (setf (gethash cache-key *freetype-pixmap-cache*) cached-glyph)
       (setf *freetype-pixmap-generate-count* (1+ *freetype-pixmap-generate-count*)))
-    cached-pixmap))
-
-(defun freetype-draw-char (char-to-draw xcoord ycoord current-font cur-ogl-color &optional (font-zoom 1.0) (adjust-baseline nil))
-  (bw::ogl-current-color) ; This is necessary to update the global ogl variable from the gl state
-  (opengl:rendering-on (bw::*boxer-pane*)
-    (let* ((glyph-pixmap (find-freetype-pixmap char-to-draw current-font cur-ogl-color font-zoom))
-           (height (opengl::ogl-pixmap-height glyph-pixmap))
-           (widgth (opengl::ogl-pixmap-width glyph-pixmap)))
-      (if adjust-baseline
-        (opengl::%pixblt-to-screen glyph-pixmap xcoord (- ycoord height) widgth height 0 0)
-        (opengl::%pixblt-to-screen glyph-pixmap xcoord ycoord widgth height 0 0)))))
+    cached-glyph))
