@@ -297,13 +297,10 @@ Modification History (most recent at the top)
   (values (ogl-font-ascent font) (ogl-font-height font) 1))
 
 (defun ogl-string-width (string &optional (font *current-opengl-font*))
-  (let* ((cha-pixmap (boxer::find-freetype-pixmap string font *ogl-current-color-vector* boxer::*font-size-baseline*))
-        (width (opengl::ogl-pixmap-width cha-pixmap)))
-    ;; TODO This should actually be the glyph advance value
-    width))
-
-(defun ogl-draw-char (char x y)
-  (boxer::freetype-draw-char char x y *current-opengl-font* *ogl-current-color-vector* boxer::*font-size-baseline* t))
+  (let ((total 0))
+    (for:for ((i over string))
+      (setf total (+ total (ogl-char-width i))))
+    total))
 
 
 ;;;; COLORS
