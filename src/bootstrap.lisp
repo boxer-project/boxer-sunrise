@@ -42,6 +42,15 @@
 (ql:quickload :zip)
 (ql:quickload :quri)
 
+(ql:quickload :cl-opengl)
+(ql:quickload :pngload)
+(ql:quickload :3d-vectors)
+(ql:quickload :3d-matrices)
+(ql:quickload :cl-glu)
+(ql:quickload :iterate)
+(ql:quickload :for)
+
+(log:config :debug)
 
 (defvar *boxer-project-dir* (make-pathname :directory (butlast (pathname-directory *load-truename*))))
 
@@ -70,13 +79,15 @@
                       #+win32 #P"Z:/code/boxer-sunrise/"
                 asdf:*central-registry*))
 
-#+(and lispworks x64) (load (example-file "opengl/examples/load"))
+#+(and lispworks x64) (load (cl-fad:merge-pathnames-as-file *boxer-project-dir* "src/opengl-lw-8/examples/load.lisp"))
 
 ;; debugging on Apple Silicon
 ; #+ARM64 (progn
 ;   ; (load "/Users/sgithens/code/lispworks-8.0-examples/opengl/host")
 ;   (load "/Applications/LispWorks 8.0 (64-bit)/Library/lib/8-0-0-0/examples/opengl/host")
 ;   (load "OPENGL:EXAMPLES;load"))
+
+(setf *features* (cons :moderngl *features*))
 
 (setf *features* (cons :opengl *features*))
 (setf *features* (cons :freetype-fonts *features*))
@@ -90,4 +101,3 @@
 (boxer-window::window-system-specific-make-boxer)
 
 (boxer-window::window-system-specific-start-boxer)
-(boxer-window::font-size-menu-action 3 nil)
