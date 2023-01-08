@@ -84,10 +84,6 @@ Modification History (most recent at top)
     ;; move the pixels....
     (gl-read-pixels fx fy wid hei *pixmap-data-type* *pixmap-data-format* data)))
 
-(defun %pixblt-in-screen (wid hei fx fy tx ty)
-  (gl-raster-pos2-i tx (+ ty hei))
-  (gl-copy-pixels fx (+ fy hei) wid hei *gl-color*))
-
 ;; NOTE: this must match the format in *pixmap-data-type* and *pixmap-data-format*
 (defun make-offscreen-pixel (red green blue &optional (alpha 255))
   (dpb alpha *gl-rgba-rev-alpha-byte*
