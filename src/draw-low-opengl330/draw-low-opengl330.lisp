@@ -249,6 +249,27 @@
     (gl:bind-vertex-array 0)
     (gl:bind-buffer :array-buffer 0)))
 
+(defun gl-add-point (device x0 y0 &key (rgb (boxgl-device-pen-color device)))
+  (let* ((program (boxgl-device-lines-program device)))
+    (gl:use-program program)
+    (gl:uniform-matrix-4fv (lines-ortho-uniform device) (boxgl-device-ortho-matrix device))
+    (gl:uniform-matrix-4fv (lines-transform-uniform device) (boxgl-device-transform-matrix device)))
+
+  (gl:bind-buffer :array-buffer (boxgl-device-lines-buffer device))
+  (let* ((vertices `#(,(coerce x0 'float) ,(coerce y0 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)))
+         (arr (gl:alloc-gl-array :float (length vertices))))
+    (dotimes (i (length vertices))
+      (setf (gl:glaref arr i) (aref vertices i)))
+    (gl:buffer-data :array-buffer :static-draw arr)
+    (gl:free-gl-array arr))
+
+  (gl:bind-vertex-array (boxgl-device-lines-vao device))
+  (gl:draw-arrays :points 0 1)
+  (gl:use-program 0)
+  (gl:bind-vertex-array 0)
+  (gl:bind-buffer :array-buffer 0)
+)
+
 (defun gl-add-line (device x0 y0 x1 y1 &key (rgb (boxgl-device-pen-color device)))
   (let* ((program (boxgl-device-lines-program device)))
     (gl:use-program program)

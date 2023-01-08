@@ -545,7 +545,7 @@ It's not clear yet whether we'll need to re-implement this for the future."
       (bw::ogl-draw-line x0 y0 x1 y1)))
 
 (defun %draw-point (x y)
-  (bw::ogl-draw-point x y))
+  (gl-add-point bw::*boxgl-device* x0 y0))
 
 (defun %draw-poly (points)
   (bw::ogl-draw-poly points))
