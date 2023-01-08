@@ -548,7 +548,7 @@ It's not clear yet whether we'll need to re-implement this for the future."
   (gl-add-point bw::*boxgl-device* x0 y0))
 
 (defun %draw-poly (points)
-  (bw::ogl-draw-poly points))
+  (gl-add-poly bw::*boxgl-device* points))
 
 (defun %draw-rectangle (width height x y)
   (unless (or (>= %clip-lef %clip-rig) (>= %clip-top %clip-bot))

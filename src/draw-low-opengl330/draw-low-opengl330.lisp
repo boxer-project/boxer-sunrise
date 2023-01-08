@@ -210,6 +210,38 @@
   (gl:bind-buffer :array-buffer 0)
 )
 
+(defun gl-add-poly (device points &key (filled? t) (rgb (boxgl-device-pen-color device)))
+  (gl:use-program (boxgl-device-lines-program device))
+  (gl:uniform-matrix-4fv (lines-ortho-uniform device) (boxgl-device-ortho-matrix device))
+  (gl:uniform-matrix-4fv (lines-transform-uniform device) (boxgl-device-transform-matrix device))
+
+  (gl:bind-buffer :array-buffer (boxgl-device-lines-buffer device))
+
+  (let* ((arr (gl:alloc-gl-array :float (* 7 (length points))))
+         (i 0))
+    (dolist (item points)
+      (setf (gl:glaref arr (* i 7)) (coerce (car item) 'single-float))
+      (setf (gl:glaref arr (+ (* i 7) 1)) (coerce (cadr item) 'single-float))
+      (setf (gl:glaref arr (+ (* i 7) 2)) 0.0)
+      (setf (gl:glaref arr (+ (* i 7) 3)) (aref rgb 1))
+      (setf (gl:glaref arr (+ (* i 7) 4)) (aref rgb 2))
+      (setf (gl:glaref arr (+ (* i 7) 5)) (aref rgb 3))
+      (setf (gl:glaref arr (+ (* i 7) 6)) (aref rgb 4))
+      (incf i)
+    )
+    (gl:buffer-data :array-buffer :static-draw arr)
+    (gl:free-gl-array arr)
+
+    (gl:bind-vertex-array (boxgl-device-lines-vao device))
+    (if filled?
+      (gl:draw-arrays :triangle-fan 0 (length points))
+      (gl:draw-arrays :line-loop 0 (length points)))
+
+    (gl:use-program 0)
+    (gl:bind-vertex-array 0)
+    (gl:bind-buffer :array-buffer 0)
+  ))
+
 (defun gl-add-circle (device cx cy radius filled? &key (rgb (boxgl-device-pen-color device)))
   (gl:use-program (boxgl-device-lines-program device))
   (gl:uniform-matrix-4fv (lines-ortho-uniform device) (boxgl-device-ortho-matrix device))
