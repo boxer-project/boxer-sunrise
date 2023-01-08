@@ -261,20 +261,14 @@ Modification History (most recent at the top)
 
 ;; Note: last value is "leading" which is the recommended space between lines
 
-;;; sizes, this can be all done on the CPU side
 (defun ogl-char-width (cha &optional (font *current-opengl-font*))
-  (let* ((cha-pixmap (boxer::find-freetype-pixmap cha font *ogl-current-color-vector* boxer::*font-size-baseline*))
-        (width (opengl::ogl-pixmap-width cha-pixmap)))
-    ;; TODO This could potentially be the glyph advance value, but so far the value of
-    ;; that and the pixmap widths seem the same.
-    width))
+  (let* ((glyph (boxer::find-box-glyph cha font boxer::*font-size-baseline*))
+         (advance (boxer::box-glyph-advance glyph)))
+    advance))
 
 ;; the same for both char,string-height
 (defun ogl-font-height (font)
-  "sgithens TODO: temporary hack until we draw the proper values from freetype"
-  (let* ((cha-pixmap (boxer::find-freetype-pixmap "A" font *ogl-current-color-vector* boxer::*font-size-baseline*))
-        (height (opengl::ogl-pixmap-height cha-pixmap)))
-    height))
+  (cadr (boxer::opengl-font-fontspec font)))
 
 (defun ogl-font-ascent (font)
   "sgithens TODO: temporary hack see ogl-font-height, the math for this should be even more different"
