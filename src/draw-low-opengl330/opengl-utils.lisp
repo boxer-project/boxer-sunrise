@@ -193,11 +193,6 @@ Modification History (most recent at the top)
 ;; *GL-TRIANGLES*, *GL-TRIANGLE-STRIP*, *GL-TRIANGLE-FAN*, *GL-QUADS*,
 ;; *GL-QUAD-STRIP*, or *gl-polygon*
 
-(defun ogl-draw-poly (points)
-  (opengl:gl-begin opengl:*gl-polygon*)
-  (dolist (v points) (opengl:gl-vertex2-f (ogl-type (car v) 'float) (ogl-type (cadr v) 'float)))
-  (opengl:gl-end))
-
 ;; used directly
 (defun boxer::multiline2 (&rest x-and-y-s)
   ;; sgithens TODO 2022-12-30 Set this up properly to be a single draw arrays call rather
@@ -213,11 +208,6 @@ Modification History (most recent at the top)
       (when prev-x
         (boxer::gl-add-line *boxgl-device* prev-x prev-y x y))
       (setf prev-x x prev-y y))))
-
-(defun ogl-draw-point (x y)
-  (opengl:gl-begin *gl-points*)
-  (opengl:gl-vertex2-f (ogl-type x 'float) (ogl-type y 'float))
-  (opengl:gl-end))
 
 ;;;; FONTS
 
