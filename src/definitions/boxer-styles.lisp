@@ -23,7 +23,7 @@
 ;;;;        functionality in the future.
 (in-package :boxer)
 
-(defvar *mouse-shrink-corner--background-color* #(:RGB 1.0 0.9 0.0))
+(defvar *mouse-shrink-corner--background-color* #(:RGB 1.0 0.9 0.0 1.0))
 
 
 (defvar *solarized-base03* #(:rgb-hex "#002b36"))
