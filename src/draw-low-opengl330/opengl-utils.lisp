@@ -364,12 +364,11 @@ Modification History (most recent at the top)
 
 (defmacro maintaining-ogl-color (&body body)
   (let ((old-color (gensym)))
-    `(let ((,old-color (ogl-current-color (allocate-ogl-color))))
+    `(let ((,old-color (boxer::boxgl-device-pen-color bw::*boxgl-device*)))
        (unwind-protect
         (progn . ,body)
-        (unless (ogl-color= ,old-color (ogl-current-color))
-          (ogl-set-color ,old-color))
-        (deallocate-ogl-color ,old-color)))))
+          (unless (equalp ,old-color (boxer::boxgl-device-pen-color bw::*boxgl-device*))
+            (setf (boxer::boxgl-device-pen-color bw::*boxgl-device*) ,old-color))))))
 
 (defun print-color (ogl-color)
   (format t "<OGL-Color R:~3F G:~3F B:~3F alpha:~3F>" (ogl-color-red ogl-color)
