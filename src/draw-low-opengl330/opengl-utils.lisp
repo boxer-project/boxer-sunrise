@@ -389,16 +389,9 @@ Modification History (most recent at the top)
 ; in example code
 
 (defun ogl-reshape (width height)
-  (opengl:gl-viewport 0 0 width height) ; x y width height (ints)
-  (debug-opengl-print "~%OGL Reshape (~D, ~D)" width height)
-  (opengl:gl-matrix-mode opengl:*gl-projection*)
-  (opengl:gl-load-identity)
-  ;; orthographic projection, 0,0 = top,left
-  ;; Note:GL-Ortho wants double-floats as args (and insists on the mac)
-  (opengl:gl-ortho (coerce 0.0 'double-float)            (coerce (float width) 'double-float)
-            (coerce (float height) 'double-float) (coerce 0.0 'double-float)
-            (coerce -1.0 'double-float)           (coerce 1.0 'double-float)))
-
+  (setf (boxer::boxgl-device-ortho-matrix bw::*boxgl-device*)
+        (boxer::create-ortho-matrix width height))
+  (opengl:gl-viewport 0 0 width height))
 
 ;;; pixel conversion
 ;; color values are floats between 0.0 and 1.0
