@@ -320,12 +320,17 @@ Modification History (most recent at the top)
                   (svref colorspec 2)
                   (svref colorspec 3)))
 
+
 (defun ogl-color-red   (color) (opengl:gl-vector-aref color 0))
 (defun ogl-color-green (color) (opengl:gl-vector-aref color 1))
 (defun ogl-color-blue  (color) (opengl:gl-vector-aref color 2))
 (defun ogl-color-alpha (color) (opengl:gl-vector-aref color 3))
 
-(defun ogl-set-color (color) (opengl:gl-color4-fv color))
+(defun ogl-color->rgb (ogl-color)
+  "Takes an openGL vector representing an RGBA color and returns a five part
+  vector as: #(:rgb 1.0 1.0 1.0 1.0"
+  `#(:rgb ,(ogl-color-red ogl-color) ,(ogl-color-green ogl-color)
+          ,(ogl-color-blue ogl-color) ,(ogl-color-alpha ogl-color)))
 
 (defun float-precision= (a b &optional (precision 0.001))
   (if (zerop a) (zerop b)  (< (abs (/ (- a b) a)) precision)))

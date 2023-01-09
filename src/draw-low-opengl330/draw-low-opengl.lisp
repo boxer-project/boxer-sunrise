@@ -428,9 +428,9 @@ OpenGL expects a list of X Y pairs"
   "This expects either an already allocated GL 4 vector that represents a color, or an RGB percentage vector
   of the form #(:RGB 0.0 0.0 1.0) (for blue)."
   (cond ((and (vectorp color) (eq :RGB (aref color 0)))
-         (bw::ogl-set-color (bw::ogl-convert-color color)))
+         (setf (boxgl-device-pen-color bw::*boxgl-device*) color))
         ((color? color)
-         (bw::ogl-set-color color))
+         (setf (boxgl-device-pen-color bw::*boxgl-device*) (bw::ogl-color->rgb color)))
         (t
          (error "Bad color passed to %set-pen-color: ~A " color))))
 
