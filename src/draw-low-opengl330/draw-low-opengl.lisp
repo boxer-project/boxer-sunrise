@@ -277,7 +277,8 @@ OpenGL expects a list of X Y pairs"
          (adjust-matrix (3d-matrices:mat4 (boxer::create-transform-matrix h v)))
          (new-transform (3d-matrices:m* current-transform adjust-matrix)))
     (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)
-          (3d-matrices:marr4 new-transform))))
+          (3d-matrices:marr4 new-transform))
+    (update-matrices-ubo bw::*boxgl-device*)))
 
 (defvar %local-clip-lef 0)
 (defvar %local-clip-top 0)

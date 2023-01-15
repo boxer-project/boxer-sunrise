@@ -4,8 +4,11 @@ layout (location = 1) in vec4 aColor;
 
 out vec4 theColor;
 
-uniform mat4 ortho;
-uniform mat4 transform;
+layout (std140) uniform Matrices
+{
+    mat4 ortho;
+    mat4 transform;
+};
 
 void main()
 {

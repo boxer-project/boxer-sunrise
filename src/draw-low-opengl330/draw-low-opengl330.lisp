@@ -32,26 +32,22 @@
 (defclass boxgl-device ()
   ((lines-program :accessor boxgl-device-lines-program)
    (lines-vao :accessor boxgl-device-lines-vao)
-   (lines-ortho-uniform :accessor lines-ortho-uniform)
-   (lines-transform-uniform :accessor lines-transform-uniform)
    (lines-buffer :accessor boxgl-device-lines-buffer)
 
+   (matrices-ubo :accessor matrices-ubo)
    (ortho-matrix :accessor boxgl-device-ortho-matrix)
    (transform-matrix :accessor boxgl-device-transform-matrix)
 
    (ft-glyph-program :accessor boxgl-device-ft-glyph-program)
    (ft-glyph-vao     :accessor boxgl-device-ft-glyph-vao)
    (ft-glyph-buffer  :accessor boxgl-device-ft-glyph-buffer)
-   (ft-glyph-ortho-uniform :accessor ft-glyph-ortho-uniform)
-   (ft-glyph-transform-uniform :accessor ft-glyph-transform-uniform)
 
    (pixmap-program :accessor boxgl-device-pixmap-program)
    (pixmap-vao     :accessor boxgl-device-pixmap-vao)
    (pixmap-buffer  :accessor boxgl-device-pixmap-buffer)
-   (pixmap-ortho-uniform :accessor pixmap-ortho-uniform)
-   (pixmap-transform-uniform :accessor pixmap-transform-uniform)
 
-   (pen-color :accessor boxgl-device-pen-color)) ; current color in #(:rgb 1.0 1.0 1.0 1.0) format
+   (pen-color :accessor boxgl-device-pen-color) ; current color in #(:rgb 1.0 1.0 1.0 1.0) format
+   (pen-size  :accessor boxgl-device-pen-size))
 )
 
 (defun gl-add-pixmap (device from-array tx ty wid hei fx fy)
@@ -65,8 +61,6 @@
          (existing-texture (opengl::ogl-pixmap-texture from-array))
          )
     (gl:use-program program)
-    (gl:uniform-matrix-4fv (pixmap-ortho-uniform device) (boxgl-device-ortho-matrix device))
-    (gl:uniform-matrix-4fv (pixmap-transform-uniform device) (boxgl-device-transform-matrix device))
     (gl:pixel-store :unpack-alignment 4)
 
     ;; TODO sgithens 2023-01-06 Still workign on caching textures. I believe in many cases the ogl-pixmap
@@ -134,9 +128,6 @@
          )
     (gl:use-program program)
 
-    (gl:uniform-matrix-4fv (ft-glyph-ortho-uniform device) (boxgl-device-ortho-matrix device))
-    (gl:uniform-matrix-4fv (ft-glyph-transform-uniform device) (boxgl-device-transform-matrix device))
-
     (gl:uniformf color-uniform (aref rgb 1) (aref rgb 2) (aref rgb 3))
     (gl:active-texture :texture0)
     (gl:bind-vertex-array vao)
@@ -181,11 +172,8 @@
         )))
 
 (defun gl-add-rect (device x y wid hei &key (rgb (boxgl-device-pen-color device)))
-  (let* ((program (boxgl-device-lines-program device)))
-    (gl:use-program program)
-    (gl:uniform-matrix-4fv (lines-ortho-uniform device) (boxgl-device-ortho-matrix device))
-    (gl:uniform-matrix-4fv (lines-transform-uniform device) (boxgl-device-transform-matrix device))
-    )
+  (gl:use-program (boxgl-device-lines-program device))
+
   ;; todo - use an elements array instead of 6 vertices
   (gl:bind-buffer :array-buffer (boxgl-device-lines-buffer device))
   (let* ((vertices `#(,(coerce x 'float) ,(coerce y 'float)                 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
@@ -202,7 +190,6 @@
     (gl:buffer-data :array-buffer :static-draw arr)
     (gl:free-gl-array arr))
 
-
   (gl:bind-vertex-array (boxgl-device-lines-vao device))
   (gl:draw-arrays :triangles 0 6)
   (gl:use-program 0)
@@ -212,8 +199,6 @@
 
 (defun gl-add-poly (device points &key (filled? t) (rgb (boxgl-device-pen-color device)))
   (gl:use-program (boxgl-device-lines-program device))
-  (gl:uniform-matrix-4fv (lines-ortho-uniform device) (boxgl-device-ortho-matrix device))
-  (gl:uniform-matrix-4fv (lines-transform-uniform device) (boxgl-device-transform-matrix device))
 
   (gl:bind-buffer :array-buffer (boxgl-device-lines-buffer device))
 
@@ -244,8 +229,6 @@
 
 (defun gl-add-circle (device cx cy radius filled? &key (rgb (boxgl-device-pen-color device)))
   (gl:use-program (boxgl-device-lines-program device))
-  (gl:uniform-matrix-4fv (lines-ortho-uniform device) (boxgl-device-ortho-matrix device))
-  (gl:uniform-matrix-4fv (lines-transform-uniform device) (boxgl-device-transform-matrix device))
 
   (gl:bind-buffer :array-buffer (boxgl-device-lines-buffer device))
   (let* ((num-slices (bw::num-slices radius))
@@ -282,10 +265,7 @@
     (gl:bind-buffer :array-buffer 0)))
 
 (defun gl-add-point (device x0 y0 &key (rgb (boxgl-device-pen-color device)))
-  (let* ((program (boxgl-device-lines-program device)))
-    (gl:use-program program)
-    (gl:uniform-matrix-4fv (lines-ortho-uniform device) (boxgl-device-ortho-matrix device))
-    (gl:uniform-matrix-4fv (lines-transform-uniform device) (boxgl-device-transform-matrix device)))
+  (gl:use-program (boxgl-device-lines-program device))
 
   (gl:bind-buffer :array-buffer (boxgl-device-lines-buffer device))
   (let* ((vertices `#(,(coerce x0 'float) ,(coerce y0 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)))
@@ -302,11 +282,9 @@
   (gl:bind-buffer :array-buffer 0)
 )
 
-(defun gl-add-line (device x0 y0 x1 y1 &key (rgb (boxgl-device-pen-color device)))
-  (let* ((program (boxgl-device-lines-program device)))
-    (gl:use-program program)
-    (gl:uniform-matrix-4fv (lines-ortho-uniform device) (boxgl-device-ortho-matrix device))
-    (gl:uniform-matrix-4fv (lines-transform-uniform device) (boxgl-device-transform-matrix device)))
+(defun gl-add-line (device x0 y0 x1 y1 &key (rgb (boxgl-device-pen-color device))
+                                            (pen-size (boxgl-device-pen-size bw::*boxgl-device*)))
+  (gl:use-program (boxgl-device-lines-program device))
 
   (gl:bind-buffer :array-buffer (boxgl-device-lines-buffer device))
   (let* ((vertices `#(,(coerce x0 'float) ,(coerce y0 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
@@ -366,8 +344,7 @@
     (setf (boxgl-device-ft-glyph-vao device) glyph-vao)
     (setf (boxgl-device-ft-glyph-buffer device) glyph-buffer)
 
-    (setf (boxer::ft-glyph-ortho-uniform device) (gl:get-uniform-location glyph-program "ortho"))
-    (setf (boxer::ft-glyph-transform-uniform device) (gl:get-uniform-location glyph-program "transform"))))
+    (%gl:uniform-block-binding glyph-program (gl:get-uniform-block-index glyph-program "Matrices") 0)))
 
 (defun setup-pixmap-program (device)
   (let* ((pixmap-program   (gl:create-program))
@@ -406,8 +383,7 @@
     (setf (boxgl-device-pixmap-vao device) pixmap-vao)
     (setf (boxgl-device-pixmap-buffer device) pixmap-buffer)
 
-    (setf (boxer::pixmap-ortho-uniform device) (gl:get-uniform-location pixmap-program "ortho"))
-    (setf (boxer::pixmap-transform-uniform device) (gl:get-uniform-location pixmap-program "transform"))))
+    (%gl:uniform-block-binding pixmap-program (gl:get-uniform-block-index pixmap-program "Matrices") 0)))
 
 (defun setup-lines-program (device)
   (let* ((lines-program (gl:create-program))
@@ -429,8 +405,7 @@
     (setf (boxer::boxgl-device-lines-vao device) lines-vao)
     (setf (boxer::boxgl-device-lines-buffer device) lines-buffer)
 
-    (setf (boxer::lines-ortho-uniform device) (gl:get-uniform-location lines-program "ortho"))
-    (setf (boxer::lines-transform-uniform device) (gl:get-uniform-location lines-program "transform"))))
+    (%gl:uniform-block-binding lines-program (gl:get-uniform-block-index lines-program "Matrices") 0)))
 
 (defun read-shader-source (filename)
   "Reads the relative filename of the shader without any directory, and loads the source into a
@@ -447,6 +422,22 @@
   "Create a transform matrix offset from the origin by x and y."
   (3d-matrices:marr4 (3d-matrices:mtranslation (3d-vectors:vec x y 0))))
 
+(defun update-matrices-ubo (device)
+  (gl:bind-buffer :uniform-buffer (matrices-ubo device))
+  (let* ((arr (gl:alloc-gl-array :float (* 2 (* 4 4))))
+          (i 0))
+    (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (3d-matrices:mat4  (boxgl-device-ortho-matrix device))))))
+      (setf (gl:glaref arr i) (coerce item 'single-float))
+      (incf i))
+    (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (3d-matrices:mat4  (boxgl-device-transform-matrix device))))))
+      (setf (gl:glaref arr i) (coerce item 'single-float))
+      (incf i))
+    (gl:buffer-sub-data :uniform-buffer arr)
+    (gl:free-gl-array arr)
+  )
+  (gl:bind-buffer :uniform-buffer 0)
+)
+
 (defun make-boxgl-device (wid hei)
   "Constructor to create a new boxgl-device renderer. Sets up initial shaders, buffers, etc.
 Needs to be run inside an active openGL context. Using the Lispworks OpenGL impl that means
@@ -460,12 +451,26 @@ inside an opengl:rendering-on macro invocation."
     (setup-pixmap-program togo)
     (setup-lines-program togo)
 
-    (setf (boxgl-device-ortho-matrix togo)
+    (setf (matrices-ubo togo)
+          (gl:gen-buffer)
+
+          (boxgl-device-ortho-matrix togo)
           (create-ortho-matrix wid hei)
 
           (boxgl-device-transform-matrix togo)
           (create-transform-matrix 0 0)
 
           (boxer::boxgl-device-pen-color togo)
-          #(:rgb 0.0 0.0 0.0 1.0))
+          #(:rgb 0.0 0.0 0.0 1.0)
+
+          (boxer::boxgl-device-pen-size togo)
+          1)
+
+    ;; Set up uniform buffer object for projection and transform matrices
+    (gl:bind-buffer :uniform-buffer (matrices-ubo togo))
+    (%gl:buffer-data :uniform-buffer (* *cffi-float-size* (* 2 (* 4 4))) (cffi:null-pointer) :static-draw)
+    (gl:bind-buffer :uniform-buffer 0)
+
+    (%gl:bind-buffer-range :uniform-buffer 0 (matrices-ubo togo) 0 (* *cffi-float-size* (* 2 (* 4 4))))
+    (update-matrices-ubo togo)
   togo))

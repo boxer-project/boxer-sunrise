@@ -47,6 +47,7 @@
       (setf (boxer::boxgl-device-ortho-matrix bw::*boxgl-device*)
             (boxer::create-ortho-matrix wid hei))
       (opengl:gl-viewport 0 0 wid hei)
+      (boxer::update-matrices-ubo bw::*boxgl-device*)
       (%set-pen-color box::*foreground-color*))
 
     (let ((arial-12 (boxer::make-boxer-font '("Arial" 12)))
@@ -78,4 +79,6 @@
     (setf (boxer::boxgl-device-ortho-matrix bw::*boxgl-device*)
           (boxer::create-ortho-matrix wid hei))
     #+moderngl
-    (opengl:gl-viewport 0 0 wid hei)))
+    (opengl:gl-viewport 0 0 wid hei)
+    #+moderngl
+    (boxer::update-matrices-ubo bw::*boxgl-device*)))

@@ -4,8 +4,11 @@ layout (location = 1) in vec2 aTexCoord;
 
 out vec2 TexCoord;
 
-uniform mat4 ortho;
-uniform mat4 transform;
+layout (std140) uniform Matrices
+{
+    mat4 ortho;
+    mat4 transform;
+};
 
 void main()
 {
