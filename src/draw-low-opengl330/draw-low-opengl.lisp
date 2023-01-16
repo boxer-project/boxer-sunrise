@@ -191,12 +191,12 @@ some opengl features to be available first."
         (unless ,current-blend-var (opengl::gl-disable opengl::*gl-blend*))))))
 
 (defun %set-pen-size (v)
-  (bw::ogl-set-pen-size v))
+  (setf (boxgl-device-pen-size bw::*boxgl-device*) v))
 
 ;; needs to be happening inside a drawing-on-window (actually rendering-on)
 (defmacro with-pen-size ((newsize) &body body)
   (let ((oldpsvar (gensym)) (nochangevar (gensym)) (newsizevar (gensym)))
-    `(let ((,oldpsvar (bw::get-opengl-state opengl::*gl-line-width* :float))
+    `(let ((,oldpsvar (boxgl-device-pen-size bw::*boxgl-device*))
            (,newsizevar (float ,newsize))
            (,nochangevar nil))
        (unwind-protect
