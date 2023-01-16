@@ -47,7 +47,12 @@
    (pixmap-buffer  :accessor boxgl-device-pixmap-buffer)
 
    (pen-color :accessor boxgl-device-pen-color) ; current color in #(:rgb 1.0 1.0 1.0 1.0) format
-   (pen-size  :accessor boxgl-device-pen-size))
+   (pen-size  :accessor boxgl-device-pen-size)
+
+   ;; Currently bound Shader Program, vao, etc
+   (cur-program :accessor cur-program :initform 0)
+   (cur-vao :accessor cur-vao :initform 0)
+   (cur-buffer :accessor cur-buffer :initform 0))
 )
 
 (defun gl-add-pixmap (device from-array tx ty wid hei fx fy)
@@ -58,9 +63,9 @@
          (data (opengl::ogl-pixmap-data from-array))
          (pwid (opengl::ogl-pixmap-width from-array))
          (phei (opengl::ogl-pixmap-height from-array))
-         (existing-texture (opengl::ogl-pixmap-texture from-array))
-         )
-    (gl:use-program program)
+         (existing-texture (opengl::ogl-pixmap-texture from-array)))
+    (enable-gl-objects device :program program :vao vao :buffer buffer)
+
     (gl:pixel-store :unpack-alignment 4)
 
     ;; TODO sgithens 2023-01-06 Still workign on caching textures. I believe in many cases the ogl-pixmap
@@ -84,7 +89,6 @@
 
     (gl:active-texture :texture1)
     (gl:bind-texture :texture-2d (opengl::ogl-pixmap-texture from-array))
-    (gl:bind-vertex-array vao)
 
     (let* ((vertices `#(,(coerce tx 'single-float)         ,(coerce ty 'single-float)         0.0 0.0 1.0
                         ,(coerce tx 'single-float)         ,(coerce (+ ty hei) 'single-float) 0.0 0.0 0.0
@@ -94,16 +98,11 @@
                         ,(coerce (+ tx wid) 'single-float) ,(coerce ty 'single-float)         0.0 1.0 1.0
                         ))
            (arr (gl:alloc-gl-array :float (length vertices))))
-      (gl:bind-buffer :array-buffer buffer)
       (dotimes (i (length vertices))
         (setf (gl:glaref arr i) (aref vertices i)))
       (gl:buffer-data :array-buffer :static-draw arr)
       (gl:free-gl-array arr)
-      (gl:draw-arrays :triangles 0 6))
-
-  (gl:use-program 0)
-  (gl:bind-vertex-array 0)
-  (gl:bind-buffer :array-buffer 0)))
+      (gl:draw-arrays :triangles 0 6))))
 
 (defun gl-add-char (device x y ch &key (rgb (boxgl-device-pen-color device))
                                        (baseline-bot nil)
@@ -124,13 +123,11 @@
                  y
                  (- y bearing-y)))
          (ypos+h (+ ypos h))
-         (xpos+w (+ xpos w))
-         )
-    (gl:use-program program)
+         (xpos+w (+ xpos w)))
+    (enable-gl-objects device :program program :vao vao :buffer (boxgl-device-ft-glyph-buffer device))
 
     (gl:uniformf color-uniform (aref rgb 1) (aref rgb 2) (aref rgb 3))
     (gl:active-texture :texture0)
-    (gl:bind-vertex-array vao)
 
     ;; make the vertices array
     (let* ((vertices `#(,xpos   ,ypos   0.0 0.0
@@ -140,7 +137,6 @@
                         ,xpos+w ,ypos+h 1.0 1.0
                         ,xpos+w ,ypos   1.0 0.0))
            (arr (gl:alloc-gl-array :float (length vertices))))
-      (gl:bind-buffer :array-buffer (boxgl-device-ft-glyph-buffer device))
       (dotimes (i (length vertices))
         (setf (gl:glaref arr i) (aref vertices i)))
 
@@ -158,8 +154,6 @@
                            (* (length vertices) *cffi-float-size*)
                            (gl::gl-array-pointer arr))
       (gl:draw-arrays :triangles 0 6)
-      (gl:bind-buffer :array-buffer 0)
-      (gl:bind-vertex-array 0)
       (gl:bind-texture :texture-2d 0))
     glyph))
 
@@ -172,10 +166,11 @@
         )))
 
 (defun gl-add-rect (device x y wid hei &key (rgb (boxgl-device-pen-color device)))
-  (gl:use-program (boxgl-device-lines-program device))
+  (enable-gl-objects device :program (boxgl-device-lines-program device) :vao (boxgl-device-lines-vao device)
+                            :buffer (boxgl-device-lines-buffer device))
+
 
   ;; todo - use an elements array instead of 6 vertices
-  (gl:bind-buffer :array-buffer (boxgl-device-lines-buffer device))
   (let* ((vertices `#(,(coerce x 'float) ,(coerce y 'float)                 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
                       ,(coerce (+ x wid) 'float) ,(coerce (+ y hei) 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
                       ,(coerce x 'float) ,(coerce (+ y hei) 'float)         0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
@@ -190,17 +185,11 @@
     (gl:buffer-data :array-buffer :static-draw arr)
     (gl:free-gl-array arr))
 
-  (gl:bind-vertex-array (boxgl-device-lines-vao device))
-  (gl:draw-arrays :triangles 0 6)
-  (gl:use-program 0)
-  (gl:bind-vertex-array 0)
-  (gl:bind-buffer :array-buffer 0)
-)
+  (gl:draw-arrays :triangles 0 6))
 
 (defun gl-add-poly (device points &key (filled? t) (rgb (boxgl-device-pen-color device)))
-  (gl:use-program (boxgl-device-lines-program device))
-
-  (gl:bind-buffer :array-buffer (boxgl-device-lines-buffer device))
+  (enable-gl-objects device :program (boxgl-device-lines-program device) :vao (boxgl-device-lines-vao device)
+                            :buffer (boxgl-device-lines-buffer device))
 
   (let* ((arr (gl:alloc-gl-array :float (* 7 (length points))))
          (i 0))
@@ -217,20 +206,14 @@
     (gl:buffer-data :array-buffer :static-draw arr)
     (gl:free-gl-array arr)
 
-    (gl:bind-vertex-array (boxgl-device-lines-vao device))
     (if filled?
       (gl:draw-arrays :triangle-fan 0 (length points))
-      (gl:draw-arrays :line-loop 0 (length points)))
-
-    (gl:use-program 0)
-    (gl:bind-vertex-array 0)
-    (gl:bind-buffer :array-buffer 0)
-  ))
+      (gl:draw-arrays :line-loop 0 (length points)))))
 
 (defun gl-add-circle (device cx cy radius filled? &key (rgb (boxgl-device-pen-color device)))
-  (gl:use-program (boxgl-device-lines-program device))
+  (enable-gl-objects device :program (boxgl-device-lines-program device) :vao (boxgl-device-lines-vao device)
+                            :buffer (boxgl-device-lines-buffer device))
 
-  (gl:bind-buffer :array-buffer (boxgl-device-lines-buffer device))
   (let* ((num-slices (bw::num-slices radius))
          (theta (/ (* 2 pi) num-slices))
          (tangent-factor (tan theta))
@@ -255,19 +238,14 @@
     (gl:buffer-data :array-buffer :static-draw arr)
     (gl:free-gl-array arr)
 
-    (gl:bind-vertex-array (boxgl-device-lines-vao device))
     (if filled?
       (gl:draw-arrays :triangle-fan 0 num-slices)
-      (gl:draw-arrays :line-loop 0 num-slices))
-
-    (gl:use-program 0)
-    (gl:bind-vertex-array 0)
-    (gl:bind-buffer :array-buffer 0)))
+      (gl:draw-arrays :line-loop 0 num-slices))))
 
 (defun gl-add-point (device x0 y0 &key (rgb (boxgl-device-pen-color device)))
-  (gl:use-program (boxgl-device-lines-program device))
+  (enable-gl-objects device :program (boxgl-device-lines-program device) :vao (boxgl-device-lines-vao device)
+                            :buffer (boxgl-device-lines-buffer device))
 
-  (gl:bind-buffer :array-buffer (boxgl-device-lines-buffer device))
   (let* ((vertices `#(,(coerce x0 'float) ,(coerce y0 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)))
          (arr (gl:alloc-gl-array :float (length vertices))))
     (dotimes (i (length vertices))
@@ -275,18 +253,29 @@
     (gl:buffer-data :array-buffer :static-draw arr)
     (gl:free-gl-array arr))
 
-  (gl:bind-vertex-array (boxgl-device-lines-vao device))
-  (gl:draw-arrays :points 0 1)
-  (gl:use-program 0)
-  (gl:bind-vertex-array 0)
-  (gl:bind-buffer :array-buffer 0)
-)
+  (gl:draw-arrays :points 0 1))
+
+(defun enable-gl-objects (device &key (program nil) (vao nil) (buffer nil))
+  "Enable the Shader program with program-id. Checks the currently enabled program first to
+  see if the operation is necessary. If it's already the current program, does nothing."
+  (when  (and program
+              (not (equal program (cur-program device))))
+    (gl:use-program program)
+    (setf (cur-program device) program))
+  (when  (and vao
+              (not (equal vao (cur-vao device))))
+    (gl:bind-vertex-array vao)
+    (setf (cur-vao device) vao))
+  (when  (and buffer
+              (not (equal buffer (cur-buffer device))))
+    (gl:bind-buffer :array-buffer buffer)
+    (setf (cur-buffer device) buffer)))
 
 (defun gl-add-line (device x0 y0 x1 y1 &key (rgb (boxgl-device-pen-color device))
                                             (pen-size (boxgl-device-pen-size bw::*boxgl-device*)))
-  (gl:use-program (boxgl-device-lines-program device))
+  (enable-gl-objects device :program (boxgl-device-lines-program device) :vao (boxgl-device-lines-vao device)
+                            :buffer (boxgl-device-lines-buffer device))
 
-  (gl:bind-buffer :array-buffer (boxgl-device-lines-buffer device))
   (let* ((vertices `#(,(coerce x0 'float) ,(coerce y0 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
                       ,(coerce x1 'float) ,(coerce y1 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
                       ))
@@ -296,12 +285,7 @@
     (gl:buffer-data :array-buffer :static-draw arr)
     (gl:free-gl-array arr))
 
-  (gl:bind-vertex-array (boxgl-device-lines-vao device))
-  (gl:draw-arrays :lines 0 2)
-  (gl:use-program 0)
-  (gl:bind-vertex-array 0)
-  (gl:bind-buffer :array-buffer 0)
-)
+  (gl:draw-arrays :lines 0 2))
 
 (defun create-shader (glsl-filename shader-type)
   "Creates and return the int id for a new shader. `glsl-filename` should be the relative
@@ -337,7 +321,6 @@
     (gl:enable-vertex-attrib-array 0)
     (gl:vertex-attrib-pointer 0 4 :float :false (* 4 *cffi-float-size*) 0) ;; TODO Should the :false really be nil?
     (gl:bind-buffer :array-buffer 0)
-    (gl:bind-vertex-array 0)
     (gl:bind-texture :texture-2d 0)
 
     (setf (boxgl-device-ft-glyph-program device) glyph-program)
@@ -376,7 +359,7 @@
     ;; layout 1 is the texture coords tx, ty
     (gl:vertex-attrib-pointer 1 2 :float :false (* 5 *cffi-float-size*) (* 3 *cffi-float-size*))
     ; (gl:bind-buffer :array-buffer 0)
-    (gl:bind-vertex-array 0)
+    ; (gl:bind-vertex-array 0)
     (gl:bind-texture :texture-2d 0)
 
     (setf (boxgl-device-pixmap-program device) pixmap-program)
