@@ -530,15 +530,13 @@ It's not clear yet whether we'll need to re-implement this for the future."
   (if (and *use-glist-performance* *inside-glist-perf-line-segs*)
       (progn
         (bw::ogl-buffer-draw-line x0 y0 x1 y1 *glist-line-segs-c-buffer* *glist-perf-pos*)
-        ; *glist-colors-c-buffer* *glist-colors-pos*)
         (setf *glist-perf-pos* (+ 4 *glist-perf-pos*))
-        ; (setf *glist-colors-pos* (+ 3 *glist-colors-pos*))
         ;; If there isn't enough room left in the buffer for 4 points, then ogl-flush-draw-line first
         (when (>= (+ *glist-perf-pos* 4) (1+ boxer::*glist-line-segs-c-buffer-size*))
-          (bw::ogl-flush-draw-line boxer::*glist-line-segs-c-buffer* boxer::*glist-perf-pos*) ; *glist-colors-c-buffer*)
+          (bw::ogl-flush-draw-line boxer::*glist-line-segs-c-buffer* boxer::*glist-perf-pos*)
           (setf boxer::*glist-perf-pos* 0))
       )
-      (bw::ogl-draw-line x0 y0 x1 y1)))
+      (gl-add-line bw::*boxgl-device* x0 y0 x1 y1)))
 
 (defun %draw-point (x y)
   (gl-add-point bw::*boxgl-device* x0 y0))
@@ -695,33 +693,27 @@ It's not clear yet whether we'll need to re-implement this for the future."
 
 (defvar *glist-line-segs-c-buffer* nil)
 (defvar *glist-line-segs-c-buffer-size* 2500)
-(defvar *glist-colors-c-buffer* nil)
 (defvar *inside-glist-perf-line-segs* nil)
 (defvar *glist-perf-pos* 0)
-(defvar *glist-colors-pos* 0)
 
 (def-redisplay-initialization
   (progn
     ;; Allocate the c-buffers to hold opengl vertices and colors
     (setf *glist-line-segs-c-buffer*
           (cffi:foreign-alloc :int :count *glist-line-segs-c-buffer-size* :initial-element 0))
-    ; (setf *glist-colors-c-buffer*
-    ;       (cffi:foreign-alloc :int :count 50000000 :initial-element 0)
   )
 )
 
 (defun %draw-before-graphics-list-playback (gl)
   (setf *inside-glist-perf-line-segs* nil)
   (setf *glist-perf-pos* 0)
-  ;  (setf *glist-colors-pos* 0)
 )
 
 (defun %draw-after-graphics-list-playback (gl)
   (when *inside-glist-perf-line-segs*
     (setf *inside-glist-perf-line-segs* nil)
-    (bw::ogl-flush-draw-line *glist-line-segs-c-buffer* *glist-perf-pos*);  *glist-colors-c-buffer*)
+    (bw::ogl-flush-draw-line *glist-line-segs-c-buffer* *glist-perf-pos*);
     (setf *glist-perf-pos* 0)
-    ;  (setf *glist-colors-pos* 0)
   )
 )
 
@@ -734,7 +726,6 @@ It's not clear yet whether we'll need to re-implement this for the future."
         ((and (equal 3 cmd-op) (not *inside-glist-perf-line-segs*) )
           (setf *inside-glist-perf-line-segs* t)
           (setf *glist-perf-pos* 0)
-          ; (setf *glist-colors-pos* 0)
         )
 
         ;; 2 We are getting a line-segment and are already in a buffering
@@ -747,9 +738,8 @@ It's not clear yet whether we'll need to re-implement this for the future."
           (setf *inside-glist-perf-line-segs* nil)
 
           ;; TODO dump this line segs buffer onto the GPU
-          (bw::ogl-flush-draw-line *glist-line-segs-c-buffer* *glist-perf-pos*) ; *glist-colors-c-buffer*)
+          (bw::ogl-flush-draw-line *glist-line-segs-c-buffer* *glist-perf-pos*)
           (setf *glist-perf-pos* 0)
-          ; (setf *glist-colors-pos* 0)
         )
 
         ;; 4 If this is a color change and we're in a line segment, don't stop it
@@ -763,7 +753,6 @@ It's not clear yet whether we'll need to re-implement this for the future."
         (t
           (setf *inside-glist-perf-line-segs* nil)
           (setf *glist-perf-pos* 0)
-          ; (setf *glist-colors-pos* 0)
         )
       )
     )
