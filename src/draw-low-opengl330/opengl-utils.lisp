@@ -135,59 +135,6 @@ Modification History (most recent at the top)
         (t (error "*opengl-type-checking-action*,~S, should be :COERCE or :ERROR"
                   *opengl-type-checking-action*))))))
 
-(defun ogl-flush-draw-line (c-buffer buffer-pos) ; color-buffer)
-  "Using the provided C buffer and raw position in the buffer that is filled, interprets
-  it as an array of paired vertices for drawing a line.
-
-  Because the buffer-pos is assumed to be the raw position in the buffer, the number of points
-  for glDrawArrays is determined by dividing it by 2.
-  "
-  (opengl::gl-enable-client-state opengl::*gl-vertex-array*)
-  ; (opengl::gl-enable-client-state opengl::*gl-color-array*)
-  (opengl::gl-disable-client-state opengl::*gl-color-array*)
-  (opengl::gl-vertex-pointer 2 opengl::*gl-int* 0 c-buffer)
-  ; (opengl::gl-color-pointer 4 opengl::*gl-float* 0 color-buffer)
-  (opengl::gl-draw-arrays opengl::*gl-lines* 0 (/ buffer-pos 2)))
-
-(defun ogl-buffer-draw-line (x0 y0 x1 y1 c-buffer buffer-pos) ; color-buffer color-pos)
-  "Takes 2 vertices, a C buffer and the current position in the buffer, and copies the
-  points in to the buffer to prepare for an glDrawArray call.
-  "
-
-  (setf (cffi:mem-aref c-buffer :int buffer-pos) x0)
-  (setf (cffi:mem-aref c-buffer :int (+ buffer-pos 1)) y0)
-  (setf (cffi:mem-aref c-buffer :int (+ buffer-pos 2)) x1)
-  (setf (cffi:mem-aref c-buffer :int (+ buffer-pos 3)) y1)
-
-  ;; 2022-06-23 The current color scheme is very slow still so we are not including it yet.
-  ;; It may be the old opengl functions being called, or maybe the number of mem-aref operations...
-  ;; the below could probably be done in one bulk call of somesort I think.
-  ;; color
-  ; (setf (cffi:mem-aref color-buffer :float color-pos)
-  ;   (bw::ogl-color-red boxer::*graphics-state-current-pen-color*))
-  ; (setf (cffi:mem-aref color-buffer :float (+ color-pos 1))
-  ;   (bw::ogl-color-green boxer::*graphics-state-current-pen-color*))
-  ; (setf (cffi:mem-aref color-buffer :float (+ color-pos 2))
-  ;   (bw::ogl-color-blue boxer::*graphics-state-current-pen-color*))
-  ; (setf (cffi:mem-aref color-buffer :float (+ color-pos 3))
-  ;   (bw::ogl-color-alpha boxer::*graphics-state-current-pen-color*))
-
-  ; ;; We have to set the color twice, once for each vertice of each line segment
-  ; (setf (cffi:mem-aref color-buffer :float (+ color-pos 4))
-  ;   (bw::ogl-color-red boxer::*graphics-state-current-pen-color*))
-  ; (setf (cffi:mem-aref color-buffer :float (+ color-pos 5))
-  ;   (bw::ogl-color-green boxer::*graphics-state-current-pen-color*))
-  ; (setf (cffi:mem-aref color-buffer :float (+ color-pos 6))
-  ;   (bw::ogl-color-blue boxer::*graphics-state-current-pen-color*))
-  ; (setf (cffi:mem-aref color-buffer :float (+ color-pos 7))
-  ;   (bw::ogl-color-alpha boxer::*graphics-state-current-pen-color*))
-)
-
-(defun ogl-set-pen-size (new)
-  (opengl:gl-point-size (ogl-type new 'float))
-  (opengl:gl-line-width (ogl-type new 'float)))
-
-
 ;;; note that gl-begin can also be
 ;; modes can be: *gl-points*, *gl-lines*, *GL-LINE-LOOP*, *GL-LINE-STRIP*,
 ;; *GL-TRIANGLES*, *GL-TRIANGLE-STRIP*, *GL-TRIANGLE-FAN*, *GL-QUADS*,

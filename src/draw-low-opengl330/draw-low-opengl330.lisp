@@ -287,6 +287,35 @@
 
   (gl:draw-arrays :lines 0 2))
 
+(defun gl-buffer-line (device x0 y0 x1 y1 c-buffer buffer-pos &key (rgb (boxer::boxgl-device-pen-color device)))
+  "Takes 2 vertices, a C buffer and the current position in the buffer, and copies the
+  points in to the buffer to prepare for a bulk draw-arrays call.
+  "
+  ;; Each Vertice has 7 points, x, y, z, r, g, b, a
+  (setf (cffi:mem-aref c-buffer :float buffer-pos) (coerce x0 'float))        ; x
+  (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 1)) (coerce y0 'float))  ; y
+  (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 2)) 0.0)                 ; z
+  (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 3)) (aref rgb 1))        ; r
+  (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 4)) (aref rgb 2))        ; g
+  (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 5)) (aref rgb 3))        ; b
+  (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 6)) (aref rgb 4))        ; a
+
+  (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 7)) (coerce x1 'float))  ; x
+  (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 8)) (coerce y1 'float))  ; y
+  (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 9)) 0.0)                 ; z
+  (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 10)) (aref rgb 1))       ; r
+  (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 11)) (aref rgb 2))       ; g
+  (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 12)) (aref rgb 3))       ; b
+  (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 13)) (aref rgb 4))       ; a
+)
+
+(defun gl-draw-lines (device c-buffer pos)
+  (enable-gl-objects device :program (boxgl-device-lines-program device) :vao (boxgl-device-lines-vao device)
+                            :buffer (boxgl-device-lines-buffer device))
+  (%gl:buffer-data :array-buffer (* *cffi-float-size* pos) c-buffer :dynamic-draw)
+  (gl:draw-arrays :lines 0 (/ pos 7))
+                            )
+
 (defun create-shader (glsl-filename shader-type)
   "Creates and return the int id for a new shader. `glsl-filename` should be the relative
   filename, such as 'boxgl-stuff.vs'. Shader type should be the symbol type accepted by cl-opengl
@@ -379,6 +408,12 @@
 
     (gl:bind-vertex-array lines-vao)
     (gl:bind-buffer :array-buffer lines-buffer)
+
+    ;; Currently the largest set of vertices we're sending in are for 6 vertices (2 triangles) each
+    ;; with 7 items
+    ;; 2500 for the perf buffer
+    (%gl:buffer-data :array-buffer (* 3000 7 *cffi-float-size*) (cffi:null-pointer) :dynamic-draw)
+
     (gl:enable-vertex-attrib-array 0)
     (gl:vertex-attrib-pointer 0 3 :float nil (* 7 *cffi-float-size*) (cffi:null-pointer))
     (gl:enable-vertex-attrib-array 1)
