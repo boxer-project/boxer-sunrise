@@ -177,18 +177,13 @@ some opengl features to be available first."
 ;;
 
 (defmacro with-blending-on (&body body)
-  ;;; should we pass blend functions in ? ((src-blend-func dst-blend-func) &body body)
+  ;; sgithens 2023-01-17 TODO Blending is essentially always on these days. Remove this once the old
+  ;; openGL immediate mode version is removed completely.
   (let ((current-blend-var (gensym)))
-    `(let ((,current-blend-var (bw::gl-enabled? opengl::*gl-blend*)))
+    `(let ((,current-blend-var nil ))
        (unwind-protect
         (progn
-         (opengl::gl-enable opengl::*gl-line-smooth*)
-         (opengl::gl-enable opengl::*gl-polygon-smooth*)
-         (opengl::gl-enable opengl::*gl-blend*)
-         (opengl::gl-blend-func opengl::*gl-src-alpha* opengl::*gl-one-minus-src-alpha*)
-         (opengl::gl-hint opengl::*gl-line-smooth-hint* opengl::*gl-nicest*)
-         . ,body)
-        (unless ,current-blend-var (opengl::gl-disable opengl::*gl-blend*))))))
+         . ,body)))))
 
 (defun %set-pen-size (v)
   (setf (boxgl-device-pen-size bw::*boxgl-device*) v))
