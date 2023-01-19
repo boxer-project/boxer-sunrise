@@ -106,11 +106,12 @@
 
 (defun gl-add-char (device x y ch &key (rgb (boxgl-device-pen-color device))
                                        (baseline-bot nil)
-                                       (font-face (current-freetype-font *current-opengl-font*)))
+                                       (font *current-opengl-font*))
   (let* ((program (boxgl-device-ft-glyph-program device))
          (vao (boxgl-device-ft-glyph-vao device))
          (color-uniform (gl:get-uniform-location program "textColor"))
-         (glyph (find-box-glyph ch *current-opengl-font*))
+         (font-face (current-freetype-font font))
+         (glyph (find-box-glyph ch font))
          (bearing-x (box-glyph-bearing-x glyph))
          (bearing-y (box-glyph-bearing-y glyph))
          (width (box-glyph-width glyph))
@@ -120,12 +121,12 @@
          (y (coerce y 'float))
          (xpos (+ x bearing-x))
          (ypos (if baseline-bot
-                 y
+                 (- (+ y (bw::ogl-font-height font)) bearing-y)
                  (- y bearing-y)))
          (ypos+h (+ ypos h))
-         (xpos+w (+ xpos w)))
+         (xpos+w (+ xpos w))
+         )
     (enable-gl-objects device :program program :vao vao :buffer (boxgl-device-ft-glyph-buffer device))
-
     (gl:uniformf color-uniform (aref rgb 1) (aref rgb 2) (aref rgb 3))
     (gl:active-texture :texture0)
 
@@ -161,7 +162,7 @@
   (let ((cur-x x)
         (prev-glyph nil))
       (for:for ((c over string))
-        (setf prev-glyph (gl-add-char device cur-x y c :baseline-bot t))
+        (setf prev-glyph (gl-add-char device cur-x y c :baseline-bot t :font font))
         (setf cur-x (+ cur-x (box-glyph-advance prev-glyph)))
         )))
 
