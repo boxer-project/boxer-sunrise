@@ -258,10 +258,16 @@ OpenGL expects a list of X Y pairs"
   ;; gl-scissor uses OpenGL coords (0,0) = bottom,left
   ;; 1/13/2008 - fine tuned X  (- lef 1) => lef  &
   ;; Y   (- (sheet-inside-height box::%drawing-array) bot) =>
-  (opengl::gl-scissor (floor lef)
-                  (floor (1+ (- (sheet-inside-height box::%drawing-array) bot)))
-                  (ceiling (- rig (- lef 1)))
-                  (ceiling (- bot top))))
+  (let* ((x (floor lef))
+         ; Using our shaders, this 1+ adds a tiny big of uncovered red at the bottom of the screen.
+         ; (y (floor (1+ (- (sheet-inside-height box::%drawing-array) bot))))
+         (y (floor  (- (sheet-inside-height box::%drawing-array) bot)))
+         (wid (ceiling (- rig (- lef 1))))
+         (hei (ceiling (- bot top))))
+    ;; For some reason, parts of our repaint code are generating a negative wid/hei, so just adding
+    ;; this check for the time being.
+    (when (and (>= wid 0) (>= hei 0))
+      (gl:scissor x y wid hei))))
 
 (defun window-system-dependent-set-origin (h v)
   "Translates the current transform matrix by an additional h and v distance.
