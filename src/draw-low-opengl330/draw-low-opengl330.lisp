@@ -37,6 +37,8 @@
    (matrices-ubo :accessor matrices-ubo)
    (ortho-matrix :accessor boxgl-device-ortho-matrix)
    (transform-matrix :accessor boxgl-device-transform-matrix)
+   (clip-rect :accessor clip-rect :initform #(0 0 0 0)
+     :documentation "A 1x4 Vector for the current clipping rectange. Left, top, right, bottom")
 
    (ft-glyph-program :accessor boxgl-device-ft-glyph-program)
    (ft-glyph-vao     :accessor boxgl-device-ft-glyph-vao)
@@ -111,7 +113,7 @@
          (vao (boxgl-device-ft-glyph-vao device))
          (color-uniform (gl:get-uniform-location program "textColor"))
          (font-face (current-freetype-font font))
-         (glyph (find-box-glyph ch font))
+         (glyph (find-box-glyph ch font boxer::*font-size-baseline*))
          (bearing-x (box-glyph-bearing-x glyph))
          (bearing-y (box-glyph-bearing-y glyph))
          (width (box-glyph-width glyph))
@@ -167,9 +169,9 @@
         )))
 
 (defun gl-add-rect (device x y wid hei &key (rgb (boxgl-device-pen-color device)))
+  (log:debug "~% gl-add-rect ~A ~A ~A ~A" x y wid hei)
   (enable-gl-objects device :program (boxgl-device-lines-program device) :vao (boxgl-device-lines-vao device)
                             :buffer (boxgl-device-lines-buffer device))
-
 
   ;; todo - use an elements array instead of 6 vertices
   (let* ((vertices `#(,(coerce x 'float) ,(coerce y 'float)                 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
@@ -276,8 +278,9 @@
                                             (pen-size (boxgl-device-pen-size bw::*boxgl-device*)))
   (enable-gl-objects device :program (boxgl-device-lines-program device) :vao (boxgl-device-lines-vao device)
                             :buffer (boxgl-device-lines-buffer device))
-
+;  (log:debug "gl-add-line: x0: ~A y0: ~A x1: ~A  y1: ~A" x0 y0 x1 y1)
   (let* ((vertices `#(,(coerce x0 'float) ,(coerce y0 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
+                      ; ,(coerce (+ x0 1) 'float) ,(coerce (+ y0 1) 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
                       ,(coerce x1 'float) ,(coerce y1 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
                       ))
          (arr (gl:alloc-gl-array :float (length vertices))))
@@ -286,7 +289,72 @@
     (gl:buffer-data :array-buffer :static-draw arr)
     (gl:free-gl-array arr))
 
-  (gl:draw-arrays :lines 0 2))
+  ; (gl:draw-arrays :triangles 0 3)
+  (gl:draw-arrays :lines 0 2)
+  )
+
+(defun gl-buffer-rect (device x y wid hei c-buffer buffer-pos &key (rgb (boxer::boxgl-device-pen-color device)))
+  (let ((red   (aref rgb 1))
+        (green (aref rgb 2))
+        (blue  (aref rgb 3))
+        (alpha (aref rgb 4)))
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 0)) (coerce x 'float))
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 1)) (coerce y 'float))
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 2)) 0.0)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 3)) red)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 4)) green)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 5)) blue)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 6)) alpha)
+
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 7)) (coerce (+ x wid) 'float))
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 8)) (coerce (+ y hei) 'float))
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 9)) 0.0)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 10)) red)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 11)) green)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 12)) blue)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 13)) alpha)
+
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 14)) (coerce x 'float))
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 15)) (coerce (+ y hei) 'float))
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 16)) 0.0)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 17)) red)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 18)) green)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 19)) blue)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 20)) alpha)
+
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 21)) (coerce x 'float))
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 22)) (coerce y 'float))
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 23)) 0.0)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 24)) red)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 25)) green)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 26)) blue)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 27)) alpha)
+
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 28)) (coerce (+ x wid) 'float))
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 29)) (coerce y 'float))
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 30)) 0.0)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 31)) red)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 32)) green)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 33)) blue)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 34)) alpha)
+
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 35)) (coerce (+ x wid) 'float))
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 36)) (coerce (+ y hei) 'float))
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 37)) 0.0)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 38)) red)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 39)) green)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 40)) blue)
+    (setf (cffi:mem-aref c-buffer :float (+ buffer-pos 41)) alpha)
+    )
+)
+
+(defun gl-draw-rects (device c-buffer pos)
+  (enable-gl-objects device :program (boxgl-device-lines-program device) :vao (boxgl-device-lines-vao device)
+                            :buffer (boxgl-device-lines-buffer device))
+
+  (%gl:buffer-data :array-buffer (* *cffi-float-size* pos) c-buffer :dynamic-draw)
+  (gl:draw-arrays :triangles 0 (/ pos 7))
+)
 
 (defun gl-buffer-line (device x0 y0 x1 y1 c-buffer buffer-pos &key (rgb (boxer::boxgl-device-pen-color device)))
   "Takes 2 vertices, a C buffer and the current position in the buffer, and copies the
@@ -443,12 +511,17 @@
 
 (defun update-matrices-ubo (device)
   (gl:bind-buffer :uniform-buffer (matrices-ubo device))
-  (let* ((arr (gl:alloc-gl-array :float (* 2 (* 4 4))))
+  ;; Currently we have two mat4 and one vec4
+  (let* ((arr (gl:alloc-gl-array :float (+ 4 (* 2 (* 4 4)))))
           (i 0))
     (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (3d-matrices:mat4  (boxgl-device-ortho-matrix device))))))
       (setf (gl:glaref arr i) (coerce item 'single-float))
       (incf i))
     (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (3d-matrices:mat4  (boxgl-device-transform-matrix device))))))
+      (setf (gl:glaref arr i) (coerce item 'single-float))
+      (incf i))
+    ; (log:debug "updating clip-rect: ~A" (clip-rect device))
+    (for:for ((item over (clip-rect device)))
       (setf (gl:glaref arr i) (coerce item 'single-float))
       (incf i))
     (gl:buffer-sub-data :uniform-buffer arr)
@@ -487,7 +560,7 @@ inside an opengl:rendering-on macro invocation."
 
     ;; Set up uniform buffer object for projection and transform matrices
     (gl:bind-buffer :uniform-buffer (matrices-ubo togo))
-    (%gl:buffer-data :uniform-buffer (* *cffi-float-size* (* 2 (* 4 4))) (cffi:null-pointer) :static-draw)
+    (%gl:buffer-data :uniform-buffer (* *cffi-float-size* (+ 4 (* 2 (* 4 4)))) (cffi:null-pointer) :static-draw)
     (gl:bind-buffer :uniform-buffer 0)
 
     (%gl:bind-buffer-range :uniform-buffer 0 (matrices-ubo togo) 0 (* *cffi-float-size* (* 2 (* 4 4))))

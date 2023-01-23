@@ -215,7 +215,7 @@ Modification History (most recent at the top)
 
 ;; the same for both char,string-height
 (defun ogl-font-height (font)
-  (cadr (boxer::opengl-font-fontspec font)))
+  (* (cadr (boxer::opengl-font-fontspec font)) boxer::*font-size-baseline*))
 
 (defun ogl-font-ascent (font)
   "sgithens TODO: temporary hack see ogl-font-height, the math for this should be even more different"
