@@ -57,6 +57,29 @@
    (cur-buffer :accessor cur-buffer :initform 0))
 )
 
+(defvar *gl-pixmap-texture-count* 0
+  "The number of openGL textures we've created for ogl-pixmaps.")
+
+(defun create-pixmap-texture (pixmap)
+  "Creates a texture for the pixmap if it doesn't exist yet. If the texture has already been
+  generated, does nothing. (Which means the texture still needs to be bound if you're about to
+  do something."
+    (when (= 0 (opengl::ogl-pixmap-texture pixmap))
+      (let ((texture-id (gl:gen-texture))
+            (wid (opengl::ogl-pixmap-width pixmap))
+            (hei (opengl::ogl-pixmap-height pixmap))
+            (data (opengl::ogl-pixmap-data pixmap)))
+        (setf (opengl::ogl-pixmap-texture pixmap) texture-id)
+        (gl:bind-texture :texture-2d texture-id)
+        (gl:tex-parameter :texture-2d :texture-wrap-s :repeat)
+        (gl:tex-parameter :texture-2d :texture-wrap-t :repeat)
+        (gl:tex-parameter :texture-2d :texture-min-filter :linear)
+        (gl:tex-parameter :texture-2d :texture-mag-filter :linear)
+
+        (gl:tex-image-2d :texture-2d 0 :rgba wid hei 0 :rgba :unsigned-byte data)
+        (gl:generate-mipmap :texture-2d)
+        (incf *gl-pixmap-texture-count*))))
+
 (defun gl-add-pixmap (device from-array tx ty wid hei fx fy)
   (let ((program (boxgl-device-pixmap-program device))
          (vao (boxgl-device-pixmap-vao device))
@@ -70,27 +93,12 @@
 
     (gl:pixel-store :unpack-alignment 4)
 
-    ;; TODO sgithens 2023-01-06 Still workign on caching textures. I believe in many cases the ogl-pixmap
-    ;; is being created in a different capi thread, so when we try and update the texture and read the
-    ;; data from it, we're not getting the updated copy of the struct.
-    ; (if (= 0 existing-texture)
-      (progn
-    ; (when (= 0 existing-texture)
-      (setf texture-id (gl:gen-texture))
-      (gl:bind-texture :texture-2d texture-id)
-      (gl:tex-parameter :texture-2d :texture-wrap-s :repeat)
-      (gl:tex-parameter :texture-2d :texture-wrap-t :repeat)
-      (gl:tex-parameter :texture-2d :texture-min-filter :linear)
-      (gl:tex-parameter :texture-2d :texture-mag-filter :linear)
+    (create-pixmap-texture from-array ) ;;pwid phei data)
 
-      (gl:tex-image-2d :texture-2d 0 :rgba pwid phei 0 :rgba :unsigned-byte data)
-      (gl:generate-mipmap :texture-2d)
-      (setf (opengl::ogl-pixmap-texture from-array) texture-id)
-      )
-    ; )
-
-    (gl:active-texture :texture1)
+    ;; Remember to bind the texture before trying to set an active texture, else
+    ;; we'll render a black square trying to make an active texture when none is bound.
     (gl:bind-texture :texture-2d (opengl::ogl-pixmap-texture from-array))
+    (gl:active-texture :texture1)
 
     (let* ((vertices `#(,(coerce tx 'single-float)         ,(coerce ty 'single-float)         0.0 0.0 1.0
                         ,(coerce tx 'single-float)         ,(coerce (+ ty hei) 'single-float) 0.0 0.0 0.0
@@ -169,7 +177,6 @@
         )))
 
 (defun gl-add-rect (device x y wid hei &key (rgb (boxgl-device-pen-color device)))
-  (log:debug "~% gl-add-rect ~A ~A ~A ~A" x y wid hei)
   (enable-gl-objects device :program (boxgl-device-lines-program device) :vao (boxgl-device-lines-vao device)
                             :buffer (boxgl-device-lines-buffer device))
 
