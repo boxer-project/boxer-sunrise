@@ -203,13 +203,13 @@ some opengl features to be available first."
 
 (defmacro with-line-stippling ((pattern factor) &body body)
   (let ((stipplevar (gensym)))
-    `(let ((,stipplevar (bw::get-opengl-state opengl::*gl-line-stipple* :boolean)))
+    `(let ((,stipplevar (line-stipple bw::*boxgl-device*)))
        (unwind-protect
         (progn
-         (opengl::gl-line-stipple ,factor ,pattern)
-         (opengl::gl-enable opengl::*gl-line-stipple*)
+          (setf (line-stipple bw::*boxgl-device*) t)
          . ,body)
-        (unless ,stipplevar (opengl::gl-disable opengl::*gl-line-stipple*))))))
+        (unless ,stipplevar
+          (setf (line-stipple bw::*boxgl-device*) nil))))))
 
 (defmacro maintaining-drawing-font (&body body)
   (let ((font-var (gensym)))

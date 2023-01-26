@@ -35,9 +35,10 @@
    (buffer  :initarg :buffer  :accessor shader-buffer)))
 
 (defclass boxgl-device ()
-  ((lines-shader    :accessor lines-shader)
-   (ft-glyph-shader :accessor ft-glyph-shader)
-   (pixmap-shader   :accessor pixmap-shader)
+  ((lines-shader        :accessor lines-shader)
+   (ft-glyph-shader     :accessor ft-glyph-shader)
+   (pixmap-shader       :accessor pixmap-shader)
+   (dashed-lines-shader :accessor dashed-lines-shader)
 
    (matrices-ubo :accessor matrices-ubo)
    (ortho-matrix :accessor boxgl-device-ortho-matrix)
@@ -47,6 +48,8 @@
 
    (pen-color :accessor boxgl-device-pen-color) ; current color in #(:rgb 1.0 1.0 1.0 1.0) format
    (pen-size  :accessor boxgl-device-pen-size)
+   (line-stipple :accessor line-stipple :initform nil
+     :documentation "Boolean to indicate if we're currently drawing dashed lines.")
 
    ;; Currently bound Shader Program, vao, etc
    (cur-program :accessor cur-program :initform 0)
@@ -267,7 +270,14 @@
 
 (defun gl-add-line (device x0 y0 x1 y1 &key (rgb (boxgl-device-pen-color device))
                                             (pen-size (boxgl-device-pen-size bw::*boxgl-device*)))
-  (enable-gl-shader-program device (lines-shader device))
+  (cond ((line-stipple device)
+         (enable-gl-shader-program device (dashed-lines-shader device))
+         (let ((res (resolution)))
+           (gl:uniformf (gl:get-uniform-location (shader-program (dashed-lines-shader device)) "u_resolution")
+                        (coerce (aref res 0) 'single-float) (coerce (aref res 1) 'single-float))))
+        (t
+         (enable-gl-shader-program device (lines-shader device))))
+
 
   (let* ((vertices `#(,(coerce x0 'float) ,(coerce y0 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
                       ; ,(coerce (+ x0 1) 'float) ,(coerce (+ y0 1) 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
@@ -446,12 +456,12 @@
 
     (%gl:uniform-block-binding pixmap-program (gl:get-uniform-block-index pixmap-program "Matrices") 0)))
 
-(defun setup-lines-program (device)
+(defun setup-lines-program (&key (vertex-shader "boxgl-lines.vs") (fragment-shader "boxgl-lines.fs"))
   (let* ((lines-program (gl:create-program))
          (lines-vao     (gl:gen-vertex-array))
          (lines-buffer  (gl:gen-buffer)))
-    (gl:attach-shader lines-program (create-shader "boxgl-lines.vs" :vertex-shader))
-    (gl:attach-shader lines-program (create-shader "boxgl-lines.fs" :fragment-shader))
+    (gl:attach-shader lines-program (create-shader vertex-shader :vertex-shader))
+    (gl:attach-shader lines-program (create-shader fragment-shader :fragment-shader))
     (gl:link-program lines-program)
     (log:debug "~%lines-program infolog: ~A" (gl:get-program-info-log lines-program))
 
@@ -468,13 +478,12 @@
     (gl:enable-vertex-attrib-array 1)
     (gl:vertex-attrib-pointer 1 4 :float nil (* 7 *cffi-float-size*) (* 3 *cffi-float-size*))
 
-    (setf (boxer::lines-shader device)
-          (make-instance 'boxgl-shader-program
+    (%gl:uniform-block-binding lines-program (gl:get-uniform-block-index lines-program "Matrices") 0)
+
+    (make-instance 'boxgl-shader-program
                          :program lines-program
                          :vao     lines-vao
-                         :buffer  lines-buffer))
-
-    (%gl:uniform-block-binding lines-program (gl:get-uniform-block-index lines-program "Matrices") 0)))
+                         :buffer  lines-buffer)))
 
 (defun read-shader-source (filename)
   "Reads the relative filename of the shader without any directory, and loads the source into a
@@ -523,9 +532,13 @@ inside an opengl:rendering-on macro invocation."
     (gl:blend-func :src-alpha :one-minus-src-alpha)
     (setup-freetype-program togo)
     (setup-pixmap-program togo)
-    (setup-lines-program togo)
+    (setf (lines-shader togo)
+          (setup-lines-program)
 
-    (setf (matrices-ubo togo)
+          (dashed-lines-shader togo)
+          (setup-lines-program :vertex-shader "boxgl-dashed-lines.vs" :fragment-shader "boxgl-dashed-lines.fs")
+
+          (matrices-ubo togo)
           (gl:gen-buffer)
 
           (boxgl-device-ortho-matrix togo)
