@@ -29,10 +29,15 @@
 (defvar *cffi-float-size* nil
   "Looking up the float size does take some time, performance wise.")
 
+(defclass boxgl-shader-program ()
+  ((program :initarg :program :accessor shader-program)
+   (vao     :initarg :vao     :accessor shader-vao)
+   (buffer  :initarg :buffer  :accessor shader-buffer)))
+
 (defclass boxgl-device ()
-  ((lines-program :accessor boxgl-device-lines-program)
-   (lines-vao :accessor boxgl-device-lines-vao)
-   (lines-buffer :accessor boxgl-device-lines-buffer)
+  ((lines-shader    :accessor lines-shader)
+   (ft-glyph-shader :accessor ft-glyph-shader)
+   (pixmap-shader   :accessor pixmap-shader)
 
    (matrices-ubo :accessor matrices-ubo)
    (ortho-matrix :accessor boxgl-device-ortho-matrix)
@@ -40,22 +45,13 @@
    (clip-rect :accessor clip-rect :initform #(0 0 0 0)
      :documentation "A 1x4 Vector for the current clipping rectange. Left, top, right, bottom")
 
-   (ft-glyph-program :accessor boxgl-device-ft-glyph-program)
-   (ft-glyph-vao     :accessor boxgl-device-ft-glyph-vao)
-   (ft-glyph-buffer  :accessor boxgl-device-ft-glyph-buffer)
-
-   (pixmap-program :accessor boxgl-device-pixmap-program)
-   (pixmap-vao     :accessor boxgl-device-pixmap-vao)
-   (pixmap-buffer  :accessor boxgl-device-pixmap-buffer)
-
    (pen-color :accessor boxgl-device-pen-color) ; current color in #(:rgb 1.0 1.0 1.0 1.0) format
    (pen-size  :accessor boxgl-device-pen-size)
 
    ;; Currently bound Shader Program, vao, etc
    (cur-program :accessor cur-program :initform 0)
    (cur-vao :accessor cur-vao :initform 0)
-   (cur-buffer :accessor cur-buffer :initform 0))
-)
+   (cur-buffer :accessor cur-buffer :initform 0)))
 
 (defvar *gl-pixmap-texture-count* 0
   "The number of openGL textures we've created for ogl-pixmaps.")
@@ -81,45 +77,35 @@
         (incf *gl-pixmap-texture-count*))))
 
 (defun gl-add-pixmap (device from-array tx ty wid hei fx fy)
-  (let ((program (boxgl-device-pixmap-program device))
-         (vao (boxgl-device-pixmap-vao device))
-         (buffer (boxgl-device-pixmap-buffer device))
-         (texture-id nil) ; (gl:gen-texture)) ;;(opengl::ogl-pixmap-texture from-array)) ;; todo, cache this on ogl-pixmap
-         (data (opengl::ogl-pixmap-data from-array))
-         (pwid (opengl::ogl-pixmap-width from-array))
-         (phei (opengl::ogl-pixmap-height from-array))
-         (existing-texture (opengl::ogl-pixmap-texture from-array)))
-    (enable-gl-objects device :program program :vao vao :buffer buffer)
+  (enable-gl-shader-program device (pixmap-shader device))
 
-    (gl:pixel-store :unpack-alignment 4)
+  (gl:pixel-store :unpack-alignment 4)
 
-    (create-pixmap-texture from-array ) ;;pwid phei data)
+  (create-pixmap-texture from-array ) ;;pwid phei data)
 
-    ;; Remember to bind the texture before trying to set an active texture, else
-    ;; we'll render a black square trying to make an active texture when none is bound.
-    (gl:bind-texture :texture-2d (opengl::ogl-pixmap-texture from-array))
-    (gl:active-texture :texture1)
+  ;; Remember to bind the texture before trying to set an active texture, else
+  ;; we'll render a black square trying to make an active texture when none is bound.
+  (gl:bind-texture :texture-2d (opengl::ogl-pixmap-texture from-array))
+  (gl:active-texture :texture1)
 
-    (let* ((vertices `#(,(coerce tx 'single-float)         ,(coerce ty 'single-float)         0.0 0.0 1.0
-                        ,(coerce tx 'single-float)         ,(coerce (+ ty hei) 'single-float) 0.0 0.0 0.0
-                        ,(coerce (+ tx wid) 'single-float) ,(coerce ty 'single-float)         0.0 1.0 1.0
-                        ,(coerce (+ tx wid) 'single-float) ,(coerce (+ ty hei) 'single-float) 0.0 1.0 0.0
-                        ,(coerce tx 'single-float)         ,(coerce (+ ty hei) 'single-float) 0.0 0.0 0.0
-                        ,(coerce (+ tx wid) 'single-float) ,(coerce ty 'single-float)         0.0 1.0 1.0
-                        ))
-           (arr (gl:alloc-gl-array :float (length vertices))))
-      (dotimes (i (length vertices))
-        (setf (gl:glaref arr i) (aref vertices i)))
-      (gl:buffer-data :array-buffer :static-draw arr)
-      (gl:free-gl-array arr)
-      (gl:draw-arrays :triangles 0 6))))
+  (let* ((vertices `#(,(coerce tx 'single-float)         ,(coerce ty 'single-float)         0.0 0.0 1.0
+                      ,(coerce tx 'single-float)         ,(coerce (+ ty hei) 'single-float) 0.0 0.0 0.0
+                      ,(coerce (+ tx wid) 'single-float) ,(coerce ty 'single-float)         0.0 1.0 1.0
+                      ,(coerce (+ tx wid) 'single-float) ,(coerce (+ ty hei) 'single-float) 0.0 1.0 0.0
+                      ,(coerce tx 'single-float)         ,(coerce (+ ty hei) 'single-float) 0.0 0.0 0.0
+                      ,(coerce (+ tx wid) 'single-float) ,(coerce ty 'single-float)         0.0 1.0 1.0
+                      ))
+          (arr (gl:alloc-gl-array :float (length vertices))))
+    (dotimes (i (length vertices))
+      (setf (gl:glaref arr i) (aref vertices i)))
+    (gl:buffer-data :array-buffer :static-draw arr)
+    (gl:free-gl-array arr)
+    (gl:draw-arrays :triangles 0 6)))
 
 (defun gl-add-char (device x y ch &key (rgb (boxgl-device-pen-color device))
                                        (baseline-bot nil)
                                        (font *current-opengl-font*))
-  (let* ((program (boxgl-device-ft-glyph-program device))
-         (vao (boxgl-device-ft-glyph-vao device))
-         (color-uniform (gl:get-uniform-location program "textColor"))
+  (let* ((color-uniform (gl:get-uniform-location (shader-program (ft-glyph-shader device)) "textColor"))
          (font-face (current-freetype-font font))
          (glyph (find-box-glyph ch font boxer::*font-size-baseline*))
          (bearing-x (box-glyph-bearing-x glyph))
@@ -134,9 +120,8 @@
                  (- (+ y (bw::ogl-font-height font)) bearing-y)
                  (- y bearing-y)))
          (ypos+h (+ ypos h))
-         (xpos+w (+ xpos w))
-         )
-    (enable-gl-objects device :program program :vao vao :buffer (boxgl-device-ft-glyph-buffer device))
+         (xpos+w (+ xpos w)))
+    (enable-gl-shader-program device (ft-glyph-shader device))
     (gl:uniformf color-uniform (aref rgb 1) (aref rgb 2) (aref rgb 3))
     (gl:active-texture :texture0)
 
@@ -177,8 +162,7 @@
         )))
 
 (defun gl-add-rect (device x y wid hei &key (rgb (boxgl-device-pen-color device)))
-  (enable-gl-objects device :program (boxgl-device-lines-program device) :vao (boxgl-device-lines-vao device)
-                            :buffer (boxgl-device-lines-buffer device))
+  (enable-gl-shader-program device (lines-shader device))
 
   ;; todo - use an elements array instead of 6 vertices
   (let* ((vertices `#(,(coerce x 'float) ,(coerce y 'float)                 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
@@ -198,8 +182,7 @@
   (gl:draw-arrays :triangles 0 6))
 
 (defun gl-add-poly (device points &key (filled? t) (rgb (boxgl-device-pen-color device)))
-  (enable-gl-objects device :program (boxgl-device-lines-program device) :vao (boxgl-device-lines-vao device)
-                            :buffer (boxgl-device-lines-buffer device))
+  (enable-gl-shader-program device (lines-shader device))
 
   (let* ((arr (gl:alloc-gl-array :float (* 7 (length points))))
          (i 0))
@@ -221,8 +204,7 @@
       (gl:draw-arrays :line-loop 0 (length points)))))
 
 (defun gl-add-circle (device cx cy radius filled? &key (rgb (boxgl-device-pen-color device)))
-  (enable-gl-objects device :program (boxgl-device-lines-program device) :vao (boxgl-device-lines-vao device)
-                            :buffer (boxgl-device-lines-buffer device))
+  (enable-gl-shader-program device (lines-shader device))
 
   (let* ((num-slices (bw::num-slices radius))
          (theta (/ (* 2 pi) num-slices))
@@ -253,8 +235,7 @@
       (gl:draw-arrays :line-loop 0 num-slices))))
 
 (defun gl-add-point (device x0 y0 &key (rgb (boxgl-device-pen-color device)))
-  (enable-gl-objects device :program (boxgl-device-lines-program device) :vao (boxgl-device-lines-vao device)
-                            :buffer (boxgl-device-lines-buffer device))
+  (enable-gl-shader-program device (lines-shader device))
 
   (let* ((vertices `#(,(coerce x0 'float) ,(coerce y0 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)))
          (arr (gl:alloc-gl-array :float (length vertices))))
@@ -281,11 +262,13 @@
     (gl:bind-buffer :array-buffer buffer)
     (setf (cur-buffer device) buffer)))
 
+(defun enable-gl-shader-program (device shader)
+  (enable-gl-objects device :program (shader-program shader) :vao (shader-vao shader) :buffer (shader-buffer shader)))
+
 (defun gl-add-line (device x0 y0 x1 y1 &key (rgb (boxgl-device-pen-color device))
                                             (pen-size (boxgl-device-pen-size bw::*boxgl-device*)))
-  (enable-gl-objects device :program (boxgl-device-lines-program device) :vao (boxgl-device-lines-vao device)
-                            :buffer (boxgl-device-lines-buffer device))
-;  (log:debug "gl-add-line: x0: ~A y0: ~A x1: ~A  y1: ~A" x0 y0 x1 y1)
+  (enable-gl-shader-program device (lines-shader device))
+
   (let* ((vertices `#(,(coerce x0 'float) ,(coerce y0 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
                       ; ,(coerce (+ x0 1) 'float) ,(coerce (+ y0 1) 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
                       ,(coerce x1 'float) ,(coerce y1 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
@@ -356,8 +339,7 @@
 )
 
 (defun gl-draw-rects (device c-buffer pos)
-  (enable-gl-objects device :program (boxgl-device-lines-program device) :vao (boxgl-device-lines-vao device)
-                            :buffer (boxgl-device-lines-buffer device))
+  (enable-gl-shader-program device (lines-shader device))
 
   (%gl:buffer-data :array-buffer (* *cffi-float-size* pos) c-buffer :dynamic-draw)
   (gl:draw-arrays :triangles 0 (/ pos 7))
@@ -386,8 +368,7 @@
 )
 
 (defun gl-draw-lines (device c-buffer pos)
-  (enable-gl-objects device :program (boxgl-device-lines-program device) :vao (boxgl-device-lines-vao device)
-                            :buffer (boxgl-device-lines-buffer device))
+  (enable-gl-shader-program device (lines-shader device))
   (%gl:buffer-data :array-buffer (* *cffi-float-size* pos) c-buffer :dynamic-draw)
   (gl:draw-arrays :lines 0 (/ pos 7))
                             )
@@ -413,9 +394,6 @@
     (gl:link-program glyph-program)
     (log:debug "~%glyph-program infolog: ~A" (gl:get-program-info-log glyph-program))
 
-    (setf (boxer::boxgl-device-ft-glyph-program device) glyph-program)
-    (setf (boxer::boxgl-device-ft-glyph-vao device) glyph-vao)
-
     (freetype2::ft-set-pixel-sizes font-face 0 48)
 
     (gl:pixel-store :unpack-alignment 1)
@@ -428,9 +406,8 @@
     (gl:bind-buffer :array-buffer 0)
     (gl:bind-texture :texture-2d 0)
 
-    (setf (boxgl-device-ft-glyph-program device) glyph-program)
-    (setf (boxgl-device-ft-glyph-vao device) glyph-vao)
-    (setf (boxgl-device-ft-glyph-buffer device) glyph-buffer)
+    (setf (boxer::ft-glyph-shader device) (make-instance 'boxgl-shader-program :program glyph-program
+                                                          :vao glyph-vao       :buffer  glyph-buffer))
 
     (%gl:uniform-block-binding glyph-program (gl:get-uniform-block-index glyph-program "Matrices") 0)))
 
@@ -442,9 +419,6 @@
     (gl:attach-shader pixmap-program (create-shader "boxgl-pixmap.fs" :fragment-shader))
     (gl:link-program pixmap-program)
     (log:debug "~%pixmap-program infolog: ~A" (gl:get-program-info-log pixmap-program))
-
-    (setf (boxer::boxgl-device-pixmap-program device) pixmap-program)
-    (setf (boxer::boxgl-device-pixmap-vao device) pixmap-vao)
 
     ;; Vertex attribute data for the pixmaps will be in the following format:
     ;;    layout 0       layout 1
@@ -467,9 +441,8 @@
     ; (gl:bind-vertex-array 0)
     (gl:bind-texture :texture-2d 0)
 
-    (setf (boxgl-device-pixmap-program device) pixmap-program)
-    (setf (boxgl-device-pixmap-vao device) pixmap-vao)
-    (setf (boxgl-device-pixmap-buffer device) pixmap-buffer)
+    (setf (boxer::pixmap-shader device) (make-instance 'boxgl-shader-program :program pixmap-program
+                                                       :vao pixmap-vao       :buffer  pixmap-buffer))
 
     (%gl:uniform-block-binding pixmap-program (gl:get-uniform-block-index pixmap-program "Matrices") 0)))
 
@@ -495,9 +468,11 @@
     (gl:enable-vertex-attrib-array 1)
     (gl:vertex-attrib-pointer 1 4 :float nil (* 7 *cffi-float-size*) (* 3 *cffi-float-size*))
 
-    (setf (boxer::boxgl-device-lines-program device) lines-program)
-    (setf (boxer::boxgl-device-lines-vao device) lines-vao)
-    (setf (boxer::boxgl-device-lines-buffer device) lines-buffer)
+    (setf (boxer::lines-shader device)
+          (make-instance 'boxgl-shader-program
+                         :program lines-program
+                         :vao     lines-vao
+                         :buffer  lines-buffer))
 
     (%gl:uniform-block-binding lines-program (gl:get-uniform-block-index lines-program "Matrices") 0)))
 
