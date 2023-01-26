@@ -106,3 +106,68 @@
       (setf (gethash cache-key *freetype-pixmap-cache*) cached-glyph)
       (setf *freetype-pixmap-generate-count* (1+ *freetype-pixmap-generate-count*)))
     cached-glyph))
+
+(defstruct box-glyph
+  ch
+  width
+  rows
+  bearing-x
+  bearing-y
+  advance
+  texture-id
+  buffer)
+
+
+(defun create-box-glyph (font-face ch &optional (create-texture? nil))
+  "Takes a freetype2 font face and the character code to generate.
+  Returns a box-glyph struct."
+  (freetype2:load-char font-face ch)
+  (let* ((togo      (make-box-glyph))
+         ;; This call to get-advance must happen either before we call render-glyph, as it mucks
+         ;; with the glyph buffers. (It could also be called as the very last thing.)
+         (advance   (freetype2::get-advance font-face ch))
+         (glyphslot (freetype2:render-glyph font-face))
+         (bitmap    (freetype2::ft-glyphslot-bitmap glyphslot))
+         (width     (freetype2::ft-bitmap-width bitmap))
+         (rows      (freetype2::ft-bitmap-rows bitmap))
+         (buffer    (freetype2::ft-bitmap-buffer bitmap))
+         (bearing-x (freetype2::ft-glyphslot-bitmap-left glyphslot))
+         (bearing-y (freetype2::ft-glyphslot-bitmap-top glyphslot))
+         (texture-id nil))
+    (setf (box-glyph-ch togo) ch)
+    (setf (box-glyph-width togo) width)
+    (setf (box-glyph-rows togo) rows)
+    (setf (box-glyph-bearing-x togo) bearing-x)
+    (setf (box-glyph-bearing-y togo) bearing-y)
+    (setf (box-glyph-advance togo) advance)
+
+    (if create-texture?
+      (setf (box-glyph-texture-id togo) (create-glyph-texture width rows buffer)))
+
+    togo))
+
+(defvar *gl-glyph-texture-count* 0)
+
+(defun create-glyph-texture (width rows buffer)
+  "Returns the integer id for a new texture from freetype fontface for `ch`.
+   Needs to be run inside an active openGL context."
+  (let ((glyph-texture   (gl:gen-texture)))
+    (gl:pixel-store :unpack-alignment 1)
+    (gl:bind-texture :texture-2d glyph-texture)
+    (gl:tex-parameter :texture-2d :texture-wrap-s :clamp-to-edge)
+    (gl:tex-parameter :texture-2d :texture-wrap-t :clamp-to-edge)
+    (gl:tex-parameter :texture-2d :texture-min-filter :linear)
+    (gl:tex-parameter :texture-2d :texture-mag-filter :linear)
+
+    (gl:tex-image-2d
+      :texture-2d 0 :red
+      width
+      rows
+      0 :red :unsigned-byte
+      buffer)
+    (gl:generate-mipmap :texture-2d)
+
+    (gl:bind-texture :texture-2d 0)
+    (incf *gl-glyph-texture-count*)
+  (log:debug "~%glyph-texture2: ~A  mp: ~A" glyph-texture (mp:get-current-process))
+  glyph-texture))

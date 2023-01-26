@@ -396,15 +396,12 @@
 (defun setup-freetype-program (device)
   (let* ((glyph-program   (gl:create-program))
          (glyph-vao       (gl:gen-vertex-array))
-         (font-face       (boxer::make-freetype-face "LiberationSans-Regular.ttf"))
          (glyph-buffer    (gl:gen-buffer)))
 
     (gl:attach-shader glyph-program (create-shader "boxgl-freetype-glyph.vs" :vertex-shader))
     (gl:attach-shader glyph-program (create-shader "boxgl-freetype-glyph.fs" :fragment-shader))
     (gl:link-program glyph-program)
     (log:debug "~%glyph-program infolog: ~A" (gl:get-program-info-log glyph-program))
-
-    (freetype2::ft-set-pixel-sizes font-face 0 48)
 
     (gl:pixel-store :unpack-alignment 1)
 
