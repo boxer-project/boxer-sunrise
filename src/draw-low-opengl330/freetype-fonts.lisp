@@ -142,16 +142,23 @@
     (setf (box-glyph-advance togo) advance)
 
     (if create-texture?
-      (setf (box-glyph-texture-id togo) (create-glyph-texture width rows buffer)))
+      (setf (box-glyph-texture-id togo) (create-glyph-texture font-face ch glyph)))
 
     togo))
 
 (defvar *gl-glyph-texture-count* 0)
 
-(defun create-glyph-texture (width rows buffer)
+(defun create-glyph-texture (font-face ch glyph)
   "Returns the integer id for a new texture from freetype fontface for `ch`.
    Needs to be run inside an active openGL context."
-  (let ((glyph-texture   (gl:gen-texture)))
+  ;; TODO Refactor this, so we're not rendering the glyph twice. if the buffer is saved on the
+  ;; glyph it gets all jittery. We need to be able to create a glyph without the GL texture since
+  ;; some widths need to be calculated when an openGL context is not available.
+  (freetype2:load-char font-face ch)
+  (let* ((glyph-texture   (gl:gen-texture))
+         (glyphslot (freetype2:render-glyph font-face))
+         (bitmap    (freetype2::ft-glyphslot-bitmap glyphslot))
+         (buffer    (freetype2::ft-bitmap-buffer bitmap)))
     (gl:pixel-store :unpack-alignment 1)
     (gl:bind-texture :texture-2d glyph-texture)
     (gl:tex-parameter :texture-2d :texture-wrap-s :clamp-to-edge)
@@ -161,8 +168,8 @@
 
     (gl:tex-image-2d
       :texture-2d 0 :red
-      width
-      rows
+      (box-glyph-width glyph)
+      (box-glyph-rows glyph)
       0 :red :unsigned-byte
       buffer)
     (gl:generate-mipmap :texture-2d)

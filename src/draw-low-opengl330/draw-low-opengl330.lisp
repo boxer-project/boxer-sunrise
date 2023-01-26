@@ -140,14 +140,8 @@
         (setf (gl:glaref arr i) (aref vertices i)))
 
       (unless (box-glyph-texture-id glyph)
-        (freetype2:load-char font-face ch)
-        (let* ((glyphslot (freetype2:render-glyph font-face))
-               (bitmap    (freetype2::ft-glyphslot-bitmap glyphslot))
-               (width     (freetype2::ft-bitmap-width bitmap))
-               (rows      (freetype2::ft-bitmap-rows bitmap))
-               (buffer    (freetype2::ft-bitmap-buffer bitmap)))
-          (setf (box-glyph-texture-id glyph)
-                (create-glyph-texture width rows buffer))))
+        (setf (box-glyph-texture-id glyph)
+              (create-glyph-texture font-face ch glyph)))
       (gl:bind-texture :texture-2d (box-glyph-texture-id glyph))
       (%gl::buffer-sub-data :array-buffer 0
                            (* (length vertices) *cffi-float-size*)
