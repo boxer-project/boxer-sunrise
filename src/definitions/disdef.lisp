@@ -280,7 +280,7 @@ Modification History (most recent at the top)
 
 (DEFMACRO REDISPLAYING-WINDOW ((WINDOW) &BODY BODY)
           `(LET* ((*REDISPLAY-WINDOW* ,WINDOW)
-                  (*OUTERMOST-SCREEN-BOX* (OUTERMOST-SCREEN-BOX ,WINDOW))
+                  ; (*OUTERMOST-SCREEN-BOX* (OUTERMOST-SCREEN-BOX ,WINDOW))
                   (.OUTERMOST-SCREEN-BOX. *OUTERMOST-SCREEN-BOX*))
                  (QUEUEING-SCREEN-OBJS-DEALLOCATION
                   (DRAWING-ON-WINDOW (,WINDOW)

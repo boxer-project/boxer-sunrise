@@ -51,13 +51,15 @@ Modification History (most recent at the top)
 (in-package :boxer-window)
 
 (defun ogl-init (width height)
-  (opengl:gl-matrix-mode opengl:*gl-projection*)
-  (opengl:gl-load-identity)
-  ;; orthographic projection, 0,0 = top,left
-  ;; Note:GL-Ortho wants double-floats as args (and insists on the mac)
-  (opengl:gl-ortho (coerce 0.0 'double-float)            (coerce (float width) 'double-float)
-            (coerce (float height) 'double-float) (coerce 0.0 'double-float)
-            (coerce -1.0 'double-float)           (coerce 1.0 'double-float)))
+  ;; 2022-11-17 sgithens
+  ; (opengl:gl-matrix-mode opengl:*gl-projection*)
+  ; (opengl:gl-load-identity)
+  ; ;; orthographic projection, 0,0 = top,left
+  ; ;; Note:GL-Ortho wants double-floats as args (and insists on the mac)
+  ; (opengl:gl-ortho (coerce 0.0 'double-float)            (coerce (float width) 'double-float)
+  ;           (coerce (float height) 'double-float) (coerce 0.0 'double-float)
+  ;           (coerce -1.0 'double-float)           (coerce 1.0 'double-float))
+            )
 
 ;;; State management (see Red Book appendix B for state vars)
 ;; Note, type can be either an atomic type of a list of type and length
@@ -276,8 +278,13 @@ Modification History (most recent at the top)
 (defun ogl-color->rgb (ogl-color)
   "Takes an openGL vector representing an RGBA color and returns a five part
   vector as: #(:rgb 1.0 1.0 1.0 1.0"
-  `#(:rgb ,(ogl-color-red ogl-color) ,(ogl-color-green ogl-color)
-          ,(ogl-color-blue ogl-color) ,(ogl-color-alpha ogl-color)))
+  (let ((togo (make-array '(5))))
+    (setf (aref togo 0) :rgb
+          (aref togo 1) (ogl-color-red ogl-color)
+          (aref togo 2) (ogl-color-green ogl-color)
+          (aref togo 3) (ogl-color-blue ogl-color)
+          (aref togo 4) (ogl-color-alpha ogl-color))
+    togo))
 
 (defun float-precision= (a b &optional (precision 0.001))
   (if (zerop a) (zerop b)  (< (abs (/ (- a b) a)) precision)))

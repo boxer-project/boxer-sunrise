@@ -29,6 +29,10 @@
 (require :asdf)
 (require :uiop)
 
+(let ((quicklisp-init (merge-pathnames "quicklisp/setup.lisp" (user-homedir-pathname))))
+  (when (probe-file quicklisp-init)
+    (load quicklisp-init)))
+
 (defvar *boxer-project-dir* (make-pathname :directory (butlast (pathname-directory *load-truename*))))
 
 (setf asdf:*central-registry*
@@ -37,16 +41,17 @@
                       #+win32 #P"z:/code/boxer-sunrise/" ; TODO Sorting out path functions on win32...
                       asdf:*central-registry*))
 
-(load (example-file "opengl/examples/load"))
+; (load (example-file "opengl/examples/load"))
+(ql:quickload :cl-fad)
+#+(and lispworks x64) (load (cl-fad:merge-pathnames-as-file *boxer-project-dir* "src/opengl-lw-8/examples/load.lisp"))
+
+
+(setf *features* (cons :moderngl *features*))
 (setf *features* (cons :opengl *features*))
 (setf *features* (cons :freetype-fonts *features*))
 (setf *features* (cons :delivering *features*))
 
-(let ((quicklisp-init (merge-pathnames "quicklisp/setup.lisp" (user-homedir-pathname))))
-  (when (probe-file quicklisp-init)
-    (load quicklisp-init)))
 
-(ql:quickload :cl-fad)
 (ql:quickload :log4cl)
 (ql:quickload :drakma)
 (ql:quickload :cl-json)
@@ -61,6 +66,14 @@
 (ql:quickload :trivial-garbage)
 (ql:quickload :cffi)
 (ql:quickload :zip)
+
+(ql:quickload :cl-opengl)
+(ql:quickload :pngload)
+(ql:quickload :3d-vectors)
+(ql:quickload :3d-matrices)
+(ql:quickload :cl-glu)
+(ql:quickload :iterate)
+(ql:quickload :for)
 
 ;; (ql:quickload :cl-freetype2)
 

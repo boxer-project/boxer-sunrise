@@ -8,7 +8,7 @@
 |#
 
 (defsystem "boxer-sunrise"
-  :version "3.4.8"
+  :version "3.4.12"
   :author "Steven Githens"
   :license ""
   :depends-on ("uiop"
@@ -20,7 +20,7 @@
                  ;; boxer
                  #-lispworks (:file "boxwin/libre/opengl")
 
-                 #+lispworks
+                 #-moderngl
                  (:module "draw-low-opengl-lispworks"
                   :depends-on ()
                   :components ((:file "platform-utils")
@@ -28,8 +28,20 @@
                                (:file "opengl-utils")
                                #+(and freetype-fonts (not delivering))
                                (:file "freetype-fonts")
-                               (:file "draw-low-opengl")
-                  ))
+                               (:file "draw-low-opengl")))
+
+                #+moderngl
+                 (:module "draw-low-opengl330"
+                  :depends-on ()
+                  :components ((:file "platform-utils")
+                               (:file "pixmap")
+                               (:file "draw-low-opengl330")
+                               (:file "opengl-utils")
+                               #+(and freetype-fonts (not delivering))
+                               (:file "freetype-fonts")
+                               (:file "draw-low-opengl")))
+
+                 #+moderngl (:file "boxwin/lw-capi/boxwin-330gl")
 
                  ;; Beginning of `DRAW` module
                  (:file "draw/draw-high-common")

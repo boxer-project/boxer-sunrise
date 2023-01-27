@@ -50,6 +50,10 @@
   )
 )
 
+(defun resolution (&optional (pane *boxer-pane*))
+  "Returns the boxer canvas resolution as vector of size 2. #(x y)"
+  (make-array '(2) :initial-contents (list (gp:port-width pane) (gp:port-height pane))))
+
 (defun make-demo-300 ()
   (let* ((gl-frame (make-instance 'boxgl-frame))
          (gl-pane  (slot-value gl-frame 'gl-pane))

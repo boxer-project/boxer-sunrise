@@ -107,17 +107,6 @@
       (setf *freetype-pixmap-generate-count* (1+ *freetype-pixmap-generate-count*)))
     cached-glyph))
 
-(defstruct box-glyph
-  ch
-  width
-  rows
-  bearing-x
-  bearing-y
-  advance
-  texture-id
-  buffer)
-
-
 (defun create-box-glyph (font-face ch &optional (create-texture? nil))
   "Takes a freetype2 font face and the character code to generate.
   Returns a box-glyph struct."

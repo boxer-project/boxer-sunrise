@@ -29,6 +29,35 @@
 (defvar *cffi-float-size* nil
   "Looking up the float size does take some time, performance wise.")
 
+(defstruct box-glyph
+  ch
+  width
+  rows
+  bearing-x
+  bearing-y
+  advance
+  texture-id)
+
+(defun line-by-width-corners (x0 y0 x1 y1 width)
+  "Given two points for a line and a width for the line, calculate the 4 points necessary for the (most likely)
+  long and skinny rectangle that delineates the line."
+
+  ;; We will find the normals.    dx = x1 - x0    dy = y1 - y0
+  ;;                           (-dy, dx) and (dy, -dx)
+  ;; Normalize them by v = sqrt(dx^2 + dy^2)
+  ;; Divide them by v
+  ;; Add both normals to each point to get the 4 corners.
+  (let* ((dx (- x1 x0))
+         (dy (- y1 y0))
+         (v  (sqrt (+ (expt dx 2) (expt dy 2))))
+         (half-wid (/ width 2))
+         (sx0 (* (/ (* -1 dy) v) half-wid)) ;; scaled normal transforms
+         (sy0 (* (/ dx v) half-wid))
+         (sx1 (* (/ dy v) half-wid))
+         (sy1 (* (/ (* -1 dx) v) half-wid)))
+    (make-array '(8) :initial-contents (list (+ x0 sx0) (+ y0 sy0) (+ x0 sx1) (+ y0 sy1)
+                                             (+ x1 sx0) (+ y1 sy0) (+ x1 sx1) (+ y1 sy1)))))
+
 (defclass boxgl-shader-program ()
   ((program :initarg :program :accessor shader-program)
    (vao     :initarg :vao     :accessor shader-vao)

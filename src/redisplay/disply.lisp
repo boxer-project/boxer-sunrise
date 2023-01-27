@@ -907,7 +907,8 @@
                                                                               WINDOW)
                                     (ERASE-SCREEN-OBJ *OUTERMOST-SCREEN-BOX*)
                                     (SETQ *OUTERMOST-SCREEN-BOX* NEW-OUTERMOST-SCREEN-BOX)))
-       (SETQ *OUTERMOST-SCREEN-BOX* (boxer-window::outermost-screen-box)) ; why ??
+      ;  (SETQ *OUTERMOST-SCREEN-BOX* (boxer-window::outermost-screen-box)) ; why ??
+       (setf *outermost-screen-box* new-outermost-screen-box)
        (LET ((OLD-SCREEN-ROW (UNLESS (NULL NEW-OUTERMOST-SCREEN-BOX)
                                      (SCREEN-ROW NEW-OUTERMOST-SCREEN-BOX))))
             (WHEN (SCREEN-ROW? OLD-SCREEN-ROW)

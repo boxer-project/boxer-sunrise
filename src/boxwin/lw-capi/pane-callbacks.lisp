@@ -31,16 +31,25 @@
                 ;; do other OpenGL inits...
                 (setq *ogl-current-color-vector* (make-ogl-color 0.0 0.0 0.0)
                       *blinker-color* (make-ogl-color .3 .3 .9 .5))
-                (opengl:gl-enable opengl:*gl-scissor-test*)
-                (opengl::gl-enable opengl::*gl-line-smooth*)
-                (opengl::gl-enable opengl::*gl-polygon-smooth*)
-                (opengl::gl-enable opengl::*gl-blend*)
-                (opengl::gl-blend-func opengl::*gl-src-alpha* opengl::*gl-one-minus-src-alpha*)
-                (opengl::gl-hint opengl::*gl-line-smooth-hint* opengl::*gl-nicest*))
+                #-moderngl
+                (progn
+                  (opengl:gl-enable opengl:*gl-scissor-test*)
+                  (opengl::gl-enable opengl::*gl-line-smooth*)
+                  (opengl::gl-enable opengl::*gl-polygon-smooth*)
+                  (opengl::gl-enable opengl::*gl-blend*)
+                  (opengl::gl-blend-func opengl::*gl-src-alpha* opengl::*gl-one-minus-src-alpha*)
+                  (opengl::gl-hint opengl::*gl-line-smooth-hint* opengl::*gl-nicest*))
+                )
 
     ;; modernGL inits
     #+moderngl
     (opengl:rendering-on (*boxer-pane*)
+      (gl:enable :scissor-test)
+      (gl:enable :line-smooth)
+      (gl:enable :polygon-smooth)
+      (gl:enable :blend)
+      ; (opengl::gl-hint opengl::*gl-line-smooth-hint* opengl::*gl-nicest*)
+
       (setf bw::*boxgl-device* (slot-value
                                   (boxer::make-boxwin-330gl-device bw::*boxer-frame* bw::*boxer-pane* :wid wid :hei hei)
                                   'boxer::draw-device))

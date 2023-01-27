@@ -47,12 +47,13 @@ Modification History (most recent at top)
 (defstruct (ogl-pixmap (:constructor %make-ogl-pixmap))
   (width 0)
   (height 0)
+  (texture 0)
   (data nil))
 
 (defun make-ogl-pixmap (width height)
   (cond ((and (integerp width)  (not (minusp width))
               (integerp height) (not (minusp height)))
-         (%make-ogl-pixmap :width width :height height
+         (%make-ogl-pixmap :width width :height height :texture 0
                            :data (cffi:foreign-alloc *pixmap-ffi-type*
                                                      :initial-element 0
                                                      :count (* width height))))

@@ -180,8 +180,8 @@
 
 ;;;; Font Vars....
 
-(defvar %drawing-font-cha-hei)
-(defvar %drawing-font-cha-ascent)
+(defvar %drawing-font-cha-hei 12)
+(defvar %drawing-font-cha-ascent 12)
 
 
 (defvar *redisplay-id* 0)
