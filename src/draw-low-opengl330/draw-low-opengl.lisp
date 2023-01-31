@@ -505,14 +505,18 @@ opengl arc drawing routine starts at 3 oclock and sweeps clockwise in radians
 also, opengl-draw-arc expects positive angle args"
   (if (minusp sweep-angle)
     ;; change the start so that we can use ABS sweep
-    (bw::opengl-draw-arc x y radius
+    (gl-add-arc bw::*boxgl-device* x y radius
                          (* +degs->rads+ (mod (- (+ start-angle sweep-angle) 90) 360))
                          (* +degs->rads+ (abs sweep-angle))
                          filled?)
-    (bw::opengl-draw-arc x y radius
+    (gl-add-arc bw::*boxgl-device* x y radius
                          (* +degs->rads+ (mod (- start-angle 90) 360))
                          (* +degs->rads+ sweep-angle)
-                         filled?)))
+                         filled?)
+
+                         )
+
+                         )
 
 (defun %draw-cha (x y char)
   "Font is managed by set-font-info.  Note that anything else that might change

@@ -229,6 +229,47 @@
       (gl:draw-arrays :triangle-fan 0 (length points))
       (gl:draw-arrays :line-loop 0 (length points)))))
 
+(defun gl-add-arc (device cx cy radius start-angle arc-angle filled? &key (rgb (boxgl-device-pen-color device)))
+  (enable-gl-shader-program device (lines-shader device))
+
+  (let* ((num-slices (round (* (bw::num-slices radius) (/ arc-angle (* 2 pi)))))
+         (theta (/ arc-angle (1- num-slices)))
+         (tangent-factor (tan theta))
+         (radial-factor (cos theta))
+         (x (* radius (cos start-angle)))
+         (y (* radius (sin start-angle)))
+         (num-vertices (if filled? (+ (* num-slices 7) 7) (* num-slices 7)))
+         (arr (gl:alloc-gl-array :float num-vertices)))
+    (dotimes (i num-slices)
+      (setf (gl:glaref arr (* i 7)) (coerce (+ x cx) 'single-float))
+      (setf (gl:glaref arr (+ (* i 7) 1)) (coerce (+ y cy) 'single-float))
+      (setf (gl:glaref arr (+ (* i 7) 2)) 0.0)
+      (setf (gl:glaref arr (+ (* i 7) 3)) (aref rgb 1))
+      (setf (gl:glaref arr (+ (* i 7) 4)) (aref rgb 2))
+      (setf (gl:glaref arr (+ (* i 7) 5)) (aref rgb 3))
+      (setf (gl:glaref arr (+ (* i 7) 6)) (aref rgb 4))
+      (let ((tx (- y)) (ty x))
+        (setq x (+ x (* tx tangent-factor))
+              y (+ y (* ty tangent-factor)))
+        (setq x (* x radial-factor)
+              y (* y radial-factor))))
+
+    (when filled?
+      (setf (gl:glaref arr (- num-vertices 7)) (coerce cx 'single-float))
+      (setf (gl:glaref arr (- num-vertices 6)) (coerce cy 'single-float))
+      (setf (gl:glaref arr (- num-vertices 5)) 0.0)
+      (setf (gl:glaref arr (- num-vertices 4)) (aref rgb 1))
+      (setf (gl:glaref arr (- num-vertices 3)) (aref rgb 2))
+      (setf (gl:glaref arr (- num-vertices 2)) (aref rgb 3))
+      (setf (gl:glaref arr (- num-vertices 1)) (aref rgb 4)))
+
+    (gl:buffer-data :array-buffer :static-draw arr)
+    (gl:free-gl-array arr)
+
+    (if filled?
+      (gl:draw-arrays :triangle-fan 0 (1+ num-slices))
+      (gl:draw-arrays :line-strip 0 num-slices))))
+
 (defun gl-add-circle (device cx cy radius filled? &key (rgb (boxgl-device-pen-color device)))
   (enable-gl-shader-program device (lines-shader device))
 

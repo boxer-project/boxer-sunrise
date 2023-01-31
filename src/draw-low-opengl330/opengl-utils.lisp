@@ -372,29 +372,3 @@ Modification History (most recent at the top)
 ;;; should be moved to opengl directory
 
 (defun num-slices (radius) (round (* 10 (sqrt radius))))
-
-(defun opengl-draw-arc (cx cy radius start-angle arc-angle &optional filled?)
-  (let* ((num-slices (round (* (num-slices radius) (/ arc-angle (* 2 pi)))))
-         (theta (/ arc-angle (1- num-slices)))
-         (tangent-factor (tan theta))
-         (radial-factor (cos theta))
-         (x (* radius (cos start-angle)))
-         (y (* radius (sin start-angle))))
-    (opengl:gl-begin (if filled? opengl:*gl-polygon* opengl:*gl-line-strip*))
-    (when filled? (opengl:gl-vertex2-f (coerce cx 'single-float) (coerce cy 'single-float)))
-    (dotimes (i num-slices)
-      (opengl:gl-vertex2-f (coerce (+ x cx) 'single-float) (coerce (+ y cy) 'single-float))
-      (let ((tx (- y)) (ty x))
-        (setq x (+ x (* tx tangent-factor))
-              y (+ y (* ty tangent-factor)))
-        (setq x (* x radial-factor)
-              y (* y radial-factor))))
-    (opengl:gl-end)))
-
-#|
-
-(drawing-on-window (*boxer-pane*)
-    (%draw-rectangle 30 20 100 100)
-    (bw::swap-buffers *boxer-pane*))
-
-|#
