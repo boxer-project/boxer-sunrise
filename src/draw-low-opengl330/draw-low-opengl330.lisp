@@ -148,9 +148,10 @@
          (x (coerce x 'float))
          (y (coerce y 'float))
          (xpos (+ x bearing-x))
+         (font-hei (bw::ogl-font-height font))
          (ypos (if baseline-bot
-                 (- (+ y (bw::ogl-font-height font)) bearing-y)
-                 (- y bearing-y)))
+                 (- (- (+ y font-hei) bearing-y) (* font-hei 0.2)) ;; This scaling by 0.2 of the font height is some
+                 (- (- y bearing-y) (* font-hei 0.2))))            ;; pixel pushing for the current repaint layout.
          (ypos+h (+ ypos h))
          (xpos+w (+ xpos w)))
     (enable-gl-shader-program device (ft-glyph-shader device))

@@ -48,7 +48,11 @@
       (gl:enable :line-smooth)
       (gl:enable :polygon-smooth)
       (gl:enable :blend)
-      ; (opengl::gl-hint opengl::*gl-line-smooth-hint* opengl::*gl-nicest*)
+      (gl:enable :multisample)
+      (gl:enable :depth-test)
+      (gl:blend-func :src-alpha :one-minus-src-alpha)
+      (gl:hint :line-smooth-hint :nicest)
+      (gl:hint :polygon-smooth-hint :nicest)
 
       (setf bw::*boxgl-device* (slot-value
                                   (boxer::make-boxwin-330gl-device bw::*boxer-frame* bw::*boxer-pane* :wid wid :hei hei)

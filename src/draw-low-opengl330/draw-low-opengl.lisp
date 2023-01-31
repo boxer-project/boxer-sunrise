@@ -346,7 +346,9 @@ OpenGL expects a list of X Y pairs"
     (if (null font)
       (error "No cached font for ~X" font-no)
       (bw::with-ogl-font (font)
-                         (bw::ogl-string-width string font)))))
+                         (if (symbolp string)
+                           (bw::ogl-string-width (string string) font)
+                           (bw::ogl-string-width string font))))))
 
 (defun string-hei (font-no)
   (let ((font (find-cached-font font-no)))
