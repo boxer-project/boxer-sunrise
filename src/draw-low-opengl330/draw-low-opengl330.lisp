@@ -29,6 +29,11 @@
 (defvar *cffi-float-size* nil
   "Looking up the float size does take some time, performance wise.")
 
+(defvar *shaders-dir* nil
+  "Path to the folder on disc where we can find the shaders. On distributed apps on macOS or Windows this should be in
+   the read-only section of it's resource files. On macOS we should put them in boxer.app/Contents/PlugIns/shaders
+   since they constitute code.")
+
 (defstruct box-glyph
   ch
   width
@@ -547,11 +552,11 @@
                          :vao     lines-vao
                          :buffer  lines-buffer)))
 
-(defun read-shader-source (filename)
+(defun read-shader-source (filename &key (shaders-dir *shaders-dir*))
   "Reads the relative filename of the shader without any directory, and loads the source into a
   string. Configured to use the Boxer file location for shaders. Returns a string with the source"
   (uiop:read-file-string
-    (cl-fad:merge-pathnames-as-file "/Users/sgithens/code/boxer-sunrise/src/draw-low-opengl330/" filename)))
+    (cl-fad:merge-pathnames-as-file shaders-dir filename)))
 
 (defun create-ortho-matrix (wid hei)
   "Create an orthogonal projection matrix for use in our shaders with the given width and height."

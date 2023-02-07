@@ -100,6 +100,10 @@
                                                   :host (pathname-host (lw:lisp-image-name))
                                                   :directory (append (base-install-folder) '("Resources"))))
 
+    (setf *shaders-dir* (make-pathname
+                                                  :host (pathname-host (lw:lisp-image-name))
+                                                  :directory (append (base-install-folder) '("PlugIns" "shaders"))))
+
     ;; Adding the fonts directory based on whereever this MacOS application happens to
     ;; be running from.
     (setf *capogi-font-directory* (make-pathname

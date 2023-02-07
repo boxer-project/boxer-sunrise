@@ -6,7 +6,10 @@ echo "Boxer Sunrise macOS Build and Notarize\n"
 # are copying this source part to the area in the application bundle where it can
 # still be available after delivery
 mkdir -p data/boxersunrise.app/Contents/MacOS
-cp src/draw/freetype-fonts.lisp data/boxersunrise.app/Contents/PlugIns
+mkdir -p data/boxersunrise.app/Contents/PlugIns/shaders
+cp src/draw-low-opengl330/shaders/* data/boxersunrise.app/Contents/PlugIns/shaders
+cp src/draw-low-opengl330/freetype-fonts.lisp data/boxersunrise.app/Contents/PlugIns
+
 
 read -p "Lispworks Build and Delivery [enter]"
 

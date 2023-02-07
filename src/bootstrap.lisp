@@ -21,10 +21,14 @@
       (load #P"./src/bootstrap.lisp")
 
 |#
+; (setf *features* (cons :cl-opengl-no-check-error *features*))
+
 (require "asdf")
 (require "uiop")
 
 #+win32 (load #P"Z:/quicklisp/setup.lisp")
+
+
 
 
 (ql:quickload :cl-fad)
@@ -94,9 +98,12 @@
 (asdf:load-system :boxer-sunrise)
 (setf boxer::*capogi-font-directory* (merge-pathnames "data/boxersunrise.app/Contents/Resources/Fonts/" *boxer-project-dir*))
 (setf boxer::*resources-dir* (merge-pathnames "data/boxersunrise.app/Contents/Resources/" *boxer-project-dir*))
+(setf boxer::*shaders-dir* (merge-pathnames "src/draw-low-opengl330/shaders/" *boxer-project-dir*))
 
 #+win32(setf boxer::*capogi-font-directory* #P"Z:/code/boxer-sunrise/data/boxersunrise.app/Contents/Resources/Fonts/")
 #+win32(setf boxer::*resources-dir* #P"Z:/code/boxer-sunrise/data/boxersunrise.app/Contents/Resources/")
+
+
 
 (boxer-window::window-system-specific-make-boxer)
 
