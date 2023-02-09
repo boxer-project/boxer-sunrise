@@ -65,7 +65,7 @@
 ;;; need to think more about whether the clipped? stuff is neccessary
 
 (defclass SCREEN-OBJ
-  ()
+  (plist-subclass)
   ((actual-obj :initform nil :accessor screen-obj-actual-obj)
    (x-offset :initform 0 :accessor screen-obj-x-offset)
    (y-offset :initform 0 :accessor screen-obj-y-offset)

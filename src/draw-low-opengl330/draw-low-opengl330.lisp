@@ -70,20 +70,34 @@
 
 (defclass boxgl-device ()
   ((lines-shader        :accessor lines-shader)
+
    (ft-glyph-shader     :accessor ft-glyph-shader)
+   (text-color-uni      :accessor text-color-uni)
+   (ft-glyph-gl-array   :accessor ft-glyph-gl-array)
+
    (pixmap-shader       :accessor pixmap-shader)
    (dashed-lines-shader :accessor dashed-lines-shader)
+
+   (canvas-shader       :accessor canvas-shader)
+   (circle-xyrad-uni    :accessor circle-xyrad-uni)
+
+   ;; Simple Shader
+   ;; Uses a color uniform, starting out using for box borders
+   ;; to draw them all in one go
+   (simple-shader       :accessor simple-shader)
+   (borders-arr         :accessor borders-arr :initform (gl:alloc-gl-array :float (* 6 1024))) ; A gl-array specifically for drawing box borders
+   (borders-count       :accessor borders-count :initform 0) ; Number of vertices
 
    (matrices-ubo :accessor matrices-ubo)
    (ortho-matrix :accessor boxgl-device-ortho-matrix)
    (transform-matrix :accessor boxgl-device-transform-matrix)
-   (clip-rect :accessor clip-rect :initform #(0 0 0 0)
-     :documentation "A 1x4 Vector for the current clipping rectange. Left, top, right, bottom")
 
    (pen-color :accessor boxgl-device-pen-color) ; current color in #(:rgb 1.0 1.0 1.0 1.0) format
    (pen-size  :accessor boxgl-device-pen-size)
    (line-stipple :accessor line-stipple :initform nil
      :documentation "Boolean to indicate if we're currently drawing dashed lines.")
+
+   (null-gl-elements-array :accessor null-gl-elements-array)
 
    ;; Currently bound Shader Program, vao, etc
    (cur-program :accessor cur-program :initform 0)
@@ -142,7 +156,7 @@
 (defun gl-add-char (device x y ch &key (rgb (boxgl-device-pen-color device))
                                        (baseline-bot nil)
                                        (font *current-opengl-font*))
-  (let* ((color-uniform (gl:get-uniform-location (shader-program (ft-glyph-shader device)) "textColor"))
+  (let* ((color-uniform (text-color-uni device))
          (font-face (current-freetype-font font))
          (glyph (find-box-glyph ch font boxer::*font-size-baseline*))
          (bearing-x (box-glyph-bearing-x glyph))
@@ -164,24 +178,35 @@
     (gl:active-texture :texture0)
 
     ;; make the vertices array
-    (let* ((vertices `#(,xpos   ,ypos   0.0 0.0
-                        ,xpos   ,ypos+h 0.0 1.0
-                        ,xpos+w ,ypos+h 1.0 1.0
-                        ,xpos   ,ypos   0.0 0.0
-                        ,xpos+w ,ypos+h 1.0 1.0
-                        ,xpos+w ,ypos   1.0 0.0))
-           (arr (gl:alloc-gl-array :float (length vertices))))
-      (dotimes (i (length vertices))
-        (setf (gl:glaref arr i) (aref vertices i)))
+    (let (
+          ;  (vertices `#(,xpos   ,ypos   0.0 0.0
+          ;               ,xpos   ,ypos+h 0.0 1.0
+          ;               ,xpos+w ,ypos+h 1.0 1.0
+          ;               ; ,xpos   ,ypos   0.0 0.0
+          ;               ; ,xpos+w ,ypos+h 1.0 1.0
+          ;               ,xpos+w ,ypos   1.0 0.0))
+          ;  (arr (gl:alloc-gl-array :float (length vertices)))
+           (arr (ft-glyph-gl-array device)))
+
+      ; (dotimes (i (length vertices))
+      ;   (setf (gl:glaref arr i) (aref vertices i)))
+      (setf (gl:glaref arr 0) xpos)
+      (setf (gl:glaref arr 1) ypos)
+      (setf (gl:glaref arr 4) xpos)
+      (setf (gl:glaref arr 5) ypos+h)
+      (setf (gl:glaref arr 8) xpos+w)
+      (setf (gl:glaref arr 9) ypos+h)
+      (setf (gl:glaref arr 12) xpos+w)
+      (setf (gl:glaref arr 13) ypos)
 
       (unless (box-glyph-texture-id glyph)
         (setf (box-glyph-texture-id glyph)
               (create-glyph-texture font-face ch glyph)))
       (gl:bind-texture :texture-2d (box-glyph-texture-id glyph))
       (%gl::buffer-sub-data :array-buffer 0
-                           (* (length vertices) *cffi-float-size*)
+                           (* 16 *cffi-float-size*)
                            (gl::gl-array-pointer arr))
-      (gl:draw-arrays :triangles 0 6)
+      (gl:draw-elements :triangles (null-gl-elements-array device) :count 6)
       (gl:bind-texture :texture-2d 0))
     glyph))
 
@@ -192,120 +217,6 @@
         (setf prev-glyph (gl-add-char device cur-x y c :baseline-bot t :font font))
         (setf cur-x (+ cur-x (box-glyph-advance prev-glyph)))
         )))
-
-(defun gl-add-rect (device x y wid hei &key (rgb (boxgl-device-pen-color device)))
-  (enable-gl-shader-program device (lines-shader device))
-
-  ;; todo - use an elements array instead of 6 vertices
-  (let* ((vertices `#(,(coerce x 'float) ,(coerce y 'float)                 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
-                      ,(coerce (+ x wid) 'float) ,(coerce (+ y hei) 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
-                      ,(coerce x 'float) ,(coerce (+ y hei) 'float)         0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
-
-                      ,(coerce x 'float) ,(coerce y 'float)                 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
-                      ,(coerce (+ x wid) 'float) ,(coerce y 'float)         0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
-                      ,(coerce (+ x wid) 'float) ,(coerce (+ y hei) 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
-                      ))
-         (arr (gl:alloc-gl-array :float (length vertices))))
-    (dotimes (i (length vertices))
-      (setf (gl:glaref arr i) (aref vertices i)))
-    (gl:buffer-data :array-buffer :static-draw arr)
-    (gl:free-gl-array arr))
-
-  (gl:draw-arrays :triangles 0 6))
-
-(defun gl-add-poly (device points &key (filled? t) (rgb (boxgl-device-pen-color device)))
-  (enable-gl-shader-program device (lines-shader device))
-
-  (let* ((arr (gl:alloc-gl-array :float (* 7 (length points))))
-         (i 0))
-    (dolist (item points)
-      (setf (gl:glaref arr (* i 7)) (coerce (car item) 'single-float))
-      (setf (gl:glaref arr (+ (* i 7) 1)) (coerce (cadr item) 'single-float))
-      (setf (gl:glaref arr (+ (* i 7) 2)) 0.0)
-      (setf (gl:glaref arr (+ (* i 7) 3)) (aref rgb 1))
-      (setf (gl:glaref arr (+ (* i 7) 4)) (aref rgb 2))
-      (setf (gl:glaref arr (+ (* i 7) 5)) (aref rgb 3))
-      (setf (gl:glaref arr (+ (* i 7) 6)) (aref rgb 4))
-      (incf i)
-    )
-    (gl:buffer-data :array-buffer :static-draw arr)
-    (gl:free-gl-array arr)
-
-    (if filled?
-      (gl:draw-arrays :triangle-fan 0 (length points))
-      (gl:draw-arrays :line-loop 0 (length points)))))
-
-(defun gl-add-arc (device cx cy radius start-angle arc-angle filled? &key (rgb (boxgl-device-pen-color device)))
-  (enable-gl-shader-program device (lines-shader device))
-
-  (let* ((num-slices (round (* (bw::num-slices radius) (/ arc-angle (* 2 pi)))))
-         (theta (/ arc-angle (1- num-slices)))
-         (tangent-factor (tan theta))
-         (radial-factor (cos theta))
-         (x (* radius (cos start-angle)))
-         (y (* radius (sin start-angle)))
-         (num-vertices (if filled? (+ (* num-slices 7) 7) (* num-slices 7)))
-         (arr (gl:alloc-gl-array :float num-vertices)))
-    (dotimes (i num-slices)
-      (setf (gl:glaref arr (* i 7)) (coerce (+ x cx) 'single-float))
-      (setf (gl:glaref arr (+ (* i 7) 1)) (coerce (+ y cy) 'single-float))
-      (setf (gl:glaref arr (+ (* i 7) 2)) 0.0)
-      (setf (gl:glaref arr (+ (* i 7) 3)) (aref rgb 1))
-      (setf (gl:glaref arr (+ (* i 7) 4)) (aref rgb 2))
-      (setf (gl:glaref arr (+ (* i 7) 5)) (aref rgb 3))
-      (setf (gl:glaref arr (+ (* i 7) 6)) (aref rgb 4))
-      (let ((tx (- y)) (ty x))
-        (setq x (+ x (* tx tangent-factor))
-              y (+ y (* ty tangent-factor)))
-        (setq x (* x radial-factor)
-              y (* y radial-factor))))
-
-    (when filled?
-      (setf (gl:glaref arr (- num-vertices 7)) (coerce cx 'single-float))
-      (setf (gl:glaref arr (- num-vertices 6)) (coerce cy 'single-float))
-      (setf (gl:glaref arr (- num-vertices 5)) 0.0)
-      (setf (gl:glaref arr (- num-vertices 4)) (aref rgb 1))
-      (setf (gl:glaref arr (- num-vertices 3)) (aref rgb 2))
-      (setf (gl:glaref arr (- num-vertices 2)) (aref rgb 3))
-      (setf (gl:glaref arr (- num-vertices 1)) (aref rgb 4)))
-
-    (gl:buffer-data :array-buffer :static-draw arr)
-    (gl:free-gl-array arr)
-
-    (if filled?
-      (gl:draw-arrays :triangle-fan 0 (1+ num-slices))
-      (gl:draw-arrays :line-strip 0 num-slices))))
-
-(defun gl-add-circle (device cx cy radius filled? &key (rgb (boxgl-device-pen-color device)))
-  (enable-gl-shader-program device (lines-shader device))
-
-  (let* ((num-slices (bw::num-slices radius))
-         (theta (/ (* 2 pi) num-slices))
-         (tangent-factor (tan theta))
-         (radial-factor (cos theta))
-         (x radius) ; start 3 O'clock
-         (y 0)
-         (num-vertices (* num-slices 7))
-         (arr (gl:alloc-gl-array :float num-vertices)))
-    (dotimes (i num-slices)
-      (setf (gl:glaref arr (* i 7)) (coerce (+ x cx) 'single-float))
-      (setf (gl:glaref arr (+ (* i 7) 1)) (coerce (+ y cy) 'single-float))
-      (setf (gl:glaref arr (+ (* i 7) 2)) 0.0)
-      (setf (gl:glaref arr (+ (* i 7) 3)) (aref rgb 1))
-      (setf (gl:glaref arr (+ (* i 7) 4)) (aref rgb 2))
-      (setf (gl:glaref arr (+ (* i 7) 5)) (aref rgb 3))
-      (setf (gl:glaref arr (+ (* i 7) 6)) (aref rgb 4))
-      (let ((tx (- y)) (ty x))
-        (setq x (+ x (* tx tangent-factor))
-              y (+ y (* ty tangent-factor)))
-        (setq x (* x radial-factor)
-              y (* y radial-factor))))
-    (gl:buffer-data :array-buffer :static-draw arr)
-    (gl:free-gl-array arr)
-
-    (if filled?
-      (gl:draw-arrays :triangle-fan 0 num-slices)
-      (gl:draw-arrays :line-loop 0 num-slices))))
 
 (defun gl-add-point (device x0 y0 &key (rgb (boxgl-device-pen-color device)))
   (enable-gl-shader-program device (lines-shader device))
@@ -338,7 +249,10 @@
 (defun enable-gl-shader-program (device shader)
   (enable-gl-objects device :program (shader-program shader) :vao (shader-vao shader) :buffer (shader-buffer shader)))
 
-(defun gl-add-line (device x0 y0 x1 y1 &key (rgb (boxgl-device-pen-color device))
+(defun unenable-shader-programs (device)
+  (enable-gl-objects device :program 0 :vao 0 :buffer 0))
+
+(defun gl-add-line-skip-lines (device x0 y0 x1 y1 &key (rgb (boxgl-device-pen-color device))
                                             (pen-size (boxgl-device-pen-size bw::*boxgl-device*)))
   (cond ((line-stipple device)
          (enable-gl-shader-program device (dashed-lines-shader device))
@@ -349,9 +263,8 @@
          (enable-gl-shader-program device (lines-shader device))))
 
 
-  (let* ((vertices `#(,(coerce x0 'float) ,(coerce y0 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
-                      ; ,(coerce (+ x0 1) 'float) ,(coerce (+ y0 1) 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
-                      ,(coerce x1 'float) ,(coerce y1 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
+  (let* ((vertices `#(,(coerce x0 'float) ,(coerce y0 'float), (aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
+                      ,(coerce x1 'float) ,(coerce y1 'float), (aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
                       ))
          (arr (gl:alloc-gl-array :float (length vertices))))
     (dotimes (i (length vertices))
@@ -418,6 +331,74 @@
     )
 )
 
+(defun gl-add-box-border-line (device x0 y0 x1 y1 &key (rgb (boxgl-device-pen-color device))
+                                                       (pen-size (boxgl-device-pen-size bw::*boxgl-device*)))
+
+  (when (refresh? *cur-border-cache*)
+    (unless (and (equal (coerce x0 'single-float) (coerce x1 'single-float)) (equal (coerce y0 'single-float) (coerce y1 'single-float)))
+      ; (cond ((line-stipple device)
+      ;     (enable-gl-shader-program device (dashed-lines-shader device))
+      ;     (let ((res (resolution)))
+      ;       (gl:uniformf (gl:get-uniform-location (shader-program (dashed-lines-shader device)) "u_resolution")
+      ;                     (coerce (aref res 0) 'single-float) (coerce (aref res 1) 'single-float))))
+      ;     (t
+      ;     (enable-gl-shader-program device (lines-shader device))))
+
+    (let* (
+           (corners (line-by-width-corners x0 y0 x1 y1 pen-size))
+           (vertices `#(,(coerce (aref corners 0) 'single-float) ,(coerce (aref corners 1) 'single-float)
+                       ,(coerce (aref corners 2) 'single-float) ,(coerce (aref corners 3) 'single-float)
+                       ,(coerce (aref corners 4) 'single-float) ,(coerce (aref corners 5) 'single-float)
+
+                       ,(coerce (aref corners 2) 'single-float) ,(coerce (aref corners 3) 'single-float)
+                       ,(coerce (aref corners 4) 'single-float) ,(coerce (aref corners 5) 'single-float)
+                        ,(coerce (aref corners 6) 'single-float) ,(coerce (aref corners 7) 'single-float)
+                        ))
+          ; (arr (gl:alloc-gl-array :float (length vertices)))
+           (arr (arr *cur-border-cache*))
+          )
+      (dotimes (i (length vertices))
+        (setf (gl:glaref arr (border-vert-count *cur-border-cache*)) (aref vertices i))
+        (incf (border-vert-count *cur-border-cache*)))
+      ; (gl:buffer-data :array-buffer :static-draw arr)
+      ; (gl:free-gl-array arr))
+
+    ; (gl:draw-arrays :triangles 0 6)
+    ))))
+
+(defvar *max-border-verts* 0)
+(defvar *cur-border-cache* nil)
+
+(defclass gl-box-border-cache ()
+  ((cached-dslist :accessor cached-dslist :initform nil) ;; display-style-list
+   (refresh?      :accessor refresh? :initform t) ;; Whether we are updating the arr this run
+   (arr           :accessor arr :initform (gl:alloc-gl-array :float 400))
+   (count         :accessor border-vert-count :initform 0) ;; current number of vertices
+   (buffer        :accessor buffer :initform (gl:gen-buffer))  ;; The opengl buffer id
+  ))
+
+(defun make-gl-box-border-cache (dslist)
+  (let ((togo (make-instance 'gl-box-border-cache)))
+    (setf (cached-dslist togo) dslist)
+    (gl:bind-buffer :array-buffer (buffer togo))
+    (%gl:buffer-data :array-buffer (* 4 6 *cffi-float-size*) (cffi:null-pointer) :dynamic-draw)
+    ; (gl:bind-buffer :array-buffer 0)
+        (unenable-shader-programs bw::*boxgl-device*)
+
+    togo))
+
+(defun update-box-border-cache (cache new-dslist)
+  (cond ((equalp new-dslist (cached-dslist cache))
+         (setf (refresh? cache) nil)
+        )
+        (t
+         (setf (refresh? cache) t)
+         (setf (border-vert-count cache) 0)
+         (setf (cached-dslist cache) new-dslist)
+        )
+  )
+  )
+
 (defun gl-draw-rects (device c-buffer pos)
   (enable-gl-shader-program device (lines-shader device))
 
@@ -464,9 +445,10 @@
     togo))
 
 (defun setup-freetype-program (device)
-  (let* ((glyph-program   (gl:create-program))
-         (glyph-vao       (gl:gen-vertex-array))
-         (glyph-buffer    (gl:gen-buffer)))
+  (let* ((glyph-program       (gl:create-program))
+         (glyph-vao           (gl:gen-vertex-array))
+         (glyph-buffer        (gl:gen-buffer))
+         (glyph-index-buffer  (gl:gen-buffer)))
 
     (gl:attach-shader glyph-program (create-shader "boxgl-freetype-glyph.vs" :vertex-shader))
     (gl:attach-shader glyph-program (create-shader "boxgl-freetype-glyph.fs" :fragment-shader))
@@ -475,18 +457,43 @@
 
     (gl:pixel-store :unpack-alignment 1)
 
+    (gl:bind-buffer :element-array-buffer glyph-index-buffer)
+      (let ((arr (gl:alloc-gl-array :unsigned-short 6))
+            (indexes #(0 1 3
+                       1 2 3)))
+        (dotimes (i (length indexes))
+          (setf (gl:glaref arr i) (aref indexes i)))
+        (gl:buffer-data :element-array-buffer :static-draw arr)
+        (gl:free-gl-array arr))
+      (gl:bind-buffer :element-array-buffer 0)
+
     (gl:bind-vertex-array glyph-vao)
     (gl:bind-buffer :array-buffer glyph-buffer)
     (%gl:buffer-data :array-buffer (* 4 6 *cffi-float-size*) (cffi:null-pointer) :dynamic-draw)
     (gl:enable-vertex-attrib-array 0)
     (gl:vertex-attrib-pointer 0 4 :float :false (* 4 *cffi-float-size*) 0) ;; TODO Should the :false really be nil?
+    (gl:bind-buffer :element-array-buffer glyph-index-buffer)
+
     (gl:bind-buffer :array-buffer 0)
     (gl:bind-texture :texture-2d 0)
 
     (setf (boxer::ft-glyph-shader device) (make-instance 'boxgl-shader-program :program glyph-program
                                                           :vao glyph-vao       :buffer  glyph-buffer))
 
-    (%gl:uniform-block-binding glyph-program (gl:get-uniform-block-index glyph-program "Matrices") 0)))
+    (%gl:uniform-block-binding glyph-program (gl:get-uniform-block-index glyph-program "Matrices") 0)
+
+    (gl:bind-vertex-array 0))
+
+    (let* ((vertices `#(0.0 0.0   0.0 0.0
+                        0.0 0.0   0.0 1.0
+                        0.0 0.0   1.0 1.0
+                        0.0 0.0   1.0 0.0))
+           (arr (gl:alloc-gl-array :float (length vertices))))
+      (dotimes (i (length vertices))
+        (setf (gl:glaref arr i) (aref vertices i)))
+      (setf (ft-glyph-gl-array device) arr)
+    )
+)
 
 (defun setup-pixmap-program (device)
   (let* ((pixmap-program   (gl:create-program))
@@ -523,35 +530,6 @@
 
     (%gl:uniform-block-binding pixmap-program (gl:get-uniform-block-index pixmap-program "Matrices") 0)))
 
-(defun setup-lines-program (&key (vertex-shader "boxgl-lines.vs") (fragment-shader "boxgl-lines.fs"))
-  (let* ((lines-program (gl:create-program))
-         (lines-vao     (gl:gen-vertex-array))
-         (lines-buffer  (gl:gen-buffer)))
-    (gl:attach-shader lines-program (create-shader vertex-shader :vertex-shader))
-    (gl:attach-shader lines-program (create-shader fragment-shader :fragment-shader))
-    (gl:link-program lines-program)
-    (log:debug "~%lines-program infolog: ~A" (gl:get-program-info-log lines-program))
-
-    (gl:bind-vertex-array lines-vao)
-    (gl:bind-buffer :array-buffer lines-buffer)
-
-    ;; Currently the largest set of vertices we're sending in are for 6 vertices (2 triangles) each
-    ;; with 7 items
-    ;; 2500 for the perf buffer
-    (%gl:buffer-data :array-buffer (* 3000 7 *cffi-float-size*) (cffi:null-pointer) :dynamic-draw)
-
-    (gl:enable-vertex-attrib-array 0)
-    (gl:vertex-attrib-pointer 0 3 :float nil (* 7 *cffi-float-size*) (cffi:null-pointer))
-    (gl:enable-vertex-attrib-array 1)
-    (gl:vertex-attrib-pointer 1 4 :float nil (* 7 *cffi-float-size*) (* 3 *cffi-float-size*))
-
-    (%gl:uniform-block-binding lines-program (gl:get-uniform-block-index lines-program "Matrices") 0)
-
-    (make-instance 'boxgl-shader-program
-                         :program lines-program
-                         :vao     lines-vao
-                         :buffer  lines-buffer)))
-
 (defun read-shader-source (filename &key (shaders-dir *shaders-dir*))
   "Reads the relative filename of the shader without any directory, and loads the source into a
   string. Configured to use the Boxer file location for shaders. Returns a string with the source"
@@ -567,10 +545,25 @@
   "Create a transform matrix offset from the origin by x and y."
   (3d-matrices:marr4 (3d-matrices:mtranslation (3d-vectors:vec x y 0))))
 
+(defun update-transform-ubo (device)
+  "Update just the transform matrix in the matrices ubo"
+
+  (gl:bind-buffer :uniform-buffer (matrices-ubo device))
+  (let* ((arr (gl:alloc-gl-array :float (* 4 4)))
+         (i 0))
+    (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (3d-matrices:mat4  (boxgl-device-transform-matrix device))))))
+      (setf (gl:glaref arr i) (coerce item 'single-float))
+      (incf i))
+    (gl:buffer-sub-data :uniform-buffer arr :offset 0 :buffer-offset (* *cffi-float-size* 16) :size (* *cffi-float-size* (* 4 4)))
+    (gl:free-gl-array arr)
+         )
+  (gl:bind-buffer :uniform-buffer 0))
+
 (defun update-matrices-ubo (device)
   (gl:bind-buffer :uniform-buffer (matrices-ubo device))
   ;; Currently we have two mat4 and one vec4
-  (let* ((arr (gl:alloc-gl-array :float (+ 4 (* 2 (* 4 4)))))
+  (let* ((rgb (boxer::boxgl-device-pen-color device))
+         (arr (gl:alloc-gl-array :float (+ 4 2 (* 2 (* 4 4)))))
           (i 0))
     (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (3d-matrices:mat4  (boxgl-device-ortho-matrix device))))))
       (setf (gl:glaref arr i) (coerce item 'single-float))
@@ -578,10 +571,18 @@
     (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (3d-matrices:mat4  (boxgl-device-transform-matrix device))))))
       (setf (gl:glaref arr i) (coerce item 'single-float))
       (incf i))
-    ; (log:debug "updating clip-rect: ~A" (clip-rect device))
-    (for:for ((item over (clip-rect device)))
+    (for:for ((item over (resolution)))
       (setf (gl:glaref arr i) (coerce item 'single-float))
       (incf i))
+    (setf (gl:glaref arr i) (coerce (aref rgb 1) 'single-float))
+    (incf i)
+    (setf (gl:glaref arr i) (coerce (aref rgb 2) 'single-float))
+    (incf i)
+    (setf (gl:glaref arr i) (coerce (aref rgb 3) 'single-float))
+    (incf i)
+    (setf (gl:glaref arr i) (coerce (aref rgb 4) 'single-float))
+    (incf i)
+
     (gl:buffer-sub-data :uniform-buffer arr)
     (gl:free-gl-array arr)
   )
@@ -605,6 +606,12 @@ inside an opengl:rendering-on macro invocation."
           (dashed-lines-shader togo)
           (setup-lines-program :vertex-shader "boxgl-dashed-lines.vs" :fragment-shader "boxgl-dashed-lines.fs")
 
+          (canvas-shader togo)
+          (setup-canvas-program)
+
+          (simple-shader togo)
+          (setup-simple-shader)
+
           (matrices-ubo togo)
           (gl:gen-buffer)
 
@@ -620,11 +627,22 @@ inside an opengl:rendering-on macro invocation."
           (boxer::boxgl-device-pen-size togo)
           1)
 
+          (setf (circle-xyrad-uni togo)
+                (gl:get-uniform-location (shader-program (canvas-shader togo)) "circle_xyrad")
+
+                (text-color-uni togo)
+                (gl:get-uniform-location (shader-program (ft-glyph-shader togo)) "textColor")
+
+                (null-gl-elements-array togo)
+                (gl:make-null-gl-array :unsigned-short)
+                )
+
     ;; Set up uniform buffer object for projection and transform matrices
     (gl:bind-buffer :uniform-buffer (matrices-ubo togo))
-    (%gl:buffer-data :uniform-buffer (* *cffi-float-size* (+ 4 (* 2 (* 4 4)))) (cffi:null-pointer) :static-draw)
+    ;; number of floats: vec2 u_res, mat4 ortho, mat4 transform
+    (%gl:buffer-data :uniform-buffer (* *cffi-float-size* (+ 4 2 (* 2 (* 4 4)))) (cffi:null-pointer) :static-draw)
     (gl:bind-buffer :uniform-buffer 0)
 
-    (%gl:bind-buffer-range :uniform-buffer 0 (matrices-ubo togo) 0 (* *cffi-float-size* (* 2 (* 4 4))))
+    (%gl:bind-buffer-range :uniform-buffer 0 (matrices-ubo togo) 0 (* *cffi-float-size* (+ 4 2 (* 2 (* 4 4)))))
     (update-matrices-ubo togo)
   togo))
