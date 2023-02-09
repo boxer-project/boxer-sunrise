@@ -353,8 +353,8 @@
         (xy-position screen-box)
       (multiple-value-bind (left top right bottom)
           (box-borders-widths (box-type screen-box) screen-box)
-        (let* ((min-x (+& window-x-offset left))
-               (min-y (+& window-y-offset top))
+        (let* ((min-x (truncate (+ window-x-offset left)))
+               (min-y (truncate (+ window-y-offset top)))
                (superior-turtle (superior-turtle turtle))
                (sup-x (if (null superior-turtle) 0
                           (absolute-x-position superior-turtle)))

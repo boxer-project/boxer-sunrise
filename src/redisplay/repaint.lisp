@@ -1025,7 +1025,8 @@
 
   ;; sgithens hacking
   ; (unless (not (null bw::*suppress-expose-handler*)) (repaint-internal just-windows?))
-  (repaint-internal just-windows?)
+  (opengl:rendering-on (*boxer-pane*)
+    (repaint-internal just-windows?))
   )
 
 (defun repaint-with-cursor-relocation ()
