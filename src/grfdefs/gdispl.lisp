@@ -2797,8 +2797,8 @@ Modification History (most recent at the top)
 ;; Note that the clipping, and origin has already been setup inside the redisplay
 (defun draw-boxtop (boxtop editor-box x y wid hei)
   (let ((bp (getprop editor-box :boxtop)))
-    (cond ((eq bp :name-only) (draw-text-boxtop boxtop x y wid hei))
-      ((eq bp :folder) (draw-folder-boxtop boxtop x y))
+    (cond ((eq bp :name-only) (draw-text-boxtop editor-box boxtop x y wid hei))
+      ((eq bp :folder) (draw-folder-boxtop editor-box boxtop x y))
       ((eq bp :framed) (draw-graphics-boxtop boxtop x y wid hei t))
       ((graphics-sheet? boxtop) (draw-graphics-boxtop boxtop x y wid hei))
       ((eq bp :xref)   (draw-xref-boxtop boxtop x y wid))
@@ -2808,19 +2808,21 @@ Modification History (most recent at the top)
       (t (Error "Don't know how to handle boxtop ~A using ~S" boxtop bp)))))
 
 ;; text is always framed (for now)
-(defun draw-text-boxtop (text x y wid hei)
-  (draw-rectangle 1 hei x y) ; left
-  (draw-rectangle wid 1 x y) ; top
-  (draw-rectangle 1 hei (+ x wid -1) y) ; right
-  (draw-rectangle wid 1 x (+ y hei -2)) ; bottom ( -2 ?)
-  (draw-string *boxtop-text-font* text (+ x 2) (+ y 2)))
+(defun draw-text-boxtop (actual-obj text x y wid hei)
+  (with-border-drawing-styles (actual-obj)
+    (draw-rectangle 1 hei x y) ; left
+    (draw-rectangle wid 1 x y) ; top
+    (draw-rectangle 1 hei (+ x wid -1) y) ; right
+    (draw-rectangle wid 1 x (+ y hei -2)) ; bottom ( -2 ?)
+    (draw-string *boxtop-text-font* text (+ x 2) (+ y 2))))
 
-(defun draw-folder-boxtop (text x y)
-  (let* ((stringw (ceiling (String-wid *boxtop-text-font* text)))
-         (wdiff (- stringw (folder-graphics-wid))))
-    (draw-folder-graphic (if (plusp wdiff) (+ x (/ wdiff 2)) x) y)
-    (draw-string *boxtop-text-font* text
-                 x (+ y (folder-graphics-hei)))))
+(defun draw-folder-boxtop (actual-obj text x y)
+  (with-border-drawing-styles (actual-obj)
+    (let* ((stringw (ceiling (String-wid *boxtop-text-font* text)))
+          (wdiff (- stringw (folder-graphics-wid))))
+      (draw-folder-graphic (if (plusp wdiff) (+ x (/ wdiff 2)) x) y)
+      (draw-string *boxtop-text-font* text
+                  x (+ y (folder-graphics-hei))))))
 
 ;;
 

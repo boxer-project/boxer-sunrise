@@ -814,7 +814,7 @@
        ;; occupied by the screen obj, and the space that will be occupied by
        ;; the screen obj when redisplay-pass-2 is complete.
        (case (display-style self)
-         (:supershrunk (draw-super-shrunk-box 0 0 box-type))
+         (:supershrunk (draw-super-shrunk-box actual-obj 0 0 box-type))
          (:shrunk (let ((boxtop (boxtop actual-obj)))
                     (cond ((null boxtop)
                            (gray-body self)

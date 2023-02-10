@@ -755,22 +755,23 @@
   (let ((size (default-character-height)))
     (values size size)))
 
-(defun draw-super-shrunk-box (x y box-type)
-  (multiple-value-bind (wid hei)
-      (super-shrunk-size)
-    (let ((startx (+ x 1)) (starty (+ y 1))(endx (+ x wid -1)) (endy (+ y hei -2)))
-      (flet ((outer-box () (multiline2 startx starty endx starty endx endy
-                                       startx endy startx starty)))
-        (ecase box-type
-          (doit-box (outer-box)
-                    (let ((insx (+ startx 2)) (insy (+ starty 2))
-                          (inex (- endx 2)) (iney (- endy 2)))
-                      (multiline2 insx insy inex insy inex iney insx iney insx insy)))
-          (data-box (outer-box)
-                    (draw-rectangle (- wid 7) (- hei 7)(+ startx 2) (+ starty 2)))
-          (port-box (outer-box)
-                    (draw-line startx starty endx endy)
-                    (draw-line startx endy endx starty)))))))
+(defun draw-super-shrunk-box (actual-obj x y box-type)
+  (with-border-drawing-styles (actual-obj)
+    (multiple-value-bind (wid hei)
+        (super-shrunk-size)
+      (let ((startx (+ x 1)) (starty (+ y 1))(endx (+ x wid -1)) (endy (+ y hei -2)))
+        (flet ((outer-box () (multiline2 startx starty endx starty endx endy
+                                        startx endy startx starty)))
+          (ecase box-type
+            (doit-box (outer-box)
+                      (let ((insx (+ startx 2)) (insy (+ starty 2))
+                            (inex (- endx 2)) (iney (- endy 2)))
+                        (multiline2 insx insy inex insy inex iney insx iney insx insy)))
+            (data-box (outer-box)
+                      (draw-rectangle (- wid 7) (- hei 7)(+ startx 2) (+ starty 2)))
+            (port-box (outer-box)
+                      (draw-line startx starty endx endy)
+                      (draw-line startx endy endx starty))))))))
 
 
 
