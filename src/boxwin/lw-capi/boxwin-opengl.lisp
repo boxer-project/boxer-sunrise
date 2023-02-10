@@ -729,6 +729,7 @@
    :width  *boxer-frame-initial-width*
    :height *boxer-frame-initial-height*
    :confirm-destroy-function 'lw-quit
+   :help-callback 'do-tooltip-help
    ; :toolbar-items (make-toolbar-items)
    ))
 
@@ -770,6 +771,12 @@ in macOS."
              (boxer::insert-cha boxer::*point*
                                 (boxer::read-internal (car args))))
            (boxer::repaint)))))
+
+(defun do-tooltip-help (interface pane type key)
+  (declare (ignorable interface pane))
+  (and (eq type :tooltip)
+       (stringp key)
+       key))
 
 (defvar *boxer-frame-initial-width* 800) ;(- (screen-width (convert-to-screen)) 200)
 (defvar *boxer-frame-initial-height* 600);(- (screen-height (convert-to-screen))100)

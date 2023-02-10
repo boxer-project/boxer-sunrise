@@ -25,6 +25,7 @@
     (list
     (make-instance 'capi:option-pane
       :toolbar-title "Font" :name "Font"
+      :help-key "Choose the font family."
       :title "Font"
       :title-gap 0
       :title-position :bottom
@@ -37,6 +38,7 @@
                               (font-menu-action font 0)))
     (make-instance 'capi:option-pane
       :toolbar-title "Font Size" :name "FontSize"
+      :help-key "Set the font size."
       :title "Size"
       :title-font (gp:make-font-description :size 11)
       :title-gap 0
@@ -48,6 +50,7 @@
                               (font-size-menu-action (parse-integer size) 0)))
     (make-instance 'color-picker-menu
       :toolbar-title "Font Color" :name "FontColor"
+      :help-key "Choose the font color."
       :title "Color"
       :title-font (gp:make-font-description :size 11)
       :title-gap 0
@@ -61,16 +64,19 @@
       (list
         (make-instance 'capi:toolbar-button
           :text "Bold" :name "Bold" :image 0 :selected-image 1
+          :help-key "Make text bold."
           :selection-callback #'(lambda (huh self) (font-style-menu-action :bold 0))
           :retract-callback #'(lambda (huh self) (font-style-menu-action :bold 0))
         )
         (make-instance 'capi:toolbar-button
           :text "Italics" :name "Italics" :image 2 :selected-image 3
+          :help-key "Make text italic."
           :selection-callback #'(lambda (huh self) (font-style-menu-action :italic 0))
           :retract-callback #'(lambda (huh self) (font-style-menu-action :italic 0))
         )
         (make-instance 'capi:toolbar-button
           :text "Run/Stop" :name "RunStop" :image 4 :selected-image 5
+          :help-key "Evaluate the current line. Stop evaluation when running."
           :selection-callback (lambda (huh frame)
                                 (cond (*suppress-expose-handler* ; I think this means we're not evaluating
                                       (menu-stop nil nil))
@@ -84,6 +90,7 @@
         )
         (make-instance 'capi:toolbar-button
           :text "Closet" :name "Closet" :image 6 :selected-image 7
+          :help-key "Open the box closet."
           :selection-callback (lambda (huh frame)
                                 (boxer::com-toggle-closets)
                                 (boxer::repaint)
@@ -95,6 +102,7 @@
         )
         (make-instance 'capi:toolbar-button
           :text "Top Level" :name "TopLevel" :image 8 :selected-image 9
+          :help-key "Switch to top level mouse/key definitions."
           :selection-callback (lambda (huh frame)
                                 (boxer::com-toggle-vanilla-mode)
                                 (boxer::repaint))
@@ -113,6 +121,7 @@
     )
     (make-instance 'color-picker-menu
       :toolbar-title "Background" :name "BackgroundColor"
+      :help-key "Change the box background color."
       :title "Background"
       :title-gap 0
       :title-font (gp:make-font-description :size 11)
@@ -128,6 +137,7 @@
     )
     (make-instance 'color-picker-menu
       :toolbar-title "Border" :name "BorderColor"
+      :help-key "Change the box border color."
       :title "Border"
       :title-gap 0
       :title-font (gp:make-font-description :size 11)
