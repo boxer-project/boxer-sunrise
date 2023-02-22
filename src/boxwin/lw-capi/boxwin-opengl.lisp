@@ -1610,6 +1610,10 @@ in macOS."
 
 ;;;;  Crash reporting
 
+(defvar *debug-errors* nil
+  "For delivered apps, if this is t, then when a boxer error occurs we'll launch the lisp debugger in
+  a terminal window. If nil, we'll launch a dialog box showing the error and giving restart/quit options.")
+
 (defvar *report-crash* t)
 
 (defun crash-reporting-filename () "~/boxerlogs.txt")

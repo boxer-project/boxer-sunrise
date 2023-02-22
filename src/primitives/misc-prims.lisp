@@ -83,6 +83,8 @@
 
 
 
+(boxer-eval::defboxer-primitive bu::test-error ()
+  (/ 2 0))
 
 ;;;;; Totally Random
 ;;; if there are enough of these, we might want to fork off a misc-prims file

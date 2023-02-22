@@ -451,6 +451,14 @@
   (setq bw::*report-crash* true-or-false)
   boxer-eval::*novalue*)
 
+(defboxer-preference bu::debug-errors (true-or-false)
+  ((bw::*debug-errors* :boolean
+                       (boxer-eval::boxer-boolean bw::*debug-errors*))
+   editor
+   ("Open a lisp debugger in a terminal on error. (Rather than show them in a dialog window.)"))
+  (setq bw::*debug-errors* true-or-false)
+  boxer-eval::*novalue*)
+
 ;; File system prefs
 
 (defboxer-preference bu::terse-file-status (true-or-false)

@@ -157,43 +157,49 @@
   (let ((warned-about-error-already-gensym (gensym)))
     `(let ((,warned-about-error-already-gensym nil))
        (restart-bind
-   ((BOXER-CONTINUE
-     #'(lambda () (throw 'system-error-restart-loop nil))
-     :report-function
-     #'(lambda (stream)
-         (unless (or ,warned-about-error-already-gensym
-         boxer::*boxer-system-hacker*
-         boxer::*inside-lisp-breakpoint-p*)
-     (beep) (beep) (beep)
-     ;; this mechanism is a crock.
-     (setq ,warned-about-error-already-gensym t))
-         (format stream "--> Return to Boxer <--")))
-    (BOXER-TOP-LEVEL
-     #'(lambda () (boxer::com-goto-top-level)
-              (throw 'system-error-restart-loop nil))
-     :report-function
-     #'(lambda (stream)
-         (format stream "--> GOTO Top Level then return to Boxer <--")))
+         ((BOXER-CONTINUE
+           #'(lambda () (throw 'system-error-restart-loop nil))
+           :report-function
+           #'(lambda (stream)
+               (unless (or ,warned-about-error-already-gensym
+               boxer::*boxer-system-hacker*
+               boxer::*inside-lisp-breakpoint-p*)
+           (beep) (beep) (beep)
+           ;; this mechanism is a crock.
+           (setq ,warned-about-error-already-gensym t))
+               (format stream "--> Return to Boxer <--")))
+          (BOXER-TOP-LEVEL
+           #'(lambda () (boxer::com-goto-top-level)
+                     (throw 'system-error-restart-loop nil))
+           :report-function
+           #'(lambda (stream)
+               (format stream "--> GOTO Top Level then return to Boxer <--")))
           (ABORT
            #'(lambda () (boxer::com-abort))
            :report-function
            #'(lambda (stream) (format stream "Aborted"))))
-   (handler-bind
-     ((error
-       #'(lambda (c)
-           (cond ((or ,warned-about-error-already-gensym
-          (not *automagic-lisp-error-handling*))
-            (invoke-debugger c))
-           (t
-            (dotimes (i 3) (beep))
-            ;(format t "~%Lisp Error:~A" c)
-                        (when *report-crash* (write-crash-report))
-            (boxer::boxer-editor-error "Lisp Error:~A" c)
-            (invoke-restart 'BOXER-CONTINUE))))))
-     (loop (catch 'system-error-restart-loop
-                   (progn ,@body)
-                   (flush-input)
-             (setq ,warned-about-error-already-gensym nil))))))))
+         (handler-bind
+           ((error
+            #'(lambda (c)
+                (cond ((or ,warned-about-error-already-gensym
+                           (and (not *automagic-lisp-error-handling*) *debug-errors*))
+                       (invoke-debugger c))
+                      ((and (not *debug-errors*) (not *automagic-lisp-error-handling*))
+                       (show-error-dialog (format nil "Lisp Error:~A ~%  backtrace: ~%~A"
+                                                  c (with-output-to-string (str)
+                                                      (dbg::output-backtrace :brief :stream str)
+                                                      (format str "~%~%Verbose:~%")
+                                                      (dbg::output-backtrace :verbose :stream str)))))
+                      (t
+                       (dotimes (i 3) (beep))
+                       ;(format t "~%Lisp Error:~A" c)
+                       (when *report-crash* (write-crash-report))
+                       (boxer::boxer-editor-error "Lisp Error:~A" c)
+                       (invoke-restart 'BOXER-CONTINUE))))))
+           (loop (catch 'system-error-restart-loop
+                         (progn ,@body)
+                         (flush-input)
+                   (setq ,warned-about-error-already-gensym nil))))))))
 
 (defun peek-next-key-or-mouse-event ()
   (loop (let ((ev (car *boxer-eval-queue*)))
