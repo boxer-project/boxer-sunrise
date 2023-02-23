@@ -101,10 +101,6 @@
         (mapcar #'copy-boxer-font-descriptor
                 (chas-array-fds (chas-array (slot-value self 'actual-obj))))))
 
-;(defmethod got-repainted ((self screen-box))
-;  (call-next-method)
-;  (setf (inf-shift self) nil))
-
 ;; Pass 1 should be accumalating changed rects...
 (defmethod repaint-inferiors-pass-1-sb ((self screen-box)
                                         infs-new-max-wid infs-new-max-hei

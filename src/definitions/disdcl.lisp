@@ -103,8 +103,6 @@
   (screen-char-subclass)
   ((screen-rows :initform (allocate-storage-vector 8.) :accessor screen-rows)
    (scroll-to-actual-row :initform nil :accessor scroll-to-actual-row)
-   ;; how much to slosh inferiors when the borders change
-   ;   (inf-shift :initform nil :accessor inf-shift)  ; remove?
    (name :initform nil :accessor name)
    (box-type :initform ':doit-box :accessor box-type)
    (bps :initform nil :accessor bps)

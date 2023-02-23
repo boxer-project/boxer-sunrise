@@ -7561,6 +7561,16 @@ Modification History (most recent at top)
 ;;;; FILE: disdcl.lisp
 ;;;;
 
+;; 2023-02-23 Removing slot from defclass screen-box and the got-repainted
+;; method from repaint.lisp that used it
+
+   ;; how much to slosh inferiors when the borders change
+   ;   (inf-shift :initform nil :accessor inf-shift)  ; remove?
+
+;(defmethod got-repainted ((self screen-box))
+;  (call-next-method)
+;  (setf (inf-shift self) nil))
+
 (DEFVAR %DRAWING-FONT-MAP NIL
         "Inside of a drawing-on-window, this variable is bound to %drawing-window's
    font-map.")
