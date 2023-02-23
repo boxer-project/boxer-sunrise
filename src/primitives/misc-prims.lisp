@@ -355,18 +355,7 @@
                                      (t (snooze seconds)))))
                                 boxer-eval::*novalue*)
 
-#+opengl
 (boxer-eval::defboxer-primitive bu::redisplay () boxer-eval::*novalue*)
-
-#-opengl
-(boxer-eval::defboxer-primitive bu::redisplay ()
-                                ;(boxer-eval::reset-poll-count)
-                                (process-editor-mutation-queue-within-eval)
-                                (let ((*evaluation-in-progress?* nil))
-                                  ;; This is checked by CLX clipping, needs to be NIL for redisplay
-                                  (repaint-window *boxer-pane*))
-                                (invalidate-absolute-position-caches)
-                                boxer-eval::*novalue*)
 
 (defvar *verbose-date-and-time* t)
 

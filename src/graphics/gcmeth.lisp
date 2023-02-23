@@ -215,9 +215,7 @@ Modification History (most recent at top)
 (defmethod set-shown? ((self graphics-cursor) new-value
                                               &optional dont-update-box (explicit t))
   (let* ((slot (slot-value self 'shown?))
-         #-opengl (old-value (box-interface-value slot))
-         (box (box-interface-box slot))
-         #-opengl (top-guy (top-sprite self)))
+         (box (box-interface-box slot)))
     (multiple-value-bind (word value)
                          (case new-value
                            ((t bu::all bu::true) (values 'bu::true t))
@@ -225,19 +223,9 @@ Modification History (most recent at top)
                            ((:subsprites bu::subsprites) (values 'bu::subsprites :subsprites))
                            ((:no-subsprites bu::no-subsprites)
                             (values 'bu::no-subsprites ':no-subsprites)))
-                         #-opengl
-                         (unless (or (not explicit) (eq old-value value))
-                           ;; if the shown? values are different, then
-                           ;; erase (before changing the shown? values)
-                           (with-graphics-screen-parameters (erase top-guy)))
                          (when (and (null dont-update-box) (not (null box)))
                            (bash-box-to-single-value box word))
-                         (setf (box-interface-value slot) value)
-                         #-opengl
-                         (unless (or (not explicit) (eq old-value value))
-                           ;; if the shown? values are different, then we need to redraw
-                           (with-graphics-screen-parameters
-                             (when (shown? top-guy) (draw top-guy)))))))
+                         (setf (box-interface-value slot) value))))
 
 (defmethod shown?-symbol ((self graphics-cursor))
   (case (box-interface-value (slot-value self 'shown?))
@@ -651,11 +639,7 @@ Modification History (most recent at top)
       ((not (no-graphics?))
        (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
              (array-y (fix-array-coordinate-y (absolute-y-position self))))
-         (record-boxer-graphics-command-dot array-x array-y)
-         #-opengl
-         (with-graphics-screen-parameters
-           (dot array-x array-y)))))))
-
+         (record-boxer-graphics-command-dot array-x array-y))))))
 
 ;;;general rects
 
@@ -673,10 +657,7 @@ Modification History (most recent at top)
        (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
              (array-y (fix-array-coordinate-y (absolute-y-position self))))
          (record-boxer-graphics-command-centered-rectangle
-          array-x array-y wid hei)
-         #-opengl
-         (with-graphics-screen-parameters
-           (centered-rectangle array-x array-y wid hei)))))))
+          array-x array-y wid hei))))))
 
 (defmethod hollow-turtle-rect ((self graphics-cursor) wid hei
                                                       &optional (orientation :centered))
@@ -692,10 +673,7 @@ Modification History (most recent at top)
        (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
              (array-y (fix-array-coordinate-y (absolute-y-position self))))
          (record-boxer-graphics-command-hollow-rectangle
-          array-x array-y wid hei)
-         #-opengl
-         (with-graphics-screen-parameters
-           (hollow-rectangle array-x array-y wid hei)))))))
+          array-x array-y wid hei))))))
 
 ;;; Circle, Ellipses and Arcs
 
@@ -713,10 +691,7 @@ Modification History (most recent at top)
        (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
              (array-y (fix-array-coordinate-y (absolute-y-position self))))
          (record-boxer-graphics-command-filled-ellipse
-          array-x array-y wid hei)
-         #-opengl
-         (with-graphics-screen-parameters
-           (filled-ellipse array-x array-y wid hei)))))))
+          array-x array-y wid hei))))))
 
 (defmethod stamp-hollow-ellipse ((self graphics-cursor) wid hei
                                                         &optional (orientation :centered))
@@ -732,10 +707,7 @@ Modification History (most recent at top)
        (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
              (array-y (fix-array-coordinate-y (absolute-y-position self))))
          (record-boxer-graphics-command-ellipse
-          array-x array-y wid hei)
-         #-opengl
-         (with-graphics-screen-parameters
-           (ellipse array-x array-y wid hei)))))))
+          array-x array-y wid hei))))))
 
 (defmethod stamp-circle ((self graphics-cursor) radius)
   (let ((alu (get-alu-from-pen
@@ -806,10 +778,6 @@ Modification History (most recent at top)
 (defun new-offscreen-copy (ba)
   (let* ((w (offscreen-bitmap-width ba)) (h (offscreen-bitmap-height ba))
                                          (new-bm (make-offscreen-bitmap *boxer-pane* w h)))
-    #-opengl
-    (drawing-on-bitmap (new-bm)
-                       (copy-offscreen-bitmap alu-seta w h ba 0 0 new-bm 0 0))
-    #+opengl
     (copy-offscreen-bitmap alu-seta w h ba 0 0 new-bm 0 0)
     new-bm))
 
@@ -829,10 +797,7 @@ Modification History (most recent at top)
              (array-y (fix-array-coordinate-y (absolute-y-position self)))
              (nbitmap (new-offscreen-copy bitmap)))
          (record-boxer-graphics-command-centered-bitmap
-          nbitmap array-x array-y wid hei)
-         #-opengl
-         (with-graphics-screen-parameters
-           (centered-bitmap nbitmap array-x array-y wid hei)))))))
+          nbitmap array-x array-y wid hei))))))
 
 ;;; orientation can be :centered, :right or :left
 (defmethod type-box ((self graphics-cursor) box
@@ -857,14 +822,7 @@ Modification History (most recent at top)
                 (:right (record-boxer-graphics-command-right-string
                          array-x array-y (box-text-string box)))
                 (:left (record-boxer-graphics-command-left-string
-                        array-x array-y (box-text-string box))))
-         #-opengl
-         (with-graphics-screen-parameters
-           (ecase orientation
-                  (:centered (centered-string array-x array-y
-                                              (box-text-string box)))
-                  (:right (right-string array-x array-y (box-text-string box)))
-                  (:left (left-string array-x array-y (box-text-string box))))))))))
+                        array-x array-y (box-text-string box)))))))))
 
 
 (defmethod stamp ((self graphics-cursor))

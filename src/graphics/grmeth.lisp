@@ -586,11 +586,7 @@ CLOSED for renovations until I fix the string/font situation
                                (when (and (not (null pen-alu))
                                           (not (zerop (pen-width self))))
                                  (record-boxer-graphics-command-line-segment
-                                  array-x array-y array-x-dest array-y-dest)
-                                 #-opengl
-                                 (with-graphics-screen-parameters
-                                     (line-segment array-x array-y
-                                                   array-x-dest array-y-dest))))
+                                  array-x array-y array-x-dest array-y-dest)))
                               ;; invalidate the shape and extent caches
                               (invalidate-window-shape-and-extent-caches
                                self)))))))))))

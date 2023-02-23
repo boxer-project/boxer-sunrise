@@ -10920,6 +10920,74 @@ if it is out of bounds
 ;;;; FILE: gcmeth.lisp
 ;;;;
 
+;; 2023-02-22 Last bits of #-opengl bits
+;; from defmethod set-shown?
+#-opengl (old-value (box-interface-value slot))
+#-opengl (top-guy (top-sprite self))
+#-opengl
+(unless (or (not explicit) (eq old-value value))
+                           ;; if the shown? values are different, then
+                           ;; erase (before changing the shown? values)
+                           (with-graphics-screen-parameters (erase top-guy)))
+
+#-opengl
+(unless (or (not explicit) (eq old-value value))
+                           ;; if the shown? values are different, then we need to redraw
+                           (with-graphics-screen-parameters
+                             (when (shown? top-guy) (draw top-guy))))
+
+;; from defmethod stamp-dot
+#-opengl
+(with-graphics-screen-parameters
+           (dot array-x array-y))
+
+;; from defmethod turtle-rect
+#-opengl
+(with-graphics-screen-parameters
+           (centered-rectangle array-x array-y wid hei))
+
+;; from defmethod hollow-turtle-rect
+#-opengl
+(with-graphics-screen-parameters
+           (hollow-rectangle array-x array-y wid hei))
+
+;; from defmethod stamp-ellipse
+#-opengl
+(with-graphics-screen-parameters
+           (filled-ellipse array-x array-y wid hei))
+
+;; from defmethod stamp-hollow-ellipse
+#-opengl
+(with-graphics-screen-parameters
+           (ellipse array-x array-y wid hei))
+
+;; from defun new-offscreen-copy
+#-opengl
+(drawing-on-bitmap (new-bm)
+                       (copy-offscreen-bitmap alu-seta w h ba 0 0 new-bm 0 0))
+
+;; from defmethod stamp-bitmap
+#-opengl
+(with-graphics-screen-parameters
+           (centered-bitmap nbitmap array-x array-y wid hei))
+
+;; from defmethod type-box
+#-opengl
+(with-graphics-screen-parameters
+           (ecase orientation
+                  (:centered (centered-string array-x array-y
+                                              (box-text-string box)))
+                  (:right (right-string array-x array-y (box-text-string box)))
+                  (:left (left-string array-x array-y (box-text-string box)))))
+
+;; from defmethod move-to
+#-opengl
+(with-graphics-screen-parameters
+                                     (line-segment array-x array-y
+                                                   array-x-dest array-y-dest))
+
+;; END 2023-02-22
+
 ;; from defmethod stamp
       #-opengl
       (with-graphics-screen-parameters
@@ -15888,6 +15956,15 @@ to the :TEXT-STRING method of boxes. "
 ;;;;
 ;;;; FILE: misc-prims.lisp
 ;;;;
+#-opengl
+(boxer-eval::defboxer-primitive bu::redisplay ()
+                                ;(boxer-eval::reset-poll-count)
+                                (process-editor-mutation-queue-within-eval)
+                                (let ((*evaluation-in-progress?* nil))
+                                  ;; This is checked by CLX clipping, needs to be NIL for redisplay
+                                  (repaint-window *boxer-pane*))
+                                (invalidate-absolute-position-caches)
+                                boxer-eval::*novalue*)
 
 (boxer-eval::defboxer-primitive bu::set-text-size ((bu::port-to box)
                                                    (boxer-eval::numberize width)
