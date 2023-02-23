@@ -17536,6 +17536,47 @@ Modification History (most recent at top)
 ;;;; FILE: repaint.lisp
 ;;;;
 
+;; 2023-02-23 Removing needs-repaint-pass methods since we are always returning t
+;; 1st cut, recalculate everything
+;; 2nd cut, get smarter (need to hack deep active sprite problem)
+;; if no deep active sprite, then use timestamps or force-repaint flag
+(defmethod needs-repaint-pass-1? ((self screen-obj)
+                                  &optional (max-wid nil) (max-hei nil)) t)
+  ;; sgithens 2021-11-19 Experiementing with just always repainting pass 1
+  ;; (cond ((or (<= (slot-value self 'tick)
+  ;;                (actual-obj-tick (screen-obj-actual-obj self)))
+  ;;            ;; actual obj has changed
+  ;;            (not (null *complete-redisplay-in-progress?*))
+  ;;            ;; got less room...
+  ;;            (and (not-null max-wid) (< max-wid (slot-value self 'wid)))
+  ;;            (and (not-null max-hei) (< max-hei (slot-value self 'hei)))
+  ;;            ;; was clipped but got more room...
+  ;;            (and (not-null (slot-value self 'x-got-clipped?))
+  ;;                 (not-null max-wid) (> max-wid (slot-value self 'wid)))
+  ;;            (and (not-null (slot-value self 'y-got-clipped?))
+  ;;                 (not-null max-hei) (> max-hei (slot-value self 'hei)))
+  ;;            ;; deep active sprite
+  ;;            ;             (active-sprite-inside? self)
+  ;;            )
+  ;;        t)
+  ;;   (t nil)))
+
+;(defmethod needs-repaint-pass-1? ((self screen-obj)
+;                                  &optional (max-wid nil) (max-hei nil))
+;  (declare (ignore max-wid max-hei))
+;  t)
+
+;; if we intend to rebuild the entire screen with every key stroke,
+;; this will always be T, we may want to be more selective in what we erase
+;; and redraw for efficiency
+;(defmethod needs-repaint-pass-2? ((self screen-obj))
+;  (or (not-null (slot-value self 'needs-redisplay-pass-2?))
+;      (not-null *complete-redisplay-in-progress?*)))
+
+(defmethod needs-repaint-pass-2? ((self screen-obj)) T)
+
+
+
 (defun brand-new? (screen-obj) (=& (screen-obj-tick screen-obj) -1))
 
 #|

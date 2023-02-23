@@ -89,44 +89,6 @@
 ;;  clear-window, repaint, update-screen wwith rects
 ;;  (this is better if we transform stuff)
 
-;; 1st cut, recalculate everything
-;; 2nd cut, get smarter (need to hack deep active sprite problem)
-;; if no deep active sprite, then use timestamps or force-repaint flag
-(defmethod needs-repaint-pass-1? ((self screen-obj)
-                                  &optional (max-wid nil) (max-hei nil)) t)
-  ;; sgithens 2021-11-19 Experiementing with just always repainting pass 1
-  ;; (cond ((or (<= (slot-value self 'tick)
-  ;;                (actual-obj-tick (screen-obj-actual-obj self)))
-  ;;            ;; actual obj has changed
-  ;;            (not (null *complete-redisplay-in-progress?*))
-  ;;            ;; got less room...
-  ;;            (and (not-null max-wid) (< max-wid (slot-value self 'wid)))
-  ;;            (and (not-null max-hei) (< max-hei (slot-value self 'hei)))
-  ;;            ;; was clipped but got more room...
-  ;;            (and (not-null (slot-value self 'x-got-clipped?))
-  ;;                 (not-null max-wid) (> max-wid (slot-value self 'wid)))
-  ;;            (and (not-null (slot-value self 'y-got-clipped?))
-  ;;                 (not-null max-hei) (> max-hei (slot-value self 'hei)))
-  ;;            ;; deep active sprite
-  ;;            ;             (active-sprite-inside? self)
-  ;;            )
-  ;;        t)
-  ;;   (t nil)))
-
-;(defmethod needs-repaint-pass-1? ((self screen-obj)
-;                                  &optional (max-wid nil) (max-hei nil))
-;  (declare (ignore max-wid max-hei))
-;  t)
-
-;; if we intend to rebuild the entire screen with every key stroke,
-;; this will always be T, we may want to be more selective in what we erase
-;; and redraw for efficiency
-;(defmethod needs-repaint-pass-2? ((self screen-obj))
-;  (or (not-null (slot-value self 'needs-redisplay-pass-2?))
-;      (not-null *complete-redisplay-in-progress?*)))
-
-(defmethod needs-repaint-pass-2? ((self screen-obj)) T)
-
 (defmethod got-repainted ((self screen-obj))
   (setf (slot-value self 'tick) (tick)))
 
@@ -245,11 +207,9 @@
                                                            ;; at this point we know that inf-screen-obj and
                                                            ;; inf-actual-obj match. If it wants to let
                                                            ;; inf-screen-obj do :redisplay-pass-1.
-                                                           (when (needs-repaint-pass-1? inf-screen-obj
-                                                                                        infs-new-max-wid infs-new-max-hei)
-                                                             (set-screen-obj-offsets inf-screen-obj inf-x-offset inf-y-offset)
-                                                             (repaint-pass-1-sr inf-screen-obj
-                                                                                infs-new-max-wid infs-new-max-hei))
+                                                           (set-screen-obj-offsets inf-screen-obj inf-x-offset inf-y-offset)
+                                                           (repaint-pass-1-sr inf-screen-obj
+                                                                              infs-new-max-wid infs-new-max-hei)
                                                            ;; Finally, let inf-screen-obj make its contibution to the
                                                            ;; total new-wid, new-hei etc. of all the inf-screen-objs.
                                                            (multiple-value-setq (infs-new-wid infs-new-hei
@@ -422,10 +382,8 @@
              ;; must be a box so let the box do some work...
              ;; that is, redisplay if it wants to and then make its
              ;; contribution to all the infs-screen-objs parameters
-             (when (needs-repaint-pass-1? inf-screen-obj
-                                          infs-new-max-wid infs-new-max-hei)
-               (repaint-pass-1-sb inf-screen-obj
-                                  infs-new-max-wid infs-new-max-hei))
+             (repaint-pass-1-sb inf-screen-obj
+                                infs-new-max-wid infs-new-max-hei)
              (multiple-value-setq (infs-new-wid infs-new-hei
                                                 infs-new-x-got-clipped?
                                                 infs-new-y-got-clipped?
@@ -759,8 +717,7 @@
                              (draw-port-box-ellipsis self il it)
                              (with-scrolling-origin (scroll-x-offset scroll-y-offset)
                                (do-vector-contents (inf-screen-obj screen-rows :index-var-name row-no)
-                                 (when (needs-repaint-pass-2? inf-screen-obj)
-                                   (repaint-pass-2-sr inf-screen-obj)))))))))
+                                 (repaint-pass-2-sr inf-screen-obj))))))))
 
 (defmethod repaint-inferiors-pass-2-sr ((self screen-row))
   (let* ((inf-x-offset 0)
@@ -785,8 +742,7 @@
                       )
            (setf (screen-obj-x-offset inf-screen-obj) inf-x-offset)
            (setf (screen-obj-y-offset inf-screen-obj) inf-y-offset))
-         (when (needs-repaint-pass-2? inf-screen-obj)
-           (repaint-pass-2-sb inf-screen-obj))
+         (repaint-pass-2-sb inf-screen-obj)
          ;; finally update inf-x-offset, screen-box style
          (incf inf-x-offset (screen-obj-wid inf-screen-obj)))))))
 
@@ -983,13 +939,11 @@
 (defun top-level-repaint-pass-1 ()
   (multiple-value-bind (max-wid max-hei)
                        (outermost-screen-box-size *redisplay-window*)
-                       (when (needs-repaint-pass-1? *outermost-screen-box* max-wid max-hei)
-                         (repaint-pass-1-sb *outermost-screen-box* max-wid max-hei))))
+                       (repaint-pass-1-sb *outermost-screen-box* max-wid max-hei)))
 
 ;;
 (defun top-level-repaint-pass-2 ()
-  (when (needs-repaint-pass-2? *outermost-screen-box*)
-    (repaint-pass-2-sb *outermost-screen-box*)))
+  (repaint-pass-2-sb *outermost-screen-box*))
 
 ;; if not fullscreen, pass-1 should clear changed areas
 ;; Note: should scrolling ops, pass in the box being scrolled as the changed area ?
