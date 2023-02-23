@@ -7687,6 +7687,82 @@ Modification History (most recent at top)
 ;;;; FILE: disply.lisp
 ;;;;
 
+;; 2023-02-23 Removing this single call from repaint.lisp:defmethod rp1-sr-punt-extra-screen-objs-from
+;; and the unused definitions from disply.lisp
+
+  ;; erase the glyphs from the screen...
+  (erase-screen-chas (slot-value self 'screen-chas) no-of-first-obj-to-punt
+                     x-coord y-coord)
+
+;;; this erases ONLY characters to the end of the line
+;;; NOTE: this CAN'T just iterate through the screen chas erasing
+;;; characters BECAUSE the screen-chas may have been side effected
+;;; HOWEVER, any boxes will still have valid offsets and widths so
+;;; we use the boxes to delimit regions to erase.
+;;; If there are no boxes, we simply erase to the end of the row
+;;; This may actually turn out to be faster (especially in the X
+;;; implementation) because of fewer graphics commands
+
+(defun erase-chas-to-eol (cha-no screen-chas x-offset y-offset row-width
+                                 &optional boxes-too)
+  (let ((erase-height 0)
+        (current-x-offset x-offset))
+    (do-screen-chas-with-font-info (cha screen-chas :start cha-no)
+      (cond ((screen-cha? cha)
+             (setq erase-height (max erase-height (cha-hei))))
+        ((not (null boxes-too))
+         ;; we want to erase boxes as well as characters
+         ;; first, adjust the size of the erasing rectangle
+         (setq erase-height (max erase-height (screen-obj-hei cha)))
+         ;; now do all the things erase-screen-box would have done
+         ;(screen-obj-zero-size cha) ; huh ? this seems to break things
+         ;; sgithens 2021-11-18 Removing these un-needed slots below.
+         ;; The next question is, are any of these erase methods even
+         ;; necessary anymore in the OpenGL double buffer version? TODO
+         ;;  (set-needs-redisplay-pass-2? cha t)
+         ;;  (set-force-redisplay-infs?   cha t)
+         )
+        (t
+         ;; looks like we hit a box, and we want to preserve the box
+         ;; erase from the current-x-offset to the beginning of the box
+         (erase-rectangle (- (screen-obj-x-offset cha) current-x-offset)
+                          erase-height
+                          current-x-offset y-offset)
+         ;; now setup the values for the next block
+         (setq erase-height 0)
+         (setq current-x-offset (+ (screen-obj-x-offset cha)
+                                   (screen-obj-wid      cha))))))
+    ;; now finish off the rest of the row
+    (erase-rectangle (- row-width current-x-offset) erase-height
+                     current-x-offset y-offset)))
+
+(defun erase-screen-cha (screen-cha x-offset y-offset)
+  (if (not-null screen-cha)
+    (let ((wid (cha-wid screen-cha))
+          (hei (cha-hei)))
+      (erase-rectangle wid hei x-offset y-offset))
+    (barf "null screen-cha for some reason")))
+
+(defun erase-screen-chas (chas start-cha-no x-offset y-offset
+                               &optional stop-cha-no)
+  (do-screen-chas-with-font-info (cha-to-erase chas
+                                               :start start-cha-no
+                                               :stop stop-cha-no)
+    (let (obj-wid)
+      (cond ((screen-cha? cha-to-erase)
+             (setq obj-wid (cha-wid cha-to-erase))
+             (erase-screen-cha cha-to-erase x-offset y-offset))
+        (t
+         (setq obj-wid (screen-obj-wid cha-to-erase))
+         (erase-screen-box cha-to-erase x-offset y-offset)))
+      ;; now increment the x-offset (y-ofset doesn't change on the row)
+      (setq x-offset  (+ x-offset obj-wid)))))
+
+
+
+
+
+
 (DEFUN REDISPLAY-CLUE (TYPE &REST ARGS)
        (LET ((HANDLER (GET TYPE ':REDISPLAY-CLUE)))
             (IF (NOT-NULL HANDLER)
@@ -18086,6 +18162,16 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: sysprims.lisp
 ;;;;
+
+;; sgithens TODO 2022-03-30 This definately isn't needed anymore, but before I archive this preference I'd like
+;;                          to look at how to cleanly remove the variable the preference is bound to.
+;; (defboxer-preference bu::penerase-color-from-bit-array (true-or-false)
+;;   ((*check-bit-array-color* :boolean (boxer-eval::boxer-boolean *check-bit-array-color*))
+;;    graphics
+;;    ("Should the backing store of a frozen box be")
+;;    ("checked for the penerase color if one exists ?"))
+;;   (setq *check-bit-array-color* true-or-false)
+;;   boxer-eval::*novalue*)
 
 ;;; use this after the site file has been edited
 (boxer-eval::defboxer-primitive bu::reconfigure-system ()

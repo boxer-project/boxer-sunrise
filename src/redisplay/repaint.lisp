@@ -409,9 +409,6 @@
                                                no-of-first-obj-to-punt
                                                clipped?
                                                x-coord y-coord)
-  ;; erase the glyphs from the screen...
-  (erase-screen-chas (slot-value self 'screen-chas) no-of-first-obj-to-punt
-                     x-coord y-coord)
   ;; handle the deallocation of any boxes
   (queue-screen-objs-for-deallocation-from (slot-value self 'screen-chas)
                                            no-of-first-obj-to-punt)

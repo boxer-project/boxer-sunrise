@@ -406,75 +406,13 @@
       (cha-hei)
       (screen-obj-hei screen-object))))
 
-;;; this erases ONLY characters to the end of the line
-;;; NOTE: this CAN'T just iterate through the screen chas erasing
-;;; characters BECAUSE the screen-chas may have been side effected
-;;; HOWEVER, any boxes will still have valid offsets and widths so
-;;; we use the boxes to delimit regions to erase.
-;;; If there are no boxes, we simply erase to the end of the row
-;;; This may actually turn out to be faster (especially in the X
-;;; implementation) because of fewer graphics commands
-
-(defun erase-chas-to-eol (cha-no screen-chas x-offset y-offset row-width
-                                 &optional boxes-too)
-  (let ((erase-height 0)
-        (current-x-offset x-offset))
-    (do-screen-chas-with-font-info (cha screen-chas :start cha-no)
-      (cond ((screen-cha? cha)
-             (setq erase-height (max erase-height (cha-hei))))
-        ((not (null boxes-too))
-         ;; we want to erase boxes as well as characters
-         ;; first, adjust the size of the erasing rectangle
-         (setq erase-height (max erase-height (screen-obj-hei cha)))
-         ;; now do all the things erase-screen-box would have done
-         ;(screen-obj-zero-size cha) ; huh ? this seems to break things
-         ;; sgithens 2021-11-18 Removing these un-needed slots below.
-         ;; The next question is, are any of these erase methods even
-         ;; necessary anymore in the OpenGL double buffer version? TODO
-         ;;  (set-needs-redisplay-pass-2? cha t)
-         ;;  (set-force-redisplay-infs?   cha t)
-         )
-        (t
-         ;; looks like we hit a box, and we want to preserve the box
-         ;; erase from the current-x-offset to the beginning of the box
-         (erase-rectangle (- (screen-obj-x-offset cha) current-x-offset)
-                          erase-height
-                          current-x-offset y-offset)
-         ;; now setup the values for the next block
-         (setq erase-height 0)
-         (setq current-x-offset (+ (screen-obj-x-offset cha)
-                                   (screen-obj-wid      cha))))))
-    ;; now finish off the rest of the row
-    (erase-rectangle (- row-width current-x-offset) erase-height
-                     current-x-offset y-offset)))
-
-(defun erase-screen-cha (screen-cha x-offset y-offset)
-  (if (not-null screen-cha)
-    (let ((wid (cha-wid screen-cha))
-          (hei (cha-hei)))
-      (erase-rectangle wid hei x-offset y-offset))
-    (barf "null screen-cha for some reason")))
+;;;; Erasing
 
 (defun erase-screen-box (screen-box x-offset y-offset)
   (multiple-value-bind (wid hei)
                        (screen-obj-size screen-box)
                        (erase-rectangle wid hei x-offset y-offset))
   (screen-obj-zero-size screen-box))
-
-(defun erase-screen-chas (chas start-cha-no x-offset y-offset
-                               &optional stop-cha-no)
-  (do-screen-chas-with-font-info (cha-to-erase chas
-                                               :start start-cha-no
-                                               :stop stop-cha-no)
-    (let (obj-wid)
-      (cond ((screen-cha? cha-to-erase)
-             (setq obj-wid (cha-wid cha-to-erase))
-             (erase-screen-cha cha-to-erase x-offset y-offset))
-        (t
-         (setq obj-wid (screen-obj-wid cha-to-erase))
-         (erase-screen-box cha-to-erase x-offset y-offset)))
-      ;; now increment the x-offset (y-ofset doesn't change on the row)
-      (setq x-offset  (+ x-offset obj-wid)))))
 
 (defun erase-screen-obj (screen-obj)
   (when (not-null screen-obj)
