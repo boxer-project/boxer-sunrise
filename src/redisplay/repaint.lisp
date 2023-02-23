@@ -945,43 +945,28 @@
 (defun top-level-repaint-pass-2 ()
   (repaint-pass-2-sb *outermost-screen-box*))
 
-;; if not fullscreen, pass-1 should clear changed areas
-;; Note: should scrolling ops, pass in the box being scrolled as the changed area ?
-
-
 (defun repaint-internal (&optional just-windows?)
-      (redisplaying-unit
-      (dolist (redisplayable-window *redisplayable-windows*)
-        (repaint-window redisplayable-window (not (eq redisplayable-window
-                                                      *boxer-pane*))))
-      (dolist (region *region-list*)
-        (when (not (null region)) (interval-update-repaint-all-rows region)))
-      ;; comment out next line for outermost box save document, updates will
-      ;; occur inside of set-outermost-box instead...
-      (when (bp? *point*)
-        ; (set-window-name (current-file-status (point-box)))
-        ;; repaint-cursor can now cause horizontal scrolling of the box
-        ;; neccessitating an additional repaint, if so, it will throw
-        ;; to 'scroll-x-changed TAG
-        (unless just-windows?
-          (repaint-cursor *point* nil)))
-      ;; swap buffers here, after all drawing is complete
-      (swap-graphics-buffers *boxer-pane*))
-     )
+  (redisplaying-unit
+    (dolist (redisplayable-window *redisplayable-windows*)
+      (repaint-window redisplayable-window (not (eq redisplayable-window
+                                                    *boxer-pane*))))
+    (dolist (region *region-list*)
+      (when (not (null region)) (interval-update-repaint-all-rows region)))
+    ;; comment out next line for outermost box save document, updates will
+    ;; occur inside of set-outermost-box instead...
+    (when (bp? *point*)
+      ; (set-window-name (current-file-status (point-box)))
+      ;; repaint-cursor can now cause horizontal scrolling of the box
+      ;; neccessitating an additional repaint, if so, it will throw
+      ;; to 'scroll-x-changed TAG
+      (unless just-windows?
+        (repaint-cursor *point* nil)))
+    ;; swap buffers here, after all drawing is complete
+    (swap-graphics-buffers *boxer-pane*)))
 
 (defun repaint (&optional just-windows?)
-  ;; #+opengl (capi:apply-in-pane-process *boxer-pane* #'repaint-internal just-windows?)
-  ;; #-opengl (repaint-internal just-windows?)
-
-  ; (unless  (equal "CAPI Execution Listener 1" (mp:process-name mp:*current-process*))
-  ;   (format t "~%what process is this2: ~A" (mp:process-name mp:*current-process*))
-  ; )
-
-  ;; sgithens hacking
-  ; (unless (not (null bw::*suppress-expose-handler*)) (repaint-internal just-windows?))
   (opengl:rendering-on (*boxer-pane*)
-    (repaint-internal just-windows?))
-  )
+    (repaint-internal just-windows?)))
 
 (defun repaint-with-cursor-relocation ()
   (let ((*allow-redisplay-encore? t))
