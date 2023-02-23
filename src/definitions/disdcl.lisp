@@ -111,7 +111,6 @@
    (display-style-list :initform (make-display-style :style nil)
                        :accessor display-style-list)
    (superior-screen-box :initform nil :accessor superior-screen-box)
-   ;   (cached-border-info :initform nil :accessor cached-border-info)  ; remove?
    (cached-absolute-pos :initform nil :accessor cached-absolute-pos)
    ;; scrolling vars
    (scroll-y-offset :initform 0)

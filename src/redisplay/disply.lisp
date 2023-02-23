@@ -143,10 +143,6 @@
         (slot-value self 'scroll-to-actual-row) nil
         (slot-value self 'scroll-x-offset) 0
         (slot-value self 'scroll-x-offset) 0)
-  ;  #-opengl
-  ;  (unless (null (slot-value self 'cached-border-info))
-  ;    (setf (basic-box-borders-cache-valid (slot-value self 'cached-border-info))
-  ;	  nil))
   (unless (null (slot-value self 'cached-absolute-pos))
     (setf (ab-pos-cache-valid (slot-value self 'cached-absolute-pos)) nil))
   (set-display-style self nil)
