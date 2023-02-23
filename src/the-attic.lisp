@@ -7596,6 +7596,18 @@ Modification History (most recent at top)
             (OPEN-BLINKER ,REGION)
             (PROGN . ,BODY)))
 
+(DEFMACRO REDISPLAYING-BOX (SCREEN-BOX &BODY BODY)
+          ;;this macro sets up the scaling for the redisplay of a particular box without having to
+          ;;redisplay the entire screen.  This means that the box to be redisplayed has to be a fixed
+          ;;sized box to avoid worrying about propagating changes in size to the superiors of the box.
+          `(QUEUEING-SCREEN-OBJS-DEALLOCATION
+            (MULTIPLE-VALUE-BIND (SUPERIOR-ORIGIN-X-OFFSET SUPERIOR-ORIGIN-Y-OFFSET)
+                                 (let ((ssb (superior ,screen-box)))
+                                   (if (screen-obj? ssb) (xy-position ssb) (values 0 0)))
+                                 (with-origin-at ((SCALE-X SUPERIOR-ORIGIN-X-OFFSET)
+                                                  (SCALE-Y SUPERIOR-ORIGIN-Y-OFFSET))
+                                   ,@BODY))))
+
 ;;;; GRAY PATTERNS
 
 ;; the default in the code is *gray* which should be bound to one of
