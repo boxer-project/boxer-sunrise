@@ -278,8 +278,6 @@ Modification History (most recent at top)
     ((bu::xor xor bu::reverse) alu-xor)
     ((bu::erase erase) alu-andca)))
 
-(defvar *check-bit-array-color* t)
-
 (defmethod background-graphics-color ((self graphics-cursor))
   (or
    (let ((gb (slot-value self 'assoc-graphics-box)))
@@ -288,7 +286,7 @@ Modification History (most recent at top)
          (unless (null gs)
            (let ((bit-array (graphics-sheet-bit-array gs))
                  (background (graphics-sheet-background gs)))
-             (cond ((and *check-bit-array-color* (not (null bit-array)))
+             (cond ((not (null bit-array))
                     (with-graphics-vars-bound-internal gs
                       (let ((gb-x (fix-array-coordinate-x (x-position self)))
                             (gb-y (fix-array-coordinate-y (y-position self))))
