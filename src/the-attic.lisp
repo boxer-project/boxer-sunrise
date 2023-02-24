@@ -7561,6 +7561,16 @@ Modification History (most recent at top)
 ;;;; FILE: disdcl.lisp
 ;;;;
 
+;; Commented out slots that were on defclass screen-obj
+   ;   (new-wid :initform 0 :accessor screen-obj-new-wid)
+   ;   (new-hei :initform 0 :accessor screen-obj-new-hei)
+   ;   (new-x-got-clipped? :initform nil :accessor screen-obj-new-x-got-clipped?)
+   ;   (new-y-got-clipped? :initform nil :accessor screen-obj-new-y-got-clipped?)
+
+;; Commented out slot on defclass screen-row
+   ;   (out-of-synch-mark :initform nil :accessor out-of-synch-mark)
+
+
 ;; 2023-02-23 Removing slot from defclass screen-box and the got-repainted
 ;; method from repaint.lisp that used it
 

@@ -73,10 +73,6 @@
    (hei :initform 0 :accessor screen-obj-hei)
    (x-got-clipped? :initform nil :accessor screen-obj-x-got-clipped?)
    (y-got-clipped? :initform nil :accessor screen-obj-y-got-clipped?)
-   ;   (new-wid :initform 0 :accessor screen-obj-new-wid)
-   ;   (new-hei :initform 0 :accessor screen-obj-new-hei)
-   ;   (new-x-got-clipped? :initform nil :accessor screen-obj-new-x-got-clipped?)
-   ;   (new-y-got-clipped? :initform nil :accessor screen-obj-new-y-got-clipped?)
    (tick :initform -1 :accessor screen-obj-tick))
   (:metaclass block-compile-class))
 
@@ -92,7 +88,6 @@
   (screen-obj)
   ((screen-box :initform nil :accessor screen-box)
    (screen-chas :initform (make-screen-chas-array) :accessor screen-chas)
-   ;   (out-of-synch-mark :initform nil :accessor out-of-synch-mark)
    (baseline :initform 0 :accessor baseline))
   (:metaclass block-compile-class))
 
