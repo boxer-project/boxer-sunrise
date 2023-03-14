@@ -179,7 +179,12 @@
   (declare (ignorable view))
   (fli:with-dynamic-foreign-objects ()
     (let* ((attributes-list
-            (nconc ;; sgithens - Adding the :modern flag to get an openGl 3.2 core context
+            (nconc ;; Antialiasing for the openGL 3.2 work with shaders
+                   (when (getf configuration :modern)
+                     (list ns-open-gl-pfa-multisample
+                           ns-open-gl-pfa-sample-buffers 1
+                           ns-open-gl-pfa-samples 4))
+                   ;; sgithens - Adding the :modern flag to get an openGl 3.2 core context
                    (when (getf configuration :modern)
                      (list ns-open-gl-pfa-open-gl-profile ns-open-gl-profile-version-3_2-core))
                    (and (or (getf configuration :double-buffer)
