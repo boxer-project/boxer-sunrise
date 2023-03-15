@@ -169,12 +169,29 @@
     (gl:buffer-data :array-buffer :static-draw arr)
     (gl:free-gl-array arr))
 
-  (gl:draw-arrays :triangles 0 6))
+  (gl:draw-arrays :triangles 0 6)
+  (unenable-shader-programs device))
 
 
 ;;;
 ;;;  Shader Program Setup
 ;;;
+
+(defun setup-xyz-rgba-vao (vao vbo num-entries)
+  "Using the generated vao and vbo integers to setup the vao for an xyzrgba stride.
+  Pre-allocates enough floats to the vbo for num-entries. Each entry takes 7 floats."
+  (gl:bind-vertex-array vao)
+  (gl:bind-buffer :array-buffer vbo)
+
+  (%gl:buffer-data :array-buffer (* num-entries 7 *cffi-float-size*) (cffi:null-pointer) :dynamic-draw)
+
+  (gl:enable-vertex-attrib-array 0)
+  (gl:vertex-attrib-pointer 0 3 :float nil (* 7 *cffi-float-size*) (cffi:null-pointer))
+  (gl:enable-vertex-attrib-array 1)
+  (gl:vertex-attrib-pointer 1 4 :float nil (* 7 *cffi-float-size*) (* 3 *cffi-float-size*))
+
+  (gl:bind-vertex-array 0)
+  (gl:bind-buffer :array-buffer 0))
 
 (defun setup-lines-program (&key (vertex-shader "boxgl-lines.vs") (fragment-shader "boxgl-lines.fs"))
   (let* ((lines-program (gl:create-program))
@@ -185,18 +202,7 @@
     (gl:link-program lines-program)
     (log:debug "~%lines-program infolog: ~A" (gl:get-program-info-log lines-program))
 
-    (gl:bind-vertex-array lines-vao)
-    (gl:bind-buffer :array-buffer lines-buffer)
-
-    ;; Currently the largest set of vertices we're sending in are for 6 vertices (2 triangles) each
-    ;; with 6 items
-    ;; 2500 for the perf buffer
-    (%gl:buffer-data :array-buffer (* 3000 7 *cffi-float-size*) (cffi:null-pointer) :dynamic-draw)
-
-    (gl:enable-vertex-attrib-array 0)
-    (gl:vertex-attrib-pointer 0 3 :float nil (* 7 *cffi-float-size*) (cffi:null-pointer))
-    (gl:enable-vertex-attrib-array 1)
-    (gl:vertex-attrib-pointer 1 4 :float nil (* 7 *cffi-float-size*) (* 3 *cffi-float-size*))
+    (setup-xyz-rgba-vao lines-vao lines-buffer 3000)
 
     (%gl:uniform-block-binding lines-program (gl:get-uniform-block-index lines-program "Matrices") 0)
 
