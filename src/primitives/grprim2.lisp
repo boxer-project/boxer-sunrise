@@ -378,8 +378,7 @@
                                                                  right 1)
                                                              (-& (+& window-y-offset
                                                                      (screen-obj-hei screen-box))
-                                                                 bottom 1)
-                                                             #+MCL :view #+MCL *boxer-pane*)
+                                                                 bottom 1))
                     (let ((new-x (translate-x mouse-x)) (new-y (translate-y mouse-y))
                           (turtle-x (x-position turtle)) (turtle-y (y-position turtle)))
                       (when (or (> (abs (- new-x turtle-x))
