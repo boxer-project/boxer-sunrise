@@ -206,19 +206,6 @@ Modification History (most recent at top)
                (make-vc '((bu::newer-other-box)))))
           (t boxer-eval::*true*))))
 
-;; this is used to catch pathnames which won't even parse
-
-(defun quote-wild-char (string quote-char)
-  (let* ((slength (length string))
-         (return-string (make-array (1+ slength)
-                                    :element-type 'character :adjustable t
-                                    :fill-pointer 0)))
-    (dotimes (i slength)
-      (let ((char (char string i)))
-        (when (char= char #\*) (vector-push-extend quote-char return-string))
-        (vector-push-extend char return-string)))
-    return-string))
-
 (defun check-valid-filename-for-primitive (filename &optional
                                                     defaults allow-wild)
   (declare (ignore allow-wild))
