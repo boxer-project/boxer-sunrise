@@ -84,7 +84,14 @@
       ;; (boxer-eval::setup-evaluator) farther down
       (run-redisplay-inits))
       (resize-handler-utility)
-      (setf *boxer-pane-initialized* t))
+      (setf *boxer-pane-initialized* t)
+
+    #+moderngl
+    (opengl:rendering-on (*boxer-pane*)
+      (log:debug "~%max-texture-size: ~A"  (gl:get-integer :max-texture-size))
+      (setf boxer::*freetype-glyph-atlas* (boxer::make-glyph-atlas))
+      (log:debug "~%Just created texture atlas: ~A" boxer::*freetype-glyph-atlas*))
+    )
 
   (unless boxer::*evaluation-in-progress?*
     (resize-handler canvas x y wid hei)
