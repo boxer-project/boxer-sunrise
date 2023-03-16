@@ -39,6 +39,7 @@
                                (:file "line-shapes")
                                (:file "shader-shapes")
                                (:file "draw-low-gdisp-lists")
+                               (:file "box-models-meshes")
                                (:file "draw-low-opengl330")
                                (:file "opengl-utils")
                                #+(and freetype-fonts (not delivering))

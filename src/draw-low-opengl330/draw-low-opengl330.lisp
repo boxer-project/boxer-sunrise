@@ -41,7 +41,12 @@
   bearing-x
   bearing-y
   advance
-  texture-id)
+  ;; If this glyph has a standalone texture this is the GL id
+  texture-id
+  ;; If this glyph is part of a texture atlas, these are it's
+  ;; offsets in texture coordinates (ie. [0, 1])
+  tx
+  ty)
 
 (defun line-by-width-corners (x0 y0 x1 y1 width)
   "Given two points for a line and a width for the line, calculate the 4 points necessary for the (most likely)
@@ -75,11 +80,15 @@
    (text-color-uni      :accessor text-color-uni)
    (ft-glyph-gl-array   :accessor ft-glyph-gl-array)
 
+   (glyph-atlas-shader  :accessor glyph-atlas-shader)
+
    (pixmap-shader       :accessor pixmap-shader)
    (dashed-lines-shader :accessor dashed-lines-shader)
 
    (canvas-shader       :accessor canvas-shader)
    (circle-xyrad-uni    :accessor circle-xyrad-uni)
+
+   (circle-shader       :accessor circle-shader)
 
    ;; Simple Shader
    ;; Uses a color uniform, starting out using for box borders
@@ -153,6 +162,109 @@
     (gl:free-gl-array arr)
     (gl:draw-arrays :triangles 0 6)))
 
+(defun gl-add-atlas-char2 (device x y ch &key (rgb (boxgl-device-pen-color device))
+                                       (baseline-bot nil)
+                                       (font *current-opengl-font*)
+                                       (atlas *freetype-glyph-atlas*))
+  "Test version of draw-char that uses a glyph from a texture atlas and the atlas shader which
+  takes the color values on the vao."
+  (let* ((font-face (current-freetype-font font))
+         (glyph (get-glyph atlas `(("Arial" 12) ,ch 1.0)))
+         (bearing-x (box-glyph-bearing-x glyph))
+         (bearing-y (box-glyph-bearing-y glyph))
+         (width (box-glyph-width glyph))
+         (w width)
+         (h (box-glyph-rows glyph))
+         (x (coerce x 'float))
+         (y (coerce y 'float))
+         (xpos (+ x bearing-x))
+         (font-hei (bw::ogl-font-height font))
+         (ypos (if baseline-bot
+                 (- (- (+ y font-hei) bearing-y) (* font-hei 0.2)) ;; This scaling by 0.2 of the font height is some
+                 (- (- y bearing-y) (* font-hei 0.2))))            ;; pixel pushing for the current repaint layout.
+         (ypos+h (+ ypos h))
+         (xpos+w (+ xpos w))
+         (tx (coerce (box-glyph-tx glyph) 'single-float))
+         (ty (coerce (box-glyph-ty glyph) 'single-float)))
+    (enable-gl-shader-program device (glyph-atlas-shader device))
+    (gl:active-texture :texture0)
+    (gl:bind-texture :texture-2d (glyph-atlas-texture-id atlas))
+
+    ;; make the vertices array
+    (let* (
+           (vertices `#(,xpos   ,ypos       0.0 ,tx                                     ,ty                                       ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ;; 0.0 0.0
+                        ,xpos   ,ypos+h     0.0 ,tx                                     ,(+ ty (/ h (glyph-atlas-height atlas)))  ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ;;0.0 1.0
+                        ,xpos+w ,ypos+h     0.0 ,(+ tx (/ w (glyph-atlas-width atlas))) ,(+ ty (/ h (glyph-atlas-height atlas)))  ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
+
+                        ; These 2 can be removed when using the element buffer
+                        ,xpos   ,ypos       0.0 ,tx                                     ,ty                                       ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ;; 0.0 0.0
+                        ,xpos+w ,ypos+h     0.0 ,(+ tx (/ w (glyph-atlas-width atlas))) ,(+ ty (/ h (glyph-atlas-height atlas)))  ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
+
+                        ,xpos+w ,ypos       0.0 ,(+ tx (/ w (glyph-atlas-width atlas))) ,ty                                       ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ;; 1.0 0.0
+                        ))
+           (arr (gl:alloc-gl-array :float (length vertices)))
+          ;  (arr (ft-glyph-gl-array device))
+           )
+      (dotimes (i (length vertices))
+        (setf (gl:glaref arr i) (aref vertices i)))
+      (gl:buffer-data :array-buffer :static-draw arr)
+      (gl:draw-arrays :triangles 0 6)
+      (gl:bind-texture :texture-2d 0))
+      (unenable-shader-programs bw::*boxgl-device*)
+    glyph))
+
+(defun gl-add-atlas-char (device x y ch &key (rgb (boxgl-device-pen-color device))
+                                       (baseline-bot nil)
+                                       (font *current-opengl-font*)
+                                       (atlas *freetype-glyph-atlas*))
+  "Test version of draw-char that uses a glyph from a texture atlas and the glyph shader which
+  takes the color from a uniform."
+  (let* ((color-uniform (text-color-uni device))
+         (font-face (current-freetype-font font))
+         (glyph (get-glyph atlas `(("Arial" 12) ,ch 1.0)))
+         (bearing-x (box-glyph-bearing-x glyph))
+         (bearing-y (box-glyph-bearing-y glyph))
+         (width (box-glyph-width glyph))
+         (w width)
+         (h (box-glyph-rows glyph))
+         (x (coerce x 'float))
+         (y (coerce y 'float))
+         (xpos (+ x bearing-x))
+         (font-hei (bw::ogl-font-height font))
+         (ypos (if baseline-bot
+                 (- (- (+ y font-hei) bearing-y) (* font-hei 0.2)) ;; This scaling by 0.2 of the font height is some
+                 (- (- y bearing-y) (* font-hei 0.2))))            ;; pixel pushing for the current repaint layout.
+         (ypos+h (+ ypos h))
+         (xpos+w (+ xpos w))
+         (tx (coerce (box-glyph-tx glyph) 'single-float))
+         (ty (coerce (box-glyph-ty glyph) 'single-float)))
+    (enable-gl-shader-program device (ft-glyph-shader device))
+    (gl:uniformf color-uniform (aref rgb 1) (aref rgb 2) (aref rgb 3))
+    (gl:active-texture :texture0)
+    (gl:bind-texture :texture-2d (glyph-atlas-texture-id atlas))
+
+    ;; make the vertices array
+    (let* (
+           (vertices `#(,xpos   ,ypos       ,tx                                     ,ty ;; 0.0 0.0
+                        ,xpos   ,ypos+h     ,tx                                     ,(+ ty (/ h (glyph-atlas-height atlas)))  ;;0.0 1.0
+                        ,xpos+w ,ypos+h     ,(+ tx (/ w (glyph-atlas-width atlas))) ,(+ ty (/ h (glyph-atlas-height atlas)))
+                        ; ,xpos   ,ypos     0.0 0.0
+                        ; ,xpos+w ,ypos+h   1.0 1.0
+                        ,xpos+w ,ypos       ,(+ tx (/ w (glyph-atlas-width atlas))) ,ty ;; 1.0 0.0
+                        ))
+           (arr (gl:alloc-gl-array :float (length vertices)))
+          ;  (arr (ft-glyph-gl-array device))
+           )
+      (format t "~%gl-add-atlas-char ~A ~A ~A ~A" x y ch vertices)
+      (dotimes (i (length vertices))
+        (setf (gl:glaref arr i) (aref vertices i)))
+      (%gl::buffer-sub-data :array-buffer 0
+                           (* 16 *cffi-float-size*)
+                           (gl::gl-array-pointer arr))
+      (gl:draw-elements :triangles (null-gl-elements-array device) :count 6)
+      (gl:bind-texture :texture-2d 0))
+    glyph))
+
 (defun gl-add-char (device x y ch &key (rgb (boxgl-device-pen-color device))
                                        (baseline-bot nil)
                                        (font *current-opengl-font*))
@@ -172,42 +284,31 @@
                  (- (- (+ y font-hei) bearing-y) (* font-hei 0.2)) ;; This scaling by 0.2 of the font height is some
                  (- (- y bearing-y) (* font-hei 0.2))))            ;; pixel pushing for the current repaint layout.
          (ypos+h (+ ypos h))
-         (xpos+w (+ xpos w)))
+         (xpos+w (+ xpos w))
+         (arr (ft-glyph-gl-array device)))
     (enable-gl-shader-program device (ft-glyph-shader device))
     (gl:uniformf color-uniform (aref rgb 1) (aref rgb 2) (aref rgb 3))
     (gl:active-texture :texture0)
 
-    ;; make the vertices array
-    (let (
-          ;  (vertices `#(,xpos   ,ypos   0.0 0.0
-          ;               ,xpos   ,ypos+h 0.0 1.0
-          ;               ,xpos+w ,ypos+h 1.0 1.0
-          ;               ; ,xpos   ,ypos   0.0 0.0
-          ;               ; ,xpos+w ,ypos+h 1.0 1.0
-          ;               ,xpos+w ,ypos   1.0 0.0))
-          ;  (arr (gl:alloc-gl-array :float (length vertices)))
-           (arr (ft-glyph-gl-array device)))
+    (setf (gl:glaref arr 0) xpos)
+    (setf (gl:glaref arr 1) ypos)
+    (setf (gl:glaref arr 4) xpos)
+    (setf (gl:glaref arr 5) ypos+h)
+    (setf (gl:glaref arr 8) xpos+w)
+    (setf (gl:glaref arr 9) ypos+h)
+    (setf (gl:glaref arr 12) xpos+w)
+    (setf (gl:glaref arr 13) ypos)
 
-      ; (dotimes (i (length vertices))
-      ;   (setf (gl:glaref arr i) (aref vertices i)))
-      (setf (gl:glaref arr 0) xpos)
-      (setf (gl:glaref arr 1) ypos)
-      (setf (gl:glaref arr 4) xpos)
-      (setf (gl:glaref arr 5) ypos+h)
-      (setf (gl:glaref arr 8) xpos+w)
-      (setf (gl:glaref arr 9) ypos+h)
-      (setf (gl:glaref arr 12) xpos+w)
-      (setf (gl:glaref arr 13) ypos)
-
-      (unless (box-glyph-texture-id glyph)
-        (setf (box-glyph-texture-id glyph)
-              (create-glyph-texture font-face ch glyph)))
-      (gl:bind-texture :texture-2d (box-glyph-texture-id glyph))
-      (%gl::buffer-sub-data :array-buffer 0
-                           (* 16 *cffi-float-size*)
-                           (gl::gl-array-pointer arr))
-      (gl:draw-elements :triangles (null-gl-elements-array device) :count 6)
-      (gl:bind-texture :texture-2d 0))
+    (unless (box-glyph-texture-id glyph)
+      (setf (box-glyph-texture-id glyph)
+            (create-glyph-texture font-face ch glyph)))
+    (gl:bind-texture :texture-2d (box-glyph-texture-id glyph))
+    (%gl::buffer-sub-data :array-buffer 0
+                          (* 16 *cffi-float-size*)
+                          (gl::gl-array-pointer arr))
+    (gl:draw-elements :triangles (null-gl-elements-array device) :count 6)
+    (gl:bind-texture :texture-2d 0)
+    (unenable-shader-programs bw::*boxgl-device*)
     glyph))
 
 (defun gl-add-string (device font string x y)
@@ -444,6 +545,53 @@
     (log:debug "~%shader: ~A infolog: ~A" glsl-filename (gl:get-shader-info-log togo))
     togo))
 
+(defun setup-xyz-txty-rgba-vao (vao vbo num-entries)
+  ;; This VAO will have 3 locations
+  ;; - vec3 position xyz
+  ;; - vec2 texture coords tx ty
+  ;; - vec4 color rgba
+  ;;
+  ;; total stride: 9 floats
+  (gl:bind-vertex-array vao)
+  (gl:bind-buffer :array-buffer vbo)
+  (%gl:buffer-data :array-buffer (* num-entries 9 *cffi-float-size*) (cffi:null-pointer) :dynamic-draw)
+
+  (gl:enable-vertex-attrib-array 0)
+  (gl:vertex-attrib-pointer 0 3 :float nil (* 9 *cffi-float-size*) (cffi:null-pointer))
+  (gl:enable-vertex-attrib-array 1)
+  (gl:vertex-attrib-pointer 1 2 :float nil (* 9 *cffi-float-size*) (* 3 *cffi-float-size*))
+  (gl:enable-vertex-attrib-array 2)
+  (gl:vertex-attrib-pointer 2 4 :float nil (* 9 *cffi-float-size*) (* 5 *cffi-float-size*))
+
+  (gl:bind-vertex-array 0)
+  (gl:bind-buffer :array-buffer 0)
+)
+
+(defun setup-glyph-atlas-program (device)
+  (let* ((glyph-program       (gl:create-program))
+         (glyph-vao           (gl:gen-vertex-array))
+         (glyph-buffer        (gl:gen-buffer))
+         (glyph-index-buffer  (gl:gen-buffer)))
+
+    (gl:attach-shader glyph-program (create-shader "boxgl-atlas-glyph.vs" :vertex-shader))
+    (gl:attach-shader glyph-program (create-shader "boxgl-atlas-glyph.fs" :fragment-shader))
+    (gl:link-program glyph-program)
+    (log:debug "~%atlas-glyph-program infolog: ~A" (gl:get-program-info-log glyph-program))
+
+    (gl:pixel-store :unpack-alignment 1)
+
+    (setup-xyz-txty-rgba-vao glyph-vao glyph-buffer 6)
+
+    (gl:bind-buffer :array-buffer 0)
+    (gl:bind-texture :texture-2d 0)
+
+    (setf (boxer::glyph-atlas-shader device) (make-instance 'boxgl-shader-program :program glyph-program
+                                                            :vao glyph-vao       :buffer  glyph-buffer))
+
+    (%gl:uniform-block-binding glyph-program (gl:get-uniform-block-index glyph-program "Matrices") 0)
+
+    (gl:bind-vertex-array 0)))
+
 (defun setup-freetype-program (device)
   (let* ((glyph-program       (gl:create-program))
          (glyph-vao           (gl:gen-vertex-array))
@@ -471,7 +619,7 @@
     (gl:bind-buffer :array-buffer glyph-buffer)
     (%gl:buffer-data :array-buffer (* 4 6 *cffi-float-size*) (cffi:null-pointer) :dynamic-draw)
     (gl:enable-vertex-attrib-array 0)
-    (gl:vertex-attrib-pointer 0 4 :float :false (* 4 *cffi-float-size*) 0) ;; TODO Should the :false really be nil?
+    (gl:vertex-attrib-pointer 0 4 :float :false (* 4 *cffi-float-size*) 0)
     (gl:bind-buffer :element-array-buffer glyph-index-buffer)
 
     (gl:bind-buffer :array-buffer 0)
@@ -599,6 +747,7 @@ inside an opengl:rendering-on macro invocation."
     (gl:enable :blend)
     (gl:blend-func :src-alpha :one-minus-src-alpha)
     (setup-freetype-program togo)
+    (setup-glyph-atlas-program togo)
     (setup-pixmap-program togo)
     (setf (lines-shader togo)
           (setup-lines-program)
@@ -608,6 +757,9 @@ inside an opengl:rendering-on macro invocation."
 
           (canvas-shader togo)
           (setup-canvas-program)
+
+          (circle-shader togo)
+          (setup-circle-program)
 
           (simple-shader togo)
           (setup-simple-shader)
