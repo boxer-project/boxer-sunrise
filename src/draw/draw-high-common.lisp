@@ -87,6 +87,7 @@ you should only use this inside the :BLINK method for a blinker."
 WITH-CLIPPING-INSIDE macro should use the new coordinate system
 set by WITH-ORIGIN-AT"
   `(with-origin-at (,x ,y)
+    ;  (format t "~%  region: x: ~A y: ~A wid: ~A hei: ~A" ,x ,y ,wid ,hei)
      (with-clipping-inside (0 0 ,wid ,hei)
        . ,body)))
 
@@ -129,10 +130,10 @@ scaled origin"
   (%draw-arc %drawing-window alu (scale-x x) (scale-y y)
              wid hei start-angle sweep-angle))
 
-(defun draw-cha (char x y)
+(defun draw-cha (char x y &key (boxgl-model nil))
   "Draw-cha needs to draw at the char's baseline rather than the top left corner.  In a
 multifont row, the common reference point will be the baseline instead of the top edge"
-  (%draw-cha x y char))
+  (%draw-cha x y char :boxgl-model boxgl-model))
 
 (defun draw-circle (x y radius &optional filled?)
   (%draw-circle x y radius filled?))
@@ -160,7 +161,6 @@ multifont row, the common reference point will be the baseline instead of the to
 
 (defun draw-string (font-no string region-x region-y)
   (%draw-string font-no string region-x region-y))
-
 
 (defun bitblt-to-screen (wid hei from-array from-x from-y to-x to-y)
   (%bitblt-to-screen wid hei from-array from-x from-y to-x to-y))
@@ -190,3 +190,82 @@ multifont row, the common reference point will be the baseline instead of the to
 
 (defun draw-before-graphics-command-marker (command gl)
   (%draw-before-graphics-command-marker command gl))
+
+;; Bulking commands for starting
+
+(defparameter *cur-gl-model-screen-obj* nil)
+
+(defun tick-comp (obj)
+  (actual-obj-tick (screen-obj-actual-obj obj)))
+
+(defun borders-comp (obj)
+  "Return a list of the screen-objs dimensions and name"
+  ;; TODO add export vars and color
+  ; (list (screen-obj-wid obj) (screen-obj-hei) (name obj))
+  (list (slot-value obj 'wid)  (slot-value obj 'hei) (slot-value obj 'name))
+  )
+
+(defun start-drawing-screen-obj-model (screen-obj &key (tick-fun #'tick-comp))
+  ; (format t "~%start-drawing-screen-obj-model: ~A" (actual-obj-tick (screen-obj-actual-obj screen-obj)))
+  (let ((tick (funcall tick-fun screen-obj)) ;;(actual-obj-tick (screen-obj-actual-obj screen-obj)))
+        (model (getprop screen-obj :gl-model)))
+    ; (format t "~% tick-comp result: ~A" tick)
+    ; 1. check and see if it's on the plist, if not add a new one
+    (unless model
+      (setf model (make-boxer-gl-model))
+      (putprop screen-obj model :gl-model))
+
+    (setf *cur-gl-model-screen-obj* model)
+
+    (if (equal tick (slot-value model 'cur-tick))
+        (setf (needs-update model) nil)
+        (progn
+          (setf (needs-update model) t)
+          (setf (slot-value model 'cur-tick) tick)
+          (reset-meshes model)
+        ))
+
+    ; 2. Starting out we're going to draw it every time and then work on caching
+    ;    afterwards at a tick check
+
+))
+
+(defun stop-drawing-screen-obj-model (screen-obj)
+  (when *cur-gl-model-screen-obj*
+    (draw *cur-gl-model-screen-obj*))
+  (setf *cur-gl-model-screen-obj* nil))
+
+;; Bulking drawing characters for a screen row.  This can't be stateful because we might have other global drawing
+;; operations, such as the borders going on. We'll actually pass in the vao/vbo with the draw-cha command. We'll
+;; keep the current model attached to the screen row in the let* of repaint-inferiors-pass-2-sr.  When we fetch it
+;; from the screen-row starting out the following cases may happen:
+;;
+;;  - The screen-row doesn't have a boxgl-model yet, create a new  one and return it.
+;;  - The screen-row has a model, look at the actual-obj tick compared to the boxer-gl-model.
+;;     - If no updates are needed ticks are the same, disable draw-cha for this bit.
+;;     - If updates are needed, update the tick, reset the draw pos to 0.
+;;  - At the end of the do-screen-chas-with-font-info loop, always draw the current boxgl-model for the screen-row
+
+(defun get-boxgl-model-for-screen-row (row)
+  (let ((tick (actual-obj-tick (screen-obj-actual-obj row)))
+        (model (getprop row  :gl-row-model)))
+
+    (unless model
+      ; (format t "~%Allocating initial glmodel for row: ~A" row)
+      (putprop row (make-boxer-gl-model) :gl-row-model)
+      (setf model (getprop row  :gl-row-model))
+      )
+
+
+    ;; TODO: make this the same as the one up above in start-drawing-screen-obj-model
+    (if (equal tick (slot-value model 'cur-tick))
+      (progn
+        ; (format t "~%   Row does not need update: ~A ~A ~A" tick (slot-value model 'cur-tick) row)
+        (setf (needs-update model) nil))
+      (progn
+        ; (format t "~%   Row NEEDS update: ~A ~A ~A" tick (slot-value model 'cur-tick) row)
+        (setf (needs-update model) t)
+        (setf (slot-value model 'cur-tick) tick)
+        (reset-meshes model)
+        ))
+    model))

@@ -315,7 +315,19 @@
   (let ((cur-x x)
         (prev-glyph nil))
       (for:for ((c over string))
-        (setf prev-glyph (gl-add-char device cur-x y c :baseline-bot t :font font))
+
+        (if *gl-cur-gdisp-list-cache*
+          (progn
+            (log:debug "add string with gdisp-list-cache")
+            (add-char (gdispl-model *gl-cur-gdisp-list-cache*) bw::*boxgl-device* cur-x y c :baseline-bot t :font font)
+            (setf prev-glyph (get-glyph *freetype-glyph-atlas* `(("Arial" 12) ,c 1.0)))
+          )
+          (if *cur-gl-model-screen-obj*
+            (if (needs-update *cur-gl-model-screen-obj*)
+              (setf prev-glyph (add-char *cur-gl-model-screen-obj* bw::*boxgl-device* cur-x y c :baseline-bot t :font font))
+              (setf prev-glyph (get-glyph *freetype-glyph-atlas* `(("Arial" 12) ,c 1.0))))
+            (setf prev-glyph (gl-add-char device cur-x y c :baseline-bot t :font font))))
+
         (setf cur-x (+ cur-x (box-glyph-advance prev-glyph)))
         )))
 

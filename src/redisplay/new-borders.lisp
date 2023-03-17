@@ -309,9 +309,13 @@
      . ,body))
 
 (defun box-borders-draw (box-type screen-box)
-  (case box-type
-    (port-box (port-borders-draw screen-box))
-    (t (plain-borders-draw screen-box))))
+  (unless (eq *outermost-screen-box* screen-box)
+    (start-drawing-screen-obj-model screen-box :tick-fun #'borders-comp)
+    (case box-type
+      (port-box (port-borders-draw screen-box))
+      (t (plain-borders-draw screen-box)))
+    (stop-drawing-screen-obj-model screen-box))
+  )
 
 ;; this is drawn in a transformed coord system...
 (defun plain-borders-draw (screen-box)

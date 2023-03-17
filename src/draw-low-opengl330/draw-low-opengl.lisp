@@ -274,6 +274,7 @@ OpenGL expects a list of X Y pairs"
   Does not replace it from scratch. In the repaint code using this macro we typically
   see the origin adjusted by some amount, and then un-adjusted by it with the negative
   amounts to put it back."
+  ; (format t "~%window-system-dependent-set-origin ~A ~A" h v)
   (let* ((current-transform (3d-matrices:mat4 (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)))
          (adjust-matrix (3d-matrices:mat4 (boxer::create-transform-matrix h v)))
          (new-transform (3d-matrices:m* current-transform adjust-matrix)))
@@ -517,29 +518,34 @@ It's not clear yet whether we'll need to re-implement this for the future."
   "circular arc, rather than the more generic elliptical arc
 opengl arc drawing routine starts at 3 oclock and sweeps clockwise in radians
 also, opengl-draw-arc expects positive angle args"
-  (if (minusp sweep-angle)
-    ;; change the start so that we can use ABS sweep
-    (gl-add-arc bw::*boxgl-device* x y radius
-                         (* +degs->rads+ (mod (- (+ start-angle sweep-angle) 90) 360))
-                         (* +degs->rads+ (abs sweep-angle))
-                         filled?)
-    (gl-add-arc bw::*boxgl-device* x y radius
-                         (* +degs->rads+ (mod (- start-angle 90) 360))
-                         (* +degs->rads+ sweep-angle)
-                         filled?)
+  (if *gl-cur-gdisp-list-cache*
+    (gdisp-cache-error "%draw-c-arc")
+    (if (minusp sweep-angle)
+      ;; change the start so that we can use ABS sweep
+      (gl-add-arc bw::*boxgl-device* x y radius
+                          (* +degs->rads+ (mod (- (+ start-angle sweep-angle) 90) 360))
+                          (* +degs->rads+ (abs sweep-angle))
+                          filled?)
+      (gl-add-arc bw::*boxgl-device* x y radius
+                          (* +degs->rads+ (mod (- start-angle 90) 360))
+                          (* +degs->rads+ sweep-angle)
+                          filled?))))
 
-                         )
-
-                         )
-
-(defun %draw-cha (x y char)
+(defun %draw-cha (x y char &key (boxgl-model nil))
   "Font is managed by set-font-info.  Note that anything else that might change
 the window font (ie, draw-string) has to change it back for this to work.
 5/11/98 draw to baseline instead of top left"
-  (gl-add-char bw::*boxgl-device* x y char))
+  (if *gl-cur-gdisp-list-cache*
+    (gdisp-cache-error "%draw-cha")
+    (if boxgl-model
+      (add-char boxgl-model bw::*boxgl-device* x y char)
+      (gl-add-char bw::*boxgl-device* x y char))))
 
 (defun %draw-circle (x y radius &optional filled?)
-  (gl-add-circle bw::*boxgl-device* x y radius filled?))
+  (if *gl-cur-gdisp-list-cache*
+    (gdisp-cache-error "%draw-circle")
+    ; (gl-add-circle bw::*boxgl-device* x y radius filled?)
+    (gl-add-shader-circle bw::*boxgl-device* x y radius filled?)))
 
 (defun %draw-filled-arc (bit-array alu x y width height th1 th2)
   "See the-attic for the previous lispworks GP library version of this function.
@@ -551,9 +557,16 @@ It's not clear yet whether we'll need to re-implement this for the future."
   copy the points to the c-buffer we are putting vertices in, otherwise it will
   call the old single openGL draw line that uses and glBegin and glEnd.
   "
-(if *gl-cur-gdisp-list-cache*
-  (gl-gdisp-list-line-segment *gl-cur-gdisp-list-cache* bw::*boxgl-device* x0 y0 x1 y1)
-  (gl-add-line bw::*boxgl-device* x0 y0 x1 y1))
+(cond
+  (*gl-cur-gdisp-list-cache*
+    ; (if *gl-cur-gdisp-list-cache* (gdisp-cache-error "%draw-line"))
+   (gl-gdisp-list-line-segment *gl-cur-gdisp-list-cache* bw::*boxgl-device* x0 y0 x1 y1)
+   )
+  (*cur-gl-model-screen-obj*
+   (when (needs-update *cur-gl-model-screen-obj*)
+     (add-line *cur-gl-model-screen-obj* bw::*boxgl-device* x0 y0 x1 y1)))
+  (t
+   (gl-add-line bw::*boxgl-device* x0 y0 x1 y1)))
 
   ; 2 vertices are currently 14 points: xyzrgba
   ; (if (and nil *use-glist-performance* *inside-glist-perf-line-segs*)
@@ -570,17 +583,20 @@ It's not clear yet whether we'll need to re-implement this for the future."
       )
 
 (defun %draw-point (x y)
-  (gl-add-point bw::*boxgl-device* x0 y0))
+  (if *gl-cur-gdisp-list-cache*
+    (gdisp-cache-error "%draw-point")
+    (gl-add-point bw::*boxgl-device* x0 y0)))
 
 (defun %draw-poly (points)
-  (gl-add-poly bw::*boxgl-device* points))
+  (if *gl-cur-gdisp-list-cache*
+    (gdisp-cache-error "%draw-poly")
+    (gl-add-poly bw::*boxgl-device* points)))
 
 (defun %draw-rectangle (width height x y)
   (unless (or (>= %clip-lef %clip-rig) (>= %clip-top %clip-bot))
     (if *gl-cur-gdisp-list-cache*
       (gl-gdisp-list-rect *gl-cur-gdisp-list-cache* bw::*boxgl-device* x y width height)
-      (gl-add-rect bw::*boxgl-device* x y width height)
-    )
+      (gl-add-rect bw::*boxgl-device* x y width height))
 
     ; (if (and *use-glist-performance* *inside-glist-perf-rect-segs*)
     ;   (progn
@@ -602,7 +618,11 @@ It's not clear yet whether we'll need to re-implement this for the future."
       (%draw-rectangle w h x y))))
 
 (defun %draw-string (font string x y)
-  (gl-add-string bw::*boxgl-device* (find-cached-font font) string x y))
+  ; (if *gl-cur-gdisp-list-cache*
+    ; (gdisp-cache-error "%draw-string")
+    (gl-add-string bw::*boxgl-device* (find-cached-font font) string x y)
+    ; )
+    )
 
 (defun %bitblt-to-screen (wid hei from-array fx fy tx ty)
   ;; remember that  we are drawing from the lower left....
@@ -754,6 +774,9 @@ It's not clear yet whether we'll need to re-implement this for the future."
           (cffi:foreign-alloc :float :count *glist-line-segs-c-buffer-size* :initial-element 0.0))
   )
 )
+
+(defun gdisp-cache-error (message)
+  (log:debug "need to implement still: ~A" message))
 
 (defun %draw-before-graphics-list-playback (gl)
   (setf *inside-glist-perf-rect-segs* nil)

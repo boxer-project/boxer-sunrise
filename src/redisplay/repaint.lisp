@@ -716,15 +716,21 @@
   (let* ((inf-x-offset 0)
          (inf-y-offset 0)
          (row-baseline (slot-value self 'baseline))
-         (row-fds (row-fds (slot-value self 'actual-obj))))
+         (row-fds (row-fds (slot-value self 'actual-obj)))
+         (glmodel (get-boxgl-model-for-screen-row self))
+         )
+    ; (format t  "~%ticks: screen-row: ~A  actual-obj: ~A" (slot-value self 'tick) (slot-value (slot-value self 'actual-obj) 'tick))
     (do-screen-chas-with-font-info (inf-screen-obj (slot-value self 'screen-chas)
                                                    :index-var-name cha-no
                                                    :font-descriptors row-fds
                                                    :cha-drawing? t)
       (cond ((screen-cha? inf-screen-obj)
              ;; draw the char
-             (draw-cha inf-screen-obj
-                       inf-x-offset (+ row-baseline inf-y-offset))
+            ;  (format t  "~%repaint draw-cha: ~A ~A ~A" inf-screen-obj inf-x-offset (+ row-baseline inf-y-offset))
+             (when (needs-update glmodel)
+               (draw-cha inf-screen-obj
+                         inf-x-offset (+ row-baseline inf-y-offset)
+                         :boxgl-model glmodel))
              ;; update the inf-x-offset
              (incf inf-x-offset (cha-wid inf-screen-obj)))
         (t
@@ -737,7 +743,9 @@
            (setf (screen-obj-y-offset inf-screen-obj) inf-y-offset))
          (repaint-pass-2-sb inf-screen-obj)
          ;; finally update inf-x-offset, screen-box style
-         (incf inf-x-offset (screen-obj-wid inf-screen-obj)))))))
+         (incf inf-x-offset (screen-obj-wid inf-screen-obj)))))
+    ; (format t "~%  drawing cha verts: ~A " (mesh-pos (slot-value glmodel 'glyphs-xyz-txty-rgba-mesh)))
+    (draw glmodel)))
 
 (defmethod repaint-pass-2-sr ((self screen-row))
   (with-slots (x-offset y-offset wid hei actual-obj)
@@ -776,7 +784,7 @@
                        (setf (display-style-border-style
                               (slot-value self 'display-style-list))
                              boxtop)
-                       (draw-boxtop boxtop actual-obj 0 0 wid hei)
+                       (draw-boxtop self boxtop actual-obj 0 0 wid hei)
                        ;			    (with-turtle-clipping (wid hei)
                        ;			      (draw-boxtop boxtop actual-obj 0 0 wid hei))
                        ))))
@@ -919,6 +927,15 @@
                           (repaint-guts)
                           (repaint-mouse-docs)
                           (repaint-dev-overlay process-state-label))
+                          ;; 2023-02-25 sgithens debugging texture atlas
+                          ; (draw *freetype-glyph-atlas*)
+                          (gl-add-atlas-char bw::*boxgl-device* 50 100 #\A)
+                          (gl-add-atlas-char2 bw::*boxgl-device* 75 100 #\B)
+                          (gl-add-char bw::*boxgl-device* 100 100 #\C)
+
+                          ; (gl-add-char bw::*boxgl-device* 100 100 #\A)
+                          ; (gl-add-shader-circle bw::*boxgl-device* 100 100 50 t)
+
                           (when flush-buffer? (swap-graphics-buffers window)))))
 
 ;;; called also by printing routines.

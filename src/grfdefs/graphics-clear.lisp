@@ -43,6 +43,7 @@
           (setf (graphics-sheet-bit-array-dirty? graphics-sheet) nil))
         ;; now erase stuff on the screen...
         (dolist (screen-box (get-visible-screen-objs  self))
+          (clear-gdisp-list-cache screen-box)
           (unless (eq ':shrunk (display-style screen-box))
             (drawing-on-turtle-slate screen-box
                                      (cond ((or (null bg) bitmap-p)

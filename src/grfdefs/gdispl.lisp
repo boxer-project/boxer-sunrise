@@ -2640,14 +2640,14 @@ Modification History (most recent at the top)
 
 ;; this is used by the redisplay...
 
-(defmacro playback-graphics-list-internal (gl &rest args)
+(defmacro playback-graphics-list-internal (gl &key (start 0))
   `(with-graphics-state (,gl t)
      (draw-before-graphics-list-playback ,gl)
 
      (with-blending-on
-       (do-vector-contents (command ,gl)
+       (do-vector-contents (command ,gl :start ,start)
          (draw-before-graphics-command-marker command ,gl)
-         (process-graphics-command-marker command . ,args)
+         (process-graphics-command-marker command) ;. ,args)
          )
 
      (draw-after-graphics-list-playback ,gl))))
@@ -2656,13 +2656,35 @@ Modification History (most recent at the top)
   (with-graphics-vars-bound ((screen-obj-actual-obj graphics-screen-box))
     ;; first the items in the list
     (let ((gl (graphics-sheet-graphics-list gs)))
-      (unless (graphics-command-list-hidden gl) (playback-graphics-list-internal gl)))
+      ; TODO In progress graphics bulking
+      (if (getprop graphics-screen-box :gl-gdisp-cache)
+        (setf *gl-cur-gdisp-list-cache* (getprop graphics-screen-box :gl-gdisp-cache))
+        (progn
+          (putprop graphics-screen-box (make-gl-graphics-box-cache) :gl-gdisp-cache)
+          (setf *gl-cur-gdisp-list-cache* (getprop graphics-screen-box :gl-gdisp-cache)))
+      )
+
+      (when (> (%%sv-fill-pointer gl) (gdispl-com-count *gl-cur-gdisp-list-cache*))
+        ; (format *standard-output* "~%Actually playing it back: ~A ~A~%  ~A"
+        ;    (%%sv-fill-pointer gl) (gdispl-com-count *gl-cur-gdisp-list-cache*) nil ) ;gl)
+        (unless (graphics-command-list-hidden gl)
+          (playback-graphics-list-internal gl :start (gdispl-com-count *gl-cur-gdisp-list-cache*)))
+        )
+
+      (setf (gdispl-com-count *gl-cur-gdisp-list-cache*) (%%sv-fill-pointer gl))
+
+      (gl-gdisp-list-draw *gl-cur-gdisp-list-cache* bw::*boxgl-device*)
+      (setf *gl-cur-gdisp-list-cache* nil)
+      )
+
     ;; and then any sprites
     (let ((sprites (graphics-sheet-object-list gs)))
       (dolist (sprite sprites)
         (when (turtle? sprite)
           (let ((pgl (slot-value sprite 'private-gl)))
-            (unless (graphics-command-list-hidden pgl) (playback-graphics-list-internal pgl)))))
+            (unless (graphics-command-list-hidden pgl)
+              ; (playback-graphics-list-internal pgl)
+              ))))
       (dolist (sprite sprites)
         (unless (null (shown? sprite))
           (draw sprite))))))
@@ -2795,9 +2817,9 @@ Modification History (most recent at the top)
                   x (+ y *folder-graphic-tab-height* *folder-graphic-height*)))
 
 ;; Note that the clipping, and origin has already been setup inside the redisplay
-(defun draw-boxtop (boxtop editor-box x y wid hei)
+(defun draw-boxtop (screen-obj boxtop editor-box x y wid hei)
   (let ((bp (getprop editor-box :boxtop)))
-    (cond ((eq bp :name-only) (draw-text-boxtop editor-box boxtop x y wid hei))
+    (cond ((eq bp :name-only) (draw-text-boxtop screen-obj editor-box boxtop x y wid hei))
       ((eq bp :folder) (draw-folder-boxtop editor-box boxtop x y))
       ((eq bp :framed) (draw-graphics-boxtop boxtop x y wid hei t))
       ((graphics-sheet? boxtop) (draw-graphics-boxtop boxtop x y wid hei))
@@ -2808,13 +2830,24 @@ Modification History (most recent at the top)
       (t (Error "Don't know how to handle boxtop ~A using ~S" boxtop bp)))))
 
 ;; text is always framed (for now)
-(defun draw-text-boxtop (actual-obj text x y wid hei)
+(defun draw-text-boxtop (screen-obj actual-obj text x y wid hei)
+  (start-drawing-screen-obj-model screen-obj)
   (with-border-drawing-styles (actual-obj)
-    (draw-rectangle 1 hei x y) ; left
-    (draw-rectangle wid 1 x y) ; top
-    (draw-rectangle 1 hei (+ x wid -1) y) ; right
-    (draw-rectangle wid 1 x (+ y hei -2)) ; bottom ( -2 ?)
-    (draw-string *boxtop-text-font* text (+ x 2) (+ y 2))))
+    (let ((xleft  (- x wid))
+          (xright (+ x wid -1))
+          (ytop   (+ y hei -2))
+          (ybot   (- y hei)))
+
+      (draw-line xleft ytop xleft ybot)   ; right side
+      (draw-line xleft ybot xright ybot)  ; bottom
+      (draw-line xright ybot xright ytop) ; left
+      (draw-line xleft ytop xright ytop)) ; top
+    ; (draw-rectangle 1 hei x y) ; left
+    ; (draw-rectangle wid 1 x y) ; top
+    ; (draw-rectangle 1 hei (+ x wid -1) y) ; right
+    ; (draw-rectangle wid 1 x (+ y hei -2)) ; bottom ( -2 ?)
+    (draw-string *boxtop-text-font* text (+ x 2) (+ y 2)))
+  (stop-drawing-screen-obj-model screen-obj))
 
 (defun draw-folder-boxtop (actual-obj text x y)
   (with-border-drawing-styles (actual-obj)

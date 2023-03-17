@@ -33,12 +33,15 @@
                                                   ;; list, we don't need to re-buffer it.
 
    (vao         :accessor vao    :initform (gl:gen-vertex-array))
-   (buffer      :accessor buffer :initform (gl:gen-buffer)))
-)
+   (buffer      :accessor buffer :initform (gl:gen-buffer))
+
+   (gl-model    :accessor gdispl-model :initform (make-boxer-gl-model :lines-size 4000000 :glyphs-size 8192))
+   ))
 
 (defun clear-gdisp-list-cache (screen-box)
   (let ((cache (getprop screen-box :gl-gdisp-cache)))
     (when cache
+      (reset-meshes (gdispl-model cache))
       (setf (buf-count cache) 0
             (buf-max   cache) 0
             (gdispl-com-count cache) 0)
@@ -60,6 +63,12 @@
     togo))
 
 (defun gl-gdisp-list-rect (cache device x y wid hei &key (rgb (boxgl-device-pen-color device))
+                                                                 (pen-size (boxgl-device-pen-size bw::*boxgl-device*))
+                                                                 (buffered-size (* *cffi-float-size* (* 6 6))))
+  ; (format t "~%gl-gdisp-list-rect nop")
+  (add-rect (gdispl-model cache) bw::*boxgl-device* x y wid hei))
+
+(defun gl-gdisp-list-rect-skip (cache device x y wid hei &key (rgb (boxgl-device-pen-color device))
                                                                  (pen-size (boxgl-device-pen-size bw::*boxgl-device*))
                                                                  (buffered-size (* *cffi-float-size* (* 6 6))))
 ;   (unless (and (equal (coerce x0 'single-float) (coerce x1 'single-float)) (equal (coerce y0 'single-float) (coerce y1 'single-float)))
@@ -95,6 +104,12 @@
 (defun gl-gdisp-list-line-segment (cache device x0 y0 x1 y1 &key (rgb (boxgl-device-pen-color device))
                                                                  (pen-size (boxgl-device-pen-size bw::*boxgl-device*))
                                                                  (buffered-size (* *cffi-float-size* (* 6 6))))
+  (add-line (gdispl-model cache) bw::*boxgl-device* x0 y0 x1 y1)
+)
+
+(defun gl-gdisp-list-line-segment-skip (cache device x0 y0 x1 y1 &key (rgb (boxgl-device-pen-color device))
+                                                                 (pen-size (boxgl-device-pen-size bw::*boxgl-device*))
+                                                                 (buffered-size (* *cffi-float-size* (* 6 6))))
   (unless (and (equal (coerce x0 'single-float) (coerce x1 'single-float)) (equal (coerce y0 'single-float) (coerce y1 'single-float)))
     ;; We don't need to buffer this again if it was already added in a previous repaint of the gdisp list
     (when (> (+ (buf-count cache) buffered-size) (buf-max cache))
@@ -121,12 +136,14 @@
 ))
 
 (defun gl-gdisp-list-draw (cache device)
-  (format *standard-output* "~%gl-gdisp-list-draw ~A" (buf-count cache))
+  ; (format *standard-output* "~%gl-gdisp-list-draw ~A" (buf-count cache))
 
-  (enable-gl-objects device :program (shader-program (lines-shader device))
-                            :vao     (vao cache)
-                            :buffer  (buffer cache))
+  ; (enable-gl-objects device :program (shader-program (lines-shader device))
+  ;                           :vao     (vao cache)
+  ;                           :buffer  (buffer cache))
 
-  (gl:draw-arrays :triangles 0 (/ (buf-max cache) 6))
+  ; (gl:draw-arrays :triangles 0 (/ (buf-max cache) 6))
+  (draw (gdispl-model cache))
   (setf (buf-max cache) (max (buf-max cache) (buf-count cache)))
-  (setf (buf-count cache) 0))
+  (setf (buf-count cache) 0)
+  )

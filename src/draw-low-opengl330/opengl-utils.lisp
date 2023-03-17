@@ -155,7 +155,10 @@ Modification History (most recent at the top)
       (unless (null x) ; both run out @ same time
         (error "Unpaired vertex in ~A" x-and-y-s)))
       (when prev-x
-        (boxer::gl-add-line *boxgl-device* prev-x prev-y x y))
+        (if boxer::*cur-gl-model-screen-obj*
+          (when (boxer::needs-update boxer::*cur-gl-model-screen-obj*)
+            (boxer::add-line boxer::*cur-gl-model-screen-obj* bw::*boxgl-device* prev-x prev-y x y))
+          (boxer::gl-add-line *boxgl-device* prev-x prev-y x y)))
       (setf prev-x x prev-y y))))
 
 ;;;; FONTS
