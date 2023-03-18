@@ -3192,6 +3192,16 @@ Modification History (most recent at top)
 ;;;; FILE: boxwin-opengl.lisp
 ;;;;
 
+;; 2023-03-18 used to be set in get-boxer-input, but nowhere else or used
+(defvar *literal-input?* nil)
+
+(defun get-boxer-input (&optional (window *boxer-pane*))
+  (declare (ignore window))
+  (let ((*literal-input?* t))
+    (mp::process-wait "Input" #'(lambda () (not (null *boxer-eval-queue*)))))
+...
+
+
 (defvar *boxer-frame-initial-width* 800) ;(- (screen-width (convert-to-screen)) 200)
 (defvar *boxer-frame-initial-height* 600);(- (screen-height (convert-to-screen))100)
 

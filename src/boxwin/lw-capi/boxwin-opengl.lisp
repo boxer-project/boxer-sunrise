@@ -939,9 +939,6 @@ in macOS."
 
 (defun click-sound () (capi::beep-pane))
 
-
-(defvar *literal-input?* nil)
-
 ;; TODO 2021-06-28 TODO Investigate that there is a matching set of event-id
 ;; declarations, but prefixed with boxer- in keydef-high.lisp. What is the relationship
 ;; and do we need both sets of them for something?
@@ -1154,8 +1151,7 @@ in macOS."
 
 (defun get-boxer-input (&optional (window *boxer-pane*))
   (declare (ignore window))
-  (let ((*literal-input?* t))
-    (mp::process-wait "Input" #'(lambda () (not (null *boxer-eval-queue*)))))
+  (mp::process-wait "Input" #'(lambda () (not (null *boxer-eval-queue*))))
 
   (loop (let ((ev (pop *boxer-eval-queue*)))
           (when (or (key-event? ev) (mouse-event? ev) (system:gesture-spec-p ev))
