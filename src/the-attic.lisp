@@ -3192,6 +3192,12 @@ Modification History (most recent at top)
 ;;;; FILE: boxwin-opengl.lisp
 ;;;;
 
+(defun abort-event? (char)
+  (and (characterp char)
+       (or ;; sgithens TODO (char= char #\control-\g)
+           (char= char #\escape))))
+           ;; sgithens TODO (char= char #\control-\.))))
+
 (defparameter *boxer-window-left-margin* 50)
 (defparameter *boxer-window-right-margin* 50)
 

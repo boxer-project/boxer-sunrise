@@ -1102,12 +1102,6 @@ in macOS."
            (record-mouse-state 0 mx my)
            (values mx my)))))
 
-(defun abort-event? (char)
-  (and (characterp char)
-       (or ;; sgithens TODO (char= char #\control-\g)
-           (char= char #\escape))))
-           ;; sgithens TODO (char= char #\control-\.))))
-
 (defun abort-gesture? (g)
   (and (typep g 'sys::gesture-spec)
        (let ((code (sys::gesture-spec-data g)))
