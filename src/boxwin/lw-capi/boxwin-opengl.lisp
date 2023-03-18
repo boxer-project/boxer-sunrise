@@ -770,9 +770,6 @@ in macOS."
        (stringp key)
        key))
 
-(defvar *boxer-frame-initial-width* 800) ;(- (screen-width (convert-to-screen)) 200)
-(defvar *boxer-frame-initial-height* 600);(- (screen-height (convert-to-screen))100)
-
 ;; some menu inits have to be preformed after the window is displayed
 (defun fixup-menus ()
   ;; font color menu needs to be updated
