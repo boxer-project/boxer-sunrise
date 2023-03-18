@@ -3192,6 +3192,54 @@ Modification History (most recent at top)
 ;;;; FILE: boxwin-opengl.lisp
 ;;;;
 
+(defparameter *boxer-window-left-margin* 50)
+(defparameter *boxer-window-right-margin* 50)
+
+;; 2023-03-18 Removing unused boxer-abort-handler keydefs and defun
+;((#\. :control :press) boxer-abort-handler)
+;((#\g :control :press) boxer-abort-handler)
+
+;; unused, see handlers in top level interface def
+(defun boxer-abort-handler (w x y)
+  (declare (ignore w x y))
+  (format t "~&ABORT !!"))
+
+;; 2023-03-18 Removing bits of expose-window-handlers that aren't used anymore, ideally because
+;;            we've put all the repainting in correct locations in the pane callbacks so that
+;;            things don't lock up anymore.
+
+;; ?? is this called as a result of a display ?
+;; might have to funcall through a symbol which changes
+;; at the end of the graphics variable bootstrapping process
+;; redisplay
+;; x y wid hei define the invalidated region
+
+(defvar *expose-window-handler-function* 'bootstrap-expose-window-function)
+
+ ;;  :display-callback 'boxer-expose-window-handler
+ (defun boxer-expose-window-handler (pane x y wid hei)
+  (declare (ignore x y))
+  (cond ((not (null *display-bootstrapping-no-boxes-yet*))
+         ;(rendering-on (pane) (ogl-init wid hei))
+         )
+        ((null *suppress-expose-handler*)
+         (opengl:rendering-on (pane) (ogl-init wid hei))  ;(ogl-reshape wid hei)
+         (redraw-status-line)
+         (boxer::repaint))
+        (t nil)))
+
+(defun bootstrap-expose-window-function (wid hei)
+  (declare (ignore wid hei))
+  ;; a stub
+  nil)
+
+(defun expose-window-function (wid hei)
+  (declare (ignore wid hei))
+;  (unless *suppress-expose-handler*
+    (redraw-status-line)
+    (boxer::repaint))
+;)
+
 ;; 2022-06-13 This is actually coming from eval-command-loop.lisp, but historically was in
 ;; boxwin-opengl. We are finally retiring the old versions of these delayed mouse clicks.
 ;; This comment covers the removal of *double-click-pause-time*, *use-mouse2021*,

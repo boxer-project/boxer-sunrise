@@ -164,12 +164,8 @@
 (defparameter *boxer-pane-minimum-width*  300)
 (defparameter *boxer-pane-minimum-height* 200)
 
-(defparameter *boxer-window-left-margin* 50)
-(defparameter *boxer-window-right-margin* 50)
-
 (defparameter *boxgl-device* nil)
 
-
 ;;;;; Menus
 
 (defvar *font-sub-font-menu*
@@ -532,14 +528,10 @@
                               ((:button-3 :motion :control :meta) boxer-track-mouse-handler)
                               ;; what are keys ?
                               ((:key :press)  boxer-key-handler)
-                              ;((#\. :control :press) boxer-abort-handler)
-                              ;((#\g :control :press) boxer-abort-handler)
                               ;; We are binding this empty gesture spec hander... because if we don't then non graphic
                               ;; keys like return, backspace, and arrows make a beeping sound.  sgithens - 2021-11-06
                               (:gesture-spec gesture-spec-handler)
                               )
-              ;;  :display-callback 'boxer-expose-window-handler
-              ;;  :create-callback
                :display-callback 'boxer-window::boxer-pane-display-callback
                :resize-callback 'boxer-window::boxer-pane-display-callback
 
@@ -1222,16 +1214,8 @@ in macOS."
            (get-character-input window
                                 :plain-char-wanted? plain-char-wanted?)))))
 
-
-;; unused, see handlers in top level interface def
-(defun boxer-abort-handler (w x y)
-  (declare (ignore w x y))
-  (format t "~&ABORT !!"))
-
 ;; error
 (defvar *automagic-lisp-error-handling* nil)
-
-
 
 ;; mouse state
 ;;
@@ -1304,14 +1288,6 @@ in macOS."
   (warp-pointer *boxer-pane* ,original-x-variable ,max-y))
        (t (progn . ,body)))))
 
-;; ?? is this called as a result of a display ?
-;; might have to funcall through a symbol which changes
-;; at the end of the graphics variable bootstrapping process
-;; redisplay
-;; x y wid hei define the invalidated region
-
-(defvar *expose-window-handler-function* 'bootstrap-expose-window-function)
-
 ;; we use this to supress full redisplays around file operations and eval
 ;; there are 2? possible ways that redisplay can be called asynchronously, via the
 ;; expose window handler or the resize window handler
@@ -1324,29 +1300,6 @@ in macOS."
          . ,body)
      (setq *suppress-expose-handler* nil
            *suppressed-actions* nil)))
-
-(defun boxer-expose-window-handler (pane x y wid hei)
-  (declare (ignore x y))
-  (cond ((not (null *display-bootstrapping-no-boxes-yet*))
-         ;(rendering-on (pane) (ogl-init wid hei))
-         )
-        ((null *suppress-expose-handler*)
-         (opengl:rendering-on (pane) (ogl-init wid hei))  ;(ogl-reshape wid hei)
-         (redraw-status-line)
-         (boxer::repaint))
-        (t nil)))
-
-(defun bootstrap-expose-window-function (wid hei)
-  (declare (ignore wid hei))
-  ;; a stub
-  nil)
-
-(defun expose-window-function (wid hei)
-  (declare (ignore wid hei))
-;  (unless *suppress-expose-handler*
-    (redraw-status-line)
-    (boxer::repaint))
-;)
 
 (defun scroll-handler (output-pane direction scroll-operation scroll-amount &key interactive)
   "Scrolls the screen box that the mouse is in based on the direction of the scrolling gestures from
