@@ -1112,14 +1112,6 @@ in macOS."
                            (= code #.(char-code #\g))
                            (= code #.(char-code #\.)))))))))
 
-;;for debugging
-(defvar *saved-keys* nil)
-(defvar *save-key-length* 40)
-
-(defun save-key (char)
-  (if (> (length *saved-keys*) *save-key-length*)
-      (setq *saved-keys* (nconc (cdr *saved-keys*) (list char)))
-    (setq *saved-keys* (nconc *saved-keys* (list char)))))
 
 ;; the main key handler
 
@@ -1127,7 +1119,6 @@ in macOS."
   ;; reset any popup docs...
   (next-event-id)
   (undocument-mouse)
-  (save-key gesture)
   (cond ((abort-gesture? gesture)
         (if (or boxer::*evaluation-in-progress?*
                 boxer-eval::*enable-interrupt-polling-in-editor*)

@@ -3192,6 +3192,16 @@ Modification History (most recent at top)
 ;;;; FILE: boxwin-opengl.lisp
 ;;;;
 
+;;for debugging
+(defvar *saved-keys* nil)
+(defvar *save-key-length* 40)
+
+(defun save-key (char)
+  (if (> (length *saved-keys*) *save-key-length*)
+      (setq *saved-keys* (nconc (cdr *saved-keys*) (list char)))
+    (setq *saved-keys* (nconc *saved-keys* (list char)))))
+
+
 (defun abort-event? (char)
   (and (characterp char)
        (or ;; sgithens TODO (char= char #\control-\g)
