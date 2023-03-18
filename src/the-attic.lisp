@@ -3192,6 +3192,9 @@ Modification History (most recent at top)
 ;;;; FILE: boxwin-opengl.lisp
 ;;;;
 
+(defvar *boxer-frame-initial-width* 800) ;(- (screen-width (convert-to-screen)) 200)
+(defvar *boxer-frame-initial-height* 600);(- (screen-height (convert-to-screen))100)
+
 ;;for debugging
 (defvar *saved-keys* nil)
 (defvar *save-key-length* 40)

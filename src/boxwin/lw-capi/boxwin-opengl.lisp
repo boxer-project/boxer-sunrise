@@ -718,8 +718,8 @@
 ;;; ;  (:menu-bar file-menu)
   (:default-initargs
    :title "Boxer"
-   :width  *boxer-frame-initial-width*
-   :height *boxer-frame-initial-height*
+   :width  800
+   :height 600
    :confirm-destroy-function 'lw-quit
    :help-callback 'do-tooltip-help
    ; :toolbar-items (make-toolbar-items)
