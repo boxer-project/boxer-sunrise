@@ -301,13 +301,36 @@
     capi:toolbar
     :image-width 16 :image-height 16
     :flatp t
-    :items (make-toolbar-items)
+    :items (make-text-dropdown-toolbar-items)
     :default-image-set
                         (capi:make-general-image-set
                          :image-count 10
                          :id (gp:read-external-image
-                               (merge-pathnames "./images/boxer16x16icons.png" boxer::*resources-dir*)))
-   )
+                               (merge-pathnames "./images/boxer16x16icons.png" boxer::*resources-dir*))))
+   (text-buttons-toolbar
+    capi:toolbar
+    :image-width 16 :image-height 16
+    :flatp t
+    :items (make-text-buttons-toolbar-items)
+    :default-image-set
+                        (capi:make-general-image-set
+                         :image-count 10
+                         :id (gp:read-external-image
+                               (merge-pathnames "./images/boxer16x16icons.png" boxer::*resources-dir*))))
+   (actions-toolbar ; toolbar for eval, toggling closets, top-level...
+    capi:toolbar
+    :image-width 16 :image-height 16
+    :flatp t
+    :items (make-action-toolbar-items)
+    :default-image-set
+                        (capi:make-general-image-set
+                         :image-count 10
+                         :id (gp:read-external-image
+                               (merge-pathnames "./images/boxer16x16icons.png" boxer::*resources-dir*))))
+   (box-decoration-toolbar ;; Toolbar for box border and background colors
+    capi:toolbar
+    :flatp t
+    :items (make-box-decoration-toolbar-items))
    (name-pane capi:title-pane :text "status line"
               :min-width nil :max-width :screen-width
               :visible-min-height *boxer-status-pane-height*
@@ -547,8 +570,11 @@
                ))
   (:layouts
    (boxer-layout capi:column-layout
-                '(text-toolbar name-pane boxer-pane status-bar-pane)
-                 :columns 1 :rows 2 :y-gap 1 :x-uniform-size-p t))
+                '(all-toolbars name-pane boxer-pane status-bar-pane)
+                 :columns 1 :rows 2 :y-gap 1 :x-uniform-size-p t)
+   (all-toolbars capi:row-layout
+                 '(text-toolbar text-buttons-toolbar nil actions-toolbar nil box-decoration-toolbar)
+                 :ratios '(1 1 20 1 20 1)))
   ;; menu item actions are defined in lw-menu.lisp
   (:menus
     (file-menu "File" (
@@ -819,7 +845,7 @@ in macOS."
      (push 'boxer-pane new-desc)
      (push 'name-pane new-desc)
      (if *boxer-window-show-toolbar-p*
-                (push 'text-toolbar new-desc))
+                (push 'all-toolbars new-desc))
      (if layout
        (setf (capi:layout-description layout) new-desc))))
 
