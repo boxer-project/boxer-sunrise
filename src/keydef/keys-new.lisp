@@ -124,21 +124,27 @@
 
 ;;;; [] Cutting and Pasting
 
-(boxer-eval::defboxer-key (bu::x-key 2) com-cut-region)
+;; 2023-03-19 Commenting out these cut/copy/paste/yank/etc commands
+;;            for now since they are bound at the operating system
+;;            too Command-xyz versions for macOS. We don't want the
+;;            control versions here anyways. We will need to resolve
+;;            this further for the Windows build unless they are all
+;;            bound at the OS level as well.
+; (boxer-eval::defboxer-key (bu::x-key 2) com-cut-region)
 
-(boxer-eval::defboxer-key (bu::c-key 2) com-copy-region)
+; (boxer-eval::defboxer-key (bu::c-key 2) com-copy-region)
 
-(boxer-eval::defboxer-key (bu::v-key 2) com-yank)
+; (boxer-eval::defboxer-key (bu::v-key 2) com-yank)
 
-(boxer-eval::defboxer-key (bu::v-key 4) com-retrieve)
-(boxer-eval::defboxer-key (bu::y-key 2) com-retrieve)
+; (boxer-eval::defboxer-key (bu::v-key 4) com-retrieve)
+; (boxer-eval::defboxer-key (bu::y-key 2) com-retrieve)
 
 ;;;; [] Other Important
 
 (boxer-eval::defboxer-key (bu::.-key 2) com-abort)
 
 ;; Find
-(boxer-eval::defboxer-key (bu::f-key 2) com-search-forward)
+(boxer-eval::defboxer-key (bu::f-key 8) com-search-forward)
 
 (boxer-eval::defboxer-key (bu::f-key 4) com-search-backward)
 
@@ -232,6 +238,11 @@
 ;;; Characters
 (boxer-eval::defboxer-key bu::left-arrow-key com-backward-cha)
 (boxer-eval::defboxer-key bu::Right-Arrow-key com-forward-cha)
+
+; Some extra bindings, historically from emacs, but they work by default on macOS applications
+(boxer-eval::defboxer-key (bu::b-key 2) com-backward-cha)
+(boxer-eval::defboxer-key (bu::f-key 2) com-forward-cha)
+
 
 ;; Words
 (boxer-eval::defboxer-key (bu::Left-Arrow-key 2) com-backward-word)
