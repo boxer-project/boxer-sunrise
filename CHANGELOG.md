@@ -1,5 +1,95 @@
 # Change Log
 
+## 3.4.12 2023-03-20
+
+This is a very alpha release marking a halfway point to the modernization of our OpenGL graphics layer.
+Until this release our graphics painting was using the deprecated fixed function pipeline OpenGL API's.
+This release features entirely rewritten drawing operations with GLSL shaders. All operations have been
+updated, as enabling a core GL context completely disables the older fixed functions. However, there is
+some remaining work to be done managing our VAO/VBO buffers, as a result, screen rendering is currently
+slower than before for some complex microworlds. Buffer management will be a focus over the next several
+builds, as we speed up the existing operations/tests and then add new features for visual effects and
+support for turtles with *large* numbers of primitives.
+
+Some known visual issues:
+
+- Slower in some of the performance heavy microworlds and with lots of text.
+- Fonts seem to be a bit too anti-aliased/multisampled in some places, so that they look a bit too blurry.
+- Name only shrunken boxes left and right borders stick down a pixel or two.
+- Unfilled circle line widths are too thin.
+
+Outside of this OpenGL rewrite, we've added a new Error dialog that is opened on errors giving the user the
+option continue execution or quit. This is a vast improvement from the previous behavior of launching an
+external terminal emulator with a lisp debugger. However, this is a user preference to launch the debugger
+rather than a dialog for developers to debug causes of error.
+
+The toolbar has received a little bit of love, with some minor aesthetics in addition to hover over tooltip
+text for all entries. Some minor keybinding updates. The Boxer icon has been updated to have rounded corners
+and take up less space to fit the style of other application icons on the dock and task switcher on macOS.
+(You may need to restart Boxer once or twice for the old icon to no longer be cached.)
+
+This build has been tested on macOS Catalina, Big Sur, Monterey, and Ventura on both x86/ARM.
+
+### Full Change Log
+
+bugs-157 Using border color for shrunk box types
+
+bugs-158
+  - Adding tooltip hover overs to toolbar items.
+  - Some initial clumping of toolbar-icons so that they spread out in their groups.
+  - Painting the start/stop icons green/red. Resizing the boxer icns and rounding the corners so it fits in.
+
+sunrise-63 Error Dialog for users (rather than always opening a debugger in a terminal)
+
+sunrise-25
+  - New copy of lispworks opengl from LW 8.0.1
+    Adding a new copy of the lispworks opengl under version control
+    to apply the fixes for using openGL 3.30 shader contexts with.
+    Ability to pass in :modern for an openGL 3.2core context.
+  - Complete update of all drawing methods from openGL fixed functions to openGL 3.2 Shaders.
+    See extensive commit log from the past several months for details.
+
+keybindings Cleaning up copy/paste, rebinding find and cha movement
+
+    - Removing extraneous bindings for cut/copy/paste
+    - Rebinding find to Command-F
+    - Binding control-f and control-b to forward and backward cha
+
+refactor
+  - Cleaning up defuns repaint and repaint-internal
+
+the-attic
+  - Removing #-opengl usages
+    - Removed old-value and top-guy slots and usage
+    - Removed numerous calls to with-graphics-screen-parameters
+    - Removed call to drawing-on-bitmap
+    - Removed pre openGL version of redisplay primitive
+  - Removing commented out cached-border-info slot and usage
+  - Moving unused defmacro redisplaying-box to the attic.
+  - Removing needs-repaint-pass-1? and 2
+    - These always return t now since we are painting every frame in
+      openGL
+  - Removing no longer used slot inf-shift from defclass screen-box
+  - Removing *check-bit-array-color*
+  - Removing defuns erase-chas-to-eol, erase-screen-cha, erase-screen-chas
+  - Removing commented out slots:
+      screen-obj: new-wid, new-hei, new-x-got-clipped?, new-y-got-clipped?
+      screen-row: out-of-synch-mark
+  - Removing old #+MCL param to with-mouse-tracking-inside
+  - Moving unused defun quote-wild-char from file-prims to the attic.
+  - Cleaning up unused bits of boxwin-opengl
+    - defparameters *boxer-window-left-margin*, *boxer-window-right-margin*
+    - defvars *expose-window-handler-function*
+    - defuns boxer-abort-handler, boxer-expose-window-handler, bootstrap-expose-window-function,
+      expose-window-function
+  - Removing unused abort-event?
+  - Removing unused save-keys defun
+    - defvars *saved-keys*, *save-key-length*
+    - defun save-key
+  - Removing extra global vars which are immediately updated by *starting-window-width* and height on init
+  - Removing near exact copy of boxer-system-error-restart-loop was only used in the dribbler
+  - Removed unused defvar *literal-input?*
+
 ## 3.4.11 2022-10-31
 
 ### Overview
