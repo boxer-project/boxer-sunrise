@@ -346,7 +346,9 @@
                               ;#+linux '(:rgba t :depth nil :double-buffered t ) ;:aux 1) TODO This aux option crashes LW on linux
                :input-model '(((:button-1 :press) boxer-click-1-handler)
                               ((:button-2 :press) boxer-click-2-handler)
-                              ((:button-3 :press) boxer-click-3-handler)
+                              ; ((:button-3 :press) boxer-click-3-handler)
+                              ((:button-3 :press) boxer::com-mouse-all-purpose-pop-up)
+
 
                               ;; shift
                               ((:button-1 :press :shift) boxer-click-1-handler :bits 1)
@@ -749,6 +751,7 @@
    :confirm-destroy-function 'lw-quit
    :help-callback 'do-tooltip-help
    ; :toolbar-items (make-toolbar-items)
+   :window-styles '(:internal-borderless)
    ))
 
 (defvar *macos-finished-launching* nil

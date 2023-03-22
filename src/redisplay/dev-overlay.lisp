@@ -17,7 +17,11 @@
 ;;;;        various bits of helpful information.
 (in-package :boxer)
 
-(defvar *show-dev-overlay* nil
+(defvar *show-outer-border* t
+  "Whether or not to paint the outside screen box border.
+  This is currently for prototyping a lighterweight editing experience.")
+
+(defvar *show-dev-overlay* t
   "Whether or not paint the development and debug overlay in the corner.")
 
 (defun repaint-dev-overlay (&optional (process-state ""))
@@ -28,7 +32,7 @@
       (let* ((code-font (make-boxer-font '("Courier New" 14)))
             (maxish-width (string-wid code-font "Repaint: 1000.00ms/fr"))
             (line-height (string-hei code-font))
-            (x (- (slot-value *boxer-pane* 'graphics-ports::width) (+ maxish-width 40)))
+            (x (- (slot-value *boxer-pane* 'graphics-ports::width) (+ maxish-width 80)))
             (y (- (slot-value *boxer-pane* 'graphics-ports::height) 120))
             (mx bw::*track-mouse-x*)
             (my bw::*track-mouse-y*)
@@ -58,6 +62,8 @@
                             (format nil "x-got-clipped?: ~A" (screen-obj-x-got-clipped? mouse-screen-box))
                             (format nil "y-got-clipped?: ~A" (screen-obj-y-got-clipped? mouse-screen-box))
                             (format nil "max-scroll-wid: ~A" (slot-value mouse-screen-box 'boxer::max-scroll-wid))
+                            (format nil "screen-obj:" (screen-obj-at *outermost-screen-box* bw::*track-mouse-x* bw::*track-mouse-y*))
+                            (format nil "~A" (screen-obj-at *outermost-screen-box* bw::*track-mouse-x* bw::*track-mouse-y*))
                             ))
           (draw-string code-font item x (+ 30 (* line-height debug-num)))
           (setf debug-num (1+ debug-num))

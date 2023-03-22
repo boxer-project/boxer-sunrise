@@ -740,6 +740,76 @@ Modification History (most recent at top)
 ;;    Properties
 ;;
 
+(defvar *all-purpose-popup-menu*
+  (make-instance 'popup-menu
+                    :items (list
+                                  (make-instance 'menu-item
+                                    :title "Cut"
+                                    :action 'com-cut-region)
+                                  (make-instance 'menu-item
+                                    :title "Copy"
+                                    :action 'com-copy-region)
+                                  (make-instance 'menu-item
+                                    :title "Paste"
+                                    :action 'com-yank)
+                                  ; (make-instance 'menu-item
+                                  ;   :title "-----------")
+                                  (make-instance 'menu-item
+                                    :title "-----------")
+                                  (make-instance 'menu-item
+                                    :title "Fullscreen"
+                                    :action 'com-hotspot-full-screen-box)
+                                  (make-instance 'menu-item
+                                    :title "Normal"
+                                    :action 'com-hotspot-normal-size-box )    ;   'com-hotspot-expand-box)
+                                  (make-instance 'menu-item
+                                    :title "Shrunk"
+                                    :action 'com-hotspot-shrink-box)
+                                  (make-instance 'menu-item
+                                    :title "Supershrunk"
+                                    :action 'com-hotspot-supershrink-box)
+                                  (make-instance 'menu-item
+                                    :title "-----------")
+                                  (make-instance 'menu-item
+                                    :title "Open Closet"
+                                    :action 'com-hotspot-toggle-closet)
+                                  (make-instance 'menu-item
+                                    :title "Properties"
+                                    :action 'com-edit-box-properties)
+                                    )))
+
+(defun update-all-purpose-menu (box)
+  (let ((fullscreen-item  (nth 4    (menu-items *all-purpose-popup-menu*)))
+        (normal-item      (nth 5   (menu-items *all-purpose-popup-menu*)))
+        (shrink-item      (nth 6  (menu-items *all-purpose-popup-menu*)))
+        (supershrink-item (nth 7 (menu-items *all-purpose-popup-menu*)))
+        (closet-item      (nth 9  (menu-items *all-purpose-popup-menu*)))
+        (properties-item  (nth 10  (menu-items *all-purpose-popup-menu*))))
+    (set-menu-item-title fullscreen-item "Fullscreen")
+    (menu-item-enable fullscreen-item)
+    (set-menu-item-title normal-item "Normal")
+    (set-menu-item-title shrink-item "Shrunk")
+
+    (if (and (graphics-box? box) (display-style-graphics-mode? (display-style-list box)))
+      (menu-item-disable fullscreen-item))
+
+    (cond ((eq box (outermost-box))
+          ;;  (menu-item-enable fullscreen-item)
+           (set-menu-item-title fullscreen-item "- Fullscreen"))
+          ((eq (display-style box) ':normal)
+           (set-menu-item-title normal-item "- Normal"))
+          ((eq (display-style box) ':shrunk)
+           (set-menu-item-title shrink-item "- Shrunk"))
+          (t
+           nil))
+
+    (let ((closet-row (slot-value box 'closets)))
+          (if (or (null closet-row) (null (row-row-no box closet-row)))
+              ;; either there's no closet or it's currently closed...
+              (set-menu-item-title closet-item "Open Closet")
+              (set-menu-item-title closet-item "Close Closet")))
+  ))
+
 (defvar *boxsize-closet-properties-popup-menu*
   (make-instance 'popup-menu
                     :items (list  (make-instance 'menu-item
@@ -862,6 +932,47 @@ Modification History (most recent at top)
 (defun top-right-hotspot-on? (edbox)
   (or (and *global-hotspot-control?* *top-right-hotspots-on?*)
       (and (not *global-hotspot-control?*) (top-right-hotspot-active? edbox))))
+
+(defboxer-command com-mouse-all-purpose-pop-up (&optional (window *boxer-pane*)
+                                       (x (bw::boxer-pane-mouse-x))
+                                       (y (bw::boxer-pane-mouse-y))
+                                       (mouse-bp
+                                        (mouse-position-values x y))
+                                       (click-only? t)
+                                       )
+  "Pop up a box attribute menu"
+  window x y ;  (declare (ignore window x y))
+  (let* ((items (list "Cut" "Copy" "Paste" "" "Fullscreen" "Normal" "Shrunk" "Supershrunk"
+  "" "Open Closet" "Properties"
+                      ))
+         (menu (make-instance 'capi:menu :items items)))
+    ; (capi:display-popup-menu menu :owner *boxer-pane*)
+    (capi:display-popup-menu menu :owner *boxer-pane* :x x :y y)
+
+    )
+  ;; first, if there already is an existing region, flush it
+  ; (reset-region) (reset-editor-numeric-arg)
+  ; (let* ((screen-box (bp-screen-box mouse-bp))
+  ;        (box-type (box-type screen-box))
+  ;        (swid (screen-obj-wid screen-box))
+  ;        (edbox (screen-obj-actual-obj screen-box))
+  ;        (*hotspot-mouse-box* edbox)
+  ;        (*hotspot-mouse-screen-box* screen-box))
+  ;   (if (and (not click-only?)
+  ;            (mouse-still-down-after-pause? 0)) ; maybe *mouse-action-pause-time* ?
+  ;       (multiple-value-bind (left top right)
+  ;           (box-borders-widths box-type screen-box)
+  ;         (declare (ignore left))
+  ;         ;; will probably have to fudge this for type tags near the edges of
+  ;         ;; the screen-especially the bottom and right edges
+  ;         (multiple-value-bind (abs-x abs-y) (xy-position screen-box)
+  ;           (update-all-purpose-menu edbox)
+  ;           ;; the coms in the pop up rely on this variable
+  ;           ;; (menu-select *tr-popup* (- (+ abs-x swid) right) (+ abs-y top))
+  ;           (menu-select *all-purpose-popup-menu* x y)
+  ;           ))
+  ;       ))
+  boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-boxsize-closet-properties-pop-up (&optional (window *boxer-pane*)
                                        (x (bw::boxer-pane-mouse-x))

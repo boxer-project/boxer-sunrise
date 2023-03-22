@@ -388,6 +388,9 @@
 ;;; plain clicks on middle of boxes
 ;;;
 
+;; prototyping lightweight editor
+(boxer-eval::defboxer-key bu::mouse-right-down com-mouse-all-purpose-pop-up)
+
 ;; 2021-02-24 These have been consolidated now in to one set of bindings for MacOS, Windows, Linux
 ;; The ctrl click bindings were previously set to Command clicks on MacOS, although that had actually
 ;; been binding to ctrl. Once we fix Command bindings, perhaps these bindings should be reviewed,

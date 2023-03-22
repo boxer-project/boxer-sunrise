@@ -309,9 +309,10 @@
      . ,body))
 
 (defun box-borders-draw (box-type screen-box)
-  (case box-type
-    (port-box (port-borders-draw screen-box))
-    (t (plain-borders-draw screen-box))))
+  (unless (and (eq screen-box *outermost-screen-box*) (null *show-outer-border*))
+    (case box-type
+      (port-box (port-borders-draw screen-box))
+      (t (plain-borders-draw screen-box)))))
 
 ;; this is drawn in a transformed coord system...
 (defun plain-borders-draw (screen-box)
