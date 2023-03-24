@@ -695,32 +695,3 @@
   ;; @ this point all the blinkers are the correct size and inthe right place...
   (drawing-on-window (window)
     (dolist (blinker (interval-blinker-list region)) (draw-blinker blinker))))
-
-;;;; mousy stuff
-
-;;;; this function tells if the mouse is on top of the current region.
-
-
-(defun mouse-on-region-being-defined-p ()
-  (if (null boxer::*region-being-defined*)
-      nil
-      (let ((blinker-list (boxer::interval-blinker-list boxer::*region-being-defined*)))
-        (multiple-value-bind (m-x m-y) (bw::mouse-window-coords)
-          (dolist (b-row blinker-list)
-            (if (coords-on-blinker-row m-x m-y b-row)
-                (return t)))))))
-
-(defun coords-on-blinker-row (m-x m-y b-row)
-  (if (null b-row) nil)
-  (let* ((x-low (region-row-blinker-x b-row))
-         (x-high (+ (region-row-blinker-x b-row)
-                    (bw::region-row-blinker-width b-row)))
-
-         (y-low (region-row-blinker-y b-row))
-         (y-high (+ (region-row-blinker-y b-row)
-                    (bw::region-row-blinker-height b-row))))
-    (and (and (< m-x x-high) (> m-x x-low))
-         (and (< m-y y-high) (> m-y y-low)))))
-
-
-
