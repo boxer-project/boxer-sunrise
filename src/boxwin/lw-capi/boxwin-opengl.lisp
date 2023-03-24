@@ -1436,15 +1436,11 @@ in macOS."
 
 ;;;; Blinkers, mostly copied from clx
 
-(defstruct (blinker (:conc-name blinker-)
-        (:constructor %make-blinker))
+(defstruct (blinker (:conc-name blinker-))
   (x 0)
   (y 0)
   (width 0)
   (height 0)  )
-
-(defun make-blinker (&rest plist)
-  (apply #'%make-blinker plist))
 
 ;; Of course the nice thing to do would be to make this generic and
 ;; define blinkers with DEFCLASS but I'm worried about speed at
@@ -1462,12 +1458,8 @@ in macOS."
 
 ;;;; Region Row Blinkers...
 (defstruct (region-row-blinker (:include blinker)
-             (:predicate region-row-blinker?)
-             (:constructor %make-region-row-blinker))
+             (:predicate region-row-blinker?))
   (uid nil))
-
-(defun make-region-row-blinker (&rest plist)
-  (apply #'%make-region-row-blinker plist))
 
 ;; This is a crock. depends too much on *point-blinker* being the correct
 ;; thing need to change the window representation so we can ask a window
