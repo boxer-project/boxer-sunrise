@@ -443,46 +443,6 @@
 ;;; corresponding to screen representation(s) for the rows which make
 ;;; up the region
 
-(defun allocate-region-row-blinker (screen-row)
-  (let ((new-blinker (make-region-row-blinker)))
-    (setf (bw::region-row-blinker-uid new-blinker) screen-row)
-    new-blinker))
-
-;;; Accessor Macros...
-(defsubst region-row-blinker-wid (region)
-  (bw::blinker-width region))
-
-(defsubst region-row-blinker-hei (region)
-  (bw::blinker-height region))
-
-(defsubst region-row-blinker-x (region)
-  (bw::blinker-x region))
-
-(defsubst region-row-blinker-y (region)
-  (bw::blinker-y region))
-
-(defsubst region-row-blinker-uid (region)
-  (bw::region-row-blinker-uid region))
-
-;;; setf's
-
-(defsetf region-row-blinker-wid (region) (new-wid)
-  `(setf (bw::blinker-width ,region) ,new-wid))
-
-(defsetf region-row-blinker-hei (region) (new-hei)
-  `(setf (bw::blinker-height ,region) ,new-hei))
-
-(defsetf region-row-blinker-x (region) (new-x)
-  `(setf (bw::blinker-x ,region) ,new-x))
-
-(defsetf region-row-blinker-y (region) (new-y)
-  `(setf (bw::blinker-y ,region) ,new-y))
-
-(defsetf region-row-blinker-uid (region) (new-uid)
-  `(setf (bw::region-row-blinker-uid ,region) ,new-uid))
-
-
-
 ;;; We provide two different messages for redisplay of regions.  One of them
 ;;; will just mark the screen rows corresponding to the region in
 ;;; the *CURRENT-SCREEN-BOX* while the other one will mark *ALL* the screen
@@ -512,17 +472,17 @@
         (xy-position screen-row)
                                         ;      ;; Blinker positions are measured with the borders included
                                         ;      (FIXUP-COORDINATES-FOR-BLINKER X Y REGION-ROW-BLINKER)
-      (when (or (not (= wid (region-row-blinker-wid region-row-blinker)))
-                (not (= hei (region-row-blinker-hei region-row-blinker)))
-                (not (= x   (region-row-blinker-x   region-row-blinker)))
-                (not (= y   (region-row-blinker-y   region-row-blinker))))
+      (when (or (not (= wid (blinker-wid region-row-blinker)))
+                (not (= hei (blinker-hei region-row-blinker)))
+                (not (= x   (blinker-x   region-row-blinker)))
+                (not (= y   (blinker-y   region-row-blinker))))
         ;; might be better to use timestamps (we might
         ;; have to use timestamps in addition anyway)
-        (setf (region-row-blinker-wid region-row-blinker)
+        (setf (blinker-wid region-row-blinker)
               (if (zerop wid) *minimum-row-blinker-wid* wid))
-        (setf (region-row-blinker-hei region-row-blinker) hei)
-        (setf (region-row-blinker-x region-row-blinker) x)
-        (setf (region-row-blinker-y region-row-blinker) y)))))
+        (setf (blinker-hei region-row-blinker) hei)
+        (setf (blinker-x region-row-blinker) x)
+        (setf (blinker-y region-row-blinker) y)))))
 
 (defun left-half-blinker-trim (blinker cha-no)
   (let* ((screen-row (region-row-blinker-uid blinker))
@@ -538,16 +498,16 @@
          (desired-wid (- row-wid amount-to-trim)))
     (multiple-value-bind (x y)
         (xy-position screen-row)
-      (when (or (not (= desired-wid        (region-row-blinker-wid blinker)))
-                (not (= row-hei            (region-row-blinker-hei blinker)))
+      (when (or (not (= desired-wid        (blinker-wid blinker)))
+                (not (= row-hei            (blinker-hei blinker)))
                 (not (= (+ x amount-to-trim)
-                        (region-row-blinker-x   blinker)))
-                (not (= y                  (region-row-blinker-y   blinker))))
-        (setf (region-row-blinker-wid blinker)
+                        (blinker-x   blinker)))
+                (not (= y                  (blinker-y   blinker))))
+        (setf (blinker-wid blinker)
               (if (zerop desired-wid) *minimum-row-blinker-wid* desired-wid))
-        (setf (region-row-blinker-hei blinker) row-hei)
-        (setf (region-row-blinker-x   blinker) (+ x amount-to-trim))
-        (setf (region-row-blinker-y   blinker) y)))))
+        (setf (blinker-hei blinker) row-hei)
+        (setf (blinker-x   blinker) (+ x amount-to-trim))
+        (setf (blinker-y   blinker) y)))))
 
 (defun right-half-blinker-trim (blinker cha-no)
   (let* ((screen-row (region-row-blinker-uid blinker))
@@ -564,15 +524,15 @@
          (desired-wid (- row-wid amount-to-trim)))
     (multiple-value-bind (x y)
         (xy-position screen-row)
-      (when (or (not (= desired-wid  (region-row-blinker-wid blinker)))
-                (not (= row-hei      (region-row-blinker-hei blinker)))
-                (not (= x            (region-row-blinker-x   blinker)))
-                (not (= y            (region-row-blinker-y   blinker))))
-        (setf (region-row-blinker-wid blinker)
+      (when (or (not (= desired-wid  (blinker-wid blinker)))
+                (not (= row-hei      (blinker-hei blinker)))
+                (not (= x            (blinker-x   blinker)))
+                (not (= y            (blinker-y   blinker))))
+        (setf (blinker-wid blinker)
               (if (zerop desired-wid) *minimum-row-blinker-wid* desired-wid))
-        (setf (region-row-blinker-hei blinker) row-hei)
-        (setf (region-row-blinker-x   blinker) x)
-        (setf (region-row-blinker-y   blinker) y)))))
+        (setf (blinker-hei blinker) row-hei)
+        (setf (blinker-x   blinker) x)
+        (setf (blinker-y   blinker) y)))))
 
 (defun both-ends-blinker-trim (blinker start-cha-no stop-cha-no)
   (let* ((screen-row (region-row-blinker-uid blinker))
@@ -598,15 +558,15 @@
          (desired-wid (- row-wid left-trim right-trim)))
     (multiple-value-bind (x y)
         (xy-position screen-row)
-      (when (or (not (= desired-wid     (region-row-blinker-wid blinker)))
-                (not (= row-hei         (region-row-blinker-hei blinker)))
-                (not (= (+ x left-trim) (region-row-blinker-x   blinker)))
-                (not (= y               (region-row-blinker-y   blinker))))
-        (setf (region-row-blinker-wid blinker)
+      (when (or (not (= desired-wid     (blinker-wid blinker)))
+                (not (= row-hei         (blinker-hei blinker)))
+                (not (= (+ x left-trim) (blinker-x   blinker)))
+                (not (= y               (blinker-y   blinker))))
+        (setf (blinker-wid blinker)
               (if (zerop desired-wid) *minimum-row-blinker-wid* desired-wid))
-        (setf (region-row-blinker-hei blinker) row-hei)
-        (setf (region-row-blinker-x   blinker) (+ x left-trim))
-        (setf (region-row-blinker-y   blinker) y)))))
+        (setf (blinker-hei blinker) row-hei)
+        (setf (blinker-x   blinker) (+ x left-trim))
+        (setf (blinker-y   blinker) y)))))
 
 ;; is the row conneted to the editor hierarchy ?
 ;; used for detemining whether we should bother trying to redisplay
@@ -634,7 +594,7 @@
                                                       (region-row-blinker-uid
                                                        reg)))))))
                      (cond ((null existing-region)
-                            (allocate-region-row-blinker screen-row))
+                            (make-region-row-blinker :uid screen-row))
                            (t
                             (setq row-blinkers (fast-delq existing-region
                                                           row-blinkers))

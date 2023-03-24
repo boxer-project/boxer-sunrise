@@ -971,7 +971,7 @@
                      ;; this updates the position & size
                      (repaint-cursor-internal cursor)
                      ;; now draw it
-                     (draw-blinker *point-blinker*)
+                     (draw-blinker (point-blinker *boxer-pane*))
                      (when flush-buffer? (swap-graphics-buffers *boxer-pane*))))
 
 (defun repaint-cursor-internal (&optional (cursor *point*))
@@ -1016,8 +1016,11 @@
                                                                                                             (eq (bp-row cursor) (first-inferior-row actual-box))))
                                                                                                  scroll-y-offset
                                                                                                  0)))
-                                                                     (set-cursorpos *boxer-pane* cursor-x (- (+ cursor-y offset-from-top) on-scroll-row-offset))
-                                                                     (set-cursor-size *point-blinker* c-width (+ c-height on-scroll-row-offset))))
+                                                                     (update-blinker (point-blinker *boxer-pane*)
+                                                                                     cursor-x
+                                                                                     (- (+ cursor-y offset-from-top) on-scroll-row-offset)
+                                                                                     c-width
+                                                                                     (+ c-height on-scroll-row-offset))))
                                               ;            (cond ((and (or (eq (bp-row cursor) scroll-row)
                                               ;                            (and (null scroll-row)
                                               ;                                 (box? actual-box)

@@ -23,6 +23,7 @@
                  (:file "definitions/vrtdef")
                  (:file "definitions/fonts")
                  (:file "definitions/disdcl")
+                 (:file "definitions/canvas")
 
 
 

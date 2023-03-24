@@ -3195,6 +3195,29 @@ Modification History (most recent at top)
 ;;;; FILE: boxwin-opengl.lisp
 ;;;;
 
+;;;; Blinkers, mostly copied from clx
+
+
+;; This is a crock. depends too much on *point-blinker* being the correct
+;; thing need to change the window representation so we can ask a window
+;; which of its blinkers corresponds to the MAIN cursor.  We do this for
+;; now cause the only window that need this is the *boxer-pane*
+
+;; OpenGL note: no more with-open-blinker, just change the vars
+(defun set-cursorpos (pane x y)
+  (setf (boxer::blinker-x (boxer::point-blinker pane)) (round x)
+        (boxer::blinker-y (boxer::point-blinker pane)) (round y)))
+
+(defun set-cursor-size (cursor wid hei)
+  (when (and (not (null boxer::*boxer-system-hacker*))
+         (or (< wid 0) (< hei 0)))
+      (cerror "Set Value to 0"
+        "Blinker Width or Height is < 0"))
+  (setf (boxer::blinker-wid  cursor) (max (round wid) 0))
+  (setf (boxer::blinker-hei cursor) (max (round hei) 0)))
+
+(defvar *point-blinker* nil)
+
 ;; if there ever is more than 1 window, this ought to become an alist
 ;; of windows and blinkers
 ;; and we should extend the blinker structure to point to the owning window...
@@ -17623,6 +17646,44 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: region.lisp
 ;;;;
+
+(defun allocate-region-row-blinker (screen-row)
+  (let ((new-blinker (make-region-row-blinker)))
+    (setf (region-row-blinker-uid new-blinker) screen-row)
+    new-blinker))
+
+;;; Accessor Macros...
+(defsubst region-row-blinker-wid (region)
+  (bw::blinker-width region))
+
+(defsubst region-row-blinker-hei (region)
+  (bw::blinker-height region))
+
+(defsubst region-row-blinker-x (region)
+  (bw::blinker-x region))
+
+(defsubst region-row-blinker-y (region)
+  (bw::blinker-y region))
+
+(defsubst region-row-blinker-uid (region)
+  (bw::region-row-blinker-uid region))
+
+;;; setf's
+
+(defsetf region-row-blinker-wid (region) (new-wid)
+  `(setf (bw::blinker-width ,region) ,new-wid))
+
+(defsetf region-row-blinker-hei (region) (new-hei)
+  `(setf (bw::blinker-height ,region) ,new-hei))
+
+(defsetf region-row-blinker-x (region) (new-x)
+  `(setf (bw::blinker-x ,region) ,new-x))
+
+(defsetf region-row-blinker-y (region) (new-y)
+  `(setf (bw::blinker-y ,region) ,new-y))
+
+(defsetf region-row-blinker-uid (region) (new-uid)
+  `(setf (bw::region-row-blinker-uid ,region) ,new-uid))
 
 ;;;; mousy stuff
 ;;;; this function tells if the mouse is on top of the current region.

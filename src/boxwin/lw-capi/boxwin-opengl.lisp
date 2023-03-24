@@ -132,8 +132,6 @@
   "An alist that keeps track of the outermost screen box for each
    redisplayable window in *redisplayable-windows*. ")
 
-(defvar *point-blinker* nil)
-
 ;; this should be initialized from some system parameter
 ;; and also adjustable as a preference...
 ;; Graphics Ports can now use the OS highlight color, as specified via
@@ -293,6 +291,8 @@
    :message-callback 'handle-OSX-events
    ))
 
+(defclass boxer-lw-opengl-canvas (boxer::boxer-canvas opengl::opengl-pane)
+ ())
 
 (capi:define-interface boxer-frame (capi:interface)
   ()
@@ -339,7 +339,7 @@
               :min-width nil :max-width :screen-width
               :visible-min-height *boxer-status-pane-height*
               :visible-max-height *boxer-status-pane-height*)
-  (boxer-pane opengl::opengl-pane
+  (boxer-pane boxer-lw-opengl-canvas
               :configuration #+moderngl '(:rgba t :depth nil :double-buffered t :modern t)
                              #-moderngl '(:rgba t :depth nil :double-buffered t :aux 1)
                               ;#-linux '(:rgba t :depth nil :double-buffered t :aux 1)
@@ -856,7 +856,7 @@ in macOS."
   (setq *boxer-pane* (slot-value *boxer-frame* 'boxer-pane)
         *name-pane*  (slot-value *boxer-frame* 'name-pane))
   (push *boxer-pane* *redisplayable-windows*)
-  (setq *point-blinker* (make-blinker))
+  (setf (boxer::point-blinker *boxer-pane*) (boxer::make-blinker))
   #+cocoa
   (capi:set-application-interface (make-instance 'cocoa-boxer-interface))
   ;; This finishes starting the application so we don't get event queue errors on some versions of macOS
@@ -1433,52 +1433,6 @@ in macOS."
 (defun reset-mouse-cursor ()
   "Sets the current mouse cursor back to the system default."
   (setf (capi:simple-pane-cursor *boxer-pane*) nil))
-
-;;;; Blinkers, mostly copied from clx
-
-(defstruct (blinker (:conc-name blinker-))
-  (x 0)
-  (y 0)
-  (width 0)
-  (height 0)  )
-
-;; Of course the nice thing to do would be to make this generic and
-;; define blinkers with DEFCLASS but I'm worried about speed at
-;;  the moment. Also there is a VERY limited number of blinker types
-
-;; for now, enable alpha blending for regions...
-;(gl-enable *gl-blend*)
-
-(defun draw-blinker (blinker)
-  (with-pen-color (*blinker-color*)
-    (box::with-blending-on
-      (box::draw-rectangle
-                           (blinker-width blinker) (blinker-height blinker)
-                           (blinker-x blinker)     (blinker-y blinker)))))
-
-;;;; Region Row Blinkers...
-(defstruct (region-row-blinker (:include blinker)
-             (:predicate region-row-blinker?))
-  (uid nil))
-
-;; This is a crock. depends too much on *point-blinker* being the correct
-;; thing need to change the window representation so we can ask a window
-;; which of its blinkers corresponds to the MAIN cursor.  We do this for
-;; now cause the only window that need this is the *boxer-pane*
-
-;; OpenGL note: no more with-open-blinker, just change the vars
-(defun set-cursorpos (window x y)
-  (declare (ignore window))
-  (setf (blinker-x *point-blinker*) (round x)
-        (blinker-y *point-blinker*) (round y)))
-
-(defun set-cursor-size (cursor wid hei)
-  (when (and (not (null boxer::*boxer-system-hacker*))
-         (or (< wid 0) (< hei 0)))
-      (cerror "Set Value to 0"
-        "Blinker Width or Height is < 0"))
-  (setf (blinker-width  cursor) (max (round wid) 0))
-  (setf (blinker-height cursor) (max (round hei) 0)))
 
 ;;;
 (defun window-system-dependent-redraw-status-line (string)

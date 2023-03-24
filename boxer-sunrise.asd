@@ -104,6 +104,7 @@
 
                  ;; Beginning of `REDISPLAY` module
                  ;; "The redisplay for the Editor"
+                 (:file "redisplay/blinkers")
                  (:file "redisplay/disply")
                  (:file "redisplay/lodisp")
                  (:file "redisplay/dev-overlay")
