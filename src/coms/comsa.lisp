@@ -926,7 +926,6 @@ removes it from the kill buffer.  No copy is made."
     (unless (bp-= start-bp stop-bp)
       (setq *region-being-defined* (make-editor-region start-bp stop-bp)
             *last-retrieved-region* *region-being-defined*)
-      (turn-on-interval *region-being-defined*)
       (push *region-being-defined* *region-list*)
       (entering-region-mode))
     (mark-file-box-dirty (point-row))
@@ -978,8 +977,6 @@ removes it from the kill buffer.  No copy is made."
                             (insert-row-chas *point* thing :moving))))
         ((interval? thing)
          (yank-region *point* thing)
-         (unless *highlight-yanked-region*
-           (turn-off-interval thing))
          (setq *current-editor-region* thing))
         ((eq thing :newline)
          (insert-row *point* (make-initialized-row) :moving))

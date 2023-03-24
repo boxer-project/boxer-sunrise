@@ -2890,6 +2890,9 @@ Modification History (most recent at top)
 ;;;; FILE: boxdef.lisp
 ;;;;
 
+(DEFVAR *HIGHLIGHT-YANKED-REGION* NIL
+  "Controls whether freshly yanked back region should be highlighted. ")
+
 (DEFVAR *REDISPLAY-CLUES* NIL
   "A list of redisplay-clues. This are hints left behind by the editor
    to help the redisplay code figure out what is going on.")
@@ -3191,6 +3194,38 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: boxwin-opengl.lisp
 ;;;;
+
+;; if there ever is more than 1 window, this ought to become an alist
+;; of windows and blinkers
+;; and we should extend the blinker structure to point to the owning window...
+(defvar *boxer-window-blinker-alist* nil)
+
+(defun sheet-blinker-list (window)
+  (let ((entry (box::fast-assq window *boxer-window-blinker-alist*)))
+    (unless (null entry)
+      (cdr entry))))
+
+(defun %set-sheet-blinker-list (window new-list)
+  (let ((entry (box::fast-assq window *boxer-window-blinker-alist*)))
+     (if (null entry)
+   (push new-list *boxer-window-blinker-alist*)
+   (setf (cdr entry) new-list)))
+  new-list)
+
+(defsetf sheet-blinker-list %set-sheet-blinker-list)
+
+(defun draw-region-row-blinker (blinker)
+  (box::draw-rectangle
+   (blinker-width blinker) (blinker-height blinker)
+   (blinker-x blinker)     (blinker-y blinker)))
+
+;;; these are used by others
+
+;; In OpenGL, just draw, no need to erase as we are double buffering...
+
+(defun set-cursor-visibility (blinker new-vis)
+  (setf (blinker-visibility blinker) new-vis))
+
 
 ;; 2023-03-18 used to be set in get-boxer-input, but nowhere else or used
 (defvar *literal-input?* nil)
@@ -17588,6 +17623,35 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: region.lisp
 ;;;;
+
+(defun turn-on-interval (region)
+  (unless (interval-visibility region)
+    (make-interval-visible region))
+  (setf (interval-visibility region) t)
+  )
+
+(defun turn-off-interval (region)
+  (when (interval-visibility region)
+    (make-interval-invisible region))
+  (setf (interval-visibility region) nil)
+  )
+
+(defsubst region-row-blinker-visibility (region)
+  (bw::blinker-visibility region))
+
+(defsetf region-row-blinker-visibility (region) (new-vis)
+  `(setf (bw::blinker-visibility ,region) ,new-vis))
+
+;; these need to have with-drawing-port's wrapped around them because
+;; they get called OUTSIDE of the redisplay
+(defun make-interval-visible (region)
+  (dolist (row-blinker (interval-blinker-list region))
+    (setf (region-row-blinker-visibility row-blinker) t)))
+
+(defun make-interval-invisible (region)
+  (dolist (row-blinker (interval-blinker-list region))
+    (setf (region-row-blinker-visibility row-blinker) nil)))
+
 
 ;; sgithens TODO I don't believe this is ever called or referenced...
 (defun interval-update-repaint-current-rows (region &optional

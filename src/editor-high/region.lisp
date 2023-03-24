@@ -265,7 +265,6 @@
 
 (defun flush-region (region)
   (when (not (null region))
-    (make-interval-invisible region)
     (let ((i-box (interval-box region)))
       (unless (null i-box)
         (set-region i-box nil)))
@@ -445,19 +444,9 @@
 ;;; up the region
 
 (defun allocate-region-row-blinker (screen-row)
-  (let ((new-blinker (make-region-row-blinker *boxer-pane* :visibility nil)))
+  (let ((new-blinker (make-region-row-blinker *boxer-pane*)))
     (setf (bw::region-row-blinker-uid new-blinker) screen-row)
     new-blinker))
-
-(defun turn-on-interval (region)
-  (unless (interval-visibility region)
-    (make-interval-visible region))
-  (setf (interval-visibility region) t))
-
-(defun turn-off-interval (region)
-  (when (interval-visibility region)
-    (make-interval-invisible region))
-  (setf (interval-visibility region) nil))
 
 ;;; Accessor Macros...
 (defsubst region-row-blinker-wid (region)
@@ -471,9 +460,6 @@
 
 (defsubst region-row-blinker-y (region)
   (bw::blinker-y region))
-
-(defsubst region-row-blinker-visibility (region)
-  (bw::blinker-visibility region))
 
 (defsubst region-row-blinker-uid (region)
   (bw::region-row-blinker-uid region))
@@ -492,9 +478,6 @@
 (defsetf region-row-blinker-y (region) (new-y)
   `(setf (bw::blinker-y ,region) ,new-y))
 
-(defsetf region-row-blinker-visibility (region) (new-vis)
-  `(setf (bw::blinker-visibility ,region) ,new-vis))
-
 (defsetf region-row-blinker-uid (region) (new-uid)
   `(setf (bw::region-row-blinker-uid ,region) ,new-uid))
 
@@ -505,9 +488,12 @@
 ;;; the *CURRENT-SCREEN-BOX* while the other one will mark *ALL* the screen
 ;;; rows of the region.
 (defun remove-region-row-blinker (row-blinker)
-  (setf (region-row-blinker-visibility row-blinker) nil)
-  (setf (bw::sheet-blinker-list *boxer-pane*)
-        (fast-delq row-blinker (bw::sheet-blinker-list *boxer-pane*))))
+  ;; sgithens TODO 2023-03-23 There may be something useful to do here, such
+  ;; as removing it from the actual region list... investigate further.
+  ; (setf (region-row-blinker-visibility row-blinker) nil)
+  ; (setf (bw::sheet-blinker-list *boxer-pane*)
+  ;       (fast-delq row-blinker (bw::sheet-blinker-list *boxer-pane*)))
+)
 
 ;; Blinkers positions are with respect to the window WITH THE BORDERS INCLUDED
                                         ;(DEFMACRO FIXUP-COORDINATES-FOR-BLINKER (X Y BL)
@@ -680,9 +666,6 @@
                       (setq displayed-rows
                             (append displayed-rows (displayed-screen-objs row))))
                     displayed-rows)))
-           (if (interval-visibility region)
-               (make-interval-visible region)
-               (make-interval-invisible region))
            (let ((starting-row (bp-row region-start-bp))
                  (starting-cha-no (bp-cha-no region-start-bp))
                  (stopping-row (bp-row region-stop-bp))
@@ -712,17 +695,6 @@
   ;; @ this point all the blinkers are the correct size and inthe right place...
   (drawing-on-window (window)
     (dolist (blinker (interval-blinker-list region)) (draw-blinker blinker))))
-
-
-;; these need to have with-drawing-port's wrapped around them because
-;; they get called OUTSIDE of the redisplay
-(defun make-interval-visible (region)
-  (dolist (row-blinker (interval-blinker-list region))
-    (setf (region-row-blinker-visibility row-blinker) t)))
-
-(defun make-interval-invisible (region)
-  (dolist (row-blinker (interval-blinker-list region))
-    (setf (region-row-blinker-visibility row-blinker) nil)))
 
 ;;;; mousy stuff
 

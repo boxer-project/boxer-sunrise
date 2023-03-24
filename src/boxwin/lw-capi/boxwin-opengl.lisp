@@ -918,7 +918,6 @@ in macOS."
   (unless boxer::*boxer-version-info*
     (setq boxer::*boxer-version-info*
           (format nil "~:(~A~) Boxer" (machine-instance))))
-  (set-cursor-visibility *point-blinker* t)
   ;; wait a sec
   ;; now that everything is defined, we can safely run redisplay
 
@@ -1437,43 +1436,16 @@ in macOS."
 
 ;;;; Blinkers, mostly copied from clx
 
-;; if there ever is more than 1 window, this ought to become an alist
-;; of windows and blinkers
-;; and we should extend the blinker structure to point to the owning window...
-(defvar *boxer-window-blinker-alist* nil)
-
-(defun sheet-blinker-list (window)
-  (let ((entry (box::fast-assq window *boxer-window-blinker-alist*)))
-    (unless (null entry)
-      (cdr entry))))
-
-(defun %set-sheet-blinker-list (window new-list)
-  (let ((entry (box::fast-assq window *boxer-window-blinker-alist*)))
-     (if (null entry)
-   (push new-list *boxer-window-blinker-alist*)
-   (setf (cdr entry) new-list)))
-  new-list)
-
-(defsetf sheet-blinker-list %set-sheet-blinker-list)
-
 (defstruct (blinker (:conc-name blinker-)
         (:constructor %make-blinker))
   (x 0)
   (y 0)
   (width 0)
   (height 0)
-  (visibility nil)
   (window nil))
 
 (defun make-blinker (window &rest plist)
-  (let ((blinker (apply #'%make-blinker :window window plist))
-  (entry (box::fast-assq window *boxer-window-blinker-alist*)))
-    (if (null entry)
-  (push (list window blinker) *boxer-window-blinker-alist*)
-  (setf (cdr entry) (nconc (list blinker) (cdr entry))))
-    (when (blinker-visibility blinker)
-      (draw-blinker blinker))
-    blinker))
+  (apply #'%make-blinker :window window plist))
 
 ;; Of course the nice thing to do would be to make this generic and
 ;; define blinkers with DEFCLASS but I'm worried about speed at
@@ -1496,27 +1468,7 @@ in macOS."
   (uid nil))
 
 (defun make-region-row-blinker (window &rest plist)
-  (let ((blinker (apply #'%make-region-row-blinker :window window plist))
-  (entry (box::fast-assq window *boxer-window-blinker-alist*)))
-    (if (null entry)
-  (push (list window blinker) *boxer-window-blinker-alist*)
-  (setf (cdr entry) (nconc (list blinker) (cdr entry))))
-    (when (blinker-visibility blinker)
-      (draw-region-row-blinker blinker))
-    blinker))
-
-(defun draw-region-row-blinker (blinker)
-  (box::draw-rectangle
-   (blinker-width blinker) (blinker-height blinker)
-   (blinker-x blinker)     (blinker-y blinker)))
-
-
-;;; these are used by others
-
-;; In OpenGL, just draw, no need to erase as we are double buffering...
-
-(defun set-cursor-visibility (blinker new-vis)
-  (setf (blinker-visibility blinker) new-vis))
+  (apply #'%make-region-row-blinker :window window plist))
 
 ;; This is a crock. depends too much on *point-blinker* being the correct
 ;; thing need to change the window representation so we can ask a window

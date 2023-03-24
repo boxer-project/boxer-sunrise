@@ -193,9 +193,6 @@ Modification History (most recent at top)
 (DEFVAR *KILLED-REGION-BUFFER* NIL
   "this should be integrated into the generic kill buffer eventually")
 
-(DEFVAR *HIGHLIGHT-YANKED-REGION* NIL
-  "Controls whether freshly yanked back region should be highlighted. ")
-
 (DEFVAR *REGION-LIST* NIL)
 
 (defvar *following-mouse-region* nil)
@@ -453,7 +450,6 @@ Modification History (most recent at top)
             (:constructor %make-interval (start-bp stop-bp)))
   (start-bp nil)
   (stop-bp nil)
-  (visibility nil)
   (blinker-list nil)
   (box nil))
 
