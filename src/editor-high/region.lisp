@@ -444,7 +444,7 @@
 ;;; up the region
 
 (defun allocate-region-row-blinker (screen-row)
-  (let ((new-blinker (make-region-row-blinker *boxer-pane*)))
+  (let ((new-blinker (make-region-row-blinker)))
     (setf (bw::region-row-blinker-uid new-blinker) screen-row)
     new-blinker))
 
