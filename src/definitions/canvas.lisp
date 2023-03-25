@@ -37,4 +37,6 @@
 (defclass boxer-canvas
   ()
   ((point-blinker :accessor point-blinker
-    :documentation "Contains a `blinker` struct for the current location of the cursor.")))
+    :documentation "Contains a `blinker` struct for the current location of the cursor.")
+   (outermost-screen-box :initform nil ; :accessor outermost-screen-box
+    :documentation "The screen-box instance which is currently fullscreened for the canvas.")))

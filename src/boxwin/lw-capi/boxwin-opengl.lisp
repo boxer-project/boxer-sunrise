@@ -128,10 +128,6 @@
   "This is a list of all the windows which should be redisplayed when
    REDISPLAY is called." )
 
-(defvar *redisplayable-window-outermost-box-alist* nil
-  "An alist that keeps track of the outermost screen box for each
-   redisplayable window in *redisplayable-windows*. ")
-
 ;; this should be initialized from some system parameter
 ;; and also adjustable as a preference...
 ;; Graphics Ports can now use the OS highlight color, as specified via
@@ -1391,7 +1387,7 @@ in macOS."
         (ogl-reshape width height)))
   ;; fill up the *boxer-pane* width/height caches
   ;; reset the outermost screen box
-  (let ((osb (outermost-screen-box)))
+  (let ((osb (outermost-screen-box *boxer-pane*)))
     (unless (null osb)
       (multiple-value-bind (obwid obhei)
           (box::outermost-screen-box-size *boxer-pane*)
@@ -1402,7 +1398,7 @@ in macOS."
 (defun check-for-window-resize ()
   ;; fill up the *boxer-pane* width/height caches
   ;; reset the outermost screen box
-  (let ((osb (outermost-screen-box)))
+  (let ((osb (outermost-screen-box *boxer-pane*)))
     (unless (null osb)
       (multiple-value-bind (obwid obhei)
           (box::outermost-screen-box-size *boxer-pane*)
@@ -1441,7 +1437,7 @@ in macOS."
   )
 
 (defun outermost-screen-box (&optional (window *boxer-pane*))
-  (cdr (assoc window *redisplayable-window-outermost-box-alist*)))
+  (slot-value window 'outermost-screen-box))
 
 (defun set-window-name (newname)
   (setf (capi::interface-title *boxer-frame*) "")
@@ -1450,11 +1446,7 @@ in macOS."
   (setf (capi::interface-title *boxer-frame*) newname))
 
 (defun set-outermost-screen-box-in-window (window new-outermost-screen-box)
-  (let ((pair (assoc window *redisplayable-window-outermost-box-alist*)))
-    (if (null pair)
-  (push (cons window new-outermost-screen-box)
-               *redisplayable-window-outermost-box-alist*)
-  (setf (cdr pair) new-outermost-screen-box))))
+  (setf (slot-value window 'outermost-screen-box) new-outermost-screen-box))
 
 ;;; "About Boxer" window ?
 (defun about-boxer-function ()
