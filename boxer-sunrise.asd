@@ -110,6 +110,7 @@
                  (:file "redisplay/dev-overlay")
                  (:file "redisplay/repaint")
                  (:file "redisplay/new-borders")
+                 (:file "redisplay/boxtops")
 
                  ;; Beginning of `GRFDEFS` module
                  ;; "Definitions for Sprite Graphics"
