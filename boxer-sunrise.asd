@@ -117,6 +117,7 @@
                  (:file "grfdefs/grobjs")
                  (:file "grfdefs/grfdfs")
                  (:file "grfdefs/gdispl")
+                 (:file "grfdefs/graphics-commands")
                  (:file "grfdefs/graphics-clear")
 
                  ;; Beginning of `EDITOR-HIGH` module
