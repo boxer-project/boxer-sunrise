@@ -63,8 +63,6 @@ Modification History (most recent at top)
   ((name :initform nil :initarg :name)
    (comtab :initform (make-comtab))))
 
-;; (block-compile-epilogue basic-mode)
-
 ;; more specific behaviors for other mode
 ;; for example, search mode should splice itself out of
 ;; the mode list if it the lookup is unsuccessful
@@ -117,7 +115,6 @@ Modification History (most recent at top)
          (basic-mode)
          ()
          )
-      ;;  (block-compile-epilogue ,mode-name)
        (defvar ,mode-var (make-instance ',mode-name))
        (defun ,mode-name () ,mode-var)
        . ,(with-collection

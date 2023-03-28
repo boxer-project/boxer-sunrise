@@ -139,16 +139,6 @@
 
 (defgeneric turtle? (x) (:method (x) nil) (:method ((x turtle)) t))
 
-;;;; block compile metaclass epilogue
-
-;; (block-compile-epilogue graphics-object)
-
-;; (block-compile-epilogue button)
-
-;; (block-compile-epilogue graphics-cursor)
-
-;; (block-compile-epilogue turtle)
-
 (defun make-turtle ()
   (make-instance 'turtle))
 

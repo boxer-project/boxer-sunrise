@@ -228,8 +228,6 @@ Modification History (most recent at top)
    (box-pattern :initform nil)
    (direction :initform 1)))
 
-;; (block-compile-epilogue search-mode)
-
 ;;; If the key is not in search mode, then we need to exit
 ;;; search mode
 (defmethod lookup-mode-key ((self search-mode) key-name)
