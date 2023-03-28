@@ -71,43 +71,6 @@ Modification History (most recent at top)
 (defvar *resources-dir* nil
   "This is the directory on disc where we can expect to find things like the Fonts and Images directories.")
 
-;; now does the compile time check for PCL-ness
-;; sgithens - 2019-11-17 This is currently used once in this file,
-;; 4 times in grobjs.lisp, many times in optimize-classes.lisp,
-;; and once in simple-stream.lisp. I'm not sure it will still be necessary
-;; for a modern SBCL CLOS type implementation. Not quite ready to delete it
-;; though...
-;;
-; (defvar *include-compiled-type-checking* t)
-;;
-;; (defmacro deftype-checking-macros (type type-string)
-;;   (let ((predicate-name (intern (symbol-format nil "~a?" type)))
-;; 	(check-arg-name (intern (symbol-format nil "CHECK-~a-ARG" type)))
-;; 	(bcm-class (let ((class (find-class type nil)))
-;; 		     (when (typep class 'block-compile-class)
-;; 		       class))))
-;;     `(progn
-;;        (defsubst  ,predicate-name (x)
-;; 	 ,(if (null bcm-class)
-;; 	      `(typep x ',type)
-;; 	      (#+clos expand-clos-type-check #+pcl expand-pcl-type-check
-;;                #+mcl expand-mcl-type-check
-;;                'x type bcm-class)))
-;;        (defmacro  ,check-arg-name (x)
-;; 	 ,(when *include-compiled-type-checking*
-;; 	    ``(check-type ,x  (satisfies ,',predicate-name) ,,type-string))))))
-
-;; Previously this was in a source file lw-bcm.lisp, though on modern machines
-;; it seems unlikely we'll need to bring this forward. sgithens - 2019-11-17
-
-(defclass block-compile-class (standard-class)
-  ((counter :initform 0)))
-
-;; https://stackoverflow.com/questions/19446174/sbcl-clos-why-do-i-have-to-add-a-validate-superclass-method-here
-#+sbcl
-(defmethod sb-mop:validate-superclass ((class block-compile-class)
-                                       (super standard-class))
-  t)
 ;;;; Boxer Object Definitions
 ;;;  These are low level SUBCLASSes designed to be combined into higher level
 ;;;  BOXER objects Which eventually get instantiated
@@ -116,8 +79,7 @@ Modification History (most recent at top)
 
 (defclass plist-subclass
   ()
-  ((plist :initform nil :accessor plist))
-  (:metaclass block-compile-class))
+  ((plist :initform nil :accessor plist)))
 
 (defmethod getprop ((obj plist-subclass) indicator &optional default)
   (or (getf (slot-value obj 'plist) indicator) default))
@@ -143,7 +105,6 @@ Modification History (most recent at top)
                     :accessor contained-links)
    (branch-links :initform nil
                  :accessor branch-links))
-  (:metaclass block-compile-class)
   (:documentation "Interface to virtual copy"))
 
 ;; All of the methods are defined in the virtcopy files
@@ -313,7 +274,6 @@ Modification History (most recent at top)
                 :accessor actual-obj-screen-objs)
    (tick :initform 1
          :accessor actual-obj-tick))
-  (:metaclass block-compile-class)
   (:documentation "Used by editor objects to interface with the redisplay" ))
 
 ;;;; Instantiable Objects...
@@ -329,8 +289,7 @@ Modification History (most recent at top)
    (cached-chunks :initform nil :accessor cached-chunks)
    (cached-eval-objs :initform NIL :accessor cached-eval-objs)
    (cached-evrow :initform nil :accessor cached-evrow)
-   (inferior-links :initform nil))
-  (:metaclass block-compile-class))
+   (inferior-links :initform nil)))
 
 (defgeneric row? (x) (:method (x) nil) (:method ((x row)) t))
 
@@ -339,14 +298,13 @@ Modification History (most recent at top)
   (row)
   ((cached-name :initform nil :accessor cached-name :initarg :cached-name))
   ;; used for environmental info--a symbol in the BU package
-  (:metaclass block-compile-class))
+  )
 
 (defgeneric name-row? (x) (:method (x) nil) (:method ((x name-row)) t))
 
 (defclass fill-row
   (row)
-  ()
-  (:metaclass block-compile-class))
+  ())
 
 (defstruct (display-style (:predicate display-style?))
   "
@@ -386,29 +344,25 @@ Modification History (most recent at top)
    (trigger-cache :initform nil :accessor trigger-cache)
    (current-triggers :initform nil :accessor current-triggers)
    (graphics-info :initform nil :accessor graphics-info)
-   (flags :initform 0 :accessor box-flags))
-  (:metaclass block-compile-class))
+   (flags :initform 0 :accessor box-flags)))
 
 (defgeneric box? (x) (:method (x) nil) (:method ((x box)) t))
 
 (defclass doit-box
   (box)
-  ()
-  (:metaclass block-compile-class))
+  ())
 
 (defgeneric doit-box? (x) (:method (x) nil) (:method ((x doit-box)) t))
 
 (defclass data-box
   (box)
-  ()
-  (:metaclass block-compile-class))
+  ())
 
 (defgeneric data-box? (x) (:method (x) nil) (:method ((x data-box)) t))
 
 (defclass port-box
   (box)
-  ()
-  (:metaclass block-compile-class))
+  ())
 
 (defgeneric port-box? (x) (:method (x) nil) (:method ((x port-box)) t))
 

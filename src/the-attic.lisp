@@ -2890,6 +2890,44 @@ Modification History (most recent at top)
 ;;;; FILE: boxdef.lisp
 ;;;;
 
+;; now does the compile time check for PCL-ness
+;; sgithens - 2019-11-17 This is currently used once in this file,
+;; 4 times in grobjs.lisp, many times in optimize-classes.lisp,
+;; and once in simple-stream.lisp. I'm not sure it will still be necessary
+;; for a modern SBCL CLOS type implementation. Not quite ready to delete it
+;; though...
+;;
+; (defvar *include-compiled-type-checking* t)
+;;
+;; (defmacro deftype-checking-macros (type type-string)
+;;   (let ((predicate-name (intern (symbol-format nil "~a?" type)))
+;; 	(check-arg-name (intern (symbol-format nil "CHECK-~a-ARG" type)))
+;; 	(bcm-class (let ((class (find-class type nil)))
+;; 		     (when (typep class 'block-compile-class)
+;; 		       class))))
+;;     `(progn
+;;        (defsubst  ,predicate-name (x)
+;; 	 ,(if (null bcm-class)
+;; 	      `(typep x ',type)
+;; 	      (#+clos expand-clos-type-check #+pcl expand-pcl-type-check
+;;                #+mcl expand-mcl-type-check
+;;                'x type bcm-class)))
+;;        (defmacro  ,check-arg-name (x)
+;; 	 ,(when *include-compiled-type-checking*
+;; 	    ``(check-type ,x  (satisfies ,',predicate-name) ,,type-string))))))
+
+;; Previously this was in a source file lw-bcm.lisp, though on modern machines
+;; it seems unlikely we'll need to bring this forward. sgithens - 2019-11-17
+
+(defclass block-compile-class (standard-class)
+  ((counter :initform 0)))
+
+;; https://stackoverflow.com/questions/19446174/sbcl-clos-why-do-i-have-to-add-a-validate-superclass-method-here
+#+sbcl
+(defmethod sb-mop:validate-superclass ((class block-compile-class)
+                                       (super standard-class))
+  t)
+
 (DEFVAR *HIGHLIGHT-YANKED-REGION* NIL
   "Controls whether freshly yanked back region should be highlighted. ")
 

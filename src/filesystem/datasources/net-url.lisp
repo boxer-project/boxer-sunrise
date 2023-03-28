@@ -28,9 +28,7 @@
    (password :initform nil :accessor url-password)
    (host :initform nil :accessor url-host)
    (port :initform nil :accessor url-port)
-   (path :initform nil :accessor url-path))
-  ;; (:metaclass block-compile-class)
-  )
+   (path :initform nil :accessor url-path)))
 
 ;;; as defined in RFC 1738, URL's which involve the direct use of
 ;;; an IP-based protocol to a specific host on the internet use a

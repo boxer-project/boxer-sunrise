@@ -79,7 +79,6 @@
               (superior-turtle    :initform nil :accessor superior-turtle)
               (sprite-box         :initform nil :accessor sprite-box)
               (assoc-graphics-box :initform nil :accessor assoc-graphics-box))
-             (:metaclass block-compile-class)
              ;; (:abstract-class t)
              (:documentation
               "Bare minimum for a graphics object, slots for box interface and position"))
@@ -98,8 +97,7 @@
    (save-under :initform nil
                :accessor turtle-save-under)
    (window-shape :initform nil
-                 :accessor turtle-window-shape))
-  (:metaclass block-compile-class))
+                 :accessor turtle-window-shape)))
 
 ;;;; This has the capability to draw lines when it moves
 
@@ -127,8 +125,7 @@
    (type-font :initform (%make-sv-box-interface
                          *sprite-type-font-no* 'type-font
                          nil 'type-font-box-updater))
-  )
-  (:metaclass block-compile-class))
+  ))
 
 ;;;; Our friend the turtle...
 
@@ -138,8 +135,7 @@
    (home-position :initform (%make-iv-box-interface '(0.0 0.0) 'home-position))
    (sprite-size   :initform (%make-vv-box-interface 1.0 'sprite-size))
    (private-gl    :initform (make-graphics-command-list))
-   )
-  (:metaclass block-compile-class))
+   ))
 
 (defgeneric turtle? (x) (:method (x) nil) (:method ((x turtle)) t))
 

@@ -41,9 +41,7 @@ Modification History (most recent at top)
 (defclass http-url
   (net-url)
   (;; used by boxer
-   (doc-type :initform ':text :accessor http-url-doc-type :initarg :doc-type))
-  ;; (:metaclass block-compile-class)
-  )
+   (doc-type :initform ':text :accessor http-url-doc-type :initarg :doc-type)))
 
 (defclass https-url (http-url) ())
 

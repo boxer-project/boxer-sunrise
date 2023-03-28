@@ -85,23 +85,20 @@ Modification History (most recent at top)
           :initform *default-font*
           :accessor menu-item-font)
    (enabled? :initform t)
-   (checked? :initform nil))
-  (:metaclass block-compile-class))
+   (checked? :initform nil)))
 
 (defvar *menu-item-margin* 8)
 
 (defclass popup-menu
   ()
   ((items :initarg :items :initform nil)
-   (default-item-no :initarg :default-item-no :initform 0))
-  (:metaclass block-compile-class))
+   (default-item-no :initarg :default-item-no :initform 0)))
 
 ;; "bubble help" used mostly for mouse documentation
 
 (defclass popup-doc
   ()
-  ((string :initarg :string :initform "" :accessor popup-doc-string))
-  (:metaclass block-compile-class))
+  ((string :initarg :string :initform "" :accessor popup-doc-string)))
 
 
 

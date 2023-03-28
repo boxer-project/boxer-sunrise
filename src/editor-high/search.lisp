@@ -226,8 +226,7 @@ Modification History (most recent at top)
    (stop-box :initform nil)
    (pattern  :initform (make-storage-vector))
    (box-pattern :initform nil)
-   (direction :initform 1))
-  (:metaclass block-compile-class))
+   (direction :initform 1)))
 
 ;; (block-compile-epilogue search-mode)
 

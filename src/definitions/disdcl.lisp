@@ -73,23 +73,20 @@
    (hei :initform 0 :accessor screen-obj-hei)
    (x-got-clipped? :initform nil :accessor screen-obj-x-got-clipped?)
    (y-got-clipped? :initform nil :accessor screen-obj-y-got-clipped?)
-   (tick :initform -1 :accessor screen-obj-tick))
-  (:metaclass block-compile-class))
+   (tick :initform -1 :accessor screen-obj-tick)))
 
 (defgeneric screen-obj? (x) (:method (x) nil) (:method ((x screen-obj)) t))
 
 ;; These only exist as a mixin for the box flavor
 (defclass SCREEN-CHAR-SUBCLASS
   (screen-obj)
-  ((screen-row :initform nil :accessor screen-row))
-  (:metaclass block-compile-class))
+  ((screen-row :initform nil :accessor screen-row)))
 
 (defclass SCREEN-ROW
   (screen-obj)
   ((screen-box :initform nil :accessor screen-box)
    (screen-chas :initform (make-screen-chas-array) :accessor screen-chas)
-   (baseline :initform 0 :accessor baseline))
-  (:metaclass block-compile-class))
+   (baseline :initform 0 :accessor baseline)))
 
 (defgeneric screen-row? (x) (:method (x) nil) (:method ((x screen-row)) t))
 
@@ -108,8 +105,7 @@
    ;; scrolling vars
    (scroll-y-offset :initform 0)
    (scroll-x-offset :initform 0)
-   (max-scroll-wid  :initform nil))
-  (:metaclass block-compile-class))
+   (max-scroll-wid  :initform nil)))
 
 (defgeneric screen-box? (x) (:method (x) nil) (:method ((x screen-box)) t))
 
@@ -119,8 +115,7 @@
 
 (defclass GRAPHICS-SCREEN-BOX
   (screen-box)
-  ()
-  (:metaclass block-compile-class))
+  ())
 
 (defgeneric graphics-screen-box? (x) (:method (x) nil) (:method ((x graphics-screen-box)) t))
 
@@ -129,8 +124,7 @@
 ;;; to/from vanilla screen-box's
 (defclass sprite-screen-box
   (screen-box)
-  ()
-  (:metaclass block-compile-class))
+  ())
 
 (defgeneric sprite-screen-box? (x) (:method (x) nil) (:method ((x sprite-screen-box)) t))
 

@@ -61,8 +61,7 @@ Modification History (most recent at top)
 (defclass basic-mode
     ()
   ((name :initform nil :initarg :name)
-   (comtab :initform (make-comtab)))
-  (:metaclass block-compile-class))
+   (comtab :initform (make-comtab))))
 
 ;; (block-compile-epilogue basic-mode)
 
@@ -117,7 +116,7 @@ Modification History (most recent at top)
        (defclass ,mode-name
          (basic-mode)
          ()
-         (:metaclass block-compile-class))
+         )
       ;;  (block-compile-epilogue ,mode-name)
        (defvar ,mode-var (make-instance ',mode-name))
        (defun ,mode-name () ,mode-var)

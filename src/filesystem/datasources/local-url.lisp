@@ -24,9 +24,7 @@
 (defclass local-url
   (url)
   ((pathname :initform nil :accessor local-url-pathname)
-   (host-type :initform nil :accessor local-url-host-type :initarg :host-type))
-  ;; (:metaclass block-compile-class)
-  )
+   (host-type :initform nil :accessor local-url-host-type :initarg :host-type)))
 
 ;;; Local Files
 

@@ -21,7 +21,6 @@
 (defclass url
   ()
   ((scheme-string :initform nil :accessor scheme-string :initarg :scheme-string))
-  ;; (:metaclass block-compile-class)
   ;; (:abstract-class t)
   (:documentation "Bare Bones url class-not meant to be instantiated"))
 

@@ -46,7 +46,6 @@ Modification History (most recent at top)
 (defclass foreign-data
   ()
   ()
-  (:metaclass block-compile-class)
   (:documentation "A Mixin for Foreign data types inthe boxer evaluator"))
 
 ;; called from CHANGE.  <new-value> will be standard boxer data, possibly a
