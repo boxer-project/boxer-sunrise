@@ -7728,6 +7728,8 @@ Modification History (most recent at top)
 ;;;; FILE: disdef.lisp
 ;;;;
 
+(DEFMACRO CHA-WIDTH (CHA) `(CHA-WID ,CHA))
+
 (defvar *screen-boxes-modified* ':toplevel
   "Screen boxes modifed during eval")
 

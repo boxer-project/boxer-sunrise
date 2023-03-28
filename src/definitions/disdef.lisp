@@ -114,8 +114,6 @@ Modification History (most recent at the top)
 
 (DEFSUBST SCREEN-CHA? (SC) (CHARACTERP SC))
 
-(DEFMACRO CHA-WIDTH (CHA) `(CHA-WID ,CHA))
-
 (DEFVAR FREE-SCREEN-ROWS NIL
         "A list of free screen-rows.")
 
