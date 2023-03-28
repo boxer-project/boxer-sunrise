@@ -823,11 +823,14 @@ in macOS."
 (defvar *boxer-window-show-statusbar-p* t
   "Determines whether or not the status bar on the boxer editor window is shown.")
 
-(defvar *setup-editor-with-news?* t)
+(defvar *setup-editor-with-news?* t
+  "If this is true we should for and load an init file on startup if it exists.
+  Default init file name is in `*starting-box-file*`
 
-(defvar *uc-free-starting-box-file* "boxer-init.box")
+  Keeping this variable name for historical preservation.")
 
-(defvar *default-starting-box-file* "start.box")
+(defvar *starting-box-file* "~/.boxer-init.box"
+  "Name/location of default boxer file to load.")
 
 (defvar *display-bootstrapping-no-boxes-yet* t)
 
@@ -904,18 +907,11 @@ in macOS."
 
   (boxer-eval::setup-evaluator)
 
-  ;; should handle double clicked files here...
-  (multiple-value-bind (start-box as-world?)
-      (load-startup-file)
-    (when (boxer::box? start-box)
-      (cond ((not (null as-world?))
-              (setup-editor start-box))
-            (t (setup-editor (boxer::make-box (list (list start-box))))))))
+  (load-startup-file)
+
   (unless boxer::*boxer-version-info*
     (setq boxer::*boxer-version-info*
           (format nil "~:(~A~) Boxer" (machine-instance))))
-  ;; wait a sec
-  ;; now that everything is defined, we can safely run redisplay
 
   ;; When our macOS app has been delivered, the startup function runs in it's own
   ;; "Initial Delivery" process, so we need to make sure these run in the gui process
@@ -925,21 +921,17 @@ in macOS."
 
   (boxer-process-top-level-fn *boxer-pane*))
 
-;; check cdr of SYSTEM:*LINE-ARGUMENTS-LIST*
-(defun load-startup-file ()
-  (cond ((not (null (cadr sys::*line-arguments-list*)))
-         (ignore-errors
-           (boxer::load-binary-box-internal (cadr sys::*line-arguments-list*))))
-        ((not (null *setup-editor-with-news?*))
-         (cond ((probe-file *uc-free-starting-box-file*)
-                (ignore-errors (values (boxer::load-binary-box-internal
-                                        *uc-free-starting-box-file*)
-                                       T)))
-               ((probe-file *default-starting-box-file*)
-                (ignore-errors (values (boxer::load-binary-box-internal
-                                        *default-starting-box-file*)
-                                       T)))))))
-
+(defun load-startup-file (&key (use-init-file? *setup-editor-with-news?*) (file-name *starting-box-file*) (as-world? nil))
+  "Loads a startup/init file into the editor if `use-initfile?` is t. `file-name` is the path to the init file.
+  If `as-world?` is t, then the box is the root of World, otherwise it's inserted at the beginning of the document
+  (or wherever the *point* happens to be)."
+  (when (and use-init-file?
+             (probe-file file-name))
+    (let ((start-box (ignore-errors (boxer::load-binary-box-internal *starting-box-file*))))
+      (when (boxer::box? start-box)
+        (if as-world?
+          (setup-editor start-box)
+          (boxer::insert-cha boxer::*point* start-box))))))
 
 ;;; We would like to make the editor somewhat reentrant for things like
 ;;; recursive edit levels this allows us to do things like call the
