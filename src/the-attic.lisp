@@ -13110,6 +13110,46 @@ if it is out of bounds
     (set-offscreen-bitmap-image pixmap pixdata)
     pixmap))
 
+;; all the optional args are for the possibility that we come here via the
+;; fast-mac-load-xxx functions when all those parameters have already been
+;; computed
+
+(defun load-8-bit-run-length-encoded-pixmap-by-strips (stream
+                                                       &optional
+                                                       (width
+                                                        (bin-next-value stream))
+                                                       (height
+                                                        (bin-next-value stream))
+                                                       (colormap
+                                                        (bin-next-value stream))
+                                                       (pixmap
+                                                        (make-offscreen-bitmap
+                                                         *boxer-pane*
+                                                         width height)))
+  ;; now process the colormap to get a pixel remap
+  (dotimes& (i (length colormap))
+    (setf (aref colormap i) (reallocate-pixel-color (aref colormap i))))
+  ;; now render the data
+  (let* ((pixdata (offscreen-bitmap-image pixmap)) (x 0) (y 0))
+    (drawing-on-bitmap (pixmap)
+      (loop
+        (let* ((word (bin-next-byte stream))
+               (count (ldb& %%bin-op-top-half word))
+               (pixel (aref colormap (ldb& %%bin-op-low-half word)))
+               (draw-wid (min& count (-& width x))))
+          (loop
+            (with-pen-color (pixel)
+              (draw-rectangle draw-wid 1 x y))
+            (setq count (-& count draw-wid)
+                  x (let ((newx (+& x draw-wid)))
+                      (cond ((>=& newx width) (setq y (1+& y)) 0)
+                            (t newx)))
+                  draw-wid (min& count (-& width x)))
+            (when (<=& count 0) (return)))
+          (when (>=& y height) (return)))))
+    (set-offscreen-bitmap-image pixmap pixdata)
+    pixmap))
+
 #+mcl
 (defvar *use-mac-fast-bitmap-loaders* t)
 
