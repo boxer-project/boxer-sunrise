@@ -110,7 +110,6 @@
                  (:file "redisplay/dev-overlay")
                  (:file "redisplay/repaint")
                  (:file "redisplay/new-borders")
-                 (:file "redisplay/boxtops")
 
                  ;; Beginning of `GRFDEFS` module
                  ;; "Definitions for Sprite Graphics"
@@ -120,6 +119,10 @@
                  (:file "grfdefs/gdispl")
                  (:file "grfdefs/graphics-commands")
                  (:file "grfdefs/graphics-clear")
+
+                 ;; Boxtops use some macros from gdispl.lisp, this needs to be a
+                 ;; bit reorged.
+                 (:file "redisplay/boxtops")
 
                  ;; Beginning of `EDITOR-HIGH` module
                  ;; "Higher level Editor Utilities"
