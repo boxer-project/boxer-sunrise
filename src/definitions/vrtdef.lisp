@@ -670,7 +670,7 @@ Modification History (most recent at top)
 
 (defun deallocate-non-lisp-structures-in-graphics-sheet (gs)
   (let ((ba (graphics-sheet-bit-array gs)))
-    (unless (null ba) (free-offscreen-bitmap ba))))
+    (unless (null ba) (ogl-free-pixmap ba))))
 
 (setf (get 'graphics-sheet 'non-lisp-deallocation-function)
       #'deallocate-non-lisp-structures-in-graphics-sheet)

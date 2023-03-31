@@ -247,7 +247,7 @@ parameters of the graphics box are bound. "
 
 (defun make-graphics-sheet-with-bitmap (wid hei &optional box)
   (%make-graphics-sheet-with-bitmap wid hei
-     (make-offscreen-bitmap *boxer-pane* wid hei) box))
+     (make-ogl-pixmap wid hei) box))
 
 
 (defun make-graphics-screen-sheet (actual-obj

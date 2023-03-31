@@ -8437,6 +8437,62 @@ if it is out of bounds
 ;;;; FILE: draw-low-opengl.lisp
 ;;;;
 
+;; copy-graphics-sheet in makcpy,  stamp-bitmap in  gcmeth ?
+(defun copy-offscreen-bitmap (alu wid hei src src-x src-y dst dst-x dst-y)
+  (declare (ignore alu))
+  (%copy-pixmap-data wid hei src src-x src-y dst dst-x dst-y))
+
+(defun make-offscreen-bitmap (window w h)
+  (declare (ignore window))
+  (make-ogl-pixmap w h))
+
+;; gak !
+(defun ogl-pixmap-depth (pm) (declare (ignore pm)) 32)
+
+
+;; also yuck, but it might actually be correct
+;; see window-depth for real yuck
+(defun offscreen-bitmap-depth (bitmap)
+  (ogl-pixmap-depth bitmap))
+
+;;; These assume bitmap bounds are zero based
+(defun offscreen-bitmap-height (bm) (ogl-pixmap-height bm))
+
+(defun offscreen-bitmap-width (bm) (ogl-pixmap-width bm))
+
+(defun deallocate-bitmap (bm) (opengl::ogl-free-pixmap bm))
+
+(defun free-offscreen-bitmap (bitmap) (ogl-free-pixmap bitmap))
+
+;; **** Look here !!! ****
+;; this is supposed to return an object that you can use offscreen-pixel
+;; with.  In the clx implementation, it actually brings the data over to
+;; the client side in an array.  In other implementations,
+;; offscreen-bitmap-image might just get the actual image data out from
+;; behind any containing structures
+;;
+;; In the mac implementation, we just refer to the GWorld.  We may want to change
+;; this to refer to the Pixmap of the GWorld in the future since we have already
+;; made the semantic split in the higher level code.  The caveat would be in properly
+;; interpreting the meaning of the pixel arg in the SETF version of IMAGE-PIXEL.
+;;
+;; In the OpenGL implementation, we have to deal with the fact that the image is
+;; built from the bottom up instead of the top down.  This is done and the load/save level
+;; it also means we have o pass the entire pixmap struct so we can use the width, height
+;; slots to calculate the correct offset for the pixel's location
+
+(defun offscreen-bitmap-image (bm) bm)
+
+;; **** A hook for those implementations in which OFFSCREEN-BITMAP-IMAGE
+;; returns a separate structure like X.  Probably a NOOP for any native
+;; window system
+(defun set-offscreen-bitmap-image (bm image)
+  (declare (ignore bm image))
+  nil)
+
+(defun offscreen-pixel (x y pixmap)
+   (pixmap-pixel pixmap x y))
+
 ;; sgithens 2022-02-26 Removing these commented out bits, putting here as a possible future
 ;; reference
 (defun clear-window (w)

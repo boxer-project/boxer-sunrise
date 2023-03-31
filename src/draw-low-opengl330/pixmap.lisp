@@ -32,43 +32,43 @@ Modification History (most recent at top)
 
 ;; we'll use the opengl data formats that mimic win32 pixels to make our porting life easier
 
-(in-package "OPENGL")
+(in-package :boxer)
 
-(defvar *pixmap-data-type* *gl-rgba*)
-(defvar *pixmap-data-format* *gl-unsigned-byte*)
+(defvar *pixmap-data-type* opengl::*gl-rgba*)
+(defvar *pixmap-data-format* opengl::*gl-unsigned-byte*)
 (defvar *pixmap-ffi-type* :unsigned-int
   "The pointer type for foreign-alloc and reference of pixmap data")
 
-(defvar *gl-rgba-rev-alpha-byte* (byte 8 24))
-(defvar *gl-rgba-rev-blue-byte* (byte 8 16))
-(defvar *gl-rgba-rev-green-byte* (byte 8 8))
-(defvar *gl-rgba-rev-red-byte* (byte 8 0))
+(defvar opengl::*gl-rgba-rev-alpha-byte* (byte 8 24))
+(defvar opengl::*gl-rgba-rev-blue-byte* (byte 8 16))
+(defvar opengl::*gl-rgba-rev-green-byte* (byte 8 8))
+(defvar opengl::*gl-rgba-rev-red-byte* (byte 8 0))
 
-(defstruct (ogl-pixmap (:constructor %make-ogl-pixmap))
-  (width 0)
-  (height 0)
-  (texture 0)
-  (data nil))
+(defclass ogl-pixmap ()
+  ((width    :initarg :width    :initform 0   :accessor ogl-pixmap-width)
+   (height   :initarg :height   :initform 0   :accessor ogl-pixmap-height)
+   (texture  :initarg :texture  :initform 0   :accessor ogl-pixmap-texture)
+   (data     :initarg :data     :initform nil :accessor ogl-pixmap-data)
+   (depth    :initarg :depth    :initform 32  :accessor ogl-pixmap-depth)))
 
 (defun make-ogl-pixmap (width height)
   (cond ((and (integerp width)  (not (minusp width))
               (integerp height) (not (minusp height)))
-         (%make-ogl-pixmap :width width :height height :texture 0
+         (make-instance 'ogl-pixmap :width width :height height :texture 0
                            :data (cffi:foreign-alloc *pixmap-ffi-type*
                                                      :initial-element 0
                                                      :count (* width height))))
         (t (error "Pixmap dimensions, (~S, ~S) must be non-negative integers"
                   width height))))
 
+(defgeneric ogl-pixmap-p (x) (:method (x) nil) (:method ((x ogl-pixmap)) t))
+
 (defun ogl-free-pixmap (pixmap)
   (when (ogl-pixmap-p pixmap)
     (cffi:foreign-free (ogl-pixmap-data pixmap))
     ))
 
-;; gak !
-(defun ogl-pixmap-depth (pm) (declare (ignore pm)) 32)
-
-(defun %pixblt-from-screen (to-array fx fy wid hei tx ty &optional (buffer *gl-front*))
+(defun %pixblt-from-screen (to-array fx fy wid hei tx ty &optional (buffer :front))
   (let* ((data (ogl-pixmap-data to-array))
          (pwid (ogl-pixmap-width to-array))
          (phei (ogl-pixmap-height to-array))
@@ -87,25 +87,25 @@ Modification History (most recent at top)
 
 ;; NOTE: this must match the format in *pixmap-data-type* and *pixmap-data-format*
 (defun make-offscreen-pixel (red green blue &optional (alpha 255))
-  (dpb alpha *gl-rgba-rev-alpha-byte*
-       (dpb blue *gl-rgba-rev-blue-byte*
-            (dpb green *gl-rgba-rev-green-byte* red))))
+  (dpb alpha opengl::*gl-rgba-rev-alpha-byte*
+       (dpb blue opengl::*gl-rgba-rev-blue-byte*
+            (dpb green opengl::*gl-rgba-rev-green-byte* red))))
 
 ;; NOTE: this must match the format in *pixmap-data-type* and *pixmap-data-format*
 (defun pixel= (p1 p2) (= p1 p2))
 
 ;; x and y are in the boxer (top,left = 0,0) sense
 (defun pixmap-pixel (pixmap x y)
-  (let* ((data (opengl::ogl-pixmap-data pixmap))
-         (pwid (opengl::ogl-pixmap-width pixmap))
-         (phei (opengl::ogl-pixmap-height pixmap))
+  (let* ((data (ogl-pixmap-data pixmap))
+         (pwid (ogl-pixmap-width pixmap))
+         (phei (ogl-pixmap-height pixmap))
          (ogl-y (- phei y 1)))
     (cffi:mem-aref data *pixmap-ffi-type* (+ x (* ogl-y pwid)))))
 
 (defun set-pixmap-pixel (newpixel pixmap x y)
-  (let* ((data (opengl::ogl-pixmap-data pixmap))
-         (pwid (opengl::ogl-pixmap-width pixmap))
-         (phei (opengl::ogl-pixmap-height pixmap))
+  (let* ((data (ogl-pixmap-data pixmap))
+         (pwid (ogl-pixmap-width pixmap))
+         (phei (ogl-pixmap-height pixmap))
          (ogl-y (- phei y 1)))
     (setf (cffi:mem-aref data *pixmap-ffi-type* (+ x (* ogl-y pwid))) newpixel)))
 
@@ -120,7 +120,7 @@ Modification History (most recent at top)
         (setf (cffi:mem-aref data *pixmap-ffi-type* i) pixel-value)))))
 
 ;; basic basic, probably a good candidate form optimization but currently only used by copy-graphics-sheet
-(defun %copy-pixmap-data (wid hei from-pixmap from-x from-y to-pixmap to-x to-y)
+(defun copy-pixmap-data (wid hei from-pixmap from-x from-y to-pixmap to-x to-y)
   (when (and (ogl-pixmap-p from-pixmap)(ogl-pixmap-p to-pixmap))
     (let* ((fw (ogl-pixmap-width from-pixmap))
            (fh (ogl-pixmap-height from-pixmap))

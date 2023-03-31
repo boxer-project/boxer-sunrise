@@ -885,8 +885,8 @@
                                                          (let ((ba (graphics-sheet-bit-array graphics-sheet)))
                                                            (unless (null ba)
                                                              (#-X BITBLT-TO-SCREEN #+(and SUN X) bitblt-pixrect-to-screen
-                                                               (min inner-width  (offscreen-bitmap-width  ba))
-                                                               (min inner-height (offscreen-bitmap-height ba))
+                                                               (min inner-width  (ogl-pixmap-width  ba))
+                                                               (min inner-height (ogl-pixmap-height ba))
                                                                ba 0 0 0 0)))
                                                          ;; then handle any sprite graphics...
                                                          (unless (null (graphics-sheet-graphics-list graphics-sheet))

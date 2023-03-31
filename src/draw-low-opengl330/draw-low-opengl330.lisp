@@ -120,12 +120,12 @@
   "Creates a texture for the pixmap if it doesn't exist yet. If the texture has already been
   generated, does nothing. (Which means the texture still needs to be bound if you're about to
   do something."
-    (when (= 0 (opengl::ogl-pixmap-texture pixmap))
+    (when (= 0 (ogl-pixmap-texture pixmap))
       (let ((texture-id (gl:gen-texture))
-            (wid (opengl::ogl-pixmap-width pixmap))
-            (hei (opengl::ogl-pixmap-height pixmap))
-            (data (opengl::ogl-pixmap-data pixmap)))
-        (setf (opengl::ogl-pixmap-texture pixmap) texture-id)
+            (wid (ogl-pixmap-width pixmap))
+            (hei (ogl-pixmap-height pixmap))
+            (data (ogl-pixmap-data pixmap)))
+        (setf (ogl-pixmap-texture pixmap) texture-id)
         (gl:bind-texture :texture-2d texture-id)
         (gl:tex-parameter :texture-2d :texture-wrap-s :repeat)
         (gl:tex-parameter :texture-2d :texture-wrap-t :repeat)
@@ -145,7 +145,7 @@
 
   ;; Remember to bind the texture before trying to set an active texture, else
   ;; we'll render a black square trying to make an active texture when none is bound.
-  (gl:bind-texture :texture-2d (opengl::ogl-pixmap-texture from-array))
+  (gl:bind-texture :texture-2d (ogl-pixmap-texture from-array))
   (gl:active-texture :texture1)
 
   (let* ((vertices `#(,(coerce tx 'single-float)         ,(coerce ty 'single-float)         0.0 0.0 1.0

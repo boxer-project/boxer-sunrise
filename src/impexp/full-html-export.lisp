@@ -121,9 +121,9 @@
 
   TODO: I believe this is currently being allocated to an entire string, we should look at streaming the base64 output
   straight to the HTML stream so it's not allocating an entire separate string for the image."
-  (let* ((width (opengl::ogl-pixmap-width pixmap))
-         (height (opengl::ogl-pixmap-height pixmap))
-         (data (opengl::ogl-pixmap-data pixmap))
+  (let* ((width (ogl-pixmap-width pixmap))
+         (height (ogl-pixmap-height pixmap))
+         (data (ogl-pixmap-data pixmap))
          (cur-pixel nil)
          (png (make-instance 'zpng:pixel-streamed-png
                             :color-type :truecolor-alpha
@@ -135,7 +135,7 @@
         (zpng:start-png png stream)
         (dotimes (y height)
           (dotimes (x width)
-            (setf cur-pixel (cffi:mem-aref data opengl::*pixmap-ffi-type* (+ x (* (- height y 1) width))))
+            (setf cur-pixel (cffi:mem-aref data *pixmap-ffi-type* (+ x (* (- height y 1) width))))
             (zpng:write-pixel (get-rgba-values-from-pixmap-pixel cur-pixel) png)))
         (zpng:finish-png png))
       (setf togo (get-output-stream-string s)))

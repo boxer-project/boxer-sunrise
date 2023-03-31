@@ -56,10 +56,10 @@
     (setf (graphics-sheet-draw-mode new-sheet)
           (graphics-sheet-draw-mode from-sheet))
     (when (not (null (graphics-sheet-bit-array from-sheet)))
-      (let ((bm (make-offscreen-bitmap *boxer-pane* wid hei)))
+      (let ((bm (make-ogl-pixmap wid hei)))
         (setf (graphics-sheet-bit-array new-sheet) bm)
         (with-graphics-vars-bound-internal from-sheet
-          (copy-offscreen-bitmap alu-seta wid hei (graphics-sheet-bit-array from-sheet) 0 0 bm 0 0)
+          (copy-pixmap-data wid hei (graphics-sheet-bit-array from-sheet) 0 0 bm 0 0)
           ;; mark the dirty? flag
           (setf (graphics-sheet-bit-array-dirty? new-sheet) t)
           )))

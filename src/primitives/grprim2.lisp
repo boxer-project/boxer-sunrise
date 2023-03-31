@@ -276,7 +276,7 @@
     (cond ((not (null ba))
            (record-boxer-graphics-command-centered-bitmap
             (new-offscreen-copy ba) x y
-            (offscreen-bitmap-width ba) (offscreen-bitmap-height ba)))
+            (ogl-pixmap-width ba) (ogl-pixmap-height ba)))
           ((not (null (graphics-sheet-background gs)))
            ;; setup the color
            (record-boxer-graphics-command-change-graphics-color
@@ -488,7 +488,7 @@ sprites)))
                        (<=& 0 gb-y)
                        (<&  gb-y (graphics-sheet-draw-hei gs)))
                   (cond ((not (null bit-array))
-                         (offscreen-pixel gb-x gb-y bit-array))
+                         (pixmap-pixel bit-array gb-x gb-y))
                         ((not (null background)) background)
                         (t (opengl::color->pixel *background-color*)))
                   (boxer-eval::primitive-signal-error

@@ -64,8 +64,8 @@ you should only use this inside the :BLINK method for a blinker."
   "Used instead of DRAWING-ON-WINDOW for bitmaps."
   (let ((bwidth-var (gensym)) (bheight-var (gensym)))
     `(let ((%drawing-window ,bitmap) (%drawing-array ,bitmap)
-             (,bwidth-var (offscreen-bitmap-width ,bitmap))
-             (,bheight-var (offscreen-bitmap-height ,bitmap)))
+             (,bwidth-var (ogl-pixmap-width ,bitmap))
+             (,bheight-var (ogl-pixmap-height ,bitmap)))
          %drawing-window %drawing-array ; bound but never used errors....
          (drawing-on-window-bootstrap-clipping-and-scaling
            (0 0 ,bwidth-var ,bheight-var)

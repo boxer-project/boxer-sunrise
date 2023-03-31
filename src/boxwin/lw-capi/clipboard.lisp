@@ -23,7 +23,7 @@
 (defun uncolor->pixel (uncolor)
   (flet ((convert-color-component (cc)
                                   (floor (* cc 255))))
-        (opengl::make-offscreen-pixel (convert-color-component (svref uncolor 1))
+        (boxer::make-offscreen-pixel (convert-color-component (svref uncolor 1))
                                       (convert-color-component (svref uncolor 2))
                                       (convert-color-component (svref uncolor 3))
                                       (convert-color-component (svref uncolor 4)))))
@@ -31,14 +31,14 @@
 ;;; capi:clipboard returns IMAGES
 (defun copy-image-to-bitmap (image bm w h)
   (let ((ia (gp:make-image-access bw::*boxer-pane* image))
-        (bdata (opengl::ogl-pixmap-data bm)))
+        (bdata (boxer::ogl-pixmap-data bm)))
     (unwind-protect
      (progn
       (gp::image-access-transfer-from-image ia)
       (dotimes (y h)
         (dotimes (x w)
           (setf
-            (cffi:mem-aref bdata opengl::*pixmap-ffi-type* (+ x (* (- h y 1) w)))
+            (cffi:mem-aref bdata boxer::*pixmap-ffi-type* (+ x (* (- h y 1) w)))
                 (uncolor->pixel
                   (color:unconvert-color bw::*boxer-pane* (gp:image-access-pixel ia x y)))))))
      (gp:free-image-access ia))))
@@ -46,7 +46,7 @@
 (defun image-to-bitmap (image)
   (unless (null image)
     (let* ((wid (gp:image-width image)) (hei (gp:image-height image))
-           (bim (boxer::make-offscreen-bitmap bw::*boxer-pane* wid hei)))
+           (bim (boxer::make-ogl-pixmap wid hei)))
       (copy-image-to-bitmap image bim wid hei)
       (values bim wid hei))))
 

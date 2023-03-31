@@ -620,10 +620,6 @@ It's not clear yet whether we'll need to re-implement this for the future."
 ;;;; Boxer bitmaps
 ;;;;
 
-(defun make-offscreen-bitmap (window w h)
-  (declare (ignore window))
-  (opengl::make-ogl-pixmap w h))
-
 ;; check for the existence of auxiliary buffer so we can signal
 ;; an error at the right level
 (defun auxiliary-buffer-count ()
@@ -651,90 +647,42 @@ It's not clear yet whether we'll need to re-implement this for the future."
                                                    )
 
 (defun clear-offscreen-bitmap (bm &optional (clear-color *background-color*))
-  (opengl::clear-ogl-pixmap bm (opengl::make-offscreen-pixel
+  (clear-ogl-pixmap bm (make-offscreen-pixel
                                 (round (* (color-red clear-color) 255))
                                 (round (* (color-green clear-color) 255))
                                 (round (* (color-blue clear-color) 255)))))
-
-;;; These assume bitmap bounds are zero based
-(defun offscreen-bitmap-height (bm) (opengl::ogl-pixmap-height bm))
-
-(defun offscreen-bitmap-width (bm) (opengl::ogl-pixmap-width bm))
-
-(defun free-offscreen-bitmap (bitmap) (opengl::ogl-free-pixmap bitmap))
-
-;; also yuck, but it might actually be correct
-;; see window-depth for real yuck
-(defun offscreen-bitmap-depth (bitmap)
-  (opengl::ogl-pixmap-depth bitmap))
-
-;; copy-graphics-sheet in makcpy,  stamp-bitmap in  gcmeth ?
-(defun copy-offscreen-bitmap (alu wid hei src src-x src-y dst dst-x dst-y)
-  (declare (ignore alu))
-  (opengl::%copy-pixmap-data wid hei src src-x src-y dst dst-x dst-y))
 
 (defun deallocate-system-dependent-structures (box)
   (let ((gi (graphics-info box)))
     (when (graphics-sheet? gi)
       (let ((bm (graphics-sheet-bit-array gi)))
-        (unless (null bm) (deallocate-bitmap bm)))))
+        (unless (null bm) (ogl-free-pixmap bm)))))
   ;; this is for quicktime
   ;(let ((avi (av-info box))) (unless (null avi) (deallocate-av-info avi)))
   )
 
-(defun deallocate-bitmap (bm) (opengl::ogl-free-pixmap bm))
-
 ;; NOTE: these functions actually return COLORS rather than the raw (system dependent) pixel value
 ;; used to grab a pixel value from the screen
 (defvar *screen-pixel-buffer*)
-(def-redisplay-initialization (setq *screen-pixel-buffer* (make-offscreen-bitmap *boxer-pane* 1 1)))
+(def-redisplay-initialization (setq *screen-pixel-buffer* (make-ogl-pixmap 1 1)))
 
 (defun %get-pixel (port x y)
   (declare (ignore port))
   (%bitblt-from-screen 1 1 *screen-pixel-buffer* x y 0 0)
-  (offscreen-pixel 0 0 *screen-pixel-buffer*))
-
-;; **** Look here !!! ****
-;; this is supposed to return an object that you can use offscreen-pixel
-;; with.  In the clx implementation, it actually brings the data over to
-;; the client side in an array.  In other implementations,
-;; offscreen-bitmap-image might just get the actual image data out from
-;; behind any containing structures
-;;
-;; In the mac implementation, we just refer to the GWorld.  We may want to change
-;; this to refer to the Pixmap of the GWorld in the future since we have already
-;; made the semantic split in the higher level code.  The caveat would be in properly
-;; interpreting the meaning of the pixel arg in the SETF version of IMAGE-PIXEL.
-;;
-;; In the OpenGL implementation, we have to deal with the fact that the image is
-;; built from the bottom up instead of the top down.  This is done and the load/save level
-;; it also means we have o pass the entire pixmap struct so we can use the width, height
-;; slots to calculate the correct offset for the pixel's location
-
-(defun offscreen-bitmap-image (bm) bm)
-
-;; **** A hook for those implementations in which OFFSCREEN-BITMAP-IMAGE
-;; returns a separate structure like X.  Probably a NOOP for any native
-;; window system
-(defun set-offscreen-bitmap-image (bm image)
-  (declare (ignore bm image))
-  nil)
+  (pixmap-pixel *screen-pixel-buffer*  0 0))
 
 ;; **** may have to change this depending on what offscreen-bitmap-image does
 ;; THIS should be SETFable
 ;; Image-Pixel and the SETF is supposed to work in conjuction with offscreen-bitmap-image's
 
 (defmacro image-pixel (x y pixmap)
-  `(offscreen-pixel ,x ,y ,pixmap))
+  `(pixmap-pixel ,pixmap ,x ,y))
 
 ;;;
 (defun %set-image-pixel (x y pixmap new-pixel)
-  (opengl::set-pixmap-pixel new-pixel pixmap x y))
+  (set-pixmap-pixel new-pixel pixmap x y))
 
 (defsetf image-pixel %set-image-pixel)
-
-(defun offscreen-pixel (x y pixmap)
-   (opengl::pixmap-pixel pixmap x y))
 
 (defun offscreen-pixel-color (x y pixmap)
   (opengl::pixel->color (opengl::pixmap-pixel pixmap x y)))

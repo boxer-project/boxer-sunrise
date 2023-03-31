@@ -1493,7 +1493,7 @@ Modification History (most recent at the top)
          (hei-scale (/ new-hei (float old-hei))))
     (when (and *update-bitmap?* (not (null (graphics-sheet-bit-array sheet))))
       (let ((old-bitmap (graphics-sheet-bit-array sheet))
-            (new-bitmap (make-offscreen-bitmap *boxer-pane*
+            (new-bitmap (make-ogl-pixmap
                                                new-wid new-hei)))
         ;; if the new bitmap is bigger, initialize it
         (when (or (> new-wid old-wid) (> new-hei old-hei))
@@ -1503,12 +1503,12 @@ Modification History (most recent at the top)
         ;; now move the old contents into the new bitmap
         (case *boxer-graphics-box-bit-gravity*
           (:top-right
-           (copy-offscreen-bitmap
-            alu-seta (min& old-wid new-wid) (min& old-hei new-hei)
+           (copy-pixmap-data
+            (min& old-wid new-wid) (min& old-hei new-hei)
             old-bitmap 0 0 new-bitmap 0 0))
           (:center
-           (copy-offscreen-bitmap
-            alu-seta (min& old-wid new-wid) (min& old-hei new-hei)
+           (copy-pixmap-data
+            (min& old-wid new-wid) (min& old-hei new-hei)
             old-bitmap
             (max& 0 (round (-& old-wid new-wid) 2))
             (max& 0 (round (-& old-hei new-hei) 2))
@@ -1519,7 +1519,7 @@ Modification History (most recent at the top)
         (setf (graphics-sheet-bit-array sheet) new-bitmap)
         ;; we might not want to do this if sprites are allowed to have
         ;; pointers to raw pixmaps in their shapes
-        (free-offscreen-bitmap old-bitmap)))
+        (ogl-free-pixmap old-bitmap)))
     (when (not (null (graphics-sheet-graphics-list sheet)))
       (ecase *boxer-graphics-box-bit-gravity*
              (:top-right

@@ -179,8 +179,8 @@ Modification History (most recent at top)
            ;; if the shape-box has a background bitmap, lay that in first
            (sv-append shape (make-boxer-graphics-command-centered-bitmap
                              (new-offscreen-copy %bit-array)
-                             0 0 (offscreen-bitmap-width %bit-array)
-                             (offscreen-bitmap-height %bit-array))))
+                             0 0 (ogl-pixmap-width %bit-array)
+                             (ogl-pixmap-height %bit-array))))
          (do-vector-contents (graphics-command %graphics-list)
            (sv-append shape (allocate-window->boxer-command
                               graphics-command))))))
@@ -774,9 +774,9 @@ Modification History (most recent at top)
 ;;;; Pictures
 
 (defun new-offscreen-copy (ba)
-  (let* ((w (offscreen-bitmap-width ba)) (h (offscreen-bitmap-height ba))
-                                         (new-bm (make-offscreen-bitmap *boxer-pane* w h)))
-    (copy-offscreen-bitmap alu-seta w h ba 0 0 new-bm 0 0)
+  (let* ((w (ogl-pixmap-width ba)) (h (ogl-pixmap-height ba))
+                                         (new-bm (make-ogl-pixmap w h)))
+    (copy-pixmap-data w h ba 0 0 new-bm 0 0)
     new-bm))
 
 (defmethod stamp-bitmap ((self graphics-cursor) bitmap wid hei

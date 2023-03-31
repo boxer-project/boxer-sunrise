@@ -375,7 +375,7 @@ Modification History (most recent at top)
                  ;; NOTE: put this here instead of for ALL new-gs's
                  ;; since only bitmaps are non lisp structures
                  (queue-non-lisp-structure-for-deallocation new-gs)
-                 (let ((new-bm (make-offscreen-bitmap *boxer-pane*
+                 (let ((new-bm (make-ogl-pixmap
                                                       width height)))
                    (setf (graphics-sheet-bit-array new-gs) new-bm)
                    ;; copy the relevant part of the bitmap
@@ -443,7 +443,7 @@ Modification History (most recent at top)
              (bitmap (graphics-sheet-bit-array graphics-sheet)))
         (when (null bitmap)
           ;; make sure there IS a backing store
-          (let ((new (make-offscreen-bitmap *boxer-pane* wid hei)))
+          (let ((new (make-ogl-pixmap wid hei)))
             ;; don't clear the bitmap because the background will be handled in the next step
             (setf (graphics-sheet-bit-array graphics-sheet) new)))
         ;; use the back buffer as a scratch buffer, it will get drawn over in the next repaint
@@ -527,7 +527,7 @@ Modification History (most recent at top)
                        (<=& 0 gb-y (graphics-sheet-draw-hei gs)))
                   (cond ((not (null bit-array))
                          (make-color-box-from-pixel
-                          (offscreen-pixel gb-x gb-y bit-array)))
+                          (pixmap-pixel bit-array gb-x gb-y)))
                         ((not (null background))
                          (make-color-box-from-pixel background))
                         (t (make-color-box-from-pixel *background-color*)))
@@ -561,7 +561,7 @@ Modification History (most recent at top)
                          (color= (window-pixel (+& box-x lef gb-x)
                                                (+& box-y top gb-y))
                                  (cond ((not (null bit-array))
-                                        (offscreen-pixel gb-x gb-y bit-array))
+                                        (pixmap-pixel bit-array gb-x gb-y))
                                        (t
                                         (or background *background-color*)))))
                         (boxer-eval::primitive-signal-error
@@ -632,7 +632,7 @@ Modification History (most recent at top)
                      (boxer-eval::boxer-boolean
                       (color=
                        (cond ((not (null bit-array))
-                              (offscreen-pixel gb-x gb-y bit-array))
+                              (pixmap-pixel bit-array gb-x gb-y))
                              (t (or background *background-color*)))
                        c))
                      (boxer-eval::primitive-signal-error
@@ -663,7 +663,7 @@ Modification History (most recent at top)
                                           color "should be a color box"))
           ;; first, make sure there is a backing store
           (when (null bit-array)
-            (let ((new (make-offscreen-bitmap *boxer-pane* wid hei)))
+            (let ((new (make-ogl-pixmap wid hei)))
               ;; clear the bitmap if it's a new one
               (drawing-on-bitmap (new)
                  (with-pen-color ((or (graphics-sheet-background gs)

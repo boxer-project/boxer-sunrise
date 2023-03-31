@@ -410,7 +410,7 @@
                (when (consp old-gss)
                  (dolist (gs-pair old-gss)
                    (let ((ba (graphics-sheet-bit-array (cdr gs-pair))))
-                     (unless (null ba) (free-offscreen-bitmap ba))))
+                     (unless (null ba) (ogl-free-pixmap ba))))
                  (setf (getf (slot-value self 'plist) 'old-graphics-sheets)
                        nil)))
              (decache-build-function self)

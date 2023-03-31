@@ -90,7 +90,7 @@
         (unless (null cb)
           (when (box::graphics-sheet? cb)
             (let ((bm (box::graphics-sheet-bit-array cb)))
-              (unless (null bm) (box::deallocate-bitmap bm))))
+              (unless (null bm) (box::ogl-free-pixmap bm))))
           (removeprop box :cached-boxtop)))
       (boxer::modified box)
       (boxer::mark-file-box-clean box))))

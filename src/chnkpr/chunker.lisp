@@ -1341,7 +1341,7 @@ Oldness and Oldossity.....
                (let ((gr (vc-graphics obj)) (gs nil))
                  (when (and gr (setq gs (graphics-info-graphics-sheet gr))
                             (graphics-sheet-bit-array gs))
-                   (free-offscreen-bitmap (graphics-sheet-bit-array gs))))))
+                   (ogl-free-pixmap (graphics-sheet-bit-array gs))))))
            (setf (slot-value self 'cached-eval-objs) eval-objs)
            (setf (slot-value self 'cached?) 'all))
           (t
