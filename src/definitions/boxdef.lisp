@@ -623,8 +623,6 @@ Modification History (most recent at top)
 ;;; package stuff that would be in pkg except it must be compiled
 ;;;
 
-(defun intern-in-boxer-user-package (symbol)
-  (intern (string symbol) 'boxer-user))
 (defun intern-in-bu-package (symbol)
   (intern (string symbol) 'bu))
 

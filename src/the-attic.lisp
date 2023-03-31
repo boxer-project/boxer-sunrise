@@ -2890,6 +2890,9 @@ Modification History (most recent at top)
 ;;;; FILE: boxdef.lisp
 ;;;;
 
+(defun intern-in-boxer-user-package (symbol)
+  (intern (string symbol) 'boxer-user))
+
 ;; now does the compile time check for PCL-ness
 ;; sgithens - 2019-11-17 This is currently used once in this file,
 ;; 4 times in grobjs.lisp, many times in optimize-classes.lisp,
