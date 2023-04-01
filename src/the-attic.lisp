@@ -16939,6 +16939,10 @@ Modification History (most recent at top)
 ;;;; FILE: opengl-utils.lisp
 ;;;;
 
+(defstruct (ogl-graphics-state (:constructor %make-ogl-graphics-state))
+  (color nil)
+  (font  nil))
+
 ;; stub
 (defun sheet-font-map (w) (declare (ignore w)) nil)
 

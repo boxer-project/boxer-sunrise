@@ -161,10 +161,6 @@ Modification History (most recent at the top)
 ;;;; FONTS
 
 
-(defstruct (ogl-graphics-state (:constructor %make-ogl-graphics-state))
-  (color nil)
-  (font  nil))
-
 ;; this handles font parameter filling in the editor
 ;; font parameter filling in sprite graphics is handled by change-graphics-font
 ;; I believe this is only being used in ogl-set-font... below and can probably be removed
