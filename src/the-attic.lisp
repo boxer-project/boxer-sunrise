@@ -8440,6 +8440,19 @@ if it is out of bounds
 ;;;; FILE: draw-low-opengl.lisp
 ;;;;
 
+;; **** may have to change this depending on what offscreen-bitmap-image does
+;; THIS should be SETFable
+;; Image-Pixel and the SETF is supposed to work in conjuction with offscreen-bitmap-image's
+
+(defmacro image-pixel (x y pixmap)
+  `(pixmap-pixel ,pixmap ,x ,y))
+
+;;;
+(defun %set-image-pixel (x y pixmap new-pixel)
+  (set-pixmap-pixel new-pixel pixmap x y))
+
+(defsetf image-pixel %set-image-pixel)
+
 ;; copy-graphics-sheet in makcpy,  stamp-bitmap in  gcmeth ?
 (defun copy-offscreen-bitmap (alu wid hei src src-x src-y dst dst-x dst-y)
   (declare (ignore alu))

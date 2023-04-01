@@ -671,19 +671,6 @@ It's not clear yet whether we'll need to re-implement this for the future."
   (%bitblt-from-screen 1 1 *screen-pixel-buffer* x y 0 0)
   (pixmap-pixel *screen-pixel-buffer*  0 0))
 
-;; **** may have to change this depending on what offscreen-bitmap-image does
-;; THIS should be SETFable
-;; Image-Pixel and the SETF is supposed to work in conjuction with offscreen-bitmap-image's
-
-(defmacro image-pixel (x y pixmap)
-  `(pixmap-pixel ,pixmap ,x ,y))
-
-;;;
-(defun %set-image-pixel (x y pixmap new-pixel)
-  (set-pixmap-pixel new-pixel pixmap x y))
-
-(defsetf image-pixel %set-image-pixel)
-
 (defun offscreen-pixel-color (x y pixmap)
   (opengl::pixel->color (opengl::pixmap-pixel pixmap x y)))
 

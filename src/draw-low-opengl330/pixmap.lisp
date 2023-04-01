@@ -102,12 +102,14 @@ Modification History (most recent at top)
          (ogl-y (- phei y 1)))
     (cffi:mem-aref data *pixmap-ffi-type* (+ x (* ogl-y pwid)))))
 
-(defun set-pixmap-pixel (newpixel pixmap x y)
+(defun set-pixmap-pixel (pixmap x y newpixel)
   (let* ((data (ogl-pixmap-data pixmap))
          (pwid (ogl-pixmap-width pixmap))
          (phei (ogl-pixmap-height pixmap))
          (ogl-y (- phei y 1)))
     (setf (cffi:mem-aref data *pixmap-ffi-type* (+ x (* ogl-y pwid))) newpixel)))
+
+(defsetf pixmap-pixel set-pixmap-pixel)
 
 ;; to "clear" a pixmap means to write the particular pixel in entire data field
 (defun clear-ogl-pixmap (pixmap pixel-value)
