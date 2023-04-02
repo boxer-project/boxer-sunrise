@@ -108,6 +108,10 @@
 
    (null-gl-elements-array :accessor null-gl-elements-array)
 
+   (start-time    :accessor start-time :initform (get-universal-time) :documentation
+    "The universal time in seconds that this canvas was created.
+    Useful for passing to shaders for visual tricks.")
+
    ;; Currently bound Shader Program, vao, etc
    (cur-program :accessor cur-program :initform 0)
    (cur-vao :accessor cur-vao :initform 0)
@@ -693,26 +697,31 @@
   "Create a transform matrix offset from the origin by x and y."
   (3d-matrices:marr4 (3d-matrices:mtranslation (3d-vectors:vec x y 0))))
 
-(defun update-transform-ubo (device)
-  "Update just the transform matrix in the matrices ubo"
+; (defun create-transform-matrix (x y)
+;   "Create a transform matrix offset from the origin by x and y."
+;   (3d-matrices:marr4 (3d-matrices:nmrotate (3d-matrices:mtranslation (3d-vectors:vec x y 0)) 3d-vectors:+vx+ 45)))
 
-  (gl:bind-buffer :uniform-buffer (matrices-ubo device))
-  (let* ((arr (gl:alloc-gl-array :float (* 4 4)))
-         (i 0))
-    (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (3d-matrices:mat4  (boxgl-device-transform-matrix device))))))
-      (setf (gl:glaref arr i) (coerce item 'single-float))
-      (incf i))
-    (gl:buffer-sub-data :uniform-buffer arr :offset 0 :buffer-offset (* *cffi-float-size* 16) :size (* *cffi-float-size* (* 4 4)))
-    (gl:free-gl-array arr)
-         )
-  (gl:bind-buffer :uniform-buffer 0))
+; (defun update-transform-ubo (device)
+;   "Update just the transform matrix in the matrices ubo"
+
+;   (gl:bind-buffer :uniform-buffer (matrices-ubo device))
+;   (let* ((arr (gl:alloc-gl-array :float (* 4 4)))
+;          (i 0))
+;     (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (3d-matrices:mat4  (boxgl-device-transform-matrix device))))))
+;       (setf (gl:glaref arr i) (coerce item 'single-float))
+;       (incf i))
+;     (gl:buffer-sub-data :uniform-buffer arr :offset 0 :buffer-offset (* *cffi-float-size* 16) :size (* *cffi-float-size* (* 4 4)))
+;     (gl:free-gl-array arr)
+;          )
+;   (gl:bind-buffer :uniform-buffer 0))
 
 (defun update-matrices-ubo (device)
   (gl:bind-buffer :uniform-buffer (matrices-ubo device))
   ;; Currently we have two mat4 and one vec4
   (let* ((rgb (boxer::boxgl-device-pen-color device))
-         (arr (gl:alloc-gl-array :float (+ 4 2 (* 2 (* 4 4)))))
-          (i 0))
+         (arr (gl:alloc-gl-array :float (+ 4 2 (* 2 (* 4 4)) 1)))
+         (i 0)
+         (u-time (- (get-universal-time) (start-time device))))
     (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (3d-matrices:mat4  (boxgl-device-ortho-matrix device))))))
       (setf (gl:glaref arr i) (coerce item 'single-float))
       (incf i))
@@ -729,6 +738,10 @@
     (setf (gl:glaref arr i) (coerce (aref rgb 3) 'single-float))
     (incf i)
     (setf (gl:glaref arr i) (coerce (aref rgb 4) 'single-float))
+    (incf i)
+    ;; u_time
+    (format t "~%Setting the u_time: ~A ~A ~A" (start-time device) (get-universal-time) u-time)
+    (setf (gl:glaref arr i) (coerce u-time 'single-float))
     (incf i)
 
     (gl:buffer-sub-data :uniform-buffer arr)
@@ -792,9 +805,9 @@ inside an opengl:rendering-on macro invocation."
     ;; Set up uniform buffer object for projection and transform matrices
     (gl:bind-buffer :uniform-buffer (matrices-ubo togo))
     ;; number of floats: vec2 u_res, mat4 ortho, mat4 transform
-    (%gl:buffer-data :uniform-buffer (* *cffi-float-size* (+ 4 2 (* 2 (* 4 4)))) (cffi:null-pointer) :static-draw)
+    (%gl:buffer-data :uniform-buffer (* *cffi-float-size* (+ 4 2 (* 2 (* 4 4)) 1)) (cffi:null-pointer) :static-draw)
     (gl:bind-buffer :uniform-buffer 0)
 
-    (%gl:bind-buffer-range :uniform-buffer 0 (matrices-ubo togo) 0 (* *cffi-float-size* (+ 4 2 (* 2 (* 4 4)))))
+    (%gl:bind-buffer-range :uniform-buffer 0 (matrices-ubo togo) 0 (* *cffi-float-size* (+ 4 2 (* 2 (* 4 4)) 1)))
     (update-matrices-ubo togo)
   togo))

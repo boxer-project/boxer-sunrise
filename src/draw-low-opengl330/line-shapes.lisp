@@ -36,7 +36,11 @@
             (gl:uniformf (gl:get-uniform-location (shader-program (dashed-lines-shader device)) "u_resolution")
                           (coerce (aref res 0) 'single-float) (coerce (aref res 1) 'single-float))))
           (t
-          (enable-gl-shader-program device (lines-shader device))))
+          (enable-gl-shader-program device (lines-shader device))
+          (gl:uniformf (gl:get-uniform-location (shader-program (lines-shader device)) "uTime")
+                          (coerce (- (get-universal-time) (start-time device)) 'single-float))))
+
+
 
     (let* ((corners (line-by-width-corners x0 y0 x1 y1 pen-size))
           (vertices `#(,(coerce (aref corners 0) 'single-float) ,(coerce (aref corners 1) 'single-float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ; point 0
