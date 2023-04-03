@@ -7769,6 +7769,26 @@ Modification History (most recent at top)
 ;;;; FILE: disdef.lisp
 ;;;;
 
+(defstruct (screen-row-rdp1-info (:type vector)
+                                 (:conc-name sr-rdp1-info-))
+  (action nil) ; a keyword
+  (from-cha-no 0)
+  (from-offset 0)
+  (no-of-chas 0)
+  (dist-to-move 0)
+  (width-to-move nil))
+
+; ;; we may want to resource these (but lets just cons them for now)
+; ;; we shouldn't need any more than 5-10 since only those rows which have
+; ;; changed will use them at any given time
+(defun allocate-sr-rdp1-info (&optional (from-cha-no 0) (from-offset 0))
+  (make-screen-row-rdp1-info :from-cha-no from-cha-no
+                             :from-offset from-offset))
+
+; ;; a stub for allocation
+(defun free-sr-rdp1-info (info) (declare (ignore info))  nil)
+
+
 (DEFMACRO CHA-WIDTH (CHA) `(CHA-WID ,CHA))
 
 (defvar *screen-boxes-modified* ':toplevel
@@ -7878,6 +7898,31 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: disply.lisp
 ;;;;
+
+;;;; Utilities for Handling the screen-row-rdp1-info
+
+;;; informs pass-2 that pass-1 erased all the characters from the
+;;; optional cha-no arg to the end of the line
+(defun set-rdp1-info-to-erase-to-eol (info &optional cha-no offset)
+  (unless (eq (sr-rdp1-info-no-of-chas info) 'to-eol)
+    (setf (sr-rdp1-info-action info) ':insert)
+    (unless (null cha-no)
+      (setf (sr-rdp1-info-from-cha-no info) cha-no))
+    (unless (null offset)
+      (setf (sr-rdp1-info-from-offset info) offset))
+    (setf (sr-rdp1-info-no-of-chas  info) 'to-eol)))
+
+(defun rdp1-info-is-eol? (info)
+  (eq (sr-rdp1-info-no-of-chas info) 'to-eol))
+
+(defun still-inside-rdp1-info (info cha-no)
+  (cond ((numberp (sr-rdp1-info-no-of-chas info))
+         (<= cha-no
+             (+ (sr-rdp1-info-from-cha-no info)
+                (sr-rdp1-info-no-of-chas  info))))
+    ((eq (sr-rdp1-info-no-of-chas  info)
+         'to-eol))))
+
 
 ;; 2023-02-23 Removing this single call from repaint.lisp:defmethod rp1-sr-punt-extra-screen-objs-from
 ;; and the unused definitions from disply.lisp

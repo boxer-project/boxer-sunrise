@@ -291,25 +291,6 @@ Modification History (most recent at the top)
 
 ;;; random useful structs and stuff
 
-(defstruct (screen-row-rdp1-info (:type vector)
-                                 (:conc-name sr-rdp1-info-))
-  (action nil) ; a keyword
-  (from-cha-no 0)
-  (from-offset 0)
-  (no-of-chas 0)
-  (dist-to-move 0)
-  (width-to-move nil))
-
-;; we may want to resource these (but lets just cons them for now)
-;; we shouldn't need any more than 5-10 since only those rows which have
-;; changed will use them at any given time
-(defun allocate-sr-rdp1-info (&optional (from-cha-no 0) (from-offset 0))
-  (make-screen-row-rdp1-info :from-cha-no from-cha-no
-                             :from-offset from-offset))
-
-;; a stub for allocation
-(defun free-sr-rdp1-info (info) (declare (ignore info))  nil)
-
 ;;; right now these are flushed by the got-redisplayed
 ;;; method (probably not the best place)
 

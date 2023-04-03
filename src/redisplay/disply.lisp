@@ -425,32 +425,6 @@
                                               (screen-obj-zero-size screen-obj)))))
 
 
-
-;;;; Utilities for Handling the screen-row-rdp1-info
-
-;;; informs pass-2 that pass-1 erased all the characters from the
-;;; optional cha-no arg to the end of the line
-(defun set-rdp1-info-to-erase-to-eol (info &optional cha-no offset)
-  (unless (eq (sr-rdp1-info-no-of-chas info) 'to-eol)
-    (setf (sr-rdp1-info-action info) ':insert)
-    (unless (null cha-no)
-      (setf (sr-rdp1-info-from-cha-no info) cha-no))
-    (unless (null offset)
-      (setf (sr-rdp1-info-from-offset info) offset))
-    (setf (sr-rdp1-info-no-of-chas  info) 'to-eol)))
-
-(defun rdp1-info-is-eol? (info)
-  (eq (sr-rdp1-info-no-of-chas info) 'to-eol))
-
-(defun still-inside-rdp1-info (info cha-no)
-  (cond ((numberp (sr-rdp1-info-no-of-chas info))
-         (<= cha-no
-             (+ (sr-rdp1-info-from-cha-no info)
-                (sr-rdp1-info-no-of-chas  info))))
-    ((eq (sr-rdp1-info-no-of-chas  info)
-         'to-eol))))
-
-
 ;;; this cycles through the contents of the storage vector
 ;;; starting from FROM and erases them an queues them for deallocation
 ;;; returns the difference in offsets of any objects that would come
