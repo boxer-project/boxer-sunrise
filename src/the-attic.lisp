@@ -12649,6 +12649,12 @@ if it is out of bounds
 ;;;; FILE: grobjs.lisp
 ;;;;
 
+;;; Some useful variables that various types of objects need
+
+(defconstant *default-graphics-object-height* 10.0)
+
+(defconstant *default-graphics-object-width* 10.0)
+
 ;;; The actual def-redisplay-initialization moved to gdispl.lisp
 ;;; for ordering reasons
 #|

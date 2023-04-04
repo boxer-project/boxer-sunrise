@@ -156,11 +156,6 @@
 ;; (deftype-checking-macros graphics-cursor "A Graphics Cursor")
 ;; (deftype-checking-macros turtle "A Turtle")
 
-;;; Some useful variables that various types of objects need
-
-(defconstant *default-graphics-object-height* 10.0)
-
-(defconstant *default-graphics-object-width* 10.0)
 
 ;;; adding and removing graphics-objects to/from GRAPHICS-BOXES
 
