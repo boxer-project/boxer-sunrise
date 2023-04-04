@@ -26,6 +26,14 @@
 (ql:quickload :cffi)
 (ql:quickload :zip)
 
+(ql:quickload :cl-opengl)
+(ql:quickload :pngload)
+(ql:quickload :3d-vectors)
+(ql:quickload :3d-matrices)
+(ql:quickload :cl-glu)
+(ql:quickload :iterate)
+(ql:quickload :for)
+
 (defvar *boxer-project-dir* (make-pathname :directory (pathname-directory *load-truename*)))
 
 (pushnew
@@ -44,7 +52,9 @@
 (setf prove:*enable-colors* nil)
 (setf prove::*default-reporter* :tap)
 
-#+lispworks (load (example-file "opengl/examples/load"))
+#+(and lispworks x64) (load (cl-fad:merge-pathnames-as-file *boxer-project-dir* "src/opengl-lw-8/examples/load.lisp"))
+(setf *features* (cons :moderngl *features*))
+
 (setf *features* (cons :opengl *features*))
 (setf *features* (cons :freetype-fonts *features*))
 
