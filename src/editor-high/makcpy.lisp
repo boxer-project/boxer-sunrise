@@ -127,7 +127,7 @@
     (unless (null bt) (putprop to-box bt :boxtop)))
   (when (copy-file? to-box)
     ; (boxnet::record-copy-file-info from-box to-box)
-    (error "Trying to copy old bfs-server document."))
+    (log:warn "Trying to copy old bfs-server document."))
   ;; graphics...
   (let ((gi (slot-value from-box 'graphics-info)))
     (cond ((null gi))
