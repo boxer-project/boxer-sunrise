@@ -294,13 +294,6 @@ Modification History (most recent at the top)
 ;;; right now these are flushed by the got-redisplayed
 ;;; method (probably not the best place)
 
-(defvar *repaint-during-eval?* :always
-  "Periodically update the screen during eval, valid values are :always,:changed-graphics, and :never")
-; :changed-graphics simulates the old behavior
-
-;;; right now these are flushed by the got-redisplayed
-;;; method (probably not the best place)
-
 (defvar *absolute-position-caches-filled* ':toplevel)
 
 (defstruct (ab-pos-cache (:type vector)

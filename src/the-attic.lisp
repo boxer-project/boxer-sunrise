@@ -7769,6 +7769,14 @@ Modification History (most recent at top)
 ;;;; FILE: disdef.lisp
 ;;;;
 
+;;; right now these are flushed by the got-redisplayed
+;;; method (probably not the best place)
+
+(defvar *repaint-during-eval?* :always
+  "Periodically update the screen during eval, valid values are :always,:changed-graphics, and :never")
+; ; :changed-graphics simulates the old behavior
+
+
 (defstruct (screen-row-rdp1-info (:type vector)
                                  (:conc-name sr-rdp1-info-))
   (action nil) ; a keyword
