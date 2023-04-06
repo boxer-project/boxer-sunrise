@@ -143,10 +143,8 @@
 
   (create-pixmap-texture from-array ) ;;pwid phei data)
 
-  ;; Remember to bind the texture before trying to set an active texture, else
-  ;; we'll render a black square trying to make an active texture when none is bound.
+  (gl:active-texture :texture0)
   (gl:bind-texture :texture-2d (ogl-pixmap-texture from-array))
-  (gl:active-texture :texture1)
 
   ;; The openGL text-coordinates go from 0 to 1 and originate in the bottom left corner.
   ;; The boxer pixmap coordinates start from 0 and go to the width/heigh in pixels and
