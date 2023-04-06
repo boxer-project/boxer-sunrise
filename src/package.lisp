@@ -102,7 +102,6 @@
            :svref&
            :cross-file-link-insert-self-action
            :fast-assq
-           :block-compile-class
            :deffile-property-handler
            :recompile-boxer :load-boxer :make-boxer :start-boxer :boxer
            :fix
@@ -153,7 +152,6 @@
            :make-box :shrink :box-or-port-target
            :append-row :make-row
            :storage-chunk? :display-style :set-display-style
-           ;;   #+(or lispworks mcl) :block-compile-class
            :modified :name-string
            :dump-plist-internal :dump-plist-length
            :ut-day :ut-month :ut-tz
@@ -266,8 +264,7 @@
 (defpackage :boxer-window
   (:use :common-lisp :boxer)
   (:nicknames :bw)
-  (:export :outermost-screen-box
-           :*foreground-color* :*background-color*
+  (:export :*foreground-color* :*background-color*
            :prepare-sheet
            :window-inside-size
            :window-pixel
