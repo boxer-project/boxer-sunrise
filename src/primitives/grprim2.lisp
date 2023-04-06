@@ -502,7 +502,7 @@ sprites)))
 
 (defsprite-function bu::bg-color-under? () (sprite turtle)
   (boxer-eval::boxer-boolean
-   (opengl::pixel= (screen-pixel-from-turtle turtle)
+   (pixel= (screen-pixel-from-turtle turtle)
                    (background-pixel-from-turtle turtle))))
 
 (defsprite-function bu::color-under= ((bu::port-to color))

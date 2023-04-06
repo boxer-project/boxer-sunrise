@@ -1132,13 +1132,13 @@ Modification History (most recent at the top)
           (let ((pix (pixmap-pixel pixmap x y)))
             (cond
               ((or (=& current-count 65534) ;255)
-                   (not (opengl::pixel= pix current-pixel)))
+                   (not (pixel= pix current-pixel)))
                (write-file-word current-count stream)
                (write-file-word (ldb (byte 16 16) current-pixel) stream)
                (write-file-word (ldb (byte 16 0) current-pixel) stream)
                ;; update the vars
                (setq current-pixel pix current-count 1))
-              ((opengl::pixel= pix current-pixel)
+              ((pixel= pix current-pixel)
                 (incf& current-count))
               (t (error "Bad case in dumping bitmap (pixel = ~X, count = ~D"
                         current-pixel current-count))))))
@@ -1169,7 +1169,7 @@ Modification History (most recent at the top)
         (dotimes& (x width)
           (let ((pix (pixel-dump-value-internal (pixmap-pixel pixmap x y))))
             (cond ((or (=& current-count 255)
-                        (not #+opengl (opengl::pixel= pix current-pixel)
+                        (not #+opengl (pixel= pix current-pixel)
                             #-opengl (color= pix current-pixel)
                             ))
                     (write-file-word (dpb& current-count %%bin-op-top-half
@@ -1178,7 +1178,7 @@ Modification History (most recent at the top)
                     (write-file-word (ldb& (byte 16 0) current-pixel) stream)
                     ;; update the vars
                     (setq current-pixel pix current-count 1))
-              (#+opengl (opengl::pixel= pix current-pixel)
+              (#+opengl (pixel= pix current-pixel)
                 #-opengl (color= pix current-pixel)
                 (incf& current-count))
               (t (error "Bad case in dumping bitmap (pixel = ~X, count = ~D"
