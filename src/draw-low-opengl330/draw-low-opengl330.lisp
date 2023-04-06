@@ -136,7 +136,7 @@
         (gl:generate-mipmap :texture-2d)
         (incf *gl-pixmap-texture-count*))))
 
-(defun gl-add-pixmap (device from-array tx ty wid hei fx fy)
+(defun gl-add-pixmap (device from-array to-x to-y wid hei from-x from-y)
   (enable-gl-shader-program device (pixmap-shader device))
 
   (gl:pixel-store :unpack-alignment 4)
@@ -148,12 +148,19 @@
   (gl:bind-texture :texture-2d (ogl-pixmap-texture from-array))
   (gl:active-texture :texture1)
 
-  (let* ((vertices `#(,(coerce tx 'single-float)         ,(coerce ty 'single-float)         0.0 0.0 1.0
-                      ,(coerce tx 'single-float)         ,(coerce (+ ty hei) 'single-float) 0.0 0.0 0.0
-                      ,(coerce (+ tx wid) 'single-float) ,(coerce ty 'single-float)         0.0 1.0 1.0
-                      ,(coerce (+ tx wid) 'single-float) ,(coerce (+ ty hei) 'single-float) 0.0 1.0 0.0
-                      ,(coerce tx 'single-float)         ,(coerce (+ ty hei) 'single-float) 0.0 0.0 0.0
-                      ,(coerce (+ tx wid) 'single-float) ,(coerce ty 'single-float)         0.0 1.0 1.0
+  ;; The openGL text-coordinates go from 0 to 1 and originate in the bottom left corner.
+  ;; The boxer pixmap coordinates start from 0 and go to the width/heigh in pixels and
+  ;; originate in the top left corner.
+  (let* ((tex-coord-x1 (coerce (/ from-x (ogl-pixmap-width from-array)) 'single-float))
+         (tex-coord-y1 (coerce (- 1 (/ (+ from-y hei) (ogl-pixmap-height from-array))) 'single-float))
+         (tex-coord-x2 (coerce (/ (+ from-x wid) (ogl-pixmap-width from-array)) 'single-float))
+         (tex-coord-y2 (coerce (- 1 (/ from-y (ogl-pixmap-height from-array))) 'single-float))
+         (vertices `#(,(coerce to-x 'single-float)         ,(coerce to-y 'single-float)         0.0 ,tex-coord-x1 ,tex-coord-y2
+                      ,(coerce to-x 'single-float)         ,(coerce (+ to-y hei) 'single-float) 0.0 ,tex-coord-x1 ,tex-coord-y1
+                      ,(coerce (+ to-x wid) 'single-float) ,(coerce to-y 'single-float)         0.0 ,tex-coord-x2 ,tex-coord-y2
+                      ,(coerce (+ to-x wid) 'single-float) ,(coerce (+ to-y hei) 'single-float) 0.0 ,tex-coord-x2 ,tex-coord-y1
+                      ,(coerce to-x 'single-float)         ,(coerce (+ to-y hei) 'single-float) 0.0 ,tex-coord-x1 ,tex-coord-y1
+                      ,(coerce (+ to-x wid) 'single-float) ,(coerce to-y 'single-float)         0.0 ,tex-coord-x2 ,tex-coord-y2
                       ))
           (arr (gl:alloc-gl-array :float (length vertices))))
     (dotimes (i (length vertices))
