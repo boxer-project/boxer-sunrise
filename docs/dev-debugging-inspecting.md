@@ -10,6 +10,16 @@ be accessed from a REPL.
 - boxer::*point* This contains a structure which includes the current row and screen-box of the cursor/point which can
   be inspected.
 
+## Box under mouse
+
+```lisp
+;; The following will return the location and box object currently under the mouse. This can be especially
+;; useful for getting a sprite or graphics box that is unavailable to having the cursor on it.
+> (bw::mouse-place)
+:SPRITE
+#<DATA-BOX  >
+```
+
 ## Restarting the boxer canvas after investigating an error
 
 After debugging/inspecting an issue stopped execution while running Boxer in Lispworks, the world canvas can
