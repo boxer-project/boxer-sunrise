@@ -634,7 +634,7 @@
 
 (defmethod insert-cha-before-cha ((self row) cha before-cha)
   (let ((before-cha-cha-no (cha-cha-no self before-cha)))
-    (insert-cha-at-cha-no self before-cha-cha-no cha)))
+    (insert-cha-at-cha-no self cha before-cha-cha-no)))
 
 (defmethod insert-cha-after-cha ((self row) cha after-cha)
   (let ((after-cha-cha-no (cha-cha-no self after-cha)))
