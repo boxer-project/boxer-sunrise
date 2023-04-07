@@ -132,8 +132,7 @@
 ;;; slide chas around in a chas-array should call. This function takes care of
 ;;; adjusting the BPs that point to the chas-array to compensate for the slide.
 ;;; This function also takes care of assuring that there is enough room in the
-;;; chas-array to perform the slide. Like all functions which may need to make
-;;; a new chas-array, chas-array-slide-chas always returns the (new) chas-array
+;;; chas-array to perform the slide.
 
 
 (defun chas-array-slide-chas (chas-array strt-cha-no distance)
