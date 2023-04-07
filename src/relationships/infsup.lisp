@@ -804,9 +804,7 @@
         (set-previous-row row-next-row row-prev-row)))))
 
 
-;;; Operations that take existing box rows as position specifiers. These
-;;; operations are built on top of the operations that take row positions
-;;; as position specifiers.
+;;; Operations that take existing box rows as position specifiers.
 
 (defmethod insert-row-before-row ((box box) row before-row
                                   &optional (check-closet t))
