@@ -55,7 +55,8 @@
 
     (gl:draw-arrays :triangles 0 6)
     ; (gl:draw-arrays :lines 0 2)
- ) )
+ )
+  (unenable-shader-programs device))
 
 (defun gl-add-circle (device cx cy radius filled? &key (rgb (boxgl-device-pen-color device)))
   (enable-gl-shader-program device (lines-shader device))
@@ -86,7 +87,9 @@
 
     (if filled?
       (gl:draw-arrays :triangle-fan 0 num-slices)
-      (gl:draw-arrays :line-loop 0 num-slices))))
+      (gl:draw-arrays :line-loop 0 num-slices)))
+
+  (unenable-shader-programs device))
 
 (defun gl-add-arc (device cx cy radius start-angle arc-angle filled? &key (rgb (boxgl-device-pen-color device)))
   (enable-gl-shader-program device (lines-shader device))
@@ -127,7 +130,9 @@
 
     (if filled?
       (gl:draw-arrays :triangle-fan 0 (1+ num-slices))
-      (gl:draw-arrays :line-strip 0 num-slices))))
+      (gl:draw-arrays :line-strip 0 num-slices)))
+
+  (unenable-shader-programs device))
 
 (defun gl-add-poly (device points &key (filled? t) (rgb (boxgl-device-pen-color device)))
   (enable-gl-shader-program device (lines-shader device))
@@ -149,7 +154,9 @@
 
     (if filled?
       (gl:draw-arrays :triangle-fan 0 (length points))
-      (gl:draw-arrays :line-loop 0 (length points)))))
+      (gl:draw-arrays :line-loop 0 (length points))))
+
+  (unenable-shader-programs device))
 
 (defun gl-add-rect (device x y wid hei &key (rgb (boxgl-device-pen-color device)))
   (enable-gl-shader-program device (lines-shader device))

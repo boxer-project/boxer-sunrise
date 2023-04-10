@@ -165,7 +165,8 @@
       (setf (gl:glaref arr i) (aref vertices i)))
     (gl:buffer-data :array-buffer :static-draw arr)
     (gl:free-gl-array arr)
-    (gl:draw-arrays :triangles 0 6)))
+    (gl:draw-arrays :triangles 0 6))
+  (unenable-shader-programs device))
 
 (defun gl-add-atlas-char2 (device x y ch &key (rgb (boxgl-device-pen-color device))
                                        (baseline-bot nil)
@@ -268,6 +269,7 @@
                            (gl::gl-array-pointer arr))
       (gl:draw-elements :triangles (null-gl-elements-array device) :count 6)
       (gl:bind-texture :texture-2d 0))
+    (unenable-shader-programs device)
     glyph))
 
 (defun gl-add-char (device x y ch &key (rgb (boxgl-device-pen-color device))
@@ -334,7 +336,8 @@
     (gl:buffer-data :array-buffer :static-draw arr)
     (gl:free-gl-array arr))
 
-  (gl:draw-arrays :points 0 1))
+  (gl:draw-arrays :points 0 1)
+  (unenable-shader-programs device))
 
 (defun enable-gl-objects (device &key (program nil) (vao nil) (buffer nil))
   "Enable the Shader program with program-id. Checks the currently enabled program first to
@@ -538,7 +541,7 @@
   (enable-gl-shader-program device (lines-shader device))
   (%gl:buffer-data :array-buffer (* *cffi-float-size* pos) c-buffer :dynamic-draw)
   (gl:draw-arrays :lines 0 (/ pos 7))
-                            )
+  (unenable-shader-programs device))
 
 (defun create-shader (glsl-filename shader-type)
   "Creates and return the int id for a new shader. `glsl-filename` should be the relative

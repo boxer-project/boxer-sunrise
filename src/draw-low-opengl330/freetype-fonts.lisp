@@ -298,7 +298,7 @@
     (gl:buffer-data :array-buffer :static-draw arr)
     (gl:free-gl-array arr)
     (gl:draw-arrays :triangles 0 6))
-  )
+  (unenable-shader-programs device))
 
 (defmethod glyph-count ((self glyph-atlas))
   "Returns the number of glyphs currently stored in the atlas."
