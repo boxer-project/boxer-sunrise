@@ -70,19 +70,17 @@
 ;;; . Slots to implement nesting in the Boxer hierarchy
 ;;;
 
-(eval-when (load compile eval)
-           (defclass graphics-object
-             ()
-             ((x-position         :initform (%make-vv-box-interface 0.0 'x-position))
-              (y-position         :initform (%make-vv-box-interface 0.0 'y-position))
-              (subsprites         :initform nil :accessor subsprites)
-              (superior-turtle    :initform nil :accessor superior-turtle)
-              (sprite-box         :initform nil :accessor sprite-box)
-              (assoc-graphics-box :initform nil :accessor assoc-graphics-box))
-             ;; (:abstract-class t)
-             (:documentation
-              "Bare minimum for a graphics object, slots for box interface and position"))
-           )
+(defclass graphics-object
+  ()
+  ((x-position         :initform (%make-vv-box-interface 0.0 'x-position))
+   (y-position         :initform (%make-vv-box-interface 0.0 'y-position))
+   (subsprites         :initform nil :accessor subsprites)
+   (superior-turtle    :initform nil :accessor superior-turtle)
+   (sprite-box         :initform nil :accessor sprite-box)
+   (assoc-graphics-box :initform nil :accessor assoc-graphics-box))
+   (:documentation
+    "Bare minimum for a graphics object, slots for box interface and position"))
+
 
 (defgeneric graphics-object? (x) (:method (x) nil) (:method ((x graphics-object)) t))
 
