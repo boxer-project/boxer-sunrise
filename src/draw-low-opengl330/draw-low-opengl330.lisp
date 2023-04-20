@@ -97,7 +97,9 @@
    (borders-arr         :accessor borders-arr :initform (gl:alloc-gl-array :float (* 6 1024))) ; A gl-array specifically for drawing box borders
    (borders-count       :accessor borders-count :initform 0) ; Number of vertices
 
-   (matrices-ubo :accessor matrices-ubo)
+   (matrices-ubo :accessor matrices-ubo
+    :documentation "Integer describing the gl uniform buffer object we are storing our transformation
+                    matrices and other information in.")
    (ortho-matrix :accessor boxgl-device-ortho-matrix)
    (transform-matrix :accessor boxgl-device-transform-matrix)
 
