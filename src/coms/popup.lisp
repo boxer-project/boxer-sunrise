@@ -902,33 +902,16 @@ Modification History (most recent at top)
                                        (mouse-bp
                                         (mouse-position-values x y))
                                        (click-only? t))
-  "Pop up a box attribute menu"
+  "Pop up a box attribute menu, usually bound to a mouse-down."
   window x y ;  (declare (ignore window x y))
-  ;; first, if there already is an existing region, flush it
   (reset-region) (reset-editor-numeric-arg)
   (let* ((screen-box (bp-screen-box mouse-bp))
-         (box-type (box-type screen-box))
-         (shei (screen-obj-hei screen-box))
          (edbox (screen-obj-actual-obj screen-box))
          (*hotspot-mouse-box* edbox)
          (*hotspot-mouse-screen-box* screen-box))
-    (if (and (not click-only?)
-             (mouse-still-down-after-pause? 0)) ; maybe *mouse-action-pause-time* ?
-        (multiple-value-bind (left top right bottom)
-            (box-borders-widths box-type screen-box)
-          (declare (ignore top right))
-          ;; will probably have to fudge this for type tags near the edges of
-          ;; the screen-especially the bottom and right edges
-          (multiple-value-bind (abs-x abs-y) (xy-position screen-box)
-            (update-box-types-menu edbox)
-            ;; the coms in the pop up rely on this variable
-            (menu-select *box-types-popup-menu* x y
-                        ;;  (+ abs-x left) (- (+ abs-y shei) bottom)
-                         )
-                         ))
-        ;; for simple clicks we do the action (unless it is disabled)
-        (when (bottom-left-hotspot-on? edbox)
-          (com-hotspot-toggle-graphics edbox)))))
+    (update-box-types-menu edbox)
+    (menu-select *box-types-popup-menu* x y))
+  boxer-eval::*novalue*)
 
 (defun com-hotspot-unfix-box-size (&optional (box *hotspot-mouse-box*))
   (com-unfix-box-size box))
