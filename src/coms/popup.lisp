@@ -933,26 +933,6 @@ Modification History (most recent at top)
 (defun com-hotspot-unfix-box-size (&optional (box *hotspot-mouse-box*))
   (com-unfix-box-size box))
 
-;; THings are setup so that this menu appears ONLY if the hotspot is enabled
-;; indicating that auto box sizing is active.  If manual box sizing is active
-;; we go straight to com-mouse-resize-box
-(defvar *br-popup* (make-instance 'popup-menu
-                     :items (list (make-instance 'menu-item
-                                    :title "Automatic Box Size"
-                                    :action 'com-hotspot-unfix-box-size)
-                                  (make-instance 'menu-item
-                                    :title "Manual Box Size"
-                                    :action 'com-mouse-toggle-br-hotspot))))
-
-(defun update-br-menu (box)
-  (declare (ignore box))
-  (let ((auto-item    (car  (menu-items *br-popup*)))
-        (manual-item  (cadr (menu-items *br-popup*))))
-    ;; We only see the menu if the spot is "off", an "on" spot means resize
-    ;; make sure "auto" is greyed out
-    (menu-item-disable  auto-item)
-    (menu-item-enable manual-item)))
-
 ;; NOTE: bottom right corner NEVER (currently) checks the global var, only
 ;; the local box flag is used...
 ;; active hotspot is interpreted to mean resizable
