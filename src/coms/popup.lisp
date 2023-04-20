@@ -957,46 +957,35 @@ Modification History (most recent at top)
 ;; the local box flag is used...
 ;; active hotspot is interpreted to mean resizable
 
+(defboxer-command com-mouse-br-reset-box-size (&optional (window *boxer-pane*)
+                                       (x (bw::boxer-pane-mouse-x))
+                                       (y (bw::boxer-pane-mouse-y))
+                                       (mouse-bp
+                                       (mouse-position-values x y))
+                                       (click-only? t))
+  "Sets the box back to autosized state, resetting any manual resizing."
+  window x y
+  (reset-region) (reset-editor-numeric-arg)
+  (let* ((screen-box (bp-screen-box mouse-bp))
+         (edbox (screen-obj-actual-obj screen-box)))
+    (when (bottom-right-hotspot-active? edbox)
+      (set-fixed-size edbox nil nil)
+      (set-scroll-to-actual-row screen-box nil)
+      (modified edbox)))
+  boxer-eval::*novalue*)
+
 (defboxer-command com-mouse-br-resize-box (&optional (window *boxer-pane*)
                                        (x (bw::boxer-pane-mouse-x))
                                        (y (bw::boxer-pane-mouse-y))
                                        (mouse-bp
                                        (mouse-position-values x y))
                                        (click-only? t))
-  "Pop up a box attribute menu"
+  "Drag to resize the box."
   window x y ;  (declare (ignore window x y))
   ;; first, if there already is an existing region, flush it
   (reset-region) (reset-editor-numeric-arg)
   (let* ((screen-box (bp-screen-box mouse-bp))
-         (box-type (box-type screen-box))
-         (swid (screen-obj-wid screen-box))
-         (shei (screen-obj-hei screen-box))
          (edbox (screen-obj-actual-obj screen-box)))
-    (cond (t (bottom-right-hotspot-active? edbox)
-           (if (or click-only? (not (mouse-still-down-after-pause? 0)))
-               ;; hotspot is on, but we only got a click, shortcut to restore menu
-               (progn
-                 (set-fixed-size edbox nil nil)
-                 (set-scroll-to-actual-row screen-box nil)
-                 (modified edbox)
-                 ;; turn the hotspot off so the menu will pop up next time
-                 (set-bottom-right-hotspot-active? edbox nil))
-               ;; otherwise, do the normal resize stuff
-               (com-mouse-resize-box window x y mouse-bp click-only?)))
-          (t ;; otherwise, update and present a menu
-            nil
-          ;;  (multiple-value-bind (left top right bottom)
-          ;;      (box-borders-widths box-type screen-box)
-          ;;    (declare (ignore left top))
-          ;;    ;; will probably have to fudge this for type tags near the edges of
-          ;;    ;; the screen-especially the bottom and right edges
-          ;;    (multiple-value-bind (abs-x abs-y) (xy-position screen-box)
-          ;;      (update-br-menu edbox)
-          ;;      ;; the coms in the pop up rely on this variable
-          ;;      (let ((*hotspot-mouse-box* edbox)
-          ;;            (*hotspot-mouse-screen-box* screen-box))
-          ;;        (menu-select *br-popup*
-          ;;                     (- (+ abs-x swid) right)
-          ;;                     (- (+ abs-y shei) bottom)))))
-                              )))
+    (when (bottom-right-hotspot-active? edbox)
+      (com-mouse-resize-box window x y mouse-bp click-only?)))
   boxer-eval::*novalue*)

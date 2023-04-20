@@ -486,9 +486,8 @@
 ;;;    Right Click: Context Menu
 
 (boxer-eval::defboxer-key bu::mouse-down-on-bottom-right com-mouse-br-resize-box)
-(boxer-eval::defboxer-key bu::mouse-click-on-bottom-right com-noop)
+(boxer-eval::defboxer-key bu::mouse-click-on-bottom-right com-mouse-br-reset-box-size)
 
-;; (boxer-eval::defboxer-key bu::mouse-right-click-on-bottom-right com-mouse-br-pop-up)
 
 ;;;  Type Tab:
 ;;;    Click: Flip between Doit/Graphics, requires holding
