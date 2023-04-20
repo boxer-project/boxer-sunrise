@@ -419,8 +419,6 @@ Modification History (most recent at top)
 (defstruct (graphics-sheet (:constructor
                             %make-simple-graphics-sheet
                             (draw-wid draw-hei superior-box))
-                           (:constructor %make-graphics-sheet-with-bitmap
-                                         (draw-wid draw-hei bit-array superior-box))
                            (:constructor
                             %make-graphics-sheet-with-graphics-list
                             (draw-wid draw-hei superior-box))

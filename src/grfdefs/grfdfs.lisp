@@ -244,12 +244,6 @@ parameters of the graphics box are bound. "
     (setf (graphics-sheet-graphics-list new-gs) sheet)
     new-gs))
 
-
-(defun make-graphics-sheet-with-bitmap (wid hei &optional box)
-  (%make-graphics-sheet-with-bitmap wid hei
-     (make-ogl-pixmap wid hei) box))
-
-
 (defun make-graphics-screen-sheet (actual-obj
                                    &optional (x-offset 0.) (y-offset 0.))
   (%make-g-screen-sheet actual-obj x-offset y-offset))
