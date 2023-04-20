@@ -866,30 +866,15 @@ Modification History (most recent at top)
                                        (mouse-bp
                                         (mouse-position-values x y))
                                        (click-only? t))
-  "Pop up a box attribute menu"
+  "Pop up a box attribute menu, typically bound to a mouse-down."
   window x y ;  (declare (ignore window x y))
-  ;; first, if there already is an existing region, flush it
   (reset-region) (reset-editor-numeric-arg)
   (let* ((screen-box (bp-screen-box mouse-bp))
-         (box-type (box-type screen-box))
-         (swid (screen-obj-wid screen-box))
          (edbox (screen-obj-actual-obj screen-box))
          (*hotspot-mouse-box* edbox)
          (*hotspot-mouse-screen-box* screen-box))
-    (if (and (not click-only?)
-             (mouse-still-down-after-pause? 0)) ; maybe *mouse-action-pause-time* ?
-        (multiple-value-bind (left top right)
-            (box-borders-widths box-type screen-box)
-          (declare (ignore left))
-          ;; will probably have to fudge this for type tags near the edges of
-          ;; the screen-especially the bottom and right edges
-          (multiple-value-bind (abs-x abs-y) (xy-position screen-box)
-            (update-boxsize-closet-properties-menu edbox)
-            ;; the coms in the pop up rely on this variable
-            ;; (menu-select *tr-popup* (- (+ abs-x swid) right) (+ abs-y top))
-            (menu-select *boxsize-closet-properties-popup-menu* x y)
-            ))
-        ))
+    (update-boxsize-closet-properties-menu edbox)
+    (menu-select *boxsize-closet-properties-popup-menu* x y))
   boxer-eval::*novalue*)
 
 (defun bottom-left-hotspot-on? (edbox)
