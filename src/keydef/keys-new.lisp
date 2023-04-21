@@ -59,25 +59,24 @@
   (dotimes (key-code #o177)
     (let ((char-to-insert (code-char key-code)))
       (unless (member key-code vanilla-key-codes-not-to-define)
-  (let ((key-name (lookup-key-name key-code 0)))
-    (when (null key-name)
-      (error "Key name for key ~D was not found" key-code))
-    (boxer-eval::defboxer-key-internal
-     key-name
-     #'(lambda ()
-               ;(reset-region)
-               ;; mac behavior instead...
-               (let ((r (or *region-being-defined* (get-current-region))))
-                 (unless (null r) (editor-kill-region r)))
-         (with-multiple-execution
-     (insert-cha *point* char-to-insert :moving))
-               (mark-file-box-dirty (point-row))
-               boxer-eval::*novalue*))
-    (boxer-command-define
-     key-name
-     (format nil
-       "Inserts the ~C character at the cursor."
-       char-to-insert)))))))
+        (let ((key-name (lookup-key-name key-code 0)))
+          (when (null key-name)
+            (error "Key name for key ~D was not found" key-code))
+          (boxer-eval::defboxer-key-internal
+                       key-name
+                       #'(lambda ()
+                                 ;(reset-region)
+                                 ;; mac behavior instead...
+                                 (let ((r (or *region-being-defined* (get-current-region))))
+                                   (unless (null r) (editor-kill-region r)))
+                                 (with-multiple-execution
+                                   (insert-cha *point* char-to-insert :moving))
+                                 (mark-file-box-dirty (point-row))
+                                 boxer-eval::*novalue*))
+          (boxer-command-define key-name
+                                (format nil
+                                  "Inserts the ~C character at the cursor."
+                                  char-to-insert)))))))
 
 ;; the return of parens
 (defself-inserting-key BOXER-USER::|(-KEY| #\()
