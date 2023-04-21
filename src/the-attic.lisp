@@ -6320,6 +6320,31 @@ Modification History (most recent at top)
 ;;;; FILE: coms-oglmouse.lisp
 ;;;;
 
+;; sgithens 2023-04-20 Removing this old slow graphics toggle option
+(defvar *slow-graphics-toggle* nil)
+
+;; This was unused in the com-mouse-bl-corner-toggle-box-view let*
+(graphics-sheet (if (port-box? box)
+                           (slot-value (ports box) 'graphics-info)
+                           (slot-value box 'graphics-info)))
+
+;; This was the final cond predicate... replacing with t
+(if *slow-graphics-toggle*
+         (and (let ((waited? (mouse-still-down-after-pause?
+                              *mouse-action-pause-time*)))
+                ;; if the user has clicked, but not waited long enough,
+                ;; maybe warn about how to win
+                (when (and (null waited?) *warn-about-disabled-commands*)
+                  (boxer-editor-warning
+                   "You have to hold the mouse down for ~A seconds to confirm"
+                   *mouse-action-pause-time*))
+                waited?)
+              (mouse-corner-tracking (:bottom-left)
+                                     #'toggle-corner-fun screen-box))
+         (or click-only?
+             (mouse-corner-tracking (:bottom-left)
+                                    #'toggle-corner-fun screen-box)))
+
 ;; there is only room to display 2 digits of row #'s
 ;; (defun elevator-row-string (n)
 ;;   (format nil "~D" n))

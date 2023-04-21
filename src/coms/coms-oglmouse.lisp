@@ -1148,7 +1148,6 @@
            (com-toggle-closets))))))
   boxer-eval::*novalue*)
 
-(defvar *slow-graphics-toggle* nil)
 
 (defboxer-command com-mouse-bl-corner-toggle-box-view (&optional (window *boxer-pane*)
                                                                  (x (bw::boxer-pane-mouse-x))
@@ -1158,35 +1157,17 @@
                                                                  (click-only? t))
   "Toggle the box view"
   window x y ;  (declare (ignore window x y))
-  ;; first, if there already is an existing region, flush it
   (reset-region)
   (let* ((screen-box (bp-screen-box mouse-bp))
          (box (screen-obj-actual-obj screen-box))
          (screen-objs (screen-objs box))
-         (graphics-sheet (if (port-box? box)
-                           (slot-value (ports box) 'graphics-info)
-                           (slot-value box 'graphics-info)))
          (display-style (display-style-list box)))
     (cond ((and (not (display-style-graphics-mode? display-style))
                 (not (graphics-box? box)))
            (boxer-editor-error "This box has no graphics"))
       ((eq screen-box *outermost-screen-box*)
        (boxer-editor-error "Can't toggle the view of the Outermost Box"))
-      ((if *slow-graphics-toggle*
-         (and (let ((waited? (mouse-still-down-after-pause?
-                              *mouse-action-pause-time*)))
-                ;; if the user has clicked, but not waited long enough,
-                ;; maybe warn about how to win
-                (when (and (null waited?) *warn-about-disabled-commands*)
-                  (boxer-editor-warning
-                   "You have to hold the mouse down for ~A seconds to confirm"
-                   *mouse-action-pause-time*))
-                waited?)
-              (mouse-corner-tracking (:bottom-left)
-                                     #'toggle-corner-fun screen-box))
-         (or click-only?
-             (mouse-corner-tracking (:bottom-left)
-                                    #'toggle-corner-fun screen-box)))
+      (t
        ;; modify the editor box
        (if (display-style-graphics-mode? display-style)
          (setf (display-style-graphics-mode? display-style) nil)
