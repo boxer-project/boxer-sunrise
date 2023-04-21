@@ -395,7 +395,6 @@
 
 (boxer-eval::defboxer-key bu::mouse-down com-mouse-define-region)
 
-;  (boxer-eval::defboxer-key bu::mouse-click com-noop)
 (boxer-eval::defboxer-key bu::mouse-click com-mouse-expand-box)
 
 (boxer-eval::defboxer-key bu::mouse-up com-noop)
@@ -486,7 +485,6 @@
 ;;;    Right Click: Context Menu
 
 (boxer-eval::defboxer-key bu::mouse-click-on-type   com-mouse-border-toggle-type)
-;; (boxer-eval::defboxer-key bu::mouse-right-click-on-type com-mouse-type-tag-pop-up)
 
 ;;;
 ;;; Box Name Row
