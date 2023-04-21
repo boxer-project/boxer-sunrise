@@ -581,12 +581,6 @@ Modification History (most recent at top)
                                ;; now return whether we are still on...
                                (and (<& min-x final-x max-x) (<& min-y final-y max-y))))))
 
-(defun mouse-still-down-after-pause? (pause-time)
-  (not
-   (or (wait-with-timeout nil pause-time #'(lambda () (zerop& (mouse-button-state))))
-       ;; one final check
-       (zerop& (mouse-button-state)))))
-
 ;;;; new port stuff
 
 ;;;; dummy box is the box with the message "redirect me"

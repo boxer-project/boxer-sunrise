@@ -6145,6 +6145,13 @@ Modification History (most recent at top)
 ;;;; FILE: comdef.lisp
 ;;;;
 
+;; sgithens 2023-04-20 No longer used after cleaning up all the right click popup menu commands
+(defun mouse-still-down-after-pause? (pause-time)
+  (not
+   (or (wait-with-timeout nil pause-time #'(lambda () (zerop& (mouse-button-state))))
+       ;; one final check
+       (zerop& (mouse-button-state)))))
+
 ;; sgithens 2022-02-08 Removing the boxer-editor-message bit from entering-region-mode
 (defun entering-region-mode ()
   (let ((main-cut-name #+(or apple win32) (current-mouse-click-name 0 2)
