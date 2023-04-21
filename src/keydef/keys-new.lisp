@@ -450,9 +450,6 @@
 (boxer-eval::defboxer-key bu::mouse-click-on-top-right com-mouse-tr-corner-expand-box)
 (boxer-eval::defboxer-key bu::mouse-double-click-on-top-right com-mouse-set-outermost-box)
 
-; (boxer-eval::defboxer-key bu::ctrl-mouse-click-on-top-right  com-mouse-boxsize-closet-properties-pop-up)
-; (boxer-eval::defboxer-key bu::mouse-right-click-on-top-right  com-mouse-boxsize-closet-properties-pop-up)
-
 ;;;  Top Left Corner:
 ;;;    Click: Shrink to next size down
 ;;;    Double Click: Supershrink
@@ -464,9 +461,6 @@
 (boxer-eval::defboxer-key bu::mouse-click-on-top-left com-mouse-tl-corner-collapse-box)
 (boxer-eval::defboxer-key bu::mouse-double-click-on-top-left com-mouse-super-shrink-box)
 
-; (boxer-eval::defboxer-key bu::mouse-right-click-on-top-left com-mouse-boxsize-closet-properties-pop-up)
-; (boxer-eval::defboxer-key bu::ctrl-mouse-click-on-top-left com-mouse-boxsize-closet-properties-pop-up)
-
 ;;;  Bottom Left Corner:
 ;;;    Click: Flip to text/graphics. Currently requires holding
 ;;;    Double Click: Nothing
@@ -476,9 +470,6 @@
 (boxer-eval::defboxer-key bu::ctrl-mouse-down-on-bottom-left com-mouse-box-types-pop-up)
 
 (boxer-eval::defboxer-key bu::mouse-click-on-bottom-left com-mouse-bl-corner-toggle-box-view)
-
-; (boxer-eval::defboxer-key bu::mouse-right-click-on-bottom-left com-mouse-box-types-pop-up)
-; (boxer-eval::defboxer-key bu::ctrl-mouse-click-on-bottom-left com-mouse-box-types-pop-up)
 
 ;;;  Bottom Right Corner:
 ;;;    Click/Drag: Resize
