@@ -6703,6 +6703,22 @@ Modification History (most recent at top)
 ;;;; FILE: comsa.lisp
 ;;;;
 
+#| ; old stuff
+(DEFUN BP-OVER-VALUES (BP DIRECTION DELIMITER-CHAS)
+  (LET ((NOT-FIRST-CHA? NIL))
+    (MAP-OVER-CHAS-IN-LINE (BP DIRECTION)
+      (LET ((DELIMITER-CHA? (char-member cha delimiter-chas)))
+     (COND ((AND (NULL CHA)
+           (NULL NEXT-OR-PREVIOUS-ROW)) ;end/beginning of the box
+      (RETURN (VALUES ROW CHA-NO)))
+     ((AND (NULL CHA) NOT-FIRST-CHA?) ;end/beginning of the line
+      (RETURN (VALUES ROW CHA-NO)))
+     ((AND NOT-FIRST-CHA? DELIMITER-CHA?) ;end of the word
+      (RETURN (VALUES ROW CHA-NO)))
+     ((NOT DELIMITER-CHA?)	;beginning of word
+      (SETQ NOT-FIRST-CHA? T)))))))
+|#
+
 #| ;; old version
 (defboxer-command filling-com-space ()
   "check margin, com-space, com-return, or format-line"
