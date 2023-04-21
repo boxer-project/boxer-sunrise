@@ -16,10 +16,6 @@
   :components ((:module "src"
                 :components
                 (
-                ;; Stuff from previous OpenGL/opengl directory that was added by
-                 ;; boxer
-                 #-lispworks (:file "boxwin/libre/opengl")
-
                  #-moderngl
                  (:module "draw-low-opengl-lispworks"
                   :depends-on ()
