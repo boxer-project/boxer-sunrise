@@ -209,7 +209,8 @@ Modification History (most recent at the top)
 (defun ogl-char-width (cha &optional (font *current-opengl-font*))
   (let* ((glyph (boxer::find-box-glyph cha font boxer::*font-size-baseline*))
          (advance (boxer::box-glyph-advance glyph)))
-    advance))
+    ;; A number of our fixnum operations will fail if this isn't an integer.
+    (floor advance)))
 
 ;; the same for both char,string-height
 (defun ogl-font-height (font)

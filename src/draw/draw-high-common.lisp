@@ -129,10 +129,11 @@ scaled origin"
   (%draw-arc %drawing-window alu (scale-x x) (scale-y y)
              wid hei start-angle sweep-angle))
 
-(defun draw-cha (char x y)
+;; TODO for anything not in the texture map, just use the regular draw-cha for now
+(defun draw-cha (char x y &key (gl-model nil))
   "Draw-cha needs to draw at the char's baseline rather than the top left corner.  In a
 multifont row, the common reference point will be the baseline instead of the top edge"
-  (%draw-cha x y char))
+  (%draw-cha x y char :gl-model gl-model))
 
 (defun draw-circle (x y radius &optional filled?)
   (%draw-circle x y radius filled?))
@@ -190,3 +191,32 @@ multifont row, the common reference point will be the baseline instead of the to
 
 (defun draw-before-graphics-command-marker (command gl)
   (%draw-before-graphics-command-marker command gl))
+
+(defmethod get-boxgl-model-for-screen-obj ((self screen-obj))
+  "Gets an instance of `boxer-gl-model` from the plist on the screen-obj, creating it if it doensn't exist
+  yet. Also updates the cur-tick and needs-update properties of the model so we know if the screen-obj has
+  changed and requires rebuffering of vertices."
+  (let ((tick (get-updated-tick self))
+        (model (getprop self  :gl-model)))
+
+    (unless model
+      (putprop self (make-boxer-gl-model) :gl-model)
+      (setf model (getprop self  :gl-model)))
+
+    (if (equal tick (slot-value model 'cur-tick))
+      (setf (needs-update model) nil)
+      (progn
+        (setf (needs-update model) t)
+        (setf (slot-value model 'cur-tick) tick)
+        (reset-meshes model)))
+    model))
+
+(defmethod get-updated-tick ((self screen-obj))
+  (actual-obj-tick (screen-obj-actual-obj self)))
+
+(defmethod get-updated-tick ((self screen-row))
+  "For checking if a screen row needs rebuffered, we are looking at the dimensions, offsets, and
+   cliping. It's tick updates on nearly every repaint, so that's not usable here."
+  (with-slots (wid hei x-offset y-offset x-got-clipped? y-got-clipped?)
+              self
+    (list wid hei x-offset y-offset x-got-clipped? y-got-clipped?)))

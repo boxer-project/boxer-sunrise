@@ -532,11 +532,13 @@ also, opengl-draw-arc expects positive angle args"
 
                          )
 
-(defun %draw-cha (x y char)
+(defun %draw-cha (x y char &key (gl-model nil))
   "Font is managed by set-font-info.  Note that anything else that might change
 the window font (ie, draw-string) has to change it back for this to work.
 5/11/98 draw to baseline instead of top left"
-  (gl-add-char bw::*boxgl-device* x y char))
+  (if gl-model
+      (add-char gl-model bw::*boxgl-device* x y char)
+      (gl-add-char bw::*boxgl-device* x y char)))
 
 (defun %draw-circle (x y radius &optional filled?)
   (gl-add-circle bw::*boxgl-device* x y radius filled?))

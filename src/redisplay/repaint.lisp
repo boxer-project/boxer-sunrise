@@ -716,15 +716,20 @@
   (let* ((inf-x-offset 0)
          (inf-y-offset 0)
          (row-baseline (slot-value self 'baseline))
-         (row-fds (row-fds (slot-value self 'actual-obj))))
+         (row-fds (row-fds (slot-value self 'actual-obj)))
+         (gl-model (get-boxgl-model-for-screen-obj self)))
     (do-screen-chas-with-font-info (inf-screen-obj (slot-value self 'screen-chas)
                                                    :index-var-name cha-no
                                                    :font-descriptors row-fds
                                                    :cha-drawing? t)
       (cond ((screen-cha? inf-screen-obj)
              ;; draw the char
-             (draw-cha inf-screen-obj
-                       inf-x-offset (+ row-baseline inf-y-offset))
+             (if (get-glyph *freetype-glyph-atlas* `(,(opengl-font-fontspec *current-opengl-font*) ,inf-screen-obj 1.0))
+              (when (needs-update gl-model)
+                (draw-cha inf-screen-obj
+                          inf-x-offset (+ row-baseline inf-y-offset)
+                          :gl-model gl-model))
+              (draw-cha inf-screen-obj inf-x-offset (+ row-baseline inf-y-offset)))
              ;; update the inf-x-offset
              (incf inf-x-offset (cha-wid inf-screen-obj)))
         (t
@@ -737,7 +742,8 @@
            (setf (screen-obj-y-offset inf-screen-obj) inf-y-offset))
          (repaint-pass-2-sb inf-screen-obj)
          ;; finally update inf-x-offset, screen-box style
-         (incf inf-x-offset (screen-obj-wid inf-screen-obj)))))))
+         (incf inf-x-offset (screen-obj-wid inf-screen-obj)))))
+    (draw gl-model)))
 
 (defmethod repaint-pass-2-sr ((self screen-row))
   (with-slots (x-offset y-offset wid hei actual-obj)
