@@ -25,12 +25,10 @@
 
   (unless *boxer-pane-initialized*
     (opengl:rendering-on (*boxer-pane*)
-                (initialize-ogl-color-pool)
                 (boxer::initialize-colors)
                 #-moderngl (%set-pen-color box::*foreground-color*)
                 ;; do other OpenGL inits...
-                (setq *ogl-current-color-vector* (make-ogl-color 0.0 0.0 0.0)
-                      *blinker-color* (make-ogl-color .3 .3 .9 .5))
+                (setq *blinker-color* (make-ogl-color .3 .3 .9 .5))
                 #-moderngl
                 (progn
                   (opengl:gl-enable opengl:*gl-scissor-test*)

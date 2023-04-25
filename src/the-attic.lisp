@@ -8541,6 +8541,14 @@ if it is out of bounds
 ;;;; FILE: draw-low-opengl.lisp
 ;;;;
 
+;; check for the existence of auxiliary buffer so we can signal
+;; an error at the right level
+(defun auxiliary-buffer-count ()
+  (bw::get-opengl-state opengl::*gl-aux-buffers* :signed-32))
+
+(defun auxiliary-buffer-exists? ()
+  (not (zerop (auxiliary-buffer-count))))
+
 ;; **** may have to change this depending on what offscreen-bitmap-image does
 ;; THIS should be SETFable
 ;; Image-Pixel and the SETF is supposed to work in conjuction with offscreen-bitmap-image's
@@ -17045,6 +17053,113 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: opengl-utils.lisp
 ;;;;
+
+(defun ogl-init (width height)
+  ;; 2022-11-17 sgithens
+  ; (opengl:gl-matrix-mode opengl:*gl-projection*)
+  ; (opengl:gl-load-identity)
+  ; ;; orthographic projection, 0,0 = top,left
+  ; ;; Note:GL-Ortho wants double-floats as args (and insists on the mac)
+  ; (opengl:gl-ortho (coerce 0.0 'double-float)            (coerce (float width) 'double-float)
+  ;           (coerce (float height) 'double-float) (coerce 0.0 'double-float)
+  ;           (coerce -1.0 'double-float)           (coerce 1.0 'double-float))
+            )
+
+(defvar *ogl-current-color-vector*) ; init'd in start-boxer (boxwin-opengl.lisp)
+
+
+;; resource pool for gl-colors used in maintaining-ogl-color
+(defvar *ogl-color-pool* nil)
+
+(defvar *initial-ogl-color-pool-size* 20)
+
+(defun initialize-ogl-color-pool ()
+  (dotimes (i *initial-ogl-color-pool-size*) (push (%make-ogl-color) *ogl-color-pool*)))
+
+(defun allocate-ogl-color () (or (pop *ogl-color-pool*) (%make-ogl-color)))
+
+(defun ogl-current-color (&optional (vector *ogl-current-color-vector*))
+  (get-opengl-state opengl:*gl-current-color* (:float 4) vector))
+
+(defun deallocate-ogl-color (color) (push color *ogl-color-pool*))
+
+;;;; for testing flags
+(defun gl-enabled? (flag) (if (zerop (opengl::gl-is-enabled flag)) nil t))
+
+;;; note that gl-begin can also be
+;; modes can be: *gl-points*, *gl-lines*, *GL-LINE-LOOP*, *GL-LINE-STRIP*,
+;; *GL-TRIANGLES*, *GL-TRIANGLE-STRIP*, *GL-TRIANGLE-FAN*, *GL-QUADS*,
+;; *GL-QUAD-STRIP*, or *gl-polygon*
+
+;;;;
+(eval-when (compile)
+  (defvar *opengl-type-checking-included?* t)
+)
+
+(defvar *opengl-type-checking-action* :coerce)
+
+(defmacro ogl-type (arg type)
+  (cond ((null *opengl-type-checking-included?*) `,arg)
+    (t
+     `(cond ((eq *opengl-type-checking-action* :error)
+             (cond ((typep ,arg ,type) ,arg)
+               (t (error "The arg, ~S, is not of type ~S" ',arg ,type))))
+        ((eq *opengl-type-checking-action* :coerce)
+         (coerce ,arg ,type))
+        (t (error "*opengl-type-checking-action*,~S, should be :COERCE or :ERROR"
+                  *opengl-type-checking-action*))))))
+
+; the gl-viewport is conditionalized with:
+;  (when #+Win32 (win32:is-window-visible
+;                 (win32:pane-hwnd (capi-internals:representation canvas)))
+;	#-Win32 T
+; in example code
+
+;;; State management (see Red Book appendix B for state vars)
+;; Note, type can be either an atomic type of a list of type and length
+;; valid types are: :SIGNED-8 :SIGNED-16 :SIGNED-32 :UNSIGNED-8 :UNSIGNED-16
+;;                  :UNSIGNED-32 (:DOUBLE :DOUBLE-FLOAT) (:FLOAT :SINGLE-FLOAT)
+(defmacro get-opengl-state (pname type &optional return-vector)
+  (let ((gl-vect-var (gensym)))
+    (flet ((canonicalize-type (raw-type)
+                              (if (eq raw-type :boolean) :unsigned-8 raw-type)))
+          `(let ((,gl-vect-var (cond ((and (not (null ,return-vector))
+                                           (listp ',type)
+                                           ; sgithens 2021-03-21 Removing this check now to get rid of
+                                           ; fli dependency, all uses of get-opengl-state seem safe in
+                                           ; the codebase. Will be refactored as we set up the libre
+                                           ; opengl rendering.
+                                           ;(fli::pointerp ,return-vector)
+                                           )
+                                      ,return-vector)
+                                 (t
+                                  (opengl::make-gl-vector ,(canonicalize-type
+                                                           (if (listp type) (car type) type))
+                                                          ,(if (listp type) (cadr type) 1))))))
+             (unwind-protect
+              (progn
+               (,(ecase (if (listp type) (car type) type)
+                        (:boolean 'opengl::gl-get-booleanv)
+                        ((:signed-32 :integer) 'opengl::gl-get-integerv)
+                        (:float 'opengl::gl-get-floatv))
+                ,pname ,gl-vect-var)
+               ,(cond ((and (listp type) (not (null return-vector)))
+                       `,gl-vect-var)
+                  ((listp type)
+                   `(values ,@(let ((value-forms nil))
+                                (dotimes (i (cadr type))
+                                  (push `(opengl::gl-vector-aref ,gl-vect-var ,i)
+                                        value-forms))
+                                (nreverse value-forms))))
+                  ((eq type :boolean)
+                   `(let ((raw (opengl::gl-vector-aref ,gl-vect-var 0)))
+                      (cond ((zerop raw) nil)
+                        ((= raw 1) t)
+                        (t (error "~D is not a valid boolean value" raw)))))
+                  (t
+                   `(opengl::gl-vector-aref ,gl-vect-var 0))))
+              (when (null ,return-vector)
+                (opengl::free-gl-vector ,gl-vect-var)))))))
 
 (defstruct (ogl-graphics-state (:constructor %make-ogl-graphics-state))
   (color nil)

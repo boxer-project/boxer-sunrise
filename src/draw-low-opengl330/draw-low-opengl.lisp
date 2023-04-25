@@ -622,14 +622,6 @@ It's not clear yet whether we'll need to re-implement this for the future."
 ;;;; Boxer bitmaps
 ;;;;
 
-;; check for the existence of auxiliary buffer so we can signal
-;; an error at the right level
-(defun auxiliary-buffer-count ()
-  (bw::get-opengl-state opengl::*gl-aux-buffers* :signed-32))
-
-(defun auxiliary-buffer-exists? ()
-  (not (zerop (auxiliary-buffer-count))))
-
 ;; 2/28/2011: Use the back buffer instead because its hard to reliably get an aux
 ;; buffer on different platforms...
 (defmacro with-system-dependent-bitmap-drawing ((bitmap &optional
