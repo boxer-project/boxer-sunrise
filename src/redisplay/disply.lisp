@@ -295,9 +295,9 @@
 ;;; screen-objs of that type.
 
 (defmethod deallocate-self ((self screen-row))
-  ;; sgithens TODO Actually free the openGL memory...
   (when (getprop self :gl-model)
-    (removeprop self :gl-model))
+    (reset-meshes (getprop self :gl-model)))
+
   (when (null (slot-value self 'screen-box))
     (deallocate-inferiors self)
     (unless (null (screen-obj-actual-obj self))
