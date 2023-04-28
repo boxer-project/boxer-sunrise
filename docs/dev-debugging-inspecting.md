@@ -20,6 +20,16 @@ be accessed from a REPL.
 #<DATA-BOX  >
 ```
 
+## Box Flags
+
+The current box flags under the mouse can be viewed with `(boxer:show-box-flags box)`.
+
+```lisp
+(in-package :boxer)
+
+(show-box-flags (screen-obj-actual-obj (cadr (multiple-value-list (bw::mouse-place)))))
+```
+
 ## Restarting the boxer canvas after investigating an error
 
 After debugging/inspecting an issue stopped execution while running Boxer in Lispworks, the world canvas can
