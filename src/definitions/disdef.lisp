@@ -152,11 +152,6 @@ Modification History (most recent at the top)
     (re-init sprite-screen-box sprite-box)
     sprite-screen-box))
 
-(DEFUN ACTUAL-OBJ-OF-SCREEN-OBJ (SCREEN-OBJ)
-       (IF (SCREEN-CHA? SCREEN-OBJ)
-           SCREEN-OBJ
-           (SCREEN-OBJ-ACTUAL-OBJ SCREEN-OBJ)))
-
 (DEFUN ALLOCATE-SCREEN-ROW-INTERNAL (ACTUAL-ROW)
        (LET ((SCREEN-ROW (OR (POP FREE-SCREEN-ROWS) (MAKE-INSTANCE 'SCREEN-ROW))))
             (RE-INIT SCREEN-ROW ACTUAL-ROW)

@@ -7817,6 +7817,11 @@ Modification History (most recent at top)
 ;;;; FILE: disdef.lisp
 ;;;;
 
+(DEFUN ACTUAL-OBJ-OF-SCREEN-OBJ (SCREEN-OBJ)
+       (IF (SCREEN-CHA? SCREEN-OBJ)
+           SCREEN-OBJ
+           (SCREEN-OBJ-ACTUAL-OBJ SCREEN-OBJ)))
+
 ;;; right now these are flushed by the got-redisplayed
 ;;; method (probably not the best place)
 
