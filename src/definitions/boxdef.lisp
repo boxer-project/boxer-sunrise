@@ -434,7 +434,7 @@ Modification History (most recent at top)
   (draw-wid *default-graphics-sheet-width*)
   (draw-hei *default-graphics-sheet-height*)
   (screen-objs nil)
-  (bit-array nil)
+  (bit-array nil)  ;; This should be an ogl-pixmap
   (object-list nil)
   (superior-box nil)
   (draw-mode ':wrap)
