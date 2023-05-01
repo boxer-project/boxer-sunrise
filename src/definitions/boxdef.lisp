@@ -65,8 +65,7 @@ Modification History (most recent at top)
 
   TODO: What was the passed in box argument used for previously?"
   (concatenate 'string "Boxer version " (boxer-component-version)
-    #-moderngl " BSD License OpenGL Release"
-    #+moderngl " BSD License OpenGL 3.2 Shaders Release"))
+               " BSD License OpenGL 3.2 Shaders Release"))
 
 (defvar *resources-dir* nil
   "This is the directory on disc where we can expect to find things like the Fonts and Images directories.")
