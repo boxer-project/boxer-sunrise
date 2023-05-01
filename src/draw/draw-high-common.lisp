@@ -183,15 +183,6 @@ multifont row, the common reference point will be the baseline instead of the to
 ;;; iterating through a list of graphics commands, and before each graphic command is processed.
 ;;;
 
-(defun draw-before-graphics-list-playback (gl)
-  (%draw-before-graphics-list-playback gl))
-
-(defun draw-after-graphics-list-playback (gl)
-  (%draw-after-graphics-list-playback gl))
-
-(defun draw-before-graphics-command-marker (command gl)
-  (%draw-before-graphics-command-marker command gl))
-
 (defmethod get-boxgl-model-for-screen-obj ((self screen-obj))
   "Gets an instance of `boxer-gl-model` from the plist on the screen-obj, creating it if it doensn't exist
   yet. Also updates the cur-tick and needs-update properties of the model so we know if the screen-obj has
@@ -217,6 +208,18 @@ multifont row, the common reference point will be the baseline instead of the to
 (defmethod get-updated-tick ((self screen-row))
   "For checking if a screen row needs rebuffered, we are looking at the dimensions, offsets, and
    cliping. It's tick updates on nearly every repaint, so that's not usable here."
-  (with-slots (wid hei x-offset y-offset x-got-clipped? y-got-clipped?)
+  (with-slots (actual-obj wid hei x-offset y-offset x-got-clipped? y-got-clipped?)
               self
-    (list wid hei x-offset y-offset x-got-clipped? y-got-clipped?)))
+    (list (actual-obj-tick actual-obj) wid hei x-offset y-offset x-got-clipped? y-got-clipped?)))
+
+(defmethod get-graphics-canvas-for-screen-obj ((self screen-obj) &optional wid hei)
+  (let ((paint-tex (getprop self :graphics-canvas)))
+    (cond
+      ((null paint-tex)
+       (putprop self (make-graphics-canvas wid hei) :graphics-canvas)
+       (setf paint-tex (getprop self :graphics-canvas)))
+      ((or (not (equal wid (ogl-pixmap-width (graphics-canvas-pixmap paint-tex))))
+           (not (equal hei (ogl-pixmap-height (graphics-canvas-pixmap paint-tex)))))
+       (resize paint-tex wid hei))
+      (t nil))
+    paint-tex))

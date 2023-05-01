@@ -51,10 +51,10 @@ Modification History (most recent at top)
    (data     :initarg :data     :initform nil :accessor ogl-pixmap-data)
    (depth    :initarg :depth    :initform 32  :accessor ogl-pixmap-depth)))
 
-(defun make-ogl-pixmap (width height)
+(defun make-ogl-pixmap (width height &key (texture 0))
   (cond ((and (integerp width)  (not (minusp width))
               (integerp height) (not (minusp height)))
-         (make-instance 'ogl-pixmap :width width :height height :texture 0
+         (make-instance 'ogl-pixmap :width width :height height :texture texture
                            :data (cffi:foreign-alloc *pixmap-ffi-type*
                                                      :initial-element 0
                                                      :count (* width height))))
@@ -84,7 +84,7 @@ Modification History (most recent at top)
     ; (gl:pixel-store :pack-skip-rows oty)
 
     ;; read from the (visible) front buffer
-    (gl:read-buffer buffer)
+    ; (gl:read-buffer buffer)
     ;; move the pixels....
     (%gl:read-pixels fx fy wid hei *pixmap-data-type* *pixmap-data-format* data)))
 

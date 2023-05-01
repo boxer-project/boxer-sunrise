@@ -317,6 +317,9 @@
   (setf (graphics-screen-sheet-actual-obj gss) nil))
 
 (defmethod deallocate-self ((self graphics-screen-box))
+  (when (getprop self :graphics-canvas)
+    (clear (getprop self :graphics-canvas)))
+
   (delete-screen-obj (screen-obj-actual-obj self) self)
   (when (typep (screen-sheet self) 'graphics-screen-sheet)
     (clear-graphics-screen-sheet (screen-sheet self)))

@@ -54,7 +54,7 @@
 (ql:quickload :iterate)
 (ql:quickload :for)
 
-(log:config :debug)
+(log:config :info)
 
 (defvar *boxer-project-dir* (make-pathname :directory (butlast (pathname-directory *load-truename*))))
 
@@ -90,8 +90,6 @@
 ;   ; (load "/Users/sgithens/code/lispworks-8.0-examples/opengl/host")
 ;   (load "/Applications/LispWorks 8.0 (64-bit)/Library/lib/8-0-0-0/examples/opengl/host")
 ;   (load "OPENGL:EXAMPLES;load"))
-
-(setf *features* (cons :moderngl *features*))
 
 (setf *features* (cons :opengl *features*))
 (setf *features* (cons :freetype-fonts *features*))

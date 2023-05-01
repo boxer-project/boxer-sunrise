@@ -41,6 +41,12 @@
             )
           ;; mark the dirty? flag
           (setf (graphics-sheet-bit-array-dirty? graphics-sheet) nil))
+        ;; Clear any framebuffers if present
+        (unless (null (actual-obj-screen-objs self))
+          (let* ((gr-scr-box (cdar (actual-obj-screen-objs self)))
+                 (canvas (getprop gr-scr-box :graphics-canvas)))
+            (when canvas
+              (clear canvas))))
         ;; now erase stuff on the screen...
         (dolist (screen-box (get-visible-screen-objs  self))
           (unless (eq ':shrunk (display-style screen-box))

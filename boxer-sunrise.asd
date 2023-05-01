@@ -16,25 +16,14 @@
   :components ((:module "src"
                 :components
                 (
-                 #-moderngl
-                 (:module "draw-low-opengl-lispworks"
-                  :depends-on ()
-                  :components ((:file "platform-utils")
-                               (:file "pixmap")
-                               (:file "opengl-utils")
-                               #+(and freetype-fonts (not delivering))
-                               (:file "freetype-fonts")
-                               (:file "draw-low-opengl")))
-
-                #+moderngl
                  (:module "draw-low-opengl330"
                   :depends-on ()
                   :components ((:file "platform-utils")
                                (:file "pixmap")
+                               (:file "graphics-canvas")
                                (:file "simple-line-shapes")
                                (:file "line-shapes")
                                (:file "shader-shapes")
-                               (:file "draw-low-gdisp-lists")
                                (:file "box-models-meshes")
                                (:file "draw-low-opengl330")
                                (:file "opengl-utils")
@@ -42,7 +31,7 @@
                                (:file "freetype-fonts")
                                (:file "draw-low-opengl")))
 
-                 #+moderngl (:file "boxwin/lw-capi/boxwin-330gl")
+                 (:file "boxwin/lw-capi/boxwin-330gl")
 
                  ;; Beginning of `DRAW` module
                  (:file "draw/draw-high-common")

@@ -890,10 +890,19 @@
                                                               (draw-rectangle inner-width inner-height 0 0))))
                                                          (let ((ba (graphics-sheet-bit-array graphics-sheet)))
                                                            (unless (null ba)
-                                                             (#-X BITBLT-TO-SCREEN #+(and SUN X) bitblt-pixrect-to-screen
+                                                             (bitblt-to-screen
                                                                (min inner-width  (ogl-pixmap-width  ba))
                                                                (min inner-height (ogl-pixmap-height ba))
                                                                ba 0 0 0 0)))
+                                                         ;; Draw the gl-model canvas / framebuffer
+                                                         (when *use-opengl-framebuffers*
+                                                          (let* ((wid (graphics-sheet-draw-wid graphics-sheet))
+                                                                  (hei (graphics-sheet-draw-hei graphics-sheet))
+                                                                  (canvas (get-graphics-canvas-for-screen-obj self wid hei))
+                                                                  (pixmap (graphics-canvas-pixmap canvas)))
+                                                            (bitblt-to-screen (min inner-width  (ogl-pixmap-width  pixmap))
+                                                                              (min inner-height (ogl-pixmap-height pixmap))
+                                                                              pixmap 0 0 0 0)))
                                                          ;; then handle any sprite graphics...
                                                          (unless (null (graphics-sheet-graphics-list graphics-sheet))
                                                            (redisplay-graphics-sheet graphics-sheet self)))))))))

@@ -26,21 +26,10 @@
   (unless *boxer-pane-initialized*
     (opengl:rendering-on (*boxer-pane*)
                 (boxer::initialize-colors)
-                #-moderngl (%set-pen-color box::*foreground-color*)
                 ;; do other OpenGL inits...
-                (setq *blinker-color* (make-ogl-color .3 .3 .9 .5))
-                #-moderngl
-                (progn
-                  (opengl:gl-enable opengl:*gl-scissor-test*)
-                  (opengl::gl-enable opengl::*gl-line-smooth*)
-                  (opengl::gl-enable opengl::*gl-polygon-smooth*)
-                  (opengl::gl-enable opengl::*gl-blend*)
-                  (opengl::gl-blend-func opengl::*gl-src-alpha* opengl::*gl-one-minus-src-alpha*)
-                  (opengl::gl-hint opengl::*gl-line-smooth-hint* opengl::*gl-nicest*))
-                )
+                (setq *blinker-color* (make-ogl-color .3 .3 .9 .5)))
 
     ;; modernGL inits
-    #+moderngl
     (opengl:rendering-on (*boxer-pane*)
       (gl:enable :scissor-test)
       (gl:enable :line-smooth)
@@ -84,7 +73,6 @@
       (resize-handler-utility)
       (setf *boxer-pane-initialized* t)
 
-    #+moderngl
     (opengl:rendering-on (*boxer-pane*)
       (log:debug "~%max-texture-size: ~A"  (gl:get-integer :max-texture-size))
       (setf boxer::*freetype-glyph-atlas* (boxer::make-glyph-atlas))
@@ -93,10 +81,7 @@
 
   (unless boxer::*evaluation-in-progress?*
     (resize-handler canvas x y wid hei)
-    #+moderngl
     (setf (boxer::boxgl-device-ortho-matrix bw::*boxgl-device*)
           (boxer::create-ortho-matrix wid hei))
-    #+moderngl
     (opengl:gl-viewport 0 0 wid hei)
-    #+moderngl
     (boxer::update-matrices-ubo bw::*boxgl-device*)))

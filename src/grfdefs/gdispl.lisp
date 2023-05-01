@@ -1810,23 +1810,47 @@ Modification History (most recent at the top)
 
 ;; this is used by the redisplay...
 
-(defmacro playback-graphics-list-internal (gl &rest args)
+(defmacro playback-graphics-list-internal (gl &key (start 0) (graphics-canvas nil))
   `(with-graphics-state (,gl t)
-     (draw-before-graphics-list-playback ,gl)
+
+     (when (and *use-opengl-framebuffers* ,graphics-canvas)
+      (when (graphics-canvas-pen-color-cmd ,graphics-canvas)
+        (process-graphics-command-marker (graphics-canvas-pen-color-cmd ,graphics-canvas)))
+      (when (graphics-canvas-pen-size-cmd ,graphics-canvas)
+        (process-graphics-command-marker (graphics-canvas-pen-size-cmd ,graphics-canvas)))
+      (when (graphics-canvas-pen-font-cmd ,graphics-canvas)
+        (process-graphics-command-marker (graphics-canvas-pen-font-cmd ,graphics-canvas))))
 
      (with-blending-on
-       (do-vector-contents (command ,gl)
-         (draw-before-graphics-command-marker command ,gl)
-         (process-graphics-command-marker command . ,args)
-         )
+       (do-vector-contents (command ,gl :start ,start)
+         (process-graphics-command-marker command) ; . ,args)
 
-     (draw-after-graphics-list-playback ,gl))))
+         (when (and *use-opengl-framebuffers* ,graphics-canvas)
+           (cond ((equal 4 (aref command 0))
+                  (setf (graphics-canvas-pen-color-cmd ,graphics-canvas) command))
+                 ((equal 1 (aref command 0))
+                  (setf (graphics-canvas-pen-size-cmd ,graphics-canvas) command))
+                 ((equal 2 (aref command 0))
+                  (setf (graphics-canvas-pen-font-cmd ,graphics-canvas) command))))))))
 
 (defun redisplay-graphics-sheet (gs graphics-screen-box)
   (with-graphics-vars-bound ((screen-obj-actual-obj graphics-screen-box))
     ;; first the items in the list
-    (let ((gl (graphics-sheet-graphics-list gs)))
-      (unless (graphics-command-list-hidden gl) (playback-graphics-list-internal gl)))
+    (if *use-opengl-framebuffers*
+      (let* ((wid (graphics-sheet-draw-wid gs))
+             (hei (graphics-sheet-draw-hei gs))
+             (gl (graphics-sheet-graphics-list gs))
+             (canvas (get-graphics-canvas-for-screen-obj graphics-screen-box wid hei)))
+        (when (> (%%sv-fill-pointer gl) (op-count canvas))
+          (enable canvas)
+          (unless (graphics-command-list-hidden gl)
+            (playback-graphics-list-internal gl :start (op-count canvas) :graphics-canvas canvas))
+          (setf (op-count canvas) (%%sv-fill-pointer gl))
+          (disable canvas)))
+      ; else
+      (let ((gl (graphics-sheet-graphics-list gs)))
+        (unless (graphics-command-list-hidden gl) (playback-graphics-list-internal gl))))
+
     ;; and then any sprites
     (let ((sprites (graphics-sheet-object-list gs)))
       (dolist (sprite sprites)
@@ -1836,7 +1860,6 @@ Modification History (most recent at the top)
       (dolist (sprite sprites)
         (unless (null (shown? sprite))
           (draw sprite))))))
-
 
 
 ;;; show probably do some type checking about compatibility

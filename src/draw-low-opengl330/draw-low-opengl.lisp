@@ -553,23 +553,7 @@ It's not clear yet whether we'll need to re-implement this for the future."
   copy the points to the c-buffer we are putting vertices in, otherwise it will
   call the old single openGL draw line that uses and glBegin and glEnd.
   "
-(if *gl-cur-gdisp-list-cache*
-  (gl-gdisp-list-line-segment *gl-cur-gdisp-list-cache* bw::*boxgl-device* x0 y0 x1 y1)
   (gl-add-line bw::*boxgl-device* x0 y0 x1 y1))
-
-  ; 2 vertices are currently 14 points: xyzrgba
-  ; (if (and nil *use-glist-performance* *inside-glist-perf-line-segs*)
-  ;     (progn
-  ;       (gl-buffer-line bw::*boxgl-device* x0 y0 x1 y1 *glist-line-segs-c-buffer* *glist-perf-pos*)
-  ;       (setf *glist-perf-pos* (+ 14 *glist-perf-pos*))
-  ;       ;; If there isn't enough room left in the buffer for 4 points, then ogl-flush-draw-line first
-  ;       (when (>= (+ *glist-perf-pos* 14) (1+ boxer::*glist-line-segs-c-buffer-size*))
-  ;         (gl-draw-lines bw::*boxgl-device* *glist-line-segs-c-buffer* *glist-perf-pos*)
-  ;         (setf boxer::*glist-perf-pos* 0))
-  ;     )
-  ;     (gl-add-line bw::*boxgl-device* x0 y0 x1 y1)
-  ;     )
-      )
 
 (defun %draw-point (x y)
   (gl-add-point bw::*boxgl-device* x0 y0))
@@ -579,24 +563,7 @@ It's not clear yet whether we'll need to re-implement this for the future."
 
 (defun %draw-rectangle (width height x y)
   (unless (or (>= %clip-lef %clip-rig) (>= %clip-top %clip-bot))
-    (if *gl-cur-gdisp-list-cache*
-      (gl-gdisp-list-rect *gl-cur-gdisp-list-cache* bw::*boxgl-device* x y width height)
-      (gl-add-rect bw::*boxgl-device* x y width height)
-    )
-
-    ; (if (and *use-glist-performance* *inside-glist-perf-rect-segs*)
-    ;   (progn
-    ;     (gl-buffer-rect bw::*boxgl-device* x y width height *glist-line-segs-c-buffer* *glist-perf-pos*)
-    ;     (setf *glist-perf-pos* (+ (* 6 7) *glist-perf-pos*)) ;; 6 vertices (2 triangles) * 7 stride
-    ;     ;; If there isn't enough room left in the buffer for 4 points, then ogl-flush-draw-line first
-    ;     (when (>= (+ *glist-perf-pos* (* 6 7)) (1+ boxer::*glist-line-segs-c-buffer-size*))
-    ;       (gl-draw-rects bw::*boxgl-device* *glist-line-segs-c-buffer* *glist-perf-pos*)
-    ;       (setf boxer::*glist-perf-pos* 0))
-    ;   )
-    ;   (gl-add-rect bw::*boxgl-device* x y width height))
-
-      )
-      )
+    (gl-add-rect bw::*boxgl-device* x y width height)))
 
 (defun %erase-rectangle (w h x y window)
   (unless (null window)
@@ -613,10 +580,10 @@ It's not clear yet whether we'll need to re-implement this for the future."
 (defun %bitblt-from-screen (wid hei to-array fx fy tx ty)
   ;; bw::gl-read-pixels
   ;; (bw::gl-read-buffer bw::*gl-front*) ; read from the (visible) front buffer
-  (opengl::%pixblt-from-screen to-array (round fx)
-                               ;; not quite right especially with a translated fy
-                               (round (- (sheet-inside-height *boxer-pane*) (+ fy hei)))
-                               (round wid) (round hei) tx ty))
+  (%pixblt-from-screen to-array (round fx)
+                                ;; not quite right especially with a translated fy
+                                (round (- (sheet-inside-height *boxer-pane*) (+ fy hei)))
+                                (round wid) (round hei) tx ty))
 
 ;;;;
 ;;;; Boxer bitmaps
@@ -665,103 +632,3 @@ It's not clear yet whether we'll need to re-implement this for the future."
 
 (defun offscreen-pixel-color (x y pixmap)
   (opengl::pixel->color (opengl::pixmap-pixel pixmap x y)))
-
-;;; Graphics List Performance Speedups
-
-(defvar *glist-line-segs-c-buffer* nil)
-(defvar *glist-line-segs-c-buffer-size* 250000)
-(defvar *inside-glist-perf-line-segs* nil)
-(defvar *inside-glist-perf-rect-segs* nil)
-(defvar *glist-perf-pos* 0)
-
-(def-redisplay-initialization
-  (progn
-    ;; Allocate the c-buffers to hold opengl vertices and colors
-    (setf *glist-line-segs-c-buffer*
-          (cffi:foreign-alloc :float :count *glist-line-segs-c-buffer-size* :initial-element 0.0))
-  )
-)
-
-(defun %draw-before-graphics-list-playback (gl)
-  (setf *inside-glist-perf-rect-segs* nil)
-  (setf *inside-glist-perf-line-segs* nil)
-  (setf *glist-perf-pos* 0)
-)
-
-(defun %draw-after-graphics-list-playback (gl)
-
-
-  (when *inside-glist-perf-line-segs*
-    (setf *inside-glist-perf-line-segs* nil)
-    (gl-draw-lines bw::*boxgl-device* *glist-line-segs-c-buffer* *glist-perf-pos*);
-    (setf *glist-perf-pos* 0)
-  )
-  (when *inside-glist-perf-rect-segs*
-    (setf *inside-glist-perf-rect-segs* nil)
-    (gl-draw-rects bw::*boxgl-device* *glist-line-segs-c-buffer* *glist-perf-pos*);
-    (setf *glist-perf-pos* 0)
-  )
-)
-
-(defun %draw-before-graphics-command-marker (command gl)
-  (when *use-glist-performance*
-    (let ((cmd-op (aref command 0)))
-      ; (format t "~% cmd-op: ~A" cmd-op)
-      (cond
-        ;; 1 We are getting a line-segment and haven't started a buffering yet
-        ; ((and (equal 3 cmd-op) (not *inside-glist-perf-line-segs*) )
-        ;   (setf *inside-glist-perf-line-segs* t)
-        ;   (setf *glist-perf-pos* 0)
-        ; )
-
-        ; ;; 2 We are getting a line-segment and are already in a buffering
-        ; ((and (equal 3 cmd-op) *inside-glist-perf-line-segs*)
-        ;   ;; no-op for now
-        ; )
-
-        ; ;; 3 If this is NOT a line seqment and we're in one, then dump it
-        ; ((and (not (equal 3 cmd-op)) *inside-glist-perf-line-segs*)
-        ;   (setf *inside-glist-perf-line-segs* nil)
-
-        ;   ;; TODO dump this line segs buffer onto the GPU
-        ;   (gl-draw-lines bw::*boxgl-device* *glist-line-segs-c-buffer* *glist-perf-pos*)
-        ;   (setf *glist-perf-pos* 0)
-        ; )
-
-        ;; 1 We are getting a line-segment and haven't started a buffering yet
-        ((and (equal 10 cmd-op) (not *inside-glist-perf-rect-segs*) )
-          (setf *inside-glist-perf-rect-segs* t)
-          (setf *glist-perf-pos* 0)
-        )
-
-        ;; 2 We are getting a line-segment and are already in a buffering
-        ((and (equal 10 cmd-op) *inside-glist-perf-rect-segs*)
-          ;; no-op for now
-        )
-
-        ;; 3 If this is NOT a line seqment and we're in one, then dump it
-        ((and (not (member cmd-op '(4 10))) *inside-glist-perf-rect-segs*)
-          (setf *inside-glist-perf-rect-segs* nil)
-; (log:debug "What why? cmd-op: ~A" cmd-op)
-          ;; TODO dump this line segs buffer onto the GPU
-          (gl-draw-rects bw::*boxgl-device* *glist-line-segs-c-buffer* *glist-perf-pos*)
-          (setf *glist-perf-pos* 0)
-        )
-
-        ;; 4 If this is a color change and we're in a line segment, don't stop it
-        ;; just go ahead and run the color change
-        ;; TODO this is if we're using the color-buffer
-        ((or (and (equal 4 cmd-op) *inside-glist-perf-line-segs*)
-             (and (equal 4 cmd-op) *inside-glist-perf-rect-segs*))
-          ;; no-op for now
-        )
-
-        ;; Else stop the line segment
-        (t
-          (setf *inside-glist-perf-line-segs* nil)
-          (setf *inside-glist-perf-rect-segs* nil)
-          (setf *glist-perf-pos* 0)
-        )
-      )
-    )
-  ))

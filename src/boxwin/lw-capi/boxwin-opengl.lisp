@@ -336,8 +336,7 @@
               :visible-min-height *boxer-status-pane-height*
               :visible-max-height *boxer-status-pane-height*)
   (boxer-pane boxer-lw-opengl-canvas
-              :configuration #+moderngl '(:rgba t :depth nil :double-buffered t :modern t)
-                             #-moderngl '(:rgba t :depth nil :double-buffered t :aux 1)
+              :configuration  '(:rgba t :depth nil :double-buffered t :modern t)
                               ;#-linux '(:rgba t :depth nil :double-buffered t :aux 1)
                               ;#+linux '(:rgba t :depth nil :double-buffered t ) ;:aux 1) TODO This aux option crashes LW on linux
                :input-model '(((:button-1 :press) boxer-click-1-handler)

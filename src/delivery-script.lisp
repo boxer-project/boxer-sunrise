@@ -45,12 +45,9 @@
 (ql:quickload :cl-fad)
 #+(and lispworks x64) (load (cl-fad:merge-pathnames-as-file *boxer-project-dir* "src/opengl-lw-8/examples/load.lisp"))
 
-
-(setf *features* (cons :moderngl *features*))
 (setf *features* (cons :opengl *features*))
 (setf *features* (cons :freetype-fonts *features*))
 (setf *features* (cons :delivering *features*))
-
 
 (ql:quickload :log4cl)
 (ql:quickload :drakma)

@@ -353,12 +353,19 @@
                    pen pen-width type-font pen-color))))
   boxer-eval::*novalue*)
 
-(defboxer-preference bu::use-glist-performance (true-or-false)
-  ((*use-glist-performance* :boolean (boxer-eval::boxer-boolean *use-glist-performance*))
+; (defboxer-preference bu::use-glist-performance (true-or-false)
+;   ((*use-glist-performance* :boolean (boxer-eval::boxer-boolean *use-glist-performance*))
+;    graphics
+;    ("Should we use the in development graphics command list optimizations?")
+;   )
+;   (setq *use-glist-performance* true-or-false)
+;   boxer-eval::*novalue*)
+
+(defboxer-preference bu::use-opengl-framebuffers (true-or-false)
+  ((*use-opengl-framebuffers* :boolean (boxer-eval::boxer-boolean *use-opengl-framebuffers*))
    graphics
-   ("Should we use the in development graphics command list optimizations?")
-  )
-  (setq *use-glist-performance* true-or-false)
+   ("Should we use in progress openGL framebuffers to back turtle drawing?"))
+  (setq *use-opengl-framebuffers* true-or-false)
   boxer-eval::*novalue*)
 
 (defboxer-preference bu::show-border-type-labels (true-or-false)
