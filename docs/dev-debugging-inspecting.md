@@ -51,6 +51,14 @@ Dumping the version and opcodes of a `.box` file can be done at the REPL with:
 
 ```
 
+## Debugging test cases
+
+Currently we are using `prove` and you can set it to hit the debugger on errors with:
+
+```lisp
+(setf prove:*debug-on-error* t)
+```
+
 ## Changing the keybindings at runtime
 
 The `make-input-devices` defun from `keydef-high.lisp` is what sets up all the keybindings and
