@@ -27,6 +27,7 @@
                 (:test-file "formats-tests")
                 ; (:test-file "eval-eval-tests")
                 (:test-file "boxer-styles-tests")
+                (:test-file "freetype-fonts-tests")
                  )))
   :description "Test system for boxer-sunrise"
 

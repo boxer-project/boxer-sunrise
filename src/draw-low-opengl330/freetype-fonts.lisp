@@ -60,7 +60,7 @@
   for now we will reset it to 12."
   (if (equal (cadr triple) 0)
     (list (car triple) 12 (cddr triple))
-    triple))
+    triple)) ;; TODO We should make this also capitalize the font and make sure the zoom is 1.0... hmm this is only the font triple...
 
 (defun font-face-from-fontspec (capi-fontspec &optional (font-zoom 1.0))
   "Returns the freetype2 font face and sets the current char size from a fontspec of the
@@ -194,15 +194,73 @@
    (glyphs :initform (make-hash-table :test #'equal) :accessor glyph-atlas-glyphs
     :documentation "Table of glyphs in the atlas, keyed by font descriptor, char, and scale: '((\"Arial\" 12) #\\D 1.0)
                    Values are of type struct box-glyph which should have the atlas locations filled in.
-                   ")))
+                   ")
+   (sizes :initform '(8 9 10 11 12 14 16 18 20 22 24 26 28 36 48 72 288) :initarg :sizes :accessor glyph-atlas-sizes
+    :documentation "A list of integers containing the font/glyphs sizes we pre-rendered on the atlas.")))
 
 (defmethod get-glyph ((self glyph-atlas) spec)
-  "TODO just using the char for now while prototyping. Should take the entire font spec
-  TODO should add the glyph to the glyph atlas if it doens't exist yet.
+  "
+  Fetches a box-glyph capable of rendering a glyph from the texture atlas. If the atlas does not have the specified
+  character in the font, then nil is returned. The texture on the atlas may be scaled down if the exact size is not
+  on the atlas. (ie. We'll pick the next largest size to scale on to the actual font size)
 
+  The spec is a list of font-spec, character, and zoom level.
   Spec example is: '((\"Arial\" 12 :BOLD) #\A 1.0)
   "
-  (gethash  (cons (cons (string-upcase (caar spec)) (cdar spec)) (cdr spec)) (glyph-atlas-glyphs self)))
+  (let* ((final-glyph nil)
+         (cha (second spec))
+         (font-spec (car spec))
+         (capitalized-font-name (string-upcase (car font-spec)))
+         (capitalized-font-spec (cons capitalized-font-name (cdar spec)))
+         (capitalized-spec (cons capitalized-font-spec (cdr spec))))
+    ;; We're going to find a glyph to return, assuming the char in this font appears in at least some size on the
+    ;; altas. (1) if it's already cached in the atlas glyphs we'll return it. (2) We'll multiply the font by the
+    ;; zoom to get it's size, and find the closest size on the atlas. If that also doesn't exist, the glyph/font
+    ;; must not be there at all. (in the future we hope to add new chars to the atlas at runtime)
+    ;; If that atlas-glyph does exist, we also get the exact sized freetype-glyph, and then add the texture
+    ;; coordinates and dimensions from the atlas-glyph to it. This is what we then add to the atlas glyph hash
+    ;; and return.  These are all of type box-glyph.
+
+    ;; 1. Does the texture atlas have this glyph already?
+    (when (gethash  capitalized-spec (glyph-atlas-glyphs self))
+      (log:debug "~%Got capitalized-spec glyph from atlas: ~A" capitalized-spec)
+      (setf final-glyph (gethash  capitalized-spec (glyph-atlas-glyphs self))))
+
+    (unless final-glyph
+      ;; 2 Get the real font size taking in to account the zoom level
+      (let* ((zoom (third spec))
+             (zoomed-font-size (* zoom (second font-spec)))
+             (closest-size (closest-font-size self zoomed-font-size))
+             (atlas-key (list (cons capitalized-font-name (cons closest-size (cddr font-spec))) cha 1.0))
+             (atlas-glyph (gethash  atlas-key (glyph-atlas-glyphs self))))
+        (when atlas-glyph ;; If this there isn't a glyph for the char any the closest zoom level, we still have to return nil
+          (let* ((font-face (font-face-from-fontspec capitalized-font-spec zoom))
+                 (freetype-glyph (create-box-glyph font-face cha nil)))
+            ;; Set the texture bits of freetype-glyph from the atlas-glyph, store in the atlas with the
+            ;; original zoom level and set as the final-glyph.
+            (setf (box-glyph-tx freetype-glyph) (box-glyph-tx atlas-glyph)
+                  (box-glyph-ty freetype-glyph) (box-glyph-ty atlas-glyph)
+                  (box-glyph-t-width freetype-glyph) (box-glyph-t-width atlas-glyph)
+                  (box-glyph-t-rows freetype-glyph) (box-glyph-t-rows atlas-glyph))
+            (setf (gethash capitalized-spec (glyph-atlas-glyphs self)) freetype-glyph)
+            (setf final-glyph freetype-glyph)))))
+    final-glyph))
+
+(defun closest (n items)
+  (cond ((null items)
+          nil)
+        ((null (cadr items))
+          (car items))
+        ((<= n (car items))
+          (car items))
+        (t
+          (closest n (cdr items)))))
+
+(defmethod closest-font-size ((self glyph-atlas) size)
+  "Returns the closest largest size font size. So we return either the same size if it's on the atlas, or
+   the next largest size so it can be sized down. If a size is larger than the largest size, we return the
+   largest size."
+  (closest size (glyph-atlas-sizes self)))
 
 (defun pre-render-font-to-atlas (atlas font-spec font-zoom start-x start-y)
   "For the given font-face render the first 32-128 characters starting at the x and y location.
@@ -216,7 +274,8 @@
   (pre-render-font-to-atlas atlas '(\"Arial\" 12 :BOLD) 1.0 0 12)
   (pre-render-font-to-atlas atlas '(\"Arial\" 16 :BOLD) 1.0 0 40)
   "
-  (let ((font-face (font-face-from-fontspec font-spec font-zoom)))
+  (let ((max-width 0)
+        (font-face (font-face-from-fontspec font-spec font-zoom)))
     (loop with x = start-x
           with y = start-y
           for i from 32 to 128 do (progn
@@ -233,10 +292,12 @@
              (tx        (/ x (glyph-atlas-width atlas)))
              (ty        (/ y (glyph-atlas-height atlas)))
              (glyph (make-box-glyph :ch (code-char i) :width width :rows rows :bearing-x bearing-x :bearing-y bearing-y
-                                    :tx tx :ty ty :advance advance)))
+                                    :tx tx :ty ty :advance advance :t-width width :t-rows rows)))
         (gl:tex-sub-image-2d :texture-2d 0 x y width rows :red :unsigned-byte buffer)
         (setf (gethash cache-key (glyph-atlas-glyphs atlas)) glyph)
-        (setf x (+ x width)))))))
+        (setf x (+ x width)))
+        (setf max-width x)))
+    (log:debug "Final texture width for ~A ~A is ~A" font-spec font-zoom max-width)))
 
 (defmethod make-glyph-atlas (&key (atlas-width 16000) (atlas-height 16000))
   "Create a new glyph atlas, allocating an openGL texture, and prefilling our default font sizes with the ASCII
@@ -261,7 +322,7 @@
     (let ((count 0))
       ;; Upper casing font names, since they can vary from boxer storage
       (dolist (font-family '("ARIAL" "COURIER NEW" "TIMES NEW ROMAN"))
-        (dolist (font-size '(8 9 10 11 12 14 16 18 20 22 24 26 28 36 48 72))
+        (dolist (font-size (glyph-atlas-sizes atlas))
           (pre-render-font-to-atlas atlas `(,font-family ,font-size) 1.0 0 count)
           (setf count (+ count font-size))
           (pre-render-font-to-atlas atlas `(,font-family ,font-size :BOLD) 1.0 0 count)

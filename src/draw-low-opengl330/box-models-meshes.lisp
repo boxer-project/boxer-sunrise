@@ -155,13 +155,14 @@
 (defmethod add-char ((self boxer-gl-model) device x y ch &key (rgb (boxgl-device-pen-color device))
                                                               (baseline-bot nil)
                                                               (font *current-opengl-font*)
+                                                              (font-zoom *font-size-baseline*)
                                                               (atlas *freetype-glyph-atlas*))
   "Version of draw-char that uses a glyph from a texture atlas."
-  (if (null (get-glyph atlas `(,(opengl-font-fontspec font) ,ch 1.0)))
-    (log:error "Could not look up glyph: ~A" `(,(opengl-font-fontspec font) ,ch 1.0))
+  (if (null (get-glyph atlas `(,(opengl-font-fontspec font) ,ch ,(coerce font-zoom 'float))))
+    (log:info "Could not look up glyph: ~A" `(,(opengl-font-fontspec font) ,ch ,(coerce font-zoom 'float)))
     (let* ((mesh (slot-value self 'glyphs-xyz-txty-rgba-mesh))
           (font-face (current-freetype-font font))
-          (glyph (get-glyph atlas `(,(opengl-font-fontspec font) ,ch 1.0)))
+          (glyph (get-glyph atlas `(,(opengl-font-fontspec font) ,ch ,(coerce font-zoom 'float))))
           (bearing-x (box-glyph-bearing-x glyph))
           (bearing-y (box-glyph-bearing-y glyph))
           (width (box-glyph-width glyph))
@@ -177,7 +178,9 @@
           (ypos+h (+ ypos h))
           (xpos+w (+ xpos w))
           (tx (coerce (box-glyph-tx glyph) 'single-float))
-          (ty (coerce (box-glyph-ty glyph) 'single-float)))
+          (ty (coerce (box-glyph-ty glyph) 'single-float))
+          (t-wid (coerce (box-glyph-t-width glyph) 'single-float))
+          (t-hei (coerce (box-glyph-t-rows glyph) 'single-float)))
       (enable-gl-objects device :program (shader-program (glyph-atlas-shader device))
                                 :vao     (mesh-vao mesh)
                                 :buffer  (mesh-vbo mesh))
@@ -185,14 +188,14 @@
       ;; make the vertices array
       (let* (
             (vertices `#(,xpos   ,ypos       0.0 ,tx                                     ,ty                                       ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ;; 0.0 0.0
-                          ,xpos   ,ypos+h     0.0 ,tx                                     ,(+ ty (/ h (glyph-atlas-height atlas)))  ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ;;0.0 1.0
-                          ,xpos+w ,ypos+h     0.0 ,(+ tx (/ w (glyph-atlas-width atlas))) ,(+ ty (/ h (glyph-atlas-height atlas)))  ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
+                          ,xpos   ,ypos+h     0.0 ,tx                                     ,(+ ty (/ t-hei (glyph-atlas-height atlas)))  ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ;;0.0 1.0
+                          ,xpos+w ,ypos+h     0.0 ,(+ tx (/ t-wid (glyph-atlas-width atlas))) ,(+ ty (/ t-hei (glyph-atlas-height atlas)))  ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
 
                           ; These 2 can be removed when using the element buffer
                           ,xpos   ,ypos       0.0 ,tx                                     ,ty                                       ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ;; 0.0 0.0
-                          ,xpos+w ,ypos+h     0.0 ,(+ tx (/ w (glyph-atlas-width atlas))) ,(+ ty (/ h (glyph-atlas-height atlas)))  ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
+                          ,xpos+w ,ypos+h     0.0 ,(+ tx (/ t-wid (glyph-atlas-width atlas))) ,(+ ty (/ t-hei (glyph-atlas-height atlas)))  ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
 
-                          ,xpos+w ,ypos       0.0 ,(+ tx (/ w (glyph-atlas-width atlas))) ,ty                                       ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ;; 1.0 0.0
+                          ,xpos+w ,ypos       0.0 ,(+ tx (/ t-wid (glyph-atlas-width atlas))) ,ty                                       ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ;; 1.0 0.0
                           ))
             (arr (gl:alloc-gl-array :float (length vertices)))
             )

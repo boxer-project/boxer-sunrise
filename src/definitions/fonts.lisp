@@ -36,9 +36,9 @@
   "We support fonts of any size now, but these are the sizes that will be
   available from the drop down menu in the UI.")
 
-(defvar *font-size-baseline* 1
+(defvar *font-size-baseline* 1.0
   "This is the font zoom percentage. Default is 1, 100% In practice we are allowing this to be somewhere between .5
-  and 4... 50% to 400% zooming.")
+  and 4... 50% to 400% zooming. This should be a float.")
 
 (defvar *font-cache* nil ;
   "This is a regular list of `opengl-font` structs. Order is important during boxer execution

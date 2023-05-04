@@ -724,7 +724,7 @@
                                                    :cha-drawing? t)
       (cond ((screen-cha? inf-screen-obj)
              ;; draw the char
-             (if (get-glyph *freetype-glyph-atlas* `(,(opengl-font-fontspec *current-opengl-font*) ,inf-screen-obj 1.0))
+             (if (get-glyph *freetype-glyph-atlas* `(,(opengl-font-fontspec *current-opengl-font*) ,inf-screen-obj ,(coerce *font-size-baseline* 'float)))
               (when (needs-update gl-model)
                 (draw-cha inf-screen-obj
                           inf-x-offset (+ row-baseline inf-y-offset)

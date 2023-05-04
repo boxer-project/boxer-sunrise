@@ -44,9 +44,17 @@
   ;; If this glyph has a standalone texture this is the GL id
   texture-id
   ;; If this glyph is part of a texture atlas, these are it's
-  ;; offsets in texture coordinates (ie. [0, 1])
+  ;; offsets in texture coordinates (ie. [0, 1]).
+  ;;
+  ;; In many cases, especially when we're not zoomed at all, t-width and t-rows
+  ;; will be the same as width and rows. However, when we are using a larger font
+  ;; size texture to downscale over a smaller one that isn't on the atlas, these
+  ;; will be different, as the texture will be larger than the quad we are going to
+  ;; render it on.
   tx
-  ty)
+  ty
+  t-width
+  t-rows)
 
 (defun line-by-width-corners (x0 y0 x1 y1 width)
   "Given two points for a line and a width for the line, calculate the 4 points necessary for the (most likely)
