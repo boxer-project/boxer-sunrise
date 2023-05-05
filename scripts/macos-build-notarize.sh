@@ -1,4 +1,6 @@
 #!/bin/sh
+# You'll need to pass in a username and password, either as command line variables or via
+# the environment. This should be an app-specific password generated at https://appleid.apple.com
 
 echo "Boxer Sunrise macOS Build and Notarize\n"
 
