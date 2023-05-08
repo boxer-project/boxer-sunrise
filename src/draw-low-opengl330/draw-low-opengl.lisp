@@ -357,14 +357,16 @@ OpenGL expects a list of X Y pairs"
     (if (null font)
       (error "No cached font for ~X" font-no)
       (bw::with-ogl-font  (font)
-                          (bw::ogl-font-height font)))))
+                          ;; most of the drawing code requires this to be a fixnum, thus the floor
+                          (floor (bw::ogl-font-height font))))))
 
 (defun string-ascent (font-no)
   (let ((font (find-cached-font font-no)))
     (if (null font)
       (error "No cached font for ~X" font-no)
       (bw::with-ogl-font  (font)
-                          (bw::ogl-font-ascent font)))))
+                          ;; most of the drawing code requires this to be a fixnum, thus the floor
+                          (floor (bw::ogl-font-ascent font))))))
 
 
 ;; proportional fonts
