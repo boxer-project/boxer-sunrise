@@ -68,7 +68,7 @@ Modification History (most recent at the top)
 ;   can be used for other types of graphics command list performance work that is in
 ;   progress as well.")
 
-(defvar *use-opengl-framebuffers* t
+(defvar *use-opengl-framebuffers* nil
   "t or nil. If t, then use openGL framebuffers to back the graphics display list drawing
    on turtle canvases.")
 

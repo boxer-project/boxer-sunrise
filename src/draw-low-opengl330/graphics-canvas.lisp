@@ -108,7 +108,9 @@
     (gl:bind-texture :texture-2d 0)
     (setf (ogl-pixmap-width pixmap) wid)
     (setf (ogl-pixmap-height pixmap) hei)
-    (setf (op-count self) 0)))
+    (setf (op-count self) 0)
+    (gl:clear-color 0.0 0.0 0.0 0.0) ;; transparent
+    (gl:clear :color-buffer-bit :depth-buffer-bit)))
 
 (defmethod enable ((self graphics-canvas) &key (device bw::*boxgl-device*))
   "Enables the framebuffer backing this graphics-canvas, such that any GL operations will
