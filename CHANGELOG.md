@@ -1,5 +1,127 @@
 # Change Log
 
+## 3.4.13 2023-05-08
+
+This is an incremental alpha release on top of the openGL graphics update from the previous release.
+This fixes some initial issues with images, boxtops, the snip primitive, and text rendering speed.  There
+are still some incremental speed improvements to come.
+
+The major feature in this release is the addition of an in-progress feature to use framebuffers for rendering
+turtle graphics drawing, massively speeding up the rendering of turtle simulations containing large numbers
+of primitives. This is still experimental and can be enabled in the preferences under the Graphics tab with
+"Use Opengl Framebuffers". Some known issues of this include slightly dithered fonts, occasional background
+color change when the framebuffer is recycled during a screen-graphics-box clear, and thin horizontal lines
+not appearing when directly on the x-axis.  This should tightened up in the next cycle aimed at bug fixing
+and remaining GL cleanup.
+
+### Full Change Log
+
+sunrise-14
+  - Removing these checks since some older files were saved with all nils and we want to
+    resize everything for now.
+
+sunrise-25 sunrise-63 draw-cha uses a texture map when possible
+    - Using our texture atlas of default sizes and ascii range chars,
+      when possible. If the char is not in there load and draw it from
+      the font. (TODO adding more to the atlas on the fly in the future)
+    - Updates some tooling to add gl-model meshes to screen-obj and screen-row
+    - Still needs some work on cleaning up openGL buffers
+    - Resetting gl-model meshes for screen-row re-use.
+
+sunrise-64
+  - Fixing snip and image squishing in new pixmap vertices and texture coordinates.
+  - Fixing wrong texture bind in gl-add-pixmap, fixing mulitple image/boxtop rendering.
+
+sunrise-66 Font scaling and zooming for glyph atlas characters
+
+sunrise-67 openGL Framebuffers to back turtle drawing
+
+    This is the first major set of work for openGL framebuffers.
+    There may be other minor cleanups, especially in regards to
+    resizing graphics and the backing framebuffer textures.
+
+    This ticket also removes the old gdispl performance lists,
+    and adds a new user preference to turn the openGL framebuffers
+    on and off. Additionally the *features* entry :moderngl has
+    been removed, and now using openGL 3.2+ is the default.
+
+doco
+  Various doco for lisp forms and developer notes.
+
+refactor
+  - Removing old commented out version of BP-OVER-VALUES
+  - Cleaning up com-mouse-bl-corner-toggle-box-view
+    - Archiving defvar *slow-graphics-toggle*
+  - Cleaning up com-mouse-boxsize-closet-properties-pop-up
+  - Cleaning up com-mouse-box-types-pop-up
+  - Cleaning up com-mouse-br-resize-box
+    - adding com-mouse-br-reset-box-size so we don't have to use the old
+      mouse click timer wait-with-timeout stuff anymore. Binding this new
+      command to mouse-click, whereas com-mouse-br-resize-box is still
+      bound to mouse-down
+  - Updating package on some remaining pixel= calls from opengl to boxer
+  - Removing redundant image-pixel and standardizing on pixmap-pixel for access.
+  - First iteration of pixmap reorganization
+    - Moving pixmap.lisp from opengl to boxer package.
+    - Converted ogl-pixmap defstruct to a defclass
+    - Removed most of the layer of offscreen bitmap idioms that just called
+      through to the pixmaps. Historically on old window systems and graphics
+      systems this probably did a lot more.
+  - Fixing up support for loading boxer init files.
+  - Moving outermost screen-box tracking from global alist to box canvas.
+    - Removing *redisplayable-window-outermost-box-alist*
+    - Adding outermost-screen-box member to boxer-canvas defclass
+  - Moving boxtop drawing routines from grfdefs to their own place in redisplay.
+  - Separating the rather voluminous graphics commands handlers in to their own file.
+  - Reorganizing the blinkers and boxer canvas
+    Removing lots of unneeded cruft for the blinker (cursor), and moving it back to the
+    generic :boxer package. Creating a new canvas class to mix in to the boxer opengl pane
+    to coalesce global variables that are specific to an individual canvas, starting to
+    allow for the future possibility of having multiple windows, tabs, divs.
+  - Removing completely unused `window` member from `blinker` defstruct.
+  - Removing unneccesary constructors for blinker and region-row-blinker
+
+minor-fixes
+  - Changing a bfs-server reference to a warn since it may happen with older docs.
+  - Minor fixes for tests
+  - Un-enabling shader programs after drawing routines.
+
+the-attic
+  - Archiving unused defun ACTUAL-OBJ-OF-SCREEN-OBJ (usually these are methods)
+  - Removing more unused old openGL code
+    - devars *opengl-type-checking-included?*, *opengl-type-checking-action*, *ogl-current-color-vector*,
+      *ogl-color-pool*, *initial-ogl-color-pool-size*,
+    - defuns auxiliary-buffer-count, auxiliary-buffer-exists?, ogl-init, gl-enabled?,
+      initialize-ogl-color-pool, allocate-ogl-color, ogl-current-color, deallocate-ogl-color
+    - defmacros get-opengl-state, ogl-type
+  - Retiring old versions of fixed function openGL API usage
+  - Archiving mouse-still-down-after-pause?
+  - Archiving unused defvar *br-popup* and defun update-br-menu
+  - Archiving the unused defboxer-command com-mouse-br-pop-up
+  - Removing unused constructor/defun %make-graphics-sheet-with-bitmap, make-graphics-sheet-with-bitmap
+  - Removing used *default-graphics-object-height*, *default-graphics-object-width*
+  - Removing now unused *repaint-during-eval?*
+  - Removing unused struct screen-row-rdp1-info and utilities
+    - defstruct screen-row-rdp1-info
+    - defuns allocate-sr-rdp1-info, free-sr-rdp1-info, set-rdp1-info-to-erase-to-eol,
+      rdp1-info-is-eol?, still-inside-rdp1-info
+  - Removing unreferenced defstruct ogl-graphics-state
+  - Removing unreferenced defun intern-in-boxer-user-package
+  - Removing now unreferenced load-8-bit-run-length-encoded-pixmap-by-strips from loader.lisp
+  - Removing this old block-compile-class metaclass.
+  - Removing unreferenced defmacro cha-width
+  - Removing unused defuns mouse-on-region-being-defined-p and coords-on-blinker-row.
+  - Removing used cursor sheets and blinker visibility
+    This *boxer-window-blinker-alist* defvar is not used, the current information is stored
+    in the global *region-list*.
+  - Removed
+      - defvars *boxer-window-blinker-alist*, *HIGHLIGHT-YANKED-REGION*
+      - defuns sheet-blinker-list, %set-sheet-blinker-list, set-cursor-visibility,
+        draw-region-row-blinker, turn-on-interval, turn-off-interval, region-row-blinker-visibility,
+        make-interval-visible, make-interval-invisible
+      - visibility from defstructs blinker
+      - defsetf region-row-blinker-visibility
+
 ## 3.4.12 2023-03-20
 
 This is a very alpha release marking a halfway point to the modernization of our OpenGL graphics layer.
