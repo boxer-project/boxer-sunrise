@@ -268,12 +268,12 @@
                                                  infs-new-y-got-clipped?
                                                  inf-y-offset
                                                  infs-new-max-hei)
-  (values (max infs-new-wid (slot-value self 'wid))
-          (+ infs-new-hei (slot-value self 'hei))
+  (values (max infs-new-wid (screen-obj-wid self))
+          (+ infs-new-hei (screen-obj-hei self))
           (or infs-new-x-got-clipped? (slot-value self 'x-got-clipped?))
           (or infs-new-y-got-clipped? (slot-value self 'y-got-clipped?))
-          (+ inf-y-offset (slot-value self 'hei))
-          (- infs-new-max-hei (slot-value self 'hei))))
+          (+ inf-y-offset (screen-obj-hei self))
+          (- infs-new-max-hei (screen-obj-hei self))))
 
 
 
@@ -441,12 +441,12 @@
                                                  infs-new-y-got-clipped?
                                                  inf-x-offset
                                                  infs-new-max-wid)
-  (values (+ infs-new-wid (slot-value self 'wid))
-          (max infs-new-hei (slot-value self 'hei))
+  (values (+ infs-new-wid (screen-obj-wid self))
+          (max infs-new-hei (screen-obj-hei self))
           (or infs-new-x-got-clipped? (slot-value self 'x-got-clipped?))
           (or infs-new-y-got-clipped? (slot-value self 'y-got-clipped?))
-          (+ inf-x-offset (slot-value self 'wid))
-          (- infs-new-max-wid (slot-value self 'wid))))
+          (+ inf-x-offset (screen-obj-wid self))
+          (- infs-new-max-wid (screen-obj-wid self))))
 
 
 
@@ -454,17 +454,17 @@
 (defmethod repaint-pass-1-sr ((self screen-row) max-wid max-hei)
   (with-drawing-inside-region ((slot-value self 'x-offset)
                                (slot-value self 'y-offset)
-                               (slot-value self 'wid)
-                               (slot-value self 'hei))
+                               (screen-obj-wid self)
+                               (screen-obj-hei self))
     ;; During redisplay-pass-1 the only region of the screen the redisplay
     ;; methods are allowed to draw in is the region of the screen currently
     ;; occupied by the screen obj.
     (multiple-value-bind (nw nh nxc nyc base total-wid)
                          (repaint-inferiors-pass-1-sr self max-wid max-hei)
-                         (setf (slot-value self 'wid) nw)
+                         (setf (screen-obj-wid self) nw)
                          (let ((1st-font (bfd-font-no (closest-bfd (slot-value self 'actual-obj) 0))))
                            (rebind-font-info (1st-font)
-                                             (setf (slot-value self 'hei) (max nh (cha-hei))
+                                             (setf (screen-obj-hei self) (max nh (cha-hei))
                                                    (slot-value self 'baseline) (max base (cha-ascent)))))
                          (setf (slot-value self 'x-got-clipped?) nxc)
                          (setf (slot-value self 'y-got-clipped?) nyc)
@@ -476,7 +476,7 @@
                                 (update-scroll-wid (screen-box self) total-wid))
                            ((not (zerop (slot-value (screen-box self) 'scroll-x-offset)))
                             ;; update if we are already scrolled...
-                            (update-scroll-wid (screen-box self) (slot-value self 'wid)))))))
+                            (update-scroll-wid (screen-box self) (screen-obj-wid self)))))))
 
 (defmethod update-scroll-wid ((self screen-box) new-scroll-wid)
   (with-slots (max-scroll-wid) self
@@ -570,8 +570,9 @@
                                                                                                    (+ fixed-hei
                                                                                                       t-border-wid
                                                                                                       b-border-wid)))))
-                                                                          (setf (slot-value self 'wid) (+ l-border-wid r-border-wid))
-                                                                          (setf (slot-value self 'hei) (+ t-border-wid b-border-wid))
+                                                                          (setf (screen-obj-wid self) (+ l-border-wid r-border-wid))
+                                                                          (setf (screen-obj-hei self) (+ t-border-wid b-border-wid))
+
                                                                           ;; Now that we know how much room the borders are going
                                                                           ;; to take up, and we know the real max size of the
                                                                           ;; screen-box, we can go off and figure out how much
@@ -586,14 +587,14 @@
                                                                                                 l-border-wid
                                                                                                 t-border-wid
                                                                                                 scroll-to-actual-row)
-                                                                                               (incf (slot-value self 'wid) rows-new-wid)
-                                                                                               (incf (slot-value self 'hei) rows-new-hei)
+                                                                                               (incf (screen-obj-wid self) rows-new-wid)
+                                                                                               (incf (screen-obj-hei self) rows-new-hei)
                                                                                                ;; make sure that we are at least
                                                                                                ;; as big as our minimum size.
-                                                                                               (setf (slot-value self 'wid)
+                                                                                               (setf (screen-obj-wid self)
                                                                                                      (min (max (screen-obj-wid self) real-min-wid)
                                                                                                           real-max-wid))
-                                                                                               (setf (slot-value self 'hei)
+                                                                                               (setf (screen-obj-hei self)
                                                                                                      (min (max hei real-min-hei) real-max-hei))
                                                                                                (setf (slot-value self 'x-got-clipped?)
                                                                                                      (and (or (< real-max-wid real-min-wid)
@@ -815,8 +816,8 @@
 (defmethod gray-body ((self screen-box))
   (multiple-value-bind (il it ir ib)
                        (box-borders-widths (class-name (class-of (screen-obj-actual-obj self))) self)
-                       (let ((inside-wid (- (slot-value self 'wid) (+ ir il)))
-                             (inside-hei (- (slot-value self 'hei) (+ ib it))))
+                       (let ((inside-wid (- (screen-obj-wid self) (+ ir il)))
+                             (inside-hei (- (screen-obj-hei self) (+ ib it))))
                          (with-pen-color (*gray*)
                            (draw-rectangle inside-wid inside-hei il it)))))
 
@@ -875,9 +876,9 @@
                               (graphics-screen-sheet-offsets (screen-sheet self))
                               (multiple-value-bind (il it ir ib)
                                                    (box-borders-widths (slot-value self 'box-type) self)
-                                                   (let ((inner-width  (min (- (slot-value self 'wid) il ir)
+                                                   (let ((inner-width  (min (- (screen-obj-wid self) il ir)
                                                                             (graphics-sheet-draw-wid graphics-sheet)))
-                                                         (inner-height (min (- (slot-value self 'hei) it ib)
+                                                         (inner-height (min (- (screen-obj-hei self) it ib)
                                                                             (graphics-sheet-draw-hei graphics-sheet))))
                                                      (with-drawing-inside-region (x y inner-width inner-height)
                                                        (with-turtle-clipping (inner-width inner-height)

@@ -69,11 +69,25 @@
   ((actual-obj :initform nil :accessor screen-obj-actual-obj)
    (x-offset :initform 0 :accessor screen-obj-x-offset)
    (y-offset :initform 0 :accessor screen-obj-y-offset)
-   (wid :initform 0 :accessor screen-obj-wid)
-   (hei :initform 0 :accessor screen-obj-hei)
+   (wid :initform 0 :accessor screen-obj-wid
+    :documentation "Width of the screen-obj, always a fixnum.")
+   (hei :initform 0 :accessor screen-obj-hei
+    :documentation "Height of the screen-obj, always a fixnum.")
    (x-got-clipped? :initform nil :accessor screen-obj-x-got-clipped?)
    (y-got-clipped? :initform nil :accessor screen-obj-y-got-clipped?)
    (tick :initform -1 :accessor screen-obj-tick)))
+
+(defmethod screen-obj-hei ((self screen-obj))
+  (floor (slot-value self 'hei)))
+
+(defmethod (setf screen-obj-hei) (value (self screen-obj))
+  (setf (slot-value self 'hei) (floor value)))
+
+(defmethod screen-obj-wid ((self screen-obj))
+  (floor (slot-value self 'wid)))
+
+(defmethod (setf screen-obj-wid) (value (self screen-obj))
+  (setf (slot-value self 'wid) (floor value)))
 
 (defgeneric screen-obj? (x) (:method (x) nil) (:method ((x screen-obj)) t))
 
