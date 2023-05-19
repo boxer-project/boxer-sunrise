@@ -462,6 +462,7 @@ Modification History (most recent at top)
         (clear-graphics-list display-list)
         ;; mark the dirty? flag
         (setf (graphics-sheet-bit-array-dirty? graphics-sheet) t)
+        (setf (ogl-pixmap-update-texture-p (graphics-sheet-bit-array graphics-sheet)) t)
         (modified-graphics gb)
         boxer-eval::*novalue*))))
 

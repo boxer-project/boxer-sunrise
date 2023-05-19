@@ -45,11 +45,14 @@ Modification History (most recent at top)
 (defvar opengl::*gl-rgba-rev-red-byte* (byte 8 0))
 
 (defclass ogl-pixmap ()
-  ((width    :initarg :width    :initform 0   :accessor ogl-pixmap-width)
-   (height   :initarg :height   :initform 0   :accessor ogl-pixmap-height)
-   (texture  :initarg :texture  :initform 0   :accessor ogl-pixmap-texture)
-   (data     :initarg :data     :initform nil :accessor ogl-pixmap-data)
-   (depth    :initarg :depth    :initform 32  :accessor ogl-pixmap-depth)))
+  ((width             :initarg :width             :initform 0   :accessor ogl-pixmap-width)
+   (height            :initarg :height            :initform 0   :accessor ogl-pixmap-height)
+   (texture           :initarg :texture           :initform 0   :accessor ogl-pixmap-texture)
+   (update-texture-p  :initarg :update-texture-p  :initform nil :accessor ogl-pixmap-update-texture-p
+    :documentation "If this is true, then changes have been made to the pixel data and should be
+                    redrawn to the GL texture.")
+   (data              :initarg :data              :initform nil :accessor ogl-pixmap-data)
+   (depth             :initarg :depth             :initform 32  :accessor ogl-pixmap-depth)))
 
 (defun make-ogl-pixmap (width height &key (texture 0))
   (cond ((and (integerp width)  (not (minusp width))
@@ -110,7 +113,8 @@ Modification History (most recent at top)
          (pwid (ogl-pixmap-width pixmap))
          (phei (ogl-pixmap-height pixmap))
          (ogl-y (- phei y 1)))
-    (setf (cffi:mem-aref data *pixmap-ffi-type* (+ x (* ogl-y pwid))) newpixel)))
+    (setf (cffi:mem-aref data *pixmap-ffi-type* (+ x (* ogl-y pwid))) newpixel))
+  (setf (ogl-pixmap-update-texture-p pixmap) t))
 
 (defsetf pixmap-pixel set-pixmap-pixel)
 
@@ -122,7 +126,8 @@ Modification History (most recent at top)
           (data (ogl-pixmap-data pixmap)))
       (declare (fixnum w h))
       (dotimes (i (* w h))
-        (setf (cffi:mem-aref data *pixmap-ffi-type* i) pixel-value)))))
+        (setf (cffi:mem-aref data *pixmap-ffi-type* i) pixel-value)))
+    (setf (ogl-pixmap-update-texture-p pixmap) t)))
 
 ;; basic basic, probably a good candidate form optimization but currently only used by copy-graphics-sheet
 (defun copy-pixmap-data (wid hei from-pixmap from-x from-y to-pixmap to-x to-y)
@@ -139,4 +144,5 @@ Modification History (most recent at top)
         (dotimes (x actual-wid)
           (setf
               (cffi:mem-aref tdata *pixmap-ffi-type* (+ (+ x to-x)   (* (- th (+ y to-y)   1) tw)))
-              (cffi:mem-aref fdata *pixmap-ffi-type* (+ (+ x from-x) (* (- fh (+ y from-y) 1) fw)))))))))
+              (cffi:mem-aref fdata *pixmap-ffi-type* (+ (+ x from-x) (* (- fh (+ y from-y) 1) fw)))))))
+    (setf (ogl-pixmap-update-texture-p to-pixmap) t)))

@@ -129,22 +129,34 @@
 (defun create-pixmap-texture (pixmap)
   "Creates a texture for the pixmap if it doesn't exist yet. If the texture has already been
   generated, does nothing. (Which means the texture still needs to be bound if you're about to
-  do something."
-    (when (= 0 (ogl-pixmap-texture pixmap))
-      (let ((texture-id (gl:gen-texture))
-            (wid (ogl-pixmap-width pixmap))
-            (hei (ogl-pixmap-height pixmap))
-            (data (ogl-pixmap-data pixmap)))
-        (setf (ogl-pixmap-texture pixmap) texture-id)
-        (gl:bind-texture :texture-2d texture-id)
-        (gl:tex-parameter :texture-2d :texture-wrap-s :repeat)
-        (gl:tex-parameter :texture-2d :texture-wrap-t :repeat)
-        (gl:tex-parameter :texture-2d :texture-min-filter :linear)
-        (gl:tex-parameter :texture-2d :texture-mag-filter :linear)
+  do something.
 
-        (gl:tex-image-2d :texture-2d 0 :rgba wid hei 0 :rgba :unsigned-byte data)
-        (gl:generate-mipmap :texture-2d)
-        (incf *gl-pixmap-texture-count*))))
+  Checks the update-texture-p accessor on the pixmap. If t, it will recopy the data to the
+  existing texture."
+    (let ((texture-id nil)
+          (wid (ogl-pixmap-width pixmap))
+          (hei (ogl-pixmap-height pixmap))
+          (data (ogl-pixmap-data pixmap)))
+      (cond ((= 0 (ogl-pixmap-texture pixmap))
+             (setf texture-id (gl:gen-texture))
+             (setf (ogl-pixmap-texture pixmap) texture-id)
+             (gl:bind-texture :texture-2d texture-id)
+             (gl:tex-parameter :texture-2d :texture-wrap-s :repeat)
+             (gl:tex-parameter :texture-2d :texture-wrap-t :repeat)
+             (gl:tex-parameter :texture-2d :texture-min-filter :linear)
+             (gl:tex-parameter :texture-2d :texture-mag-filter :linear)
+
+             (gl:tex-image-2d :texture-2d 0 :rgba wid hei 0 :rgba :unsigned-byte data)
+             (gl:generate-mipmap :texture-2d)
+             (setf (ogl-pixmap-update-texture-p pixmap) nil)
+             (incf *gl-pixmap-texture-count*))
+            ((ogl-pixmap-update-texture-p pixmap)
+             (setf texture-id (ogl-pixmap-texture pixmap))
+             (gl:bind-texture :texture-2d texture-id)
+             (gl:tex-image-2d :texture-2d 0 :rgba wid hei 0 :rgba :unsigned-byte data)
+             (gl:bind-texture :texture-2d 0)
+             (setf (ogl-pixmap-update-texture-p pixmap) nil))
+            (t nil))))
 
 (defun gl-add-pixmap (device from-array to-x to-y wid hei from-x from-y)
   (enable-gl-shader-program device (pixmap-shader device))
