@@ -17,13 +17,6 @@
 ;;;;      Simpler set of drawing routines using less vertices and the color from a global uniform.
 (in-package :boxer)
 
-(defun gl-draw-box-border (device)
-  "Draw the box border lines accumulated in gl-add-box-border-line."
-  (enable-gl-shader-program device (simple-shader device))
-  (setf *max-border-verts* (max (border-vert-count *cur-border-cache*) *max-border-verts*))
-  (gl:buffer-sub-data :array-buffer (arr *cur-border-cache*) :size (* *cffi-float-size* (border-vert-count *cur-border-cache*)))
-  (gl:draw-arrays :triangles 0 (/ (border-vert-count *cur-border-cache*) 2)))
-
 (defun setup-simple-shader (&key (vertex-shader "boxgl-simple.vs") (fragment-shader "boxgl-lines.fs"))
   (let* ((simple-program (gl:create-program))
          (simple-vao     (gl:gen-vertex-array))
