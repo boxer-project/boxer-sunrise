@@ -92,21 +92,20 @@
 (defun gl-add-shader-circle (device cx cy radius filled? &key (rgb (boxgl-device-pen-color device)))
   (enable-gl-shader-program device (circle-shader device))
 
-  (let* ((r  (coerce radius 'single-float))
-         (x0 (coerce (- cx r) 'single-float)) (y0 (coerce (+ cy r) 'single-float))
-         (x1 (coerce (+ cx r) 'single-float)) (y1 (coerce (+ cy r) 'single-float))
-         (x2 (coerce (- cx r) 'single-float)) (y2 (coerce (- cy r) 'single-float))
-         (x3 (coerce (+ cx r) 'single-float)) (y3 (coerce (- cy r) 'single-float))
-         (cxf (coerce cx 'single-float))
-         (cyf (coerce cy 'single-float))
+  (let* ((x0 (- cx radius)) (y0 (+ cy radius))
+         (x1 (+ cx radius)) (y1 (+ cy radius))
+         (x2 (- cx radius)) (y2 (- cy radius))
+         (x3 (+ cx radius)) (y3 (- cy radius))
+         (cxf cx)
+         (cyf cy)
          ;;// x y z radius r g b a
-         (vertices `#(,x0 ,y0 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ,cxf ,cyf ,r   ; point 0
-                      ,x1 ,y1 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ,cxf ,cyf ,r   ; point 1
-                      ,x2 ,y2 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ,cxf ,cyf ,r   ; point 2
+         (vertices (float-vector x0 y0 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) cxf cyf r   ; point 0
+                                 x1 y1 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) cxf cyf r   ; point 1
+                                 x2 y2 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) cxf cyf r   ; point 2
 
-                      ,x1 ,y1 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ,cxf ,cyf ,r   ; point 1
-                      ,x2 ,y2 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ,cxf ,cyf ,r   ; point 2
-                      ,x3 ,y3 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ,cxf ,cyf ,r)) ; point 3
+                                 x1 y1 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) cxf cyf r   ; point 1
+                                 x2 y2 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) cxf cyf r   ; point 2
+                                 x3 y3 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) cxf cyf r)) ; point 3
           (arr (gl:alloc-gl-array :float (length vertices))))
       (dotimes (i (length vertices))
         (setf (gl:glaref arr i) (aref vertices i)))

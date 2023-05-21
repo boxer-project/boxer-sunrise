@@ -34,6 +34,11 @@
    the read-only section of it's resource files. On macOS we should put them in boxer.app/Contents/PlugIns/shaders
    since they constitute code.")
 
+(defun float-vector (&rest items)
+  "Takes an arbitrary number of numbers, and returns them as a vector, ensuring
+   they are all single floats that will play nicely on an openGL vbo."
+  (map 'vector (lambda (item) (coerce item 'single-float)) items))
+
 (defstruct box-glyph
   ch
   width
@@ -171,18 +176,17 @@
   ;; The openGL text-coordinates go from 0 to 1 and originate in the bottom left corner.
   ;; The boxer pixmap coordinates start from 0 and go to the width/heigh in pixels and
   ;; originate in the top left corner.
-  (let* ((tex-coord-x1 (coerce (/ from-x (ogl-pixmap-width from-array)) 'single-float))
-         (tex-coord-y1 (coerce (- 1 (/ (+ from-y hei) (ogl-pixmap-height from-array))) 'single-float))
-         (tex-coord-x2 (coerce (/ (+ from-x wid) (ogl-pixmap-width from-array)) 'single-float))
-         (tex-coord-y2 (coerce (- 1 (/ from-y (ogl-pixmap-height from-array))) 'single-float))
-         (vertices `#(,(coerce to-x 'single-float)         ,(coerce to-y 'single-float)         0.0 ,tex-coord-x1 ,tex-coord-y2
-                      ,(coerce to-x 'single-float)         ,(coerce (+ to-y hei) 'single-float) 0.0 ,tex-coord-x1 ,tex-coord-y1
-                      ,(coerce (+ to-x wid) 'single-float) ,(coerce to-y 'single-float)         0.0 ,tex-coord-x2 ,tex-coord-y2
-                      ,(coerce (+ to-x wid) 'single-float) ,(coerce (+ to-y hei) 'single-float) 0.0 ,tex-coord-x2 ,tex-coord-y1
-                      ,(coerce to-x 'single-float)         ,(coerce (+ to-y hei) 'single-float) 0.0 ,tex-coord-x1 ,tex-coord-y1
-                      ,(coerce (+ to-x wid) 'single-float) ,(coerce to-y 'single-float)         0.0 ,tex-coord-x2 ,tex-coord-y2
-                      ))
-          (arr (gl:alloc-gl-array :float (length vertices))))
+  (let* ((tex-coord-x1 (/ from-x (ogl-pixmap-width from-array)))
+         (tex-coord-y1 (- 1 (/ (+ from-y hei) (ogl-pixmap-height from-array))))
+         (tex-coord-x2 (/ (+ from-x wid) (ogl-pixmap-width from-array)))
+         (tex-coord-y2 (- 1 (/ from-y (ogl-pixmap-height from-array))))
+         (vertices (float-vector to-x          to-y          0.0 tex-coord-x1 tex-coord-y2
+                                 to-x          (+ to-y hei)  0.0 tex-coord-x1 tex-coord-y1
+                                 (+ to-x wid)  to-y          0.0 tex-coord-x2 tex-coord-y2
+                                 (+ to-x wid)  (+ to-y hei)  0.0 tex-coord-x2 tex-coord-y1
+                                 to-x          (+ to-y hei)  0.0 tex-coord-x1 tex-coord-y1
+                                 (+ to-x wid)  to-y          0.0 tex-coord-x2 tex-coord-y2))
+         (arr (gl:alloc-gl-array :float (length vertices))))
     (dotimes (i (length vertices))
       (setf (gl:glaref arr i) (aref vertices i)))
     (gl:buffer-data :array-buffer :static-draw arr)
@@ -203,8 +207,6 @@
          (width (box-glyph-width glyph))
          (w width)
          (h (box-glyph-rows glyph))
-         (x (coerce x 'float))
-         (y (coerce y 'float))
          (xpos (+ x bearing-x))
          (font-hei (bw::ogl-font-height font))
          (ypos (if baseline-bot
@@ -212,23 +214,22 @@
                  (- (- y bearing-y) (* font-hei 0.2))))            ;; pixel pushing for the current repaint layout.
          (ypos+h (+ ypos h))
          (xpos+w (+ xpos w))
-         (tx (coerce (box-glyph-tx glyph) 'single-float))
-         (ty (coerce (box-glyph-ty glyph) 'single-float)))
+         (tx (box-glyph-tx glyph))
+         (ty (box-glyph-ty glyph)))
     (enable-gl-shader-program device (glyph-atlas-shader device))
     (gl:active-texture :texture0)
     (gl:bind-texture :texture-2d (glyph-atlas-texture-id atlas))
 
     ;; make the vertices array
-    (let* (
-           (vertices `#(,xpos   ,ypos       0.0 ,tx                                     ,ty                                       ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ;; 0.0 0.0
-                        ,xpos   ,ypos+h     0.0 ,tx                                     ,(+ ty (/ h (glyph-atlas-height atlas)))  ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ;;0.0 1.0
-                        ,xpos+w ,ypos+h     0.0 ,(+ tx (/ w (glyph-atlas-width atlas))) ,(+ ty (/ h (glyph-atlas-height atlas)))  ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
+    (let* ((vertices (float-vector xpos   ypos       0.0 tx                                     ty                                       (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ;; 0.0 0.0
+                                   xpos   ypos+h     0.0 tx                                     (+ ty (/ h (glyph-atlas-height atlas)))  (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ;;0.0 1.0
+                                   xpos+w ypos+h     0.0 (+ tx (/ w (glyph-atlas-width atlas))) (+ ty (/ h (glyph-atlas-height atlas)))  (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4)
 
-                        ; These 2 can be removed when using the element buffer
-                        ,xpos   ,ypos       0.0 ,tx                                     ,ty                                       ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ;; 0.0 0.0
-                        ,xpos+w ,ypos+h     0.0 ,(+ tx (/ w (glyph-atlas-width atlas))) ,(+ ty (/ h (glyph-atlas-height atlas)))  ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
+                                   ; These 2 can be removed when using the element buffer
+                                   xpos   ypos       0.0 tx                                     ty                                       (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ;; 0.0 0.0
+                                   xpos+w ypos+h     0.0 (+ tx (/ w (glyph-atlas-width atlas))) (+ ty (/ h (glyph-atlas-height atlas)))  (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4)
 
-                        ,xpos+w ,ypos       0.0 ,(+ tx (/ w (glyph-atlas-width atlas))) ,ty                                       ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ;; 1.0 0.0
+                                   xpos+w ypos       0.0 (+ tx (/ w (glyph-atlas-width atlas))) ty                                       (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ;; 1.0 0.0
                         ))
            (arr (gl:alloc-gl-array :float (length vertices)))
           ;  (arr (ft-glyph-gl-array device))
@@ -255,8 +256,6 @@
          (width (box-glyph-width glyph))
          (w width)
          (h (box-glyph-rows glyph))
-         (x (coerce x 'float))
-         (y (coerce y 'float))
          (xpos (+ x bearing-x))
          (font-hei (bw::ogl-font-height font))
          (ypos (if baseline-bot
@@ -264,21 +263,20 @@
                  (- (- y bearing-y) (* font-hei 0.2))))            ;; pixel pushing for the current repaint layout.
          (ypos+h (+ ypos h))
          (xpos+w (+ xpos w))
-         (tx (coerce (box-glyph-tx glyph) 'single-float))
-         (ty (coerce (box-glyph-ty glyph) 'single-float)))
+         (tx (box-glyph-tx glyph))
+         (ty (box-glyph-ty glyph)))
     (enable-gl-shader-program device (ft-glyph-shader device))
     (gl:uniformf color-uniform (aref rgb 1) (aref rgb 2) (aref rgb 3))
     (gl:active-texture :texture0)
     (gl:bind-texture :texture-2d (glyph-atlas-texture-id atlas))
 
     ;; make the vertices array
-    (let* (
-           (vertices `#(,xpos   ,ypos       ,tx                                     ,ty ;; 0.0 0.0
-                        ,xpos   ,ypos+h     ,tx                                     ,(+ ty (/ h (glyph-atlas-height atlas)))  ;;0.0 1.0
-                        ,xpos+w ,ypos+h     ,(+ tx (/ w (glyph-atlas-width atlas))) ,(+ ty (/ h (glyph-atlas-height atlas)))
-                        ; ,xpos   ,ypos     0.0 0.0
-                        ; ,xpos+w ,ypos+h   1.0 1.0
-                        ,xpos+w ,ypos       ,(+ tx (/ w (glyph-atlas-width atlas))) ,ty ;; 1.0 0.0
+    (let* ((vertices (float-vector xpos   ypos       tx                                     ty ;; 0.0 0.0
+                                   xpos   ypos+h     tx                                     (+ ty (/ h (glyph-atlas-height atlas)))  ;;0.0 1.0
+                                   xpos+w ypos+h     (+ tx (/ w (glyph-atlas-width atlas))) (+ ty (/ h (glyph-atlas-height atlas)))
+                                   ; xpos   ypos     0.0 0.0
+                                   ; xpos+w ypos+h   1.0 1.0
+                                   xpos+w ypos       (+ tx (/ w (glyph-atlas-width atlas))) ty ;; 1.0 0.0
                         ))
            (arr (gl:alloc-gl-array :float (length vertices)))
           ;  (arr (ft-glyph-gl-array device))
@@ -351,7 +349,7 @@
 (defun gl-add-point (device x0 y0 &key (rgb (boxgl-device-pen-color device)))
   (enable-gl-shader-program device (lines-shader device))
 
-  (let* ((vertices `#(,(coerce x0 'float) ,(coerce y0 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)))
+  (let* ((vertices (float-vector x0 y0 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4)))
          (arr (gl:alloc-gl-array :float (length vertices))))
     (dotimes (i (length vertices))
       (setf (gl:glaref arr i) (aref vertices i)))
@@ -480,7 +478,7 @@
 
     (gl:bind-vertex-array 0))
 
-    (let* ((vertices `#(0.0 0.0   0.0 0.0
+    (let* ((vertices  #(0.0 0.0   0.0 0.0
                         0.0 0.0   0.0 1.0
                         0.0 0.0   1.0 1.0
                         0.0 0.0   1.0 0.0))

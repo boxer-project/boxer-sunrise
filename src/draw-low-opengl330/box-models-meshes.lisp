@@ -99,13 +99,13 @@
 
     (let* ((mesh (slot-value self 'xyz-rgba-mesh))
            (corners (line-by-width-corners x0 y0 x1 y1 pen-size))
-           (vertices `#(,(coerce (aref corners 0) 'single-float) ,(coerce (aref corners 1) 'single-float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ; point 0
-                       ,(coerce (aref corners 2) 'single-float) ,(coerce (aref corners 3) 'single-float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ; point 1
-                       ,(coerce (aref corners 4) 'single-float) ,(coerce (aref corners 5) 'single-float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ; point 2
+           (vertices (float-vector (aref corners 0) (aref corners 1) 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ; point 0
+                                   (aref corners 2) (aref corners 3) 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ; point 1
+                                   (aref corners 4) (aref corners 5) 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ; point 2
 
-                       ,(coerce (aref corners 2) 'single-float) ,(coerce (aref corners 3) 'single-float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ; point 1
-                       ,(coerce (aref corners 4) 'single-float) ,(coerce (aref corners 5) 'single-float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ; point 2
-                       ,(coerce (aref corners 6) 'single-float) ,(coerce (aref corners 7) 'single-float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ; point 3
+                                   (aref corners 2) (aref corners 3) 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ; point 1
+                                   (aref corners 4) (aref corners 5) 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ; point 2
+                                   (aref corners 6) (aref corners 7) 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ; point 3
                         ))
           (arr (slot-value mesh 'arr)))
 
@@ -128,13 +128,13 @@
                                                                  (buffered-size (* *cffi-float-size* (* 7 6))))
     (let* ((mesh (slot-value self 'xyz-rgba-mesh))
           ;  (corners (line-by-width-corners x0 y0 x1 y1 pen-size))
-           (vertices `#(,(coerce x 'single-float) ,(coerce y 'single-float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ; point 0
-                       ,(coerce (+ x wid) 'single-float) ,(coerce (+ y hei) 'single-float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ; point 1
-                       ,(coerce x 'single-float) ,(coerce (+ y hei) 'single-float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ; point 2
+           (vertices (float-vector x        y         0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ; point 0
+                                  (+ x wid) (+ y hei) 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ; point 1
+                                  x         (+ y hei) 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ; point 2
 
-                       ,(coerce x 'single-float) ,(coerce y 'single-float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ; point 1
-                       ,(coerce (+ x wid) 'single-float) ,(coerce y 'single-float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ; point 2
-                       ,(coerce (+ x wid) 'single-float) ,(coerce (+ y hei) 'single-float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ; point 3
+                                  x         y         0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ; point 1
+                                  (+ x wid) y         0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ; point 2
+                                  (+ x wid) (+ y hei) 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ; point 3
                         ))
           (arr (slot-value mesh 'arr)))
 
@@ -168,8 +168,6 @@
           (width (box-glyph-width glyph))
           (w width)
           (h (box-glyph-rows glyph))
-          (x (coerce x 'float))
-          (y (coerce y 'float))
           (xpos (+ x bearing-x))
           (font-hei (bw::ogl-font-height font))
           (ypos (if baseline-bot
@@ -177,27 +175,26 @@
                   (- (- y bearing-y) (* font-hei 0.2))))            ;; pixel pushing for the current repaint layout.
           (ypos+h (+ ypos h))
           (xpos+w (+ xpos w))
-          (tx (coerce (box-glyph-tx glyph) 'single-float))
-          (ty (coerce (box-glyph-ty glyph) 'single-float))
-          (t-wid (coerce (box-glyph-t-width glyph) 'single-float))
-          (t-hei (coerce (box-glyph-t-rows glyph) 'single-float)))
+          (tx (box-glyph-tx glyph))
+          (ty (box-glyph-ty glyph))
+          (t-wid (box-glyph-t-width glyph))
+          (t-hei (box-glyph-t-rows glyph)))
       (enable-gl-objects device :program (shader-program (glyph-atlas-shader device))
                                 :vao     (mesh-vao mesh)
                                 :buffer  (mesh-vbo mesh))
 
       ;; make the vertices array
-      (let* (
-            (vertices `#(,xpos   ,ypos       0.0 ,tx                                     ,ty                                       ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ;; 0.0 0.0
-                          ,xpos   ,ypos+h     0.0 ,tx                                     ,(+ ty (/ t-hei (glyph-atlas-height atlas)))  ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ;;0.0 1.0
-                          ,xpos+w ,ypos+h     0.0 ,(+ tx (/ t-wid (glyph-atlas-width atlas))) ,(+ ty (/ t-hei (glyph-atlas-height atlas)))  ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
+      (let* ((vertices (float-vector xpos   ypos       0.0 tx                                         ty                                           (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ;; 0.0 0.0
+                                     xpos   ypos+h     0.0 tx                                         (+ ty (/ t-hei (glyph-atlas-height atlas)))  (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ;;0.0 1.0
+                                     xpos+w ypos+h     0.0 (+ tx (/ t-wid (glyph-atlas-width atlas))) (+ ty (/ t-hei (glyph-atlas-height atlas)))  (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4)
 
-                          ; These 2 can be removed when using the element buffer
-                          ,xpos   ,ypos       0.0 ,tx                                     ,ty                                       ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ;; 0.0 0.0
-                          ,xpos+w ,ypos+h     0.0 ,(+ tx (/ t-wid (glyph-atlas-width atlas))) ,(+ ty (/ t-hei (glyph-atlas-height atlas)))  ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
+                                     ; These 2 can be removed when using the element buffer
+                                     xpos   ypos       0.0 tx                                         ty                                           (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ;; 0.0 0.0
+                                     xpos+w ypos+h     0.0 (+ tx (/ t-wid (glyph-atlas-width atlas))) (+ ty (/ t-hei (glyph-atlas-height atlas)))  (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4)
 
-                          ,xpos+w ,ypos       0.0 ,(+ tx (/ t-wid (glyph-atlas-width atlas))) ,ty                                       ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ;; 1.0 0.0
-                          ))
-            (arr (gl:alloc-gl-array :float (length vertices)))
+                                     xpos+w ypos       0.0 (+ tx (/ t-wid (glyph-atlas-width atlas))) ty                                           (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ;; 1.0 0.0
+                                     ))
+             (arr (gl:alloc-gl-array :float (length vertices)))
             )
         (dotimes (i (length vertices))
           (setf (gl:glaref arr i) (aref vertices i)))

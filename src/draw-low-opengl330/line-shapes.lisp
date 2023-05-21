@@ -39,13 +39,13 @@
           (enable-gl-shader-program device (lines-shader device))))
 
     (let* ((corners (line-by-width-corners x0 y0 x1 y1 pen-size))
-          (vertices `#(,(coerce (aref corners 0) 'single-float) ,(coerce (aref corners 1) 'single-float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ; point 0
-                        ,(coerce (aref corners 2) 'single-float) ,(coerce (aref corners 3) 'single-float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ; point 1
-                        ,(coerce (aref corners 4) 'single-float) ,(coerce (aref corners 5) 'single-float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ; point 2
+          (vertices (float-vector (aref corners 0) (aref corners 1) 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ; point 0
+                                  (aref corners 2) (aref corners 3) 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ; point 1
+                                  (aref corners 4) (aref corners 5) 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ; point 2
 
-                        ,(coerce (aref corners 2) 'single-float) ,(coerce (aref corners 3) 'single-float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ; point 1
-                        ,(coerce (aref corners 4) 'single-float) ,(coerce (aref corners 5) 'single-float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ; point 2
-                        ,(coerce (aref corners 6) 'single-float) ,(coerce (aref corners 7) 'single-float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4) ; point 3
+                                  (aref corners 2) (aref corners 3) 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ; point 1
+                                  (aref corners 4) (aref corners 5) 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ; point 2
+                                  (aref corners 6) (aref corners 7) 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ; point 3
                         ))
           (arr (gl:alloc-gl-array :float (length vertices))))
       (dotimes (i (length vertices))
@@ -162,14 +162,13 @@
   (enable-gl-shader-program device (lines-shader device))
 
   ;; todo - use an elements array instead of 6 vertices
-  (let* ((vertices `#(,(coerce x 'float) ,(coerce y 'float)                 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
-                      ,(coerce (+ x wid) 'float) ,(coerce (+ y hei) 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
-                      ,(coerce x 'float) ,(coerce (+ y hei) 'float)         0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
+  (let* ((vertices (float-vector x y                 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4)
+                                 (+ x wid) (+ y hei) 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4)
+                                 x (+ y hei)         0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4)
 
-                      ,(coerce x 'float) ,(coerce y 'float)                 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
-                      ,(coerce (+ x wid) 'float) ,(coerce y 'float)         0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
-                      ,(coerce (+ x wid) 'float) ,(coerce (+ y hei) 'float) 0.0 ,(aref rgb 1) ,(aref rgb 2) ,(aref rgb 3) ,(aref rgb 4)
-                      ))
+                                 x y                 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4)
+                                 (+ x wid) y         0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4)
+                                 (+ x wid) (+ y hei) 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4)))
          (arr (gl:alloc-gl-array :float (length vertices))))
     (dotimes (i (length vertices))
       (setf (gl:glaref arr i) (aref vertices i)))

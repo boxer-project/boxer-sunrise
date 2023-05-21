@@ -29,6 +29,7 @@
                 (:test-file "boxer-styles-tests")
                 (:test-file "freetype-fonts-tests")
                 (:test-file "disdcl-tests")
+                (:test-file "draw-low-opengl-tests")
                  )))
   :description "Test system for boxer-sunrise"
 

@@ -346,13 +346,13 @@
          (ty 200)
          (wid (glyph-atlas-width self))
          (hei (glyph-atlas-height self))
-         (vertices `#(,(coerce tx 'single-float)         ,(coerce ty 'single-float)         0.0 0.0 ;; 0.0 1.0
-                      ,(coerce tx 'single-float)         ,(coerce (+ ty hei) 'single-float) 0.0 1.0 ;; 0.0 0.0
-                      ,(coerce (+ tx wid) 'single-float) ,(coerce ty 'single-float)         1.0 0.0 ;; 1.0 1.0
-                      ,(coerce (+ tx wid) 'single-float) ,(coerce (+ ty hei) 'single-float) 0.0 1.0 ;; 1.0 0.0
-                      ,(coerce tx 'single-float)         ,(coerce (+ ty hei) 'single-float) 1.0 1.0 ;; 0.0 0.0
-                      ,(coerce (+ tx wid) 'single-float) ,(coerce ty 'single-float)         1.0 0.0 ;; 1.0 1.0
-                      ))
+         (vertices (float-vector tx         ty         0.0 0.0 ;; 0.0 1.0
+                                 tx         (+ ty hei) 0.0 1.0 ;; 0.0 0.0
+                                 (+ tx wid) ty         1.0 0.0 ;; 1.0 1.0
+                                 (+ tx wid) (+ ty hei) 0.0 1.0 ;; 1.0 0.0
+                                 tx         (+ ty hei) 1.0 1.0 ;; 0.0 0.0
+                                 (+ tx wid) ty         1.0 0.0 ;; 1.0 1.0
+                                 ))
           (arr (gl:alloc-gl-array :float (length vertices))))
     (dotimes (i (length vertices))
       (setf (gl:glaref arr i) (aref vertices i)))
