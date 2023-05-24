@@ -138,6 +138,9 @@ multifont row, the common reference point will be the baseline instead of the to
 (defun draw-circle (x y radius &optional filled?)
   (%draw-circle x y radius filled?))
 
+(defun draw-ellipse (x y width height &optional filled?)
+  (%draw-ellipse x y width height filled?))
+
 (defun draw-filled-arc (alu x y wid hei start-angle sweep-angle)
   (%draw-filled-arc %drawing-window alu (scale-x x) (scale-y y)
                     wid hei start-angle sweep-angle))

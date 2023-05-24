@@ -102,6 +102,8 @@
    (circle-xyrad-uni    :accessor circle-xyrad-uni)
 
    (circle-shader       :accessor circle-shader)
+   (arc-shader          :accessor arc-shader)
+   (ellipse-shader      :accessor ellipse-shader)
 
    ;; Simple Shader
    ;; Uses a color uniform, starting out using for box borders
@@ -388,7 +390,7 @@
   (let ((togo (gl:create-shader shader-type)))
     (gl:shader-source togo (read-shader-source glsl-filename))
     (gl:compile-shader togo)
-    (log:debug "~%shader: ~A infolog: ~A" glsl-filename (gl:get-shader-info-log togo))
+    (log:info "~%shader: ~A infolog: ~A" glsl-filename (gl:get-shader-info-log togo))
     togo))
 
 (defun setup-xyz-txty-rgba-vao (vao vbo num-entries)
@@ -606,6 +608,12 @@ inside an opengl:rendering-on macro invocation."
 
           (circle-shader togo)
           (setup-circle-program)
+
+          (arc-shader togo)
+          (setup-arc-program)
+
+          (ellipse-shader togo)
+          (setup-ellipse-program)
 
           (simple-shader togo)
           (setup-simple-shader)

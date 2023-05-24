@@ -521,18 +521,22 @@ opengl arc drawing routine starts at 3 oclock and sweeps clockwise in radians
 also, opengl-draw-arc expects positive angle args"
   (if (minusp sweep-angle)
     ;; change the start so that we can use ABS sweep
-    (gl-add-arc bw::*boxgl-device* x y radius
-                         (* +degs->rads+ (mod (- (+ start-angle sweep-angle) 90) 360))
-                         (* +degs->rads+ (abs sweep-angle))
-                         filled?)
-    (gl-add-arc bw::*boxgl-device* x y radius
-                         (* +degs->rads+ (mod (- start-angle 90) 360))
-                         (* +degs->rads+ sweep-angle)
-                         filled?)
-
-                         )
-
-                         )
+    ; (gl-add-arc bw::*boxgl-device* x y radius
+    ;                      (* +degs->rads+ (mod (- (+ start-angle sweep-angle) 90) 360))
+    ;                      (* +degs->rads+ (abs sweep-angle))
+    ;                      filled?)
+    ; (gl-add-arc bw::*boxgl-device* x y radius
+    ;                      (* +degs->rads+ (mod (- start-angle 90) 360))
+    ;                      (* +degs->rads+ sweep-angle)
+    ;                      filled?)
+    (gl-add-shader-arc bw::*boxgl-device* x y radius
+                       (* +degs->rads+ (mod (- (+ start-angle sweep-angle) 90) 360))
+                       (* +degs->rads+ (abs sweep-angle))
+                       filled?)
+    (gl-add-shader-arc bw::*boxgl-device* x y radius
+                       (* +degs->rads+ (mod (- start-angle 90) 360))
+                       (* +degs->rads+ sweep-angle)
+                       filled?)))
 
 (defun %draw-cha (x y char &key (gl-model nil))
   "Font is managed by set-font-info.  Note that anything else that might change
@@ -543,7 +547,11 @@ the window font (ie, draw-string) has to change it back for this to work.
       (gl-add-char bw::*boxgl-device* x y char)))
 
 (defun %draw-circle (x y radius &optional filled?)
-  (gl-add-circle bw::*boxgl-device* x y radius filled?))
+  ; (gl-add-circle bw::*boxgl-device* x y radius filled?)
+  (gl-add-shader-circle  bw::*boxgl-device* x y radius filled?))
+
+(defun %draw-ellipse (x y width height &optional filled?)
+  (gl-add-shader-ellipse bw::*boxgl-device* x y width height filled?))
 
 (defun %draw-filled-arc (bit-array alu x y width height th1 th2)
   "See the-attic for the previous lispworks GP library version of this function.

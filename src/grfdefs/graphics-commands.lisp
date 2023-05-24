@@ -670,15 +670,7 @@
             (list 'bu::stamp-ellipse width height))))
   :COMMAND-BODY
   (unless (or (zerop width) (zerop height))
-    (let ((half-width (floor width 2))
-          (half-height (floor height 2)))
-      (%draw-filled-arc %drawing-array *graphics-state-current-alu*
-                        (ensure-legal-window-coordinate
-                        (scale-x (-& x half-width)))
-                        (ensure-legal-window-coordinate
-                        (scale-y (-& y half-height)))
-                        (fixr width) (fixr height)
-                        0 360)))
+    (draw-ellipse x y width height t))
   :TRANSLATION-ARGS
   ;; translation
   (trans-x trans-y)
@@ -727,13 +719,7 @@
             (list 'bu::stamp-hollow-ellipse width height))))
   :COMMAND-BODY
   (unless (or (zerop width) (zerop height))
-    (let ((half-width (floor width 2))
-          (half-height (floor height 2)))
-      (%draw-arc %drawing-array *graphics-state-current-alu*
-                (ensure-legal-window-coordinate (scale-x (-& x half-width)))
-                (ensure-legal-window-coordinate (scale-y (-& y half-height)))
-                (fixr width) (fixr height)
-                0 360)))
+    (draw-ellipse x y width height nil))
   :TRANSLATION-ARGS
   ;; translation
   (trans-x trans-y)
