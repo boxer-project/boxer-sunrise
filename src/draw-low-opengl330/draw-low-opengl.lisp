@@ -563,7 +563,10 @@ It's not clear yet whether we'll need to re-implement this for the future."
   copy the points to the c-buffer we are putting vertices in, otherwise it will
   call the old single openGL draw line that uses and glBegin and glEnd.
   "
-  (gl-add-line bw::*boxgl-device* x0 y0 x1 y1))
+  (if *cur-gl-model-screen-obj*
+    (when (needs-update *cur-gl-model-screen-obj*)
+      (add-line *cur-gl-model-screen-obj* bw::*boxgl-device* x0 y0 x1 y1))
+    (gl-add-line bw::*boxgl-device* x0 y0 x1 y1)))
 
 (defun %draw-point (x y)
   (gl-add-point bw::*boxgl-device* x0 y0))

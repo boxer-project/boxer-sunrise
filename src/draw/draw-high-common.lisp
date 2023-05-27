@@ -215,6 +215,12 @@ multifont row, the common reference point will be the baseline instead of the to
               self
     (list (actual-obj-tick actual-obj) wid hei x-offset y-offset x-got-clipped? y-got-clipped?)))
 
+(defmethod get-updated-tick ((self screen-box))
+  "Currently we're just using the screen-box model for drawing borders."
+  (with-slots (wid hei name actual-obj box-type) self
+    (list wid hei name box-type (get-css-style actual-obj :border-color)
+          (display-style-border-style (display-style-list actual-obj)))))
+
 (defmethod get-graphics-canvas-for-screen-obj ((self screen-obj) &optional wid hei)
   (let ((paint-tex (getprop self :graphics-canvas)))
     (cond
@@ -238,3 +244,19 @@ multifont row, the common reference point will be the baseline instead of the to
        (resize paint-tex wid hei))
       (t nil))
     paint-tex))
+
+(defparameter *cur-gl-model-screen-obj* nil
+  "If this global object is set, then supported draw-xyzed commands will buffer vertices to this gl model
+  rather immediately buffer and draw them.")
+
+(defun start-drawing-screen-obj-model (screen-obj)
+  "This set the gl-model to being drawing to for all supported drawing commands until stop-drawing-screen-obj-model
+  is called.
+  Currently used to set the model for drawing box borders, including name and type labels."
+  (setf *cur-gl-model-screen-obj* (get-boxgl-model-for-screen-obj screen-obj)))
+
+(defun stop-drawing-screen-obj-model ()
+  "This will stop drawing to the screen-obj's model and draw it to the active buffer."
+  (when *cur-gl-model-screen-obj*
+    (draw *cur-gl-model-screen-obj*))
+  (setf *cur-gl-model-screen-obj* nil))

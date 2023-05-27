@@ -56,15 +56,18 @@
 (defun make-boxer-gl-model (&key (lines-size 1024) (glyphs-size 4096))
   (let ((model (make-instance 'boxer-gl-model)))
     (setf (slot-value model 'xyz-rgba-mesh) (make-boxer-xyz-rgba-mesh :size lines-size))
+    (setf (slot-value model 'dashed-xyz-rgba-mesh) (make-boxer-xyz-rgba-mesh :size lines-size))
     (setf (slot-value model 'glyphs-xyz-txty-rgba-mesh) (make-boxer-glyphs-xyz-txty-rgba-mesh :size glyphs-size))
     model))
 
 (defmethod reset-meshes ((self boxer-gl-model))
   (setf (mesh-pos (slot-value self 'xyz-rgba-mesh)) 0)
+  (setf (mesh-pos (slot-value self 'dashed-xyz-rgba-mesh)) 0)
   (setf (mesh-pos (slot-value self 'glyphs-xyz-txty-rgba-mesh)) 0)
 )
 
 (defmethod draw ((self boxer-gl-model))
+  ;; Regular Line Shapes
   (let ((mesh (slot-value self 'xyz-rgba-mesh)))
     (enable-gl-objects bw::*boxgl-device* :program (shader-program (lines-shader bw::*boxgl-device*))
                                           :vao     (mesh-vao mesh)
@@ -72,6 +75,18 @@
     (gl:draw-arrays :triangles 0 (/ (mesh-pos mesh) 7))
     (unenable-shader-programs bw::*boxgl-device*))
 
+  ;; Dashed Line Shapes
+  (let ((mesh (slot-value self 'dashed-xyz-rgba-mesh))
+        (res (resolution)))
+    (enable-gl-objects bw::*boxgl-device* :program (shader-program (dashed-lines-shader bw::*boxgl-device*))
+                                          :vao     (mesh-vao mesh)
+                                          :buffer  (mesh-vbo mesh))
+    (gl:uniformf (gl:get-uniform-location (shader-program (dashed-lines-shader bw::*boxgl-device*)) "u_resolution")
+                 (coerce (aref res 0) 'single-float) (coerce (aref res 1) 'single-float))
+    (gl:draw-arrays :triangles 0 (/ (mesh-pos mesh) 7))
+    (unenable-shader-programs bw::*boxgl-device*))
+
+  ;; Glyphs on the texture atlas
   (let ((mesh (slot-value self 'glyphs-xyz-txty-rgba-mesh)))
     (enable-gl-objects bw::*boxgl-device* :program (shader-program (glyph-atlas-shader bw::*boxgl-device*))
                                           :vao     (mesh-vao mesh)
@@ -80,7 +95,6 @@
     (gl:bind-texture :texture-2d (glyph-atlas-texture-id *freetype-glyph-atlas*))
 
     (gl:draw-arrays :triangles 0 (/ (mesh-pos mesh) 9))
-    ; (format t "~% drawing chas: ~A " (/ (mesh-pos mesh) 9))
     (gl:bind-texture :texture-2d 0)
     (unenable-shader-programs bw::*boxgl-device*))
   )
@@ -97,7 +111,9 @@
                                                                  (buffered-size (* *cffi-float-size* (* 7 6))))
   (unless (and (equal (coerce x0 'single-float) (coerce x1 'single-float)) (equal (coerce y0 'single-float) (coerce y1 'single-float)))
 
-    (let* ((mesh (slot-value self 'xyz-rgba-mesh))
+    (let* ((mesh (if (line-stipple device)
+                   (slot-value self 'dashed-xyz-rgba-mesh)
+                   (slot-value self 'xyz-rgba-mesh)))
            (corners (line-by-width-corners x0 y0 x1 y1 pen-size))
            (vertices (float-vector (aref corners 0) (aref corners 1) 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ; point 0
                                    (aref corners 2) (aref corners 3) 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4) ; point 1

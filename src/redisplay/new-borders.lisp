@@ -309,9 +309,11 @@
      . ,body))
 
 (defun box-borders-draw (box-type screen-box)
+  (start-drawing-screen-obj-model screen-box)
   (case box-type
     (port-box (port-borders-draw screen-box))
-    (t (plain-borders-draw screen-box))))
+    (t (plain-borders-draw screen-box)))
+  (stop-drawing-screen-obj-model))
 
 ;; this is drawn in a transformed coord system...
 (defun plain-borders-draw (screen-box)
