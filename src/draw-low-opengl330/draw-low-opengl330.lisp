@@ -344,9 +344,24 @@
   (let ((cur-x x)
         (prev-glyph nil))
       (for:for ((c over string))
-        (setf prev-glyph (gl-add-char device cur-x y c :baseline-bot t :font font))
-        (setf cur-x (+ cur-x (box-glyph-advance prev-glyph)))
-        )))
+        (cond
+          ;; If there is an active gl model that needs update
+          ((and *cur-gl-model-screen-obj* (needs-update *cur-gl-model-screen-obj*))
+           (progn
+             (setf prev-glyph (add-char *cur-gl-model-screen-obj* device cur-x y c :baseline-bot t :font font))
+             ;; If the above glyph isn't on the texture atlas, we immediately render it and get the glyph
+             ;; so we can keep accumulating the length of the string from it's dimensions
+             (unless prev-glyph
+               (setf prev-glyph (gl-add-char device cur-x y c :baseline-bot t :font font)))))
+          (*cur-gl-model-screen-obj*
+           ;; We still have to go through the glyphs to immediate print any chars that aren't on the texture atlas
+           (setf prev-glyph
+                 (get-glyph *freetype-glyph-atlas* `(,(opengl-font-fontspec font) ,c ,(coerce *font-size-baseline* 'float))))
+           (unless prev-glyph
+               (setf prev-glyph (gl-add-char device cur-x y c :baseline-bot t :font font))))
+          (t
+           (setf prev-glyph (gl-add-char device cur-x y c :baseline-bot t :font font))))
+        (setf cur-x (+ cur-x (box-glyph-advance prev-glyph))))))
 
 (defun gl-add-point (device x0 y0 &key (rgb (boxgl-device-pen-color device)))
   (enable-gl-shader-program device (lines-shader device))

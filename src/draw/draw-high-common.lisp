@@ -217,8 +217,8 @@ multifont row, the common reference point will be the baseline instead of the to
 
 (defmethod get-updated-tick ((self screen-box))
   "Currently we're just using the screen-box model for drawing borders."
-  (with-slots (wid hei name actual-obj box-type) self
-    (list wid hei name box-type (get-css-style actual-obj :border-color)
+  (with-slots (wid hei actual-obj box-type) self
+    (list wid hei (name actual-obj) box-type (get-css-style actual-obj :border-color)
           (display-style-border-style (display-style-list actual-obj)))))
 
 (defmethod get-graphics-canvas-for-screen-obj ((self screen-obj) &optional wid hei)

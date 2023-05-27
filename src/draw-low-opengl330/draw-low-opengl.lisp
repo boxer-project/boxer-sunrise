@@ -584,6 +584,7 @@ It's not clear yet whether we'll need to re-implement this for the future."
       (%draw-rectangle w h x y))))
 
 (defun %draw-string (font string x y)
+  ;; The check for *cur-gl-model-screen-obj* happens inside of gl-add-string
   (gl-add-string bw::*boxgl-device* (find-cached-font font) string x y))
 
 (defun %bitblt-to-screen (wid hei from-array fx fy tx ty)
