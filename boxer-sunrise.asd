@@ -11,8 +11,28 @@
   :version "3.4.13"
   :author "Steven Githens"
   :license ""
-  :depends-on ("uiop"
-               "boxer-sunrise-core")
+  :depends-on (:alexandria
+               :cffi
+               :cl-fad
+               :cl-glu
+               :cl-json
+               :cl-opengl
+               :drakma
+               :for
+               :html-entities
+               :iterate
+               :log4cl
+               :pngload
+               :qbase64
+               :quri
+               :trivial-garbage
+               :uiop
+               :zip
+               :zpng
+               :3d-matrices
+               :3d-vectors
+               :boxer-sunrise-core
+               )
   :components ((:module "src"
                 :components
                 (

@@ -23,14 +23,9 @@
                  (:file "definitions/vrtdef")
                  (:file "definitions/fonts")
                  (:file "definitions/disdcl")
-                 (:file "definitions/canvas")
-
-
-
-                )))
+                 (:file "definitions/canvas"))))
   :description ""
   :long-description
   #.(read-file-string
      (subpathname *load-pathname* "README.md"))
-  :in-order-to ((test-op (test-op "boxer-sunrise-core-test")))
-)
+  :in-order-to ((test-op (test-op "boxer-sunrise-core-test"))))

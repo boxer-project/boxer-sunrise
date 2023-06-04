@@ -7,8 +7,9 @@
   :defsystem-depends-on ("prove-asdf")
   :author "Steven Githens"
   :license ""
-  :depends-on ("boxer-sunrise"
-               "prove")
+  :depends-on (:boxer-sunrise
+               :prove
+               :md5)
   :components ((:module "tests"
                 :components
                 ((:test-file "boxer-sunrise")

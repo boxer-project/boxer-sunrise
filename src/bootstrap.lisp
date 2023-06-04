@@ -28,31 +28,9 @@
 
 #+win32 (load #P"Z:/quicklisp/setup.lisp")
 
-
-
-
 (ql:quickload :cl-fad)
-(ql:quickload :drakma)
-(ql:quickload :cl-json)
-(ql:quickload :zpng)
-(ql:quickload :qbase64)
-(ql:quickload :html-entities)
-
-(ql:quickload :alexandria)
-(ql:quickload :trivial-garbage)
 (ql:quickload :log4cl)
-
 (ql:quickload :cffi)
-(ql:quickload :zip)
-(ql:quickload :quri)
-
-(ql:quickload :cl-opengl)
-(ql:quickload :pngload)
-(ql:quickload :3d-vectors)
-(ql:quickload :3d-matrices)
-(ql:quickload :cl-glu)
-(ql:quickload :iterate)
-(ql:quickload :for)
 
 (log:config :info)
 
