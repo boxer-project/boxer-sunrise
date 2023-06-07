@@ -975,6 +975,9 @@
 
 (defun repaint (&optional just-windows?)
   (opengl:rendering-on (*boxer-pane*)
+    (when *reload-shaders*
+      (update-boxgl-programs)
+      (setf *reload-shaders* nil))
     (repaint-internal just-windows?)))
 
 (defun repaint-with-cursor-relocation ()

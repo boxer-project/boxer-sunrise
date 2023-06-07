@@ -600,6 +600,31 @@
   (gl:bind-buffer :uniform-buffer 0)
 )
 
+(defun update-boxgl-programs (&key (device bw::*boxgl-device*))
+  "Creates and sets all our GL shader programs. Can be used at runtime to reload programs when we're working on
+   shaders."
+  (setf (lines-shader device)
+        (setup-lines-program)
+
+        (dashed-lines-shader device)
+        (setup-lines-program :vertex-shader "boxgl-dashed-lines.vs" :fragment-shader "boxgl-dashed-lines.fs")
+
+        (canvas-shader device)
+        (setup-canvas-program)
+
+        (circle-shader device)
+        (setup-circle-program)
+
+        (arc-shader device)
+        (setup-arc-program)
+
+        (ellipse-shader device)
+        (setup-ellipse-program)
+
+        (simple-shader device)
+        (setup-simple-shader)
+))
+
 (defun make-boxgl-device (wid hei)
   "Constructor to create a new boxgl-device renderer. Sets up initial shaders, buffers, etc.
 Needs to be run inside an active openGL context. Using the Lispworks OpenGL impl that means
@@ -612,28 +637,8 @@ inside an opengl:rendering-on macro invocation."
     (setup-freetype-program togo)
     (setup-glyph-atlas-program togo)
     (setup-pixmap-program togo)
-    (setf (lines-shader togo)
-          (setup-lines-program)
-
-          (dashed-lines-shader togo)
-          (setup-lines-program :vertex-shader "boxgl-dashed-lines.vs" :fragment-shader "boxgl-dashed-lines.fs")
-
-          (canvas-shader togo)
-          (setup-canvas-program)
-
-          (circle-shader togo)
-          (setup-circle-program)
-
-          (arc-shader togo)
-          (setup-arc-program)
-
-          (ellipse-shader togo)
-          (setup-ellipse-program)
-
-          (simple-shader togo)
-          (setup-simple-shader)
-
-          (matrices-ubo togo)
+    (update-boxgl-programs :device togo)
+    (setf (matrices-ubo togo)
           (gl:gen-buffer)
 
           (boxgl-device-ortho-matrix togo)

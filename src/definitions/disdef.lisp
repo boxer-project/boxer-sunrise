@@ -72,6 +72,9 @@ Modification History (most recent at the top)
   "t or nil. If t, then use openGL framebuffers to back the graphics display list drawing
    on turtle canvases.")
 
+(defvar *reload-shaders* nil
+  "When set to true, reload the shader programs before next repaint.")
+
 (DEFVAR *DEFAULT-GRAPHICS-SHEET-WIDTH* 320.)
 
 (DEFVAR *DEFAULT-GRAPHICS-SHEET-HEIGHT* 200.)
