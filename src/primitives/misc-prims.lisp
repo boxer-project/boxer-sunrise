@@ -355,7 +355,9 @@
                                      (t (snooze seconds)))))
                                 boxer-eval::*novalue*)
 
-(boxer-eval::defboxer-primitive bu::redisplay () boxer-eval::*novalue*)
+(boxer-eval::defboxer-primitive bu::redisplay ()
+  (repaint)
+  boxer-eval::*novalue*)
 
 (defvar *verbose-date-and-time* t)
 
