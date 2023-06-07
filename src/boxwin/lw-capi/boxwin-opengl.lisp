@@ -744,6 +744,7 @@
    :confirm-destroy-function 'lw-quit
    :help-callback 'do-tooltip-help
    ; :toolbar-items (make-toolbar-items)
+   :window-styles '(:internal-borderless)
    ))
 
 (defvar *macos-finished-launching* nil
