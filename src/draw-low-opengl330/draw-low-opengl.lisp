@@ -176,15 +176,6 @@ some opengl features to be available first."
 ;;; Drawing and Geometry layout type Macros
 ;;
 
-(defmacro with-blending-on (&body body)
-  ;; sgithens 2023-01-17 TODO Blending is essentially always on these days. Remove this once the old
-  ;; openGL immediate mode version is removed completely.
-  (let ((current-blend-var (gensym)))
-    `(let ((,current-blend-var nil ))
-       (unwind-protect
-        (progn
-         . ,body)))))
-
 (defun %set-pen-size (v)
   (setf (boxgl-device-pen-size bw::*boxgl-device*) v))
 
@@ -235,19 +226,6 @@ some opengl features to be available first."
                            (bw::ogl-reshape (sheet-inside-width ,view) (sheet-inside-height ,view))
                            (opengl::gl-scissor 0 0 (sheet-inside-width ,view) (sheet-inside-height ,view))
                            . ,body)))
-
-(defmacro boxer-points->window-system-points (boxer-point-list (x-arg x-form)
-                                                               (y-arg y-form))
-  "this takes a set of boxer points and converts them into a form that
-the window system desires.  The x/y-function args will be funcalled
-on the coordinate as it is converted.
-
-OpenGL expects a list of X Y pairs"
-  `(macrolet ((x-handler (,x-arg) ,x-form)
-              (y-handler (,y-arg) ,y-form))
-             (let ((trans nil))
-               (dolist (pt ,boxer-point-list (nreverse trans))
-                 (push (list (x-handler (car pt)) (y-handler (cdr pt))) trans)))))
 
 (defmacro prepare-sheet ((window) &body body)
   `(with-drawing-port ,window

@@ -719,23 +719,23 @@
   (let ((fx (1- x)) (fy (1- y)) (lx (+ x wid)) (ly (+ y hei))
         (tsize (floor (min wid hei) 2)))
     (with-pen-color (*border-gui-color*)
-      (draw-poly (list (cons fx (+ fy tsize)) (cons (+ fx tsize) fy)  ;; top left
-                                (cons (+ fx tsize) (+ fy tsize))))
-      (draw-poly (list (cons (+ fx tsize 1) fy) (cons (+ fx tsize 1) (+ fy tsize)) ; top right
-                                (cons lx (+ fy tsize))))
-      (draw-poly (list (cons fx (+ fy tsize 1)) (cons (+ fx tsize) (+ fy tsize 1)) ; bottom left
-                                (cons (+ fx tsize) ly)))
-      (draw-poly (list (cons (+ fx tsize 1) (+ fy tsize 1)) (cons lx (+ fy tsize 1)) ; bottom right
-                                (cons (+ fx tsize 1) (1+ ly)))))))
+      (draw-poly (list (list fx (+ fy tsize)) (list (+ fx tsize) fy)  ;; top left
+                                (list (+ fx tsize) (+ fy tsize))))
+      (draw-poly (list (list (+ fx tsize 1) fy) (list (+ fx tsize 1) (+ fy tsize)) ; top right
+                                (list lx (+ fy tsize))))
+      (draw-poly (list (list fx (+ fy tsize 1)) (list (+ fx tsize) (+ fy tsize 1)) ; bottom left
+                                (list (+ fx tsize) ly)))
+      (draw-poly (list (list (+ fx tsize 1) (+ fy tsize 1)) (list lx (+ fy tsize 1)) ; bottom right
+                                (list (+ fx tsize 1) (1+ ly)))))))
 
 (defun expand-corner-fun (x y wid hei)
   (let ((lx (+ x wid)) (ly (+ y hei))
         (tside (floor (min wid hei) 2)))
     (with-pen-color (*border-gui-color*)
-      (draw-poly (list (cons x y) (cons (+ x tside) y) (cons x (+ y tside)))) ; top left
-      (draw-poly (list (cons (- lx tside) y) (cons lx y) (cons lx (+ y tside)))) ; top right
-      (draw-poly (list (cons x ly) (cons x (- ly tside)) (cons (+ x tside) ly))) ; bottom left
-      (draw-poly (list (cons (- lx tside) ly) (cons lx ly) (cons lx (- ly tside))))))) ; bottom R
+      (draw-poly (list (list x y) (list (+ x tside) y) (list x (+ y tside)))) ; top left
+      (draw-poly (list (list (- lx tside) y) (list lx y) (list lx (+ y tside)))) ; top right
+      (draw-poly (list (list x ly) (list x (- ly tside)) (list (+ x tside) ly))) ; bottom left
+      (draw-poly (list (list (- lx tside) ly) (list lx ly) (list lx (- ly tside))))))) ; bottom R
 
 
 (defun resize-corner-fun (x y wid hei)
@@ -1050,10 +1050,10 @@
       (draw-circle half-x half-y (* *mouse-corner-highlight-size* 0.7)  t))
     (with-pen-color (*mouse-doc-highlight-color*)
       (draw-circle half-x half-y (* *mouse-corner-highlight-size* 0.7)  nil)
-      (draw-poly (list (cons x y) (cons half-x half-y)
-                                (cons x full-y) (cons x y)))
-      (draw-poly (list (cons full-x y) (cons full-x full-y)
-                                (cons half-x half-y) (cons full-x y)))
+      (draw-poly (list (list x y) (list half-x half-y)
+                                (list x full-y) (list x y)))
+      (draw-poly (list (list full-x y) (list full-x full-y)
+                                (list half-x half-y) (list full-x y)))
       )))
 
 (defun draw-mouse-expand-corner (x-in y-in)
@@ -1068,10 +1068,10 @@
       (draw-circle half-x half-y (* *mouse-corner-highlight-size* 0.7)  t))
     (with-pen-color (*mouse-doc-highlight-color*)
       (draw-circle half-x half-y (* *mouse-corner-highlight-size* 0.7)  nil)
-      (draw-poly (list (cons x half-y) (cons (- half-x 1) y)
-                                (cons (- half-x 1) full-y) (cons x half-y)))
-      (draw-poly (list (cons (+ half-x 1) y) (cons full-x half-y)
-                                (cons (+ half-x 1) full-y) (cons (+ half-x 1) y))))))
+      (draw-poly (list (list x half-y) (list (- half-x 1) y)
+                                (list (- half-x 1) full-y) (list x half-y)))
+      (draw-poly (list (list (+ half-x 1) y) (list full-x half-y)
+                                (list (+ half-x 1) full-y) (list (+ half-x 1) y))))))
 
 (defun draw-mouse-toggle-corner (x y)
   (with-pen-color (*mouse-doc-highlight-color*)
@@ -1107,11 +1107,11 @@
     (with-pen-color (*mouse-doc-highlight-color*)
       (draw-circle half-x half-y (* *mouse-corner-highlight-size* 0.7)  nil)
       ;; TL arrowhead
-      (draw-poly (list (cons x y) (cons (+ x half) y)
-                                (cons x (+ y half)) (cons x y)))
+      (draw-poly (list (list x y) (list (+ x half) y)
+                                (list x (+ y half)) (list x y)))
       ;; BR arrowhead
-      (draw-poly (list (cons full-x full-y) (cons (- full-x half) full-y)
-                                (cons full-x (- full-y half)) (cons full-x full-y)))
+      (draw-poly (list (list full-x full-y) (list (- full-x half) full-y)
+                                (list full-x (- full-y half)) (list full-x full-y)))
       (draw-line x y full-x full-y))))
 
 ;;; OpenGL just adds things to be redrawn during regular redisplay

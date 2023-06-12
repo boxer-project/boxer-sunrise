@@ -152,9 +152,7 @@ multifont row, the common reference point will be the baseline instead of the to
   (%draw-point x y))
 
 (defun draw-poly (points)
-  ;; should'nt transform the points because translation is done @ hardware level in OpenGL
-  (unless (null points)
-    (%draw-poly (boxer-points->window-system-points points (x x) (y y)))))
+  (%draw-poly points))
 
 (defun draw-rectangle (w h x y)
   (%draw-rectangle w h x y))

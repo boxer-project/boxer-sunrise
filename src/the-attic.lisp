@@ -8546,6 +8546,23 @@ if it is out of bounds
 ;;;; FILE: draw-low-opengl.lisp
 ;;;;
 
+;; sgithens 2023-06-12 Only usage of this was in draw-high draw-poly
+  ;; should'nt transform the points because translation is done @ hardware level in OpenGL
+  ; (unless (null points)
+  ;   (%draw-poly (boxer-points->window-system-points points (x x) (y y))))
+(defmacro boxer-points->window-system-points (boxer-point-list (x-arg x-form)
+                                                               (y-arg y-form))
+  "this takes a set of boxer points and converts them into a form that
+the window system desires.  The x/y-function args will be funcalled
+on the coordinate as it is converted.
+
+OpenGL expects a list of X Y pairs"
+  `(macrolet ((x-handler (,x-arg) ,x-form)
+              (y-handler (,y-arg) ,y-form))
+             (let ((trans nil))
+               (dolist (pt ,boxer-point-list (nreverse trans))
+                 (push (list (x-handler (car pt)) (y-handler (cdr pt))) trans)))))
+
 (defmacro with-blending-on (&body body)
   ;; sgithens 2023-01-17 TODO Blending is essentially always on these days. Remove this once the old
   ;; openGL immediate mode version is removed completely.
