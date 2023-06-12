@@ -1154,10 +1154,9 @@
                                                 (progn
                                                  (unless (null ,screen-box-x)
                                                    (with-pen-color (bw::*blinker-color*)
-                                                     (box::with-blending-on
                                                       (draw-rectangle
                                                                       ,screen-box-wid ,screen-box-hei
-                                                                      ,screen-box-x ,screen-box-y)))
+                                                                      ,screen-box-x ,screen-box-y))
                                                    (swap-graphics-buffers))
                                                  . ,body)
                                                 (unless (null ,screen-box-x)

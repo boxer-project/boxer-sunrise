@@ -18,7 +18,6 @@
 
 (defun draw-blinker (blinker)
   (with-pen-color (bw::*blinker-color*)
-    (with-blending-on
-      (draw-rectangle
-        (blinker-wid blinker)   (blinker-hei blinker)
-        (blinker-x blinker)     (blinker-y blinker)))))
+    (draw-rectangle
+      (blinker-wid blinker)   (blinker-hei blinker)
+      (blinker-x blinker)     (blinker-y blinker))))

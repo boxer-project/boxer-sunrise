@@ -1821,7 +1821,6 @@ Modification History (most recent at the top)
       (when (graphics-canvas-pen-font-cmd ,graphics-canvas)
         (process-graphics-command-marker (graphics-canvas-pen-font-cmd ,graphics-canvas))))
 
-     (with-blending-on
        (do-vector-contents (command ,gl :start ,start)
          (process-graphics-command-marker command) ; . ,args)
 
@@ -1831,7 +1830,7 @@ Modification History (most recent at the top)
                  ((equal 1 (aref command 0))
                   (setf (graphics-canvas-pen-size-cmd ,graphics-canvas) command))
                  ((equal 2 (aref command 0))
-                  (setf (graphics-canvas-pen-font-cmd ,graphics-canvas) command))))))))
+                  (setf (graphics-canvas-pen-font-cmd ,graphics-canvas) command)))))))
 
 (defun redisplay-graphics-sheet (gs graphics-screen-box)
   (with-graphics-vars-bound ((screen-obj-actual-obj graphics-screen-box))

@@ -930,12 +930,11 @@
   (opengl:rendering-on (window)
     (bw::check-for-window-resize)
     (REDISPLAYING-WINDOW (WINDOW)
-                        (with-blending-on
-                          (clear-window window)
-                          (repaint-guts)
-                          (repaint-mouse-docs)
-                          (repaint-dev-overlay process-state-label))
-                          (when flush-buffer? (swap-graphics-buffers window)))))
+                         (clear-window window)
+                         (repaint-guts)
+                         (repaint-mouse-docs)
+                         (repaint-dev-overlay process-state-label)
+                         (when flush-buffer? (swap-graphics-buffers window)))))
 
 ;;; called also by printing routines.
 (defun repaint-guts ()

@@ -8546,6 +8546,15 @@ if it is out of bounds
 ;;;; FILE: draw-low-opengl.lisp
 ;;;;
 
+(defmacro with-blending-on (&body body)
+  ;; sgithens 2023-01-17 TODO Blending is essentially always on these days. Remove this once the old
+  ;; openGL immediate mode version is removed completely.
+  (let ((current-blend-var (gensym)))
+    `(let ((,current-blend-var nil ))
+       (unwind-protect
+        (progn
+         . ,body)))))
+
 ;; check for the existence of auxiliary buffer so we can signal
 ;; an error at the right level
 (defun auxiliary-buffer-count ()

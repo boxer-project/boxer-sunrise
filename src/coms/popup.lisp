@@ -259,9 +259,8 @@ Modification History (most recent at top)
                                ;; highlight
                                (draw-menu menu real-x real-y)
                                (with-pen-color (bw::*blinker-color*)
-                                 (with-blending-on
-                                   (draw-rectangle (- mwid 3) ih
-                                                   (1+ real-x) (+ real-y iy))))
+                                 (draw-rectangle (- mwid 3) ih
+                                                 (1+ real-x) (+ real-y iy)))
                                (swap-graphics-buffers))
                               ((eq ti current-item)) ; no change, do nothing
                               ((not (slot-value ti 'enabled?))
@@ -274,9 +273,8 @@ Modification History (most recent at top)
                                (draw-menu menu real-x real-y)
                                ;; highlight selected item...
                                (with-pen-color (bw::*blinker-color*)
-                                 (with-blending-on
-                                   (draw-rectangle (- mwid 3) ih
-                                                   (1+ real-x) (+ real-y iy))))
+                                 (draw-rectangle (- mwid 3) ih
+                                                 (1+ real-x) (+ real-y iy)))
                                (swap-graphics-buffers)
                                ;; set vars
                                (setq current-item ti current-y iy current-height ih))))
@@ -293,9 +291,8 @@ Modification History (most recent at top)
                     (draw-menu menu real-x real-y)
                     (swap-graphics-buffers) (snooze .05)
                     (with-pen-color (bw::*blinker-color*)
-                      (with-blending-on
-                        (draw-rectangle (- mwid 3) current-height
-                                        (1+ real-x) (+ real-y current-y))))
+                      (draw-rectangle (- mwid 3) current-height
+                                      (1+ real-x) (+ real-y current-y)))
                     (swap-graphics-buffers) (snooze .05)))))))
         ;; funcall the action (note we are OUTSIDE of the drawing-on-window
         (unless (null current-item)
