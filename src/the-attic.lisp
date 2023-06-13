@@ -11948,6 +11948,23 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: grfdfs.lisp
 ;;;;
 
+;; this tries to save/restore only the extents of the turtle rather than
+;; the entire size of the allocated save-under which must take into account
+;; possible rotations
+;;
+;; Also, clip to the containing graphics-box's dimensions
+
+;; sgithens 2023-06-12 Completely removing remainder of save-under
+(defun save-under-turtle (turtle)
+  (declare (ignore turtle))
+  (log:debug "Is save-under-turtle really necessary?"))
+
+(defun restore-under-turtle (turtle)
+  (declare (ignore turtle))
+  (log:debug "Is restore-under-turtle really necessary?"))
+
+
+
 (defvar *prepared-graphics-box* nil)
 (defvar *sprites-hidden* nil)
 
@@ -12423,6 +12440,16 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: grmeth.lisp
 ;;;;
 
+;;; The save-under slot-of a turtle can be the symbol 'XOR-REDRAW,
+;;; or an offscreen bitmap or NIL (for a freshly CONSed turtle)
+;;; XOR mode is faster than save-unders so if we can, use XOR mode
+
+;; sgithens TODO 2023-06-12 Completely removing remainder of save-under
+(defmethod update-save-under ((self button))
+  (declare (ignore self))
+  (log:debug "Is update-save-under really necessary?")
+)
+
 (defmethod update-save-under ((self button))
   (let ((shape (shape self))
 	(save-under (slot-value self 'save-under))
@@ -12735,6 +12762,20 @@ OpenGL expects a list of X Y pairs"
 ;;;;
 ;;;; FILE: grobjs.lisp
 ;;;;
+
+;; 2023-06-12 Removing from defclass button
+(save-under :initform nil
+               :accessor turtle-save-under)
+
+;; sgithens TODO 2023-06-12 Completely removing remainder of save-under
+;; soon to be '(xor-redraw overlay)
+(defvar *valid-save-under-keywords* '(xor-redraw))
+
+;; sgithens TODO 2023-06-12 Completely removing remainder of save-under
+(defstruct (save-under (:constructor make-save-under (bitmap middle size)))
+  (bitmap nil)
+  (middle 0)
+  (size))
 
 ;;; Some useful variables that various types of objects need
 

@@ -517,21 +517,6 @@ parameters of the graphics box are bound. "
                         (draw-wrap-line from-x (wrap-y-coord-bottom from-y)
                                         to-x   (wrap-y-coord-bottom to-y) alu))))))))))
 
-
-;; this tries to save/restore only the extents of the turtle rather than
-;; the entire size of the allocated save-under which must take into account
-;; possible rotations
-;;
-;; Also, clip to the containing graphics-box's dimensions
-
-(defun save-under-turtle (turtle)
-  (declare (ignore turtle))
-  (log:debug "Is save-under-turtle really necessary?"))
-
-(defun restore-under-turtle (turtle)
-  (declare (ignore turtle))
-  (log:debug "Is restore-under-turtle really necessary?"))
-
 ;;;; Sprite Access
 
 ;;; this is the sprite scoping function.  Basically, we walk up the static

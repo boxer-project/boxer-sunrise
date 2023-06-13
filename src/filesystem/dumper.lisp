@@ -940,17 +940,19 @@ Modification History (most recent at the top)
   (dump-boxer-thing (slot-value self 'subsprites) stream))
 
 (defmethod dump-plist-length ((self button))
-  (+ 4 (call-next-method)))
+  (+ 2 (call-next-method)))
 
 (defmethod dump-plist-internal ((self button) stream)
   (call-next-method)
   (dump-boxer-thing 'shape stream)
   (dump-graphics-list (box-interface-value (slot-value self 'shape)) stream)
-  (dump-boxer-thing 'save-under stream)
-  (dump-boxer-thing (if (eq (slot-value self 'save-under) 'xor-redraw)
-      'xor-redraw
-      'save-under)
-        stream))
+  ;; sgithens 2023-06-12 Completely removing remainder of save-under
+  ;; (dump-boxer-thing 'save-under stream)
+  ;; (dump-boxer-thing (if (eq (slot-value self 'save-under) 'xor-redraw)
+  ;;     'xor-redraw
+  ;;     'save-under)
+  ;;       stream)
+  )
 
 (defmethod dump-plist-length ((self graphics-cursor))
   (+ 10 (call-next-method)))

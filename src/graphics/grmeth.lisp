@@ -636,9 +636,6 @@ CLOSED for renovations until I fix the string/font situation
 
 ;;;; Shape Handling
 
-;;; The save-under slot-of a turtle can be the symbol 'XOR-REDRAW,
-;;; or an offscreen bitmap or NIL (for a freshly CONSed turtle)
-;;; XOR mode is faster than save-unders so if we can, use XOR mode
 ;;;
 ;;; Note that we deliberately allocate a backing store large enough
 ;;; to support any possible rotation of the sprite to avoid having to
@@ -647,11 +644,6 @@ CLOSED for renovations until I fix the string/font situation
 ;;;
 ;;; Need to put in support for overlay planes
 ;;;
-
-(defmethod update-save-under ((self button))
-  (declare (ignore self))
-  (log:debug "Is update-save-under really necessary?")
-)
 
 (defmethod update-window-shape-allocation ((self button))
   (let ((window-shape (slot-value self 'window-shape))
@@ -735,9 +727,11 @@ CLOSED for renovations until I fix the string/font situation
 ;;; need to support overlay here...
 (defmethod fast-erase ((turtle button))
   (unless (eq turtle *current-active-sprite*)
-    (if (eq (turtle-save-under turtle) 'xor-redraw)
+    ;; sgithens TODO 2023-06-12 Completely removing remainder of save-under
+    ;; (if (eq (turtle-save-under turtle) 'xor-redraw)
         (draw turtle)
-        (restore-under-turtle turtle))))
+        ;; (restore-under-turtle turtle))
+        ))
 
 (defmethod erase ((self button))
   (when (absolute-shown? self) (fast-erase self)))
