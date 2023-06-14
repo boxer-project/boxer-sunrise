@@ -10,6 +10,7 @@ out vec3 vertPos;
 
 layout (std140) uniform Matrices
 {
+    mat4 model;
     mat4 ortho;
     mat4 transform;
         vec2 u_resolution;
@@ -19,7 +20,7 @@ layout (std140) uniform Matrices
 void main()
 {
     theColor = aColor;
-    vec4 pos = ortho * transform * vec4(aPos, 0.0, 1.0);
+    vec4 pos = ortho * transform * model *vec4(aPos, 0.0, 1.0);
     gl_Position = pos;
     vertPos = pos.xyz / pos.w;
     startPos = vertPos;

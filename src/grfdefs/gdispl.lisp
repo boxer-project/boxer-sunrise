@@ -353,6 +353,8 @@ Modification History (most recent at the top)
 (defmacro process-graphics-command-marker (graphics-command &rest args)
   `(let ((handler (svref& *graphics-command-dispatch-table*
                           (svref& ,graphics-command 0))))
+     (when (null handler)
+       (format t "~%Handler missing for: ~A" ,graphics-command))
      (unless (null  handler)
        (funcall handler ,graphics-command ,@args))))
 
@@ -409,9 +411,15 @@ Modification History (most recent at the top)
   (let ((handler (svref& *turtle-translation-table*
                          (svref& from-graphics-command 0))))
     (unless (null handler)
+      (format t "~%Handler: ~A" handler)
       (funcall handler
                from-graphics-command to-graphics-command
-               trans-x trans-y cos-scale sin-scale scale))))
+               trans-x trans-y cos-scale sin-scale scale)))
+  (format t "~%translate-boxer->window-command:after
+  from-graphics-command: ~A to-graphics-command: ~A
+  trans-x: ~A trans-y: ~A cos-scale: ~A sin-scale:~A scale: ~A" from-graphics-command to-graphics-command
+  trans-x trans-y cos-scale sin-scale scale)
+  )
 
 (defun allocate-boxer->window-command (graphics-command)
   (let ((handler (svref& *graphics-command-boxer->window-translation-table*

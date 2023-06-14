@@ -658,7 +658,7 @@ CLOSED for renovations until I fix the string/font situation
   (do-vector-contents (turtle-graphics-command shape :index-var-name idx)
     (translate-boxer->window-command turtle-graphics-command
                                      (sv-nth idx window-shape)
-                                     trans-x trans-y cos-scale sin-scale
+                                     trans-x trans-y 1.0 0.0 ;sgithens hacking cos-scale sin-scale
                                      scale))
   (setf (turtle-window-shape-valid window-shape) t))
 
@@ -680,9 +680,25 @@ CLOSED for renovations until I fix the string/font situation
 
 (defmethod draw ((self button))
   (unless (or (eq self *current-active-sprite*) (null (shown? self)))
-    (let (;(*supress-graphics-recording?* (not stamp?))
+    (let* (;(*supress-graphics-recording?* (not stamp?))
           (ahead (absolute-heading self))
-          (asize (absolute-size self)))
+          (asize (absolute-size self))
+          (ahead-rad (* ahead (/ pi 180)))
+          (prev-model (boxgl-device-model-matrix bw::*boxgl-device*))
+          (trans-mat (3d-matrices:mtranslation
+                       (3d-vectors:vec
+                         (+ %drawing-half-width (absolute-x-position self))
+                         (- %drawing-half-height (absolute-y-position self)) 0.0)))
+          (rot-mat (3d-matrices:nmrotate
+                       (3d-matrices:meye 4) 3d-vectors:+vz+
+                       ahead-rad
+                      ;;  (- ahead-rad (/ pi 2))
+                       ))
+          (scale-mat (3d-matrices:nmscale (3d-matrices:meye 4) (3d-vectors:vec asize asize 0.0)))
+          (final-mat (3d-matrices:marr4 (3d-matrices:m* trans-mat rot-mat scale-mat)))
+          )
+      (format t "~%draw button: ahead: ~A  asize: ~A abs-x-pos: ~A abs-y-pos: ~A" ahead asize
+        (absolute-x-position self) (absolute-y-position self))
       ;; update the turtle-window-shape
       (unless (turtle-window-shape-valid (slot-value self 'window-shape))
         ;; minimal error checking...
@@ -697,8 +713,20 @@ CLOSED for renovations until I fix the string/font situation
                              (absolute-x-position self)
                              (absolute-y-position self)
                              (* (cosd ahead) asize) (* (sind ahead) asize)
-                             asize))
-      (playback-graphics-list-internal (slot-value self 'window-shape))
+                             asize)
+        )
+
+      (setf (boxgl-device-model-matrix bw::*boxgl-device*) final-mat)
+      (update-matrices-ubo bw::*boxgl-device*)
+
+      ;; Going to try and playback the graphics list in boxer/user command space
+      ;; (playback-graphics-list-internal (slot-value self 'window-shape))
+      ; (playback-graphics-list-internal (box-interface-value (slot-value self 'shape)))
+      (boxer-playback-graphics-list (box-interface-value (slot-value self 'shape)))
+
+      (setf (boxgl-device-model-matrix bw::*boxgl-device*) prev-model)
+      (update-matrices-ubo bw::*boxgl-device*)
+
       (unless (eq (shown? self) ':no-subsprites)
         (dolist (subs (slot-value self 'subsprites))
           (draw subs))))))

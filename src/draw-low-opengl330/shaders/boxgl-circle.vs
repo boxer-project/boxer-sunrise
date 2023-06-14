@@ -8,6 +8,7 @@ out vec4 circle_pos;
 
 layout (std140) uniform Matrices
 {
+    mat4 model;
     mat4 ortho;
     mat4 transform;
     vec2 u_resolution;
@@ -16,5 +17,5 @@ layout (std140) uniform Matrices
 void main() {
     color = a_color;
     circle_pos = a_circle_pos;
-    gl_Position = ortho * transform * vec4(a_position.xyz, 1.0);
+    gl_Position = ortho * transform * model * vec4(a_position.xyz, 1.0);
 }
