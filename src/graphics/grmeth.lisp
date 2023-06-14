@@ -300,21 +300,10 @@ Modification History (most recent at top)
   (error "You MUST define a DRAW method for the ~S class"
          (class-name (class-of self))))
 
-(defmethod fast-erase ((self graphics-object))
-  (error "You MUST define a FAST-ERASE method for the ~S class"
-         (class-name (class-of self))))
-
-(defmethod erase ((self graphics-object))
-  (error "You MUST define a ERASE method for the ~S class"
-         (class-name (class-of self))))
-
 (defmethod enclosing-rectangle ((self graphics-object))
   (error "You MUST define a ENCLOSING-RECTANGLE method for the ~S class"
          (class-name (class-of self))))
 
-
-
-
 
 ;;;; utilities for updating BOX values
 
@@ -724,18 +713,6 @@ CLOSED for renovations until I fix the string/font situation
       (dolist (subs (slot-value self 'subsprites))
         (draw-update subs)))))
 
-;;; need to support overlay here...
-(defmethod fast-erase ((turtle button))
-  (unless (eq turtle *current-active-sprite*)
-    ;; sgithens TODO 2023-06-12 Completely removing remainder of save-under
-    ;; (if (eq (turtle-save-under turtle) 'xor-redraw)
-        (draw turtle)
-        ;; (restore-under-turtle turtle))
-        ))
-
-(defmethod erase ((self button))
-  (when (absolute-shown? self) (fast-erase self)))
-
 (defmethod show-turtle ((self button))
   (set-shown? self t))
 
@@ -745,7 +722,6 @@ CLOSED for renovations until I fix the string/font situation
 ;; therefore, it needs to suppress the explicit erasing
 (defmethod hide-turtle ((self button))
   (set-shown? self nil nil nil))
-
 
 
 ;;; stuff for mouse-sensitivity
