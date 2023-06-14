@@ -92,6 +92,19 @@ The central idea in VC data structure is it gets forked _at the point of mutatio
 
 multiple pointer slot.
 
+## Save Unders
+
+If you look through the attic or other logs you may occasionally see references to
+functions or data structures called `save-under`, `update-save-under`, `turtle-save-under`,
+and similar things. Before switching to openGL, Boxer used several different retained mode
+drawing api's, (ie. The scene wasn't repainted on each frame.) This means a lot of
+complex state was manually kept track of such as the area that would be under a sprite.
+(the `save-under`). Such that when the sprite was moved, that little bitmap of graphics
+could be painted back under where the turtle sprite was. These little cached bits of
+canvas that were under the sprites were even part of the save format so that when the
+box file was loaded back in, the turtle could still move from where it was, preserving
+the graphics that were underneath it.
+
 ## Variables in Boxer
 
 All this applies equally to variable and procedure lookup by name, the rules are the same.
