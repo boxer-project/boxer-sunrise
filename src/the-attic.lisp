@@ -12440,6 +12440,25 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: grmeth.lisp
 ;;;;
 
+(defmethod fast-erase ((self graphics-object))
+  (error "You MUST define a FAST-ERASE method for the ~S class"
+         (class-name (class-of self))))
+
+(defmethod erase ((self graphics-object))
+  (error "You MUST define a ERASE method for the ~S class"
+         (class-name (class-of self))))
+
+;;; need to support overlay here...
+(defmethod fast-erase ((turtle button))
+  (unless (eq turtle *current-active-sprite*)
+    (if (eq (turtle-save-under turtle) 'xor-redraw)
+        (draw turtle)
+        (restore-under-turtle turtle))))
+
+(defmethod erase ((self button))
+  (when (absolute-shown? self) (fast-erase self)))
+
+
 ;;; The save-under slot-of a turtle can be the symbol 'XOR-REDRAW,
 ;;; or an offscreen bitmap or NIL (for a freshly CONSed turtle)
 ;;; XOR mode is faster than save-unders so if we can, use XOR mode
