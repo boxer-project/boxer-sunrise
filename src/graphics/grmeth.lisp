@@ -575,10 +575,7 @@ CLOSED for renovations until I fix the string/font situation
                                (when (and (not (null pen-alu))
                                           (not (zerop (pen-width self))))
                                  (record-boxer-graphics-command-line-segment
-                                  array-x array-y array-x-dest array-y-dest)))
-                              ;; invalidate the shape and extent caches
-                              (invalidate-window-shape-and-extent-caches
-                               self)))))))))))
+                                  array-x array-y array-x-dest array-y-dest)))))))))))))
 
 
 ;;;;;;;; Graphics BUTTON methods
@@ -589,10 +586,7 @@ CLOSED for renovations until I fix the string/font situation
   (let ((new-shape (copy-graphics-command-list
                     *default-graphics-object-shape*)))
     (setf (slot-value self 'shape)
-          (%make-sv-box-interface new-shape 'shape nil 'shape-box-updater))
-    ;; the window shape is is used as a graphics cache
-    (setf (slot-value self 'window-shape)
-          (make-turtle-window-shape new-shape)))
+          (%make-sv-box-interface new-shape 'shape nil 'shape-box-updater)))
   self)
 
 (defmethod shape ((self button))
@@ -618,52 +612,7 @@ CLOSED for renovations until I fix the string/font situation
   (call-next-method)
   (setf (box-interface-value (slot-value new-button 'shape))
         (copy-graphics-command-list
-         (box-interface-value (slot-value old-button 'shape))))
-  (update-window-shape-allocation new-button))
-
-
-
-;;;; Shape Handling
-
-;;;
-;;; Note that we deliberately allocate a backing store large enough
-;;; to support any possible rotation of the sprite to avoid having to
-;;; continually reallocate a backing store (slow !) for any rotation
-;;; of the sprite.
-;;;
-;;; Need to put in support for overlay planes
-;;;
-
-(defmethod update-window-shape-allocation ((self button))
-  (let ((window-shape (slot-value self 'window-shape))
-        (shape (box-interface-value (slot-value self 'shape))))
-    (unless (null window-shape)
-      (clear-graphics-list window-shape))
-    (do-vector-contents (gc shape)
-      (sv-append window-shape (allocate-boxer->window-command gc)))))
-
-(defun update-window-shape (shape window-shape
-                                  trans-x trans-y cos-scale sin-scale scale)
-  (do-vector-contents (turtle-graphics-command shape :index-var-name idx)
-    (translate-boxer->window-command turtle-graphics-command
-                                     (sv-nth idx window-shape)
-                                     trans-x trans-y 1.0 0.0 ;sgithens hacking cos-scale sin-scale
-                                     scale))
-  (setf (turtle-window-shape-valid window-shape) t))
-
-;;; When a window shape is invalidated, we have to recurse through the
-;;; inferiors as well
-
-(defmethod invalidate-window-shape-and-extent-caches ((self button))
-  (setf (turtle-window-shape-valid (slot-value self 'window-shape))
-        nil
-        (turtle-window-shape-min-graphics-x-extent
-         (slot-value self 'window-shape))
-        nil)
-  ;; now recurse
-  (dolist (ss (slot-value self 'subsprites))
-    (invalidate-window-shape-and-extent-caches ss)))
-
+         (box-interface-value (slot-value old-button 'shape)))))
 
 ;;;; drawing
 
@@ -688,22 +637,6 @@ CLOSED for renovations until I fix the string/font situation
           )
       (format t "~%draw button: ahead: ~A  asize: ~A abs-x-pos: ~A abs-y-pos: ~A" ahead asize
         (absolute-x-position self) (absolute-y-position self))
-      ;; update the turtle-window-shape
-      (unless (turtle-window-shape-valid (slot-value self 'window-shape))
-        ;; minimal error checking...
-        (unless (= (storage-vector-active-length
-                    (box-interface-value (slot-value self 'shape)))
-                   (storage-vector-active-length (slot-value self
-                                                             'window-shape)))
-          (warn "The shape and the window-shape are out of synch, fixing...")
-          (update-window-shape-allocation self))
-        (update-window-shape (box-interface-value (slot-value self 'shape))
-                             (slot-value self 'window-shape)
-                             (absolute-x-position self)
-                             (absolute-y-position self)
-                             (* (cosd ahead) asize) (* (sind ahead) asize)
-                             asize)
-        )
 
       (setf (boxgl-device-model-matrix bw::*boxgl-device*) final-mat)
       (update-matrices-ubo bw::*boxgl-device*)
@@ -723,20 +656,6 @@ CLOSED for renovations until I fix the string/font situation
 ;;; like draw but without the actual drawing
 (defmethod draw-update ((self button))
   (let ((ahead (absolute-heading self)) (asize (absolute-size self)))
-    ;; update the turtle-window-shape
-    (unless (turtle-window-shape-valid (slot-value self 'window-shape))
-      ;; minimal error checking...
-      (unless (= (storage-vector-active-length
-                  (box-interface-value (slot-value self 'shape)))
-                 (storage-vector-active-length (slot-value self 'window-shape)))
-        (warn "The shape and the window-shape are out of synch, fixing...")
-        (update-window-shape-allocation self))
-      (update-window-shape (box-interface-value (slot-value self 'shape))
-                           (slot-value self 'window-shape)
-                           (absolute-x-position self)
-                           (absolute-y-position self)
-                           (* (cosd ahead) asize) (* (sind ahead) asize)
-                           asize))
     (unless (eq (shown? self) ':no-subsprites)
       (dolist (subs (slot-value self 'subsprites))
         (draw-update subs)))))

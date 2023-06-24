@@ -532,27 +532,6 @@ Modification History (most recent at the top)
 (defsubst turtle-shape? (thing)
   (simple-vector-p thing))
 
-;;; Like a Graphics-Command-List with extra slots.  This is used as
-;;; a cache for the rendering of a turtle shape at a particular
-;;; location and heading.  Subsequent calls to draw the turtle
-;;; can just access the cached values instead of recalculating.
-;;; Commands will be of the window system/integer variety
-
-(defstruct (turtle-window-shape (:type vector)
-                                (:include graphics-command-list)
-                                ;; we need to define our own versions of
-                                (:copier %%copy-turtle-window-shape)
-                                (:constructor %%make-turtle-window-shape))
-  (valid nil)
-  ;; some places to cache popular quantities
-  min-graphics-x-extent
-  max-graphics-x-extent
-  min-graphics-y-extent
-  max-graphics-y-extent)
-
-(defsubst turtle-window-shape? (thing)
-  (simple-vector-p thing))
-
 
 (defmacro expand-mutators-and-body (args initial-index &body body)
   (cond ((null args)
@@ -1460,14 +1439,6 @@ Modification History (most recent at the top)
                                      *default-graphics-list-initial-length*))
   (%%make-turtle-shape :contents (allocate-c-vector length)))
 
-(defun make-turtle-window-shape (&optional (shape *default-turtle-shape*))
-  (let ((tws (%%make-turtle-window-shape
-              :contents (allocate-c-vector
-                         (storage-vector-max-length shape)))))
-    (do-vector-contents (gc shape)
-      (sv-append tws (allocate-boxer->window-command gc)))
-    tws))
-
 
 (defun translate-graphics-command-list (gl trans-x trans-y)
   (do-vector-contents (graphics-command gl)
@@ -1580,27 +1551,15 @@ Modification History (most recent at the top)
                          ;					     (max (abs home-y)
                          ;						  (/ new-wid 2)))))
                          )
-                       ;; if there is a window-shape cache, invalidate it
-                       (flush-window-shape-cache obj)))
+                       ))
                 (t
                  (dolist (obj (graphics-sheet-object-list sheet))
                    (when (not (eq (graphics-sheet-draw-mode sheet) ':clip))
                      (set-x-position obj (* (x-position obj) wid-scale))
                      (set-y-position obj (* (y-position obj) hei-scale)))
-                   ;; if there is a window-shape cache, invalidate it
-                   (flush-window-shape-cache obj)))))))
+                   ))))))
     (setf (graphics-sheet-draw-wid sheet) new-wid)
     (setf (graphics-sheet-draw-hei sheet) new-hei)))
-
-
-(defun flush-window-shape-cache (turtle)
-  (let ((ws (slot-value turtle 'window-shape)))
-    (setf (turtle-window-shape-valid ws) nil)
-    ;; extents are checks separately (see sprite-at-window-point for details)
-    (setf (turtle-window-shape-min-graphics-x-extent ws) nil)
-    (dolist (ss (subsprites turtle)) (flush-window-shape-cache ss))))
-
-
 
 ;;; Graphics State Changes
 

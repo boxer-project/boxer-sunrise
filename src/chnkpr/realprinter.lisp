@@ -597,11 +597,7 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
           (set-slot-value-from-binding (slot-value go slot-name) (car existing))))))
   ;; Now we can attach the graphics-object to the box
   (setf (graphics-info box) go)
-  (set-sprite-box go box)
-  ;; make sure the window-shape-cache agrees with the (possibly) new shape
-  (update-window-shape-allocation go)
-  ;; force recompute of offsets and extents of the commands in the window shape
-  (invalidate-window-shape-and-extent-caches go))
+  (set-sprite-box go box))
 
 (defun set-slot-value-from-binding (slot binding)
   (let ((box (boxer-eval::static-variable-value binding)))

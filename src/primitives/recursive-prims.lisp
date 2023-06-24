@@ -103,7 +103,6 @@
     (setq boxer::%learning-shape-graphics-list nil)
     (unwind-protect
       (setq boxer::%learning-shape? nil)
-      (boxer::update-window-shape-allocation turtle)
       (boxer::restore-turtle-state turtle boxer::%turtle-state))
       (restore-state-variables))
   :UNWIND-PROTECT-FORM
@@ -119,7 +118,6 @@
       ;; the shape can be in an inconsistent state here so make
       ;; sure all the things that depend on the shape synchronize
       ;; themselves to the shape's current state
-      (boxer::update-window-shape-allocation turtle)
       (boxer::restore-turtle-state turtle old-state))
     (restore-state-variables)))
 

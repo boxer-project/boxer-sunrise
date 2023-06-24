@@ -1523,8 +1523,10 @@ should ignore it.")
                       (post-load-process-graphics-list value) 'shape nil 'shape-box-updater))
                ;; now that we have (or should have) a shape, fill in
                ;; the auxiliary data structures
-               (setf (slot-value self 'window-shape)
-                     (make-turtle-window-shape (shape self))))
+               ;; sgithens 2023-06-22 Completely removing window-shapes
+               ;  (setf (slot-value self 'window-shape)
+               ;        (make-turtle-window-shape (shape self)))
+                     )
       ;; sgithens 2023-06-12 Completely removing remainder of save-under
       ;; (save-under (progn
       ;;                 ;; crock for initializing in save-unders
@@ -1679,8 +1681,9 @@ should ignore it.")
       (warn "Null pen-color, fixing...")
       (setf (slot-value turtle 'pen-color)
             (%make-iv-box-interface *foreground-color* 'pen-color)))
-    (setf (slot-value turtle 'window-shape)
-          (make-turtle-window-shape (shape turtle)))
+    ;; sgithens 2023-06-22 Completely removing window-shapes
+    ; (setf (slot-value turtle 'window-shape)
+    ;       (make-turtle-window-shape (shape turtle)))
     turtle))
 
 ;(define-load-command bin-op-turtle (stream)

@@ -187,22 +187,7 @@ Modification History (most recent at top)
     ;; handle any box interface...
     (when (and (null dont-update-box)
                (not (null (box-interface-box shape-slot))))
-      (shape-box-updater shape-slot))
-    ;; fixup other slots which depend on the shape...
-    (update-window-shape-allocation self)
-    ;; now we need to initialize the save under...
-    (let ((assoc-graphics-box (slot-value self 'assoc-graphics-box))
-          (ahead (absolute-heading self))
-          (asize (absolute-size self)))
-      (unless (null assoc-graphics-box)
-        (with-graphics-vars-bound (assoc-graphics-box)
-          (update-window-shape (box-interface-value (slot-value self 'shape))
-                               (slot-value self 'window-shape)
-                               (absolute-x-position self)
-                               (absolute-y-position self)
-                               (* (cosd ahead) asize) (* (sind ahead) asize)
-                               asize)
-        )))))
+      (shape-box-updater shape-slot))))
 
 
 
@@ -827,8 +812,6 @@ Modification History (most recent at top)
   (let ((pen-mode (get-alu-from-pen (pen self))))
     (when (and pen-mode (not (no-graphics?)))
       (draw-update self)
-      ;; the call to draw will insure the validity of the window-shape
-      (dub-graphics-list (slot-value self 'window-shape))
       ;; reset the state values which may have been bashed during the
       ;; dub to be the state value of the shape
       (synchronize-graphics-state self t))))

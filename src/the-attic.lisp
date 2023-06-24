@@ -10059,6 +10059,42 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: gdispl.lisp
 ;;;;
 
+;;; Like a Graphics-Command-List with extra slots.  This is used as
+;;; a cache for the rendering of a turtle shape at a particular
+;;; location and heading.  Subsequent calls to draw the turtle
+;;; can just access the cached values instead of recalculating.
+;;; Commands will be of the window system/integer variety
+
+(defstruct (turtle-window-shape (:type vector)
+                                (:include graphics-command-list)
+                                ;; we need to define our own versions of
+                                (:copier %%copy-turtle-window-shape)
+                                (:constructor %%make-turtle-window-shape))
+  (valid nil)
+  ;; some places to cache popular quantities
+  min-graphics-x-extent
+  max-graphics-x-extent
+  min-graphics-y-extent
+  max-graphics-y-extent)
+
+(defsubst turtle-window-shape? (thing)
+  (simple-vector-p thing))
+
+(defun make-turtle-window-shape (&optional (shape *default-turtle-shape*))
+  (let ((tws (%%make-turtle-window-shape
+              :contents (allocate-c-vector
+                         (storage-vector-max-length shape)))))
+    (do-vector-contents (gc shape)
+      (sv-append tws (allocate-boxer->window-command gc)))
+    tws))
+
+(defun flush-window-shape-cache (turtle)
+  (let ((ws (slot-value turtle 'window-shape)))
+    (setf (turtle-window-shape-valid ws) nil)
+    ;; extents are checks separately (see sprite-at-window-point for details)
+    (setf (turtle-window-shape-min-graphics-x-extent ws) nil)
+    (dolist (ss (subsprites turtle)) (flush-window-shape-cache ss))))
+
 ; Commented out section from redisplay-graphics-sheet
     ;; no more save-unders in OpenGL
     ;    (dolist (turtle (graphics-sheet-object-list gs))
@@ -11476,6 +11512,41 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: gcmeth.lisp
 ;;;;
 
+;; 2023-06-23 Removing this bit of window-shape update from set-shape
+    ;; fixup other slots which depend on the shape...
+    ; (update-window-shape-allocation self)
+    ;; now we need to initialize the save under...
+    (let ((assoc-graphics-box (slot-value self 'assoc-graphics-box))
+          (ahead (absolute-heading self))
+          (asize (absolute-size self)))
+      (unless (null assoc-graphics-box)
+        (with-graphics-vars-bound (assoc-graphics-box)
+          (update-window-shape (box-interface-value (slot-value self 'shape))
+                               (slot-value self 'window-shape)
+                               (absolute-x-position self)
+                               (absolute-y-position self)
+                               (* (cosd ahead) asize) (* (sind ahead) asize)
+                               asize)
+        )))
+
+;; ... and then from inside defmethod draw
+      ;; update the turtle-window-shape
+      (unless (turtle-window-shape-valid (slot-value self 'window-shape))
+        ;; minimal error checking...
+        (unless (= (storage-vector-active-length
+                    (box-interface-value (slot-value self 'shape)))
+                   (storage-vector-active-length (slot-value self
+                                                             'window-shape)))
+          (warn "The shape and the window-shape are out of synch, fixing...")
+          (update-window-shape-allocation self))
+        (update-window-shape (box-interface-value (slot-value self 'shape))
+                             (slot-value self 'window-shape)
+                             (absolute-x-position self)
+                             (absolute-y-position self)
+                             (* (cosd ahead) asize) (* (sind ahead) asize)
+                             asize)
+        )
+
 ;; 2023-02-22 Last bits of #-opengl bits
 ;; from defmethod set-shown?
 #-opengl (old-value (box-interface-value slot))
@@ -12440,6 +12511,50 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: grmeth.lisp
 ;;;;
 
+;;;; Shape Handling
+
+;;;
+;;; Note that we deliberately allocate a backing store large enough
+;;; to support any possible rotation of the sprite to avoid having to
+;;; continually reallocate a backing store (slow !) for any rotation
+;;; of the sprite.
+;;;
+;;; Need to put in support for overlay planes
+;;;
+
+(defmethod update-window-shape-allocation ((self button))
+  (let ((window-shape (slot-value self 'window-shape))
+        (shape (box-interface-value (slot-value self 'shape))))
+    (unless (null window-shape)
+      (clear-graphics-list window-shape))
+    (do-vector-contents (gc shape)
+      (sv-append window-shape (allocate-boxer->window-command gc)))))
+
+(defun update-window-shape (shape window-shape
+                                  trans-x trans-y cos-scale sin-scale scale)
+  (do-vector-contents (turtle-graphics-command shape :index-var-name idx)
+    (translate-boxer->window-command turtle-graphics-command
+                                     (sv-nth idx window-shape)
+                                     trans-x trans-y 1.0 0.0 ;sgithens hacking cos-scale sin-scale
+                                     scale))
+  (setf (turtle-window-shape-valid window-shape) t))
+
+;;; When a window shape is invalidated, we have to recurse through the
+;;; inferiors as well
+
+(defmethod invalidate-window-shape-and-extent-caches ((self button))
+  (setf (turtle-window-shape-valid (slot-value self 'window-shape))
+        nil
+        (turtle-window-shape-min-graphics-x-extent
+         (slot-value self 'window-shape))
+        nil)
+  ;; now recurse
+  (dolist (ss (slot-value self 'subsprites))
+    (invalidate-window-shape-and-extent-caches ss)))
+
+
+;;; END Shape Handling
+
 (defmethod fast-erase ((self graphics-object))
   (error "You MUST define a FAST-ERASE method for the ~S class"
          (class-name (class-of self))))
@@ -12781,6 +12896,10 @@ OpenGL expects a list of X Y pairs"
 ;;;;
 ;;;; FILE: grobjs.lisp
 ;;;;
+
+;; 2023-06-22 Removing from defclass button
+(window-shape :initform nil
+                 :accessor turtle-window-shape)
 
 ;; 2023-06-12 Removing from defclass button
 (save-under :initform nil

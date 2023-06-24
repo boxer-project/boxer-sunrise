@@ -91,9 +91,9 @@
 
 (defclass button
   (graphics-object)
-  ((shape      :initform nil)
-   (window-shape :initform nil
-                 :accessor turtle-window-shape)))
+  ((shape      :initform nil
+    :documentation "This is a special-value-box-interface vector. The value is a graphics-command-list, the slot
+    is this shape slot, and the update function in the 5th vector position is shape-box-updater.")))
 
 ;;;; This has the capability to draw lines when it moves
 

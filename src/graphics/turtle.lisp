@@ -47,9 +47,7 @@ Modification History (most recent at top)
   (let ((new-shape (copy-graphics-command-list
                     *default-turtle-shape*)))
     (setf (slot-value self 'shape)
-          (%make-sv-box-interface new-shape 'shape nil 'shape-box-updater)
-          (slot-value self 'window-shape)
-          (make-turtle-window-shape new-shape)))
+          (%make-sv-box-interface new-shape 'shape nil 'shape-box-updater)))
   self)
 
 (defmethod all-interface-slots ((self turtle))
@@ -159,9 +157,7 @@ Modification History (most recent at top)
            (unless (= (box-interface-value slot) new-size)
              (when (and (null dont-update-box) (not (null box)))
                (bash-box-to-number box new-size))
-             (setf (box-interface-value slot) new-size))
-           ;; invalidate the shape and extent caches
-           (invalidate-window-shape-and-extent-caches self)))))
+             (setf (box-interface-value slot) new-size))))))
 
 (defmethod absolute-size ((self turtle))
   (let ((superior-turtle (slot-value self 'superior-turtle)))
@@ -208,9 +204,7 @@ Modification History (most recent at top)
              (without-interrupts
                (set-heading-instance-var self
                                          (float-modulo new-heading 360.)
-                                         dont-update-box)
-               ;; invalidate the shape and extent caches
-               (invalidate-window-shape-and-extent-caches self))))
+                                         dont-update-box))))
         (t (error "the argument, ~s, was not a number" new-heading))))
 
 (defmethod right ((self turtle) degrees)

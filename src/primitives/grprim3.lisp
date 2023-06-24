@@ -91,10 +91,6 @@ Modification History (most recent at top)
                       (let ((gs (copy-graphics-sheet new-gs box))
                             (old-objs (graphics-sheet-object-list old-gs)))
                         (setf (graphics-sheet-object-list gs) old-objs)
-                        ;; The window shape caches will need to be recalculated
-                        ;; using the dimensions of the new graphics sheet
-                        (dolist (turtle old-objs)
-                          (flush-window-shape-cache turtle))
                         (setf (graphics-info box) gs))
                       (clearscreen box :none)
                       (modified-graphics box))
