@@ -415,22 +415,32 @@ Modification History (most recent at top)
 
 ;;;; Intersection Routines
 
-(defun update-turtle-window-extents (window-shape turtle
-                                                  &optional
-                                                  (array-x 0) (array-y 0))
-  (let ((min-x array-x) (min-y array-y) (max-x array-x) (max-y array-y)
-        (visible? (shown? turtle)))
+(defun turtle-window-extents (turtle)
+  "In progress replacement for update-turtle-window-extents that keeps things in
+   regular boxer gc coordinates. Returns a list of '(min-x min-y max-x max-y)."
+
+  (let ((min-x nil)
+        (min-y nil)
+        (max-x nil)
+        (max-y nil)
+        (visible? (shown? turtle))
+        ;; TODO is there a method to get the value from a box-interface? (rather than
+        ;; remembering the array location)
+        ;; TODO make an accessor for shape
+        (shape-gdispl (aref (slot-value turtle 'shape) 1)))
     (unless (eq visible? ':subsprites)
       (with-graphics-state-bound
-        (do-vector-contents (gc window-shape)
+        (do-vector-contents (gc shape-gdispl)
           (multiple-value-bind (gc-min-x gc-min-y gc-max-x gc-max-y
                                          state-change?)
                                (graphics-command-extents gc)
             (unless state-change?
-              (setq min-x (min gc-min-x min-x)
-                    min-y (min gc-min-y min-y)
-                    max-x (max gc-max-x max-x)
-                    max-y (max gc-max-y max-y)))))))
+              (setq min-x gc-min-x  ;(min gc-min-x min-x)
+                    min-y gc-min-y  ;(min gc-min-y min-y)
+                    max-x gc-max-x  ;(max gc-max-x max-x)
+                    max-y gc-max-y  ;(max gc-max-y max-y)
+
+                    ))))))
     (unless (eq visible? ':no-subsprites)
       (dolist (subs (slot-value turtle 'subsprites))
         (when (absolute-shown? subs)
@@ -440,17 +450,16 @@ Modification History (most recent at top)
                   min-y (min min-y sub-min-y)
                   max-x (max max-x sub-max-x)
                   max-y (max max-y sub-max-y))))))
-    (setf (turtle-window-shape-min-graphics-x-extent window-shape) min-x
-          (turtle-window-shape-min-graphics-y-extent window-shape) min-y
-          (turtle-window-shape-max-graphics-x-extent window-shape) max-x
-          (turtle-window-shape-max-graphics-y-extent window-shape) max-y)
-    (values min-x min-y max-x max-y)))
+    (list min-x min-y max-x max-y)))
 
 (defmethod touching? ((self graphics-object) other-turtle)
   (multiple-value-bind (left1 top1 right1 bottom1)
       (enclosing-rectangle self)
     (multiple-value-bind (left2 top2 right2 bottom2)
         (enclosing-rectangle other-turtle)
+(format t "~%touching? l: ~A t: ~A r: ~A b: ~A
+          l: ~A t: ~A r: ~A b: ~A" left1 top1 right1 bottom1
+          left2 top2 right2 bottom2)
       (flet ((horiz-touch? ()
                (or (inclusive-between? left1 left2 right2)
                    (inclusive-between? right1 left2 right2)
@@ -460,8 +469,6 @@ Modification History (most recent at top)
                    (inclusive-between? bottom1 top2 bottom2)
                    (inclusive-between? top2 top1 bottom1))))
         (and (horiz-touch?) (vert-touch?))))))
-
-
 
 (defmethod all-sprites-in-contact ((self graphics-object))
   (let ((objects (graphics-object-list (slot-value self 'assoc-graphics-box)))
@@ -635,8 +642,8 @@ CLOSED for renovations until I fix the string/font situation
           (scale-mat (3d-matrices:nmscale (3d-matrices:meye 4) (3d-vectors:vec asize asize 0.0)))
           (final-mat (3d-matrices:marr4 (3d-matrices:m* trans-mat rot-mat scale-mat)))
           )
-      (format t "~%draw button: ahead: ~A  asize: ~A abs-x-pos: ~A abs-y-pos: ~A" ahead asize
-        (absolute-x-position self) (absolute-y-position self))
+      ; (format t "~%draw button: ahead: ~A  asize: ~A abs-x-pos: ~A abs-y-pos: ~A" ahead asize
+        ; (absolute-x-position self) (absolute-y-position self))
 
       (setf (boxgl-device-model-matrix bw::*boxgl-device*) final-mat)
       (update-matrices-ubo bw::*boxgl-device*)
@@ -676,85 +683,40 @@ CLOSED for renovations until I fix the string/font situation
 ;;;; These return values in WINDOW coordinates
 
 (defmethod enclosing-rectangle ((self button))
-  ;; first insure the validity of the window-shape
-  (let ((ws (slot-value self 'window-shape)))
-    (unless (turtle-window-shape-valid ws)
-      (when *boxer-system-hacker*
-        (warn "Updating window shape inside of ENCLOSING-RECTANGLE"))
-      (let ((ahead (absolute-heading self))
-            (asize (absolute-size self)))
-        (unless (= (storage-vector-active-length
-                    (box-interface-value (slot-value self 'shape)))
-                   (storage-vector-active-length (slot-value self
-                                                             'window-shape)))
-          (warn "The shape and the window-shape are out of synch, fixing...")
-          (update-window-shape-allocation self))
-        (update-window-shape (box-interface-value (slot-value self 'shape))
-                             ws
-                             (absolute-x-position self)
-                             (absolute-y-position self)
-                             (* (cosd ahead) asize) (* (sind ahead) asize)
-                             asize)))
-    ;; now fill the extents slots if needed
-    (when (null (turtle-window-shape-min-graphics-x-extent ws))
-      (update-turtle-window-extents ws self
-                                    ;; ?? is this neccesary ??
-                                    (fix-array-coordinate-x
-                                     (absolute-x-position self))
-                                    (fix-array-coordinate-y
-                                     (absolute-y-position self))))
-    ;; finally return the values
-    (values (turtle-window-shape-min-graphics-x-extent ws)
-            (turtle-window-shape-min-graphics-y-extent ws)
-            (turtle-window-shape-max-graphics-x-extent ws)
-            (turtle-window-shape-max-graphics-y-extent ws))))
+  (let* ((extents (turtle-window-extents self)))
+    (values (nth 0 extents)    ;min-x
+            (nth 1 extents)    ;min-y
+            (nth 2 extents)    ;max-x
+            (nth 3 extents)))) ;max-y
 
 (defun enclosing-sprite-coords (sprite)
   (multiple-value-bind (left top right bottom)
       (enclosing-rectangle sprite)
     (unless (no-graphics?)
-      (values (user-coordinate-x left)  (user-coordinate-y top)
-              (user-coordinate-x right) (user-coordinate-y bottom)))))
+      (values left top right bottom))))
 
 ;;; returns either NIL or the lowest sprite that contains the point
 (defmethod sprite-at-window-point ((self button) window-x window-y)
-  ;; first insure the validity of the window-shape
-  (let ((ws (slot-value self 'window-shape)))
-    (unless (turtle-window-shape-valid ws)
-      (when *boxer-system-hacker*
-        (warn "Updating window shape inside of ENCLOSING-RECTANGLE"))
-      (let ((ahead (absolute-heading self))
-            (asize (absolute-size self)))
-        (unless (= (storage-vector-active-length
-                    (box-interface-value (slot-value self 'shape)))
-                   (storage-vector-active-length (slot-value self
-                                                             'window-shape)))
-          (warn "The shape and the window-shape are out of synch, fixing...")
-          (update-window-shape-allocation self))
-        (update-window-shape (box-interface-value (slot-value self 'shape))
-                             ws
-                             (absolute-x-position self)
-                             (absolute-y-position self)
-                             (* (cosd ahead) asize) (* (sind ahead) asize)
-                             asize)))
-    ;; now fill the extents slots if needed
-    (when (null (turtle-window-shape-min-graphics-x-extent ws))
-      (update-turtle-window-extents ws self
-                                    ;; ?? is this neccesary ??
-                                    (fix-array-coordinate-x
-                                     (absolute-x-position self))
-                                    (fix-array-coordinate-y
-                                     (absolute-y-position self))))
-    ;; now we can use the cache values
-    (when (and (<= (turtle-window-shape-min-graphics-x-extent ws)
-                    window-x
-                    (turtle-window-shape-max-graphics-x-extent ws))
-               (<= (turtle-window-shape-min-graphics-y-extent ws)
-                    window-y
-                    (turtle-window-shape-max-graphics-y-extent ws)))
+  (let* ((point-x (- window-x (+ %drawing-half-width (absolute-x-position self))))
+         (point-y (* -1.0 (- window-y (- %drawing-half-height (absolute-y-position self)))))
+         (extents (turtle-window-extents self))
+         (min-x (nth 0 extents))
+         (min-y (nth 1 extents))
+         (max-x (nth 2 extents))
+         (max-y (nth 3 extents)))
+    (format t "~%Fresh extents4: ~A point-x: ~A point-y: ~A" extents point-x point-y)
+
+    (when (and (<=  min-x
+                    point-x
+                    max-x
+                    )
+               (<=  min-y
+                    point-y
+                    max-y
+                    ))
       ;; the point is within the sprite, now check any subsprites
       (or (dolist (sub (slot-value self 'subsprites))
-            (let ((under? (sprite-at-window-point sub window-x window-y)))
+            (let ((under? (sprite-at-window-point sub point-x point-y)))
               (when (not (null under?))
                 (return under?))))
           self))))

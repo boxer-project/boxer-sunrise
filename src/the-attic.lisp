@@ -12511,6 +12511,125 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: grmeth.lisp
 ;;;;
 
+;; 2023-06-24 Old version that used window-shape, and the old version of enclosing-sprite-coords
+;; that used it.
+(defmethod enclosing-rectangle ((self button))
+  ;; first insure the validity of the window-shape
+  (let ((ws (slot-value self 'window-shape)))
+    (unless (turtle-window-shape-valid ws)
+      (when *boxer-system-hacker*
+        (warn "Updating window shape inside of ENCLOSING-RECTANGLE"))
+      (let ((ahead (absolute-heading self))
+            (asize (absolute-size self)))
+        (unless (= (storage-vector-active-length
+                    (box-interface-value (slot-value self 'shape)))
+                   (storage-vector-active-length (slot-value self
+                                                             'window-shape)))
+          (warn "The shape and the window-shape are out of synch, fixing...")
+          (update-window-shape-allocation self))
+        (update-window-shape (box-interface-value (slot-value self 'shape))
+                             ws
+                             (absolute-x-position self)
+                             (absolute-y-position self)
+                             (* (cosd ahead) asize) (* (sind ahead) asize)
+                             asize)))
+    ;; now fill the extents slots if needed
+    (when (null (turtle-window-shape-min-graphics-x-extent ws))
+      (update-turtle-window-extents ws self
+                                    ;; ?? is this neccesary ??
+                                    (fix-array-coordinate-x
+                                     (absolute-x-position self))
+                                    (fix-array-coordinate-y
+                                     (absolute-y-position self))))
+    ;; finally return the values
+    (values (turtle-window-shape-min-graphics-x-extent ws)
+            (turtle-window-shape-min-graphics-y-extent ws)
+            (turtle-window-shape-max-graphics-x-extent ws)
+            (turtle-window-shape-max-graphics-y-extent ws))))
+
+(defun enclosing-sprite-coords (sprite)
+   (multiple-value-bind (left top right bottom)
+       (enclosing-rectangle sprite)
+     (unless (no-graphics?)
+       (values (user-coordinate-x left)  (user-coordinate-y top)
+               (user-coordinate-x right) (user-coordinate-y bottom)))))
+
+
+;; 2023-06-23 Old version that used window-shape. Current version in
+;; code uses the boxer native gcdispl in the shape slot.
+(defmethod sprite-at-window-point ((self button) window-x window-y)
+  ;; first insure the validity of the window-shape
+  (let ((ws (slot-value self 'window-shape)))
+    (unless (turtle-window-shape-valid ws)
+      (when *boxer-system-hacker*
+        (warn "Updating window shape inside of ENCLOSING-RECTANGLE"))
+      (let ((ahead (absolute-heading self))
+            (asize (absolute-size self)))
+        (unless (= (storage-vector-active-length
+                    (box-interface-value (slot-value self 'shape)))
+                   (storage-vector-active-length (slot-value self
+                                                             'window-shape)))
+          (warn "The shape and the window-shape are out of synch, fixing...")
+          (update-window-shape-allocation self))
+        (update-window-shape (box-interface-value (slot-value self 'shape))
+                             ws
+                             (absolute-x-position self)
+                             (absolute-y-position self)
+                             (* (cosd ahead) asize) (* (sind ahead) asize)
+                             asize)))
+    ;; now fill the extents slots if needed
+    (when (null (turtle-window-shape-min-graphics-x-extent ws))
+      (update-turtle-window-extents ws self
+                                    ;; ?? is this neccesary ??
+                                    (fix-array-coordinate-x
+                                     (absolute-x-position self))
+                                    (fix-array-coordinate-y
+                                     (absolute-y-position self))))
+    ;; now we can use the cache values
+    (when (and (<= (turtle-window-shape-min-graphics-x-extent ws)
+                    window-x
+                    (turtle-window-shape-max-graphics-x-extent ws))
+               (<= (turtle-window-shape-min-graphics-y-extent ws)
+                    window-y
+                    (turtle-window-shape-max-graphics-y-extent ws)))
+      ;; the point is within the sprite, now check any subsprites
+      (or (dolist (sub (slot-value self 'subsprites))
+            (let ((under? (sprite-at-window-point sub window-x window-y)))
+              (when (not (null under?))
+                (return under?))))
+          self))))
+
+(defun update-turtle-window-extents (window-shape turtle
+                                                  &optional
+                                                  (array-x 0) (array-y 0))
+  (let ((min-x array-x) (min-y array-y) (max-x array-x) (max-y array-y)
+        (visible? (shown? turtle)))
+    (unless (eq visible? ':subsprites)
+      (with-graphics-state-bound
+        (do-vector-contents (gc window-shape)
+          (multiple-value-bind (gc-min-x gc-min-y gc-max-x gc-max-y
+                                         state-change?)
+                               (graphics-command-extents gc)
+            (unless state-change?
+              (setq min-x (min gc-min-x min-x)
+                    min-y (min gc-min-y min-y)
+                    max-x (max gc-max-x max-x)
+                    max-y (max gc-max-y max-y)))))))
+    (unless (eq visible? ':no-subsprites)
+      (dolist (subs (slot-value turtle 'subsprites))
+        (when (absolute-shown? subs)
+          (multiple-value-bind (sub-min-x sub-min-y sub-max-x sub-max-y)
+            (enclosing-rectangle subs)
+            (setq min-x (min min-x sub-min-x)
+                  min-y (min min-y sub-min-y)
+                  max-x (max max-x sub-max-x)
+                  max-y (max max-y sub-max-y))))))
+    (setf (turtle-window-shape-min-graphics-x-extent window-shape) min-x
+          (turtle-window-shape-min-graphics-y-extent window-shape) min-y
+          (turtle-window-shape-max-graphics-x-extent window-shape) max-x
+          (turtle-window-shape-max-graphics-y-extent window-shape) max-y)
+    (values min-x min-y max-x max-y)))
+
 ;;;; Shape Handling
 
 ;;;
