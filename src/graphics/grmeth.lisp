@@ -415,14 +415,13 @@ Modification History (most recent at top)
 
 ;;;; Intersection Routines
 
-(defun turtle-window-extents (turtle)
+(defun turtle-window-extents (turtle &optional (x 0) (y 0) (translate? t))
   "In progress replacement for update-turtle-window-extents that keeps things in
    regular boxer gc coordinates. Returns a list of '(min-x min-y max-x max-y)."
-
-  (let ((min-x nil)
-        (min-y nil)
-        (max-x nil)
-        (max-y nil)
+  (let ((min-x 0)
+        (min-y 0)
+        (max-x 0)
+        (max-y 0)
         (visible? (shown? turtle))
         ;; TODO is there a method to get the value from a box-interface? (rather than
         ;; remembering the array location)
@@ -435,12 +434,10 @@ Modification History (most recent at top)
                                          state-change?)
                                (graphics-command-extents gc)
             (unless state-change?
-              (setq min-x gc-min-x  ;(min gc-min-x min-x)
-                    min-y gc-min-y  ;(min gc-min-y min-y)
-                    max-x gc-max-x  ;(max gc-max-x max-x)
-                    max-y gc-max-y  ;(max gc-max-y max-y)
-
-                    ))))))
+              (setq min-x (min gc-min-x min-x)
+                    min-y (min gc-min-y min-y)
+                    max-x (max gc-max-x max-x)
+                    max-y (max gc-max-y max-y)))))))
     (unless (eq visible? ':no-subsprites)
       (dolist (subs (slot-value turtle 'subsprites))
         (when (absolute-shown? subs)
@@ -450,6 +447,13 @@ Modification History (most recent at top)
                   min-y (min min-y sub-min-y)
                   max-x (max max-x sub-max-x)
                   max-y (max max-y sub-max-y))))))
+
+    ;; translate the results
+    (when translate? (setf min-x (incf min-x x)
+                           min-y (incf min-y y)
+                           max-x (incf max-x x)
+                           max-y (incf max-y y)))
+
     (list min-x min-y max-x max-y)))
 
 (defmethod touching? ((self graphics-object) other-turtle)
@@ -683,11 +687,11 @@ CLOSED for renovations until I fix the string/font situation
 ;;;; These return values in WINDOW coordinates
 
 (defmethod enclosing-rectangle ((self button))
-  (let* ((extents (turtle-window-extents self)))
+  (let* ((extents (turtle-window-extents self (absolute-x-position self) (absolute-y-position self))))
     (values (nth 0 extents)    ;min-x
-            (nth 1 extents)    ;min-y
+            (nth 3 extents)    ;max-y
             (nth 2 extents)    ;max-x
-            (nth 3 extents)))) ;max-y
+            (nth 1 extents)))) ;min-y
 
 (defun enclosing-sprite-coords (sprite)
   (multiple-value-bind (left top right bottom)
@@ -699,12 +703,11 @@ CLOSED for renovations until I fix the string/font situation
 (defmethod sprite-at-window-point ((self button) window-x window-y)
   (let* ((point-x (- window-x (+ %drawing-half-width (absolute-x-position self))))
          (point-y (* -1.0 (- window-y (- %drawing-half-height (absolute-y-position self)))))
-         (extents (turtle-window-extents self))
+         (extents (turtle-window-extents self (absolute-x-position self) (absolute-y-position self) nil))
          (min-x (nth 0 extents))
          (min-y (nth 1 extents))
          (max-x (nth 2 extents))
          (max-y (nth 3 extents)))
-    (format t "~%Fresh extents4: ~A point-x: ~A point-y: ~A" extents point-x point-y)
 
     (when (and (<=  min-x
                     point-x
