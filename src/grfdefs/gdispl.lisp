@@ -391,10 +391,12 @@ Modification History (most recent at the top)
     (unless (null handler) (funcall handler command))))
 
 (defun translate-graphics-command (graphics-command trans-x trans-y)
-  (let ((handler (svref& *graphics-command-translation-table*
-                         (svref& graphics-command 0))))
-    (unless (null handler)
-      (funcall handler graphics-command trans-x trans-y))))
+  (if (< (aref graphics-command 0) 32)
+    (let ((handler (svref& *graphics-command-translation-table*
+                           (svref& graphics-command 0))))
+      (unless (null handler)
+        (funcall handler graphics-command trans-x trans-y)))
+    graphics-command))
 
 (defun translate-and-scale-graphics-command (graphics-command
                                              trans-x trans-y
@@ -433,11 +435,13 @@ Modification History (most recent at the top)
       (funcall handler graphics-command))))
 
 (defun allocate-window->boxer-command (graphics-command)
-  (let ((handler (svref& *graphics-command-window->boxer-translation-table*
-                         (svref& graphics-command 0))))
-    (if (null handler)
-      (error "No translation allocator for ~A" graphics-command)
-      (funcall handler graphics-command))))
+  (if (< (aref graphics-command 0) 32)
+    (let ((handler (svref& *graphics-command-window->boxer-translation-table*
+                           (svref& graphics-command 0))))
+      (if (null handler)
+        (error "No translation allocator for ~A" graphics-command)
+        (funcall handler graphics-command)))
+    graphics-command))
 
 (defmacro graphics-command-values (command-name-or-opcode
                                    graphics-command &body body)
@@ -1788,16 +1792,63 @@ Modification History (most recent at the top)
       (when (graphics-canvas-pen-font-cmd ,graphics-canvas)
         (process-graphics-command-marker (graphics-canvas-pen-font-cmd ,graphics-canvas))))
 
-       (do-vector-contents (command ,gl :start ,start)
-         (process-graphics-command-marker command) ; . ,args)
+       (let ((prev-model (boxgl-device-model-matrix bw::*boxgl-device*))
+             (trans-mat (3d-matrices:mtranslation
+                        (3d-vectors:vec
+                         (+ %drawing-half-width 0.0)
+                         (- %drawing-half-height 0.0) 0.0))))
+        (do-vector-contents (command ,gl :start ,start)
+          (cond ((eq (aref command 0) 33)
+                (draw-boxer-change-pen-width command))
 
-         (when (and *use-opengl-framebuffers* ,graphics-canvas)
-           (cond ((equal 4 (aref command 0))
-                  (setf (graphics-canvas-pen-color-cmd ,graphics-canvas) command))
-                 ((equal 1 (aref command 0))
-                  (setf (graphics-canvas-pen-size-cmd ,graphics-canvas) command))
-                 ((equal 2 (aref command 0))
-                  (setf (graphics-canvas-pen-font-cmd ,graphics-canvas) command)))))))
+               ((eq (aref command 0) 35)
+                (setf (boxgl-device-model-matrix bw::*boxgl-device*) (3d-matrices:marr4 trans-mat))
+                (update-matrices-ubo bw::*boxgl-device*)
+                (draw-boxer-line-segment command)
+                (setf (boxgl-device-model-matrix bw::*boxgl-device*) prev-model)
+                (update-matrices-ubo bw::*boxgl-device*))
+
+               ((eq (aref command 0) 36)
+                (draw-boxer-change-graphics-color command))
+
+               ((eq (aref command 0) 39)
+                (setf (boxgl-device-model-matrix bw::*boxgl-device*) (3d-matrices:marr4 trans-mat))
+                (update-matrices-ubo bw::*boxgl-device*)
+                (draw-boxer-centered-string command)
+                (setf (boxgl-device-model-matrix bw::*boxgl-device*) prev-model)
+                (update-matrices-ubo bw::*boxgl-device*))
+
+               ((eq (aref command 0) 42)
+                (setf (boxgl-device-model-matrix bw::*boxgl-device*) (3d-matrices:marr4 trans-mat))
+                (update-matrices-ubo bw::*boxgl-device*)
+                (draw-boxer-centered-rectangle command)
+                (setf (boxgl-device-model-matrix bw::*boxgl-device*) prev-model)
+                (update-matrices-ubo bw::*boxgl-device*))
+
+               ((eq (aref command 0) 47)
+                (setf (boxgl-device-model-matrix bw::*boxgl-device*) (3d-matrices:marr4 trans-mat))
+                (update-matrices-ubo bw::*boxgl-device*)
+                (draw-boxer-centered-bitmap command)
+                (setf (boxgl-device-model-matrix bw::*boxgl-device*) prev-model)
+                (update-matrices-ubo bw::*boxgl-device*))
+
+               ((eq (aref command 0) 60)
+                (setf (boxgl-device-model-matrix bw::*boxgl-device*) (3d-matrices:marr4 trans-mat))
+                (update-matrices-ubo bw::*boxgl-device*)
+                (draw-boxer-filled-ellipse command)
+                (setf (boxgl-device-model-matrix bw::*boxgl-device*) prev-model)
+                (update-matrices-ubo bw::*boxgl-device*))
+               (t
+                 (process-graphics-command-marker command) ; . ,args)
+               ))
+
+          (when (and *use-opengl-framebuffers* ,graphics-canvas)
+            (cond ((equal 4 (aref command 0))
+                   (setf (graphics-canvas-pen-color-cmd ,graphics-canvas) command))
+                  ((equal 1 (aref command 0))
+                   (setf (graphics-canvas-pen-size-cmd ,graphics-canvas) command))
+                  ((equal 2 (aref command 0))
+                   (setf (graphics-canvas-pen-font-cmd ,graphics-canvas) command))))))))
 
 (defun redisplay-graphics-sheet (gs graphics-screen-box)
   (with-graphics-vars-bound ((screen-obj-actual-obj graphics-screen-box))

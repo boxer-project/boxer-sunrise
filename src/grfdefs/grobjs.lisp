@@ -92,8 +92,15 @@
 (defclass button
   (graphics-object)
   ((shape      :initform nil
-    :documentation "This is a special-value-box-interface vector. The value is a graphics-command-list, the slot
-    is this shape slot, and the update function in the 5th vector position is shape-box-updater.")))
+    :documentation
+    "This is a special-value-box-interface vector. The value is a graphics-command-list, the slot
+    is this shape slot, and the update function in the 5th vector position is shape-box-updater.
+
+    At the moment, users can update a shape with primitives change, change-graphics, and set-shape.
+    These have some slightly odd edge cases. See the following locations for where this happens.
+    - gcmeth:          defmethod set-shape
+    - recursive-prims: defrecursive-funcall-primitive update-shape
+    - grprim3:         defboxer-primitive change-graphics")))
 
 ;;;; This has the capability to draw lines when it moves
 

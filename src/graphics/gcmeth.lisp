@@ -157,37 +157,56 @@ Modification History (most recent at top)
     (queue-editor-object-for-mutation bi)))
 
 
-(defmethod set-shape ((self button) shape-box &optional dont-update-box)
+;; 2023-07-07 sgithens This has been updated to change both the shape slot and the graphics
+;; of the containing shape box. The sprite-box? and virtual-copy? options below may still
+;; need updates.
+(defmethod set-shape ((self button) new-shape-box &optional dont-update-box)
   (let* ((shape-slot (slot-value self 'shape))
-         (shape (box-interface-value shape-slot)))
-    (cond ((sprite-box? shape-box)
+         (shape     (box-interface-value shape-slot)) ;; This is our graphics list we're updating in the shape box
+         (shape-box (box-interface-box shape-slot))
+         (new-extents nil))
+
+    (clear-box shape-box)
+
+    (cond ((sprite-box? new-shape-box)
            ;; just copy the sprite's shape into the current shape
-           (dub-graphics-list (shape (slot-value shape-box
+           (dub-graphics-list (shape (slot-value new-shape-box
                                                  'associated-turtle))
                               shape :replace))
-      ((and (virtual-copy? shape-box)
-            (fast-vc-has-sprite? shape-box))
+      ((and (virtual-copy? new-shape-box)
+            (fast-vc-has-sprite? new-shape-box))
        ;; just copy the sprite's shape into the current shape
-       (dub-graphics-list (shape (getf (vc-graphics shape-box) 'turtle))
+       (dub-graphics-list (shape (getf (vc-graphics new-shape-box) 'turtle))
                           shape :replace))
       (t
        ;; must be some flavor of graphics box
        ;; need to convert to from window to turtle commands
-       (with-graphics-vars-bound (shape-box)
+       (with-graphics-vars-bound (new-shape-box)
          (clear-graphics-list shape)
+
          (unless (null %bit-array)
-           ;; if the shape-box has a background bitmap, lay that in first
+           ;; if the new-shape-box has a background bitmap, lay that in first
            (sv-append shape (make-boxer-graphics-command-centered-bitmap
                              (new-offscreen-copy %bit-array)
                              0 0 (ogl-pixmap-width %bit-array)
                              (ogl-pixmap-height %bit-array))))
          (do-vector-contents (graphics-command %graphics-list)
            (sv-append shape (allocate-window->boxer-command
-                              graphics-command))))))
+                              graphics-command)))
+
+         (setf new-extents (boxer::graphics-command-list-extents shape))
+
+         (setf (boxer::graphics-sheet-graphics-list (boxer::graphics-info shape-box))
+               shape)
+
+         (setf (boxer::graphics-sheet-draw-wid (boxer::graphics-info shape-box)) (floor (* 2 (+ (abs (nth 0 new-extents)) (abs (nth 2 new-extents))))))
+         (setf (boxer::graphics-sheet-draw-hei (boxer::graphics-info shape-box)) (floor (* 2 (+ (abs (nth 1 new-extents)) (abs (nth 3 new-extents)))))))))
+
     ;; handle any box interface...
-    (when (and (null dont-update-box)
-               (not (null (box-interface-box shape-slot))))
-      (shape-box-updater shape-slot))))
+    ; (when (and (null dont-update-box)
+    ;            (not (null (box-interface-box shape-slot))))
+    ;   (shape-box-updater shape-slot))
+))
 
 
 

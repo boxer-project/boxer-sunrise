@@ -90,15 +90,38 @@
                  t (boxer::reset-turtle-and-return-state turtle)
                  new-graphics-list ':boxer sprites)
                 (boxer::new-shape-preamble turtle new-graphics-list)
+
+                ;; sgithens 2023-06-27 Adjusting sprite sync to get both the graphics command lists
+                ;; on the shape slot, and on the shape box graphics.
+                ;;
+                ;; This is the gc-displ used to render the actual sprites on the turtle...
                 (setf (boxer::box-interface-value shape-slot) new-graphics-list)
+                ;; ... now we also need to get it on to the graphics canvas of the shape
+                ;;     box inside the sprite
+                (boxer::clear-box (boxer::box-interface-box shape-slot))
+                (setf (boxer::graphics-sheet-graphics-list (boxer::graphics-info (boxer::box-interface-box shape-slot)))
+                      new-graphics-list)
+
+                ;; We need to reset the size of the shape graphics box to fit the
+                ;; new design
+                ;;(set-fixed-size (boxer::box-interface-box shape-slot) )
+
                 (unless (null shape-box)
                   (recursive-funcall-invoke
                    (convert-data-to-function shape-box)))))))))
   :AFTER
   ;; we will make it in error to do TELL JOE... inside shapes.
   (let* ((sprites (boxer::get-sprites))
-        (turtle (slot-value sprites 'boxer::graphics-info)) ;'boxer::associated-turtle))
-        (assoc-graphics-box (slot-value turtle 'boxer::assoc-graphics-box)))
+         (turtle (slot-value sprites 'boxer::graphics-info)) ;'boxer::associated-turtle))
+         (assoc-graphics-box (slot-value turtle 'boxer::assoc-graphics-box))
+         (shape-slot (slot-value turtle 'boxer::shape))
+         (shape-box (boxer::box-interface-box shape-slot))
+         (shape-graphics-list (boxer::graphics-sheet-graphics-list (boxer::graphics-info shape-box)))
+         (new-extents (boxer::graphics-command-list-extents shape-graphics-list)))
+
+    (setf (boxer::graphics-sheet-draw-wid (boxer::graphics-info shape-box)) (floor (* 2 (+ (abs (nth 0 new-extents)) (abs (nth 2 new-extents))))))
+    (setf (boxer::graphics-sheet-draw-hei (boxer::graphics-info shape-box)) (floor (* 2 (+ (abs (nth 1 new-extents)) (abs (nth 3 new-extents))))))
+
     ;; no need to check for a null sprite since we did it in the :BEFORE clause
     (setq boxer::%learning-shape-graphics-list nil)
     (unwind-protect
