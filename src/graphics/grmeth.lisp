@@ -415,6 +415,26 @@ Modification History (most recent at top)
 
 ;;;; Intersection Routines
 
+(defun graphics-command-list-extents (gc-displ)
+  "Takes a graphics-command-list and calculates the extents of all the drawing operations,
+   returning a list with the min/max values as floats in the order: '(min-x min-y max-x max-y)"
+  (let ((min-x 0)
+        (min-y 0)
+        (max-x 0)
+        (max-y 0))
+    (with-graphics-state-bound
+        (do-vector-contents (gc gc-displ)
+          (multiple-value-bind (gc-min-x gc-min-y gc-max-x gc-max-y
+                                         state-change?)
+                               (graphics-command-extents gc)
+            (unless state-change?
+              (setq min-x (min gc-min-x min-x)
+                    min-y (min gc-min-y min-y)
+                    max-x (max gc-max-x max-x)
+                    max-y (max gc-max-y max-y))))))
+
+    (list min-x min-y max-x max-y)))
+
 (defun turtle-window-extents (turtle &optional (x 0) (y 0) (translate? t))
   "In progress replacement for update-turtle-window-extents that keeps things in
    regular boxer gc coordinates. Returns a list of '(min-x min-y max-x max-y)."
@@ -640,14 +660,9 @@ CLOSED for renovations until I fix the string/font situation
                          (- %drawing-half-height (absolute-y-position self)) 0.0)))
           (rot-mat (3d-matrices:nmrotate
                        (3d-matrices:meye 4) 3d-vectors:+vz+
-                       ahead-rad
-                      ;;  (- ahead-rad (/ pi 2))
-                       ))
+                       ahead-rad))
           (scale-mat (3d-matrices:nmscale (3d-matrices:meye 4) (3d-vectors:vec asize asize 0.0)))
-          (final-mat (3d-matrices:marr4 (3d-matrices:m* trans-mat rot-mat scale-mat)))
-          )
-      ; (format t "~%draw button: ahead: ~A  asize: ~A abs-x-pos: ~A abs-y-pos: ~A" ahead asize
-        ; (absolute-x-position self) (absolute-y-position self))
+          (final-mat (3d-matrices:marr4 (3d-matrices:m* trans-mat rot-mat scale-mat))))
 
       (setf (boxgl-device-model-matrix bw::*boxgl-device*) final-mat)
       (update-matrices-ubo bw::*boxgl-device*)

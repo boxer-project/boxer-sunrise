@@ -17,27 +17,30 @@
 ;;;; 63   BOXER-CIRCLE                                 (X Y RADIUS)
 
 (defmacro boxer-playback-graphics-list (gl &key (start 0) (graphics-canvas nil))
+  "In progress work to move all the boxer graphics to turtle coordinates. Will get trued
+   up with the defboxer-graphics-handler macros soon."
   `(with-graphics-state (,gl t)
-       (do-vector-contents (command ,gl :start ,start)
-        (format t "~%New Boxer Playback: ~A" command)
-        (cond ((eq (aref command 0) 33)
-               (draw-boxer-change-pen-width command))
-              ((eq (aref command 0) 35)
-               (draw-boxer-line-segment command))
-              ((eq (aref command 0) 36)
-               (draw-boxer-change-graphics-color command))
-              ((eq (aref command 0) 39)
-               (draw-boxer-centered-string command))
-              ((eq (aref command 0) 42)
-               (draw-boxer-centered-rectangle command))
-              ((eq (aref command 0) 47)
-               (draw-boxer-centered-bitmap command))
-              ((eq (aref command 0) 60)
-               (draw-boxer-filled-ellipse command))
-              (t
-               nil))
+       (let ((com (aref command 0)))
+         (do-vector-contents (command ,gl :start ,start)
+           (format t "~%New Boxer Playback: ~A" command)
+           (cond ((eq com 33)
+                  (draw-boxer-change-pen-width command))
+                 ((eq com 35)
+                  (draw-boxer-line-segment command))
+                 ((eq com 36)
+                  (draw-boxer-change-graphics-color command))
+                 ((eq com 39)
+                  (draw-boxer-centered-string command))
+                 ((eq com 42)
+                  (draw-boxer-centered-rectangle command))
+                 ((eq com 47)
+                  (draw-boxer-centered-bitmap command))
+                 ((eq com 60)
+                  (draw-boxer-filled-ellipse command))
+                 (t
+                  nil))
         ;;  (process-graphics-command-marker command)
-)))
+))))
 
 ;; 33   BOXER-CHANGE-PEN-WIDTH              (NEW-WIDTH)
 
@@ -48,7 +51,8 @@
 (defun draw-boxer-line-segment (com)
   "Takes a boxer command starting with 35:
     ex #(35 -0.5 -0.5 0.0 0.5)"
-  (draw-line (aref com 1) (aref com 2) (aref com 3) (aref com 4)))
+  ;; The y-axis needs to be flipped
+  (draw-line (aref com 1) (* -1 (aref com 2)) (aref com 3) (* -1 (aref com 4))))
 
 ;; 36   BOXER-CHANGE-GRAPHICS-COLOR                  (NEW-COLOR)
 (defun draw-boxer-change-graphics-color (com)
@@ -65,9 +69,11 @@
 
 ;; 42   BOXER-CENTERED-RECTANGLE       (X Y WIDTH HEIGHT)
 (defun draw-boxer-centered-rectangle (com)
-  (draw-rectangle (aref com 3) (aref com 4)
-    (- (aref com 1) (/ (aref com 3) 2))
-    (- (aref com 2) (/ (aref com 4) 2))))
+  (let ((x (aref com 1)) (y (aref com 2)) (w (aref com 3)) (h (aref com 4)))
+    (draw-rectangle w h
+                   (- x (/ w 2))
+                   ;; The y axis is flipped
+                   (* -1 (+ y (/ h 2))))))
 
 ;; 47   BOXER-CENTERED-BITMAP          (BITMAP X Y WIDTH HEIGHT)
 (defun draw-boxer-centered-bitmap (com)
