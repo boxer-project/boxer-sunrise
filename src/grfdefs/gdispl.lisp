@@ -152,7 +152,7 @@ Modification History (most recent at the top)
 ;;;; 9    RIGHT-STRING                                 (X Y STRING)
 ;;;; 10   CENTERED-RECTANGLE                           (X Y WIDTH HEIGHT)
 ;;;; 11   DOT                                          (X Y)
-;;;; 12
+;;;; 12   HOLLOW-RECTANGLE ???                         (X Y WIDTH HEIGHT)
 ;;;; 13
 ;;;; 14
 ;;;; 15   CENTERED-BITMAP                             (BITMAP X Y WIDTH HEIGHT)
@@ -166,8 +166,8 @@ Modification History (most recent at the top)
 ;;;; 23
 ;;;; 24
 ;;;; 25
-;;;; 26
-;;;; 27
+;;;; 26   WEDGE ???                                    (X Y RADIUS START-ANGLE SWEEP-ANGLE)
+;;;; 27   ARC ???                                      (X Y RADIUS START-ANGLE SWEEP-ANGLE)
 ;;;; 28   FILLED-ELLIPSE                               (X Y WIDTH HEIGHT)
 ;;;; 29   ELLIPSE                                      (X Y WIDTH HEIGHT)
 ;;;; 30   FILLED-CIRCLE                                (X Y RADIUS)
@@ -1567,28 +1567,6 @@ Modification History (most recent at the top)
 
 ;;; Graphics State Changes
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-(defgraphics-state-change (change-alu 0) (new-alu)
-  :dump-form
-  (let ((existing-alu (svref& command 1)))
-    (unwind-protect
-    (progn (setf (svref& command 1) (canonicalize-file-alu existing-alu))
-            (dump-boxer-thing command stream))
-    (setf (svref& command 1) existing-alu)))
-  :load-form
-  (setf (svref& command 1) (reallocate-file-alu (svref& command 1)))
-  :sprite-command
-  (list (case new-alu
-          (#.alu-xor 'bu::penreverse)
-          ((#.alu-ior #.alu-seta) 'bu::pendown)
-          ((#.alu-andca #.alu-setz) 'bu::penerase)
-          (t (warn "Untranslatable alu ~A, assuming PENDOWN" new-alu)
-            'bu::pendown)))
-  :body
-  (unless (=& new-alu *graphics-state-current-alu*)
-    (setq *graphics-state-current-alu* new-alu)))
-)
-
 (defun canonicalize-file-alu (alu)
   (case alu
     (#.alu-andca 'alu-andca)
@@ -1609,29 +1587,6 @@ Modification History (most recent at the top)
     #+mcl (6 alu-xor) #+mcl (5 alu-seta)
     (otherwise alu)))
 
-(defgraphics-translator (change-alu) (trans-x trans-y cos-scale sin-scale
-                                              scale)
-  ())
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-           (defgraphics-state-change (change-pen-width 1) (new-width)
-             :extents-form (progn (setq *graphics-state-current-pen-width* new-width)
-                                  ;; need to update because other graphics command
-                                  ;; extent forms rely on an accurate value for pen-width
-                                  (values 0 0 0 0 t))
-             :sprite-command
-             (list 'bu::set-pen-width new-width)
-             :body
-             (unless (=& new-width *graphics-state-current-pen-width*)
-               (setq *graphics-state-current-pen-width* new-width)
-               (%set-pen-size new-width)))
-)
-
-(defgraphics-translator (change-pen-width) (trans-x trans-y
-                                                    cos-scale sin-scale
-                                                    scale)
-  ())
-
 (defun make-font-from-file-value (file-font)
   (cond ((and (typep file-font 'fixnum) (<=& 0 file-font 7))
          ;; compatibility with old files...
@@ -1649,36 +1604,6 @@ Modification History (most recent at the top)
       ;; If the number isn't between 1 and 7 we'll return this
       '("Arial" 10 :bold))
     (t (make-boxer-font file-font))))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-(defgraphics-state-change (change-graphics-font 2) (new-font-no)
-  :extents-form (progn (setq *graphics-state-current-font-no* new-font-no)
-                      ;; need to update because other graphics command
-                      ;; extent forms rely on an accurate value for pen-width
-                      (values 0 0 0 0 t))
-  :dump-form (cond ((>=& *version-number* 12)
-                    ;; guts of a dump-array
-                    (enter-table 'fake-array)
-                    (write-file-word bin-op-initialize-and-return-array stream)
-                    (dump-array-1 stream 2 nil) (dump-boxer-thing 2 stream)
-                    (dump-boxer-thing (svref& command 0) stream)
-                    (dump-font (svref& command 1) stream))
-              (t (dump-boxer-thing command stream)))
-  :load-form (when (>=& *version-number* 12)
-              (setf (svref& command 1)
-                    (make-font-from-file-value (svref& command 1))))
-  :sprite-command
-  (list 'bu::set-type-font new-font-no)
-  :body
-  (unless (=& new-font-no *graphics-state-current-font-no*)
-    ;; have to check for possible font
-    (setq *graphics-state-current-font-no* new-font-no)))
-)
-
-(defgraphics-translator (change-graphics-font) (trans-x trans-y
-                                                        cos-scale sin-scale
-                                                        scale)
-  ())
 
 ;; check for foreground, background and predefined colors
 (defun canonicalize-pixel-color (pixel &optional box)
@@ -1702,36 +1627,6 @@ Modification History (most recent at the top)
              (list   (if (> (length color) 3)
                        (%make-color (car color) (cadr color)(caddr color)(cadddr color))
                        (%make-color (car color) (cadr color) (caddr color))))))
-
-;; should opengl use :deallocate-form to free color memory ?  is color in use elsewhere ?
-(eval-when (:compile-toplevel :load-toplevel :execute)
-           (defgraphics-state-change (change-graphics-color 4) (new-color)
-             :dump-form
-             (let ((existing-pixel (svref& command 1)))
-               (unwind-protect
-                (progn (setf (svref& command 1)
-                             (if (>=& *version-number* 12)
-                               (pixel-dump-value existing-pixel)
-                               (canonicalize-pixel-color existing-pixel)))
-                       (dump-boxer-thing command stream))
-                (setf (svref& command 1) existing-pixel)))
-             :load-form
-             (setf (svref& command 1)
-                   (reallocate-pixel-color (svref& command 1)))
-             :sprite-command
-             (list 'bu::set-pen-color new-color)
-             :body
-             (unless (color= new-color *graphics-state-current-pen-color*)
-               (setq *graphics-state-current-pen-color* new-color)
-               (%set-pen-color new-color)))
-)
-
-(defgraphics-translator (change-graphics-color) (trans-x trans-y
-                                                         cos-scale sin-scale
-                                                         scale)
-  ())
-
-
 
 (defun sprite-commands-for-new-position (new-x new-y)
   (list 'bu::penup 'bu::setxy new-x new-y 'bu::pendown))

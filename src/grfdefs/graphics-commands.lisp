@@ -18,11 +18,83 @@
 ;;;;
 (in-package :boxer)
 
-;;;; Commands that draw
+;;; 0 Change ALU
 
-;;; Lines
+(defgraphics-state-change (change-alu 0) (new-alu)
+  :dump-form
+  (let ((existing-alu (svref& command 1)))
+    (unwind-protect
+    (progn (setf (svref& command 1) (canonicalize-file-alu existing-alu))
+            (dump-boxer-thing command stream))
+    (setf (svref& command 1) existing-alu)))
+  :load-form
+  (setf (svref& command 1) (reallocate-file-alu (svref& command 1)))
+  :sprite-command
+  (list (case new-alu
+          (#.alu-xor 'bu::penreverse)
+          ((#.alu-ior #.alu-seta) 'bu::pendown)
+          ((#.alu-andca #.alu-setz) 'bu::penerase)
+          (t (warn "Untranslatable alu ~A, assuming PENDOWN" new-alu)
+            'bu::pendown)))
+  :body
+  (unless (=& new-alu *graphics-state-current-alu*)
+    (setq *graphics-state-current-alu* new-alu)))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
+(defgraphics-translator (change-alu) (trans-x trans-y cos-scale sin-scale
+                                              scale)
+  ())
+
+;;; 1 Change Pen Width
+
+(defgraphics-state-change (change-pen-width 1) (new-width)
+  :extents-form (progn (setq *graphics-state-current-pen-width* new-width)
+                       ;; need to update because other graphics command
+                       ;; extent forms rely on an accurate value for pen-width
+                       (values 0 0 0 0 t))
+  :sprite-command
+  (list 'bu::set-pen-width new-width)
+  :body
+  (unless (=& new-width *graphics-state-current-pen-width*)
+    (setq *graphics-state-current-pen-width* new-width)
+    (%set-pen-size new-width)))
+
+(defgraphics-translator (change-pen-width) (trans-x trans-y
+                                                    cos-scale sin-scale
+                                                    scale)
+  ())
+
+;;; 2 Change Graphics Font
+
+(defgraphics-state-change (change-graphics-font 2) (new-font-no)
+  :extents-form (progn (setq *graphics-state-current-font-no* new-font-no)
+                      ;; need to update because other graphics command
+                      ;; extent forms rely on an accurate value for pen-width
+                      (values 0 0 0 0 t))
+  :dump-form (cond ((>=& *version-number* 12)
+                    ;; guts of a dump-array
+                    (enter-table 'fake-array)
+                    (write-file-word bin-op-initialize-and-return-array stream)
+                    (dump-array-1 stream 2 nil) (dump-boxer-thing 2 stream)
+                    (dump-boxer-thing (svref& command 0) stream)
+                    (dump-font (svref& command 1) stream))
+              (t (dump-boxer-thing command stream)))
+  :load-form (when (>=& *version-number* 12)
+              (setf (svref& command 1)
+                    (make-font-from-file-value (svref& command 1))))
+  :sprite-command
+  (list 'bu::set-type-font new-font-no)
+  :body
+  (unless (=& new-font-no *graphics-state-current-font-no*)
+    ;; have to check for possible font
+    (setq *graphics-state-current-font-no* new-font-no)))
+
+(defgraphics-translator (change-graphics-font) (trans-x trans-y
+                                                        cos-scale sin-scale
+                                                        scale)
+  ())
+
+;;; 3 Line Segment
+
 (defstandard-graphics-handlers (line-segment 3)
   :COMMAND-ARGS (x0 y0 x1 y1)
   :EXTENTS-FORM
@@ -79,15 +151,36 @@
   (y1 (fix-array-coordinate-y
         (+ trans-y (- (* cos-scale y1) (* sin-scale x1))))))
   )
-) ;eval-when
 
+;;; 4 Change Graphics Color
 
-;;; opcode 4 is used by change-color
+(defgraphics-state-change (change-graphics-color 4) (new-color)
+             :dump-form
+             (let ((existing-pixel (svref& command 1)))
+               (unwind-protect
+                (progn (setf (svref& command 1)
+                             (if (>=& *version-number* 12)
+                               (pixel-dump-value existing-pixel)
+                               (canonicalize-pixel-color existing-pixel)))
+                       (dump-boxer-thing command stream))
+                (setf (svref& command 1) existing-pixel)))
+             :load-form
+             (setf (svref& command 1)
+                   (reallocate-pixel-color (svref& command 1)))
+             :sprite-command
+             (list 'bu::set-pen-color new-color)
+             :body
+             (unless (color= new-color *graphics-state-current-pen-color*)
+               (setq *graphics-state-current-pen-color* new-color)
+               (%set-pen-color new-color)))
 
+(defgraphics-translator (change-graphics-color) (trans-x trans-y
+                                                         cos-scale sin-scale
+                                                         scale)
+  ())
 
-;;; Strings
+;;; 7 Centered String
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
 (defstandard-graphics-handlers (centered-string 7)
   :COMMAND-ARGS (x y string)
   :EXTENTS-FORM
@@ -169,6 +262,8 @@
   (y (fix-array-coordinate-y
       (+ trans-y (- (* cos-scale y) (* sin-scale x)))))))
 
+;;; 8 Left String
+
 (defstandard-graphics-handlers (left-string 8)
   :COMMAND-ARGS (x y string)
   :EXTENTS-FORM
@@ -227,6 +322,8 @@
       (+ trans-x (+ (* cos-scale x) (* sin-scale y)))))
   (y (fix-array-coordinate-y
       (+ trans-y (- (* cos-scale y) (* sin-scale x)))))))
+
+;;; 9 Right String
 
 (defstandard-graphics-handlers (right-string 9)
   :COMMAND-ARGS (x y string)
@@ -293,7 +390,7 @@
       (+ trans-y (- (* cos-scale y) (* sin-scale x)))))))
 
 
-;;; Rectangles
+;;; 10 Centered Rectangle
 
 (defstandard-graphics-handlers (centered-rectangle 10)
   :COMMAND-ARGS (x y width height)
@@ -356,6 +453,7 @@
   (width  (fixr (* width  scale)))
   (height (fixr (* height scale)))))
 
+;;; 11 Dot
 
 ;; maybe this should be a circle ? Need to check relative speeds
 ;; also, should probably use the pen-width ?
@@ -414,6 +512,8 @@
       (+ trans-x (+ (* cos-scale x) (* sin-scale y)))))
   (y (fix-array-coordinate-y
       (+ trans-y (- (* cos-scale y) (* sin-scale x)))))))
+
+;;; 12 Hollow Rectangle
 
 (defstandard-graphics-handlers (hollow-rectangle 12)
   :COMMAND-ARGS (x y width height)
@@ -482,6 +582,8 @@
   (width  (fixr (* width  scale)))
   (height (fixr (* height scale)))))
 
+;;; 15 Centered Bitmap
+
 (defstandard-graphics-handlers (centered-bitmap 15)
   :COMMAND-ARGS (bitmap x y width height)
   :EXTENTS-FORM
@@ -549,11 +651,9 @@
   ;; don't scale bitmaps yet.  Easy to do on the mac harder to do on
   ;; other platforms, maybe change this later
   ))
-) ;eval-when for a large block of defstandard-graphics-handlers...
 
-;;; Arcs, Ellipses, and Circles
+;;; 26 Wedge
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
 (defstandard-graphics-handlers (wedge 26)
   :COMMAND-ARGS (x y radius start-angle sweep-angle)
   :EXTENTS-FORM ;leave as circle for now, get smarter about this later
@@ -600,6 +700,8 @@
       (+ trans-y (- (* cos-scale y) (* sin-scale x)))))
   (radius (fixr (* radius scale)))))
 
+;;; 27 Arc
+
 (defstandard-graphics-handlers (arc 27)
   :COMMAND-ARGS (x y radius start-angle sweep-angle)
   :EXTENTS-FORM  ;leave as circle for now, get smarter about this later
@@ -645,6 +747,8 @@
   (y (fix-array-coordinate-y
       (+ trans-y (- (* cos-scale y) (* sin-scale x)))))
   (radius (fixr (* radius scale)))))
+
+;;; 28 Filled Ellipse
 
 (defstandard-graphics-handlers (filled-ellipse 28)
   :COMMAND-ARGS (x y width height)
@@ -695,6 +799,8 @@
   (width  (fixr (* width  scale)))
   (height (fixr (* height scale)))))
 
+;;; 29 Ellipse
+
 (defstandard-graphics-handlers (ellipse 29)
   :COMMAND-ARGS (x y width height)
   :EXTENTS-FORM
@@ -744,6 +850,8 @@
   (width  (fixr (* width  scale)))
   (height (fixr (* height scale)))))
 
+;;; 30 Filled Circle
+
 (defstandard-graphics-handlers (filled-circle 30)
   :COMMAND-ARGS (x y radius)
   :EXTENTS-FORM
@@ -790,6 +898,8 @@
       (+ trans-y (- (* cos-scale y) (* sin-scale x)))))
   (radius (fixr (* radius scale)))))
 
+;;; 31 Circle
+
 (defstandard-graphics-handlers (circle 31)
   :COMMAND-ARGS (x y radius)
   :EXTENTS-FORM
@@ -834,4 +944,3 @@
   (y (fix-array-coordinate-y
       (+ trans-y (- (* cos-scale y) (* sin-scale x)))))
   (radius (fixr (* radius scale)))))
-) ;eval-when for another large block of defstandard-graphics-handlers...
