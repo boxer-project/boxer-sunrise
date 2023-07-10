@@ -294,13 +294,14 @@
 (defun get-background-color (box)
   (let ((color-rgb-hex (get-css-style box :background-color)))
     (if color-rgb-hex
-      (bw::ogl-convert-color (rgb-hex->rgb color-rgb-hex))
+      (rgb-hex->rgb color-rgb-hex)
       nil)))
 
 (defun get-border-color (box)
+
   (let ((color-rgb-hex (get-css-style box :border-color)))
     (if color-rgb-hex
-      (bw::ogl-convert-color (rgb-hex->rgb color-rgb-hex))
+      (rgb-hex->rgb color-rgb-hex)
       *default-border-color*)))
 
 ;; hook for colored borders (fold transparency in here too ? (via line stipple))

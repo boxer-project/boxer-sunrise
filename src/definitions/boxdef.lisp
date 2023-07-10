@@ -593,7 +593,7 @@ Modification History (most recent at top)
 
 ;; a draw-low-xxx variable, defined here to suppress warnings in the following
 ;; Defstruct
-(defvar *foreground-color*)
+(defvar *foreground-color* #(:rgb 0.0 0.0 0.0 1.0))
 
 (defstruct (boxer-font-descriptor (:conc-name bfd-)
                                   (:predicate bfd?)

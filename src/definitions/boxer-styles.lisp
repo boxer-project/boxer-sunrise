@@ -47,7 +47,8 @@
   (let ((hexstring (aref color 1)))
     `#(:rgb ,(/ (parse-integer (subseq hexstring 1 3) :radix 16) 255)
             ,(/ (parse-integer (subseq hexstring 3 5) :radix 16) 255)
-            ,(/ (parse-integer (subseq hexstring 5 7) :radix 16) 255))))
+            ,(/ (parse-integer (subseq hexstring 5 7) :radix 16) 255)
+            1.0)))
 
 (defun rgb->rgb-hex (rgb-color)
   (let* ((red (floor (* 255 (aref rgb-color 1))))

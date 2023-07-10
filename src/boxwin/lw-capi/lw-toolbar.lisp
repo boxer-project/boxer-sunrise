@@ -33,8 +33,7 @@
              :title-adjust :center
              :selection-callback #'(lambda (color interface)
                                      (if color
-                                       (let* ((hex-color (boxer::ogl-color-to-css-hex (symbol-value color)))
-                                               (rgb-hex-color `#(:rgb-hex ,hex-color)))
+                                       (let* ((rgb-hex-color (boxer::rgb->rgb-hex (symbol-value color))))
                                          (boxer::set-css-style (boxer::box-point-is-in) :background-color rgb-hex-color))
                                        (boxer::remove-css-style (boxer::box-point-is-in) :background-color))
                                      (boxer::repaint)))
@@ -48,8 +47,7 @@
              :title-adjust :center
              :selection-callback #'(lambda (color interface)
                                      (if color
-                                       (let* ((hex-color (boxer::ogl-color-to-css-hex (symbol-value color)))
-                                               (rgb-hex-color `#(:rgb-hex ,hex-color)))
+                                       (let* ((rgb-hex-color (boxer::rgb->rgb-hex (symbol-value color))))
                                          (boxer::set-css-style (boxer::box-point-is-in) :border-color rgb-hex-color))
                                        (boxer::remove-css-style (boxer::box-point-is-in) :border-color))
                                      (boxer::repaint)))))

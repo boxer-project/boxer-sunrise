@@ -24,11 +24,6 @@
   ;; canvas ignore
 
   (unless *boxer-pane-initialized*
-    (opengl:rendering-on (*boxer-pane*)
-                (boxer::initialize-colors)
-                ;; do other OpenGL inits...
-                (setq *blinker-color* (make-ogl-color .3 .3 .9 .5)))
-
     ;; modernGL inits
     (opengl:rendering-on (*boxer-pane*)
       (gl:enable :scissor-test)

@@ -149,68 +149,8 @@ Modification History (most recent at the top)
       (setf total (+ total (ogl-char-width i))))
     total))
 
-
-;;;; COLORS
-
-;; we'll use opengl vectors as the primary color object, this allows us to
-;; bind and pass them around as they need to be in the upper level boxer code
-
-(defvar *ogl-color-counter* 0)
-(defvar *ogl-color-freed* 0)
-
-(defun make-ogl-color (r g b &optional (alpha 1.0))
-  (incf *ogl-color-counter*)
-  (box::with-stack-list (color (coerce r 'single-float)
-                               (coerce g 'single-float)
-                               (coerce b 'single-float)
-                               (coerce alpha 'single-float))
-                        (opengl::make-gl-vector :float 4 :contents color)))
-
-(defun %make-ogl-color ()
-  (incf *ogl-color-counter*)
-  (opengl::make-gl-vector :float 4))
-
-(defun free-ogl-color (color)
-  (incf *ogl-color-freed*)
-  (opengl::free-gl-vector color))
-
-(defun ogl-convert-color (colorspec)
-  "Takes an RGB spec vector and returns an opengl 4f vector with RGBA values, with alpha at 1.0
-  Colorspec is an RGB vector like this (for orange): #(:RGB 1.0 0.6470585 0.0)"
-  (make-ogl-color (svref colorspec 1)
-                  (svref colorspec 2)
-                  (svref colorspec 3)))
-
-
-(defun ogl-color-red   (color) (opengl:gl-vector-aref color 0))
-(defun ogl-color-green (color) (opengl:gl-vector-aref color 1))
-(defun ogl-color-blue  (color) (opengl:gl-vector-aref color 2))
-(defun ogl-color-alpha (color) (opengl:gl-vector-aref color 3))
-
-(defun ogl-color->rgb (ogl-color)
-  "Takes an openGL vector representing an RGBA color and returns a five part
-  vector as: #(:rgb 1.0 1.0 1.0 1.0"
-  (let ((togo (make-array '(5))))
-    (setf (aref togo 0) :rgb
-          (aref togo 1) (ogl-color-red ogl-color)
-          (aref togo 2) (ogl-color-green ogl-color)
-          (aref togo 3) (ogl-color-blue ogl-color)
-          (aref togo 4) (ogl-color-alpha ogl-color))
-    togo))
-
 (defun float-precision= (a b &optional (precision 0.001))
   (if (zerop a) (zerop b)  (< (abs (/ (- a b) a)) precision)))
-
-(defun ogl-color= (c1 c2)
-  "Compares an ogl-color to one another to see if they are the same.
-  For all practical purposes we're using the usual color range of 0 - 255 (a bit larger than that),
-  so only that portion of a float will be considered, regardless of how
-  many trailing decimal points each RGB float component as it has."
-  (and (float-precision= (opengl:gl-vector-aref c1 0) (opengl:gl-vector-aref c2 0))
-       (float-precision= (opengl:gl-vector-aref c1 1) (opengl:gl-vector-aref c2 1))
-       (float-precision= (opengl:gl-vector-aref c1 2) (opengl:gl-vector-aref c2 2))
-       ;; compare alpha values ?
-       ))
 
 (defmacro maintaining-ogl-color (&body body)
   (let ((old-color (gensym)))
@@ -219,17 +159,6 @@ Modification History (most recent at the top)
         (progn . ,body)
           (unless (equalp ,old-color (boxer::boxgl-device-pen-color bw::*boxgl-device*))
             (setf (boxer::boxgl-device-pen-color bw::*boxgl-device*) ,old-color))))))
-
-(defun print-color (ogl-color)
-  (format t "<OGL-Color R:~3F G:~3F B:~3F alpha:~3F>" (ogl-color-red ogl-color)
-          (ogl-color-green ogl-color) (ogl-color-blue ogl-color)
-          (ogl-color-alpha ogl-color)))
-
-(defun ogl-report (&optional clear?)
-  (format t "~&~D OGL colors allocated, ~D freed, ~D leaked"
-          bw::*ogl-color-counter* bw::*ogl-color-freed*
-          (- bw::*ogl-color-counter* bw::*ogl-color-freed*))
-  (when clear? (setq bw::*ogl-color-counter* 0 bw::*ogl-color-freed* 0)))
 
 (defun ogl-reshape (width height)
   (setf (boxer::boxgl-device-ortho-matrix bw::*boxgl-device*)

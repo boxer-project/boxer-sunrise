@@ -120,52 +120,26 @@
 (defvar *boxer-pane* nil
   "The pane which contains the actual boxer screen editor.")
 
-;;colors, these get initialized AFTER the boxer window has been created
-;(defvar *foreground-color*) ; defined in boxdef
-(defvar *background-color*)
 
-;; here for bootstrapping purposes, these might get changed later
-;; by initialize-colors which actually looks at the window
-(setq *foreground-color* (bw::make-ogl-color 0.0 0.0 0.0)
-      *background-color* (bw::make-ogl-color 1.0 1.0 1.0))
+(defvar *black*   #(:RGB 0.0 0.0 0.0 1.0))
+(defvar *white*   #(:RGB 1.0 1.0 1.0 1.0))
+(defvar *red*     #(:RGB 1.0 0.0 0.0 1.0))
+(defvar *green*   #(:RGB 0.0 1.0 0.0 1.0))
+(defvar *blue*    #(:RGB 0.0 0.0 1.0 1.0))
+(defvar *yellow*  #(:RGB 1.0 1.0 0.0 1.0))
+(defvar *magenta* #(:RGB 1.0 0.0 1.0 1.0))
+(defvar *cyan*    #(:RGB 0.0 1.0 1.0 1.0))
+(defvar *orange*  #(:RGB 1.0 0.6470585 0.0 1.0))
+(defvar *purple*  #(:RGB 0.627451 0.1254902 0.941175 1.0))
+(defvar *gray*    #(:RGB 0.752941 0.752941 0.752941 1.0))
 
-(defvar *black*)
-(defvar *white*)
-(defvar *red*)
-(defvar *green*)
-(defvar *blue*)
-(defvar *yellow*)
-(defvar *magenta*)
-(defvar *cyan*)
-(defvar *orange*)
-(defvar *purple*)
-(defvar *gray*)
-(defvar *closet-color*)
 
 ;; color variables that boxer uses
-(defvar *default-border-color*) ;
-(defvar *border-gui-color*)  ; color of temporary interface elements when mouse is held
-
-
-(defun initialize-colors ()
-  "This must be called AFTER *boxer-pane* has been created, as it depends on several
-some opengl features to be available first."
-  (setq *black*   (bw::ogl-convert-color #(:RGB 0.0 0.0 0.0))
-        *white*   (bw::ogl-convert-color #(:RGB 1.0 1.0 1.0))
-        *red*     (bw::ogl-convert-color #(:RGB 1.0 0.0 0.0))
-        *green*   (bw::ogl-convert-color #(:RGB 0.0 1.0 0.0))
-        *blue*    (bw::ogl-convert-color #(:RGB 0.0 0.0 1.0))
-        *yellow*  (bw::ogl-convert-color #(:RGB 1.0 1.0 0.0))
-        *magenta* (bw::ogl-convert-color #(:RGB 1.0 0.0 1.0))
-        *cyan*    (bw::ogl-convert-color #(:RGB 0.0 1.0 1.0))
-        *orange*  (bw::ogl-convert-color #(:RGB 1.0 0.6470585 0.0))
-        *purple*  (bw::ogl-convert-color #(:RGB 0.627451 0.1254902 0.941175))
-        *gray*    (bw::ogl-convert-color #(:RGB 0.752941 0.752941 0.752941)))
-  (setq *foreground-color* *black*
-        *background-color* *white*
-        *default-border-color* *black*
-        *closet-color* (bw::make-ogl-color .94 .94 .97)
-        *border-gui-color* *default-border-color*))
+(defvar *background-color* *white*)
+;; *foreground-color* is in boxdef.lisp
+(defvar *default-border-color* *black*) ;
+(defvar *border-gui-color* *default-border-color*)
+(defvar *closet-color* #(:rgb .94 .94 .97 1.0))
 
 ;;; **** returns pixel value(window system dependent) at windw coords (x,y)
 ;;; see BU::COLOR-AT in grprim3.lisp
@@ -283,9 +257,9 @@ some opengl features to be available first."
                   %clip-rig %clip-bot)))
 
 (defun clear-window (w)
-  (gl::clear-color (bw::ogl-color-red *background-color*)
-                   (bw::ogl-color-green *background-color*)
-                   (bw::ogl-color-blue *background-color*)
+  (gl::clear-color (aref *background-color* 1)
+                   (aref *background-color* 2)
+                   (aref *background-color* 3)
                    0.0)
   (gl:clear :color-buffer-bit :depth-buffer-bit))
 
@@ -390,16 +364,10 @@ some opengl features to be available first."
   (%make-color-from-100s red green blue (or alpha 100.0)))
 
 (defun %make-color-from-bytes (red green blue &optional (alpha 255))
-  (bw::make-ogl-color (/ red   255.0)
-                      (/ green 255.0)
-                      (/ blue  255.0)
-                      (/ alpha 255.0)))
+  `#(:rgb ,(/ red 255.0) ,(/ green 255.0) ,(/ blue 255.0) ,(/ alpha 255.0)))
 
 (defun %make-color-from-100s (red green blue alpha)
-  (bw::make-ogl-color (/ red   100.0)
-                      (/ green 100.0)
-                      (/ blue  100.0)
-                      (/ alpha 100.0)))
+  `#(:rgb ,(/ red   100.0) ,(/ green 100.0) ,(/ blue  100.0) ,(/ alpha 100.0)))
 
 ;;; neccessary but not sufficient...
 (Defun color? (thing) (typep thing 'opengl::gl-vector))
@@ -407,13 +375,23 @@ some opengl features to be available first."
 ;; we are comparing WIN32::COLORREF's not COLOR:COLOR-SPEC's
 ;; so use WIN32:COLOR= instead of COLOR:COLORS=
 (defun color= (c1 c2)
-  (if (and c1 c2) ; these  can't be nil
-    (bw::ogl-color= c1 c2)))
+  nil ;; sgithens TODO 2023-07-10 Removing ogl-colors
+  ; (if (and c1 c2) ; these  can't be nil
+  ;   (bw::ogl-color= c1 c2))
+    )
 
 (defun %set-pen-color (color)
-  "This expects either an already allocated GL 4 vector that represents a color, or an RGB percentage vector
-  of the form #(:RGB 0.0 0.0 1.0) (for blue)."
-  (cond ((and (vectorp color) (eq :RGB (aref color 0)))
+  "This expects either an already allocated GL 4 vector that represents a color, an RGB percentage vector
+  of the form #(:RGB 0.0 0.0 1.0) (for blue), or a number that corresponds to an unsigned 32-bit integer
+  with the RGBA values."
+  (cond ((integerp color)
+         (setf (boxgl-device-pen-color bw::*boxgl-device*)
+               `#(:rgb ,(/ (ldb (byte 8 0) color) 255)
+                       ,(/ (ldb (byte 8 8) color) 255)
+                       ,(/ (ldb (byte 8 16) color) 255)
+                       1.0) ;; sgithens TODO I'm not sure we support alpha pen colors yet, may need to increment the box file version
+         ))
+        ((and (vectorp color) (eq :RGB (aref color 0)))
         ;  (unless (equalp color (boxgl-device-pen-color bw::*boxgl-device*))
           ; (format *standard-output* "~%Actually different 1 color: ~A ugh: ~A" color (boxgl-device-pen-color bw::*boxgl-device*))
           (setf (boxgl-device-pen-color bw::*boxgl-device*) color)
@@ -441,10 +419,10 @@ some opengl features to be available first."
 (defun pixel-rgb-values (pixel)
   "Returns a list of RGB values for the dumper.
 Should return the values in the boxer 0->100 range (floats are OK)"
-  (list (* (color-red pixel)   100)
-        (* (color-green pixel) 100)
-        (* (color-blue pixel)  100)
-        (* (color-alpha pixel) 100)))
+  (list (* (aref pixel 1)   100)
+        (* (aref pixel 2) 100)
+        (* (aref pixel 3)  100)
+        (* (aref pixel 4) 100)))
 
 ;; new dumper interface...
 ;; leave pixel-rgb-values alone because other (non file) things now depend on it
