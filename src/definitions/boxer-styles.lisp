@@ -25,7 +25,6 @@
 
 (defvar *mouse-shrink-corner--background-color* #(:RGB 1.0 0.9 0.0 1.0))
 
-
 (defvar *solarized-base03* #(:rgb-hex "#002b36"))
 (defvar *solarized-base02* #(:rgb-hex "#073642"))
 (defvar *solarized-base01* #(:rgb-hex "#586e75"))
@@ -42,23 +41,6 @@
 (defvar *solarized-blue* #(:rgb-hex "#268bd2"))
 (defvar *solarized-cyan* #(:rgb-hex "#2aa198"))
 (defvar *solarized-green* #(:rgb-hex "#859900"))
-
-(defun rgb-hex->rgb (color)
-  (let ((hexstring (aref color 1)))
-    `#(:rgb ,(/ (parse-integer (subseq hexstring 1 3) :radix 16) 255)
-            ,(/ (parse-integer (subseq hexstring 3 5) :radix 16) 255)
-            ,(/ (parse-integer (subseq hexstring 5 7) :radix 16) 255)
-            1.0)))
-
-(defun rgb->rgb-hex (rgb-color)
-  (let* ((red (floor (* 255 (aref rgb-color 1))))
-        (green (floor (* 255 (aref rgb-color 2))))
-        (blue (floor (* 255 (aref rgb-color 3))))
-        (hex-string (format nil "#~2,'0x~2,'0x~2,'0x" red green blue)))
-  `#(:rgb-hex ,hex-string)))
-
-(defun rgb-hex->ogl (color)
-  (bw::ogl-convert-color (rgb-hex->rgb color)))
 
 (defun default-light-theme ()
   (setf *background-color* (rgb-hex->ogl #(:rgb-hex "#FFFFFF"))

@@ -8546,6 +8546,38 @@ if it is out of bounds
 ;;;; FILE: draw-low-opengl.lisp
 ;;;;
 
+;; sgithens 2023-07-10 Removing ogl-color stuff
+
+;; Boxer represents colors as RGB triples where each component is
+;; between 0 and 100 inclusively.
+
+;;
+;; use this to convert a boxer RGB component to a window system dependent
+;; color component.  Domain checking should be assumed to occur at a
+;; higher (in boxer proper) level but paranoia is ok too
+;; in CLX,  color component is between 0.0 and 1.0
+;; Mac stores them as 3 concatenated 8-bit fields of an integer
+;; LWWin RGB color spec component is between 0.0 and 1.0 but we pass pixels
+;; instead.
+;; Get pixels from color specs via ogl-convert-color which
+;; Opengl color = gl-vector of 4 floats between 0.0 and 1.0
+
+(defmacro color-red (pixel) `(bw::ogl-color-red ,pixel))
+
+(defmacro color-green (pixel) `(bw::ogl-color-green ,pixel))
+
+(defmacro color-blue (pixel) `(bw::ogl-color-blue ,pixel))
+
+(defmacro color-alpha (pixel) `(bw::ogl-color-alpha ,pixel))
+
+;; this should return a suitable argument to set-pen-color
+;; should assume that R,G,and B are in boxer values (0->100)
+;; **** If the current screen is B&W, this needs to return a valid value ****
+;; **** perhaps after doing a luminance calculation ****
+;; **** NTSC  luminance = .299Red + .587Green + .114Blue
+;; **** SMPTE luminance = .2122Red + .7013Green + .0865Blue
+;; (defun %make-color (red green blue &optional alpha)
+
 ;; sgithens 2023-06-12 Only usage of this was in draw-high draw-poly
   ;; should'nt transform the points because translation is done @ hardware level in OpenGL
   ; (unless (null points)

@@ -120,27 +120,6 @@
 (defvar *boxer-pane* nil
   "The pane which contains the actual boxer screen editor.")
 
-
-(defvar *black*   #(:RGB 0.0 0.0 0.0 1.0))
-(defvar *white*   #(:RGB 1.0 1.0 1.0 1.0))
-(defvar *red*     #(:RGB 1.0 0.0 0.0 1.0))
-(defvar *green*   #(:RGB 0.0 1.0 0.0 1.0))
-(defvar *blue*    #(:RGB 0.0 0.0 1.0 1.0))
-(defvar *yellow*  #(:RGB 1.0 1.0 0.0 1.0))
-(defvar *magenta* #(:RGB 1.0 0.0 1.0 1.0))
-(defvar *cyan*    #(:RGB 0.0 1.0 1.0 1.0))
-(defvar *orange*  #(:RGB 1.0 0.6470585 0.0 1.0))
-(defvar *purple*  #(:RGB 0.627451 0.1254902 0.941175 1.0))
-(defvar *gray*    #(:RGB 0.752941 0.752941 0.752941 1.0))
-
-
-;; color variables that boxer uses
-(defvar *background-color* *white*)
-;; *foreground-color* is in boxdef.lisp
-(defvar *default-border-color* *black*) ;
-(defvar *border-gui-color* *default-border-color*)
-(defvar *closet-color* #(:rgb .94 .94 .97 1.0))
-
 ;;; **** returns pixel value(window system dependent) at windw coords (x,y)
 ;;; see BU::COLOR-AT in grprim3.lisp
 (defun window-pixel (x y &optional (view *boxer-pane*)) (%get-pixel view x y))
@@ -332,53 +311,8 @@
 
 ;;;; COLOR (incomplete)
 
-;; Boxer represents colors as RGB triples where each component is
-;; between 0 and 100 inclusively.
-
-;;
-;; use this to convert a boxer RGB component to a window system dependent
-;; color component.  Domain checking should be assumed to occur at a
-;; higher (in boxer proper) level but paranoia is ok too
-;; in CLX,  color component is between 0.0 and 1.0
-;; Mac stores them as 3 concatenated 8-bit fields of an integer
-;; LWWin RGB color spec component is between 0.0 and 1.0 but we pass pixels
-;; instead.
-;; Get pixels from color specs via ogl-convert-color which
-;; Opengl color = gl-vector of 4 floats between 0.0 and 1.0
-
-(defmacro color-red (pixel) `(bw::ogl-color-red ,pixel))
-
-(defmacro color-green (pixel) `(bw::ogl-color-green ,pixel))
-
-(defmacro color-blue (pixel) `(bw::ogl-color-blue ,pixel))
-
-(defmacro color-alpha (pixel) `(bw::ogl-color-alpha ,pixel))
-
-;; this should return a suitable argument to set-pen-color
-;; should assume that R,G,and B are in boxer values (0->100)
-;; **** If the current screen is B&W, this needs to return a valid value ****
-;; **** perhaps after doing a luminance calculation ****
-;; **** NTSC  luminance = .299Red + .587Green + .114Blue
-;; **** SMPTE luminance = .2122Red + .7013Green + .0865Blue
-(defun %make-color (red green blue &optional alpha)
-  (%make-color-from-100s red green blue (or alpha 100.0)))
-
-(defun %make-color-from-bytes (red green blue &optional (alpha 255))
-  `#(:rgb ,(/ red 255.0) ,(/ green 255.0) ,(/ blue 255.0) ,(/ alpha 255.0)))
-
-(defun %make-color-from-100s (red green blue alpha)
-  `#(:rgb ,(/ red   100.0) ,(/ green 100.0) ,(/ blue  100.0) ,(/ alpha 100.0)))
-
 ;;; neccessary but not sufficient...
 (Defun color? (thing) (typep thing 'opengl::gl-vector))
-
-;; we are comparing WIN32::COLORREF's not COLOR:COLOR-SPEC's
-;; so use WIN32:COLOR= instead of COLOR:COLORS=
-(defun color= (c1 c2)
-  nil ;; sgithens TODO 2023-07-10 Removing ogl-colors
-  ; (if (and c1 c2) ; these  can't be nil
-  ;   (bw::ogl-color= c1 c2))
-    )
 
 (defun %set-pen-color (color)
   "This expects either an already allocated GL 4 vector that represents a color, an RGB percentage vector
@@ -386,9 +320,10 @@
   with the RGBA values."
   (cond ((integerp color)
          (setf (boxgl-device-pen-color bw::*boxgl-device*)
-               `#(:rgb ,(/ (ldb (byte 8 0) color) 255)
-                       ,(/ (ldb (byte 8 8) color) 255)
+               `#(:rgb
                        ,(/ (ldb (byte 8 16) color) 255)
+                       ,(/ (ldb (byte 8 8) color) 255)
+                       ,(/ (ldb (byte 8 0) color) 255)
                        1.0) ;; sgithens TODO I'm not sure we support alpha pen colors yet, may need to increment the box file version
          ))
         ((and (vectorp color) (eq :RGB (aref color 0)))
@@ -415,52 +350,6 @@
 
 (defmacro maintaining-pen-color (&body body)
   `(bw::maintaining-ogl-color . ,body))
-
-(defun pixel-rgb-values (pixel)
-  "Returns a list of RGB values for the dumper.
-Should return the values in the boxer 0->100 range (floats are OK)"
-  (list (* (aref pixel 1)   100)
-        (* (aref pixel 2) 100)
-        (* (aref pixel 3)  100)
-        (* (aref pixel 4) 100)))
-
-;; new dumper interface...
-;; leave pixel-rgb-values alone because other (non file) things now depend on it
-;; NOTE: mac pixel dump value has Red as high byte and blue as low byte
-;; so for compatibility between platforms, we must swap bytes because the
-;; colorref-value arranges the color bytes as blue-green-red
-;;
-;; Opengl: this is supposed to return an RGB 24 bit value
-;; Opengl color are stored as 0.0 to 1.0 floats, so we normalize to 255 and deposit the bytes
-;; (what about the alpha (potential) value ??)
-(defvar *red-byte-position* (byte 8 16))
-(defvar *green-byte-position* (byte 8 8))
-(defvar *blue-byte-position* (byte 8 0))
-
-(defun pixel-dump-value (pixel)
-  "TODO need to deal with possible alpha values..."
-  (let ((alpha (color-alpha pixel)))
-    (cond ((< alpha 1.0)
-           ;; a transparent color, so return a list with the alpha value since the
-           ;; dumper would be unhappy with a non fixnum pixel
-           (pixel-rgb-values pixel))
-      (t ; pack a fixnum (in the right order)
-         (let* ((redbyte (round (* (color-red pixel) 255)))
-                (greenbyte (round (* (color-green pixel) 255)))
-                (bluebyte (round (* (color-blue pixel) 255))))
-           (dpb& redbyte *red-byte-position*
-                 (dpb& greenbyte *green-byte-position*
-                       bluebyte)))))))
-
-(defun pixel-dump-value-internal (winpixel)
-  "we need to shave off the alpha value because higher level code
-(dump-true-color-pixmap: dumper.lisp) assumes fixnum pixels"
-  (let* ((returnpixel (logand winpixel #xff00))
-         (redbyte (ldb (byte 8 0) winpixel))
-         (bluebyte (ldb (byte 8 16) winpixel)))
-    (dpb redbyte (byte 8 16)       ; move red to high position
-         (dpb bluebyte (byte 8 0)   ; move blue to low byte
-              returnpixel))))
 
 ;;;
 ;;; Drawing functions
