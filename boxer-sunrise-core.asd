@@ -17,6 +17,7 @@
                 ((:file "boxer-sunrise")
                  (:file "package")
                  ;; DEFINITIONS
+                 (:file "definitions/color")
                  (:file "definitions/macros")
                  (:file "definitions/storage")
                  (:file "definitions/boxdef")

@@ -28,24 +28,24 @@
    :items (list  (make-instance 'capi::menu-item
                                  :title "" :data nil)
                  (make-instance 'capi::menu-item
-                                 :title "Black" :data 'boxer::*black*)
+                                 :title "Black" :data boxer::*black*)
                  (make-instance 'capi::menu-item
-                                 :title "White" :data 'boxer::*white*)
+                                 :title "White" :data boxer::*white*)
                  (make-instance 'capi::menu-item
-                                 :title "Red" :data 'boxer::*red*)
+                                 :title "Red" :data boxer::*red*)
                  (make-instance 'capi::menu-item
-                                 :title "Green" :data 'boxer::*green*)
+                                 :title "Green" :data boxer::*green*)
                  (make-instance 'capi::menu-item
-                                 :title "Blue" :data 'boxer::*blue*)
+                                 :title "Blue" :data boxer::*blue*)
                  (make-instance 'capi::menu-item
-                                 :title "Cyan" :data 'boxer::*cyan*)
+                                 :title "Cyan" :data boxer::*cyan*)
                  (make-instance 'capi::menu-item
-                                 :title "Magenta" :data 'boxer::*magenta*)
+                                 :title "Magenta" :data boxer::*magenta*)
                  (make-instance 'capi::menu-item
-                                 :title "Yellow" :data 'boxer::*yellow*)
+                                 :title "Yellow" :data boxer::*yellow*)
                  (make-instance 'capi::menu-item
-                                 :title "Orange" :data 'boxer::*orange*)
+                                 :title "Orange" :data boxer::*orange*)
                  (make-instance 'capi::menu-item
-                                 :title "Purple" :data 'boxer::*purple*)
+                                 :title "Purple" :data boxer::*purple*)
                  (make-instance 'capi::menu-item
-                                 :title "Gray" :data 'boxer::*gray*))))
+                                 :title "Gray" :data boxer::*gray*))))

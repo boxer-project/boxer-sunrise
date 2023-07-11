@@ -218,17 +218,17 @@
               ((equal name "BackgroundColor")
                (if background-color
                  (setf (capi:choice-selected-item item)
-                       (capi:get-collection-item item (or (position (boxer::rgb-hex->ogl background-color) (capi::collection-items item)
+                       (capi:get-collection-item item (or (position (boxer::rgb-hex->rgb background-color) (capi::collection-items item)
                                                                                        :test #'(lambda (fs it)
-                                                                                                 (color= fs (symbol-value (capi::menu-item-data it))))) 0)))
+                                                                                                 (color= fs (capi::menu-item-data it)))) 0)))
                  (setf (capi:choice-selected-item item)
                        (capi:get-collection-item item 0))))
               ((equal name "BorderColor")
                (if border-color
                  (setf (capi:choice-selected-item item)
-                       (capi:get-collection-item item (or (position (boxer::rgb-hex->ogl border-color) (capi::collection-items item)
+                       (capi:get-collection-item item (or (position (boxer::rgb-hex->rgb border-color) (capi::collection-items item)
                                                                                    :test #'(lambda (fs it)
-                                                                                             (color= fs (symbol-value (capi::menu-item-data it))))) 0)))
+                                                                                             (color= fs (capi::menu-item-data it)))) 0)))
                  (setf (capi:choice-selected-item item)
                        (capi:get-collection-item item 0))))))))
 
