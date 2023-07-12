@@ -181,10 +181,10 @@ Modification History (most recent at the top)
                  (float-color-to-byte-value (ogl-color-red color))))))
 
 (defun opengl::pixel->color (pixel)
-  (make-ogl-color (/ (ldb opengl::*gl-rgba-rev-red-byte* pixel)   255.0)
-                  (/ (ldb opengl::*gl-rgba-rev-green-byte* pixel) 255.0)
-                  (/ (ldb opengl::*gl-rgba-rev-blue-byte* pixel)  255.0)
-                  (/ (ldb opengl::*gl-rgba-rev-alpha-byte* pixel) 255.0)))
+  `#(:rgb ,(/ (ldb opengl::*gl-rgba-rev-red-byte* pixel)   255.0)
+          ,(/ (ldb opengl::*gl-rgba-rev-green-byte* pixel) 255.0)
+          ,(/ (ldb opengl::*gl-rgba-rev-blue-byte* pixel)  255.0)
+          ,(/ (ldb opengl::*gl-rgba-rev-alpha-byte* pixel) 255.0)))
 
 ;;; circle, (eventually) arcs, ellipses
 ;;; lisp crib of http://slabode.exofire.net/circle_draw.shtml
