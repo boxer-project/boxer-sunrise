@@ -435,11 +435,11 @@ Modification History (most recent at top)
   (draw-hei *default-graphics-sheet-height*)
   (screen-objs nil)
   (bit-array nil)  ;; This should be an ogl-pixmap
-  (object-list nil)
+  (object-list nil) ;; This is the list of turtle sprites
   (superior-box nil)
   (draw-mode ':wrap)
   (graphics-list nil)
-  (background nil)
+  (background nil) ;; This is an optional background color
   (colormap nil)
   (transform nil) ; opengl transform matrix
 
