@@ -185,7 +185,7 @@ Modification History (most recent at the top)
 ;;;; 41   BOXER-RIGHT-STRING                           (X Y STRING)
 ;;;; 42   BOXER-CENTERED-RECTANGLE                     (X Y WIDTH HEIGHT)
 ;;;; 43   BOXER-DOT                                    (X Y)
-;;;; 44
+;;;; 44   BOXER-HOLLOW-RECTANGLE ???                   (X Y WIDTH HEIGHT)
 ;;;; 45
 ;;;; 46
 ;;;; 47   BOXER-CENTERED-BITMAP                        (BITMAP X Y WIDTH HEIGHT)
@@ -199,8 +199,8 @@ Modification History (most recent at the top)
 ;;;; 55
 ;;;; 56
 ;;;; 57
-;;;; 58
-;;;; 59
+;;;; 58   BOXER-WEDGE ???                              (X Y RADIUS START-ANGLE SWEEP-ANGLE)
+;;;; 59   BOXER-ARC ???                                (X Y RADIUS START-ANGLE SWEEP-ANGLE)
 ;;;; 60   BOXER-FILLED-ELLIPSE                         (X Y WIDTH HEIGHT)
 ;;;; 61   BOXER-ELLIPSE                                (X Y WIDTH HEIGHT)
 ;;;; 62   BOXER-FILLED-CIRCLE                          (X Y RADIUS)
