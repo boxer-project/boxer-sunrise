@@ -1616,11 +1616,7 @@ Modification History (most recent at the top)
 ;; for *file-bin-version* > 12, colors are fixnums again
 (defun reallocate-pixel-color (color)
   (etypecase color
-             #+mcl
-             (fixnum color);; old version, don't barf, just return a reasonable value
-             ;   (symbol (allocate-named-color color)) ;;a predefined color(unused for now)
              (null   color);; NIL is the default color for turtle shapes
-             #+lispworks
              (integer (%make-color-from-bytes (ldb (byte 8 16) color)
                                               (ldb (byte 8 8)  color)
                                               (ldb (byte 8 0)  color)))

@@ -33,7 +33,7 @@
              :title-adjust :center
              :selection-callback #'(lambda (color interface)
                                      (if color
-                                       (let* ((rgb-hex-color (boxer::rgb->rgb-hex (symbol-value color))))
+                                       (let* ((rgb-hex-color (boxer::rgb->rgb-hex color)))
                                          (boxer::set-css-style (boxer::box-point-is-in) :background-color rgb-hex-color))
                                        (boxer::remove-css-style (boxer::box-point-is-in) :background-color))
                                      (boxer::repaint)))
@@ -47,7 +47,7 @@
              :title-adjust :center
              :selection-callback #'(lambda (color interface)
                                      (if color
-                                       (let* ((rgb-hex-color (boxer::rgb->rgb-hex (symbol-value color))))
+                                       (let* ((rgb-hex-color (boxer::rgb->rgb-hex color)))
                                          (boxer::set-css-style (boxer::box-point-is-in) :border-color rgb-hex-color))
                                        (boxer::remove-css-style (boxer::box-point-is-in) :border-color))
                                      (boxer::repaint)))))
@@ -162,7 +162,7 @@
            :title-adjust :center
            :selection-callback #'(lambda (color interface)
                                    (if color
-                                     (font-color-menu-action (symbol-value color) nil))))))))
+                                     (font-color-menu-action color nil))))))))
 
 (defun update-toolbar-button (item)
   "Update a single item on the Boxer toolbar. We do this by inspecting it's unique `name` slot and adjusting
@@ -200,7 +200,7 @@
                (setf (capi:choice-selected-item item)
                      (capi:get-collection-item item (or (position current-color (capi::collection-items item)
                                                                :test #'(lambda (fs it)
-                                                                         (color= fs (symbol-value (capi::menu-item-data it))))) 0))))
+                                                                         (color= fs (capi::menu-item-data it)))) 0))))
               ((equal name "Bold")
                (setf (capi:item-selected item) bold-font)
               )
