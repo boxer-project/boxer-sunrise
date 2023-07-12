@@ -91,7 +91,7 @@ Should return the values in the boxer 0->100 range (floats are OK)"
         (* (aref pixel 3)  100)
         (* (aref pixel 4) 100)))
 
-(defun float-precision= (a b &optional (precision 0.006))
+(defun float-precision= (a b &optional (precision 0.0065))
   (if (zerop a) (zerop b)  (< (abs (/ (- a b) a)) precision)))
 
 (defun color= (c1 c2)
