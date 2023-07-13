@@ -639,9 +639,7 @@ Modification History (most recent at top)
        (record-boxer-graphics-command-dot (x-position self)
                                           (y-position self)))
       ((not (no-graphics?))
-       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-             (array-y (fix-array-coordinate-y (absolute-y-position self))))
-         (record-boxer-graphics-command-dot array-x array-y))))))
+       (record-boxer-graphics-command-dot (x-position self) (y-position self))))))
 
 ;;;general rects
 
@@ -656,10 +654,8 @@ Modification History (most recent at top)
         (x-position self) (y-position self)
         (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
       ((not (no-graphics?))
-       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-             (array-y (fix-array-coordinate-y (absolute-y-position self))))
          (record-boxer-graphics-command-centered-rectangle
-          array-x array-y wid hei))))))
+          (x-position self) (y-position self) wid hei)))))
 
 (defmethod hollow-turtle-rect ((self graphics-cursor) wid hei
                                                       &optional (orientation :centered))
