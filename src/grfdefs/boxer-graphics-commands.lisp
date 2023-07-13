@@ -30,6 +30,10 @@
                     (draw-boxer-change-graphics-color command))
                    ((eq com 39)
                     (draw-boxer-centered-string command))
+                   ((eq com 40)
+                    (draw-boxer-left-string command))
+                   ((eq com 41)
+                    (draw-boxer-right-string command))
                    ((eq com 42)
                     (draw-boxer-centered-rectangle command))
                    ((eq com 43)
@@ -60,6 +64,7 @@
   (%set-pen-color (aref com 1)))
 
 ;; 39   BOXER-CENTERED-STRING             (X Y STRING)
+;; TODO all these string commands need to check for newlines, see graphics-commands.lisp
 (defun draw-boxer-centered-string (com)
   (let* ((wid (string-wid *graphics-state-current-font-no* (aref com 3)))
          (hei (string-hei *graphics-state-current-font-no*))
@@ -67,6 +72,16 @@
          (y (- (aref com 2) (/ hei 2))))
     (draw-string *graphics-state-current-font-no* (aref com 3)
                x y)))
+
+;;;; 40   BOXER-LEFT-STRING          (X Y STRING)
+(defun draw-boxer-left-string (com)
+  ;; TODO
+  (draw-boxer-centered-string com))
+
+;;;; 41   BOXER-RIGHT-STRING         (X Y STRING)
+(defun draw-boxer-right-string (com)
+  ;; TODO
+  (draw-boxer-centered-string com))
 
 ;; 42   BOXER-CENTERED-RECTANGLE       (X Y WIDTH HEIGHT)
 (defun draw-boxer-centered-rectangle (com)

@@ -809,15 +809,13 @@ Modification History (most recent at top)
               (:left (record-boxer-graphics-command-left-string
                       (x-position self) (y-position self) (box-text-string box)))))
       ((not (no-graphics?))
-       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-             (array-y (fix-array-coordinate-y (absolute-y-position self))))
          (ecase orientation
                 (:centered (record-boxer-graphics-command-centered-string
-                            array-x array-y (box-text-string box)))
+                             (x-position self) (y-position self) (box-text-string box)))
                 (:right (record-boxer-graphics-command-right-string
-                         array-x array-y (box-text-string box)))
+                          (x-position self) (y-position self) (box-text-string box)))
                 (:left (record-boxer-graphics-command-left-string
-                        array-x array-y (box-text-string box)))))))))
+                          (x-position self) (y-position self) (box-text-string box))))))))
 
 
 (defmethod stamp ((self graphics-cursor))
