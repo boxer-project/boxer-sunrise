@@ -791,11 +791,8 @@ Modification History (most recent at top)
         (new-offscreen-copy bitmap) (x-position self) (y-position self)
         (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
       ((not (no-graphics?))
-       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-             (array-y (fix-array-coordinate-y (absolute-y-position self)))
-             (nbitmap (new-offscreen-copy bitmap)))
          (record-boxer-graphics-command-centered-bitmap
-          nbitmap array-x array-y wid hei))))))
+          (new-offscreen-copy bitmap) (x-position self) (y-position self) wid hei)))))
 
 ;;; orientation can be :centered, :right or :left
 (defmethod type-box ((self graphics-cursor) box

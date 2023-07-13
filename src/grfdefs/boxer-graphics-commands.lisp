@@ -32,6 +32,8 @@
                     (draw-boxer-centered-string command))
                    ((eq com 42)
                     (draw-boxer-centered-rectangle command))
+                   ((eq com 43)
+                    (draw-boxer-dot command))
                    ((eq com 47)
                     (draw-boxer-centered-bitmap command))
                    ((eq com 60)
@@ -74,11 +76,19 @@
                    ;; The y axis is flipped
                    (* -1 (+ y (/ h 2))))))
 
+;; 43   BOXER-DOT                      (X Y)
+(defun draw-boxer-dot (com)
+  (let ((x (aref com 1)) (y (aref com 2)))
+    (draw-rectangle *graphics-state-current-pen-width* *graphics-state-current-pen-width*
+                 (- x (/ *graphics-state-current-pen-width* 2))
+                 (* -1 (+ y (/ *graphics-state-current-pen-width* 2))))))
+
 ;; 47   BOXER-CENTERED-BITMAP          (BITMAP X Y WIDTH HEIGHT)
 (defun draw-boxer-centered-bitmap (com)
-  (bitblt-to-screen (aref com 4) (aref com 5) (aref com 1) 0 0
-                    (- (aref com 2) (floor (aref com 4) 2))
-                    (- (aref com 3) (floor (aref com 5) 2))))
+  (let ((bitmap (aref com 1)) (x (aref com 2)) (y (aref com 3)) (wid (aref com 4)) (hei (aref com 5)))
+    (bitblt-to-screen wid hei bitmap 0 0
+                      (- x (floor wid 2))
+                      (* -1 (+ y (floor hei 2))))))
 
 ;;;; 60   BOXER-FILLED-ELLIPSE        (X Y WIDTH HEIGHT)
 (defun draw-boxer-filled-ellipse (com)
