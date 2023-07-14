@@ -105,8 +105,18 @@
                       (- x (floor wid 2))
                       (* -1 (+ y (floor hei 2))))))
 
-;;;; 60   BOXER-FILLED-ELLIPSE        (X Y WIDTH HEIGHT)
+;; 60   BOXER-FILLED-ELLIPSE        (X Y WIDTH HEIGHT)
 (defun draw-boxer-filled-ellipse (com)
   (draw-ellipse (- (aref com 1) (/ (aref com 3) 2))
                 (- (aref com 2) (/ (aref com 4) 2))
                 (aref com 3) (aref com 4) t))
+
+;; 62   BOXER-FILLED-CIRCLE        (X Y RADIUS)
+(defun draw-boxer-filled-circle (com)
+  (let ((x (aref com 1)) (y (aref com 2)) (radius (aref com 3)))
+    (draw-circle x y radius t)))
+
+;; 63   BOXER-CIRCLE               (X Y RADIUS)
+(defun draw-boxer-circle (com)
+  (let ((x (aref com 1)) (y (aref com 2)) (radius (aref com 3)))
+    (draw-circle x y radius nil)))

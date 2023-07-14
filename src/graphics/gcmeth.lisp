@@ -715,12 +715,10 @@ Modification History (most recent at top)
        (record-boxer-graphics-command-filled-circle
         (x-position self) (y-position self) (coerce radius 'boxer-float)))
       ((not (no-graphics?))
-       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-             (array-y (fix-array-coordinate-y (absolute-y-position self))))
          (record-boxer-graphics-command-filled-circle
-          array-x array-y radius)
+          (x-position self) (y-position self) radius)
          (with-graphics-screen-parameters
-           (filled-circle array-x array-y radius)))))))
+           (filled-circle (x-position self) (y-position self) radius))))))
 
 (defmethod stamp-hollow-circle ((self graphics-cursor) radius)
   (let ((alu (get-alu-from-pen
@@ -730,11 +728,9 @@ Modification History (most recent at top)
        (record-boxer-graphics-command-circle
         (x-position self) (y-position self) (coerce radius 'boxer-float)))
       ((not (no-graphics?))
-       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-             (array-y (fix-array-coordinate-y (absolute-y-position self))))
-         (record-boxer-graphics-command-circle array-x array-y radius)
+         (record-boxer-graphics-command-circle (x-position self) (y-position self) radius)
          (with-graphics-screen-parameters
-           (circle array-x array-y radius)))))))
+           (circle (x-position self) (y-position self) radius))))))
 
 (defmethod stamp-wedge ((self graphics-cursor) radius sweep-angle)
   (let ((alu (get-alu-from-pen
