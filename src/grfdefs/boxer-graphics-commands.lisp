@@ -42,6 +42,12 @@
                     (draw-boxer-centered-bitmap command))
                    ((eq com 60)
                     (draw-boxer-filled-ellipse command))
+                   ((eq com 61)
+                    (draw-boxer-ellipse command))
+                   ((eq com 62)
+                    (draw-boxer-filled-circle command))
+                   ((eq com 63)
+                    (draw-boxer-circle command))
                    (t
                     nil))))
         ;;  (process-graphics-command-marker command)
@@ -107,9 +113,17 @@
 
 ;; 60   BOXER-FILLED-ELLIPSE        (X Y WIDTH HEIGHT)
 (defun draw-boxer-filled-ellipse (com)
-  (draw-ellipse (- (aref com 1) (/ (aref com 3) 2))
-                (- (aref com 2) (/ (aref com 4) 2))
-                (aref com 3) (aref com 4) t))
+  (let ((x (aref com 1)) (y (aref com 2)) (w (aref com 3)) (h (aref com 4)))
+    (draw-ellipse x ;(- x (floor w 2))
+                  y ;(* -1 (+ y (floor h 2)))
+                  w h t)))
+
+;; 61   BOXER-ELLIPSE               (X Y WIDTH HEIGHT)
+(defun draw-boxer-ellipse (com)
+  (let ((x (aref com 1)) (y (aref com 2)) (w (aref com 3)) (h (aref com 4)))
+    (draw-ellipse x ;(- x (floor w 2))
+                  y ;(* -1 (+ y (floor h 2)))
+                  w h nil)))
 
 ;; 62   BOXER-FILLED-CIRCLE        (X Y RADIUS)
 (defun draw-boxer-filled-circle (com)

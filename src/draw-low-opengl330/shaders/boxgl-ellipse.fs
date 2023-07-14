@@ -41,7 +41,7 @@ float ellipse(in vec2 center, in vec2 pos, in float width, in float height, in f
 }
 
 void main() {
-    vec4 final_pos = transform * vec4(circle_pos.xy, 1.0, 1.0);
+    vec4 final_pos = transform * model * vec4(circle_pos.xy, 1.0, 1.0);
     float alpha = 0.0;
 
     alpha = ellipse(final_pos.xy,  gl_FragCoord.xy, ellipse_dims.x, ellipse_dims.y, circle_pos.z);

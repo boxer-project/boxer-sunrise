@@ -686,10 +686,8 @@ Modification History (most recent at top)
         (x-position self) (y-position self)
         (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
       ((not (no-graphics?))
-       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-             (array-y (fix-array-coordinate-y (absolute-y-position self))))
          (record-boxer-graphics-command-filled-ellipse
-          array-x array-y wid hei))))))
+          (x-position self) (y-position self) wid hei)))))
 
 (defmethod stamp-hollow-ellipse ((self graphics-cursor) wid hei
                                                         &optional (orientation :centered))
@@ -702,10 +700,8 @@ Modification History (most recent at top)
         (x-position self) (y-position self)
         (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
       ((not (no-graphics?))
-       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-             (array-y (fix-array-coordinate-y (absolute-y-position self))))
          (record-boxer-graphics-command-ellipse
-          array-x array-y wid hei))))))
+          (x-position self) (y-position self) wid hei)))))
 
 (defmethod stamp-circle ((self graphics-cursor) radius)
   (let ((alu (get-alu-from-pen
