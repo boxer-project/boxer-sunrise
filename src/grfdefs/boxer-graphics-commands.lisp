@@ -16,14 +16,32 @@
 ;;;; 62   BOXER-FILLED-CIRCLE                          (X Y RADIUS)
 ;;;; 63   BOXER-CIRCLE                                 (X Y RADIUS)
 
-(defmacro boxer-playback-graphics-list (gl &key (start 0) (graphics-canvas nil))
+
+(defun boxer-playback-graphics-list (gl &key (start 0) (graphics-canvas nil))
   "In progress work to move all the boxer graphics to turtle coordinates. Will get trued
    up with the defboxer-graphics-handler macros soon."
-  `(with-graphics-state (,gl t)
-         (do-vector-contents (command ,gl :start ,start)
+  (with-graphics-state (gl t)
+         (do-vector-contents (command gl :start start)
+;                     (format t
+; "~%matmatMAT: ~A
+;      trns: ~A
+;      com: ~A
+;      gl: ~A" (boxgl-device-model-matrix bw::*boxgl-device*)
+;              (boxgl-device-transform-matrix bw::*boxgl-device*) command gl)
            (let ((com (aref command 0)))
-             (cond ((eq com 33)
+             (when (< com 32)
+              ;  (format t "~%~%About to convert: ~A" command)
+              ;; sgithens TODO is this actually updating the contents of the graphics list for next time and saving?
+               (setf command (allocate-window->boxer-command command))
+               (setf com (aref command 0))
+              ;  (format t "~%converted       : ~A" command)
+               )
+             (cond ((eq com 32)
+                    (draw-boxer-change-alu command))
+                   ((eq com 33)
                     (draw-boxer-change-pen-width command))
+                   ((eq com 34)
+                    (draw-boxer-change-graphics-font command))
                    ((eq com 35)
                     (draw-boxer-line-segment command))
                    ((eq com 36)
@@ -49,14 +67,22 @@
                    ((eq com 63)
                     (draw-boxer-circle command))
                    (t
-                    nil))))
+                    (break "Unhandled boxer graphics playback: ~A" command)))))
         ;;  (process-graphics-command-marker command)
 ))
+
+;; 32   BOXER-CHANGE-ALU                             (NEW-ALU)
+(defun draw-boxer-change-alu (com)
+  (setq *graphics-state-current-alu* (aref com 1)))
 
 ;; 33   BOXER-CHANGE-PEN-WIDTH              (NEW-WIDTH)
 
 (defun draw-boxer-change-pen-width (com)
   (%set-pen-size (aref com 1)))
+
+;; 34   BOXER-CHANGE-GRAPHICS-FONT          (NEW-FONT-NO)
+(defun draw-boxer-change-graphics-font (com)
+  (setq *graphics-state-current-font-no* (aref com 1)))
 
 ;; 35   BOXER-LINE-SEGMENT                           (X0 Y0 X1 Y1)
 (defun draw-boxer-line-segment (com)
