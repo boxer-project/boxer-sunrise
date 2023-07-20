@@ -215,15 +215,7 @@
 
 ;;; these want ARRAY coordinates
 
-(defun point-in-array? (x y)
-  (and (x-in-array? x)
-       (y-in-array? y)))
 
-(defsubst x-in-array? (x)
-  (and (>=& x 0) (<& x %drawing-width)))
-
-(defsubst y-in-array? (y)
-  (and (>=& y 0) (<& y %drawing-height)))
 
 ;;; normalize coordinates to the on screen position
 

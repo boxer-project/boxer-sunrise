@@ -86,6 +86,7 @@
   (:nicknames :box)
   (:shadow :once-only)
   (:export :symbol-format :set-font-info
+           :draw-line
            :*boxer-frame*
            :*current-opengl-font*
            :with-collection
@@ -118,6 +119,10 @@
            :string-case :char-case
            :once-only
            :%drawing-window :%drawing-array
+           :%drawing-height
+           :%drawing-width
+           :%drawing-half-height
+           :%drawing-half-width
            :scale-x :scale-y
            :x-out-of-bounds? :y-out-of-bounds?
            :max-window-coord :min-window-coord
@@ -206,6 +211,11 @@
            :system-version
            )
            )
+
+(defpackage :boxer-wrap
+  (:use :common-lisp)
+  (:use :boxer)
+  (:export :draw-wrap-line))
 
 (defpackage :boxer-eval
   (:use :common-lisp)

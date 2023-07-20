@@ -119,10 +119,11 @@
                  ;; Beginning of `GRFDEFS` module
                  ;; "Definitions for Sprite Graphics"
                  (:file "filesystem/fildfs")
-                 (:file "grfdefs/boxer-graphics-commands")
+                 (:file "grfdefs/wrap-line")
                  (:file "grfdefs/grobjs")
                  (:file "grfdefs/grfdfs")
                  (:file "grfdefs/gdispl")
+                 (:file "grfdefs/boxer-graphics-commands")
                  (:file "grfdefs/graphics-commands")
                  (:file "grfdefs/graphics-clear")
 

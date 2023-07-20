@@ -89,7 +89,8 @@
   "Takes a boxer command starting with 35:
     ex #(35 -0.5 -0.5 0.0 0.5)"
   ;; The y-axis needs to be flipped
-  (draw-line (aref com 1) (* -1 (aref com 2)) (aref com 3) (* -1 (aref com 4))))
+  (ck-mode-draw-line (aref com 1) (* -1 (aref com 2)) (aref com 3) (* -1 (aref com 4))
+                     *graphics-state-current-alu*))
 
 ;; 36   BOXER-CHANGE-GRAPHICS-COLOR                  (NEW-COLOR)
 (defun draw-boxer-change-graphics-color (com)
