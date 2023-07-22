@@ -307,8 +307,8 @@
          (width (box-glyph-width glyph))
          (w width)
          (h (box-glyph-rows glyph))
-         (x (coerce x 'float))
-         (y (coerce y 'float))
+         (x (coerce x 'single-float))
+         (y (coerce y 'single-float))
          (xpos (+ x bearing-x))
          (font-hei (bw::ogl-font-height font))
          (ypos (if baseline-bot
