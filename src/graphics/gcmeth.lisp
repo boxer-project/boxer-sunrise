@@ -737,13 +737,10 @@ Modification History (most recent at top)
         (x-position self) (y-position self) (coerce radius 'boxer-float)
         (heading self) sweep-angle))
       ((not (no-graphics?))
-       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-             (array-y (fix-array-coordinate-y (absolute-y-position self)))
-             (abheading (absolute-heading self)))
-         (record-boxer-graphics-command-wedge
-          array-x array-y radius abheading sweep-angle)
-         (with-graphics-screen-parameters
-           (wedge array-x array-y radius abheading sweep-angle)))))))
+        (record-boxer-graphics-command-wedge
+          (x-position self) (y-position self) radius (absolute-heading self) sweep-angle)
+        (with-graphics-screen-parameters
+          (wedge (x-position self) (y-position self) radius (absolute-heading self) sweep-angle))))))
 
 (defmethod stamp-arc ((self graphics-cursor) radius sweep-angle)
   (let ((alu (get-alu-from-pen
@@ -754,13 +751,10 @@ Modification History (most recent at top)
         (x-position self) (y-position self) (coerce radius 'boxer-float)
         (heading self) sweep-angle))
       ((not (no-graphics?))
-       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-             (array-y (fix-array-coordinate-y (absolute-y-position self)))
-             (abheading (absolute-heading self)))
          (record-boxer-graphics-command-arc
-          array-x array-y radius abheading sweep-angle)
+           (x-position self) (y-position self) radius (absolute-heading self) sweep-angle)
          (with-graphics-screen-parameters
-           (arc array-x array-y radius abheading sweep-angle)))))))
+           (arc (x-position self) (y-position self) radius (absolute-heading self) sweep-angle))))))
 
 
 ;;;; Pictures

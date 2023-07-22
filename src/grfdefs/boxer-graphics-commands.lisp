@@ -11,6 +11,8 @@
 ;;;; 42   BOXER-CENTERED-RECTANGLE                     (X Y WIDTH HEIGHT)
 ;;;; 43   BOXER-DOT                                    (X Y)
 ;;;; 47   BOXER-CENTERED-BITMAP                        (BITMAP X Y WIDTH HEIGHT)
+;;;; 58   BOXER-WEDGE                                  (X Y RADIUS START-ANGLE SWEEP-ANGLE)
+;;;; 59   BOXER-ARC                                    (X Y RADIUS START-ANGLE SWEEP-ANGLE)
 ;;;; 60   BOXER-FILLED-ELLIPSE                         (X Y WIDTH HEIGHT)
 ;;;; 61   BOXER-ELLIPSE                                (X Y WIDTH HEIGHT)
 ;;;; 62   BOXER-FILLED-CIRCLE                          (X Y RADIUS)
@@ -73,6 +75,10 @@
                     (draw-boxer-dot command))
                    ((eq com 47)
                     (draw-boxer-centered-bitmap command))
+                   ((eq com 58)
+                    (draw-boxer-wedge command))
+                   ((eq com 59)
+                    (draw-boxer-arc command))
                    ((eq com 60)
                     (draw-boxer-filled-ellipse command))
                    ((eq com 61)
@@ -186,6 +192,18 @@
     (bitblt-to-screen wid hei bitmap 0 0
                       (- x (floor wid 2))
                       (* -1 (+ y (floor hei 2))))))
+
+;; 58   BOXER-WEDGE                    (X Y RADIUS START-ANGLE SWEEP-ANGLE)
+(defun draw-boxer-wedge (com)
+  (let ((x (aref com 1)) (y (- (aref com 2))) (radius (aref com 3)) (start-angle (aref com 4)) (sweep-angle (aref com 5)))
+    (when (plusp radius)
+      (%draw-c-arc x y radius start-angle sweep-angle t))))
+
+;; 59   BOXER-ARC                      (X Y RADIUS START-ANGLE SWEEP-ANGLE)
+(defun draw-boxer-arc (com)
+  (let ((x (aref com 1)) (y (- (aref com 2))) (radius (aref com 3)) (start-angle (aref com 4)) (sweep-angle (aref com 5)))
+    (when (plusp radius)
+      (%draw-c-arc x y radius start-angle sweep-angle nil))))
 
 ;; 60   BOXER-FILLED-ELLIPSE        (X Y WIDTH HEIGHT)
 (defun draw-boxer-filled-ellipse (com)

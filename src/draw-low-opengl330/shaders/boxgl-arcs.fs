@@ -73,7 +73,7 @@ float arc(in vec2 center, in vec2 pos, in float radius, in float start, in float
 }
 
 void main() {
-    vec4 final_pos = transform * vec4(circle_pos.xy, 1.0, 1.0);
+    vec4 final_pos = transform * model * vec4(circle_pos.xy, 1.0, 1.0);
     float alpha = 0.0;
     float start = arc_sweeps.x;
     float end = arc_sweeps.y;
