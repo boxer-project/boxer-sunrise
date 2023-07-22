@@ -189,24 +189,24 @@
 
 ;; 60   BOXER-FILLED-ELLIPSE        (X Y WIDTH HEIGHT)
 (defun draw-boxer-filled-ellipse (com)
-  (let ((x (aref com 1)) (y (aref com 2)) (w (aref com 3)) (h (aref com 4)))
+  (let ((x (aref com 1)) (y (- (aref com 2))) (w (aref com 3)) (h (aref com 4)))
     (draw-ellipse x ;(- x (floor w 2))
                   y ;(* -1 (+ y (floor h 2)))
                   w h t)))
 
 ;; 61   BOXER-ELLIPSE               (X Y WIDTH HEIGHT)
 (defun draw-boxer-ellipse (com)
-  (let ((x (aref com 1)) (y (aref com 2)) (w (aref com 3)) (h (aref com 4)))
+  (let ((x (aref com 1)) (y (- (aref com 2))) (w (aref com 3)) (h (aref com 4)))
     (draw-ellipse x ;(- x (floor w 2))
                   y ;(* -1 (+ y (floor h 2)))
                   w h nil)))
 
 ;; 62   BOXER-FILLED-CIRCLE        (X Y RADIUS)
 (defun draw-boxer-filled-circle (com)
-  (let ((x (aref com 1)) (y (aref com 2)) (radius (aref com 3)))
+  (let ((x (aref com 1)) (y (- (aref com 2))) (radius (aref com 3)))
     (draw-circle x y radius t)))
 
 ;; 63   BOXER-CIRCLE               (X Y RADIUS)
 (defun draw-boxer-circle (com)
-  (let ((x (aref com 1)) (y (aref com 2)) (radius (aref com 3)))
+  (let ((x (aref com 1)) (y (- (aref com 2))) (radius (aref com 3)))
     (draw-circle x y radius nil)))
