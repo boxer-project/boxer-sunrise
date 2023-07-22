@@ -1712,17 +1712,8 @@ Modification History (most recent at the top)
       ; else
       (let ((gl (graphics-sheet-graphics-list gs)))
         (unless (graphics-command-list-hidden gl)
-         (let* ((prev-model (boxgl-device-model-matrix bw::*boxgl-device*))
-                (trans-mat (3d-matrices:mtranslation
-                       (3d-vectors:vec
-                         %drawing-half-width
-                         %drawing-half-height 0.0))))
-            (setf (boxgl-device-model-matrix bw::*boxgl-device*) (3d-matrices:marr4 trans-mat))
-            (update-matrices-ubo bw::*boxgl-device*)
-            ; (playback-graphics-list-internal gl :start (op-count canvas) :graphics-canvas canvas)
-            (boxer-playback-graphics-list gl)
-            (setf (boxgl-device-model-matrix bw::*boxgl-device*) prev-model)
-            (update-matrices-ubo bw::*boxgl-device*))))
+          ; (playback-graphics-list-internal gl :start (op-count canvas) :graphics-canvas canvas)
+          (boxer-playback-graphics-list gl :translate? t)))
 
     ;; and then any sprites
     (let ((sprites (graphics-sheet-object-list gs)))

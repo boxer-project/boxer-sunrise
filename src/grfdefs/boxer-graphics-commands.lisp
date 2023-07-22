@@ -17,10 +17,25 @@
 ;;;; 63   BOXER-CIRCLE                                 (X Y RADIUS)
 
 
-(defun boxer-playback-graphics-list (gl &key (start 0) (graphics-canvas nil))
+(defun boxer-playback-graphics-list (gl &key (start 0) (graphics-canvas nil) (translate? nil))
   "In progress work to move all the boxer graphics to turtle coordinates. Will get trued
-   up with the defboxer-graphics-handler macros soon."
-  (with-graphics-state (gl t)
+   up with the defboxer-graphics-handler macros soon.
+
+  If translate? is t, we will move the origin according to the values of %drawing-half-width and
+  %drawing-half-height. The default is nil, as some usages of this will want to perform their own
+  translation, scaling, rotation, etc."
+  (let ((prev-model nil)
+        (trans-mat nil))
+
+    (when translate?
+      (setf prev-model (boxgl-device-model-matrix bw::*boxgl-device*)
+            trans-mat  (3d-matrices:mtranslation
+                         (3d-vectors:vec %drawing-half-width %drawing-half-height 0.0)))
+
+      (setf (boxgl-device-model-matrix bw::*boxgl-device*) (3d-matrices:marr4 trans-mat))
+      (update-matrices-ubo bw::*boxgl-device*))
+
+    (with-graphics-state (gl t)
          (do-vector-contents (command gl :start start)
 ;                     (format t
 ; "~%matmatMAT: ~A
@@ -68,8 +83,11 @@
                     (draw-boxer-circle command))
                    (t
                     (break "Unhandled boxer graphics playback: ~A" command)))))
-        ;;  (process-graphics-command-marker command)
-))
+                   ;;  (process-graphics-command-marker command)
+                   )
+    (when translate?
+      (setf (boxgl-device-model-matrix bw::*boxgl-device*) prev-model)
+      (update-matrices-ubo bw::*boxgl-device*))))
 
 ;; 32   BOXER-CHANGE-ALU                             (NEW-ALU)
 (defun draw-boxer-change-alu (com)
