@@ -490,7 +490,7 @@ sprites)))
                   (cond ((not (null bit-array))
                          (pixmap-pixel bit-array gb-x gb-y))
                         ((not (null background)) background)
-                        (t (opengl::color->pixel *background-color*)))
+                        (t *background-color*))
                   (boxer-eval::primitive-signal-error
                    :graphics "Pixel is not in the graphics box"))))))))
 

@@ -171,15 +171,6 @@ Modification History (most recent at the top)
   (round (* 255 (/ value 1.0))))
 
 ;; NOTE: this must match the format in *pixmap-data-type* and *pixmap-data-format*
-(defun opengl::color->pixel (color)
-  (dpb (float-color-to-byte-value (ogl-color-alpha color))
-       opengl::*gl-rgba-rev-alpha-byte*
-       (dpb (float-color-to-byte-value (ogl-color-blue color))
-            opengl::*gl-rgba-rev-blue-byte*
-            (dpb (float-color-to-byte-value (ogl-color-green color))
-                 opengl::*gl-rgba-rev-green-byte*
-                 (float-color-to-byte-value (ogl-color-red color))))))
-
 (defun opengl::pixel->color (pixel)
   `#(:rgb ,(/ (ldb opengl::*gl-rgba-rev-red-byte* pixel)   255.0)
           ,(/ (ldb opengl::*gl-rgba-rev-green-byte* pixel) 255.0)

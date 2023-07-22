@@ -17694,6 +17694,16 @@ Modification History (most recent at top)
 ;;;; FILE: opengl-utils.lisp
 ;;;;
 
+;; NOTE: this must match the format in *pixmap-data-type* and *pixmap-data-format*
+(defun opengl::color->pixel (color)
+  (dpb (float-color-to-byte-value (ogl-color-alpha color))
+       opengl::*gl-rgba-rev-alpha-byte*
+       (dpb (float-color-to-byte-value (ogl-color-blue color))
+            opengl::*gl-rgba-rev-blue-byte*
+            (dpb (float-color-to-byte-value (ogl-color-green color))
+                 opengl::*gl-rgba-rev-green-byte*
+                 (float-color-to-byte-value (ogl-color-red color))))))
+
 ;; sgithens 2023-07-10 Retiring the old ogl-color vectors that are no longer in use, but were still being
 ;; used as intermediaries
 ;;;; COLORS

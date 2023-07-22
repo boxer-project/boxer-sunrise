@@ -152,8 +152,7 @@
         (boxer-eval::primitive-signal-error :graphics
               "No color in: " color))
        ((not (null (graphics-sheet-bit-array gs)))
-        (clear-ogl-pixmap (graphics-sheet-bit-array gs)
-                                  (opengl::color->pixel pix))
+        (clear-ogl-pixmap (graphics-sheet-bit-array gs) pix)
         ;; mark the dirty? flag
         (setf (graphics-sheet-bit-array-dirty? gs) t)
         (modified-graphics gb))
