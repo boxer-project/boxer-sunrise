@@ -191,7 +191,10 @@ Can be nil if no action is desired.")
 (define-eval-var boxer::%turtle-state    :global nil)
 (define-eval-var boxer::%learning-shape-graphics-list :global nil)
 (define-eval-var boxer::%private-graphics-list :global nil)
-(define-eval-var boxer::*graphics-command-recording-mode* :global ':window)
+;; sgithens 2023-07-12 We are always in :boxer rather than :window mode now after
+;; transitioning to all Boxer coords for turtles. Eventually we may want to remove
+;; this variable.
+(define-eval-var boxer::*graphics-command-recording-mode* :global ':boxer)
 (define-eval-var boxer::*current-sprite* :global nil)
 
 (defvar boxer::*supress-graphics-recording?* nil)
