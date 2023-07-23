@@ -546,9 +546,11 @@ CLOSED for renovations until I fix the string/font situation
 
 (defmethod move-to ((self graphics-object) x-dest y-dest
                     &optional dont-update-box)
-  (let ((x-position (slot-value self 'x-position))
-        (y-position (slot-value self 'y-position))
-        (pen-alu (get-alu-from-pen (pen self))))
+  (let* ((x-position (slot-value self 'x-position))
+         (y-position (slot-value self 'y-position))
+         (x-start (box-interface-value x-position))
+         (y-start (box-interface-value y-position))
+         (pen-alu (get-alu-from-pen (pen self))))
     (cond  ((not (and (numberp x-dest) (numberp y-dest)))
             (error "one of the args, ~s or ~s, was not a number"
                    x-dest y-dest))
@@ -567,27 +569,23 @@ CLOSED for renovations until I fix the string/font situation
                    ;; While in learning-shape, don't update any boxes
                    (setf (box-interface-value x-position) x-dest)
                    (setf (box-interface-value y-position) y-dest))
-                  ;; Have to make fence mode work some other time
-;		  ((and (eq %draw-mode ':fence)
-;			(not (point-in-array? array-x-dest array-y-dest)))
-;		   (error "you hit the fence"))
                   (t
                    (cond ((no-graphics?)
                           ;; this means we can't even do any wrapping
                           ;; calculations, so just set values
                           (set-xy self x-dest y-dest dont-update-box))
                          (t
-                          (multiple-value-bind (array-x-dest array-y-dest)
-                              (make-absolute self x-dest y-dest)
-                            (setq array-x-dest (fix-array-coordinate-x
-                                                array-x-dest)
-                                  array-y-dest (fix-array-coordinate-y
-                                                array-y-dest))
-                            (let ((array-x (fix-array-coordinate-x
-                                            (absolute-x-position self)))
-                                  (array-y (fix-array-coordinate-y
-                                            (absolute-y-position self))))
-                              (without-interrupts
+                            (without-interrupts
+                               ;; We record the graphics commend before potentially wrapping the dest,
+                               ;; and then wrap the dest for the sprites new location. The line wrapping
+                               ;; is taken care of at draw time by draw-wrap-line
+                               (when (and (not (null pen-alu))
+                                          (not (zerop (pen-width self))))
+                                 (record-boxer-graphics-command-line-segment
+                                   (coerce x-start 'single-float)
+                                   (coerce y-start 'single-float)
+                                   (coerce x-dest 'single-float)
+                                   (coerce y-dest 'single-float)))
                                (when (and (null (slot-value self
                                                             'superior-turtle))
                                           (eq %draw-mode ':wrap))
@@ -602,11 +600,7 @@ CLOSED for renovations until I fix the string/font situation
                                             y-dest))
                                      (t
                                       (set-xy self x-dest y-dest
-                                              dont-update-box)))
-                               (when (and (not (null pen-alu))
-                                          (not (zerop (pen-width self))))
-                                 (record-boxer-graphics-command-line-segment
-                                  array-x array-y array-x-dest array-y-dest)))))))))))))
+                                              dont-update-box))))))))))))
 
 
 ;;;;;;;; Graphics BUTTON methods
