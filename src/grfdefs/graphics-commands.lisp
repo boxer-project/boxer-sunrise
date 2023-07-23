@@ -156,17 +156,18 @@
 
 (defgraphics-state-change (change-graphics-color 4) (new-color)
              :dump-form
-             (let ((existing-pixel (svref& command 1)))
-               (unwind-protect
-                (progn (setf (svref& command 1)
-                             (if (>=& *version-number* 12)
-                               (pixel-dump-value existing-pixel)
-                               (canonicalize-pixel-color existing-pixel)))
-                       (dump-boxer-thing command stream))
-                (setf (svref& command 1) existing-pixel)))
+             (let ((existing-pixel (aref command 1)))
+                (unless (typep (aref command 1) 'fixnum)
+                         ;; If this is a float to an openGL float vector, convert it
+                         ;; to an integer representation of the color
+                        (setf (aref command 1)
+                          (if (>= *version-number* 12)
+                              (pixel-dump-value existing-pixel)
+                              (canonicalize-pixel-color existing-pixel))))
+                (dump-boxer-thing command stream))
              :load-form
-             (setf (svref& command 1)
-                   (reallocate-pixel-color (svref& command 1)))
+             (setf (aref command 1)
+                   (reallocate-pixel-color (aref command 1)))
              :sprite-command
              (list 'bu::set-pen-color new-color)
              :body
