@@ -144,8 +144,7 @@ Modification History (most recent at top)
       (with-graphics-vars-bound (box)
         (clear-graphics-list %graphics-list)
         (do-vector-contents (shape-gc shape)
-          (sv-append %graphics-list
-                     (allocate-boxer->window-command shape-gc)))))
+          (sv-append %graphics-list shape-gc))))
     ;; make sure we are in graphics mode
     (setf (display-style-graphics-mode? (display-style-list box)) t))
 
@@ -511,7 +510,8 @@ Modification History (most recent at top)
          (font (box-interface-value (slot-value agent 'type-font)))
          ;; this has to be bound explicitly here because this method can
          ;; be called INSIDE of update-shape
-         (*graphics-command-recording-mode* ':window)
+         ;; sgithens 2023-07-12 we are always in :boxer mode now
+         ;  (*graphics-command-recording-mode* ':window)
          ;; Do not supress recording of these synchronization commands
          (*supress-graphics-recording?* nil))
     (unless (and (not force?) (eq pen-state 'up))
@@ -542,7 +542,9 @@ Modification History (most recent at top)
          (font (box-interface-value (slot-value agent 'type-font)))
          ;; this has to be bound explicitly here because this method can
          ;; be called INSIDE of update-shape
-         (*graphics-command-recording-mode* ':window))
+         ;; sgithens 2023-07-12 we are always in :boxer mode now
+         ;  (*graphics-command-recording-mode* ':window)
+         )
     (unless (eql *graphics-state-current-alu* alu-seta)
       (record-boxer-graphics-command-change-alu alu-seta)
       (change-alu alu-seta))
