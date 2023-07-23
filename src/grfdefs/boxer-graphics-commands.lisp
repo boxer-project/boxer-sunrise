@@ -37,6 +37,14 @@
       (setf (boxgl-device-model-matrix bw::*boxgl-device*) (3d-matrices:marr4 trans-mat))
       (update-matrices-ubo bw::*boxgl-device*))
 
+    (when (and *use-opengl-framebuffers* graphics-canvas)
+      (when (graphics-canvas-pen-color-cmd graphics-canvas)
+        (process-graphics-command-marker (graphics-canvas-pen-color-cmd graphics-canvas)))
+      (when (graphics-canvas-pen-size-cmd graphics-canvas)
+        (process-graphics-command-marker (graphics-canvas-pen-size-cmd graphics-canvas)))
+      (when (graphics-canvas-pen-font-cmd graphics-canvas)
+        (process-graphics-command-marker (graphics-canvas-pen-font-cmd graphics-canvas))))
+
     (with-graphics-state (gl t)
          (do-vector-contents (command gl :start start)
 ;                     (format t
@@ -88,7 +96,16 @@
                    ((eq com 63)
                     (draw-boxer-circle command))
                    (t
-                    (break "Unhandled boxer graphics playback: ~A" command)))))
+                    (break "Unhandled boxer graphics playback: ~A" command))))
+
+             (when (and *use-opengl-framebuffers* graphics-canvas)
+               (cond ((equal 4 (aref command 0))
+                      (setf (graphics-canvas-pen-color-cmd graphics-canvas) command))
+                     ((equal 1 (aref command 0))
+                      (setf (graphics-canvas-pen-size-cmd graphics-canvas) command))
+                     ((equal 2 (aref command 0))
+                      (setf (graphics-canvas-pen-font-cmd graphics-canvas) command))))
+            )
                    ;;  (process-graphics-command-marker command)
                    )
     (when translate?
