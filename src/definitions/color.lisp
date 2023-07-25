@@ -51,6 +51,9 @@
 (defvar *border-gui-color* *default-border-color*)
 (defvar *closet-color* #(:rgb .94 .94 .97 1.0))
 
+(defun rgb-p (color)
+  (and (vectorp color) (= (length color) 5) (equal :rgb (aref color 0))))
+
 (defun rgb-hex->rgb (color)
   "Converts from the rgb-hex vector to the rgb vector.
    TODO: add support for the alpha channel in the hex representation."
@@ -129,9 +132,9 @@ Should return the values in the boxer 0->100 range (floats are OK)"
          (let* ((redbyte (round (* (color-red pixel) 255)))
                 (greenbyte (round (* (color-green pixel) 255)))
                 (bluebyte (round (* (color-blue pixel) 255))))
-           (dpb& redbyte *red-byte-position*
-                 (dpb& greenbyte *green-byte-position*
-                       bluebyte)))))))
+           (dpb redbyte *red-byte-position*
+                (dpb greenbyte *green-byte-position*
+                     bluebyte)))))))
 
 (defun pixel-dump-value-internal (winpixel)
   "we need to shave off the alpha value because higher level code

@@ -157,7 +157,8 @@
 (defgraphics-state-change (change-graphics-color 4) (new-color)
              :dump-form
              (let ((existing-pixel (aref command 1)))
-                (unless (typep (aref command 1) 'fixnum)
+                (unless (or (typep (aref command 1) 'fixnum)
+                            (listp (aref command 1)))
                          ;; If this is a float to an openGL float vector, convert it
                          ;; to an integer representation of the color
                         (setf (aref command 1)

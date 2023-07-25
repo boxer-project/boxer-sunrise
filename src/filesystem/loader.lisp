@@ -722,6 +722,14 @@ should ignore it.")
              (not (null (slot-value box 'closets))))
     (crock-fix-sprite-closet-for-changed-slot-names (slot-value box 'closets)
                                                     box))
+
+  ;; bugs-54 Convert turtle graphics
+  (when (graphics-box? box)
+    (with-graphics-vars-bound (box)
+      (let ((gl (graphics-sheet-graphics-list %graphics-sheet)))
+        (do-vector-contents (command gl :index-var-name i)
+          (setf (aref (%%sv-contents gl) i) (allocate-window->boxer-command command))))))
+
 ;    ;; add an empty row to keep things happy
 ;    ;; since ports get dumped with a NIL first-inferior-row
 ;    (when (port-box? box)
