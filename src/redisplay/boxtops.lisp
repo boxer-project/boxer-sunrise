@@ -166,8 +166,7 @@
   ;; then handle any sprite graphics...
   (unless (null (graphics-sheet-graphics-list boxtop))
     (with-graphics-vars-bound-internal boxtop
-      (boxer-playback-graphics-list  ;playback-graphics-list-internal
-       (graphics-sheet-graphics-list boxtop) :translate? t))))
+      (boxer-playback-graphics-list (graphics-sheet-graphics-list boxtop) :translate? t))))
 
 (defun draw-graphics-boxtop (boxtop x y wid hei &optional framed?)
   (cond ((null framed?)
