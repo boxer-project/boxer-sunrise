@@ -8365,6 +8365,10 @@ Modification History (most recent at top)
 ;;;; FILE: draw-high-common.lisp
 ;;;;
 
+(defun draw-arc (alu x y wid hei start-angle sweep-angle)
+  (%draw-arc %drawing-window alu (scale-x x) (scale-y y)
+             wid hei start-angle sweep-angle))
+
 ;; sgithens 2022-02-24 Some fairly historic comments about clipping from the top
 ;; header comments
     ;;;;   Only the primitives and macros which do not respect clipping are
@@ -8546,6 +8550,11 @@ if it is out of bounds
 ;;;;
 ;;;; FILE: draw-low-opengl.lisp
 ;;;;
+
+(defun %draw-arc (bit-array alu x y width height th1 th2)
+  "See the-attic for the previous lispworks GP library version of this function.
+It's not clear yet whether we'll need to re-implement this for the future."
+  (declare (ignore bit-array alu x y width height th1 th2)))
 
 ;; sgithens 2023-07-10 Removing ogl-color stuff
 

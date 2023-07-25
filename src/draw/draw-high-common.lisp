@@ -125,10 +125,6 @@ scaled origin"
 ;;; Drawing functions
 ;;;
 
-(defun draw-arc (alu x y wid hei start-angle sweep-angle)
-  (%draw-arc %drawing-window alu (scale-x x) (scale-y y)
-             wid hei start-angle sweep-angle))
-
 ;; TODO for anything not in the texture map, just use the regular draw-cha for now
 (defun draw-cha (char x y &key (gl-model nil))
   "Draw-cha needs to draw at the char's baseline rather than the top left corner.  In a

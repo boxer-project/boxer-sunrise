@@ -355,11 +355,6 @@
 ;;; Drawing functions
 ;;;
 
-(defun %draw-arc (bit-array alu x y width height th1 th2)
-  "See the-attic for the previous lispworks GP library version of this function.
-It's not clear yet whether we'll need to re-implement this for the future."
-  (declare (ignore bit-array alu x y width height th1 th2)))
-
 (defun %draw-c-arc (x y radius start-angle sweep-angle &optional filled?)
   "circular arc, rather than the more generic elliptical arc
 opengl arc drawing routine starts at 3 oclock and sweeps clockwise in radians
