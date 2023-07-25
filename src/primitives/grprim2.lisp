@@ -267,7 +267,7 @@
   (let ((gl (graphics-sheet-graphics-list gs))
         (ba (graphics-sheet-bit-array gs))
         (new-start-idx (storage-vector-active-length %graphics-list))
-        (trans-x (-& x half-width)) (trans-y (-& y half-height)))
+        (trans-x (- x half-width)) (trans-y (- y half-height)))
     (canonicalize-graphics-state %graphics-list)
                                         ;(reset-graphics-list-values %graphics-list)
     ;; handle bitmaps and backgrounds here....
@@ -293,7 +293,7 @@
     ;; now draw the new commands
     (with-graphics-screen-parameters
       (do-vector-contents (newgc %graphics-list :start new-start-idx)
-        (process-graphics-command-marker newgc)))
+        (process-graphics-command newgc)))
     ;; synch list values
     (setf (graphics-command-list-agent %graphics-list) nil
           (graphics-command-list-alu %graphics-list)
@@ -321,21 +321,11 @@
     (if (null gs)
         (boxer-eval::primitive-signal-error :sprite-error "No graphics in "
                                             (port-to-internal graphics-box))
-        (let* (;(turtle-graphics-box (slot-value turtle 'assoc-graphics-box))
-                                        ;(tgs (unless (null turtle-graphics-box)
-                                        ;       (graphics-sheet turtle-graphics-box)))
-                                        ;(tba (when tgs (graphics-sheet-bit-array tgs)))
-               (turtle-array-x (fix-array-coordinate-x
-                                (absolute-x-position turtle)))
-               (turtle-array-y (fix-array-coordinate-y
-                                (absolute-y-position turtle))))
-
-          (append-graphics-sheet-at
-            gs
-            turtle-array-x turtle-array-y
-            (floor (graphics-sheet-draw-wid gs) 2)
-            (floor (graphics-sheet-draw-hei gs) 2))))
-    )
+        (append-graphics-sheet-at
+          gs
+          (x-position turtle) (y-position turtle)
+          (floor (graphics-sheet-draw-wid gs) 2)
+          (floor (graphics-sheet-draw-hei gs) 2))))
   boxer-eval::*novalue*)
 
 (defvar *follow-mouse-movement-threshold* 2)
