@@ -20,6 +20,7 @@
 ;;;;     client.lisp and clientmacros.lisp
 ;;;;   - surf.lisp mailto-url and make-message-box show the email urls and how a new box was
 ;;;;     created for composing a new email message.
+;;;;   - grmeth.lisp flash-name seems like a useful design idea... flashed a turtles name or label?
 
 
 ;;;;
@@ -12688,6 +12689,39 @@ OpenGL expects a list of X Y pairs"
 ;;;;
 ;;;; FILE: grmeth.lisp
 ;;;;
+
+;; sgithens 2023-07-25 no longer needed, was only used in flash-name
+(defun calc-name-position-x (length left right)
+  (setq left (array-coordinate-x left)
+        right (array-coordinate-x right))
+  (if (> (+ right length) %drawing-width)
+      (fixr (- left length 3.))
+      (fixr (+ right 5.))))
+
+;; sgithens 2023-07-25 no longer needed, was only used in flash-name
+(defun calc-name-position-y (height top bottom)
+  (let ((center (+ (array-coordinate-y top)
+                   (/ (- top bottom) 2))))
+    (fixr (min (max center 0)
+               (- %drawing-height height 1.)))))
+
+;;; Drawing the turtle's name
+
+#|
+CLOSED for renovations until I fix the string/font situation
+
+(defmethod flash-name ((self turtle))
+    (let* ((print-name (name sprite-box))
+           (name-length (sting-wid ))) ;;; fix this
+      (multiple-value-bind (left top right bottom)
+          (enclosing-rectangle self)
+        (let ((x-pos (calc-name-position-x name-length left RIGHT))
+              (Y-POS (CALC-NAME-POSITION-Y *FONT-HEIGHT* TOP BOTTOM)))
+          (DRAW-STRING-TO-GBOX PRINT-NAME X-POS Y-POS)
+          (PROCESS-SLEEP 120 "Pausing to flash name")
+          (DRAW-STRING-TO-GBOX PRINT-NAME X-POS Y-POS)))))
+
+|#
 
 ; 2023-07-17 sgithens Did we used to have a fence mode? Commented out stuff from defmethod move-to
                   ;; Have to make fence mode work some other time

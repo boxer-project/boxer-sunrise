@@ -512,38 +512,6 @@ Modification History (most recent at top)
         (y-diff (- (y-position self) y)))
     (sqrt (+ (* x-diff x-diff) (* y-diff y-diff)))))
 
-(defun calc-name-position-x (length left right)
-  (setq left (array-coordinate-x left)
-        right (array-coordinate-x right))
-  (if (> (+ right length) %drawing-width)
-      (fixr (- left length 3.))
-      (fixr (+ right 5.))))
-
-(defun calc-name-position-y (height top bottom)
-  (let ((center (+ (array-coordinate-y top)
-                   (/ (- top bottom) 2))))
-    (fixr (min (max center 0)
-               (- %drawing-height height 1.)))))
-
-;;; Drawing the turtle's name
-
-#|
-CLOSED for renovations until I fix the string/font situation
-
-(defmethod flash-name ((self turtle))
-    (let* ((print-name (name sprite-box))
-           (name-length (sting-wid ))) ;;; fix this
-      (multiple-value-bind (left top right bottom)
-          (enclosing-rectangle self)
-        (let ((x-pos (calc-name-position-x name-length left RIGHT))
-              (Y-POS (CALC-NAME-POSITION-Y *FONT-HEIGHT* TOP BOTTOM)))
-          (DRAW-STRING-TO-GBOX PRINT-NAME X-POS Y-POS)
-          (PROCESS-SLEEP 120 "Pausing to flash name")
-          (DRAW-STRING-TO-GBOX PRINT-NAME X-POS Y-POS)))))
-
-|#
-
-
 (defmethod move-to ((self graphics-object) x-dest y-dest
                     &optional dont-update-box)
   (let* ((x-position (slot-value self 'x-position))
