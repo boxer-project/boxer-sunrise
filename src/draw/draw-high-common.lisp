@@ -52,9 +52,8 @@ which does everything Drawing-On-Window does except that it does not do a
 PREPARE-SHEET of the window. Unless you really know what you are doing
 you should only use this inside the :BLINK method for a blinker."
   (once-only (window)
-    `(let ((%drawing-window ,window)
-           (%drawing-array  ,window))
-       %drawing-window %drawing-array    ;bound but never...
+    `(let ((%drawing-array  ,window))
+       %drawing-array    ;bound but never...
        (drawing-on-window-bootstrap-clipping-and-scaling
          (0 0
           (sheet-inside-width ,window) (sheet-inside-height ,window))
@@ -63,10 +62,10 @@ you should only use this inside the :BLINK method for a blinker."
 (defmacro drawing-on-bitmap ((bitmap) &body body)
   "Used instead of DRAWING-ON-WINDOW for bitmaps."
   (let ((bwidth-var (gensym)) (bheight-var (gensym)))
-    `(let ((%drawing-window ,bitmap) (%drawing-array ,bitmap)
+    `(let ((%drawing-array ,bitmap)
              (,bwidth-var (ogl-pixmap-width ,bitmap))
              (,bheight-var (ogl-pixmap-height ,bitmap)))
-         %drawing-window %drawing-array ; bound but never used errors....
+         %drawing-array ; bound but never used errors....
          (drawing-on-window-bootstrap-clipping-and-scaling
            (0 0 ,bwidth-var ,bheight-var)
            (with-system-dependent-bitmap-drawing (,bitmap ,bwidth-var ,bheight-var)
@@ -150,7 +149,7 @@ multifont row, the common reference point will be the baseline instead of the to
   (%draw-rectangle w h x y))
 
 (defun erase-rectangle (w h x y)
-  (%erase-rectangle w h x y %drawing-window))
+  (%erase-rectangle w h x y))
 
 (defun draw-string (font-no string region-x region-y)
   (%draw-string font-no string region-x region-y))

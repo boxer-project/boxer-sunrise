@@ -7790,6 +7790,10 @@ Modification History (most recent at top)
 ;;;; FILE: disdcl.lisp
 ;;;;
 
+(DEFVAR %DRAWING-WINDOW NIL
+        "Inside of a drawing-on-window, this variable is bound to the window which
+   was given as an argument to drawing-on window, makes sense right.")
+
 ;; Commented out slots that were on defclass screen-obj
    ;   (new-wid :initform 0 :accessor screen-obj-new-wid)
    ;   (new-hei :initform 0 :accessor screen-obj-new-hei)

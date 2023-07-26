@@ -152,10 +152,6 @@
   "A list of symbols to funcall.  The symbols are generated from
    the forms in *redisplay-related-initializations*")
 
-(DEFVAR %DRAWING-WINDOW NIL
-        "Inside of a drawing-on-window, this variable is bound to the window which
-   was given as an argument to drawing-on window, makes sense right.")
-
 (DEFVAR %DRAWING-ARRAY NIL
         "Inside of a drawing-on-window, this variable is bound to %drawing-window's
    screen-array (Note that this value is valid because drawing-on-window does
