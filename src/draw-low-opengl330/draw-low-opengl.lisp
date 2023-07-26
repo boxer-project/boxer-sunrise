@@ -393,11 +393,6 @@ the window font (ie, draw-string) has to change it back for this to work.
 (defun %draw-ellipse (x y width height &optional filled?)
   (gl-add-shader-ellipse bw::*boxgl-device* x y width height filled?))
 
-(defun %draw-filled-arc (bit-array alu x y width height th1 th2)
-  "See the-attic for the previous lispworks GP library version of this function.
-It's not clear yet whether we'll need to re-implement this for the future."
-  (declare (ignore bit-array alu x y width height th1 th2)))
-
 (defun %draw-line (x0 y0 x1 y1)
   "Low level draw-line.  If we are using the graphics list performance, this will
   copy the points to the c-buffer we are putting vertices in, otherwise it will
