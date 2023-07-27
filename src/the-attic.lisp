@@ -10114,6 +10114,69 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: gdispl.lisp
 ;;;;
 
+;; sgithens 2023-07-26 bugs-54 removal
+
+                                                                                      (defun translate-graphics-command-list (gl trans-x trans-y)
+  (do-vector-contents (graphics-command gl)
+    (translate-graphics-command graphics-command trans-x trans-y)))
+
+(defun translate-and-scale-graphics-command-list (gl trans-x trans-y
+                                                     scale-x scale-y)
+  (do-vector-contents (graphics-command gl)
+    (translate-and-scale-graphics-command graphics-command
+                                          trans-x trans-y
+                                          scale-x scale-y)))
+
+;;; should go somewhere else eventually, doesn't hack clipping
+;;; should also handle "boxer-bit-gravity" eventually , for now,
+;;; the "bit gravity" will be :TOP-RIGHT but we might want to
+;;; make it be :CENTER to follow the sprite coordinate system
+;;; (maybe have scaling too)
+
+(defvar *boxer-graphics-box-bit-gravity* ':center)
+
+(defvar *scale-on-resize?* nil)
+
+;; stuff from resize-graphics-sheets that's not needed anymore... the boxer turtle coords stay the same
+    (when (not (null (graphics-sheet-graphics-list sheet)))
+      (ecase *boxer-graphics-box-bit-gravity*
+             (:top-right
+              (when *scale-on-resize?*
+                (translate-and-scale-graphics-command-list
+                 (graphics-sheet-graphics-list sheet)
+                 0 0 wid-scale hei-scale)))
+             (:center
+              (cond ((null *scale-on-resize?*)
+                     (translate-graphics-command-list
+                      (graphics-sheet-graphics-list sheet)
+                      (round (-& new-wid old-wid) 2)
+                      (round (-& new-hei old-hei) 2))
+                     )
+                (t
+                 (translate-graphics-command-list
+                  (graphics-sheet-graphics-list sheet)
+                  (-& (round old-wid 2)) (-& (round old-hei 2)))
+                 (translate-and-scale-graphics-command-list
+                  (graphics-sheet-graphics-list sheet)
+                  (round new-wid 2) (round new-hei 2)
+                  wid-scale hei-scale))))))
+
+       ;; if *scale-on-resize?* was not nil
+       (t
+          (dolist (obj (graphics-sheet-object-list sheet))
+            (when (not (eq (graphics-sheet-draw-mode sheet) ':clip))
+              (set-x-position obj (* (x-position obj) wid-scale))
+              (set-y-position obj (* (y-position obj) hei-scale)))
+            ))
+
+        ;; bitmap resizing
+        (case *boxer-graphics-box-bit-gravity*
+          (:top-right
+           (copy-pixmap-data
+            (min& old-wid new-wid) (min& old-hei new-hei)
+            old-bitmap 0 0 new-bitmap 0 0))
+          (:center
+
 ;; sgithens 2023-07-24 bugs-54 removal
 (defun allocate-boxer->window-command (graphics-command)
   (let ((handler (svref& *graphics-command-boxer->window-translation-table*

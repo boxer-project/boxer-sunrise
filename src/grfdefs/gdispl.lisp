@@ -1433,26 +1433,7 @@ Modification History (most recent at the top)
   (%%make-turtle-shape :contents (allocate-c-vector length)))
 
 
-(defun translate-graphics-command-list (gl trans-x trans-y)
-  (do-vector-contents (graphics-command gl)
-    (translate-graphics-command graphics-command trans-x trans-y)))
 
-(defun translate-and-scale-graphics-command-list (gl trans-x trans-y
-                                                     scale-x scale-y)
-  (do-vector-contents (graphics-command gl)
-    (translate-and-scale-graphics-command graphics-command
-                                          trans-x trans-y
-                                          scale-x scale-y)))
-
-;;; should go somewhere else eventually, doesn't hack clipping
-;;; should also handle "boxer-bit-gravity" eventually , for now,
-;;; the "bit gravity" will be :TOP-RIGHT but we might want to
-;;; make it be :CENTER to follow the sprite coordinate system
-;;; (maybe have scaling too)
-
-(defvar *boxer-graphics-box-bit-gravity* ':center)
-
-(defvar *scale-on-resize?* nil)
 
 (defvar *update-bitmap?* t)
 
@@ -1460,99 +1441,56 @@ Modification History (most recent at the top)
 ;; the memory with every twitch of the mouse
 (defun resize-graphics-sheet (sheet new-wid new-hei)
   (let* ((old-wid (graphics-sheet-draw-wid sheet))
-         (old-hei (graphics-sheet-draw-hei sheet))
-         (wid-scale (/ new-wid (float old-wid)))
-         (hei-scale (/ new-hei (float old-hei))))
+         (old-hei (graphics-sheet-draw-hei sheet)))
     (when (and *update-bitmap?* (not (null (graphics-sheet-bit-array sheet))))
       (let ((old-bitmap (graphics-sheet-bit-array sheet))
-            (new-bitmap (make-ogl-pixmap
-                                               new-wid new-hei)))
+            (new-bitmap (make-ogl-pixmap new-wid new-hei)))
         ;; if the new bitmap is bigger, initialize it
         (when (or (> new-wid old-wid) (> new-hei old-hei))
           (clear-offscreen-bitmap new-bitmap (or (graphics-sheet-background sheet)
-                                                 *background-color*))
-          )
+                                                 *background-color*)))
         ;; now move the old contents into the new bitmap
-        (case *boxer-graphics-box-bit-gravity*
-          (:top-right
-           (copy-pixmap-data
-            (min& old-wid new-wid) (min& old-hei new-hei)
-            old-bitmap 0 0 new-bitmap 0 0))
-          (:center
-           (copy-pixmap-data
-            (min& old-wid new-wid) (min& old-hei new-hei)
-            old-bitmap
-            (max& 0 (round (-& old-wid new-wid) 2))
-            (max& 0 (round (-& old-hei new-hei) 2))
-            new-bitmap
-            (max& 0 (round (-& new-wid old-wid) 2))
-            (max& 0 (round (-& new-hei old-hei) 2)))))
+        (copy-pixmap-data
+          (min& old-wid new-wid) (min& old-hei new-hei)
+          old-bitmap
+          (max& 0 (round (-& old-wid new-wid) 2))
+          (max& 0 (round (-& old-hei new-hei) 2))
+          new-bitmap
+          (max& 0 (round (-& new-wid old-wid) 2))
+          (max& 0 (round (-& new-hei old-hei) 2)))
         ;; now install the new bitmap
         (setf (graphics-sheet-bit-array sheet) new-bitmap)
         ;; we might not want to do this if sprites are allowed to have
         ;; pointers to raw pixmaps in their shapes
         (ogl-free-pixmap old-bitmap)))
-    (when (not (null (graphics-sheet-graphics-list sheet)))
-      (ecase *boxer-graphics-box-bit-gravity*
-             (:top-right
-              (when *scale-on-resize?*
-                (translate-and-scale-graphics-command-list
-                 (graphics-sheet-graphics-list sheet)
-                 0 0 wid-scale hei-scale)))
-             (:center
-              (cond ((null *scale-on-resize?*)
-                     (translate-graphics-command-list
-                      (graphics-sheet-graphics-list sheet)
-                      (round (-& new-wid old-wid) 2)
-                      (round (-& new-hei old-hei) 2))
-                     )
-                (t
-                 (translate-graphics-command-list
-                  (graphics-sheet-graphics-list sheet)
-                  (-& (round old-wid 2)) (-& (round old-hei 2)))
-                 (translate-and-scale-graphics-command-list
-                  (graphics-sheet-graphics-list sheet)
-                  (round new-wid 2) (round new-hei 2)
-                  wid-scale hei-scale))))))
     (when (not (null (graphics-sheet-object-list sheet)))
       ;; (maybe) move sprites to a new position
       ;; don't move if there are no sprites or if the box is in :clip mode
-      (ecase *boxer-graphics-box-bit-gravity*
-             (:top-right)
-             (:center
-              (cond ((null *scale-on-resize?*)
-                     (dolist (obj (graphics-sheet-object-list sheet))
-                       ;; leave things where they are unless they
-                       ;; would be clipped, in which case send them
-                       ;; home unless the sheet is in :clip mode
-                       (when (and (or (>= (abs (x-position obj)) (/ new-wid 2))
-                                      (>= (abs (y-position obj)) (/ new-hei 2)))
-                                  (not (eq (graphics-sheet-draw-mode sheet) ':clip)))
-                         (let ((%drawing-width new-wid) (%drawing-height new-hei)
-                                                        (%drawing-half-width (/ new-wid 2.0))
-                                                        (%drawing-half-height (/ new-hei 2.0)))
-                           (set-xy obj (wrap-x-coordinate (x-position obj))
-                                   (wrap-y-coordinate (y-position obj))))
+      (dolist (obj (graphics-sheet-object-list sheet))
+        ;; leave things where they are unless they
+        ;; would be clipped, in which case send them
+        ;; home unless the sheet is in :clip mode
+        (when (and (or (>= (abs (x-position obj)) (/ new-wid 2))
+                       (>= (abs (y-position obj)) (/ new-hei 2)))
+                  (not (eq (graphics-sheet-draw-mode sheet) ':clip)))
+          (let ((%drawing-width new-wid) (%drawing-height new-hei)
+                                        (%drawing-half-width (/ new-wid 2.0))
+                                        (%drawing-half-height (/ new-hei 2.0)))
+            (set-xy obj (wrap-x-coordinate (x-position obj))
+                    (wrap-y-coordinate (y-position obj))))
 
-                         ;		    (let* ((home-pos (home-position obj))
-                         ;			   (home-x (car home-pos))
-                         ;			   (home-y (cadr home-pos)))
-                         ;		      (set-x-position obj (* (signum home-x)
-                         ;					     (max (abs home-x)
-                         ;						  (/ new-wid 2))))
-                         ;		      (set-y-position obj (* (signum home-y)
-                         ;					     (max (abs home-y)
-                         ;						  (/ new-wid 2)))))
-                         )
-                       ))
-                (t
-                 (dolist (obj (graphics-sheet-object-list sheet))
-                   (when (not (eq (graphics-sheet-draw-mode sheet) ':clip))
-                     (set-x-position obj (* (x-position obj) wid-scale))
-                     (set-y-position obj (* (y-position obj) hei-scale)))
-                   ))))))
+          ;		    (let* ((home-pos (home-position obj))
+          ;			   (home-x (car home-pos))
+          ;			   (home-y (cadr home-pos)))
+          ;		      (set-x-position obj (* (signum home-x)
+          ;					     (max (abs home-x)
+          ;						  (/ new-wid 2))))
+          ;		      (set-y-position obj (* (signum home-y)
+          ;					     (max (abs home-y)
+          ;						  (/ new-wid 2)))))
+        ))))
     (setf (graphics-sheet-draw-wid sheet) new-wid)
-    (setf (graphics-sheet-draw-hei sheet) new-hei)))
+    (setf (graphics-sheet-draw-hei sheet) new-hei))
 
 ;;; Graphics State Changes
 
