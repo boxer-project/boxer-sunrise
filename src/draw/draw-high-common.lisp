@@ -52,24 +52,20 @@ which does everything Drawing-On-Window does except that it does not do a
 PREPARE-SHEET of the window. Unless you really know what you are doing
 you should only use this inside the :BLINK method for a blinker."
   (once-only (window)
-    `(let ((%drawing-array  ,window))
-       %drawing-array    ;bound but never...
-       (drawing-on-window-bootstrap-clipping-and-scaling
-         (0 0
-          (sheet-inside-width ,window) (sheet-inside-height ,window))
-          . ,body))))
+    `(drawing-on-window-bootstrap-clipping-and-scaling
+       (0 0
+        (sheet-inside-width ,window) (sheet-inside-height ,window))
+        . ,body)))
 
 (defmacro drawing-on-bitmap ((bitmap) &body body)
   "Used instead of DRAWING-ON-WINDOW for bitmaps."
   (let ((bwidth-var (gensym)) (bheight-var (gensym)))
-    `(let ((%drawing-array ,bitmap)
-             (,bwidth-var (ogl-pixmap-width ,bitmap))
-             (,bheight-var (ogl-pixmap-height ,bitmap)))
-         %drawing-array ; bound but never used errors....
-         (drawing-on-window-bootstrap-clipping-and-scaling
-           (0 0 ,bwidth-var ,bheight-var)
-           (with-system-dependent-bitmap-drawing (,bitmap ,bwidth-var ,bheight-var)
-       . ,body)))))
+    `(let ((,bwidth-var (ogl-pixmap-width ,bitmap))
+           (,bheight-var (ogl-pixmap-height ,bitmap)))
+       (drawing-on-window-bootstrap-clipping-and-scaling
+         (0 0 ,bwidth-var ,bheight-var)
+         (with-system-dependent-bitmap-drawing (,bitmap ,bwidth-var ,bheight-var)
+           . ,body)))))
 
 ;;;
 ;;; Scaling and Clipping Macros
