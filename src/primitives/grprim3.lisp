@@ -456,7 +456,7 @@ Modification History (most recent at top)
                 (t (bitblt-to-screen wid hei bitmap 0 0 0 0)))
           ;; now play the graphics list into the same area
           (with-graphics-vars-bound-internal graphics-sheet
-            (playback-graphics-list-internal display-list)))
+            (boxer-playback-graphics-list display-list :translate? t)))
         ;; now clear the display list
         (clear-graphics-list display-list)
         ;; mark the dirty? flag
