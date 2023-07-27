@@ -10114,6 +10114,28 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: gdispl.lisp
 ;;;;
 
+(defmacro playback-graphics-list-internal (gl &key (start 0) (graphics-canvas nil))
+  `(with-graphics-state (,gl t)
+
+     (when (and *use-opengl-framebuffers* ,graphics-canvas)
+      (when (graphics-canvas-pen-color-cmd ,graphics-canvas)
+        (process-graphics-command-marker (graphics-canvas-pen-color-cmd ,graphics-canvas)))
+      (when (graphics-canvas-pen-size-cmd ,graphics-canvas)
+        (process-graphics-command-marker (graphics-canvas-pen-size-cmd ,graphics-canvas)))
+      (when (graphics-canvas-pen-font-cmd ,graphics-canvas)
+        (process-graphics-command-marker (graphics-canvas-pen-font-cmd ,graphics-canvas))))
+
+      (do-vector-contents (command ,gl :start ,start)
+        (process-graphics-command-marker command) ; . ,args)
+
+        (when (and *use-opengl-framebuffers* ,graphics-canvas)
+          (cond ((equal 4 (aref command 0))
+                (setf (graphics-canvas-pen-color-cmd ,graphics-canvas) command))
+                ((equal 1 (aref command 0))
+                (setf (graphics-canvas-pen-size-cmd ,graphics-canvas) command))
+                ((equal 2 (aref command 0))
+                (setf (graphics-canvas-pen-font-cmd ,graphics-canvas) command)))))))
+
 ;; sgithens 2023-07-26 bugs-54 removal
 
                                                                                       (defun translate-graphics-command-list (gl trans-x trans-y)
