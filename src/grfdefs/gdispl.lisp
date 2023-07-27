@@ -553,6 +553,9 @@ Modification History (most recent at the top)
 
 (defvar *type-check-during-template-conversion* t)
 
+(defun make-single-float (arg)
+  (coerce arg 'single-float))
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun expand-transform-template-item (arg template-action direction)
     (ecase direction
@@ -564,7 +567,7 @@ Modification History (most recent at the top)
           (:window->boxer (case template-action
                             (:x-transform (list 'user-coordinate-fix-x arg))
                             (:y-transform (list 'user-coordinate-fix-y arg))
-                            (:coerce      (list 'single-float arg))
+                            (:coerce      (list 'make-single-float arg))
                             (t            arg)))))
 )
 
@@ -1543,7 +1546,10 @@ Modification History (most recent at the top)
 ;; for *file-bin-version* > 12, colors are fixnums again
 (defun reallocate-pixel-color (color)
   (etypecase color
-             (null   color);; NIL is the default color for turtle shapes
+             (null    color);; NIL is the default color for turtle shapes
+             (vector  (if (rgb-p color)
+                        color
+                        nil))
              (integer (%make-color-from-bytes (ldb (byte 8 16) color)
                                               (ldb (byte 8 8)  color)
                                               (ldb (byte 8 0)  color)))
