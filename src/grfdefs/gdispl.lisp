@@ -423,17 +423,6 @@ Modification History (most recent at the top)
   trans-x trans-y cos-scale sin-scale scale)
   )
 
-(defun allocate-boxer->window-command (graphics-command)
-  (let ((handler (svref& *graphics-command-boxer->window-translation-table*
-                         (let ((opcode (svref& graphics-command 0)))
-                           ;; this is a crock to handle cases where
-                           ;; we (maybe) need to convert old graphics
-                           ;; commands from obsolete files
-                           (if (>=& opcode 32) (-& opcode 32) opcode)))))
-    (if (null handler)
-      (error "No translation allocator for ~A" graphics-command)
-      (funcall handler graphics-command))))
-
 (defun allocate-window->boxer-command (graphics-command)
   (if (< (aref graphics-command 0) 32)
     (let ((handler (svref& *graphics-command-window->boxer-translation-table*

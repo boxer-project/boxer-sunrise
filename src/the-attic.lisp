@@ -10114,6 +10114,19 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: gdispl.lisp
 ;;;;
 
+;; sgithens 2023-07-24 bugs-54 removal
+(defun allocate-boxer->window-command (graphics-command)
+  (let ((handler (svref& *graphics-command-boxer->window-translation-table*
+                         (let ((opcode (svref& graphics-command 0)))
+                           ;; this is a crock to handle cases where
+                           ;; we (maybe) need to convert old graphics
+                           ;; commands from obsolete files
+                           (if (>=& opcode 32) (-& opcode 32) opcode)))))
+    (if (null handler)
+      (error "No translation allocator for ~A" graphics-command)
+      (funcall handler graphics-command))))
+
+
 ;;; Like a Graphics-Command-List with extra slots.  This is used as
 ;;; a cache for the rendering of a turtle shape at a particular
 ;;; location and heading.  Subsequent calls to draw the turtle
