@@ -67,6 +67,8 @@
   (let ((prev-model nil)
         (trans-mat nil))
 
+    (with-graphics-state (gl t)
+
     (when translate?
       (setf prev-model (boxgl-device-model-matrix bw::*boxgl-device*)
             trans-mat  (3d-matrices:mtranslation
@@ -86,7 +88,6 @@
         (draw-boxer-change-graphics-font ;process-graphics-command-marker
          (graphics-canvas-pen-font-cmd graphics-canvas))))
 
-    (with-graphics-state (gl t)
          (do-vector-contents (command gl :start start)
 ;                     (format t
 ; "~%matmatMAT: ~A
@@ -104,10 +105,12 @@
                      ((equal 2 (aref command 0))
                       (setf (graphics-canvas-pen-font-cmd graphics-canvas) command)))))
                    ;;  (process-graphics-command-marker command)
-                   )
     (when translate?
       (setf (boxgl-device-model-matrix bw::*boxgl-device*) prev-model)
-      (update-matrices-ubo bw::*boxgl-device*))))
+      (update-matrices-ubo bw::*boxgl-device*))
+                   )
+      )
+      )
 
 ;; 32   BOXER-CHANGE-ALU                             (NEW-ALU)
 (defun draw-boxer-change-alu (com)

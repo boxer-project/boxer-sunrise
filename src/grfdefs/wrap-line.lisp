@@ -17,6 +17,9 @@
 ;;;;
 (in-package :boxer-wrap)
 
+(declaim (inline wrap-y-coord-top wrap-y-coord-bottom wrap-x-coord-right wrap-x-coord-left
+                 beyond-top? beyond-bottom? beyond-right? beyond-left?))
+
 (defun point-in-array? (x y)
   (and (x-in-array? x)
        (y-in-array? y)))

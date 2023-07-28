@@ -810,6 +810,15 @@ Modification History (most recent at top)
   (let ((pen-mode (get-alu-from-pen (pen self))))
     (when (and pen-mode (not (no-graphics?)))
       (draw-update self)
+
+; Ok, looking back at a previous tag, we need to add dub-graphics-list back, expect
+; I'm not sure it will be translated... perhpaps we could just add a setxy command before
+; it... but we'd have to keep track of the pen state and stuff. ugh.  Maybe we should
+; just translate the graphics command list of the shape.
+
+      (dub-graphics-list (box-interface-value (slot-value self 'shape)))
+        ; :translate? t :trans-x (x-position self) :trans-y (y-position self))
+
       ;; reset the state values which may have been bashed during the
       ;; dub to be the state value of the shape
       (synchronize-graphics-state self t))))
