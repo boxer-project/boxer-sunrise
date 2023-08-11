@@ -364,7 +364,7 @@
               (> (length name) 0)
               (and (eq actual-obj (screen-obj-actual-obj (cadddr *point*)))
                    (name-row? (cadr *point*))))
-        (setq name-end-x (draw-borders-name name inner-left box-top name-top))
+        (setq name-end-x (draw-borders-name name inner-left box-top name-top border-thickness))
         (setq name-end-x inner-left))
       (setq label-end-x (draw-borders-label (box-type-label actual-obj) inner-left box-bottom))
       (draw-borders-walls box-left box-right inner-top inner-bottom box-top
@@ -388,31 +388,32 @@
         (draw-rectangle (- inner-right name-end-x) (- inner-top top-y 1)
                         name-end-x top-y)))))
 
-(defun draw-borders-name (name name-x name-mid-y name-top-y)
-  (let ((current-x name-x)
-        (inside-name-width (if (null name)
-                               *noname-blank-width*
-                             (string-wid *border-name-font* name)))
-        (lower-slant-y (+ name-mid-y *border-inside-space*)))
-    (let ((end-x (+ current-x *border-name-slant-offset*)))
-      ;; the left "<" of the name
-      (draw-line current-x name-mid-y end-x name-top-y)
-      (draw-line current-x name-mid-y end-x lower-slant-y)
-      (setq current-x end-x))
-    (let ((end-x (+ current-x inside-name-width (* *border-name-padding* 2))))
-      ;; the name string itself
-      (unless (null name)
-        (draw-string *border-name-font* name current-x
-                     (+ name-top-y *border-name-padding* *basic-border-width*)))
-      ;; the top & bottom
-      (draw-line current-x name-top-y end-x name-top-y)
-      (draw-line current-x lower-slant-y end-x lower-slant-y)
-      (setq current-x end-x))
-    (let ((end-x (+ current-x *border-name-slant-offset*)))
-      ;; the right ">"
-      (draw-line current-x name-top-y end-x name-mid-y)
-      (draw-line current-x lower-slant-y end-x name-mid-y)
-      end-x)))
+(defun draw-borders-name (name name-x name-mid-y name-top-y border-thickness)
+  (with-pen-size (border-thickness)
+    (let ((current-x name-x)
+          (inside-name-width (if (null name)
+                                *noname-blank-width*
+                              (string-wid *border-name-font* name)))
+          (lower-slant-y (+ name-mid-y *border-inside-space*)))
+      (let ((end-x (+ current-x *border-name-slant-offset*)))
+        ;; the left "<" of the name
+        (draw-line current-x name-mid-y end-x name-top-y)
+        (draw-line current-x name-mid-y end-x lower-slant-y)
+        (setq current-x end-x))
+      (let ((end-x (+ current-x inside-name-width (* *border-name-padding* 2))))
+        ;; the name string itself
+        (unless (null name)
+          (draw-string *border-name-font* name current-x
+                      (+ name-top-y *border-name-padding* *basic-border-width*)))
+        ;; the top & bottom
+        (draw-line current-x name-top-y end-x name-top-y)
+        (draw-line current-x lower-slant-y end-x lower-slant-y)
+        (setq current-x end-x))
+      (let ((end-x (+ current-x *border-name-slant-offset*)))
+        ;; the right ">"
+        (draw-line current-x name-top-y end-x name-mid-y)
+        (draw-line current-x lower-slant-y end-x name-mid-y)
+        end-x))))
 
 (defun draw-borders-label (label inner-left box-bottom)
   (cond ((null *show-border-type-labels*)
