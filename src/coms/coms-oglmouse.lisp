@@ -805,8 +805,8 @@
                                                                                                                   ;; sized bitmaps inside of loop
                                                                                                                   (set-fixed-size actual-box
                                                                                                                                   (- new-wid left right)
-                                                                                                                                  (- new-hei top bottom)))
-                                                                                                                (repaint)
+                                                                                                                                  (- new-hei top bottom))
+                                                                                                                  (repaint))
                                                                                                                 ))))
                                                                         ;; finalize..
                                                                         (cond ((null moved-p)
