@@ -100,17 +100,21 @@
     (disable self)))
 
 (defmethod resize ((self graphics-canvas) wid hei)
-  "Resizes the contents, by regenerating the backing texture. Existing contents will be lost."
-  (let* ((pixmap (graphics-canvas-pixmap self))
-         (texture (ogl-pixmap-texture pixmap)))
-    (gl:bind-texture :texture-2d texture)
-    (gl:tex-image-2d :texture-2d 0 :rgba wid hei 0 :rgba :unsigned-byte (cffi:null-pointer))
-    (gl:bind-texture :texture-2d 0)
-    (setf (ogl-pixmap-width pixmap) wid)
-    (setf (ogl-pixmap-height pixmap) hei)
-    (setf (op-count self) 0)
-    (gl:clear-color 0.0 0.0 0.0 0.0) ;; transparent
-    (gl:clear :color-buffer-bit :depth-buffer-bit)))
+  "Resizes the contents, by regenerating the backing texture. Existing contents will be lost.
+
+   Respects the global *update-bitmap?* to avoid intensive work during manual box resizing.
+  "
+  (when *update-bitmap?*
+    (let* ((pixmap (graphics-canvas-pixmap self))
+          (texture (ogl-pixmap-texture pixmap)))
+      (gl:bind-texture :texture-2d texture)
+      (gl:tex-image-2d :texture-2d 0 :rgba wid hei 0 :rgba :unsigned-byte (cffi:null-pointer))
+      (gl:bind-texture :texture-2d 0)
+      (setf (ogl-pixmap-width pixmap) wid)
+      (setf (ogl-pixmap-height pixmap) hei)
+      (setf (op-count self) 0)
+      (gl:clear-color 0.0 0.0 0.0 0.0) ;; transparent
+      (gl:clear :color-buffer-bit :depth-buffer-bit))))
 
 (defmethod enable ((self graphics-canvas) &key (device bw::*boxgl-device*))
   "Enables the framebuffer backing this graphics-canvas, such that any GL operations will
