@@ -178,7 +178,7 @@ Modification History (most recent at the top)
 ;;;; 34   BOXER-CHANGE-GRAPHICS-FONT                   (NEW-FONT-NO)
 ;;;; 35   BOXER-LINE-SEGMENT                           (X0 Y0 X1 Y1)
 ;;;; 36   BOXER-CHANGE-GRAPHICS-COLOR                  (NEW-COLOR)
-;;;; 37
+;;;; 37   BOXER-TRANSFORM-MATRIX                       (MATRIX) 4x4 matrix packed in 1x16 single-float vector
 ;;;; 38
 ;;;; 39   BOXER-CENTERED-STRING                        (X Y STRING)
 ;;;; 40   BOXER-LEFT-STRING                            (X Y STRING)
@@ -443,9 +443,11 @@ Modification History (most recent at the top)
 
 
 (defun deallocate-graphics-command-marker (graphics-command)
-  (funcall (svref& *graphics-command-deallocation-table*
+  (when (svref& *graphics-command-deallocation-table*
                    (svref& graphics-command 0))
-           graphics-command))
+    (funcall (svref& *graphics-command-deallocation-table*
+                   (svref& graphics-command 0))
+           graphics-command)))
 
 
 
@@ -1641,9 +1643,14 @@ Modification History (most recent at the top)
 
 ;;; show probably do some type checking about compatibility
 ;;; of the from and to args
-(defun dub-graphics-list (from-gl &optional
+(defun dub-graphics-list (from-gl &key
                                   (to-gl %graphics-list)
-                                  (action ':append))
+                                  (action ':append)
+                                  (model-matrix nil))
+  ;; sgithens 2023-08-10 TODO I'm not sure why this is working since I'm not
+  ;; putting the inverse matrix at the end of the dubbed list...
+  (when model-matrix
+    (sv-append to-gl `#(37 ,model-matrix)))
   (ecase action
          (:append
           ;; first, set the drawing parameters to the basic state

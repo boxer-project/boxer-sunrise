@@ -171,12 +171,12 @@ Modification History (most recent at top)
            ;; just copy the sprite's shape into the current shape
            (dub-graphics-list (shape (slot-value new-shape-box
                                                  'associated-turtle))
-                              shape :replace))
+                              :to-gl shape :action :replace))
       ((and (virtual-copy? new-shape-box)
             (fast-vc-has-sprite? new-shape-box))
        ;; just copy the sprite's shape into the current shape
        (dub-graphics-list (shape (getf (vc-graphics new-shape-box) 'turtle))
-                          shape :replace))
+                          :to-gl shape :action :replace))
       (t
        ;; must be some flavor of graphics box
        ;; need to convert to from window to turtle commands
@@ -816,8 +816,8 @@ Modification History (most recent at top)
 ; it... but we'd have to keep track of the pen state and stuff. ugh.  Maybe we should
 ; just translate the graphics command list of the shape.
 
-      (dub-graphics-list (box-interface-value (slot-value self 'shape)))
-        ; :translate? t :trans-x (x-position self) :trans-y (y-position self))
+      (dub-graphics-list (box-interface-value (slot-value self 'shape))
+                         :model-matrix (model-matrix self))
 
       ;; reset the state values which may have been bashed during the
       ;; dub to be the state value of the shape

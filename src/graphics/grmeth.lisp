@@ -609,22 +609,26 @@ Modification History (most recent at top)
 
 ;;;; drawing
 
+(defmethod model-matrix ((self button))
+  "Generates the model matrix for the sprites current heading, size (scale), and rotation."
+  (let* ((ahead (absolute-heading self))
+         (asize (absolute-size self))
+         (ahead-rad (* ahead (/ pi 180)))
+         (trans-mat (3d-matrices:mtranslation
+                      (3d-vectors:vec
+                        (+ %drawing-half-width (absolute-x-position self))
+                        (- %drawing-half-height (absolute-y-position self)) 0.0)))
+         (rot-mat (3d-matrices:nmrotate
+                      (3d-matrices:meye 4) 3d-vectors:+vz+
+                      ahead-rad))
+         (scale-mat (3d-matrices:nmscale (3d-matrices:meye 4) (3d-vectors:vec asize asize 0.0)))
+         (final-mat (3d-matrices:marr4 (3d-matrices:m* trans-mat rot-mat scale-mat))))
+    final-mat))
+
 (defmethod draw ((self button))
   (unless (or (eq self *current-active-sprite*) (null (shown? self)))
-    (let* (;(*supress-graphics-recording?* (not stamp?))
-          (ahead (absolute-heading self))
-          (asize (absolute-size self))
-          (ahead-rad (* ahead (/ pi 180)))
-          (prev-model (boxgl-device-model-matrix bw::*boxgl-device*))
-          (trans-mat (3d-matrices:mtranslation
-                       (3d-vectors:vec
-                         (+ %drawing-half-width (absolute-x-position self))
-                         (- %drawing-half-height (absolute-y-position self)) 0.0)))
-          (rot-mat (3d-matrices:nmrotate
-                       (3d-matrices:meye 4) 3d-vectors:+vz+
-                       ahead-rad))
-          (scale-mat (3d-matrices:nmscale (3d-matrices:meye 4) (3d-vectors:vec asize asize 0.0)))
-          (final-mat (3d-matrices:marr4 (3d-matrices:m* trans-mat rot-mat scale-mat))))
+    (let* ((prev-model (boxgl-device-model-matrix bw::*boxgl-device*))
+           (final-mat (model-matrix self)))
 
       (setf (boxgl-device-model-matrix bw::*boxgl-device*) final-mat)
       (update-matrices-ubo bw::*boxgl-device*)

@@ -33,6 +33,9 @@
            (apply-gdispl-com #'draw-boxer-line-segment command))
           ((eq com 36)
            (apply-gdispl-com #'draw-boxer-change-graphics-color command))
+          ((eq com 37)
+           (apply-gdispl-com #'draw-boxer-transform-matrix command)
+          )
           ((eq com 39)
            (apply-gdispl-com #'draw-boxer-centered-string command))
           ((eq com 40)
@@ -136,6 +139,12 @@
 ;; 36   BOXER-CHANGE-GRAPHICS-COLOR                  (NEW-COLOR)
 (defun draw-boxer-change-graphics-color (new-color)
   (%set-pen-color new-color))
+
+;; 37   BOXER-TRANSFORM-MATRIX                       (. . .)
+
+(defun draw-boxer-transform-matrix (matrix)
+  (setf (boxgl-device-model-matrix bw::*boxgl-device*) matrix)
+  (update-matrices-ubo bw::*boxgl-device*))
 
 ;; 39   BOXER-CENTERED-STRING             (X Y STRING)
 (defun draw-boxer-centered-string (x y text)
