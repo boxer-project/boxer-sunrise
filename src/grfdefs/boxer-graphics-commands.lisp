@@ -82,14 +82,11 @@
 
     (when (and *use-opengl-framebuffers* graphics-canvas)
       (when (graphics-canvas-pen-color-cmd graphics-canvas)
-        (draw-boxer-change-graphics-color ;process-graphics-command-marker
-         (graphics-canvas-pen-color-cmd graphics-canvas)))
+        (process-graphics-command (graphics-canvas-pen-color-cmd graphics-canvas)))
       (when (graphics-canvas-pen-size-cmd graphics-canvas)
-        (draw-boxer-change-pen-width ;process-graphics-command-marker
-         (graphics-canvas-pen-size-cmd graphics-canvas)))
+        (process-graphics-command (graphics-canvas-pen-size-cmd graphics-canvas)))
       (when (graphics-canvas-pen-font-cmd graphics-canvas)
-        (draw-boxer-change-graphics-font ;process-graphics-command-marker
-         (graphics-canvas-pen-font-cmd graphics-canvas))))
+        (process-graphics-command (graphics-canvas-pen-font-cmd graphics-canvas))))
 
          (do-vector-contents (command gl :start start)
 ;                     (format t
@@ -101,11 +98,11 @@
            (process-graphics-command command)
 
              (when (and *use-opengl-framebuffers* graphics-canvas)
-               (cond ((equal 4 (aref command 0))
+               (cond ((member (aref command 0) '(4 36))  ;(equal 4 (aref command 0))
                       (setf (graphics-canvas-pen-color-cmd graphics-canvas) command))
-                     ((equal 1 (aref command 0))
+                     ((member (aref command 0) '(1 33))  ;(equal 1 (aref command 0))
                       (setf (graphics-canvas-pen-size-cmd graphics-canvas) command))
-                     ((equal 2 (aref command 0))
+                     ((member (aref command 0) '(2 34))  ;(equal 2 (aref command 0))
                       (setf (graphics-canvas-pen-font-cmd graphics-canvas) command)))))
                    ;;  (process-graphics-command-marker command)
     (when translate?
