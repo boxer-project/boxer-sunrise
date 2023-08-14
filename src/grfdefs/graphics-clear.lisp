@@ -46,29 +46,7 @@
           (let* ((gr-scr-box (cdar (actual-obj-screen-objs self)))
                  (canvas (getprop gr-scr-box :graphics-canvas)))
             (when canvas
-              (clear canvas))))
-        ;; now erase stuff on the screen...
-        (dolist (screen-box (get-visible-screen-objs  self))
-          (unless (eq ':shrunk (display-style screen-box))
-            (drawing-on-turtle-slate screen-box
-                                     (cond ((or (null bg) bitmap-p)
-                                            (erase-rectangle gswid gshei 0 0))
-                                       ((color? bg)
-                                        ;; looks like a color so draw a rectangle of that color
-                                        (with-pen-color (bg)
-                                          (draw-rectangle gswid gshei 0 0)))
-                                       ;; check for tiling pattern here
-                                       )
-                                     ;; now, if only one of the drawing sufaces has been cleared,
-                                     ;; we need to regenerate the other surface
-                                     (when (and (not graphics-list-p) graphics-list)
-                                       ;; regenerate the graphics list
-                                       ;;  (break "This is it!")
-                                       (playback-graphics-list-internal graphics-list))
-                                     (when (and (not bitmap-p) graphics-list-p bit-array)
-                                       ;; regenerate the background
-                                       (bitblt-to-screen gswid gshei bit-array
-                                                         0 0 0 0)))))))))
+              (clear canvas))))))))
 
 
 (defmethod clearscreen ((self box)

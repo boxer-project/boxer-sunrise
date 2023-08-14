@@ -10138,7 +10138,7 @@ OpenGL expects a list of X Y pairs"
 
 ;; sgithens 2023-07-26 bugs-54 removal
 
-                                                                                      (defun translate-graphics-command-list (gl trans-x trans-y)
+(defun translate-graphics-command-list (gl trans-x trans-y)
   (do-vector-contents (graphics-command gl)
     (translate-graphics-command graphics-command trans-x trans-y)))
 
@@ -12167,6 +12167,35 @@ OpenGL expects a list of X Y pairs"
 (defmethod dump-plist-length ((self gopher-url))
   (+& (call-next-method) 2))
 
+;;;;
+;;;; FILE: graphics-clear.lisp
+;;;;
+
+;; from defmethod clear-box
+        ;; now erase stuff on the screen...
+        ;; sgithens 2023-07-22 I don't think anything in this erase box is necessary with
+        ;; double buffering
+        ; (dolist (screen-box (get-visible-screen-objs  self))
+        ;   (unless (eq ':shrunk (display-style screen-box))
+        ;     (drawing-on-turtle-slate screen-box
+        ;                              (cond ((or (null bg) bitmap-p)
+        ;                                     (erase-rectangle gswid gshei 0 0))
+        ;                                ((color? bg)
+        ;                                 ;; looks like a color so draw a rectangle of that color
+        ;                                 (with-pen-color (bg)
+        ;                                   (draw-rectangle gswid gshei 0 0)))
+        ;                                ;; check for tiling pattern here
+        ;                                )
+        ;                              ;; now, if only one of the drawing sufaces has been cleared,
+        ;                              ;; we need to regenerate the other surface
+        ;                              (when (and (not graphics-list-p) graphics-list)
+        ;                                ;; regenerate the graphics list
+        ;                                ;;  (break "This is it!")
+        ;                                (playback-graphics-list-internal graphics-list))
+        ;                              (when (and (not bitmap-p) graphics-list-p bit-array)
+        ;                                ;; regenerate the background
+        ;                                (bitblt-to-screen gswid gshei bit-array
+        ;                                                  0 0 0 0)))))
 
 ;;;;
 ;;;; FILE: grfdfs.lisp
