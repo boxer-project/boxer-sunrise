@@ -191,12 +191,12 @@
              (height (graphics-sheet-draw-hei gs))
              (bit-array-dirty? (graphics-sheet-bit-array-dirty? gs))
              (background-color (if (graphics-sheet-background gs)
-                                   (ogl-color-to-css-hex (graphics-sheet-background gs))
-                                   (ogl-color-to-css-hex *white*)))
+                                   (rgb->css-hex (graphics-sheet-background gs))
+                                   (rgb->css-hex *white*)))
              (glist (graphics-sheet-graphics-list gs))
              (glist-commands (aref glist 0))
              (gobj-list (graphics-sheet-object-list gs))
-             (current-pen-color (ogl-color-to-css-hex *black*)))
+             (current-pen-color (rgb->css-hex *black*)))
 
         (format stream "<svg width=\"~a\" height=\"~a\" xmlns=\"http://www.w3.org/2000/svg\">" width height )
         ;; If it has a bit-array it's likely a raster image, but could have graphics commands as well? Either way,
@@ -209,42 +209,45 @@
         (loop for command across (remove nil glist-commands)
           do
             (let ((opcode (aref command 0)))
-              (cond ((equal opcode 4) ; change-graphics-color
-                     (setf current-pen-color (ogl-color-to-css-hex (aref command 1))))
+              (cond ((member (aref command 0) '(4 36)) ; change-graphics-color
+                     (setf current-pen-color (rgb->css-hex (aref command 1))))
                     (t
                      (generate-svg-from-graphics-command command stream current-pen-color)))))
+        ;; sprites
         (if gobj-list
          (loop for object in (remove nil gobj-list)
           do
-            (loop for command across (remove nil (aref (slot-value object 'window-shape) 0))
+            (loop for command across (remove nil (aref (box-interface-value (slot-value object 'shape)) 0))
               do (let ((opcode (aref command 0)))
-              (cond ((equal opcode 4) ; change-graphics-color
-                     (setf current-pen-color (ogl-color-to-css-hex (aref command 1))))
+              (cond ((member (aref command 0) '(4 36)) ; change-graphics-color
+                     (setf current-pen-color (rgb->css-hex (aref command 1))))
                     (t
                      (generate-svg-from-graphics-command command stream current-pen-color)))))))
         (format stream "</svg>")))
 
     (format stream "</fieldset>")))
 
+;; TODO 2023-08-14 This needs an overhaul to fix up again after the work on bugs-54. At the moment
+;; just fixed up enough to prevent crashing.
 (defun generate-svg-from-graphics-command (command stream current-pen-color)
   "Taking a graphics command (ex. '(3 1 1 10 10) ) we stream the appropriate svg tag for it.
   These are the commands detailed in gdispl.lisp. Currently this function just takes care of the
   actual drawing commands, not any state change commands such as changing pen-color."
   (let ((opcode (aref command 0)))
-    (cond ((equal opcode 3) ; draw-line
+    (cond ((member opcode '(3 35)) ; draw-line
            (format stream "<line x1=\"~a\" y1=\"~a\" x2=\"~a\" y2=\"~a\" stroke=\"~a\" />"
-                   (aref command 1) (aref command 2) (aref command 3) (aref command 4) current-pen-color))
-          ((equal opcode 7) ; centered-string
+                   (aref command 1) (- (aref command 2)) (aref command 3) (aref command 4) current-pen-color))
+          ((member opcode '(7 39)) ; centered-string
            (format stream "<text x=\"~f\" y=\"~f\" dominant-baseline=\"hanging\" text-anchor=\"middle\">~a</text>"
                    (aref command 1) (aref command 2) (aref command 3)))
-          ((equal opcode 10) ; centered-rectangle
+          ((member opcode '(10 42)) ; centered-rectangle
            (let* ((width (aref command 3))
                  (height (aref command 4))
                  (x (- (aref command 1) (/ width 2)))
                  (y (- (aref command 2) (/ height 2))))
              (format stream "<rect x=\"~f\" y=\"~f\" width=\"~f\" height=\"~f\" fill=\"~a\"/>"
                      x y width height current-pen-color)))
-          ((equal opcode 15) ; 15 CENTERED-BITMAP (BITMAP X Y WIDTH HEIGHT)
+          ((member opcode '(15 47)) ; 15 CENTERED-BITMAP (BITMAP X Y WIDTH HEIGHT)
            (let* ((width (aref command 4))
                  (height (aref command 5))
                  (x (- (aref command 2) (/ width 2)))
@@ -252,22 +255,14 @@
              (let ((base64png (generate-png-from-ogl-pixmap (aref command 1))))
                (format stream "<image x=\"~f\" y=\"~f\" width=\"~f\" height=\"~f\" href=\"data:image/png;base64,~a\"/>"
                        x y width height base64png))))
-          ((equal opcode 30) ; filled circle
+          ((member opcode '(30 62)) ; filled circle
            (format stream "<circle cx=\"~f\" cy=\"~f\" r=\"~f\" fill=\"~a\" />"
                    (aref command 1) (aref command 2) (aref command 3) current-pen-color))
           (t
            (format t "~%HTML Need to Implement Graphics command: ~a" command)))))
 
-(defun ogl-color-to-css-hex (color)
-  "Converts one of our internal opengl colors to a hex representation like #ABCC00 thats
-   ready to go into some html or css.
-
-   These are percentages so we have to translate them to 0 -> 255 values."
-  (let* ((red (floor (* 255 (bw::ogl-color-red color))))
-         (green (floor (* 255 (bw::ogl-color-green color))))
-         (blue (floor (* 255 (bw::ogl-color-blue color))))
-         (alpha (bw::ogl-color-alpha color)))
-    (format nil "#~2,'0x~2,'0x~2,'0x" red green blue)))
+(defun rgb->css-hex (rgb-color)
+  (aref (rgb->rgb-hex rgb-color) 1))
 
 (defmethod write-foreign-file-row ((ffc full-html-file-class) row stream)
   (let* ((bfd-list (aref (chas-array row) 3))
@@ -275,7 +270,7 @@
          (cur-color (if cur-bfd
                         (bfd-color cur-bfd)
                         *foreground-color*))
-         (cur-css-color (ogl-color-to-css-hex cur-color)))
+         (cur-css-color (rgb->css-hex cur-color)))
 
     (when (closet-row? row (superior-box row))
       (format stream "<div class=\"closet-row\">")
@@ -286,7 +281,7 @@
       ;; each letter in a span. We'll need to do a bit of work on traversing the rows to put consective cha's together.
       (when (and cur-bfd (equal cha-no (bfd-cha-no cur-bfd)))
         (setf cur-color (bfd-color cur-bfd))
-        (setf cur-css-color (ogl-color-to-css-hex cur-color))
+        (setf cur-css-color (rgb->css-hex cur-color))
         (when (cdr bfd-list)
             (setf cur-bfd (cadr bfd-list))
             (setf bfd-list (cdr bfd-list))))
