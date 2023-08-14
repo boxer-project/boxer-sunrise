@@ -60,13 +60,6 @@
   (unless (null slope)
     (- (- (* slope (- x %drawing-half-width)) y))))
 
-(defun draw-wrap-line-skip (from-x from-y to-x to-y)
-  (let* ((delta-x (- to-x from-x))
-         (delta-y (- to-y from-y))
-         (islope (unless (zerop delta-y) (/ delta-x delta-y)))
-         (slope (unless (zerop delta-x) (/ delta-y delta-x))))
-    (draw-line from-x from-y to-x to-y)))
-
 (defun draw-line-yflip (x1 y1 x2 y2)
   (draw-line x1 (- y1) x2 (- y2)))
 
