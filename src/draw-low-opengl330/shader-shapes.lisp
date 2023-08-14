@@ -235,10 +235,17 @@
   (enable-gl-shader-program device (ellipse-shader device))
 
   (let* ((pen-width (if filled? 0 pen-size))
-         (x0 (- cx (/ width 2))) (y0 (+ cy (/ height 2)))
-         (x1 (+ cx (/ width 2))) (y1 (+ cy (/ height 2)))
-         (x2 (- cx (/ width 2))) (y2 (- cy (/ height 2)))
-         (x3 (+ cx (/ width 2))) (y3 (- cy (/ height 2)))
+         ; I believe this needs to be square in case it's rotated. TODO sgithens 2023-08-14
+         ;  (x0 (- cx (/ width 2))) (y0 (+ cy (/ height 2)))
+         ;  (x1 (+ cx (/ width 2))) (y1 (+ cy (/ height 2)))
+         ;  (x2 (- cx (/ width 2))) (y2 (- cy (/ height 2)))
+         ;  (x3 (+ cx (/ width 2))) (y3 (- cy (/ height 2)))
+         (maxdim (max width height))
+         (x0 (- cx (/ maxdim 2))) (y0 (+ cy (/ maxdim 2)))
+         (x1 (+ cx (/ maxdim 2))) (y1 (+ cy (/ maxdim 2)))
+         (x2 (- cx (/ maxdim 2))) (y2 (- cy (/ maxdim 2)))
+         (x3 (+ cx (/ maxdim 2))) (y3 (- cy (/ maxdim 2)))
+
          (cxf cx)
          (cyf cy)
          ;;// x y z r g b a
