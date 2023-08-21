@@ -35,22 +35,22 @@
 (defun wrap-x-coord-left (x) (+ x %drawing-width))
 (defun wrap-x-coord-right (x) (- x %drawing-width))
 
-(defun beyond-top? (y) (>= y %drawing-half-height))
+(defun beyond-top? (y) (> y %drawing-half-height))
 (defun beyond-bottom? (y) (<= y (- %drawing-half-height)))
-(defun beyond-left? (x) (<= x (- %drawing-half-width)))
+(defun beyond-left? (x) (< x (- %drawing-half-width)))
 (defun beyond-right? (x) (>= x %drawing-half-width))
 
 ;;; Point-slope form x/y intercepts
 
 (defun top-x-intercept (x y slope)
-  (if (null slope)
+  (if (or (null slope) (= 0 slope))
     x
     (- (- (/ (- y %drawing-half-height) slope) x))))
 
 (defun bottom-x-intercept (x y slope)
-  (if (null slope)
+  (if (or (null slope) (= 0 slope))
     x
-    (- (- (/ (- y (- %drawing-half-height)) slope) x))))
+    (- (- (/ (- y (- %drawing-half-height) 1) slope) x))))
 
 (defun left-y-intercept (x y slope)
   (unless (null slope)
@@ -58,65 +58,65 @@
 
 (defun right-y-intercept (x y slope)
   (unless (null slope)
-    (- (- (* slope (- x %drawing-half-width)) y))))
+    (- (- (* slope (- x %drawing-half-width 1)) y))))
 
 (defun draw-line-yflip (x1 y1 x2 y2)
   (draw-line x1 (- y1) x2 (- y2)))
 
-(defun draw-wrap-line (from-x from-y to-x to-y &optional alu)
+(defun draw-wrap-line (from-x from-y to-x to-y &optional (draw-func #'draw-line-yflip) )
   (let* ((delta-x (- to-x from-x))
          (delta-y (- to-y from-y))
          (islope (unless (zerop delta-y) (/ delta-x delta-y)))
          (slope (unless (zerop delta-x) (/ delta-y delta-x))))
       (flet ((line-right-then-continue (y-intercept)
-               (draw-line-yflip from-x from-y %drawing-half-width y-intercept)
+               (funcall draw-func from-x from-y %drawing-half-width y-intercept)
                ;; now recurse
                (draw-wrap-line (- %drawing-half-width) y-intercept
-                               (wrap-x-coord-right to-x) to-y alu))
+                               (wrap-x-coord-right to-x) to-y draw-func))
 
              (line-top-then-continue (x-intercept)
-               (draw-line-yflip from-x from-y x-intercept %drawing-half-height)
+               (funcall draw-func from-x from-y x-intercept %drawing-half-height)
                (draw-wrap-line x-intercept (- %drawing-half-height)
-                               to-x (wrap-y-coord-top to-y) alu))
+                               to-x (wrap-y-coord-top to-y) draw-func))
 
              (line-left-then-continue (y-intercept)
-               (draw-line-yflip from-x from-y
+               (funcall draw-func from-x from-y
                                        (- %drawing-half-width) y-intercept)
                (draw-wrap-line %drawing-half-width y-intercept
-                               (wrap-x-coord-left to-x) to-y alu))
+                               (wrap-x-coord-left to-x) to-y draw-func))
 
              (line-bottom-then-continue (x-intercept)
-               (draw-line-yflip from-x from-y
+               (funcall draw-func from-x from-y
                                        x-intercept (- %drawing-half-height))
                (draw-wrap-line x-intercept %drawing-half-height
-                               to-x (wrap-y-coord-bottom to-y) alu))
+                               to-x (wrap-y-coord-bottom to-y) draw-func))
 
              (break-line-left (y-intercept)
                (draw-wrap-line (wrap-x-coord-left from-x) from-y
-                                %drawing-half-width y-intercept alu)
-               (draw-wrap-line (- %drawing-half-width) y-intercept to-x to-y alu))
+                                %drawing-half-width y-intercept  draw-func)
+               (draw-wrap-line (- %drawing-half-width) y-intercept to-x to-y draw-func))
 
              (break-line-top (x-intercept)
                (draw-wrap-line from-x (wrap-y-coord-top from-y)
-                               x-intercept (- %drawing-half-height) alu)
-               (draw-wrap-line x-intercept %drawing-half-height to-x to-y alu))
+                               x-intercept (- %drawing-half-height)  draw-func)
+               (draw-wrap-line x-intercept %drawing-half-height to-x to-y draw-func))
 
              (break-line-right (y-intercept)
                (draw-wrap-line (wrap-x-coord-right from-x) from-y
-                               (- %drawing-half-width) y-intercept alu)
-               (draw-wrap-line %drawing-half-width y-intercept to-x to-y alu))
+                               (- %drawing-half-width) y-intercept  draw-func)
+               (draw-wrap-line %drawing-half-width y-intercept to-x to-y draw-func))
 
              (break-line-bottom (x-intercept)
                (draw-wrap-line from-x (wrap-y-coord-bottom from-y)
-                               x-intercept %drawing-half-height alu)
+                               x-intercept %drawing-half-height  draw-func)
                (draw-wrap-line x-intercept (- %drawing-half-height)
-                               to-x to-y alu)))
+                               to-x to-y  draw-func)))
         (cond ((point-in-array? from-x from-y)
                ;; check for the simple cases instead of falling
                ;; to optimize the common case
                (cond ((point-in-array? to-x to-y)
                       ;; the simple, simple case
-                      (draw-line-yflip from-x from-y to-x to-y))
+                      (funcall draw-func from-x from-y to-x to-y))
                      ((beyond-right? to-x)
                       ;; note that if the line extends beyond a
                       ;; horizontal boundary, it can't be vertical
@@ -160,7 +160,7 @@
                         (break-line-right right-y-intercept))
                        (t;; otherwise wrap, and try again...
                         (draw-wrap-line (wrap-x-coord-right from-x) from-y
-                                        (wrap-x-coord-right to-x)   to-y   alu)))))
+                                        (wrap-x-coord-right to-x)   to-y draw-func)))))
               ((beyond-left? from-x)
                (let ((left-y-intercept (left-y-intercept to-x to-y slope)))
                  (cond ((and (not (beyond-left? to-x))
@@ -169,7 +169,7 @@
                         (break-line-left left-y-intercept))
                        (t;; just wrap both coords and try again
                         (draw-wrap-line (wrap-x-coord-left from-x) from-y
-                                        (wrap-x-coord-left to-x)   to-y   alu)))))
+                                        (wrap-x-coord-left to-x)   to-y draw-func)))))
               ((beyond-top? from-y)
                (let ((top-x-intercept (top-x-intercept to-x to-y slope)))
                  (cond ((and (not (beyond-top? to-y))
@@ -177,7 +177,7 @@
                         (break-line-top top-x-intercept))
                        (t
                         (draw-wrap-line from-x (wrap-y-coord-top from-y)
-                                        to-x   (wrap-y-coord-top to-y)   alu)))))
+                                        to-x   (wrap-y-coord-top to-y)    draw-func)))))
               (t;; from-y must be beyond the bottom line
                (let ((bottom-x-intercept (bottom-x-intercept to-x to-y slope)))
                  (cond ((and (not (beyond-bottom? to-y))
@@ -185,4 +185,4 @@
                         (break-line-bottom bottom-x-intercept))
                        (t
                         (draw-wrap-line from-x (wrap-y-coord-bottom from-y)
-                                        to-x   (wrap-y-coord-bottom to-y) alu)))))))))
+                                        to-x   (wrap-y-coord-bottom to-y) draw-func)))))))))

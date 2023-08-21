@@ -38,6 +38,46 @@
 
 (is (boxer-wrap::right-y-intercept 250 125 75/50) -25)
 
-)
+(let ((draw-count 0))
+  (labels ((test-draw-line (x0 y0 x1 y1)
+             (progn
+               (format t "~%test-draw-line: x0: ~A y0: ~A x1: ~A y1: ~A" x0 y0 x1 y1)
+               (incf draw-count))
+             ))
+    (boxer-wrap::draw-wrap-line 0 0 10 10 #'test-draw-line)
+    (is draw-count 1 "Simple wrap line")
+
+    ;; I believe this test will exhaust the stack
+    (setf boxer::%drawing-height 451)
+    (setf boxer::%drawing-width 334)
+    (setf boxer::%drawing-half-width 225.5)
+    (setf boxer::%drawing-half-height 167.0)
+    (boxer-wrap::draw-wrap-line 225.5 144.136 225.5 144.136 #'test-draw-line)
+    (is 1 1 "2nd case")
+
+    ;; Stack  overflow from dragging CATT with pen segments
+    (setf boxer::%drawing-height 462)
+    (setf boxer::%drawing-width 787)
+    (setf boxer::%drawing-half-width 393.5)
+    (setf boxer::%drawing-half-height 231.0)
+    (boxer-wrap::draw-wrap-line -393.5 342.0 -410.5 343.0 #'test-draw-line)
+    (is 1 1 "3rd case")
+
+    (setf boxer::%drawing-height 434)
+    (setf boxer::%drawing-width 861)
+    (setf boxer::%drawing-half-width 430.5)
+    (setf boxer::%drawing-half-height 217.0)
+    (boxer-wrap::draw-wrap-line -227.5 215.5 -233.5 217.5 #'test-draw-line)
+    (is 1 1 "4th case")
+
+    ;; Division by zero in top-x-intercept
+    (setf boxer::%drawing-height 394)
+    (setf boxer::%drawing-width 484)
+    (setf boxer::%drawing-half-width 242.0)
+    (setf boxer::%drawing-half-height 197.0)
+    (boxer-wrap::draw-wrap-line -277.5 399.5 -297.5 399.5 #'test-draw-line)
+    (is 1 1 "5th case")
+
+)))
 
 (finalize)
