@@ -1646,9 +1646,9 @@ Modification History (most recent at the top)
 (defun dub-graphics-list (from-gl &key
                                   (to-gl %graphics-list)
                                   (action ':append)
-                                  (model-matrix nil))
-  ;; sgithens 2023-08-10 TODO I'm not sure why this is working since I'm not
-  ;; putting the inverse matrix at the end of the dubbed list...
+                                  (model-matrix nil)
+                                  (inverse-matrix nil))
+  ;; Transform the drawing commands if a model has been provided
   (when model-matrix
     (sv-append to-gl `#(37 ,model-matrix)))
   (ecase action
@@ -1662,6 +1662,9 @@ Modification History (most recent at the top)
           (clear-graphics-list to-gl)
           (do-vector-contents (command from-gl)
             (sv-append to-gl (copy-graphics-command command)))))
+  ;; Invert the transformation if one has been supplied
+  (when inverse-matrix
+    (sv-append to-gl `#(37 ,inverse-matrix)))
   ;; now make sure the to-gl has the same current state as the from-gl
   (setf (graphics-command-list-agent to-gl) nil
         (graphics-command-list-alu to-gl) (graphics-command-list-alu from-gl)

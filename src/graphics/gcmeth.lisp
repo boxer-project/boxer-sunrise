@@ -817,7 +817,8 @@ Modification History (most recent at top)
 ; just translate the graphics command list of the shape.
 
       (dub-graphics-list (box-interface-value (slot-value self 'shape))
-                         :model-matrix (model-matrix self))
+                         :model-matrix (model-matrix self)
+                         :inverse-matrix (boxgl-device-model-matrix bw::*boxgl-device*))
 
       ;; reset the state values which may have been bashed during the
       ;; dub to be the state value of the shape
