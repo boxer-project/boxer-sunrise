@@ -604,7 +604,7 @@
   (nil :x-transform :y-transform :coerce :coerce)
   :copy-post-processing
   (with-graphics-command-slots-bound graphics-command (bitmap x y width height)
-    (set-bitmap (new-offscreen-copy bitmap)))
+    (set-bitmap (copy-pixmap bitmap)))
   :deallocate-args (graphics-command)
   :deallocate-form (ogl-free-pixmap bitmap)
   :DUMP-FORM ;; need special handling for the bitmap...

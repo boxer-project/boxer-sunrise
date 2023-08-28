@@ -275,7 +275,7 @@
     ;; pen-color=*foreground-color*
     (cond ((not (null ba))
            (record-boxer-graphics-command-centered-bitmap
-            (new-offscreen-copy ba) x y
+            (copy-pixmap ba) x y
             (ogl-pixmap-width ba) (ogl-pixmap-height ba)))
           ((not (null (graphics-sheet-background gs)))
            ;; setup the color

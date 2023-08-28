@@ -1589,7 +1589,7 @@ Modification History (most recent at the top)
 ;; sgithens TODO fix these duplicate def warnings for sbcl
 #-sbcl(defun copy-window-graphics-command-centered-bitmap (command)
   (make-window-graphics-command-centered-bitmap
-   (new-offscreen-copy (window-graphics-command-centered-bitmap-bitmap command))
+   (copy-pixmap (window-graphics-command-centered-bitmap-bitmap command))
    (window-graphics-command-centered-bitmap-x command)
    (window-graphics-command-centered-bitmap-y command)
    (window-graphics-command-centered-bitmap-width command)
@@ -1597,7 +1597,7 @@ Modification History (most recent at the top)
 
 #-sbcl(defun copy-boxer-graphics-command-centered-bitmap (command)
   (make-boxer-graphics-command-centered-bitmap
-   (new-offscreen-copy (boxer-graphics-command-centered-bitmap-bitmap command))
+   (copy-pixmap (boxer-graphics-command-centered-bitmap-bitmap command))
    (boxer-graphics-command-centered-bitmap-x command)
    (boxer-graphics-command-centered-bitmap-y command)
    (boxer-graphics-command-centered-bitmap-width command)

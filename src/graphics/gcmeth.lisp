@@ -186,7 +186,7 @@ Modification History (most recent at top)
          (unless (null %bit-array)
            ;; if the new-shape-box has a background bitmap, lay that in first
            (sv-append shape (make-boxer-graphics-command-centered-bitmap
-                             (new-offscreen-copy %bit-array)
+                             (copy-pixmap %bit-array)
                              0 0 (ogl-pixmap-width %bit-array)
                              (ogl-pixmap-height %bit-array))))
          (do-vector-contents (graphics-command %graphics-list)
@@ -761,12 +761,6 @@ Modification History (most recent at top)
 
 ;;;; Pictures
 
-(defun new-offscreen-copy (ba)
-  (let* ((w (ogl-pixmap-width ba)) (h (ogl-pixmap-height ba))
-                                         (new-bm (make-ogl-pixmap w h)))
-    (copy-pixmap-data w h ba 0 0 new-bm 0 0)
-    new-bm))
-
 (defmethod stamp-bitmap ((self graphics-cursor) bitmap wid hei
                                                 &optional (orientation :centered))
   (declare (ignore orientation)) ;; a hook for later
@@ -776,11 +770,11 @@ Modification History (most recent at top)
       ((not (null %learning-shape?))
        (record-boxer-graphics-command-centered-bitmap
         ;; shouldn't we be copying this bitmap here ???
-        (new-offscreen-copy bitmap) (x-position self) (y-position self)
+        (copy-pixmap bitmap) (x-position self) (y-position self)
         (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
       ((not (no-graphics?))
          (record-boxer-graphics-command-centered-bitmap
-          (new-offscreen-copy bitmap) (x-position self) (y-position self) wid hei)))))
+          (copy-pixmap bitmap) (x-position self) (y-position self) wid hei)))))
 
 ;;; orientation can be :centered, :right or :left
 (defmethod type-box ((self graphics-cursor) box
