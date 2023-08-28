@@ -12839,6 +12839,21 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: grmeth.lisp
 ;;;;
 
+;; sgithens 2023-08-24 I believe we can get rid of this and just use enclosing-rectangle
+(defun enclosing-sprite-coords (sprite)
+  (multiple-value-bind (left top right bottom)
+      (enclosing-rectangle sprite)
+    (unless (no-graphics?)
+      (values left top right bottom))))
+
+;; sgithens 2023-08-23 I don't think this draw-update does anything at all anymore...
+;;; like draw but without the actual drawing
+(defmethod draw-update ((self button))
+  (let ((ahead (absolute-heading self)) (asize (absolute-size self)))
+    (unless (eq (shown? self) ':no-subsprites)
+      (dolist (subs (slot-value self 'subsprites))
+        (draw-update subs)))))
+
 ;; sgithens 2023-07-25 no longer needed, was only used in flash-name
 (defun calc-name-position-x (length left right)
   (setq left (array-coordinate-x left)

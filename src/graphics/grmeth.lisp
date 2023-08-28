@@ -435,47 +435,6 @@ Modification History (most recent at top)
 
     (list min-x min-y max-x max-y)))
 
-(defun turtle-window-extents (turtle &optional (x 0) (y 0) (translate? t))
-  "In progress replacement for update-turtle-window-extents that keeps things in
-   regular boxer gc coordinates. Returns a list of '(min-x min-y max-x max-y)."
-  (let ((min-x 0)
-        (min-y 0)
-        (max-x 0)
-        (max-y 0)
-        (visible? (shown? turtle))
-        ;; TODO is there a method to get the value from a box-interface? (rather than
-        ;; remembering the array location)
-        ;; TODO make an accessor for shape
-        (shape-gdispl (aref (slot-value turtle 'shape) 1)))
-    (unless (eq visible? ':subsprites)
-      (with-graphics-state-bound
-        (do-vector-contents (gc shape-gdispl)
-          (multiple-value-bind (gc-min-x gc-min-y gc-max-x gc-max-y
-                                         state-change?)
-                               (graphics-command-extents gc)
-            (unless state-change?
-              (setq min-x (min gc-min-x min-x)
-                    min-y (min gc-min-y min-y)
-                    max-x (max gc-max-x max-x)
-                    max-y (max gc-max-y max-y)))))))
-    (unless (eq visible? ':no-subsprites)
-      (dolist (subs (slot-value turtle 'subsprites))
-        (when (absolute-shown? subs)
-          (multiple-value-bind (sub-min-x sub-min-y sub-max-x sub-max-y)
-            (enclosing-rectangle subs)
-            (setq min-x (min min-x sub-min-x)
-                  min-y (min min-y sub-min-y)
-                  max-x (max max-x sub-max-x)
-                  max-y (max max-y sub-max-y))))))
-
-    ;; translate the results
-    (when translate? (setf min-x (incf min-x x)
-                           min-y (incf min-y y)
-                           max-x (incf max-x x)
-                           max-y (incf max-y y)))
-
-    (list min-x min-y max-x max-y)))
-
 (defmethod touching? ((self graphics-object) other-turtle)
   (multiple-value-bind (left1 top1 right1 bottom1)
       (enclosing-rectangle self)
@@ -645,13 +604,6 @@ Modification History (most recent at top)
         (dolist (subs (slot-value self 'subsprites))
           (draw subs))))))
 
-;;; like draw but without the actual drawing
-(defmethod draw-update ((self button))
-  (let ((ahead (absolute-heading self)) (asize (absolute-size self)))
-    (unless (eq (shown? self) ':no-subsprites)
-      (dolist (subs (slot-value self 'subsprites))
-        (draw-update subs)))))
-
 (defmethod show-turtle ((self button))
   (set-shown? self t))
 
@@ -665,42 +617,66 @@ Modification History (most recent at top)
 
 ;;; stuff for mouse-sensitivity
 
-;;;; These return values in WINDOW coordinates
-
 (defmethod enclosing-rectangle ((self button))
-  (let* ((extents (turtle-window-extents self (absolute-x-position self) (absolute-y-position self))))
-    (values (nth 0 extents)    ;min-x
-            (nth 3 extents)    ;max-y
-            (nth 2 extents)    ;max-x
-            (nth 1 extents)))) ;min-y
+  (let ((min-x 0)
+        (min-y 0)
+        (max-x 0)
+        (max-y 0)
+        (x (absolute-x-position self))
+        (y (absolute-y-position self))
+        (visible? (shown? self))
+        (shape-gdispl (box-interface-value (slot-value self 'shape)))
+        (scale (box-interface-value (slot-value self 'sprite-size))))
+    (unless (eq visible? ':subsprites)
+      (with-graphics-state-bound
+        (do-vector-contents (gc shape-gdispl)
+          (multiple-value-bind (gc-min-x gc-min-y gc-max-x gc-max-y
+                                         state-change?)
+                               (graphics-command-extents gc)
+            (unless state-change?
+              (setq min-x (min gc-min-x min-x)
+                    min-y (min gc-min-y min-y)
+                    max-x (max gc-max-x max-x)
+                    max-y (max gc-max-y max-y)))))))
+    (unless (eq visible? ':no-subsprites)
+      (dolist (subs (slot-value self 'subsprites))
+        (when (absolute-shown? subs)
+          (multiple-value-bind (sub-min-x sub-min-y sub-max-x sub-max-y)
+            (enclosing-rectangle subs)
+            (setq min-x (min min-x sub-min-x)
+                  min-y (min min-y sub-min-y)
+                  max-x (max max-x sub-max-x)
+                  max-y (max max-y sub-max-y))))))
 
-(defun enclosing-sprite-coords (sprite)
-  (multiple-value-bind (left top right bottom)
-      (enclosing-rectangle sprite)
-    (unless (no-graphics?)
-      (values left top right bottom))))
+    ;; scale by the sprite-size
+    (setf min-x (* min-x scale)
+          min-y (* min-y scale)
+          max-x (* max-x scale)
+          max-y (* max-y scale))
+
+    ;; translate the results
+    (setf min-x (incf min-x x)
+          min-y (incf min-y y)
+          max-x (incf max-x x)
+          max-y (incf max-y y))
+
+    (values min-x max-y max-x min-y)))
 
 ;;; returns either NIL or the lowest sprite that contains the point
 (defmethod sprite-at-window-point ((self button) window-x window-y)
-  (let* ((point-x (- window-x (+ %drawing-half-width (absolute-x-position self))))
-         (point-y (* -1.0 (- window-y (- %drawing-half-height (absolute-y-position self)))))
-         (extents (turtle-window-extents self (absolute-x-position self) (absolute-y-position self) nil))
-         (min-x (nth 0 extents))
-         (min-y (nth 1 extents))
-         (max-x (nth 2 extents))
-         (max-y (nth 3 extents)))
-
-    (when (and (<=  min-x
-                    point-x
-                    max-x
-                    )
-               (<=  min-y
-                    point-y
-                    max-y
-                    ))
-      ;; the point is within the sprite, now check any subsprites
-      (or (dolist (sub (slot-value self 'subsprites))
-            (let ((under? (sprite-at-window-point sub point-x point-y)))
-              (when (not (null under?))
-                (return under?))))
-          self))))
+  (let ((point-x (user-coordinate-x window-x))
+        (point-y (user-coordinate-y window-y)))
+    (multiple-value-bind (min-x max-y max-x min-y)
+                         (enclosing-rectangle self)
+      (when (and (<=  min-x
+                      point-x
+                      max-x)
+                 (<=  min-y
+                      point-y
+                      max-y))
+        ;; the point is within the sprite, now check any subsprites
+        (or (dolist (sub (slot-value self 'subsprites))
+              (let ((under? (sprite-at-window-point sub point-x point-y)))
+                (when (not (null under?))
+                  (return under?))))
+            self)))))

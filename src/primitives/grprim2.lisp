@@ -71,7 +71,7 @@
 
 (defsprite-function bu::enclosing-rectangle () (sprite turtle)
   (multiple-value-bind (Left top right bottom)
-      (enclosing-sprite-coords turtle)
+      (enclosing-rectangle turtle)
     (if (null left)
         (boxer-eval::primitive-signal-error :sprite-error
                                             "Sprite is not in a graphics box")

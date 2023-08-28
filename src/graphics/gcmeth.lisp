@@ -809,17 +809,9 @@ Modification History (most recent at top)
 (defmethod stamp ((self graphics-cursor))
   (let ((pen-mode (get-alu-from-pen (pen self))))
     (when (and pen-mode (not (no-graphics?)))
-      (draw-update self)
-
-; Ok, looking back at a previous tag, we need to add dub-graphics-list back, expect
-; I'm not sure it will be translated... perhpaps we could just add a setxy command before
-; it... but we'd have to keep track of the pen state and stuff. ugh.  Maybe we should
-; just translate the graphics command list of the shape.
-
       (dub-graphics-list (box-interface-value (slot-value self 'shape))
                          :model-matrix (model-matrix self)
-                         :inverse-matrix (boxgl-device-model-matrix bw::*boxgl-device*))
-
+                         :inverse-matrix (3d-matrices:marr4 (3d-matrices:meye 4)))
       ;; reset the state values which may have been bashed during the
       ;; dub to be the state value of the shape
       (synchronize-graphics-state self t))))
