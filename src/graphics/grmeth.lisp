@@ -626,6 +626,7 @@ Modification History (most recent at top)
         (y (absolute-y-position self))
         (visible? (shown? self))
         (shape-gdispl (box-interface-value (slot-value self 'shape)))
+        (ahead-rad (* (absolute-heading self) (/ pi 180)))
         (scale (box-interface-value (slot-value self 'sprite-size))))
     (unless (eq visible? ':subsprites)
       (with-graphics-state-bound
@@ -648,17 +649,23 @@ Modification History (most recent at top)
                   max-x (max max-x sub-max-x)
                   max-y (max max-y sub-max-y))))))
 
-    ;; scale by the sprite-size
-    (setf min-x (* min-x scale)
-          min-y (* min-y scale)
-          max-x (* max-x scale)
-          max-y (* max-y scale))
+    (let ((top-left (3d-vectors:vec min-x max-y 0))
+          (bottom-right (3d-vectors:vec max-x min-y 0))
+          (trans-vector (3d-vectors:vec x y 0)))
+      ;; scale, rotate, translate
+      (3d-vectors:nv* top-left scale)
+      (3d-vectors:nv* bottom-right scale)
 
-    ;; translate the results
-    (setf min-x (incf min-x x)
-          min-y (incf min-y y)
-          max-x (incf max-x x)
-          max-y (incf max-y y))
+      (3d-vectors:nvrot top-left (3d-vectors:vec 0 0 1) ahead-rad)
+      (3d-vectors:nvrot bottom-right (3d-vectors:vec 0 0 1) ahead-rad)
+
+      (3d-vectors:nv+ top-left trans-vector)
+      (3d-vectors:nv+ bottom-right trans-vector)
+
+      (setf min-x (min (3d-vectors:vx3 top-left) (3d-vectors:vx3 bottom-right))
+            max-x (max (3d-vectors:vx3 top-left) (3d-vectors:vx3 bottom-right))
+            min-y (min (3d-vectors:vy3 top-left) (3d-vectors:vy3 bottom-right))
+            max-y (max (3d-vectors:vy3 top-left) (3d-vectors:vy3 bottom-right))))
 
     (values min-x max-y max-x min-y)))
 
