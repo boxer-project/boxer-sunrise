@@ -107,6 +107,7 @@
                 ;;(set-fixed-size (boxer::box-interface-box shape-slot) )
 
                 (unless (null shape-box)
+
                   (recursive-funcall-invoke
                    (convert-data-to-function shape-box)))))))))
   :AFTER
@@ -117,10 +118,18 @@
          (shape-slot (slot-value turtle 'boxer::shape))
          (shape-box (boxer::box-interface-box shape-slot))
          (shape-graphics-list (boxer::graphics-sheet-graphics-list (boxer::graphics-info shape-box)))
-         (new-extents (boxer::graphics-command-list-extents shape-graphics-list)))
+         (new-extents (boxer::graphics-command-list-extents shape-graphics-list))
+         (min-x (nth 0 new-extents))
+         (min-y (nth 1 new-extents))
+         (max-x (nth 2 new-extents))
+         (max-y (nth 3 new-extents)))
 
-    (setf (boxer::graphics-sheet-draw-wid (boxer::graphics-info shape-box)) (floor (* 2 (+ (abs (nth 0 new-extents)) (abs (nth 2 new-extents))))))
-    (setf (boxer::graphics-sheet-draw-hei (boxer::graphics-info shape-box)) (floor (* 2 (+ (abs (nth 1 new-extents)) (abs (nth 3 new-extents))))))
+    ;; TODO sgithens 2023-08-29 Until we put in support to move the origin on graphics boxes this is the best we can
+    ;; do to find the width and height. If most of the shape is drawn to on side of the origin at 0,0 we just have to
+    ;; pad the other side for now. We take the maximum amount on either side of 0,0 and multiply that by 2 to put the
+    ;; origin in the center and have enough room to render the shape.
+    (setf (boxer::graphics-sheet-draw-wid (boxer::graphics-info shape-box)) (floor (* 2 (max (abs min-x) (abs max-x)))))
+    (setf (boxer::graphics-sheet-draw-hei (boxer::graphics-info shape-box)) (floor (* 2 (max (abs min-y) (abs max-y)))))
 
     ;; no need to check for a null sprite since we did it in the :BEFORE clause
     (setq boxer::%learning-shape-graphics-list nil)
