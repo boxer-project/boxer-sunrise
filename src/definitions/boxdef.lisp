@@ -440,14 +440,11 @@ Modification History (most recent at top)
   (draw-mode ':wrap)
   (graphics-list nil)
   (background nil) ;; This is an optional background color
-  (colormap nil)
   (transform nil) ; opengl transform matrix
 
   ;; these are obsolete....
-  (prepared-flag nil)
   ;; used to avoid redundant prepare sheets (see bu::with-sprites-hidden)
   (bit-array-dirty? nil)
-  ;; used to avoid saving cleared bitmap backgrounds
   )
 
 ;; this can stay here cause its for a Struct and not a PCL Class
