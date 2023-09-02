@@ -538,21 +538,21 @@
          (name-start-x (+ box-left *port-name-indent*))
          (name-end-x 0)) ; this will get set later
     (with-border-drawing-styles (port)
-      ;; name
-      (setq name-end-x
-            (draw-port-name name name-start-x box-top name-top))
-      ;; walls
       (with-pen-size (border-thickness)
+        ;; name
+        (setq name-end-x
+              (draw-port-name name name-start-x box-top name-top))
+        ;; walls
         (draw-line box-left box-top box-left box-bottom) ; left
         (draw-line box-left box-top name-start-x box-top) ; top
         (draw-line name-end-x box-top box-right box-top) ; top, after name
         (draw-line box-right box-top box-right box-bottom) ; right
-        (draw-line box-left box-bottom box-right box-bottom)) ; bottom
-      ;; struts
-      (draw-line box-left box-top i-strut-left i-strut-top)
-      (draw-line box-right box-top i-strut-right i-strut-top)
-      (draw-line box-right box-bottom i-strut-right i-strut-bottom)
-      (draw-line box-left box-bottom i-strut-left i-strut-bottom))))
+        (draw-line box-left box-bottom box-right box-bottom) ; bottom
+        ;; struts
+        (draw-line box-left box-top i-strut-left i-strut-top)
+        (draw-line box-right box-top i-strut-right i-strut-top)
+        (draw-line box-right box-bottom i-strut-right i-strut-bottom)
+        (draw-line box-left box-bottom i-strut-left i-strut-bottom)))))
 
 (defun draw-port-name (name name-x name-mid-y name-top-y)
   (let ((current-x name-x)
@@ -761,21 +761,23 @@
 
 (defun draw-super-shrunk-box (actual-obj x y box-type)
   (with-border-drawing-styles (actual-obj)
-    (multiple-value-bind (wid hei)
-        (super-shrunk-size)
-      (let ((startx (+ x 1)) (starty (+ y 1))(endx (+ x wid -1)) (endy (+ y hei -2)))
-        (flet ((outer-box () (multiline2 startx starty endx starty endx endy
-                                        startx endy startx starty)))
-          (ecase box-type
-            (doit-box (outer-box)
-                      (let ((insx (+ startx 2)) (insy (+ starty 2))
-                            (inex (- endx 2)) (iney (- endy 2)))
-                        (multiline2 insx insy inex insy inex iney insx iney insx insy)))
-            (data-box (outer-box)
-                      (draw-rectangle (- wid 7) (- hei 7)(+ startx 2) (+ starty 2)))
-            (port-box (outer-box)
-                      (draw-line startx starty endx endy)
-                      (draw-line startx endy endx starty))))))))
+    (let ((border-thickness (border-thickness (display-style-border-style (display-style-list actual-obj)))))
+      (with-pen-size (border-thickness)
+        (multiple-value-bind (wid hei)
+            (super-shrunk-size)
+          (let ((startx (+ x 1)) (starty (+ y 1))(endx (+ x wid -1)) (endy (+ y hei -2)))
+            (flet ((outer-box () (multiline2 startx starty endx starty endx endy
+                                            startx endy startx starty)))
+              (ecase box-type
+                (doit-box (outer-box)
+                          (let ((insx (+ startx 2)) (insy (+ starty 2))
+                                (inex (- endx 2)) (iney (- endy 2)))
+                            (multiline2 insx insy inex insy inex iney insx iney insx insy)))
+                (data-box (outer-box)
+                          (draw-rectangle (- wid 7) (- hei 7)(+ startx 2) (+ starty 2)))
+                (port-box (outer-box)
+                          (draw-line startx starty endx endy)
+                          (draw-line startx endy endx starty))))))))))
 
 
 
