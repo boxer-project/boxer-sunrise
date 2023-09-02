@@ -457,8 +457,9 @@ Modification History (most recent at top)
           ;; now play the graphics list into the same area
           (with-graphics-vars-bound-internal graphics-sheet
             (boxer-playback-graphics-list display-list :translate? t)))
-        ;; now clear the display list
+        ;; now clear the display list and graphics-canvas if in use
         (clear-graphics-list display-list)
+        (clear-graphics-canvas gb)
         ;; mark the dirty? flag
         (setf (graphics-sheet-bit-array-dirty? graphics-sheet) t)
         (setf (ogl-pixmap-update-texture-p (graphics-sheet-bit-array graphics-sheet)) t)

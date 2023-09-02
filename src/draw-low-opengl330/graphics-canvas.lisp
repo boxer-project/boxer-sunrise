@@ -99,6 +99,13 @@
     (gl:clear :color-buffer-bit :depth-buffer-bit)
     (disable self)))
 
+(defmethod clear-graphics-canvas ((self box))
+  "If this box has a graphics-canvas on any screen-boxes rendering it, clears them."
+  (dolist (item (get-visible-screen-objs self))
+    (let ((canvas (getprop item :graphics-canvas)))
+      (when canvas
+        (clear canvas)))))
+
 (defmethod resize ((self graphics-canvas) wid hei)
   "Resizes the contents, by regenerating the backing texture. Existing contents will be lost.
 

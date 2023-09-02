@@ -42,12 +42,7 @@
           ;; mark the dirty? flag
           (setf (graphics-sheet-bit-array-dirty? graphics-sheet) nil))
         ;; Clear any framebuffers if present
-        (unless (null (actual-obj-screen-objs self))
-          (let* ((gr-scr-box (cdar (actual-obj-screen-objs self)))
-                 (canvas (getprop gr-scr-box :graphics-canvas)))
-            (when canvas
-              (clear canvas))))))))
-
+        (clear-graphics-canvas self)))))
 
 (defmethod clearscreen ((self box)
                         &optional surface)
