@@ -508,8 +508,8 @@ Modification History (most recent at top)
                       (if (and (<& 0 gb-x (screen-obj-wid sb))
                                (<& 0 gb-y (screen-obj-hei sb)))
                           (make-color-box-from-pixel
-                           (window-pixel (+& box-x lef gb-x)
-                                         (+& box-y top gb-y)))
+                           (window-pixel-color (+& box-x lef gb-x)
+                                               (+& box-y top gb-y)))
                           (boxer-eval::primitive-signal-error
                            :graphics
                            "Pixel at " x "," y "is not visible")))))))))))
@@ -528,7 +528,7 @@ Modification History (most recent at top)
                        (<=& 0 gb-y (graphics-sheet-draw-hei gs)))
                   (cond ((not (null bit-array))
                          (make-color-box-from-pixel
-                          (pixmap-pixel bit-array gb-x gb-y)))
+                           (pixmap-pixel-color bit-array gb-x gb-y)))
                         ((not (null background))
                          (make-color-box-from-pixel background))
                         (t (make-color-box-from-pixel *background-color*)))
@@ -559,10 +559,10 @@ Modification History (most recent at top)
                     (if (and (<& 0 gb-x (screen-obj-wid sb))
                              (<& 0 gb-y (screen-obj-hei sb)))
                         (boxer-eval::boxer-boolean
-                         (color= (window-pixel (+& box-x lef gb-x)
-                                               (+& box-y top gb-y))
+                         (color= (window-pixel-color (+& box-x lef gb-x)
+                                                     (+& box-y top gb-y))
                                  (cond ((not (null bit-array))
-                                        (pixmap-pixel bit-array gb-x gb-y))
+                                        (pixmap-pixel-color bit-array gb-x gb-y))
                                        (t
                                         (or background *background-color*)))))
                         (boxer-eval::primitive-signal-error
@@ -603,8 +603,8 @@ Modification History (most recent at top)
                                   (<& 0 gb-y (screen-obj-hei sb)))
                              (boxer-eval::boxer-boolean
                               (color=
-                               (window-pixel (+& box-x lef gb-x)
-                                             (+& box-y top gb-y))
+                               (window-pixel-color (+& box-x lef gb-x)
+                                                   (+& box-y top gb-y))
                                c))
                              (boxer-eval::primitive-signal-error
                               :graphics
@@ -633,7 +633,7 @@ Modification History (most recent at top)
                      (boxer-eval::boxer-boolean
                       (color=
                        (cond ((not (null bit-array))
-                              (pixmap-pixel bit-array gb-x gb-y))
+                              (pixmap-pixel-color bit-array gb-x gb-y))
                              (t (or background *background-color*)))
                        c))
                      (boxer-eval::primitive-signal-error

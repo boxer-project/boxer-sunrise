@@ -430,10 +430,7 @@ sprites)))
 ;;; Color
 
 (defun screen-color-from-turtle (turtle)
-  (opengl::pixel->color
-   (screen-pixel-from-turtle turtle)))
-
-(defun screen-pixel-from-turtle (turtle)
+  "Returns an :rgb color from the graphics box wherever the turtle is."
   (let ((gb (assoc-graphics-box turtle)))
     (if (null gb)
         (boxer-eval::primitive-signal-error :graphics "Can't find a graphics box")
@@ -453,17 +450,15 @@ sprites)))
                                (<&  gb-x (screen-obj-wid sb))
                                (<=& 0 gb-y)
                                (<&  gb-y (screen-obj-hei sb)))
-                          (window-pixel (+& box-x lef gb-x)
+                          (window-pixel-color (+& box-x lef gb-x)
                                         (+& box-y top gb-y))
                           (boxer-eval::primitive-signal-error
                            :graphics
                            "Pixel at sprite location is not visible")))))))))))
 
 (defun background-color-from-turtle (turtle)
-  (opengl::pixel->color
-   (background-pixel-from-turtle turtle)))
-
-(defun background-pixel-from-turtle (turtle)
+  "Returns an :rgb color from the graphics boxes background where the center of
+   the turtle is."
   (let ((gb (assoc-graphics-box turtle)))
     (if (null gb)
         (boxer-eval::primitive-signal-error :graphics "Can't find a graphics box")
@@ -478,7 +473,7 @@ sprites)))
                        (<=& 0 gb-y)
                        (<&  gb-y (graphics-sheet-draw-hei gs)))
                   (cond ((not (null bit-array))
-                         (pixmap-pixel bit-array gb-x gb-y))
+                         (pixmap-pixel-color bit-array gb-x gb-y))
                         ((not (null background)) background)
                         (t *background-color*))
                   (boxer-eval::primitive-signal-error
@@ -492,8 +487,8 @@ sprites)))
 
 (defsprite-function bu::bg-color-under? () (sprite turtle)
   (boxer-eval::boxer-boolean
-   (pixel= (screen-pixel-from-turtle turtle)
-                   (background-pixel-from-turtle turtle))))
+   (color= (screen-color-from-turtle turtle)
+           (background-color-from-turtle turtle))))
 
 (defsprite-function bu::color-under= ((bu::port-to color))
     (sprite turtle)
