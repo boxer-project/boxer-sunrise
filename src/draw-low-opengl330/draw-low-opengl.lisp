@@ -404,7 +404,7 @@ the window font (ie, draw-string) has to change it back for this to work.
     (gl-add-line bw::*boxgl-device* x0 y0 x1 y1)))
 
 (defun %draw-point (x y)
-  (gl-add-point bw::*boxgl-device* x0 y0))
+  (gl-add-point bw::*boxgl-device* x y))
 
 (defun %draw-poly (points)
   (gl-add-poly bw::*boxgl-device* points))
