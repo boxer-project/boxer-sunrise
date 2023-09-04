@@ -1624,7 +1624,6 @@ Modification History (most recent at the top)
       ; else
       (let ((gl (graphics-sheet-graphics-list gs)))
         (unless (graphics-command-list-hidden gl)
-          ; (playback-graphics-list-internal gl :start (op-count canvas) :graphics-canvas canvas)
           (boxer-playback-graphics-list gl :translate? t))))
 
     ;; and then any sprites
@@ -1633,7 +1632,6 @@ Modification History (most recent at the top)
         (when (turtle? sprite)
           (let ((pgl (slot-value sprite 'private-gl)))
             (unless (graphics-command-list-hidden pgl)
-              ; (playback-graphics-list-internal pgl)
               (boxer-playback-graphics-list pgl)
               ))))
       (dolist (sprite sprites)
