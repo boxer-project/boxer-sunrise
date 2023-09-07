@@ -108,6 +108,9 @@ Modification History (most recent at top)
          (ogl-y (- phei y 1)))
     (cffi:mem-aref data *pixmap-ffi-type* (+ x (* ogl-y pwid)))))
 
+(defun pixmap-pixel-color (pixmap x y)
+  (opengl::pixel->color (pixmap-pixel pixmap x y)))
+
 (defun set-pixmap-pixel (pixmap x y newpixel)
   (let* ((data (ogl-pixmap-data pixmap))
          (pwid (ogl-pixmap-width pixmap))
