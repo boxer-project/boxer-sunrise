@@ -596,11 +596,15 @@ Modification History (most recent at top)
       ;; with the values from the shape box graphics-sheet, otherwise, if it's scaled or
       ;; someething it will use the values from the upper level graphics box.  This is
       ;; primarily for correct operation of draw-wrap-line which uses these global values.
-      (let* ((gs (graphics-sheet (box-interface-box (slot-value self 'shape))))
-             (wid (graphics-sheet-draw-wid gs))
-             (hei (graphics-sheet-draw-hei gs))
-             (%drawing-half-width (/ wid 2))
-             (%drawing-half-height (/ hei 2)))
+      (if (box-interface-box (slot-value self 'shape))
+        ;; Occasionally there seems to be a shape that has it's interface value, but not
+        ;; the accompanying box
+        (let* ((gs (graphics-sheet (box-interface-box (slot-value self 'shape))))
+              (wid (graphics-sheet-draw-wid gs))
+              (hei (graphics-sheet-draw-hei gs))
+              (%drawing-half-width (/ wid 2))
+              (%drawing-half-height (/ hei 2)))
+          (boxer-playback-graphics-list (box-interface-value (slot-value self 'shape))))
         (boxer-playback-graphics-list (box-interface-value (slot-value self 'shape))))
 
       (setf (boxgl-device-model-matrix bw::*boxgl-device*) prev-model)
