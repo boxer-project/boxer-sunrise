@@ -431,16 +431,15 @@ Modification History (most recent at top)
                                     (format s "#<Graphics-Sheet W-~D. H-~D.>"
                                             (graphics-sheet-draw-wid gs)
                                             (graphics-sheet-draw-hei gs)))))
-  (draw-wid *default-graphics-sheet-width*)
-  (draw-hei *default-graphics-sheet-height*)
+  (draw-wid *default-graphics-sheet-width*)   ;; Width of graphics sheet in pixels
+  (draw-hei *default-graphics-sheet-height*)  ;; Height of graphics sheet in pixels
   (screen-objs nil)
-  (bit-array nil)  ;; This should be an ogl-pixmap
-  (object-list nil) ;; This is the list of turtle sprites
+  (bit-array nil)                             ;; An ogl-pixmap that acts as the background
+  (object-list nil)                           ;; A list of turtle sprites
   (superior-box nil)
-  (draw-mode ':wrap)
-  (graphics-list nil)
-  (background nil) ;; This is an optional background color
-  (transform nil) ; opengl transform matrix
+  (draw-mode ':wrap)                          ;; Either ':wrap or ':clip for turtle drawing around edges
+  (graphics-list nil)                         ;; A graphics-command-list struct with the drawn turtle graphics commands
+  (background nil)                            ;; A background color that is used in lieu of the pixmap bit-array member
 
   ;; these are obsolete....
   ;; used to avoid redundant prepare sheets (see bu::with-sprites-hidden)
