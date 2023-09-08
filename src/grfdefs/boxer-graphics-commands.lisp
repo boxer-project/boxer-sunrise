@@ -74,46 +74,34 @@
         (trans-mat nil))
 
     (with-graphics-state (gl t)
+      (when translate?
+        (setf prev-model (boxgl-device-model-matrix bw::*boxgl-device*)
+              trans-mat  (3d-matrices:mtranslation
+                          (3d-vectors:vec %drawing-half-width %drawing-half-height 0.0)))
 
-    (when translate?
-      (setf prev-model (boxgl-device-model-matrix bw::*boxgl-device*)
-            trans-mat  (3d-matrices:mtranslation
-                         (3d-vectors:vec %drawing-half-width %drawing-half-height 0.0)))
+        (setf (boxgl-device-model-matrix bw::*boxgl-device*) (3d-matrices:marr4 trans-mat))
+        (update-matrices-ubo bw::*boxgl-device*))
 
-      (setf (boxgl-device-model-matrix bw::*boxgl-device*) (3d-matrices:marr4 trans-mat))
-      (update-matrices-ubo bw::*boxgl-device*))
+      (when (and *use-opengl-framebuffers* graphics-canvas)
+        (when (graphics-canvas-pen-color-cmd graphics-canvas)
+          (process-graphics-command (graphics-canvas-pen-color-cmd graphics-canvas)))
+        (when (graphics-canvas-pen-size-cmd graphics-canvas)
+          (process-graphics-command (graphics-canvas-pen-size-cmd graphics-canvas)))
+        (when (graphics-canvas-pen-font-cmd graphics-canvas)
+          (process-graphics-command (graphics-canvas-pen-font-cmd graphics-canvas))))
 
-    (when (and *use-opengl-framebuffers* graphics-canvas)
-      (when (graphics-canvas-pen-color-cmd graphics-canvas)
-        (process-graphics-command (graphics-canvas-pen-color-cmd graphics-canvas)))
-      (when (graphics-canvas-pen-size-cmd graphics-canvas)
-        (process-graphics-command (graphics-canvas-pen-size-cmd graphics-canvas)))
-      (when (graphics-canvas-pen-font-cmd graphics-canvas)
-        (process-graphics-command (graphics-canvas-pen-font-cmd graphics-canvas))))
-
-         (do-vector-contents (command gl :start start)
-;                     (format t
-; "~%matmatMAT: ~A
-;      trns: ~A
-;      com: ~A
-;      gl: ~A" (boxgl-device-model-matrix bw::*boxgl-device*)
-;              (boxgl-device-transform-matrix bw::*boxgl-device*) command gl)
-           (process-graphics-command command)
-
-             (when (and *use-opengl-framebuffers* graphics-canvas)
-               (cond ((member (aref command 0) '(4 36))  ;(equal 4 (aref command 0))
-                      (setf (graphics-canvas-pen-color-cmd graphics-canvas) command))
-                     ((member (aref command 0) '(1 33))  ;(equal 1 (aref command 0))
-                      (setf (graphics-canvas-pen-size-cmd graphics-canvas) command))
-                     ((member (aref command 0) '(2 34))  ;(equal 2 (aref command 0))
-                      (setf (graphics-canvas-pen-font-cmd graphics-canvas) command)))))
-                   ;;  (process-graphics-command-marker command)
-    (when translate?
-      (setf (boxgl-device-model-matrix bw::*boxgl-device*) prev-model)
-      (update-matrices-ubo bw::*boxgl-device*))
-                   )
-      )
-      )
+      (do-vector-contents (command gl :start start)
+        (process-graphics-command command)
+        (when (and *use-opengl-framebuffers* graphics-canvas)
+          (cond ((member (aref command 0) '(4 36))
+                (setf (graphics-canvas-pen-color-cmd graphics-canvas) command))
+                ((member (aref command 0) '(1 33))
+                (setf (graphics-canvas-pen-size-cmd graphics-canvas) command))
+                ((member (aref command 0) '(2 34))
+                (setf (graphics-canvas-pen-font-cmd graphics-canvas) command)))))
+      (when translate?
+        (setf (boxgl-device-model-matrix bw::*boxgl-device*) prev-model)
+        (update-matrices-ubo bw::*boxgl-device*)))))
 
 ;; 32   BOXER-CHANGE-ALU                             (NEW-ALU)
 (defun draw-boxer-change-alu (new-alu)
@@ -138,6 +126,7 @@
 
 ;; 36   BOXER-CHANGE-GRAPHICS-COLOR                  (NEW-COLOR)
 (defun draw-boxer-change-graphics-color (new-color)
+  (setf *graphics-state-current-pen-color* new-color)
   (%set-pen-color new-color))
 
 ;; 37   BOXER-TRANSFORM-MATRIX                       (. . .)
