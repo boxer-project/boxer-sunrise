@@ -10119,6 +10119,21 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: gdispl.lisp
 ;;;;
 
+;;;; COLOR
+
+(defstruct (boxer-color :named (:type vector)
+                        (:constructor %make-boxer-color (red green blue)))
+  (red   0)
+  (green 0)
+  (blue  0))
+
+;;; color tables map color indices (internal fixnums) to boxer
+;;; color structures.  For each window system, there should be
+;;; a way to obtain an index from a color description.
+;;; The index returned will be a suitable value for the turtle's pen-color
+
+
+
 (defmacro playback-graphics-list-internal (gl &key (start 0) (graphics-canvas nil))
   `(with-graphics-state (,gl t)
 

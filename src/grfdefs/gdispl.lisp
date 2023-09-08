@@ -463,23 +463,6 @@ Modification History (most recent at the top)
 (defvar *initial-graphics-state-current-font-no* *sprite-type-font-no*)
 (defvar *initial-graphics-state-current-pen-color* *foreground-color*)
 
-;;;; COLOR
-
-(defstruct (boxer-color :named (:type vector)
-                        (:constructor %make-boxer-color (red green blue)))
-  (red   0)
-  (green 0)
-  (blue  0))
-
-;;; color tables map color indices (internal fixnums) to boxer
-;;; color structures.  For each window system, there should be
-;;; a way to obtain an index from a color description.
-;;; The index returned will be a suitable value for the turtle's pen-color
-
-
-
-
-
 ;;;; Graphics Command Lists
 ;;; these are built out of storage vectors but they also contain
 ;;; state about the value(s) of various drawing variables
