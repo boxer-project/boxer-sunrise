@@ -258,9 +258,6 @@ Modification History (most recent at the top)
 
 (DEFVAR *BOX-ELLIPSIS-CURRENT-STYLE* 'BOX-ELLIPSIS-SOLID-LINES)
 
-(defmacro with-real-time (&body body)
-  `(progn . ,body))
-
 ;;;****************************************************************;;;
 ;;;                      REDISPLAY MACROS                          ;;;
 ;;;****************************************************************;;;

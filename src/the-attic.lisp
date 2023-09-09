@@ -7827,6 +7827,9 @@ Modification History (most recent at top)
 ;;;; FILE: disdef.lisp
 ;;;;
 
+(defmacro with-real-time (&body body)
+  `(progn . ,body))
+
 (DEFUN ACTUAL-OBJ-OF-SCREEN-OBJ (SCREEN-OBJ)
        (IF (SCREEN-CHA? SCREEN-OBJ)
            SCREEN-OBJ
