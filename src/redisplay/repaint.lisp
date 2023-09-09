@@ -536,7 +536,7 @@
               (and (>& now (+ *last-eval-repaint* *eval-repaint-quantum*))
                   (>& now (+ *last-eval-repaint* (* *eval-repaint-ratio*
                                                     *last-repaint-duration*)))))
-        (bw::update-toolbar-font-buttons)
+        #+lispworks (capi::apply-in-pane-process *boxer-pane* #'bw::update-toolbar-font-buttons)
         (setq *last-eval-repaint* now)
         (process-editor-mutation-queue-within-eval)
         (unless (null bw::*suppressed-actions*)
