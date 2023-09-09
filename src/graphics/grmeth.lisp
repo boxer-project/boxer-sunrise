@@ -440,9 +440,6 @@ Modification History (most recent at top)
       (enclosing-rectangle self)
     (multiple-value-bind (left2 top2 right2 bottom2)
         (enclosing-rectangle other-turtle)
-(format t "~%touching? l: ~A t: ~A r: ~A b: ~A
-          l: ~A t: ~A r: ~A b: ~A" left1 top1 right1 bottom1
-          left2 top2 right2 bottom2)
       (flet ((horiz-touch? ()
                (or (inclusive-between? left1 left2 right2)
                    (inclusive-between? right1 left2 right2)
