@@ -1590,9 +1590,12 @@ Modification History (most recent at the top)
 
 ;; this is used by the redisplay...
 
-(defun redisplay-graphics-sheet (gs graphics-screen-box)
+(defun redisplay-graphics-sheet-graphics-list (gs graphics-screen-box)
+  "Draws the graphics-command-list of the graphics-sheet in member graphics-list. This typically contains
+   everything that has been drawn or stamped by sprites and doesn't privately belong to them. This takes
+   in to account if openGL framebuffers are used and can paint to the framebuffer attached to the
+   screen-box."
   (with-graphics-vars-bound ((screen-obj-actual-obj graphics-screen-box))
-    ;; first the items in the list
     (if *use-opengl-framebuffers*
       (let* ((wid (graphics-sheet-draw-wid gs))
              (hei (graphics-sheet-draw-hei gs))
@@ -1607,9 +1610,12 @@ Modification History (most recent at the top)
       ; else
       (let ((gl (graphics-sheet-graphics-list gs)))
         (unless (graphics-command-list-hidden gl)
-          (boxer-playback-graphics-list gl :translate? t))))
+          (boxer-playback-graphics-list gl :translate? t))))))
 
-    ;; and then any sprites
+(defun redisplay-graphics-sheet-sprites (gs graphics-screen-box)
+  "Draws all the sprites in the the object-list slot of the related graphics-sheet.  Draws the sprites private
+   graphcis-command-list and issues each sprites draw method."
+  (with-graphics-vars-bound ((screen-obj-actual-obj graphics-screen-box))
     (let ((sprites (graphics-sheet-object-list gs)))
       (dolist (sprite sprites)
         (when (turtle? sprite)

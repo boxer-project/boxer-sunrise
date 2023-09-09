@@ -324,6 +324,11 @@
                                                                (min inner-width  (ogl-pixmap-width  ba))
                                                                (min inner-height (ogl-pixmap-height ba))
                                                                ba 0 0 0 0)))
+                                                         ;; First draw the graphics list operations, then display the
+                                                         ;; framebuffer they just got painted to, assuming framebuffers
+                                                         ;; are in use.
+                                                         (unless (null (graphics-sheet-graphics-list graphics-sheet))
+                                                           (redisplay-graphics-sheet-graphics-list graphics-sheet self))
                                                          ;; Draw the gl-model canvas / framebuffer
                                                          (when *use-opengl-framebuffers*
                                                           (let* ((wid (graphics-sheet-draw-wid graphics-sheet))
@@ -335,7 +340,7 @@
                                                                               pixmap 0 0 0 0)))
                                                          ;; then handle any sprite graphics...
                                                          (unless (null (graphics-sheet-graphics-list graphics-sheet))
-                                                           (redisplay-graphics-sheet graphics-sheet self)))))))))
+                                                           (redisplay-graphics-sheet-sprites graphics-sheet self)))))))))
 
 
 
