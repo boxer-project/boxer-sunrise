@@ -205,7 +205,7 @@ Modification History (most recent at the top)
 (defvar %%bin-op-im-number-size (ash 1 11.))
 
 ;;; Currently supported version number
-(defvar *version-number* 13.)
+(defvar *version-number* 14.)
 
 ;;; Dumping variables
 
@@ -421,7 +421,7 @@ Modification History (most recent at the top)
 
 (defvar *bin-op-load-command-table* (make-bin-op-dispatch-table))
 
-(defvar *supported-obsolete-versions* '(5 6 7 8 9 10 11 12))
+(defvar *supported-obsolete-versions* '(5 6 7 8 9 10 11 12 13))
 
 (defvar *status-line-loading-format-string* "Loading ~D (~D %)")
 

@@ -58,3 +58,20 @@ Changes:
   - sunrise-52 Changed name rows to dump as string. Allows higher unicode characters in box names.
 
     https://github.com/boxer-project/boxer-sunrise/commit/d843d7374557bbd1619747de82956bb707e66edd
+
+### Version 14
+
+Version 14 is a marker version to note that a new graphics list command has been added for
+graphics-sheets-graphics-list, such that any Boxer documents saved with this graphics command will not
+open in earlier versions of Boxer.
+
+  - Added in Boxer version 3.4.14
+  - New graphics command is 37, allowing rotation/translation/scaling of turtle drawing operations by supplying
+    a 4x4 transformation matrix.
+    ```
+    37   BOXER-TRANSFORM-MATRIX     (MATRIX) 4x4 matrix packed in 1x16 single-float vector
+    In order to fix/support stamp-self with the same rotations/scaling/etc with bitmaps and all
+    primitives we need to move beyond the simple hand transforms. This graphics display list
+    command allows putting an arbitrary 4x4 transformation matrix in the graphics list to
+    affect upcoming commands.
+    ```
