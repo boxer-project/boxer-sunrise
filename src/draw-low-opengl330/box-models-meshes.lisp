@@ -61,10 +61,11 @@
     model))
 
 (defmethod reset-meshes ((self boxer-gl-model))
-  (setf (mesh-pos (slot-value self 'xyz-rgba-mesh)) 0)
-  (setf (mesh-pos (slot-value self 'dashed-xyz-rgba-mesh)) 0)
-  (setf (mesh-pos (slot-value self 'glyphs-xyz-txty-rgba-mesh)) 0)
-)
+  (setf (cur-tick self) 0
+        (needs-update self) t
+        (mesh-pos (slot-value self 'xyz-rgba-mesh)) 0
+        (mesh-pos (slot-value self 'dashed-xyz-rgba-mesh)) 0
+        (mesh-pos (slot-value self 'glyphs-xyz-txty-rgba-mesh)) 0))
 
 (defmethod draw ((self boxer-gl-model))
   ;; Regular Line Shapes

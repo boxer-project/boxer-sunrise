@@ -185,9 +185,8 @@ multifont row, the common reference point will be the baseline instead of the to
     (if (equal tick (slot-value model 'cur-tick))
       (setf (needs-update model) nil)
       (progn
-        (setf (needs-update model) t)
-        (setf (slot-value model 'cur-tick) tick)
-        (reset-meshes model)))
+        (reset-meshes model)
+        (setf (slot-value model 'cur-tick) tick)))
     model))
 
 (defmethod get-updated-tick ((self screen-obj))
