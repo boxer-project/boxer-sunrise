@@ -156,16 +156,17 @@
 
 (defgraphics-state-change (change-graphics-color 4) (new-color)
              :dump-form
-             (let ((existing-pixel (aref command 1)))
-                (unless (or (typep (aref command 1) 'fixnum)
-                            (listp (aref command 1)))
+             (let* ((outgoing-command (copy-seq command))
+                    (existing-pixel (aref outgoing-command 1)))
+                (unless (or (typep existing-pixel 'fixnum)
+                            (listp existing-pixel))
                          ;; If this is a float to an openGL float vector, convert it
                          ;; to an integer representation of the color
-                        (setf (aref command 1)
+                        (setf (aref outgoing-command 1)
                           (if (>= *version-number* 12)
                               (pixel-dump-value existing-pixel)
                               (canonicalize-pixel-color existing-pixel))))
-                (dump-boxer-thing command stream))
+                (dump-boxer-thing outgoing-command stream))
              :load-form
              (setf (aref command 1)
                    (reallocate-pixel-color (aref command 1)))
