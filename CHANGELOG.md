@@ -1,5 +1,173 @@
 # Change Log
 
+## 3.4.14 2023-09-12
+
+This alpha release fixes and cleans up numerous items in the turtle graphics and sprites layer, along with
+some other minor fixes.  Most importantly it includes a large refactoring which puts drawn turtle graphics
+and sprites in a graphics box back in to the same coordinate system.  Due to historical platform reasons,
+lines and shapes drawn with turtles were immediately converted into an integer topleft coordinate space while
+sprites were kept in a 0,0 float space, which would cause them to loose precision and float apart when the
+graphics box was resized. This results in a major simplification of the turtle infrastructure making it
+easier to perform modern graphics "tricks".
+
+Additionally, ellipses and similar shapes are now available for use again! (these have been missing for a while).
+Line width on hollow ellipses, arcs, and circles have been fixed.  Sprites made with pixmaps and other shapes
+can now also rotate and scale based on the sprites properties, which is a major improvement.  A caveat is that
+ellipses and few shapes do not rotate yet, but their shaders should be fixed to do this in the next release.
+
+Part of this work included adding a new graphics list command, the first new one in several decades.  Graphics
+list commands underpin the record keeping for any drawn turtle graphics. The new command is `BOXER-TRANSFORM-MATRIX`
+allowing an arbitrary 4x4 transformation matrix to be added to the graphics list to rotate, scale, and translate
+any following commands:
+
+```
+37   BOXER-TRANSFORM-MATRIX     (MATRIX) 4x4 matrix packed in 1x16 single-float vector
+```
+
+This is quite exciting, because it gets us very close to having all the graphics operations existing in a modern
+3d compatible GL environment, such that we could have 3d turtle environments and perform other interesting visual
+effects.  Because of this added graphics command, the box file format version has been increased to v14 for this
+build.
+
+Other fixes include primitives for fetching screen colors like `color-at`, numerous crash fixes, dissapearing row
+text render fixes, and improvements in syncing between a Sprites actual rendering and it's preview render in it's
+shape box (another major refactor that has simplified the system).
+
+The update of the toolbar when starting a long running evaluation has been fixed, the run/stop icon properly changes
+now.  The internal color representations have been simplified as well.
+
+### Full Change Log
+
+sunrise-25
+  - Putting box borders on the GL Model Meshes
+  - Putting box names on the gl model.
+
+sunrise-67 Fixing up freeze primitive so that it clears any attached graphic canvas framebuffers.
+
+sunrise-68 Removing ogl-colors and replacing with RGBA vectors
+  - centralizing color functions in color.lisp
+  - Removing ogl-color conversion routines in favor of using rgb vectors.
+  - Fixing toolbar color comparisons.
+  - Fixing pixel->color
+  - Changing precision to check color portions that max at 255.
+  - Removing remaining usage of ogl color->pixel
+  - Cleaning up change-graphics-color
+
+bugs-54 First adjustments to boxer coords for stamp-dot and stamp-rectangle
+  - Adjusting bitmap recording, fixing dot and bitmap drawing.
+  - Fixing up coords for type recording, filled and hollow circles, hollow and filled ellipses, arcs and wedges,
+    move-to, loading of colors and translating window->boxer turtle coords on load, stamp primitives, freeze,
+    model and inverse matrix on dub-graphics-list, cached pen color/width/font in graphics display list framebuffer
+    canvas's.
+  - Converting window-coords graphics commands to boxer-coords on first render.
+  - Reworking draw-line-wrap for native boxer turtle coordinates.
+  - Fixing positioning for type, ltype, rtype primitives.
+  - Adding translate? option to boxer-playback-graphics-list to fix boxtops.
+  - Always in :boxer recording mode now, switching *graphics-command-recording-mode* to ':boxer from ':window
+  - Completely removing allocate-boxer->window-command
+  - Massively cleaning up resize-graphics-sheet
+  - Archiving the venerable playback-graphics-list-internal
+  - Changing :window-boxer template to single-float. Checking for :rgb vector in reallocate-pixel-color
+  - Updating graphics-canvas resize to use global *update-bimap?* to avoid framebuffer lag on mouse resizing.
+  - Moving repaint inside *update-bimap?* nil context to avoid framebuffer resizes during repaint when mouse resizing.
+  - Adding new graphics command 37   BOXER-TRANSFORM-MATRIX
+    - 37   BOXER-TRANSFORM-MATRIX     (MATRIX) 4x4 matrix packed in 1x16 single-float vector
+      In order to fix/support stamp-self with the same rotations/scaling/etc with bitmaps and all
+      primitives we need to move beyond the simple hand transforms. This graphics display list
+      command allows putting an arbitrary 4x4 transformation matrix in the graphics list to
+      affect upcoming commands.
+  - Cleaning up sprite extents and draw-update removal
+    - Simplifying and reworking enclosing-rectangle and other extents functions
+    - Removing draw-update which no longer is used with sprite shapes
+  - Improving enclosing-rectangle with proper scale/rotation/translating.
+  - Improving wid/hei calculations for the SHAPE graphics-sheet dimensions.
+  - When drawing a sprite, override the global %draw-half-width and height
+    - This is so wrap-line respects the dimensions of the sprites shape, rather than using
+      the graphics-sheet of the containing graphics box. This can make a big difference if
+      the sprite is scaled/rotated/etc.
+
+bugs-169 Fixing run/stop toolbar icon update during evaluation
+    During evaluation we may not be in the same process/thread as the
+    capi widgets. Changing the toolbar update to apply in the boxer pane
+    process, fixing it changing to the 'stop' icon once we're in evaluation
+    from the boxer canvas.
+
+bugs-171 Fixing issues with freeze and gl textures getting updated
+    There are a number of operations which change the pixel data in an
+    ogl-pixmap. This ticket adds a flag to the class indicating if the texture
+    needs updating because the data has changed, along with the necessary
+    checks for this in various pixmap operations and in gl-add-pixmap.
+
+bugs-172 Creating accessors for screen-obj-wid and hei to ensure the value is always a fixnum.
+
+bugs-176 Fragments shaders for hollow/filled circles/arcs/ellipses
+
+bugs-182 Removing window-shape usage
+  - defstruct turtle-window-shape
+  - defuns turtle-window-shape?, make-turtle-window-shape, flush-window-shape-cache,
+    update-window-shape
+  - defmethods update-window-shape-allocation, invalidate-window-shape-and-extent-caches
+  - window-shape slot from button
+  - Fixing up math and translations for enclosing-rectangle, turtle-window-extents, sprite-at-window-point
+  - updating extents and drawing for turtle coordinates.
+
+bugs-193 Fixing up color-under, color-at, and bg-color variations
+  - Coalescing background-color-from-turtle and background-pixel-from-turtle
+  - Converting everything to :rgb float vectors from int32 pixels
+  - Adding pixmap-pixel-color defun to pixmap.lisp
+  - Checking for old files where Shape interfaces may not have an attached box.
+  - Fixing set-color-at by fixing up %draw-point
+
+color-tools-demo Fixed an issue causing the framebuffer to flicker.
+    Split up redisplay-graphics-sheet into redisplay-graphics-sheet-graphics-list
+    and redisplay-graphics-sheet-sprites, so that in the repaint we can paint
+    the graphics list first, then blit the texture for the framebuffer, and then the
+    sprites that need to go on top of that.
+
+wip First spike of work for rotated/scaled sprites.
+
+minor-fix
+  - Adding repaint back in to redisplay primitive.
+  - Removing extra window chrome around boxer canvas
+  - wrapping supershrunk and port struts in proper pen width.
+
+cleanup
+  - Adding float-vector to begin cleaning up filling VBOs
+  - Cleaning up quicklisp dependencies.
+  - Removing old Sun invocation of bitblt-pixrect-to-screen
+  - Removing commented out reference to playback-graphics-list-internal
+  - Removing bound but unused %drawing-array from drawing-on-bitmap and drawing-on-window-without-prepare-sheet
+
+refactor
+  - Pulling out shader program inits and adding variable to reload them during runtime for shader work.
+  - Moving defgraphics-state-change and translator entries to graphics-commands.lisp
+  - Renaming new-offscreen-copy -> copy-pixmap and moving to pixmap.lisp
+  - Moving repaint pass-1 methods in to their own file.
+
+doco
+  - Adding 'save-under' to glossery
+  - Adding boxer coord commands to table: hollow rect, wedge, arc
+  - Documenting members of graphics-sheet, removing wip member transform that was never used
+
+the-attic
+  - Removing unreferenced macros from macros.lisp
+    - SPLICE-LIST-INTO-LIST, SPLICE-ITEM-INTO-LIST, SPLICE-LIST-INTO-LIST-1,
+      SPLICE-ITEM-OUT-OF-LIST, SPLICE-ITEM-AND-TAIL-OUT-OF-LIST, SPLICE-ITEM-AND-TAIL-OUT-OF-LIST-1,
+      SPLICE-BETWEEN-ITEMS-OUT-OF-LIST, SPLICE-LIST-INTO-LIST-AT, SPLICE-ITEM-INTO-LIST-AT,
+      SPLICE-ITEM-OUT-OF-LIST-AT, SPLICE-ITEM-AND-TAIL-OUT-OF-LIST-FROM, SPLICE-ITEMS-FROM-TO-OUT-OF-LIST,
+      ITEMS-SPLICED-FROM-TO-FROM-LIST, char-case
+  - Removing now unused with-blending macro and usage
+  - Fixing up usage of draw-poly and archiving unneeded boxer-points->window-system-points
+  - Removing the remaining save-under code.
+  - Removing defmethods fast-erase and erase for graphics-object/button
+  - Archiving flash-name, calc-name-position-x, calc-name-position-y
+  - Removing unused versions of draw-arc / %draw-arc
+  - Archiving unused draw-filled-arc, %draw-filled-arc
+  - Removing unused defvar %drawing-window
+  - Removing unreferened colormap and prepared-flag members from defstruct graphics-sheet
+  - Archiving unused boxer-color defstruct from gdispl.lisp
+  - Removing empty with-real-time defmacro
+
 ## 3.4.13 2023-05-08
 
 This is an incremental alpha release on top of the openGL graphics update from the previous release.
