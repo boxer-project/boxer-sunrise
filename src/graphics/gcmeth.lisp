@@ -313,49 +313,21 @@ Modification History (most recent at top)
         (when (and (null dont-update-box) (not (null box)))
           (bash-box-to-single-value box new-value))))
     (unless (or (null pen-alu) (eq %graphics-box :no-graphics))
-      (let ((erase-color (when (eq new-value 'bu::erase)
-                           (background-graphics-color self))))
-        (cond ((eq self (graphics-command-list-agent %graphics-list))
-               ;; if the current sprite is still the "owner" then just
-               ;; record the change in alu with special handling for
-               ;; erasing in a graphics box which has a background
-               (cond (erase-color
-                      (unless (eql *graphics-state-current-alu* alu-seta)
-                        (record-boxer-graphics-command-change-alu alu-seta)
-                        (change-alu alu-seta))
-                      (unless (eql *graphics-state-current-pen-color*
-                                   erase-color)
-                        (record-boxer-graphics-command-change-graphics-color
-                         erase-color)
-                        (change-graphics-color erase-color)))
-                 (t
-                  (unless (eql *graphics-state-current-alu* pen-alu)
-                    (record-boxer-graphics-command-change-alu pen-alu)
-                    (change-alu pen-alu))
-                  ;; check the validity of the color since it may
-                  ;; have been changed by a previous erase command, note
-                  ;; that we can't check the current value of the alu
-                  ;; for 'bu::erase because there may have been
-                  ;; an intervening PENUP command
-
-                  ;; always record when learning shape because we
-                  ;; can't side effect the sprite's state to
-                  ;; check if the current color is correcta
-                  (let ((gc (box-interface-value (slot-value self
-                                                             'pen-color))))
-                    (unless (eql *graphics-state-current-pen-color* gc)
-                      (record-boxer-graphics-command-change-graphics-color
-                       gc)
-                      (change-graphics-color gc))))))
-          (t
-           ;; first, make sure the current state of the graphics list
-           ;; matches the state of the drawing sprite, this is handled
-           ;; in a different way if the sprite is erasing
-           (cond (erase-color
-                  (synchronize-graphics-state-for-erase self erase-color))
-             (t (synchronize-graphics-state self)))
-           ;; Now that everything agrees, set the new "owner"
-           (setf (graphics-command-list-agent %graphics-list) self)))))))
+      (cond ((eq self (graphics-command-list-agent %graphics-list))
+             (unless (eql *graphics-state-current-alu* pen-alu)
+               (record-boxer-graphics-command-change-alu pen-alu)
+               (change-alu pen-alu))
+               ;; always record when learning shape because we
+               ;; can't side effect the sprite's state to
+               ;; check if the current color is correcta
+               (let ((gc (box-interface-value (slot-value self 'pen-color))))
+                 (unless (eql *graphics-state-current-pen-color* gc)
+                   (record-boxer-graphics-command-change-graphics-color gc)
+                   (change-graphics-color gc))))
+        (t
+         (synchronize-graphics-state self)
+         ;; Now that everything agrees, set the new "owner"
+         (setf (graphics-command-list-agent %graphics-list) self)))))) ;)
 
 (defmethod pen-width ((self graphics-cursor))
   (box-interface-value (slot-value self 'pen-width)))
@@ -533,30 +505,6 @@ Modification History (most recent at top)
         (record-boxer-graphics-command-change-graphics-font font)
         (setf (graphics-command-list-font-no %graphics-list) font)
         (change-graphics-font font)))))
-
-;; similiar to synchronize-graphics-state except we synch to erasing
-;; values instead of the intrinsic values of the sprite
-(defmethod synchronize-graphics-state-for-erase ((agent graphics-cursor)
-                                                 erase-color)
-  (let* ((pw (box-interface-value (slot-value agent 'pen-width)))
-         (font (box-interface-value (slot-value agent 'type-font)))
-         ;; this has to be bound explicitly here because this method can
-         ;; be called INSIDE of update-shape
-         ;; sgithens 2023-07-12 we are always in :boxer mode now
-         ;  (*graphics-command-recording-mode* ':window)
-         )
-    (unless (eql *graphics-state-current-alu* alu-seta)
-      (record-boxer-graphics-command-change-alu alu-seta)
-      (change-alu alu-seta))
-    (unless (eql *graphics-state-current-pen-width* pw)
-      (record-boxer-graphics-command-change-pen-width pw)
-      (change-pen-width pw))
-    (unless (color= *graphics-state-current-pen-color* erase-color)
-      (record-boxer-graphics-command-change-graphics-color erase-color)
-      (change-graphics-color erase-color))
-    (unless (eql *graphics-state-current-font-no* font)
-      (record-boxer-graphics-command-change-graphics-font font)
-      (change-graphics-font font))))
 
 ;; this is like synchronize-graphics-state EXCEPT that it
 ;; ONLY puts entries in the beginning of its graphics-command-list

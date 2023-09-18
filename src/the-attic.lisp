@@ -11688,6 +11688,30 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: gcmeth.lisp
 ;;;;
 
+;; similiar to synchronize-graphics-state except we synch to erasing
+;; values instead of the intrinsic values of the sprite
+(defmethod synchronize-graphics-state-for-erase ((agent graphics-cursor)
+                                                 erase-color)
+  (let* ((pw (box-interface-value (slot-value agent 'pen-width)))
+         (font (box-interface-value (slot-value agent 'type-font)))
+         ;; this has to be bound explicitly here because this method can
+         ;; be called INSIDE of update-shape
+         ;; sgithens 2023-07-12 we are always in :boxer mode now
+         ;  (*graphics-command-recording-mode* ':window)
+         )
+    (unless (eql *graphics-state-current-alu* alu-seta)
+      (record-boxer-graphics-command-change-alu alu-seta)
+      (change-alu alu-seta))
+    (unless (eql *graphics-state-current-pen-width* pw)
+      (record-boxer-graphics-command-change-pen-width pw)
+      (change-pen-width pw))
+    (unless (color= *graphics-state-current-pen-color* erase-color)
+      (record-boxer-graphics-command-change-graphics-color erase-color)
+      (change-graphics-color erase-color))
+    (unless (eql *graphics-state-current-font-no* font)
+      (record-boxer-graphics-command-change-graphics-font font)
+      (change-graphics-font font))))
+
 ;; 2023-06-23 Removing this bit of window-shape update from set-shape
     ;; fixup other slots which depend on the shape...
     ; (update-window-shape-allocation self)
