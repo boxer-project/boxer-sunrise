@@ -113,10 +113,6 @@
             (+ (max x0 x1) delta) (+ (max y0 y1) delta)))
   :TRANSFORMATION-TEMPLATE
   (:x-transform :y-transform :x-transform :y-transform)
-  :COMMAND-BODY
-  (unless (zerop *graphics-state-current-pen-width*)
-    (ck-mode-draw-line x0 y0 x1 y1 *graphics-state-current-alu*)
-  )
   :sprite-command
   (cond ((and (= x0 last-x) (= y0 last-y))
         (setq last-x x1 last-y y1)
@@ -218,24 +214,6 @@
                             (if (null p) 0 (1+& p))))))))
   :TRANSFORMATION-TEMPLATE
   (:x-transform :y-transform nil)
-  :COMMAND-BODY
-  ;; Yuck, rewrite these to remove all the string CONSing
-  (do* ((height (1+& (string-hei *graphics-state-current-font-no*)))
-        (s string (subseq s (let ((p (position #\newline s)))
-                              (if (null p) 0 (1+& p)))))
-        (trimmed-string (subseq s 0 (position #\newline s))
-                        (subseq s 0 (position #\newline s)))
-        (width (ceiling (string-wid *graphics-state-current-font-no* trimmed-string))
-              (ceiling (string-wid *graphics-state-current-font-no* trimmed-string)))
-        (wx (fixr (- x (/ width 2))) (fixr (- x (/ width 2))))
-        (wy (fixr y) (+& wy height)))
-    ((not (position #\newline s))
-    (draw-string *graphics-state-current-font-no* trimmed-string
-                  (ensure-legal-window-coordinate (scale-x wx))
-                  (ensure-legal-window-coordinate (scale-y wy))))
-    (draw-string *graphics-state-current-font-no* trimmed-string
-                  (ensure-legal-window-coordinate (scale-x wx))
-                  (ensure-legal-window-coordinate (scale-y wy))))
   :SPRITE-COMMAND
   (cond ((and (= x last-x) (= y last-y))
         (list 'bu::type (make-box (list (list (coerce string
@@ -283,20 +261,6 @@
                             (if (null p) 0 (1+& p))))))))
   :TRANSFORMATION-TEMPLATE
   (:x-transform :y-transform nil)
-  :COMMAND-BODY
-  (let ((current-y y) (s string))
-    (loop
-      (draw-string *graphics-state-current-font-no*
-                    (subseq s 0 (position #\newline s))
-                    (ensure-legal-window-coordinate (scale-x(fixr x)))
-                    (ensure-legal-window-coordinate (scale-y(fixr current-y))))
-      ;; If we have drawn the last line (the current line has no CR's)
-      (if (not (position #\newline s))
-        (return)
-        (setq s (subseq s (let ((p (position #\newline s)))
-                            (if (null p) 0 (1+& p))))
-              current-y (+ current-y 1
-                          (string-hei *graphics-state-current-font-no*))))))
   :SPRITE-COMMAND
   (cond ((and (= x last-x) (= y last-y))
         (list 'bu::ltype (make-box (list (list (coerce string
@@ -344,25 +308,6 @@
                             (if (null p) 0 (1+& p))))))))
   :TRANSFORMATION-TEMPLATE
   (:x-transform :y-transform nil)
-  :COMMAND-BODY
-  (let ((current-y y) (s string) (width 0) (trimmed-string ""))
-    (loop
-      (setq trimmed-string (subseq s 0 (position #\newline s))
-            width (string-wid *graphics-state-current-font-no* trimmed-string))
-      (draw-string *graphics-state-current-font-no*
-                    trimmed-string
-                    (ensure-legal-window-coordinate
-                    (scale-x (fixr (- x width))))
-                    (ensure-legal-window-coordinate
-                    (scale-y (fixr current-y))))
-      ;; If we have drawn the last line (the current line has no CR's)
-      (if (not (position #\newline s))
-        (return)
-        (setq s (subseq s (let ((p (position #\newline s)))
-                            (if (null p) 0 (1+& p))))
-              current-y (+ current-y
-                          (1+ (string-hei
-                                *graphics-state-current-font-no*)))))))
   :SPRITE-COMMAND
   (cond ((and (= x last-x) (= y last-y))
         (list 'bu::rtype (make-box (list (list (coerce string
@@ -426,13 +371,6 @@
     (setq last-x x last-y y)
     (append (sprite-commands-for-new-position x y)
             (list 'bu::stamp-rect width height))))
-  :COMMAND-BODY
-  (unless (or (zerop width) (zerop height))
-    (draw-rectangle (fixr width) (fixr height)
-                    (ensure-legal-window-coordinate
-                      (scale-x (-& x (floor (the fixnum width) 2))))
-                    (ensure-legal-window-coordinate
-                      (scale-y (-& y (floor (the fixnum height) 2))))))
   :TRANSLATION-ARGS
   (trans-x trans-y)
   :TRANSLATION-BODY
@@ -481,22 +419,6 @@
     (setq last-x x last-y y)
     (append (sprite-commands-for-new-position x y)
             (list 'bu::dot))))
-  :COMMAND-BODY
-  (unless (zerop *graphics-state-current-pen-width*)
-    (draw-rectangle *graphics-state-current-pen-width*
-                    *graphics-state-current-pen-width*
-                    (ensure-legal-window-coordinate
-                      (scale-x (-& x
-                                  (floor
-                                    (the fixnum
-                                        *graphics-state-current-pen-width*)
-                                    2))))
-                    (ensure-legal-window-coordinate
-                      (scale-y (-& y
-                                  (floor
-                                    (the fixnum
-                                        *graphics-state-current-pen-width*)
-                                    2))))))
   :TRANSLATION-ARGS
   (trans-x trans-y)
   :TRANSLATION-BODY
@@ -540,28 +462,6 @@
     (setq last-x x last-y y)
     (append (sprite-commands-for-new-position x y)
             (list 'bu::stamp-hollow-rect width height))))
-  :COMMAND-BODY
-  (unless (or (zerop width) (zerop height))
-    (let ((xxx (ensure-legal-window-coordinate
-                (scale-x (-& x (floor (the fixnum width) 2)))))
-          (yyy (ensure-legal-window-coordinate
-                (scale-y (-& y (floor (the fixnum height) 2)))))
-          (thick (fixr *graphics-state-current-pen-width*))
-          (wid (fixr width)) (hei (fixr height)))
-      (cond ((or (>=& (*& thick 2) wid)
-                (>=& (*& thick 2) hei))
-            ;; degenerate cases where walls touch
-            (draw-rectangle wid hei xxx yyy))
-        (t
-        ;; left wall
-        (draw-rectangle thick hei xxx yyy)
-        ;; top
-        (draw-rectangle (-& wid (*& 2 thick)) thick (+& xxx thick) yyy)
-        ;; right
-        (draw-rectangle thick hei (+& xxx (-& wid thick)) yyy)
-        ;; bottom
-        (draw-rectangle (-& wid (*& 2 thick)) thick (+& xxx thick)
-                          (+& yyy (-& hei thick)))))))
   :TRANSLATION-ARGS
   (trans-x trans-y)
   :TRANSLATION-BODY
@@ -624,13 +524,6 @@
     (dump-boxer-thing y stream)
     (dump-boxer-thing width stream)
     (dump-boxer-thing height stream)))
-  :COMMAND-BODY
-  (%bitblt-to-screen (fixr width) (fixr height)
-                    bitmap 0 0
-                    (ensure-legal-window-coordinate
-                      (scale-x (-& x (floor (the fixnum width) 2))))
-                    (ensure-legal-window-coordinate
-                      (scale-y (-& y (floor (the fixnum height) 2)))))
   :TRANSLATION-ARGS
   (trans-x trans-y)
   :TRANSLATION-BODY
@@ -674,13 +567,6 @@
     (setq last-x x last-y y)
     (append (sprite-commands-for-new-position x y)
             (list 'bu::stamp-wedge radius sweep-angle))))
-  :COMMAND-BODY
-  (when (plusp radius)
-    (%draw-c-arc (ensure-legal-window-coordinate (scale-x x))
-                (ensure-legal-window-coordinate (scale-y y))
-                radius
-                start-angle sweep-angle T)
-    )
   :TRANSLATION-ARGS
   ;; translation
   (trans-x trans-y)
@@ -722,13 +608,6 @@
     (setq last-x x last-y y)
     (append (sprite-commands-for-new-position x y)
             (list 'bu::stamp-arc radius sweep-angle))))
-  :COMMAND-BODY
-  (unless (zerop radius)
-    (%draw-c-arc (ensure-legal-window-coordinate (scale-x x))
-                (ensure-legal-window-coordinate (scale-y y))
-                radius
-                start-angle sweep-angle nil)
-    )
   :TRANSLATION-ARGS
   ;; translation
   (trans-x trans-y)
@@ -775,9 +654,6 @@
     (setq last-x x last-y y)
     (append (sprite-commands-for-new-position x y)
             (list 'bu::stamp-ellipse width height))))
-  :COMMAND-BODY
-  (unless (or (zerop width) (zerop height))
-    (draw-ellipse x y width height t))
   :TRANSLATION-ARGS
   ;; translation
   (trans-x trans-y)
@@ -826,9 +702,6 @@
     (setq last-x x last-y y)
     (append (sprite-commands-for-new-position x y)
             (list 'bu::stamp-hollow-ellipse width height))))
-  :COMMAND-BODY
-  (unless (or (zerop width) (zerop height))
-    (draw-ellipse x y width height nil))
   :TRANSLATION-ARGS
   ;; translation
   (trans-x trans-y)
@@ -871,14 +744,6 @@
     (setq last-x x last-y y)
     (append (sprite-commands-for-new-position x y)
             (list 'bu::stamp-circle radius))))
-  :COMMAND-BODY
-  (when (plusp radius)
-    (draw-circle (ensure-legal-window-coordinate (scale-x x))
-                  (ensure-legal-window-coordinate (scale-y y))
-                  radius
-                  T)
-
-    )
   :TRANSLATION-ARGS
   ;; translation
   (trans-x trans-y)
@@ -919,13 +784,6 @@
     (setq last-x x last-y y)
     (append (sprite-commands-for-new-position x y)
             (list 'bu::stamp-hollow-circle radius))))
-  :COMMAND-BODY
-  (unless (zerop radius)
-    (draw-circle (ensure-legal-window-coordinate (scale-x x))
-                  (ensure-legal-window-coordinate (scale-y y))
-                  radius
-                  nil)
-    )
   :TRANSLATION-ARGS
   ;; translation
   (trans-x trans-y)

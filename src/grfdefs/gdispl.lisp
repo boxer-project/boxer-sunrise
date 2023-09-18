@@ -1158,7 +1158,6 @@ Modification History (most recent at the top)
                                          sprite-command
                                          transformation-template
                                          copy-post-processing
-                                         command-body
                                          translation-args
                                          translation-body
                                          translation-and-scaling-args
@@ -1175,7 +1174,7 @@ Modification History (most recent at the top)
       ,deallocate-args ,deallocate-form
       ,sprite-command
       ,transformation-template ,copy-post-processing
-      ,command-body)
+      'nil)
     (defgraphics-handler (,name *graphics-command-translation-table*)
       ,translation-args
       ,translation-body)
