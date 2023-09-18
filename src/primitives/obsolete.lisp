@@ -119,6 +119,20 @@
       (set-pen turtle 'bu::reverse))
   boxer-eval::*novalue*)
 
+(defsprite-function bu::pe ()
+  (sprite turtle)
+  (boxer-eval::primitive-signal-error :obsolete
+                                    "erase pens are no longer supported")
+  ; (set-pen turtle 'bu::erase)
+  boxer-eval::*novalue*)
+
+(defsprite-function bu::penerase ()
+  (sprite turtle)
+  (boxer-eval::primitive-signal-error :obsolete
+                                    "erase pens are no longer supported")
+  ; (set-pen turtle 'bu::erase)
+  boxer-eval::*novalue*)
+
 ;; 2021-12-12  Primitives from net-prims for sending boxes back and forth between different
 ;; computers. It's actually pretty cool, and would be nice to modernize some day, but the
 ;; current implementation is built on a socket implementation from when Boxer was being

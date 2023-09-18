@@ -305,16 +305,6 @@
   (set-pen turtle 'bu::down)
   boxer-eval::*novalue*)
 
-(defsprite-function bu::pe ()
-  (sprite turtle)
-  (set-pen turtle 'bu::erase)
-  boxer-eval::*novalue*)
-
-(defsprite-function bu::penerase ()
-  (sprite turtle)
-  (set-pen turtle 'bu::erase)
-  boxer-eval::*novalue*)
-
 (defsprite-function bu::set-pen-width ((boxer-eval::numberize width))
   (sprite turtle)
   (cond ((and (numberp width) (not (minusp width)))
