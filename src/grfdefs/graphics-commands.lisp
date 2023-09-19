@@ -47,7 +47,7 @@
 ;;; 1 Change Pen Width
 
 (defgraphics-state-change (change-pen-width 1) (new-width)
-  :extents-form (progn (setq *graphics-state-current-pen-width* new-width)
+  :boxer-extents-form (progn (setq *graphics-state-current-pen-width* new-width)
                        ;; need to update because other graphics command
                        ;; extent forms rely on an accurate value for pen-width
                        (values 0 0 0 0 t))
@@ -66,7 +66,7 @@
 ;;; 2 Change Graphics Font
 
 (defgraphics-state-change (change-graphics-font 2) (new-font-no)
-  :extents-form (progn (setq *graphics-state-current-font-no* new-font-no)
+  :boxer-extents-form (progn (setq *graphics-state-current-font-no* new-font-no)
                       ;; need to update because other graphics command
                       ;; extent forms rely on an accurate value for pen-width
                       (values 0 0 0 0 t))
@@ -97,13 +97,6 @@
 
 (defstandard-graphics-handlers (line-segment 3)
   :COMMAND-ARGS (x0 y0 x1 y1)
-  :EXTENTS-FORM
-  (let ((delta #-mcl (ceiling *graphics-state-current-pen-width* 2)
-              ;; this has to stay until the non centered thick line bug in
-              ;; the mac implementation gets fixed
-              #+mcl *graphics-state-current-pen-width*))
-    (values (-& (min& x0 x1) delta) (-& (min& y0 y1) delta)
-            (+& (max& x0 x1) delta) (+& (max& y0 y1) delta)))
   :BOXER-EXTENTS-FORM
   (let ((delta #-mcl (ceiling *graphics-state-current-pen-width* 2)
               ;; this has to stay until the non centered thick line bug in
@@ -182,20 +175,6 @@
 
 (defstandard-graphics-handlers (centered-string 7)
   :COMMAND-ARGS (x y string)
-  :EXTENTS-FORM
-  (let ((height 0) (s string) (width 0) (wx x))
-    (loop
-      (setq height (+ height (1+& (string-hei
-                                  *graphics-state-current-font-no*)))
-            width (max& (ceiling (string-wid *graphics-state-current-font-no*
-                                            (subseq s 0 (position #\newline s))))
-                        width)
-            wx (min& wx (fixr (- x (/ width 2)))))
-      ;; If we have handled the last line (the current line has no CR's)
-      (if (not (position #\newline s))
-        (return (values wx y (+& wx width) (+& y height)))
-        (setq s (subseq s (let ((p (position #\newline s)))
-                            (if (null p) 0 (1+& p))))))))
   :BOXER-EXTENTS-FORM
   (let ((height 0) (s string) (width 0) (wx x))
     (loop
@@ -247,18 +226,18 @@
 
 (defstandard-graphics-handlers (left-string 8)
   :COMMAND-ARGS (x y string)
-  :EXTENTS-FORM
-  (let ((height 0) (s string) (width 0))
-    (loop
-      (setq height (+ height 1(string-hei *graphics-state-current-font-no*))
-            width (max (string-wid *graphics-state-current-font-no*
-                                  (subseq s 0 (position #\newline s)))
-                      width))
-      ;; If we have handled the last line (the current line has no CR's)
-      (if (not (position #\newline s))
-        (return (values x y (+ x width) (+ y height)))
-        (setq s (subseq s (let ((p (position #\newline s)))
-                            (if (null p) 0 (1+& p))))))))
+  ; :EXTENTS-FORM
+  ; (let ((height 0) (s string) (width 0))
+  ;   (loop
+  ;     (setq height (+ height 1(string-hei *graphics-state-current-font-no*))
+  ;           width (max (string-wid *graphics-state-current-font-no*
+  ;                                 (subseq s 0 (position #\newline s)))
+  ;                     width))
+  ;     ;; If we have handled the last line (the current line has no CR's)
+  ;     (if (not (position #\newline s))
+  ;       (return (values x y (+ x width) (+ y height)))
+  ;       (setq s (subseq s (let ((p (position #\newline s)))
+  ;                           (if (null p) 0 (1+& p))))))))
   :TRANSFORMATION-TEMPLATE
   (:x-transform :y-transform nil)
   :SPRITE-COMMAND
@@ -294,18 +273,18 @@
 
 (defstandard-graphics-handlers (right-string 9)
   :COMMAND-ARGS (x y string)
-  :EXTENTS-FORM
-  (let ((height 0) (s string) (width 0))
-    (loop
-      (setq height (+ height 1 (string-hei *graphics-state-current-font-no*))
-            width (max (string-wid *graphics-state-current-font-no*
-                                  (subseq s 0 (position #\newline s)))
-                      width))
-      ;; If we have handled the last line (the current line has no CR's)
-      (if (not (position #\newline s))
-        (return (values (- x width) y x (+ y height)))
-        (setq s (subseq s (let ((p (position #\newline s)))
-                            (if (null p) 0 (1+& p))))))))
+  ; :EXTENTS-FORM
+  ; (let ((height 0) (s string) (width 0))
+  ;   (loop
+  ;     (setq height (+ height 1 (string-hei *graphics-state-current-font-no*))
+  ;           width (max (string-wid *graphics-state-current-font-no*
+  ;                                 (subseq s 0 (position #\newline s)))
+  ;                     width))
+  ;     ;; If we have handled the last line (the current line has no CR's)
+  ;     (if (not (position #\newline s))
+  ;       (return (values (- x width) y x (+ y height)))
+  ;       (setq s (subseq s (let ((p (position #\newline s)))
+  ;                           (if (null p) 0 (1+& p))))))))
   :TRANSFORMATION-TEMPLATE
   (:x-transform :y-transform nil)
   :SPRITE-COMMAND
@@ -342,20 +321,6 @@
 
 (defstandard-graphics-handlers (centered-rectangle 10)
   :COMMAND-ARGS (x y width height)
-  :EXTENTS-FORM
-  ;    (let ((half-width (values (round width 2)))
-  ;	  (half-height (values (round height 2))))
-  ;      (declare (fixnum half-width half-height))
-  ;      (values (-& x half-width) (-& y half-height)
-  ;	      (+& x half-width) (+& y half-height)))
-
-  ;    (values (-& x (values (floor width 2))) (-& y (values (floor height 2)))
-  ;            (+& x (values (ceiling width 2))) (+& y (values (ceiling height 2))))
-  ;; should be the same as floor, ceiling but half the ops
-  (multiple-value-bind (half-width wfudge) (truncate width 2)
-                      (multiple-value-bind (half-height hfudge) (truncate height 2)
-                                            (values (-& x half-width) (-& y half-height)
-                                                    (+& x half-width wfudge) (+& y half-height hfudge))))
   :BOXER-EXTENTS-FORM
   (let ((half-width (values (/ width 2.0)))
         (half-height (values (/ height 2.0))))
@@ -400,11 +365,6 @@
 ;; also, should probably use the pen-width ?
 (defstandard-graphics-handlers (dot 11)
   :COMMAND-ARGS (x y)
-  :EXTENTS-FORM
-  (multiple-value-bind (half-size fudge)
-                      (truncate *graphics-state-current-pen-width* 2)
-                      (values (-& x half-size) (-& y half-size)
-                              (+& x half-size fudge) (+& y half-size fudge)))
   :BOXER-EXTENTS-FORM
   (let ((half-size (/ *graphics-state-current-pen-width* 2.0)))
     (declare (type boxer-float half-size))
@@ -442,11 +402,6 @@
 
 (defstandard-graphics-handlers (hollow-rectangle 12)
   :COMMAND-ARGS (x y width height)
-  :EXTENTS-FORM
-  (multiple-value-bind (half-width wfudge) (truncate width 2)
-                      (multiple-value-bind (half-height hfudge) (truncate height 2)
-                                            (values (-& x half-width) (-& y half-height)
-                                                    (+& x half-width wfudge) (+& y half-height hfudge))))
   :BOXER-EXTENTS-FORM
   (let ((half-width (values (/ width 2.0)))
         (half-height (values (/ height 2.0))))
@@ -489,11 +444,6 @@
 
 (defstandard-graphics-handlers (centered-bitmap 15)
   :COMMAND-ARGS (bitmap x y width height)
-  :EXTENTS-FORM
-  (multiple-value-bind (half-width wfudge) (truncate width 2)
-                      (multiple-value-bind (half-height hfudge) (truncate height 2)
-                                            (values (-& x half-width) (-& y half-height)
-                                                    (+& x half-width wfudge) (+& y half-height hfudge))))
   :BOXER-EXTENTS-FORM
   (let ((half-width (/ width 2.0))
         (half-height (/ height 2.0)))
@@ -552,9 +502,6 @@
 
 (defstandard-graphics-handlers (wedge 26)
   :COMMAND-ARGS (x y radius start-angle sweep-angle)
-  :EXTENTS-FORM ;leave as circle for now, get smarter about this later
-  (let ((radius (fixr radius)))
-    (values (-& x radius) (-& y radius) (+& x radius) (+& y radius)))
   :BOXER-EXTENTS-FORM
   (values (- x radius) (- y radius)
           (+ x radius) (+ y radius))
@@ -593,9 +540,6 @@
 
 (defstandard-graphics-handlers (arc 27)
   :COMMAND-ARGS (x y radius start-angle sweep-angle)
-  :EXTENTS-FORM  ;leave as circle for now, get smarter about this later
-  (let ((radius (fixr radius)))
-    (values (-& x radius) (-& y radius) (+& x radius) (+& y radius)))
   :BOXER-EXTENTS-FORM
   (values (- x radius) (- y radius)
           (+ x radius) (+ y radius))
@@ -634,11 +578,6 @@
 
 (defstandard-graphics-handlers (filled-ellipse 28)
   :COMMAND-ARGS (x y width height)
-  :EXTENTS-FORM
-  (multiple-value-bind (half-width wfudge) (truncate width 2)
-                      (multiple-value-bind (half-height hfudge) (truncate height 2)
-                                            (values (-& x half-width) (-& y half-height)
-                                                    (+& x half-width wfudge) (+& y half-height hfudge))))
   :BOXER-EXTENTS-FORM
   (let ((half-width (/ width 2.0))
         (half-height (/  height 2.0)))
@@ -682,11 +621,6 @@
 
 (defstandard-graphics-handlers (ellipse 29)
   :COMMAND-ARGS (x y width height)
-  :EXTENTS-FORM
-  (multiple-value-bind (half-width wfudge) (truncate width 2)
-                      (multiple-value-bind (half-height hfudge) (truncate height 2)
-                                            (values (-& x half-width) (-& y half-height)
-                                                    (+& x half-width wfudge) (+& y half-height hfudge))))
   :BOXER-EXTENTS-FORM
   (let ((half-width (/ width 2.0))
         (half-height (/  height 2.0)))
@@ -730,9 +664,6 @@
 
 (defstandard-graphics-handlers (filled-circle 30)
   :COMMAND-ARGS (x y radius)
-  :EXTENTS-FORM
-  (let ((radius (fixr radius)))
-    (values (-& x radius) (-& y radius) (+& x radius) (+& y radius)))
   :BOXER-EXTENTS-FORM
   (values (- x radius) (- y radius) (+ x radius) (+ y radius))
   :TRANSFORMATION-TEMPLATE
@@ -770,9 +701,6 @@
 
 (defstandard-graphics-handlers (circle 31)
   :COMMAND-ARGS (x y radius)
-  :EXTENTS-FORM
-  (let ((radius (fixr radius)))
-    (values (-& x radius) (-& y radius) (+& x radius) (+& y radius)))
   :BOXER-EXTENTS-FORM
   (values (- x radius) (- y radius) (+ x radius) (+ y radius))
   :TRANSFORMATION-TEMPLATE

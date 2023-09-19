@@ -616,7 +616,7 @@ Modification History (most recent at the top)
 (defmacro defgraphics-command ((name opcode
                                     &optional (optimize-recording? nil))
                               args
-                              extents-form boxer-extents-form
+                              boxer-extents-form
                               dump-args dump-form
                               load-args load-form
                               deallocate-args deallocate-form
@@ -733,14 +733,6 @@ Modification History (most recent at the top)
                                 (,wmake-name ,@args))))))
 
             ;; extents
-            (defun ,window-extents-function (graphics-command)
-              (with-graphics-command-slots-bound graphics-command ,args
-                ,extents-form))
-            ,(when (>=& opcode (svlength *graphics-command-size-values-table*))
-              ;; for that compile time error checking appeal
-              (error "The *graphics-command-size-values-table* is too short"))
-            (setf (svref& *graphics-command-size-values-table* ,opcode)
-                  ',window-extents-function)
             (defun ,boxer-extents-function (graphics-command)
               (with-graphics-command-slots-bound graphics-command ,args
                 ,boxer-extents-form))
@@ -987,7 +979,7 @@ Modification History (most recent at the top)
 ;; (eval (compile load eval)
 (defmacro defgraphics-state-change ((name opcode) args
                                                   &key
-                                                  extents-form boxer-extents-form
+                                                  boxer-extents-form
                                                   (dump-args '(command stream &optional
                                                                        (type :turtle-shape)))
                                                   (dump-form
@@ -1001,8 +993,7 @@ Modification History (most recent at the top)
                                                   body)
   `(defgraphics-command (,name ,opcode t)
      ,args
-     ,(or extents-form '(progn graphics-command (values 0 0 0 0 t)))
-     ,(or boxer-extents-form extents-form '(progn graphics-command
+     ,(or boxer-extents-form '(progn graphics-command
                                                   (values 0.0 0.0 0.0 0.0 t)))
      ,dump-args ,dump-form
      ,load-args ,load-form
@@ -1146,8 +1137,7 @@ Modification History (most recent at the top)
 (defmacro defstandard-graphics-handlers ((name opcode)
                                          &key
                                          command-args
-                                         extents-form
-                                         (boxer-extents-form extents-form)
+                                         boxer-extents-form
                                          (dump-args '(command stream &optional
                                                               (type :turtle-shape)))
                                          (dump-form
@@ -1169,7 +1159,7 @@ Modification History (most recent at the top)
   `(progn
     (defgraphics-command (,name ,opcode)
       ,command-args
-      ,extents-form ,boxer-extents-form
+      ,boxer-extents-form
       ,dump-args ,dump-form ,load-args ,load-form
       ,deallocate-args ,deallocate-form
       ,sprite-command
