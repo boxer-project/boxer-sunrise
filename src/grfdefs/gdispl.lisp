@@ -1534,28 +1534,6 @@ Modification History (most recent at the top)
 (defun sprite-commands-for-new-position (new-x new-y)
   (list 'bu::penup 'bu::setxy new-x new-y 'bu::pendown))
 
-
-;;; temporary fix to keep Window systems from blowing out when
-;;; some kid types FORWARD 239823094230923490
-;;;
-;;; In theory, this should get captured at a higher level
-;;; in the STEPS-ARG-CHECK function but that doesn't deal in
-;;; window coords so it can be fooled
-;;;
-(defun ensure-legal-window-coordinate (n)
-  (cond ((< n #.(min-window-coord))
-         (warn "window system coordinate ~D too small, changing to ~D"
-               n #.(min-window-coord))
-         #.(min-window-coord))
-    ((>= n #.(max-window-coord))
-     (warn "window system coordinate ~D too large, changing to ~D"
-           n #.(max-window-coord))
-     #.(max-window-coord))
-    (t n)))
-
-
-
-
 ;; the default copy functions only copy slots. For bitmaps, we need
 ;; a separate copy of the bitmap as well
 ;; sgithens TODO fix these duplicate def warnings for sbcl

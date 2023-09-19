@@ -10122,6 +10122,24 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: gdispl.lisp
 ;;;;
 
+;;; temporary fix to keep Window systems from blowing out when
+;;; some kid types FORWARD 239823094230923490
+;;;
+;;; In theory, this should get captured at a higher level
+;;; in the STEPS-ARG-CHECK function but that doesn't deal in
+;;; window coords so it can be fooled
+;;;
+(defun ensure-legal-window-coordinate (n)
+  (cond ((< n #.(min-window-coord))
+         (warn "window system coordinate ~D too small, changing to ~D"
+               n #.(min-window-coord))
+         #.(min-window-coord))
+    ((>= n #.(max-window-coord))
+     (warn "window system coordinate ~D too large, changing to ~D"
+           n #.(max-window-coord))
+     #.(max-window-coord))
+    (t n)))
+
 ;;;; COLOR
 
 (defstruct (boxer-color :named (:type vector)
