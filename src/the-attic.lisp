@@ -10122,6 +10122,92 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: gdispl.lisp
 ;;;;
 
+(defvar *turtle-translation-table*
+  (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
+              :initial-element nil))
+
+(defun translate-boxer->window-command (from-graphics-command
+                                        to-graphics-command
+                                        trans-x trans-y
+                                        cos-scale sin-scale scale)
+  (let ((handler (svref& *turtle-translation-table*
+                         (svref& from-graphics-command 0))))
+    (unless (null handler)
+      (format t "~%Handler: ~A" handler)
+      (funcall handler
+               from-graphics-command to-graphics-command
+               trans-x trans-y cos-scale sin-scale scale)))
+  (format t "~%translate-boxer->window-command:after
+  from-graphics-command: ~A to-graphics-command: ~A
+  trans-x: ~A trans-y: ~A cos-scale: ~A sin-scale:~A scale: ~A" from-graphics-command to-graphics-command
+  trans-x trans-y cos-scale sin-scale scale)
+  )
+
+;;; Used to define arbitrary transformations between the boxer/floating
+;;; representations and the window/fixnum representations
+;;; translation clauses should be a list of forms.
+;;; The CAR of each form should be the name of a slot in the graphics command
+;;; and the CADR of each form should be a form to be called which translates
+;;; the slot.  The translating form is called in an environment where the
+;;; slots of the originating form as well as the EXTRA-ARGS are bound
+;;;
+;;; This tries to be smart and use info from the transformation-template
+;;; when none is provided
+;;;
+(eval-when (:compile-toplevel :load-toplevel :execute)
+
+(defmacro defgraphics-translator ((name &optional
+                                        (table '*turtle-translation-table*)
+                                        (direction :boxer->window))
+                                  extra-args translation-clauses)
+  (let* ((handler-name (intern (symbol-format nil "~A Graphics Translator ~A"
+                                              name (gensym))))
+        (handler-opcode (if (eq direction :window->boxer)
+                          (graphics-command-opcode name)
+                          (+ (graphics-command-opcode name)
+                              *boxer-graphics-command-mask*)))
+        (command-descriptor (get-graphics-command-descriptor handler-opcode))
+        (template (graphics-command-descriptor-transform-template
+                    command-descriptor))
+        )
+    ;; some of that ole' compile time error checking appeal...
+    (cond ((null table)
+          (error "Need a table to put the handlers in"))
+      ((vectorp table)
+      (when (>= handler-opcode (svlength table))
+        (error "The table, ~A, is too short for an opcode of ~D"
+                table handler-opcode)))
+      ((symbolp table)
+      (let ((value (symbol-value table)))
+        (if (vectorp value)
+          (when (>= handler-opcode (svlength value))
+            (error "The table, ~A, is too short for an opcode of ~D"
+                    table handler-opcode))
+          (error "Hey, ~A doesn't look like a handler table" table))))
+      (t (error "fooey !")))
+    `(progn
+      (defun ,handler-name (from-gc to-gc . ,extra-args)
+        ,@extra-args   ;; handle bound but never used errors
+        (graphics-command-values ,handler-opcode from-gc
+                                  ,@(with-collection
+                                      (dolist (slot (graphics-command-descriptor-slots
+                                                    command-descriptor))
+                                        (let ((tform (assoc slot translation-clauses))
+                                              (offset (graphics-command-slot-offset
+                                                      command-descriptor slot)))
+                                          (collect
+                                          `(setf (svref& to-gc ,offset)
+                                                  ,(if (not (null tform))
+                                                    (cadr tform)
+                                                    (let ((template-action (nth (1- offset)
+                                                                                template)))
+                                                      (expand-transform-template-item
+                                                        slot template-action direction))))))))))
+      (setf (svref& ,table ,handler-opcode) ',handler-name)
+      ',handler-name)))
+
+)
+
 ;;; temporary fix to keep Window systems from blowing out when
 ;;; some kid types FORWARD 239823094230923490
 ;;;

@@ -40,10 +40,6 @@
   (unless (=& new-alu *graphics-state-current-alu*)
     (setq *graphics-state-current-alu* new-alu)))
 
-(defgraphics-translator (change-alu) (trans-x trans-y cos-scale sin-scale
-                                              scale)
-  ())
-
 ;;; 1 Change Pen Width
 
 (defgraphics-state-change (change-pen-width 1) (new-width)
@@ -57,11 +53,6 @@
   (unless (=& new-width *graphics-state-current-pen-width*)
     (setq *graphics-state-current-pen-width* new-width)
     (%set-pen-size new-width)))
-
-(defgraphics-translator (change-pen-width) (trans-x trans-y
-                                                    cos-scale sin-scale
-                                                    scale)
-  ())
 
 ;;; 2 Change Graphics Font
 
@@ -87,11 +78,6 @@
   (unless (=& new-font-no *graphics-state-current-font-no*)
     ;; have to check for possible font
     (setq *graphics-state-current-font-no* new-font-no)))
-
-(defgraphics-translator (change-graphics-font) (trans-x trans-y
-                                                        cos-scale sin-scale
-                                                        scale)
-  ())
 
 ;;; 3 Line Segment
 
@@ -126,20 +112,7 @@
   (progn (set-x0 (+& (fixr (* x0 scale-x)) trans-x))
         (set-y0 (+& (fixr (* y0 scale-y)) trans-y))
         (set-x1 (+& (fixr (* x1 scale-x)) trans-x))
-        (set-y1 (+& (fixr (* y1 scale-y)) trans-y)))
-  ;; sprite shape translation
-  :TURTLE-TRANSLATOR-ARGS
-  (trans-x trans-y cos-scale sin-scale scale)
-  :TURTLE-TRANSLATOR-CLAUSES
-  ((x0 (fix-array-coordinate-x
-        (+ trans-x (+ (* cos-scale x0) (* sin-scale y0)))))
-  (y0 (fix-array-coordinate-y
-        (+ trans-y (- (* cos-scale y0) (* sin-scale x0)))))
-  (x1 (fix-array-coordinate-x
-        (+ trans-x (+ (* cos-scale x1) (* sin-scale y1)))))
-  (y1 (fix-array-coordinate-y
-        (+ trans-y (- (* cos-scale y1) (* sin-scale x1))))))
-  )
+        (set-y1 (+& (fixr (* y1 scale-y)) trans-y))))
 
 ;;; 4 Change Graphics Color
 
@@ -165,11 +138,6 @@
              (unless (color= new-color *graphics-state-current-pen-color*)
                (setq *graphics-state-current-pen-color* new-color)
                (%set-pen-color new-color)))
-
-(defgraphics-translator (change-graphics-color) (trans-x trans-y
-                                                         cos-scale sin-scale
-                                                         scale)
-  ())
 
 ;;; 7 Centered String
 
@@ -212,15 +180,7 @@
   (trans-x trans-y scale-x scale-y)
   :TRANSLATION-AND-SCALING-BODY
   (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-        (set-y (+& (fixr (* y scale-y)) trans-y)))
-  ;; sprite shape translation
-  :TURTLE-TRANSLATOR-ARGS
-  (trans-x trans-y cos-scale sin-scale scale)
-  :TURTLE-TRANSLATOR-CLAUSES
-  ((x (fix-array-coordinate-x
-      (+ trans-x (+ (* cos-scale x) (* sin-scale y)))))
-  (y (fix-array-coordinate-y
-      (+ trans-y (- (* cos-scale y) (* sin-scale x)))))))
+        (set-y (+& (fixr (* y scale-y)) trans-y))))
 
 ;;; 8 Left String
 
@@ -259,15 +219,7 @@
   (trans-x trans-y scale-x scale-y)
   :TRANSLATION-AND-SCALING-BODY
   (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-        (set-y (+& (fixr (* y scale-y)) trans-y)))
-  ;; sprite shape translation
-  :TURTLE-TRANSLATOR-ARGS
-  (trans-x trans-y cos-scale sin-scale scale)
-  :TURTLE-TRANSLATOR-CLAUSES
-  ((x (fix-array-coordinate-x
-      (+ trans-x (+ (* cos-scale x) (* sin-scale y)))))
-  (y (fix-array-coordinate-y
-      (+ trans-y (- (* cos-scale y) (* sin-scale x)))))))
+        (set-y (+& (fixr (* y scale-y)) trans-y))))
 
 ;;; 9 Right String
 
@@ -306,16 +258,7 @@
   (trans-x trans-y scale-x scale-y)
   :TRANSLATION-AND-SCALING-BODY
   (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-        (set-y (+& (fixr (* y scale-y)) trans-y)))
-  ;; sprite shape translation
-  :TURTLE-TRANSLATOR-ARGS
-  (trans-x trans-y cos-scale sin-scale scale)
-  :TURTLE-TRANSLATOR-CLAUSES
-  ((x (fix-array-coordinate-x
-      (+ trans-x (+ (* cos-scale x) (* sin-scale y)))))
-  (y (fix-array-coordinate-y
-      (+ trans-y (- (* cos-scale y) (* sin-scale x)))))))
-
+        (set-y (+& (fixr (* y scale-y)) trans-y))))
 
 ;;; 10 Centered Rectangle
 
@@ -347,17 +290,7 @@
   (progn (set-x (+& (fixr (* x scale-x)) trans-x))
         (set-y (+& (fixr (* y scale-y)) trans-y))
         (set-width (fixr (* width scale-x)))
-        (set-height (fixr (* height scale-y))))
-  ;; sprite shape translation
-  :TURTLE-TRANSLATOR-ARGS
-  (trans-x trans-y cos-scale sin-scale scale)
-  :TURTLE-TRANSLATOR-CLAUSES
-  ((x (fix-array-coordinate-x
-      (+ trans-x (+ (* cos-scale x) (* sin-scale y)))))
-  (y (fix-array-coordinate-y
-      (+ trans-y (- (* cos-scale y) (* sin-scale x)))))
-  (width  (fixr (* width  scale)))
-  (height (fixr (* height scale)))))
+        (set-height (fixr (* height scale-y)))))
 
 ;;; 11 Dot
 
@@ -388,15 +321,7 @@
   (trans-x trans-y scale-x scale-y)
   :TRANSLATION-AND-SCALING-BODY
   (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-        (set-y (+& (fixr (* y scale-y)) trans-y)))
-  ;; sprite shape translation
-  :TURTLE-TRANSLATOR-ARGS
-  (trans-x trans-y cos-scale sin-scale scale)
-  :TURTLE-TRANSLATOR-CLAUSES
-  ((x (fix-array-coordinate-x
-      (+ trans-x (+ (* cos-scale x) (* sin-scale y)))))
-  (y (fix-array-coordinate-y
-      (+ trans-y (- (* cos-scale y) (* sin-scale x)))))))
+        (set-y (+& (fixr (* y scale-y)) trans-y))))
 
 ;;; 12 Hollow Rectangle
 
@@ -428,17 +353,7 @@
   (progn (set-x (+& (fixr (* x scale-x)) trans-x))
         (set-y (+& (fixr (* y scale-y)) trans-y))
         (set-width (fixr (* width scale-x)))
-        (set-height (fixr (* height scale-y))))
-  ;; sprite shape translation
-  :TURTLE-TRANSLATOR-ARGS
-  (trans-x trans-y cos-scale sin-scale scale)
-  :TURTLE-TRANSLATOR-CLAUSES
-  ((x (fix-array-coordinate-x
-      (+ trans-x (+ (* cos-scale x) (* sin-scale y)))))
-  (y (fix-array-coordinate-y
-      (+ trans-y (- (* cos-scale y) (* sin-scale x)))))
-  (width  (fixr (* width  scale)))
-  (height (fixr (* height scale)))))
+        (set-height (fixr (* height scale-y)))))
 
 ;;; 15 Centered Bitmap
 
@@ -485,18 +400,7 @@
   (progn (set-x (+& (fixr (* x scale-x)) trans-x))
         (set-y (+& (fixr (* y scale-y)) trans-y))
         (set-width (fixr (* width scale-x)))
-        (set-height (fixr (* height scale-y))))
-  ;; sprite shape translation
-  :TURTLE-TRANSLATOR-ARGS
-  (trans-x trans-y cos-scale sin-scale scale)
-  :TURTLE-TRANSLATOR-CLAUSES
-  ((x (fix-array-coordinate-x
-      (+ trans-x (+ (* cos-scale x) (* sin-scale y)))))
-  (y (fix-array-coordinate-y
-      (+ trans-y (- (* cos-scale y) (* sin-scale x)))))
-  ;; don't scale bitmaps yet.  Easy to do on the mac harder to do on
-  ;; other platforms, maybe change this later
-  ))
+        (set-height (fixr (* height scale-y)))))
 
 ;;; 26 Wedge
 
@@ -525,16 +429,7 @@
   :TRANSLATION-AND-SCALING-BODY
   (progn (set-x (+& (fixr (* x scale-x)) trans-x))
         (set-y (+& (fixr (* y scale-y)) trans-y))
-        (set-radius (fixr (* radius (min scale-x scale-y)))))
-  ;; sprite shape translation
-  :TURTLE-TRANSLATOR-ARGS
-  (trans-x trans-y cos-scale sin-scale scale)
-  :TURTLE-TRANSLATOR-CLAUSES
-  ((x (fix-array-coordinate-x
-      (+ trans-x (+ (* cos-scale x) (* sin-scale y)))))
-  (y (fix-array-coordinate-y
-      (+ trans-y (- (* cos-scale y) (* sin-scale x)))))
-  (radius (fixr (* radius scale)))))
+        (set-radius (fixr (* radius (min scale-x scale-y))))))
 
 ;;; 27 Arc
 
@@ -563,16 +458,7 @@
   :TRANSLATION-AND-SCALING-BODY
   (progn (set-x (+& (fixr (* x scale-x)) trans-x))
         (set-y (+& (fixr (* y scale-y)) trans-y))
-        (set-radius (fixr (* radius (min scale-x scale-y)))))
-  ;; sprite shape translation
-  :TURTLE-TRANSLATOR-ARGS
-  (trans-x trans-y cos-scale sin-scale scale)
-  :TURTLE-TRANSLATOR-CLAUSES
-  ((x (fix-array-coordinate-x
-      (+ trans-x (+ (* cos-scale x) (* sin-scale y)))))
-  (y (fix-array-coordinate-y
-      (+ trans-y (- (* cos-scale y) (* sin-scale x)))))
-  (radius (fixr (* radius scale)))))
+        (set-radius (fixr (* radius (min scale-x scale-y))))))
 
 ;;; 28 Filled Ellipse
 
@@ -605,17 +491,7 @@
   (progn (set-x (+& (fixr (* x scale-x)) trans-x))
         (set-y (+& (fixr (* y scale-y)) trans-y))
         (set-width (fixr (* width scale-x)))
-        (set-height (fixr (* height scale-y))))
-  ;; sprite shape translation
-  :TURTLE-TRANSLATOR-ARGS
-  (trans-x trans-y cos-scale sin-scale scale)
-  :TURTLE-TRANSLATOR-CLAUSES
-  ((x (fix-array-coordinate-x
-      (+ trans-x (+ (* cos-scale x) (* sin-scale y)))))
-  (y (fix-array-coordinate-y
-      (+ trans-y (- (* cos-scale y) (* sin-scale x)))))
-  (width  (fixr (* width  scale)))
-  (height (fixr (* height scale)))))
+        (set-height (fixr (* height scale-y)))))
 
 ;;; 29 Ellipse
 
@@ -648,17 +524,7 @@
   (progn (set-x (+& (fixr (* x scale-x)) trans-x))
         (set-y (+& (fixr (* y scale-y)) trans-y))
         (set-width (fixr (* width scale-x)))
-        (set-height (fixr (* height scale-y))))
-  ;; sprite shape translation
-  :TURTLE-TRANSLATOR-ARGS
-  (trans-x trans-y cos-scale sin-scale scale)
-  :TURTLE-TRANSLATOR-CLAUSES
-  ((x (fix-array-coordinate-x
-      (+ trans-x (+ (* cos-scale x) (* sin-scale y)))))
-  (y (fix-array-coordinate-y
-      (+ trans-y (- (* cos-scale y) (* sin-scale x)))))
-  (width  (fixr (* width  scale)))
-  (height (fixr (* height scale)))))
+        (set-height (fixr (* height scale-y)))))
 
 ;;; 30 Filled Circle
 
@@ -686,16 +552,7 @@
   :TRANSLATION-AND-SCALING-BODY
   (progn (set-x (+& (fixr (* x scale-x)) trans-x))
         (set-y (+& (fixr (* y scale-y)) trans-y))
-        (set-radius (fixr (* radius (min scale-x scale-y)))))
-  ;; sprite shape translation
-  :TURTLE-TRANSLATOR-ARGS
-  (trans-x trans-y cos-scale sin-scale scale)
-  :TURTLE-TRANSLATOR-CLAUSES
-  ((x (fix-array-coordinate-x
-      (+ trans-x (+ (* cos-scale x) (* sin-scale y)))))
-  (y (fix-array-coordinate-y
-      (+ trans-y (- (* cos-scale y) (* sin-scale x)))))
-  (radius (fixr (* radius scale)))))
+        (set-radius (fixr (* radius (min scale-x scale-y))))))
 
 ;;; 31 Circle
 
@@ -723,13 +580,4 @@
   :TRANSLATION-AND-SCALING-BODY
   (progn (set-x (+& (fixr (* x scale-x)) trans-x))
         (set-y (+& (fixr (* y scale-y)) trans-y))
-        (set-radius (fixr (* radius (min scale-x scale-y)))))
-  ;; sprite shape translation
-  :TURTLE-TRANSLATOR-ARGS
-  (trans-x trans-y cos-scale sin-scale scale)
-  :TURTLE-TRANSLATOR-CLAUSES
-  ((x (fix-array-coordinate-x
-      (+ trans-x (+ (* cos-scale x) (* sin-scale y)))))
-  (y (fix-array-coordinate-y
-      (+ trans-y (- (* cos-scale y) (* sin-scale x)))))
-  (radius (fixr (* radius scale)))))
+        (set-radius (fixr (* radius (min scale-x scale-y))))))
