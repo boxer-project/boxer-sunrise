@@ -104,15 +104,7 @@
   (trans-x trans-y)
   :TRANSLATION-BODY
   (progn (set-x0 (+& x0 trans-x)) (set-y0 (+& y0 trans-y))
-        (set-x1 (+& x1 trans-x)) (set-y1 (+& y1 trans-y)))
-  ;; translation and scaling (for window GC's)
-  :TRANSLATION-AND-SCALING-ARGS
-  (trans-x trans-y scale-x scale-y)
-  :TRANSLATION-AND-SCALING-BODY
-  (progn (set-x0 (+& (fixr (* x0 scale-x)) trans-x))
-        (set-y0 (+& (fixr (* y0 scale-y)) trans-y))
-        (set-x1 (+& (fixr (* x1 scale-x)) trans-x))
-        (set-y1 (+& (fixr (* y1 scale-y)) trans-y))))
+        (set-x1 (+& x1 trans-x)) (set-y1 (+& y1 trans-y))))
 
 ;;; 4 Change Graphics Color
 
@@ -174,13 +166,7 @@
   :TRANSLATION-ARGS
   (trans-x trans-y)
   :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y)))
-  ;; translation and scaling
-  :TRANSLATION-AND-SCALING-ARGS
-  (trans-x trans-y scale-x scale-y)
-  :TRANSLATION-AND-SCALING-BODY
-  (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-        (set-y (+& (fixr (* y scale-y)) trans-y))))
+  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
 
 ;;; 8 Left String
 
@@ -213,13 +199,7 @@
   :TRANSLATION-ARGS
   (trans-x trans-y)
   :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y)))
-  ;; translation and scaling
-  :TRANSLATION-AND-SCALING-ARGS
-  (trans-x trans-y scale-x scale-y)
-  :TRANSLATION-AND-SCALING-BODY
-  (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-        (set-y (+& (fixr (* y scale-y)) trans-y))))
+  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
 
 ;;; 9 Right String
 
@@ -252,13 +232,7 @@
   :TRANSLATION-ARGS
   (trans-x trans-y)
   :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y)))
-  ;; translation and scaling
-  :TRANSLATION-AND-SCALING-ARGS
-  (trans-x trans-y scale-x scale-y)
-  :TRANSLATION-AND-SCALING-BODY
-  (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-        (set-y (+& (fixr (* y scale-y)) trans-y))))
+  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
 
 ;;; 10 Centered Rectangle
 
@@ -282,15 +256,7 @@
   :TRANSLATION-ARGS
   (trans-x trans-y)
   :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y)))
-  ;; translation and scaling
-  :TRANSLATION-AND-SCALING-ARGS
-  (trans-x trans-y scale-x scale-y)
-  :TRANSLATION-AND-SCALING-BODY
-  (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-        (set-y (+& (fixr (* y scale-y)) trans-y))
-        (set-width (fixr (* width scale-x)))
-        (set-height (fixr (* height scale-y)))))
+  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
 
 ;;; 11 Dot
 
@@ -315,13 +281,7 @@
   :TRANSLATION-ARGS
   (trans-x trans-y)
   :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y)))
-  ;; translation and scaling
-  :TRANSLATION-AND-SCALING-ARGS
-  (trans-x trans-y scale-x scale-y)
-  :TRANSLATION-AND-SCALING-BODY
-  (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-        (set-y (+& (fixr (* y scale-y)) trans-y))))
+  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
 
 ;;; 12 Hollow Rectangle
 
@@ -345,15 +305,7 @@
   :TRANSLATION-ARGS
   (trans-x trans-y)
   :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y)))
-  ;; translation and scaling
-  :TRANSLATION-AND-SCALING-ARGS
-  (trans-x trans-y scale-x scale-y)
-  :TRANSLATION-AND-SCALING-BODY
-  (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-        (set-y (+& (fixr (* y scale-y)) trans-y))
-        (set-width (fixr (* width scale-x)))
-        (set-height (fixr (* height scale-y)))))
+  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
 
 ;;; 15 Centered Bitmap
 
@@ -392,15 +344,7 @@
   :TRANSLATION-ARGS
   (trans-x trans-y)
   :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y)))
-  ;; translation and scaling
-  :TRANSLATION-AND-SCALING-ARGS
-  (trans-x trans-y scale-x scale-y)
-  :TRANSLATION-AND-SCALING-BODY
-  (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-        (set-y (+& (fixr (* y scale-y)) trans-y))
-        (set-width (fixr (* width scale-x)))
-        (set-height (fixr (* height scale-y)))))
+  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
 
 ;;; 26 Wedge
 
@@ -422,14 +366,7 @@
   ;; translation
   (trans-x trans-y)
   :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y)))
-  ;; translation and scaling
-  :TRANSLATION-AND-SCALING-ARGS
-  (trans-x trans-y scale-x scale-y)
-  :TRANSLATION-AND-SCALING-BODY
-  (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-        (set-y (+& (fixr (* y scale-y)) trans-y))
-        (set-radius (fixr (* radius (min scale-x scale-y))))))
+  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
 
 ;;; 27 Arc
 
@@ -451,14 +388,7 @@
   ;; translation
   (trans-x trans-y)
   :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y)))
-  ;; translation and scaling
-  :TRANSLATION-AND-SCALING-ARGS
-  (trans-x trans-y scale-x scale-y)
-  :TRANSLATION-AND-SCALING-BODY
-  (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-        (set-y (+& (fixr (* y scale-y)) trans-y))
-        (set-radius (fixr (* radius (min scale-x scale-y))))))
+  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
 
 ;;; 28 Filled Ellipse
 
@@ -483,15 +413,8 @@
   ;; translation
   (trans-x trans-y)
   :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y)))
-  ;; translation and scaling
-  :TRANSLATION-AND-SCALING-ARGS
-  (trans-x trans-y scale-x scale-y)
-  :TRANSLATION-AND-SCALING-BODY
-  (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-        (set-y (+& (fixr (* y scale-y)) trans-y))
-        (set-width (fixr (* width scale-x)))
-        (set-height (fixr (* height scale-y)))))
+  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
+
 
 ;;; 29 Ellipse
 
@@ -516,15 +439,7 @@
   ;; translation
   (trans-x trans-y)
   :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y)))
-  ;; translation and scaling
-  :TRANSLATION-AND-SCALING-ARGS
-  (trans-x trans-y scale-x scale-y)
-  :TRANSLATION-AND-SCALING-BODY
-  (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-        (set-y (+& (fixr (* y scale-y)) trans-y))
-        (set-width (fixr (* width scale-x)))
-        (set-height (fixr (* height scale-y)))))
+  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
 
 ;;; 30 Filled Circle
 
@@ -545,14 +460,7 @@
   ;; translation
   (trans-x trans-y)
   :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y)))
-  ;; translation and scaling
-  :TRANSLATION-AND-SCALING-ARGS
-  (trans-x trans-y scale-x scale-y)
-  :TRANSLATION-AND-SCALING-BODY
-  (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-        (set-y (+& (fixr (* y scale-y)) trans-y))
-        (set-radius (fixr (* radius (min scale-x scale-y))))))
+  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
 
 ;;; 31 Circle
 
@@ -573,11 +481,4 @@
   ;; translation
   (trans-x trans-y)
   :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y)))
-  ;; translation and scaling
-  :TRANSLATION-AND-SCALING-ARGS
-  (trans-x trans-y scale-x scale-y)
-  :TRANSLATION-AND-SCALING-BODY
-  (progn (set-x (+& (fixr (* x scale-x)) trans-x))
-        (set-y (+& (fixr (* y scale-y)) trans-y))
-        (set-radius (fixr (* radius (min scale-x scale-y))))))
+  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))

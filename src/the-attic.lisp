@@ -10122,6 +10122,26 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: gdispl.lisp
 ;;;;
 
+(defmacro process-graphics-command-marker (graphics-command &rest args)
+  `(let ((handler (svref& *graphics-command-dispatch-table*
+                          (svref& ,graphics-command 0))))
+     (when (null handler)
+       (format t "~%Handler missing for: ~A" ,graphics-command))
+     (unless (null  handler)
+       (funcall handler ,graphics-command ,@args))))
+
+(defvar *graphics-command-translation-and-scaling-table*
+  (make-array *initial-graphics-command-dispatch-table-size*
+              :initial-element nil))
+
+(defun translate-and-scale-graphics-command (graphics-command
+                                             trans-x trans-y
+                                             scale-x scale-y)
+  (let ((handler (svref& *graphics-command-translation-and-scaling-table*
+                         (svref& graphics-command 0))))
+    (unless (null handler)
+      (funcall handler graphics-command trans-x trans-y scale-x scale-y))))
+
 (defvar *turtle-translation-table*
   (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
               :initial-element nil))

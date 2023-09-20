@@ -264,10 +264,6 @@ Modification History (most recent at the top)
   (make-array *initial-graphics-command-dispatch-table-size*
               :initial-element nil))
 
-(defvar *graphics-command-translation-and-scaling-table*
-  (make-array *initial-graphics-command-dispatch-table-size*
-              :initial-element nil))
-
 (defvar *graphics-command-boxer->window-translation-table*
   (make-array *initial-graphics-command-dispatch-table-size*
               :initial-element nil))
@@ -346,14 +342,6 @@ Modification History (most recent at the top)
   `(let ((*graphics-command-dispatch-table* ,table))
      . ,body))
 
-(defmacro process-graphics-command-marker (graphics-command &rest args)
-  `(let ((handler (svref& *graphics-command-dispatch-table*
-                          (svref& ,graphics-command 0))))
-     (when (null handler)
-       (format t "~%Handler missing for: ~A" ,graphics-command))
-     (unless (null  handler)
-       (funcall handler ,graphics-command ,@args))))
-
 (defun graphics-command-extents (graphics-command)
   (declare (values min-x min-y max-x max-y))
   (let ((handler (svref& *graphics-command-size-values-table*
@@ -393,14 +381,6 @@ Modification History (most recent at the top)
       (unless (null handler)
         (funcall handler graphics-command trans-x trans-y)))
     graphics-command))
-
-(defun translate-and-scale-graphics-command (graphics-command
-                                             trans-x trans-y
-                                             scale-x scale-y)
-  (let ((handler (svref& *graphics-command-translation-and-scaling-table*
-                         (svref& graphics-command 0))))
-    (unless (null handler)
-      (funcall handler graphics-command trans-x trans-y scale-x scale-y))))
 
 (defun allocate-window->boxer-command (graphics-command)
   (if (< (aref graphics-command 0) 32)
@@ -1063,8 +1043,6 @@ Modification History (most recent at the top)
                                          copy-post-processing
                                          translation-args
                                          translation-body
-                                         translation-and-scaling-args
-                                         translation-and-scaling-body
                                          (deallocate-args '(graphics-command))
                                          (deallocate-form 'graphics-command))
   `(progn
@@ -1078,11 +1056,7 @@ Modification History (most recent at the top)
       'nil)
     (defgraphics-handler (,name *graphics-command-translation-table*)
       ,translation-args
-      ,translation-body)
-    (defgraphics-handler (,name
-                          *graphics-command-translation-and-scaling-table*)
-      ,translation-and-scaling-args
-      ,translation-and-scaling-body)))
+      ,translation-body)))
 
 
 ;;; for now, on a monochrome monitor, we only need to record
