@@ -718,7 +718,10 @@
                                                      :callback 'menu-name-spelling-help)
                                     ("Key/Mouse" ;:accelerator "Alt-?"
                                      :callback 'menu-key-mouse-help)))
-                       (:component (("Repaint" :accelerator #\r :callback 'menu-redisplay)))))
+                       ;; bugs-191 Removing this from the menu for now, not sure if it really
+                       ;; ever has a place on there again
+                       ;;  (:component (("Repaint" :accelerator #\r :callback 'menu-redisplay)))
+                       ))
     ;; submenus
     (display-props-sub-menu "Display Properties..."
                             (("Zoom Control" :callback 'menu-zoom-toggle
