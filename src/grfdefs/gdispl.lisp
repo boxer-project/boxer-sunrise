@@ -260,14 +260,6 @@ Modification History (most recent at the top)
   (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
               :initial-element nil))
 
-(defvar *graphics-command-translation-table*
-  (make-array *initial-graphics-command-dispatch-table-size*
-              :initial-element nil))
-
-(defvar *graphics-command-boxer->window-translation-table*
-  (make-array *initial-graphics-command-dispatch-table-size*
-              :initial-element nil))
-
 (defvar *graphics-command-window->boxer-translation-table*
   (make-array *initial-graphics-command-dispatch-table-size*
               :initial-element nil))
@@ -373,14 +365,6 @@ Modification History (most recent at the top)
          (handler (svref& *graphics-command-sprite-command-translation-table*
                           x)))
     (unless (null handler) (funcall handler command))))
-
-(defun translate-graphics-command (graphics-command trans-x trans-y)
-  (if (< (aref graphics-command 0) 32)
-    (let ((handler (svref& *graphics-command-translation-table*
-                           (svref& graphics-command 0))))
-      (unless (null handler)
-        (funcall handler graphics-command trans-x trans-y)))
-    graphics-command))
 
 (defun allocate-window->boxer-command (graphics-command)
   (if (< (aref graphics-command 0) 32)
@@ -880,22 +864,6 @@ Modification History (most recent at the top)
             (setf (svref& *graphics-command-window->boxer-translation-table*
                           ,opcode)
                   ',window->boxer-name)
-            (defun ,boxer->window-name (boxer-graphics-command)
-              (let ((graphics-command
-                    (,wmake-name ,@(let ((idx 0))
-                                      (mapcar #'(lambda (arg)
-                                                        (declare (ignore arg))
-                                                        (incf idx)
-                                                        (expand-transform-template-item
-                                                        `(svref& boxer-graphics-command ,idx)
-                                                        (nth (1- idx) transform-template)
-                                                        ':boxer->window))
-                                              args)))))
-                ,copy-post-processing
-                graphics-command))
-            (setf (svref& *graphics-command-boxer->window-translation-table*
-                          ,opcode)
-                  ',boxer->window-name)
 
             ;; File system interface
             (defun ,dump-function-name ,dump-args
@@ -961,46 +929,6 @@ Modification History (most recent at the top)
      ,(make-list (length args)) nil ,body))
 ;; )
 
-(defmacro defgraphics-handler ((name &optional
-                                     (table
-                                      '*graphics-command-translation-table*))
-                               extra-args &body body)
-  (let ((handler-name (intern (symbol-format nil "~A Graphics Handler ~A"
-                                             name (gensym))))
-        (handler-opcode (graphics-command-opcode name)))
-    ;; some of that ole' compile time error checking appeal...
-    (cond ((null table)
-           (error "Need a table to put the handlers in"))
-      ((vectorp table)
-       (when (>= handler-opcode (svlength table))
-         (error "The table, ~A, is too short for an opcode of ~D"
-                table handler-opcode)))
-      ((symbolp table)
-       (let ((value (symbol-value table)))
-         (if (vectorp value)
-           (when (>= handler-opcode (svlength value))
-             (error "The table, ~A, is too short for an opcode of ~D"
-                    table handler-opcode))
-           (error "Hey, ~A doesn't look like a handler table" table))))
-      (t (error "fooey !")))
-    (cond ((null body)
-           ;; a null body means that we should copy the default handler
-           `(if (null (svref& *graphics-command-dispatch-table*
-                              ,handler-opcode))
-              (error "There is NO default command for ~S" ',name)
-              (setf (svref& ,table ,handler-opcode)
-                    (svref& *graphics-command-dispatch-table*
-                            ,handler-opcode))))
-      (t
-       `(progn
-         (defun ,handler-name (graphics-command . ,extra-args)
-           ,@extra-args
-           (graphics-command-values ,name graphics-command
-                                     . ,body))
-         (setf (svref& ,table ,handler-opcode) ',handler-name)
-         ',name)))))
-
-
 ;;; Putting it all together...
 ;;;
 ;;; Note that we are using the standard Boxer trick of spending memory to
@@ -1041,8 +969,6 @@ Modification History (most recent at the top)
                                          sprite-command
                                          transformation-template
                                          copy-post-processing
-                                         translation-args
-                                         translation-body
                                          (deallocate-args '(graphics-command))
                                          (deallocate-form 'graphics-command))
   `(progn
@@ -1053,10 +979,7 @@ Modification History (most recent at the top)
       ,deallocate-args ,deallocate-form
       ,sprite-command
       ,transformation-template ,copy-post-processing
-      'nil)
-    (defgraphics-handler (,name *graphics-command-translation-table*)
-      ,translation-args
-      ,translation-body)))
+      'nil)))
 
 
 ;;; for now, on a monochrome monitor, we only need to record

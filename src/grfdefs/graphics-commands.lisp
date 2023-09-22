@@ -99,12 +99,7 @@
     (t
     (setq last-x x1 last-y y1)
     (append (sprite-commands-for-new-position x0 y0)
-            (list 'bu::setxy x1 y1))))
-  :TRANSLATION-ARGS
-  (trans-x trans-y)
-  :TRANSLATION-BODY
-  (progn (set-x0 (+& x0 trans-x)) (set-y0 (+& y0 trans-y))
-        (set-x1 (+& x1 trans-x)) (set-y1 (+& y1 trans-y))))
+            (list 'bu::setxy x1 y1)))))
 
 ;;; 4 Change Graphics Color
 
@@ -130,6 +125,10 @@
              (unless (color= new-color *graphics-state-current-pen-color*)
                (setq *graphics-state-current-pen-color* new-color)
                (%set-pen-color new-color)))
+
+(defgraphics-state-change (transform-matrix 5) (matrix)
+             :body
+             nil)
 
 ;;; 7 Centered String
 
@@ -162,11 +161,7 @@
     (append (sprite-commands-for-new-position x y)
             (list 'bu::type
                   (make-box (list (list (coerce string
-                                                'simple-string))))))))
-  :TRANSLATION-ARGS
-  (trans-x trans-y)
-  :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
+                                                'simple-string)))))))))
 
 ;;; 8 Left String
 
@@ -195,11 +190,7 @@
     (append (sprite-commands-for-new-position x y)
             (list 'bu::ltype
                   (make-box (list (list (coerce string
-                                                'simple-string))))))))
-  :TRANSLATION-ARGS
-  (trans-x trans-y)
-  :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
+                                                'simple-string)))))))))
 
 ;;; 9 Right String
 
@@ -228,11 +219,7 @@
     (append (sprite-commands-for-new-position x y)
             (list 'bu::rtype
                   (make-box (list (list (coerce string
-                                                'simple-string))))))))
-  :TRANSLATION-ARGS
-  (trans-x trans-y)
-  :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
+                                                'simple-string)))))))))
 
 ;;; 10 Centered Rectangle
 
@@ -252,11 +239,7 @@
     (t
     (setq last-x x last-y y)
     (append (sprite-commands-for-new-position x y)
-            (list 'bu::stamp-rect width height))))
-  :TRANSLATION-ARGS
-  (trans-x trans-y)
-  :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
+            (list 'bu::stamp-rect width height)))))
 
 ;;; 11 Dot
 
@@ -277,11 +260,7 @@
     (t
     (setq last-x x last-y y)
     (append (sprite-commands-for-new-position x y)
-            (list 'bu::dot))))
-  :TRANSLATION-ARGS
-  (trans-x trans-y)
-  :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
+            (list 'bu::dot)))))
 
 ;;; 12 Hollow Rectangle
 
@@ -301,11 +280,7 @@
     (t
     (setq last-x x last-y y)
     (append (sprite-commands-for-new-position x y)
-            (list 'bu::stamp-hollow-rect width height))))
-  :TRANSLATION-ARGS
-  (trans-x trans-y)
-  :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
+            (list 'bu::stamp-hollow-rect width height)))))
 
 ;;; 15 Centered Bitmap
 
@@ -340,11 +315,7 @@
     (dump-boxer-thing x stream)
     (dump-boxer-thing y stream)
     (dump-boxer-thing width stream)
-    (dump-boxer-thing height stream)))
-  :TRANSLATION-ARGS
-  (trans-x trans-y)
-  :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
+    (dump-boxer-thing height stream))))
 
 ;;; 26 Wedge
 
@@ -361,12 +332,7 @@
     (t
     (setq last-x x last-y y)
     (append (sprite-commands-for-new-position x y)
-            (list 'bu::stamp-wedge radius sweep-angle))))
-  :TRANSLATION-ARGS
-  ;; translation
-  (trans-x trans-y)
-  :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
+            (list 'bu::stamp-wedge radius sweep-angle)))))
 
 ;;; 27 Arc
 
@@ -383,12 +349,7 @@
     (t
     (setq last-x x last-y y)
     (append (sprite-commands-for-new-position x y)
-            (list 'bu::stamp-arc radius sweep-angle))))
-  :TRANSLATION-ARGS
-  ;; translation
-  (trans-x trans-y)
-  :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
+            (list 'bu::stamp-arc radius sweep-angle)))))
 
 ;;; 28 Filled Ellipse
 
@@ -408,12 +369,7 @@
     (t
     (setq last-x x last-y y)
     (append (sprite-commands-for-new-position x y)
-            (list 'bu::stamp-ellipse width height))))
-  :TRANSLATION-ARGS
-  ;; translation
-  (trans-x trans-y)
-  :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
+            (list 'bu::stamp-ellipse width height)))))
 
 
 ;;; 29 Ellipse
@@ -434,12 +390,7 @@
     (t
     (setq last-x x last-y y)
     (append (sprite-commands-for-new-position x y)
-            (list 'bu::stamp-hollow-ellipse width height))))
-  :TRANSLATION-ARGS
-  ;; translation
-  (trans-x trans-y)
-  :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
+            (list 'bu::stamp-hollow-ellipse width height)))))
 
 ;;; 30 Filled Circle
 
@@ -455,12 +406,7 @@
     (t
     (setq last-x x last-y y)
     (append (sprite-commands-for-new-position x y)
-            (list 'bu::stamp-circle radius))))
-  :TRANSLATION-ARGS
-  ;; translation
-  (trans-x trans-y)
-  :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
+            (list 'bu::stamp-circle radius)))))
 
 ;;; 31 Circle
 
@@ -476,9 +422,4 @@
     (t
     (setq last-x x last-y y)
     (append (sprite-commands-for-new-position x y)
-            (list 'bu::stamp-hollow-circle radius))))
-  :TRANSLATION-ARGS
-  ;; translation
-  (trans-x trans-y)
-  :TRANSLATION-BODY
-  (progn (set-x (+& x trans-x)) (set-y (+& y trans-y))))
+            (list 'bu::stamp-hollow-circle radius)))))

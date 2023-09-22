@@ -288,7 +288,7 @@
             *initial-graphics-state-current-pen-color*)))
     (do-vector-contents (gc gl)
       (let ((new-command (copy-graphics-command gc)))
-        (translate-graphics-command new-command trans-x trans-y)
+        ; (translate-graphics-command new-command trans-x trans-y)
         (sv-append %graphics-list new-command)))
     ;; now draw the new commands
     (with-graphics-screen-parameters

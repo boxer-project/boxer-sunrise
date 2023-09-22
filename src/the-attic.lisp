@@ -10122,6 +10122,61 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: gdispl.lisp
 ;;;;
 
+(defvar *graphics-command-translation-table*
+  (make-array *initial-graphics-command-dispatch-table-size*
+              :initial-element nil))
+
+(defvar *graphics-command-boxer->window-translation-table*
+  (make-array *initial-graphics-command-dispatch-table-size*
+              :initial-element nil))
+
+(defun translate-graphics-command (graphics-command trans-x trans-y)
+  (if (< (aref graphics-command 0) 32)
+    (let ((handler (svref& *graphics-command-translation-table*
+                           (svref& graphics-command 0))))
+      (unless (null handler)
+        (funcall handler graphics-command trans-x trans-y)))
+    graphics-command))
+
+(defmacro defgraphics-handler ((name &optional
+                                     (table
+                                      '*graphics-command-translation-table*))
+                               extra-args &body body)
+  (let ((handler-name (intern (symbol-format nil "~A Graphics Handler ~A"
+                                             name (gensym))))
+        (handler-opcode (graphics-command-opcode name)))
+    ;; some of that ole' compile time error checking appeal...
+    (cond ((null table)
+           (error "Need a table to put the handlers in"))
+      ((vectorp table)
+       (when (>= handler-opcode (svlength table))
+         (error "The table, ~A, is too short for an opcode of ~D"
+                table handler-opcode)))
+      ((symbolp table)
+       (let ((value (symbol-value table)))
+         (if (vectorp value)
+           (when (>= handler-opcode (svlength value))
+             (error "The table, ~A, is too short for an opcode of ~D"
+                    table handler-opcode))
+           (error "Hey, ~A doesn't look like a handler table" table))))
+      (t (error "fooey !")))
+    (cond ((null body)
+           ;; a null body means that we should copy the default handler
+           `(if (null (svref& *graphics-command-dispatch-table*
+                              ,handler-opcode))
+              (error "There is NO default command for ~S" ',name)
+              (setf (svref& ,table ,handler-opcode)
+                    (svref& *graphics-command-dispatch-table*
+                            ,handler-opcode))))
+      (t
+       `(progn
+         (defun ,handler-name (graphics-command . ,extra-args)
+           ,@extra-args
+           (graphics-command-values ,name graphics-command
+                                     . ,body))
+         (setf (svref& ,table ,handler-opcode) ',handler-name)
+         ',name)))))
+
 (defmacro process-graphics-command-marker (graphics-command &rest args)
   `(let ((handler (svref& *graphics-command-dispatch-table*
                           (svref& ,graphics-command 0))))
