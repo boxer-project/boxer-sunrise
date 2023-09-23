@@ -236,10 +236,6 @@ Modification History (most recent at the top)
 (defvar *graphics-command-name-opcode-alist* nil
   "Used to map names back into their opcodes")
 
-(defvar *graphics-command-copier-table*
-    (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
-                :initial-element nil))
-
 (defvar *graphics-command-dispatch-table*
   (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
               :initial-element nil))
@@ -326,9 +322,7 @@ Modification History (most recent at the top)
 
 
 (defun copy-graphics-command (graphics-command)
-  (funcall (svref& *graphics-command-copier-table*
-                   (svref& graphics-command 0))
-           graphics-command))
+  (copy (gethash (aref graphics-command 0) *graphics-commands*) graphics-command))
 
 (defmacro bind-graphics-handlers ((table) &body body)
   `(let ((*graphics-command-dispatch-table* ,table))
@@ -634,11 +628,6 @@ Modification History (most recent at the top)
                   (let ((graphics-command (,wcopy-struct-name gc)))
                     ,copy-post-processing
                     graphics-command)))
-            ,(when (>=& opcode (svlength *graphics-command-copier-table*))
-              ;; for that compile time error checking appeal
-              (error "The *graphics-command-copier-table* is too short"))
-            (setf (svref& *graphics-command-copier-table* ,opcode)
-                  ',wcopy-name)
             (defstruct (,bstruct-name (:type vector)
                                       (:constructor ,bmake-name ,args)
                                       (:copier ,bcopy-struct-name))
@@ -650,12 +639,6 @@ Modification History (most recent at the top)
                   (let ((graphics-command (,bcopy-struct-name gc)))
                     ,copy-post-processing
                     graphics-command)))
-            ,(when (>=& boxer-command-opcode
-                        (svlength *graphics-command-copier-table*))
-              ;; for that compile time error checking appeal
-              (error "The *graphics-command-copier-table* is too short"))
-            (setf (svref& *graphics-command-copier-table*
-                          ,boxer-command-opcode) ',bcopy-name)
             ;; this indirection is provided because we may want to
             ;; switch to some resource scheme for these command markers
             ;; instead of just consing them up on the fly

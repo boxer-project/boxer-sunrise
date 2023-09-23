@@ -68,6 +68,9 @@
 
 (defclass graphics-command () ())
 
+(defmethod copy ((self graphics-command) com)
+  (copy-seq com))
+
 (defmacro defdraw-graphics-command ((gc-class &rest method-args) &body body)
   `(defmethod draw-gc ((self ,gc-class) com)
      (let ,(loop for i
@@ -205,6 +208,11 @@
 ;; 47   BOXER-CENTERED-BITMAP          (BITMAP X Y WIDTH HEIGHT)
 (defclass boxer-centered-bitmap (graphics-command)
   ())
+
+(defmethod copy ((self boxer-centered-bitmap) command)
+  (let ((togo (copy-seq command)))
+    (setf (aref togo 1) (copy-pixmap (aref command 1)))
+    togo))
 
 (defdraw-graphics-command (boxer-centered-bitmap bitmap x y wid hei)
     (bitblt-to-screen wid hei bitmap 0 0

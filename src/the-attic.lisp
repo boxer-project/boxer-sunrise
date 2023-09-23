@@ -10122,6 +10122,10 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: gdispl.lisp
 ;;;;
 
+(defvar *graphics-command-copier-table*
+    (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
+                :initial-element nil))
+
 (defvar *graphics-command-translation-table*
   (make-array *initial-graphics-command-dispatch-table-size*
               :initial-element nil))
