@@ -80,31 +80,22 @@
 (defclass boxer-change-alu (graphics-command)
   ())
 
-(defun change-alu (new-alu)
-  (setq *graphics-state-current-alu* new-alu))
-
 (defdraw-graphics-command (boxer-change-alu new-alu)
-  (change-alu new-alu))
+  (setq *graphics-state-current-alu* new-alu))
 
 ;; 33   BOXER-CHANGE-PEN-WIDTH              (NEW-WIDTH)
 (defclass boxer-change-pen-width (graphics-command)
   ())
 
-(defun change-pen-width (new-width)
-  (%set-pen-size new-width))
-
 (defdraw-graphics-command (boxer-change-pen-width new-width)
-  (change-pen-width new-width))
+  (%set-pen-size new-width))
 
 ;; 34   BOXER-CHANGE-GRAPHICS-FONT          (NEW-FONT-NO)
 (defclass boxer-change-graphics-font (graphics-command)
   ())
 
-(defun change-graphics-font (new-font-no)
-  (setq *graphics-state-current-font-no* new-font-no))
-
 (defdraw-graphics-command (boxer-change-graphics-font new-font-no)
-  (change-graphics-font new-font-no))
+  (setq *graphics-state-current-font-no* new-font-no))
 
 
 ;; 35   BOXER-LINE-SEGMENT                           (X0 Y0 X1 Y1)
@@ -122,12 +113,9 @@
 (defclass boxer-change-graphics-color (graphics-command)
   ())
 
-(defun change-graphics-color (new-color)
+(defdraw-graphics-command (boxer-change-graphics-color new-color)
   (setf *graphics-state-current-pen-color* new-color)
   (%set-pen-color new-color))
-
-(defdraw-graphics-command (boxer-change-graphics-color new-color)
-  (change-graphics-color new-color))
 
 ;; 37   BOXER-TRANSFORM-MATRIX                       (. . .)
 (defclass boxer-transform-matrix (graphics-command)

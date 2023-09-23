@@ -35,7 +35,10 @@
           ((#.alu-ior #.alu-seta) 'bu::pendown)
           ((#.alu-andca #.alu-setz) 'bu::penerase)
           (t (warn "Untranslatable alu ~A, assuming PENDOWN" new-alu)
-            'bu::pendown))))
+            'bu::pendown)))
+  :body
+  (unless (=& new-alu *graphics-state-current-alu*)
+    (setq *graphics-state-current-alu* new-alu)))
 
 ;;; 1 Change Pen Width
 
@@ -45,7 +48,11 @@
                        ;; extent forms rely on an accurate value for pen-width
                        (values 0 0 0 0 t))
   :sprite-command
-  (list 'bu::set-pen-width new-width))
+  (list 'bu::set-pen-width new-width)
+  :body
+  (unless (=& new-width *graphics-state-current-pen-width*)
+    (setq *graphics-state-current-pen-width* new-width)
+    (%set-pen-size new-width)))
 
 ;;; 2 Change Graphics Font
 
@@ -66,7 +73,11 @@
               (setf (svref& command 1)
                     (make-font-from-file-value (svref& command 1))))
   :sprite-command
-  (list 'bu::set-type-font new-font-no))
+  (list 'bu::set-type-font new-font-no)
+  :body
+  (unless (=& new-font-no *graphics-state-current-font-no*)
+    ;; have to check for possible font
+    (setq *graphics-state-current-font-no* new-font-no)))
 
 ;;; 3 Line Segment
 
@@ -109,9 +120,15 @@
              (setf (aref command 1)
                    (reallocate-pixel-color (aref command 1)))
              :sprite-command
-             (list 'bu::set-pen-color new-color))
+             (list 'bu::set-pen-color new-color)
+             :body
+             (unless (color= new-color *graphics-state-current-pen-color*)
+               (setq *graphics-state-current-pen-color* new-color)
+               (%set-pen-color new-color)))
 
-(defgraphics-state-change (transform-matrix 5) (matrix))
+(defgraphics-state-change (transform-matrix 5) (matrix)
+             :body
+             nil)
 
 ;;; 7 Centered String
 

@@ -240,6 +240,10 @@ Modification History (most recent at the top)
     (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
                 :initial-element nil))
 
+(defvar *graphics-command-dispatch-table*
+  (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
+              :initial-element nil))
+
 (defvar *graphics-command-size-values-table*
   (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
               :initial-element nil))
@@ -326,6 +330,10 @@ Modification History (most recent at the top)
                    (svref& graphics-command 0))
            graphics-command))
 
+(defmacro bind-graphics-handlers ((table) &body body)
+  `(let ((*graphics-command-dispatch-table* ,table))
+     . ,body))
+
 (defun graphics-command-extents (graphics-command)
   (declare (values min-x min-y max-x max-y))
   (let ((handler (svref& *graphics-command-size-values-table*
@@ -366,6 +374,16 @@ Modification History (most recent at the top)
         (error "No translation allocator for ~A" graphics-command)
         (funcall handler graphics-command)))
     graphics-command))
+
+(defmacro graphics-command-values (command-name-or-opcode
+                                   graphics-command &body body)
+  (let ((opcode (etypecase command-name-or-opcode
+                           (number command-name-or-opcode)
+                           (symbol (graphics-command-opcode command-name-or-opcode)))))
+    `(,(svref& *graphics-command-binding-values-table* opcode)
+      ,graphics-command
+       ,@body)))
+
 
 (defun deallocate-graphics-command-marker (graphics-command)
   (when (svref& *graphics-command-deallocation-table*
@@ -582,6 +600,8 @@ Modification History (most recent at the top)
                                       nil "%COPY-BOXER-GRAPHICS-COMMAND-~A" name))))
               (window->boxer-name
                 (intern (symbol-format nil "GRAPHICS-WINDOW->BOXER-~A-ALLOCATOR" name)))
+              (boxer->window-name
+                (intern (symbol-format nil "GRAPHICS-BOXER->WINDOW-~A-ALLOCATOR" name)))
               (recording-function
                 (intern (symbol-format nil "RECORD-BOXER-GRAPHICS-COMMAND-~A" name)))
               (process-function
@@ -590,6 +610,8 @@ Modification History (most recent at the top)
                 (intern (symbol-format nil "~A Window Binding Values Macro" name)))
               (boxer-binding-values-macro
                 (intern (symbol-format nil "~A Boxer Binding Values Macro" name)))
+              (window-extents-function
+                (intern (symbol-format nil "~A Window Command Extents" name)))
               (boxer-extents-function
                 (intern (symbol-format nil "~A Boxer Command Extents" name)))
               (dump-function-name
@@ -731,9 +753,9 @@ Modification History (most recent at the top)
 
             ;; the default handlers for drawing the
             ;; objects directly into the graphics box
-            ; (defun ,process-function (graphics-command)
-            ;   (with-graphics-command-slots-bound graphics-command ,args
-            ;     (progn ,@draw-body)))
+            (defun ,process-function (graphics-command)
+              (with-graphics-command-slots-bound graphics-command ,args
+                (progn ,@draw-body)))
 
             ;	   (let ,(let ((idx 0))
             ;		   (mapcar #'(lambda (arg)
@@ -745,11 +767,11 @@ Modification History (most recent at the top)
             ;	     ,@args
             ;	     (progn ,@draw-body)))
             ;; now install the drawing function in the dispatch table
-            ; ,(when (>=& opcode (svlength *graphics-command-dispatch-table*))
-            ;   ;; for that compile time error checking appeal
-            ;   (error "The *graphics-command-dispatch-table* is too short"))
-            ; (setf (svref& *graphics-command-dispatch-table* ,opcode)
-            ;       ',process-function)
+            ,(when (>=& opcode (svlength *graphics-command-dispatch-table*))
+              ;; for that compile time error checking appeal
+              (error "The *graphics-command-dispatch-table* is too short"))
+            (setf (svref& *graphics-command-dispatch-table* ,opcode)
+                  ',process-function)
 
             ;; establishes a lexical environment for a particular graphics
             ;; command where the slots are bound to the names of the args
@@ -871,9 +893,9 @@ Modification History (most recent at the top)
                   ',sprite-command-translator-name)
 
             ;; now make the function for drawing on the window (that also records)
-            ; (defun ,name ,args
-            ;   ,@args
-            ;   (progn ,@draw-body))
+            (defun ,name ,args
+              ,@args
+              (progn ,@draw-body))
 
             ;; finally return the name (as opposed to random returned values)
             ',name))))
@@ -894,7 +916,8 @@ Modification History (most recent at the top)
                                                   (load-form 'command)
                                                   (deallocate-args '(graphics-command))
                                                   (deallocate-form 'graphics-command)
-                                                  sprite-command)
+                                                  sprite-command
+                                                  body)
   `(defgraphics-command (,name ,opcode t)
      ,args
      ,(or boxer-extents-form '(progn graphics-command
@@ -903,7 +926,7 @@ Modification History (most recent at the top)
      ,load-args ,load-form
      ,deallocate-args ,deallocate-form
      ,sprite-command
-     ,(make-list (length args)) nil))
+     ,(make-list (length args)) nil ,body))
 ;; )
 
 ;;; Putting it all together...
