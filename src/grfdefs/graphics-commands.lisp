@@ -43,10 +43,6 @@
 ;;; 1 Change Pen Width
 
 (defgraphics-state-change (change-pen-width 1) (new-width)
-  :boxer-extents-form (progn (setq *graphics-state-current-pen-width* new-width)
-                       ;; need to update because other graphics command
-                       ;; extent forms rely on an accurate value for pen-width
-                       (values 0 0 0 0 t))
   :sprite-command
   (list 'bu::set-pen-width new-width)
   :body
@@ -57,10 +53,6 @@
 ;;; 2 Change Graphics Font
 
 (defgraphics-state-change (change-graphics-font 2) (new-font-no)
-  :boxer-extents-form (progn (setq *graphics-state-current-font-no* new-font-no)
-                      ;; need to update because other graphics command
-                      ;; extent forms rely on an accurate value for pen-width
-                      (values 0 0 0 0 t))
   :dump-form (cond ((>=& *version-number* 12)
                     ;; guts of a dump-array
                     (enter-table 'fake-array)
@@ -83,13 +75,6 @@
 
 (defstandard-graphics-handlers (line-segment 3)
   :COMMAND-ARGS (x0 y0 x1 y1)
-  :BOXER-EXTENTS-FORM
-  (let ((delta #-mcl (ceiling *graphics-state-current-pen-width* 2)
-              ;; this has to stay until the non centered thick line bug in
-              ;; the mac implementation gets fixed
-              #+mcl *graphics-state-current-pen-width*))
-    (values (- (min x0 x1) delta) (- (min y0 y1) delta)
-            (+ (max x0 x1) delta) (+ (max y0 y1) delta)))
   :TRANSFORMATION-TEMPLATE
   (:x-transform :y-transform :x-transform :y-transform)
   :sprite-command
@@ -134,22 +119,6 @@
 
 (defstandard-graphics-handlers (centered-string 7)
   :COMMAND-ARGS (x y string)
-  :BOXER-EXTENTS-FORM
-  (let ((height 0) (s string) (width 0) (wx x))
-    (loop
-      (setq height
-            (+ height (1+(string-hei *graphics-state-current-font-no*)))
-            width (max (string-wid *graphics-state-current-font-no*
-                                  (subseq s 0 (position #\newline s)))
-                      width)
-            wx (min wx (- x (/ width 2))))
-      ;; If we have handled the last line (the current line has no CR's)
-      (if (not (position #\newline s))
-        (return (values (coerce wx 'boxer-float) (coerce y 'boxer-float)
-                        (coerce (+ wx width) 'boxer-float)
-                        (coerce (+ y height) 'boxer-float)))
-        (setq s (subseq s (let ((p (position #\newline s)))
-                            (if (null p) 0 (1+& p))))))))
   :TRANSFORMATION-TEMPLATE
   (:x-transform :y-transform nil)
   :SPRITE-COMMAND
@@ -225,12 +194,6 @@
 
 (defstandard-graphics-handlers (centered-rectangle 10)
   :COMMAND-ARGS (x y width height)
-  :BOXER-EXTENTS-FORM
-  (let ((half-width (values (/ width 2.0)))
-        (half-height (values (/ height 2.0))))
-    (declare (type boxer-float half-width half-height))
-    (values (float-minus x half-width) (float-minus y half-height)
-            (float-plus x half-width) (float-plus y half-height)))
   :TRANSFORMATION-TEMPLATE
   (:x-transform :y-transform :coerce :coerce)
   :SPRITE-COMMAND
@@ -247,11 +210,6 @@
 ;; also, should probably use the pen-width ?
 (defstandard-graphics-handlers (dot 11)
   :COMMAND-ARGS (x y)
-  :BOXER-EXTENTS-FORM
-  (let ((half-size (/ *graphics-state-current-pen-width* 2.0)))
-    (declare (type boxer-float half-size))
-    (values (float-minus x half-size) (float-minus y half-size)
-            (float-plus x half-size) (float-plus y half-size)))
   :TRANSFORMATION-TEMPLATE
   (:x-transform :y-transform)
   :SPRITE-COMMAND
@@ -266,12 +224,6 @@
 
 (defstandard-graphics-handlers (hollow-rectangle 12)
   :COMMAND-ARGS (x y width height)
-  :BOXER-EXTENTS-FORM
-  (let ((half-width (values (/ width 2.0)))
-        (half-height (values (/ height 2.0))))
-    (declare (type boxer-float half-width half-height))
-    (values (float-minus x half-width) (float-minus y half-height)
-            (float-plus x half-width) (float-plus y half-height)))
   :TRANSFORMATION-TEMPLATE
   (:x-transform :y-transform :coerce :coerce)
   :SPRITE-COMMAND
@@ -286,13 +238,6 @@
 
 (defstandard-graphics-handlers (centered-bitmap 15)
   :COMMAND-ARGS (bitmap x y width height)
-  :BOXER-EXTENTS-FORM
-  (let ((half-width (/ width 2.0))
-        (half-height (/ height 2.0)))
-    (declare (type boxer-float half-width half-height))
-    ;; removed float-plus/minus because x & y are not floats
-    (values (- x half-width) (- y half-height)
-            (+ x half-width) (+ y half-height)))
   :TRANSFORMATION-TEMPLATE
   (nil :x-transform :y-transform :coerce :coerce)
   :deallocate-args (graphics-command)
@@ -318,9 +263,6 @@
 
 (defstandard-graphics-handlers (wedge 26)
   :COMMAND-ARGS (x y radius start-angle sweep-angle)
-  :BOXER-EXTENTS-FORM
-  (values (- x radius) (- y radius)
-          (+ x radius) (+ y radius))
   :TRANSFORMATION-TEMPLATE
   (:x-transform :y-transform nil nil nil)
   :SPRITE-COMMAND ; !!!what abut synching HEADING ???
@@ -335,9 +277,6 @@
 
 (defstandard-graphics-handlers (arc 27)
   :COMMAND-ARGS (x y radius start-angle sweep-angle)
-  :BOXER-EXTENTS-FORM
-  (values (- x radius) (- y radius)
-          (+ x radius) (+ y radius))
   :TRANSFORMATION-TEMPLATE
   (:x-transform :y-transform nil nil nil)
   :SPRITE-COMMAND
@@ -352,12 +291,6 @@
 
 (defstandard-graphics-handlers (filled-ellipse 28)
   :COMMAND-ARGS (x y width height)
-  :BOXER-EXTENTS-FORM
-  (let ((half-width (/ width 2.0))
-        (half-height (/  height 2.0)))
-    (declare (type boxer-float half-width half-height))
-    (values (float-minus x half-width) (float-minus y half-height)
-            (float-plus x half-width) (float-plus y half-height)))
   :TRANSFORMATION-TEMPLATE
   (:x-transform :y-transform :coerce :coerce)
   :SPRITE-COMMAND
@@ -373,12 +306,6 @@
 
 (defstandard-graphics-handlers (ellipse 29)
   :COMMAND-ARGS (x y width height)
-  :BOXER-EXTENTS-FORM
-  (let ((half-width (/ width 2.0))
-        (half-height (/  height 2.0)))
-    (declare (type boxer-float half-width half-height))
-    (values (float-minus x half-width) (float-minus y half-height)
-            (float-plus x half-width) (float-plus y half-height)))
   :TRANSFORMATION-TEMPLATE
   (:x-transform :y-transform :coerce :coerce)
   :SPRITE-COMMAND
@@ -393,8 +320,6 @@
 
 (defstandard-graphics-handlers (filled-circle 30)
   :COMMAND-ARGS (x y radius)
-  :BOXER-EXTENTS-FORM
-  (values (- x radius) (- y radius) (+ x radius) (+ y radius))
   :TRANSFORMATION-TEMPLATE
   (:x-transform :y-transform nil)
   :SPRITE-COMMAND
@@ -409,8 +334,6 @@
 
 (defstandard-graphics-handlers (circle 31)
   :COMMAND-ARGS (x y radius)
-  :BOXER-EXTENTS-FORM
-  (values (- x radius) (- y radius) (+ x radius) (+ y radius))
   :TRANSFORMATION-TEMPLATE
   (:x-transform :y-transform nil)
   :SPRITE-COMMAND

@@ -1,5 +1,7 @@
 (in-package :boxer)
 
+;; TODO!!! Hollow Rectangle!!
+
 ;;;; 32   BOXER-CHANGE-ALU                             (NEW-ALU)
 ;;;; 33   BOXER-CHANGE-PEN-WIDTH                       (NEW-WIDTH)
 ;;;; 34   BOXER-CHANGE-GRAPHICS-FONT                   (NEW-FONT-NO)
@@ -68,11 +70,25 @@
 
 (defclass graphics-command () ())
 
+(defmethod draw-gc ((self graphics-command) com)
+  (error "No draw method defined for this command"))
+
 (defmethod copy ((self graphics-command) com)
   (copy-seq com))
 
+(defmethod extents ((self graphics-command) com)
+  (values 0 0 0 0))
+
 (defmacro defdraw-graphics-command ((gc-class &rest method-args) &body body)
   `(defmethod draw-gc ((self ,gc-class) com)
+     (let ,(loop for i
+                 from 0
+                 to (1- (length method-args))
+                 collect (list (nth i method-args) (list 'nth i 'com)))
+       . ,body)))
+
+(defmacro defextents-graphics-command ((gc-class &rest method-args) &body body)
+  `(defmethod extents ((self ,gc-class) com)
      (let ,(loop for i
                  from 0
                  to (1- (length method-args))
@@ -93,6 +109,12 @@
 (defdraw-graphics-command (boxer-change-pen-width new-width)
   (%set-pen-size new-width))
 
+(defextents-graphics-command (boxer-change-pen-width new-width)
+  (setq *graphics-state-current-pen-width* new-width)
+  ;; need to update because other graphics command
+  ;; extent forms rely on an accurate value for pen-width
+  (values 0 0 0 0 t))
+
 ;; 34   BOXER-CHANGE-GRAPHICS-FONT          (NEW-FONT-NO)
 (defclass boxer-change-graphics-font (graphics-command)
   ())
@@ -100,6 +122,11 @@
 (defdraw-graphics-command (boxer-change-graphics-font new-font-no)
   (setq *graphics-state-current-font-no* new-font-no))
 
+(defextents-graphics-command (boxer-change-graphics-font new-font-no)
+  (setq *graphics-state-current-font-no* new-font-no)
+  ;; need to update because other graphics command
+  ;; extent forms rely on an accurate value for pen-width
+  (values 0 0 0 0 t))
 
 ;; 35   BOXER-LINE-SEGMENT                           (X0 Y0 X1 Y1)
 (defclass boxer-line-segment (graphics-command)
@@ -111,6 +138,14 @@
   ;; The y-axis needs to be flipped
   (ck-mode-draw-line x0 (- y0) x1 (- y1)
                      *graphics-state-current-alu*))
+
+(defextents-graphics-command (boxer-line-segment x0 y0 x1 y1)
+  (let ((delta #-mcl (ceiling *graphics-state-current-pen-width* 2)
+               ;; this has to stay until the non centered thick line bug in
+               ;; the mac implementation gets fixed
+               #+mcl *graphics-state-current-pen-width*))
+    (values (- (min x0 x1) delta) (- (min y0 y1) delta)
+            (+ (max x0 x1) delta) (+ (max y0 y1) delta))))
 
 ;; 36   BOXER-CHANGE-GRAPHICS-COLOR                  (NEW-COLOR)
 (defclass boxer-change-graphics-color (graphics-command)
@@ -146,6 +181,23 @@
       ((not (position #\newline s))
        (draw-string *graphics-state-current-font-no* trimmed-string wx wy))
       (draw-string *graphics-state-current-font-no* trimmed-string wx wy))))
+
+(defextents-graphics-command (boxer-centered-string x y text)
+  (let ((height 0) (s text) (width 0) (wx x))
+    (loop
+      (setq height
+            (+ height (1+(string-hei *graphics-state-current-font-no*)))
+            width (max (string-wid *graphics-state-current-font-no*
+                                  (subseq s 0 (position #\newline s)))
+                      width)
+            wx (min wx (- x (/ width 2))))
+      ;; If we have handled the last line (the current line has no CR's)
+      (if (not (position #\newline s))
+        (return (values (coerce wx 'boxer-float) (coerce y 'boxer-float)
+                        (coerce (+ wx width) 'boxer-float)
+                        (coerce (+ y height) 'boxer-float)))
+        (setq s (subseq s (let ((p (position #\newline s)))
+                            (if (null p) 0 (1+& p)))))))))
 
 ;;;; 40   BOXER-LEFT-STRING          (X Y STRING)
 (defclass boxer-left-string (graphics-command)
@@ -194,6 +246,12 @@
                    ;; The y axis is flipped
                    (- (+ y (/ h 2)))))
 
+(defextents-graphics-command (boxer-centered-rectangle x y width height)
+  (let ((half-width (values (/ width 2.0)))
+        (half-height (values (/ height 2.0))))
+    (declare (type boxer-float half-width half-height))
+    (values (float-minus x half-width) (float-minus y half-height)
+            (float-plus x half-width) (float-plus y half-height))))
 
 ;; 43   BOXER-DOT                      (X Y)
 (defclass boxer-dot (graphics-command)
@@ -204,6 +262,11 @@
                  (- x (/ *graphics-state-current-pen-width* 2))
                  (- (+ y (/ *graphics-state-current-pen-width* 2)))))
 
+(defextents-graphics-command (boxer-dot x y)
+  (let ((half-size (/ *graphics-state-current-pen-width* 2.0)))
+    (declare (type boxer-float half-size))
+    (values (float-minus x half-size) (float-minus y half-size)
+            (float-plus x half-size) (float-plus y half-size))))
 
 ;; 47   BOXER-CENTERED-BITMAP          (BITMAP X Y WIDTH HEIGHT)
 (defclass boxer-centered-bitmap (graphics-command)
@@ -219,6 +282,13 @@
                       (- x (floor wid 2))
                       (- (+ y (floor hei 2)))))
 
+(defextents-graphics-command (boxer-centered-bitmap bitmap x y width height)
+  (let ((half-width (/ width 2.0))
+        (half-height (/ height 2.0)))
+    (declare (type boxer-float half-width half-height))
+    ;; removed float-plus/minus because x & y are not floats
+    (values (- x half-width) (- y half-height)
+            (+ x half-width) (+ y half-height))))
 
 ;; 58   BOXER-WEDGE                    (X Y RADIUS START-ANGLE SWEEP-ANGLE)
 (defclass boxer-wedge (graphics-command)
@@ -229,6 +299,10 @@
     (when (plusp radius)
       (%draw-c-arc x y radius start-angle sweep-angle t))))
 
+(defextents-graphics-command (boxer-wedge x y radius start-angle sweep-angle)
+  (values (- x radius) (- y radius)
+          (+ x radius) (+ y radius)))
+
 ;; 59   BOXER-ARC                      (X Y RADIUS START-ANGLE SWEEP-ANGLE)
 (defclass boxer-arc (graphics-command)
   ())
@@ -238,6 +312,9 @@
     (when (plusp radius)
       (%draw-c-arc x y radius start-angle sweep-angle nil))))
 
+(defextents-graphics-command (boxer-arc x y radius start-angle sweep-angle)
+  (values (- x radius) (- y radius)
+          (+ x radius) (+ y radius)))
 
 ;; 60   BOXER-FILLED-ELLIPSE        (X Y WIDTH HEIGHT)
 (defclass boxer-filled-ellipse (graphics-command)
@@ -247,6 +324,12 @@
   (let ((y (- y)))
     (draw-ellipse x y w h t)))
 
+(defextents-graphics-command (boxer-filled-ellipse x y width height)
+  (let ((half-width (/ width 2.0))
+        (half-height (/  height 2.0)))
+    (declare (type boxer-float half-width half-height))
+    (values (float-minus x half-width) (float-minus y half-height)
+            (float-plus x half-width) (float-plus y half-height))))
 
 ;; 61   BOXER-ELLIPSE               (X Y WIDTH HEIGHT)
 (defclass boxer-ellipse (graphics-command)
@@ -256,6 +339,13 @@
   (let ((y (- y)))
     (draw-ellipse x y w h nil)))
 
+(defextents-graphics-command (boxer-ellipse x y width height)
+  (let ((half-width (/ width 2.0))
+        (half-height (/  height 2.0)))
+    (declare (type boxer-float half-width half-height))
+    (values (float-minus x half-width) (float-minus y half-height)
+            (float-plus x half-width) (float-plus y half-height))))
+
 ;; 62   BOXER-FILLED-CIRCLE        (X Y RADIUS)
 (defclass boxer-filled-circle (graphics-command)
   ())
@@ -264,6 +354,8 @@
   (let ((y (- y)))
     (draw-circle x y radius t)))
 
+(defextents-graphics-command (boxer-filled-circle x y radius)
+  (values (- x radius) (- y radius) (+ x radius) (+ y radius)))
 
 ;; 63   BOXER-CIRCLE               (X Y RADIUS)
 (defclass boxer-circle (graphics-command)
@@ -273,6 +365,8 @@
   (let ((y (- y)))
     (draw-circle x y radius nil)))
 
+(defextents-graphics-command (boxer-circle x y radius)
+  (values (- x radius) (- y radius) (+ x radius) (+ y radius)))
 
 (defparameter *graphics-commands*
   (serapeum:dict 32 (make-instance 'boxer-change-alu)

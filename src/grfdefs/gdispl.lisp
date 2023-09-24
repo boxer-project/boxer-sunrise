@@ -240,10 +240,6 @@ Modification History (most recent at the top)
   (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
               :initial-element nil))
 
-(defvar *graphics-command-size-values-table*
-  (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
-              :initial-element nil))
-
 (defvar *graphics-command-binding-values-table*
   (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
               :initial-element nil))
@@ -330,11 +326,7 @@ Modification History (most recent at the top)
 
 (defun graphics-command-extents (graphics-command)
   (declare (values min-x min-y max-x max-y))
-  (let ((handler (svref& *graphics-command-size-values-table*
-                         (svref& graphics-command 0))))
-    (if (null handler)
-      (values 0 0 0 0)
-      (funcall handler graphics-command))))
+  (extents (gethash (aref graphics-command 0) *graphics-commands*) (cdr (coerce graphics-command 'list))))
 
 (defun dump-graphics-command (command stream &optional (type :turtle-shape))
   (declare (ignore type))
@@ -553,7 +545,6 @@ Modification History (most recent at the top)
 (defmacro defgraphics-command ((name opcode
                                     &optional (optimize-recording? nil))
                               args
-                              boxer-extents-form
                               dump-args dump-form
                               load-args load-form
                               deallocate-args deallocate-form
@@ -657,18 +648,6 @@ Modification History (most recent at the top)
                                       ':boxer)
                                 (,bmake-name ,@args)
                                 (,wmake-name ,@args))))))
-
-            ;; extents
-            (defun ,boxer-extents-function (graphics-command)
-              (with-graphics-command-slots-bound graphics-command ,args
-                ,boxer-extents-form))
-            ,(when (>=& boxer-command-opcode
-                        (svlength *graphics-command-size-values-table*))
-              ;; for that compile time error checking appeal
-              (error "The *graphics-command-size-values-table* is too short"))
-            (setf (svref& *graphics-command-size-values-table*
-                          ,boxer-command-opcode)
-                  ',boxer-extents-function)
 
             ;; record the descriptor
             ,(when (>=& boxer-command-opcode
@@ -889,7 +868,6 @@ Modification History (most recent at the top)
 ;; (eval (compile load eval)
 (defmacro defgraphics-state-change ((name opcode) args
                                                   &key
-                                                  boxer-extents-form
                                                   (dump-args '(command stream &optional
                                                                        (type :turtle-shape)))
                                                   (dump-form
@@ -903,8 +881,6 @@ Modification History (most recent at the top)
                                                   body)
   `(defgraphics-command (,name ,opcode t)
      ,args
-     ,(or boxer-extents-form '(progn graphics-command
-                                                  (values 0.0 0.0 0.0 0.0 t)))
      ,dump-args ,dump-form
      ,load-args ,load-form
      ,deallocate-args ,deallocate-form
@@ -941,7 +917,6 @@ Modification History (most recent at the top)
 (defmacro defstandard-graphics-handlers ((name opcode)
                                          &key
                                          command-args
-                                         boxer-extents-form
                                          (dump-args '(command stream &optional
                                                               (type :turtle-shape)))
                                          (dump-form
@@ -957,7 +932,6 @@ Modification History (most recent at the top)
   `(progn
     (defgraphics-command (,name ,opcode)
       ,command-args
-      ,boxer-extents-form
       ,dump-args ,dump-form ,load-args ,load-form
       ,deallocate-args ,deallocate-form
       ,sprite-command
