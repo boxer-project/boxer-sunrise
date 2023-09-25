@@ -236,10 +236,6 @@ Modification History (most recent at the top)
 (defvar *graphics-command-name-opcode-alist* nil
   "Used to map names back into their opcodes")
 
-(defvar *graphics-command-dispatch-table*
-  (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
-              :initial-element nil))
-
 (defvar *graphics-command-binding-values-table*
   (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
               :initial-element nil))
@@ -319,10 +315,6 @@ Modification History (most recent at the top)
 
 (defun copy-graphics-command (graphics-command)
   (copy (gethash (aref graphics-command 0) *graphics-commands*) graphics-command))
-
-(defmacro bind-graphics-handlers ((table) &body body)
-  `(let ((*graphics-command-dispatch-table* ,table))
-     . ,body))
 
 (defun graphics-command-extents (graphics-command)
   (declare (values min-x min-y max-x max-y))
@@ -550,7 +542,6 @@ Modification History (most recent at the top)
                               deallocate-args deallocate-form
                               sprite-command
                               transform-template
-                              copy-post-processing
                               &body draw-body)
   (flet ((numeric-declaration-args ()
                                   (with-collection
@@ -569,20 +560,14 @@ Modification History (most recent at the top)
                 (intern (symbol-format nil "MAKE-WINDOW-GRAPHICS-COMMAND-~A" name)))
               (wcopy-name
                 (intern (symbol-format nil "COPY-WINDOW-GRAPHICS-COMMAND-~A" name)))
-              (wcopy-struct-name (if (null copy-post-processing) wcopy-name
-                                    (intern
-                                    (symbol-format
-                                      nil "%COPY-WINDOW-GRAPHICS-COMMAND-~A" name))))
+              (wcopy-struct-name wcopy-name)
               (bstruct-name
                 (intern (symbol-format nil "BOXER-GRAPHICS-COMMAND-~A" name)))
               (bmake-name
                 (intern (symbol-format nil "MAKE-BOXER-GRAPHICS-COMMAND-~A" name)))
               (bcopy-name
                 (intern (symbol-format nil "COPY-BOXER-GRAPHICS-COMMAND-~A" name)))
-              (bcopy-struct-name (if (null copy-post-processing) bcopy-name
-                                    (intern
-                                    (symbol-format
-                                      nil "%COPY-BOXER-GRAPHICS-COMMAND-~A" name))))
+              (bcopy-struct-name bcopy-name)
               (window->boxer-name
                 (intern (symbol-format nil "GRAPHICS-WINDOW->BOXER-~A-ALLOCATOR" name)))
               (boxer->window-name
@@ -614,22 +599,12 @@ Modification History (most recent at the top)
               ;; slot 0 is used as an index into the dispatch table
               (type ,opcode)
               ,@args)
-            ,(unless (null copy-post-processing)
-              `(defun ,wcopy-name (gc)
-                  (let ((graphics-command (,wcopy-struct-name gc)))
-                    ,copy-post-processing
-                    graphics-command)))
             (defstruct (,bstruct-name (:type vector)
                                       (:constructor ,bmake-name ,args)
                                       (:copier ,bcopy-struct-name))
               ;; slot 0 is used as an index into the dispatch table
               (type ,boxer-command-opcode)
               ,@args)
-            ,(unless (null copy-post-processing)
-              `(defun ,bcopy-name (gc)
-                  (let ((graphics-command (,bcopy-struct-name gc)))
-                    ,copy-post-processing
-                    graphics-command)))
             ;; this indirection is provided because we may want to
             ;; switch to some resource scheme for these command markers
             ;; instead of just consing them up on the fly
@@ -712,28 +687,6 @@ Modification History (most recent at the top)
               (push (cons boxer-command-name boxer-command-opcode)
                     *graphics-command-name-opcode-alist*)
               nil)
-
-            ;; the default handlers for drawing the
-            ;; objects directly into the graphics box
-            (defun ,process-function (graphics-command)
-              (with-graphics-command-slots-bound graphics-command ,args
-                (progn ,@draw-body)))
-
-            ;	   (let ,(let ((idx 0))
-            ;		   (mapcar #'(lambda (arg)
-            ;			       (incf idx)
-            ;			       (list arg
-            ;				     `(svref& graphics-command ,idx)))
-            ;			   args))
-            ;	     (declare (fixnum ,@(numeric-declaration-args)))
-            ;	     ,@args
-            ;	     (progn ,@draw-body)))
-            ;; now install the drawing function in the dispatch table
-            ,(when (>=& opcode (svlength *graphics-command-dispatch-table*))
-              ;; for that compile time error checking appeal
-              (error "The *graphics-command-dispatch-table* is too short"))
-            (setf (svref& *graphics-command-dispatch-table* ,opcode)
-                  ',process-function)
 
             ;; establishes a lexical environment for a particular graphics
             ;; command where the slots are bound to the names of the args
@@ -820,7 +773,6 @@ Modification History (most recent at the top)
                                                         (nth (1- idx) transform-template)
                                                         ':window->boxer))
                                               args)))))
-                ,copy-post-processing
                 graphics-command))
             ;; install it
             (setf (svref& *graphics-command-window->boxer-translation-table*
@@ -926,7 +878,6 @@ Modification History (most recent at the top)
                                          (load-form 'command)
                                          sprite-command
                                          transformation-template
-                                         copy-post-processing
                                          (deallocate-args '(graphics-command))
                                          (deallocate-form 'graphics-command))
   `(progn
@@ -935,7 +886,7 @@ Modification History (most recent at the top)
       ,dump-args ,dump-form ,load-args ,load-form
       ,deallocate-args ,deallocate-form
       ,sprite-command
-      ,transformation-template ,copy-post-processing
+      ,transformation-template
       'nil)))
 
 
@@ -1298,14 +1249,6 @@ Modification History (most recent at the top)
 ;; the default copy functions only copy slots. For bitmaps, we need
 ;; a separate copy of the bitmap as well
 ;; sgithens TODO fix these duplicate def warnings for sbcl
-#-sbcl(defun copy-window-graphics-command-centered-bitmap (command)
-  (make-window-graphics-command-centered-bitmap
-   (copy-pixmap (window-graphics-command-centered-bitmap-bitmap command))
-   (window-graphics-command-centered-bitmap-x command)
-   (window-graphics-command-centered-bitmap-y command)
-   (window-graphics-command-centered-bitmap-width command)
-   (window-graphics-command-centered-bitmap-height command)))
-
 #-sbcl(defun copy-boxer-graphics-command-centered-bitmap (command)
   (make-boxer-graphics-command-centered-bitmap
    (copy-pixmap (boxer-graphics-command-centered-bitmap-bitmap command))

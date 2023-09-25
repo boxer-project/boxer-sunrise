@@ -10122,6 +10122,10 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: gdispl.lisp
 ;;;;
 
+(defvar *graphics-command-dispatch-table*
+  (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
+              :initial-element nil))
+
 (defvar *graphics-command-size-values-table*
   (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
               :initial-element nil))
@@ -10137,6 +10141,10 @@ OpenGL expects a list of X Y pairs"
 (defvar *graphics-command-boxer->window-translation-table*
   (make-array *initial-graphics-command-dispatch-table-size*
               :initial-element nil))
+
+(defmacro bind-graphics-handlers ((table) &body body)
+  `(let ((*graphics-command-dispatch-table* ,table))
+     . ,body))
 
 (defun translate-graphics-command (graphics-command trans-x trans-y)
   (if (< (aref graphics-command 0) 32)
