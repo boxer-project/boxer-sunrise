@@ -27,8 +27,6 @@
     (progn (setf (svref& command 1) (canonicalize-file-alu existing-alu))
             (dump-boxer-thing command stream))
     (setf (svref& command 1) existing-alu)))
-  :load-form
-  (setf (svref& command 1) (reallocate-file-alu (svref& command 1)))
   :sprite-command
   (list (case new-alu
           (#.alu-xor 'bu::penreverse)
@@ -61,9 +59,6 @@
                     (dump-boxer-thing (svref& command 0) stream)
                     (dump-font (svref& command 1) stream))
               (t (dump-boxer-thing command stream)))
-  :load-form (when (>=& *version-number* 12)
-              (setf (svref& command 1)
-                    (make-font-from-file-value (svref& command 1))))
   :sprite-command
   (list 'bu::set-type-font new-font-no)
   :body
@@ -101,9 +96,6 @@
                               (pixel-dump-value existing-pixel)
                               (canonicalize-pixel-color existing-pixel))))
                 (dump-boxer-thing outgoing-command stream))
-             :load-form
-             (setf (aref command 1)
-                   (reallocate-pixel-color (aref command 1)))
              :sprite-command
              (list 'bu::set-pen-color new-color)
              :body

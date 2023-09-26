@@ -244,10 +244,6 @@ Modification History (most recent at the top)
   (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
               :initial-element nil))
 
-(defvar *graphics-command-loader-dispatch-table*
-  (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
-              :initial-element nil))
-
 (defvar *graphics-command-window->boxer-translation-table*
   (make-array *initial-graphics-command-dispatch-table-size*
               :initial-element nil))
@@ -331,10 +327,12 @@ Modification History (most recent at the top)
 ;; this is actually more of a post load processing kinda thing
 (defun load-graphics-command (command &optional (type :turtle-shape))
   (declare (ignore type))
-  (let ((handler (svref& *graphics-command-loader-dispatch-table*
-                         (svref& command 0))))
-    (unless (null handler)
-      (funcall handler command))))
+  ;; Bit of a hack for old files, because of the graphics post load ordering, this is
+  ;; looked up before we convert any older lower number window commands (<32) to boxer commands. (>=32)
+  (let ((opcode (aref command 0)))
+    (when (< opcode 32)
+      (setf opcode (+ opcode 32)))
+    (load-gc (gethash opcode *graphics-commands*) command)))
 
 (defun translate-graphics-command-to-sprite-primitive (command)
   (let* ((x (if (>= (svref& command 0) 32)
@@ -538,7 +536,6 @@ Modification History (most recent at the top)
                                     &optional (optimize-recording? nil))
                               args
                               dump-args dump-form
-                              load-args load-form
                               deallocate-args deallocate-form
                               sprite-command
                               transform-template
@@ -586,8 +583,6 @@ Modification History (most recent at the top)
                 (intern (symbol-format nil "~A Boxer Command Extents" name)))
               (dump-function-name
                 (intern (symbol-format nil "GRAPHICS COMMAND ~A DUMPER" name)))
-              (load-function-name
-                (intern (symbol-format nil "GRAPHICS COMMAND ~A LOADER" name)))
               (sprite-command-translator-name
                 (intern (symbol-format nil "~A SPRITE TRANSLATOR" name)))
               (wdeallocate-function (gensym))
@@ -788,14 +783,6 @@ Modification History (most recent at the top)
                   (svref& *graphics-command-dumper-dispatch-table*
                           ,boxer-command-opcode)
                   ',dump-function-name)
-            (defun ,load-function-name ,load-args
-              ,@(arglist-argnames load-args)
-              ,load-form)
-            (setf (svref& *graphics-command-loader-dispatch-table* ,opcode)
-                  ',load-function-name
-                  (svref& *graphics-command-loader-dispatch-table*
-                          ,boxer-command-opcode)
-                  ',load-function-name)
 
             ;; back translation to sprite commands
             (defun ,sprite-command-translator-name (command)
@@ -824,9 +811,6 @@ Modification History (most recent at the top)
                                                                        (type :turtle-shape)))
                                                   (dump-form
                                                    '(dump-boxer-thing command stream))
-                                                  (load-args '(command &optional
-                                                                       (type :turtle-shape)))
-                                                  (load-form 'command)
                                                   (deallocate-args '(graphics-command))
                                                   (deallocate-form 'graphics-command)
                                                   sprite-command
@@ -834,7 +818,6 @@ Modification History (most recent at the top)
   `(defgraphics-command (,name ,opcode t)
      ,args
      ,dump-args ,dump-form
-     ,load-args ,load-form
      ,deallocate-args ,deallocate-form
      ,sprite-command
      ,(make-list (length args)) nil ,body))
@@ -873,9 +856,6 @@ Modification History (most recent at the top)
                                                               (type :turtle-shape)))
                                          (dump-form
                                           '(dump-boxer-thing command stream))
-                                         (load-args '(command &optional
-                                                              (type :turtle-shape)))
-                                         (load-form 'command)
                                          sprite-command
                                          transformation-template
                                          (deallocate-args '(graphics-command))
@@ -883,7 +863,7 @@ Modification History (most recent at the top)
   `(progn
     (defgraphics-command (,name ,opcode)
       ,command-args
-      ,dump-args ,dump-form ,load-args ,load-form
+      ,dump-args ,dump-form
       ,deallocate-args ,deallocate-form
       ,sprite-command
       ,transformation-template

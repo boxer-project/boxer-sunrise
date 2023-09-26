@@ -79,6 +79,9 @@
 (defmethod extents ((self graphics-command) com)
   (values 0 0 0 0))
 
+(defmethod load-gc ((self graphics-command) com)
+  nil)
+
 (defmacro defdraw-graphics-command ((gc-class &rest method-args) &body body)
   `(defmethod draw-gc ((self ,gc-class) com)
      (let ,(loop for i
@@ -101,6 +104,9 @@
 
 (defdraw-graphics-command (boxer-change-alu new-alu)
   (setq *graphics-state-current-alu* new-alu))
+
+(defmethod load-gc ((self boxer-change-alu) command)
+  (setf (aref command 1) (reallocate-file-alu (aref command 1))))
 
 ;; 33   BOXER-CHANGE-PEN-WIDTH              (NEW-WIDTH)
 (defclass boxer-change-pen-width (graphics-command)
@@ -128,6 +134,11 @@
   ;; extent forms rely on an accurate value for pen-width
   (values 0 0 0 0 t))
 
+(defmethod load-gc ((self boxer-change-graphics-font) command)
+  (when (>=& *version-number* 12)
+    (setf (svref& command 1)
+    (make-font-from-file-value (svref& command 1)))))
+
 ;; 35   BOXER-LINE-SEGMENT                           (X0 Y0 X1 Y1)
 (defclass boxer-line-segment (graphics-command)
   ())
@@ -154,6 +165,10 @@
 (defdraw-graphics-command (boxer-change-graphics-color new-color)
   (setf *graphics-state-current-pen-color* new-color)
   (%set-pen-color new-color))
+
+(defmethod load-gc ((self boxer-change-graphics-color) command)
+  (setf (aref command 1)
+        (reallocate-pixel-color (aref command 1))))
 
 ;; 37   BOXER-TRANSFORM-MATRIX                       (. . .)
 (defclass boxer-transform-matrix (graphics-command)
