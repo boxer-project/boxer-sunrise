@@ -85,6 +85,9 @@
 (defmethod dump-gc ((self graphics-command) command stream)
   (dump-boxer-thing command stream))
 
+(defmethod deallocate-gc ((self graphics-command) command)
+  nil)
+
 (defmacro defdraw-graphics-command ((gc-class &rest method-args) &body body)
   `(defmethod draw-gc ((self ,gc-class) com)
      (let ,(loop for i
@@ -354,6 +357,9 @@
     (dump-boxer-thing y stream)
     (dump-boxer-thing width stream)
     (dump-boxer-thing height stream))))
+
+(defmethod deallocate-gc ((self boxer-centered-bitmap) command)
+  (ogl-free-pixmap (aref command 1)))
 
 ;; 58   BOXER-WEDGE                    (X Y RADIUS START-ANGLE SWEEP-ANGLE)
 (defclass boxer-wedge (graphics-command)

@@ -244,10 +244,6 @@ Modification History (most recent at the top)
   (make-array *initial-graphics-command-dispatch-table-size*
               :initial-element nil))
 
-(defvar *graphics-command-deallocation-table*
-  (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
-              :initial-element nil))
-
 (defvar *graphics-command-sprite-command-translation-table*
   (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
               :initial-element nil))
@@ -351,16 +347,8 @@ Modification History (most recent at the top)
       ,graphics-command
        ,@body)))
 
-
 (defun deallocate-graphics-command-marker (graphics-command)
-  (when (svref& *graphics-command-deallocation-table*
-                   (svref& graphics-command 0))
-    (funcall (svref& *graphics-command-deallocation-table*
-                   (svref& graphics-command 0))
-           graphics-command)))
-
-
-
+  (deallocate-gc (gethash (aref graphics-command 0) *graphics-commands*) graphics-command))
 
 ;;; these should NEVER be changed.  These are the starting values
 ;;; for playback of graphics lists.  Changing these values will
@@ -526,7 +514,6 @@ Modification History (most recent at the top)
 (defmacro defgraphics-command ((name opcode
                                     &optional (optimize-recording? nil))
                               args
-                              deallocate-args deallocate-form
                               sprite-command
                               transform-template
                               &body draw-body)
@@ -570,9 +557,7 @@ Modification History (most recent at the top)
               (dump-function-name
                 (intern (symbol-format nil "GRAPHICS COMMAND ~A DUMPER" name)))
               (sprite-command-translator-name
-                (intern (symbol-format nil "~A SPRITE TRANSLATOR" name)))
-              (wdeallocate-function (gensym))
-              (bdeallocate-function (gensym)))
+                (intern (symbol-format nil "~A SPRITE TRANSLATOR" name))))
           `(progn
             (defstruct (,wstruct-name (:type vector)
                                       (:constructor ,wmake-name ,args)
@@ -716,31 +701,6 @@ Modification History (most recent at the top)
             (setf (svref&  *graphics-command-binding-values-table*
                           ,boxer-command-opcode) ',boxer-binding-values-macro)
 
-            ;; if we move to a resource scheme, this will be useful and we
-            ;; will have to install it into its own dispatch table like the
-            ;; drawing functions
-            (defun ,wdeallocate-function ,deallocate-args
-              (with-graphics-command-slots-bound ,(car deallocate-args) ,args
-                ,deallocate-form))
-            ;; install it
-            ,(when (>=& opcode (svlength *graphics-command-deallocation-table*))
-              ;; for that compile time error checking appeal
-              (error "The *graphics-command-deallocation-table* is too short"))
-            (setf (svref& *graphics-command-deallocation-table* ,opcode)
-                  ',wdeallocate-function)
-
-            (defun ,bdeallocate-function ,deallocate-args
-              (with-graphics-command-slots-bound ,(car deallocate-args) ,args
-                ,deallocate-form))
-            ;; install it
-            ,(when (>=& boxer-command-opcode
-                        (svlength *graphics-command-deallocation-table*))
-              ;; for that compile time error checking appeal
-              (error "The *graphics-command-deallocation-table* is too short"))
-            (setf (svref& *graphics-command-deallocation-table*
-                          ,boxer-command-opcode)
-                  ',bdeallocate-function)
-
             ;; Conversion functions from Window->Boxer coordinates and back
             ;; these rely on being called within a with-graphics-vars-bound
             (defun ,window->boxer-name (window-command)
@@ -783,13 +743,10 @@ Modification History (most recent at the top)
 ;; (eval (compile load eval)
 (defmacro defgraphics-state-change ((name opcode) args
                                                   &key
-                                                  (deallocate-args '(graphics-command))
-                                                  (deallocate-form 'graphics-command)
                                                   sprite-command
                                                   body)
   `(defgraphics-command (,name ,opcode t)
      ,args
-     ,deallocate-args ,deallocate-form
      ,sprite-command
      ,(make-list (length args)) nil ,body))
 ;; )
@@ -824,13 +781,10 @@ Modification History (most recent at the top)
                                          &key
                                          command-args
                                          sprite-command
-                                         transformation-template
-                                         (deallocate-args '(graphics-command))
-                                         (deallocate-form 'graphics-command))
+                                         transformation-template)
   `(progn
     (defgraphics-command (,name ,opcode)
       ,command-args
-      ,deallocate-args ,deallocate-form
       ,sprite-command
       ,transformation-template
       'nil)))

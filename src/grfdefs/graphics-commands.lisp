@@ -205,10 +205,7 @@
 (defstandard-graphics-handlers (centered-bitmap 15)
   :COMMAND-ARGS (bitmap x y width height)
   :TRANSFORMATION-TEMPLATE
-  (nil :x-transform :y-transform :coerce :coerce)
-  :deallocate-args (graphics-command)
-  :deallocate-form (ogl-free-pixmap bitmap)
-    )
+  (nil :x-transform :y-transform :coerce :coerce))
 
 ;;; 26 Wedge
 
