@@ -289,16 +289,7 @@ Modification History (most recent at the top)
            (defun graphics-command-transform-template (graphics-command)
              (graphics-command-descriptor-transform-template
               (get-graphics-command-descriptor (svref& graphics-command 0))))
-
-
-           (defun graphics-command-slot-offset (descriptor slot-name)
-             (let ((pos (position slot-name
-                                  (graphics-command-descriptor-slots descriptor))))
-               (if (null pos)
-                 (error "The slot, ~S, does not seem to be in the Graphics Command ~S"
-                        slot-name (graphics-command-descriptor-name descriptor))
-                 (1+ pos))))
-           ) ; eval-when
+) ; eval-when
 
 
 (defun copy-graphics-command (graphics-command)
@@ -337,15 +328,6 @@ Modification History (most recent at the top)
         (error "No translation allocator for ~A" graphics-command)
         (funcall handler graphics-command)))
     graphics-command))
-
-(defmacro graphics-command-values (command-name-or-opcode
-                                   graphics-command &body body)
-  (let ((opcode (etypecase command-name-or-opcode
-                           (number command-name-or-opcode)
-                           (symbol (graphics-command-opcode command-name-or-opcode)))))
-    `(,(svref& *graphics-command-binding-values-table* opcode)
-      ,graphics-command
-       ,@body)))
 
 (defun deallocate-graphics-command-marker (graphics-command)
   (deallocate-gc (gethash (aref graphics-command 0) *graphics-commands*) graphics-command))
@@ -544,8 +526,6 @@ Modification History (most recent at the top)
               (bcopy-struct-name bcopy-name)
               (window->boxer-name
                 (intern (symbol-format nil "GRAPHICS-WINDOW->BOXER-~A-ALLOCATOR" name)))
-              (boxer->window-name
-                (intern (symbol-format nil "GRAPHICS-BOXER->WINDOW-~A-ALLOCATOR" name)))
               (recording-function
                 (intern (symbol-format nil "RECORD-BOXER-GRAPHICS-COMMAND-~A" name)))
               (process-function
