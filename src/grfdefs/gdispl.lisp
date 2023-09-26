@@ -240,10 +240,6 @@ Modification History (most recent at the top)
   (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
               :initial-element nil))
 
-(defvar *graphics-command-dumper-dispatch-table*
-  (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
-              :initial-element nil))
-
 (defvar *graphics-command-window->boxer-translation-table*
   (make-array *initial-graphics-command-dispatch-table-size*
               :initial-element nil))
@@ -316,13 +312,8 @@ Modification History (most recent at the top)
   (declare (values min-x min-y max-x max-y))
   (extents (gethash (aref graphics-command 0) *graphics-commands*) (cdr (coerce graphics-command 'list))))
 
-(defun dump-graphics-command (command stream &optional (type :turtle-shape))
-  (declare (ignore type))
-  (let ((handler (svref& *graphics-command-dumper-dispatch-table*
-                         (svref& command 0))))
-    (if (null handler)
-      (dump-boxer-thing command stream)
-      (funcall handler command stream))))
+(defun dump-graphics-command (command stream)
+  (dump-gc (gethash (aref command 0) *graphics-commands*) command stream))
 
 ;; this is actually more of a post load processing kinda thing
 (defun load-graphics-command (command &optional (type :turtle-shape))
@@ -535,7 +526,6 @@ Modification History (most recent at the top)
 (defmacro defgraphics-command ((name opcode
                                     &optional (optimize-recording? nil))
                               args
-                              dump-args dump-form
                               deallocate-args deallocate-form
                               sprite-command
                               transform-template
@@ -577,10 +567,6 @@ Modification History (most recent at the top)
                 (intern (symbol-format nil "~A Window Binding Values Macro" name)))
               (boxer-binding-values-macro
                 (intern (symbol-format nil "~A Boxer Binding Values Macro" name)))
-              (window-extents-function
-                (intern (symbol-format nil "~A Window Command Extents" name)))
-              (boxer-extents-function
-                (intern (symbol-format nil "~A Boxer Command Extents" name)))
               (dump-function-name
                 (intern (symbol-format nil "GRAPHICS COMMAND ~A DUMPER" name)))
               (sprite-command-translator-name
@@ -774,16 +760,6 @@ Modification History (most recent at the top)
                           ,opcode)
                   ',window->boxer-name)
 
-            ;; File system interface
-            (defun ,dump-function-name ,dump-args
-              ,@(arglist-argnames dump-args)
-              ,dump-form)
-            (setf (svref& *graphics-command-dumper-dispatch-table* ,opcode)
-                  ',dump-function-name
-                  (svref& *graphics-command-dumper-dispatch-table*
-                          ,boxer-command-opcode)
-                  ',dump-function-name)
-
             ;; back translation to sprite commands
             (defun ,sprite-command-translator-name (command)
               (declare (special last-x last-y))
@@ -807,17 +783,12 @@ Modification History (most recent at the top)
 ;; (eval (compile load eval)
 (defmacro defgraphics-state-change ((name opcode) args
                                                   &key
-                                                  (dump-args '(command stream &optional
-                                                                       (type :turtle-shape)))
-                                                  (dump-form
-                                                   '(dump-boxer-thing command stream))
                                                   (deallocate-args '(graphics-command))
                                                   (deallocate-form 'graphics-command)
                                                   sprite-command
                                                   body)
   `(defgraphics-command (,name ,opcode t)
      ,args
-     ,dump-args ,dump-form
      ,deallocate-args ,deallocate-form
      ,sprite-command
      ,(make-list (length args)) nil ,body))
@@ -852,10 +823,6 @@ Modification History (most recent at the top)
 (defmacro defstandard-graphics-handlers ((name opcode)
                                          &key
                                          command-args
-                                         (dump-args '(command stream &optional
-                                                              (type :turtle-shape)))
-                                         (dump-form
-                                          '(dump-boxer-thing command stream))
                                          sprite-command
                                          transformation-template
                                          (deallocate-args '(graphics-command))
@@ -863,7 +830,6 @@ Modification History (most recent at the top)
   `(progn
     (defgraphics-command (,name ,opcode)
       ,command-args
-      ,dump-args ,dump-form
       ,deallocate-args ,deallocate-form
       ,sprite-command
       ,transformation-template

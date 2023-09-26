@@ -21,12 +21,6 @@
 ;;; 0 Change ALU
 
 (defgraphics-state-change (change-alu 0) (new-alu)
-  :dump-form
-  (let ((existing-alu (svref& command 1)))
-    (unwind-protect
-    (progn (setf (svref& command 1) (canonicalize-file-alu existing-alu))
-            (dump-boxer-thing command stream))
-    (setf (svref& command 1) existing-alu)))
   :sprite-command
   (list (case new-alu
           (#.alu-xor 'bu::penreverse)
@@ -51,14 +45,6 @@
 ;;; 2 Change Graphics Font
 
 (defgraphics-state-change (change-graphics-font 2) (new-font-no)
-  :dump-form (cond ((>=& *version-number* 12)
-                    ;; guts of a dump-array
-                    (enter-table 'fake-array)
-                    (write-file-word bin-op-initialize-and-return-array stream)
-                    (dump-array-1 stream 2 nil) (dump-boxer-thing 2 stream)
-                    (dump-boxer-thing (svref& command 0) stream)
-                    (dump-font (svref& command 1) stream))
-              (t (dump-boxer-thing command stream)))
   :sprite-command
   (list 'bu::set-type-font new-font-no)
   :body
@@ -84,18 +70,6 @@
 ;;; 4 Change Graphics Color
 
 (defgraphics-state-change (change-graphics-color 4) (new-color)
-             :dump-form
-             (let* ((outgoing-command (copy-seq command))
-                    (existing-pixel (aref outgoing-command 1)))
-                (unless (or (typep existing-pixel 'fixnum)
-                            (listp existing-pixel))
-                         ;; If this is a float to an openGL float vector, convert it
-                         ;; to an integer representation of the color
-                        (setf (aref outgoing-command 1)
-                          (if (>= *version-number* 12)
-                              (pixel-dump-value existing-pixel)
-                              (canonicalize-pixel-color existing-pixel))))
-                (dump-boxer-thing outgoing-command stream))
              :sprite-command
              (list 'bu::set-pen-color new-color)
              :body
@@ -234,22 +208,7 @@
   (nil :x-transform :y-transform :coerce :coerce)
   :deallocate-args (graphics-command)
   :deallocate-form (ogl-free-pixmap bitmap)
-  :DUMP-FORM ;; need special handling for the bitmap...
-  (with-graphics-command-slots-bound command (bitmap x y width height)
-    (progn
-    ;; faking a dump of a simple array (which is the command)
-    (enter-table command) ; we need to do this so load table index is correct
-    (write-file-word bin-op-initialize-and-return-array stream)
-    (multiple-value-bind (dims opts) (decode-array command)
-                          (dump-array-1 stream dims opts))
-    (dump-boxer-thing (length command) stream)
-    ;; now the contents
-    (dump-boxer-thing (svref& command 0) stream) ; opcode
-    (dump-pixmap bitmap stream)
-    (dump-boxer-thing x stream)
-    (dump-boxer-thing y stream)
-    (dump-boxer-thing width stream)
-    (dump-boxer-thing height stream))))
+    )
 
 ;;; 26 Wedge
 

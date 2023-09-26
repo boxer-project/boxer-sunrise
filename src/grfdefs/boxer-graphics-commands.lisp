@@ -82,6 +82,9 @@
 (defmethod load-gc ((self graphics-command) com)
   nil)
 
+(defmethod dump-gc ((self graphics-command) command stream)
+  (dump-boxer-thing command stream))
+
 (defmacro defdraw-graphics-command ((gc-class &rest method-args) &body body)
   `(defmethod draw-gc ((self ,gc-class) com)
      (let ,(loop for i
@@ -107,6 +110,13 @@
 
 (defmethod load-gc ((self boxer-change-alu) command)
   (setf (aref command 1) (reallocate-file-alu (aref command 1))))
+
+(defmethod dump-gc ((self boxer-change-alu) command stream)
+  (let ((existing-alu (aref command 1)))
+    (unwind-protect
+    (progn (setf (aref command 1) (canonicalize-file-alu existing-alu))
+            (dump-boxer-thing command stream))
+    (setf (aref command 1) existing-alu))))
 
 ;; 33   BOXER-CHANGE-PEN-WIDTH              (NEW-WIDTH)
 (defclass boxer-change-pen-width (graphics-command)
@@ -139,6 +149,16 @@
     (setf (svref& command 1)
     (make-font-from-file-value (svref& command 1)))))
 
+(defmethod dump-gc ((self boxer-change-graphics-font) command stream)
+  (cond ((>=& *version-number* 12)
+         ;; guts of a dump-array
+         (enter-table 'fake-array)
+         (write-file-word bin-op-initialize-and-return-array stream)
+         (dump-array-1 stream 2 nil) (dump-boxer-thing 2 stream)
+         (dump-boxer-thing (svref& command 0) stream)
+         (dump-font (svref& command 1) stream))
+    (t (dump-boxer-thing command stream))))
+
 ;; 35   BOXER-LINE-SEGMENT                           (X0 Y0 X1 Y1)
 (defclass boxer-line-segment (graphics-command)
   ())
@@ -169,6 +189,19 @@
 (defmethod load-gc ((self boxer-change-graphics-color) command)
   (setf (aref command 1)
         (reallocate-pixel-color (aref command 1))))
+
+(defmethod dump-gc ((self boxer-change-graphics-color) command stream)
+  (let* ((outgoing-command (copy-seq command))
+         (existing-pixel (aref outgoing-command 1)))
+    (unless (or (typep existing-pixel 'fixnum)
+                (listp existing-pixel))
+             ;; If this is a float to an openGL float vector, convert it
+             ;; to an integer representation of the color
+            (setf (aref outgoing-command 1)
+              (if (>= *version-number* 12)
+                  (pixel-dump-value existing-pixel)
+                  (canonicalize-pixel-color existing-pixel))))
+    (dump-boxer-thing outgoing-command stream)))
 
 ;; 37   BOXER-TRANSFORM-MATRIX                       (. . .)
 (defclass boxer-transform-matrix (graphics-command)
@@ -304,6 +337,23 @@
     ;; removed float-plus/minus because x & y are not floats
     (values (- x half-width) (- y half-height)
             (+ x half-width) (+ y half-height))))
+
+(defmethod dump-gc ((self boxer-centered-bitmap) command stream)
+  (with-graphics-command-slots-bound command (bitmap x y width height)
+    (progn
+    ;; faking a dump of a simple array (which is the command)
+    (enter-table command) ; we need to do this so load table index is correct
+    (write-file-word bin-op-initialize-and-return-array stream)
+    (multiple-value-bind (dims opts) (decode-array command)
+                          (dump-array-1 stream dims opts))
+    (dump-boxer-thing (length command) stream)
+    ;; now the contents
+    (dump-boxer-thing (svref& command 0) stream) ; opcode
+    (dump-pixmap bitmap stream)
+    (dump-boxer-thing x stream)
+    (dump-boxer-thing y stream)
+    (dump-boxer-thing width stream)
+    (dump-boxer-thing height stream))))
 
 ;; 58   BOXER-WEDGE                    (X Y RADIUS START-ANGLE SWEEP-ANGLE)
 (defclass boxer-wedge (graphics-command)
