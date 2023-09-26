@@ -526,10 +526,6 @@ Modification History (most recent at the top)
                 (intern (symbol-format nil "RECORD-BOXER-GRAPHICS-COMMAND-~A" name)))
               (process-function
                 (intern (symbol-format nil "Process Graphics Command ~A" name)))
-              (window-binding-values-macro
-                (intern (symbol-format nil "~A Window Binding Values Macro" name)))
-              (boxer-binding-values-macro
-                (intern (symbol-format nil "~A Boxer Binding Values Macro" name)))
               (dump-function-name
                 (intern (symbol-format nil "GRAPHICS COMMAND ~A DUMPER" name)))
               (sprite-command-translator-name
