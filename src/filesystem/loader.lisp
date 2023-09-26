@@ -1459,16 +1459,21 @@ should ignore it.")
         (%make-iv-box-interface *sprite-type-font-no* 'type-font))
   (setf (slot-value turtle 'pen-color)
         (%make-iv-box-interface *foreground-color* 'pen-color))
+  ;; 2023-09-26 sgithens Commenting this out for now, we can deprecate some of the old graphics-command
+  ;; macros (graphics-command-transform-template below). But furthermore, I don't believe these actually
+  ;; need to be coerced to floats, they should work fine as is, and if not that can be fixed up elsewhere.
+  ;; This function is also only called for file versions < v6, so pretty old files.
   ;; a hack to convert the values of the graphics commands to
-  (do-vector-contents (gc (shape turtle))
-    (unless (>= (svref gc 0) 32.)
-      (setf (svref gc 0) (+ (svref gc 0) 32)))
-    (do* ((idx 1 (1+& idx))
-          (tp-items (graphics-command-transform-template gc) (cdr tp-items))
-          (tp-action (car tp-items) (car tp-items)))
-         ((null tp-items))
-      (unless (null tp-action)
-        (setf (svref gc idx) (float (svref gc idx)))))))
+  ; (do-vector-contents (gc (shape turtle))
+  ;   (unless (>= (svref gc 0) 32.)
+  ;     (setf (svref gc 0) (+ (svref gc 0) 32)))
+  ;   (do* ((idx 1 (1+& idx))
+  ;         (tp-items (graphics-command-transform-template gc) (cdr tp-items))
+  ;         (tp-action (car tp-items) (car tp-items)))
+  ;        ((null tp-items))
+  ;     (unless (null tp-action)
+  ;       (setf (svref gc idx) (float (svref gc idx))))))
+        )
 
 ;;; this should be changed to check for the file bin version in order to
 ;;; move all the detailed checks into the old style file case

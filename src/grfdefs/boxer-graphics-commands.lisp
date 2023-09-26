@@ -68,7 +68,10 @@
         (setf (boxgl-device-model-matrix bw::*boxgl-device*) prev-model)
         (update-matrices-ubo bw::*boxgl-device*)))))
 
-(defclass graphics-command () ())
+(defclass graphics-command ()
+  ((name :initform nil)
+   (command-args :initform nil)
+   (transformation-template :initform nil)))
 
 (defmethod draw-gc ((self graphics-command) com)
   (error "No draw method defined for this command"))
@@ -106,7 +109,9 @@
 
 ;; 32   BOXER-CHANGE-ALU                             (NEW-ALU)
 (defclass boxer-change-alu (graphics-command)
-  ())
+  ((name :initform "boxer-change-alu")
+   (command-args :initform nil)
+   (transformation-template :initform nil)))
 
 (defdraw-graphics-command (boxer-change-alu new-alu)
   (setq *graphics-state-current-alu* new-alu))
@@ -123,7 +128,9 @@
 
 ;; 33   BOXER-CHANGE-PEN-WIDTH              (NEW-WIDTH)
 (defclass boxer-change-pen-width (graphics-command)
-  ())
+  ((name :initform "boxer-change-pen-width")
+   (command-args :initform nil)
+   (transformation-template :initform nil)))
 
 (defdraw-graphics-command (boxer-change-pen-width new-width)
   (%set-pen-size new-width))
@@ -136,7 +143,9 @@
 
 ;; 34   BOXER-CHANGE-GRAPHICS-FONT          (NEW-FONT-NO)
 (defclass boxer-change-graphics-font (graphics-command)
-  ())
+  ((name :initform "boxer-change-graphics-font")
+   (command-args :initform nil)
+   (transformation-template :initform nil)))
 
 (defdraw-graphics-command (boxer-change-graphics-font new-font-no)
   (setq *graphics-state-current-font-no* new-font-no))
@@ -164,7 +173,9 @@
 
 ;; 35   BOXER-LINE-SEGMENT                           (X0 Y0 X1 Y1)
 (defclass boxer-line-segment (graphics-command)
-  ())
+  ((name :initform "boxer-line-segment")
+   (command-args :initform '(x0 y0 x1 y1))
+   (transformation-template :initform '(:x-transform :y-transform :x-transform :y-transform))))
 
 (defdraw-graphics-command (boxer-line-segment x0 y0 x1 y1)
   "Takes a boxer command starting with 35:
@@ -183,7 +194,9 @@
 
 ;; 36   BOXER-CHANGE-GRAPHICS-COLOR                  (NEW-COLOR)
 (defclass boxer-change-graphics-color (graphics-command)
-  ())
+  ((name :initform "boxer-change-graphics-color")
+   (command-args :initform nil)
+   (transformation-template :initform nil)))
 
 (defdraw-graphics-command (boxer-change-graphics-color new-color)
   (setf *graphics-state-current-pen-color* new-color)
@@ -208,7 +221,9 @@
 
 ;; 37   BOXER-TRANSFORM-MATRIX                       (. . .)
 (defclass boxer-transform-matrix (graphics-command)
-  ())
+  ((name :initform "boxer-transform-matrix")
+   (command-args :initform nil)
+   (transformation-template :initform nil)))
 
 (defdraw-graphics-command (boxer-transform-matrix matrix)
   (setf (boxgl-device-model-matrix bw::*boxgl-device*) matrix)
@@ -216,7 +231,9 @@
 
 ;; 39   BOXER-CENTERED-STRING             (X Y STRING)
 (defclass boxer-centered-string (graphics-command)
-  ())
+  ((name :initform "boxer-centered-string")
+   (command-args :initform '(x y string))
+   (transformation-template :initform '(:x-transform :y-transform nil))))
 
 (defdraw-graphics-command (boxer-centered-string x y text)
   (let ((y (- y)))
@@ -252,7 +269,9 @@
 
 ;;;; 40   BOXER-LEFT-STRING          (X Y STRING)
 (defclass boxer-left-string (graphics-command)
-  ())
+  ((name :initform "boxer-left-string")
+   (command-args :initform '(x y string))
+   (transformation-template :initform '(:x-transform :y-transform nil))))
 
 (defdraw-graphics-command (boxer-left-string x y text)
   (let ((y (- y)))
@@ -269,7 +288,9 @@
 
 ;;;; 41   BOXER-RIGHT-STRING         (X Y STRING)
 (defclass boxer-right-string (graphics-command)
-  ())
+  ((name :initform "boxer-right-string")
+   (command-args :initform '(x y string))
+   (transformation-template :initform '(:x-transform :y-transform nil))))
 
 (defdraw-graphics-command (boxer-right-string x y text)
   (let ((y (- y))
@@ -289,7 +310,9 @@
 
 ;; 42   BOXER-CENTERED-RECTANGLE       (X Y WIDTH HEIGHT)
 (defclass boxer-centered-rectangle (graphics-command)
-  ())
+  ((name :initform "boxer-centered-rectangle")
+   (command-args :initform '(x y width height))
+   (transformation-template :initform '(:x-transform :y-transform :coerce :coerce))))
 
 (defdraw-graphics-command (boxer-centered-rectangle x y w h)
     (draw-rectangle w h
@@ -306,7 +329,9 @@
 
 ;; 43   BOXER-DOT                      (X Y)
 (defclass boxer-dot (graphics-command)
-  ())
+  ((name :initform "boxer-dot")
+   (command-args :initform '(x y))
+   (transformation-template :initform '(:x-transform :y-transform))))
 
 (defdraw-graphics-command (boxer-dot x y)
     (draw-rectangle *graphics-state-current-pen-width* *graphics-state-current-pen-width*
@@ -321,7 +346,9 @@
 
 ;; 47   BOXER-CENTERED-BITMAP          (BITMAP X Y WIDTH HEIGHT)
 (defclass boxer-centered-bitmap (graphics-command)
-  ())
+  ((name :initform "boxer-centered-bitmap")
+   (command-args :initform '(bitmap x y width height))
+   (transformation-template :initform '(nil :x-transform :y-transform :coerce :coerce))))
 
 (defmethod copy ((self boxer-centered-bitmap) command)
   (let ((togo (copy-seq command)))
@@ -363,7 +390,9 @@
 
 ;; 58   BOXER-WEDGE                    (X Y RADIUS START-ANGLE SWEEP-ANGLE)
 (defclass boxer-wedge (graphics-command)
-  ())
+  ((name :initform "boxer-wedge")
+   (command-args :initform '(x y radius start-angle sweep-angle))
+   (transformation-template :initform '(:x-transform :y-transform nil nil nil))))
 
 (defdraw-graphics-command (boxer-wedge x y radius start-angle sweep-angle)
   (let ((y (- y)))
@@ -376,7 +405,9 @@
 
 ;; 59   BOXER-ARC                      (X Y RADIUS START-ANGLE SWEEP-ANGLE)
 (defclass boxer-arc (graphics-command)
-  ())
+  ((name :initform "boxer-arc")
+   (command-args :initform '(x y radius start-angle sweep-angle))
+   (transformation-template :initform '(:x-transform :y-transform nil nil nil))))
 
 (defdraw-graphics-command (boxer-arc x y radius start-angle sweep-angle)
   (let ((y (- y)))
@@ -389,7 +420,9 @@
 
 ;; 60   BOXER-FILLED-ELLIPSE        (X Y WIDTH HEIGHT)
 (defclass boxer-filled-ellipse (graphics-command)
-  ())
+  ((name :initform "boxer-filled-ellipse")
+   (command-args :initform '(x y width height))
+   (transformation-template :initform '(:x-transform :y-transform :coerce :coerce))))
 
 (defdraw-graphics-command (boxer-filled-ellipse x y w h)
   (let ((y (- y)))
@@ -404,7 +437,9 @@
 
 ;; 61   BOXER-ELLIPSE               (X Y WIDTH HEIGHT)
 (defclass boxer-ellipse (graphics-command)
-  ())
+  ((name :initform "boxer-ellipse")
+   (command-args :initform '(x y width height))
+   (transformation-template :initform '(:x-transform :y-transform :coerce :coerce))))
 
 (defdraw-graphics-command (boxer-ellipse x y w h)
   (let ((y (- y)))
@@ -419,7 +454,9 @@
 
 ;; 62   BOXER-FILLED-CIRCLE        (X Y RADIUS)
 (defclass boxer-filled-circle (graphics-command)
-  ())
+  ((name :initform "boxer-filled-circle")
+   (command-args :initform '(x y radius))
+   (transformation-template :initform '(:x-transform :y-transform nil))))
 
 (defdraw-graphics-command (boxer-filled-circle x y radius)
   (let ((y (- y)))
@@ -430,7 +467,9 @@
 
 ;; 63   BOXER-CIRCLE               (X Y RADIUS)
 (defclass boxer-circle (graphics-command)
-  ())
+  ((name :initform "boxer-circle")
+   (command-args :initform '(x y radius))
+   (transformation-template :initform '(:x-transform :y-transform nil))))
 
 (defdraw-graphics-command (boxer-circle x y radius)
   (let ((y (- y)))

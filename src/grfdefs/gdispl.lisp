@@ -227,12 +227,6 @@ Modification History (most recent at the top)
 
 (defvar *boxer-graphics-command-mask* 32.) ;
 
-
-(defvar *graphics-command-descriptor-table*
-  (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
-              :initial-element nil)
-  "This is useful for decoding what a graphics command is")
-
 (defvar *graphics-command-name-opcode-alist* nil
   "Used to map names back into their opcodes")
 
@@ -254,20 +248,12 @@ Modification History (most recent at the top)
     slots
     transform-template)
 
-  (defun graphics-command-opcode (command-name)
-    (let ((entry (fast-assq command-name *graphics-command-name-opcode-alist*)))
-      (if (null entry)
-        (error "No Graphics Command Opcode for ~S" command-name)
-        (cdr entry))))
-
-  (defun get-graphics-command-descriptor (name-or-opcode)
-    (etypecase name-or-opcode
-              (integer )
-              (symbol (setq name-or-opcode (graphics-command-opcode name-or-opcode))))
-    (let ((des (svref& *graphics-command-descriptor-table* name-or-opcode)))
-      (if (null des)
-        (error "No Descriptor found for ~S" name-or-opcode)
-        des)))
+  (defun get-graphics-command-descriptor (opcode)
+    (let ((gc (gethash opcode *graphics-commands*)))
+      (make-graphics-command-descriptor :name (slot-value gc 'name)
+                                        :slot (slot-value gc 'command-args)
+                                        :transform-template (slot-value gc 'transform-template))
+    ))
 )
 
 (defun graphics-command-descriptor (graphics-command)
@@ -280,13 +266,6 @@ Modification History (most recent at the top)
 (defun graphics-command-slots (graphics-command)
   (graphics-command-descriptor-slots
    (get-graphics-command-descriptor (svref& graphics-command 0))))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-           (defun graphics-command-transform-template (graphics-command)
-             (graphics-command-descriptor-transform-template
-              (get-graphics-command-descriptor (svref& graphics-command 0))))
-) ; eval-when
-
 
 (defun copy-graphics-command (graphics-command)
   (copy (gethash (aref graphics-command 0) *graphics-commands*) graphics-command))
@@ -562,29 +541,6 @@ Modification History (most recent at the top)
                                 (,bmake-name ,@args)
                                 (,wmake-name ,@args))))))
 
-            ;; record the descriptor
-            ,(when (>=& boxer-command-opcode
-                        (svlength *graphics-command-descriptor-table*))
-              ;; for that compile time error checking appeal
-              (error "The *graphics-command-descriptor-table* is too short"))
-            (setf (svref& *graphics-command-descriptor-table* ,opcode)
-                  (make-graphics-command-descriptor :name ',name
-                                                    :slots ',args
-                                                    :transform-template
-                                                    ',transform-template))
-            ;; some other macros further down need this info to be defined at
-            ;; macroexpansion time.  This is not a problem for implementations which
-            ;; macroexpand as they eval (depth 1st, sort of).  For implementations
-            ;; which macroexpand fully, before eval, we have to make sure these
-            ;; important bits of info get defined
-            ;; NOTE: we still need the other form to define the vars during load
-            #+lispworks
-            ,(progn (setf (svref& *graphics-command-descriptor-table* opcode)
-                          (make-graphics-command-descriptor :name name
-                                                            :slots args
-                                                            :transform-template
-                                                            transform-template))
-                    nil)
             ;; and the back mapping
             (let ((entry (fast-assq ',name *graphics-command-name-opcode-alist*)))
               (if (null entry)
@@ -596,21 +552,6 @@ Modification History (most recent at the top)
               (push (cons name opcode) *graphics-command-name-opcode-alist*)
               nil)
 
-            (setf (svref& *graphics-command-descriptor-table*
-                          ,boxer-command-opcode)
-                  (make-graphics-command-descriptor :name ',boxer-command-name
-                                                    :slots ',args
-                                                    :transform-template
-                                                    ',transform-template))
-            ;; needed for decoding during further macroexpansion
-            #+lispworks
-            ,(progn (setf (svref& *graphics-command-descriptor-table*
-                                  boxer-command-opcode)
-                          (make-graphics-command-descriptor :name boxer-command-name
-                                                            :slots args
-                                                            :transform-template
-                                                            transform-template))
-                    nil)
             ;; and the back mapping
             (let ((entry (fast-assq ',boxer-command-name
                                     *graphics-command-name-opcode-alist*)))
