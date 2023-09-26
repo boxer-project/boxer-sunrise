@@ -236,10 +236,6 @@ Modification History (most recent at the top)
 (defvar *graphics-command-name-opcode-alist* nil
   "Used to map names back into their opcodes")
 
-(defvar *graphics-command-binding-values-table*
-  (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
-              :initial-element nil))
-
 (defvar *graphics-command-window->boxer-translation-table*
   (make-array *initial-graphics-command-dispatch-table-size*
               :initial-element nil))
@@ -633,53 +629,6 @@ Modification History (most recent at the top)
               (push (cons boxer-command-name boxer-command-opcode)
                     *graphics-command-name-opcode-alist*)
               nil)
-
-            ;; establishes a lexical environment for a particular graphics
-            ;; command where the slots are bound to the names of the args
-            ;; the default handler does this by itself, these macros are for
-            ;; the benefit of various defgraphics-handlers to use
-            (defmacro ,window-binding-values-macro (graphics-command &body body)
-              `(let ((.graphics-command. ,graphics-command))
-                (let
-                  ,',(let ((idx 0))
-                        (mapcar #'(lambda (arg)
-                                          (incf idx)
-                                          (list arg `(svref& .graphics-command. ,idx)))
-                                args))
-                  (declare (fixnum . ,',(numeric-declaration-args)))
-                  ;; prevent bound but never used errors
-                  (progn . ,',args)
-                  ;; define local mutators...
-                  (expand-mutators-and-body ,',args 1 ,@body))))
-            ;; now install it
-            ,(when (>=& opcode (svlength  *graphics-command-binding-values-table*))
-              ;; for that compile time error checking appeal
-              (error "The  *graphics-command-binding-values-table* is too short"))
-            (setf (svref&  *graphics-command-binding-values-table* ,opcode)
-                  ',window-binding-values-macro)
-
-            (defmacro ,boxer-binding-values-macro (graphics-command &body body)
-              `(let ((.graphics-command. ,graphics-command))
-                (let
-                  ,',(let ((idx 0))
-                        (mapcar #'(lambda (arg)
-                                          (incf idx)
-                                          (list arg `(svref& .graphics-command. ,idx)))
-                                args))
-                  ;; sgithens TODO boxer-sunrise-22 Currently looking in to some issues where this comes
-                  ;; in as a fixnum rather than a float.
-                  ;; (declare (type boxer-float . ,',(numeric-declaration-args)))
-                  ;; prevent bound but never used errors
-                  (progn . ,',args)
-                  ;; define local mutators...
-                  (expand-mutators-and-body ,',args 1 ,@body))))
-            ;; now install it
-            ,(when (>=& boxer-command-opcode
-                        (svlength  *graphics-command-binding-values-table*))
-              ;; for that compile time error checking appeal
-              (error "The  *graphics-command-binding-values-table* is too short"))
-            (setf (svref&  *graphics-command-binding-values-table*
-                          ,boxer-command-opcode) ',boxer-binding-values-macro)
 
             ;; Conversion functions from Window->Boxer coordinates and back
             ;; these rely on being called within a with-graphics-vars-bound

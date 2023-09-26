@@ -10122,6 +10122,10 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: gdispl.lisp
 ;;;;
 
+(defvar *graphics-command-binding-values-table*
+  (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
+              :initial-element nil))
+
 (defvar *graphics-command-deallocation-table*
   (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
               :initial-element nil))
@@ -10153,6 +10157,23 @@ OpenGL expects a list of X Y pairs"
 (defvar *graphics-command-boxer->window-translation-table*
   (make-array *initial-graphics-command-dispatch-table-size*
               :initial-element nil))
+
+(defun graphics-command-slot-offset (descriptor slot-name)
+  (let ((pos (position slot-name
+                      (graphics-command-descriptor-slots descriptor))))
+    (if (null pos)
+      (error "The slot, ~S, does not seem to be in the Graphics Command ~S"
+            slot-name (graphics-command-descriptor-name descriptor))
+      (1+ pos))))
+
+(defmacro graphics-command-values (command-name-or-opcode
+                                   graphics-command &body body)
+  (let ((opcode (etypecase command-name-or-opcode
+                           (number command-name-or-opcode)
+                           (symbol (graphics-command-opcode command-name-or-opcode)))))
+    `(,(svref& *graphics-command-binding-values-table* opcode)
+      ,graphics-command
+       ,@body)))
 
 (defmacro bind-graphics-handlers ((table) &body body)
   `(let ((*graphics-command-dispatch-table* ,table))
