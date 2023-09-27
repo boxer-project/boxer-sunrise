@@ -91,6 +91,9 @@
 (defmethod deallocate-gc ((self graphics-command) command)
   nil)
 
+(defmethod sprite-gc ((self graphics-command) command)
+  '())
+
 (defmacro defdraw-graphics-command ((gc-class &rest method-args) &body body)
   `(defmethod draw-gc ((self ,gc-class) com)
      (let ,(loop for i
@@ -101,6 +104,14 @@
 
 (defmacro defextents-graphics-command ((gc-class &rest method-args) &body body)
   `(defmethod extents ((self ,gc-class) com)
+     (let ,(loop for i
+                 from 0
+                 to (1- (length method-args))
+                 collect (list (nth i method-args) (list 'nth i 'com)))
+       . ,body)))
+
+(defmacro defsprite-graphics-command ((gc-class &rest method-args) &body body)
+  `(defmethod sprite-gc ((self ,gc-class) com)
      (let ,(loop for i
                  from 0
                  to (1- (length method-args))
@@ -126,6 +137,14 @@
             (dump-boxer-thing command stream))
     (setf (aref command 1) existing-alu))))
 
+(defsprite-graphics-command (boxer-change-alu new-alu)
+  (list (case new-alu
+          (#.alu-xor 'bu::penreverse)
+          ((#.alu-ior #.alu-seta) 'bu::pendown)
+          ((#.alu-andca #.alu-setz) 'bu::penerase)
+          (t (warn "Untranslatable alu ~A, assuming PENDOWN" new-alu)
+            'bu::pendown))))
+
 ;; 33   BOXER-CHANGE-PEN-WIDTH              (NEW-WIDTH)
 (defclass boxer-change-pen-width (graphics-command)
   ((name :initform "boxer-change-pen-width")
@@ -141,6 +160,9 @@
   ;; extent forms rely on an accurate value for pen-width
   (values 0 0 0 0 t))
 
+(defsprite-graphics-command (boxer-change-pen-width new-width)
+  (list 'bu::set-pen-width new-width))
+
 ;; 34   BOXER-CHANGE-GRAPHICS-FONT          (NEW-FONT-NO)
 (defclass boxer-change-graphics-font (graphics-command)
   ((name :initform "boxer-change-graphics-font")
@@ -155,6 +177,9 @@
   ;; need to update because other graphics command
   ;; extent forms rely on an accurate value for pen-width
   (values 0 0 0 0 t))
+
+(defsprite-graphics-command (boxer-change-graphics-font new-font-no)
+  (list 'bu::set-type-font new-font-no))
 
 (defmethod load-gc ((self boxer-change-graphics-font) command)
   (when (>=& *version-number* 12)
@@ -192,6 +217,15 @@
     (values (- (min x0 x1) delta) (- (min y0 y1) delta)
             (+ (max x0 x1) delta) (+ (max y0 y1) delta))))
 
+(defsprite-graphics-command (boxer-line-segment x0 y0 x1 y1)
+  (cond ((and (= x0 last-x) (= y0 last-y))
+        (setq last-x x1 last-y y1)
+        (list 'bu::setxy x1 y1))
+    (t
+    (setq last-x x1 last-y y1)
+    (append (sprite-commands-for-new-position x0 y0)
+            (list 'bu::setxy x1 y1)))))
+
 ;; 36   BOXER-CHANGE-GRAPHICS-COLOR                  (NEW-COLOR)
 (defclass boxer-change-graphics-color (graphics-command)
   ((name :initform "boxer-change-graphics-color")
@@ -218,6 +252,9 @@
                   (pixel-dump-value existing-pixel)
                   (canonicalize-pixel-color existing-pixel))))
     (dump-boxer-thing outgoing-command stream)))
+
+(defsprite-graphics-command (boxer-change-graphics-color new-color)
+  (list 'bu::set-pen-color new-color))
 
 ;; 37   BOXER-TRANSFORM-MATRIX                       (. . .)
 (defclass boxer-transform-matrix (graphics-command)
@@ -267,6 +304,17 @@
         (setq s (subseq s (let ((p (position #\newline s)))
                             (if (null p) 0 (1+& p)))))))))
 
+(defsprite-graphics-command (boxer-centered-string x y text)
+  (cond ((and (= x last-x) (= y last-y))
+        (list 'bu::type (make-box (list (list (coerce string
+                                                      'simple-string))))))
+    (t
+    (setq last-x x last-y y)
+    (append (sprite-commands-for-new-position x y)
+            (list 'bu::type
+                  (make-box (list (list (coerce string
+                                                'simple-string)))))))))
+
 ;;;; 40   BOXER-LEFT-STRING          (X Y STRING)
 (defclass boxer-left-string (graphics-command)
   ((name :initform "boxer-left-string")
@@ -285,6 +333,16 @@
                             (if (null p) 0 (1+ p))))
               y (+ y 1 (string-hei *graphics-state-current-font-no*)))))))
 
+(defsprite-graphics-command (boxer-left-string x y text)
+  (cond ((and (= x last-x) (= y last-y))
+        (list 'bu::ltype (make-box (list (list (coerce string
+                                                        'simple-string))))))
+    (t
+    (setq last-x x last-y y)
+    (append (sprite-commands-for-new-position x y)
+            (list 'bu::ltype
+                  (make-box (list (list (coerce string
+                                                'simple-string)))))))))
 
 ;;;; 41   BOXER-RIGHT-STRING         (X Y STRING)
 (defclass boxer-right-string (graphics-command)
@@ -307,6 +365,16 @@
                                   (if (null p) 0 (1+ p))))
               y (+ y (1+ (string-hei *graphics-state-current-font-no*))))))))
 
+(defsprite-graphics-command (boxer-right-string x y text)
+  (cond ((and (= x last-x) (= y last-y))
+        (list 'bu::rtype (make-box (list (list (coerce string
+                                                        'simple-string))))))
+    (t
+    (setq last-x x last-y y)
+    (append (sprite-commands-for-new-position x y)
+            (list 'bu::rtype
+                  (make-box (list (list (coerce string
+                                                'simple-string)))))))))
 
 ;; 42   BOXER-CENTERED-RECTANGLE       (X Y WIDTH HEIGHT)
 (defclass boxer-centered-rectangle (graphics-command)
@@ -327,6 +395,14 @@
     (values (float-minus x half-width) (float-minus y half-height)
             (float-plus x half-width) (float-plus y half-height))))
 
+(defsprite-graphics-command (boxer-centered-rectangle x y width height)
+  (cond ((and (= x last-x) (= y last-y))
+        (list 'bu::stamp-rect width height))
+    (t
+    (setq last-x x last-y y)
+    (append (sprite-commands-for-new-position x y)
+            (list 'bu::stamp-rect width height)))))
+
 ;; 43   BOXER-DOT                      (X Y)
 (defclass boxer-dot (graphics-command)
   ((name :initform "boxer-dot")
@@ -343,6 +419,25 @@
     (declare (type boxer-float half-size))
     (values (float-minus x half-size) (float-minus y half-size)
             (float-plus x half-size) (float-plus y half-size))))
+
+(defsprite-graphics-command (boxer-dot x y)
+  (cond ((and (= x last-x) (= y last-y))
+        (list 'bu::dot))
+    (t
+    (setq last-x x last-y y)
+    (append (sprite-commands-for-new-position x y)
+            (list 'bu::dot)))))
+
+;; 44 TODO Hollow Rectangle??
+
+  ; :SPRITE-COMMAND
+  ; (cond ((and (= x last-x) (= y last-y))
+  ;       (list 'bu::stamp-hollow-rect width height))
+  ;   (t
+  ;   (setq last-x x last-y y)
+  ;   (append (sprite-commands-for-new-position x y)
+  ;           (list 'bu::stamp-hollow-rect width height))))
+
 
 ;; 47   BOXER-CENTERED-BITMAP          (BITMAP X Y WIDTH HEIGHT)
 (defclass boxer-centered-bitmap (graphics-command)
@@ -403,6 +498,15 @@
   (values (- x radius) (- y radius)
           (+ x radius) (+ y radius)))
 
+(defsprite-graphics-command (boxer-wedge x y radius start-angle sweep-angle)
+  ; !!!what abut synching HEADING ???
+  (cond ((and (= x last-x) (= y last-y))
+        (list 'bu::stamp-wedge radius sweep-angle))
+    (t
+    (setq last-x x last-y y)
+    (append (sprite-commands-for-new-position x y)
+            (list 'bu::stamp-wedge radius sweep-angle)))))
+
 ;; 59   BOXER-ARC                      (X Y RADIUS START-ANGLE SWEEP-ANGLE)
 (defclass boxer-arc (graphics-command)
   ((name :initform "boxer-arc")
@@ -417,6 +521,15 @@
 (defextents-graphics-command (boxer-arc x y radius start-angle sweep-angle)
   (values (- x radius) (- y radius)
           (+ x radius) (+ y radius)))
+
+(defsprite-graphics-command (boxer-arc x y radius start-angle sweep-angle)
+  (cond ((and (= x last-x) (= y last-y))
+        (list 'bu::stamp-arc radius sweep-angle))
+    (t
+    (setq last-x x last-y y)
+    (append (sprite-commands-for-new-position x y)
+            (list 'bu::stamp-arc radius sweep-angle)))))
+
 
 ;; 60   BOXER-FILLED-ELLIPSE        (X Y WIDTH HEIGHT)
 (defclass boxer-filled-ellipse (graphics-command)
@@ -435,6 +548,14 @@
     (values (float-minus x half-width) (float-minus y half-height)
             (float-plus x half-width) (float-plus y half-height))))
 
+(defsprite-graphics-command (boxer-filled-ellipse x y w h)
+  (cond ((and (= x last-x) (= y last-y))
+        (list 'bu::stamp-ellipse width height))
+    (t
+    (setq last-x x last-y y)
+    (append (sprite-commands-for-new-position x y)
+            (list 'bu::stamp-ellipse width height)))))
+
 ;; 61   BOXER-ELLIPSE               (X Y WIDTH HEIGHT)
 (defclass boxer-ellipse (graphics-command)
   ((name :initform "boxer-ellipse")
@@ -452,6 +573,14 @@
     (values (float-minus x half-width) (float-minus y half-height)
             (float-plus x half-width) (float-plus y half-height))))
 
+(defsprite-graphics-command (boxer-ellipse x y width height)
+  (cond ((and (= x last-x) (= y last-y))
+        (list 'bu::stamp-hollow-ellipse width height))
+    (t
+    (setq last-x x last-y y)
+    (append (sprite-commands-for-new-position x y)
+            (list 'bu::stamp-hollow-ellipse width height)))))
+
 ;; 62   BOXER-FILLED-CIRCLE        (X Y RADIUS)
 (defclass boxer-filled-circle (graphics-command)
   ((name :initform "boxer-filled-circle")
@@ -465,6 +594,14 @@
 (defextents-graphics-command (boxer-filled-circle x y radius)
   (values (- x radius) (- y radius) (+ x radius) (+ y radius)))
 
+(defsprite-graphics-command (boxer-filled-circle x y radius)
+  (cond ((and (= x last-x) (= y last-y))
+        (list 'bu::stamp-circle radius))
+    (t
+    (setq last-x x last-y y)
+    (append (sprite-commands-for-new-position x y)
+            (list 'bu::stamp-circle radius)))))
+
 ;; 63   BOXER-CIRCLE               (X Y RADIUS)
 (defclass boxer-circle (graphics-command)
   ((name :initform "boxer-circle")
@@ -477,6 +614,14 @@
 
 (defextents-graphics-command (boxer-circle x y radius)
   (values (- x radius) (- y radius) (+ x radius) (+ y radius)))
+
+(defsprite-graphics-command (boxer-circle x y radius)
+  (cond ((and (= x last-x) (= y last-y))
+        (list 'bu::stamp-hollow-circle radius))
+    (t
+    (setq last-x x last-y y)
+    (append (sprite-commands-for-new-position x y)
+            (list 'bu::stamp-hollow-circle radius)))))
 
 (defparameter *graphics-commands*
   (serapeum:dict 32 (make-instance 'boxer-change-alu)

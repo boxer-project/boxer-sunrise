@@ -10122,6 +10122,11 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: gdispl.lisp
 ;;;;
 
+(defvar *graphics-command-descriptor-table*
+  (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
+              :initial-element nil)
+  "This is useful for decoding what a graphics command is")
+
 (defvar *graphics-command-binding-values-table*
   (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
               :initial-element nil))
@@ -10157,6 +10162,22 @@ OpenGL expects a list of X Y pairs"
 (defvar *graphics-command-boxer->window-translation-table*
   (make-array *initial-graphics-command-dispatch-table-size*
               :initial-element nil))
+
+(defvar *graphics-command-sprite-command-translation-table*
+  (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
+              :initial-element nil))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+           (defun graphics-command-transform-template (graphics-command)
+             (graphics-command-descriptor-transform-template
+              (get-graphics-command-descriptor (svref& graphics-command 0))))
+) ; eval-when
+
+ (defun graphics-command-opcode (command-name)
+    (let ((entry (fast-assq command-name *graphics-command-name-opcode-alist*)))
+      (if (null entry)
+        (error "No Graphics Command Opcode for ~S" command-name)
+        (cdr entry))))
 
 (defun graphics-command-slot-offset (descriptor slot-name)
   (let ((pos (position slot-name

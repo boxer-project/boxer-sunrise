@@ -21,13 +21,6 @@
 ;;; 0 Change ALU
 
 (defgraphics-state-change (change-alu 0) (new-alu)
-  :sprite-command
-  (list (case new-alu
-          (#.alu-xor 'bu::penreverse)
-          ((#.alu-ior #.alu-seta) 'bu::pendown)
-          ((#.alu-andca #.alu-setz) 'bu::penerase)
-          (t (warn "Untranslatable alu ~A, assuming PENDOWN" new-alu)
-            'bu::pendown)))
   :body
   (unless (=& new-alu *graphics-state-current-alu*)
     (setq *graphics-state-current-alu* new-alu)))
@@ -35,8 +28,6 @@
 ;;; 1 Change Pen Width
 
 (defgraphics-state-change (change-pen-width 1) (new-width)
-  :sprite-command
-  (list 'bu::set-pen-width new-width)
   :body
   (unless (=& new-width *graphics-state-current-pen-width*)
     (setq *graphics-state-current-pen-width* new-width)
@@ -45,8 +36,6 @@
 ;;; 2 Change Graphics Font
 
 (defgraphics-state-change (change-graphics-font 2) (new-font-no)
-  :sprite-command
-  (list 'bu::set-type-font new-font-no)
   :body
   (unless (=& new-font-no *graphics-state-current-font-no*)
     ;; have to check for possible font
@@ -57,21 +46,11 @@
 (defstandard-graphics-handlers (line-segment 3)
   :COMMAND-ARGS (x0 y0 x1 y1)
   :TRANSFORMATION-TEMPLATE
-  (:x-transform :y-transform :x-transform :y-transform)
-  :sprite-command
-  (cond ((and (= x0 last-x) (= y0 last-y))
-        (setq last-x x1 last-y y1)
-        (list 'bu::setxy x1 y1))
-    (t
-    (setq last-x x1 last-y y1)
-    (append (sprite-commands-for-new-position x0 y0)
-            (list 'bu::setxy x1 y1)))))
+  (:x-transform :y-transform :x-transform :y-transform))
 
 ;;; 4 Change Graphics Color
 
 (defgraphics-state-change (change-graphics-color 4) (new-color)
-             :sprite-command
-             (list 'bu::set-pen-color new-color)
              :body
              (unless (color= new-color *graphics-state-current-pen-color*)
                (setq *graphics-state-current-pen-color* new-color)
@@ -86,17 +65,7 @@
 (defstandard-graphics-handlers (centered-string 7)
   :COMMAND-ARGS (x y string)
   :TRANSFORMATION-TEMPLATE
-  (:x-transform :y-transform nil)
-  :SPRITE-COMMAND
-  (cond ((and (= x last-x) (= y last-y))
-        (list 'bu::type (make-box (list (list (coerce string
-                                                      'simple-string))))))
-    (t
-    (setq last-x x last-y y)
-    (append (sprite-commands-for-new-position x y)
-            (list 'bu::type
-                  (make-box (list (list (coerce string
-                                                'simple-string)))))))))
+  (:x-transform :y-transform nil))
 
 ;;; 8 Left String
 
@@ -115,17 +84,7 @@
   ;       (setq s (subseq s (let ((p (position #\newline s)))
   ;                           (if (null p) 0 (1+& p))))))))
   :TRANSFORMATION-TEMPLATE
-  (:x-transform :y-transform nil)
-  :SPRITE-COMMAND
-  (cond ((and (= x last-x) (= y last-y))
-        (list 'bu::ltype (make-box (list (list (coerce string
-                                                        'simple-string))))))
-    (t
-    (setq last-x x last-y y)
-    (append (sprite-commands-for-new-position x y)
-            (list 'bu::ltype
-                  (make-box (list (list (coerce string
-                                                'simple-string)))))))))
+  (:x-transform :y-transform nil))
 
 ;;; 9 Right String
 
@@ -144,31 +103,14 @@
   ;       (setq s (subseq s (let ((p (position #\newline s)))
   ;                           (if (null p) 0 (1+& p))))))))
   :TRANSFORMATION-TEMPLATE
-  (:x-transform :y-transform nil)
-  :SPRITE-COMMAND
-  (cond ((and (= x last-x) (= y last-y))
-        (list 'bu::rtype (make-box (list (list (coerce string
-                                                        'simple-string))))))
-    (t
-    (setq last-x x last-y y)
-    (append (sprite-commands-for-new-position x y)
-            (list 'bu::rtype
-                  (make-box (list (list (coerce string
-                                                'simple-string)))))))))
+  (:x-transform :y-transform nil))
 
 ;;; 10 Centered Rectangle
 
 (defstandard-graphics-handlers (centered-rectangle 10)
   :COMMAND-ARGS (x y width height)
   :TRANSFORMATION-TEMPLATE
-  (:x-transform :y-transform :coerce :coerce)
-  :SPRITE-COMMAND
-  (cond ((and (= x last-x) (= y last-y))
-        (list 'bu::stamp-rect width height))
-    (t
-    (setq last-x x last-y y)
-    (append (sprite-commands-for-new-position x y)
-            (list 'bu::stamp-rect width height)))))
+  (:x-transform :y-transform :coerce :coerce))
 
 ;;; 11 Dot
 
@@ -177,28 +119,14 @@
 (defstandard-graphics-handlers (dot 11)
   :COMMAND-ARGS (x y)
   :TRANSFORMATION-TEMPLATE
-  (:x-transform :y-transform)
-  :SPRITE-COMMAND
-  (cond ((and (= x last-x) (= y last-y))
-        (list 'bu::dot))
-    (t
-    (setq last-x x last-y y)
-    (append (sprite-commands-for-new-position x y)
-            (list 'bu::dot)))))
+  (:x-transform :y-transform))
 
 ;;; 12 Hollow Rectangle
 
 (defstandard-graphics-handlers (hollow-rectangle 12)
   :COMMAND-ARGS (x y width height)
   :TRANSFORMATION-TEMPLATE
-  (:x-transform :y-transform :coerce :coerce)
-  :SPRITE-COMMAND
-  (cond ((and (= x last-x) (= y last-y))
-        (list 'bu::stamp-hollow-rect width height))
-    (t
-    (setq last-x x last-y y)
-    (append (sprite-commands-for-new-position x y)
-            (list 'bu::stamp-hollow-rect width height)))))
+  (:x-transform :y-transform :coerce :coerce))
 
 ;;; 15 Centered Bitmap
 
@@ -212,42 +140,21 @@
 (defstandard-graphics-handlers (wedge 26)
   :COMMAND-ARGS (x y radius start-angle sweep-angle)
   :TRANSFORMATION-TEMPLATE
-  (:x-transform :y-transform nil nil nil)
-  :SPRITE-COMMAND ; !!!what abut synching HEADING ???
-  (cond ((and (= x last-x) (= y last-y))
-        (list 'bu::stamp-wedge radius sweep-angle))
-    (t
-    (setq last-x x last-y y)
-    (append (sprite-commands-for-new-position x y)
-            (list 'bu::stamp-wedge radius sweep-angle)))))
+  (:x-transform :y-transform nil nil nil))
 
 ;;; 27 Arc
 
 (defstandard-graphics-handlers (arc 27)
   :COMMAND-ARGS (x y radius start-angle sweep-angle)
   :TRANSFORMATION-TEMPLATE
-  (:x-transform :y-transform nil nil nil)
-  :SPRITE-COMMAND
-  (cond ((and (= x last-x) (= y last-y))
-        (list 'bu::stamp-arc radius sweep-angle))
-    (t
-    (setq last-x x last-y y)
-    (append (sprite-commands-for-new-position x y)
-            (list 'bu::stamp-arc radius sweep-angle)))))
+  (:x-transform :y-transform nil nil nil))
 
 ;;; 28 Filled Ellipse
 
 (defstandard-graphics-handlers (filled-ellipse 28)
   :COMMAND-ARGS (x y width height)
   :TRANSFORMATION-TEMPLATE
-  (:x-transform :y-transform :coerce :coerce)
-  :SPRITE-COMMAND
-  (cond ((and (= x last-x) (= y last-y))
-        (list 'bu::stamp-ellipse width height))
-    (t
-    (setq last-x x last-y y)
-    (append (sprite-commands-for-new-position x y)
-            (list 'bu::stamp-ellipse width height)))))
+  (:x-transform :y-transform :coerce :coerce))
 
 
 ;;; 29 Ellipse
@@ -255,39 +162,18 @@
 (defstandard-graphics-handlers (ellipse 29)
   :COMMAND-ARGS (x y width height)
   :TRANSFORMATION-TEMPLATE
-  (:x-transform :y-transform :coerce :coerce)
-  :SPRITE-COMMAND
-  (cond ((and (= x last-x) (= y last-y))
-        (list 'bu::stamp-hollow-ellipse width height))
-    (t
-    (setq last-x x last-y y)
-    (append (sprite-commands-for-new-position x y)
-            (list 'bu::stamp-hollow-ellipse width height)))))
+  (:x-transform :y-transform :coerce :coerce))
 
 ;;; 30 Filled Circle
 
 (defstandard-graphics-handlers (filled-circle 30)
   :COMMAND-ARGS (x y radius)
   :TRANSFORMATION-TEMPLATE
-  (:x-transform :y-transform nil)
-  :SPRITE-COMMAND
-  (cond ((and (= x last-x) (= y last-y))
-        (list 'bu::stamp-circle radius))
-    (t
-    (setq last-x x last-y y)
-    (append (sprite-commands-for-new-position x y)
-            (list 'bu::stamp-circle radius)))))
+  (:x-transform :y-transform nil))
 
 ;;; 31 Circle
 
 (defstandard-graphics-handlers (circle 31)
   :COMMAND-ARGS (x y radius)
   :TRANSFORMATION-TEMPLATE
-  (:x-transform :y-transform nil)
-  :SPRITE-COMMAND
-  (cond ((and (= x last-x) (= y last-y))
-        (list 'bu::stamp-hollow-circle radius))
-    (t
-    (setq last-x x last-y y)
-    (append (sprite-commands-for-new-position x y)
-            (list 'bu::stamp-hollow-circle radius)))))
+  (:x-transform :y-transform nil))

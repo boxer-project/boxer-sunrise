@@ -234,10 +234,6 @@ Modification History (most recent at the top)
   (make-array *initial-graphics-command-dispatch-table-size*
               :initial-element nil))
 
-(defvar *graphics-command-sprite-command-translation-table*
-  (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
-              :initial-element nil))
-
 ) ; eval-when
 
 ;;; store information about the graphics-command that
@@ -288,12 +284,7 @@ Modification History (most recent at the top)
     (load-gc (gethash opcode *graphics-commands*) command)))
 
 (defun translate-graphics-command-to-sprite-primitive (command)
-  (let* ((x (if (>= (svref& command 0) 32)
-              (-& (svref& command 0) 32)
-              (svref& command 0)))
-         (handler (svref& *graphics-command-sprite-command-translation-table*
-                          x)))
-    (unless (null handler) (funcall handler command))))
+  (sprite-gc (gethash (aref command 0) *graphics-commands*) (cdr (coerce command 'list))))
 
 (defun allocate-window->boxer-command (graphics-command)
   (if (< (aref graphics-command 0) 32)
@@ -504,11 +495,7 @@ Modification History (most recent at the top)
               (recording-function
                 (intern (symbol-format nil "RECORD-BOXER-GRAPHICS-COMMAND-~A" name)))
               (process-function
-                (intern (symbol-format nil "Process Graphics Command ~A" name)))
-              (dump-function-name
-                (intern (symbol-format nil "GRAPHICS COMMAND ~A DUMPER" name)))
-              (sprite-command-translator-name
-                (intern (symbol-format nil "~A SPRITE TRANSLATOR" name))))
+                (intern (symbol-format nil "Process Graphics Command ~A" name))))
           `(progn
             (defstruct (,wstruct-name (:type vector)
                                       (:constructor ,wmake-name ,args)
@@ -585,15 +572,6 @@ Modification History (most recent at the top)
             (setf (svref& *graphics-command-window->boxer-translation-table*
                           ,opcode)
                   ',window->boxer-name)
-
-            ;; back translation to sprite commands
-            (defun ,sprite-command-translator-name (command)
-              (declare (special last-x last-y))
-              (with-graphics-command-slots-bound command ,args
-                ,sprite-command))
-            (setf (svref& *graphics-command-sprite-command-translation-table*
-                          ,opcode)
-                  ',sprite-command-translator-name)
 
             ;; now make the function for drawing on the window (that also records)
             (defun ,name ,args
