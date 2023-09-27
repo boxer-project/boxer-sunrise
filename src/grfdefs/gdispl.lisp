@@ -227,9 +227,6 @@ Modification History (most recent at the top)
 
 (defvar *boxer-graphics-command-mask* 32.) ;
 
-(defvar *graphics-command-name-opcode-alist* nil
-  "Used to map names back into their opcodes")
-
 (defvar *graphics-command-window->boxer-translation-table*
   (make-array *initial-graphics-command-dispatch-table-size*
               :initial-element nil))
@@ -527,32 +524,6 @@ Modification History (most recent at the top)
                                       ':boxer)
                                 (,bmake-name ,@args)
                                 (,wmake-name ,@args))))))
-
-            ;; and the back mapping
-            (let ((entry (fast-assq ',name *graphics-command-name-opcode-alist*)))
-              (if (null entry)
-                (push (cons ',name ,opcode) *graphics-command-name-opcode-alist*)
-                (setf (cdr entry) ,opcode)))
-            ;; needed for decoding during further macroexpansion
-            #+lispworks
-            ,(when (null (fast-assq name *graphics-command-name-opcode-alist*))
-              (push (cons name opcode) *graphics-command-name-opcode-alist*)
-              nil)
-
-            ;; and the back mapping
-            (let ((entry (fast-assq ',boxer-command-name
-                                    *graphics-command-name-opcode-alist*)))
-              (if (null entry)
-                (push (cons ',boxer-command-name ,boxer-command-opcode)
-                      *graphics-command-name-opcode-alist*)
-                (setf (cdr entry) ,boxer-command-opcode)))
-            ;; needed for decoding during further macroexpansion
-            #+lispworks
-            ,(when (null (fast-assq boxer-command-name
-                                    *graphics-command-name-opcode-alist*))
-              (push (cons boxer-command-name boxer-command-opcode)
-                    *graphics-command-name-opcode-alist*)
-              nil)
 
             ;; Conversion functions from Window->Boxer coordinates and back
             ;; these rely on being called within a with-graphics-vars-bound

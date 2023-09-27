@@ -10167,6 +10167,9 @@ OpenGL expects a list of X Y pairs"
   (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
               :initial-element nil))
 
+(defvar *graphics-command-name-opcode-alist* nil
+  "Used to map names back into their opcodes")
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
            (defun graphics-command-transform-template (graphics-command)
              (graphics-command-descriptor-transform-template
