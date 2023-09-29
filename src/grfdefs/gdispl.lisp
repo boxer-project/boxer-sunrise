@@ -489,8 +489,6 @@ Modification History (most recent at the top)
               (bcopy-struct-name bcopy-name)
               (window->boxer-name
                 (intern (symbol-format nil "GRAPHICS-WINDOW->BOXER-~A-ALLOCATOR" name)))
-              (recording-function
-                (intern (symbol-format nil "RECORD-BOXER-GRAPHICS-COMMAND-~A" name)))
               (process-function
                 (intern (symbol-format nil "Process Graphics Command ~A" name))))
           `(progn
@@ -506,24 +504,6 @@ Modification History (most recent at the top)
               ;; slot 0 is used as an index into the dispatch table
               (type ,boxer-command-opcode)
               ,@args)
-            ;; this indirection is provided because we may want to
-            ;; switch to some resource scheme for these command markers
-            ;; instead of just consing them up on the fly
-            (defun ,recording-function ,args
-              (unless (not (null *supress-graphics-recording?*))
-                ,(if optimize-recording?
-                  `(if (eq *graphics-command-recording-mode* ':boxer)
-                      (unless (check-existing-graphics-state-entries
-                              ,boxer-command-opcode ,@args %graphics-list)
-                        (sv-append %graphics-list (,bmake-name ,@args)))
-                      (unless (check-existing-graphics-state-entries
-                              ,opcode ,@args %graphics-list)
-                        (sv-append %graphics-list (,wmake-name ,@args))))
-                  `(sv-append %graphics-list
-                              (if (eq *graphics-command-recording-mode*
-                                      ':boxer)
-                                (,bmake-name ,@args)
-                                (,wmake-name ,@args))))))
 
             ;; Conversion functions from Window->Boxer coordinates and back
             ;; these rely on being called within a with-graphics-vars-bound

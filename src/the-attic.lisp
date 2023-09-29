@@ -21,6 +21,9 @@
 ;;;;   - surf.lisp mailto-url and make-message-box show the email urls and how a new box was
 ;;;;     created for composing a new email message.
 ;;;;   - grmeth.lisp flash-name seems like a useful design idea... flashed a turtles name or label?
+;;;;   - gdispl.lisp (defun ,recording-function ,args... shows how we could optimize the
+;;;;     record-boxer-graphics-command-xyz functions by looking backwards and not recording it if it's
+;;;;     the previous item
 
 
 ;;;;
@@ -10175,6 +10178,25 @@ OpenGL expects a list of X Y pairs"
              (graphics-command-descriptor-transform-template
               (get-graphics-command-descriptor (svref& graphics-command 0))))
 ) ; eval-when
+
+            ;; this indirection is provided because we may want to
+            ;; switch to some resource scheme for these command markers
+            ;; instead of just consing them up on the fly
+            (defun ,recording-function ,args
+              (unless (not (null *supress-graphics-recording?*))
+                ,(if optimize-recording?
+                  `(if (eq *graphics-command-recording-mode* ':boxer)
+                      (unless (check-existing-graphics-state-entries
+                              ,boxer-command-opcode ,@args %graphics-list)
+                        (sv-append %graphics-list (,bmake-name ,@args)))
+                      (unless (check-existing-graphics-state-entries
+                              ,opcode ,@args %graphics-list)
+                        (sv-append %graphics-list (,wmake-name ,@args))))
+                  `(sv-append %graphics-list
+                              (if (eq *graphics-command-recording-mode*
+                                      ':boxer)
+                                (,bmake-name ,@args)
+                                (,wmake-name ,@args))))))
 
  (defun graphics-command-opcode (command-name)
     (let ((entry (fast-assq command-name *graphics-command-name-opcode-alist*)))

@@ -118,9 +118,24 @@
                  collect (list (nth i method-args) (list 'nth i 'com)))
        . ,body)))
 
+(defmacro defrecord-graphics-command (gc-class &rest method-args)
+  ;; TODO sgithens 2023-09-29 Unfinished, currently these are manually defined throughout the
+  ;; file.
+  ; (let* ((gc (make-instance gc-class))
+  ;        (opcode (slot-value gc 'opcode))
+  ;        (record-name (intern (format nil "record-graphics-command-~A" (slot-value gc 'name))))
+  ;        (args (loop for i
+  ;                   from 0
+  ;                   to (1- (length method-args))
+  ;                   collect (nth i method-args))))
+  ;   `(defun ,record-name ,args
+  ;      (sv-append %graphics-list (coerce (list ,opcode ,@args) 'vector))))
+  )
+
 ;; 32   BOXER-CHANGE-ALU                             (NEW-ALU)
 (defclass boxer-change-alu (graphics-command)
-  ((name :initform "boxer-change-alu")
+  ((opcode :initform 32)
+   (name :initform "boxer-change-alu")
    (command-args :initform nil)
    (transformation-template :initform nil)))
 
@@ -145,9 +160,13 @@
           (t (warn "Untranslatable alu ~A, assuming PENDOWN" new-alu)
             'bu::pendown))))
 
+(defun record-boxer-graphics-command-change-alu (new-alu)
+  (sv-append %graphics-list (coerce (list 32 new-alu) 'vector)))
+
 ;; 33   BOXER-CHANGE-PEN-WIDTH              (NEW-WIDTH)
 (defclass boxer-change-pen-width (graphics-command)
-  ((name :initform "boxer-change-pen-width")
+  ((opcode :initform 33)
+   (name :initform "boxer-change-pen-width")
    (command-args :initform nil)
    (transformation-template :initform nil)))
 
@@ -163,9 +182,13 @@
 (defsprite-graphics-command (boxer-change-pen-width new-width)
   (list 'bu::set-pen-width new-width))
 
+(defun record-boxer-graphics-command-change-pen-width (new-width)
+  (sv-append %graphics-list (coerce (list 33 new-width) 'vector)))
+
 ;; 34   BOXER-CHANGE-GRAPHICS-FONT          (NEW-FONT-NO)
 (defclass boxer-change-graphics-font (graphics-command)
-  ((name :initform "boxer-change-graphics-font")
+  ((opcode :initform 34)
+   (name :initform "boxer-change-graphics-font")
    (command-args :initform nil)
    (transformation-template :initform nil)))
 
@@ -196,9 +219,13 @@
          (dump-font (svref& command 1) stream))
     (t (dump-boxer-thing command stream))))
 
+(defun record-boxer-graphics-command-change-graphics-font (new-font-no)
+  (sv-append %graphics-list (coerce (list 34 new-font-no) 'vector)))
+
 ;; 35   BOXER-LINE-SEGMENT                           (X0 Y0 X1 Y1)
 (defclass boxer-line-segment (graphics-command)
-  ((name :initform "boxer-line-segment")
+  ((opcode :initform 35)
+   (name :initform "boxer-line-segment")
    (command-args :initform '(x0 y0 x1 y1))
    (transformation-template :initform '(:x-transform :y-transform :x-transform :y-transform))))
 
@@ -226,9 +253,13 @@
     (append (sprite-commands-for-new-position x0 y0)
             (list 'bu::setxy x1 y1)))))
 
+(defun record-boxer-graphics-command-line-segment (x0 y0 x1 y1)
+  (sv-append %graphics-list (coerce (list 35 x0 y0 x1 y1) 'vector)))
+
 ;; 36   BOXER-CHANGE-GRAPHICS-COLOR                  (NEW-COLOR)
 (defclass boxer-change-graphics-color (graphics-command)
-  ((name :initform "boxer-change-graphics-color")
+  ((opcode :initform 36)
+   (name :initform "boxer-change-graphics-color")
    (command-args :initform nil)
    (transformation-template :initform nil)))
 
@@ -256,9 +287,13 @@
 (defsprite-graphics-command (boxer-change-graphics-color new-color)
   (list 'bu::set-pen-color new-color))
 
+(defun record-boxer-graphics-command-change-graphics-color (new-color)
+  (sv-append %graphics-list (coerce (list 36 new-color) 'vector)))
+
 ;; 37   BOXER-TRANSFORM-MATRIX                       (. . .)
 (defclass boxer-transform-matrix (graphics-command)
-  ((name :initform "boxer-transform-matrix")
+  ((opcode :initform 37)
+   (name :initform "boxer-transform-matrix")
    (command-args :initform nil)
    (transformation-template :initform nil)))
 
@@ -268,7 +303,8 @@
 
 ;; 39   BOXER-CENTERED-STRING             (X Y STRING)
 (defclass boxer-centered-string (graphics-command)
-  ((name :initform "boxer-centered-string")
+  ((opcode :initform 39)
+   (name :initform "boxer-centered-string")
    (command-args :initform '(x y string))
    (transformation-template :initform '(:x-transform :y-transform nil))))
 
@@ -315,9 +351,13 @@
                   (make-box (list (list (coerce string
                                                 'simple-string)))))))))
 
+(defun record-boxer-graphics-command-centered-string (x y text)
+  (sv-append %graphics-list (coerce (list 39 x y text) 'vector)))
+
 ;;;; 40   BOXER-LEFT-STRING          (X Y STRING)
 (defclass boxer-left-string (graphics-command)
-  ((name :initform "boxer-left-string")
+  ((opcode :initform 40)
+   (name :initform "boxer-left-string")
    (command-args :initform '(x y string))
    (transformation-template :initform '(:x-transform :y-transform nil))))
 
@@ -344,9 +384,13 @@
                   (make-box (list (list (coerce string
                                                 'simple-string)))))))))
 
+(defun record-boxer-graphics-command-left-string (x y text)
+  (sv-append %graphics-list (coerce (list 40 x y text) 'vector)))
+
 ;;;; 41   BOXER-RIGHT-STRING         (X Y STRING)
 (defclass boxer-right-string (graphics-command)
-  ((name :initform "boxer-right-string")
+  ((opcode :initform 41)
+   (name :initform "boxer-right-string")
    (command-args :initform '(x y string))
    (transformation-template :initform '(:x-transform :y-transform nil))))
 
@@ -376,9 +420,13 @@
                   (make-box (list (list (coerce string
                                                 'simple-string)))))))))
 
+(defun record-boxer-graphics-command-right-string (x y text)
+  (sv-append %graphics-list (coerce (list 41 x y text) 'vector)))
+
 ;; 42   BOXER-CENTERED-RECTANGLE       (X Y WIDTH HEIGHT)
 (defclass boxer-centered-rectangle (graphics-command)
-  ((name :initform "boxer-centered-rectangle")
+  ((opcode :initform 42)
+   (name :initform "boxer-centered-rectangle")
    (command-args :initform '(x y width height))
    (transformation-template :initform '(:x-transform :y-transform :coerce :coerce))))
 
@@ -403,9 +451,13 @@
     (append (sprite-commands-for-new-position x y)
             (list 'bu::stamp-rect width height)))))
 
+(defun record-boxer-graphics-command-centered-rectangle (x y width height)
+  (sv-append %graphics-list (coerce (list 42 x y width height) 'vector)))
+
 ;; 43   BOXER-DOT                      (X Y)
 (defclass boxer-dot (graphics-command)
-  ((name :initform "boxer-dot")
+  ((opcode :initform 43)
+   (name :initform "boxer-dot")
    (command-args :initform '(x y))
    (transformation-template :initform '(:x-transform :y-transform))))
 
@@ -428,6 +480,9 @@
     (append (sprite-commands-for-new-position x y)
             (list 'bu::dot)))))
 
+(defun record-boxer-graphics-command-dot (x y)
+  (sv-append %graphics-list (coerce (list 43 x y) 'vector)))
+
 ;; 44 TODO Hollow Rectangle??
 
   ; :SPRITE-COMMAND
@@ -441,7 +496,8 @@
 
 ;; 47   BOXER-CENTERED-BITMAP          (BITMAP X Y WIDTH HEIGHT)
 (defclass boxer-centered-bitmap (graphics-command)
-  ((name :initform "boxer-centered-bitmap")
+  ((opcode :initform 47)
+   (name :initform "boxer-centered-bitmap")
    (command-args :initform '(bitmap x y width height))
    (transformation-template :initform '(nil :x-transform :y-transform :coerce :coerce))))
 
@@ -483,9 +539,13 @@
 (defmethod deallocate-gc ((self boxer-centered-bitmap) command)
   (ogl-free-pixmap (aref command 1)))
 
+(defun record-boxer-graphics-command-bitmap (bitmap x y width height)
+  (sv-append %graphics-list (coerce (list 47 bitmap x y width height) 'vector)))
+
 ;; 58   BOXER-WEDGE                    (X Y RADIUS START-ANGLE SWEEP-ANGLE)
 (defclass boxer-wedge (graphics-command)
-  ((name :initform "boxer-wedge")
+  ((opcode :initform 58)
+   (name :initform "boxer-wedge")
    (command-args :initform '(x y radius start-angle sweep-angle))
    (transformation-template :initform '(:x-transform :y-transform nil nil nil))))
 
@@ -507,9 +567,14 @@
     (append (sprite-commands-for-new-position x y)
             (list 'bu::stamp-wedge radius sweep-angle)))))
 
+(defun record-boxer-graphics-command-wedge (x y radius start-angle sweep-angle)
+  (sv-append %graphics-list (coerce (list 58 x y radius start-angle sweep-angle) 'vector)))
+
+
 ;; 59   BOXER-ARC                      (X Y RADIUS START-ANGLE SWEEP-ANGLE)
 (defclass boxer-arc (graphics-command)
-  ((name :initform "boxer-arc")
+  ((opcode :initform 59)
+   (name :initform "boxer-arc")
    (command-args :initform '(x y radius start-angle sweep-angle))
    (transformation-template :initform '(:x-transform :y-transform nil nil nil))))
 
@@ -530,10 +595,13 @@
     (append (sprite-commands-for-new-position x y)
             (list 'bu::stamp-arc radius sweep-angle)))))
 
+(defun record-boxer-graphics-command-arc (x y radius start-angle sweep-angle)
+  (sv-append %graphics-list (coerce (list 59 x y radius start-angle sweep-angle) 'vector)))
 
 ;; 60   BOXER-FILLED-ELLIPSE        (X Y WIDTH HEIGHT)
 (defclass boxer-filled-ellipse (graphics-command)
-  ((name :initform "boxer-filled-ellipse")
+  ((opcode :initform 60)
+   (name :initform "boxer-filled-ellipse")
    (command-args :initform '(x y width height))
    (transformation-template :initform '(:x-transform :y-transform :coerce :coerce))))
 
@@ -556,9 +624,13 @@
     (append (sprite-commands-for-new-position x y)
             (list 'bu::stamp-ellipse width height)))))
 
+(defun record-boxer-graphics-command-filled-ellipse (x y width height)
+  (sv-append %graphics-list (coerce (list 60 x y width height) 'vector)))
+
 ;; 61   BOXER-ELLIPSE               (X Y WIDTH HEIGHT)
 (defclass boxer-ellipse (graphics-command)
-  ((name :initform "boxer-ellipse")
+  ((opcode :initform 61)
+   (name :initform "boxer-ellipse")
    (command-args :initform '(x y width height))
    (transformation-template :initform '(:x-transform :y-transform :coerce :coerce))))
 
@@ -581,9 +653,13 @@
     (append (sprite-commands-for-new-position x y)
             (list 'bu::stamp-hollow-ellipse width height)))))
 
+(defun record-boxer-graphics-command-ellipse (x y width height)
+  (sv-append %graphics-list (coerce (list 61 x y width height) 'vector)))
+
 ;; 62   BOXER-FILLED-CIRCLE        (X Y RADIUS)
 (defclass boxer-filled-circle (graphics-command)
-  ((name :initform "boxer-filled-circle")
+  ((opcode :initform 62)
+   (name :initform "boxer-filled-circle")
    (command-args :initform '(x y radius))
    (transformation-template :initform '(:x-transform :y-transform nil))))
 
@@ -602,9 +678,13 @@
     (append (sprite-commands-for-new-position x y)
             (list 'bu::stamp-circle radius)))))
 
+(defun record-boxer-graphics-command-filled-circle (x y radius)
+  (sv-append %graphics-list (coerce (list 62 x y radius) 'vector)))
+
 ;; 63   BOXER-CIRCLE               (X Y RADIUS)
 (defclass boxer-circle (graphics-command)
-  ((name :initform "boxer-circle")
+  ((opcode :initform 63)
+   (name :initform "boxer-circle")
    (command-args :initform '(x y radius))
    (transformation-template :initform '(:x-transform :y-transform nil))))
 
@@ -622,6 +702,9 @@
     (setq last-x x last-y y)
     (append (sprite-commands-for-new-position x y)
             (list 'bu::stamp-hollow-circle radius)))))
+
+(defun record-boxer-graphics-command-circle (x y radius)
+  (sv-append %graphics-list (coerce (list 63 x y radius) 'vector)))
 
 (defparameter *graphics-commands*
   (serapeum:dict 32 (make-instance 'boxer-change-alu)
