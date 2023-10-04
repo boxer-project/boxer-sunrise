@@ -34,8 +34,8 @@ Modification History (most recent at top)
 
 (in-package :boxer)
 
-(defvar *pixmap-data-type* opengl::*gl-rgba*)
-(defvar *pixmap-data-format* opengl::*gl-unsigned-byte*)
+(defvar *pixmap-data-type* :rgba)
+(defvar *pixmap-data-format* :unsigned-byte)
 (defvar *pixmap-ffi-type* :unsigned-int
   "The pointer type for foreign-alloc and reference of pixmap data")
 

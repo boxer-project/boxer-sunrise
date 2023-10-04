@@ -142,7 +142,7 @@
                               ((beyond-top? to-y) ; y-intercept ?
                                ;; must intersect with the top edge instead
                                (line-top-then-continue
-                                (top-x-intercept from-x from-y)))
+                                (top-x-intercept from-x from-y slope)))
                               (t
                                ;; must intersect with the bottom edge
                                (line-bottom-then-continue

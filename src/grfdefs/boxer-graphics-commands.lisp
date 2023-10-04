@@ -56,6 +56,10 @@
           (process-graphics-command (graphics-canvas-pen-font-cmd graphics-canvas))))
 
       (do-vector-contents (command gl :start start)
+        ;; Sometimes there may still be old window graphics command lurking around, like in
+        ;; the :cached-boxtop entry in a boxes plist
+        (setf command (allocate-window->boxer-command command))
+
         (process-graphics-command command)
         (when (and *use-opengl-framebuffers* graphics-canvas)
           (cond ((member (aref command 0) '(4 36))
