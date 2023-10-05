@@ -46,6 +46,6 @@ void main() {
 
     alpha = ellipse(final_pos.xy,  gl_FragCoord.xy, ellipse_dims.x, ellipse_dims.y, circle_pos.z);
 
-    FragColor = vec4(color.xyz, alpha);
+    FragColor = vec4(color.xyz, color.w * alpha);
 }
 

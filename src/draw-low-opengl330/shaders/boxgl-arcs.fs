@@ -80,5 +80,5 @@ void main() {
 
     alpha = arc(final_pos.xy , gl_FragCoord.xy, circle_pos.z, start, end, circle_pos.w);
 
-    FragColor = vec4(color.xyz, alpha);
+    FragColor = vec4(color.xyz, color.w * alpha);
 }
