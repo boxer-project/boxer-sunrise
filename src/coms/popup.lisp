@@ -441,8 +441,7 @@ Modification History (most recent at top)
                             (box-top-y (name-string-or-null
                                         (screen-obj-actual-obj screen-box))
                                         0))))
-          (unless popup-only?
-            (bw::set-mouse-doc-status-xy corner-x corner-y))
+          (bw::set-mouse-doc-status-xy corner-x corner-y)
           ;; then (possibly) the popup doc
           (unless (or (null *popup-mouse-documentation?*)
                       (bw::popup-doc-delay))
@@ -474,8 +473,7 @@ Modification History (most recent at top)
                               (box-top-y (name-string-or-null
                                           (screen-obj-actual-obj screen-box))
                                          0))))
-            (unless popup-only?
-              (bw::set-mouse-doc-status-xy corner-x corner-y))
+            (bw::set-mouse-doc-status-xy corner-x corner-y)
             ;;
             (unless (or (null *popup-mouse-documentation?*)
                         (bw::popup-doc-delay))
@@ -499,8 +497,7 @@ Modification History (most recent at top)
           (declare (ignore lef top rig))
           (let ((corner-x (+ x delta-x))
                 (corner-y (+ y (screen-obj-hei screen-box) (- bot))))
-            (unless popup-only?
-              (bw::set-mouse-doc-status-xy corner-x corner-y))
+            (bw::set-mouse-doc-status-xy corner-x corner-y)
             ;;
             (unless (or (null *popup-mouse-documentation?*)
                         (bw::popup-doc-delay))
@@ -521,8 +518,7 @@ Modification History (most recent at top)
         (declare (ignore lef top))
         (let ((corner-x (+ x (screen-obj-wid screen-box) (- rig)))
               (corner-y (+ y (screen-obj-hei screen-box) (- bot))))
-          (unless popup-only?
-            (bw::set-mouse-doc-status-xy corner-x corner-y))
+          (bw::set-mouse-doc-status-xy corner-x corner-y)
           (unless (or (null *popup-mouse-documentation?*)
                       (bw::popup-doc-delay))
             (multiple-value-bind (doc-x doc-y)
