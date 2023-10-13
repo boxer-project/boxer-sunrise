@@ -240,7 +240,7 @@
                    (aref *background-color* 2)
                    (aref *background-color* 3)
                    0.0)
-  (gl:clear :color-buffer-bit :depth-buffer-bit))
+  (gl:clear :color-buffer-bit :depth-buffer-bit :stencil-buffer-bit))
 
 ;;; used by repaint-in-eval
 (defvar *last-eval-repaint* 0)

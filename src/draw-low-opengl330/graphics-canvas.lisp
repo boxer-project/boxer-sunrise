@@ -80,7 +80,7 @@
     ; (gl:framebuffer-renderbuffer :framebuffer :depth-stencil-attachment :renderbuffer renderbuffer)
 
     (gl:clear-color 0.0 0.0 0.0 0.0)
-    (gl:clear :color-buffer-bit :depth-buffer-bit)
+    (gl:clear :color-buffer-bit :depth-buffer-bit :stencil-buffer-bit)
 
     (gl:bind-framebuffer :framebuffer 0)
     togo))
@@ -96,7 +96,7 @@
   (opengl:rendering-on (*boxer-pane*)
     (enable self)
     (gl:clear-color 0.0 0.0 0.0 0.0) ;; transparent
-    (gl:clear :color-buffer-bit :depth-buffer-bit)
+    (gl:clear :color-buffer-bit :depth-buffer-bit :stencil-buffer-bit)
     (disable self)))
 
 (defmethod clear-graphics-canvas ((self box))
@@ -121,7 +121,7 @@
       (setf (ogl-pixmap-height pixmap) hei)
       (setf (op-count self) 0)
       (gl:clear-color 0.0 0.0 0.0 0.0) ;; transparent
-      (gl:clear :color-buffer-bit :depth-buffer-bit))))
+      (gl:clear :color-buffer-bit :depth-buffer-bit :stencil-buffer-bit))))
 
 (defmethod enable ((self graphics-canvas) &key (device bw::*boxgl-device*))
   "Enables the framebuffer backing this graphics-canvas, such that any GL operations will

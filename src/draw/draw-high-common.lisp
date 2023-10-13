@@ -213,7 +213,7 @@ multifont row, the common reference point will be the baseline instead of the to
        (setf paint-tex (getprop self :graphics-canvas))
        (enable paint-tex)
        (gl:clear-color 0.0 0.0 0.0 0.0) ;; transparent
-       (gl:clear :color-buffer-bit :depth-buffer-bit)
+       (gl:clear :color-buffer-bit :depth-buffer-bit :stencil-buffer-bit)
        (gl:enable :line-smooth)
        (gl:enable :polygon-smooth)
        (gl:enable :blend)
@@ -225,7 +225,9 @@ multifont row, the common reference point will be the baseline instead of the to
        (disable paint-tex))
       ((or (not (equal wid (ogl-pixmap-width (graphics-canvas-pixmap paint-tex))))
            (not (equal hei (ogl-pixmap-height (graphics-canvas-pixmap paint-tex)))))
-       (resize paint-tex wid hei))
+       (enable paint-tex)
+       (resize paint-tex wid hei)
+       (disable paint-tex))
       (t nil))
     paint-tex))
 
