@@ -286,8 +286,14 @@
    :message-callback 'handle-OSX-events
    ))
 
-(defclass boxer-lw-opengl-canvas (boxer::boxer-canvas opengl::opengl-pane)
- ())
+(defclass boxer-lw-opengl-canvas (opengl::opengl-pane boxer::boxer-canvas)
+ ;; For some reason, I have to redefine configuration, context, and reader-state from capi.lisp in the
+ ;; opengl examples for things to work on win32. On macOS they inherit fine.
+ ((configuration :initform *default-opengl-pane-configuration*
+                  :initarg :configuration
+                  :reader configuration)
+   (context :initform nil :initarg :context :accessor context)
+   (render-state :initform nil :accessor opengl-pane-render-state)))
 
 (capi:define-interface boxer-frame (capi:interface)
   ()
@@ -335,7 +341,8 @@
               :visible-min-height *boxer-status-pane-height*
               :visible-max-height *boxer-status-pane-height*)
   (boxer-pane boxer-lw-opengl-canvas
-              :configuration  '(:rgba t :depth nil :double-buffered t :modern t)
+              :configuration  #+macosx '(:rgba t :depth nil :double-buffered t :modern t)
+                              #+win32 '(:rgba t :depth nil :double-buffered t)
                               ;#-linux '(:rgba t :depth nil :double-buffered t :aux 1)
                               ;#+linux '(:rgba t :depth nil :double-buffered t ) ;:aux 1) TODO This aux option crashes LW on linux
                :input-model '(((:button-1 :press) boxer-click-1-handler)

@@ -75,8 +75,9 @@
     )
 
   (unless boxer::*evaluation-in-progress?*
-    (resize-handler canvas x y wid hei)
-    (setf (boxer::boxgl-device-ortho-matrix bw::*boxgl-device*)
-          (boxer::create-ortho-matrix wid hei))
-    (opengl:gl-viewport 0 0 wid hei)
-    (boxer::update-matrices-ubo bw::*boxgl-device*)))
+    (opengl:rendering-on (*boxer-pane*)
+      (resize-handler canvas x y wid hei)
+      (setf (boxer::boxgl-device-ortho-matrix bw::*boxgl-device*)
+            (boxer::create-ortho-matrix wid hei))
+      (opengl:gl-viewport 0 0 wid hei)
+      (boxer::update-matrices-ubo bw::*boxgl-device*))))

@@ -34,7 +34,9 @@
 
 (log:config :info)
 
-(defvar *boxer-project-dir* (make-pathname :directory (butlast (pathname-directory *load-truename*))))
+#-win32 (defvar *boxer-project-dir* (make-pathname :directory (butlast (pathname-directory *load-truename*))))
+#+win32 (defvar *boxer-project-dir* #P"Z:/code/boxer-sunrise/")
+
 
 (pushnew
   (cl-fad:merge-pathnames-as-directory *boxer-project-dir* "data/boxersunrise.app/Contents/Frameworks/")

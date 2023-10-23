@@ -308,6 +308,7 @@
   (let* ((texture     (gl:gen-texture))
          (atlas       (make-instance 'glyph-atlas :texture-id texture :width atlas-width :height atlas-height)))
     ;; create a texture for the entire atlas
+    #-win32 (progn
     (gl:pixel-store :unpack-alignment 1)
     (gl:active-texture :texture0)
     (gl:bind-texture :texture-2d texture)
@@ -333,7 +334,7 @@
           (setf count (+ count font-size)))))
 
     ;; return the new atlas
-    (gl:bind-texture :texture-2d 0)
+    (gl:bind-texture :texture-2d 0))
     atlas))
 
 (defmethod draw ((self glyph-atlas))
