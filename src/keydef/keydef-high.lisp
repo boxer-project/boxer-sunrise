@@ -520,7 +520,7 @@
 
 ;
 ;;; initial setup
-(eval-when (eval load)
+#+lispworks (eval-when (eval load)
            (initialize-input-lookup-arrays)
            (make-input-devices *initial-platform* nil)
            )
@@ -621,7 +621,7 @@
                     (mouse-position-values x-pos y-pos)
                          (declare (ignore mouse-bp local-x local-y))
                          (lookup-click-name click bits area))))
-        ((sys:gesture-spec-p data)
+        #+lispworks ((sys:gesture-spec-p data)
          (lookup-key-name (sys:gesture-spec-data data) (sys:gesture-spec-modifiers data)))
         (t nil)))
 

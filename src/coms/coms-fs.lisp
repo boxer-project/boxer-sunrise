@@ -388,7 +388,7 @@ Modification History (most recent at top)
 (defboxer-command com-export-box-as (&optional (ffc *default-ffc*))
   "Write the contents of a box out in a different format"
   (catch 'cancel-boxer-file-dialog
-    (let ((filename (capi:prompt-for-file "Export box to..."
+    #+lispworks (let ((filename (capi:prompt-for-file "Export box to..."
                                           :filter (ffc-file-filter ffc)
                                           :filters *foreign-file-filters*
                                           :operation :save

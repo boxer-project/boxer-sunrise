@@ -148,7 +148,8 @@
                            (and (not *automagic-lisp-error-handling*) *debug-errors*))
                        (invoke-debugger c))
                       ((and (not *debug-errors*) (not *automagic-lisp-error-handling*))
-                       (show-error-dialog (format nil "Lisp Error:~A ~%  backtrace: ~%~A"
+                       ;; TODO sgithens Cross platform version of this
+                       #+lispworks (show-error-dialog (format nil "Lisp Error:~A ~%  backtrace: ~%~A"
                                                   c (with-output-to-string (str)
                                                       (dbg::output-backtrace :brief :stream str)
                                                       (format str "~%~%Verbose:~%")

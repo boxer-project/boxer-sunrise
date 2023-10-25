@@ -406,10 +406,10 @@ If the box was not entered with EDIT-BOX, just insert a return."
   :state-variables (*lexical-variables-root* *dynamic-variables-bottom*)
   :before
   (let* ((input (bw::get-boxer-input))
-         (mouse-p (not (or (system:gesture-spec-p input) (boxer::key-event? input)))))
+         (mouse-p (not (or #+lispworks (system:gesture-spec-p input) (boxer::key-event? input)))))
     (multiple-value-bind (name mouse-bp)
                          (if (not mouse-p)
-                           (progn (if (system:gesture-spec-p input)
+                           #+lispworks (progn (if (system:gesture-spec-p input)
                                       (let* ((data (sys::gesture-spec-data input))
                                           (charcode (bw::input-gesture->char-code input))
                                           (charbits (sys:gesture-spec-modifiers input)))

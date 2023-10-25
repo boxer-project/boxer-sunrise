@@ -175,7 +175,7 @@
 
     (gl:bind-texture :texture-2d 0)
     (incf *gl-glyph-texture-count*)
-  (log:debug "~%glyph-texture: ~A  mp: ~A" glyph-texture (mp:get-current-process))
+  #+lispworks (log:debug "~%glyph-texture: ~A  mp: ~A" glyph-texture (mp:get-current-process))
   glyph-texture))
 
 ;;;

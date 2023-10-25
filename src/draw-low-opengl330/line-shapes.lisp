@@ -27,7 +27,7 @@
 ;;;
 
 (defun gl-add-line (device x0 y0 x1 y1 &key (rgb (boxgl-device-pen-color device))
-                                            (pen-size (boxgl-device-pen-size bw::*boxgl-device*)))
+                                            (pen-size (boxgl-device-pen-size device)))
   "Testing line thickness with 2 triangles"
   (unless (and (equal (coerce x0 'single-float) (coerce x1 'single-float)) (equal (coerce y0 'single-float) (coerce y1 'single-float)))
       (cond ((line-stipple device)

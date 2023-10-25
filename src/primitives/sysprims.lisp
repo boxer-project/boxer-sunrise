@@ -428,7 +428,7 @@
    editor
    ("Display the toolbar on the boxer editor window?"))
   (setq bw::*boxer-window-show-toolbar-p* true-or-false)
-  (capi::apply-in-pane-process *boxer-pane* #'bw::update-visible-editor-panes)
+  #+lispworks (capi::apply-in-pane-process *boxer-pane* #'bw::update-visible-editor-panes)
   boxer-eval::*novalue*)
 
 (defboxer-preference bu::boxer-window-show-statusbar (true-or-false)
@@ -437,7 +437,7 @@
    editor
    ("Display the status bar on the boxer editor window?"))
   (setq bw::*boxer-window-show-statusbar-p* true-or-false)
-  (capi::apply-in-pane-process *boxer-pane* #'bw::update-visible-editor-panes)
+  #+lispworks (capi::apply-in-pane-process *boxer-pane* #'bw::update-visible-editor-panes)
   boxer-eval::*novalue*)
 
 (defboxer-preference bu::report-crash (true-or-false)

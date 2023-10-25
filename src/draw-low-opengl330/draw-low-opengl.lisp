@@ -272,7 +272,9 @@
 (defun %flush-port-buffer (&optional (pane *boxer-pane*))
   (update-framerate)
   ; (opengl::rendering-on (pane) (opengl::gl-flush))
-  (opengl::swap-buffers pane))
+  (opengl:rendering-on (pane)
+    (opengl::swap-buffers pane)))
+
 
 (defun string-wid (font-no string)
   (let ((font (find-cached-font font-no)))

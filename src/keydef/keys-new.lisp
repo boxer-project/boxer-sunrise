@@ -392,7 +392,7 @@
 ;; been binding to ctrl. Once we fix Command bindings, perhaps these bindings should be reviewed,
 ;; especially since ctrl-click is often used on MacOS to mimic a right click.
 
-(boxer-eval::defboxer-key bu::mouse-down com-mouse-define-region)
+#+lispworks (boxer-eval::defboxer-key bu::mouse-down com-mouse-define-region)
 
 (boxer-eval::defboxer-key bu::mouse-click com-mouse-expand-box)
 

@@ -122,7 +122,7 @@ Modification History (most recent at top)
   (dolist (x (get-xtns)) (load-extension x)))
 
 (defun get-xtns (&optional (dir (xdir)))
-  (remove-duplicates
+  #+lispworks (remove-duplicates
    (mapcar #'pathname-name
            (directory (make-pathname :directory dir :name "*"
                                      :type #+(and mcl powerpc) "PPC"
@@ -136,13 +136,13 @@ Modification History (most recent at top)
                       #'(lambda (f) (eq (ccl::mac-file-type f) :BOXE))))))
 
 (defun xpath (name &optional (dir (xdir)))
-  (make-pathname :directory dir :name name
+  #+lispworks (make-pathname :directory dir :name name
                  :type #+(and mcl powerpc) "PPC"
                        #+(and mcl (not powerpc)) "68K"
                        #+win32 "bxe"))
 
 (defun load-extension (x)
-  (let ((xpath (xpath x)))
+  #+lispworks (let ((xpath (xpath x)))
     (when (and (probe-file xpath) #+ccl (eq (ccl::mac-file-type xpath) :BOXE))
       (multiple-value-bind (major minor patch version-string version-info)
           (xten-info xpath)
@@ -212,7 +212,7 @@ Modification History (most recent at top)
 ;; returns 3 boxes, currently loaded extensions, the startup list and the list
 ;; of available extensions
 
-(boxer-eval::defboxer-primitive bu::extension-info ()
+#+lispworks  (boxer-eval::defboxer-primitive bu::extension-info ()
   (insure-extension-dirs)
   (let* ((current (mapcar #'boxer-extension-pretty-name *boxer-extensions*))
          (available (append (get-xtns (xdir)) (get-xtns (dxdir))))
@@ -246,7 +246,7 @@ Modification History (most recent at top)
 (defun xname-from-box (box)
   (string-trim '(#\space #\tab #\newline) (box-text-string box)))
 
-(boxer-eval::defboxer-primitive bu::add-extension (x)
+#+lispworks  (boxer-eval::defboxer-primitive bu::add-extension (x)
   (insure-extension-dirs)
   (let ((xstring (xname-from-box x))
         (current (get-xtns))
@@ -264,7 +264,7 @@ Modification History (most recent at top)
                                            "into the \"Extensions\" folder"))))
   boxer-eval::*novalue*)
 
-(boxer-eval::defboxer-primitive bu::remove-extension (x)
+#+lispworks (boxer-eval::defboxer-primitive bu::remove-extension (x)
   (insure-extension-dirs)
   (let ((xstring (xname-from-box x))
         (current (get-xtns)))
@@ -319,7 +319,7 @@ Modification History (most recent at top)
 
 |#
 
-(boxer-eval::defboxer-primitive bu::load-extension (x)
+#+lispworks (boxer-eval::defboxer-primitive bu::load-extension (x)
   (insure-extension-dirs)
   ;(ccl::eval-enqueue `(load-extension ,(xname-from-box x)))
   (load-extension (xname-from-box x))

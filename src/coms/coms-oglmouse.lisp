@@ -267,7 +267,7 @@
   ;(repaint-cursor)
   boxer-eval::*novalue*)
 
-(defboxer-command com-mouse-define-region (&optional (window *boxer-pane*)
+#+lispworks (defboxer-command com-mouse-define-region (&optional (window *boxer-pane*)
                                                      (x (bw::boxer-pane-mouse-x))
                                                      (y (bw::boxer-pane-mouse-y))
                                                      (mouse-bp
@@ -763,7 +763,7 @@
         "Can't Resize the Outermost Box. Resize the Window instead."))
       (t
        ;; mouse grab, interactive loop
-       (multiple-value-bind (box-window-x box-window-y)
+       #+lispworks (multiple-value-bind (box-window-x box-window-y)
                             (xy-position screen-box)
                             (multiple-value-bind (left top right bottom)
                                                  (box-borders-widths box-type screen-box)
@@ -1420,7 +1420,7 @@
     (com-scroll-up-row screen-box)
     (com-scroll-dn-row screen-box))
   ;; do one thing, show it, then pause...
-  (capi::apply-in-pane-process *boxer-pane* #'repaint t)
+  #+lispworks (capi::apply-in-pane-process *boxer-pane* #'repaint t)
   (simple-wait-with-timeout *initial-scroll-pause-time* #'(lambda () (zerop& (mouse-button-state))))
 
   ;; sgithens 2021-03-11 This `if` is a temporary crash fix, as this method keeps getting called when there are
@@ -1566,7 +1566,7 @@
                                                          (no-of-rows (length-in-rows eb)))
                                                     ;; bind these so we dont have to calculate them for each iteration
                                                     ;; of the tracking loop
-                                                    (boxer-window::with-mouse-tracking ((mouse-x x) (mouse-y y))
+                                                    #+lispworks (boxer-window::with-mouse-tracking ((mouse-x x) (mouse-y y))
                                                                                        (declare (ignore mouse-x))
                                                                                        (set-v-scroll-row screen-box
                                                                                                          (min (/ (max 0 (- mouse-y y-offset)) v-working-height) 1)

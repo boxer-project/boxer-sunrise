@@ -25,6 +25,7 @@
                :pngload
                :qbase64
                :quri
+               :serapeum
                :trivial-garbage
                :uiop
                :zip
@@ -51,7 +52,7 @@
                                (:file "freetype-fonts")
                                (:file "draw-low-opengl")))
 
-                 (:file "boxwin/lw-capi/boxwin-330gl")
+                 #+lispworks (:file "boxwin/lw-capi/boxwin-330gl")
 
                  ;; Beginning of `DRAW` module
                  (:file "draw/draw-high-common")
@@ -99,6 +100,9 @@
                  #+lispworks (:file "boxwin/lw-capi/pane-callbacks")
                  #+lispworks (:file "boxwin/lw-capi/boxwin-opengl")
                  #+lispworks (:file "boxwin/lw-capi/clipboard")
+
+                 #+lispworks (:file "boxwin/lw-capi/modern-opengl")
+
                 ;;  (:file "boxwin/lw-capi/hardcopy-lw")
                  (:file "boxwin/mousedoc")
                  (:file "boxwin/boxapp-data")
@@ -175,8 +179,8 @@
                  (:file "compiler/comp")
                  ;; Beginning of `STEPPER` module
                  ;; "The Movie Stepper"
-                 (:file "stepper/stepper")
-                 (:file "stepper/stepper-eval")
+                 #+lispworks (:file "stepper/stepper")
+                 #+lispworks (:file "stepper/stepper-eval")
 
                  ;; Beginning of `FILESYSTEM` module
                  ;; "Saving and Restoring Boxes To/From Files"
@@ -246,14 +250,14 @@
                  (:file "coms/popup")
                  ;; Beginning of `keys` module
                  ;; "Install Commands on Specific Keys"
-                 (:file "keydef/keys-new")
+                 #+lispworks (:file "keydef/keys-new")
                  ;; Beginning of `UTILITIES` module
                  ;; 	   "Various useful tools for Boxer system hacking"
                  (:file "utilities/mcl-utils")
                  ;; Beginning of `printer` module
                  ;; 	   "Utilities for printing out boxes in various ways"
                  ;;  (:file "printer/ps")
-                 (:file "printer/deep-print")
+                 #+lispworks (:file "printer/deep-print")
                  ;; Beginning of `site` modules
                  ;; 	   "Utilities for Site specific customizations"
                  (:file "site/site")

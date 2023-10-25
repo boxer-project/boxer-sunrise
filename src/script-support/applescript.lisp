@@ -60,7 +60,7 @@ close-movie
 
 
 (defun startup-applescript ()
-  (setq *applescript-stream*  (sys:open-pipe nil :direction :io)
+  #+lispworks (setq *applescript-stream*  (sys:open-pipe nil :direction :io)
         *applescript-running?* T))
 
 (defun stop-applescript ()
@@ -136,7 +136,7 @@ close-movie
     (force-output *applescript-stream*))
   (cond ((null rtype) boxer-eval::*novalue*)
         (t
-         (mp:process-wait-local-with-timeout-and-periodic-checks "Applescript Response"
+         #+lispworks (mp:process-wait-local-with-timeout-and-periodic-checks "Applescript Response"
                                                                  *apple-script-response-max-wait-time*
                                                                  *apple-script-response-poll-period*
                                                                  #'(lambda () (listen *applescript-stream*)))

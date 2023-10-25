@@ -99,7 +99,7 @@
   (cond ((eq rate 'bu::normal) *normal-frame-pause-time*)
         ((eq rate 'bu::fastest) 0)
         ((numberp rate) (/  .1 (abs rate)))
-        (t (error "~A is not a legal playback rate"))))
+        (t (error "~A is not a legal playback rate" rate))))
 
 ;; ****stub****
 ;; Note: need to also handle audio only
@@ -238,7 +238,7 @@
 
 ;; here temporarily
 ;; as in option-a-key (a for av ? can't use "v" because it's already taken)
-(boxer-eval::defboxer-key (bu::a-key 4) com-make-av-box)
+#+lispworks (boxer-eval::defboxer-key (bu::a-key 4) com-make-av-box)
 
 ;; Primitives
 (boxer-eval::defboxer-primitive bu::set-av-file ((bu::port-to av-box)

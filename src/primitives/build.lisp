@@ -85,8 +85,8 @@ There are several parts to this file.
   (forms nil)
   (eval-list nil))
 
-(defsubst cbo-code (x) (compiled-boxer-object-code x))
-(defsubst cbo-args (x) (compiled-boxer-object-args x))
+#+lispworks (defsubst cbo-code (x) (compiled-boxer-object-code x))
+#+lispworks (defsubst cbo-args (x) (compiled-boxer-object-args x))
 
 ;;;; Formal Arg Objects
 

@@ -243,7 +243,7 @@ Modification History (most recent at top)
               (swap-graphics-buffers)
               ;; loop
               (let ((current-y 0) (current-height 0))
-                (boxer-window::with-mouse-tracking ((mouse-x real-x) (mouse-y real-y))
+                #+lispworks (boxer-window::with-mouse-tracking ((mouse-x real-x) (mouse-y real-y))
                   (let ((local-x (- mouse-x real-x)) (local-y (- mouse-y real-y)))
                     (if (and (< 0 local-x mwid) (< 0 local-y mhei))
                       ;; this means we are IN the popup

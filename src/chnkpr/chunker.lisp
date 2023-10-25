@@ -513,7 +513,7 @@ Oldness and Oldossity.....
                                           :adjustable t
                                           :element-type
                                           #+(or excl lucid) 'string-char
-                                          #+(or lispworks mcl symbolics) 'character)))
+                                          #+(or lispworks mcl symbolics sbcl ecl) 'character)))
 
 (defun chunk-string ()
   (let ((cs (or (pop *chunk-strings*)
@@ -522,7 +522,7 @@ Oldness and Oldossity.....
                             :adjustable t
                             :element-type
                             #+(or excl lucid) 'string-char
-                            #+(or lispworks mcl symbolics) 'character))))
+                            #+(or lispworks mcl symbolics sbcl ecl) 'character))))
     (setf (fill-pointer cs) 0)
     cs))
 

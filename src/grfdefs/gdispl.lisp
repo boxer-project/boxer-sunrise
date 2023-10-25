@@ -244,7 +244,7 @@ Modification History (most recent at the top)
   (defun get-graphics-command-descriptor (opcode)
     (let ((gc (gethash opcode *graphics-commands*)))
       (make-graphics-command-descriptor :name (slot-value gc 'name)
-                                        :slot (slot-value gc 'command-args)
+                                        :slots (slot-value gc 'command-args)
                                         :transform-template (slot-value gc 'transform-template))
     ))
 )
@@ -602,10 +602,10 @@ Modification History (most recent at the top)
 
 ;;; the foreground color is usually undefined until boxer startup time
 (def-redisplay-initialization
+  (progn
   (setq *initial-graphics-state-current-pen-color* *foreground-color*
-        *graphics-state-current-pen-color* *foreground-color*))
+        *graphics-state-current-pen-color* *foreground-color*)
 
-(def-redisplay-initialization ; :turtle-shape
   (setq *default-graphics-object-shape*
         (let ((%graphics-list (make-turtle-shape 8))
               (*graphics-command-recording-mode* ':boxer))
@@ -632,7 +632,7 @@ Modification History (most recent at the top)
           (record-boxer-graphics-command-line-segment
            0.0 (* 2 (/ *turtle-height* 3))
            (- *turtle-half-base*) (- (/ *turtle-height* 3.0)))
-          %graphics-list)))
+          %graphics-list))))
 
 ;;; puts a graphics list into the initial state by issuing
 ;;; state changing commands when neccessary

@@ -43,8 +43,8 @@
      other possible fixes. Hopefully this will be removed in the near future and the
      asdf:load-system call used instead.
     (asdf:load-system :cl-freetype2)"
-  (let ((freetype-deps-dir (make-pathname
-                              :host (pathname-host (lw:lisp-image-name))
+  #+lispworks (let ((freetype-deps-dir (make-pathname
+                              :host (pathname-host #+lispworks (lw:lisp-image-name))
                               :directory (append contents-dir '("PlugIns"
                                                                         #+(and lispworks8 arm64 mac) "lw8-macos-arm"
                                                                         #+(and lispworks8 x86-64 mac) "lw8-macos-x86"
@@ -86,8 +86,8 @@
     (log:info "Starting boxer")
     ;; Here we are adding the Resources/libs directory of the application bundle
     ;; which will libfreetype.6.dylib, as well as any other *.dylib and *.dll files.
-    (pushnew
-        (make-pathname :host (pathname-host (lw:lisp-image-name))
+    #+lispworks (pushnew
+        (make-pathname :host (pathname-host #+lispworks (lw:lisp-image-name))
                        :directory(append (base-install-folder)
                                          '("Frameworks"
                                            #+(and lispworks8 arm64) "lw8-macos-arm")))
@@ -96,24 +96,24 @@
 
     (load-compiled-freetype-fasl-files)
 
-    (setf *resources-dir* (make-pathname
-                                                  :host (pathname-host (lw:lisp-image-name))
+    #+lispworks (setf *resources-dir* (make-pathname
+                                                  :host (pathname-host #+lispworks (lw:lisp-image-name))
                                                   :directory (append (base-install-folder) '("Resources"))))
 
-    (setf *shaders-dir* (make-pathname
-                                                  :host (pathname-host (lw:lisp-image-name))
+    #+lispworks (setf *shaders-dir* (make-pathname
+                                                  :host (pathname-host #+lispworks (lw:lisp-image-name))
                                                   :directory (append (base-install-folder) '("PlugIns" "shaders"))))
 
     ;; Adding the fonts directory based on whereever this MacOS application happens to
     ;; be running from.
-    (setf *capogi-font-directory* (make-pathname
-                                                  :host (pathname-host (lw:lisp-image-name))
+    #+lispworks (setf *capogi-font-directory* (make-pathname
+                                                  :host (pathname-host #+lispworks (lw:lisp-image-name))
                                                   :directory (append (base-install-folder) '("Resources" "Fonts"))))
 
     ;; See the above comments on freetype, but we are manually loading our code for it
     ;; here, because the freetype package is not yet declared when we build our system.
-    (load (make-pathname
-            :host (pathname-host (lw:lisp-image-name))
+    #+lispworks (load (make-pathname
+            :host (pathname-host #+lispworks (lw:lisp-image-name))
             :directory (append (base-install-folder) '("PlugIns"))
             :name "freetype-fonts" :type "lisp"))
 

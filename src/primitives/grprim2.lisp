@@ -332,7 +332,7 @@
 
 ;;; add throttling, i.e. dont record movement if there hasn't been any (or enough)
 (defsprite-function bu::follow-mouse () (sprite turtle)
-  (let ((screen-box (or (car (fast-memq (bp-screen-box *mouse-bp*)
+  #+lispworks (let ((screen-box (or (car (fast-memq (bp-screen-box *mouse-bp*)
                                         ;; is *mouse-bp* valid ?
                                         (get-visible-screen-objs
                                          (slot-value turtle 'assoc-graphics-box))))

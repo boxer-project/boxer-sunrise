@@ -1262,11 +1262,11 @@ Modification History (most recent at top)
     (values)))
 
 ;;; spread it around
-(import 'salvage-boxer-world (find-package 'user))
-(import 'salvage-boxer-world (find-package :boxer-window))
-(import 'salvage-boxer-world (find-package :boxer-eval))
+#+lispworks (import 'salvage-boxer-world (find-package 'user))
+#+lispworks (import 'salvage-boxer-world (find-package :boxer-window))
+#+lispworks (import 'salvage-boxer-world (find-package :boxer-eval))
 ;; might as well be paranoid...
-(import 'salvage-boxer-world (find-package :boxer-user))
+#+lispworks (import 'salvage-boxer-world (find-package :boxer-user))
 
 
 

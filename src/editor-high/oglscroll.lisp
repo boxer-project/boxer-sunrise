@@ -806,11 +806,11 @@ Modification History (most recent at top)
                                               ;; the horizontal scrolling elevator which is where the new scrolling location is
                                               ;; calculated from
                                               (declare (ignore box-window-y))
-                                                (ignore-errors
+                                                #+lispworks (ignore-errors
                                                   (let ((x-offset (+ box-window-x h-min-x))
                                                         (h-working-width (- h-max-x h-min-x)))
                                                     (with-mouse-tracking ((mouse-x x) (mouse-y y))
-                                                      (declare (ignore mouse-y))
+                                                      ; (declare (ignore mouse-y))
                                                       (setf (slot-value screen-box 'scroll-x-offset)
                                                             (- (round (* (min (/ (max 0 (- mouse-x x-offset)) h-working-width) 1)
                                                                         (- (slot-value screen-box 'max-scroll-wid)
