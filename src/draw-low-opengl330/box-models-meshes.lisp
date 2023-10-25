@@ -82,7 +82,7 @@
     (enable-gl-objects bw::*boxgl-device* :program (shader-program (dashed-lines-shader bw::*boxgl-device*))
                                           :vao     (mesh-vao mesh)
                                           :buffer  (mesh-vbo mesh))
-    (gl:uniformf (gl:get-uniform-location (shader-program (dashed-lines-shader bw::*boxgl-device*)) "u_resolution")
+    (gl:uniformf (gl:get-uniform-location (shader-program (dashed-lines-shader bw::*boxgl-device*)) "resolution")
                  (coerce (aref res 0) 'single-float) (coerce (aref res 1) 'single-float))
     (gl:draw-arrays :triangles 0 (/ (mesh-pos mesh) 7))
     (unenable-shader-programs bw::*boxgl-device*))

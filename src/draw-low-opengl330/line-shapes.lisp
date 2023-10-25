@@ -33,7 +33,7 @@
       (cond ((line-stipple device)
           (enable-gl-shader-program device (dashed-lines-shader device))
           (let ((res (resolution)))
-            (gl:uniformf (gl:get-uniform-location (shader-program (dashed-lines-shader device)) "u_resolution")
+            (gl:uniformf (gl:get-uniform-location (shader-program (dashed-lines-shader device)) "resolution")
                           (coerce (aref res 0) 'single-float) (coerce (aref res 1) 'single-float))))
           (t
           (enable-gl-shader-program device (lines-shader device))))

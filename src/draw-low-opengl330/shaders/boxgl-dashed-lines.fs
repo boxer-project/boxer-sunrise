@@ -2,11 +2,10 @@
 
 flat in vec3 startPos;
 in vec3 vertPos;
-
 in vec4 theColor;
 out vec4 FragColor;
 
-uniform vec2 u_resolution;
+uniform vec2 resolution;
 
 void main()
 {
@@ -14,7 +13,7 @@ void main()
   float u_dashSize = 3.0;
   float u_gapSize = 3.0;
 
-  vec2  dir  = (vertPos.xy-startPos.xy) * u_resolution/2.0;
+  vec2  dir  = (vertPos.xy-startPos.xy) * resolution/2.0;
   float dist = length(dir);
 
   if (fract(dist / (u_dashSize + u_gapSize)) > u_dashSize/(u_dashSize + u_gapSize))
