@@ -50,7 +50,7 @@ Modification History (most recent at top)
 
 (in-package :boxer)
 
-(defvar *boxer-version* "3.4.14 2023-09-12")
+(defvar *boxer-version* "3.4.15 2023-10-28")
 
 (defun boxer-component-version ()
   "Returns the current semver version of boxer based on it's asdf configuration."
@@ -65,7 +65,7 @@ Modification History (most recent at top)
 
   TODO: What was the passed in box argument used for previously?"
   (concatenate 'string "Boxer version " (boxer-component-version)
-               " BSD License OpenGL 3.2 Shaders Release"))
+               " BSD License openGL 3.2" #+macosx " macOS"  #+win32 " windows Experimental"))
 
 (defvar *resources-dir* nil
   "This is the directory on disc where we can expect to find things like the Fonts and Images directories.")
