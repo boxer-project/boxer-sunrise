@@ -551,7 +551,10 @@
                               ((:button-2 :motion :control :meta) boxer-track-mouse-handler)
                               ((:button-3 :motion :control :meta) boxer-track-mouse-handler)
                               ;; what are keys ?
-                              ((:key :press)  boxer-key-handler)
+                              ;; 2023-10-28 There are some oddities between macOS and windows with all of this.
+                              ;; shifted keyed don't get through here on windows so we're sticking to the
+                              ;; gesture-spec for windows.
+                              #-win32 ((:key :press)  boxer-key-handler)
                               ;; We are binding this empty gesture spec hander... because if we don't then non graphic
                               ;; keys like return, backspace, and arrows make a beeping sound.  sgithens - 2021-11-06
                               (:gesture-spec gesture-spec-handler)
@@ -1168,7 +1171,7 @@ in macOS."
   (declare (ignore w x y))
   ;; Currently we are handling everything with the low level key-handler, but binding this
   ;; is still necessary to avoid system beeps for some reason on Lispworks...
-  ; (handle-gesture final-gesture)
+  #+win32 (handle-gesture gesture)
   )
 
 (defun get-boxer-input (&optional (window *boxer-pane*))
