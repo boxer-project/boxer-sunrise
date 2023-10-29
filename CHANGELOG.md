@@ -1,5 +1,80 @@
 # Change Log
 
+## 3.4.15 2023-10-28
+
+This release is largely cleanup from the last build, fixing a few annoying bugs introduced that were causing
+crashes, such as fewing shrunk boxes that had cached boxtops still using old graphics list commands.
+Other minor fixes include color transparency for circles, ellipses, and arcs in turtle boxes, and framebuffer
+improvements for Intel.
+
+Of notable mention for this build is a good deal of cleanup that allows us to now load the entire code base
+into both ECL and SBCL, and passing some of the lisp unit tests. This doens't include any UI windows yet,
+but is a major first step toward portability and moving towards an integrated future (such as running in a
+web browser). Additionally, this month we fixed the Windows build and have generated a delivered
+executable for it again. Do note this is extremely experimental, many obvious things are broken (such as
+numerous places with image support), but it's likely it should be up to grade by year end.
+
+Lots of other under the covers refactoring includes continued cleanup of the older graphics commands
+macros for turtle primitives to streamline future graphics works and effects.
+
+### Full Change Log
+
+sunrise-69 Cleaning up extents calculations and graphics-command macros
+  - Initial removal of :extents-form in preference of :boxer-extents-form
+  - Removing turtle translators.
+  - Removing process-graphics-command-marker and translate-and-scale-graphics-command machinery.
+  - Cleaning up graphics commands by adding defclass graphics-command and defmacro defdraw-graphics-command
+  - Removing *graphics-command-translation-table* and *graphics-command-boxer->window-translation-ta
+ble* along with their related macros and functions.
+  - Moving gc list copying over the graphics-command class
+  - Moving extents functions to new graphics-command defclass
+  - Removing *graphics-command-dispatch-table* and related machinery, as well as remaining copy-post-processin
+g references.
+  - Moving load-form code over to graphics-command class from *graphics-command-loader-dispatch-table*
+  - Moving dump-form code over to graphics-command class from *graphics-command-dumper-dispatch-table*
+  - Moving deallocate-form code over to graphics-command class from *graphics-command-deallocation-table*
+  - Removing unused graphics-command-slot-offset, graphics-command-values
+  - Removing *graphics-command-binding-values-table*, graphics-command-slot-offset, graphics-command-values
+  - Removing *graphics-command-binding-values-table*, graphics-command-slot-offset, graphics-command-values
+  - Removing *graphics-command-descriptor-table* and related functions.
+  - Moving *graphics-command-sprite-command-translation-table* functionality to defclass graphics-command.
+  - Removing *graphics-command-name-opcode-alist*
+  - Moving recording defuns to boxer-graphics-command.lisp
+
+sunrise-11 Fixing windows support
+  - For some reason the opengl-pane members need to be redefined on the subclass boxer-lw-opengl-canvas
+  - #-win32 Some opengl operations that still need fix ups
+  - Disambiguating u_resolution uniform which was breaking on win32
+  - A few windows fixes in the delivery paths and keyboard handling
+
+sunrise-20 Common Lisp platform cleanup
+  - Removing constant usage from lispworks opengl to cl-opengl symbols.
+  - Temporarily adding #+lispworks to several things to get loading and some tests to run on ECL, SBCL
+
+bugs-188 Fixing transparency for shader shapes: circle, ellpse, arcs
+
+bugs-191 Removing the Repaint item from the Help menu for now
+
+cleanup
+  - Removing commented out stuff from resize-graphics-sheet
+
+refactor Moving repaint-pass-2 methods to their own file
+
+minor-fix
+  - Fixing up top-x-intercept call arguments.
+  - Adding check in boxer-playback-graphics-list for old <32 commands that are lurking in cached boxtops.
+  - Framebuffer fixes for macOS/intel
+    - Defaults for ARM didn't cause issue. Adding stencil-buffer to glClear calls. Wrapping
+      resize framebuffer updates in the graphics-canvas enable/disable
+  - Always updating mouse-status x and y coordinates to fix rendering hotspot corners.
+  - Always updating mouse-status x and y coordinates to fix rendering hotspot corners.
+
+the-attic
+  - Removing defmethod synchronize-graphics-state-for-erase and usage in set-pen with erase-color.
+  - Obsoleting prims pe and penerase
+  - Removing :command-body from graphics commands.
+  - Removing unused ensure-legal-window-coordinate
+
 ## 3.4.14 2023-09-12
 
 This alpha release fixes and cleans up numerous items in the turtle graphics and sprites layer, along with
