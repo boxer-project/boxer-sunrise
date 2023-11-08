@@ -111,17 +111,22 @@
 (defmethod repaint-pass-2-sr ((self screen-row))
   (with-slots (x-offset y-offset wid hei actual-obj)
     self
-    (with-drawing-inside-region (x-offset y-offset wid hei)
+    (when actual-obj
+    ;; (with-drawing-inside-region (x-offset y-offset wid hei)
+    (with-origin-at (x-offset y-offset)
       (when (closet-row? actual-obj (superior-box actual-obj))
         ;; this should get the inner width from the superior box
         (with-pen-color (*closet-color*) (draw-rectangle wid hei 0 0)))
       (repaint-inferiors-pass-2-sr self)
-      (got-repainted self))))
+      (got-repainted self)
+      )
+      )))
 
 (defmethod repaint-pass-2-sb ((self screen-box))
   (with-slots (x-offset y-offset wid hei actual-obj box-type)
     self
     (with-drawing-inside-region (x-offset y-offset wid hei)
+    ;; (with-origin-at (x-offset y-offset)
       (maintaining-pen-color
        ;; need this because we may be in the middle of a colored font run
        (%set-pen-color *foreground-color*)

@@ -345,7 +345,8 @@
                               #+win32 '(:rgba t :depth nil :double-buffered t)
                               ;#-linux '(:rgba t :depth nil :double-buffered t :aux 1)
                               ;#+linux '(:rgba t :depth nil :double-buffered t ) ;:aux 1) TODO This aux option crashes LW on linux
-               :input-model '(((:button-1 :press) boxer-click-1-handler)
+               :input-model '(
+                ((:button-1 :press) boxer-click-1-handler)
                               ((:button-2 :press) boxer-click-2-handler)
                               ((:button-3 :press) boxer-click-3-handler)
 
@@ -531,25 +532,25 @@
                               ((:button-3 :release :hyper) boxer-mouse-release-3-handler)
 
                               ;; updates the mouse tracking vars
-                              (:motion boxer-track-and-doc-mouse-handler)
+                              ;; (:motion boxer-track-and-doc-mouse-handler)
 
-                              ;; have to track while the mouse is down too...
-                              ((:button-1 :motion) boxer-track-mouse-handler)
-                              ((:button-2 :motion) boxer-track-mouse-handler)
-                              ((:button-3 :motion) boxer-track-mouse-handler)
+                              ;; ;; have to track while the mouse is down too...
+                              ;; ((:button-1 :motion) boxer-track-mouse-handler)
+                              ;; ((:button-2 :motion) boxer-track-mouse-handler)
+                              ;; ((:button-3 :motion) boxer-track-mouse-handler)
 
-                              ;; track shifted mouse down...
-                              ((:button-1 :motion :control) boxer-track-mouse-handler)
-                              ((:button-2 :motion :control) boxer-track-mouse-handler)
-                              ((:button-3 :motion :control) boxer-track-mouse-handler)
+                              ;; ;; track shifted mouse down...
+                              ;; ((:button-1 :motion :control) boxer-track-mouse-handler)
+                              ;; ((:button-2 :motion :control) boxer-track-mouse-handler)
+                              ;; ((:button-3 :motion :control) boxer-track-mouse-handler)
 
-                              ((:button-1 :motion :meta) boxer-track-mouse-handler)
-                              ((:button-2 :motion :meta) boxer-track-mouse-handler)
-                              ((:button-3 :motion :meta) boxer-track-mouse-handler)
+                              ;; ((:button-1 :motion :meta) boxer-track-mouse-handler)
+                              ;; ((:button-2 :motion :meta) boxer-track-mouse-handler)
+                              ;; ((:button-3 :motion :meta) boxer-track-mouse-handler)
 
-                              ((:button-1 :motion :control :meta) boxer-track-mouse-handler)
-                              ((:button-2 :motion :control :meta) boxer-track-mouse-handler)
-                              ((:button-3 :motion :control :meta) boxer-track-mouse-handler)
+                              ;; ((:button-1 :motion :control :meta) boxer-track-mouse-handler)
+                              ;; ((:button-2 :motion :control :meta) boxer-track-mouse-handler)
+                              ;; ((:button-3 :motion :control :meta) boxer-track-mouse-handler)
                               ;; what are keys ?
                               ;; 2023-10-28 There are some oddities between macOS and windows with all of this.
                               ;; shifted keyed don't get through here on windows so we're sticking to the
@@ -565,9 +566,11 @@
               ;  :resize-callback 'resize-handler
                ;; The following 4 params are for scrolling gestures (two finger scroll, mouse wheels, etc)
                :coordinate-origin :fixed-graphics
-               :vertical-scroll :without-bar
-               :horizontal-scroll :without-bar
+              ;;  :vertical-scroll :without-bar
+              ;;  :horizontal-scroll :without-bar
                :scroll-callback 'scroll-handler
+               :vertical-scroll t
+               :horizontal-scroll t
 
                :visible-min-width  *boxer-pane-minimum-width*
                :visible-min-height *boxer-pane-minimum-height*
@@ -1304,7 +1307,34 @@ in macOS."
      (setq *suppress-expose-handler* nil
            *suppressed-actions* nil)))
 
+(defvar *test-h-scroll-amt* 0)
+(defvar *test-v-scroll-amt* 0)
+
 (defun scroll-handler (output-pane direction scroll-operation scroll-amount &key interactive)
+  "Prototyping new scroll handler"
+  (when (equal direction :horizontal)
+    (setf *test-h-scroll-amt* (- scroll-amount))
+    (capi:set-horizontal-scroll-parameters output-pane :slug-position scroll-amount))
+  (when (equal direction :vertical)
+    (setf *test-v-scroll-amt* (- scroll-amount))
+    (capi:set-vertical-scroll-parameters output-pane :slug-position scroll-amount))
+
+  (format t "~%6 new amts: hscroll: ~A vscroll: ~A" *test-h-scroll-amt* *test-v-scroll-amt*)
+  (format t "~%scroll-hander: direction: ~A scroll-operation: ~A scroll-amount: ~A interactive: ~A"
+    direction scroll-operation scroll-amount interactive)
+  (format t "~%horizontal scroll params: ~A" (capi:get-horizontal-scroll-parameters output-pane))
+  (format t "~%vertical scroll params: ~A" (capi:get-vertical-scroll-parameters output-pane))
+  (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*) (boxer::create-transform-matrix *test-h-scroll-amt* *test-v-scroll-amt*))
+  ;; (setf (boxer::boxgl-device-ortho-matrix bw::*boxgl-device*)
+        ;; (boxer::create-ortho-matrix width height)
+        ;; (let ((ortho (3d-matrices:mortho *test-h-scroll-amt* (sheet-inside-width output-pane) (sheet-inside-height output-pane) *test-v-scroll-amt* -1.0 1.0)))
+    ;; (3d-matrices:marr4 ortho))
+        ;; )
+  (boxer::update-matrices-ubo bw::*boxgl-device*)
+  (boxer::repaint)
+)
+
+(defun scroll-handler-current (output-pane direction scroll-operation scroll-amount &key interactive)
   "Scrolls the screen box that the mouse is in based on the direction of the scrolling gestures from
    a trackpad or mouse."
   ;; We need to do a bit more work to support gesture scrolling during evalution to prevent locking

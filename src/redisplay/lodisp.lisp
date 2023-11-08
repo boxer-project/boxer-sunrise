@@ -300,11 +300,32 @@ Modification History (most recent at top)
 (defmethod screen-cha-cha-no ((self screen-row) cha)
   (sv-place cha (slot-value self 'screen-chas)))
 
-(defmethod screen-row-at-row-no ((self screen-box) row-no)
-  (when (<& row-no
-            (storage-vector-active-length
-             (slot-value self 'screen-rows)))
-    (sv-nth row-no (slot-value self 'screen-rows))))
+(defmethod screen-row-at-row-no ((self screen-box) row-no &optional actual-obj)
+  (let ((togo nil))
+    (cond
+      ((< row-no (storage-vector-active-length (slot-value self 'screen-rows)))
+       (setf togo (sv-nth row-no (slot-value self 'screen-rows)))
+       (unless togo
+         (setf togo (make-instance 'screen-row))
+         (re-init togo actual-obj)
+        ;;  (setf (screen-box togo) actual-obj)
+         (sv-insert-at (slot-value self 'screen-rows) row-no togo))
+      )
+      (t ;; we'll need to increase the vector length
+       (resize-storage-vector (screen-rows self) (1+ row-no))
+       (setf togo (make-instance 'screen-row))
+       (re-init togo actual-obj)
+      ;;  (setf (screen-box togo) actual-obj)
+       (sv-insert-at (slot-value self 'screen-rows) row-no togo)
+      ))
+    togo
+    )
+
+  ;; (when (< row-no
+  ;;          (storage-vector-active-length
+  ;;           (slot-value self 'screen-rows)))
+  ;;   (sv-nth row-no (slot-value self 'screen-rows)))
+    )
 
 (defmethod screen-row-row-no ((self screen-box) row)
   (sv-place row (slot-value self 'screen-rows)))
