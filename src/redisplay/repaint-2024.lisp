@@ -66,6 +66,38 @@
             first-inf-y-offset 0))
     (values wid hei)))
 
+(defmethod internal-dimensions ((self graphics-screen-box) &optional
+                                                           (first-inf-x-offset 0) (first-inf-y-offset 0) ignore)
+  (let* ((graphics-sheet (graphics-sheet (screen-obj-actual-obj self)))
+         (desired-wid (graphics-sheet-draw-wid graphics-sheet))
+         (desired-hei (graphics-sheet-draw-hei graphics-sheet)))
+    ;; first make-sure that there is a screen object for the graphics sheet
+    (when (not (graphics-screen-sheet? (screen-sheet self)))
+      (let ((screen-sheet (allocate-screen-sheet-for-use-in graphics-sheet
+                                                            self)))
+        (set-screen-sheet self screen-sheet)))
+    (let ((screen-sheet (screen-sheet self)))
+      ;; now adjust the slots of the graphics-screen-sheet
+      (unless (= first-inf-x-offset
+                 (graphics-screen-sheet-x-offset screen-sheet))
+        (set-graphics-screen-sheet-x-offset screen-sheet first-inf-x-offset))
+      (unless (= first-inf-y-offset
+                 (graphics-screen-sheet-y-offset screen-sheet))
+        (set-graphics-screen-sheet-y-offset screen-sheet
+                                            first-inf-y-offset))
+      (setf (graphics-screen-sheet-actual-obj screen-sheet) graphics-sheet))
+    ;; make sure we have the Right graphics-sheet
+    (unless (eq graphics-sheet
+                (graphics-screen-sheet-actual-obj (screen-sheet self)))
+      (setf (graphics-screen-sheet-actual-obj (screen-sheet self))
+            graphics-sheet)
+      )
+    ;; error check, remove this SOON !!!!!!!
+    (IF (NOT (GRAPHICS-SCREEN-SHEET? (SCREEN-ROWS SELF)))
+        (BARF "The object ~S, inside of ~S is not a GRAPHICS-SHEET. "
+              (SCREEN-ROWS SELF) SELF)
+        (VALUES desired-wid desired-hei))))
+
 (defmethod internal-dimensions ((self screen-box) &optional
                                                   (first-inf-x-offset 0) (first-inf-y-offset 0) (scroll-to-inf nil))
   "This is like repaint inferiors
@@ -114,13 +146,14 @@
                       (values infs-new-wid infs-new-hei nil nil)))
                    ;; Step
                    (setf (slot-value inf-screen-obj 'actual-obj) inf-actual-obj)
+                   (setf (screen-box inf-screen-obj) self)
                    ;;  (break "what...")
                    (set-screen-obj-offsets inf-screen-obj inf-x-offset inf-y-offset)
                    ;; fixing this up now...
                    (multiple-value-bind (row-width row-height)
                      (dimensions inf-screen-obj)
                      (setf inf-y-offset (+ inf-y-offset row-height)
-                           infs-new-wid (+ infs-new-wid row-width)
+                           infs-new-wid (max infs-new-wid row-width)
                            infs-new-hei (+ infs-new-hei row-height)))
                  ))))))))
 
