@@ -162,15 +162,31 @@
     (let ((new-box-type (class-name (class-of actual-obj)))
           (new-display-style (display-style actual-obj))
           (boxtop (boxtop actual-obj)))
+      (format t "~% dimension screen-box: new-box-type: ~A new-display-style: ~A" new-box-type new-display-style)
       (cond ((and (eq new-display-style :supershrunk)
                   (not (eq self *outermost-screen-box*)))
              ;; Supershrunk
-            )
+             (multiple-value-bind (sswid sshei)
+                                  (super-shrunk-size)
+                                  (set-display-style self :supershrunk)
+                                  (setf wid sswid hei sshei)
+                                  (format t "~% Case supershrunk: wid: ~A hei: ~A" wid hei)
+                                  ;; make sure to punt the inf screen objs or else they may try
+                                  ;; and redisplay themselves (like after change-graphics)
+                                  ;; (unless (graphics-screen-box? self)
+                                  ;;   (rp1-sb-punt-extra-screen-objs self (first-screen-row self)))
+                                    ))
        ((and (eq new-display-style :shrunk)
               (not (eq self *outermost-screen-box*))
               (not (null boxtop)))
-        ;; Shrunk
-        )
+        ;; If there is a boxtop
+        (set-display-style self :shrunk)
+        (multiple-value-bind (btwid bthei) (boxtop-size boxtop actual-obj)
+                             (setf wid btwid hei bthei)
+                             (format t "~% Case Shrunk: wid: ~A hei: ~A" wid hei)
+                            ;;  (unless (graphics-screen-box? self)
+                            ;;    (rp1-sb-punt-extra-screen-objs self (first-screen-row self)))
+                               ))
        (t
          ;; What if this is just :shrunk?
          (when (eq (display-style self) :supershrunk)
@@ -187,6 +203,7 @@
                (multiple-value-bind (fixed-wid fixed-hei) (fixed-size actual-obj)
                  (setf wid fixed-wid
                        hei fixed-hei)))
+            (format t "~% Case regular: wid: ~A hei: ~A" wid hei)
           )
        )))
     (values wid hei)))

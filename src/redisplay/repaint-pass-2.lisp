@@ -59,11 +59,20 @@
                 (chas-array-fds (chas-array (slot-value self 'actual-obj))))))
 
 (defmethod repaint-inferiors-pass-2-sb ((self screen-box))
-  (with-slots (wid hei box-type screen-rows scroll-x-offset scroll-y-offset)
+  (with-slots (wid hei box-type screen-rows scroll-x-offset scroll-y-offset actual-obj)
     self
     (multiple-value-bind (il it ir ib)
                          (box-borders-widths box-type self)
-                         (with-clipping-inside (il it (- wid il ir) (- hei it ib))
+                         (format t
+"~%with-clipping-inside name: ~A x: ~A y: ~A wid: ~A hei: ~A
+                        h-scroll-amt: ~A v-scroll-amt: ~A
+                        new-x: ~A new-y: ~A "
+                           (name actual-obj) il it (- wid il ir) (- hei it ib)
+                           bw::*test-h-scroll-amt* bw::*test-v-scroll-amt*
+                           (+ it bw::*test-v-scroll-amt*)
+                           (+ il bw::*test-h-scroll-amt*))
+                        ;;  (with-clipping-inside (il it (- wid il ir) (- hei it ib))
+                         (with-clipping-inside ((+ il bw::*test-h-scroll-amt*) (+ it bw::*test-v-scroll-amt*) (- wid il ir) (- hei it ib))
                            ;; The clipping and rescaling for these methods is similar to
                            ;; the clipping and rescaling for the other redisplay-pass-1
                            ;; and redisplay-pass-2 methods, except that here the region
@@ -123,10 +132,14 @@
       )))
 
 (defmethod repaint-pass-2-sb ((self screen-box))
+  (multiple-value-bind (x-pos y-pos) (xy-position self)
+    (format t "~%2repain-pass-2-sb xy-position: x: ~A y: ~A" x-pos y-pos)
   (with-slots (x-offset y-offset wid hei actual-obj box-type)
     self
-    (with-drawing-inside-region (x-offset y-offset wid hei)
-    ;; (with-origin-at (x-offset y-offset)
+    ;; original works! (with-drawing-inside-region (x-offset y-offset wid hei)
+    ;; (with-drawing-inside-region ((+ x-offset bw::*test-h-scroll-amt*) (+ y-offset bw::*test-v-scroll-amt*) wid hei)
+    (with-origin-at (x-offset y-offset)
+      ;; (with-clipping-inside ((+ x-pos bw::*test-h-scroll-amt*) (+ y-pos bw::*test-v-scroll-amt*) wid hei)
       (maintaining-pen-color
        ;; need this because we may be in the middle of a colored font run
        (%set-pen-color *foreground-color*)
@@ -165,7 +178,7 @@
             ;; draw any scroll info no
             (draw-scroll-info self)
             ;; Now deal with the Borders,
-            (box-borders-draw box-type self))))))
+            (box-borders-draw box-type self))))))) ;)
   ;; Make a note of the fact that this screen box has
   ;; been redisplayed (pass-1 and pass-2 complete).
   (got-repainted self))
@@ -185,8 +198,9 @@
                                                                             (graphics-sheet-draw-wid graphics-sheet)))
                                                          (inner-height (min (- (screen-obj-hei self) it ib)
                                                                             (graphics-sheet-draw-hei graphics-sheet))))
-                                                     (with-drawing-inside-region (x y inner-width inner-height)
-                                                       (with-turtle-clipping (inner-width inner-height)
+                                                    ;;  (with-drawing-inside-region (x y inner-width inner-height)
+                                                     (with-origin-at (x y)
+                                                      ;;  (with-turtle-clipping (inner-width inner-height)
                                                          ;; first handle the background or video if there is any
                                                          (cond ((not (null av-info))
                                                                 (draw-current-av-info av-info 0 0
@@ -216,7 +230,7 @@
                                                                               pixmap 0 0 0 0)))
                                                          ;; then handle any sprite graphics...
                                                          (unless (null (graphics-sheet-graphics-list graphics-sheet))
-                                                           (redisplay-graphics-sheet-sprites graphics-sheet self)))))))))
+                                                           (redisplay-graphics-sheet-sprites graphics-sheet self)))))))) ;)
 
 ;;;; Screen Sprites....
 
