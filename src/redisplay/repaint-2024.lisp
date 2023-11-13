@@ -194,11 +194,12 @@
          (when (neq box-type new-box-type) (setq box-type new-box-type))
            (multiple-value-bind (l-border-wid t-border-wid r-border-wid b-border-wid)
                                 (box-borders-widths new-box-type self)
-
-             (multiple-value-bind (internal-wid internal-hei)
-                                  (internal-dimensions self l-border-wid t-border-wid)
-               (setf wid (+ internal-wid l-border-wid r-border-wid)
-                     hei (+ internal-hei t-border-wid b-border-wid)))
+             (multiple-value-bind (min-wid min-hei)
+                                  (box-borders-minimum-size new-box-type self)
+               (multiple-value-bind (internal-wid internal-hei)
+                                    (internal-dimensions self l-border-wid t-border-wid)
+                 (setf wid (max min-wid (+  internal-wid l-border-wid r-border-wid))
+                       hei (max min-hei (+ internal-hei t-border-wid b-border-wid)))))
              (when (fixed-size? actual-obj)
                (multiple-value-bind (fixed-wid fixed-hei) (fixed-size actual-obj)
                  (setf wid fixed-wid
@@ -220,18 +221,4 @@
     (capi:set-horizontal-scroll-parameters bw::*boxer-pane*
       :max-range (+ 40 (screen-obj-wid outer-screen-box)) :min-range 0)
     (capi:set-vertical-scroll-parameters bw::*boxer-pane*
-      :max-range (+ 40 (screen-obj-hei outer-screen-box)) :min-range 0)
-    ;; (opengl:rendering-on (*boxer-pane*)
-    ;;   ;; (resize-handler canvas x y wid hei)
-    ;;   ;; (capi:)
-    ;;   (capi:set-horizontal-scroll-parameters bw::*boxer-pane* :max-range (screen-obj-wid outer-screen-box))
-    ;;   (capi:set-vertical-scroll-parameters bw::*boxer-pane* :max-range (screen-obj-hei outer-screen-box))
-      ;; (setf (boxer::boxgl-device-ortho-matrix bw::*boxgl-device*)
-      ;;       (boxer::create-ortho-matrix (screen-obj-wid outer-screen-box)
-      ;;                                   (screen-obj-hei outer-screen-box)))
-      ;; (opengl:gl-viewport 0 0
-      ;;                     (screen-obj-wid outer-screen-box)
-      ;;                     (screen-obj-hei outer-screen-box))
-      ;; (boxer::update-matrices-ubo bw::*boxgl-device*)
-    ;; )
-          ))
+      :max-range (+ 40 (screen-obj-hei outer-screen-box)) :min-range 0)))
