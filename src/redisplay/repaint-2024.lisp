@@ -147,6 +147,7 @@
                    ;; Step
                    (setf (slot-value inf-screen-obj 'actual-obj) inf-actual-obj)
                    (setf (screen-box inf-screen-obj) self)
+                   (setf (slot-value inf-actual-obj 'screen-objs) (list (cons self inf-screen-obj)))
                    ;;  (break "what...")
                    (set-screen-obj-offsets inf-screen-obj inf-x-offset inf-y-offset)
                    ;; fixing this up now...
