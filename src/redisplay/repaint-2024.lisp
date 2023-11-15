@@ -188,9 +188,7 @@
                             ;;    (rp1-sb-punt-extra-screen-objs self (first-screen-row self)))
                                ))
        (t
-         ;; What if this is just :shrunk?
-         (when (eq (display-style self) :supershrunk)
-           (set-display-style self nil))
+         (set-display-style self new-display-style)
          (when (neq box-type new-box-type) (setq box-type new-box-type))
            (multiple-value-bind (l-border-wid t-border-wid r-border-wid b-border-wid)
                                 (box-borders-widths new-box-type self)
