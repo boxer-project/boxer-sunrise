@@ -530,8 +530,7 @@ Modification History (most recent at top)
                                                      (/ visible-rows total-rows)
                                                      (if (or (null scroll-to-actual-row)
                                                              (null (row-row-no actual-obj scroll-to-actual-row))) 0
-                                                       (/ (row-row-no actual-obj scroll-to-actual-row) total-rows)))
-                             (draw-vertical-scroll-buttons vert-x (- hei ib sbe)))
+                                                       (/ (row-row-no actual-obj scroll-to-actual-row) total-rows))))
                            (when (h-scrollable? self)
                              ;; ok, need to draw horizontal scroll GUI
                              (let* ((esize (cond ((or (null max-scroll-wid) (equal max-scroll-wid 0)) 1/2)
@@ -544,8 +543,7 @@ Modification History (most recent at top)
                                (draw-horizontal-elevator (+ type-label-width il) (- hei ib)
                                                          (- inner-wid type-label-width sbe)
                                                          esize
-                                                         epos))
-                             (draw-horizontal-scroll-buttons (- wid ir sbe) (- hei ib)))))))
+                                                         epos)))))))
 
 ;; useful info for h-scroll tracking, returns the elevator's  min-x, max-x and
 ;; current left x-pos relative to the box
@@ -612,10 +610,6 @@ Modification History (most recent at top)
     (draw-rectangle *scroll-elevator-thickness* (round (* height size))
                     (+ x *scroll-info-offset*) (+ y (round (* pos height))))))
 
-;; and up arrow and a down arrow, highlight describes which arrow to to hightlight (when the mouse is on it)
-(defun draw-vertical-scroll-buttons (x y) ;; sgithen 2021-03-08 Removing these buttons for now.
-)
-
 (defun scroll-buttons-extent () (+ 1 *scroll-button-length* 1 *scroll-button-length* 1))
 
 ;; size is expressed as a rational < 1 = amount of available space to draw the elevator in
@@ -624,11 +618,6 @@ Modification History (most recent at top)
   (with-pen-color (*scroll-elevator-color*)
     (draw-rectangle (round (* width size)) *scroll-elevator-thickness*
                     (+ x (round (* pos width))) (+ y *scroll-info-offset*))))
-
-(defun draw-horizontal-scroll-buttons (x y) ;; sgithen 2021-03-08 Removing these buttons for now.
-)
-
-
 
 ;; scroll position tracking.  Get-position-in-border only returns :Scroll-bar
 ;; which causes a generic mouse-scrolling com to be invoked.  Finer grained
