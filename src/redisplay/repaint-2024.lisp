@@ -163,7 +163,7 @@
     (let ((new-box-type (class-name (class-of actual-obj)))
           (new-display-style (display-style actual-obj))
           (boxtop (boxtop actual-obj)))
-      (format t "~% dimension screen-box: new-box-type: ~A new-display-style: ~A" new-box-type new-display-style)
+      (log:debug "~% dimension screen-box: new-box-type: ~A new-display-style: ~A" new-box-type new-display-style)
       (cond ((and (eq new-display-style :supershrunk)
                   (not (eq self *outermost-screen-box*)))
              ;; Supershrunk
@@ -171,40 +171,53 @@
                                   (super-shrunk-size)
                                   (set-display-style self :supershrunk)
                                   (setf wid sswid hei sshei)
-                                  (format t "~% Case supershrunk: wid: ~A hei: ~A" wid hei)
+                                  (log:debug "~% Case supershrunk: wid: ~A hei: ~A" wid hei)
                                   ;; make sure to punt the inf screen objs or else they may try
                                   ;; and redisplay themselves (like after change-graphics)
                                   ;; (unless (graphics-screen-box? self)
                                   ;;   (rp1-sb-punt-extra-screen-objs self (first-screen-row self)))
                                     ))
        ((and (eq new-display-style :shrunk)
-              (not (eq self *outermost-screen-box*))
-              (not (null boxtop)))
+              (not (eq self *outermost-screen-box*)))
         ;; If there is a boxtop
         (set-display-style self :shrunk)
-        (multiple-value-bind (btwid bthei) (boxtop-size boxtop actual-obj)
-                             (setf wid btwid hei bthei)
-                             (format t "~% Case Shrunk: wid: ~A hei: ~A" wid hei)
-                            ;;  (unless (graphics-screen-box? self)
-                            ;;    (rp1-sb-punt-extra-screen-objs self (first-screen-row self)))
-                               ))
+        (cond ((not (null boxtop))
+               (multiple-value-bind (btwid bthei) (boxtop-size boxtop actual-obj)
+                                    (setf wid btwid hei bthei)
+                                    (log:debug "~% Case Shrunk 1 (boxtop): wid: ~A hei: ~A" wid hei)
+                                   ;;  (unless (graphics-screen-box? self)
+                                   ;;    (rp1-sb-punt-extra-screen-objs self (first-screen-row self)))
+                                      ))
+              (t
+               (multiple-value-bind (l-border-wid t-border-wid r-border-wid b-border-wid)
+                                    (box-borders-widths new-box-type self)
+                 (multiple-value-bind (min-wid min-hei)
+                                      (box-borders-minimum-size new-box-type self)
+                   (setf wid min-wid
+                         hei (max min-hei (+ (cha-hei) t-border-wid b-border-wid)))
+                   (log:debug "~% case Shrunk 2: wid: ~A hei: ~A" wid hei))))))
        (t
          (set-display-style self new-display-style)
-         (when (neq box-type new-box-type) (setq box-type new-box-type))
-           (multiple-value-bind (l-border-wid t-border-wid r-border-wid b-border-wid)
-                                (box-borders-widths new-box-type self)
+         (when (neq box-type new-box-type)
+           (setq box-type new-box-type))
+         (multiple-value-bind (l-border-wid t-border-wid r-border-wid b-border-wid)
+                              (box-borders-widths new-box-type self)
+           (multiple-value-bind (internal-wid internal-hei)
+                                (internal-dimensions self l-border-wid t-border-wid)
              (multiple-value-bind (min-wid min-hei)
                                   (box-borders-minimum-size new-box-type self)
-               (multiple-value-bind (internal-wid internal-hei)
-                                    (internal-dimensions self l-border-wid t-border-wid)
-                 (setf wid (max min-wid (+  internal-wid l-border-wid r-border-wid))
-                       hei (max min-hei (+ internal-hei t-border-wid b-border-wid)))))
-             (when (fixed-size? actual-obj)
-               (multiple-value-bind (fixed-wid fixed-hei) (fixed-size actual-obj)
-                 (setf wid fixed-wid
-                       hei fixed-hei)))
-            (format t "~% Case regular: wid: ~A hei: ~A" wid hei)
-          )
+               (setf wid (max min-wid (+  internal-wid l-border-wid r-border-wid))
+                     hei (max min-hei (+ internal-hei t-border-wid b-border-wid)))
+               (when (fixed-size? actual-obj)
+                 (multiple-value-bind (fixed-wid fixed-hei) (fixed-size actual-obj)
+                   (setf wid fixed-wid
+                         hei fixed-hei)))
+
+               (setf (screen-obj-x-got-clipped? self) (> internal-wid wid))
+               (setf (screen-obj-y-got-clipped? self) (> (- internal-hei 50) hei)) ;; sgithens - just hacking values for now
+
+               (log:debug "~% Case regular: wid: ~A hei: ~A" wid hei)
+          )))
        )))
     (values wid hei)))
 
@@ -213,7 +226,7 @@
 
 (defun repaint-fill-dimensions (outer-screen-box pane-width pane-height)
   (multiple-value-bind (wid hei) (dimensions outer-screen-box)
-    (format t "~% repaint-fill-dimensions: wid: ~A hei: ~A pane-width: ~A pane-height: ~A"
+    (log:debug "~% repaint-fill-dimensions: wid: ~A hei: ~A pane-width: ~A pane-height: ~A"
       wid hei pane-width pane-height)
     (setf (screen-obj-wid outer-screen-box) (max pane-width wid)
           (screen-obj-hei outer-screen-box) (max pane-height hei))
