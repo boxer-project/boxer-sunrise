@@ -1307,32 +1307,18 @@ in macOS."
      (setq *suppress-expose-handler* nil
            *suppressed-actions* nil)))
 
-(defvar *test-h-scroll-amt* 0)
-(defvar *test-v-scroll-amt* 0)
-
 (defun scroll-handler (output-pane direction scroll-operation scroll-amount &key interactive)
   "Prototyping new scroll handler"
   (when (equal direction :horizontal)
-    (setf *test-h-scroll-amt* (- scroll-amount))
+    (setf (horizontal-scroll output-pane) (- scroll-amount))
     (capi:set-horizontal-scroll-parameters output-pane :slug-position scroll-amount))
   (when (equal direction :vertical)
-    (setf *test-v-scroll-amt* (- scroll-amount))
+    (setf (vertical-scroll output-pane) (- scroll-amount))
     (capi:set-vertical-scroll-parameters output-pane :slug-position scroll-amount))
-
-  (format t "~%6 new amts: hscroll: ~A vscroll: ~A" *test-h-scroll-amt* *test-v-scroll-amt*)
-  (format t "~%scroll-hander: direction: ~A scroll-operation: ~A scroll-amount: ~A interactive: ~A"
-    direction scroll-operation scroll-amount interactive)
-  (format t "~%horizontal scroll params: ~A" (capi:get-horizontal-scroll-parameters output-pane))
-  (format t "~%vertical scroll params: ~A" (capi:get-vertical-scroll-parameters output-pane))
-  (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*) (boxer::create-transform-matrix *test-h-scroll-amt* *test-v-scroll-amt*))
-  ;; (setf (boxer::boxgl-device-ortho-matrix bw::*boxgl-device*)
-        ;; (boxer::create-ortho-matrix width height)
-        ;; (let ((ortho (3d-matrices:mortho *test-h-scroll-amt* (sheet-inside-width output-pane) (sheet-inside-height output-pane) *test-v-scroll-amt* -1.0 1.0)))
-    ;; (3d-matrices:marr4 ortho))
-        ;; )
+  (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)
+        (boxer::create-transform-matrix (horizontal-scroll output-pane) (vertical-scroll output-pane)))
   (boxer::update-matrices-ubo bw::*boxgl-device*)
-  (boxer::repaint)
-)
+  (boxer::repaint))
 
 (defun scroll-handler-current (output-pane direction scroll-operation scroll-amount &key interactive)
   "Scrolls the screen box that the mouse is in based on the direction of the scrolling gestures from

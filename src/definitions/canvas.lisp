@@ -39,4 +39,24 @@
   ((point-blinker :accessor point-blinker
     :documentation "Contains a `blinker` struct for the current location of the cursor.")
    (outermost-screen-box :initform nil ; :accessor outermost-screen-box
-    :documentation "The screen-box instance which is currently fullscreened for the canvas.")))
+    :documentation "The screen-box instance which is currently fullscreened for the canvas.")
+
+   ;; The following variables track the current location of the content. We keep track of the zoom level and
+   ;; the amount the content is scrolled at the global level if it exceeds the window size. We also keep track of
+   ;; where the content is anchored. Historically it's been anchored at the top/left corner, as in MS Word's web view,
+   ;; but if we want it to be centered and perhaps have a gray background outside the Boxer canvas, then it may be
+   ;; shifted, to be centered and down a bit.
+   (content-wid :accessor content-wid
+    :documentation "The width of all the content (may be larger than the window).")
+   (content-hei :accessor content-hei
+    :documentation "The height of all the content (may be larger than the window).")
+   (horizontal-scroll :accessor horizontal-scroll :initform 0
+    :documentation "Horizontal distance scrolled from the left in the window.")
+   (vertical-scroll :accessor vertical-scroll :initform 0
+    :documentation "Vertical distance scrolled from the top in the window.")
+   (content-origin :accessor content-origin :initform '(0 0)
+    :documentation "The distance from the top-left that the content starts. Useful in the case of centering the boxer view.")
+   (zoom-level :accessor zoom-level :initform 1.0
+    :documentation "Current zoom level of the canvas window. As a percentage, reasonable ranges are usually something
+                    like 0.25 to 4.0")
+    ))

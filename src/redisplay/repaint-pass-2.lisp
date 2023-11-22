@@ -68,11 +68,11 @@
                         h-scroll-amt: ~A v-scroll-amt: ~A
                         new-x: ~A new-y: ~A "
                            (name actual-obj) il it (- wid il ir) (- hei it ib)
-                           bw::*test-h-scroll-amt* bw::*test-v-scroll-amt*
-                           (+ it bw::*test-v-scroll-amt*)
-                           (+ il bw::*test-h-scroll-amt*))
+                           (horizontal-scroll *boxer-pane*) (vertical-scroll *boxer-pane*)
+                           (+ it (vertical-scroll *boxer-pane*))
+                           (+ il (horizontal-scroll *boxer-pane*)))
                         ;;  (with-clipping-inside (il it (- wid il ir) (- hei it ib))
-                         (with-clipping-inside ((+ il bw::*test-h-scroll-amt*) (+ it bw::*test-v-scroll-amt*) (- wid il ir) (- hei it ib))
+                         (with-clipping-inside ((+ il (horizontal-scroll *boxer-pane*)) (+ it (vertical-scroll *boxer-pane*)) (- wid il ir) (- hei it ib))
                            ;; The clipping and rescaling for these methods is similar to
                            ;; the clipping and rescaling for the other redisplay-pass-1
                            ;; and redisplay-pass-2 methods, except that here the region
@@ -136,10 +136,7 @@
     (format t "~%2repain-pass-2-sb xy-position: x: ~A y: ~A" x-pos y-pos)
   (with-slots (x-offset y-offset wid hei actual-obj box-type)
     self
-    ;; original works! (with-drawing-inside-region (x-offset y-offset wid hei)
-    ;; (with-drawing-inside-region ((+ x-offset bw::*test-h-scroll-amt*) (+ y-offset bw::*test-v-scroll-amt*) wid hei)
     (with-origin-at (x-offset y-offset)
-      ;; (with-clipping-inside ((+ x-pos bw::*test-h-scroll-amt*) (+ y-pos bw::*test-v-scroll-amt*) wid hei)
       (maintaining-pen-color
        ;; need this because we may be in the middle of a colored font run
        (%set-pen-color *foreground-color*)
