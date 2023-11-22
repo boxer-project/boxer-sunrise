@@ -209,7 +209,7 @@
 
            :mouse-click-names :mouse-state-names :lookup-click-name
            :system-version
-           :horizontal-scroll :vertical-scroll
+           :horizontal-scroll :vertical-scroll :zoom-level
            )
            )
 

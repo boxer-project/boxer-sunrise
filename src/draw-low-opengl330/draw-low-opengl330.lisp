@@ -551,7 +551,9 @@
 
 (defun create-ortho-matrix (wid hei)
   "Create an orthogonal projection matrix for use in our shaders with the given width and height."
-  (let ((ortho (3d-matrices:mortho 0 wid hei 0 -1.0 1.0)))
+  (let ((ortho (3d-matrices:mortho 0 wid hei 0 -1.0 1.0))
+        (zoom (zoom-level *boxer-pane*)))
+    (3d-matrices:nmscale ortho (3d-vectors:vec zoom zoom 1.0))
     (3d-matrices:marr4 ortho)))
 
 (defun create-transform-matrix (x y)
