@@ -197,7 +197,7 @@
                          hei (max min-hei (+ (cha-hei) t-border-wid b-border-wid)))
                    (log:debug "~% case Shrunk 2: wid: ~A hei: ~A" wid hei))))))
        (t
-         (set-display-style self new-display-style)
+         (set-display-style self :normal)
          (when (neq box-type new-box-type)
            (setq box-type new-box-type))
          (multiple-value-bind (l-border-wid t-border-wid r-border-wid b-border-wid)
