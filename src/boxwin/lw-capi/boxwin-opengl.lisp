@@ -532,25 +532,25 @@
                               ((:button-3 :release :hyper) boxer-mouse-release-3-handler)
 
                               ;; updates the mouse tracking vars
-                              ;; (:motion boxer-track-and-doc-mouse-handler)
+                              (:motion boxer-track-and-doc-mouse-handler)
 
-                              ;; ;; have to track while the mouse is down too...
-                              ;; ((:button-1 :motion) boxer-track-mouse-handler)
-                              ;; ((:button-2 :motion) boxer-track-mouse-handler)
-                              ;; ((:button-3 :motion) boxer-track-mouse-handler)
+                              ;; have to track while the mouse is down too...
+                              ((:button-1 :motion) boxer-track-mouse-handler)
+                              ((:button-2 :motion) boxer-track-mouse-handler)
+                              ((:button-3 :motion) boxer-track-mouse-handler)
 
-                              ;; ;; track shifted mouse down...
-                              ;; ((:button-1 :motion :control) boxer-track-mouse-handler)
-                              ;; ((:button-2 :motion :control) boxer-track-mouse-handler)
-                              ;; ((:button-3 :motion :control) boxer-track-mouse-handler)
+                              ;; track shifted mouse down...
+                              ((:button-1 :motion :control) boxer-track-mouse-handler)
+                              ((:button-2 :motion :control) boxer-track-mouse-handler)
+                              ((:button-3 :motion :control) boxer-track-mouse-handler)
 
-                              ;; ((:button-1 :motion :meta) boxer-track-mouse-handler)
-                              ;; ((:button-2 :motion :meta) boxer-track-mouse-handler)
-                              ;; ((:button-3 :motion :meta) boxer-track-mouse-handler)
+                              ((:button-1 :motion :meta) boxer-track-mouse-handler)
+                              ((:button-2 :motion :meta) boxer-track-mouse-handler)
+                              ((:button-3 :motion :meta) boxer-track-mouse-handler)
 
-                              ;; ((:button-1 :motion :control :meta) boxer-track-mouse-handler)
-                              ;; ((:button-2 :motion :control :meta) boxer-track-mouse-handler)
-                              ;; ((:button-3 :motion :control :meta) boxer-track-mouse-handler)
+                              ((:button-1 :motion :control :meta) boxer-track-mouse-handler)
+                              ((:button-2 :motion :control :meta) boxer-track-mouse-handler)
+                              ((:button-3 :motion :control :meta) boxer-track-mouse-handler)
                               ;; what are keys ?
                               ;; 2023-10-28 There are some oddities between macOS and windows with all of this.
                               ;; shifted keyed don't get through here on windows so we're sticking to the
