@@ -354,6 +354,12 @@ Modification History (most recent at top)
 ;;;; New Stuff
 
 (defmethod v-scrollable? ((self screen-box))
+  (screen-obj-y-got-clipped? self))
+
+(defmethod h-scrollable? ((self screen-box))
+  (screen-obj-x-got-clipped? self))
+
+(defmethod v-scrollable?-old ((self screen-box))
   (with-slots (actual-obj scroll-to-actual-row screen-rows)
     self
     (unless (symbolp screen-rows) ;;  screen-rows can be a symbol for port ellipsis
@@ -361,7 +367,7 @@ Modification History (most recent at top)
           (and (not (null scroll-to-actual-row))
                (not (eq scroll-to-actual-row (first-inferior-row actual-obj))))))))
 
-(defmethod h-scrollable? ((self screen-box))
+(defmethod h-scrollable?-old ((self screen-box))
   (with-slots (scroll-x-offset max-scroll-wid)
     self
     (or (not (zerop scroll-x-offset)) (not (null max-scroll-wid)))))
@@ -371,8 +377,8 @@ Modification History (most recent at top)
 ;;; {X,Y}-got-clipped?, or the scroll-{x,y}-offset is non zero, or scroll-to-actual-row is non null
 ;;;
 (defmethod draw-scroll-info ((self screen-box))
-  (with-slots (actual-obj wid hei box-type scroll-to-actual-row
-                          scroll-x-offset ; scroll-y-offset ;;vertical elevator drawing should use this...
+  (with-slots (actual-obj wid hei box-type scroll-to-actual-row content-hei content-wid
+                          scroll-x-offset scroll-y-offset ;;vertical elevator drawing should use this...
                           max-scroll-wid)
     self
     (multiple-value-bind (il it ir ib)
@@ -386,11 +392,16 @@ Modification History (most recent at top)
                                 (sbe (scroll-buttons-extent)))
                            (when (v-scrollable? self)
                              ;; ok need to draw vertical scroll GUI
-                             (draw-vertical-elevator vert-x it (- inner-hei 0) ;sbe)
+                             (if *use-repaint2024*
+                               (draw-vertical-scrollbar vert-x it inner-hei
+                                                        (* (/ inner-hei content-hei) inner-hei)
+                                                        ;; percent scrolled
+                                                        (/ scroll-y-offset (- content-hei inner-hei)))
+                               (draw-vertical-elevator vert-x it (- inner-hei 0) ;sbe)
                                                      (/ visible-rows total-rows)
                                                      (if (or (null scroll-to-actual-row)
                                                              (null (row-row-no actual-obj scroll-to-actual-row))) 0
-                                                       (/ (row-row-no actual-obj scroll-to-actual-row) total-rows))))
+                                                       (/ (row-row-no actual-obj scroll-to-actual-row) total-rows)))))
                            (when (h-scrollable? self)
                              ;; ok, need to draw horizontal scroll GUI
                              (let* ((esize (cond ((or (null max-scroll-wid) (equal max-scroll-wid 0)) 1/2)
@@ -400,10 +411,16 @@ Modification History (most recent at top)
                                             (t (/ (- scroll-x-offset) max-scroll-wid)))))
                                ;; It is possible for scroll-x-offset to exceed max-scroll-wid under certain conditions in
                                ;; particular, vertical scrolling away from an extra wide section which horizontally scrolled
-                               (draw-horizontal-elevator (+ type-label-width il) (- hei ib)
-                                                         (- inner-wid type-label-width sbe)
-                                                         esize
-                                                         epos)))))))
+                               (if *use-repaint2024*
+                                 (draw-horizontal-scrollbar (+ type-label-width il) (- hei ib)
+                                                            inner-wid (* (/ inner-wid content-wid) inner-wid)
+                                                            ;; percent scrolled
+                                                            (/ scroll-x-offset (- content-wid inner-wid))
+                                                            )
+                                 (draw-horizontal-elevator (+ type-label-width il) (- hei ib)
+                                                           (- inner-wid type-label-width sbe)
+                                                           esize
+                                                           epos))))))))
 
 ;; useful info for h-scroll tracking, returns the elevator's  min-x, max-x and
 ;; current left x-pos relative to the box
@@ -457,6 +474,23 @@ Modification History (most recent at top)
 
 ; init
 (def-redisplay-initialization (setq *scroll-elevator-color* *gray* *scroll-buttons-color* *black*))
+
+;; new for 2024
+(defun draw-vertical-scrollbar (x y hei scroll-bar-hei percent-scrolled)
+  (let ((scrolled (* percent-scrolled (- hei scroll-bar-hei))))
+    (format t "~%draw-vertical-scrollbar: x: ~A y: ~A hei: ~A scroll-bar-hei: ~A percent-scrolled: ~A scrolled: ~A"
+      x y hei scroll-bar-hei percent-scrolled scrolled)
+    (with-pen-color (*scroll-elevator-color*)
+      (draw-rectangle *scroll-elevator-thickness* scroll-bar-hei
+                      (+ x *scroll-info-offset*) (- y scrolled))))
+)
+
+(defun draw-horizontal-scrollbar (x y wid scroll-bar-wid percent-scrolled)
+  (let ((scrolled (* percent-scrolled (- wid scroll-bar-wid))))
+    (with-pen-color (*scroll-elevator-color*)
+      (draw-rectangle scroll-bar-wid *scroll-elevator-thickness*
+                      (- x scrolled) (+ y *scroll-info-offset*))))
+)
 
 ;; size is expressed as a rational < 1 = amount of available space to draw the elevator in
 ;; pos is also expressed as a rational 0 <= pos <= 1

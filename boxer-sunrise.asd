@@ -101,7 +101,7 @@
                  #+lispworks (:file "boxwin/lw-capi/boxwin-opengl")
                  #+lispworks (:file "boxwin/lw-capi/clipboard")
 
-                 #+lispworks (:file "boxwin/lw-capi/modern-opengl")
+                ;  #+lispworks (:file "boxwin/lw-capi/modern-opengl")
 
                 ;;  (:file "boxwin/lw-capi/hardcopy-lw")
                  (:file "boxwin/mousedoc")
@@ -118,6 +118,7 @@
                  (:file "redisplay/lodisp")
                  (:file "redisplay/dev-overlay")
                  (:file "redisplay/repaint-pass-1")
+                 (:file "redisplay/repaint-2024")
                  (:file "redisplay/repaint-pass-2")
                  (:file "redisplay/repaint")
                  (:file "redisplay/new-borders")

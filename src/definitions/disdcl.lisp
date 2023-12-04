@@ -73,6 +73,10 @@
     :documentation "Width of the screen-obj, always a fixnum.")
    (hei :initform 0 :accessor screen-obj-hei
     :documentation "Height of the screen-obj, always a fixnum.")
+   (content-wid :initform 0 :accessor content-wid
+    :documentation "Width of the internal content, may be smaller than the wid for scrolled content.")
+   (content-hei :initform 0 :accessor content-hei
+    :documentation "Height of the internal content, may be smaller than the hei for scrolled content.")
    (x-got-clipped? :initform nil :accessor screen-obj-x-got-clipped?)
    (y-got-clipped? :initform nil :accessor screen-obj-y-got-clipped?)
    (tick :initform -1 :accessor screen-obj-tick)))

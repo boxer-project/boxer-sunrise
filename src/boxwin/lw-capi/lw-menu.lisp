@@ -482,6 +482,20 @@ Modification History (most recent at top)
 (defun show-statusbar-popup-callback (menu)
   (setf (capi:item-selected menu) *boxer-window-show-statusbar-p*))
 
+(defun menu-zoom-in (data interface)
+  (declare (ignore data interface))
+  (unless (>= (zoom-level *boxer-pane*) 4)
+    (setf (zoom-level *boxer-pane*) (+ 0.25 (zoom-level *boxer-pane*))))
+  (boxer::repaint)
+  (boxer::repaint))
+
+(defun menu-zoom-out (data interface)
+  (declare (ignore data interface))
+  (unless (<=  (zoom-level *boxer-pane*) 0.50)
+    (setf (zoom-level *boxer-pane*) (- (zoom-level *boxer-pane*) 0.25)))
+  (boxer::repaint)
+  (boxer::repaint))
+
 ;; **** Do Menu ****
 
 

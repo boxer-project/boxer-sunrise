@@ -236,4 +236,8 @@
 
 ;;
 (defun top-level-repaint-pass-2 ()
+  ;; Currently this is above the repaint-pass-2 even though it should be below it forcing a second repaint. If we
+  ;; added support for a z-index then we could just paint it below after the dimensions are calculated.
+  (with-pen-color (*background-color*)
+    (draw-rectangle (+ 6 (screen-obj-wid *outermost-screen-box*)) (+ 6 (screen-obj-hei *outermost-screen-box*)) 6 6))
   (repaint-pass-2-sb *outermost-screen-box*))

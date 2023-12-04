@@ -159,7 +159,7 @@
                  ))))))))
 
 (defmethod dimensions ((self screen-box) &optional (first-inf-x-offset 0) (first-inf-y-offset 0))
-  (with-slots (wid hei actual-obj scroll-to-actual-row box-type) self
+  (with-slots (wid hei actual-obj scroll-to-actual-row box-type content-wid content-hei) self
     (let ((new-box-type (class-name (class-of actual-obj)))
           (new-display-style (display-style actual-obj))
           (boxtop (boxtop actual-obj)))
@@ -206,8 +206,10 @@
                                 (internal-dimensions self l-border-wid t-border-wid)
              (multiple-value-bind (min-wid min-hei)
                                   (box-borders-minimum-size new-box-type self)
-               (setf wid (max min-wid (+  internal-wid l-border-wid r-border-wid))
-                     hei (max min-hei (+ internal-hei t-border-wid b-border-wid)))
+               (setf wid         (max min-wid (+  internal-wid l-border-wid r-border-wid))
+                     hei         (max min-hei (+ internal-hei t-border-wid b-border-wid))
+                     content-wid internal-wid
+                     content-hei internal-hei)
                (when (fixed-size? actual-obj)
                  (multiple-value-bind (fixed-wid fixed-hei) (fixed-size actual-obj)
                    (setf wid fixed-wid
@@ -228,8 +230,14 @@
   (multiple-value-bind (wid hei) (dimensions outer-screen-box)
     (log:debug "~% repaint-fill-dimensions: wid: ~A hei: ~A pane-width: ~A pane-height: ~A"
       wid hei pane-width pane-height)
-    (setf (screen-obj-wid outer-screen-box) (max pane-width wid)
-          (screen-obj-hei outer-screen-box) (max pane-height hei))
+    (setf (screen-obj-wid outer-screen-box) (if (eq (view-layout *boxer-pane*) :canvas-view)
+                                              (first (page-size *boxer-pane*))
+                                              (max pane-width wid))
+          (screen-obj-hei outer-screen-box) (if (eq (view-layout *boxer-pane*) :canvas-view)
+                                              (second (page-size *boxer-pane*))
+                                              (max pane-height hei))
+          (content-hei bw::*boxer-pane*)    (max pane-height hei)
+          (content-wid bw::*boxer-pane*)    (max pane-width wid))
     (capi:set-horizontal-scroll-parameters bw::*boxer-pane*
       :max-range (+ 40 (screen-obj-wid outer-screen-box)) :min-range 0)
     (capi:set-vertical-scroll-parameters bw::*boxer-pane*

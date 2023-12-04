@@ -629,6 +629,11 @@
                        (:component (("Preferences..." :callback 'menu-prefs)))
                        ("Find" :accelerator #\f :callback 'menu-find)))
     (boxer-view-menu "View" ((:component
+                              (("Zoom +" :accelerator #\=
+                                         :callback 'menu-zoom-in)
+                               ("Zoom -" :accelerator #\-
+                                         :callback 'menu-zoom-out)))
+                             (:component
                               (("Show Toolbar" :popup-callback 'show-toolbar-popup-callback
                                           :callback-type :element
                                           :callback #'(lambda (element)
@@ -706,10 +711,10 @@
                                            :callback 'menu-do-line)))
                    ;(:component (("Step" :callback 'menu-step)))
                    (:component (("Stop	Ctrl-." :callback 'menu-stop)))))
-    (font-menu "Font" (("Zoom +" :accelerator #\=
-                        :callback 'menu-font-bigger)
-                       ("Zoom -" :accelerator #\-
-                        :callback 'menu-font-smaller)
+    (font-menu "Font" (;;("Zoom +" :accelerator #\=
+                       ;; :callback 'menu-font-bigger)
+                       ;;("Zoom -" :accelerator #\-
+                       ;; :callback 'menu-font-smaller)
                        ;*font-sub-font-menu* *font-sub-size-menu*
                        ;*font-sub-style-menu* *font-sub-color-menu*
                        ))
