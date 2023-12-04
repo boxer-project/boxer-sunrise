@@ -236,10 +236,11 @@
                   %clip-rig %clip-bot)))
 
 (defun clear-window (w)
-  (gl::clear-color (aref *background-color* 1)
-                   (aref *background-color* 2)
-                   (aref *background-color* 3)
-                   0.0)
+  (let ((color (backdrop-color w)))
+    (gl::clear-color (aref color 1)
+                     (aref color 2)
+                     (aref color 3)
+                     0.0))
   (gl:clear :color-buffer-bit :depth-buffer-bit :stencil-buffer-bit))
 
 ;;; used by repaint-in-eval

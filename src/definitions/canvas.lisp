@@ -59,4 +59,28 @@
    (zoom-level :accessor zoom-level :initform 1.0
     :documentation "Current zoom level of the canvas window. As a percentage, reasonable ranges are usually something
                     like 0.25 to 4.0")
+
+   ;; Viewing modes
+   (view-layout :accessor view-layout :initform :microworld-view
+    :documentation "Layout of the boxer-canvas. Can be:
+     :canvas-view Similar to Word's Page View
+     :microworld-view Similar to Word's Web or Draft View")
+   (page-size :accessor page-size :initform '(800 1100)
+    :documentation )
+
+   ;; Current Colors
+   (backdrop-color :accessor backdrop-color :initform *white*)
     ))
+
+(defmethod activate-canvas-view ((self boxer-canvas))
+  (setf ;*backdrop-color* #(:rgb 0.89 0.89 0.89)
+        (content-origin self) (list 120 20)
+        (view-layout self) :canvas-view
+        (backdrop-color self) #(:rgb 0.89 0.89 0.89)))
+
+(defmethod activate-microworld-view ((self boxer-canvas))
+  (setf ;*backdrop-color* *white*
+        (content-origin self) (list 0 0)
+        (view-layout self) :microworld-view
+        (backdrop-color self) *white*))
+
