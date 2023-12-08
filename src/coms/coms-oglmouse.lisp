@@ -1549,6 +1549,25 @@
 (defvar *scroll-grid-width* 10)
 
 (defun mouse-in-v-scroll-bar-internal (screen-box x y click-only?)
+  ;; bind these so we dont have to calculate them for each iteration
+  ;; of the tracking loop
+  (let ((orig-scroll-y-offset (slot-value screen-box 'scroll-y-offset)))
+    #+lispworks (boxer-window::with-mouse-tracking ((mouse-x x) (mouse-y y))
+                (declare (ignore mouse-x))
+                (let* ((diff (- y mouse-y))
+                       (new-scroll (+ orig-scroll-y-offset diff)))
+                  (when (> new-scroll 0)
+                    (setf new-scroll 0))
+                  (when (> (- new-scroll) (screen-obj-hei screen-box))
+                    (setf new-scroll (- (screen-obj-hei screen-box))))
+                  (format t "
+scrolling-v  x: ~A       y: ~A
+       mouse-x: ~A mouse-y: ~A
+          diff: ~A  new-scroll: ~A" x y mouse-x mouse-y diff new-scroll)
+                  (setf (slot-value screen-box 'scroll-y-offset) new-scroll))
+                (repaint t))))
+
+(defun mouse-in-v-scroll-bar-internal-current (screen-box x y click-only?)
   (let ((start-row (or (scroll-to-actual-row screen-box)
                        (first-inferior-row (screen-obj-actual-obj screen-box)))))
     (multiple-value-bind (v-min-y v-max-y)

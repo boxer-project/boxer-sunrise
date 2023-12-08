@@ -5,7 +5,7 @@
     self
     (let* ((infs-new-wid 0)
            (infs-new-hei 0)
-           (new-baseline 0)
+          ;;  (new-baseline 0)
            (inf-x-offset first-inf-x-offset)
            (inf-y-offset first-inf-y-offset))
       ;; Watch out, this is a little flaky since we aren't going through the
@@ -15,6 +15,7 @@
       (with-font-hacking ((row-fds actual-obj))
         ;; If the line is empty we still need to set the initial height
         (setf infs-new-hei (cha-hei))
+        (setf baseline (cha-ascent))
 
         (do* ((cha-no 0 (+ cha-no 1))
               (inf-actual-obj (cha-at-cha-no actual-obj cha-no)
@@ -47,7 +48,7 @@
              ;; and increment its own infs-screen-objs parameters
              (setf infs-new-wid (+   infs-new-wid (cha-wid inf-screen-obj))
                    infs-new-hei (max infs-new-hei (cha-hei))
-                   baseline (max new-baseline (cha-ascent))
+                   baseline (max baseline (cha-ascent))
                    inf-x-offset (+ inf-x-offset wid)))
             (t
              ;; must be a box so let the box do some work...

@@ -677,9 +677,26 @@ Modification History (most recent at top)
     (when (and (null moved?) (not (null continue?)))
       (search-downward-for-visible-row self nil))))
 
+(defun mouse-in-h-scroll-bar-internal (screen-box x y)
+(let ((orig-scroll-x-offset (slot-value screen-box 'scroll-x-offset)))
+    #+lispworks (boxer-window::with-mouse-tracking ((mouse-x x) (mouse-y y))
+                (declare (ignore mouse-y))
+                (let* ((diff (- x mouse-x))
+                       (new-scroll (+ orig-scroll-x-offset diff)))
+                  (when (> new-scroll 0)
+                    (setf new-scroll 0))
+                  (when (> (- new-scroll) (content-wid screen-box))
+                    (setf new-scroll (- (content-wid screen-box))))
+                  (format t "
+scrolling-v  x: ~A       y: ~A
+       mouse-x: ~A mouse-y: ~A
+          diff: ~A  new-scroll: ~A" x y mouse-x mouse-y diff new-scroll)
+                  (setf (slot-value screen-box 'scroll-x-offset) new-scroll))
+                (repaint t))))
+
 ;; loop:get the current elevator position, update, repaint
 ;; ? display info graphics ?
-(defun mouse-in-h-scroll-bar-internal (screen-box x y)
+(defun mouse-in-h-scroll-bar-internal-current (screen-box x y)
   (let ((initial-scroll-pos (slot-value screen-box 'scroll-x-offset)))
     (multiple-value-bind (h-min-x h-max-x)
                          (h-scroll-info screen-box)
