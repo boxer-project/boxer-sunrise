@@ -172,9 +172,6 @@
     ;; occur inside of set-outermost-box instead...
     (when (bp? *point*)
       ; (set-window-name (current-file-status (point-box)))
-      ;; repaint-cursor can now cause horizontal scrolling of the box
-      ;; neccessitating an additional repaint, if so, it will throw
-      ;; to 'scroll-x-changed TAG
       (unless just-windows?
         (repaint-cursor *point* nil)))
     ;; swap buffers here, after all drawing is complete
@@ -186,10 +183,6 @@
       (update-boxgl-programs)
       (setf *reload-shaders* nil))
     (repaint-internal just-windows?)))
-
-(defun repaint-with-cursor-relocation ()
-  (let ((*allow-redisplay-encore? t))
-    (repaint)))
 
 ;;;; Ephemera: cursors, regions
 (defun repaint-cursor (&optional (cursor *point*)(flush-buffer? T))
@@ -214,27 +207,6 @@
                                                    (scroll-row (and psb (scroll-to-actual-row psb)))
                                                    (scroll-y-offset (or (and psb (slot-value psb 'scroll-y-offset))
                                                                         0)))
-                                              ;; check the BP coords here, we may have to adjust the scroll-x-offset of the psb
-                                              ;; check to see if cursor-x falls inside of PSB, if not, change the scroll-x-offset of psb
-                                              (unless (or (null psb) (null *allow-redisplay-encore?))
-                                                (multiple-value-bind (lef top rig bot)
-                                                                     (box-borders-widths (box-type psb) psb) (declare (ignore top bot))
-                                                                     (let* ((psb-x (- (screen-obj-absolute-coordinates psb) (slot-value psb 'scroll-x-offset)))
-                                                                            (psb-min-x (+ psb-x lef))
-                                                                            (psb-max-x (+ psb-x (- (screen-obj-wid psb) rig)))
-                                                                            (move-distance (floor (slot-value psb 'wid) 2)))
-                                                                       (cond ((<= psb-min-x cursor-x psb-max-x)) ; everything is ok, cursor is already visible
-                                                                         ((< cursor-x psb-min-x) ; cursor is to left of the visible part of the box
-                                                                                                 (setf (slot-value psb 'scroll-x-offset)
-                                                                                                       (min 0 (+ (slot-value psb 'scroll-x-offset) (- psb-min-x cursor-x) move-distance)))
-                                                                                                 (setq *redisplay-encore?* t)
-                                                                                                 (throw 'scroll-x-changed t))
-                                                                         ((> cursor-x psb-max-x) ; cursor is to the right of the visible part of the box
-                                                                                                 (setf (slot-value psb 'scroll-x-offset)
-                                                                                                       (min 0 (+ (slot-value psb 'scroll-x-offset) (- psb-max-x cursor-x move-distance))))
-                                                                                                 (setq *redisplay-encore?* t)
-                                                                                                 (throw 'scroll-x-changed nil))))))
-                                              ;; continue...
                                               (multiple-value-bind (c-width c-height offset-from-top)
                                                                    (cursor-info cursor)
                                                                    (let ((on-scroll-row-offset (if (or (eq (bp-row cursor) scroll-row)
@@ -246,22 +218,7 @@
                                                                                      cursor-x
                                                                                      (- (+ cursor-y offset-from-top) on-scroll-row-offset)
                                                                                      c-width
-                                                                                     (+ c-height on-scroll-row-offset))))
-                                              ;            (cond ((and (or (eq (bp-row cursor) scroll-row)
-                                              ;                            (and (null scroll-row)
-                                              ;                                 (box? actual-box)
-                                              ;                                 (eq (bp-row cursor)
-                                              ;                                     (first-inferior-row actual-box))))
-                                              ;                        (not (zerop scroll-y-offset)))
-                                              ;                   (set-cursorpos *boxer-pane* cursor-x (- cursor-y scroll-y-offset))
-                                              ;                   (SET-CURSOR-SIZE *POINT-BLINKER* 3 (+ (get-cursor-height cha)
-                                              ;                                                         scroll-y-offset)))
-                                              ;                  (t
-                                              ;                   (set-cursorpos *boxer-pane* cursor-x cursor-y)
-                                              ;                   (SET-CURSOR-SIZE *POINT-BLINKER* 3
-                                              ;                                    (get-cursor-height cha))))
-                                              )))))
-
+                                                                                     (+ c-height on-scroll-row-offset)))))))))
 
 (defvar *default-cursor-width* 3)
 (defvar *unseen-box-cursor-height* 17)

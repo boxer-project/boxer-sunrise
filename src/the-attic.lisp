@@ -19746,6 +19746,50 @@ Modification History (most recent at top)
 ;;;; FILE: repaint.lisp
 ;;;;
 
+(defun repaint-with-cursor-relocation ()
+  (let ((*allow-redisplay-encore? t))
+    (repaint)))
+
+;; sgithens 2023-23-08 from repaint-cursor-internal, when we were checking to see if the horiz scroll-bar
+;; needed to snap back because the cursor was offscreen.
+        ;; check the BP coords here, we may have to adjust the scroll-x-offset of the psb
+    ;; check to see if cursor-x falls inside of PSB, if not, change the scroll-x-offset of psb
+    (unless (or (null psb) (null *allow-redisplay-encore?))
+      (multiple-value-bind (lef top rig bot)
+                           (box-borders-widths (box-type psb) psb) (declare (ignore top bot))
+                           (let* ((psb-x (- (screen-obj-absolute-coordinates psb) (slot-value psb 'scroll-x-offset)))
+                                  (psb-min-x (+ psb-x lef))
+                                  (psb-max-x (+ psb-x (- (screen-obj-wid psb) rig)))
+                                  (move-distance (floor (slot-value psb 'wid) 2)))
+                             (cond ((<= psb-min-x cursor-x psb-max-x)) ; everything is ok, cursor is already visible
+                               ((< cursor-x psb-min-x) ; cursor is to left of the visible part of the box
+                                                       (setf (slot-value psb 'scroll-x-offset)
+                                                             (min 0 (+ (slot-value psb 'scroll-x-offset) (- psb-min-x cursor-x) move-distance)))
+                                                       (setq *redisplay-encore?* t)
+                                                       (throw 'scroll-x-changed t))
+                               ((> cursor-x psb-max-x) ; cursor is to the right of the visible part of the box
+                                                       (setf (slot-value psb 'scroll-x-offset)
+                                                             (min 0 (+ (slot-value psb 'scroll-x-offset) (- psb-max-x cursor-x move-distance))))
+                                                       (setq *redisplay-encore?* t)
+                                                       (throw 'scroll-x-changed nil))))))
+    ;; continue...
+
+;; this has been commented out from repaint-cursor-internal for a while.
+                                              ;            (cond ((and (or (eq (bp-row cursor) scroll-row)
+                                              ;                            (and (null scroll-row)
+                                              ;                                 (box? actual-box)
+                                              ;                                 (eq (bp-row cursor)
+                                              ;                                     (first-inferior-row actual-box))))
+                                              ;                        (not (zerop scroll-y-offset)))
+                                              ;                   (set-cursorpos *boxer-pane* cursor-x (- cursor-y scroll-y-offset))
+                                              ;                   (SET-CURSOR-SIZE *POINT-BLINKER* 3 (+ (get-cursor-height cha)
+                                              ;                                                         scroll-y-offset)))
+                                              ;                  (t
+                                              ;                   (set-cursorpos *boxer-pane* cursor-x cursor-y)
+                                              ;                   (SET-CURSOR-SIZE *POINT-BLINKER* 3
+                                              ;                                    (get-cursor-height cha))))
+
+
 ;; 2023-02-23 Removing needs-repaint-pass methods since we are always returning t
 ;; 1st cut, recalculate everything
 ;; 2nd cut, get smarter (need to hack deep active sprite problem)
