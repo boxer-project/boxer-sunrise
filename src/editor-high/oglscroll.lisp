@@ -359,19 +359,6 @@ Modification History (most recent at top)
 (defmethod h-scrollable? ((self screen-box))
   (screen-obj-x-got-clipped? self))
 
-(defmethod v-scrollable?-old ((self screen-box))
-  (with-slots (actual-obj scroll-to-actual-row screen-rows)
-    self
-    (unless (symbolp screen-rows) ;;  screen-rows can be a symbol for port ellipsis
-      (or (< (screen-rows-length self) (length-in-rows actual-obj))
-          (and (not (null scroll-to-actual-row))
-               (not (eq scroll-to-actual-row (first-inferior-row actual-obj))))))))
-
-(defmethod h-scrollable?-old ((self screen-box))
-  (with-slots (scroll-x-offset max-scroll-wid)
-    self
-    (or (not (zerop scroll-x-offset)) (not (null max-scroll-wid)))))
-
 ;;; scroll bar support
 ;;; scroll bars are displayed if:
 ;;; {X,Y}-got-clipped?, or the scroll-{x,y}-offset is non zero, or scroll-to-actual-row is non null

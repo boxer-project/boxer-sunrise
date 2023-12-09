@@ -18437,6 +18437,21 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: oglscroll.lisp
 ;;;;
+
+;; 2023-12-08 sgithens Old versions of v-scrollable? and h-scrollable?
+(defmethod v-scrollable? ((self screen-box))
+  (with-slots (actual-obj scroll-to-actual-row screen-rows)
+    self
+    (unless (symbolp screen-rows) ;;  screen-rows can be a symbol for port ellipsis
+      (or (< (screen-rows-length self) (length-in-rows actual-obj))
+          (and (not (null scroll-to-actual-row))
+               (not (eq scroll-to-actual-row (first-inferior-row actual-obj))))))))
+
+(defmethod h-scrollable? ((self screen-box))
+  (with-slots (scroll-x-offset max-scroll-wid)
+    self
+    (or (not (zerop scroll-x-offset)) (not (null max-scroll-wid)))))
+
 #|
 (defmethod pixel-scroll-screen-box ((screen-box screen-box) pixels)
   (with-slots (wid hei scroll-to-actual-row scroll-y-offset) screen-box
