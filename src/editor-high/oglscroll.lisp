@@ -307,15 +307,6 @@ Modification History (most recent at top)
 (defmethod screen-box-is-scrollable? ((screen-box graphics-screen-box))
   (values nil nil))
 
-;; set the pixel level scrolling a screen-box, negative values push the
-;; contents upward
-;; Note: we don't check for pixel movement greater than the size of the
-;;       tallest row, this implies that the biggest possible pixel movement
-;;       MUST be less than the smallest possible row
-(defmethod pixel-scroll-screen-box ((screen-box screen-box) pixels)
-  "Old version of this currently in the attic.")
-
-
 (defun dont-show-scroll-buttons? (screen-box)
   (or ;(null screen-box)  ; should already have been checked
    ;; screen-box is not connected
@@ -532,19 +523,9 @@ Modification History (most recent at top)
                                                                                         ;; now check for horizontal stuff, must be in the horizontal
                                                                                         ;; because it isn't in the vertical space and we can only come here
                                                                                         ;; as a result of a previous tracking returning :scroll-bar
-                                                                                        (cond ((< y v-div) :v-bar)
-                                                                                          ;; check the vertical stuff first
-                                                                                          ((and (>= x (+ box-window-x (- wid right)))
-                                                                                                (> y (+ v-div *scroll-button-length* 2))) ; fudge factor...
-                                                                                                                                          (unless last-is-top? :v-down-button))
-                                                                                          ((>= x (+ box-window-x (- wid right)))
-                                                                                           (unless (null scroll-top) :v-up-button))
-                                                                                          ;; if it isn't vertical, must be horizontal...
-                                                                                          ((< x h-div) :h-bar)
-                                                                                          ((> x (+ h-div *scroll-button-length*))
-                                                                                           (unless (null (slot-value screen-box 'max-scroll-wid)) :h-right-button))
-                                                                                          (t
-                                                                                           (unless (zerop (slot-value screen-box 'scroll-x-offset)) :h-left-button)))))))))
+                                                                                        (cond
+                                                                                          ((< y v-div) :v-bar)
+                                                                                          ((< x h-div) :h-bar))))))))
 
 (defvar *horizontal-click-scroll-quantum* 10
   "How much to scroll horizontally when a horizontal scroll button has been clicked")
@@ -560,33 +541,6 @@ Modification History (most recent at top)
              (max new-scroll-x-offset (- (if (null (slot-value screen-box 'max-scroll-wid))
                                            (floor (screen-obj-wid screen-box) 2)
                                            (slot-value screen-box 'max-scroll-wid)))))))))
-
-;; should this be in coms-oglmouse ?
-;; this needs to move the *point* if it is scrolled off the screen
-(defun mouse-h-scroll (screen-box direction &optional (vboost 1))
-  (let ((velocity (if (eq direction :right)
-                    (* vboost (- *horizontal-continuous-scroll-quantum*))
-                    (* vboost *horizontal-continuous-scroll-quantum*))))
-    ;; do SOMETHING, for cases that should be interpreted as a slow click
-    (h-scroll-screen-box screen-box velocity)
-    (simple-wait-with-timeout *initial-scroll-pause-time*
-                              #'(lambda () (zerop& (mouse-button-state))))
-    (loop (when (or (zerop& (mouse-button-state))
-                    (and (eq direction :right)
-                         (or (null (slot-value screen-box 'max-scroll-wid))
-                             (>= (+ (abs (slot-value screen-box 'scroll-x-offset))
-                                    (round (screen-obj-wid screen-box) 2))
-                                 (slot-value screen-box 'max-scroll-wid))))
-                    (and (eq direction :left)
-                         (zerop (slot-value screen-box 'scroll-x-offset))))
-            (return))
-      (h-scroll-screen-box screen-box velocity)
-      (repaint t)
-      (simple-wait-with-timeout *scroll-pause-time*
-                                #'(lambda () (zerop& (mouse-button-state)))))
-    ;; maybe adjust *point* here, otherwise (repaint) can change the scroll state
-    ;; no need to adjust in the loop because we aren't calling the scroll changing version of repaint
-    (maybe-move-point-after-scrolling screen-box direction)))
 
 (defun maybe-move-point-after-scrolling (screen-box direction)
   (when (eq screen-box (point-screen-box))

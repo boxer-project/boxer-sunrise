@@ -6336,6 +6336,32 @@ Modification History (most recent at top)
 ;;;; FILE: coms-oglmouse.lisp
 ;;;;
 
+;; sgithens 2023-12-20 We aren't using these types of scroll buttons anymore, and if we do again
+;;                     the implemention will be factored differently
+
+;; The scroll bar button checks from com-mouse-scroll-box, looking at the return from get-scroll-position
+        (:v-up-button (if click-only?
+                        (com-scroll-up-row screen-box)
+                        (mouse-line-scroll-internal screen-box :up)))
+        (:v-down-button (if click-only?
+                          (com-scroll-dn-row screen-box)
+                          (mouse-line-scroll-internal screen-box :down)))
+        (:h-left-button (if click-only?
+                          (h-scroll-screen-box screen-box *horizontal-click-scroll-quantum*)
+                          (mouse-h-scroll screen-box :left)))
+        (:h-right-button (if click-only?
+                           (h-scroll-screen-box screen-box (- *horizontal-click-scroll-quantum*))
+                           (mouse-h-scroll screen-box :right)))
+;; and the old cond expressions from get-scroll-position in oglscroll.lisp
+((and (>= x (+ box-window-x (- wid right)))
+      (> y (+ v-div *scroll-button-length* 2))) ; fudge factor...
+((>= x (+ box-window-x (- wid right)))
+       (unless (null scroll-top) :v-up-button))                                                                                                                                          (unless last-is-top? :v-down-button))
+((> x (+ h-div *scroll-button-length*))
+      (unless (null (slot-value screen-box 'max-scroll-wid)) :h-right-button))
+(t
+      (unless (zerop (slot-value screen-box 'scroll-x-offset)) :h-left-button))
+
 ;; sgithens 2023-12-19 If you look at one of the old old windows builds we had, there was this
 ;;                     funky grid rendered on the scroll bars.
 
@@ -6346,6 +6372,21 @@ Modification History (most recent at top)
   "Minimum number of pixels between each tick in the scroll bar grid")
 
 (defvar *scroll-grid-width* 10)
+
+(defun mouse-page-scroll-internal (direction &rest screen-box-list)
+  (if (eq direction :up)
+    (com-scroll-up-one-screen-box screen-box-list)
+    (com-scroll-dn-one-screen-box screen-box-list))
+  (simple-wait-with-timeout *initial-scroll-pause-time*
+                            #'(lambda () (zerop& (mouse-button-state))))
+  (loop (when (zerop& (mouse-button-state)) (return))
+    (if (eq direction :up)
+      (com-scroll-up-one-screen-box screen-box-list)
+      (com-scroll-dn-one-screen-box screen-box-list))
+    (repaint)
+    (simple-wait-with-timeout *scroll-pause-time*
+                              #'(lambda ()
+                                        (zerop& (mouse-button-state))))))
 
 (defboxer-command com-mouse-page-scroll-box (&optional (window *boxer-pane*)
                                                        (x (bw::boxer-pane-mouse-x))
@@ -18617,6 +18658,33 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: oglscroll.lisp
 ;;;;
+
+;; should this be in coms-oglmouse ?
+;; this needs to move the *point* if it is scrolled off the screen
+(defun mouse-h-scroll (screen-box direction &optional (vboost 1))
+  (let ((velocity (if (eq direction :right)
+                    (* vboost (- *horizontal-continuous-scroll-quantum*))
+                    (* vboost *horizontal-continuous-scroll-quantum*))))
+    ;; do SOMETHING, for cases that should be interpreted as a slow click
+    (h-scroll-screen-box screen-box velocity)
+    (simple-wait-with-timeout *initial-scroll-pause-time*
+                              #'(lambda () (zerop& (mouse-button-state))))
+    (loop (when (or (zerop& (mouse-button-state))
+                    (and (eq direction :right)
+                         (or (null (slot-value screen-box 'max-scroll-wid))
+                             (>= (+ (abs (slot-value screen-box 'scroll-x-offset))
+                                    (round (screen-obj-wid screen-box) 2))
+                                 (slot-value screen-box 'max-scroll-wid))))
+                    (and (eq direction :left)
+                         (zerop (slot-value screen-box 'scroll-x-offset))))
+            (return))
+      (h-scroll-screen-box screen-box velocity)
+      (repaint t)
+      (simple-wait-with-timeout *scroll-pause-time*
+                                #'(lambda () (zerop& (mouse-button-state)))))
+    ;; maybe adjust *point* here, otherwise (repaint) can change the scroll state
+    ;; no need to adjust in the loop because we aren't calling the scroll changing version of repaint
+    (maybe-move-point-after-scrolling screen-box direction)))
 
 ;; 2023-12-08 sgithens Old versions of v-scrollable? and h-scrollable?
 (defmethod v-scrollable? ((self screen-box))
