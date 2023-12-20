@@ -1294,18 +1294,6 @@
                                                                   (- current-wid l-wid r-wid)
                                                                   (- current-hei t-wid b-wid)))))
       (case (get-scroll-position x y screen-box box-type)
-        (:v-up-button (if click-only?
-                        (com-scroll-up-row screen-box)
-                        (mouse-line-scroll-internal screen-box :up)))
-        (:v-down-button (if click-only?
-                          (com-scroll-dn-row screen-box)
-                          (mouse-line-scroll-internal screen-box :down)))
-        (:h-left-button (if click-only?
-                          (h-scroll-screen-box screen-box *horizontal-click-scroll-quantum*)
-                          (mouse-h-scroll screen-box :left)))
-        (:h-right-button (if click-only?
-                           (h-scroll-screen-box screen-box (- *horizontal-click-scroll-quantum*))
-                           (mouse-h-scroll screen-box :right)))
         (:v-bar (mouse-in-v-scroll-bar-internal screen-box x y click-only?))
         (:h-bar (mouse-in-h-scroll-bar-internal screen-box x y)))
       ;; now restore the box, if we have fixed it before
@@ -1362,21 +1350,6 @@
         (repaint)
         (simple-wait-with-timeout *scroll-pause-time*
                                   #'(lambda () (zerop& (mouse-button-state))))))))
-
-(defun mouse-page-scroll-internal (direction &rest screen-box-list)
-  (if (eq direction :up)
-    (com-scroll-up-one-screen-box screen-box-list)
-    (com-scroll-dn-one-screen-box screen-box-list))
-  (simple-wait-with-timeout *initial-scroll-pause-time*
-                            #'(lambda () (zerop& (mouse-button-state))))
-  (loop (when (zerop& (mouse-button-state)) (return))
-    (if (eq direction :up)
-      (com-scroll-up-one-screen-box screen-box-list)
-      (com-scroll-dn-one-screen-box screen-box-list))
-    (repaint)
-    (simple-wait-with-timeout *scroll-pause-time*
-                              #'(lambda ()
-                                        (zerop& (mouse-button-state))))))
 
 (defun mouse-in-v-scroll-bar-internal (screen-box x y click-only?)
   ;; bind these so we dont have to calculate them for each iteration
