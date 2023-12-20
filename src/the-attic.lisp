@@ -6336,6 +6336,17 @@ Modification History (most recent at top)
 ;;;; FILE: coms-oglmouse.lisp
 ;;;;
 
+;; sgithens 2023-12-19 If you look at one of the old old windows builds we had, there was this
+;;                     funky grid rendered on the scroll bars.
+
+(defvar *max-scroll-grid-increment* 15
+  "Maximum number of pixels between each tick in the scroll bar grid")
+
+(defvar *min-scroll-grid-increment* 4
+  "Minimum number of pixels between each tick in the scroll bar grid")
+
+(defvar *scroll-grid-width* 10)
+
 (defboxer-command com-mouse-page-scroll-box (&optional (window *boxer-pane*)
                                                        (x (bw::boxer-pane-mouse-x))
                                                        (y (bw::boxer-pane-mouse-y))

@@ -1378,14 +1378,6 @@
                               #'(lambda ()
                                         (zerop& (mouse-button-state))))))
 
-(defvar *max-scroll-grid-increment* 15
-  "Maximum number of pixels between each tick in the scroll bar grid")
-
-(defvar *min-scroll-grid-increment* 4
-  "Minimum number of pixels between each tick in the scroll bar grid")
-
-(defvar *scroll-grid-width* 10)
-
 (defun mouse-in-v-scroll-bar-internal (screen-box x y click-only?)
   ;; bind these so we dont have to calculate them for each iteration
   ;; of the tracking loop
