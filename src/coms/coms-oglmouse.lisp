@@ -1316,9 +1316,6 @@
 (defvar *scroll-pause-time* 0.1
   "Seconds to pause between each line scroll while holding the mouse")
 
-(defvar *smooth-scroll-pause-time* 0.005
-  "Seconds to pause between each pixel scroll while holding the mouse")
-
 (defun last-scrolling-row (editor-box)
   (previous-row (previous-row (last-inferior-row editor-box))))
 

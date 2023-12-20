@@ -6336,6 +6336,9 @@ Modification History (most recent at top)
 ;;;; FILE: coms-oglmouse.lisp
 ;;;;
 
+(defvar *smooth-scroll-pause-time* 0.005
+  "Seconds to pause between each pixel scroll while holding the mouse")
+
 ;; sgithens 2023-12-20 We aren't using these types of scroll buttons anymore, and if we do again
 ;;                     the implemention will be factored differently
 
