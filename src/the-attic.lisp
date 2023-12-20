@@ -6336,6 +6336,89 @@ Modification History (most recent at top)
 ;;;; FILE: coms-oglmouse.lisp
 ;;;;
 
+(defvar *smooth-scrolling?* nil)  ; for now...
+
+;; pixel (as opposed to row) based scrolling
+;; should we quantize on integral row on exit ??
+;; no movement lines for now, presumably, disorientation should be less of a problem
+;; no initial pause, start scrolling right away
+
+(defvar *smooth-scroll-min-speed* 1)
+(defvar *smooth-scroll-med-speed* 2)
+(defvar *smooth-scroll-max-speed* 6) ; note must be less than (max-char-height)
+
+(defun mouse-smooth-scroll-internal (screen-box direction)
+  (drawing-on-window (*boxer-pane*)
+                     (queueing-screen-objs-deallocation
+                      (let* ((edbox (screen-obj-actual-obj screen-box))
+                             (1st-edrow (first-inferior-row edbox))
+                             (last-edrow (last-scrolling-row edbox))
+                             (slow-start-time (get-internal-real-time)))
+                        (multiple-value-bind (initial-mx initial-my) (mouse-window-coords)
+                                             (declare (ignore initial-mx))
+                                             (flet ((get-velocity ()
+                                                                  (let ((ydiff (- initial-my
+                                                                                  (multiple-value-bind (mx my) (mouse-window-coords)
+                                                                                                       (declare (ignore mx)) my)))
+                                                                        (tdiff (- (get-internal-real-time) slow-start-time)))
+                                                                    (if (eq direction :up)
+                                                                      (cond ((or (> ydiff 10)
+                                                                                 (> tdiff (* 2 internal-time-units-per-second)))
+                                                                             *smooth-scroll-max-speed*)
+                                                                        ((or (> ydiff 5)
+                                                                             (> tdiff internal-time-units-per-second))
+                                                                         *smooth-scroll-med-speed*)
+                                                                        (t *smooth-scroll-min-speed*))
+                                                                      (cond ((or (< ydiff -10)
+                                                                                 (> tdiff (* 2 internal-time-units-per-second)))
+                                                                             (- *smooth-scroll-max-speed*))
+                                                                        ((or (< ydiff -5)
+                                                                             (> tdiff internal-time-units-per-second))
+                                                                         (- *smooth-scroll-med-speed*))
+                                                                        (t (- *smooth-scroll-min-speed*)))))))
+                                                   ;; everything needs to happen inside the screen-box
+                                                   (let ((bwid (screen-obj-wid screen-box))
+                                                         (bhei (screen-obj-hei screen-box))
+                                                         (body-time (round (* *smooth-scroll-pause-time*
+                                                                              internal-time-units-per-second))))
+                                                     (multiple-value-bind (sb-x sb-y) (xy-position screen-box)
+                                                                          (with-drawing-inside-region (sb-x sb-y bwid bhei)
+                                                                            ;; grab the initial y pos as a baseline for acceleration
+                                                                            (loop (when (or (zerop& (mouse-button-state))
+                                                                                            (and (eq direction :up)
+                                                                                                 (or (eq (scroll-to-actual-row screen-box)
+                                                                                                         1st-edrow)
+                                                                                                     (null (scroll-to-actual-row screen-box)))
+                                                                                                 (zerop (slot-value screen-box 'scroll-y-offset)))
+                                                                                            (and (eq direction :down)
+                                                                                                 (row-> (or (scroll-to-actual-row screen-box)
+                                                                                                            (first-inferior-row edbox))
+                                                                                                   last-edrow)))
+                                                                                    (return))
+                                                                              (timed-body (body-time)
+                                                                                          (let ((vel (get-velocity)))
+                                                                                            (setq vel (pixel-scroll-screen-box screen-box vel))
+                                                                                            ;; sgithens TODO 2021-04-21 Crash fix, these don't exist anymore.
+                                                                                            ;; Can we remove this entire timed-body section?
+                                                                                            ;; (erase-scroll-buttons *last-scrolled-box* t)
+                                                                                            ;; (scroll-move-contents screen-box vel)
+                                                                                            )
+                                                                                          ;; (draw-scroll-buttons screen-box t)
+                                                                                          (swap-graphics-buffers)))
+                                                                            ;; now maybe move the point so it is still visible after scrolling...
+                                                                            (let ((scroll-row (scroll-to-actual-row screen-box)))
+                                                                              (cond ((null scroll-row)
+                                                                                     (move-point-1 (first-inferior-row
+                                                                                                    (screen-obj-actual-obj screen-box))
+                                                                                                   0 screen-box))
+                                                                                ((and (not (zerop (slot-value screen-box 'scroll-y-offset)))
+                                                                                      (not (null (next-row scroll-row))))
+                                                                                 (move-point-1 (next-row scroll-row) 0 screen-box))
+                                                                                (t (move-point-1 scroll-row 0 screen-box))))
+                                                                            ;; finally cover up our mistakes...
+                                                                            ;(set-force-redisplay-infs? screen-box) ; looks bad...
+                                                                            )))))))))
+
 ;; sgithens 2023-04-20 Removing this old slow graphics toggle option
 (defvar *slow-graphics-toggle* nil)
 
