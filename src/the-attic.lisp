@@ -6336,6 +6336,81 @@ Modification History (most recent at top)
 ;;;; FILE: coms-oglmouse.lisp
 ;;;;
 
+(defboxer-command com-mouse-page-scroll-box (&optional (window *boxer-pane*)
+                                                       (x (bw::boxer-pane-mouse-x))
+                                                       (y (bw::boxer-pane-mouse-y))
+                                                       (mouse-bp
+                                                        (mouse-position-values x y))
+                                                       (click-only? t))
+  "Scroll box by the page"
+  window
+  (reset-region)
+  (let* ((screen-box (bp-screen-box mouse-bp))
+         (box-type (box-type screen-box))
+         (fixed? (not (null (display-style-fixed-wid
+                             (display-style-list (screen-obj-actual-obj
+                                                  screen-box)))))))
+    (unless (and *only-scroll-current-box?* (neq screen-box (point-screen-box)))
+      (unless fixed? ; fix the box size during scrolling
+        (multiple-value-bind (wid hei)
+                             (screen-obj-size screen-box)
+                             (multiple-value-bind (left top right bottom)
+                                                  (box-borders-widths (box-type  (screen-box-point-is-in))
+                                                                      (screen-box-point-is-in))
+                                                  (set-fixed-size (screen-obj-actual-obj screen-box)
+                                                                  (- wid left right)
+                                                                  (- hei top bottom)))))
+      (case (get-scroll-position x y screen-box box-type)
+        (:v-up-button (if click-only?
+                        (com-scroll-up-one-screen-box (list screen-box))
+                        (mouse-page-scroll-internal :up screen-box)))
+        (:v-down-button (if click-only?
+                          (com-scroll-dn-one-screen-box (list screen-box))
+                          (mouse-page-scroll-internal :down screen-box)))
+        (:h-left-button (if click-only?
+                          (h-scroll-screen-box screen-box (* 2 *horizontal-click-scroll-quantum*))
+                          (mouse-h-scroll screen-box :left 2)))
+        (:h-right-button (if click-only?
+                           (h-scroll-screen-box screen-box (* 2 (- *horizontal-click-scroll-quantum*)))
+                           (mouse-h-scroll screen-box :right 2)))
+        (:v-bar (mouse-in-v-scroll-bar-internal screen-box x y click-only?))
+        (:h-bar (mouse-in-h-scroll-bar-internal screen-box x y)))
+      ;; now restore the box, if we have fixed it before
+      (unless fixed? (set-fixed-size (screen-obj-actual-obj screen-box) nil nil))))
+  ;; if the cursor is in the box being scrolled (or some inferior), we
+  ;; need to make sure that it gets moved to where it will become visible
+  ;; The scroll-to-actual-row of the screen box is a good bet
+  boxer-eval::*novalue*)
+
+(defboxer-command com-mouse-limit-scroll-box (&optional (window *boxer-pane*)
+                                                        (x (bw::boxer-pane-mouse-x))
+                                                        (y (bw::boxer-pane-mouse-y))
+                                                        (mouse-bp
+                                                         (mouse-position-values x y))
+                                                        (click-only? t))
+  "To the limit..."
+  window
+  (reset-region)
+  (let* ((screen-box (bp-screen-box mouse-bp))
+         (edbox (screen-obj-actual-obj screen-box))
+         (box-type (box-type screen-box)))
+    (unless (and *only-scroll-current-box?* (neq screen-box (point-screen-box)))
+      (multiple-value-bind (left top right bottom)
+                           (box-borders-widths box-type screen-box)
+                           (declare (ignore left right))
+                           (multiple-value-bind (wid hei)
+                                                (screen-obj-size screen-box)
+                                                (declare (ignore wid))
+                                                (case (get-scroll-position x y screen-box box-type)
+                                                  (:v-up-button   (set-scroll-to-actual-row screen-box (first-inferior-row edbox)))
+                                                  (:v-down-button (set-scroll-to-actual-row screen-box
+                                                                                            (last-page-top-row edbox (- hei top bottom))))
+                                                  (:h-left-button  (h-scroll-screen-box screen-box 100000)) ; any large number will do...
+                                                  (:h-right-button (h-scroll-screen-box screen-box -100000))
+                                                  (:v-bar (mouse-in-v-scroll-bar-internal screen-box x y click-only?))
+                                                  (:h-bar (mouse-in-h-scroll-bar-internal screen-box x y)))))))
+  boxer-eval::*novalue*)
+
 (defvar *smooth-scrolling?* nil)  ; for now...
 
 ;; pixel (as opposed to row) based scrolling
@@ -14333,6 +14408,17 @@ CLOSED for renovations until I fix the string/font situation
 ;;;;
 ;;;; FILE: keys-new.lisp
 ;;;;
+(boxer-eval::defboxer-key bu::ctrl-mouse-click-on-scroll-bar        com-mouse-page-scroll-box) ;; was previously Command on MacOS
+(boxer-eval::defboxer-key bu::option-mouse-click-on-scroll-bar         com-mouse-page-scroll-box)
+(boxer-eval::defboxer-key bu::alt-mouse-click-on-scroll-bar         com-mouse-page-scroll-box)
+
+(boxer-eval::defboxer-key bu::mouse-double-click-on-scroll-bar         com-mouse-limit-scroll-box)
+(boxer-eval::defboxer-key bu::ctrl-mouse-right-click-on-scroll-bar com-mouse-limit-scroll-box)
+(boxer-eval::defboxer-key bu::alt-mouse-right-click-on-scroll-bar  com-mouse-limit-scroll-box)
+(boxer-eval::defboxer-key bu::option-mouse-double-click-on-scroll-bar  com-mouse-limit-scroll-box)
+(boxer-eval::defboxer-key bu::ctrl-mouse-double-click-on-scroll-bar com-mouse-limit-scroll-box) ;; was previously Command on MacOS
+
+
 (boxer-eval::defboxer-key (bu::>-key 2) com-fat)
 (boxer-eval::defboxer-key (bu::<-key 2) com-nutri-system)
 
