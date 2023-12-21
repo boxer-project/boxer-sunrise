@@ -309,18 +309,11 @@ Modification History (most recent at top)
 
 (defun dont-show-scroll-buttons? (screen-box)
   (or ;(null screen-box)  ; should already have been checked
-   ;; screen-box is not connected
-   (null (superior-screen-box screen-box))
+    (null (superior-screen-box screen-box))
       (graphics-screen-box? screen-box)
       (and (not (outermost-screen-box? screen-box))
            (fast-memq (display-style (screen-obj-actual-obj screen-box))
-                      '(:shrunk :supershrunk :boxtop)))
-      ;; make sure that the screen-box is part of the hierarchy
-      ;(do ((sb screen-box (when (or (screen-row? sb) (screen-box? sb))
-      ;		    (superior sb))))
-      ;    ((null sb) t)
-      ;  (when (outermost-screen-box? sb) (return nil)))
-      ))
+                      '(:shrunk :supershrunk :boxtop)))))
 
 ;; this is a hook for a later time when we might want to have
 ;; the ability to lock unlock individual boxes
@@ -361,69 +354,24 @@ Modification History (most recent at top)
     self
     (multiple-value-bind (il it ir ib)
                          (box-borders-widths box-type self)
-                         (let* ((total-rows (length-in-rows actual-obj))
-                                (visible-rows (screen-rows-length self))
-                                (inner-wid (- wid il ir))
+                         (let* ((inner-wid (- wid il ir))
                                 (inner-hei (- hei it ib))
                                 (type-label-width (border-label-width (box-type-label actual-obj)))
-                                (vert-x (- wid ir (- (border-thickness (border-style actual-obj)) 1)))
-                                (sbe (scroll-buttons-extent)))
+                                (vert-x (- wid ir (- (border-thickness (border-style actual-obj)) 1))))
                            (when (v-scrollable? self)
                              ;; ok need to draw vertical scroll GUI
-                             (if *use-repaint2024*
-                               (draw-vertical-scrollbar vert-x it inner-hei
-                                                        (* (/ inner-hei content-hei) inner-hei)
-                                                        ;; percent scrolled
-                                                        (/ scroll-y-offset (- content-hei inner-hei)))
-                               (draw-vertical-elevator vert-x it (- inner-hei 0) ;sbe)
-                                                     (/ visible-rows total-rows)
-                                                     (if (or (null scroll-to-actual-row)
-                                                             (null (row-row-no actual-obj scroll-to-actual-row))) 0
-                                                       (/ (row-row-no actual-obj scroll-to-actual-row) total-rows)))))
+                             (draw-vertical-scrollbar vert-x it inner-hei
+                                                      (* (/ inner-hei content-hei) inner-hei)
+                                                      ;; percent scrolled
+                                                      (/ scroll-y-offset (- content-hei inner-hei))))
                            (when (h-scrollable? self)
                              ;; ok, need to draw horizontal scroll GUI
-                             (let* ((esize (cond ((or (null max-scroll-wid) (equal max-scroll-wid 0)) 1/2)
-                                             (t  (/ (min inner-wid (+ max-scroll-wid scroll-x-offset))
-                                                    max-scroll-wid))))
-                                    (epos (cond ((or (null max-scroll-wid) (equal max-scroll-wid 0)) 1/2)
-                                            (t (/ (- scroll-x-offset) max-scroll-wid)))))
-                               ;; It is possible for scroll-x-offset to exceed max-scroll-wid under certain conditions in
-                               ;; particular, vertical scrolling away from an extra wide section which horizontally scrolled
-                               (if *use-repaint2024*
-                                 (draw-horizontal-scrollbar (+ type-label-width il) (- hei ib)
-                                                            inner-wid (* (/ inner-wid content-wid) inner-wid)
-                                                            ;; percent scrolled
-                                                            (/ scroll-x-offset (- content-wid inner-wid))
-                                                            )
-                                 (draw-horizontal-elevator (+ type-label-width il) (- hei ib)
-                                                           (- inner-wid type-label-width sbe)
-                                                           esize
-                                                           epos))))))))
-
-;; useful info for h-scroll tracking, returns the elevator's  min-x, max-x and
-;; current left x-pos relative to the box
-(defmethod h-scroll-info ((self screen-box))
-  (with-slots (actual-obj wid box-type scroll-x-offset max-scroll-wid)
-    self
-    (multiple-value-bind (il it ir ib)
-                         (box-borders-widths box-type self)
-                         (declare (ignore it ib))
-                         (let* ((type-label-width (border-label-width (box-type-label actual-obj)))
-                                (s-start (+ type-label-width il) )
-                                (s-width (- wid il ir type-label-width (scroll-buttons-extent))))
-                           (values s-start
-                                   (+ s-start s-width);(+ s-start (- s-width (round (* s-width (/ (- wid il ir) max-scroll-wid)))))
-                                   (+ s-start (abs (round (* s-width (/ scroll-x-offset max-scroll-wid))))))))))
-
-(defmethod v-scroll-info ((self screen-box))
-  (with-slots (hei box-type)
-    self
-    (multiple-value-bind (il it ir ib)
-                         (box-borders-widths box-type self)
-                         (declare (ignore il ir))
-                         (let ((s-width (- hei it ib (scroll-buttons-extent))))
-                           (values it
-                                   (+ it s-width))))))
+                             ;; It is possible for scroll-x-offset to exceed max-scroll-wid under certain conditions in
+                             ;; particular, vertical scrolling away from an extra wide section which horizontally scrolled
+                             (draw-horizontal-scrollbar (+ type-label-width il) (- hei ib)
+                                                        inner-wid (* (/ inner-wid content-wid) inner-wid)
+                                                        ;; percent scrolled
+                                                        (/ scroll-x-offset (- content-wid inner-wid))))))))
 
 (defmethod draw-scroll-info ((self graphics-screen-box))
   (with-slots (actual-obj wid hei box-type)
@@ -445,51 +393,22 @@ Modification History (most recent at top)
 
 (defvar *scroll-info-offset* 0 "How far to indent scroll info from the inner (text) part of the box")
 (defvar *scroll-elevator-thickness* 6)
-(defvar *scroll-button-width* 10)
-(defvar *scroll-button-length* 6)
 (defvar *scroll-elevator-color*)
-(defvar *scroll-buttons-color*)
 
 ; init
-(def-redisplay-initialization (setq *scroll-elevator-color* *gray* *scroll-buttons-color* *black*))
+(def-redisplay-initialization (setq *scroll-elevator-color* *gray*))
 
-;; new for 2024
 (defun draw-vertical-scrollbar (x y hei scroll-bar-hei percent-scrolled)
   (let ((scrolled (* percent-scrolled (- hei scroll-bar-hei))))
-    (format t "~%draw-vertical-scrollbar: x: ~A y: ~A hei: ~A scroll-bar-hei: ~A percent-scrolled: ~A scrolled: ~A"
-      x y hei scroll-bar-hei percent-scrolled scrolled)
     (with-pen-color (*scroll-elevator-color*)
       (draw-rectangle *scroll-elevator-thickness* scroll-bar-hei
-                      (+ x *scroll-info-offset*) (- y scrolled))))
-)
+                      (+ x *scroll-info-offset*) (- y scrolled)))))
 
 (defun draw-horizontal-scrollbar (x y wid scroll-bar-wid percent-scrolled)
   (let ((scrolled (* percent-scrolled (- wid scroll-bar-wid))))
     (with-pen-color (*scroll-elevator-color*)
       (draw-rectangle scroll-bar-wid *scroll-elevator-thickness*
-                      (- x scrolled) (+ y *scroll-info-offset*))))
-)
-
-;; size is expressed as a rational < 1 = amount of available space to draw the elevator in
-;; pos is also expressed as a rational 0 <= pos <= 1
-(defun draw-vertical-elevator (x y height size pos)
-   (with-pen-size (1) (with-pen-color (*black*)
-     (opengl::gl-disable opengl::*gl-line-smooth*)
-    (draw-line x y x (+ y height))
-    (opengl::gl-enable opengl::*gl-line-smooth*)
-  ))
-  (with-pen-color (*scroll-elevator-color*)
-    (draw-rectangle *scroll-elevator-thickness* (round (* height size))
-                    (+ x *scroll-info-offset*) (+ y (round (* pos height))))))
-
-(defun scroll-buttons-extent () (+ 1 *scroll-button-length* 1 *scroll-button-length* 1))
-
-;; size is expressed as a rational < 1 = amount of available space to draw the elevator in
-;; pos is also expressed as a rational 0 <= pos <= 1
-(defun draw-horizontal-elevator (x y width size pos)
-  (with-pen-color (*scroll-elevator-color*)
-    (draw-rectangle (round (* width size)) *scroll-elevator-thickness*
-                    (+ x (round (* pos width))) (+ y *scroll-info-offset*))))
+                      (- x scrolled) (+ y *scroll-info-offset*)))))
 
 ;; scroll position tracking.  Get-position-in-border only returns :Scroll-bar
 ;; which causes a generic mouse-scrolling com to be invoked.  Finer grained
@@ -515,32 +434,16 @@ Modification History (most recent at top)
                                                                  (multiple-value-bind (scroll-top scroll-bottom last-is-top?)
                                                                                       (screen-box-is-scrollable? screen-box)
                                                                                       (declare (ignore scroll-bottom))
-                                                                                      (let* ((sbe (scroll-buttons-extent))
-                                                                                             ;; these are the demarcation lines between the elevator space
+                                                                                      (let* (;; these are the demarcation lines between the elevator space
                                                                                              ;; and the buttons
-                                                                                             (v-div (+ box-window-y (- hei bottom sbe)))
-                                                                                             (h-div (+ box-window-x (- wid right sbe))))
+                                                                                             (v-div (+ box-window-y (- hei bottom)))
+                                                                                             (h-div (+ box-window-x (- wid right))))
                                                                                         ;; now check for horizontal stuff, must be in the horizontal
                                                                                         ;; because it isn't in the vertical space and we can only come here
                                                                                         ;; as a result of a previous tracking returning :scroll-bar
                                                                                         (cond
                                                                                           ((< y v-div) :v-bar)
                                                                                           ((< x h-div) :h-bar))))))))
-
-(defvar *horizontal-click-scroll-quantum* 10
-  "How much to scroll horizontally when a horizontal scroll button has been clicked")
-
-(defvar *horizontal-continuous-scroll-quantum* 2)
-
-(defun h-scroll-screen-box (screen-box &optional (velocity -1)) ; negative values scroll right
-  (let ((new-scroll-x-offset (+ (slot-value screen-box 'scroll-x-offset) velocity)))
-    (setf (slot-value screen-box 'scroll-x-offset)
-          (cond ((plusp velocity)
-                 (min new-scroll-x-offset 0))
-            (t
-             (max new-scroll-x-offset (- (if (null (slot-value screen-box 'max-scroll-wid))
-                                           (floor (screen-obj-wid screen-box) 2)
-                                           (slot-value screen-box 'max-scroll-wid)))))))))
 
 (defun maybe-move-point-after-scrolling (screen-box direction)
   (when (eq screen-box (point-screen-box))
@@ -618,6 +521,21 @@ Modification History (most recent at top)
     (when (and (null moved?) (not (null continue?)))
       (search-downward-for-visible-row self nil))))
 
+(defun mouse-in-v-scroll-bar-internal (screen-box x y click-only?)
+  ;; bind these so we dont have to calculate them for each iteration
+  ;; of the tracking loop
+  (let ((orig-scroll-y-offset (slot-value screen-box 'scroll-y-offset)))
+    #+lispworks (boxer-window::with-mouse-tracking ((mouse-x x) (mouse-y y))
+                (declare (ignore mouse-x))
+                (let* ((diff (- y mouse-y))
+                       (new-scroll (+ orig-scroll-y-offset diff)))
+                  (when (> new-scroll 0)
+                    (setf new-scroll 0))
+                  (when (> (- new-scroll) (screen-obj-hei screen-box))
+                    (setf new-scroll (- (screen-obj-hei screen-box))))
+                  (setf (slot-value screen-box 'scroll-y-offset) new-scroll))
+                (repaint t))))
+
 (defun mouse-in-h-scroll-bar-internal (screen-box x y)
 (let ((orig-scroll-x-offset (slot-value screen-box 'scroll-x-offset)))
     #+lispworks (boxer-window::with-mouse-tracking ((mouse-x x) (mouse-y y))
@@ -628,39 +546,11 @@ Modification History (most recent at top)
                     (setf new-scroll 0))
                   (when (> (- new-scroll) (content-wid screen-box))
                     (setf new-scroll (- (content-wid screen-box))))
-                  (format t "
-scrolling-v  x: ~A       y: ~A
-       mouse-x: ~A mouse-y: ~A
-          diff: ~A  new-scroll: ~A" x y mouse-x mouse-y diff new-scroll)
                   (setf (slot-value screen-box 'scroll-x-offset) new-scroll))
                 (repaint t))))
 
-;; loop:get the current elevator position, update, repaint
-;; ? display info graphics ?
-(defun mouse-in-h-scroll-bar-internal-current (screen-box x y)
-  (let ((initial-scroll-pos (slot-value screen-box 'scroll-x-offset)))
-    (multiple-value-bind (h-min-x h-max-x)
-                         (h-scroll-info screen-box)
-                         (multiple-value-bind (box-window-x box-window-y)
-                                              (xy-position screen-box)
-                                              ;; the "offset" is the difference between the initial mouse pos to the start if
-                                              ;; the horizontal scrolling elevator which is where the new scrolling location is
-                                              ;; calculated from
-                                              (declare (ignore box-window-y))
-                                                #+lispworks (ignore-errors
-                                                  (let ((x-offset (+ box-window-x h-min-x))
-                                                        (h-working-width (- h-max-x h-min-x)))
-                                                    (with-mouse-tracking ((mouse-x x) (mouse-y y))
-                                                      ; (declare (ignore mouse-y))
-                                                      (setf (slot-value screen-box 'scroll-x-offset)
-                                                            (- (round (* (min (/ (max 0 (- mouse-x x-offset)) h-working-width) 1)
-                                                                        (- (slot-value screen-box 'max-scroll-wid)
-                                                                            (/ (screen-obj-wid screen-box) 2))))))
-                                                      (repaint t)))
-                                                  (maybe-move-point-after-scrolling screen-box (if (< initial-scroll-pos
-                                                                                                      (slot-value screen-box 'scroll-x-offset))
-                                                                                                :left
-                                                                                                :right)))))))
+
+
 
 
 

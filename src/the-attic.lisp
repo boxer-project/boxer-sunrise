@@ -24,7 +24,9 @@
 ;;;;   - gdispl.lisp (defun ,recording-function ,args... shows how we could optimize the
 ;;;;     record-boxer-graphics-command-xyz functions by looking backwards and not recording it if it's
 ;;;;     the previous item
-
+;;;;   - oglscroll.lisp  Some old versions of mouse-in-h-scroll-bar-internal (and v) that handled the mouse
+;;;;     scrolling with a scroll bar and also used maybe-move-point-after-scrolling to move to make the
+;;;;     cursor visible if it had been scrolled offscreen
 
 ;;;;
 ;;;; FILE: applefile.lisp
@@ -6335,6 +6337,73 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: coms-oglmouse.lisp
 ;;;;
+
+;; we need to make sure that we don't leave just a single row for unfixed size
+;; boxes because that makes it hard to use the scrolling machinery
+;; should be smarter and estimate row heights so the lowest we go is still a boxful
+;; of text
+(defun new-elevator-scrolled-row (ed-box elevator-row-no)
+  (let ((elevator-row (row-at-row-no ed-box elevator-row-no)))
+    (cond ((and t ; (not (fixed-size? ed-box)) ;; note: Size is fixed temp, for ALL
+                (eq elevator-row (last-inferior-row ed-box)))
+           (or (previous-row elevator-row) elevator-row))
+      (t elevator-row))))
+
+(defun set-v-scroll-row (screen-box fraction
+                                    &optional (ed-box (screen-obj-actual-obj screen-box))
+                                    (no-of-rows (length-in-rows ed-box)))
+  (set-scroll-to-actual-row screen-box
+                            (new-elevator-scrolled-row ed-box
+                                                       (floor (* fraction (1-& no-of-rows))))))
+
+(defun last-scrolling-row (editor-box)
+  (previous-row (previous-row (last-inferior-row editor-box))))
+
+(defun last-page-top-row (box hei)
+  (do ((row (last-inferior-row box) (previous-row row))
+       (acc-height 0))
+    ((or (null row) (>= acc-height hei))
+     (if (null row) (first-inferior-row box) (next-row row)))
+    (setq acc-height (+ acc-height (estimate-row-height row)))))
+
+(defvar *initial-scroll-pause-time* .5
+  "Seconds to pause after the 1st line scroll while holding the mouse")
+
+(defvar *scroll-pause-time* 0.1
+  "Seconds to pause between each line scroll while holding the mouse")
+
+(defun mouse-line-scroll-internal (screen-box direction)
+  (if (eq direction :up)
+    (com-scroll-up-row screen-box)
+    (com-scroll-dn-row screen-box))
+  ;; do one thing, show it, then pause...
+  #+lispworks (capi::apply-in-pane-process *boxer-pane* #'repaint t)
+  (simple-wait-with-timeout *initial-scroll-pause-time* #'(lambda () (zerop& (mouse-button-state))))
+
+  ;; sgithens 2021-03-11 This `if` is a temporary crash fix, as this method keeps getting called when there are
+  ;; no previous rows for `last-scrolling-row`
+  (if (and (previous-row (last-inferior-row (screen-obj-actual-obj screen-box)))
+           (previous-row (previous-row (last-inferior-row (screen-obj-actual-obj screen-box)))))
+    ;; now loop
+    (let* ((edbox (screen-obj-actual-obj screen-box))
+          (1st-edrow (first-inferior-row edbox))
+          (last-edrow (last-scrolling-row edbox)))
+      (loop (when (or (zerop& (mouse-button-state))
+                      (and (eq direction :up) (eq (scroll-to-actual-row screen-box) 1st-edrow))
+                      (and (eq direction :down) (row-> (scroll-to-actual-row screen-box)
+                                                  last-edrow)))
+              ;; stop if the mouse is up or we hit one end or the other...
+              (return))
+        (if (eq direction :up)
+          (com-scroll-up-row screen-box)
+          (com-scroll-dn-row screen-box))
+        (repaint)
+        (simple-wait-with-timeout *scroll-pause-time*
+                                  #'(lambda () (zerop& (mouse-button-state))))))))
+
+
+(defvar *only-scroll-current-box?* nil)
+
 
 (defvar *smooth-scroll-pause-time* 0.005
   "Seconds to pause between each pixel scroll while holding the mouse")
@@ -18661,6 +18730,134 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: oglscroll.lisp
 ;;;;
+
+(defvar *scroll-buttons-color*)
+(defvar *scroll-button-width* 10)
+(defvar *scroll-button-length* 6)
+
+(defun scroll-buttons-extent () (+ 1 *scroll-button-length* 1 *scroll-button-length* 1))
+
+;; useful info for h-scroll tracking, returns the elevator's  min-x, max-x and
+;; current left x-pos relative to the box
+(defmethod h-scroll-info ((self screen-box))
+  (with-slots (actual-obj wid box-type scroll-x-offset max-scroll-wid)
+    self
+    (multiple-value-bind (il it ir ib)
+                         (box-borders-widths box-type self)
+                         (declare (ignore it ib))
+                         (let* ((type-label-width (border-label-width (box-type-label actual-obj)))
+                                (s-start (+ type-label-width il) )
+                                (s-width (- wid il ir type-label-width (scroll-buttons-extent))))
+                           (values s-start
+                                   (+ s-start s-width);(+ s-start (- s-width (round (* s-width (/ (- wid il ir) max-scroll-wid)))))
+                                   (+ s-start (abs (round (* s-width (/ scroll-x-offset max-scroll-wid))))))))))
+
+(defmethod v-scroll-info ((self screen-box))
+  (with-slots (hei box-type)
+    self
+    (multiple-value-bind (il it ir ib)
+                         (box-borders-widths box-type self)
+                         (declare (ignore il ir))
+                         (let ((s-width (- hei it ib (scroll-buttons-extent))))
+                           (values it
+                                   (+ it s-width))))))
+
+;; size is expressed as a rational < 1 = amount of available space to draw the elevator in
+;; pos is also expressed as a rational 0 <= pos <= 1
+(defun draw-vertical-elevator (x y height size pos)
+   (with-pen-size (1) (with-pen-color (*black*)
+     (opengl::gl-disable opengl::*gl-line-smooth*)
+    (draw-line x y x (+ y height))
+    (opengl::gl-enable opengl::*gl-line-smooth*)
+  ))
+  (with-pen-color (*scroll-elevator-color*)
+    (draw-rectangle *scroll-elevator-thickness* (round (* height size))
+                    (+ x *scroll-info-offset*) (+ y (round (* pos height))))))
+
+;; size is expressed as a rational < 1 = amount of available space to draw the elevator in
+;; pos is also expressed as a rational 0 <= pos <= 1
+(defun draw-horizontal-elevator (x y width size pos)
+  (with-pen-color (*scroll-elevator-color*)
+    (draw-rectangle (round (* width size)) *scroll-elevator-thickness*
+                    (+ x (round (* pos width))) (+ y *scroll-info-offset*))))
+
+;; Older versions of mouse-in-h-scroll-bar-internal and mouse-in-v-scroll-bar-internal for reference
+
+;; loop:get the current elevator position, update, repaint
+;; ? display info graphics ?
+(defun mouse-in-h-scroll-bar-internal (screen-box x y)
+  (let ((initial-scroll-pos (slot-value screen-box 'scroll-x-offset)))
+    (multiple-value-bind (h-min-x h-max-x)
+                         (h-scroll-info screen-box)
+                         (multiple-value-bind (box-window-x box-window-y)
+                                              (xy-position screen-box)
+                                              ;; the "offset" is the difference between the initial mouse pos to the start if
+                                              ;; the horizontal scrolling elevator which is where the new scrolling location is
+                                              ;; calculated from
+                                              (declare (ignore box-window-y))
+                                                #+lispworks (ignore-errors
+                                                  (let ((x-offset (+ box-window-x h-min-x))
+                                                        (h-working-width (- h-max-x h-min-x)))
+                                                    (with-mouse-tracking ((mouse-x x) (mouse-y y))
+                                                      ; (declare (ignore mouse-y))
+                                                      (setf (slot-value screen-box 'scroll-x-offset)
+                                                            (- (round (* (min (/ (max 0 (- mouse-x x-offset)) h-working-width) 1)
+                                                                        (- (slot-value screen-box 'max-scroll-wid)
+                                                                            (/ (screen-obj-wid screen-box) 2))))))
+                                                      (repaint t)))
+                                                  (maybe-move-point-after-scrolling screen-box (if (< initial-scroll-pos
+                                                                                                      (slot-value screen-box 'scroll-x-offset))
+                                                                                                :left
+                                                                                                :right)))))))
+
+(defun mouse-in-v-scroll-bar-internal (screen-box x y click-only?)
+  (let ((start-row (or (scroll-to-actual-row screen-box)
+                       (first-inferior-row (screen-obj-actual-obj screen-box)))))
+    (multiple-value-bind (v-min-y v-max-y)
+                         (v-scroll-info screen-box)
+                         (multiple-value-bind (box-window-x box-window-y)
+                                              (xy-position screen-box)
+                                              (declare (ignore box-window-x))
+                                              (let ((y-offset (+ box-window-y v-min-y))
+                                                    (v-working-height (- v-max-y v-min-y)))
+                                                (if click-only?
+                                                  (set-v-scroll-row screen-box (min (/ (max 0 (- y y-offset))
+                                                                                       v-working-height)
+                                                                                    1))
+                                                  (let* ((eb (screen-obj-actual-obj screen-box))
+                                                         (no-of-rows (length-in-rows eb)))
+                                                    ;; bind these so we dont have to calculate them for each iteration
+                                                    ;; of the tracking loop
+                                                    #+lispworks (boxer-window::with-mouse-tracking ((mouse-x x) (mouse-y y))
+                                                                                       (declare (ignore mouse-x))
+                                                                                       (set-v-scroll-row screen-box
+                                                                                                         (min (/ (max 0 (- mouse-y y-offset)) v-working-height) 1)
+                                                                                                         eb
+                                                                                                         no-of-rows)
+                                                                                       (repaint t)))))))
+    (maybe-move-point-after-scrolling screen-box
+                                      (if (row-> start-row
+                                            (or (scroll-to-actual-row screen-box)
+                                                (first-inferior-row (screen-obj-actual-obj
+                                                                     screen-box))))
+                                        :left
+                                        :right))))
+
+(defun h-scroll-screen-box (screen-box &optional (velocity -1)) ; negative values scroll right
+  (let ((new-scroll-x-offset (+ (slot-value screen-box 'scroll-x-offset) velocity)))
+    (setf (slot-value screen-box 'scroll-x-offset)
+          (cond ((plusp velocity)
+                 (min new-scroll-x-offset 0))
+            (t
+             (max new-scroll-x-offset (- (if (null (slot-value screen-box 'max-scroll-wid))
+                                           (floor (screen-obj-wid screen-box) 2)
+                                           (slot-value screen-box 'max-scroll-wid)))))))))
+
+(defvar *horizontal-click-scroll-quantum* 10
+  "How much to scroll horizontally when a horizontal scroll button has been clicked")
+
+(defvar *horizontal-continuous-scroll-quantum* 2)
+
 
 ;; should this be in coms-oglmouse ?
 ;; this needs to move the *point* if it is scrolled off the screen
