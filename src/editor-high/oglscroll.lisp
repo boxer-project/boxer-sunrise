@@ -521,33 +521,54 @@ Modification History (most recent at top)
     (when (and (null moved?) (not (null continue?)))
       (search-downward-for-visible-row self nil))))
 
+(defmethod v-scroll-multiplier ((self screen-box))
+  "Find the multiplier needed to adjust the outer scroll distance to the internal height.
+   The ratio of the content-hei / inner-hei. This is multiplied by the distance the mouse
+   moves such that it stays in line with the scroll bar."
+  (with-slots (content-hei box-type hei) self
+    (multiple-value-bind (il it ir ib) (box-borders-widths box-type self)
+      (let ((inner-hei (- hei it ib)))
+        (/ content-hei inner-hei)))))
+
 (defun mouse-in-v-scroll-bar-internal (screen-box x y click-only?)
   ;; bind these so we dont have to calculate them for each iteration
   ;; of the tracking loop
-  (let ((orig-scroll-y-offset (slot-value screen-box 'scroll-y-offset)))
-    #+lispworks (boxer-window::with-mouse-tracking ((mouse-x x) (mouse-y y))
-                (declare (ignore mouse-x))
-                (let* ((diff (- y mouse-y))
-                       (new-scroll (+ orig-scroll-y-offset diff)))
-                  (when (> new-scroll 0)
-                    (setf new-scroll 0))
-                  (when (> (- new-scroll) (screen-obj-hei screen-box))
-                    (setf new-scroll (- (screen-obj-hei screen-box))))
-                  (setf (slot-value screen-box 'scroll-y-offset) new-scroll))
-                (repaint t))))
+  (with-slots (content-hei) screen-box
+    (let ((orig-scroll-y-offset (slot-value screen-box 'scroll-y-offset))
+          (scroll-multiplier (v-scroll-multiplier screen-box)))
+      #+lispworks
+      (boxer-window::with-mouse-tracking ((mouse-x x) (mouse-y y))
+        (declare (ignore mouse-x))
+        (let* ((diff (- y mouse-y))
+               (new-scroll (* scroll-multiplier (+ orig-scroll-y-offset diff))))
+          (when (> new-scroll 0)
+            (setf new-scroll 0))
+          (when (> (- new-scroll) (screen-obj-hei screen-box))
+            (setf new-scroll (- (screen-obj-hei screen-box))))
+          (setf (slot-value screen-box 'scroll-y-offset) new-scroll))
+        (repaint t)))))
+
+(defmethod h-scroll-multiplier ((self screen-box))
+  "See v-scroll-multiplier for explanation, but to the horizontal scroll bar."
+  (with-slots (content-wid box-type wid) self
+    (multiple-value-bind (il it ir ib) (box-borders-widths box-type self)
+      (let ((inner-wid (- wid it ib)))
+        (/ content-wid inner-wid)))))
 
 (defun mouse-in-h-scroll-bar-internal (screen-box x y)
-(let ((orig-scroll-x-offset (slot-value screen-box 'scroll-x-offset)))
-    #+lispworks (boxer-window::with-mouse-tracking ((mouse-x x) (mouse-y y))
-                (declare (ignore mouse-y))
-                (let* ((diff (- x mouse-x))
-                       (new-scroll (+ orig-scroll-x-offset diff)))
-                  (when (> new-scroll 0)
-                    (setf new-scroll 0))
-                  (when (> (- new-scroll) (content-wid screen-box))
-                    (setf new-scroll (- (content-wid screen-box))))
-                  (setf (slot-value screen-box 'scroll-x-offset) new-scroll))
-                (repaint t))))
+  (let ((orig-scroll-x-offset (slot-value screen-box 'scroll-x-offset))
+        (scroll-multiplier (h-scroll-multiplier screen-box)))
+    #+lispworks
+    (boxer-window::with-mouse-tracking ((mouse-x x) (mouse-y y))
+      (declare (ignore mouse-y))
+      (let* ((diff (- x mouse-x))
+             (new-scroll (* scroll-multiplier (+ orig-scroll-x-offset diff))))
+        (when (> new-scroll 0)
+          (setf new-scroll 0))
+        (when (> (- new-scroll) (content-wid screen-box))
+          (setf new-scroll (- (content-wid screen-box))))
+        (setf (slot-value screen-box 'scroll-x-offset) new-scroll))
+      (repaint t))))
 
 
 
