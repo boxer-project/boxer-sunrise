@@ -495,19 +495,10 @@
 ;;;
 ;;; Scrolling
 ;;;
+;;; note: see the attic for older versions that bound com-mouse-page-scroll-box and
+;;;       com-mouse-limit-scroll-box
 
 (boxer-eval::defboxer-key bu::mouse-down-on-scroll-bar                com-mouse-scroll-box)
-
-(boxer-eval::defboxer-key bu::ctrl-mouse-click-on-scroll-bar        com-mouse-page-scroll-box) ;; was previously Command on MacOS
-(boxer-eval::defboxer-key bu::option-mouse-click-on-scroll-bar         com-mouse-page-scroll-box)
-(boxer-eval::defboxer-key bu::alt-mouse-click-on-scroll-bar         com-mouse-page-scroll-box)
-
-(boxer-eval::defboxer-key bu::mouse-double-click-on-scroll-bar         com-mouse-limit-scroll-box)
-(boxer-eval::defboxer-key bu::ctrl-mouse-right-click-on-scroll-bar com-mouse-limit-scroll-box)
-(boxer-eval::defboxer-key bu::alt-mouse-right-click-on-scroll-bar  com-mouse-limit-scroll-box)
-(boxer-eval::defboxer-key bu::option-mouse-double-click-on-scroll-bar  com-mouse-limit-scroll-box)
-(boxer-eval::defboxer-key bu::ctrl-mouse-double-click-on-scroll-bar com-mouse-limit-scroll-box) ;; was previously Command on MacOS
-
 
 ;;;; temporary
 

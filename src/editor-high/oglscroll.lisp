@@ -548,6 +548,16 @@ Modification History (most recent at top)
           (setf (slot-value screen-box 'scroll-y-offset) new-scroll))
         (repaint t)))))
 
+(defmethod scroll-vertical ((self screen-box) scroll-amount)
+  (with-slots (scroll-y-offset) self
+    (let ((new-scroll (+ scroll-y-offset (- scroll-amount))))
+      ;; TODO duplicated lines from mouse-in-v-scroll-bar-internal
+      (when (> new-scroll 0)
+        (setf new-scroll 0))
+      (when (> (- new-scroll) (screen-obj-hei self))
+        (setf new-scroll (- (screen-obj-hei self))))
+      (setf scroll-y-offset new-scroll))))
+
 (defmethod h-scroll-multiplier ((self screen-box))
   "See v-scroll-multiplier for explanation, but to the horizontal scroll bar."
   (with-slots (content-wid box-type wid) self
@@ -570,7 +580,15 @@ Modification History (most recent at top)
         (setf (slot-value screen-box 'scroll-x-offset) new-scroll))
       (repaint t))))
 
-
+(defmethod scroll-horizontal ((self screen-box) scroll-amount)
+  (with-slots (scroll-x-offset) self
+    (let ((new-scroll (+ scroll-x-offset (- scroll-amount))))
+      ;; TODO duplicated lines from mouse-in-v-scroll-bar-internal
+      (when (> new-scroll 0)
+        (setf new-scroll 0))
+      (when (> (- new-scroll) (content-wid self))
+        (setf new-scroll (- (content-wid self))))
+      (setf scroll-x-offset new-scroll))))
 
 
 

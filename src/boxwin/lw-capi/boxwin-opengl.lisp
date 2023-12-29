@@ -564,12 +564,10 @@
 
               ;  :resize-callback 'resize-handler
                ;; The following 4 params are for scrolling gestures (two finger scroll, mouse wheels, etc)
-               :coordinate-origin :fixed-graphics
-              ;;  :vertical-scroll :without-bar
-              ;;  :horizontal-scroll :without-bar
+               :coordinate-origin :fixed
+               :vertical-scroll :without-bar
+               :horizontal-scroll :without-bar
                :scroll-callback 'scroll-handler
-               :vertical-scroll t
-               :horizontal-scroll t
 
                :visible-min-width  *boxer-pane-minimum-width*
                :visible-min-height *boxer-pane-minimum-height*
@@ -1312,19 +1310,6 @@ in macOS."
            *suppressed-actions* nil)))
 
 (defun scroll-handler (output-pane direction scroll-operation scroll-amount &key interactive)
-  "Prototyping new scroll handler"
-  (when (equal direction :horizontal)
-    (setf (horizontal-scroll output-pane) (- scroll-amount))
-    (capi:set-horizontal-scroll-parameters output-pane :slug-position scroll-amount))
-  (when (equal direction :vertical)
-    (setf (vertical-scroll output-pane) (- scroll-amount))
-    (capi:set-vertical-scroll-parameters output-pane :slug-position scroll-amount))
-  (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)
-        (boxer::create-transform-matrix (horizontal-scroll output-pane) (vertical-scroll output-pane)))
-  (boxer::update-matrices-ubo bw::*boxgl-device*)
-  (boxer::repaint))
-
-(defun scroll-handler-current (output-pane direction scroll-operation scroll-amount &key interactive)
   "Scrolls the screen box that the mouse is in based on the direction of the scrolling gestures from
    a trackpad or mouse."
   ;; We need to do a bit more work to support gesture scrolling during evalution to prevent locking
@@ -1373,19 +1358,23 @@ in macOS."
             (v-scrollable (boxer::v-scrollable? v-screen-box-to-scroll))
             (h-scrollable (boxer::h-scrollable? h-screen-box-to-scroll))
             )
-        (cond ((and v-scrollable (equal direction :vertical) (equal scroll-operation :step) (> scroll-amount 0))
-              (boxer::mouse-line-scroll-internal v-screen-box-to-scroll :down))
-              ((and v-scrollable (equal direction :vertical) (equal scroll-operation :step) (< scroll-amount 0))
-                (boxer::mouse-line-scroll-internal v-screen-box-to-scroll :up))
-              ((and h-scrollable (equal direction :horizontal) (equal scroll-operation :step) (> scroll-amount 0) )
-              ;; (boxer::mouse-h-scroll (boxer::screen-box-point-is-in) :right)
-              (boxer::h-scroll-screen-box h-screen-box-to-scroll (- boxer::*horizontal-click-scroll-quantum*))
-              (boxer::repaint t))
-              ((and h-scrollable (equal direction :horizontal) (equal scroll-operation :step) (< scroll-amount 0) )
-              ;; (boxer::mouse-h-scroll (boxer::screen-box-point-is-in) :left)
-              (boxer::h-scroll-screen-box h-screen-box-to-scroll boxer::*horizontal-click-scroll-quantum*)
-              (boxer::repaint t))
-              (t nil))))))
+        (cond ((and v-scrollable (equal direction :vertical))
+               (boxer::scroll-vertical v-screen-box-to-scroll scroll-amount))
+              ((and h-scrollable (equal direction :horizontal))
+               (boxer::scroll-horizontal h-screen-box-to-scroll scroll-amount))
+              ;; These are for the global scrollbars
+              ((equal direction :horizontal)
+               (setf (horizontal-scroll output-pane) (+ (horizontal-scroll output-pane) (- scroll-amount)))
+               ;;  (capi:set-horizontal-scroll-parameters output-pane :slug-position scroll-amount)
+               (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)
+                     (boxer::create-transform-matrix (horizontal-scroll output-pane) (vertical-scroll output-pane))))
+              ((equal direction :vertical)
+               (setf (vertical-scroll output-pane) (+ (vertical-scroll output-pane) (- scroll-amount)))
+               ;;  (capi:set-vertical-scroll-parameters output-pane :slug-position scroll-amount)
+               (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)
+                    (boxer::create-transform-matrix (horizontal-scroll output-pane) (vertical-scroll output-pane))))
+              (t nil))
+       (boxer::repaint t)))))
 
 ;; careful, this called during startup before the outermost screen box
 ;; is created (by the 1st call to redisplay)

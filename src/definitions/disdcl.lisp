@@ -183,30 +183,13 @@
 (defvar %drawing-font-cha-hei 12)
 (defvar %drawing-font-cha-ascent 12)
 
-
-(defvar *redisplay-id* 0)
 (defvar *redisplay-in-progress?* nil)
-(defvar *redisplay-encore?* nil)
-(defvar *allow-redisplay-encore? nil)
-
-;; the innards of repaint-cursor can side effect the horizontal scrolling
-;; of the (point-screen-box).  If it does, then it will set this flag and then
-;; throw to 'scroll-x-changed TAG
 
 (defmacro redisplaying-unit (&body body)
-  `(let ((*redisplay-in-progress?* t)
-         (*redisplay-encore?* nil))
-     (catch 'scroll-x-changed
-       (unwind-protect
-        (progn . ,body)
-        (when (not (null *redisplay-encore?*))
-          (progn . ,body))
-        (setq *redisplay-id* (tick))))))
+  `(let ((*redisplay-in-progress?* t))
+        (progn . ,body)))
 
 (defun redisplay-in-progress? () *redisplay-in-progress?*)
-(defun redisplay-id () *redisplay-id*)
-
-
 
 ;;;; Inits
 

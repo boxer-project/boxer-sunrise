@@ -63,16 +63,10 @@
     self
     (multiple-value-bind (il it ir ib)
                          (box-borders-widths box-type self)
-                         (format t
-"~%with-clipping-inside name: ~A x: ~A y: ~A wid: ~A hei: ~A
-                        h-scroll-amt: ~A v-scroll-amt: ~A
-                        new-x: ~A new-y: ~A "
-                           (name actual-obj) il it (- wid il ir) (- hei it ib)
-                           (horizontal-scroll *boxer-pane*) (vertical-scroll *boxer-pane*)
-                           (+ it (vertical-scroll *boxer-pane*))
-                           (+ il (horizontal-scroll *boxer-pane*)))
-                        ;;  (with-clipping-inside (il it (- wid il ir) (- hei it ib))
-                         (with-clipping-inside ((+ il (horizontal-scroll *boxer-pane*)) (+ it (vertical-scroll *boxer-pane*)) (- wid il ir) (- hei it ib))
+                         (with-clipping-inside ((+ il (horizontal-scroll *boxer-pane*))
+                                               (+ it (vertical-scroll *boxer-pane*))
+                                               (- wid il ir)
+                                               (- hei it ib))
                            ;; The clipping and rescaling for these methods is similar to
                            ;; the clipping and rescaling for the other redisplay-pass-1
                            ;; and redisplay-pass-2 methods, except that here the region
@@ -133,7 +127,6 @@
 
 (defmethod repaint-pass-2-sb ((self screen-box))
   (multiple-value-bind (x-pos y-pos) (xy-position self)
-    (format t "~%2repain-pass-2-sb xy-position: x: ~A y: ~A" x-pos y-pos)
   (with-slots (x-offset y-offset wid hei actual-obj box-type)
     self
     (with-origin-at (x-offset y-offset)

@@ -564,20 +564,18 @@
   "Create a transform matrix offset from the origin by x and y."
   (3d-matrices:marr4 (3d-matrices:mtranslation (3d-vectors:vec x y 0))))
 
-;; currently unused
-; (defun update-transform-ubo (device)
-;   "Update just the transform matrix in the matrices ubo"
-;
-;   (gl:bind-buffer :uniform-buffer (matrices-ubo device))
-;   (let* ((arr (gl:alloc-gl-array :float (* 4 4)))
-;          (i 0))
-;     (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (3d-matrices:mat4  (boxgl-device-transform-matrix device))))))
-;       (setf (gl:glaref arr i) (coerce item 'single-float))
-;       (incf i))
-;     (gl:buffer-sub-data :uniform-buffer arr :offset 0 :buffer-offset (* *cffi-float-size* 16) :size (* *cffi-float-size* (* 4 4)))
-;     (gl:free-gl-array arr)
-;          )
-;   (gl:bind-buffer :uniform-buffer 0))
+(defun update-transform-matrix-ubo (device)
+  "Update just the transform matrix in the matrices ubo. Slightly more efficient than updating everything in our
+   UBO array."
+  (gl:bind-buffer :uniform-buffer (matrices-ubo device))
+  (let ((arr (gl:alloc-gl-array :float (* 4 4)))
+        (i 0))
+    (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (3d-matrices:mat4  (boxgl-device-transform-matrix device))))))
+      (setf (gl:glaref arr i) (coerce item 'single-float))
+      (incf i))
+    (gl:buffer-sub-data :uniform-buffer arr :offset 0 :buffer-offset (* *cffi-float-size* (* 2 (* 4 4))) :size (* *cffi-float-size* (* 4 4)))
+    (gl:free-gl-array arr))
+  (gl:bind-buffer :uniform-buffer 0))
 
 (defun update-matrices-ubo (device)
   (gl:bind-buffer :uniform-buffer (matrices-ubo device))

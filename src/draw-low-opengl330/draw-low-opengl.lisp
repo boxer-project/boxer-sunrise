@@ -198,7 +198,8 @@
     ;; For some reason, parts of our repaint code are generating a negative wid/hei, so just adding
     ;; this check for the time being.
     (when (and (>= wid 0) (>= hei 0))
-      (gl:scissor x y wid hei))))
+      (gl:scissor x y wid hei)
+      )))
 
 (defun window-system-dependent-set-origin (h v)
   "Translates the current transform matrix by an additional h and v distance.
@@ -210,9 +211,7 @@
          (new-transform (3d-matrices:m* current-transform adjust-matrix)))
     (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)
           (3d-matrices:marr4 new-transform))
-    (update-matrices-ubo bw::*boxgl-device*) ;; todo
-    ; (update-transform-ubo bw::*boxgl-device*)
-    ))
+    (update-transform-matrix-ubo bw::*boxgl-device*)))
 
 (defvar %local-clip-lef 0)
 (defvar %local-clip-top 0)

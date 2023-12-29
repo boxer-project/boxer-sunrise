@@ -8080,6 +8080,12 @@ Modification History (most recent at top)
 ;;;; FILE: disdcl.lisp
 ;;;;
 
+(defvar *redisplay-id* 0)
+(defvar *redisplay-encore?* nil)
+(defvar *allow-redisplay-encore? nil)
+
+(defun redisplay-id () *redisplay-id*)
+
 (DEFVAR %DRAWING-WINDOW NIL
         "Inside of a drawing-on-window, this variable is bound to the window which
    was given as an argument to drawing-on window, makes sense right.")
