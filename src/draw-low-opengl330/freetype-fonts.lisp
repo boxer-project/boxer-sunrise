@@ -65,16 +65,16 @@
 (defun font-face-from-fontspec (capi-fontspec &optional (font-zoom 1.0))
   "Returns the freetype2 font face and sets the current char size from a fontspec of the
   type '(\"Arial\" 12 :BOLD)"
-  (let* ((name (car capi-fontspec))
+  (let* ((name (string-upcase (car capi-fontspec)))
          (size (cadr capi-fontspec))
          (style (cddr capi-fontspec))
          (face-family-name nil) ; ie. LiberationSerif
          (face-style-name nil) ; ie. Regular, Bold, Italic, BoldItalic
          (face-full-name) ; ie. LiberationSans-Bold
          (face nil))
-    (cond ((equal name "Times New Roman")
+    (cond ((equal name (string-upcase "Times New Roman"))
            (setf face-family-name "LiberationSerif"))
-          ((equal name "Courier New")
+          ((equal name (string-upcase "Courier New"))
            (setf face-family-name "LiberationMono"))
           (t
            (setf face-family-name "LiberationSans")))
@@ -280,7 +280,7 @@
           with y = start-y
           for i from 32 to 128 do (progn
       (freetype2:load-char font-face (code-char i))
-      (let* ((cache-key `(,font-spec ,(code-char i) ,(coerce font-zoom 'single-float)))
+      (let* ((cache-key (list font-spec (code-char i) (coerce font-zoom 'single-float)))
              (advance   (freetype2::get-advance font-face (code-char i)))
              (glyphslot (freetype2:render-glyph font-face))
              (bitmap    (freetype2::ft-glyphslot-bitmap glyphslot))
@@ -297,7 +297,7 @@
         (setf (gethash cache-key (glyph-atlas-glyphs atlas)) glyph)
         (setf x (+ x width)))
         (setf max-width x)))
-    (log:debug "Final texture width for ~A ~A is ~A" font-spec font-zoom max-width)))
+    (log:debug "~%pre-render: font-face: ~A spec: ~A ~% Final texture width for ~A ~A is ~A" font-face font-spec font-spec font-zoom max-width)))
 
 (defmethod make-glyph-atlas (&key (atlas-width 16000) (atlas-height 16000))
   "Create a new glyph atlas, allocating an openGL texture, and prefilling our default font sizes with the ASCII
@@ -324,13 +324,13 @@
       ;; Upper casing font names, since they can vary from boxer storage
       (dolist (font-family '("ARIAL" "COURIER NEW" "TIMES NEW ROMAN"))
         (dolist (font-size (glyph-atlas-sizes atlas))
-          (pre-render-font-to-atlas atlas `(,font-family ,font-size) 1.0 0 count)
+          (pre-render-font-to-atlas atlas (list font-family font-size) 1.0 0 count)
           (setf count (+ count font-size))
-          (pre-render-font-to-atlas atlas `(,font-family ,font-size :BOLD) 1.0 0 count)
+          (pre-render-font-to-atlas atlas (list font-family font-size :BOLD) 1.0 0 count)
           (setf count (+ count font-size))
-          (pre-render-font-to-atlas atlas `(,font-family ,font-size :ITALIC) 1.0 0 count)
+          (pre-render-font-to-atlas atlas (list font-family font-size :ITALIC) 1.0 0 count)
           (setf count (+ count font-size))
-          (pre-render-font-to-atlas atlas `(,font-family ,font-size :BOLD :ITALIC) 1.0 0 count)
+          (pre-render-font-to-atlas atlas (list font-family font-size :BOLD :ITALIC) 1.0 0 count)
           (setf count (+ count font-size)))))
 
     ;; return the new atlas
@@ -360,7 +360,7 @@
     (gl:buffer-data :array-buffer :static-draw arr)
     (gl:free-gl-array arr)
     (gl:draw-arrays :triangles 0 6))
-  (unenable-shader-programs device))
+  (unenable-shader-programs bw::*boxgl-device*))
 
 (defmethod glyph-count ((self glyph-atlas))
   "Returns the number of glyphs currently stored in the atlas."
