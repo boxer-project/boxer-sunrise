@@ -28,9 +28,11 @@ cd data
 /usr/bin/ditto -c -k --keepParent ./boxersunrise.app ./boxersunrise.zip
 cd ..
 
-read -p "Send for notarization [enter]"
+read -p "Send for notarization with notarytool [enter]"
 
-xcrun altool --notarize-app --password ${password} --username ${username} --file ./data/boxersunrise.zip --primary-bundle-id "boxer.notorize"
+# xcrun altool --notarize-app --password ${password} --username ${username} --file ./data/boxersunrise.zip --primary-bundle-id "boxer.notorize"
+# Swithing to notarytool for 2024
+xcrun notarytool submit --password ${password} --apple-id ${username} --team-id ${team} --wait ./data/boxersunrise.zip
 
 read -p "Remove the temporary zip file [enter]"
 
