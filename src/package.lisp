@@ -301,7 +301,6 @@
            :set-mouse-cursor :reset-mouse-cursor :with-mouse-cursor :beep
            :mouse-window-coords :mouse-button-state
 
-           :*redisplayable-windows*
            :outermost-screen-box
            ;; useful variables...
            :*boxer-pane* :*name-pane* :*boxer-frame*

@@ -124,10 +124,6 @@
 
 ;; Vars
 
-(defvar *redisplayable-windows* nil
-  "This is a list of all the windows which should be redisplayed when
-   REDISPLAY is called." )
-
 ;; this should be initialized from some system parameter
 ;; and also adjustable as a preference...
 ;; Graphics Ports can now use the OS highlight color, as specified via
@@ -871,7 +867,6 @@ in macOS."
   ;; after creation, set some variables
   (setq *boxer-pane* (slot-value *boxer-frame* 'boxer-pane)
         *name-pane*  (slot-value *boxer-frame* 'name-pane))
-  (push *boxer-pane* *redisplayable-windows*)
   (setf (boxer::point-blinker *boxer-pane*) (boxer::make-blinker))
   #+cocoa
   (capi:set-application-interface (make-instance 'cocoa-boxer-interface))

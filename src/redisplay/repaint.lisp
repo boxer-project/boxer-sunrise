@@ -162,9 +162,7 @@
     (top-level-repaint-pass-2)))
 
 (defun repaint-internal (&optional just-windows?)
-  (dolist (redisplayable-window *redisplayable-windows*)
-    (repaint-window redisplayable-window (not (eq redisplayable-window
-                                                  *boxer-pane*))))
+  (repaint-window *boxer-pane* nil)
   (dolist (region *region-list*)
     (when (not (null region)) (interval-update-repaint-all-rows region)))
   ;; comment out next line for outermost box save document, updates will

@@ -3247,6 +3247,10 @@ Modification History (most recent at top)
 ;;;; FILE: boxwin-opengl.lisp
 ;;;;
 
+(defvar *redisplayable-windows* nil
+  "This is a list of all the windows which should be redisplayed when
+   REDISPLAY is called." )
+
 (defvar *redisplayable-window-outermost-box-alist* nil
   "An alist that keeps track of the outermost screen box for each
    redisplayable window in *redisplayable-windows*. ")
