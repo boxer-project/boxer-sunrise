@@ -1273,7 +1273,7 @@
                                                    (mouse-position-values x y))
                                                   (click-only? t))
   "Scroll or reposition the box"
-  (declare (ignore window))
+  window ;; (declare (ignore window))
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let* ((screen-box (bp-screen-box mouse-bp))

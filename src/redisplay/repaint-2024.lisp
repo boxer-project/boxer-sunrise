@@ -239,7 +239,8 @@
                                               (max pane-height hei))
           (content-hei bw::*boxer-pane*)    (max pane-height hei)
           (content-wid bw::*boxer-pane*)    (max pane-width wid))
-    (capi:set-horizontal-scroll-parameters bw::*boxer-pane*
-      :max-range (+ 40 (* (zoom-level *boxer-pane*) (screen-obj-wid outer-screen-box))) :min-range 0)
-    (capi:set-vertical-scroll-parameters bw::*boxer-pane*
-      :max-range (+ 40 (* (zoom-level *boxer-pane*) (screen-obj-hei outer-screen-box))) :min-range 0)))
+    ;; (capi:set-horizontal-scroll-parameters bw::*boxer-pane*
+    ;;   :max-range (+ 40 (* (zoom-level *boxer-pane*) (screen-obj-wid outer-screen-box))) :min-range 0)
+    ;; (capi:set-vertical-scroll-parameters bw::*boxer-pane*
+    ;;   :max-range (+ 40 (* (zoom-level *boxer-pane*) (screen-obj-hei outer-screen-box))) :min-range 0)
+))

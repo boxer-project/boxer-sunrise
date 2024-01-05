@@ -66,7 +66,7 @@
      :canvas-view Similar to Word's Page View
      :microworld-view Similar to Word's Web or Draft View")
    (page-size :accessor page-size :initform '(800 1100)
-    :documentation )
+    :documentation "")
 
    ;; Current Colors
    (backdrop-color :accessor backdrop-color :initform *white*)
