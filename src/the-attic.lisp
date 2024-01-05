@@ -8080,6 +8080,14 @@ Modification History (most recent at top)
 ;;;; FILE: disdcl.lisp
 ;;;;
 
+(defvar *redisplay-in-progress?* nil)
+
+(defmacro redisplaying-unit (&body body)
+  `(let ((*redisplay-in-progress?* t))
+        (progn . ,body)))
+
+(defun redisplay-in-progress? () *redisplay-in-progress?*)
+
 (defvar *redisplay-id* 0)
 (defvar *redisplay-encore?* nil)
 (defvar *allow-redisplay-encore? nil)

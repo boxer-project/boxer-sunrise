@@ -65,8 +65,7 @@ Modification History (most recent at top)
                                          page-transform-height)
                 ;; this is emulating boxer::redisplaying-window without binding the port
                 ;; because the port should be bound by the printing routines to the printer port
-                (let ((boxer::*COMPLETE-REDISPLAY-IN-PROGRESS?* t)
-                      (boxer::*redisplay-window* *boxer-pane*)
+                (let ((boxer::*redisplay-window* *boxer-pane*)
                       (boxer::*outermost-screen-box* (boxer::outermost-screen-box *boxer-pane*))
                       (boxer::%drawing-array printer-port))
                   (boxer::drawing-on-window (printer-port)

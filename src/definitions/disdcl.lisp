@@ -183,14 +183,6 @@
 (defvar %drawing-font-cha-hei 12)
 (defvar %drawing-font-cha-ascent 12)
 
-(defvar *redisplay-in-progress?* nil)
-
-(defmacro redisplaying-unit (&body body)
-  `(let ((*redisplay-in-progress?* t))
-        (progn . ,body)))
-
-(defun redisplay-in-progress? () *redisplay-in-progress?*)
-
 ;;;; Inits
 
 (defmacro def-redisplay-initialization (form)

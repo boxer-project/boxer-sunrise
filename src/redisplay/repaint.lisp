@@ -162,20 +162,19 @@
     (top-level-repaint-pass-2)))
 
 (defun repaint-internal (&optional just-windows?)
-  (redisplaying-unit
-    (dolist (redisplayable-window *redisplayable-windows*)
-      (repaint-window redisplayable-window (not (eq redisplayable-window
-                                                    *boxer-pane*))))
-    (dolist (region *region-list*)
-      (when (not (null region)) (interval-update-repaint-all-rows region)))
-    ;; comment out next line for outermost box save document, updates will
-    ;; occur inside of set-outermost-box instead...
-    (when (bp? *point*)
-      ; (set-window-name (current-file-status (point-box)))
-      (unless just-windows?
-        (repaint-cursor *point* nil)))
-    ;; swap buffers here, after all drawing is complete
-    (swap-graphics-buffers *boxer-pane*)))
+  (dolist (redisplayable-window *redisplayable-windows*)
+    (repaint-window redisplayable-window (not (eq redisplayable-window
+                                                  *boxer-pane*))))
+  (dolist (region *region-list*)
+    (when (not (null region)) (interval-update-repaint-all-rows region)))
+  ;; comment out next line for outermost box save document, updates will
+  ;; occur inside of set-outermost-box instead...
+  (when (bp? *point*)
+    ; (set-window-name (current-file-status (point-box)))
+    (unless just-windows?
+      (repaint-cursor *point* nil)))
+  ;; swap buffers here, after all drawing is complete
+  (swap-graphics-buffers *boxer-pane*))
 
 (defun repaint (&optional just-windows?)
   (opengl:rendering-on (*boxer-pane*)
