@@ -176,6 +176,7 @@
 
 (defun repaint (&optional just-windows?)
   (opengl:rendering-on (*boxer-pane*)
+    (update-matrices-ubo bw::*boxgl-device*)
     (when *reload-shaders*
       (update-boxgl-programs)
       (setf *reload-shaders* nil))
