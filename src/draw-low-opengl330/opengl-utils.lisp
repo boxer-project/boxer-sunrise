@@ -128,9 +128,6 @@ Modification History (most recent at the top)
       (setf total (+ total (ogl-char-width i))))
     total))
 
-(defun float-precision= (a b &optional (precision 0.001))
-  (if (zerop a) (zerop b)  (< (abs (/ (- a b) a)) precision)))
-
 (defmacro maintaining-ogl-color (&body body)
   (let ((old-color (gensym)))
     `(let ((,old-color (boxer::boxgl-device-pen-color bw::*boxgl-device*)))
