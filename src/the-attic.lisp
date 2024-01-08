@@ -18524,6 +18524,26 @@ Modification History (most recent at top)
 ;;;; FILE: opengl-utils.lisp
 ;;;;
 
+;; for debugging
+(eval-when (compile)
+  (defvar *include-opengl-debugging?* nil)
+)
+
+(defmacro debug-opengl-print (format-string &rest args)
+  (when *include-opengl-debugging?*
+    `(format *error-output* ,format-string . ,args)))
+
+(eval-when (compile)
+           (defvar *include-font-debugging* nil)
+           )
+
+(defvar *debug-font-caching* nil)
+
+(defmacro ogl-debug (&body forms)
+  (when *include-font-debugging*
+    `(when *debug-font-caching*
+       . ,forms)))
+
 ;; NOTE: this must match the format in *pixmap-data-type* and *pixmap-data-format*
 (defun opengl::color->pixel (color)
   (dpb (float-color-to-byte-value (ogl-color-alpha color))

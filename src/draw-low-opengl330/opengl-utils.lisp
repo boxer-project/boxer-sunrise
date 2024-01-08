@@ -50,15 +50,6 @@ Modification History (most recent at the top)
 
 (in-package :boxer-window)
 
-;; for debugging
-(eval-when (compile)
-  (defvar *include-opengl-debugging?* nil)
-)
-
-(defmacro debug-opengl-print (format-string &rest args)
-  (when *include-opengl-debugging?*
-    `(format *error-output* ,format-string . ,args)))
-
 ;; used directly
 (defun boxer::multiline2 (&rest x-and-y-s)
   ;; sgithens TODO 2022-12-30 Set this up properly to be a single draw arrays call rather
@@ -76,7 +67,6 @@ Modification History (most recent at the top)
       (setf prev-x x prev-y y))))
 
 ;;;; FONTS
-
 
 ;; this handles font parameter filling in the editor
 ;; font parameter filling in sprite graphics is handled by change-graphics-font
@@ -109,17 +99,6 @@ Modification History (most recent at the top)
         (progn
          (let ((*current-opengl-font* ,font))
            . ,body))))))
-
-(eval-when (compile)
-           (defvar *include-font-debugging* nil)
-           )
-
-(defvar *debug-font-caching* nil)
-
-(defmacro ogl-debug (&body forms)
-  (when *include-font-debugging*
-    `(when *debug-font-caching*
-       . ,forms)))
 
 ;; Note: last value is "leading" which is the recommended space between lines
 
