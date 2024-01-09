@@ -814,23 +814,18 @@ argument, deletes that many lines."
 (defboxer-command COM-SELECT-BOX-CONTENTS ()
   "Selects the contents of a box as the current region"
   (reset-region)
-  (drawing-on-window-without-prepare-sheet (*boxer-pane*)
-                                           (with-drawing-port *boxer-pane*
-                                             ;; this is essentially all of drawing-on-window EXCEPT
-                                             ;; blinker management, probably should have a separate macro
-                                             ;; for this eventually
-                                             (multiple-value-bind (start-row start-cha-no)
-                                                 (box-first-bp-values (point-box))
-                                               (multiple-value-bind (stop-row stop-cha-no)
-                                                   (box-last-bp-values (point-box))
-                                                 (let ((start-bp (make-bp ':fixed))
-                                                       (stop-bp  (make-bp ':fixed)))
-                                                   (setf (bp-row start-bp) start-row (bp-cha-no start-bp) start-cha-no
-                                                         (bp-row stop-bp) stop-row (bp-cha-no stop-bp) stop-cha-no)
-                                                   (setq *region-being-defined*
-                                                         (make-editor-region start-bp stop-bp))
-                                                   (push *region-being-defined* *region-list*)
-                                                   (entering-region-mode))))))
+  (multiple-value-bind (start-row start-cha-no)
+      (box-first-bp-values (point-box))
+    (multiple-value-bind (stop-row stop-cha-no)
+        (box-last-bp-values (point-box))
+      (let ((start-bp (make-bp ':fixed))
+            (stop-bp  (make-bp ':fixed)))
+        (setf (bp-row start-bp) start-row (bp-cha-no start-bp) start-cha-no
+              (bp-row stop-bp) stop-row (bp-cha-no stop-bp) stop-cha-no)
+        (setq *region-being-defined*
+              (make-editor-region start-bp stop-bp))
+        (push *region-being-defined* *region-list*)
+        (entering-region-mode))))
   boxer-eval::*novalue*)
 
 (defboxer-command COM-COPY-REGION ()
