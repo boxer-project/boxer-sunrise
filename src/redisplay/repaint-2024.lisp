@@ -126,10 +126,7 @@
                (let ((infs-new-wid 0)
                      (infs-new-hei 0)
                      (inf-x-offset first-inf-x-offset)
-                     (inf-y-offset first-inf-y-offset)
-                     )
-
-                 ;; Make sure the screen-rows vector is large enough
+                     (inf-y-offset first-inf-y-offset))
 
                  (do*
                    ;; Vars
@@ -142,6 +139,9 @@
                    ;; End / Result
                    ((or (null inf-actual-obj)
                         (eq (display-style self) ':shrunk))
+                    ;; If there are less rows than the last repaint we'll need to trim the extra
+                    ;; screen-rows
+                    (sv-delete-to-end screen-rows (1+ row-no))
                     (if (eq (display-style self) ':shrunk)
                       (values *shrunk-box-wid* *shrunk-box-hei* nil nil)
                       (values infs-new-wid infs-new-hei nil nil)))
@@ -149,15 +149,14 @@
                    (setf (slot-value inf-screen-obj 'actual-obj) inf-actual-obj)
                    (setf (screen-box inf-screen-obj) self)
                    (setf (slot-value inf-actual-obj 'screen-objs) (list (cons self inf-screen-obj)))
-                   ;;  (break "what...")
+
                    (set-screen-obj-offsets inf-screen-obj inf-x-offset inf-y-offset)
-                   ;; fixing this up now...
+
                    (multiple-value-bind (row-width row-height)
                      (dimensions inf-screen-obj)
                      (setf inf-y-offset (+ inf-y-offset row-height)
                            infs-new-wid (max infs-new-wid row-width)
-                           infs-new-hei (+ infs-new-hei row-height)))
-                 ))))))))
+                           infs-new-hei (+ infs-new-hei row-height)))))))))))
 
 (defmethod dimensions ((self screen-box) &optional (first-inf-x-offset 0) (first-inf-y-offset 0))
   (with-slots (wid hei actual-obj scroll-to-actual-row box-type content-wid content-hei) self
