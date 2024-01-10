@@ -141,7 +141,7 @@
                         (eq (display-style self) ':shrunk))
                     ;; If there are less rows than the last repaint we'll need to trim the extra
                     ;; screen-rows
-                    (sv-delete-to-end screen-rows (1+ row-no))
+                    (sv-delete-to-end screen-rows row-no)
                     (if (eq (display-style self) ':shrunk)
                       (values *shrunk-box-wid* *shrunk-box-hei* nil nil)
                       (values infs-new-wid infs-new-hei nil nil)))
