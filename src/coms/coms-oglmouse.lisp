@@ -1278,10 +1278,10 @@
   (reset-region)
   (let* ((screen-box (bp-screen-box mouse-bp))
          (box-type (box-type screen-box)))
-    (unless (neq screen-box (point-screen-box))
+    ;; (unless (neq screen-box (point-screen-box)) ;; This was to only let you scroll the box if the point is in it
       (case (get-scroll-position x y screen-box box-type)
         (:v-bar (mouse-in-v-scroll-bar-internal screen-box x y click-only?))
-        (:h-bar (mouse-in-h-scroll-bar-internal screen-box x y)))))
+        (:h-bar (mouse-in-h-scroll-bar-internal screen-box x y)))) ;)
   boxer-eval::*novalue*)
 
 (defboxer-command com-sprite-follow-mouse (&optional (window *boxer-pane*)
