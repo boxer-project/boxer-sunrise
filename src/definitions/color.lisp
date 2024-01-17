@@ -50,6 +50,7 @@
 (defvar *default-border-color* *black*) ;
 (defvar *border-gui-color* *default-border-color*)
 (defvar *closet-color* #(:rgb .94 .94 .97 1.0))
+(defvar *scroll-elevator-color* *gray* "Color for scrollbars")
 
 (defun rgb-p (color)
   (and (vectorp color) (= (length color) 5) (equal :rgb (aref color 0))))

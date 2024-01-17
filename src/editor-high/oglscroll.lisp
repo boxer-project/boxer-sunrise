@@ -393,10 +393,6 @@ Modification History (most recent at top)
 
 (defvar *scroll-info-offset* 0 "How far to indent scroll info from the inner (text) part of the box")
 (defvar *scroll-elevator-thickness* 6)
-(defvar *scroll-elevator-color*)
-
-; init
-(def-redisplay-initialization (setq *scroll-elevator-color* *gray*))
 
 (defun draw-vertical-scrollbar (x y hei scroll-bar-hei percent-scrolled)
   (let ((scrolled (* percent-scrolled (- hei scroll-bar-hei))))
