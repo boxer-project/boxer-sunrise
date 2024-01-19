@@ -43,7 +43,7 @@
 
 ; (load (example-file "opengl/examples/load"))
 (ql:quickload :cl-fad)
-#+(and lispworks x64 macOS) (load (cl-fad:merge-pathnames-as-file *boxer-project-dir* "src/opengl-lw-8/examples/load.lisp"))
+#+(and lispworks x64 macosx) (load (cl-fad:merge-pathnames-as-file *boxer-project-dir* "src/opengl-lw-8/examples/load.lisp"))
 #+(and lispworks x64 win32) (load #P"z:/code/boxer-sunrise/src/opengl-lw-8/examples/load.lisp")
 
 
