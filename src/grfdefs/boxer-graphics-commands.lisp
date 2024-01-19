@@ -543,7 +543,7 @@
 (defmethod deallocate-gc ((self boxer-centered-bitmap) command)
   (ogl-free-pixmap (aref command 1)))
 
-(defun record-boxer-graphics-command-bitmap (bitmap x y width height)
+(defun record-boxer-graphics-command-centered-bitmap (bitmap x y width height)
   (sv-append %graphics-list (coerce (list 47 bitmap x y width height) 'vector)))
 
 ;; 58   BOXER-WEDGE                    (X Y RADIUS START-ANGLE SWEEP-ANGLE)
