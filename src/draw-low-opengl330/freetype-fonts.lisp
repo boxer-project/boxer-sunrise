@@ -309,14 +309,26 @@
          (atlas       (make-instance 'glyph-atlas :texture-id texture :width atlas-width :height atlas-height)))
     ;; create a texture for the entire atlas
     #-win32 (progn
-    (gl:pixel-store :unpack-alignment 1)
     (gl:active-texture :texture0)
+    (gl:pixel-store :unpack-alignment 1)
     (gl:bind-texture :texture-2d texture)
     (gl:tex-parameter :texture-2d :texture-wrap-s :clamp-to-edge)
     (gl:tex-parameter :texture-2d :texture-wrap-t :clamp-to-edge)
     (gl:tex-parameter :texture-2d :texture-min-filter :linear)
     (gl:tex-parameter :texture-2d :texture-mag-filter :linear)
     (gl:tex-image-2d :texture-2d 0 :red atlas-width atlas-height 0 :red :unsigned-byte (cffi:null-pointer))
+
+    ;; For some reason, this texture gets created with vertical striping... haven't discovered why.
+    ;; Clearing it with a translucent value
+    (let ((arr (gl:alloc-gl-array :unsigned-char (* 100 100))))
+      ;; (setf (gl:glaref arr 0) 0)
+      (dotimes (i (* 100 100))
+        (setf (gl:glaref arr i) 0))
+      (dotimes (i 160)
+        (dotimes (j 160)
+        (gl:tex-sub-image-2d :texture-2d 0 i j 100 100 :red :unsigned-byte (gl::gl-array-pointer arr))))
+      (gl:free-gl-array arr))
+
     (gl:generate-mipmap :texture-2d)
 
     ;; add some glyphs
