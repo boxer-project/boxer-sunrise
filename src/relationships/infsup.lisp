@@ -132,8 +132,7 @@
 ;;; slide chas around in a chas-array should call. This function takes care of
 ;;; adjusting the BPs that point to the chas-array to compensate for the slide.
 ;;; This function also takes care of assuring that there is enough room in the
-;;; chas-array to perform the slide. Like all functions which may need to make
-;;; a new chas-array, chas-array-slide-chas always returns the (new) chas-array
+;;; chas-array to perform the slide.
 
 
 (defun chas-array-slide-chas (chas-array strt-cha-no distance)
@@ -635,7 +634,7 @@
 
 (defmethod insert-cha-before-cha ((self row) cha before-cha)
   (let ((before-cha-cha-no (cha-cha-no self before-cha)))
-    (insert-cha-at-cha-no self before-cha-cha-no cha)))
+    (insert-cha-at-cha-no self cha before-cha-cha-no)))
 
 (defmethod insert-cha-after-cha ((self row) cha after-cha)
   (let ((after-cha-cha-no (cha-cha-no self after-cha)))
@@ -805,9 +804,7 @@
         (set-previous-row row-next-row row-prev-row)))))
 
 
-;;; Operations that take existing box rows as position specifiers. These
-;;; operations are built on top of the operations that take row positions
-;;; as position specifiers.
+;;; Operations that take existing box rows as position specifiers.
 
 (defmethod insert-row-before-row ((box box) row before-row
                                   &optional (check-closet t))
