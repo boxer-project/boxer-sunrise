@@ -12,6 +12,7 @@
 ;;;; 41   BOXER-RIGHT-STRING                           (X Y STRING)
 ;;;; 42   BOXER-CENTERED-RECTANGLE                     (X Y WIDTH HEIGHT)
 ;;;; 43   BOXER-DOT                                    (X Y)
+;;;; 44   BOXER-HOLLOW-RECTANGLE ???                   (X Y WIDTH HEIGHT)
 ;;;; 47   BOXER-CENTERED-BITMAP                        (BITMAP X Y WIDTH HEIGHT)
 ;;;; 58   BOXER-WEDGE                                  (X Y RADIUS START-ANGLE SWEEP-ANGLE)
 ;;;; 59   BOXER-ARC                                    (X Y RADIUS START-ANGLE SWEEP-ANGLE)
@@ -487,16 +488,49 @@
 (defun record-boxer-graphics-command-dot (x y)
   (sv-append %graphics-list (coerce (list 43 x y) 'vector)))
 
-;; 44 TODO Hollow Rectangle??
+;; 44   BOXER-HOLLOW-RECTANGLE                   (X Y WIDTH HEIGHT)
+(defclass boxer-hollow-rectangle (graphics-command)
+  ((opcode :initform 44)
+   (name :initform "boxer-hollow-rectangle")
+   (command-args :initform '(x y width height))
+   (transformation-template :initform '(:x-transform :y-transform :coerce :coerce))))
 
-  ; :SPRITE-COMMAND
-  ; (cond ((and (= x last-x) (= y last-y))
-  ;       (list 'bu::stamp-hollow-rect width height))
-  ;   (t
-  ;   (setq last-x x last-y y)
-  ;   (append (sprite-commands-for-new-position x y)
-  ;           (list 'bu::stamp-hollow-rect width height))))
+(defdraw-graphics-command (boxer-hollow-rectangle x y w h)
+  ;; sgithens TODO should we be using *graphics-state-current-pen-width*, rather then boxgl-device-pen-size?
+  ;;               Currently this doens't seem to be running in the graphics context that has that bound.
+  (let* ((pen-size (boxgl-device-pen-size bw::*boxgl-device*))
+         (right    (- (+ x (/ w 2)) (/ pen-size 2)))
+         (left     (+ (- x (/ w 2)) (/ pen-size 2)))
+         ;; Full right and left are flush with edge for the top
+         ;; and bottom line, otherwise there is rectangle missing
+         ;; from the corner.
+         (full-right (+ x (/ w 2)))
+         (full-left  (- x (/ w 2)))
+         ;; The y axis is flipped
+         (top      (- (- (+ y (/ h 2)) (/ pen-size 2))))
+         (bottom   (- (+ (- y (/ h 2)) (/ pen-size 2)))))
+    (draw-line right top right bottom)
+    (draw-line full-right bottom full-left bottom)
+    (draw-line left bottom left top)
+    (draw-line full-left top full-right top)))
 
+(defextents-graphics-command (boxer-hollow-rectangle x y width height)
+  (let ((half-width (values (/ width 2.0)))
+        (half-height (values (/ height 2.0))))
+    (declare (type boxer-float half-width half-height))
+    (values (float-minus x half-width) (float-minus y half-height)
+            (float-plus x half-width) (float-plus y half-height))))
+
+(defsprite-graphics-command (boxer-hollow-rectangle x y width height)
+  (cond ((and (= x last-x) (= y last-y))
+         (list 'bu::stamp-hollow-rect width height))
+    (t
+    (setq last-x x last-y y)
+    (append (sprite-commands-for-new-position x y)
+            (list 'bu::stamp-hollow-rect width height)))))
+
+(defun record-boxer-graphics-command-hollow-rectangle (x y width height)
+  (sv-append %graphics-list (coerce (list 44 x y width height) 'vector)))
 
 ;; 47   BOXER-CENTERED-BITMAP          (BITMAP X Y WIDTH HEIGHT)
 (defclass boxer-centered-bitmap (graphics-command)
@@ -722,6 +756,7 @@
                  41 (make-instance 'boxer-right-string)
                  42 (make-instance 'boxer-centered-rectangle)
                  43 (make-instance 'boxer-dot)
+                 44 (make-instance 'boxer-hollow-rectangle)
                  47 (make-instance 'boxer-centered-bitmap)
                  58 (make-instance 'boxer-wedge)
                  59 (make-instance 'boxer-arc)
