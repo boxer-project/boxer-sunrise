@@ -218,19 +218,6 @@ Modification History (most recent at the top)
 ;;(defvar *graphics-command-recording-mode* ':window
 ;;  "Should be either :WINDOW or :BOXER")
 
-(defvar *initial-graphics-command-dispatch-table-size* 32.
-  "This is the expected maximum number of DIFFERENT graphics commands.
-   The actual table sizes will be twice this number with the bottom
-   half for window coordinate based commands and the top half for
-   boxer coodinate based commands.")
-
-
-(defvar *boxer-graphics-command-mask* 32.) ;
-
-(defvar *graphics-command-window->boxer-translation-table*
-  (make-array *initial-graphics-command-dispatch-table-size*
-              :initial-element nil))
-
 ) ; eval-when
 
 ;;; store information about the graphics-command that
@@ -285,11 +272,20 @@ Modification History (most recent at the top)
 
 (defun allocate-window->boxer-command (graphics-command)
   (if (< (aref graphics-command 0) 32)
-    (let ((handler (svref& *graphics-command-window->boxer-translation-table*
-                           (svref& graphics-command 0))))
-      (if (null handler)
-        (error "No translation allocator for ~A" graphics-command)
-        (funcall handler graphics-command)))
+    (let* ((com (gethash (+ 32 (aref graphics-command 0)) *graphics-commands*))
+           (template (slot-value com 'transformation-template))
+           (togo (copy-seq graphics-command))
+           (idx 1))
+      (setf (aref togo 0) (+ 32 (aref graphics-command 0)))
+      (unless (null template)
+        (dolist (item template)
+          (case item
+            (:x-transform (setf (aref togo idx) (user-coordinate-fix-x (aref togo idx))))
+            (:y-transform (setf (aref togo idx) (user-coordinate-fix-y (aref togo idx))))
+            (:coerce (setf (aref togo idx) (make-single-float (aref togo idx))))
+            (t nil))
+          (incf idx)))
+      togo)
     graphics-command))
 
 (defun deallocate-graphics-command-marker (graphics-command)
@@ -379,160 +375,8 @@ Modification History (most recent at the top)
 ;;;      NIL          - Leave the slot alone
 ;;;
 
-(defvar *type-check-during-template-conversion* t)
-
 (defun make-single-float (arg)
   (coerce arg 'single-float))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defun expand-transform-template-item (arg template-action direction)
-    (ecase direction
-          (:boxer->window (case template-action
-                            (:x-transform (list 'fix-array-coordinate-x arg))
-                            (:y-transform (list 'fix-array-coordinate-y arg))
-                            (:coerce      (list 'round arg))
-                            (t            arg)))
-          (:window->boxer (case template-action
-                            (:x-transform (list 'user-coordinate-fix-x arg))
-                            (:y-transform (list 'user-coordinate-fix-y arg))
-                            (:coerce      (list 'make-single-float arg))
-                            (t            arg)))))
-)
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-
-(defun arglist-argnames (arglist)
-  (let ((revargnames nil))
-    (dolist (arg arglist)
-      (cond ((fast-memq arg lambda-list-keywords))
-        ((consp arg) (push (car arg) revargnames))
-        (t (push arg revargnames))))
-    (nreverse revargnames)))
-
-;; this is not smart about special forms
-(defun walk-body-for-args (args body)
-  (let ((mutators (mapcar #'(lambda (s) (intern (symbol-format nil "SET-~A" s)))
-                          args))
-        (found nil)
-        (mutators-found nil))
-    (cond ((symbolp body)
-          (when (and (member body args) (not (member body found)))
-            (push body found))
-          (when (and (member body mutators) (not (member body mutators-found)))
-            (push body mutators-found)))
-      ((listp body)
-      (dolist (thing body)
-        (cond ((symbolp thing)
-                (when (and (member thing args) (not (member thing found)))
-                  (push thing found))
-                (when (and (member thing mutators) (not (member thing mutators-found)))
-                  (push thing mutators-found)))
-          ((listp thing)
-            (multiple-value-bind (a m)
-                                (walk-body-for-args args thing)
-                                (setq found (union found a)
-                                      mutators-found (union mutators-found m))))))))
-    (values found mutators-found)))
-
-(defmacro with-graphics-command-slots-bound (gc-arg args body)
-  (multiple-value-bind (args-used mutators-used)
-                      (walk-body-for-args args body)
-                      (cond ((and (null args-used) (null mutators-used)) `,body)
-                        (T
-                          (let ((mutators (mapcar #'(lambda (s)
-                                                            (intern (symbol-format nil "SET-~A" s)))
-                                                  args)))
-                            ;; easier than passing a list of mutators
-                            `(let ,(mapcar #'(lambda (arg)
-                                                    (list arg `(svref& ,gc-arg
-                                                                        ,(1+ (position arg args)))))
-                                          args-used)
-                              (flet ,(mapcar #'(lambda (mut)
-                                                        (list mut '(new-value)
-                                                              `(setf (svref& ,gc-arg
-                                                                              ,(1+ (position
-                                                                                    mut mutators)))
-                                                                    new-value)))
-                                              mutators-used)
-                                      ,body)))))))
-
-(defmacro defgraphics-command ((name opcode
-                                    &optional (optimize-recording? nil))
-                              args
-                              sprite-command
-                              transform-template
-                              &body draw-body)
-  (flet ((numeric-declaration-args ()
-                                  (with-collection
-                                    (do* ((list-of-args args (cdr list-of-args))
-                                          (arg (car list-of-args) (car list-of-args))
-                                          (template-items transform-template (cdr template-items))
-                                          (template-item (car template-items) (car template-items)))
-                                      ((null list-of-args))
-                                      (unless (null template-item)
-                                        (collect arg))))))
-        (let* ((boxer-command-name (intern (symbol-format nil "BOXER-~A" name)))
-              (boxer-command-opcode (+ opcode *boxer-graphics-command-mask*))
-              (wstruct-name
-                (intern (symbol-format nil "WINDOW-GRAPHICS-COMMAND-~A" name)))
-              (wmake-name
-                (intern (symbol-format nil "MAKE-WINDOW-GRAPHICS-COMMAND-~A" name)))
-              (wcopy-name
-                (intern (symbol-format nil "COPY-WINDOW-GRAPHICS-COMMAND-~A" name)))
-              (wcopy-struct-name wcopy-name)
-              (bstruct-name
-                (intern (symbol-format nil "BOXER-GRAPHICS-COMMAND-~A" name)))
-              (bmake-name
-                (intern (symbol-format nil "MAKE-BOXER-GRAPHICS-COMMAND-~A" name)))
-              (bcopy-name
-                (intern (symbol-format nil "COPY-BOXER-GRAPHICS-COMMAND-~A" name)))
-              (bcopy-struct-name bcopy-name)
-              (window->boxer-name
-                (intern (symbol-format nil "GRAPHICS-WINDOW->BOXER-~A-ALLOCATOR" name)))
-              (process-function
-                (intern (symbol-format nil "Process Graphics Command ~A" name))))
-          `(progn
-            (defstruct (,wstruct-name (:type vector)
-                                      (:constructor ,wmake-name ,args)
-                                      (:copier ,wcopy-struct-name))
-              ;; slot 0 is used as an index into the dispatch table
-              (type ,opcode)
-              ,@args)
-            (defstruct (,bstruct-name (:type vector)
-                                      (:constructor ,bmake-name ,args)
-                                      (:copier ,bcopy-struct-name))
-              ;; slot 0 is used as an index into the dispatch table
-              (type ,boxer-command-opcode)
-              ,@args)
-
-            ;; Conversion functions from Window->Boxer coordinates and back
-            ;; these rely on being called within a with-graphics-vars-bound
-            (defun ,window->boxer-name (window-command)
-              (let ((graphics-command
-                    (,bmake-name ,@(let ((idx 0))
-                                      (mapcar #'(lambda (arg)
-                                                        (declare (ignore arg))
-                                                        (incf idx)
-                                                        (expand-transform-template-item
-                                                        `(svref& window-command ,idx)
-                                                        (nth (1- idx) transform-template)
-                                                        ':window->boxer))
-                                              args)))))
-                graphics-command))
-            ;; install it
-            (setf (svref& *graphics-command-window->boxer-translation-table*
-                          ,opcode)
-                  ',window->boxer-name)
-
-            ;; now make the function for drawing on the window (that also records)
-            (defun ,name ,args
-              ,@args
-              (progn ,@draw-body))
-
-            ;; finally return the name (as opposed to random returned values)
-            ',name))))
-
-) ; eval-when
 
 ;;; this is mostly for readability
 ;; (eval (compile load eval)
@@ -540,12 +384,13 @@ Modification History (most recent at the top)
                                                   &key
                                                   sprite-command
                                                   body)
-  `(defgraphics-command (,name ,opcode t)
-     ,args
-     ,sprite-command
-     ,(make-list (length args)) nil ,body))
+  `(defun ,name ,args
+             ,@args
+             (progn ,@body)))
 ;; )
 
+;;; sgithens 2024-02-20 Old notes from before defstandard-graphics-handlers
+;;;
 ;;; Putting it all together...
 ;;;
 ;;; Note that we are using the standard Boxer trick of spending memory to
@@ -572,17 +417,7 @@ Modification History (most recent at the top)
 ;;;     sprite also needs to be drawing in XOR).
 ;;;
 
-(defmacro defstandard-graphics-handlers ((name opcode)
-                                         &key
-                                         command-args
-                                         sprite-command
-                                         transformation-template)
-  `(progn
-    (defgraphics-command (,name ,opcode)
-      ,command-args
-      ,sprite-command
-      ,transformation-template
-      'nil)))
+
 
 
 ;;; for now, on a monochrome monitor, we only need to record
@@ -656,21 +491,6 @@ Modification History (most recent at the top)
                 *initial-graphics-state-current-font-no*)
       (record-boxer-graphics-command-change-graphics-font
        *initial-graphics-state-current-font-no*))))
-
-;;; peephole optimizer support
-
-;; walk back looking for entries in the graphics list that
-;; can be changed rather than blindly appending to the graphics list
-;; for now, we just peek at the last entry.  At some point, we may
-;; want to continue backwards until we hit a non state change entry.
-(defun check-existing-graphics-state-entries (opcode new-value graphics-list)
-  (let ((al (storage-vector-active-length graphics-list)))
-    (unless (zerop& al)
-      (let ((last-entry (sv-nth (1-& al) graphics-list)))
-        (cond ((=& opcode (svref& last-entry 0))
-               (setf (svref& last-entry 1) new-value)
-               T)
-          (t nil))))))
 
 (defmacro with-graphics-state ((gcl &optional use-initial-values) &body body)
   (let ((old-pen-width (gensym))

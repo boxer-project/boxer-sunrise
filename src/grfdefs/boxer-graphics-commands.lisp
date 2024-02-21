@@ -558,7 +558,6 @@
             (+ x half-width) (+ y half-height))))
 
 (defmethod dump-gc ((self boxer-centered-bitmap) command stream)
-  (with-graphics-command-slots-bound command (bitmap x y width height)
     (progn
     ;; faking a dump of a simple array (which is the command)
     (enter-table command) ; we need to do this so load table index is correct
@@ -567,12 +566,12 @@
                           (dump-array-1 stream dims opts))
     (dump-boxer-thing (length command) stream)
     ;; now the contents
-    (dump-boxer-thing (svref& command 0) stream) ; opcode
-    (dump-pixmap bitmap stream)
-    (dump-boxer-thing x stream)
-    (dump-boxer-thing y stream)
-    (dump-boxer-thing width stream)
-    (dump-boxer-thing height stream))))
+    (dump-boxer-thing (svref& command 0) stream) ;; opcode
+    (dump-pixmap (aref command 1) stream)        ;; bitmap
+    (dump-boxer-thing (aref command 2) stream)   ;; x
+    (dump-boxer-thing (aref command 3) stream)   ;; y
+    (dump-boxer-thing (aref command 4) stream)   ;; width
+    (dump-boxer-thing (aref command 5) stream))) ;; height
 
 (defmethod deallocate-gc ((self boxer-centered-bitmap) command)
   (ogl-free-pixmap (aref command 1)))

@@ -24,6 +24,9 @@
 ;;;;   - gdispl.lisp (defun ,recording-function ,args... shows how we could optimize the
 ;;;;     record-boxer-graphics-command-xyz functions by looking backwards and not recording it if it's
 ;;;;     the previous item
+;;;;   - gdispl.lisp check-existing-graphics-state-entries peephole optimizer support
+;;;;     would look back through a graphics command list and not add the entry (or maybe just state change)
+;;;;     if it matched the previous one
 
 
 ;;;;
@@ -10124,6 +10127,192 @@ OpenGL expects a list of X Y pairs"
 ;;;;
 ;;;; FILE: gdispl.lisp
 ;;;;
+
+;; this is not smart about special forms
+(defun walk-body-for-args (args body)
+  (let ((mutators (mapcar #'(lambda (s) (intern (symbol-format nil "SET-~A" s)))
+                          args))
+        (found nil)
+        (mutators-found nil))
+    (cond ((symbolp body)
+          (when (and (member body args) (not (member body found)))
+            (push body found))
+          (when (and (member body mutators) (not (member body mutators-found)))
+            (push body mutators-found)))
+      ((listp body)
+      (dolist (thing body)
+        (cond ((symbolp thing)
+                (when (and (member thing args) (not (member thing found)))
+                  (push thing found))
+                (when (and (member thing mutators) (not (member thing mutators-found)))
+                  (push thing mutators-found)))
+          ((listp thing)
+            (multiple-value-bind (a m)
+                                (walk-body-for-args args thing)
+                                (setq found (union found a)
+                                      mutators-found (union mutators-found m))))))))
+    (values found mutators-found)))
+
+(defmacro with-graphics-command-slots-bound (gc-arg args body)
+  (multiple-value-bind (args-used mutators-used)
+                      (walk-body-for-args args body)
+                      (cond ((and (null args-used) (null mutators-used)) `,body)
+                        (T
+                          (let ((mutators (mapcar #'(lambda (s)
+                                                            (intern (symbol-format nil "SET-~A" s)))
+                                                  args)))
+                            ;; easier than passing a list of mutators
+                            `(let ,(mapcar #'(lambda (arg)
+                                                    (list arg `(svref& ,gc-arg
+                                                                        ,(1+ (position arg args)))))
+                                          args-used)
+                              (flet ,(mapcar #'(lambda (mut)
+                                                        (list mut '(new-value)
+                                                              `(setf (svref& ,gc-arg
+                                                                              ,(1+ (position
+                                                                                    mut mutators)))
+                                                                    new-value)))
+                                              mutators-used)
+                                      ,body)))))))
+
+
+(defvar *initial-graphics-command-dispatch-table-size* 32.
+  "This is the expected maximum number of DIFFERENT graphics commands.
+   The actual table sizes will be twice this number with the bottom
+   half for window coordinate based commands and the top half for
+   boxer coodinate based commands.")
+
+(defvar *boxer-graphics-command-mask* 32.)
+
+;;; peephole optimizer support
+
+;; walk back looking for entries in the graphics list that
+;; can be changed rather than blindly appending to the graphics list
+;; for now, we just peek at the last entry.  At some point, we may
+;; want to continue backwards until we hit a non state change entry.
+(defun check-existing-graphics-state-entries (opcode new-value graphics-list)
+  (let ((al (storage-vector-active-length graphics-list)))
+    (unless (zerop& al)
+      (let ((last-entry (sv-nth (1-& al) graphics-list)))
+        (cond ((=& opcode (svref& last-entry 0))
+               (setf (svref& last-entry 1) new-value)
+               T)
+          (t nil))))))
+
+(defun arglist-argnames (arglist)
+  (let ((revargnames nil))
+    (dolist (arg arglist)
+      (cond ((fast-memq arg lambda-list-keywords))
+        ((consp arg) (push (car arg) revargnames))
+        (t (push arg revargnames))))
+    (nreverse revargnames)))
+
+(defvar *type-check-during-template-conversion* t)
+
+(defun expand-transform-template-item (arg template-action direction)
+  (ecase direction
+        (:boxer->window (case template-action
+                          (:x-transform (list 'fix-array-coordinate-x arg))
+                          (:y-transform (list 'fix-array-coordinate-y arg))
+                          (:coerce      (list 'round arg))
+                          (t            arg)))
+        (:window->boxer (case template-action
+                          (:x-transform (list 'user-coordinate-fix-x arg))
+                          (:y-transform (list 'user-coordinate-fix-y arg))
+                          (:coerce      (list 'make-single-float arg))
+                          (t            arg)))))
+
+
+;; sgithens 2024-02-20 Final removal of the last of this macro
+(defmacro defgraphics-command ((name opcode
+                                    &optional (optimize-recording? nil))
+                              args
+                              sprite-command
+                              transform-template
+                              &body draw-body)
+  (flet ((numeric-declaration-args ()
+                                  (with-collection
+                                    (do* ((list-of-args args (cdr list-of-args))
+                                          (arg (car list-of-args) (car list-of-args))
+                                          (template-items transform-template (cdr template-items))
+                                          (template-item (car template-items) (car template-items)))
+                                      ((null list-of-args))
+                                      (unless (null template-item)
+                                        (collect arg))))))
+        (let* ((boxer-command-name (intern (symbol-format nil "BOXER-~A" name)))
+              (boxer-command-opcode (+ opcode *boxer-graphics-command-mask*))
+              (wstruct-name
+                (intern (symbol-format nil "WINDOW-GRAPHICS-COMMAND-~A" name)))
+              (wmake-name
+                (intern (symbol-format nil "MAKE-WINDOW-GRAPHICS-COMMAND-~A" name)))
+              (wcopy-name
+                (intern (symbol-format nil "COPY-WINDOW-GRAPHICS-COMMAND-~A" name)))
+              (wcopy-struct-name wcopy-name)
+              (bstruct-name
+                (intern (symbol-format nil "BOXER-GRAPHICS-COMMAND-~A" name)))
+              (bmake-name
+                (intern (symbol-format nil "MAKE-BOXER-GRAPHICS-COMMAND-~A" name)))
+              (bcopy-name
+                (intern (symbol-format nil "COPY-BOXER-GRAPHICS-COMMAND-~A" name)))
+              (bcopy-struct-name bcopy-name)
+              (window->boxer-name
+                (intern (symbol-format nil "GRAPHICS-WINDOW->BOXER-~A-ALLOCATOR" name)))
+              (process-function
+                (intern (symbol-format nil "Process Graphics Command ~A" name))))
+          `(progn
+            (defstruct (,wstruct-name (:type vector)
+                                      (:constructor ,wmake-name ,args)
+                                      (:copier ,wcopy-struct-name))
+              ;; slot 0 is used as an index into the dispatch table
+              (type ,opcode)
+              ,@args)
+            (defstruct (,bstruct-name (:type vector)
+                                      (:constructor ,bmake-name ,args)
+                                      (:copier ,bcopy-struct-name))
+              ;; slot 0 is used as an index into the dispatch table
+              (type ,boxer-command-opcode)
+              ,@args)
+
+            Conversion functions from Window->Boxer coordinates and back
+            these rely on being called within a with-graphics-vars-bound
+            (defun ,window->boxer-name (window-command)
+              (let ((graphics-command
+                    (,bmake-name ,@(let ((idx 0))
+                                      (mapcar #'(lambda (arg)
+                                                        (declare (ignore arg))
+                                                        (incf idx)
+                                                        (expand-transform-template-item
+                                                        `(svref& window-command ,idx)
+                                                        (nth (1- idx) transform-template)
+                                                        ':window->boxer))
+                                              args)))))
+                graphics-command))
+            install it
+            (setf (svref& *graphics-command-window->boxer-translation-table*
+                          ,opcode)
+                  ',window->boxer-name)
+
+            ;; now make the function for drawing on the window (that also records)
+            (defun ,name ,args
+              ,@args
+              (progn ,@draw-body))
+
+            ;; finally return the name (as opposed to random returned values)
+            ',name))))
+
+(defvar *graphics-command-window->boxer-translation-table*
+  (make-array *initial-graphics-command-dispatch-table-size*
+              :initial-element nil))
+
+;; sgithens 2024-02-20 older version of this function
+(defun allocate-window->boxer-command (graphics-command)
+  (if (< (aref graphics-command 0) 32)
+    (let ((handler (svref& *graphics-command-window->boxer-translation-table*
+                           (svref& graphics-command 0))))
+      (if (null handler)
+        (error "No translation allocator for ~A" graphics-command)
+        (funcall handler graphics-command)))
+    graphics-command))
 
 (defvar *graphics-command-descriptor-table*
   (make-array (* 2 *initial-graphics-command-dispatch-table-size*)
