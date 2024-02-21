@@ -10128,6 +10128,17 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: gdispl.lisp
 ;;;;
 
+(defmacro expand-mutators-and-body (args initial-index &body body)
+  (cond ((null args)
+         `(progn . ,body))
+    (t `(macrolet ((,(intern (symbol-format nil "SET-~A" (car args)))
+                    (new-value)
+                    `(setf (svref& .graphics-command. ,,initial-index)
+                           ,new-value)))
+                  (expand-mutators-and-body ,(cdr args)
+                                             ,(incf initial-index)
+                                             ,@body)))))
+
 ;; this is not smart about special forms
 (defun walk-body-for-args (args body)
   (let ((mutators (mapcar #'(lambda (s) (intern (symbol-format nil "SET-~A" s)))

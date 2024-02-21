@@ -176,6 +176,7 @@
    (transformation-template :initform nil)))
 
 (defdraw-graphics-command (boxer-change-pen-width new-width)
+  (setq *graphics-state-current-pen-width* new-width)
   (%set-pen-size new-width))
 
 (defextents-graphics-command (boxer-change-pen-width new-width)

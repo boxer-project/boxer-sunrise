@@ -349,18 +349,6 @@ Modification History (most recent at the top)
 (defsubst turtle-shape? (thing)
   (simple-vector-p thing))
 
-
-(defmacro expand-mutators-and-body (args initial-index &body body)
-  (cond ((null args)
-         `(progn . ,body))
-    (t `(macrolet ((,(intern (symbol-format nil "SET-~A" (car args)))
-                    (new-value)
-                    `(setf (svref& .graphics-command. ,,initial-index)
-                           ,new-value)))
-                  (expand-mutators-and-body ,(cdr args)
-                                             ,(incf initial-index)
-                                             ,@body)))))
-
 ;;; A template (which should be the same length as the args) specifies
 ;;; how to convert particular slots of a window-system-integer-command
 ;;; from/to boxer-graphics-floating-command.
@@ -378,16 +366,6 @@ Modification History (most recent at the top)
 (defun make-single-float (arg)
   (coerce arg 'single-float))
 
-;;; this is mostly for readability
-;; (eval (compile load eval)
-(defmacro defgraphics-state-change ((name opcode) args
-                                                  &key
-                                                  sprite-command
-                                                  body)
-  `(defun ,name ,args
-             ,@args
-             (progn ,@body)))
-;; )
 
 ;;; sgithens 2024-02-20 Old notes from before defstandard-graphics-handlers
 ;;;
@@ -575,7 +553,8 @@ Modification History (most recent at the top)
                                  (setq bgc (background-graphics-color agent)))))
            (record-boxer-graphics-command-change-graphics-color bgc)
            (setf (graphics-command-list-pen-color %graphics-list) bgc)
-           (change-graphics-color bgc))))
+          ;;  (change-graphics-color bgc)
+           )))
       ((eq pen 'bu::up)) ; the agent might do a PD
       ;; if the agent is not drawing, do nothing
       ;; also need a clause here for agents that do not use pens
@@ -635,9 +614,6 @@ Modification History (most recent at the top)
 (defun make-turtle-shape (&optional (length
                                      *default-graphics-list-initial-length*))
   (%%make-turtle-shape :contents (allocate-c-vector length)))
-
-
-
 
 (defvar *update-bitmap?* t)
 
