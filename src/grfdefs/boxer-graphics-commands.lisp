@@ -366,6 +366,21 @@
    (command-args :initform '(x y string))
    (transformation-template :initform '(:x-transform :y-transform nil))))
 
+;; TODO Leftover Extents from graphics-commands
+  ; :EXTENTS-FORM
+  ; (let ((height 0) (s string) (width 0))
+  ;   (loop
+  ;     (setq height (+ height 1(string-hei *graphics-state-current-font-no*))
+  ;           width (max (string-wid *graphics-state-current-font-no*
+  ;                                 (subseq s 0 (position #\newline s)))
+  ;                     width))
+  ;     ;; If we have handled the last line (the current line has no CR's)
+  ;     (if (not (position #\newline s))
+  ;       (return (values x y (+ x width) (+ y height)))
+  ;       (setq s (subseq s (let ((p (position #\newline s)))
+  ;                           (if (null p) 0 (1+& p))))))))
+
+
 (defdraw-graphics-command (boxer-left-string x y text)
   (let ((y (- y)))
     (loop
@@ -398,6 +413,21 @@
    (name :initform "boxer-right-string")
    (command-args :initform '(x y string))
    (transformation-template :initform '(:x-transform :y-transform nil))))
+
+;; TODO Leftover Extents from graphics-commands
+  ; :EXTENTS-FORM
+  ; (let ((height 0) (s string) (width 0))
+  ;   (loop
+  ;     (setq height (+ height 1 (string-hei *graphics-state-current-font-no*))
+  ;           width (max (string-wid *graphics-state-current-font-no*
+  ;                                 (subseq s 0 (position #\newline s)))
+  ;                     width))
+  ;     ;; If we have handled the last line (the current line has no CR's)
+  ;     (if (not (position #\newline s))
+  ;       (return (values (- x width) y x (+ y height)))
+  ;       (setq s (subseq s (let ((p (position #\newline s)))
+  ;                           (if (null p) 0 (1+& p))))))))
+
 
 (defdraw-graphics-command (boxer-right-string x y text)
   (let ((y (- y))
@@ -466,6 +496,8 @@
    (command-args :initform '(x y))
    (transformation-template :initform '(:x-transform :y-transform))))
 
+;; maybe this should be a circle ? Need to check relative speeds
+;; also, should probably use the pen-width ?
 (defdraw-graphics-command (boxer-dot x y)
     (draw-rectangle *graphics-state-current-pen-width* *graphics-state-current-pen-width*
                  (- x (/ *graphics-state-current-pen-width* 2))

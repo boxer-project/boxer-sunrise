@@ -59,49 +59,13 @@
 
 ;;; 8 Left String
 
-;; (defstandard-graphics-handlers (left-string 8)
-;;   :COMMAND-ARGS (x y string)
-;;   ; :EXTENTS-FORM
-;;   ; (let ((height 0) (s string) (width 0))
-;;   ;   (loop
-;;   ;     (setq height (+ height 1(string-hei *graphics-state-current-font-no*))
-;;   ;           width (max (string-wid *graphics-state-current-font-no*
-;;   ;                                 (subseq s 0 (position #\newline s)))
-;;   ;                     width))
-;;   ;     ;; If we have handled the last line (the current line has no CR's)
-;;   ;     (if (not (position #\newline s))
-;;   ;       (return (values x y (+ x width) (+ y height)))
-;;   ;       (setq s (subseq s (let ((p (position #\newline s)))
-;;   ;                           (if (null p) 0 (1+& p))))))))
-;;   :TRANSFORMATION-TEMPLATE
-;;   (:x-transform :y-transform nil))
 
 ;;; 9 Right String
 
-;; (defstandard-graphics-handlers (right-string 9)
-;;   :COMMAND-ARGS (x y string)
-;;   ; :EXTENTS-FORM
-;;   ; (let ((height 0) (s string) (width 0))
-;;   ;   (loop
-;;   ;     (setq height (+ height 1 (string-hei *graphics-state-current-font-no*))
-;;   ;           width (max (string-wid *graphics-state-current-font-no*
-;;   ;                                 (subseq s 0 (position #\newline s)))
-;;   ;                     width))
-;;   ;     ;; If we have handled the last line (the current line has no CR's)
-;;   ;     (if (not (position #\newline s))
-;;   ;       (return (values (- x width) y x (+ y height)))
-;;   ;       (setq s (subseq s (let ((p (position #\newline s)))
-;;   ;                           (if (null p) 0 (1+& p))))))))
-;;   :TRANSFORMATION-TEMPLATE
-;;   (:x-transform :y-transform nil))
 
 ;;; 10 Centered Rectangle
 
 ;;; 11 Dot
-
-;; maybe this should be a circle ? Need to check relative speeds
-;; also, should probably use the pen-width ?
-
 
 ;;; 12 Hollow Rectangle
 
