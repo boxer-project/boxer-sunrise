@@ -12722,6 +12722,12 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: grfdfs.lisp
 ;;;;
 
+;; this is set to Nil for the mac because of the bug which causes
+;; allocation of new bitmaps to take a LONG time
+(defvar *add-new-graphics-sheet-bit-array?* #+mcl nil #-mcl t
+  "Automatically allocate new bit-arrays for graphics sheets when
+   they need them e.g. the STAMP primitive")
+
 ;; 2023-07-20 sgithens Old version of draw-wrap-line that took the window-system
 ;; integer coords
 (defun draw-wrap-line (from-x from-y to-x to-y alu)
