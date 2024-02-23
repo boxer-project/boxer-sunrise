@@ -10977,6 +10977,32 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: file-prims.lisp
 ;;;;
 
+;; sgithens 2024-02-21 In MCL, this is how we used to dynamically update the top macOS menus
+#| ;; this is now handled (as it should be) in the menu-update
+      #+mcl ;; dynamically adjust the file menu...
+      (let ((save-item (find "Save" (slot-value *boxer-file-menu* 'ccl::item-list)
+                             :test #'(lambda (a b)
+                                       (string-equal a (ccl::menu-item-title b)))))
+            ;(save-box-as-item (find "Save Box As..." (slot-value *boxer-file-menu*
+            ;                                                     'ccl::item-list)
+            ;                        :test #'(lambda (a b)
+            ;                                  (string-equal
+            ;                                   a (ccl::menu-item-title b)))))
+            )
+        ;; grey out File menu items if they are redundant or not applicable
+        ;; "Save" is not applicable if there is not an existing filename
+        ;; or if the file box has not been modified...
+        (if (or read-only? (null pathname) (not (file-modified? filebox)))
+            (ccl::menu-item-disable save-item)
+            (ccl::menu-item-enable  save-item))
+        ;; "Save Box As..." is redundant with "Save As"if the
+        ;; cursor is in the same box as the document box
+;        (if (eq filebox (point-box))
+;            (ccl::menu-item-disable save-box-as-item)
+;            (ccl::menu-item-enable  save-box-as-item))
+        )
+|#
+
 ;; this is used to catch pathnames which won't even parse
 
 (defun quote-wild-char (string quote-char)

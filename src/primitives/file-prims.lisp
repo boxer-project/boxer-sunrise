@@ -985,30 +985,7 @@ Modification History (most recent at top)
                          (boxnet::local-url-pathname url)))))
     (multiple-value-bind (origin-type file-format read-only? fmodified?)
         (get-box-file-props filebox)
-#| ;; this is now handled (as it should be) in the menu-update
-      #+mcl ;; dynamically adjust the file menu...
-      (let ((save-item (find "Save" (slot-value *boxer-file-menu* 'ccl::item-list)
-                             :test #'(lambda (a b)
-                                       (string-equal a (ccl::menu-item-title b)))))
-            ;(save-box-as-item (find "Save Box As..." (slot-value *boxer-file-menu*
-            ;                                                     'ccl::item-list)
-            ;                        :test #'(lambda (a b)
-            ;                                  (string-equal
-            ;                                   a (ccl::menu-item-title b)))))
-            )
-        ;; grey out File menu items if they are redundant or not applicable
-        ;; "Save" is not applicable if there is not an existing filename
-        ;; or if the file box has not been modified...
-        (if (or read-only? (null pathname) (not (file-modified? filebox)))
-            (ccl::menu-item-disable save-item)
-            (ccl::menu-item-enable  save-item))
-        ;; "Save Box As..." is redundant with "Save As"if the
-        ;; cursor is in the same box as the document box
-;        (if (eq filebox (point-box))
-;            (ccl::menu-item-disable save-box-as-item)
-;            (ccl::menu-item-enable  save-box-as-item))
-        )
-|#
+
       ;; print into the *file-status-string*
       (clear-file-status-string)
       (catch 'status-string-end
@@ -1017,25 +994,27 @@ Modification History (most recent at top)
                    (when (eq result t) (throw 'status-string-end nil)))))
           ;; first (maybe) indicate file modified  status
           (when (and (not vanilla?) fmodified?)
-            (add-string #+mcl "� " #-mcl "* "))
-          ;;; print +mcl the box name...
+            (add-string "* "))
+
           (add-string "File Box: ")
           (add-string box-name)
-          (add-string  #+mcl " � " #-mcl " | ")
           ;; now add info about the where the box came from...
-          (add-string "From: ")
           (unless (and (null pathname) (not (eq origin-type :network)))
+            (add-string " | ")
+            (add-string " in file: ") ; "From: ")
             ;; leave the where field blank if we dont have a name...
             (let ((adjectives nil))
               (when (and read-only? (not (eq origin-type :network)))
                 (add-string (if *terse-file-status* "(RO) " "Read Only "))
                 (setq adjectives t))
-              (case origin-type
-                (:network (if *terse-file-status*
-                              (add-string "(net) ")
-                              (add-string "Network "))
-                          (setq adjectives t))
-                (:disk (when *terse-file-status* (add-string "(disk) "))))
+              ;; sgithens 2024-02-21 Leaving this out for now. If wanted we can put disk|network in front
+              ;;                     of the name depending on where it was loaded from.
+              ;; (case origin-type
+              ;;   (:network (if *terse-file-status*
+              ;;                 (add-string "(net) ")
+              ;;                 (add-string "Network "))
+              ;;             (setq adjectives t))
+              ;;   (:disk (when *terse-file-status* (add-string "(disk) "))))
               (unless (eq file-format :box)
                 (add-string (string-capitalize file-format))
                 (add-string " ")
@@ -1054,7 +1033,7 @@ Modification History (most recent at top)
                          (when (listp raw-dirs) ; could be :unspecific
                            (dolist (dir (cdr raw-dirs))
                              (add-string dir)
-                             (add-string #+mcl ":" #-mcl "/")))
+                             (add-string "/")))
                          (add-string "}"))))
                     ((eq origin-type :network)
                      (add-string (boxnet::scheme-string url))))))))

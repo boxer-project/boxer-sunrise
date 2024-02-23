@@ -90,11 +90,20 @@
                                                  (boxer::repaint))
                            :retract-callback (lambda (huh frame)
                                                  (boxer::com-toggle-vanilla-mode)
+                                                 (boxer::repaint)))
+           (make-instance 'capi:toolbar-button
+                           :text "Save File Box" :name "SaveFileBox" :image 10 :selected-image 11
+                           :help-key "Save current file box."
+                           :selection-callback (lambda (huh frame)
+                                                 (boxer::com-save-document)
+                                                 (boxer::repaint))
+                           :retract-callback (lambda (huh frame)
+                                                 (boxer::com-save-document)
                                                  (boxer::repaint))))
          :interaction :multiple-selection
          :default-image-set
            (capi:make-general-image-set
-            :image-count 10
+            :image-count 12
             :id (gp:read-external-image
                   (merge-pathnames "./images/boxer16x16icons.png" boxer::*resources-dir*))))
   ))
@@ -177,7 +186,13 @@
          (current-color (boxer::bfd-color (get-current-font)))
          (point-box (boxer::box-point-is-in))
          (background-color (boxer::get-css-style point-box :background-color))
-         (border-color (boxer::get-css-style point-box :border-color)))
+         (border-color (boxer::get-css-style point-box :border-color))
+         (file-modified nil))
+
+    (if point-box
+      (multiple-value-bind (origin-type file-format read-only? fmodified?)
+        (boxer::get-box-file-props (boxer::current-file-box point-box))
+        (setf file-modified fmodified?)))
 
       (let ((name (slot-value item 'capi::name)))
         (cond ((and *suppress-expose-handler* (not (equal name "RunStop")))
@@ -215,6 +230,8 @@
               ((equal name "TopLevel")
                (setf (capi:item-selected item)
                      (boxer::fast-memq boxer::*global-top-level-mode* boxer::*active-modes*)))
+              ((equal name "SaveFileBox")
+               (setf (capi:item-selected item) file-modified))
               ((equal name "BackgroundColor")
                (if background-color
                  (setf (capi:choice-selected-item item)
