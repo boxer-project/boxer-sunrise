@@ -1,5 +1,34 @@
 # Change Log
 
+## 3.4.16 2024-02-26
+
+This is a small bug fix and maintenance release while larger work on zooming and smooth scrolling is occuring in
+another branch.
+
+bugs-150 Putting file status back on title bar and adding save file toolbar icon.
+
+bugs-194 Fixing font-face name capitalization hash lookups for generating the glyph texture atlas.
+
+sunrise-71 Adding missing graphics command for hollow rectangles.
+
+sunrise-69
+  - Moving some remaining extents and size comments over to the newer boxer graphics commands.
+  - Retiring defgraphics-state-change, expand-mutators-and-body. Fixed issue with pen-size not taking effect.
+
+infrastructure
+  - Updating notarization to use notarytool from altool.
+
+clean-up
+  - Removing older version of lispworks opengl bindings
+
+minor-fix
+  - Updating delivery script with proper macosx read macro include.
+  - Typo in name 'record-boxer-graphics-command-centered-bitmap' (missing centered)
+
+the-attic
+  - Fully removing the remaining bits of defstandard-graphics-handlers and defgraphics-command
+  - Archiving unused *add-new-graphics-sheet-bit-array?*
+
 ## 3.4.15 2023-10-28
 
 This release is largely cleanup from the last build, fixing a few annoying bugs introduced that were causing
