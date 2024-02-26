@@ -168,6 +168,10 @@
 (defun record-boxer-graphics-command-change-alu (new-alu)
   (sv-append %graphics-list (coerce (list 32 new-alu) 'vector)))
 
+(defun change-alu (new-alu)
+  (unless (=& new-alu *graphics-state-current-alu*)
+    (setq *graphics-state-current-alu* new-alu)))
+
 ;; 33   BOXER-CHANGE-PEN-WIDTH              (NEW-WIDTH)
 (defclass boxer-change-pen-width (graphics-command)
   ((opcode :initform 33)
@@ -190,6 +194,11 @@
 
 (defun record-boxer-graphics-command-change-pen-width (new-width)
   (sv-append %graphics-list (coerce (list 33 new-width) 'vector)))
+
+(defun change-pen-width (new-width)
+  (unless (=& new-width *graphics-state-current-pen-width*)
+    (setq *graphics-state-current-pen-width* new-width)
+    (%set-pen-size new-width)))
 
 ;; 34   BOXER-CHANGE-GRAPHICS-FONT          (NEW-FONT-NO)
 (defclass boxer-change-graphics-font (graphics-command)
@@ -228,6 +237,11 @@
 (defun record-boxer-graphics-command-change-graphics-font (new-font-no)
   (sv-append %graphics-list (coerce (list 34 new-font-no) 'vector)))
 
+(defun change-graphics-font (new-font-no)
+  (unless (=& new-font-no *graphics-state-current-font-no*)
+    ;; have to check for possible font
+    (setq *graphics-state-current-font-no* new-font-no)))
+
 ;; 35   BOXER-LINE-SEGMENT                           (X0 Y0 X1 Y1)
 (defclass boxer-line-segment (graphics-command)
   ((opcode :initform 35)
@@ -261,6 +275,11 @@
 
 (defun record-boxer-graphics-command-line-segment (x0 y0 x1 y1)
   (sv-append %graphics-list (coerce (list 35 x0 y0 x1 y1) 'vector)))
+
+(defun change-graphics-color (new-color)
+  (unless (color= new-color *graphics-state-current-pen-color*)
+    (setq *graphics-state-current-pen-color* new-color)
+    (%set-pen-color new-color)))
 
 ;; 36   BOXER-CHANGE-GRAPHICS-COLOR                  (NEW-COLOR)
 (defclass boxer-change-graphics-color (graphics-command)
