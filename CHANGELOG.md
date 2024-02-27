@@ -3,7 +3,11 @@
 ## 3.4.16 2024-02-26
 
 This is a small bug fix and maintenance release while larger work on zooming and smooth scrolling is occuring in
-another branch.
+another branch. We've added the current filebox name and file status back to the window title bar. A problem looking
+up glyphs widths has been fixed, which was very noticable in Courier New and monospace fonts. Hollow rectangle stamps
+have been fixed and added back to turtle graphics. Infrastructurally, we finally updated our notarization workflow to
+notarytool.  Outside of that, the remainder of the old school defboxer-graphics-command macros were moved over to CLOS
+classes with a few tweaks.
 
 bugs-150 Putting file status back on title bar and adding save file toolbar icon.
 
