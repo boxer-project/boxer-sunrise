@@ -77,12 +77,6 @@ Modification History (most recent at top)
 
 (defvar %drawing-half-height 100.0)
 
-;; this is set to Nil for the mac because of the bug which causes
-;; allocation of new bitmaps to take a LONG time
-(defvar *add-new-graphics-sheet-bit-array?* #+mcl nil #-mcl t
-  "Automatically allocate new bit-arrays for graphics sheets when
-   they need them e.g. the STAMP primitive")
-
 (defmacro no-graphics? () '(eq %graphics-box :no-graphics))
 
 ;;; if drawing with more than one sprite becomes common, it may be worthwhile

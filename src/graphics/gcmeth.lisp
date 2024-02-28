@@ -618,10 +618,8 @@ Modification History (most recent at top)
         (x-position self) (y-position self)
         (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
       ((not (no-graphics?))
-       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-             (array-y (fix-array-coordinate-y (absolute-y-position self))))
-         (record-boxer-graphics-command-hollow-rectangle
-          array-x array-y wid hei))))))
+       (record-boxer-graphics-command-hollow-rectangle
+        (x-position self) (y-position self) wid hei)))))
 
 ;;; Circle, Ellipses and Arcs
 
@@ -662,9 +660,7 @@ Modification History (most recent at top)
         (x-position self) (y-position self) (coerce radius 'boxer-float)))
       ((not (no-graphics?))
          (record-boxer-graphics-command-filled-circle
-          (x-position self) (y-position self) radius)
-         (with-graphics-screen-parameters
-           (filled-circle (x-position self) (y-position self) radius))))))
+          (x-position self) (y-position self) radius)))))
 
 (defmethod stamp-hollow-circle ((self graphics-cursor) radius)
   (let ((alu (get-alu-from-pen
@@ -674,9 +670,7 @@ Modification History (most recent at top)
        (record-boxer-graphics-command-circle
         (x-position self) (y-position self) (coerce radius 'boxer-float)))
       ((not (no-graphics?))
-         (record-boxer-graphics-command-circle (x-position self) (y-position self) radius)
-         (with-graphics-screen-parameters
-           (circle (x-position self) (y-position self) radius))))))
+         (record-boxer-graphics-command-circle (x-position self) (y-position self) radius)))))
 
 (defmethod stamp-wedge ((self graphics-cursor) radius sweep-angle)
   (let ((alu (get-alu-from-pen
@@ -688,9 +682,7 @@ Modification History (most recent at top)
         (heading self) sweep-angle))
       ((not (no-graphics?))
         (record-boxer-graphics-command-wedge
-          (x-position self) (y-position self) radius (absolute-heading self) sweep-angle)
-        (with-graphics-screen-parameters
-          (wedge (x-position self) (y-position self) radius (absolute-heading self) sweep-angle))))))
+          (x-position self) (y-position self) radius (absolute-heading self) sweep-angle)))))
 
 (defmethod stamp-arc ((self graphics-cursor) radius sweep-angle)
   (let ((alu (get-alu-from-pen
@@ -702,9 +694,7 @@ Modification History (most recent at top)
         (heading self) sweep-angle))
       ((not (no-graphics?))
          (record-boxer-graphics-command-arc
-           (x-position self) (y-position self) radius (absolute-heading self) sweep-angle)
-         (with-graphics-screen-parameters
-           (arc (x-position self) (y-position self) radius (absolute-heading self) sweep-angle))))))
+           (x-position self) (y-position self) radius (absolute-heading self) sweep-angle)))))
 
 
 ;;;; Pictures

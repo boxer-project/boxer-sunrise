@@ -12,6 +12,7 @@
 ;;;; 41   BOXER-RIGHT-STRING                           (X Y STRING)
 ;;;; 42   BOXER-CENTERED-RECTANGLE                     (X Y WIDTH HEIGHT)
 ;;;; 43   BOXER-DOT                                    (X Y)
+;;;; 44   BOXER-HOLLOW-RECTANGLE ???                   (X Y WIDTH HEIGHT)
 ;;;; 47   BOXER-CENTERED-BITMAP                        (BITMAP X Y WIDTH HEIGHT)
 ;;;; 58   BOXER-WEDGE                                  (X Y RADIUS START-ANGLE SWEEP-ANGLE)
 ;;;; 59   BOXER-ARC                                    (X Y RADIUS START-ANGLE SWEEP-ANGLE)
@@ -167,6 +168,10 @@
 (defun record-boxer-graphics-command-change-alu (new-alu)
   (sv-append %graphics-list (coerce (list 32 new-alu) 'vector)))
 
+(defun change-alu (new-alu)
+  (unless (=& new-alu *graphics-state-current-alu*)
+    (setq *graphics-state-current-alu* new-alu)))
+
 ;; 33   BOXER-CHANGE-PEN-WIDTH              (NEW-WIDTH)
 (defclass boxer-change-pen-width (graphics-command)
   ((opcode :initform 33)
@@ -175,6 +180,7 @@
    (transformation-template :initform nil)))
 
 (defdraw-graphics-command (boxer-change-pen-width new-width)
+  (setq *graphics-state-current-pen-width* new-width)
   (%set-pen-size new-width))
 
 (defextents-graphics-command (boxer-change-pen-width new-width)
@@ -188,6 +194,11 @@
 
 (defun record-boxer-graphics-command-change-pen-width (new-width)
   (sv-append %graphics-list (coerce (list 33 new-width) 'vector)))
+
+(defun change-pen-width (new-width)
+  (unless (=& new-width *graphics-state-current-pen-width*)
+    (setq *graphics-state-current-pen-width* new-width)
+    (%set-pen-size new-width)))
 
 ;; 34   BOXER-CHANGE-GRAPHICS-FONT          (NEW-FONT-NO)
 (defclass boxer-change-graphics-font (graphics-command)
@@ -226,6 +237,11 @@
 (defun record-boxer-graphics-command-change-graphics-font (new-font-no)
   (sv-append %graphics-list (coerce (list 34 new-font-no) 'vector)))
 
+(defun change-graphics-font (new-font-no)
+  (unless (=& new-font-no *graphics-state-current-font-no*)
+    ;; have to check for possible font
+    (setq *graphics-state-current-font-no* new-font-no)))
+
 ;; 35   BOXER-LINE-SEGMENT                           (X0 Y0 X1 Y1)
 (defclass boxer-line-segment (graphics-command)
   ((opcode :initform 35)
@@ -259,6 +275,11 @@
 
 (defun record-boxer-graphics-command-line-segment (x0 y0 x1 y1)
   (sv-append %graphics-list (coerce (list 35 x0 y0 x1 y1) 'vector)))
+
+(defun change-graphics-color (new-color)
+  (unless (color= new-color *graphics-state-current-pen-color*)
+    (setq *graphics-state-current-pen-color* new-color)
+    (%set-pen-color new-color)))
 
 ;; 36   BOXER-CHANGE-GRAPHICS-COLOR                  (NEW-COLOR)
 (defclass boxer-change-graphics-color (graphics-command)
@@ -365,6 +386,21 @@
    (command-args :initform '(x y string))
    (transformation-template :initform '(:x-transform :y-transform nil))))
 
+;; TODO Leftover Extents from graphics-commands
+  ; :EXTENTS-FORM
+  ; (let ((height 0) (s string) (width 0))
+  ;   (loop
+  ;     (setq height (+ height 1(string-hei *graphics-state-current-font-no*))
+  ;           width (max (string-wid *graphics-state-current-font-no*
+  ;                                 (subseq s 0 (position #\newline s)))
+  ;                     width))
+  ;     ;; If we have handled the last line (the current line has no CR's)
+  ;     (if (not (position #\newline s))
+  ;       (return (values x y (+ x width) (+ y height)))
+  ;       (setq s (subseq s (let ((p (position #\newline s)))
+  ;                           (if (null p) 0 (1+& p))))))))
+
+
 (defdraw-graphics-command (boxer-left-string x y text)
   (let ((y (- y)))
     (loop
@@ -397,6 +433,21 @@
    (name :initform "boxer-right-string")
    (command-args :initform '(x y string))
    (transformation-template :initform '(:x-transform :y-transform nil))))
+
+;; TODO Leftover Extents from graphics-commands
+  ; :EXTENTS-FORM
+  ; (let ((height 0) (s string) (width 0))
+  ;   (loop
+  ;     (setq height (+ height 1 (string-hei *graphics-state-current-font-no*))
+  ;           width (max (string-wid *graphics-state-current-font-no*
+  ;                                 (subseq s 0 (position #\newline s)))
+  ;                     width))
+  ;     ;; If we have handled the last line (the current line has no CR's)
+  ;     (if (not (position #\newline s))
+  ;       (return (values (- x width) y x (+ y height)))
+  ;       (setq s (subseq s (let ((p (position #\newline s)))
+  ;                           (if (null p) 0 (1+& p))))))))
+
 
 (defdraw-graphics-command (boxer-right-string x y text)
   (let ((y (- y))
@@ -465,6 +516,8 @@
    (command-args :initform '(x y))
    (transformation-template :initform '(:x-transform :y-transform))))
 
+;; maybe this should be a circle ? Need to check relative speeds
+;; also, should probably use the pen-width ?
 (defdraw-graphics-command (boxer-dot x y)
     (draw-rectangle *graphics-state-current-pen-width* *graphics-state-current-pen-width*
                  (- x (/ *graphics-state-current-pen-width* 2))
@@ -487,16 +540,49 @@
 (defun record-boxer-graphics-command-dot (x y)
   (sv-append %graphics-list (coerce (list 43 x y) 'vector)))
 
-;; 44 TODO Hollow Rectangle??
+;; 44   BOXER-HOLLOW-RECTANGLE                   (X Y WIDTH HEIGHT)
+(defclass boxer-hollow-rectangle (graphics-command)
+  ((opcode :initform 44)
+   (name :initform "boxer-hollow-rectangle")
+   (command-args :initform '(x y width height))
+   (transformation-template :initform '(:x-transform :y-transform :coerce :coerce))))
 
-  ; :SPRITE-COMMAND
-  ; (cond ((and (= x last-x) (= y last-y))
-  ;       (list 'bu::stamp-hollow-rect width height))
-  ;   (t
-  ;   (setq last-x x last-y y)
-  ;   (append (sprite-commands-for-new-position x y)
-  ;           (list 'bu::stamp-hollow-rect width height))))
+(defdraw-graphics-command (boxer-hollow-rectangle x y w h)
+  ;; sgithens TODO should we be using *graphics-state-current-pen-width*, rather then boxgl-device-pen-size?
+  ;;               Currently this doens't seem to be running in the graphics context that has that bound.
+  (let* ((pen-size (boxgl-device-pen-size bw::*boxgl-device*))
+         (right    (- (+ x (/ w 2)) (/ pen-size 2)))
+         (left     (+ (- x (/ w 2)) (/ pen-size 2)))
+         ;; Full right and left are flush with edge for the top
+         ;; and bottom line, otherwise there is rectangle missing
+         ;; from the corner.
+         (full-right (+ x (/ w 2)))
+         (full-left  (- x (/ w 2)))
+         ;; The y axis is flipped
+         (top      (- (- (+ y (/ h 2)) (/ pen-size 2))))
+         (bottom   (- (+ (- y (/ h 2)) (/ pen-size 2)))))
+    (draw-line right top right bottom)
+    (draw-line full-right bottom full-left bottom)
+    (draw-line left bottom left top)
+    (draw-line full-left top full-right top)))
 
+(defextents-graphics-command (boxer-hollow-rectangle x y width height)
+  (let ((half-width (values (/ width 2.0)))
+        (half-height (values (/ height 2.0))))
+    (declare (type boxer-float half-width half-height))
+    (values (float-minus x half-width) (float-minus y half-height)
+            (float-plus x half-width) (float-plus y half-height))))
+
+(defsprite-graphics-command (boxer-hollow-rectangle x y width height)
+  (cond ((and (= x last-x) (= y last-y))
+         (list 'bu::stamp-hollow-rect width height))
+    (t
+    (setq last-x x last-y y)
+    (append (sprite-commands-for-new-position x y)
+            (list 'bu::stamp-hollow-rect width height)))))
+
+(defun record-boxer-graphics-command-hollow-rectangle (x y width height)
+  (sv-append %graphics-list (coerce (list 44 x y width height) 'vector)))
 
 ;; 47   BOXER-CENTERED-BITMAP          (BITMAP X Y WIDTH HEIGHT)
 (defclass boxer-centered-bitmap (graphics-command)
@@ -524,7 +610,6 @@
             (+ x half-width) (+ y half-height))))
 
 (defmethod dump-gc ((self boxer-centered-bitmap) command stream)
-  (with-graphics-command-slots-bound command (bitmap x y width height)
     (progn
     ;; faking a dump of a simple array (which is the command)
     (enter-table command) ; we need to do this so load table index is correct
@@ -533,12 +618,12 @@
                           (dump-array-1 stream dims opts))
     (dump-boxer-thing (length command) stream)
     ;; now the contents
-    (dump-boxer-thing (svref& command 0) stream) ; opcode
-    (dump-pixmap bitmap stream)
-    (dump-boxer-thing x stream)
-    (dump-boxer-thing y stream)
-    (dump-boxer-thing width stream)
-    (dump-boxer-thing height stream))))
+    (dump-boxer-thing (svref& command 0) stream) ;; opcode
+    (dump-pixmap (aref command 1) stream)        ;; bitmap
+    (dump-boxer-thing (aref command 2) stream)   ;; x
+    (dump-boxer-thing (aref command 3) stream)   ;; y
+    (dump-boxer-thing (aref command 4) stream)   ;; width
+    (dump-boxer-thing (aref command 5) stream))) ;; height
 
 (defmethod deallocate-gc ((self boxer-centered-bitmap) command)
   (ogl-free-pixmap (aref command 1)))
@@ -722,6 +807,7 @@
                  41 (make-instance 'boxer-right-string)
                  42 (make-instance 'boxer-centered-rectangle)
                  43 (make-instance 'boxer-dot)
+                 44 (make-instance 'boxer-hollow-rectangle)
                  47 (make-instance 'boxer-centered-bitmap)
                  58 (make-instance 'boxer-wedge)
                  59 (make-instance 'boxer-arc)

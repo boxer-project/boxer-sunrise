@@ -161,6 +161,9 @@
       (top-level-repaint-pass-1))
     (top-level-repaint-pass-2)))
 
+(defun update-window-title ()
+  (set-window-name (current-file-status (point-box))))
+
 (defun repaint-internal (&optional just-windows?)
   (repaint-window *boxer-pane* nil)
   (dolist (region *region-list*)
@@ -168,7 +171,7 @@
   ;; comment out next line for outermost box save document, updates will
   ;; occur inside of set-outermost-box instead...
   (when (bp? *point*)
-    ; (set-window-name (current-file-status (point-box)))
+    (capi:apply-in-pane-process *boxer-pane* 'update-window-title)
     (unless just-windows?
       (repaint-cursor *point* nil)))
   ;; swap buffers here, after all drawing is complete
