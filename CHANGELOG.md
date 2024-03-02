@@ -1,5 +1,20 @@
 # Change Log
 
+## 3.4.17 2024-03-02
+
+Very minor release with a single bugfix that was causing problems saving certain older files.
+
+crash-fix Saving :cached-boxtops with old graphics commands
+
+    Working on an issue from the most recent build, where there are old graphics lists that are stored
+    in box plists under :cached-boxtop that aren't getting translated, so it's still trying to save the old
+    lower ( >32 ) commands, but are blowing up.
+
+    To fix this I put in a check for lower opcodes, and then fetch the higher level graphics-command to
+    use with dump-gc.  This is ok, after reviewing all the defmethod dump-gc implementations, none of
+    actually modify the original opcode when saving, and the special ones mostly deal with things like
+    bitmaps and whatnot. (fonts, colors, bitmaps, alu).
+
 ## 3.4.16 2024-02-26
 
 This is a small bug fix and maintenance release while larger work on zooming and smooth scrolling is occuring in

@@ -255,7 +255,13 @@ Modification History (most recent at the top)
   (extents (gethash (aref graphics-command 0) *graphics-commands*) (cdr (coerce graphics-command 'list))))
 
 (defun dump-graphics-command (command stream)
-  (dump-gc (gethash (aref command 0) *graphics-commands*) command stream))
+  (let* ((opcode (aref command 0))
+         (com (setf com (gethash opcode *graphics-commands*))))
+    ;; Occasionally some old graphics commands still get untranslated in opened files, the bug
+    ;; requiring this fix was cached boxtops.
+    (when (< opcode 32)
+      (setf com (gethash (+ opcode 32) *graphics-commands*)))
+    (dump-gc com command stream)))
 
 ;; this is actually more of a post load processing kinda thing
 (defun load-graphics-command (command &optional (type :turtle-shape))
