@@ -8683,6 +8683,12 @@ Modification History (most recent at top)
 ;;;; FILE: draw-high-common.lisp
 ;;;;
 
+;; sgithens 2024-03-04 no longer needed...
+(defmacro with-scrolling-origin ((scroll-x scroll-y) &body body)
+  ;; do we need to readjust the clip region here ????
+  `(with-origin-at (,scroll-x ,scroll-y)
+     . ,body))
+
 (defun draw-filled-arc (alu x y wid hei start-angle sweep-angle)
   (%draw-filled-arc %drawing-window alu (scale-x x) (scale-y y)
                     wid hei start-angle sweep-angle))

@@ -74,7 +74,7 @@
                            ;; a subpart of the screen obj, the screen-box's screen-rows.
                            (if (draw-port-box-ellipsis? self)
                              (draw-port-box-ellipsis self il it)
-                             (with-scrolling-origin (scroll-x-offset scroll-y-offset)
+                             (with-origin-at (scroll-x-offset scroll-y-offset)
                                (do-vector-contents (inf-screen-obj screen-rows :index-var-name row-no)
                                  (repaint-pass-2-sr inf-screen-obj))))))))
 
