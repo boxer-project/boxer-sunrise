@@ -92,7 +92,7 @@
            :with-collection
            :collect
            :sheet-inside-width :sheet-inside-height
-           :with-window-system-dependent-clipping :with-turtle-clipping
+           :with-turtle-clipping
            :alu-andca :alu-seta :alu-xor :alu-and :alu-ior :alu-setz
            :port-to
            :getprop

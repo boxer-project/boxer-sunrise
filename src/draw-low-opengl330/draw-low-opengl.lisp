@@ -195,20 +195,6 @@
       (gl:scissor x y wid hei)
       )))
 
-(defmacro with-window-system-dependent-clipping ((x y wid hei) &body body)
-  `(unwind-protect
-    (let ((%clip-lef (max %clip-lef (+ %origin-x-offset ,x)))
-          (%clip-top (max %clip-top (+ %origin-y-offset ,y)))
-          (%clip-rig (min %clip-rig (+ %origin-x-offset ,x ,wid)))
-          (%clip-bot (min %clip-bot (+ %origin-y-offset ,y ,hei))))
-      ;; make sure that the clipping parameters are always at least
-      ;; as restrictive as the previous parameters
-      (my-clip-rect %clip-lef %clip-top %clip-rig %clip-bot)
-      . ,body)
-    ;; reset the old clip region
-    (my-clip-rect %clip-lef %clip-top
-                  %clip-rig %clip-bot)))
-
 (defun clear-window (w)
   (let ((color (backdrop-color w)))
     (gl::clear-color (aref color 1)
