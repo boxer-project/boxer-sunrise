@@ -8683,6 +8683,16 @@ Modification History (most recent at top)
 ;;;; FILE: draw-high-common.lisp
 ;;;;
 
+;; sgithens 2024-03-04 this doesn't do much anymore...
+(defmacro with-turtle-clipping ((wid hei . args) &body body)
+  "This MUST use the hardware clipping regardless of speed.
+It is used only around bodies which do sprite graphics
+so the frequency of use is MUCH less than it is in the redisplay
+
+this adjusts the clipping to be width and height AT the current
+scaled origin"
+  `(with-window-system-dependent-clipping (0 0 ,wid ,hei . ,args) . ,body))
+
 ;; sgithens 2024-03-04 no longer needed...
 (defmacro with-scrolling-origin ((scroll-x scroll-y) &body body)
   ;; do we need to readjust the clip region here ????
@@ -8878,6 +8888,15 @@ if it is out of bounds
 ;;;;
 ;;;; FILE: draw-low-opengl.lisp
 ;;;;
+
+;; sgithens 2024-01-08 None of these seem to be used other than emptily being
+;;          bound in drawing macros
+;; (defvar %local-clip-lef 0)
+;; (defvar %local-clip-top 0)
+;; (defvar %local-clip-rig (expt 2 15))
+;; (defvar %local-clip-bot (expt 2 15))
+
+;; (defvar %clip-total-height nil)
 
 (defun %draw-filled-arc (bit-array alu x y width height th1 th2)
   "See the-attic for the previous lispworks GP library version of this function.

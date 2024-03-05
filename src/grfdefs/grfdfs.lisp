@@ -194,8 +194,7 @@ parameters of the graphics box are bound. "
                                              (ab-pos-cache-sy pos-cache))
                                          (ab-pos-cache-iw pos-cache)
                                          (ab-pos-cache-ih pos-cache))
-              (with-turtle-clipping ((ab-pos-cache-iw pos-cache)
-                                     (ab-pos-cache-ih pos-cache))
+              (with-clipping-inside (0 0 (ab-pos-cache-iw pos-cache) (ab-pos-cache-ih pos-cache))
                 (unwind-protect
                      (progn . ,body)
                   (when (eq *absolute-position-caches-filled* ':toplevel)

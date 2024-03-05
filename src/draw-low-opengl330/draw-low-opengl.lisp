@@ -201,25 +201,6 @@
       (gl:scissor x y wid hei)
       )))
 
-(defun window-system-dependent-set-origin (h v)
-  "Translates the current transform matrix by an additional h and v distance.
-  Does not replace it from scratch. In the repaint code using this macro we typically
-  see the origin adjusted by some amount, and then un-adjusted by it with the negative
-  amounts to put it back."
-  (let* ((current-transform (3d-matrices:mat4 (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)))
-         (adjust-matrix (3d-matrices:mat4 (boxer::create-transform-matrix h v)))
-         (new-transform (3d-matrices:m* current-transform adjust-matrix)))
-    (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)
-          (3d-matrices:marr4 new-transform))
-    (update-transform-matrix-ubo bw::*boxgl-device*)))
-
-(defvar %local-clip-lef 0)
-(defvar %local-clip-top 0)
-(defvar %local-clip-rig (expt 2 15))
-(defvar %local-clip-bot (expt 2 15))
-
-(defvar %clip-total-height nil)
-
 (defmacro with-window-system-dependent-clipping ((x y wid hei) &body body)
   `(unwind-protect
     (let ((%clip-lef (max %clip-lef (+ %origin-x-offset ,x)))

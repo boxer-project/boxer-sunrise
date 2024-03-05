@@ -38,13 +38,9 @@ the bootstrapping of the clipping and coordinate scaling variables."
   `(let* ((%origin-x-offset ,x) (%origin-y-offset ,y)
           ;; absolute clipping parameters
           (%clip-lef ,x) (%clip-top ,y)
-    (%clip-rig (+& %clip-lef ,wid)) (%clip-bot (+& %clip-top ,hei))
-          ;; relative clipping parameters
-          (%local-clip-lef 0)    (%local-clip-top 0)
-          (%local-clip-rig ,wid) (%local-clip-bot ,hei))
+          (%clip-rig (+& %clip-lef ,wid)) (%clip-bot (+& %clip-top ,hei)))
      %clip-rig %clip-bot %origin-x-offset %origin-y-offset ;bound but never...
-     %local-clip-lef %local-clip-top %local-clip-rig %local-clip-bot
-                ,@body))
+     ,@body))
 
 (defmacro drawing-on-window-without-prepare-sheet ((window) &body body)
   "DRAWING-ON-WINDOW-WITHOUT-PREPARE-SHEET is a variant of Drawing-On-Window
@@ -101,20 +97,6 @@ set by WITH-ORIGIN-AT"
 
 (defmacro with-clipping-inside ((x y wid hei) &body body)
   `(with-window-system-dependent-clipping (,x ,y ,wid ,hei) . ,body))
-
-(defmacro with-scrolling-origin ((scroll-x scroll-y) &body body)
-  ;; do we need to readjust the clip region here ????
-  `(with-origin-at (,scroll-x ,scroll-y)
-     . ,body))
-
-(defmacro with-turtle-clipping ((wid hei . args) &body body)
-  "This MUST use the hardware clipping regardless of speed.
-It is used only around bodies which do sprite graphics
-so the frequency of use is MUCH less than it is in the redisplay
-
-this adjusts the clipping to be width and height AT the current
-scaled origin"
-  `(with-window-system-dependent-clipping (0 0 ,wid ,hei . ,args) . ,body))
 
 ;;;
 ;;; Drawing functions
