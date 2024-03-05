@@ -364,7 +364,7 @@ parameters of the graphics box are bound. "
 (defun draw-clip-line (from-x from-y to-x to-y)
   ;(draw-line from-x from-y to-x to-y alu t)
   ;; draw-line will clip the coordinates making the slope wrong...
-  (draw-line (scale-x from-x) (scale-y from-y) (scale-x to-x) (scale-y to-y)))
+  (draw-line from-x from-y to-x to-y))
 
 ;;;; Sprite Access
 

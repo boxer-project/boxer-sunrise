@@ -123,7 +123,6 @@
            :%drawing-width
            :%drawing-half-height
            :%drawing-half-width
-           :scale-x :scale-y
            :x-out-of-bounds? :y-out-of-bounds?
            :max-window-coord :min-window-coord
 

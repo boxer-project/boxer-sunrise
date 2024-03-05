@@ -8689,6 +8689,12 @@ Modification History (most recent at top)
 ;;;; FILE: draw-high-common.lisp
 ;;;;
 
+;; origin gets reset in hardware by scaling macros so these are no ops
+;; They need to be defined because other functions (usually sprite graphics)
+;; will use them explicitly to convert coords.
+(defmacro scale-x (x) x)
+(defmacro scale-y (y) y)
+
 ;; sgithens 2024-03-04 this doesn't do much anymore...
 (defmacro with-turtle-clipping ((wid hei . args) &body body)
   "This MUST use the hardware clipping regardless of speed.

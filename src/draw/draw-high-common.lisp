@@ -67,12 +67,6 @@ you should only use this inside the :BLINK method for a blinker."
 ;;; Scaling and Clipping Macros
 ;;;
 
-;; origin gets reset in hardware by scaling macros so these are no ops
-;; They need to be defined because other functions (usually sprite graphics)
-;; will use them explicitly to convert coords.
-(defmacro scale-x (x) x)
-(defmacro scale-y (y) y)
-
 (defmacro with-drawing-inside-region ((x y wid hei) &body body)
   "**** this is the reverse of the software version because the
 WITH-CLIPPING-INSIDE macro should use the new coordinate system
