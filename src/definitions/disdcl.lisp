@@ -156,11 +156,6 @@
   "A list of symbols to funcall.  The symbols are generated from
    the forms in *redisplay-related-initializations*")
 
-(DEFVAR %DRAWING-ARRAY NIL
-        "Inside of a drawing-on-window, this variable is bound to %drawing-window's
-   screen-array (Note that this value is valid because drawing-on-window does
-   a prepare-sheet of drawing-window.")
-
 (DEFVAR %ORIGIN-X-OFFSET 0
         "Inside of a drawing-on-window, this variable is bound to x-offset of the
    current drawing origin from the screen's actual x origin. With-origin-at

@@ -118,7 +118,7 @@
            :between :inclusive-between? :intern-keyword :symbol-format
            :string-case :char-case
            :once-only
-           :%drawing-window :%drawing-array
+           :%drawing-window
            :%drawing-height
            :%drawing-width
            :%drawing-half-height
@@ -195,8 +195,6 @@
            :window-system-specific-start-boxer
            :status-line-display :redraw-status-line
            :force-redisplay
-           :%local-clip-lef :%local-clip-top
-           :%local-clip-rig :%local-clip-bot
            :%origin-x-offset :%origin-y-offset
            :input-code :input-bits
            ;; dribble symbols
@@ -276,7 +274,6 @@
   (:use :common-lisp :boxer)
   (:nicknames :bw)
   (:export :*foreground-color* :*background-color*
-           :prepare-sheet
            :window-inside-size
            :window-pixel
            :%bitblt-to-screen :%bitblt-from-screen

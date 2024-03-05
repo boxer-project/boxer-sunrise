@@ -8087,6 +8087,12 @@ Modification History (most recent at top)
 ;;;; FILE: disdcl.lisp
 ;;;;
 
+;; sgithens 2024-03-04 this is just *boxer-pane* and was only used in like one remaining place...
+(DEFVAR %DRAWING-ARRAY NIL
+        "Inside of a drawing-on-window, this variable is bound to %drawing-window's
+   screen-array (Note that this value is valid because drawing-on-window does
+   a prepare-sheet of drawing-window.")
+
 (defvar *redisplay-in-progress?* nil)
 
 (defmacro redisplaying-unit (&body body)
