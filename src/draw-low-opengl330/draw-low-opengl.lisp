@@ -180,11 +180,6 @@
                            (opengl::gl-scissor 0 0 (sheet-inside-width ,view) (sheet-inside-height ,view))
                            . ,body)))
 
-(defmacro prepare-sheet ((window) &body body)
-  `(with-drawing-port ,window
-     ;; make sure things are the way they should be
-     ,@body))
-
 (defun my-clip-rect (lef top rig bot)
   ;; gl-scissor uses OpenGL coords (0,0) = bottom,left
   ;; 1/13/2008 - fine tuned X  (- lef 1) => lef  &

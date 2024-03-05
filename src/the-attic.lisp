@@ -8889,6 +8889,13 @@ if it is out of bounds
 ;;;; FILE: draw-low-opengl.lisp
 ;;;;
 
+;; sgithens 2024-03-04 I don't believe this needed anymore
+(defmacro prepare-sheet ((window) &body body)
+  `(with-drawing-port ,window
+     ;; make sure things are the way they should be
+     ,@body))
+
+
 ;; sgithens 2024-01-08 None of these seem to be used other than emptily being
 ;;          bound in drawing macros
 ;; (defvar %local-clip-lef 0)

@@ -31,7 +31,7 @@ must be called inside of. It basically prepares the window to be drawn on
 and binds all the magic variables that the drawing macros need including
 the bootstrapping of the clipping and coordinate scaling variables."
   (once-only (window)
-    `(prepare-sheet (,window)
+    `(with-drawing-port ,window
        (drawing-on-window-without-prepare-sheet (,window) . ,body))))
 
 (defmacro drawing-on-window-bootstrap-clipping-and-scaling ((x y wid hei) &body body)
