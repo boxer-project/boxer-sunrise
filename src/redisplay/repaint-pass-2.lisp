@@ -178,8 +178,7 @@
 
 (defmethod repaint-inferiors-pass-2-sb ((SELF GRAPHICS-SCREEN-BOX))
   (LET ((GRAPHICS-SHEET (GRAPHICS-SCREEN-SHEET-ACTUAL-OBJ
-                          (SCREEN-SHEET SELF)))
-        (av-info (av-info (slot-value self 'actual-obj))))
+                          (SCREEN-SHEET SELF))))
          (multiple-value-bind (x y)
                               (graphics-screen-sheet-offsets (screen-sheet self))
                               (multiple-value-bind (il it ir ib)
@@ -191,13 +190,9 @@
                                                     ;;  (with-drawing-inside-region (x y inner-width inner-height)
                                                      (with-origin-at (x y)
                                                       ;;  (with-turtle-clipping (inner-width inner-height)
-                                                         ;; first handle the background or video if there is any
-                                                         (cond ((not (null av-info))
-                                                                (draw-current-av-info av-info 0 0
-                                                                                      inner-width inner-height))
-                                                           ((not (null (graphics-sheet-background graphics-sheet)))
+                                                         (when (not (null (graphics-sheet-background graphics-sheet)))
                                                             (with-pen-color ((graphics-sheet-background graphics-sheet))
-                                                              (draw-rectangle inner-width inner-height 0 0))))
+                                                              (draw-rectangle inner-width inner-height 0 0)))
                                                          (let ((ba (graphics-sheet-bit-array graphics-sheet)))
                                                            (unless (null ba)
                                                              (bitblt-to-screen
