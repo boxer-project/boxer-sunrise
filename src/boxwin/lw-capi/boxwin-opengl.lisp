@@ -567,11 +567,33 @@
 
                :visible-min-width  *boxer-pane-minimum-width*
                :visible-min-height *boxer-pane-minimum-height*
-               ))
+
+               :visible-border nil
+               )
+      (outer-horizontal-scroll capi:scroll-bar
+        :callback 'horizontal-scroll-callback
+        :page-size 10
+        :line-size 2
+        :orientation :horizontal
+        ;; :enabled t
+        :visible-min-width 200
+        :visible-border nil)
+      (outer-vertical-scroll capi:scroll-bar
+        :callback 'vertical-scroll-callback
+        :page-size 10
+        :line-size 2
+        :orientation :vertical
+        :visible-min-height 200
+        :visible-border nil)
+    )
   (:layouts
    (boxer-layout capi:column-layout
-                '(all-toolbars name-pane boxer-pane status-bar-pane)
-                 :columns 1 :rows 2 :y-gap 1 :x-uniform-size-p t)
+                 ;; Note: This immediately gets re-layed-out in defun update-visible-editor-panes
+                 '(all-toolbars name-pane boxer-pane-w-scrollbar status-bar-pane) ;boxer-pane status-bar-pane)
+                 :columns 1 :rows 2 :y-gap 0 :x-uniform-size-p t)
+   (boxer-pane-w-scrollbar capi:grid-layout
+                           '(boxer-pane outer-vertical-scroll outer-horizontal-scroll nil)
+                 :x-gap 0 :y-gap 0 :x-ratios '(1000 1) :y-ratios '(1000 1))
    (all-toolbars capi:row-layout
                  '(text-toolbar text-buttons-toolbar nil actions-toolbar nil box-decoration-toolbar)
                  :ratios '(1 1 20 1 20 1)))
@@ -854,7 +876,7 @@ in macOS."
         (new-desc '()))
      (if *boxer-window-show-statusbar-p*
                 (push 'status-bar-pane new-desc))
-     (push 'boxer-pane new-desc)
+     (push 'boxer-pane-w-scrollbar new-desc)
      (push 'name-pane new-desc)
      (if *boxer-window-show-toolbar-p*
                 (push 'all-toolbars new-desc))
