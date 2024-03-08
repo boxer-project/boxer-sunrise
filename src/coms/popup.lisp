@@ -233,8 +233,6 @@ Modification History (most recent at top)
         ;; a more fine tuned way is to use fit-x and fit-y to shift the current
         ;; mouse pos by the amount the menu is shifted (later...)
         (drawing-on-window (*boxer-pane*)
-          (when (or *select-1st-item-on-popup* (plusp fit-x) (plusp fit-y))
-            (warp-pointer *boxer-pane* (+ real-x 5) (+ real-y 5)))
           ;; now draw the menu and loop
           (unwind-protect
             (progn

@@ -351,24 +351,12 @@
                (sup-y (if (null superior-turtle) 0
                           (absolute-y-position superior-turtle))))
           (flet ((translate-x (window-x)
-                   (- (user-coordinate-x (-& window-x min-x)) sup-x))
+                   (- (user-coordinate-x (- window-x min-x)) sup-x))
                  (translate-y (window-y)
-                   (- (user-coordinate-y (-& window-y min-y)) sup-y)))
-            (warp-pointer *boxer-pane*
-                          (+ window-x-offset left (fix-array-coordinate-x
-                                                   (absolute-x-position turtle)))
-                          (+ window-y-offset top  (fix-array-coordinate-y
-                                                   (absolute-y-position turtle))))
+                   (- (user-coordinate-y (- window-y min-y)) sup-y)))
             (multiple-value-bind (final-x final-y moved?)
                 (let ((%mouse-usurped t))
-                  (boxer-window::with-mouse-tracking-inside ((mouse-x min-x) (mouse-y min-y)
-                                                             min-x min-y
-                                                             (-& (+& window-x-offset
-                                                                     (screen-obj-wid screen-box))
-                                                                 right 1)
-                                                             (-& (+& window-y-offset
-                                                                     (screen-obj-hei screen-box))
-                                                                 bottom 1))
+                  (bw::with-mouse-tracking ((mouse-x min-x) (mouse-y min-y))
                     (let ((new-x (translate-x mouse-x)) (new-y (translate-y mouse-y))
                           (turtle-x (x-position turtle)) (turtle-y (y-position turtle)))
                       (when (or (> (abs (- new-x turtle-x))

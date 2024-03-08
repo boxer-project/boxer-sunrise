@@ -30,6 +30,8 @@
 ;;;;   - gdispl.lisp check-existing-graphics-state-entries peephole optimizer support
 ;;;;     would look back through a graphics command list and not add the entry (or maybe just state change)
 ;;;;     if it matched the previous one
+;;;;   - boxwin-opengl.lisp There is a stub for a thing called a warp pointer that would have pulled the mouse
+;;;;     cursor back to the side of the box if you moused outside of it.
 
 ;;;;
 ;;;; FILE: applefile.lisp
@@ -3249,6 +3251,41 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: boxwin-opengl.lisp
 ;;;;
+
+;; stub, for now
+(defun warp-pointer (window x y)
+  (declare (ignore window x y))
+  nil)
+
+(defmacro with-mouse-tracking-inside (((original-x-variable original-x-value)
+               (original-y-variable original-y-value)
+              min-x min-y
+              max-x max-y &rest keys)
+              &body body)
+  `(with-mouse-tracking ((,original-x-variable ,original-x-value)
+                         (,original-y-variable ,original-y-value) ,@keys)
+     ;; if the mouse has strayed,
+     ;; then send it back
+     (cond
+       ((box::<& ,original-x-variable ,min-x)
+  (cond ((box::<& ,original-y-variable ,min-y)
+         (warp-pointer *boxer-pane* ,min-x ,min-y))
+        ((box::>& ,original-y-variable ,max-y)
+         (warp-pointer *boxer-pane* ,min-x ,max-y))
+        (t
+         (warp-pointer *boxer-pane* ,min-x ,original-y-variable))))
+       ((box::>& ,original-x-variable ,max-x)
+  (cond ((box::<& ,original-y-variable ,min-y)
+         (warp-pointer *boxer-pane* ,max-x ,min-y))
+        ((box::>& ,original-y-variable ,max-y)
+         (warp-pointer *boxer-pane* ,max-x ,max-y))
+        (t
+         (warp-pointer *boxer-pane* ,max-x ,original-y-variable))))
+       ((box::<& ,original-y-variable ,min-y)
+  (warp-pointer *boxer-pane* ,original-x-variable ,min-y))
+       ((box::>& ,original-y-variable ,max-y)
+  (warp-pointer *boxer-pane* ,original-x-variable ,max-y))
+       (t (progn . ,body)))))
 
 (defvar *redisplayable-windows* nil
   "This is a list of all the windows which should be redisplayed when
