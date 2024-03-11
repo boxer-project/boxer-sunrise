@@ -504,8 +504,8 @@ Modification History (most recent at top)
                       (if (and (<& 0 gb-x (screen-obj-wid sb))
                                (<& 0 gb-y (screen-obj-hei sb)))
                           (make-color-box-from-pixel
-                           (window-pixel-color (+& box-x lef gb-x)
-                                               (+& box-y top gb-y)))
+                           (window-pixel-color (floor (+ box-x lef gb-x))
+                                               (floor (+ box-y top gb-y))))
                           (boxer-eval::primitive-signal-error
                            :graphics
                            "Pixel at " x "," y "is not visible")))))))))))
