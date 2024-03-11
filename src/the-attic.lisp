@@ -10364,6 +10364,17 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: editor.lisp
 ;;;;
 
+            ;; sgithens TODO 2024-01-19 This old graphics sheet is not being used
+            ;; anywhere...
+             (let ((old-gss (getf (slot-value self 'plist) 'old-graphics-sheets)))
+               (when (consp old-gss)
+                 (dolist (gs-pair old-gss)
+                   (let ((ba (graphics-sheet-bit-array (cdr gs-pair))))
+                     (unless (null ba) (ogl-free-pixmap ba))))
+                 (setf (getf (slot-value self 'plist) 'old-graphics-sheets)
+                       nil)))
+
+
 ;;; These are used ONLY by the comaptability loader and should
 ;;; eventually be flushed or moved to compat-loader.lisp
 

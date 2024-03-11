@@ -406,13 +406,6 @@
                  (funcall handler self (superior-box self))))
              |#
              (setf (cached-code self) nil)
-             (let ((old-gss (getf (slot-value self 'plist) 'old-graphics-sheets)))
-               (when (consp old-gss)
-                 (dolist (gs-pair old-gss)
-                   (let ((ba (graphics-sheet-bit-array (cdr gs-pair))))
-                     (unless (null ba) (ogl-free-pixmap ba))))
-                 (setf (getf (slot-value self 'plist) 'old-graphics-sheets)
-                       nil)))
              (decache-build-function self)
              ;; decache visible-screen-objs
              (decache-visible-screen-objs self)

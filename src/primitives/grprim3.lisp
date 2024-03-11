@@ -87,10 +87,6 @@ Modification History (most recent at top)
                             (copy-graphics-sheet new-gs box))
                       (modified-graphics box))
                      ((box? box)
-                      ;; save away older version of graphics sheets
-                      ;; we may need them later when we print
-                      (push (cons (tick) old-gs)
-                            (getf (plist box) 'old-graphics-sheets))
                       (let ((gs (copy-graphics-sheet new-gs box))
                             (old-objs (graphics-sheet-object-list old-gs)))
                         (setf (graphics-sheet-object-list gs) old-objs)
