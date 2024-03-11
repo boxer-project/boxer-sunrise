@@ -271,9 +271,8 @@
   (update-toolbar-items)
   ;; Bottom Status Line
   (setf (capi:title-pane-text (slot-value *boxer-frame* 'status-bar-pane))
-        (format nil "~A ~40tFont Zoom ~A%"
-          ; (vanilla-menu-item-print nil)
+        (format nil "~A ~40tZoom ~A%"
           (if (boxer::fast-memq boxer::*global-top-level-mode* boxer::*active-modes*)
             "System Mouse/Key Actions"
             "Mouse/Key Redefinitions Active")
-          (round (* 100 boxer::*font-size-baseline*)))))
+          (round (* 100 (zoom-level *boxer-pane*))))))
