@@ -72,6 +72,15 @@
    (backdrop-color :accessor backdrop-color :initform *white*)
     ))
 
+(defmethod port-width ((self boxer-canvas))
+  "Give the width of the port or widget container the Boxer documents canvas. Calculation will be different
+   depending on the GL and Widget toolkit used. Needed for scrollbars, panning, and other types of interactions."
+   (error "boxer-canvas port-width needs an toolkit specific implementation"))
+
+(defmethod port-height ((self boxer-canvas))
+  "See port-width for description."
+  (error "boxer-canvas port-width needs an toolkit specific implementation"))
+
 (defmethod activate-canvas-view ((self boxer-canvas))
   (setf ;*backdrop-color* #(:rgb 0.89 0.89 0.89)
         (content-origin self) (list 120 20)
@@ -84,3 +93,12 @@
         (view-layout self) :microworld-view
         (backdrop-color self) *white*))
 
+(defmethod viewport-to-document-x ((self boxer-canvas) x)
+  "Takes the actual x location on the Boxer documents viewport, and translates it to be the X value for the
+  outermost screen box.  If the document is panned in the window, or if it is zoomed, this adjusts the
+  value so it can be used for internal document interactions."
+  (* (/ 1 (zoom-level self)) (- x (horizontal-scroll self))))
+
+(defmethod viewport-to-document-y ((self boxer-canvas) y)
+  "see port-to-document-x"
+  (* (/ 1 (zoom-level self)) (- y (vertical-scroll self))))
