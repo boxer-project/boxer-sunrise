@@ -18,6 +18,8 @@
 
 (defun draw-blinker (blinker)
   (with-pen-color (bw::*blinker-color*)
-    (draw-rectangle
-      (blinker-wid blinker)   (blinker-hei blinker)
-      (blinker-x blinker)     (blinker-y blinker))))
+    (let ((horiz (horizontal-scroll *boxer-pane*))
+          (vert  (vertical-scroll *boxer-pane*)))
+      (draw-rectangle (blinker-wid blinker) (blinker-hei blinker)
+                      (+ horiz (blinker-x blinker))
+                      (+ vert (blinker-y blinker))))))

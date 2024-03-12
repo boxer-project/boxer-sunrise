@@ -913,13 +913,11 @@ Modification History (most recent at top)
   boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-br-resize-box (&optional (window *boxer-pane*)
-                                       (x (bw::boxer-pane-mouse-x))
-                                       (y (bw::boxer-pane-mouse-y))
-                                       (mouse-bp
-                                       (mouse-position-values x y))
-                                       (click-only? t))
+                                          (x (bw::boxer-pane-mouse-x))
+                                          (y (bw::boxer-pane-mouse-y))
+                                          (mouse-bp (mouse-position-values x y))
+                                          (click-only? t))
   "Drag to resize the box."
-  window x y ;  (declare (ignore window x y))
   ;; first, if there already is an existing region, flush it
   (reset-region) (reset-editor-numeric-arg)
   (let* ((screen-box (bp-screen-box mouse-bp))
