@@ -1423,15 +1423,7 @@ in macOS."
             (window-inside-size *boxer-pane*)
           (ogl-reshape ww wh))
         (ogl-reshape width height)))
-  ;; fill up the *boxer-pane* width/height caches
-  ;; reset the outermost screen box
-  (let ((osb (outermost-screen-box *boxer-pane*)))
-    (unless (null osb)
-      (multiple-value-bind (obwid obhei)
-          (box::outermost-screen-box-size *boxer-pane*)
-        (unless (and (= obwid (box::screen-obj-wid osb))
-                     (= obhei (box::screen-obj-hei osb)))
-          (box::set-fixed-size osb obwid obhei))))))
+  (check-for-window-resize))
 
 (defun check-for-window-resize ()
   ;; fill up the *boxer-pane* width/height caches
@@ -1442,8 +1434,7 @@ in macOS."
           (box::outermost-screen-box-size *boxer-pane*)
         (unless (and (= obwid (box::screen-obj-wid osb))
                      (= obhei (box::screen-obj-hei osb)))
-          (box::set-fixed-size osb obwid obhei)))))
-)
+          (box::set-fixed-size osb obwid obhei))))))
 
 (defun set-mouse-cursor (cursor)
   "Changes the current style of the mouse cursor using a keyword. Currently supported keywords are:
