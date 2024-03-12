@@ -85,9 +85,9 @@ set by WITH-ORIGIN-AT"
             (%origin-y-offset (+ %origin-y-offset ,y)))
        (unwind-protect
            (progn
-             (window-system-dependent-set-origin ,fx ,fy)
+             (adjust-transform bw::*boxgl-device* ,fx ,fy)
              . ,body)
-         (window-system-dependent-set-origin ,ux ,uy)))))
+         (adjust-transform bw::*boxgl-device* ,ux ,uy)))))
 
 (defmacro with-clipping-inside ((x y wid hei) &body body)
   `(unwind-protect
