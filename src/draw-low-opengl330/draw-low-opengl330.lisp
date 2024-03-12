@@ -132,6 +132,12 @@
    (cur-vao :accessor cur-vao :initform 0)
    (cur-buffer :accessor cur-buffer :initform 0)))
 
+(defmethod set-transform ((self boxgl-device) h v)
+  "Sets the absolute values of the current transform matrix and updates the ubo."
+    (setf (boxer::boxgl-device-transform-matrix self)
+          (boxer::create-transform-matrix h v))
+    (update-transform-matrix-ubo self))
+
 (defmethod adjust-transform ((self boxgl-device) h v)
   "Translates the current transform matrix by an additional h and v distance.
   Does not replace it from scratch. In the repaint code using this macro we typically
