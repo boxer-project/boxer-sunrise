@@ -997,29 +997,45 @@ in macOS."
 (defun next-event-id () (incf *event-id*))
 
 ;; mouse motion
-(defvar *track-mouse-x* 0)
-(defvar *track-mouse-y* 0)
+(defvar *track-mouse-x* 0
+  "Original x position in the window pane.")
+(defvar *track-mouse-y* 0
+  "Original y position in the window pane.")
+
+(defvar *document-mouse-x* 0
+  "Document x position based on transforming *track-mouse-x* with the current zoom and scroll values.")
+(defvar *document-mouse-y* 0
+  "Document y position based on transforming *track-mouse-y* with the current zoom and scroll values.")
 
 
 ;; this is called by the :motion input type
 (defun boxer-track-and-doc-mouse-handler (w x y)
-  (declare (ignore w))
   (next-event-id)
-  (setq *track-mouse-x* x *track-mouse-y* y)
+  (setq *track-mouse-x* x
+        *track-mouse-y* y
+        *document-mouse-x* (boxer::viewport-to-document-x w x)
+        *document-mouse-y* (boxer::viewport-to-document-y w y))
+
   (document-mouse))
 
 ;; tracking when a button is down...
 (defun boxer-track-mouse-handler (w x y)
-  (declare (ignore w))
-  (setq *track-mouse-x* x *track-mouse-y* y))
+  (setq *track-mouse-x* x
+        *track-mouse-y* y
+        *document-mouse-x* (boxer::viewport-to-document-x w x)
+        *document-mouse-y* (boxer::viewport-to-document-y w y)))
 
 (defun boxer-pane-mouse-position ()
   ;; must allow track mouse handler in the interface(boxer) process to run
   (mp::process-allow-scheduling)
-  (values *track-mouse-x* *track-mouse-y*))
+  ;; (values *track-mouse-x* *track-mouse-y*)
+  (values *document-mouse-x* *document-mouse-y*)
+  )
 
-(defun boxer-pane-mouse-x ()  (mp::process-allow-scheduling) *track-mouse-x*)
-(defun boxer-pane-mouse-y ()  (mp::process-allow-scheduling) *track-mouse-y*)
+;; (defun boxer-pane-mouse-x ()  (mp::process-allow-scheduling) *track-mouse-x*)
+;; (defun boxer-pane-mouse-y ()  (mp::process-allow-scheduling) *track-mouse-y*)
+(defun boxer-pane-mouse-x ()  (mp::process-allow-scheduling) *document-mouse-x*)
+(defun boxer-pane-mouse-y ()  (mp::process-allow-scheduling) *document-mouse-y*)
 
 (defun boxer-pane-mouse-down? ()
   *mouse-down-p*)
@@ -1054,12 +1070,16 @@ in macOS."
 ;; this may need to encode further (3 button mouse on a mac)
 (defun boxer-click-handler (x y button &optional double? (bits 0))
   ;; 1st set the tracking vars...
-  (setq *track-mouse-x* x *track-mouse-y* y)
+  (setq *track-mouse-x* x
+        *track-mouse-y* y
+        *document-mouse-x* (boxer::viewport-to-document-x *boxer-pane* x)
+        *document-mouse-y* (boxer::viewport-to-document-y *boxer-pane* y))
   (next-event-id)
   ;; reset any popup docs
   (undocument-mouse)
   ;; queue an eventp
-  (let ((me (make-mouse-event :x-pos x :y-pos y :bits bits
+  (let ((me (make-mouse-event :x-pos *document-mouse-x* :y-pos *document-mouse-y* :bits bits
+  ;; (let ((me (make-mouse-event :x-pos *track-mouse-x* :y-pos *track-mouse-y* :bits bits
                               :click  (+ button (if double? 3 0))
                               :number-of-clicks (if double? 2 1)
                               :last-time-stamp (get-internal-real-time)
