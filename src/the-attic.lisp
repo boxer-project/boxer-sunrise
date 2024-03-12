@@ -18407,6 +18407,16 @@ to the :TEXT-STRING method of boxes. "
 ;;;; FILE: mouse.lisp
 ;;;;
 
+;; sgithens 2024-01-16 Doesn't seem to be called from anywhere...
+(defun mouse-position-screen-values (global-x global-y)
+  (multiple-value-bind (so local-offset position)
+                       (screen-obj-at (outermost-screen-box) global-x global-y)
+                       (cond ((screen-row? so)
+                              (values so local-offset))
+                         (t
+                          ;; must be a screen box
+                          (values (screen-row so) local-offset position)))))
+
 ;;; old
 ;(defsubst screen-boxes-in-row (screen-row)
 ;  (subset #'screen-box? (inferiors screen-row)))

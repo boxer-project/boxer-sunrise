@@ -367,15 +367,6 @@
          (values self acc-x (unless more-than-half-a-char? char)))
         (t (values self acc-x))))))
 
-(defun mouse-position-screen-values (global-x global-y)
-  (multiple-value-bind (so local-offset position)
-                       (screen-obj-at (outermost-screen-box) global-x global-y)
-                       (cond ((screen-row? so)
-                              (values so local-offset))
-                         (t
-                          ;; must be a screen box
-                          (values (screen-row so) local-offset position)))))
-
 (defun mouse-position-screen-row-values (global-x global-y)
   (multiple-value-bind (so local-offset position near-row)
                        (screen-obj-at (outermost-screen-box) global-x global-y)
