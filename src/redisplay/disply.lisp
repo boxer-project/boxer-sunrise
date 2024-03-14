@@ -914,8 +914,8 @@
 (defun outermost-screen-box-size (&optional (window *boxer-pane*))
   (multiple-value-bind (window-inner-wid window-inner-hei)
                        (window-inside-size window)
-                       (values (- window-inner-wid (* 2 *space-around-outermost-screen-box*))
-                               (- window-inner-hei (* 2 *space-around-outermost-screen-box*)))))
+                       (values (- (* (/ 1 (zoom-level *boxer-pane*)) window-inner-wid) (* 2 *space-around-outermost-screen-box*))
+                               (- (* (/ 1 (zoom-level *boxer-pane*)) window-inner-hei) (* 2 *space-around-outermost-screen-box*)))))
 
 (defun outermost-screen-box-position (&optional ignore)
   (declare (ignore ignore))

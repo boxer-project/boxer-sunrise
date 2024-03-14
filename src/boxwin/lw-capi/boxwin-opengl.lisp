@@ -575,7 +575,6 @@
         :page-size 10
         :line-size 2
         :orientation :horizontal
-        ;; :enabled t
         :visible-min-width 200
         :visible-border nil)
       (outer-vertical-scroll capi:scroll-bar
@@ -1311,7 +1310,47 @@ in macOS."
      (setq *suppress-expose-handler* nil
            *suppressed-actions* nil)))
 
-(defun scroll-handler (output-pane direction scroll-operation scroll-amount &key interactive)
+(defun vertical-scroll-callback (interface sb how where)
+  "For the OS outer scrollbars"
+  (declare (ignorable interface))
+  ;; sgithens TODO a bunch of this is cut and pasted from defmethod scroll-vertical below
+  (format t "Vertical Scrolled ~a where ~a : ~a~%"
+          how where (capi:range-slug-start sb))
+  (let ((new-scroll-amount (- where)) ;(+ (vertical-scroll *boxer-pane*) (- scroll-amount)))
+        (screen-box (outermost-screen-box))
+        (pane-hei (gp:port-height *boxer-pane*)))
+    (cond ((< (- new-scroll-amount) 0)
+           (setf new-scroll-amount 0))
+          ((> (- new-scroll-amount) (- (boxer::screen-obj-hei screen-box) pane-hei -20))
+           (setf new-scroll-amount (- (- (boxer::screen-obj-hei screen-box) pane-hei -20))))
+          (t nil))
+    (setf (vertical-scroll *boxer-pane*) new-scroll-amount))
+  ;;  (capi:set-vertical-scroll-parameters *boxer-pane* :slug-position scroll-amount)
+  (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)
+       (boxer::create-transform-matrix (horizontal-scroll *boxer-pane*) (vertical-scroll *boxer-pane*)))
+  (boxer::repaint))
+
+(defun horizontal-scroll-callback (interface sb how where)
+  "For the OS outer scrollbars"
+  (declare (ignorable interface))
+  ;; sgithens TODO a bunch of this is cut and pasted from defmethod scroll-horizontal below
+  (format t "Horizontal Scrolled ~a where ~a : ~a~%"
+          how where (capi:range-slug-start sb))
+  (let ((new-scroll-amount (- where));;(+ (horizontal-scroll self) (- scroll-amount)))
+        (screen-box (outermost-screen-box))
+        (pane-wid (gp:port-width *boxer-pane*)))
+    (cond ((< (- new-scroll-amount) 0)
+           (setf new-scroll-amount 0))
+          ((> (- new-scroll-amount) (- (boxer::screen-obj-wid screen-box) pane-wid -20))
+           (setf new-scroll-amount (- (- (boxer::screen-obj-wid screen-box) pane-wid -20))))
+          (t nil))
+    (setf (horizontal-scroll *boxer-pane*) new-scroll-amount))
+  ;;  (capi:set-horizontal-scroll-parameters *boxer-pane* :slug-position scroll-amount)
+  (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)
+        (boxer::create-transform-matrix (horizontal-scroll *boxer-pane*) (vertical-scroll *boxer-pane*)))
+  (boxer::repaint))
+
+(defun scroll-handler (output-pane direction scroll-operation scroll-amount-original &key interactive)
   "Scrolls the screen box that the mouse is in based on the direction of the scrolling gestures from
    a trackpad or mouse."
   ;; We need to do a bit more work to support gesture scrolling during evalution to prevent locking
@@ -1320,9 +1359,9 @@ in macOS."
   ;; that scroll gesture mechanisms are issuing repaints, and in order for this to not lock up the
   ;; evaluation polling repaints, they need to be queued, or just not done at all, letting the evaluator
   ;; polling repaint take care of it.
-  (unless (not (null *suppress-expose-handler*))
+  (ignore-errors (unless (not (null *suppress-expose-handler*))
     (multiple-value-bind (x y) (boxer-pane-mouse-position)
-      (let* (
+      (let* ((scroll-amount (* scroll-amount-original 4)) ;; TODO This should really be pulled from the OS trackpad/mouse scroll settings
             (mouse-bp (boxer::mouse-position-values x y))
             (mouse-screen-box (boxer::bp-screen-box mouse-bp))
             (mouse-actual-obj (slot-value mouse-screen-box 'boxer::actual-obj))
@@ -1371,7 +1410,7 @@ in macOS."
               ((equal direction :vertical)
                (scroll-vertical output-pane scroll-amount))
               (t nil))
-       (boxer::repaint t)))))
+       (boxer::repaint t))))))
 
 (defmethod scroll-vertical ((self capi:output-pane) scroll-amount)
   (let ((new-scroll-amount (+ (vertical-scroll self) (- scroll-amount)))

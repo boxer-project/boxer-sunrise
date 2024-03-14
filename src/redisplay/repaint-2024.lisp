@@ -212,8 +212,8 @@
                      content-hei internal-hei)
                (when (fixed-size? actual-obj)
                  (multiple-value-bind (fixed-wid fixed-hei) (fixed-size actual-obj)
-                   (setf wid fixed-wid
-                         hei fixed-hei)))
+                   (setf wid (max min-wid fixed-wid)
+                         hei (max min-hei fixed-hei))))
 
                (setf (screen-obj-x-got-clipped? self) (> internal-wid wid))
                (setf (screen-obj-y-got-clipped? self) (> (- internal-hei 50) hei)) ;; sgithens - just hacking values for now
@@ -225,6 +225,48 @@
 
 (defmethod dimensions ((self sprite-screen-box) &optional (first-inf-x-offset 0) (first-inf-y-offset 0))
   )
+
+(defun update-outer-scrollbars (screen-box frame)
+  ;; A few things.
+  ;; 1. If the outermost screen box fits on the entire canvas (either way) then that scroll-bar should
+  ;;    not be enabled.
+  ;; 2. After that we need to look the total size of the outermost screen-box and work our slug sizes to that
+
+  ;; Vertical scrolling
+  (let* ((pane-hei         (capi:simple-pane-visible-height (slot-value *boxer-frame* 'bw::outer-vertical-scroll)))
+         (box-hei          (screen-obj-hei screen-box))
+         ;; The slug size is the proportion: (pane-hei / content) * pane-hei = slug-size
+         ;; pane-hei here is the height of the scroll-bar pane. Content is the size of the GL canvas, ie. outer-screen-box full size
+         (vert-slug-size   (* (/ pane-hei box-hei) pane-hei)))
+    ;; (format t "~%2pane-hei: ~A box-hei: ~A %vert-slug-size ~A" pane-hei box-hei vert-slug-size)
+    (capi:range-set-sizes (slot-value *boxer-frame* 'bw::outer-vertical-scroll)
+                          :start 0
+                          :end (+ 40 (* (zoom-level *boxer-pane*) box-hei))
+                          :slug-start (- (vertical-scroll *boxer-pane*))
+                          :slug-end (+ vert-slug-size (- (vertical-scroll *boxer-pane*)))
+                          :redisplay t)
+    )
+
+  ;; Horizontal Scrolling
+  (let* ((pane-wid         (capi:simple-pane-visible-width (slot-value *boxer-frame* 'bw::outer-horizontal-scroll)))
+         (zoom             (zoom-level *boxer-pane*))
+         (box-wid          (* zoom (screen-obj-wid screen-box)))
+         ;; The slug size is the proportion: (pane-wid / content) * pane-wid = slug-size
+         ;; pane-wid here is the width of the scroll-bar pane. Content is the size of the GL canvas, ie. outer-screen-box full size
+         (horiz-slug-size   (* (/ pane-wid box-wid) pane-wid))
+         (end (+ -40 (* zoom box-wid)))
+         (slug-start (- (horizontal-scroll *boxer-pane*)))
+         (slug-end (+ horiz-slug-size (- (horizontal-scroll *boxer-pane*)))))
+
+  ;;   (format t "~%2update horiz scroll: pane-wid: ~A box-wid: ~A
+  ;; start: 0 end: ~A slug-start: ~A slug-end: ~A" pane-wid box-wid end slug-start (float slug-end))
+
+      (capi:range-set-sizes (slot-value *boxer-frame* 'bw::outer-horizontal-scroll)
+                          :start 0
+                          :end end
+                          :slug-start slug-start
+                          :slug-end slug-end
+                          :redisplay t)))
 
 (defun repaint-fill-dimensions (outer-screen-box pane-width pane-height)
   (multiple-value-bind (wid hei) (dimensions outer-screen-box)
@@ -238,8 +280,6 @@
                                               (max pane-height hei))
           (content-hei bw::*boxer-pane*)    (max pane-height hei)
           (content-wid bw::*boxer-pane*)    (max pane-width wid))
-    ;; (capi:set-horizontal-scroll-parameters bw::*boxer-pane*
-    ;;   :max-range (+ 40 (* (zoom-level *boxer-pane*) (screen-obj-wid outer-screen-box))) :min-range 0)
-    ;; (capi:set-vertical-scroll-parameters bw::*boxer-pane*
-    ;;   :max-range (+ 40 (* (zoom-level *boxer-pane*) (screen-obj-hei outer-screen-box))) :min-range 0)
-))
+
+    (capi:apply-in-pane-process *boxer-frame*
+      (lambda () (update-outer-scrollbars outer-screen-box *boxer-frame*)))))
