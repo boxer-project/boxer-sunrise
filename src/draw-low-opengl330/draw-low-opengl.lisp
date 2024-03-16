@@ -192,7 +192,8 @@
     ;; For some reason, parts of our repaint code are generating a negative wid/hei, so just adding
     ;; this check for the time being.
     (when (and (>= wid 0) (>= hei 0))
-      (gl:scissor x y wid hei)
+      ;; sgithens TODO this is about to be re-implemented as stencil buffer
+      ;; (gl:scissor x y wid hei)
       )))
 
 (defun clear-window (w)
