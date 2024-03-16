@@ -258,8 +258,8 @@
          (slug-start (- (horizontal-scroll *boxer-pane*)))
          (slug-end (+ horiz-slug-size (- (horizontal-scroll *boxer-pane*)))))
 
-  ;;   (format t "~%2update horiz scroll: pane-wid: ~A box-wid: ~A
-  ;; start: 0 end: ~A slug-start: ~A slug-end: ~A" pane-wid box-wid end slug-start (float slug-end))
+    (format t "~%2update horiz scroll: pane-wid: ~A box-wid: ~A
+  start: 0 end: ~A slug-start: ~A slug-end: ~A" pane-wid box-wid end slug-start (float slug-end))
 
       (capi:range-set-sizes (slot-value *boxer-frame* 'bw::outer-horizontal-scroll)
                           :start 0

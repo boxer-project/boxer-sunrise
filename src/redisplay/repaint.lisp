@@ -144,7 +144,10 @@
                          (clear-window window)
                          (repaint-guts)
                          (repaint-mouse-docs)
-                         (repaint-dev-overlay process-state-label)
+                         (let ((cur-transform (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)))
+                           (set-transform bw::*boxgl-device* 0 0)
+                           (repaint-dev-overlay process-state-label)
+                           (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*) cur-transform))
                          (when flush-buffer? (swap-graphics-buffers window)))))
 
 (defvar *use-repaint2024* t)
