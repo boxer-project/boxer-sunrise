@@ -52,10 +52,17 @@
     `(let ((,eval-completion-gensym nil))
        (catch 'boxer-error
          (unwind-protect
-          (compiler-let ()
+          ;; sgithens TODO 2024-03-18 This has been commented out for a while, but since it's in a pretty
+          ;;               critical location, going to wait a bit longer before removing it.  Especially
+          ;;               since it's needed in the stepper.
+          ; (compiler-let ()
                         (let ,(create-local-eval-state-vars-bvl)
-                          (compiler-let ()
-                                        (prog1 (progn . ,body) (setq ,eval-completion-gensym t)))))
+                          ; (compiler-let ()
+                                        (prog1 (progn . ,body) (setq ,eval-completion-gensym t))
+                          ; )
+                        )
+          ; )
+
           (unless ,eval-completion-gensym
             (when boxer::*boxer-system-hacker* (format t "~%Unwinding stack..."))
             (unwind-to-top-level)
