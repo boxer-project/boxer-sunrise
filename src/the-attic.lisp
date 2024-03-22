@@ -13140,6 +13140,13 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: grfdfs.lisp
 ;;;;
 
+;; for use by handle-input ?
+(defun invalidate-absolute-position-caches ()
+  (if (eq *absolute-position-caches-filled* ':toplevel)
+      (warn "Can't invalidate absolute position caches from Top Level")
+      (dolist (cache *absolute-position-caches-filled*)
+        (setf (ab-pos-cache-valid cache) nil))))
+
 ;; this is set to Nil for the mac because of the bug which causes
 ;; allocation of new bitmaps to take a LONG time
 (defvar *add-new-graphics-sheet-bit-array?* #+mcl nil #-mcl t

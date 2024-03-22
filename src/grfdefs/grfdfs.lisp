@@ -156,13 +156,6 @@ parameters of the graphics box are bound. "
   ;; finally return the cache
   cache)
 
-;; for use by handle-input ?
-(defun invalidate-absolute-position-caches ()
-  (if (eq *absolute-position-caches-filled* ':toplevel)
-      (warn "Can't invalidate absolute position caches from Top Level")
-      (dolist (cache *absolute-position-caches-filled*)
-        (setf (ab-pos-cache-valid cache) nil))))
-
 (defmacro drawing-on-turtle-slate (screen-box &body body)
   ;; first check the cache
   `(let ((pos-cache (cached-absolute-pos ,screen-box))
