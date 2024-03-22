@@ -119,7 +119,6 @@
                (when (and (port-box? actual-obj)
                           (box-ellipsis-style? screen-rows))
                  ;; PORTNOTE: still needed ?
-                 ;(funcall (get screen-rows 'erase-self) il it)
                  (setq screen-rows (allocate-storage-vector 8)))
 
                ;; Here is the loop to accumulate the row dimensions
@@ -171,12 +170,7 @@
                                   (super-shrunk-size)
                                   (set-display-style self :supershrunk)
                                   (setf wid sswid hei sshei)
-                                  (log:debug "~% Case supershrunk: wid: ~A hei: ~A" wid hei)
-                                  ;; make sure to punt the inf screen objs or else they may try
-                                  ;; and redisplay themselves (like after change-graphics)
-                                  ;; (unless (graphics-screen-box? self)
-                                  ;;   (rp1-sb-punt-extra-screen-objs self (first-screen-row self)))
-                                    ))
+                                  (log:debug "~% Case supershrunk: wid: ~A hei: ~A" wid hei)))
        ((and (eq new-display-style :shrunk)
               (not (eq self *outermost-screen-box*)))
         ;; If there is a boxtop
@@ -184,10 +178,7 @@
         (cond ((not (null boxtop))
                (multiple-value-bind (btwid bthei) (boxtop-size boxtop actual-obj)
                                     (setf wid btwid hei bthei)
-                                    (log:debug "~% Case Shrunk 1 (boxtop): wid: ~A hei: ~A" wid hei)
-                                   ;;  (unless (graphics-screen-box? self)
-                                   ;;    (rp1-sb-punt-extra-screen-objs self (first-screen-row self)))
-                                      ))
+                                    (log:debug "~% Case Shrunk 1 (boxtop): wid: ~A hei: ~A" wid hei)))
               (t
                (multiple-value-bind (l-border-wid t-border-wid r-border-wid b-border-wid)
                                     (box-borders-widths new-box-type self)
