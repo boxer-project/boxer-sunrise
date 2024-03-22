@@ -374,8 +374,7 @@ the window font (ie, draw-string) has to change it back for this to work.
   (gl-add-poly bw::*boxgl-device* points))
 
 (defun %draw-rectangle (width height x y)
-  (unless (or (>= %clip-lef %clip-rig) (>= %clip-top %clip-bot))
-    (gl-add-rect bw::*boxgl-device* x y width height)))
+  (gl-add-rect bw::*boxgl-device* x y width height))
 
 (defun %erase-rectangle (w h x y)
   (with-pen-color (*background-color*)

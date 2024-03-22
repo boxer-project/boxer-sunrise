@@ -427,10 +427,6 @@
                                    inf-x-offset            infs-new-max-wid)))))))))
 
 (defmethod repaint-pass-1-sr ((self screen-row) max-wid max-hei)
-  (with-drawing-inside-region ((slot-value self 'x-offset)
-                               (slot-value self 'y-offset)
-                               (screen-obj-wid self)
-                               (screen-obj-hei self))
     ;; During redisplay-pass-1 the only region of the screen the redisplay
     ;; methods are allowed to draw in is the region of the screen currently
     ;; occupied by the screen obj.
@@ -451,7 +447,7 @@
                                 (update-scroll-wid (screen-box self) total-wid))
                            ((not (zerop (slot-value (screen-box self) 'scroll-x-offset)))
                             ;; update if we are already scrolled...
-                            (update-scroll-wid (screen-box self) (screen-obj-wid self)))))))
+                            (update-scroll-wid (screen-box self) (screen-obj-wid self))))))
 
 (defmethod repaint-pass-1-sb ((self screen-box) max-wid max-hei)
   (with-slots (wid hei x-got-clipped? y-got-clipped?
