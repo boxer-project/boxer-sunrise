@@ -488,20 +488,18 @@ Modification History (most recent at top)
 (defvar *name-link-boxes* t
   "When T, give link boxes the same name as the filename, NIL for unnamed link boxes")
 
-(defboxer-command com-open-link-file (&optional explicit-redisplay)
+(defboxer-command com-open-link-file ()
   "Inserts the contents of a Boxer file"
   (if (name-row? (point-row))
     (boxer-editor-error "Can't insert a (file) box while in a name")
     (progn
       (catch 'cancel-boxer-file-dialog
         (boxer-eval::report-eval-errors-in-editor
-          ;; (with-drawing-port *boxer-pane*
           (let* ((filename (open-xref-file-dialog))
                  (xbox (make-xfile-box filename)))
             (when *name-link-boxes*
               (set-name xbox (make-name-row (list (pathname-name filename)))))
-            (insert-cha *point* xbox)
-            (when explicit-redisplay (repaint)))))
+            (insert-cha *point* xbox))))
       ;; this marks the box superior to the box being loaded
       (mark-file-box-dirty (point-row))))
   boxer-eval::*novalue*)
