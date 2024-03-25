@@ -32,7 +32,10 @@ and binds all the magic variables that the drawing macros need including
 the bootstrapping of the clipping and coordinate scaling variables."
   (once-only (window)
     `(with-drawing-port ,window
-       (drawing-on-window-without-prepare-sheet (,window) . ,body))))
+      (drawing-on-window-bootstrap-clipping-and-scaling
+       (0 0
+        (sheet-inside-width ,window) (sheet-inside-height ,window))
+        . ,body))))
 
 (defmacro drawing-on-window-bootstrap-clipping-and-scaling ((x y wid hei) &body body)
   `(let* ((%origin-x-offset ,x) (%origin-y-offset ,y)
@@ -41,17 +44,6 @@ the bootstrapping of the clipping and coordinate scaling variables."
           (%clip-rig (+& %clip-lef ,wid)) (%clip-bot (+& %clip-top ,hei)))
      %clip-rig %clip-bot %origin-x-offset %origin-y-offset ;bound but never...
      ,@body))
-
-(defmacro drawing-on-window-without-prepare-sheet ((window) &body body)
-  "DRAWING-ON-WINDOW-WITHOUT-PREPARE-SHEET is a variant of Drawing-On-Window
-which does everything Drawing-On-Window does except that it does not do a
-PREPARE-SHEET of the window. Unless you really know what you are doing
-you should only use this inside the :BLINK method for a blinker."
-  (once-only (window)
-    `(drawing-on-window-bootstrap-clipping-and-scaling
-       (0 0
-        (sheet-inside-width ,window) (sheet-inside-height ,window))
-        . ,body)))
 
 (defmacro drawing-on-bitmap ((bitmap) &body body)
   "Used instead of DRAWING-ON-WINDOW for bitmaps."

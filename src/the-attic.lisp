@@ -8726,6 +8726,17 @@ Modification History (most recent at top)
 ;;;; FILE: draw-high-common.lisp
 ;;;;
 
+(defmacro drawing-on-window-without-prepare-sheet ((window) &body body)
+  "DRAWING-ON-WINDOW-WITHOUT-PREPARE-SHEET is a variant of Drawing-On-Window
+which does everything Drawing-On-Window does except that it does not do a
+PREPARE-SHEET of the window. Unless you really know what you are doing
+you should only use this inside the :BLINK method for a blinker."
+  (once-only (window)
+    `(drawing-on-window-bootstrap-clipping-and-scaling
+       (0 0
+        (sheet-inside-width ,window) (sheet-inside-height ,window))
+        . ,body)))
+
 ;; origin gets reset in hardware by scaling macros so these are no ops
 ;; They need to be defined because other functions (usually sprite graphics)
 ;; will use them explicitly to convert coords.
