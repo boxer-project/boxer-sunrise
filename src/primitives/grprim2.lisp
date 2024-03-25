@@ -290,10 +290,6 @@
       (let ((new-command (copy-graphics-command gc)))
         ; (translate-graphics-command new-command trans-x trans-y)
         (sv-append %graphics-list new-command)))
-    ;; now draw the new commands
-    (with-graphics-screen-parameters
-      (do-vector-contents (newgc %graphics-list :start new-start-idx)
-        (process-graphics-command newgc)))
     ;; synch list values
     (setf (graphics-command-list-agent %graphics-list) nil
           (graphics-command-list-alu %graphics-list)

@@ -156,65 +156,6 @@ parameters of the graphics box are bound. "
   ;; finally return the cache
   cache)
 
-(defmacro drawing-on-turtle-slate (screen-box &body body)
-  ;; first check the cache
-  `(let ((pos-cache (cached-absolute-pos ,screen-box))
-         (screen-sheet (when ,screen-box (screen-sheet ,screen-box))))
-     (cond ((null screen-sheet))
-           (t
-            (when (or (null pos-cache) (null (ab-pos-cache-valid pos-cache)))
-              ;; If the cache is not valid, fix it
-              (multiple-value-bind (box-x-offset box-y-offset)
-                  (xy-position ,screen-box)
-                (multiple-value-bind (inner-wid inner-hei)
-                    (graphics-sheet-size (screen-obj-actual-obj ,screen-box))
-                  (multiple-value-bind (sheet-x sheet-y)
-                      (graphics-screen-sheet-offsets screen-sheet)
-                    (multiple-value-bind (bl bt br bb)
-                        (box-borders-widths (box-type ,screen-box) ,screen-box)
-                      (setq pos-cache
-                            (update-absolute-pos-cache
-                             ,screen-box pos-cache box-x-offset box-y-offset
-                             (min inner-wid
-                                   (- (screen-obj-wid ,screen-box) bl br))
-                             (min inner-hei
-                                   (- (screen-obj-hei ,screen-box) bt bb))
-                             sheet-x sheet-y)))))))
-            ;; The position cache should now be valid....
-            (with-drawing-inside-region ((+ (ab-pos-cache-x pos-cache)
-                                             (ab-pos-cache-sx pos-cache))
-                                         (+ (ab-pos-cache-y pos-cache)
-                                             (ab-pos-cache-sy pos-cache))
-                                         (ab-pos-cache-iw pos-cache)
-                                         (ab-pos-cache-ih pos-cache))
-              (with-clipping-inside (0 0 (ab-pos-cache-iw pos-cache) (ab-pos-cache-ih pos-cache))
-                (unwind-protect
-                     (progn . ,body)
-                  (when (eq *absolute-position-caches-filled* ':toplevel)
-                    ;; if we are not inside the evaluator, then
-                    ;; make sure we mark the cache as invalid after we are
-                    ;; through using it
-                    (setf (ab-pos-cache-valid pos-cache) nil)))))))))
-
-;;; this has to be INSIDE of a with-graphics-vars-bound
-;;; note that we can't combine the 2 macros into one because
-;;; this macro has to be wrapped around BODY's which are
-;;; STATEless because they may be executed multiple times
-;;; For example, a sprite drawing one several screen-box's (as
-;;; a result of port(s) to the original graphics box)
-
-;;; The equivalent macro used to be imbedded directly into the
-;;; various drawing primitives (draw-vector, draw-rect, etc) but
-;;; it is out here now to allow the possibility of grouping
-;;; several graphics calls within each turtle-slate binding
-
-(defmacro with-graphics-screen-parameters (&body body)
-  `(unless (no-graphics?)
-     (dolist (screen-box (get-visible-screen-objs %graphics-box))
-       (unless (or (eq ':shrunk (display-style screen-box))
-                   (not (graphics-screen-box? screen-box)))
-         (drawing-on-turtle-slate screen-box ,@body)))))
-
 (defun make-graphics-sheet (wid hei &optional box)
   (let ((new-gs (%make-graphics-sheet-with-graphics-list wid hei box)))
     (setf (graphics-sheet-graphics-list new-gs) (make-graphics-command-list))
