@@ -133,29 +133,6 @@ parameters of the graphics box are bound. "
 
 ;;; Set Up Clipping and Offsets
 
-(defun update-absolute-pos-cache (screen-box cache
-                                             box-x-offset box-y-offset
-                                             real-wid real-hei sheet-x sheet-y)
-  (cond ((null cache)
-         (setf (cached-absolute-pos screen-box)
-               (setq cache (make-ab-pos-cache box-x-offset box-y-offset
-                                              real-wid     real-hei
-                                              sheet-x      sheet-y))))
-        (t
-         (setf (ab-pos-cache-x cache) box-x-offset
-               (ab-pos-cache-y cache) box-y-offset
-               (ab-pos-cache-iw cache) real-wid
-               (ab-pos-cache-ih cache) real-hei
-               (ab-pos-cache-sx cache) sheet-x
-               (ab-pos-cache-sy cache) sheet-y
-               (ab-pos-cache-valid cache) t)))
-  ;; now keep track of the cache so it can be flushed at the proper time
-  (unless (or (eq *absolute-position-caches-filled* ':toplevel)
-              (fast-memq cache *absolute-position-caches-filled*))
-    (push cache *absolute-position-caches-filled*))
-  ;; finally return the cache
-  cache)
-
 (defun make-graphics-sheet (wid hei &optional box)
   (let ((new-gs (%make-graphics-sheet-with-graphics-list wid hei box)))
     (setf (graphics-sheet-graphics-list new-gs) (make-graphics-command-list))
