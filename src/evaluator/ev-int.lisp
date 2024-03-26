@@ -385,8 +385,7 @@
                                          (boxer-eval::*doit-key-process* boxer-eval::*current-process*))
                                     #+lispworks (setq *evaluation-in-progress?* t)
                                     (with-editor-mutation-queueing
-                                      (with-absolute-position-cache-recording
-                                        . ,body)))
+                                        . ,body))
                                   #+lispworks (setq *evaluation-in-progress?* nil)))))))))
     (unless (null *post-eval-hook*)
       (if (listp *post-eval-hook*)

@@ -143,8 +143,6 @@
         (slot-value self 'scroll-to-actual-row) nil
         (slot-value self 'scroll-x-offset) 0
         (slot-value self 'scroll-x-offset) 0)
-  (unless (null (slot-value self 'cached-absolute-pos))
-    (setf (ab-pos-cache-valid (slot-value self 'cached-absolute-pos)) nil))
   (set-display-style self nil)
   (cond ((or (graphics-screen-box? self) (sprite-screen-box? self))
          ;; these go back on the graphics queue

@@ -156,15 +156,7 @@ Modification History (most recent at top)
                (resize-graphics-sheet
                 gs (values (round width)) (values (round height)))))
            (when (box? gb)
-             (modified gb)
-             ;; just being modified is not enough to get the underlying
-             ;; graphics to redisplay because of the hack to avoid gratuitous
-             ;; redisplays when returning from sprite graphics
-             (dolist (screen-box (screen-objs gb))
-               ;; clear the abs cache because they also hold onto wid and hei
-               (let ((poscache (cached-absolute-pos screen-box)))
-                 (unless (null poscache)
-                   (setf (ab-pos-cache-valid poscache) nil)))))
+             (modified gb))
            boxer-eval::*novalue*))))
 
 

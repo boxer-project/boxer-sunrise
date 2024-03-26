@@ -8177,6 +8177,33 @@ Modification History (most recent at top)
 ;;;; FILE: disdef.lisp
 ;;;;
 
+;;; right now these are flushed by the got-redisplayed
+;;; method (probably not the best place)
+
+(defvar *absolute-position-caches-filled* ':toplevel)
+
+(defstruct (ab-pos-cache (:type vector)
+                         (:constructor make-ab-pos-cache (x y iw ih sx sy)))
+  (x 0)
+  (y 0)
+  (iw 0)
+  (ih 0)
+  (sx 0)
+  (sy 0)
+  (valid nil)
+  )
+
+;; might have to propagate modified to EB's after eval for proper
+;; final redisplay
+
+(defmacro with-absolute-position-cache-recording (&body body)
+  `(let ((*absolute-position-caches-filled* nil))
+     (unwind-protect
+      (progn . ,body)
+      (dolist (cache *absolute-position-caches-filled*)
+        (setf (ab-pos-cache-valid cache) nil)))))
+
+
 (defmacro with-real-time (&body body)
   `(progn . ,body))
 
