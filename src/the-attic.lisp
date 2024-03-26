@@ -32,6 +32,7 @@
 ;;;;     if it matched the previous one
 ;;;;   - boxwin-opengl.lisp There is a stub for a thing called a warp pointer that would have pulled the mouse
 ;;;;     cursor back to the side of the box if you moused outside of it.
+;;;;   - repaint-pass-2.lisp *tutti-frutti* and colorit pastel random color debugging
 
 ;;;;
 ;;;; FILE: applefile.lisp
@@ -8725,6 +8726,14 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: draw-high-common.lisp
 ;;;;
+
+(defmacro with-drawing-inside-region ((x y wid hei) &body body)
+  "**** this is the reverse of the software version because the
+WITH-CLIPPING-INSIDE macro should use the new coordinate system
+set by WITH-ORIGIN-AT"
+  `(with-origin-at (,x ,y)
+     (with-clipping-inside (0 0 ,wid ,hei)
+       . ,body)))
 
 (defmacro drawing-on-window-without-prepare-sheet ((window) &body body)
   "DRAWING-ON-WINDOW-WITHOUT-PREPARE-SHEET is a variant of Drawing-On-Window
@@ -20657,6 +20666,15 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: repaint.lisp
 ;;;;
+
+(defvar *tutti-frutti* nil)
+
+;; useful for testing
+(defun colorit (w h x y)
+  (with-pen-color ((bw::make-ogl-color (+ .3 (random .7))
+                                       (random 1.0)
+                                       (+ .3 (random .7)) .2))
+    (draw-rectangle w h x y)))
 
 (defun repaint-with-cursor-relocation ()
   (let ((*allow-redisplay-encore? t))

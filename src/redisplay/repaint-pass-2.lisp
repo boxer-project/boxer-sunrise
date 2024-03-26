@@ -28,16 +28,6 @@
 (DEFUN DRAW-PORT-BOX-ELLIPSIS (SCREEN-BOX X Y)
        (FUNCALL (GET (SLOT-VALUE SCREEN-BOX 'SCREEN-ROWS) 'DRAW-SELF) X Y))
 
-(defvar *tutti-frutti* nil)
-
-;; useful for testing
-(defun colorit (w h x y)
-  (with-pen-color ((bw::make-ogl-color (+ .3 (random .7))
-                                       (random 1.0)
-                                       (+ .3 (random .7)) .2))
-    (draw-rectangle w h x y)))
-
-
 (defmethod gray-body ((self screen-box))
   (multiple-value-bind (il it ir ib)
                        (box-borders-widths (class-name (class-of (screen-obj-actual-obj self))) self)
@@ -115,15 +105,12 @@
   (with-slots (x-offset y-offset wid hei actual-obj)
     self
     (when actual-obj
-    ;; (with-drawing-inside-region (x-offset y-offset wid hei)
     (with-origin-at (x-offset y-offset)
       (when (closet-row? actual-obj (superior-box actual-obj))
         ;; this should get the inner width from the superior box
         (with-pen-color (*closet-color*) (draw-rectangle wid hei 0 0)))
       (repaint-inferiors-pass-2-sr self)
-      (got-repainted self)
-      )
-      )))
+      (got-repainted self)))))
 
 (defmethod repaint-pass-2-sb ((self screen-box))
   (multiple-value-bind (x-pos y-pos) (xy-position self)
@@ -156,14 +143,11 @@
                        ;			      (draw-boxtop boxtop actual-obj 0 0 wid hei))
                        ))))
          (t ;; have to draw any background BEFORE inferiors
-            (unless nil ;(null background)
-              (multiple-value-bind (lef top rig bot)
-                                   (box-borders-widths box-type self)
-                                   (cond ((not (null *tutti-frutti*))
-                                          (colorit  (- wid rig lef) (- hei bot top) lef top))
-                                         ((not (null (get-background-color actual-obj)))
-                                          (with-pen-color ((get-background-color actual-obj))
-                                            (draw-rectangle (- wid rig lef) (- hei bot top) lef top))) )))
+            (multiple-value-bind (lef top rig bot)
+                                  (box-borders-widths box-type self)
+                                 (when (not (null (get-background-color actual-obj)))
+                                   (with-pen-color ((get-background-color actual-obj))
+                                     (draw-rectangle (- wid rig lef) (- hei bot top) lef top))))
             (repaint-inferiors-pass-2-sb self)
             ;; draw any scroll info no
             (draw-scroll-info self)
@@ -187,9 +171,7 @@
                                                                             (graphics-sheet-draw-wid graphics-sheet)))
                                                          (inner-height (min (- (screen-obj-hei self) it ib)
                                                                             (graphics-sheet-draw-hei graphics-sheet))))
-                                                    ;;  (with-drawing-inside-region (x y inner-width inner-height)
                                                      (with-origin-at (x y)
-                                                      ;;  (with-turtle-clipping (inner-width inner-height)
                                                          (when (not (null (graphics-sheet-background graphics-sheet)))
                                                             (with-pen-color ((graphics-sheet-background graphics-sheet))
                                                               (draw-rectangle inner-width inner-height 0 0)))

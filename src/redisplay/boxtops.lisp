@@ -178,7 +178,7 @@
        (draw-rectangle 1 hei (+ x wid -1) y)
        (draw-rectangle wid 1 x (+ y hei -1))
        ;; then move the origin over before graphics
-       (with-drawing-inside-region (1 1 (- wid 2) (- hei 2))
+       (with-origin-at (1 1)
          (draw-graphics-boxtop-internal boxtop x y (- wid 2) (- hei 2))))))
 
 (defun draw-file-boxtop (boxtop x y wid)

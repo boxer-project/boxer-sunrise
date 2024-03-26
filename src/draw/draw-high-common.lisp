@@ -59,14 +59,6 @@ the bootstrapping of the clipping and coordinate scaling variables."
 ;;; Scaling and Clipping Macros
 ;;;
 
-(defmacro with-drawing-inside-region ((x y wid hei) &body body)
-  "**** this is the reverse of the software version because the
-WITH-CLIPPING-INSIDE macro should use the new coordinate system
-set by WITH-ORIGIN-AT"
-  `(with-origin-at (,x ,y)
-     (with-clipping-inside (0 0 ,wid ,hei)
-       . ,body)))
-
 (defmacro with-origin-at ((x y) &body body)
   "Opengl set-origin is RELATIVE !"
   (let ((fx (gensym)) (fy (gensym)) (ux (gensym)) (uy (gensym)))
