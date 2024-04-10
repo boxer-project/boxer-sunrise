@@ -41,6 +41,7 @@
                   :depends-on ()
                   :components ((:file "platform-utils")
                                (:file "pixmap")
+                               (:file "stencils")
                                (:file "graphics-canvas")
                                (:file "simple-line-shapes")
                                (:file "line-shapes")
@@ -100,6 +101,8 @@
                  #+lispworks (:file "boxwin/lw-capi/pane-callbacks")
                  #+lispworks (:file "boxwin/lw-capi/boxwin-opengl")
                  #+lispworks (:file "boxwin/lw-capi/clipboard")
+
+                 #+lispworks (:file "boxwin/lw-capi/outline-tree")
 
                 ;  #+lispworks (:file "boxwin/lw-capi/modern-opengl")
 
