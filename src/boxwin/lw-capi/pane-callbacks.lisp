@@ -26,15 +26,7 @@
   (unless *boxer-pane-initialized*
     ;; modernGL inits
     (opengl:rendering-on (*boxer-pane*)
-      (gl:enable :scissor-test)
-      (gl:enable :line-smooth)
-      (gl:enable :polygon-smooth)
-      (gl:enable :blend)
-      (gl:enable :multisample)
-      (gl:enable :depth-test)
-      (gl:blend-func :src-alpha :one-minus-src-alpha)
-      (gl:hint :line-smooth-hint :nicest)
-      (gl:hint :polygon-smooth-hint :nicest)
+      (boxer::opengl-enables)
 
       (setf bw::*boxgl-device* (slot-value
                                   (boxer::make-boxwin-330gl-device bw::*boxer-frame* bw::*boxer-pane* :wid wid :hei hei)

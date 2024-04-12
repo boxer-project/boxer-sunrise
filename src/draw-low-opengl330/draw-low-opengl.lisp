@@ -120,6 +120,22 @@
 (defvar *boxer-pane* nil
   "The pane which contains the actual boxer screen editor.")
 
+(defun opengl-enables ()
+  "Run our standard set of openGL enables and disables."
+  ;; (gl:enable :scissor-test)
+  (gl:enable :line-smooth)
+  (gl:enable :polygon-smooth)
+  (gl:enable :blend)
+  (gl:enable :multisample)
+  (gl:disable :depth-test)
+  ;; (gl:enable :depth-test)
+  ;; (gl:enable :stencil-test)
+  ;; (gl:stencil-func :notequal 1 #xFF)
+  ;; (gl:stencil-op :keep :keep :replace)
+  (gl:blend-func :src-alpha :one-minus-src-alpha)
+  (gl:hint :line-smooth-hint :nicest)
+  (gl:hint :polygon-smooth-hint :nicest))
+
 ;;; **** returns pixel value(window system dependent) at windw coords (x,y)
 ;;; see BU::COLOR-AT in grprim3.lisp
 (defun window-pixel (x y &optional (view *boxer-pane*)) (%get-pixel view x y))
