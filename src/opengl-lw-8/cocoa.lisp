@@ -182,6 +182,10 @@
             (nconc ;; Antialiasing for the openGL 3.2 work with shaders
                    (when (getf configuration :modern)
                      (list ns-open-gl-pfa-multisample
+                           ;; sgithens 2024-04 8, 24, 8 seems to be a config that works on macOS
+                           ns-open-gl-pfa-alpha-size 8
+                           ns-open-gl-pfa-depth-size 24
+                           ns-open-gl-pfa-stencil-size 8
                            ns-open-gl-pfa-sample-buffers 1
                            ns-open-gl-pfa-samples 4))
                    ;; sgithens - Adding the :modern flag to get an openGl 3.2 core context
@@ -190,9 +194,9 @@
                    (and (or (getf configuration :double-buffer)
                             (getf configuration :double-buffered))
                         (list ns-open-gl-pfa-double-buffer))
-                   (let ((depth-buffer (getf configuration :depth-buffer)))
-                     (and depth-buffer
-                          (list ns-open-gl-pfa-depth-size depth-buffer)))
+                  ;;  (let ((depth-buffer (getf configuration :depth-buffer)))
+                  ;;    (and depth-buffer
+                  ;;         (list ns-open-gl-pfa-depth-size depth-buffer)))
                    (list 0)))
            (attributes (fli:allocate-dynamic-foreign-object
                         :type (ns-open-gl-pixel-format-attribute-type)
