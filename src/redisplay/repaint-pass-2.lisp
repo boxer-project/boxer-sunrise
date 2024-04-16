@@ -69,7 +69,7 @@
 
           (with-origin-at (scroll-x-offset scroll-y-offset)
             (do-vector-contents (inf-screen-obj screen-rows :index-var-name row-no)
-              (repaint-pass-2-sr inf-screen-obj)))))))
+              (repaint-pass-2-sr inf-screen-obj))))))))
 
 (defmethod repaint-inferiors-pass-2-sr ((self screen-row))
   (let* ((inf-x-offset 0)
