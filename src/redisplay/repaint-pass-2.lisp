@@ -49,24 +49,27 @@
                 (chas-array-fds (chas-array (slot-value self 'actual-obj))))))
 
 (defmethod repaint-inferiors-pass-2-sb ((self screen-box))
-  (with-slots (wid hei box-type screen-rows scroll-x-offset scroll-y-offset actual-obj)
+  (with-slots (wid hei box-type screen-rows scroll-x-offset scroll-y-offset x-got-clipped? y-got-clipped? actual-obj)
     self
     (multiple-value-bind (il it ir ib)
                          (box-borders-widths box-type self)
-                         (with-clipping-inside ((+ il (horizontal-scroll *boxer-pane*))
-                                               (+ it (vertical-scroll *boxer-pane*))
-                                               (- wid il ir)
-                                               (- hei it ib))
-                           ;; The clipping and rescaling for these methods is similar to
-                           ;; the clipping and rescaling for the other redisplay-pass-1
-                           ;; and redisplay-pass-2 methods, except that here the region
-                           ;; of the screen of that is being draw inside is
-                           ;; a subpart of the screen obj, the screen-box's screen-rows.
-                           (if (draw-port-box-ellipsis? self)
-                             (draw-port-box-ellipsis self il it)
-                             (with-origin-at (scroll-x-offset scroll-y-offset)
-                               (do-vector-contents (inf-screen-obj screen-rows :index-var-name row-no)
-                                 (repaint-pass-2-sr inf-screen-obj))))))))
+      ;; sgithens TODO 2024-04-16 Get rid of this clear
+      (clear-stencil-buffer)
+
+      (if (draw-port-box-ellipsis? self)
+        (draw-port-box-ellipsis self il it)
+        (if (or x-got-clipped? y-got-clipped?)
+          (with-clipping-inside ((+ il (horizontal-scroll *boxer-pane*))
+                                  (+ it (vertical-scroll *boxer-pane*))
+                                  (- wid il ir)
+                                  (- hei it ib))
+            (with-origin-at (scroll-x-offset scroll-y-offset)
+              (do-vector-contents (inf-screen-obj screen-rows :index-var-name row-no)
+                (repaint-pass-2-sr inf-screen-obj))))
+
+          (with-origin-at (scroll-x-offset scroll-y-offset)
+            (do-vector-contents (inf-screen-obj screen-rows :index-var-name row-no)
+              (repaint-pass-2-sr inf-screen-obj)))))))
 
 (defmethod repaint-inferiors-pass-2-sr ((self screen-row))
   (let* ((inf-x-offset 0)
@@ -172,6 +175,11 @@
                                                          (inner-height (min (- (screen-obj-hei self) it ib)
                                                                             (graphics-sheet-draw-hei graphics-sheet))))
                                                      (with-origin-at (x y)
+                                                       (with-clipping-inside ((+ 0 (horizontal-scroll *boxer-pane*))
+                                                                              (+ 0 (vertical-scroll *boxer-pane*))
+                                                                              inner-width
+                                                                              inner-height)
+
                                                          (when (not (null (graphics-sheet-background graphics-sheet)))
                                                             (with-pen-color ((graphics-sheet-background graphics-sheet))
                                                               (draw-rectangle inner-width inner-height 0 0)))
@@ -197,7 +205,9 @@
                                                                               pixmap 0 0 0 0)))
                                                          ;; then handle any sprite graphics...
                                                          (unless (null (graphics-sheet-graphics-list graphics-sheet))
-                                                           (redisplay-graphics-sheet-sprites graphics-sheet self)))))))) ;)
+                                                           (redisplay-graphics-sheet-sprites graphics-sheet self))
+                                                           )
+                                                           )))))) ;)
 
 ;;;; Screen Sprites....
 

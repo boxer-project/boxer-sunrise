@@ -139,7 +139,6 @@
     (setf (boxgl-device-ortho-matrix device) new-ortho-matrix)
     (setf (boxgl-device-transform-matrix device) (create-transform-matrix 0 0))
     (opengl:gl-viewport 0 0 wid hei)
-    (gl:disable :scissor-test)
   (update-matrices-ubo device)))
 
 (defmethod disable ((self graphics-canvas) &key (device bw::*boxgl-device*))
@@ -148,5 +147,4 @@
   (setf (boxgl-device-ortho-matrix device) (cached-ortho-matrix self))
   (setf (boxgl-device-transform-matrix device) (cached-transform-matrix self))
   (opengl:gl-viewport 0 0 (aref (resolution) 0) (aref (resolution) 1))
-  (gl:enable :scissor-test)
   (update-matrices-ubo device))

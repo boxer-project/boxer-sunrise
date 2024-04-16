@@ -26,7 +26,7 @@
    general usage is:
 
    (write-to-stencil) ;; without arguments clears the previous stencil buffer
-   (draw-rectange etc etc)
+   (draw-rectangle etc etc)
    (render-inside-stencil)
    (draw-box-contents)
    (ignore-stencil)"
@@ -37,10 +37,8 @@
 
 (defun render-inside-stencil ()
   (gl:stencil-func :equal 1 #xFF)
-  (gl:stencil-mask #x00)
-  (gl:disable :depth-test))
+  (gl:stencil-mask #x00))
 
 (defun ignore-stencil ()
   (gl:stencil-mask #xFF)
-  (gl:stencil-func :always 0 #xFF)
-  (gl:enable :depth-test))
+  (gl:stencil-func :always 0 #xFF))

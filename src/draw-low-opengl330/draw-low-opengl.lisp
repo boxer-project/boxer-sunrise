@@ -127,11 +127,13 @@
   (gl:enable :polygon-smooth)
   (gl:enable :blend)
   (gl:enable :multisample)
+  ;; We need to change our painting algorithm, lest enabling depth test just displays
+  ;; a totally white canvas.
   (gl:disable :depth-test)
-  ;; (gl:enable :depth-test)
-  ;; (gl:enable :stencil-test)
-  ;; (gl:stencil-func :notequal 1 #xFF)
-  ;; (gl:stencil-op :keep :keep :replace)
+  (gl:enable :stencil-test)
+  (gl:stencil-func :notequal 1 #xFF)
+  (gl:stencil-op :keep :keep :replace)
+  (ignore-stencil)
   (gl:blend-func :src-alpha :one-minus-src-alpha)
   (gl:hint :line-smooth-hint :nicest)
   (gl:hint :polygon-smooth-hint :nicest))
@@ -192,7 +194,6 @@
   `(opengl::rendering-on (,view)
      ;; always start by drawing eveywhere
      (bw::ogl-reshape (sheet-inside-width ,view) (sheet-inside-height ,view))
-     (opengl::gl-scissor 0 0 (sheet-inside-width ,view) (sheet-inside-height ,view))
      . ,body))
 
 (defun my-clip-rect (lef top rig bot)

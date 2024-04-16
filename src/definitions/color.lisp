@@ -43,6 +43,7 @@
 (defvar *orange*  #(:RGB 1.0 0.6470585 0.0 1.0))
 (defvar *purple*  #(:RGB 0.627451 0.1254902 0.941175 1.0))
 (defvar *gray*    #(:RGB 0.752941 0.752941 0.752941 1.0))
+(defvar *transparent* #(:RGB 0.0 0.0 0.0 0.0))
 
 ;; color variables that boxer uses
 (defvar *background-color* *white*)
