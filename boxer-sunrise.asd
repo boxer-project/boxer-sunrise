@@ -120,7 +120,6 @@
                  (:file "redisplay/disply")
                  (:file "redisplay/lodisp")
                  (:file "redisplay/dev-overlay")
-                ;;  (:file "redisplay/repaint-pass-1")
                  (:file "redisplay/repaint-2024")
                  (:file "redisplay/repaint-pass-2")
                  (:file "redisplay/repaint")
