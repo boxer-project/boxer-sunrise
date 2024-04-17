@@ -150,18 +150,14 @@
                            (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*) cur-transform))
                          (when flush-buffer? (swap-graphics-buffers window)))))
 
-(defvar *use-repaint2024* t)
-
 ;;; called also by printing routines.
 (defun repaint-guts ()
   (unless (null *outermost-screen-box*)
     ;; can happen asynch, during window startup if window systems tries to update before
     ;; all the boxer innards are created
-    (if *use-repaint2024*
-      (multiple-value-bind (max-wid max-hei)
-                       (outermost-screen-box-size *redisplay-window*)
+    (multiple-value-bind (max-wid max-hei)
+                         (outermost-screen-box-size *redisplay-window*)
                        (repaint-fill-dimensions *outermost-screen-box* max-wid max-hei))
-      (top-level-repaint-pass-1))
     (top-level-repaint-pass-2)))
 
 (defun update-window-title ()
