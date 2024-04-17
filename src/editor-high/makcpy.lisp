@@ -143,8 +143,6 @@
                 (t (copy-graphics-object gi)))))
          (setf (graphics-info to-box) new-graphics-object)
          (set-sprite-box new-graphics-object to-box)))))
-  (when (not (null (av-info from-box)))
-    (putprop to-box (copy-av-info (av-info from-box)) 'av-info))
   ;; other special properties...
   (dolist (pfun *copy-special-box-properties-hook*) (funcall pfun from-box to-box))
   ;; Copying these depend on whether we are at top level or not

@@ -430,10 +430,7 @@ the window font (ie, draw-string) has to change it back for this to work.
   (let ((gi (graphics-info box)))
     (when (graphics-sheet? gi)
       (let ((bm (graphics-sheet-bit-array gi)))
-        (unless (null bm) (ogl-free-pixmap bm)))))
-  ;; this is for quicktime
-  ;(let ((avi (av-info box))) (unless (null avi) (deallocate-av-info avi)))
-  )
+        (unless (null bm) (ogl-free-pixmap bm))))))
 
 ;; NOTE: these functions actually return COLORS rather than the raw (system dependent) pixel value
 ;; used to grab a pixel value from the screen

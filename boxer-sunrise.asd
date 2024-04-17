@@ -272,10 +272,6 @@
                  #+lispworks (:file "boxwin/lw-capi/preferences-dialog")
                  #+lispworks (:file "boxwin/lw-capi/confirm-quit-dialogs")
 
-
-                 ;; Beginning of `av` module
-                 ;;    "Primitives and support code for controlling VCR's from Mac Boxer"
-                 (:file "av/av-stubs")
                  ;; Beginning of `SYSPRIMS` module
                  ;;    "Primitives to tweak default system parameters"
                  (:file "primitives/sysprims")

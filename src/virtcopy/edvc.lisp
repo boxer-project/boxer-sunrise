@@ -891,12 +891,8 @@ average datastructure.
         (push new-sheet info)
         (push 'graphics-sheet info))
       ;; if there is a graphics sheet, there might be a movie
-      (let ((av (av-info editor-box)))
-        (unless (null av)
-          (let ((new-av (copy-av-info av)))
-            (queue-non-lisp-structure-for-deallocation new-av)
-            (push new-av info))
-          (push 'av-info info)))
+      ;; 2024-04-17 av-info removed
+
       ;; other image types (jpeg ?, gif ?)
       )
     (when (sprite-box? editor-box)

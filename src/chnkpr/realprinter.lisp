@@ -407,8 +407,6 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
 
 (defun graphics-info-turtle (gi) (getf gi 'turtle))
 
-(defun graphics-info-av (gi) (getf gi 'av-info))
-
 ;;; copying closets
 ;; In general, only a pointer to the closet in the original box is retained
 ;; this can be a problem when an item in the closet is symeval'd and then
@@ -516,10 +514,8 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
           (setf (display-style-graphics-mode? (display-style-list box)) t))
         ;; check for other visual props which may occur with a graphics sheet
         ;; like av-info, gif?, jpeg?
-        (let ((av (graphics-info-av (vc-graphics vc))))
-          (unless (null av)
-            (unqueue-non-lisp-structure-for-deallocation av)
-            (putprop box av 'av-info)))
+        ;; 2024-04-17 av-info has been removed, but leaving this stub comment above for the future.
+
         ;; turtle needs to be handled AFTER the rows and the closets are
         ;; added because we might need the values in the boxes to properly
         ;; initialize the graphics-object
