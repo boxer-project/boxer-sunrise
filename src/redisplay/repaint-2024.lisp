@@ -110,9 +110,19 @@
         (declare (ignore ir ib))
         (cond ((and (port-box? actual-obj)
                     (port-has-been-displayed-enough? actual-obj))
-               ;; Port redisplayed enough
-               ;; todo, go back and grab this bit
-               )
+               ;; The Actual Box is part of a circular structure AND
+               ;; we have already displayed the port the required number
+               ;; of times, so we erase and remove whatever is in
+               ;; the box, then...
+               (when (and (not-null screen-rows)
+                         (not (box-ellipsis-style? screen-rows)))
+                 (queue-for-deallocation-screen-rows-from screen-rows 0)
+                 (kill-screen-rows-from self 0))
+               ;; put a Box ellipsis marker into the
+               ;; inferiors slot of the screen box
+               (setq screen-rows *box-ellipsis-current-style*)
+               ;; then return the necessary values
+               (funcall (get *box-ellipsis-current-style* 'size)))
               (t
                ;; If the port has an ellipsis marker when it shouldn't,
                ;; then erase and remove it
