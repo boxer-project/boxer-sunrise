@@ -158,8 +158,8 @@
 
   (unenable-shader-programs device))
 
-(defun gl-add-rect (device x y wid hei &key (rgb (boxgl-device-pen-color device)))
-  (enable-gl-shader-program device (lines-shader device))
+(defun gl-add-rect (device x y wid hei &key (rgb (boxgl-device-pen-color device)) (shader (lines-shader device)))
+  (enable-gl-shader-program device shader)
 
   ;; todo - use an elements array instead of 6 vertices
   (let* ((vertices (float-vector x y                 0.0 (aref rgb 1) (aref rgb 2) (aref rgb 3) (aref rgb 4)

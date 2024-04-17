@@ -376,6 +376,10 @@ the window font (ie, draw-string) has to change it back for this to work.
 (defun %draw-rectangle (width height x y)
   (gl-add-rect bw::*boxgl-device* x y width height))
 
+(defun %draw-absolute-rectangle (width height x y)
+  "Same as %draw-rectangle, but doesn't take the transformation matrix into consideration."
+  (gl-add-rect bw::*boxgl-device* x y width height :shader (absolute-lines-shader bw::*boxgl-device*)))
+
 (defun %erase-rectangle (w h x y)
   (with-pen-color (*background-color*)
     (%draw-rectangle w h x y)))

@@ -78,54 +78,21 @@ the bootstrapping of the clipping and coordinate scaling variables."
     (let ((%clip-lef (max %clip-lef (+ %origin-x-offset ,x)))
           (%clip-top (max %clip-top (+ %origin-y-offset ,y)))
           (%clip-rig (min %clip-rig (+ %origin-x-offset ,x ,wid)))
-          (%clip-bot (min %clip-bot (+ %origin-y-offset ,y ,hei)))
-          (prev-origin (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)))
+          (%clip-bot (min %clip-bot (+ %origin-y-offset ,y ,hei))))
       ;; make sure that the clipping parameters are always at least
       ;; as restrictive as the previous parameters
-
-      ;; sgithens 2024-04-16 Previous impl, keeping here for a release to two
-      ;; (my-clip-rect %clip-lef %clip-top %clip-rig %clip-bot)
       (write-to-stencil)
-      (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)
-            (boxer::create-transform-matrix 0 0))
-
-      ;; (update-transform-matrix-ubo bw::*boxgl-device*)
-      (update-matrices-ubo bw::*boxgl-device*)
-
       (with-pen-color (*transparent*)
-        (draw-rectangle (- %clip-rig %clip-lef) (- %clip-bot %clip-top) %clip-lef %clip-top))
-      (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)
-            prev-origin)
-
-      ;; (update-transform-matrix-ubo bw::*boxgl-device*)
-      (update-matrices-ubo bw::*boxgl-device*)
-
+        (%draw-absolute-rectangle (- %clip-rig %clip-lef) (- %clip-bot %clip-top) %clip-lef %clip-top))
       (render-inside-stencil)
       . ,body)
 
     (progn
-      ;; sgithens 2024-04-16 Previous impl, keeping here for a release to two
       ;; reset the old clip region
-      ;; (my-clip-rect %clip-lef %clip-top
-      ;;               %clip-rig %clip-bot)
-
-      (let ((prev-origin (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)))
-        (write-to-stencil)
-        (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)
-              (boxer::create-transform-matrix 0 0))
-
-        ;; (update-transform-matrix-ubo bw::*boxgl-device*)
-        (update-matrices-ubo bw::*boxgl-device*)
-
-        (with-pen-color (*transparent*)
-          (draw-rectangle (- %clip-rig %clip-lef) (- %clip-bot %clip-top) %clip-lef %clip-top))
-        (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)
-              prev-origin)
-
-        ;; (update-transform-matrix-ubo bw::*boxgl-device*)
-        (update-matrices-ubo bw::*boxgl-device*)
-
-        (render-inside-stencil))
+      (write-to-stencil)
+      (with-pen-color (*transparent*)
+        (%draw-absolute-rectangle (- %clip-rig %clip-lef) (- %clip-bot %clip-top) %clip-lef %clip-top))
+      (render-inside-stencil)
       ;; TODO, this maybe a hack to keep things working, revisit for deeper nested boxes
       (ignore-stencil))))
 
