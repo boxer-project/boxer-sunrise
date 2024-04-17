@@ -108,11 +108,10 @@
    CAPI Font List, Char/String
   "
   (let* ((capi-fontspec (check-fontspec (opengl-font-fontspec current-font)))
-         (font-face (current-freetype-font current-font (coerce font-zoom 'single-float)))
          (cache-key `(,capi-fontspec ,ch ,(coerce font-zoom 'single-float)))
          (cached-glyph (gethash cache-key *freetype-pixmap-cache*)))
     (unless cached-glyph
-      (setf cached-glyph (create-box-glyph font-face ch))
+      (setf cached-glyph (create-box-glyph (current-freetype-font current-font (coerce font-zoom 'single-float)) ch))
       (setf (gethash cache-key *freetype-pixmap-cache*) cached-glyph)
       (setf *freetype-pixmap-generate-count* (1+ *freetype-pixmap-generate-count*)))
     cached-glyph))
