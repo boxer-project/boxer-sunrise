@@ -121,8 +121,7 @@
    (superior-screen-box :initform nil :accessor superior-screen-box)
    ;; scrolling vars
    (scroll-y-offset :initform 0)
-   (scroll-x-offset :initform 0)
-   (max-scroll-wid  :initform nil)))
+   (scroll-x-offset :initform 0)))
 
 (defgeneric screen-box? (x) (:method (x) nil) (:method ((x screen-box)) t))
 

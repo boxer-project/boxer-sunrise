@@ -349,8 +349,7 @@ Modification History (most recent at top)
 ;;;
 (defmethod draw-scroll-info ((self screen-box))
   (with-slots (actual-obj wid hei box-type scroll-to-actual-row content-hei content-wid
-                          scroll-x-offset scroll-y-offset ;;vertical elevator drawing should use this...
-                          max-scroll-wid)
+                          scroll-x-offset scroll-y-offset)
     self
     (multiple-value-bind (il it ir ib)
                          (box-borders-widths box-type self)
@@ -366,8 +365,6 @@ Modification History (most recent at top)
                                                       (/ scroll-y-offset (- content-hei inner-hei))))
                            (when (h-scrollable? self)
                              ;; ok, need to draw horizontal scroll GUI
-                             ;; It is possible for scroll-x-offset to exceed max-scroll-wid under certain conditions in
-                             ;; particular, vertical scrolling away from an extra wide section which horizontally scrolled
                              (draw-horizontal-scrollbar (+ type-label-width il) (- hei ib)
                                                         inner-wid (* (/ inner-wid content-wid) inner-wid)
                                                         ;; percent scrolled

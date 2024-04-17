@@ -149,7 +149,6 @@ disdcl.lisp:104
 | display-style-list | | |
 | force-redisplay-infs? | | |
 | hei | | |
-| max-scroll-wid | | |
 | name | | |
 | needs-redisplay-pass-2 | | |
 | screen-row | | |

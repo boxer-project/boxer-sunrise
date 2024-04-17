@@ -59,7 +59,6 @@
                             ;; (format nil "hei: ~A" (screen-obj-hei mouse-screen-box))
                             ;; (format nil "x-got-clipped?: ~A" (screen-obj-x-got-clipped? mouse-screen-box))
                             ;; (format nil "y-got-clipped?: ~A" (screen-obj-y-got-clipped? mouse-screen-box))
-                            ;; (format nil "max-scroll-wid: ~A" (slot-value mouse-screen-box 'boxer::max-scroll-wid))
                             ))
           (draw-string code-font item x (+ 30 (* line-height debug-num)))
           (setf debug-num (1+ debug-num))
