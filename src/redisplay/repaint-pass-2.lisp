@@ -48,6 +48,14 @@
         (mapcar #'copy-boxer-font-descriptor
                 (chas-array-fds (chas-array (slot-value self 'actual-obj))))))
 
+(defun within-boxer-pane (item)
+  "Checks if the screen-obj item is on the screen, taking in to affect and global scrolling
+   on the canvas using the top level operating sysytem scroll bars."
+  (let ((y-pos (second (multiple-value-list (xy-position item))))
+        (vert-scroll (vertical-scroll *boxer-pane*)))
+      (and (> (+ y-pos vert-scroll (screen-obj-hei item)) 0)
+           (< (+ y-pos vert-scroll) (* (/ 1 (zoom-level *boxer-pane*)) (gp:port-height *boxer-pane*))))))
+
 (defmethod repaint-inferiors-pass-2-sb ((self screen-box))
   (with-slots (wid hei box-type screen-rows scroll-x-offset scroll-y-offset x-got-clipped? y-got-clipped? actual-obj)
     self
@@ -56,20 +64,28 @@
       ;; sgithens TODO 2024-04-16 Get rid of this clear
       (clear-stencil-buffer)
 
-      (if (draw-port-box-ellipsis? self)
-        (draw-port-box-ellipsis self il it)
-        (if (or x-got-clipped? y-got-clipped?)
-          (with-clipping-inside ((+ il (horizontal-scroll *boxer-pane*))
-                                  (+ it (vertical-scroll *boxer-pane*))
-                                  (- wid il ir)
-                                  (- hei it ib))
-            (with-origin-at (scroll-x-offset scroll-y-offset)
-              (do-vector-contents (inf-screen-obj screen-rows :index-var-name row-no)
-                (repaint-pass-2-sr inf-screen-obj))))
-
-          (with-origin-at (scroll-x-offset scroll-y-offset)
-            (do-vector-contents (inf-screen-obj screen-rows :index-var-name row-no)
-              (repaint-pass-2-sr inf-screen-obj))))))))
+      (cond ((draw-port-box-ellipsis? self)
+             (draw-port-box-ellipsis self il it))
+            ((or x-got-clipped? y-got-clipped?)
+             (with-clipping-inside ((+ il (horizontal-scroll *boxer-pane*))
+                                    (+ it (vertical-scroll *boxer-pane*))
+                                    (- wid il ir)
+                                    (- hei it ib))
+               (with-origin-at (scroll-x-offset scroll-y-offset)
+                 (do-vector-contents (inf-screen-obj screen-rows :index-var-name row-no)
+                   ;; if row.y-pos > box.y-pos AND row.y-pos < box.y-pos + box.hei
+                   ;;   then render the row
+                   (let ((row-y-pos (second (multiple-value-list (xy-position inf-screen-obj))))
+                         (box-y-pos (second (multiple-value-list (xy-position self)))))
+                     (when (and (> row-y-pos box-y-pos)
+                                (< row-y-pos (+ box-y-pos hei))
+                                (within-boxer-pane inf-screen-obj))
+                       (repaint-pass-2-sr inf-screen-obj)))))))
+            (t
+             (with-origin-at (scroll-x-offset scroll-y-offset)
+               (do-vector-contents (inf-screen-obj screen-rows :index-var-name row-no)
+                 (when (within-boxer-pane inf-screen-obj)
+                   (repaint-pass-2-sr inf-screen-obj)))))))))
 
 (defmethod repaint-inferiors-pass-2-sr ((self screen-row))
   (let* ((inf-x-offset 0)
@@ -210,11 +226,10 @@
                                                            )))))) ;)
 
 ;;;; Screen Sprites....
-
 (defmethod repaint-pass-2-sb ((self sprite-screen-box))
   )
 
-;;
+
 (defun top-level-repaint-pass-2 ()
   ;; Currently this is above the repaint-pass-2 even though it should be below it forcing a second repaint. If we
   ;; added support for a z-index then we could just paint it below after the dimensions are calculated.
