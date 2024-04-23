@@ -71,5 +71,13 @@
       (resize-handler canvas x y wid hei)
       (setf (boxer::boxgl-device-ortho-matrix bw::*boxgl-device*)
             (boxer::create-ortho-matrix wid hei))
+
+      ;; When resizing set the scrolling back to the top left corner, so the margins
+      ;; don't get stuck. In the future we might want to be smarter, such as if we were
+      ;; in the lower right corner all the way, we would stay there while resizing.
+      (setf (horizontal-scroll *boxer-pane*) 0)
+      (setf (vertical-scroll *boxer-pane*) 0)
+      (boxer::set-transform bw::*boxgl-device* 0 0)
+
       (opengl:gl-viewport 0 0 wid hei)
       (boxer::update-matrices-ubo bw::*boxgl-device*))))
