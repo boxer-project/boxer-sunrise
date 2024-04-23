@@ -97,8 +97,8 @@
   "Takes the actual x location on the Boxer documents viewport, and translates it to be the X value for the
   outermost screen box.  If the document is panned in the window, or if it is zoomed, this adjusts the
   value so it can be used for internal document interactions."
-  (* (/ 1 (zoom-level self)) (- x (horizontal-scroll self))))
+  (- (* x (/ 1 (zoom-level self))) (horizontal-scroll self)))
 
 (defmethod viewport-to-document-y ((self boxer-canvas) y)
   "see port-to-document-x"
-  (* (/ 1 (zoom-level self)) (- y (vertical-scroll self))))
+  (- (* y (/ 1 (zoom-level self))) (vertical-scroll self)))
