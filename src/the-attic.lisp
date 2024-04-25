@@ -20035,6 +20035,9 @@ Modification History (most recent at top)
 ;;;; FILE: popup.lisp
 ;;;;
 
+(defun com-hotspot-unfix-box-size (&optional (box *hotspot-mouse-box*))
+  (com-unfix-box-size box))
+
 ;; sgithens 2023-04-20 This old bottom-right pop-up hasn't been used in years.
 ;; (boxer-eval::defboxer-key bu::mouse-right-click-on-bottom-right com-mouse-br-pop-up)
 

@@ -889,8 +889,7 @@ Modification History (most recent at top)
     (menu-select *box-types-popup-menu* x y))
   boxer-eval::*novalue*)
 
-(defun com-hotspot-unfix-box-size (&optional (box *hotspot-mouse-box*))
-  (com-unfix-box-size box))
+
 
 ;; NOTE: bottom right corner NEVER (currently) checks the global var, only
 ;; the local box flag is used...
