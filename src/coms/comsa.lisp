@@ -682,19 +682,8 @@ argument (n), kills forward n words. "
   ;; if there is a region, get rid of it
   (reset-region)
   (reset-editor-numeric-arg)
-  (let ((row-to-move-to nil))
-    (dolist (screen-box screen-boxs)
-      (let ((screen-box-new-scroll-row (scroll-dn-one-screen-box screen-box)))
-        (when (row? screen-box-new-scroll-row)
-          (setq row-to-move-to
-                (cond ((null row-to-move-to)
-                       screen-box-new-scroll-row)
-                      ((row-> screen-box-new-scroll-row row-to-move-to)
-                       screen-box-new-scroll-row)
-                      (t row-to-move-to))))))
-    (unless (null row-to-move-to)
-      (move-point-1 row-to-move-to (min (length-in-chas row-to-move-to)
-                                        (bp-cha-no *point*)))))
+  (dolist (screen-box screen-boxs)
+    (scroll-dn-one-screen-box screen-box))
   boxer-eval::*novalue*)
 
 (defboxer-command COM-SCROLL-UP-ONE-SCREEN-BOX (&optional
@@ -706,21 +695,8 @@ argument (n), kills forward n words. "
   ;; if there is a region, get rid of it
   (reset-region)
   (reset-editor-numeric-arg)
-  (let ((row-to-move-to nil))
-    (dolist (screen-box screen-boxs)
-      (scroll-up-one-screen-box screen-box)
-      (let ((screen-box-new-scroll-row
-              (screen-obj-actual-obj (first-screen-row screen-box))))
-        (when (row? screen-box-new-scroll-row)
-          (setq row-to-move-to
-                (cond ((null row-to-move-to)
-                       screen-box-new-scroll-row)
-                      ((row-< screen-box-new-scroll-row row-to-move-to)
-                       screen-box-new-scroll-row)
-                      (t row-to-move-to))))))
-    (when (row? row-to-move-to)
-      (move-point-1 row-to-move-to (min (length-in-chas row-to-move-to)
-                                        (bp-cha-no *point*)))))
+  (dolist (screen-box screen-boxs)
+    (scroll-up-one-screen-box screen-box))
   boxer-eval::*novalue*)
 
 (defboxer-command COM-SCROLL-DN-ROW (&optional
