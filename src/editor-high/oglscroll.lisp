@@ -592,7 +592,25 @@ Modification History (most recent at top)
     (let ((new-scroll (+ scroll-x-offset (- scroll-amount))))
       (setf scroll-x-offset (check-h-scroll-limits self new-scroll)))))
 
+;;;
+;;; Page Up/Down for Boxes with Scrollbars
+;;;
 
+(defmethod scroll-dn-one-screen-box ((self screen-box))
+  (with-slots (scroll-y-offset y-got-clipped?) self
+    (when y-got-clipped?
+      (setf scroll-y-offset (check-v-scroll-limits self (- scroll-y-offset (inner-hei self) (- 20)))))))
 
+(defmethod scroll-up-one-screen-box ((self screen-box))
+  (with-slots (scroll-y-offset y-got-clipped?) self
+    (when y-got-clipped?
+      (setf scroll-y-offset (check-v-scroll-limits self (+ scroll-y-offset (inner-hei self)  20))))))
 
+(defmethod scroll-dn-one-screen-box ((self graphics-screen-box))
+  ;  (declare (ignore self))
+  nil)
+
+(defmethod scroll-up-one-screen-box ((self graphics-screen-box))
+  ;  (declare (ignore self))
+  nil)
 

@@ -102,31 +102,12 @@
       (let ((actual-obj (screen-obj-actual-obj sb)))
         (when (port-box? actual-obj) (push actual-obj ports))))))
 
-
-(defmethod scroll-dn-one-screen-box ((self screen-box))
-  (with-slots (scroll-y-offset y-got-clipped?) self
-    (when y-got-clipped?
-      (setf scroll-y-offset (check-v-scroll-limits self (- scroll-y-offset (inner-hei self) (- 20)))))))
-
-(defmethod scroll-up-one-screen-box ((self screen-box))
-  (with-slots (scroll-y-offset y-got-clipped?) self
-    (when y-got-clipped?
-      (setf scroll-y-offset (check-v-scroll-limits self (+ scroll-y-offset (inner-hei self)  20))))))
-
-
 ;; shadow these methods out for graphics-screen-boxes
 (defmethod set-scroll-to-actual-row ((self graphics-screen-box) new-value)
   ;  (declare (ignore self))
   (declare (ignore new-value))
   nil)
 
-(defmethod scroll-dn-one-screen-box ((self graphics-screen-box))
-  ;  (declare (ignore self))
-  nil)
-
-(defmethod scroll-up-one-screen-box ((self graphics-screen-box))
-  ;  (declare (ignore self))
-  nil)
 
 (defun repaint-window (&OPTIONAL (WINDOW *BOXER-PANE*) (flush-buffer? t) &KEY (process-state-label "stopped"))
   (opengl:rendering-on (window)
