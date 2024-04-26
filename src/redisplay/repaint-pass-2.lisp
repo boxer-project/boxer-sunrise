@@ -56,6 +56,22 @@
       (and (> (+ y-pos vert-scroll (screen-obj-hei item)) 0)
            (< (+ y-pos vert-scroll) (* (/ 1 (zoom-level *boxer-pane*)) (gp:port-height *boxer-pane*))))))
 
+(defmethod region-in-screen-box? ((self screen-box) &optional (region-list *region-list*))
+  (when (car region-list)
+    (let ((region-screen-box (screen-box (car (screen-objs (bp-row (interval-start-bp (car *region-list*))))))))
+      (eq self region-screen-box))))
+
+(defmethod repaint-cursors-regions ((self screen-box))
+  (when (or (bps self) (region-in-screen-box? self))
+    (let ((cur-transform (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)))
+      (set-transform bw::*boxgl-device* 0 0)
+      (when (bps self)
+        (repaint-cursor *point*))
+      (when (region-in-screen-box? self)
+        (dolist (region *region-list*)
+          (when (not (null region)) (interval-update-repaint-all-rows region))))
+      (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*) cur-transform))))
+
 (defmethod repaint-inferiors-pass-2-sb ((self screen-box))
   (with-slots (wid hei box-type screen-rows scroll-x-offset scroll-y-offset x-got-clipped? y-got-clipped? actual-obj bps)
     self
@@ -82,15 +98,13 @@
                                 (< row-y-pos (+ box-y-pos hei))
                                 (within-boxer-pane inf-screen-obj))
                        (repaint-pass-2-sr inf-screen-obj))))
-                       (when bps
-                          (repaint-cursor *point*)))))
+                 (repaint-cursors-regions self))))
             (t
              (with-origin-at (scroll-x-offset scroll-y-offset)
                (do-vector-contents (inf-screen-obj screen-rows :index-var-name row-no)
                  (when (within-boxer-pane inf-screen-obj)
                    (repaint-pass-2-sr inf-screen-obj)))
-                   (when bps
-                     (repaint-cursor *point*))))))))
+               (repaint-cursors-regions self)))))))
 
 (defmethod repaint-inferiors-pass-2-sr ((self screen-row))
   (let* ((inf-x-offset 0)

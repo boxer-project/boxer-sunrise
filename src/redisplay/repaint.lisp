@@ -137,8 +137,6 @@
 
 (defun repaint-internal (&optional just-windows?)
   (repaint-window *boxer-pane* nil)
-  (dolist (region *region-list*)
-    (when (not (null region)) (interval-update-repaint-all-rows region)))
   ;; comment out next line for outermost box save document, updates will
   ;; occur inside of set-outermost-box instead...
   (when (bp? *point*)
@@ -157,13 +155,10 @@
 ;;;; Ephemera: cursors, regions
 (defun repaint-cursor (&optional (cursor *point*))
   ;; Currently the cursors are calculated and painted from the original top left 0,0 origin
-  (let ((cur-transform (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)))
-    (set-transform bw::*boxgl-device* 0 0)
-    ;; this updates the position & size
-    (repaint-cursor-internal cursor)
-    ;; now draw it
-    (draw-blinker (point-blinker *boxer-pane*))
-    (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*) cur-transform)))
+  ;; this updates the position & size
+  (repaint-cursor-internal cursor)
+  ;; now draw it
+  (draw-blinker (point-blinker *boxer-pane*)))
 
 (defun repaint-cursor-internal (&optional (cursor *point*))
   (ignore-errors  ;; without this, errors here will generate endless beeping

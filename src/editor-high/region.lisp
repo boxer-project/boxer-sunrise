@@ -653,5 +653,4 @@
                         ;; finally, take care of all the other rows
                         (update-region-row-blinker blinker)))))))))
   ;; @ this point all the blinkers are the correct size and inthe right place...
-  (drawing-on-window (window)
-    (dolist (blinker (interval-blinker-list region)) (draw-blinker blinker))))
+  (dolist (blinker (interval-blinker-list region)) (draw-blinker blinker)))
