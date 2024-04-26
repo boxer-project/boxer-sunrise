@@ -102,26 +102,17 @@
       (let ((actual-obj (screen-obj-actual-obj sb)))
         (when (port-box? actual-obj) (push actual-obj ports))))))
 
-;; tall 1st lines
-(defmethod scroll-dn-one-screen-box ((self screen-box))
-  (let ((last-screen-row (last-screen-row self)))
-    (unless (null last-screen-row)
-      (let* ((last-row (screen-obj-actual-obj last-screen-row))
-             (new-scroll-row (cond ((and (= (screen-rows-length self) 1)
-                                         (not (null (next-row last-row))))
-                                    (next-row last-row))
-                               (t last-row))))
-        (set-scroll-to-actual-row self new-scroll-row)
-        new-scroll-row))))
 
-;; zeroes Y scrolling offset.  this fixes non pageUp for (tall) partially scrolled
-;; 1st lines
+(defmethod scroll-dn-one-screen-box ((self screen-box))
+  (with-slots (scroll-y-offset y-got-clipped?) self
+    (when y-got-clipped?
+      (setf scroll-y-offset (check-v-scroll-limits self (- scroll-y-offset (inner-hei self) (- 20)))))))
+
 (defmethod scroll-up-one-screen-box ((self screen-box))
-  (unless (or (null (screen-obj-actual-obj self))
-              (zerop& (screen-rows-length self)))
-    (setf (slot-value self 'scroll-y-offset) 0)
-    (ensure-row-is-displayed (screen-obj-actual-obj (first-screen-row self))
-                             self -1 t)))
+  (with-slots (scroll-y-offset y-got-clipped?) self
+    (when y-got-clipped?
+      (setf scroll-y-offset (check-v-scroll-limits self (+ scroll-y-offset (inner-hei self)  20))))))
+
 
 ;; shadow these methods out for graphics-screen-boxes
 (defmethod set-scroll-to-actual-row ((self graphics-screen-box) new-value)
