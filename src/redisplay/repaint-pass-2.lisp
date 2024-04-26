@@ -57,7 +57,7 @@
            (< (+ y-pos vert-scroll) (* (/ 1 (zoom-level *boxer-pane*)) (gp:port-height *boxer-pane*))))))
 
 (defmethod repaint-inferiors-pass-2-sb ((self screen-box))
-  (with-slots (wid hei box-type screen-rows scroll-x-offset scroll-y-offset x-got-clipped? y-got-clipped? actual-obj)
+  (with-slots (wid hei box-type screen-rows scroll-x-offset scroll-y-offset x-got-clipped? y-got-clipped? actual-obj bps)
     self
     (multiple-value-bind (il it ir ib)
                          (box-borders-widths box-type self)
@@ -76,16 +76,21 @@
                    ;; if row.y-pos > box.y-pos AND row.y-pos < box.y-pos + box.hei
                    ;;   then render the row
                    (let ((row-y-pos (second (multiple-value-list (xy-position inf-screen-obj))))
+                         (row-y-hei (screen-obj-hei inf-screen-obj))
                          (box-y-pos (second (multiple-value-list (xy-position self)))))
-                     (when (and (> row-y-pos box-y-pos)
+                     (when (and (> (+ row-y-hei row-y-pos) box-y-pos)
                                 (< row-y-pos (+ box-y-pos hei))
                                 (within-boxer-pane inf-screen-obj))
-                       (repaint-pass-2-sr inf-screen-obj)))))))
+                       (repaint-pass-2-sr inf-screen-obj))))
+                       (when bps
+                          (repaint-cursor *point*)))))
             (t
              (with-origin-at (scroll-x-offset scroll-y-offset)
                (do-vector-contents (inf-screen-obj screen-rows :index-var-name row-no)
                  (when (within-boxer-pane inf-screen-obj)
-                   (repaint-pass-2-sr inf-screen-obj)))))))))
+                   (repaint-pass-2-sr inf-screen-obj)))
+                   (when bps
+                     (repaint-cursor *point*))))))))
 
 (defmethod repaint-inferiors-pass-2-sr ((self screen-row))
   (let* ((inf-x-offset 0)
