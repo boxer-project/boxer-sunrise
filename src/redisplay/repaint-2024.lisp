@@ -168,7 +168,7 @@
                            infs-new-hei (+ infs-new-hei row-height)))))))))))
 
 (defmethod dimensions ((self screen-box) &optional (first-inf-x-offset 0) (first-inf-y-offset 0))
-  (with-slots (wid hei actual-obj scroll-to-actual-row box-type content-wid content-hei) self
+  (with-slots (wid hei actual-obj scroll-to-actual-row box-type content-wid content-hei scroll-y-offset) self
     (let ((new-box-type (class-name (class-of actual-obj)))
           (new-display-style (display-style actual-obj))
           (boxtop (boxtop actual-obj)))
@@ -219,6 +219,16 @@
                (setf (screen-obj-x-got-clipped? self) (> internal-wid wid))
                (setf (screen-obj-y-got-clipped? self) (> (- internal-hei 50) hei)) ;; sgithens - just hacking values for now
 
+               ;; Update the y-offset based on a scroll-to-actual-row adjustment.
+               ;;
+               ;; Should we be able to set a scroll row if we're not using scroll bars at all? I believe in the
+               ;; old repaint algorithm, it would add scroll bars, if there hadn't been any yet.
+               (when (and (screen-obj-y-got-clipped? self) scroll-to-actual-row)
+                 (let* ((scrolled-to-scr-row (cdar (actual-obj-screen-objs scroll-to-actual-row)))
+                        (row-y-offset (screen-obj-y-offset scrolled-to-scr-row)))
+                   (setf scroll-y-offset (- (- row-y-offset (baseline scrolled-to-scr-row) *border-inside-space*) ))
+                   (setf scroll-to-actual-row nil)))
+
                (log:debug "~% Case regular: wid: ~A hei: ~A" wid hei)
           )))
        )))
@@ -235,14 +245,15 @@
 
   ;; Vertical scrolling
   (let* ((pane-hei         (capi:simple-pane-visible-height (slot-value *boxer-frame* 'bw::outer-vertical-scroll)))
-         (box-hei          (screen-obj-hei screen-box))
+         (zoom             (zoom-level *boxer-pane*))
+         (box-hei          (* (/ 1 zoom) (screen-obj-hei screen-box)))
          ;; The slug size is the proportion: (pane-hei / content) * pane-hei = slug-size
          ;; pane-hei here is the height of the scroll-bar pane. Content is the size of the GL canvas, ie. outer-screen-box full size
          (vert-slug-size   (* (/ pane-hei box-hei) pane-hei)))
     ;; (format t "~%2pane-hei: ~A box-hei: ~A %vert-slug-size ~A" pane-hei box-hei vert-slug-size)
     (capi:range-set-sizes (slot-value *boxer-frame* 'bw::outer-vertical-scroll)
                           :start 0
-                          :end (+ 40 (* (zoom-level *boxer-pane*) box-hei))
+                          :end (+ 40 (* zoom box-hei))
                           :slug-start (- (vertical-scroll *boxer-pane*))
                           :slug-end (+ vert-slug-size (- (vertical-scroll *boxer-pane*)))
                           :redisplay t)
