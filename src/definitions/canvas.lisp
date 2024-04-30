@@ -102,3 +102,8 @@
 (defmethod viewport-to-document-y ((self boxer-canvas) y)
   "see port-to-document-x"
   (- (* y (/ 1 (zoom-level self))) (vertical-scroll self)))
+
+(defmethod adjust-global-scroll ((self boxer-canvas))
+  "Updates the global transform matrix based on the current values of the top level global scrollbars."
+  (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)
+        (boxer::create-transform-matrix (horizontal-scroll self) (vertical-scroll self))))

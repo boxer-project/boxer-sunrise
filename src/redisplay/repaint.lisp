@@ -145,6 +145,7 @@
   (swap-graphics-buffers *boxer-pane*))
 
 (defun repaint (&optional just-windows?)
+  (adjust-global-scroll *boxer-pane*)
   (opengl:rendering-on (*boxer-pane*)
     (update-matrices-ubo bw::*boxgl-device*)
     (when *reload-shaders*
