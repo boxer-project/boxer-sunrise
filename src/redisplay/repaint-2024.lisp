@@ -237,45 +237,6 @@
 (defmethod dimensions ((self sprite-screen-box) &optional (first-inf-x-offset 0) (first-inf-y-offset 0))
   )
 
-(defun update-outer-scrollbars (screen-box frame)
-  ;; A few things.
-  ;; 1. If the outermost screen box fits on the entire canvas (either way) then that scroll-bar should
-  ;;    not be enabled.
-  ;; 2. After that we need to look the total size of the outermost screen-box and work our slug sizes to that
-
-  (let* ((pane-hei         (capi:simple-pane-visible-height *boxer-pane*))  ;(slot-value *boxer-frame* 'bw::outer-vertical-scroll)))
-         (box-hei          (screen-obj-hei screen-box)) ;  (+ top bot (screen-obj-hei screen-box)))
-         (zoom             (zoom-level *boxer-pane*))
-         ;; The slug start and end are in the coordinate space of the box height (not the pane height)
-         (max-slug-start   (- box-hei pane-hei -20))
-         (vert-slug-size   (- box-hei max-slug-start))
-         (slug-start (- (vertical-scroll *boxer-pane*)))
-         (slug-end (+ vert-slug-size slug-start)))
-
-    (capi:range-set-sizes (slot-value *boxer-frame* 'bw::outer-vertical-scroll)
-                          :start 0
-                          :end box-hei
-                          ;; :end (+ 40 (* zoom box-hei))
-                          :slug-start slug-start
-                          :slug-end slug-end
-                          :redisplay t))
-
-  ;; Horizontal Scrolling
-  (let* ((pane-wid         (capi:simple-pane-visible-width (slot-value *boxer-frame* 'bw::outer-horizontal-scroll)))
-         (zoom             (zoom-level *boxer-pane*))
-         (box-wid          (* zoom (screen-obj-wid screen-box)))
-         (max-slug-start   (- box-wid pane-wid -20))
-         (horiz-slug-size  (- box-wid max-slug-start))
-         (slug-start (- (horizontal-scroll *boxer-pane*)))
-         (slug-end (+ horiz-slug-size slug-start)))
-
-    (capi:range-set-sizes (slot-value *boxer-frame* 'bw::outer-horizontal-scroll)
-                          :start 0
-                          :end box-wid
-                          :slug-start slug-start
-                          :slug-end slug-end
-                          :redisplay t)))
-
 (defun repaint-fill-dimensions (outer-screen-box pane-width pane-height)
   (multiple-value-bind (wid hei) (dimensions outer-screen-box)
     (log:debug "~% repaint-fill-dimensions: wid: ~A hei: ~A pane-width: ~A pane-height: ~A"
@@ -290,4 +251,4 @@
           (content-wid bw::*boxer-pane*)    (max pane-width wid))
 
     (capi:apply-in-pane-process *boxer-frame*
-      (lambda () (update-outer-scrollbars outer-screen-box *boxer-frame*)))))
+      (lambda () (bw::update-outer-scrollbars outer-screen-box *boxer-frame*)))))

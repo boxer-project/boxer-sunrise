@@ -17,20 +17,72 @@
 ;;;;
 (in-package :boxer-window)
 
+(defun outer-scrollbars-padhack ()
+  (* 20 (zoom-level *boxer-pane*)))
+
+(defmethod max-vertical-scroll ((self boxer::boxer-canvas) screen-box)
+  (let* ((zoom     (box::zoom-level self))
+         (pane-hei (capi:simple-pane-visible-height self))
+         (box-hei  (* zoom (box::screen-obj-hei screen-box))))
+    (* (/ 1 zoom) (- box-hei pane-hei (- (outer-scrollbars-padhack))))))
+
+(defmethod max-horizontal-scroll ((self boxer::boxer-canvas) screen-box)
+  (let* ((zoom     (box::zoom-level self))
+         (pane-wid (capi:simple-pane-visible-width self))
+         (box-wid  (* zoom (box::screen-obj-wid screen-box))))
+    (* (/ 1 zoom) (- box-wid pane-wid (- (outer-scrollbars-padhack))))))
+
+(defun update-outer-scrollbars (screen-box frame)
+  ;; A few things.
+  ;; 1. If the outermost screen box fits on the entire canvas (either way) then that scroll-bar should
+  ;;    not be enabled.
+  ;; 2. After that we need to look the total size of the outermost screen-box and work our slug sizes to that
+  (let* (
+         (zoom             (box::zoom-level *boxer-pane*))
+         (pane-hei         (capi:simple-pane-visible-height *boxer-pane*))  ;(slot-value *boxer-frame* 'bw::outer-vertical-scroll)))
+         (box-hei          (* zoom (box::screen-obj-hei screen-box))) ;  (+ top bot (screen-obj-hei screen-box)))
+         ;; The slug start and end are in the coordinate space of the box height (not the pane height)
+         (max-vertical-scroll  (max-vertical-scroll *boxer-pane* screen-box)) ;(* (/ 1 zoom) (- box-hei pane-hei (- (boxer::outer-scrollbars-padhack)))))
+         (vert-slug-size   (- box-hei max-vertical-scroll))
+         (slug-start  (- (box::vertical-scroll *boxer-pane*)))
+         (slug-end (+ vert-slug-size slug-start)))
+
+    (capi:range-set-sizes (slot-value *boxer-frame* 'bw::outer-vertical-scroll)
+                          :start 0
+                          :end box-hei
+                          ;; :end (+ 40 (* zoom box-hei))
+                          :slug-start slug-start
+                          :slug-end slug-end
+                          :redisplay t))
+
+  ;; Horizontal Scrolling
+  (let* ((pane-wid         (capi:simple-pane-visible-width (slot-value *boxer-frame* 'bw::outer-horizontal-scroll)))
+         (zoom             (zoom-level *boxer-pane*))
+         (box-wid          (* zoom (box::screen-obj-wid screen-box)))
+         (max-horizontal-scroll  (max-horizontal-scroll *boxer-pane* screen-box))
+         (horiz-slug-size  (- box-wid max-horizontal-scroll))
+         (slug-start (- (horizontal-scroll *boxer-pane*)))
+         (slug-end (+ horiz-slug-size slug-start)))
+
+    (capi:range-set-sizes (slot-value *boxer-frame* 'bw::outer-horizontal-scroll)
+                          :start 0
+                          :end box-wid
+                          :slug-start slug-start
+                          :slug-end slug-end
+                          :redisplay t)))
 
 (defun vertical-scroll-callback (interface sb how where)
   "For the OS outer scrollbars"
   (declare (ignorable interface))
   ;; sgithens TODO a bunch of this is cut and pasted from defmethod scroll-vertical below
-  (format t "Vertical Scrolled ~a where ~a : ~a~%"
-          how where (capi:range-slug-start sb))
   (let ((new-scroll-amount (- where)) ;(+ (vertical-scroll *boxer-pane*) (- scroll-amount)))
-        (screen-box (outermost-screen-box))
-        (pane-hei (gp:port-height *boxer-pane*)))
+        (box-hei (* (boxer::zoom-level *boxer-pane*) (boxer::screen-obj-hei (outermost-screen-box))))
+        (pane-hei (gp:port-height *boxer-pane*))
+        (max-vertical-scroll  (max-vertical-scroll *boxer-pane* (outermost-screen-box))))
     (cond ((< (- new-scroll-amount) 0)
            (setf new-scroll-amount 0))
-          ((> (- new-scroll-amount) (- (boxer::screen-obj-hei screen-box) pane-hei -20))
-           (setf new-scroll-amount (- (- (boxer::screen-obj-hei screen-box) pane-hei -20))))
+          ((> (- new-scroll-amount) max-vertical-scroll)
+           (setf new-scroll-amount (- max-vertical-scroll)))
           (t nil))
     (setf (vertical-scroll *boxer-pane*) new-scroll-amount))
   (boxer::repaint))
@@ -39,15 +91,14 @@
   "For the OS outer scrollbars"
   (declare (ignorable interface))
   ;; sgithens TODO a bunch of this is cut and pasted from defmethod scroll-horizontal below
-  (format t "Horizontal Scrolled ~a where ~a : ~a~%"
-          how where (capi:range-slug-start sb))
   (let ((new-scroll-amount (- where));;(+ (horizontal-scroll self) (- scroll-amount)))
         (screen-box (outermost-screen-box))
-        (pane-wid (gp:port-width *boxer-pane*)))
+        (pane-wid (gp:port-width *boxer-pane*))
+        (max-horizontal-scroll  (max-horizontal-scroll *boxer-pane* (outermost-screen-box))))
     (cond ((< (- new-scroll-amount) 0)
            (setf new-scroll-amount 0))
-          ((> (- new-scroll-amount) (- (boxer::screen-obj-wid screen-box) pane-wid -20))
-           (setf new-scroll-amount (- (- (boxer::screen-obj-wid screen-box) pane-wid -20))))
+          ((> (- new-scroll-amount) max-horizontal-scroll)
+           (setf new-scroll-amount (- max-horizontal-scroll)))
           (t nil))
     (setf (horizontal-scroll *boxer-pane*) new-scroll-amount))
   (boxer::repaint))
@@ -116,12 +167,12 @@
 
 (defmethod scroll-vertical ((self capi:output-pane) scroll-amount)
   (let ((new-scroll-amount (+ (vertical-scroll self) (- scroll-amount)))
-        (screen-box (outermost-screen-box))
+        (box-hei (* (boxer::zoom-level *boxer-pane*) (screen-box (outermost-screen-box))))
         (pane-hei (gp:port-height self)))
     (cond ((< (- new-scroll-amount) 0)
            (setf new-scroll-amount 0))
-          ((> (- new-scroll-amount) (- (boxer::screen-obj-hei screen-box) pane-hei -20))
-           (setf new-scroll-amount (- (- (boxer::screen-obj-hei screen-box) pane-hei -20))))
+          ((> (- new-scroll-amount) (- box-hei pane-hei -20))
+           (setf new-scroll-amount (- (- box-hei pane-hei -20))))
           (t nil))
     (setf (vertical-scroll self) new-scroll-amount)))
 
