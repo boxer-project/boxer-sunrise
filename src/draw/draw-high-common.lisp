@@ -41,7 +41,8 @@ the bootstrapping of the clipping and coordinate scaling variables."
   `(let* ((%origin-x-offset ,x) (%origin-y-offset ,y)
           ;; absolute clipping parameters
           (%clip-lef ,x) (%clip-top ,y)
-          (%clip-rig (+& %clip-lef ,wid)) (%clip-bot (+& %clip-top ,hei)))
+          (%clip-rig (+& %clip-lef (* (/ 1 (zoom-level *boxer-pane*)) ,wid)))
+          (%clip-bot (+& %clip-top (* (/ 1 (zoom-level *boxer-pane*)) ,hei))))
      %clip-rig %clip-bot %origin-x-offset %origin-y-offset ;bound but never...
      ,@body))
 
