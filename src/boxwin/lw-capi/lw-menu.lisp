@@ -486,6 +486,9 @@ Modification History (most recent at top)
   (declare (ignore data interface))
   (unless (>= (zoom-level *boxer-pane*) 4)
     (setf (zoom-level *boxer-pane*) (+ 0.25 (zoom-level *boxer-pane*))))
+
+  (reset-global-scrolling)
+
   (boxer::repaint)
   (boxer::repaint))
 
@@ -493,6 +496,9 @@ Modification History (most recent at top)
   (declare (ignore data interface))
   (unless (<=  (zoom-level *boxer-pane*) 0.50)
     (setf (zoom-level *boxer-pane*) (- (zoom-level *boxer-pane*) 0.25)))
+
+  (reset-global-scrolling)
+
   (boxer::repaint)
   (boxer::repaint))
 
