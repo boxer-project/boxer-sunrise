@@ -74,6 +74,12 @@ the bootstrapping of the clipping and coordinate scaling variables."
              . ,body)
          (adjust-transform bw::*boxgl-device* ,ux ,uy)))))
 
+(defun clip-stencil-rectangle (direction wid hei x y)
+    (write-to-stencil)
+    (with-pen-color (*transparent*)
+      (%draw-absolute-rectangle wid hei x y))
+    (render-inside-stencil))
+
 (defmacro with-clipping-inside ((x y wid hei) &body body)
   `(unwind-protect
     (let ((%clip-lef (max %clip-lef (+ %origin-x-offset ,x)))
@@ -82,20 +88,11 @@ the bootstrapping of the clipping and coordinate scaling variables."
           (%clip-bot (min %clip-bot (+ %origin-y-offset ,y ,hei))))
       ;; make sure that the clipping parameters are always at least
       ;; as restrictive as the previous parameters
-      (write-to-stencil)
-      (with-pen-color (*transparent*)
-        (%draw-absolute-rectangle (- %clip-rig %clip-lef) (- %clip-bot %clip-top) %clip-lef %clip-top))
-      (render-inside-stencil)
+      (clip-stencil-rectangle "> in " (- %clip-rig %clip-lef) (- %clip-bot %clip-top) %clip-lef %clip-top)
       . ,body)
 
-    (progn
-      ;; reset the old clip region
-      (write-to-stencil)
-      (with-pen-color (*transparent*)
-        (%draw-absolute-rectangle (- %clip-rig %clip-lef) (- %clip-bot %clip-top) %clip-lef %clip-top))
-      (render-inside-stencil)
-      ;; TODO, this maybe a hack to keep things working, revisit for deeper nested boxes
-      (ignore-stencil))))
+    ;; reset the old clip region
+    (clip-stencil-rectangle "< out" (- %clip-rig %clip-lef) (- %clip-bot %clip-top) %clip-lef %clip-top)))
 
 ;;;
 ;;; Drawing functions

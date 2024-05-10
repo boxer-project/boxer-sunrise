@@ -31,6 +31,8 @@
    (draw-box-contents)
    (ignore-stencil)"
   (when clear-buffer
+    (gl:clear-stencil 0)
+    (gl:stencil-mask #xFF)
     (gl:clear :stencil-buffer-bit))
   (gl:stencil-func :always 1 #xFF)
   (gl:stencil-mask #xFF))
