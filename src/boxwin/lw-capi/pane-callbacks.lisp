@@ -81,7 +81,7 @@
       ;; When resizing set the scrolling back to the top left corner, so the margins
       ;; don't get stuck. In the future we might want to be smarter, such as if we were
       ;; in the lower right corner all the way, we would stay there while resizing.
-      reset-global-scrolling
+      (reset-global-scrolling)
 
       (opengl:gl-viewport 0 0 wid hei)
       (boxer::update-matrices-ubo bw::*boxgl-device*))))
