@@ -120,8 +120,11 @@
                        :accessor display-style-list)
    (superior-screen-box :initform nil :accessor superior-screen-box)
    ;; scrolling vars
-   (scroll-y-offset :initform 0)
-   (scroll-x-offset :initform 0)))
+   (scroll-y-offset :initform 0
+    :documentation "A negative value results in the box being scrolled down.
+                    Essentially, neither the scroll-y/x-offset can be positive.")
+   (scroll-x-offset :initform 0
+    :documentation "A negative value results in the box being scrolled to the right.")))
 
 (defgeneric screen-box? (x) (:method (x) nil) (:method ((x screen-box)) t))
 
