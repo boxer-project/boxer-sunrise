@@ -265,7 +265,6 @@
                  ;; Beginning of `site` modules
                  ;; 	   "Utilities for Site specific customizations"
                  (:file "site/site")
-                 (:file "site/xten")
                  ;; Beginning of `menu` module
                  ;;    "Menus for Harlequin Lispworks on the PC"
                  #+lispworks (:file "boxwin/lw-capi/file-dialogs")
