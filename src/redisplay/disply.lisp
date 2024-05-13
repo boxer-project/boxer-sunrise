@@ -376,22 +376,23 @@
   (values (screen-obj-wid screen-obj)
           (screen-obj-hei screen-obj)))
 
-(DEFUN SCREEN-BOXES-AND-WHITESPACE-SIZE (SCREEN-BOXES &AUX(WID 0) (HEI 0))
-       (LET ((FIRST-BOX (CAR SCREEN-BOXES))
-             (LAST-BOX (CAR (LAST SCREEN-BOXES))))
-            (SETQ WID (- (+ (SCREEN-OBJ-X-OFFSET LAST-BOX) (SCREEN-OBJ-WID LAST-BOX))
-                         (SCREEN-OBJ-X-OFFSET FIRST-BOX)))
-            (DOLIST (SCREEN-BOX SCREEN-BOXES)
-                    (SETQ HEI (MAX (SCREEN-OBJ-HEI SCREEN-BOX) HEI)))
-            (VALUES WID HEI)))
+;; sgithens TODO 2024-04-17 this appears unused anywhere
+;; (DEFUN SCREEN-BOXES-AND-WHITESPACE-SIZE (SCREEN-BOXES &AUX(WID 0) (HEI 0))
+;;        (LET ((FIRST-BOX (CAR SCREEN-BOXES))
+;;              (LAST-BOX (CAR (LAST SCREEN-BOXES))))
+;;             (SETQ WID (- (+ (SCREEN-OBJ-X-OFFSET LAST-BOX) (SCREEN-OBJ-WID LAST-BOX))
+;;                          (SCREEN-OBJ-X-OFFSET FIRST-BOX)))
+;;             (DOLIST (SCREEN-BOX SCREEN-BOXES)
+;;                     (SETQ HEI (MAX (SCREEN-OBJ-HEI SCREEN-BOX) HEI)))
+;;             (VALUES WID HEI)))
 
-(DEFUN MAP-OVER-SCREEN-OBJ (SCREEN-OBJ FN)
-       (FUNCALL FN SCREEN-OBJ)
-       (MAP-OVER-SCREEN-OBJS (INFERIORS SCREEN-OBJ) FN))
+;; (DEFUN MAP-OVER-SCREEN-OBJ (SCREEN-OBJ FN)
+;;        (FUNCALL FN SCREEN-OBJ)
+;;        (MAP-OVER-SCREEN-OBJS (INFERIORS SCREEN-OBJ) FN))
 
-(DEFUN MAP-OVER-SCREEN-OBJS (LIST-OF-SCREEN-OBJS FN)
-       (DOLIST (SCREEN-OBJ LIST-OF-SCREEN-OBJS)
-               (MAP-OVER-SCREEN-OBJ SCREEN-OBJ FN)))
+;; (DEFUN MAP-OVER-SCREEN-OBJS (LIST-OF-SCREEN-OBJS FN)
+;;        (DOLIST (SCREEN-OBJ LIST-OF-SCREEN-OBJS)
+;;                (MAP-OVER-SCREEN-OBJ SCREEN-OBJ FN)))
 
 
 (defun screen-obj-zero-size (screen-obj)
@@ -409,47 +410,6 @@
     (if (screen-cha? screen-object)
       (cha-hei)
       (screen-obj-hei screen-object))))
-
-;;;; Erasing
-
-(defun erase-screen-box (screen-box x-offset y-offset)
-  (multiple-value-bind (wid hei)
-                       (screen-obj-size screen-box)
-                       (erase-rectangle wid hei x-offset y-offset))
-  (screen-obj-zero-size screen-box))
-
-(defun erase-screen-obj (screen-obj)
-  (when (not-null screen-obj)
-    ;; sgithens TODO (check-screen-obj-arg screen-obj)
-    (multiple-value-bind (wid hei)
-                         (screen-obj-size screen-obj)
-                         (multiple-value-bind (x-offset y-offset)
-                                              (screen-obj-offsets screen-obj)
-                                              (erase-rectangle wid hei x-offset y-offset)
-                                              (screen-obj-zero-size screen-obj)))))
-
-
-;;; this cycles through the contents of the storage vector
-;;; starting from FROM and erases them an queues them for deallocation
-;;; returns the difference in offsets of any objects that would come
-;;; after th eobjects which have been erased
-(defun erase-and-queue-for-deallocation-screen-rows-from (sv from
-                                                             &optional to
-                                                             no-erase?)
-  (declare (values delta-x-offset delta-y-offset))
-  (unless (>=& from (storage-vector-active-length sv))
-    (multiple-value-bind (x y)
-                         (screen-obj-offsets (sv-nth from sv))
-                         (let ((wid 0) (hei 0))
-                           (do-vector-contents (screen-row sv :start from :stop to)
-                             (setq wid (max wid (screen-obj-wid screen-row))
-                                   hei (+  hei (screen-obj-hei screen-row)))
-                             ;; dunno why these next 3 should be here but leave it in for now...
-                             (screen-obj-zero-size screen-row)
-                             (queue-screen-obj-for-deallocation screen-row))
-                           ;; finally do the actual erasing
-                           (unless no-erase? (erase-rectangle wid hei x y))
-                           (values 0 hei)))))
 
 (defun queue-for-deallocation-screen-rows-from (sv from &optional to)
   (declare (values delta-x-offset delta-y-offset))
@@ -623,12 +583,12 @@
            (SET-DISPLAY-STYLE SELF ':NORMAL)
            (MODIFIED SELF))
 
+;; sgithens TODO I don't think these implementations are used...
+;; (DEFMETHOD SHRINK ((SELF SCREEN-BOX))
+;;            (SHRINK (SCREEN-OBJ-ACTUAL-OBJ SELF)))
 
-(DEFMETHOD SHRINK ((SELF SCREEN-BOX))
-           (SHRINK (SCREEN-OBJ-ACTUAL-OBJ SELF)))
-
-(DEFMETHOD UNSHRINK ((SELF SCREEN-BOX))
-           (UNSHRINK (SCREEN-OBJ-ACTUAL-OBJ SELF)))
+;; (DEFMETHOD UNSHRINK ((SELF SCREEN-BOX))
+;;            (UNSHRINK (SCREEN-OBJ-ACTUAL-OBJ SELF)))
 
 
 
@@ -817,7 +777,6 @@
                                                                                 WINDOW)
                                     (CONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX NEW-OUTERMOST-SCREEN-BOX
                                                                               WINDOW)
-                                    (ERASE-SCREEN-OBJ *OUTERMOST-SCREEN-BOX*)
                                     (SETQ *OUTERMOST-SCREEN-BOX* NEW-OUTERMOST-SCREEN-BOX)))
       ;  (SETQ *OUTERMOST-SCREEN-BOX* (boxer-window::outermost-screen-box)) ; why ??
        (setf *outermost-screen-box* new-outermost-screen-box)
@@ -872,42 +831,21 @@
                        (values (+ superior-x-off (slot-value self 'x-offset))
                                (+ superior-y-off (slot-value self 'y-offset)))))
 
-(defmethod window-xy-position ((self screen-obj))
-  (multiple-value-bind (superior-x-off superior-y-off)
-                       (cond ((outermost-screen-box? self)
-                              (values 0 0))
-                         (t
-                          (xy-position (superior self))))
-                       (values (+ superior-x-off (screen-obj-x-offset self))
-                               (+ superior-y-off (screen-obj-y-offset self)))))
+;; sgithens TODO 2024-04-22 Doesn't appear to be used anywhere...
+;; (DEFMETHOD NEXT-SCREEN-CHA-POSITION ((SELF SCREEN-CHAR-SUBCLASS))
+;;            (MULTIPLE-VALUE-BIND (X Y)
+;;                                 (XY-POSITION SELF)
+;;                                 (VALUES (+ X (SCREEN-OBJ-WID SELF)) Y)))
 
-(defmethod window-x-position ((self screen-obj))
-  (cond ((outermost-screen-box? self) (slot-value self 'x-offset))
-    (t (+ (slot-value self 'x-offset)
-          (window-x-position (superior self))))))
+;; (DEFMETHOD FIRST-SCREEN-CHA-POSITION ((SELF SCREEN-ROW))
+;;            (XY-POSITION SELF))
 
-(defmethod window-y-position ((self screen-obj))
-  (cond ((outermost-screen-box? self) (slot-value self 'y-offset))
-    (t (+ (slot-value self 'y-offset)
-          (window-y-position (superior self))))))
-
-
-(DEFMETHOD NEXT-SCREEN-CHA-POSITION ((SELF SCREEN-CHAR-SUBCLASS))
-           (MULTIPLE-VALUE-BIND (X Y)
-                                (XY-POSITION SELF)
-                                (VALUES (+ X (SCREEN-OBJ-WID SELF)) Y)))
-
-(DEFMETHOD FIRST-SCREEN-CHA-POSITION ((SELF SCREEN-ROW))
-           (XY-POSITION SELF))
-
-(DEFMETHOD FIRST-SCREEN-CHA-POSITION ((SELF SCREEN-BOX))
-           (MULTIPLE-VALUE-BIND (X Y)
-                                (XY-POSITION SELF)
-                                (MULTIPLE-VALUE-BIND (IL IT)
-                                                     (box-borders-widths (slot-value self 'box-type) self)
-                                                     (VALUES (+ X IL) (+ Y IT)))))
-
-
+;; (DEFMETHOD FIRST-SCREEN-CHA-POSITION ((SELF SCREEN-BOX))
+;;            (MULTIPLE-VALUE-BIND (X Y)
+;;                                 (XY-POSITION SELF)
+;;                                 (MULTIPLE-VALUE-BIND (IL IT)
+;;                                                      (box-borders-widths (slot-value self 'box-type) self)
+;;                                                      (VALUES (+ X IL) (+ Y IT)))))
 
 (defun outermost-screen-box-size (&optional (window *boxer-pane*))
   (multiple-value-bind (window-inner-wid window-inner-hei)
@@ -1125,35 +1063,36 @@
       (sum (screen-object-width cha)))))
 
 
-(DEFMETHOD SCREEN-BP ((SELF SCREEN-CHAR-SUBCLASS))
-           (LET ((BP (MAKE-BP 'FIXED)))
-                (MOVE-BP BP (CHA-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
-                BP))
+;; sgithens TODO 2024-04-22 Doesn't appear to be used anywhere...
+;; (DEFMETHOD SCREEN-BP ((SELF SCREEN-CHAR-SUBCLASS))
+;;            (LET ((BP (MAKE-BP 'FIXED)))
+;;                 (MOVE-BP BP (CHA-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
+;;                 BP))
 
-(DEFMETHOD NEXT-SCREEN-BP ((SELF SCREEN-CHAR-SUBCLASS))
-           (LET ((BP (MAKE-BP 'FIXED)))
-                (MOVE-BP BP (CHA-NEXT-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
-                BP))
+;; (DEFMETHOD NEXT-SCREEN-BP ((SELF SCREEN-CHAR-SUBCLASS))
+;;            (LET ((BP (MAKE-BP 'FIXED)))
+;;                 (MOVE-BP BP (CHA-NEXT-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
+;;                 BP))
 
-(DEFMETHOD FIRST-SCREEN-BP ((SELF SCREEN-ROW))
-           (LET ((BP (MAKE-BP 'FIXED)))
-                (MOVE-BP BP (ROW-FIRST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
-                BP))
+;; (DEFMETHOD FIRST-SCREEN-BP ((SELF SCREEN-ROW))
+;;            (LET ((BP (MAKE-BP 'FIXED)))
+;;                 (MOVE-BP BP (ROW-FIRST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
+;;                 BP))
 
-(DEFMETHOD LAST-SCREEN-BP ((SELF SCREEN-ROW))
-           (LET ((BP (MAKE-BP 'FIXED)))
-                (MOVE-BP BP (ROW-LAST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
-                BP))
+;; (DEFMETHOD LAST-SCREEN-BP ((SELF SCREEN-ROW))
+;;            (LET ((BP (MAKE-BP 'FIXED)))
+;;                 (MOVE-BP BP (ROW-LAST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
+;;                 BP))
 
-(DEFMETHOD FIRST-SCREEN-BP ((SELF SCREEN-BOX))
-           (LET ((BP (MAKE-BP 'FIXED)))
-                (MOVE-BP BP (BOX-FIRST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
-                BP))
+;; (DEFMETHOD FIRST-SCREEN-BP ((SELF SCREEN-BOX))
+;;            (LET ((BP (MAKE-BP 'FIXED)))
+;;                 (MOVE-BP BP (BOX-FIRST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
+;;                 BP))
 
-(DEFMETHOD LAST-SCREEN-BP ((SELF SCREEN-BOX))
-           (LET ((BP (MAKE-BP 'FIXED)))
-                (MOVE-BP BP (BOX-LAST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
-                BP))
+;; (DEFMETHOD LAST-SCREEN-BP ((SELF SCREEN-BOX))
+;;            (LET ((BP (MAKE-BP 'FIXED)))
+;;                 (MOVE-BP BP (BOX-LAST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
+;;                 BP))
 
 ;;; returns the screen obj of box which is within
 (DEFUN INF-CURRENT-SCREEN-BOX (BOX)
@@ -1202,29 +1141,3 @@
 
 (setf (get 'box-ellipsis-solid-lines 'draw-self)
       'box-ellipsis-solid-lines-draw-self)
-
-(define-box-ellipsis-style box-ellipsis-corner-dots)
-
-(defun box-ellipsis-corner-dots-draw-self (x-coord y-coord)
-  (do ((x x-coord (+ x *box-ellipsis-thickness* *box-ellipsis-spacing*))
-       (y y-coord (+ y *box-ellipsis-thickness* *box-ellipsis-spacing*))
-       (wid (- *box-ellipsis-wid* (* 2 *box-ellipsis-thickness*))
-            (- wid (* 2 (+ *box-ellipsis-thickness* *box-ellipsis-spacing*))))
-       (hei *box-ellipsis-hei*
-            (- hei (* 2 (+ *box-ellipsis-thickness* *box-ellipsis-spacing*)))))
-    ((or (>= x (+ x-coord (floor (/ *box-ellipsis-wid* 2.))))
-         (>= y (+ y-coord (floor (/ *box-ellipsis-wid* 2.))))
-         (<= wid 0)
-         (<= hei 0)))
-    (draw-rectangle *box-ellipsis-thickness* *box-ellipsis-thickness*
-                    x y)
-    (draw-rectangle *box-ellipsis-thickness* *box-ellipsis-thickness*
-                    (+ x wid *box-ellipsis-thickness*) y)
-    (draw-rectangle *box-ellipsis-thickness* *box-ellipsis-thickness*
-                    x (+ y hei (- *box-ellipsis-thickness*)))
-    (draw-rectangle *box-ellipsis-thickness* *box-ellipsis-thickness*
-                    (+ x wid *box-ellipsis-thickness*)
-                    (+ y hei (- *box-ellipsis-thickness*)))))
-
-(setf (get 'box-ellipsis-corner-dots 'draw-self)
-      'box-ellipsis-corner-dots-draw-self)
