@@ -264,7 +264,6 @@
                (not (name-row? new-row))
                (shrunken? (screen-obj-actual-obj (screen-box-point-is-in))))
       (com-expand-box)))
-  ;(repaint-cursor)
   boxer-eval::*novalue*)
 
 #+lispworks (defboxer-command com-mouse-define-region (&optional (window *boxer-pane*)
@@ -309,7 +308,6 @@
   (when (and (or (null click-only?) shift?)  (not (shrunken? (bp-screen-box mouse-bp))))
     ;; now go about dragging a region defined by *point* and the mouse-bp
     ;; unless the user is no longer holding the mouse button down
-    ; (repaint-cursor)
     ;; now track the mouse
     (multiple-value-bind (original-screen-row original-x)
                          (if shift?
@@ -599,9 +597,7 @@
                                                                 (setq *region-list*
                                                                       (fast-delq *region-being-defined* *region-list*)
                                                                       *region-being-defined*
-                                                                      nil)
-                                                                ;(repaint)
-                                                                ))
+                                                                      nil)))
                                                          (t
                                                           ;; region is still there so...
                                                           (entering-region-mode)))))
