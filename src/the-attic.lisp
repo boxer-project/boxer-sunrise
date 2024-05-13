@@ -8803,6 +8803,96 @@ Modification History (most recent at top)
 ;;;; FILE: disply.lisp
 ;;;;
 
+;; sgithens 2024-04-17 I don't think this style is ever actually used
+(define-box-ellipsis-style box-ellipsis-corner-dots)
+
+(defun box-ellipsis-corner-dots-draw-self (x-coord y-coord)
+  (do ((x x-coord (+ x *box-ellipsis-thickness* *box-ellipsis-spacing*))
+       (y y-coord (+ y *box-ellipsis-thickness* *box-ellipsis-spacing*))
+       (wid (- *box-ellipsis-wid* (* 2 *box-ellipsis-thickness*))
+            (- wid (* 2 (+ *box-ellipsis-thickness* *box-ellipsis-spacing*))))
+       (hei *box-ellipsis-hei*
+            (- hei (* 2 (+ *box-ellipsis-thickness* *box-ellipsis-spacing*)))))
+    ((or (>= x (+ x-coord (floor (/ *box-ellipsis-wid* 2.))))
+         (>= y (+ y-coord (floor (/ *box-ellipsis-wid* 2.))))
+         (<= wid 0)
+         (<= hei 0)))
+    (draw-rectangle *box-ellipsis-thickness* *box-ellipsis-thickness*
+                    x y)
+    (draw-rectangle *box-ellipsis-thickness* *box-ellipsis-thickness*
+                    (+ x wid *box-ellipsis-thickness*) y)
+    (draw-rectangle *box-ellipsis-thickness* *box-ellipsis-thickness*
+                    x (+ y hei (- *box-ellipsis-thickness*)))
+    (draw-rectangle *box-ellipsis-thickness* *box-ellipsis-thickness*
+                    (+ x wid *box-ellipsis-thickness*)
+                    (+ y hei (- *box-ellipsis-thickness*)))))
+
+(setf (get 'box-ellipsis-corner-dots 'draw-self)
+      'box-ellipsis-corner-dots-draw-self)
+
+
+;;;; Erasing
+;; sgithens TODO 2024-04-17 this appears unused anywhere
+(defun erase-screen-box (screen-box x-offset y-offset)
+  (multiple-value-bind (wid hei)
+                       (screen-obj-size screen-box)
+                       (erase-rectangle wid hei x-offset y-offset))
+  (screen-obj-zero-size screen-box))
+
+(defun erase-screen-obj (screen-obj)
+  (when (not-null screen-obj)
+    ;; sgithens TODO (check-screen-obj-arg screen-obj)
+    (multiple-value-bind (wid hei)
+                         (screen-obj-size screen-obj)
+                         (multiple-value-bind (x-offset y-offset)
+                                              (screen-obj-offsets screen-obj)
+                                              (erase-rectangle wid hei x-offset y-offset)
+                                              (screen-obj-zero-size screen-obj)))))
+
+
+;;; this cycles through the contents of the storage vector
+;;; starting from FROM and erases them an queues them for deallocation
+;;; returns the difference in offsets of any objects that would come
+;;; after th eobjects which have been erased
+;; sgithens TODO 2024-04-17 this appears unused anywhere
+(defun erase-and-queue-for-deallocation-screen-rows-from (sv from
+                                                             &optional to
+                                                             no-erase?)
+  (declare (values delta-x-offset delta-y-offset))
+  (unless (>=& from (storage-vector-active-length sv))
+    (multiple-value-bind (x y)
+                         (screen-obj-offsets (sv-nth from sv))
+                         (let ((wid 0) (hei 0))
+                           (do-vector-contents (screen-row sv :start from :stop to)
+                             (setq wid (max wid (screen-obj-wid screen-row))
+                                   hei (+  hei (screen-obj-hei screen-row)))
+                             ;; dunno why these next 3 should be here but leave it in for now...
+                             (screen-obj-zero-size screen-row)
+                             (queue-screen-obj-for-deallocation screen-row))
+                           ;; finally do the actual erasing
+                           (unless no-erase? (erase-rectangle wid hei x y))
+                           (values 0 hei)))))
+
+;; sgithens TODO 2024-04-22 Doesn't appear to be used anywhere...
+(defmethod window-xy-position ((self screen-obj))
+  (multiple-value-bind (superior-x-off superior-y-off)
+                       (cond ((outermost-screen-box? self)
+                              (values 0 0))
+                         (t
+                          (xy-position (superior self))))
+                       (values (+ superior-x-off (screen-obj-x-offset self))
+                               (+ superior-y-off (screen-obj-y-offset self)))))
+
+(defmethod window-x-position ((self screen-obj))
+  (cond ((outermost-screen-box? self) (slot-value self 'x-offset))
+    (t (+ (slot-value self 'x-offset)
+          (window-x-position (superior self))))))
+
+(defmethod window-y-position ((self screen-obj))
+  (cond ((outermost-screen-box? self) (slot-value self 'y-offset))
+    (t (+ (slot-value self 'y-offset)
+          (window-y-position (superior self))))))
+
 ;;;; Utilities for Handling the screen-row-rdp1-info
 
 ;;; informs pass-2 that pass-1 erased all the characters from the
