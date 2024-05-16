@@ -260,7 +260,6 @@
                  (:file "utilities/mcl-utils")
                  ;; Beginning of `printer` module
                  ;; 	   "Utilities for printing out boxes in various ways"
-                 ;;  (:file "printer/ps")
                  #+lispworks (:file "printer/deep-print")
                  ;; Beginning of `site` modules
                  ;; 	   "Utilities for Site specific customizations"
