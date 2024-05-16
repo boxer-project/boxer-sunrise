@@ -762,13 +762,6 @@
     (status-line-display 'shrink-proof-screen "(Unshrinkable)")
     (status-line-undisplay 'shrink-proof-screen)))
 
-
-;;;these should go somewhere else eventually...
-(DEFMETHOD VISIBLE? ((SCREEN-OBJ SCREEN-OBJ))
-           (MEMBER SCREEN-OBJ
-                   (DISPLAYED-SCREEN-OBJS (SCREEN-OBJ-ACTUAL-OBJ SCREEN-OBJ))))
-
-
 (DEFUN SET-OUTERMOST-SCREEN-BOX (NEW-OUTERMOST-SCREEN-BOX
                                  &OPTIONAL (WINDOW *BOXER-PANE*))
        (REDISPLAYING-WINDOW (WINDOW)

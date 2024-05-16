@@ -8804,6 +8804,12 @@ Modification History (most recent at top)
 ;;;; FILE: disply.lisp
 ;;;;
 
+;;;these should go somewhere else eventually...
+(DEFMETHOD VISIBLE? ((SCREEN-OBJ SCREEN-OBJ))
+           (MEMBER SCREEN-OBJ
+                   (DISPLAYED-SCREEN-OBJS (SCREEN-OBJ-ACTUAL-OBJ SCREEN-OBJ))))
+
+
 ;; sgithens 2024-04-17 I don't think this style is ever actually used
 (define-box-ellipsis-style box-ellipsis-corner-dots)
 
