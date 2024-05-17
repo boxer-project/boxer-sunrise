@@ -112,13 +112,6 @@ Modification History (most recent at top)
   (declare (ignore screen-box direction scroll-anyway))
   nil)
 
-(defmethod screen-box-is-scrollable? ((self screen-box))
-  "Returns 2 boolean values, whether vertical scrolling & horizontal scrolling."
-  (values (screen-obj-x-got-clipped? self) (screen-obj-y-got-clipped? self)))
-
-(defmethod screen-box-is-scrollable? ((screen-box graphics-screen-box))
-  (values nil nil))
-
 (defun dont-show-scroll-buttons? (screen-box)
   (or ;(null screen-box)  ; should already have been checked
     (null (superior-screen-box screen-box))
@@ -233,19 +226,16 @@ Modification History (most recent at top)
                                             (declare (ignore left top))
                                             (multiple-value-bind (wid hei)
                                                                  (screen-obj-size screen-box)
-                                                                 (multiple-value-bind (scroll-top scroll-bottom last-is-top?)
-                                                                                      (screen-box-is-scrollable? screen-box)
-                                                                                      (declare (ignore scroll-bottom))
-                                                                                      (let* (;; these are the demarcation lines between the elevator space
-                                                                                             ;; and the buttons
-                                                                                             (v-div (+ box-window-y (- hei bottom)))
-                                                                                             (h-div (+ box-window-x (- wid right))))
-                                                                                        ;; now check for horizontal stuff, must be in the horizontal
-                                                                                        ;; because it isn't in the vertical space and we can only come here
-                                                                                        ;; as a result of a previous tracking returning :scroll-bar
-                                                                                        (cond
-                                                                                          ((< y v-div) :v-bar)
-                                                                                          ((< x h-div) :h-bar))))))))
+                                                                 (let* (;; these are the demarcation lines between the elevator space
+                                                                         ;; and the buttons
+                                                                         (v-div (+ box-window-y (- hei bottom)))
+                                                                         (h-div (+ box-window-x (- wid right))))
+                                                                   ;; now check for horizontal stuff, must be in the horizontal
+                                                                   ;; because it isn't in the vertical space and we can only come here
+                                                                   ;; as a result of a previous tracking returning :scroll-bar
+                                                                   (cond
+                                                                     ((< y v-div) :v-bar)
+                                                                     ((< x h-div) :h-bar)))))))
 
 
 

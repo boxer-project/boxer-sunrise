@@ -19806,6 +19806,13 @@ Modification History (most recent at top)
 ;;;; FILE: oglscroll.lisp
 ;;;;
 
+(defmethod screen-box-is-scrollable? ((self screen-box))
+  "Returns 2 boolean values, whether vertical scrolling & horizontal scrolling."
+  (values (screen-obj-x-got-clipped? self) (screen-obj-y-got-clipped? self)))
+
+(defmethod screen-box-is-scrollable? ((screen-box graphics-screen-box))
+  (values nil nil))
+
 ;; sgithens 2024-05-16 Old versions of methods/functions related to ensure-row-is-displayed
 
 ;; should return 2 boolean values, whether vert scrolling &  horiz scrolling
