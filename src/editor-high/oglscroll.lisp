@@ -93,7 +93,10 @@ Modification History (most recent at top)
   (when (screen-objs (point-row))
     (let* ((point-row-y-offset (screen-obj-y-offset (car (screen-objs (point-row)))))
            (point-row-baseline-y-offset (- point-row-y-offset (baseline (car (screen-objs (point-row))))))
-           (adjusted-row-y-offset (+ point-row-y-offset (slot-value screen-box 'scroll-y-offset))))
+           (adjusted-row-y-offset (+ point-row-y-offset (slot-value screen-box 'scroll-y-offset)))
+           (bp-coords (multiple-value-list (bp-coordinates *point*)))
+           (bp-y-coord (cadr bp-coords)))
+
       ;; Eventually this may need to be properly recursive.
       ;; But for now, let's just check if we're typing in a scrolled box, and if not whether the top
       ;; level scrollbars are active.
@@ -102,8 +105,9 @@ Modification History (most recent at top)
         (setf (slot-value screen-box 'scroll-y-offset) (- (- point-row-y-offset (inner-hei screen-box)))))
         ((and (v-scrollable? screen-box) (< point-row-baseline-y-offset (- (slot-value screen-box 'scroll-y-offset))))
         (setf (slot-value screen-box 'scroll-y-offset) (- (- point-row-baseline-y-offset 4))))
-        ((v-scrollable? *boxer-pane*)
-        nil)
+        ((and (v-scrollable? *boxer-pane*)
+              (> (+ bp-y-coord (vertical-scroll *boxer-pane*)) (port-height *boxer-pane*)))
+         (setf (vertical-scroll *boxer-pane*) (- (+ bp-y-coord (vertical-scroll *boxer-pane*)))))
         (t
         nil)))))
 
