@@ -282,14 +282,6 @@
    :message-callback 'handle-OSX-events
    ))
 
-(defclass boxer-lw-opengl-canvas (opengl::opengl-pane boxer::boxer-canvas)
- ;; For some reason, I have to redefine configuration, context, and reader-state from capi.lisp in the
- ;; opengl examples for things to work on win32. On macOS they inherit fine.
- ((configuration :initform *default-opengl-pane-configuration*
-                  :initarg :configuration
-                  :reader configuration)
-   (context :initform nil :initarg :context :accessor context)
-   (render-state :initform nil :accessor opengl-pane-render-state)))
 
 (capi:define-interface boxer-frame (capi:interface)
   ()

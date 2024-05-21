@@ -99,6 +99,7 @@
                  #+lispworks (:file "boxwin/lw-capi/lw-toolbar")
                  #+lispworks (:file "boxwin/lw-capi/click-handlers")
                  #+lispworks (:file "boxwin/lw-capi/pane-callbacks")
+                 #+lispworks (:file "boxwin/lw-capi/boxer-lw-opengl-canvas")
                  #+lispworks (:file "boxwin/lw-capi/scrolling")
                  #+lispworks (:file "boxwin/lw-capi/boxwin-opengl")
                  #+lispworks (:file "boxwin/lw-capi/clipboard")

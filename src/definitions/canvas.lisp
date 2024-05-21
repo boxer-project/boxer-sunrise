@@ -75,11 +75,11 @@
 (defmethod port-width ((self boxer-canvas))
   "Give the width of the port or widget container the Boxer documents canvas. Calculation will be different
    depending on the GL and Widget toolkit used. Needed for scrollbars, panning, and other types of interactions."
-   (error "boxer-canvas port-width needs an toolkit specific implementation"))
+  (error "boxer-canvas port-width needs an toolkit specific implementation"))
 
 (defmethod port-height ((self boxer-canvas))
   "See port-width for description."
-  (error "boxer-canvas port-width needs an toolkit specific implementation"))
+  (error "boxer-canvas port-height needs an toolkit specific implementation"))
 
 (defmethod activate-canvas-view ((self boxer-canvas))
   (setf ;*backdrop-color* #(:rgb 0.89 0.89 0.89)
@@ -107,3 +107,9 @@
   "Updates the global transform matrix based on the current values of the top level global scrollbars."
   (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)
         (boxer::create-transform-matrix (horizontal-scroll self) (vertical-scroll self))))
+
+(defmethod v-scrollable? ((self boxer-canvas))
+ (> (content-hei self) (port-height self)))
+
+(defmethod h-scrollable? ((self boxer-canvas))
+ (> (content-wid self) (port-width self)))
