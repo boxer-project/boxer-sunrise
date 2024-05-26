@@ -17,7 +17,7 @@
 ;;;;        various bits of helpful information.
 (in-package :boxer)
 
-(defvar *show-dev-overlay* t
+(defvar *show-dev-overlay* nil
   "Whether or not paint the development and debug overlay in the corner.")
 
 (defun repaint-dev-overlay (&optional (process-state ""))
