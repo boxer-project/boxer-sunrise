@@ -1,5 +1,113 @@
 # Change Log
 
+## 3.4.18 2024-05-26
+
+This is the first release of our reworked scrolling and rendering layout, replacing our old single screen
+style scrolling, with a more modern canvas that expands to the size of your contect, and uses OS scrollbars
+on the top level window to move around. Additionally, the scrolling is now smooth (rather than one line at
+a time), Boxes maintain their horizontal widths when scrolling, plus many other modernizations to bring Boxer
+in line with how you'd expect a modern desktop authoring application to pan, scroll, and move.
+
+Part of this includes a total overhaul of the first pass rendering layout algorithm, along with lots of
+other refactoring and cleanup of old code and technical debt. This rework will continue to make it easier
+and faster to implement newer interactions and graphics on the system.  It's very exciting for future work!
+
+Do expect some glitches and occasionall rendering bugs as this is wrapped up in a series of smaller bug
+fix releases over the next few months.
+
+### Full Change Log
+
+sunrise-11 Smooth Scrolling and New Pass-1 Repain Layout Algorithm
+  - Adding outer level OS scrollbars to the boxer-pane
+  - cleanup Removing old av-info checks from repaint-2 algorithm.
+  - Changing status bar from Font Zoom to real Zoom
+  - Viewport document offset methods for boxer canvas.
+  - Removing usage of slot 'old-graphics-sheet
+  - Adding scroll bar translations to blinker drawing.
+  - Adding set-transform defmethod to boxgl-device
+  - Adding *document-mouse-x* and y to track translated mouse location
+  - Using adjust-transform instead of window-system-dependent-set-origin
+  - Removing unneeded %draw-rectangle clip and repaint-1 with-drawing-inside-region
+  - Cleaning up com-open-link-file from old explicit-redisplay and commented out with-drawing-port reference
+  - Routines for our usage of openGL Stencil Buffers.
+  - Factoring openGL enables/disables into a single defun
+  - Adjusting lispworks openGL config for alpha/depth/stencil configs
+  - Totally retiring the source for the old layout algorithm.
+  - Optimization for stenciling transforms
+    Currently our stencil calculations always draw from
+    the origin 0, 0 origin. Adding a shader just to draw
+    without the global uniform transform so we don't need
+    keep updating the buffer for each stencil when wrapping
+    code sections in with-clipping-inside
+  - Small optimization to stop looking up the font-face unless we really need to create a new glyph.
+  - Removing unused member max-scroll-wid from defclass screen-box
+  - Performance improvements for rendering large screens/boxes
+    For both content that is scrolled globablly and also locally inside
+    a manually sized box, we check that the row is vertically inside the
+    box/window before rendering it.
+  - Repinning global scrolling/transform to top-left when resizing.
+  - Fixing up math for scrollbar limits when dragging box scrollbars
+  - Breaking out scroll limits into their own defuns and applying to trackpad scrolling.
+  - Fixing defmethods scroll-dn-one-screen-box, scroll-up-one-screen-box
+  - Moving screen-box page up/down scrolling to oglscroll.lisp
+  - Fixing up defboxer-command COM-SCROLL-DN-ONE-SCREEN-BOX and UP
+  - Fixing cursor repainting for new scroll rendering.
+  - Fixing up cursor and region rendering so they occur in the actual clipped box.
+  - Fixing scroll drag maths for box scrollbars.
+  - Fixing rendering interpretation of scroll-to-actual-row and some zoom maths
+  - Fixing up slug size and position on global scroll bars.
+  - Fixing up scrollbar math on outermost window OS scrolling.
+  - Fixing zoomed wid/hei %clip-lef in drawing-on-window-bootstrap-clipping-and-scaling
+  - Fixing recursive stencil buffering by adding the wanted stencil-func before calling glClear midway.
+  - wip updating defmethod ensure-row-is-displayed
+  - Fixing two finger scrolling.
+  - Refactoring lispworks version of boxer-canvas
+
+minor-fix
+  - Removing usage of a fixnum operator that sometimes got floats.
+
+refactor
+  - Removing duplicated code that is just defun check-for-window-resize
+  - Moving capi pane scrolling code to it's own file.
+
+debug
+  - Adding an outline tree view pane of screen-objs for development.
+
+doco
+  - Documentation strings for scroll-y-offset and scroll-x-offset.
+
+the-attic
+  - Removing unneeded with-scrolling-origin
+  - Removing unused %local-clip-lef/top/rig/bot, %clip-total-height
+  - Refactoring defun window-system-dependent-set-origin (h v) to
+    defmethod adjust-transform ((self boxgl-device) h v)
+  - Removing redundant defmacros with-scrolling-origin, with-turtle-clipping
+  - Removing empty defmacro prepare-sheet
+  - Retiring defvar %drawing-array
+  - merging with-window-system-dependent-clipping into with-clipping-inside
+  - Retiring scale-x and scale-y
+  - Archiving defmacro with-mouse-tracking-inside, and defun warp-pointer
+  - Archiving unused defun mouse-position-screen-values
+  - Removing old commented bits that were erasing parts of screen...
+  - Archiving unused invalidate-absolute-position-caches
+  - Archiving defmacro with-graphics-screen-parameters, drawing-on-turtle-slate
+  - Simplifying drawing-on-window, archiving drawing-on-window-without-prepare-sheet
+  - Archiving with-drawing-inside-region and tutti frutti random color debugging.
+  - Archiving defun update-absolute-pos-cache
+  - Removing old unused ab-pos-cache
+    - defvar *absolute-position-caches-filled*,
+    - defstruct ab-pos-cache
+    - defmacro with-absolute-position-cache-recording
+    - member cached-absolute-pos from screen-box
+  - Archiving defun my-clip-rect
+  - Archiving av-stubs and av-info.
+  - Removing defun com-hotspot-unfix-box-size
+  - Archiving binary style application extensions.
+  - Cleaning up unused and retired bits (erasing, etc) from disply.lisp
+  - Archiving code for printing/exporting to postscript
+  - Archivign unused defmethod VISIBLE? screen-obj
+  - Removing now unused screen-box-is-scrollable?
+
 ## 3.4.17 2024-03-02
 
 Very minor release with a single bugfix that was causing problems saving certain older files.
