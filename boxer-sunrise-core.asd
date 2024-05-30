@@ -8,7 +8,7 @@
 |#
 
 (defsystem "boxer-sunrise-core"
-  :version "3.4.17"
+  :version "3.4.18"
   :author "Steven Githens"
   :license ""
   :depends-on ("uiop")
