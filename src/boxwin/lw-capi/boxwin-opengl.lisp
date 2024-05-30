@@ -917,10 +917,6 @@ in macOS."
   (when (member "-debug" sys:*line-arguments-list* :test #'string-equal)
     (break "Start Boxer"))
   (setq boxer-eval::*current-process* nil)
-  ;; extensions
-  (setq boxer::*starting-directory-pathname* (lw:lisp-image-name))
-  ;; sgithens TODO - Removing extensions for now March 7, 2020
-  ;; (boxer::load-boxer-extensions)
 
   (when (member "-debug" sys:*line-arguments-list* :test #'string-equal)
     (opengl:describe-configuration *boxer-pane*))
