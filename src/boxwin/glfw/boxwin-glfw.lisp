@@ -1,0 +1,209 @@
+;;;;
+;;;;      Boxer
+;;;;      Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;
+;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
+;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
+;;;;
+;;;;      Licensed under the 3-Clause BSD license. You may not use this file except in compliance with this license.
+;;;;
+;;;;      https://opensource.org/licenses/BSD-3-Clause
+;;;;
+;;;;
+;;;;                                           +-Data--+
+;;;;                  This file is part of the | BOXER | system
+;;;;                                           +-------+
+;;;;
+;;;;  Work In Progress! GLFW Engine
+;;;;
+(in-package :boxer-window)
+
+;;;
+;;; Re-implemented Utilities from boxwin-opengl and other places
+;;;
+
+(defvar *blinker-color* #(:rgb .3 .3 .9 .5))
+
+;; TODO refactor from boxwin-opengl.lisp
+(defun outermost-screen-box (&optional (window *boxer-pane*))
+  ;; (slot-value window 'outermost-screen-box)
+  )
+
+;;;
+;;; GLFW Pane and Frame Classes and Methods
+;;;
+
+(defparameter scr-width 800)
+(defparameter scr-height 600)
+
+(cl-glfw3:def-key-callback quit-on-escape (window key scancode action mod-keys)
+  (declare (ignore window scancode mod-keys))
+  (when (and (eq key :escape) (eq action :press))
+    (cl-glfw3:set-window-should-close)))
+
+;; glfw: whenever the window size changed (by OS or user resize) this callback function executes"
+(cl-glfw3:def-window-size-callback update-viewport (window w h)
+  (declare (ignore window))
+  (gl:viewport 0 0 scr-width scr-height))
+
+(defclass glfw-boxer-pane (boxer::boxer-canvas)
+  ())
+
+(defclass glfw-boxer-name-pane ()
+  ())
+
+(defclass glfw-boxer-frame ()
+  ((boxer-pane :initform (make-instance 'glfw-boxer-pane))
+   (name-pane  :initform (make-instance 'glfw-boxer-name-pane))))
+
+(defmethod display ((self glfw-boxer-frame))
+  ;; (with-body-in-main-thread ()
+    (cl-glfw3:with-init-window (:title "LearnOpenGL" :width scr-width :height scr-height
+                                :context-version-major 3
+                                :context-version-minor 3
+                                :opengl-profile #x00032001
+                                #+os-macosx :opengl-forward-compat #+os-macosx t)
+        (setf %gl:*gl-get-proc-address* #'cl-glfw3:get-proc-address)
+        (cl-glfw3:set-key-callback 'quit-on-escape)
+        (cl-glfw3:set-window-size-callback 'update-viewport)
+
+        ;; START Duplicated from pane-callbacks
+        (print "GLFW Display Frame 2")
+        (boxer::opengl-enables)
+        (setf bw::*boxgl-device* (slot-value
+                            (boxer::make-boxwin-330gl-device bw::*boxer-frame* bw::*boxer-pane* :wid scr-width :hei scr-height)
+                            'boxer::draw-device))
+        (setf (boxer::boxgl-device-ortho-matrix bw::*boxgl-device*)
+              (boxer::create-ortho-matrix scr-width scr-height))
+
+        (boxer::update-matrices-ubo bw::*boxgl-device*)
+        (%set-pen-color box::*foreground-color*)
+
+        (boxer::load-freetype-faces)
+        (let ((boxer::%private-graphics-list nil))
+          ;; needed by shape-box updater in the redisplay inits but not set until
+          ;; (boxer-eval::setup-evaluator) farther down
+          (run-redisplay-inits))
+
+        (setf boxer::*freetype-glyph-atlas* (boxer::make-glyph-atlas))
+        ;; END pane-callbacks duplication
+
+        (loop until (cl-glfw3:window-should-close-p)
+            do (progn
+              ;; per-frame-time-logic
+              ;; --------------------
+
+              ;; render
+              ;; ------
+              (gl:clear-color 1.0 1.0 1.0 1.0)
+              (gl:clear :color-buffer-bit :depth-buffer-bit)
+
+              ;; Duplicated from repaint.lisp repaint-window
+              ;; (boxer::REDISPLAYING-WINDOW (*boxer-pane*)
+                        ;;  (clear-window window)
+                         (boxer::repaint-guts)
+                        ;;  (repaint-mouse-docs)
+                        ;;  (let ((cur-transform (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)))
+                        ;;    (set-transform bw::*boxgl-device* 0 0)
+                        ;;    (repaint-dev-overlay process-state-label)
+                        ;;    (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*) cur-transform))
+                        ;;  (when flush-buffer? (swap-graphics-buffers window))
+                        ;;  )
+
+
+              (cl-glfw3:swap-buffers)
+              (cl-glfw3:poll-events)))))
+
+;;;
+;;; Window System Specific Make and Start Functions
+;;;
+
+(defun window-system-specific-make-boxer ()
+
+  (setf *boxer-frame* (make-instance 'glfw-boxer-frame))
+  ;; ;; after creation, set some variables
+  (setf *boxer-pane* (slot-value *boxer-frame* 'boxer-pane)
+        *name-pane*  (slot-value *boxer-frame* 'name-pane))
+  (setf (boxer::point-blinker *boxer-pane*) (boxer::make-blinker))
+
+  ;; load prefs if they exists
+  ;; (let ((pf (boxer::default-lw-pref-file-name)))
+  ;;   (when (and pf (probe-file pf))
+  ;;     (boxer::handle-preference-initializations pf)))
+
+  ;; maybe set the size of the boxer window...
+  ;; check window size prefs, they will be overidden by the following
+  ;; fullscreen-window check
+  ;; (let ((screen (capi:convert-to-screen)))
+  ;;   (when (> *starting-window-width* 0)
+  ;;     (capi:set-hint-table *boxer-frame* (list :width *starting-window-width*)))
+  ;;   (when (> *starting-window-height* 0)
+  ;;     (capi:set-hint-table *boxer-frame* (list :height *starting-window-height*)))
+  ;;   ;; fullscreen check AFTER prefs are loaded but BEFORE display ?
+  ;;   (when *fullscreen-window-p*
+  ;;     (capi:set-hint-table *boxer-frame*
+  ;;                     (list :x 0 :y 0
+  ;;                           :width (- (capi:screen-width screen) 10)
+  ;;                           :height (- (capi:screen-height screen) 120)))))
+
+  ;; START Duplicated from pane-callbacks
+
+
+      ;; (setf (boxer::boxgl-device-ortho-matrix bw::*boxgl-device*)
+      ;;       (boxer::create-ortho-matrix wid hei))
+      ;; (opengl:gl-viewport 0 0 wid hei)
+      ;; (boxer::update-matrices-ubo bw::*boxgl-device*)
+      ;; (%set-pen-color box::*foreground-color*))
+
+  (let ((arial-12 (boxer::make-boxer-font '("Arial" 12)))
+          (arial-16 (boxer::make-boxer-font '("Arial" 16)))
+          (arial-16-bold (boxer::make-boxer-font '("Arial" 16 :bold))))
+      (setq  boxer::*normal-font-no*           arial-16
+              boxer::*default-font*             arial-16
+              boxer::*box-border-label-font-no* arial-12
+              boxer::*border-label-font*        arial-12
+              boxer::*box-border-name-font-no*  arial-16-bold
+              boxer::*border-name-font*         arial-16-bold
+              boxer::*sprite-type-font-no*      arial-16-bold
+              boxer::*initial-graphics-state-current-font-no* arial-16-bold
+              boxer::*graphics-state-current-font-no* arial-16-bold
+              boxer::*boxtop-text-font*         arial-16-bold
+      ))
+  ;; END
+  ;; START copied from disdep.lisp
+  ;; (def-redisplay-initialization
+  (progn ;; moved here because FD's need init'd colors
+         (setq boxer::*default-font-descriptor* (boxer::make-bfd -1 boxer::*default-font*)
+               boxer::*current-font-descriptor* (boxer::make-bfd -1 boxer::*default-font*))
+        ;;  (drawing-on-window (boxer-window::*boxer-pane*)
+        ;;                     (set-font-info *normal-font-no*))
+                            )
+                            ;; )
+  ;; END
+
+  ;; (capi:display boxer-window::*boxer-frame*)
+  ;; (display *boxer-frame*)
+  )
+
+(defun window-system-specific-start-boxer ()
+  ;; (when (member "-debug" sys:*line-arguments-list* :test #'string-equal)
+  ;;   (break "Start Boxer"))
+  (setq boxer-eval::*current-process* nil)
+
+  ;; (boxer::load-appdata)
+  (setup-editor boxer::*initial-box*)
+  ;; (setq *display-bootstrapping-no-boxes-yet* nil)
+
+  (boxer-eval::setup-evaluator)
+
+  ;; (load-startup-file)
+
+  (unless boxer::*boxer-version-info*
+    (setq boxer::*boxer-version-info*
+          (format nil "~:(~A~) Boxer" (machine-instance))))
+
+  ;; (boxer-process-top-level-fn *boxer-pane*)
+  ;;; START contents of boxer-process-top-level-fn
+  (boxer::enter (boxer::point-box))
+  ;; (boxer::repaint)
+  (display *boxer-frame*))

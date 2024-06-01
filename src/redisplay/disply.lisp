@@ -725,6 +725,29 @@
                 (VALUES (SCREEN-OBJ-ACTUAL-OBJ PREVIOUS-OUTERMOST-SCREEN-BOX)
                         PREVIOUS-OUTERMOST-SCREEN-BOX))))
 
+(DEFUN SET-OUTERMOST-SCREEN-BOX (NEW-OUTERMOST-SCREEN-BOX
+                                 &OPTIONAL (WINDOW *BOXER-PANE*))
+       #+lispworks (REDISPLAYING-WINDOW (WINDOW)
+                            (UNLESS (EQ NEW-OUTERMOST-SCREEN-BOX *OUTERMOST-SCREEN-BOX*)
+                                    (DECONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX *OUTERMOST-SCREEN-BOX*
+                                                                                WINDOW)
+                                    (CONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX NEW-OUTERMOST-SCREEN-BOX
+                                                                              WINDOW)
+                                    (SETQ *OUTERMOST-SCREEN-BOX* NEW-OUTERMOST-SCREEN-BOX)))
+       #+glfw-engine (SETQ *OUTERMOST-SCREEN-BOX* NEW-OUTERMOST-SCREEN-BOX)
+
+       (setf *outermost-screen-box* new-outermost-screen-box)
+       (LET ((OLD-SCREEN-ROW (UNLESS (NULL NEW-OUTERMOST-SCREEN-BOX)
+                                     (SCREEN-ROW NEW-OUTERMOST-SCREEN-BOX))))
+            (WHEN (SCREEN-ROW? OLD-SCREEN-ROW)
+                  ;; we need to break up the screen-structure
+                  (KILL-SCREEN-CHAS-FROM OLD-SCREEN-ROW 0)
+                  (if (fast-memq (superior old-screen-row) *outermost-screen-box-stack*)
+                    (deallocate-inferiors (superior old-screen-row))
+                    (deallocate-self (superior old-screen-row))))
+            ;; (repaint-window window)
+            ))
+
 (defun set-outermost-box (new-outermost-box
                           &optional (new-outermost-screen-box
                                      (car (when (not-null new-outermost-box)
@@ -751,7 +774,7 @@
         (allocate-outermost-screen-box-for-use-in new-outermost-box window
                                                   new-outermost-screen-box)
         window)
-       (update-shrink-proof-display)
+        #+lispworks (update-shrink-proof-display)
        ))))
 
 
@@ -762,26 +785,6 @@
     (status-line-display 'shrink-proof-screen "(Unshrinkable)")
     (status-line-undisplay 'shrink-proof-screen)))
 
-(DEFUN SET-OUTERMOST-SCREEN-BOX (NEW-OUTERMOST-SCREEN-BOX
-                                 &OPTIONAL (WINDOW *BOXER-PANE*))
-       (REDISPLAYING-WINDOW (WINDOW)
-                            (UNLESS (EQ NEW-OUTERMOST-SCREEN-BOX *OUTERMOST-SCREEN-BOX*)
-                                    (DECONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX *OUTERMOST-SCREEN-BOX*
-                                                                                WINDOW)
-                                    (CONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX NEW-OUTERMOST-SCREEN-BOX
-                                                                              WINDOW)
-                                    (SETQ *OUTERMOST-SCREEN-BOX* NEW-OUTERMOST-SCREEN-BOX)))
-      ;  (SETQ *OUTERMOST-SCREEN-BOX* (boxer-window::outermost-screen-box)) ; why ??
-       (setf *outermost-screen-box* new-outermost-screen-box)
-       (LET ((OLD-SCREEN-ROW (UNLESS (NULL NEW-OUTERMOST-SCREEN-BOX)
-                                     (SCREEN-ROW NEW-OUTERMOST-SCREEN-BOX))))
-            (WHEN (SCREEN-ROW? OLD-SCREEN-ROW)
-                  ;; we need to break up the screen-structure
-                  (KILL-SCREEN-CHAS-FROM OLD-SCREEN-ROW 0)
-                  (if (fast-memq (superior old-screen-row) *outermost-screen-box-stack*)
-                    (deallocate-inferiors (superior old-screen-row))
-                    (deallocate-self (superior old-screen-row))))
-            (repaint-window window)))
 
 (DEFUN CONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX (SCREEN-BOX
                                                  &OPTIONAL
@@ -805,6 +808,10 @@
        (AND (SCREEN-BOX? SCREEN-OBJ)
             (EQ SCREEN-OBJ (boxer-window::outermost-screen-box))))
 
+(defgeneric xy-position (self)
+  (:method (self)
+    (values 0 0)))
+
 (defmethod xy-position ((self screen-row))
   (let ((superior (slot-value self 'screen-box)))
     (multiple-value-bind (superior-x-off superior-y-off)
@@ -823,6 +830,8 @@
                           (xy-position (superior self))))
                        (values (+ superior-x-off (slot-value self 'x-offset))
                                (+ superior-y-off (slot-value self 'y-offset)))))
+
+
 
 ;; sgithens TODO 2024-04-22 Doesn't appear to be used anywhere...
 ;; (DEFMETHOD NEXT-SCREEN-CHA-POSITION ((SELF SCREEN-CHAR-SUBCLASS))

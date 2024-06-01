@@ -140,6 +140,7 @@
   ;; comment out next line for outermost box save document, updates will
   ;; occur inside of set-outermost-box instead...
   (when (bp? *point*)
+    #+lispworks
     (capi:apply-in-pane-process *boxer-pane* 'update-window-title))
   ;; swap buffers here, after all drawing is complete
   (swap-graphics-buffers *boxer-pane*))

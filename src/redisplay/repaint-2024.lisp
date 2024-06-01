@@ -250,5 +250,6 @@
           (content-hei bw::*boxer-pane*)    (max pane-height hei)
           (content-wid bw::*boxer-pane*)    (max pane-width wid))
 
+    #+lispworks
     (capi:apply-in-pane-process *boxer-frame*
       (lambda () (bw::update-outer-scrollbars outer-screen-box *boxer-frame*)))))

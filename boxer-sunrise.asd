@@ -33,6 +33,7 @@
                :3d-matrices
                :3d-vectors
                :boxer-sunrise-core
+               #+glfw-engine :cl-glfw3
                )
   :components ((:module "src"
                 :components
@@ -53,7 +54,7 @@
                                (:file "freetype-fonts")
                                (:file "draw-low-opengl")))
 
-                 #+lispworks (:file "boxwin/lw-capi/boxwin-330gl")
+                 (:file "boxwin/lw-capi/boxwin-330gl")
 
                  ;; Beginning of `DRAW` module
                  (:file "draw/draw-high-common")
@@ -105,6 +106,8 @@
                  #+lispworks (:file "boxwin/lw-capi/clipboard")
 
                  #+lispworks (:file "boxwin/lw-capi/outline-tree")
+
+                 #+glfw-engine (:file "boxwin/glfw/boxwin-glfw")
 
                 ;  #+lispworks (:file "boxwin/lw-capi/modern-opengl")
 
