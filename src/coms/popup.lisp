@@ -256,7 +256,7 @@ Modification History (most recent at top)
                                (setq current-item ti current-y iy current-height ih)
                                ;; highlight
                                (draw-menu menu real-x real-y)
-                               (with-pen-color (bw::*blinker-color*)
+                               (with-pen-color (*blinker-color*)
                                  (draw-rectangle (- mwid 3) ih
                                                  (1+ real-x) (+ real-y iy)))
                                (swap-graphics-buffers))
@@ -270,7 +270,7 @@ Modification History (most recent at top)
                                ;; redraw menu
                                (draw-menu menu real-x real-y)
                                ;; highlight selected item...
-                               (with-pen-color (bw::*blinker-color*)
+                               (with-pen-color (*blinker-color*)
                                  (draw-rectangle (- mwid 3) ih
                                                  (1+ real-x) (+ real-y iy)))
                                (swap-graphics-buffers)
@@ -288,7 +288,7 @@ Modification History (most recent at top)
                   (dotimes (i 5)
                     (draw-menu menu real-x real-y)
                     (swap-graphics-buffers) (snooze .05)
-                    (with-pen-color (bw::*blinker-color*)
+                    (with-pen-color (*blinker-color*)
                       (draw-rectangle (- mwid 3) current-height
                                       (1+ real-x) (+ real-y current-y)))
                     (swap-graphics-buffers) (snooze .05)))))))

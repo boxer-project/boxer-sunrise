@@ -17,7 +17,7 @@
 (in-package :boxer)
 
 (defun draw-blinker (blinker)
-  (with-pen-color (bw::*blinker-color*)
+  (with-pen-color (*blinker-color*)
     (let ((horiz (horizontal-scroll *boxer-pane*))
           (vert  (vertical-scroll *boxer-pane*)))
       (draw-rectangle (blinker-wid blinker) (blinker-hei blinker)

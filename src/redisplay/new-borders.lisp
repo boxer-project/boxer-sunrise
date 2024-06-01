@@ -1160,7 +1160,7 @@
                                                (unwind-protect
                                                 (progn
                                                  (unless (null ,screen-box-x)
-                                                   (with-pen-color (bw::*blinker-color*)
+                                                   (with-pen-color (*blinker-color*)
                                                       (draw-rectangle
                                                                       ,screen-box-wid ,screen-box-hei
                                                                       ,screen-box-x ,screen-box-y))

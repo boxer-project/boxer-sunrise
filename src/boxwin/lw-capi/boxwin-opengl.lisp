@@ -135,8 +135,6 @@
 ;; should get set on window creation and probably checked whenever the boxer
 ;; window gets the focus back
 
-(defvar *blinker-color* #(:rgb .3 .3 .9 .5))
-
 ;; alternatively, we could make the *boxer-frame* inherit from
 ;; the capi::title-pane class amd use the :title init arg
 ;(defvar *title-pane* (make-instance 'title-pane :text "Boxer Title Pane"

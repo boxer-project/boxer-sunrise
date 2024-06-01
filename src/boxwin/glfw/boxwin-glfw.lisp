@@ -22,8 +22,6 @@
 ;;; Re-implemented Utilities from boxwin-opengl and other places
 ;;;
 
-(defvar *blinker-color* #(:rgb .3 .3 .9 .5))
-
 ;; TODO refactor from boxwin-opengl.lisp
 (defun outermost-screen-box (&optional (window *boxer-pane*))
   ;; (slot-value window 'outermost-screen-box)
