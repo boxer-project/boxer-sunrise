@@ -27,6 +27,16 @@
   ;; (slot-value window 'outermost-screen-box)
   )
 
+(defun window-system-dependent-redraw-status-line (string)
+  ;; (capi:apply-in-pane-process *name-pane* #'(lambda ()
+  ;;                                            (setf (capi::title-pane-text *name-pane*) string)))
+  )
+
+(defun beep ()
+  ;; (capi::beep-pane)
+)
+
+
 ;;;
 ;;; GLFW Pane and Frame Classes and Methods
 ;;;
@@ -35,9 +45,20 @@
 (defparameter scr-height 600)
 
 (cl-glfw3:def-key-callback quit-on-escape (window key scancode action mod-keys)
-  (declare (ignore window scancode mod-keys))
-  (when (and (eq key :escape) (eq action :press))
-    (cl-glfw3:set-window-should-close)))
+  ;; (declare (ignore window scancode mod-keys))
+  (format t "~%glfw3 key-callback key3: ~A scancode: ~A action: ~A mod-keys: ~A input type: ~A"
+    key scancode action mod-keys (type-of key))
+  (cond
+    ((and (eq key :escape) (eq action :press))
+     (cl-glfw3:set-window-should-close))
+    ((eq action :press)
+     ;;  (boxer::handle-boxer-input (character key))
+     (boxer::insert-cha boxer::*point* (character key))
+     (format t "~%  the initial box now: ~A" boxer::*initial-box*)
+     )
+    (t
+     (print "key-callback nothing")
+     nil)))
 
 ;; glfw: whenever the window size changed (by OS or user resize) this callback function executes"
 (cl-glfw3:def-window-size-callback update-viewport (window w h)
@@ -54,6 +75,22 @@
   ((boxer-pane :initform (make-instance 'glfw-boxer-pane))
    (name-pane  :initform (make-instance 'glfw-boxer-name-pane))))
 
+;; timing
+(defvar delta-time 0.0) ;; time between current frame and last frame
+(defvar last-frame 0.0)
+(defvar blinker-time 0.0)
+(defvar blinker-on t)
+
+(defun toggle-blinker ()
+  (cond
+    (blinker-on
+      (setf boxer::*blinker-color* #(:rgb .3 .3 .9 .5))
+      (setf blinker-on nil)
+    )
+    (t
+      (setf boxer::*blinker-color* #(:rgb .3 .3 .9 .0))
+      (setf blinker-on t))))
+
 (defmethod display ((self glfw-boxer-frame))
   ;; (with-body-in-main-thread ()
     (cl-glfw3:with-init-window (:title "LearnOpenGL" :width scr-width :height scr-height
@@ -66,7 +103,6 @@
         (cl-glfw3:set-window-size-callback 'update-viewport)
 
         ;; START Duplicated from pane-callbacks
-        (print "GLFW Display Frame 2")
         (boxer::opengl-enables)
         (setf bw::*boxgl-device* (slot-value
                             (boxer::make-boxwin-330gl-device bw::*boxer-frame* bw::*boxer-pane* :wid scr-width :hei scr-height)
@@ -86,19 +122,28 @@
         (setf boxer::*freetype-glyph-atlas* (boxer::make-glyph-atlas))
         ;; END pane-callbacks duplication
 
+        (boxer::insert-cha boxer::*point* #\H)
+
         (loop until (cl-glfw3:window-should-close-p)
             do (progn
               ;; per-frame-time-logic
               ;; --------------------
+              (let ((current-frame (%cl-glfw3:get-time)))
+                (setf delta-time (- current-frame last-frame)
+                      last-frame current-frame
+                      blinker-time (+ blinker-time delta-time)))
+
+              (when (> blinker-time 0.7)
+                (toggle-blinker)
+                (setf blinker-time 0.0))
 
               ;; render
               ;; ------
-              (gl:clear-color 1.0 1.0 1.0 1.0)
-              (gl:clear :color-buffer-bit :depth-buffer-bit)
+              ;; (setf (boxer::name *initial-box*) (format nil "The world: ~A" blinker-time))
 
               ;; Duplicated from repaint.lisp repaint-window
               ;; (boxer::REDISPLAYING-WINDOW (*boxer-pane*)
-                        ;;  (clear-window window)
+                         (clear-window *boxer-pane*)
                          (boxer::repaint-guts)
                         ;;  (repaint-mouse-docs)
                         ;;  (let ((cur-transform (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)))
@@ -146,13 +191,6 @@
 
   ;; START Duplicated from pane-callbacks
 
-
-      ;; (setf (boxer::boxgl-device-ortho-matrix bw::*boxgl-device*)
-      ;;       (boxer::create-ortho-matrix wid hei))
-      ;; (opengl:gl-viewport 0 0 wid hei)
-      ;; (boxer::update-matrices-ubo bw::*boxgl-device*)
-      ;; (%set-pen-color box::*foreground-color*))
-
   (boxer::initialize-fonts)
   ;; END
   ;; START copied from disdep.lisp
@@ -171,8 +209,6 @@
   )
 
 (defun window-system-specific-start-boxer ()
-  ;; (when (member "-debug" sys:*line-arguments-list* :test #'string-equal)
-  ;;   (break "Start Boxer"))
   (setq boxer-eval::*current-process* nil)
 
   ;; (boxer::load-appdata)
@@ -190,5 +226,4 @@
   ;; (boxer-process-top-level-fn *boxer-pane*)
   ;;; START contents of boxer-process-top-level-fn
   (boxer::enter (boxer::point-box))
-  ;; (boxer::repaint)
   (display *boxer-frame*))
