@@ -82,8 +82,6 @@
                                                    (make-pointer right)
                                                    (make-pointer bottom))))))))
 
-(defsprite-function bu::no-op () (sprite turtle))
-
 ;;; This only works with single sprites for now
 (boxer-eval::defboxer-primitive bu::talk-to ((bu::port-to sprite))
   ;; first check for a "who" box

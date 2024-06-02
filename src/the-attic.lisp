@@ -15195,6 +15195,7 @@ CLOSED for renovations until I fix the string/font situation
 ;;;; FILE: grprim2.lisp
 ;;;;
 
+(defsprite-function bu::no-op () (sprite turtle))
 
 ;; 2022-04-21 Some wild stuff from defsprite-function stamp directly above the usage
 ;; of append-graphics-sheet-at
