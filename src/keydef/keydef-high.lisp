@@ -58,7 +58,7 @@
 ;;; BOXER key names, we use an array to look them up in. This is kind
 ;;; of like ZWEI.
 
-(defvar *initial-platform* #+macosx  :lwm
+(defvar *initial-platform* #+(or os-macosx macosx)  :lwm
                            #+win32   :ibm-pc
                            #+linux   :linux)
 
@@ -217,7 +217,7 @@
 
 (defun define-basic-keys (platform)
   "Give names to all the standard character keys.  Alphabetic
-  keys are by given the lowercase meaning, with "CAPITAL"
+  keys are by given the lowercase meaning, with CAPITAL
   defined as a shift key.
 
   This handles most alphanumeric keys and special symbols.
@@ -520,10 +520,9 @@
 
 ;
 ;;; initial setup
-#+lispworks (eval-when (eval load)
+(eval-when (eval load)
            (initialize-input-lookup-arrays)
-           (make-input-devices *initial-platform* nil)
-           )
+           (make-input-devices *initial-platform* nil))
 
 
 
@@ -548,6 +547,7 @@
     ;; an editor command, catch it at this level so the entire command
     ;; gets aborted rather than just the net loading piece.
     (COND ((key-event? input)
+            (print "   KEY EVENT")
             ;; Some sort of  key code. Try to lookup a name for it. If it
             ;; has a name call boxer-eval:handle-boxer-key with the name.
             (let ((key-name (lookup-key-name (if (numberp input)
@@ -564,7 +564,8 @@
           ((mouse-event? input)
             (record-mouse-input input)
             (mouse-click-boxer-input-handler input))
-          (t (unhandled-boxer-input input))))))
+          (t
+            (unhandled-boxer-input input))))))
 
 ;;; The following comment is preserved for posterity.
 ;; For now just be obnoxious

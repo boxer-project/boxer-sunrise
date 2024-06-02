@@ -139,7 +139,7 @@ Modification History (most recent at the top)
 (defun ogl-reshape (width height)
   (setf (boxer::boxgl-device-ortho-matrix bw::*boxgl-device*)
         (boxer::create-ortho-matrix width height))
-  (opengl:gl-viewport 0 0 width height))
+  #+lispworks (opengl:gl-viewport 0 0 width height))
 
 ;;; pixel conversion
 ;; color values are floats between 0.0 and 1.0
@@ -147,11 +147,11 @@ Modification History (most recent at the top)
   (round (* 255 (/ value 1.0))))
 
 ;; NOTE: this must match the format in *pixmap-data-type* and *pixmap-data-format*
-(defun opengl::pixel->color (pixel)
-  `#(:rgb ,(/ (ldb opengl::*gl-rgba-rev-red-byte* pixel)   255.0)
-          ,(/ (ldb opengl::*gl-rgba-rev-green-byte* pixel) 255.0)
-          ,(/ (ldb opengl::*gl-rgba-rev-blue-byte* pixel)  255.0)
-          ,(/ (ldb opengl::*gl-rgba-rev-alpha-byte* pixel) 255.0)))
+(defun pixel->color (pixel)
+  `#(:rgb ,(/ (ldb *gl-rgba-rev-red-byte* pixel)   255.0)
+          ,(/ (ldb *gl-rgba-rev-green-byte* pixel) 255.0)
+          ,(/ (ldb *gl-rgba-rev-blue-byte* pixel)  255.0)
+          ,(/ (ldb *gl-rgba-rev-alpha-byte* pixel) 255.0)))
 
 ;;; circle, (eventually) arcs, ellipses
 ;;; lisp crib of http://slabode.exofire.net/circle_draw.shtml

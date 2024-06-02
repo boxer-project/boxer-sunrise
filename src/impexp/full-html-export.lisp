@@ -110,10 +110,10 @@
   "This is a pixel that comes from the C array allocated by fli and stored in the ogl-pixmap-data. These
   predefined byte specifiers from the opengl code allow retrieval of the bytes with ldb. Luckily, in our
   current situation they are already in the 0 to 255 range we require for each RGBA value."
-  (list (ldb opengl::*gl-rgba-rev-red-byte* pixel)
-        (ldb opengl::*gl-rgba-rev-green-byte* pixel)
-        (ldb opengl::*gl-rgba-rev-blue-byte* pixel)
-        (ldb opengl::*gl-rgba-rev-alpha-byte* pixel)))
+  (list (ldb *gl-rgba-rev-red-byte* pixel)
+        (ldb *gl-rgba-rev-green-byte* pixel)
+        (ldb *gl-rgba-rev-blue-byte* pixel)
+        (ldb *gl-rgba-rev-alpha-byte* pixel)))
 
 (defun generate-png-from-ogl-pixmap (pixmap)
   "Using the zpng and qbase64 libraries we generate PNG image formatted data from the ogl-pixmap. This is streamed

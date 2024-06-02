@@ -141,7 +141,7 @@
 ;;; **** returns pixel value(window system dependent) at windw coords (x,y)
 ;;; see BU::COLOR-AT in grprim3.lisp
 (defun window-pixel (x y &optional (view *boxer-pane*)) (%get-pixel view x y))
-(defun window-pixel-color (x y &optional (view *boxer-pane*)) (opengl::pixel->color (%get-pixel view x y)))
+(defun window-pixel-color (x y &optional (view *boxer-pane*)) (pixel->color (%get-pixel view x y)))
 
 ;;;
 ;;; Drawing and Geometry layout type Macros
@@ -191,7 +191,7 @@
         ,@body))))
 
 (defmacro with-drawing-port (view &body body)
-  `(opengl::rendering-on (,view)
+  #+lispworks `(opengl::rendering-on (,view)
      ;; always start by drawing eveywhere
      (bw::ogl-reshape (sheet-inside-width ,view) (sheet-inside-height ,view))
      . ,body))
@@ -234,7 +234,7 @@
 (defun %flush-port-buffer (&optional (pane *boxer-pane*))
   (update-framerate)
   ; (opengl::rendering-on (pane) (opengl::gl-flush))
-  (opengl:rendering-on (pane)
+  #+lispworks (opengl:rendering-on (pane)
     (opengl::swap-buffers pane)))
 
 
@@ -276,7 +276,7 @@
 ;;;; COLOR (incomplete)
 
 ;;; neccessary but not sufficient...
-(Defun color? (thing) (typep thing 'opengl::gl-vector))
+(Defun color? (thing) #+lispworks (typep thing 'opengl::gl-vector))
 
 (defun %set-pen-color (color)
   "This expects either an already allocated GL 4 vector that represents a color, an RGB percentage vector
@@ -410,7 +410,7 @@ the window font (ie, draw-string) has to change it back for this to work.
                                                         bitmap-width bitmap-height)
                                                 &body body)
   (declare (ignore bitmap-width bitmap-height))
-  `(opengl::rendering-on (*boxer-pane*)
+  #+lispworks `(opengl::rendering-on (*boxer-pane*)
                      (gl:draw-buffer :back) ;gl:aux1)
                      (progn . ,body)
                      (gl:flush)
@@ -443,4 +443,4 @@ the window font (ie, draw-string) has to change it back for this to work.
   (pixmap-pixel *screen-pixel-buffer*  0 0))
 
 (defun offscreen-pixel-color (x y pixmap)
-  (opengl::pixel->color (opengl::pixmap-pixel pixmap x y)))
+  (pixel->color (pixmap-pixel pixmap x y)))

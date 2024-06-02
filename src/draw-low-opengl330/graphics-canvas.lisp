@@ -93,7 +93,7 @@
   (setf (graphics-canvas-pen-font-cmd self) nil)
   ;; Wrapping this in a rendering-on because sometimes clear is called by clearscreen
   ;; outside of a repaint.
-  (opengl:rendering-on (*boxer-pane*)
+  #+lispworks (opengl:rendering-on (*boxer-pane*)
     (enable self)
     (gl:clear-color 0.0 0.0 0.0 0.0) ;; transparent
     (gl:clear :color-buffer-bit :depth-buffer-bit :stencil-buffer-bit)
@@ -138,7 +138,7 @@
          (new-ortho-matrix (create-ortho-matrix wid hei)))
     (setf (boxgl-device-ortho-matrix device) new-ortho-matrix)
     (setf (boxgl-device-transform-matrix device) (create-transform-matrix 0 0))
-    (opengl:gl-viewport 0 0 wid hei)
+    #+lispworks (opengl:gl-viewport 0 0 wid hei)
   (update-matrices-ubo device)))
 
 (defmethod disable ((self graphics-canvas) &key (device bw::*boxgl-device*))
@@ -146,5 +146,5 @@
   (gl:bind-framebuffer :framebuffer 0)
   (setf (boxgl-device-ortho-matrix device) (cached-ortho-matrix self))
   (setf (boxgl-device-transform-matrix device) (cached-transform-matrix self))
-  (opengl:gl-viewport 0 0 (aref (resolution) 0) (aref (resolution) 1))
+  #+lispworks (opengl:gl-viewport 0 0 (aref (resolution) 0) (aref (resolution) 1))
   (update-matrices-ubo device))

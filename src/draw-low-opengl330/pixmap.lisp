@@ -39,10 +39,10 @@ Modification History (most recent at top)
 (defvar *pixmap-ffi-type* :unsigned-int
   "The pointer type for foreign-alloc and reference of pixmap data")
 
-(defvar opengl::*gl-rgba-rev-alpha-byte* (byte 8 24))
-(defvar opengl::*gl-rgba-rev-blue-byte* (byte 8 16))
-(defvar opengl::*gl-rgba-rev-green-byte* (byte 8 8))
-(defvar opengl::*gl-rgba-rev-red-byte* (byte 8 0))
+(defvar *gl-rgba-rev-alpha-byte* (byte 8 24))
+(defvar *gl-rgba-rev-blue-byte* (byte 8 16))
+(defvar *gl-rgba-rev-green-byte* (byte 8 8))
+(defvar *gl-rgba-rev-red-byte* (byte 8 0))
 
 (defclass ogl-pixmap ()
   ((width             :initarg :width             :initform 0   :accessor ogl-pixmap-width)
@@ -93,9 +93,9 @@ Modification History (most recent at top)
 
 ;; NOTE: this must match the format in *pixmap-data-type* and *pixmap-data-format*
 (defun make-offscreen-pixel (red green blue &optional (alpha 255))
-  (dpb alpha opengl::*gl-rgba-rev-alpha-byte*
-       (dpb blue opengl::*gl-rgba-rev-blue-byte*
-            (dpb green opengl::*gl-rgba-rev-green-byte* red))))
+  (dpb alpha *gl-rgba-rev-alpha-byte*
+       (dpb blue *gl-rgba-rev-blue-byte*
+            (dpb green *gl-rgba-rev-green-byte* red))))
 
 ;; NOTE: this must match the format in *pixmap-data-type* and *pixmap-data-format*
 (defun pixel= (p1 p2) (= p1 p2))
@@ -109,7 +109,7 @@ Modification History (most recent at top)
     (cffi:mem-aref data *pixmap-ffi-type* (+ x (* ogl-y pwid)))))
 
 (defun pixmap-pixel-color (pixmap x y)
-  (opengl::pixel->color (pixmap-pixel pixmap x y)))
+  (pixel->color (pixmap-pixel pixmap x y)))
 
 (defun set-pixmap-pixel (pixmap x y newpixel)
   (let* ((data (ogl-pixmap-data pixmap))

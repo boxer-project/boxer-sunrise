@@ -110,7 +110,7 @@
 
 
 (defun repaint-window (&OPTIONAL (WINDOW *BOXER-PANE*) (flush-buffer? t) &KEY (process-state-label "stopped"))
-  (opengl:rendering-on (window)
+  #+lispworks (opengl:rendering-on (window)
     (bw::check-for-window-resize)
     (REDISPLAYING-WINDOW (WINDOW)
                          (clear-window window)
@@ -147,7 +147,7 @@
 
 (defun repaint (&optional just-windows?)
   (adjust-global-scroll *boxer-pane*)
-  (opengl:rendering-on (*boxer-pane*)
+  #+lispworks (opengl:rendering-on (*boxer-pane*)
     (update-matrices-ubo bw::*boxgl-device*)
     (when *reload-shaders*
       (update-boxgl-programs)
