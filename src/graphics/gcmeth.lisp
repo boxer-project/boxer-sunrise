@@ -165,7 +165,9 @@ Modification History (most recent at top)
          (shape-box (box-interface-box shape-slot))
          (new-extents nil))
 
-    (clear-box shape-box)
+    ;; If we're using diet sprites, and no other actions have uncovered it, this box may not exist yet.
+    (when shape-box
+      (clear-box shape-box))
 
     (cond ((sprite-box? new-shape-box)
            ;; just copy the sprite's shape into the current shape
@@ -195,11 +197,13 @@ Modification History (most recent at top)
 
          (setf new-extents (boxer::graphics-command-list-extents shape))
 
-         (setf (boxer::graphics-sheet-graphics-list (boxer::graphics-info shape-box))
+         ;; Again, if we're using diet sprites, and no other actions have uncovered it, this box may not exist yet.
+         (when shape-box
+           (setf (boxer::graphics-sheet-graphics-list (boxer::graphics-info shape-box))
                shape)
 
-         (setf (boxer::graphics-sheet-draw-wid (boxer::graphics-info shape-box)) (floor (* 2 (+ (abs (nth 0 new-extents)) (abs (nth 2 new-extents))))))
-         (setf (boxer::graphics-sheet-draw-hei (boxer::graphics-info shape-box)) (floor (* 2 (+ (abs (nth 1 new-extents)) (abs (nth 3 new-extents)))))))))
+           (setf (boxer::graphics-sheet-draw-wid (boxer::graphics-info shape-box)) (floor (* 2 (+ (abs (nth 0 new-extents)) (abs (nth 2 new-extents))))))
+           (setf (boxer::graphics-sheet-draw-hei (boxer::graphics-info shape-box)) (floor (* 2 (+ (abs (nth 1 new-extents)) (abs (nth 3 new-extents))))))))))
 
     ;; handle any box interface...
     ; (when (and (null dont-update-box)
