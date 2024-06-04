@@ -262,9 +262,6 @@
                  ;; Beginning of `UTILITIES` module
                  ;; 	   "Various useful tools for Boxer system hacking"
                  (:file "utilities/mcl-utils")
-                 ;; Beginning of `printer` module
-                 ;; 	   "Utilities for printing out boxes in various ways"
-                 #+lispworks (:file "printer/deep-print")
                  ;; Beginning of `site` modules
                  ;; 	   "Utilities for Site specific customizations"
                  (:file "site/site")
