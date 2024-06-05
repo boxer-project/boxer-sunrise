@@ -41,13 +41,11 @@ as node and a possible server side Boxer).
   ; example on windows
   (load "Z:/quicklisp/setup.lisp")
   ```
-- Install our patched cl-freetype project
+- Install our patched cl-freetype2 project
   ```
   # substitute for your quicklisp install location
   cd ~/quicklisp/local-projects
-  git clone git@github.com:sgithens/cl-freetype2.git
-  cd cl-freetype2
-  git checkout -b lispworks-fixup origin/lispworks-fixup
+  git clone --branch=lispworks-fixup https://github.com/sgithens/cl-freetype2.git
   ```
 - Install freetype2 libraries, headers, etc
   ```
@@ -71,6 +69,8 @@ MSYS2. You may choose to use a different build system for Windows.
   ```
 
 - Add `C:\msys64\mingw64\bin` to the windows `PATH` environment variable.
+
+You also need the patched cl-freetype2 bindings, as above (clone it under `%HOMEPATH%/quicklisp/local-projects/`).
 
 ### Running Boxer
 
