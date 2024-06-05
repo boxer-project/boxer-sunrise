@@ -775,6 +775,7 @@
                                                   new-outermost-screen-box)
         window)
         #+lispworks (update-shrink-proof-display)
+        (reset-global-scrolling)
        ))))
 
 

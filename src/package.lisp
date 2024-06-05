@@ -32,6 +32,7 @@
   (:shadow :once-only)
   (:export :symbol-format :set-font-info
            :draw-line
+           :reset-global-scrolling
            :*boxer-frame*
            :*current-opengl-font*
            :with-collection

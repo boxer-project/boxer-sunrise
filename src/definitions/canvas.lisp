@@ -113,3 +113,9 @@
 
 (defmethod h-scrollable? ((self boxer-canvas))
  (> (content-wid self) (port-width self)))
+
+(defun reset-global-scrolling ()
+  "Move the global os scrollbars back to 0,0 along with the GL transform."
+  (setf (horizontal-scroll *boxer-pane*) 0)
+  (setf (vertical-scroll *boxer-pane*) 0)
+  (boxer::set-transform bw::*boxgl-device* 0 0))
