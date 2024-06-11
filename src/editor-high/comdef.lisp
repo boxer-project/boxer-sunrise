@@ -775,15 +775,6 @@ Modification History (most recent at top)
 (defvar *popup-doc-font*
   (make-boxer-font '("Arial" 8)))
 
-;; a pale yellow...
-;; try and get a close match to the usual Windows popup doc
-(defvar *popup-doc-color* #-(or lwwin opengl) (%make-color 95 95 70))
-(defvar *mouse-doc-highlight-color*)
-
-#+(or lwwin opengl)
-(def-redisplay-initialization (setq *popup-doc-color* (%make-color 95 95 70 60)
-                                    *mouse-doc-highlight-color* (%make-color 10 30 10)))
-
 ;; should be as big as the largest popup-doc
 (defvar *popup-doc-backing-store* nil)
 (defvar *popup-doc-on?* nil)
