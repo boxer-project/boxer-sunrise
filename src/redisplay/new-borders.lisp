@@ -68,8 +68,6 @@
 
 (defvar *basic-border-width* 1) ; +1 for file boxes...
 
-(defvar *border-left-margin* 1) ; *border-inside-space*
-
 (defvar *border-label-font* nil)
 (defvar *border-name-font*  nil)
 

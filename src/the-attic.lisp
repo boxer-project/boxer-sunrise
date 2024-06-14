@@ -22065,6 +22065,10 @@ Modification History (most recent at top)
 ;;;; FILE: new-borders.lisp
 ;;;;
 
+;; sgithens TODO 2024-06-11 Doesn't seem to be used anywhere
+(defvar *border-left-margin* 1) ; *border-inside-space*
+
+
 ;;;; used in various border GUI's & popup docs
 ;; these bitmaps are used to save *small* pieces of the screen before displaying
 ;; popup menus or other GUI items
