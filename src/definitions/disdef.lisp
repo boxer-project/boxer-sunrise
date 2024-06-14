@@ -103,16 +103,6 @@ Modification History (most recent at the top)
   `(check-type ,x (satisfies graphics-screen-sheet?)
                 "A graphics screen sheet"))
 
-;;; The X implementation requires that the font map stuff be set
-;;; up BEFORE the redisplay inits are run but we better check first...
-(def-redisplay-initialization
-  (progn ;; moved here because FD's need init'd colors
-         (setq *default-font-descriptor* (make-bfd -1 *default-font*)
-               *current-font-descriptor* (make-bfd -1 *default-font*))
-         (drawing-on-window (boxer-window::*boxer-pane*)
-                            (set-font-info *normal-font-no*))))
-
-
 ;;;NOTE:it must be loaded before any of the other display files
 
 (DEFSUBST MAKE-SCREEN-CHA (ACTUAL-CHA)

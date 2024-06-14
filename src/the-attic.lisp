@@ -8863,6 +8863,16 @@ Modification History (most recent at the top)
 ;;;; FILE: disdef.lisp
 ;;;;
 
+;;; The X implementation requires that the font map stuff be set
+;;; up BEFORE the redisplay inits are run but we better check first...
+(def-redisplay-initialization
+  (progn ;; moved here because FD's need init'd colors
+         (setq *default-font-descriptor* (make-bfd -1 *default-font*)
+               *current-font-descriptor* (make-bfd -1 *default-font*))
+         (drawing-on-window (boxer-window::*boxer-pane*)
+                            (set-font-info *normal-font-no*))
+                            ))
+
 ;;; right now these are flushed by the got-redisplayed
 ;;; method (probably not the best place)
 
