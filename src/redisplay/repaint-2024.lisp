@@ -215,7 +215,7 @@
                          hei (max min-hei fixed-hei))))
 
                (setf (screen-obj-x-got-clipped? self) (> internal-wid wid))
-               (setf (screen-obj-y-got-clipped? self) (> (+ internal-hei 50) hei)) ;; sgithens TODO 2024-06-11 Properly calculate this '50' padding
+               (setf (screen-obj-y-got-clipped? self) (> (- internal-hei (* *border-inside-space* 2)) (- hei t-border-wid b-border-wid (* *border-inside-space* 2)))) ;; sgithens TODO These calculations need to come from our new Boxer Box Model
 
                ;; Update the y-offset based on a scroll-to-actual-row adjustment.
                ;;
