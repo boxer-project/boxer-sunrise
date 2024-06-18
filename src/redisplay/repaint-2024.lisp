@@ -195,6 +195,19 @@
                    (setf wid min-wid
                          hei (max min-hei (+ (cha-hei) t-border-wid b-border-wid)))
                    (log:debug "~% case Shrunk 2: wid: ~A hei: ~A" wid hei))))))
+       ((graphics-screen-box? self)
+        ;; Currently graphics boxes never get clipped and always take their full canvas size
+        (set-display-style self :normal)
+        (when (neq box-type new-box-type)
+          (setq box-type new-box-type))
+        (multiple-value-bind (l-border-wid t-border-wid r-border-wid b-border-wid)
+                             (box-borders-widths new-box-type self)
+          (multiple-value-bind (internal-wid internal-hei)
+                               (internal-dimensions self l-border-wid t-border-wid)
+            (setf wid         (+  internal-wid l-border-wid r-border-wid)
+                  hei         (+ internal-hei t-border-wid b-border-wid)
+                  content-wid internal-wid
+                  content-hei internal-hei))))
        (t
          (set-display-style self :normal)
          (when (neq box-type new-box-type)
