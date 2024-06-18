@@ -193,7 +193,7 @@
 (defmacro with-drawing-port (view &body body)
   #+lispworks `(opengl::rendering-on (,view)
      ;; always start by drawing eveywhere
-     (bw::ogl-reshape (sheet-inside-width ,view) (sheet-inside-height ,view))
+     (ogl-reshape (sheet-inside-width ,view) (sheet-inside-height ,view))
      . ,body))
 
 (defun clear-window (w)
@@ -242,31 +242,31 @@
   (let ((font (find-cached-font font-no)))
     (if (null font)
       (error "No cached font for ~X" font-no)
-      (bw::with-ogl-font (font)
+      (with-ogl-font (font)
                          (if (symbolp string)
-                           (bw::ogl-string-width (string string) font)
-                           (bw::ogl-string-width string font))))))
+                           (ogl-string-width (string string) font)
+                           (ogl-string-width string font))))))
 
 (defun string-hei (font-no)
   (let ((font (find-cached-font font-no)))
     (if (null font)
       (error "No cached font for ~X" font-no)
-      (bw::with-ogl-font  (font)
+      (with-ogl-font  (font)
                           ;; most of the drawing code requires this to be a fixnum, thus the floor
-                          (floor (bw::ogl-font-height font))))))
+                          (floor (ogl-font-height font))))))
 
 (defun string-ascent (font-no)
   (let ((font (find-cached-font font-no)))
     (if (null font)
       (error "No cached font for ~X" font-no)
-      (bw::with-ogl-font  (font)
+      (with-ogl-font  (font)
                           ;; most of the drawing code requires this to be a fixnum, thus the floor
-                          (floor (bw::ogl-font-ascent font))))))
+                          (floor (ogl-font-ascent font))))))
 
 
 ;; proportional fonts
 (defun cha-wid (char)
-  (bw::ogl-char-width char))
+  (ogl-char-width char))
 
 (defun cha-ascent () %drawing-font-cha-ascent)
 
@@ -308,12 +308,12 @@
   )
 
 (defmacro with-pen-color ((color) &body body)
-  `(bw::maintaining-ogl-color
+  `(maintaining-ogl-color
     (bw::%set-pen-color ,color)
     . ,body))
 
 (defmacro maintaining-pen-color (&body body)
-  `(bw::maintaining-ogl-color . ,body))
+  `(maintaining-ogl-color . ,body))
 
 ;;;
 ;;; Drawing functions

@@ -48,10 +48,10 @@ Modification History (most recent at the top)
 
 |#
 
-(in-package :boxer-window)
+(in-package :boxer)
 
 ;; used directly
-(defun boxer::multiline2 (&rest x-and-y-s)
+(defun multiline2 (&rest x-and-y-s)
   ;; sgithens TODO 2022-12-30 Set this up properly to be a single draw arrays call rather
   ;;                          than a series of single line draws.
   (let ((prev-x nil)

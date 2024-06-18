@@ -1318,8 +1318,8 @@ in macOS."
     (if (null width)
         (multiple-value-bind (ww wh)
             (window-inside-size *boxer-pane*)
-          (ogl-reshape ww wh))
-        (ogl-reshape width height)))
+          (boxer::ogl-reshape ww wh))
+        (boxer::ogl-reshape width height)))
   (check-for-window-resize))
 
 (defun check-for-window-resize ()
