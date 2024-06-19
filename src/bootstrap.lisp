@@ -27,7 +27,9 @@
 (require "uiop")
 
 ;; By default (quicklisp-quickstart:install) puts it at something like "C:/Users/<YOU>/quicklisp/setup.lisp".
-#+win32 (load (merge-pathnames #P"quicklisp/setup.lisp" (user-homedir-pathname)))
+;; This will be in most lisp installations init scripts, but startup scripts aren't available in LW Personal
+;; #+win32 (load (merge-pathnames #P"quicklisp/setup.lisp" (user-homedir-pathname)))
+
 
 (ql:quickload :cl-fad)
 (ql:quickload :log4cl)
@@ -37,7 +39,7 @@
 
 (defvar *boxer-project-dir*
   (make-pathname :host (pathname-host *load-truename*) ; retain drive e.g. Z:/code/boxer-sunrise/
-		 :directory (butlast (pathname-directory *load-truename*))))
+                 :directory (butlast (pathname-directory *load-truename*))))
 
 (pushnew
   (cl-fad:merge-pathnames-as-directory *boxer-project-dir* "data/boxersunrise.app/Contents/Frameworks/")
@@ -48,14 +50,14 @@
 
 (setf asdf:*central-registry*
       (list* '*default-pathname-defaults*
-	     ;; This is relevant for compiled releases which include a "Plugins" subdir.
-	     ;; In development, cl-freetype2 goes into quicklisp/local-projects/; while this based on LW install
-	     ;; path may give something non-existent e.g. #P"C:/Program Files/PlugIns/cl-freetype2/".
-             (make-pathname :host (pathname-host (lw:lisp-image-name))
-			    :directory (append (butlast (pathname-directory (lw:lisp-image-name)))
-					       '("PlugIns"
-						 #+(and lispworks8 arm64) "lw8-macos-arm"
-						 "cl-freetype2")))
+        ;; This is relevant for compiled releases which include a "Plugins" subdir.
+        ;; In development, cl-freetype2 goes into quicklisp/local-projects/; while this based on LW install
+        ;; path may give something non-existent e.g. #P"C:/Program Files/PlugIns/cl-freetype2/".
+        (make-pathname :host (pathname-host (lw:lisp-image-name))
+                       :directory (append (butlast (pathname-directory (lw:lisp-image-name)))
+                                          '("PlugIns"
+                                          #+(and lispworks8 arm64) "lw8-macos-arm"
+                                          "cl-freetype2")))
        asdf:*central-registry*))
     (log:debug "ASDF Registry: ~A" asdf:*central-registry*)
 
