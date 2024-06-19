@@ -141,7 +141,7 @@
 ;;; **** returns pixel value(window system dependent) at windw coords (x,y)
 ;;; see BU::COLOR-AT in grprim3.lisp
 (defun window-pixel (x y &optional (view *boxer-pane*)) (%get-pixel view x y))
-(defun window-pixel-color (x y &optional (view *boxer-pane*)) (pixel->color (%get-pixel view x y)))
+(defun window-pixel-color (x y &optional (view *boxer-pane*)) (pixel->color (%get-pixel view (floor x) (floor y))))
 
 ;;;
 ;;; Drawing and Geometry layout type Macros
