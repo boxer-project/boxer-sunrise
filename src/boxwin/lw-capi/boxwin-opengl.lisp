@@ -921,7 +921,9 @@ in macOS."
 
   (boxer::load-appdata)
   (fixup-menus)
-  (setup-editor boxer::*initial-box*)
+  ;; win32 needs this rendering context here
+  (opengl:rendering-on (*boxer-pane*)
+    (setup-editor boxer::*initial-box*))
   (setq *display-bootstrapping-no-boxes-yet* nil)
 
   (boxer-eval::setup-evaluator)
@@ -1316,8 +1318,8 @@ in macOS."
     (if (null width)
         (multiple-value-bind (ww wh)
             (window-inside-size *boxer-pane*)
-          (ogl-reshape ww wh))
-        (ogl-reshape width height)))
+          (boxer::ogl-reshape ww wh))
+        (boxer::ogl-reshape width height)))
   (check-for-window-resize))
 
 (defun check-for-window-resize ()

@@ -36,7 +36,7 @@
                   (make-screen-cha inf-actual-obj)
                   (let ((new-obj (allocate-screen-obj-for-use-in
                                   inf-actual-obj (lowest-screen-box self))))
-                    (set-screen-obj-offsets new-obj inf-x-offset inf-y-offset)
+                    (set-screen-obj-offsets new-obj infs-new-wid inf-y-offset)
                     new-obj)))
           (append-screen-cha self inf-screen-obj)
           ;; At this point we know that inf-screen-obj and inf-actual-obj
@@ -49,7 +49,7 @@
              (setf infs-new-wid (+   infs-new-wid (cha-wid inf-screen-obj))
                    infs-new-hei (max infs-new-hei (cha-hei))
                    baseline (max baseline (cha-ascent))
-                   inf-x-offset (+ inf-x-offset wid)))
+                   inf-x-offset (+ inf-x-offset infs-new-wid))) ;; sgithens This may need to be 'wid' as well
             (t
              ;; must be a box so let the box do some work...
              ;; that is, redisplay if it wants to and then make its
@@ -57,10 +57,7 @@
              (multiple-value-bind (next-wid next-hei) (dimensions inf-screen-obj)
                 (setf infs-new-wid (+   infs-new-wid next-wid)
                       infs-new-hei (max infs-new-hei next-hei)
-                      inf-x-offset (+ inf-x-offset wid))
-             )
-
-            ))))
+                      inf-x-offset (+ inf-x-offset next-wid))))))) ;; sgithens This may need to be 'wid'
       (setf wid infs-new-wid
             hei infs-new-hei
             first-inf-x-offset 0
@@ -159,6 +156,7 @@
                    (setf (screen-box inf-screen-obj) self)
                    (setf (slot-value inf-actual-obj 'screen-objs) (list (cons self inf-screen-obj)))
 
+                   ;; These offsets are for screen rows
                    (set-screen-obj-offsets inf-screen-obj inf-x-offset inf-y-offset)
 
                    (multiple-value-bind (row-width row-height)
@@ -197,6 +195,19 @@
                    (setf wid min-wid
                          hei (max min-hei (+ (cha-hei) t-border-wid b-border-wid)))
                    (log:debug "~% case Shrunk 2: wid: ~A hei: ~A" wid hei))))))
+       ((graphics-screen-box? self)
+        ;; Currently graphics boxes never get clipped and always take their full canvas size
+        (set-display-style self :normal)
+        (when (neq box-type new-box-type)
+          (setq box-type new-box-type))
+        (multiple-value-bind (l-border-wid t-border-wid r-border-wid b-border-wid)
+                             (box-borders-widths new-box-type self)
+          (multiple-value-bind (internal-wid internal-hei)
+                               (internal-dimensions self l-border-wid t-border-wid)
+            (setf wid         (+  internal-wid l-border-wid r-border-wid)
+                  hei         (+ internal-hei t-border-wid b-border-wid)
+                  content-wid internal-wid
+                  content-hei internal-hei))))
        (t
          (set-display-style self :normal)
          (when (neq box-type new-box-type)
@@ -217,7 +228,7 @@
                          hei (max min-hei fixed-hei))))
 
                (setf (screen-obj-x-got-clipped? self) (> internal-wid wid))
-               (setf (screen-obj-y-got-clipped? self) (> (- internal-hei 50) hei)) ;; sgithens - just hacking values for now
+               (setf (screen-obj-y-got-clipped? self) (> (- internal-hei (* *border-inside-space* 2)) (- hei t-border-wid b-border-wid (* *border-inside-space* 2)))) ;; sgithens TODO These calculations need to come from our new Boxer Box Model
 
                ;; Update the y-offset based on a scroll-to-actual-row adjustment.
                ;;

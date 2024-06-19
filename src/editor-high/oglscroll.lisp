@@ -168,13 +168,17 @@ Modification History (most recent at top)
                              (draw-vertical-scrollbar vert-x it inner-hei
                                                       (* (/ inner-hei content-hei) inner-hei)
                                                       ;; percent scrolled
-                                                      (/ scroll-y-offset (- content-hei inner-hei))))
+                                                      (if (= (- content-hei inner-hei) 0)
+                                                        0
+                                                        (/ scroll-y-offset (- content-hei inner-hei)))))
                            (when (h-scrollable? self)
                              ;; ok, need to draw horizontal scroll GUI
                              (draw-horizontal-scrollbar (+ type-label-width il) (- hei ib)
                                                         inner-wid (* (/ inner-wid content-wid) inner-wid)
                                                         ;; percent scrolled
-                                                        (/ scroll-x-offset (- content-wid inner-wid))))))))
+                                                        (if (= (- content-wid inner-wid) 0)
+                                                          0
+                                                          (/ scroll-x-offset (- content-wid inner-wid)))))))))
 
 (defmethod draw-scroll-info ((self graphics-screen-box))
   (with-slots (actual-obj wid hei box-type)

@@ -773,15 +773,15 @@
                                                      (multiple-value-bind (n-min-x n-min-y n-max-x n-max-y)
                                                                           (box-borders-name-tab-values box-type screen-box)
                                                                           (declare (ignore n-min-x))
-                                                                          (setq minimum-track-wid (max& n-max-x minimum-track-wid)
+                                                                          (setq minimum-track-wid (max n-max-x minimum-track-wid)
                                                                                 minimum-track-hei (+ minimum-track-hei
                                                                                                      (- n-max-y n-min-y)))))
                                                    (multiple-value-bind (final-x final-y moved-p)
                                                                         (boxer-window::with-mouse-tracking ((mouse-x x) (mouse-y y)
                                                                                                                         :action :resize)
-                                                                                                           (let ((new-wid (max& minimum-track-wid
+                                                                                                           (let ((new-wid (max minimum-track-wid
                                                                                                                                 (- mouse-x box-window-x)))
-                                                                                                                 (new-hei (max& minimum-track-hei
+                                                                                                                 (new-hei (max minimum-track-hei
                                                                                                                                 (- mouse-y box-window-y)))
                                                                                                                  (last-wid (screen-obj-wid screen-box))
                                                                                                                  (last-hei (screen-obj-hei screen-box)))

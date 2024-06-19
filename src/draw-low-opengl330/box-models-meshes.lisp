@@ -186,7 +186,7 @@
           (w width)
           (h (box-glyph-rows glyph))
           (xpos (+ x bearing-x))
-          (font-hei (bw::ogl-font-height font))
+          (font-hei (ogl-font-height font))
           (ypos (if baseline-bot
                   (- (- (+ y font-hei) bearing-y) (* font-hei 0.2)) ;; This scaling by 0.2 of the font height is some
                   (- (- y bearing-y) (* font-hei 0.2))))            ;; pixel pushing for the current repaint layout.

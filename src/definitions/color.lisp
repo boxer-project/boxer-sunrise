@@ -53,6 +53,8 @@
 (defvar *closet-color* #(:rgb .94 .94 .97 1.0))
 (defvar *scroll-elevator-color* *gray* "Color for scrollbars")
 (defvar *blinker-color* #(:rgb .3 .3 .9 .5))
+(defvar *popup-doc-color* #(:RGB 0.95 0.95 0.70 0.60) "a pale yellow...")
+(defvar *mouse-doc-highlight-color* #(:RGB 0.10 0.30 0.10 1.0))
 
 (defun rgb-p (color)
   (and (vectorp color) (= (length color) 5) (equal :rgb (aref color 0))))

@@ -132,6 +132,18 @@
          (unless (and (= (screen-obj-x-offset inf-screen-obj) inf-x-offset)
                       ;; should we bother to checks y-offsets ?
                       )
+           ;; sgithens 2024-06-13 This should no longer happen. If this error isn't triggered, remove this entire
+           ;;                     'unless' block in another release or so.
+           ;;
+           (error "repaint-inferiors-pass-2-sr adjusting items that should have been handled in pass-1
+  inf-screen-obj: ~A
+  (screen-obj-x-offset inf-screen-obj): ~A
+                          inf-x-offset: ~A
+  (screen-obj-y-offset inf-screen-obj): ~A
+                          inf-y-offset: ~A"
+             inf-screen-obj
+             (screen-obj-x-offset inf-screen-obj) inf-x-offset
+             (screen-obj-y-offset inf-screen-obj) inf-y-offset)
            (setf (screen-obj-x-offset inf-screen-obj) inf-x-offset)
            (setf (screen-obj-y-offset inf-screen-obj) inf-y-offset))
          (repaint-pass-2-sb inf-screen-obj)
