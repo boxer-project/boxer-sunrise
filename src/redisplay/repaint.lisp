@@ -163,31 +163,30 @@
   (draw-blinker (point-blinker *boxer-pane*)))
 
 (defun repaint-cursor-internal (&optional (cursor *point*))
-  (ignore-errors  ;; without this, errors here will generate endless beeping
-                  (and (bp? cursor)
-                       (multiple-value-bind (cursor-x cursor-y size-hint)
-                                            (bp-coordinates cursor)
-                                            (declare (ignore size-hint))
-                                            (let* ((psb (point-screen-box))
-                                                   ;; 1/9/03 under certain conditions, point-screen-box can be NIL
-                                                   ;; usually because  of programatic scrolling
-                                                   (actual-box (or (and psb (screen-obj-actual-obj psb))
-                                                                   (bp-box cursor)))
-                                                   (scroll-row (and psb (scroll-to-actual-row psb)))
-                                                   (scroll-y-offset (or (and psb (slot-value psb 'scroll-y-offset))
-                                                                        0)))
-                                              (multiple-value-bind (c-width c-height offset-from-top)
-                                                                   (cursor-info cursor)
-                                                                   (let ((on-scroll-row-offset (if (or (eq (bp-row cursor) scroll-row)
-                                                                                                       (and (null scroll-row) (box? actual-box)
-                                                                                                            (eq (bp-row cursor) (first-inferior-row actual-box))))
-                                                                                                 scroll-y-offset
-                                                                                                 0)))
-                                                                     (update-blinker (point-blinker *boxer-pane*)
-                                                                                     cursor-x
-                                                                                     (- (+ cursor-y offset-from-top) on-scroll-row-offset)
-                                                                                     c-width
-                                                                                     (+ c-height on-scroll-row-offset)))))))))
+  (and (bp? cursor)
+        (multiple-value-bind (cursor-x cursor-y size-hint)
+                            (bp-coordinates cursor)
+                            (declare (ignore size-hint))
+                            (let* ((psb (point-screen-box))
+                                    ;; 1/9/03 under certain conditions, point-screen-box can be NIL
+                                    ;; usually because  of programatic scrolling
+                                    (actual-box (or (and psb (screen-obj-actual-obj psb))
+                                                    (bp-box cursor)))
+                                    (scroll-row (and psb (scroll-to-actual-row psb)))
+                                    (scroll-y-offset (or (and psb (slot-value psb 'scroll-y-offset))
+                                                        0)))
+                              (multiple-value-bind (c-width c-height offset-from-top)
+                                                    (cursor-info cursor)
+                                                    (let ((on-scroll-row-offset (if (or (eq (bp-row cursor) scroll-row)
+                                                                                        (and (null scroll-row) (box? actual-box)
+                                                                                            (eq (bp-row cursor) (first-inferior-row actual-box))))
+                                                                                  scroll-y-offset
+                                                                                  0)))
+                                                      (update-blinker (point-blinker *boxer-pane*)
+                                                                      cursor-x
+                                                                      (- (+ cursor-y offset-from-top) on-scroll-row-offset)
+                                                                      c-width
+                                                                      (+ c-height on-scroll-row-offset))))))))
 
 (defvar *default-cursor-width* 3)
 (defvar *unseen-box-cursor-height* 17)
