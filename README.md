@@ -41,11 +41,14 @@ as node and a possible server side Boxer).
   ; example on windows
   (load "Z:/quicklisp/setup.lisp")
   ```
-- Install our patched cl-freetype2 project
+- Install our patched cl-freetype2, cl-opengl, and zip projects.  These are small workarounds, and ideally will
+  be removed at some point in the future.
   ```
   # substitute for your quicklisp install location
   cd ~/quicklisp/local-projects
   git clone --branch=lispworks-fixup https://github.com/sgithens/cl-freetype2.git
+  git clone --branch=lispworks-fixup https://github.com/sgithens/cl-opengl.git
+  git clone --branch=lispworks-fixup https://github.com/sgithens/zip.git
   ```
 - Install freetype2 libraries, headers, etc
   ```
