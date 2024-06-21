@@ -70,6 +70,7 @@
 
 #+(and lispworks x64) (load (cl-fad:merge-pathnames-as-file *boxer-project-dir* "src/opengl-lw-8/examples/load.lisp"))
 
+
 ;; debugging on Apple Silicon
 ; #+ARM64 (progn
 ;   ; (load "/Users/sgithens/code/lispworks-8.0-examples/opengl/host")
@@ -78,7 +79,7 @@
 
 (setf *features* (cons :opengl *features*))
 (setf *features* (cons :freetype-fonts *features*))
-(asdf:load-system :boxer-sunrise)
+(ql:quickload :boxer-sunrise)
 (setf boxer::*capogi-font-directory* (merge-pathnames "data/boxersunrise.app/Contents/Resources/Fonts/" *boxer-project-dir*))
 (setf boxer::*resources-dir* (merge-pathnames "data/boxersunrise.app/Contents/Resources/" *boxer-project-dir*))
 (setf boxer::*shaders-dir* (merge-pathnames "src/draw-low-opengl330/shaders/" *boxer-project-dir*))

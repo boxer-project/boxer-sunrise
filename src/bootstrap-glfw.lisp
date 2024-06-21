@@ -36,7 +36,7 @@
 (setf *features* (cons :opengl *features*))
 (setf *features* (cons :freetype-fonts *features*))
 (setf *features* (cons :glfw-engine *features*))
-(asdf:load-system :boxer-sunrise)
+(ql:quickload :boxer-sunrise)
 
 (setf boxer::*capogi-font-directory* (merge-pathnames "data/boxersunrise.app/Contents/Resources/Fonts/" *project-dir*))
 (setf boxer::*resources-dir* (merge-pathnames "data/boxersunrise.app/Contents/Resources/" *project-dir*))
