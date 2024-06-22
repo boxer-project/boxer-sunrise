@@ -440,10 +440,6 @@ Modification History (most recent at top)
   (draw-mode ':wrap)                          ;; Either ':wrap or ':clip for turtle drawing around edges
   (graphics-list nil)                         ;; A graphics-command-list struct with the drawn turtle graphics commands
   (background nil)                            ;; A background color that is used in lieu of the pixmap bit-array member
-
-  ;; these are obsolete....
-  ;; used to avoid redundant prepare sheets (see bu::with-sprites-hidden)
-  (bit-array-dirty? nil)
   )
 
 ;; this can stay here cause its for a Struct and not a PCL Class

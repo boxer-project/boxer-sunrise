@@ -38,9 +38,7 @@
             ((color? bg)
              (setf (graphics-sheet-background graphics-sheet) nil))
             ;; tiling pattern code here
-            )
-          ;; mark the dirty? flag
-          (setf (graphics-sheet-bit-array-dirty? graphics-sheet) nil))
+            ))
         ;; Clear any framebuffers if present
         (clear-graphics-canvas self)))))
 

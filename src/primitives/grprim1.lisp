@@ -153,8 +153,6 @@
               "No color in: " color))
        ((not (null (graphics-sheet-bit-array gs)))
         (clear-ogl-pixmap (graphics-sheet-bit-array gs) pix)
-        ;; mark the dirty? flag
-        (setf (graphics-sheet-bit-array-dirty? gs) t)
         (modified-graphics gb))
        (t
         ;; first, set the color

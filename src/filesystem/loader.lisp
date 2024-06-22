@@ -1146,9 +1146,7 @@ should ignore it.")
         (unless (null graphics-list)
           (setf (graphics-sheet-graphics-list new-sheet) (post-load-process-graphics-list graphics-list)))
         (unless (null bit-array)
-          (setf (graphics-sheet-bit-array new-sheet) bit-array)
-          ;; mark the dirty? flag
-          (setf (graphics-sheet-bit-array-dirty? new-sheet) t))
+          (setf (graphics-sheet-bit-array new-sheet) bit-array))
         (unless (null background)
           (setf (graphics-sheet-background new-sheet)
                 (reallocate-pixel-color background)))
@@ -1368,8 +1366,7 @@ should ignore it.")
                            :bitmap-p t)
             ;; IWBNI we could free the consed up image here
             (bw::free-gcontext gc))))
-      ;; mark the dirty? flag
-      (setf (graphics-sheet-bit-array-dirty? new-sheet) t))
+    )
     new-sheet))
 
 

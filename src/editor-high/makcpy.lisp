@@ -59,10 +59,7 @@
       (let ((bm (make-ogl-pixmap wid hei)))
         (setf (graphics-sheet-bit-array new-sheet) bm)
         (with-graphics-vars-bound-internal from-sheet
-          (copy-pixmap-data wid hei (graphics-sheet-bit-array from-sheet) 0 0 bm 0 0)
-          ;; mark the dirty? flag
-          (setf (graphics-sheet-bit-array-dirty? new-sheet) t)
-          )))
+          (copy-pixmap-data wid hei (graphics-sheet-bit-array from-sheet) 0 0 bm 0 0))))
     new-sheet))
 
 (defmethod copy-box ((from-box box) &optional (copy-top-level-attributes? t))

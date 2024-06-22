@@ -72,7 +72,6 @@
       (let* ((gb (boxer::make-box '(())))
              (gs (boxer::make-graphics-sheet wid hei gb)))
         (setf (boxer::graphics-sheet-bit-array gs) bm)
-        (setf (boxer::graphics-sheet-bit-array-dirty? gs) T)
         (setf (boxer::graphics-info gb) gs)
         (setf (boxer::display-style-graphics-mode?
                (boxer::display-style-list gb)) T)

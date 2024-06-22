@@ -389,9 +389,7 @@ Modification History (most recent at top)
                                              (min& height
                                                    (-& %drawing-height orig-y)))
                                          (graphics-sheet-bit-array graphics-sheet)
-                                         (max& orig-x 0) (max& orig-y 0) 0 0))))
-                 ;; mark the dirty? flag
-                 (setf (graphics-sheet-bit-array-dirty? new-gs) t))
+                                         (max& orig-x 0) (max& orig-y 0) 0 0)))))
                ;; if there is a graphics list, it needs to be
                ;; translated to look right
                (let ((gl (graphics-sheet-graphics-list graphics-sheet))
@@ -448,8 +446,6 @@ Modification History (most recent at top)
         ;; now clear the display list and graphics-canvas if in use
         (clear-graphics-list display-list)
         (clear-graphics-canvas gb)
-        ;; mark the dirty? flag
-        (setf (graphics-sheet-bit-array-dirty? graphics-sheet) t)
         (setf (ogl-pixmap-update-texture-p (graphics-sheet-bit-array graphics-sheet)) t)
         (modified-graphics gb)
         boxer-eval::*novalue*))))
@@ -668,9 +664,7 @@ Modification History (most recent at top)
                          (<=& 0 gb-y %drawing-height))
                 (drawing-on-bitmap (bit-array)
                    (with-pen-color (pixcolor)
-                     (draw-point gb-x gb-y)))
-                ;; mark the dirty? flag
-                (setf (graphics-sheet-bit-array-dirty? gs) t))
+                     (draw-point gb-x gb-y))))
               (when (and (<& 0 gb-x (screen-obj-wid sb))
                          (<& 0 gb-y (screen-obj-hei sb)))
                 (multiple-value-bind (box-x box-y) (xy-position sb)

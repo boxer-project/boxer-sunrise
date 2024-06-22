@@ -3306,6 +3306,11 @@ Modification History (most recent at top)
 ;;;; FILE: boxdef.lisp
 ;;;;
 
+;; 2024-06-21 Removing another unneeded member of graphics-sheet
+  ;; these are obsolete....
+  ;; used to avoid redundant prepare sheets (see bu::with-sprites-hidden)
+  (bit-array-dirty? nil)
+
 ;; 2023-08-30 Removing completely unreferenced members of defstruct graphics-sheet
   (colormap nil)
   (prepared-flag nil)

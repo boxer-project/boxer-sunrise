@@ -189,7 +189,6 @@
       (let* ((gs (graphics-info box))
              (width (graphics-sheet-draw-wid gs))
              (height (graphics-sheet-draw-hei gs))
-             (bit-array-dirty? (graphics-sheet-bit-array-dirty? gs))
              (background-color (if (graphics-sheet-background gs)
                                    (rgb->css-hex (graphics-sheet-background gs))
                                    (rgb->css-hex *white*)))
@@ -202,7 +201,7 @@
         ;; If it has a bit-array it's likely a raster image, but could have graphics commands as well? Either way,
         ;; we paint the raster image in the SVG. Otherwise we paint a rectangle over the entire graphics using the
         ;; background-color.
-        (if (and bit-array-dirty? (graphics-sheet-bit-array gs))
+        (if (graphics-sheet-bit-array gs)
           (let ((base64png (generate-png-from-ogl-pixmap (graphics-sheet-bit-array gs))))
             (format stream "<image href=\"data:image/png;base64,~a\"/>" base64png))
           (format stream "<rect width=\"100%\" height=\"100%\" fill=\"~a\"/>" background-color))
