@@ -187,7 +187,7 @@ Modification History (most recent at top)
 
          (unless (null %bit-array)
            ;; if the new-shape-box has a background bitmap, lay that in first
-           (sv-append shape (make-boxer-graphics-command-centered-bitmap
+           (sv-append shape (record-boxer-graphics-command-centered-bitmap
                              (copy-pixmap %bit-array)
                              0 0 (ogl-pixmap-width %bit-array)
                              (ogl-pixmap-height %bit-array))))
