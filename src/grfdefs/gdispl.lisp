@@ -732,19 +732,6 @@ Modification History (most recent at the top)
 (defun sprite-commands-for-new-position (new-x new-y)
   (list 'bu::penup 'bu::setxy new-x new-y 'bu::pendown))
 
-;; the default copy functions only copy slots. For bitmaps, we need
-;; a separate copy of the bitmap as well
-;; sgithens TODO fix these duplicate def warnings for sbcl
-#-sbcl(defun copy-boxer-graphics-command-centered-bitmap (command)
-  (make-boxer-graphics-command-centered-bitmap
-   (copy-pixmap (boxer-graphics-command-centered-bitmap-bitmap command))
-   (boxer-graphics-command-centered-bitmap-x command)
-   (boxer-graphics-command-centered-bitmap-y command)
-   (boxer-graphics-command-centered-bitmap-width command)
-   (boxer-graphics-command-centered-bitmap-height command)))
-
-;; the def macro should be changed so we don't have to do this...
-
 ;; this is used by the redisplay...
 
 (defun redisplay-graphics-sheet-graphics-list (gs graphics-screen-box)

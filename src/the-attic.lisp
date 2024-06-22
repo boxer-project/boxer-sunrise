@@ -11376,6 +11376,17 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: gdispl.lisp
 ;;;;
 
+;; the default copy functions only copy slots. For bitmaps, we need
+;; a separate copy of the bitmap as well
+;; sgithens TODO fix these duplicate def warnings for sbcl
+#-sbcl(defun copy-boxer-graphics-command-centered-bitmap (command)
+  (make-boxer-graphics-command-centered-bitmap
+   (copy-pixmap (boxer-graphics-command-centered-bitmap-bitmap command))
+   (boxer-graphics-command-centered-bitmap-x command)
+   (boxer-graphics-command-centered-bitmap-y command)
+   (boxer-graphics-command-centered-bitmap-width command)
+   (boxer-graphics-command-centered-bitmap-height command)))
+
 (defmacro expand-mutators-and-body (args initial-index &body body)
   (cond ((null args)
          `(progn . ,body))
