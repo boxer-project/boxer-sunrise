@@ -1,5 +1,75 @@
 # Change Log
 
+## 3.4.19 2024-06-24
+
+This is the first maintenance release after the large redisdplay layout refactoring. This fixes a number of small
+regressions which popped up plus a few random bugs. There is still an annoying bug that occurs occasionally when you
+resize or scroll the window resulting in a white screen... this should be fixed in the July bug fix release. A few
+small fixes have been made for starting up on Windows, and some work from @cben plus follow up documentation work
+have been merged.
+
+Additionally, and perhaps most exciting, is that this months R&D has resulted in the Boxer GL canvas starting up in
+SBCL using GLFW3 (including an actual blinking cursor!). Input is being registered, but an issue with some of the GL
+meshes is keeping them from being rendered, but ideally that will be working soon. Very Exciting, and gets us closer to
+a full-on repaint loop (needed for video and things) as well as running in ECL and then WebGL in a browser.
+
+### Full Change Log
+
+regression bugs-193 Removing more fixnum calculations and flooring the pixel-color arguments.
+
+sunrise-11 Erroring out a bit of repaint pass 2 that was updating screen-objs that should be handled in pass1, and fixing that.
+
+sunrise-20
+  - Initial Boxer Window Rendering in SBCL!!!
+  - Moving *blinker-color* to colors.lisp
+  - Moving initialize of basic fonts to shared defun
+  - Removing opengl package and adding more #+lispworks wrappers
+  - Blinking cursor on GLFW and initial look at key entry
+  - Removing extra output and temporary exclusion for sbcl
+
+sunrise-72 Checking if an shape box exists (in addition to the underlying shape data), before trying to update it.
+
+sunrise-74
+  - Correcting vertical clipping padding math.
+  - Corrently using borders and padding measurements.
+
+sunrise-77 Improve dev setup on Windows
+  - Replace some hardcoded paths with computed (taking care with drive letters).
+  - Document some defaults that were unobvious to me as a newbie.
+
+sunrise-80 Adding dimensions case for graphics-screen-boxes
+
+sunrise-83
+  - Adding a few missing forks with lispworks work arounds... (Sorry!)
+  - Swapping out asdf:load-system to ql:quickload so the dependencies are brought in.
+
+sunrise-84 Updated dangling MAKE-BOXER-GRAPHICS-COMMAND-CENTERED-BITMAP to record-boxer-graphics-command-centered-bitmap
+
+windows
+  - Requires an openGL context here...
+`
+minor-fix
+  - Resetting scrolling and transforms when changing the outerscreen box.
+  - Avoid occasional divide by zero errors
+  - Changing fixnum max& to regular max
+
+cleanup
+  - Removing commented out :opengl package
+
+refactor`
+  - Moving *popup-doc-color* and *mouse-doc-highlight-color* to colors.lisp
+  - Moving *default-font-descriptor* and *current-font-descriptor* inits from a def-redisplay-initialization to font
+s.lisp
+  - Moving opengl-utils.lisp from package :boxer-window to :boxer
+  - Removing ignore-errors from repaint-cursor-internal, so we actually get the errors.
+
+the-attic
+  - Archiving sprite primitive no-op
+  - Archiving unused and partially implemented deep-print.lisp
+  - Removing unused defvar *border-left-margin*
+  - Archiving no longer used copy-boxer-graphics-command-centered-bitmap
+  - Removing essentially unused bit-array-dirty? member from defstruct graphics-sheet
+
 ## 3.4.18 2024-05-26
 
 This is the first release of our reworked scrolling and rendering layout, replacing our old single screen
