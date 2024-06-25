@@ -547,7 +547,6 @@
     ;; an editor command, catch it at this level so the entire command
     ;; gets aborted rather than just the net loading piece.
     (COND ((key-event? input)
-            (print "   KEY EVENT")
             ;; Some sort of  key code. Try to lookup a name for it. If it
             ;; has a name call boxer-eval:handle-boxer-key with the name.
             (let ((key-name (lookup-key-name (if (numberp input)
