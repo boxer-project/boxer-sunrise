@@ -254,24 +254,8 @@ Modification History (most recent at top)
                                         (1+ (LENGTH-IN-CHAS NEXT-OR-PREVIOUS-ROW)))))
                       (T . ,BODY))))
 
-
-
-;;; For Killing stuff
-
-;for control-y
-(DEFMACRO KILL-BUFFER-TOP ()
-          '(CAR *KILL-BUFFER*))
 
 ;;;; Variables...
-
-;;; Used by the Kill stuff
-(defvar *kill-buffer-last-direction* nil)
-
-(defvar *kill-buffer-length* 8)
-
-(defvar *kill-buffer* (make-list *kill-buffer-length*))
-
-(defvar *number-of-non-kill-commands-executed* 0)
 
 ;;; Used by search
 (DEFVAR *CASE-AFFECTS-STRING-SEARCH* NIL)

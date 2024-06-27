@@ -84,10 +84,11 @@
          ;; this is the case we know we were the last one to set the clipboard and yank
          ;; in our most recent item.
          ;; http://www.lispworks.com/documentation/lw71/CAPI-W/html/capi-w-206.htm#82688
-         (boxer::com-yank))
+         (boxer::com-paste))
         ((not (capi:clipboard-empty self :string))
          (paste-text))
         ((not (capi:clipboard-empty self :image))
          (paste-pict))
-        (t (boxer::com-yank)))
+        (t
+         (boxer::com-paste)))
   (boxer::repaint))

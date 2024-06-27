@@ -814,7 +814,7 @@ argument, deletes that many lines."
                    (region (copy-interval existing-region)))
               (write-system-scrap region)
               region)
-            ':forward)
+            ':forward :include-paste t)
            ;; should we flush the region here ?
            ;; on one hand, what else would we want to do with it ?
            ;; on the other hand, "It's not like the Mac"
@@ -831,7 +831,7 @@ argument, deletes that many lines."
       (reset-editor-numeric-arg)
       (let ((killed-region (kill-region existing-region)))
         (write-system-scrap killed-region)
-        (kill-buffer-push killed-region ':forward))
+        (kill-buffer-push killed-region ':forward :include-paste t))
       ;; need to figure out where and what redisplay clues to add here
       (flush-region existing-region)
       (exiting-region-mode)))
@@ -861,6 +861,17 @@ removes it from the kill buffer.  No copy is made."
     (setf (kill-buffer-top) nil)
     (top-level-insert-things item))
   (com-rotate-kill-buffer)
+  (mark-file-box-dirty (point-row))
+  boxer-eval::*novalue*)
+
+(defboxer-command COM-PASTE ()
+  "Inserts from the current paste clipboard rather than the kill buffer."
+  (reset-region)
+  (reset-editor-numeric-arg)
+  (let ((item (copy-thing *current-paste-item*)))
+    ;; (setf (kill-buffer-top) nil)
+    (top-level-insert-things item))
+  ;; (com-rotate-kill-buffer)
   (mark-file-box-dirty (point-row))
   boxer-eval::*novalue*)
 
@@ -938,33 +949,6 @@ removes it from the kill buffer.  No copy is made."
          (insert-row *point* (make-initialized-row) :moving))
         ((listp thing) (insert-list-of-things thing))
         (t (boxer-editor-error "Unusual Object Found In Boxer Kill Buffer"))))
-
-
-(defun kill-buffer-push (item direction)
-  (when (null item) (setq item :newline))
-  (if (<= *number-of-non-kill-commands-executed* 1)
-      (if (eq direction *kill-buffer-last-direction*)
-          (cond ((eq direction ':forward)
-                 (ensure-list item)
-                 (ensure-list (car *kill-buffer*))
-                 (setf (car *kill-buffer*)
-                       (nconc (car *kill-buffer*) item)))
-                ((eq direction ':backward)
-                 (ensure-list (car *kill-buffer*))
-                 (setf (car *kill-buffer*)
-                       (cons item (car *kill-buffer*)))))
-          (push item *kill-buffer*))
-      (push item *kill-buffer*))
-  ;; We don't want every deleted char to be in the clipboard, so adding to the
-  ;; clipboard is now limited to the kill-region and copy-region commands
-                                        ;  (write-system-scrap (car *kill-buffer*))
-  (when (> (length *kill-buffer*) *kill-buffer-length*)
-    (let ((objs-for-deallocation (car (nthcdr *kill-buffer-length* *kill-buffer*))))
-      (rplacd (nthcdr (1- *kill-buffer-length*) *kill-buffer*) nil)
-      (queue-editor-objs-for-deallocation objs-for-deallocation)))
-  (setq *kill-buffer-last-direction* direction)
-  (setq *number-of-non-kill-commands-executed* 0)
-  *kill-buffer*)
 
 ;;for control-meta-y, sort of.
 (defboxer-command COM-ROTATE-KILL-BUFFER ()

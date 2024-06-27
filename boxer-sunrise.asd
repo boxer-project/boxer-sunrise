@@ -147,6 +147,7 @@
 
                  ;; Beginning of `EDITOR-HIGH` module
                  ;; "Higher level Editor Utilities"
+                 (:file "editor-high/copy-paste-buffers")
                  (:file "editor-high/mouse")
                  (:file "editor-high/simple-stream")
                  (:file "editor-high/makcpy")
