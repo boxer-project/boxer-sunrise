@@ -204,10 +204,12 @@
                              (box-borders-widths new-box-type self)
           (multiple-value-bind (internal-wid internal-hei)
                                (internal-dimensions self l-border-wid t-border-wid)
-            (setf wid         (+  internal-wid l-border-wid r-border-wid)
-                  hei         (+ internal-hei t-border-wid b-border-wid)
-                  content-wid internal-wid
-                  content-hei internal-hei))))
+            (multiple-value-bind (min-wid min-hei)
+                                 (box-borders-minimum-size new-box-type self)
+              (setf wid         (max min-wid (+ internal-wid l-border-wid r-border-wid))
+                    hei         (max min-hei (+ internal-hei t-border-wid b-border-wid))
+                    content-wid internal-wid
+                    content-hei internal-hei)))))
        (t
          (set-display-style self :normal)
          (when (neq box-type new-box-type)
