@@ -52,8 +52,11 @@
     ((and (eq key :escape) (eq action :press))
      (cl-glfw3:set-window-should-close))
     ((eq action :press)
-     ;;  (boxer::handle-boxer-input (character key))
-     (boxer::insert-cha boxer::*point* (character key))
+     (handler-case
+         ;;  (boxer::handle-boxer-input (character key))
+         (boxer::insert-cha boxer::*point* (character key))
+       (type-error (e)
+         (format t "~%  Error converting key to character: ~A, ignoring." e)))
      (format t "~%  the initial box now: ~A" boxer::*initial-box*)
      )
     (t
