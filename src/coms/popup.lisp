@@ -300,7 +300,7 @@ Modification History (most recent at top)
 
 ;;; popup doc methods
 
-(defvar *popup-mouse-documentation?* #+lwwin :unroll #+mcl T #+opengl :unroll
+(defvar *popup-mouse-documentation?* :unroll
   "Can be NIL (no documentation), :unroll or T")
 
 
@@ -467,7 +467,6 @@ Modification History (most recent at top)
           (declare (ignore lef top bot))
           (let ((corner-x (+ x (screen-obj-wid screen-box) (- rig)))
                 (corner-y (+ y delta-y
-                              ;; #+opengl
                               (box-top-y (name-string-or-null
                                           (screen-obj-actual-obj screen-box))
                                          0))))

@@ -413,7 +413,6 @@ Modification History (most recent at top)
 (boxer-eval::defboxer-primitive bu::freeze ()
   (boxer-eval::primitive-signal-error :graphics "Freeze does not work yet."))
 
-#+opengl
 (boxer-eval::defboxer-primitive bu::freeze ()
   (let ((gb (get-relevant-graphics-box)))
     (if (or (null gb) (eq gb :no-graphics))

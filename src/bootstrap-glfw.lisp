@@ -33,7 +33,6 @@
 (sb-int:set-floating-point-modes :traps nil)
 
 (ql:quickload :cl-freetype2)
-(setf *features* (cons :opengl *features*))
 (setf *features* (cons :freetype-fonts *features*))
 (setf *features* (cons :glfw-engine *features*))
 (ql:quickload :boxer-sunrise)
