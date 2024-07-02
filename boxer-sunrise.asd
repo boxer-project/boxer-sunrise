@@ -50,7 +50,7 @@
                                (:file "box-models-meshes")
                                (:file "draw-low-opengl330")
                                (:file "opengl-utils")
-                               #+(and freetype-fonts (not delivering))
+                               #+(not delivering)
                                (:file "freetype-fonts")
                                (:file "draw-low-opengl")))
 

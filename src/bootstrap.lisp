@@ -77,7 +77,6 @@
 ;   (load "/Applications/LispWorks 8.0 (64-bit)/Library/lib/8-0-0-0/examples/opengl/host")
 ;   (load "OPENGL:EXAMPLES;load"))
 
-(setf *features* (cons :freetype-fonts *features*))
 (ql:quickload :boxer-sunrise)
 (setf boxer::*capogi-font-directory* (merge-pathnames "data/boxersunrise.app/Contents/Resources/Fonts/" *boxer-project-dir*))
 (setf boxer::*resources-dir* (merge-pathnames "data/boxersunrise.app/Contents/Resources/" *boxer-project-dir*))

@@ -30,7 +30,5 @@
 (setf prove::*default-reporter* :tap)
 
 #+lispworks (load (example-file "opengl/examples/load"))
-(setf *features* (cons :opengl *features*))
-(setf *features* (cons :freetype-fonts *features*))
 
 (asdf:test-system :boxer-sunrise-core :reporter :list)

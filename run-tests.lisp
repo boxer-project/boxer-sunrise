@@ -33,7 +33,4 @@
 
 #+(and lispworks x64) (load (cl-fad:merge-pathnames-as-file *boxer-project-dir* "src/opengl-lw-8/examples/load.lisp"))
 
-(setf *features* (cons :opengl *features*))
-(setf *features* (cons :freetype-fonts *features*))
-
 (asdf:test-system :boxer-sunrise :reporter :list)
