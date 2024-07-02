@@ -227,3 +227,13 @@
   ;;; START contents of boxer-process-top-level-fn
   (boxer::enter (boxer::point-box))
   (display *boxer-frame*))
+
+(defun start-glfw-boxer (project-dir)
+  (setf boxer::*capogi-font-directory* (merge-pathnames "data/boxersunrise.app/Contents/Resources/Fonts/" project-dir))
+  (setf boxer::*resources-dir* (merge-pathnames "data/boxersunrise.app/Contents/Resources/" project-dir))
+  (setf boxer::*shaders-dir* (merge-pathnames "src/draw-low-opengl330/shaders/" project-dir))
+
+  (sb-int:set-floating-point-modes :traps nil)
+
+  (window-system-specific-make-boxer)
+  (window-system-specific-start-boxer))

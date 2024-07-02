@@ -33,7 +33,6 @@
                :3d-matrices
                :3d-vectors
                :boxer-sunrise-core
-               #+glfw-engine :cl-glfw3
                )
   :components ((:module "src"
                 :components
@@ -106,8 +105,6 @@
                  #+lispworks (:file "boxwin/lw-capi/clipboard")
 
                  #+lispworks (:file "boxwin/lw-capi/outline-tree")
-
-                 #+glfw-engine (:file "boxwin/glfw/boxwin-glfw")
 
                 ;  #+lispworks (:file "boxwin/lw-capi/modern-opengl")
 

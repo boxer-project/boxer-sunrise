@@ -16,29 +16,15 @@
 ;;;;
 ;;;;  Work In Progress! GLFW Engine Bootstrap
 ;;;;
-(require "asdf")
-(require "uiop")
-
 (ql:quickload :cl-fad)
-(ql:quickload :log4cl)
-(ql:quickload :cffi)
-
 (defvar *project-dir* (make-pathname :directory (butlast (pathname-directory *load-truename*))))
 
 (setf asdf:*central-registry*
       (list* '*default-pathname-defaults*
               *project-dir*
+              (cl-fad:merge-pathnames-as-directory *project-dir*  "src/boxwin/glfw/")
       asdf:*central-registry*))
 
-(sb-int:set-floating-point-modes :traps nil)
-
-(ql:quickload :cl-freetype2)
 (setf *features* (cons :glfw-engine *features*))
-(ql:quickload :boxer-sunrise)
-
-(setf boxer::*capogi-font-directory* (merge-pathnames "data/boxersunrise.app/Contents/Resources/Fonts/" *project-dir*))
-(setf boxer::*resources-dir* (merge-pathnames "data/boxersunrise.app/Contents/Resources/" *project-dir*))
-(setf boxer::*shaders-dir* (merge-pathnames "src/draw-low-opengl330/shaders/" *project-dir*))
-
-(boxer-window::window-system-specific-make-boxer)
-(boxer-window::window-system-specific-start-boxer)
+(ql:quickload :boxer-sunrise-glfw)
+(bw::start-glfw-boxer *project-dir*)
