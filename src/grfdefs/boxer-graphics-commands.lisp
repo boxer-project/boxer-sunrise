@@ -29,6 +29,7 @@
          (handler (gethash com *graphics-commands*)))
     (apply-gdispl-com handler command)))
 
+(defvar *start-u-time* (get-universal-time))
 (defun boxer-playback-graphics-list (gl &key (start 0) (graphics-canvas nil) (translate? nil))
   "In progress work to move all the boxer graphics to turtle coordinates. Will get trued
    up with the defboxer-graphics-handler macros soon.
@@ -43,7 +44,9 @@
       (when translate?
         (setf prev-model (boxgl-device-model-matrix bw::*boxgl-device*)
               trans-mat  (3d-matrices:mtranslation
-                          (3d-vectors:vec %drawing-half-width %drawing-half-height 0.0)))
+                          (3d-vectors:vec %drawing-half-width %drawing-half-height .5)))
+
+        (3d-matrices:nmrotate trans-mat 3d-matrices::+vx+ (* (* 2 pi) (abs (sin (* 0.05 (- (get-universal-time) *start-u-time*))))))
 
         (setf (boxgl-device-model-matrix bw::*boxgl-device*) (3d-matrices:marr4 trans-mat))
         (update-matrices-ubo bw::*boxgl-device*))

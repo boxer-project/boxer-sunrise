@@ -571,7 +571,7 @@
 
 (defun create-ortho-matrix (wid hei)
   "Create an orthogonal projection matrix for use in our shaders with the given width and height."
-  (let* ((ortho (3d-matrices:mortho 0 wid hei 0 -1.0 1.0))
+  (let* ((ortho (3d-matrices:mortho 0 wid hei 0 -10000 10000))
          (zoom  (zoom-level *boxer-pane*))
          (origin (content-origin *boxer-pane*))
          (trans (3d-matrices:mtranslation (3d-vectors:vec (first origin) (second origin) 0))))
