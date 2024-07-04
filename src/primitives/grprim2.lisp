@@ -286,8 +286,7 @@
             *initial-graphics-state-current-pen-color*)))
     (do-vector-contents (gc gl)
       (let ((new-command (copy-graphics-command gc)))
-        ; (translate-graphics-command new-command trans-x trans-y)
-        (sv-append %graphics-list new-command)))
+        (sv-append %graphics-list (translate-graphics-command new-command x y))))
     ;; synch list values
     (setf (graphics-command-list-agent %graphics-list) nil
           (graphics-command-list-alu %graphics-list)
