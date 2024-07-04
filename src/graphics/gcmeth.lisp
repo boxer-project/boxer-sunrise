@@ -747,7 +747,7 @@ Modification History (most recent at top)
     (when (and pen-mode (not (no-graphics?)))
       (dub-graphics-list (box-interface-value (slot-value self 'shape))
                          :model-matrix (model-matrix self)
-                         :inverse-matrix (3d-matrices:marr4 (3d-matrices:meye 4)))
+                         :inverse-matrix (3d-matrices:meye 4))
       ;; reset the state values which may have been bashed during the
       ;; dub to be the state value of the shape
       (synchronize-graphics-state self t))))

@@ -578,7 +578,7 @@ Modification History (most recent at top)
                       (3d-matrices:meye 4) 3d-vectors:+vz+
                       ahead-rad))
          (scale-mat (3d-matrices:nmscale (3d-matrices:meye 4) (3d-vectors:vec asize asize 0.0)))
-         (final-mat (3d-matrices:marr4 (3d-matrices:m* trans-mat rot-mat scale-mat))))
+         (final-mat (3d-matrices:m* trans-mat rot-mat scale-mat)))
     final-mat))
 
 (defmethod draw ((self button))

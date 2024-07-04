@@ -118,9 +118,10 @@
     :documentation "Integer describing the gl uniform buffer object we are storing our transformation
                     matrices and other information in.")
    (ortho-matrix :accessor boxgl-device-ortho-matrix)
-   (transform-matrix :accessor boxgl-device-transform-matrix)
+   (transform-matrix :accessor boxgl-device-transform-matrix
+                     :initform (3d-matrices:meye 4))
    (model-matrix :accessor boxgl-device-model-matrix
-                 :initform (3d-matrices:marr4 (3d-matrices:meye 4)))
+                 :initform (3d-matrices:meye 4))
 
    (pen-color :accessor boxgl-device-pen-color) ; current color in #(:rgb 1.0 1.0 1.0 1.0) format
    (pen-size  :accessor boxgl-device-pen-size)
@@ -145,11 +146,10 @@
   Does not replace it from scratch. In the repaint code using this macro we typically
   see the origin adjusted by some amount, and then un-adjusted by it with the negative
   amounts to put it back."
-  (let* ((current-transform (3d-matrices:mat4 (boxer::boxgl-device-transform-matrix self)))
-         (adjust-matrix (3d-matrices:mat4 (boxer::create-transform-matrix h v)))
+  (let* ((current-transform (boxer::boxgl-device-transform-matrix self))
+         (adjust-matrix (boxer::create-transform-matrix h v))
          (new-transform (3d-matrices:m* current-transform adjust-matrix)))
-    (setf (boxer::boxgl-device-transform-matrix self)
-          (3d-matrices:marr4 new-transform))
+    (setf (boxer::boxgl-device-transform-matrix self) new-transform)
     (update-transform-matrix-ubo self)))
 
 (defvar *gl-pixmap-texture-count* 0
@@ -578,11 +578,11 @@
     (3d-matrices:nmscale trans (3d-vectors:vec zoom zoom 1.0))
     (setf ortho (3d-matrices:m*  ortho trans))
 
-    (3d-matrices:marr4 ortho)))
+    ortho))
 
 (defun create-transform-matrix (x y)
   "Create a transform matrix offset from the origin by x and y."
-  (3d-matrices:marr4 (3d-matrices:mtranslation (3d-vectors:vec x y 0))))
+  (3d-matrices:mtranslation (3d-vectors:vec x y 0)))
 
 (defun update-transform-matrix-ubo (device)
   "Update just the transform matrix in the matrices ubo. Slightly more efficient than updating everything in our
@@ -590,7 +590,7 @@
   (gl:bind-buffer :uniform-buffer (matrices-ubo device))
   (let ((arr (gl:alloc-gl-array :float (* 4 4)))
         (i 0))
-    (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (3d-matrices:mat4  (boxgl-device-transform-matrix device))))))
+    (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (boxgl-device-transform-matrix device)))))
       (setf (gl:glaref arr i) (coerce item 'single-float))
       (incf i))
     (gl:buffer-sub-data :uniform-buffer arr :offset 0 :buffer-offset (* *cffi-float-size* (* 2 (* 4 4))) :size (* *cffi-float-size* (* 4 4)))
@@ -603,13 +603,13 @@
   (let* ((rgb (boxer::boxgl-device-pen-color device))
          (arr (gl:alloc-gl-array :float (+ 4 2 (* 3 (* 4 4)))))
           (i 0))
-    (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (3d-matrices:mat4  (boxgl-device-model-matrix device))))))
+    (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (boxgl-device-model-matrix device)))))
       (setf (gl:glaref arr i) (coerce item 'single-float))
       (incf i))
-    (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (3d-matrices:mat4  (boxgl-device-ortho-matrix device))))))
+    (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (boxgl-device-ortho-matrix device)))))
       (setf (gl:glaref arr i) (coerce item 'single-float))
       (incf i))
-    (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (3d-matrices:mat4  (boxgl-device-transform-matrix device))))))
+    (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (boxgl-device-transform-matrix device)))))
       (setf (gl:glaref arr i) (coerce item 'single-float))
       (incf i))
     (for:for ((item over (resolution)))

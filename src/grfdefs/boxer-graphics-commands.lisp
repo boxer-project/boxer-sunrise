@@ -45,7 +45,7 @@
               trans-mat  (3d-matrices:mtranslation
                           (3d-vectors:vec %drawing-half-width %drawing-half-height 0.0)))
 
-        (setf (boxgl-device-model-matrix bw::*boxgl-device*) (3d-matrices:marr4 trans-mat))
+        (setf (boxgl-device-model-matrix bw::*boxgl-device*) trans-mat)
         (update-matrices-ubo bw::*boxgl-device*))
 
       (when (and *use-opengl-framebuffers* graphics-canvas)
