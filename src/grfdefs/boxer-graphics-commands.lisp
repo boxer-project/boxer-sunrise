@@ -48,7 +48,7 @@
 
         (3d-matrices:nmrotate trans-mat 3d-matrices::+vx+ (* (* 2 pi) (abs (sin (* 0.05 (- (get-universal-time) *start-u-time*))))))
 
-        (setf (boxgl-device-model-matrix bw::*boxgl-device*) (3d-matrices:marr4 trans-mat))
+        (setf (boxgl-device-model-matrix bw::*boxgl-device*) trans-mat)
         (update-matrices-ubo bw::*boxgl-device*))
 
       (when (and *use-opengl-framebuffers* graphics-canvas)
