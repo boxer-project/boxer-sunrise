@@ -440,7 +440,23 @@ Modification History (most recent at top)
   (draw-mode ':wrap)                          ;; Either ':wrap or ':clip for turtle drawing around edges
   (graphics-list nil)                         ;; A graphics-command-list struct with the drawn turtle graphics commands
   (background nil)                            ;; A background color that is used in lieu of the pixmap bit-array member
+  (rotations #(0.0 0.0 0.0))                  ;; x/y/z values to rotate this graphics box by. In degrees.
   )
+
+(defun degrees->radians (deg)
+  (* deg (/ pi 180)))
+
+(defvar *cur-graphics-sheet-model* (3d-matrices:meye 4)
+  "Hacking")
+
+(defmethod apply-sheet-rotations ((self graphics-sheet) matrix)
+  "Returns a 3d-matrix for the current set of stored rotations in the graphics-sheet."
+  (let ((togo (3d-matrices:mcopy matrix))
+        (rotations (graphics-sheet-rotations self)))
+    (3d-matrices:nmrotate togo 3d-matrices::+vx+ (degrees->radians (aref rotations 0)))
+    (3d-matrices:nmrotate togo 3d-matrices::+vy+ (degrees->radians (aref rotations 1)))
+    (3d-matrices:nmrotate togo 3d-matrices::+vz+ (degrees->radians (aref rotations 2)))
+    togo))
 
 ;; this can stay here cause its for a Struct and not a PCL Class
 ;; sgithens - See above on definition of deftype-checking-macros

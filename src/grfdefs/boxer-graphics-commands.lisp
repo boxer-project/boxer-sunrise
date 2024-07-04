@@ -46,9 +46,9 @@
               trans-mat  (3d-matrices:mtranslation
                           (3d-vectors:vec %drawing-half-width %drawing-half-height .5)))
 
-        (3d-matrices:nmrotate trans-mat 3d-matrices::+vx+ (* (* 2 pi) (abs (sin (* 0.05 (- (get-universal-time) *start-u-time*))))))
+        ;; (3d-matrices:nmrotate trans-mat 3d-matrices::+vx+ (* (* 2 pi) (abs (sin (* 0.05 (- (get-universal-time) *start-u-time*))))))
 
-        (setf (boxgl-device-model-matrix bw::*boxgl-device*) trans-mat)
+          (setf (boxgl-device-model-matrix bw::*boxgl-device*) (3d-matrices:m* trans-mat *cur-graphics-sheet-model*))
         (update-matrices-ubo bw::*boxgl-device*))
 
       (when (and *use-opengl-framebuffers* graphics-canvas)
@@ -326,7 +326,8 @@
    (transformation-template :initform nil)))
 
 (defdraw-graphics-command (boxer-transform-matrix matrix)
-  (setf (boxgl-device-model-matrix bw::*boxgl-device*) matrix)
+  (setf (boxgl-device-model-matrix bw::*boxgl-device*)
+        (3d-matrices:m* matrix *cur-graphics-sheet-model* ))
   (update-matrices-ubo bw::*boxgl-device*))
 
 ;; 39   BOXER-CENTERED-STRING             (X Y STRING)

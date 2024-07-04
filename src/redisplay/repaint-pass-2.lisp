@@ -213,6 +213,7 @@
 (defmethod repaint-inferiors-pass-2-sb ((SELF GRAPHICS-SCREEN-BOX))
   (LET ((GRAPHICS-SHEET (GRAPHICS-SCREEN-SHEET-ACTUAL-OBJ
                           (SCREEN-SHEET SELF))))
+         (setf *cur-graphics-sheet-model* (apply-sheet-rotations graphics-sheet (3d-matrices:meye 4)))
          (multiple-value-bind (x y)
                               (graphics-screen-sheet-offsets (screen-sheet self))
                               (multiple-value-bind (il it ir ib)
@@ -241,6 +242,7 @@
                                                          ;; are in use.
                                                          (unless (null (graphics-sheet-graphics-list graphics-sheet))
                                                            (redisplay-graphics-sheet-graphics-list graphics-sheet self))
+
                                                          ;; Draw the gl-model canvas / framebuffer
                                                          (when *use-opengl-framebuffers*
                                                           (let* ((wid (graphics-sheet-draw-wid graphics-sheet))
@@ -252,9 +254,8 @@
                                                                               pixmap 0 0 0 0)))
                                                          ;; then handle any sprite graphics...
                                                          (unless (null (graphics-sheet-graphics-list graphics-sheet))
-                                                           (redisplay-graphics-sheet-sprites graphics-sheet self))
-                                                           )
-                                                           )))))) ;)
+                                                           (redisplay-graphics-sheet-sprites graphics-sheet self)))))))
+  (setf *cur-graphics-sheet-model* (3d-matrices:meye 4)))) ;)
 
 ;;;; Screen Sprites....
 (defmethod repaint-pass-2-sb ((self sprite-screen-box))

@@ -131,6 +131,17 @@ Modification History (most recent at top)
                            "is not a valid Graphics Mode"))))))
     boxer-eval::*novalue*))
 
+(boxer-eval::defboxer-primitive bu::set-graphics-rotation ((boxer-eval::numberize x-rot) (boxer-eval::numberize y-rot) (boxer-eval::numberize z-rot))
+  (let ((gb (get-relevant-graphics-box)))
+    (cond ((or (null gb) (eq gb :no-graphics))
+           (boxer-eval::primitive-signal-error :graphics-error
+                                         "No Graphics Box found"))
+          (t
+           (let ((gs (get-graphics-sheet gb)))
+             (setf (graphics-sheet-rotations gs) `#(,x-rot ,y-rot ,z-rot))
+             )))
+    boxer-eval::*novalue*))
+
 (boxer-eval::defboxer-primitive bu::graphics-size ()
   (let ((gb (get-relevant-graphics-box)))
     (cond ((or (null gb) (eq gb :no-graphics))
