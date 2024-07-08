@@ -109,21 +109,27 @@ Modification History (most recent at top)
                                          (box-interface-box interface)))))
 
 (defmethod all-interface-slots ((self graphics-object))
-  (list 'x-position 'y-position))
+  (list 'x-position 'y-position 'z-position))
 
 (defmethod link-interface-slots ((self graphics-object) sprite-box)
   (install-interface-slot (slot-value self 'x-position)
                           'bu::x-position sprite-box)
   (install-interface-slot (slot-value self 'y-position)
-                          'bu::y-position sprite-box))
+                          'bu::y-position sprite-box)
+  (unless (slot-boundp self 'z-position)
+    (setf (slot-value self 'z-position) (%make-vv-box-interface 0.0 'z-position)))
+  (install-interface-slot (slot-value self 'z-position)
+                          'bu::z-position sprite-box))
 
 (defmethod unlink-interface-slots ((self graphics-object) sprite-box)
   (uninstall-interface-slot (slot-value self 'x-position)
                             'bu::x-position sprite-box)
   (uninstall-interface-slot (slot-value self 'y-position)
-                            'bu::y-position sprite-box))
+                            'bu::y-position sprite-box)
+  (uninstall-interface-slot (slot-value self 'z-position)
+                            'bu::z-position sprite-box))
 
-(defvar *default-graphics-object-interface-boxes* '(x-position y-position))
+(defvar *default-graphics-object-interface-boxes* '(x-position y-position z-position))
 
 (defvar *graphics-interface-boxes-in-box* ':default)
 (defvar *graphics-interface-boxes-in-closet* ':default)
@@ -177,6 +183,8 @@ Modification History (most recent at top)
 (defmethod y-position ((self graphics-object))
   (box-interface-value (slot-value self 'y-position)))
 
+(defmethod z-position ((self graphics-object))
+  (box-interface-value (slot-value self 'z-position)))
 
 ;;; These should be smarter, they should accumalate LOCAL offsets
 ;;; and rotations instead of having EACH child calculate the ABSOLUTE
@@ -197,20 +205,21 @@ Modification History (most recent at top)
                 (box-interface-value (slot-value self 'y-position))
                 abs-size))))))
 
-(defmethod make-absolute ((self graphics-object) xpos ypos)
-  (let ((superior-turtle (slot-value self 'superior-turtle)))
-    (if (null superior-turtle)
-        (values xpos ypos)
-        (let ((sup-heading (absolute-heading superior-turtle))
-              (sup-xpos (absolute-x-position superior-turtle))
-              (abs-size (absolute-size self))
-              (sup-ypos (absolute-y-position superior-turtle)))
-          (values (+ sup-xpos
-                     (* (cosd sup-heading) xpos abs-size)
-                     (* (sind sup-heading) ypos abs-size))
-                  (+ sup-ypos
-                     (* (- (sind sup-heading)) xpos abs-size)
-                     (* (cosd sup-heading) ypos abs-size)))))))
+;; sgithens 2024-07-05 This isn't used anywhere anymore...
+;; (defmethod make-absolute ((self graphics-object) xpos ypos)
+;;   (let ((superior-turtle (slot-value self 'superior-turtle)))
+;;     (if (null superior-turtle)
+;;         (values xpos ypos)
+;;         (let ((sup-heading (absolute-heading superior-turtle))
+;;               (sup-xpos (absolute-x-position superior-turtle))
+;;               (abs-size (absolute-size self))
+;;               (sup-ypos (absolute-y-position superior-turtle)))
+;;           (values (+ sup-xpos
+;;                      (* (cosd sup-heading) xpos abs-size)
+;;                      (* (sind sup-heading) ypos abs-size))
+;;                   (+ sup-ypos
+;;                      (* (- (sind sup-heading)) xpos abs-size)
+;;                      (* (cosd sup-heading) ypos abs-size)))))))
 
 (defmethod absolute-y-position ((self graphics-object))
   (let ((superior-turtle (slot-value self 'superior-turtle)))
@@ -227,16 +236,18 @@ Modification History (most recent at top)
                 (box-interface-value (slot-value self 'y-position))
                 abs-size))))))
 
+(defmethod absolute-z-position ((self graphics-object))
+  (box-interface-value (slot-value self 'z-position)))
 
 
 ;;; Instance SLOT Linkup
 
-(defmethod add-xpos-box ((self graphics-object) box)
-  (setf (box-interface-box (slot-value self 'x-position)) box))
+;; sgithens 2024-07-04 No one uses these two add methods
+;; (defmethod add-xpos-box ((self graphics-object) box)
+;;   (setf (box-interface-box (slot-value self 'x-position)) box))
 
-
-(defmethod add-ypos-box ((self graphics-object) box)
-  (setf (box-interface-box (slot-value self 'y-position)) box))
+;; (defmethod add-ypos-box ((self graphics-object) box)
+;;   (setf (box-interface-box (slot-value self 'y-position)) box))
 
 
 (defmethod copy-graphics-object ((self graphics-object))
@@ -249,7 +260,9 @@ Modification History (most recent at top)
   (setf (box-interface-value (slot-value new-graphics-object 'x-position))
         (box-interface-value (slot-value old-graphics-object 'x-position)))
   (setf (box-interface-value (slot-value new-graphics-object 'y-position))
-        (box-interface-value (slot-value old-graphics-object 'y-position))))
+        (box-interface-value (slot-value old-graphics-object 'y-position)))
+  (setf (box-interface-value (slot-value new-graphics-object 'z-position))
+        (box-interface-value (slot-value old-graphics-object 'z-position))))
 
 
 
@@ -379,6 +392,13 @@ Modification History (most recent at top)
     (when (not-null box)
       (bash-box-to-number box new-value))
     (setf (box-interface-value y-slot) new-value)))
+
+(defmethod set-z-position ((self graphics-object) new-value)
+  (let* ((z-slot (slot-value self 'z-position))
+         (box (box-interface-box z-slot)))
+    (when (not-null box)
+      (bash-box-to-number box new-value))
+    (setf (box-interface-value z-slot) new-value)))
 
 (defmethod set-xy ((self graphics-object) new-x new-y
                    &optional dont-update-box)
@@ -573,7 +593,8 @@ Modification History (most recent at top)
          (trans-mat (3d-matrices:mtranslation
                       (3d-vectors:vec
                         (+ %drawing-half-width (absolute-x-position self))
-                        (- %drawing-half-height (absolute-y-position self)) 0.0)))
+                        (- %drawing-half-height (absolute-y-position self))
+                        (absolute-z-position self))))
          (rot-mat (3d-matrices:nmrotate
                       (3d-matrices:meye 4) 3d-vectors:+vz+
                       ahead-rad))

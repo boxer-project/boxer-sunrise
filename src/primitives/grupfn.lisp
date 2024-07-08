@@ -79,6 +79,19 @@
 
 (add-sprite-update-function y-position bu::update-y-position)
 
+(defsprite-trigger-function bu::update-z-position () (sprite turtle)
+  (when (inside-sprite? sprite)
+    (let* ((slot (slot-value turtle 'z-position))
+           (box (box-interface-box slot)))
+      (if (null box)
+        (no-interface-box-error 'Z-POSITION turtle)
+        (multiple-value-bind (new-z fix?)
+                             (check-and-get-number-arg box 'Z-POSITION�)
+                             (setf (box-interface-value slot)
+                                            new-z)))))
+  boxer-eval::*novalue*)
+
+(add-sprite-update-function z-position bu::update-z-position)
 
 (defsprite-trigger-function bu::update-heading () (sprite turtle)
   (when (inside-sprite? sprite)

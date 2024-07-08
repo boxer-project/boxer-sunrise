@@ -74,6 +74,7 @@
   ()
   ((x-position         :initform (%make-vv-box-interface 0.0 'x-position))
    (y-position         :initform (%make-vv-box-interface 0.0 'y-position))
+   (z-position         :initform (%make-vv-box-interface 0.0 'z-position))
    (subsprites         :initform nil :accessor subsprites)
    (superior-turtle    :initform nil :accessor superior-turtle)
    (sprite-box         :initform nil :accessor sprite-box)
@@ -219,11 +220,12 @@
 
 ;;; normalize coordinates to the on screen position
 
-(defun wrap-object-coords (object)
-  (setf (slot-value object 'x-position)
-        (wrap-x-coordinate (slot-value object 'x-position)))
-  (setf (slot-value object 'y-position)
-        (wrap-y-coordinate (slot-value object 'y-position))))
+;; sgithens 2024-07-05 Doesn't seem to be used anywhere...
+;; (defun wrap-object-coords (object)
+;;   (setf (slot-value object 'x-position)
+;;         (wrap-x-coordinate (slot-value object 'x-position)))
+;;   (setf (slot-value object 'y-position)
+;;         (wrap-y-coordinate (slot-value object 'y-position))))
 
 ;;; Lucid (lcl3.0) specific versions try are written to
 ;;; minimize floating point CONSing

@@ -974,7 +974,7 @@ specified target. "
     (let* ((box (make-initialized-box :type 'data-box))
            (sprite
             (let ((*graphics-interface-boxes-in-box*
-                   '(x-position y-position heading shape))
+                   '(x-position y-position z-position heading shape))
                   (*graphics-interface-boxes-in-closet*
                    '(shown? pen pen-width type-font pen-color
                             home-position sprite-size)))
