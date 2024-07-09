@@ -361,7 +361,7 @@ Modification History (most recent at top)
 ;;  speed starts to become a problem
 
 (defun get-pointer-value (pointer with-respect-to)
-  (declare (values value exact?))
+  "Returns (values value exact?))"
   (vc-check-pointer pointer)
   (cond ((eq (pointer-type pointer) 'single)
 	 (record-single-ptr-ref)

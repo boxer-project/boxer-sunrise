@@ -887,7 +887,7 @@
 ;;;
 
 (defun bp-coordinates (bp)
-  (declare (values abs-x abs-y size-hint))
+  "Returns (values abs-x abs-y size-hint))"
   (check-bp-arg bp)
   (let* ((row (bp-row bp))
          (cha-no (bp-cha-no bp))

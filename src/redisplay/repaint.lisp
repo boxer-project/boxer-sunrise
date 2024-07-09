@@ -166,7 +166,6 @@
   (and (bp? cursor)
         (multiple-value-bind (cursor-x cursor-y size-hint)
                             (bp-coordinates cursor)
-                            (declare (ignore size-hint))
                             (let* ((psb (point-screen-box))
                                     ;; 1/9/03 under certain conditions, point-screen-box can be NIL
                                     ;; usually because  of programatic scrolling

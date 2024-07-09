@@ -998,7 +998,6 @@ average datastructure.
     (flet ((handle-pointer-for-eval (p)
 	     (multiple-value-bind (raw-chunk exact?)
 		 (get-pointer-value p vc-rows-entry)
-	       (declare (ignore exact?))
 	       (let ((value (if (chunk-p raw-chunk)
 				(chunk-chunk raw-chunk)
 				raw-chunk)))

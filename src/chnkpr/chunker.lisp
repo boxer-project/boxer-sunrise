@@ -417,7 +417,7 @@ Oldness and Oldossity.....
 ;;;  The main entry point into the chunker is CHUNK-ROW.
 
 (defun chunk-row (row &optional pointers-only?)
-  (declare (values pointers eval-objects))
+  "Returns (values pointers eval-objects))"
   (let ((stream (make-simple-row-stream-from-row row)))
     (with-local-formatting-info (stream)
       (chunk-top-level stream pointers-only?))))
@@ -643,7 +643,7 @@ Oldness and Oldossity.....
 
 
 (defun chunk (stream &optional left-formatting-property)
-  (declare (values lfp pname chunk rfp label eval-props))
+  "Returns (values lfp pname chunk rfp label eval-props))"
   (let (;; The values that will be returned
         (lfp (or left-formatting-property 0))
         pname
