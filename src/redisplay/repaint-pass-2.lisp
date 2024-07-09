@@ -57,7 +57,8 @@
            (< (+ y-pos vert-scroll) (* (/ 1 (zoom-level *boxer-pane*)) #+lispworks (gp:port-height *boxer-pane*))))))
 
 (defmethod region-in-screen-box? ((self screen-box) &optional (region-list *region-list*))
-  (when (car region-list)
+  (when (and (car region-list)
+             (car (screen-objs (bp-row (interval-start-bp (car *region-list*))))))  ;; sunrise-102
     (let ((region-screen-box (screen-box (car (screen-objs (bp-row (interval-start-bp (car *region-list*))))))))
       (eq self region-screen-box))))
 
