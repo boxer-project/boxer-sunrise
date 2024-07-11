@@ -308,19 +308,18 @@
 (defun safe-get-sprite-mouse-doc (sprite-box)
   (when (boxer::sprite-box? sprite-box)
     (let ((doc nil))
-      (ignore-errors
        (setq doc
              (let* ((boxer-eval::*lexical-variables-root* sprite-box)
                     (docbox (boxer-eval::boxer-symeval 'bu::sprite-mouse-documentation)))
                (unless (eq docbox boxer-eval::*novalue*)
-                 (boxer::box-text-string docbox)))))
+                 (boxer::box-text-string docbox))))
       doc)))
 
 (defun mouse-place ()
   (multiple-value-bind (xpos ypos)
       (boxer-pane-mouse-position)
     (multiple-value-bind (area box)
-        (ignore-errors (boxer::mouse-documentation-area xpos ypos))
+        (boxer::mouse-documentation-area xpos ypos)
       (values area box))))
 
 (defun document-top-left-mouse (screen-box popup-only?)

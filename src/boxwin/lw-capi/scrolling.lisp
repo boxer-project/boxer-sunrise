@@ -112,7 +112,7 @@
   ;; that scroll gesture mechanisms are issuing repaints, and in order for this to not lock up the
   ;; evaluation polling repaints, they need to be queued, or just not done at all, letting the evaluator
   ;; polling repaint take care of it.
-  (ignore-errors (unless (not (null *suppress-expose-handler*))
+  (unless (not (null *suppress-expose-handler*))
     (multiple-value-bind (x y) (boxer-pane-mouse-position)
       (let* ((scroll-amount (* scroll-amount-original 4)) ;; TODO This should really be pulled from the OS trackpad/mouse scroll settings
             (mouse-bp (boxer::mouse-position-values x y))
@@ -163,7 +163,7 @@
               ((equal direction :vertical)
                (scroll-vertical output-pane scroll-amount))
               (t nil))
-       (boxer::repaint t))))))
+       (boxer::repaint t)))))
 
 (defmethod scroll-vertical ((self capi:output-pane) scroll-amount)
   (let ((new-scroll-amount (+ (vertical-scroll self) (- scroll-amount)))
