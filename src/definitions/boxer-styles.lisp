@@ -122,7 +122,7 @@
 
 (defun copy-css-styles-special-property (from-box to-box)
   (when (getprop from-box :css-styles)
-    (putprop to-box (getprop from-box :css-styles) :css-styles)))
+    (putprop to-box (copy-tree (getprop from-box :css-styles)) :css-styles)))
 
 (defun edvc-css-styles-hook (eb vc)
   (let ((css-styles (getf (plist eb) :css-styles)))
@@ -137,4 +137,4 @@
 (defun print-vc-css-styles-hook (vc eb)
   (let ((css-styles (getf (vc-graphics vc) 'css-styles)))
     (unless (null css-styles)
-      (putprop eb css-styles :css-styles))))
+      (putprop eb (copy-tree css-styles) :css-styles))))
