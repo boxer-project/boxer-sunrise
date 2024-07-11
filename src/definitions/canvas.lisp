@@ -68,6 +68,11 @@
    (page-size :accessor page-size :initform '(800 1100)
     :documentation "")
 
+   (active :accessor active :initform t
+    :documentation "Boolean that determines whether or not the window containing this canvas
+                    is currently active. Primarily this is so we can make a decision to stop
+                    rendering repeatedly when our window isn't the active window in the OS.")
+
    ;; Current Colors
    (backdrop-color :accessor backdrop-color :initform *white*)
     ))

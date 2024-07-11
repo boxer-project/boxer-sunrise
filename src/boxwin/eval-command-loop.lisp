@@ -197,7 +197,7 @@
                  ;; NOTE: when the idle function is fixed to actually document
                  ;; the mouse, we will need to change this to
                  ;; mp::process-allow-scheduling so it can run continously...
-                 #+lispworks (mp::process-wait "Boxer Input"
+                 #+lispworks (mp::process-wait-with-timeout "Boxer Input" 0.25
                                    #'(lambda ()
                                        (not (null (car *boxer-eval-queue*)))))))
               #+lispworks

@@ -767,9 +767,13 @@
    :height 600
    :confirm-destroy-function 'lw-quit
    :help-callback 'do-tooltip-help
+   :activate-callback 'boxwin-activate-callback
    ; :toolbar-items (make-toolbar-items)
    :window-styles '(:internal-borderless)
    ))
+
+(defun boxwin-activate-callback (interface activated)
+  (setf (boxer::active *boxer-pane*) activated))
 
 (defvar *macos-finished-launching* nil
   "Boolean tracking whether or not macOS has fired the finished-launching message yet.")

@@ -3662,6 +3662,24 @@ Modification History (most recent at top)
 ;;;; FILE: boxwin-opengl.lisp
 ;;;;
 
+;; sgithens 2024-07-10 Moving most of this work to main repaint function to avoid threading
+;;                     issues
+;; from boxer-pane-display-callback
+(unless boxer::*evaluation-in-progress?*
+    (opengl:rendering-on (*boxer-pane*)
+      (format t "~%pane-callback no eval in progress")
+      (resize-handler canvas x y wid hei)
+      (setf (boxer::boxgl-device-ortho-matrix bw::*boxgl-device*)
+            (boxer::create-ortho-matrix wid hei))
+
+      ;; When resizing set the scrolling back to the top left corner, so the margins
+      ;; don't get stuck. In the future we might want to be smarter, such as if we were
+      ;; in the lower right corner all the way, we would stay there while resizing.
+      (reset-global-scrolling)
+
+      (opengl:gl-viewport 0 0 wid hei)
+      (boxer::update-matrices-ubo bw::*boxgl-device*)))
+
 ;; stub, for now
 (defun warp-pointer (window x y)
   (declare (ignore window x y))
