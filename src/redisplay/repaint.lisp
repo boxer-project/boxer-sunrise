@@ -110,8 +110,8 @@
 
 
 (defun repaint-window (&OPTIONAL (WINDOW *BOXER-PANE*) (flush-buffer? t) &KEY (process-state-label "stopped"))
-  #+lispworks (opengl:rendering-on (window)
-    (bw::check-for-window-resize)
+    (check-for-window-resize)
+    (update-matrices-ubo bw::*boxgl-device*)
     (REDISPLAYING-WINDOW (WINDOW)
                          (clear-window window)
                          (repaint-guts)
@@ -120,7 +120,7 @@
                            (set-transform bw::*boxgl-device* 0 0)
                            (repaint-dev-overlay process-state-label)
                            (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*) cur-transform))
-                         (when flush-buffer? (swap-graphics-buffers window)))))
+                         (when flush-buffer? (swap-graphics-buffers window))))
 
 ;;; called also by printing routines.
 (defun repaint-guts ()
@@ -145,14 +145,35 @@
   ;; swap buffers here, after all drawing is complete
   (swap-graphics-buffers *boxer-pane*))
 
+(defun check-for-window-resize ()
+  ;; fill up the *boxer-pane* width/height caches
+  ;; reset the outermost screen box
+  (let ((osb (outermost-screen-box *boxer-pane*)))
+    (unless (null osb)
+      (multiple-value-bind (obwid obhei)
+          (box::outermost-screen-box-size *boxer-pane*)
+        (unless (and (= obwid (display-style-fixed-wid (display-style-list osb)));(box::screen-obj-wid osb))
+                     (= obhei (display-style-fixed-hei (display-style-list osb)))) ;(box::screen-obj-hei osb)))
+          (format t "check-for-window-resize: obwid: ~A obhei: ~A scr-obj-wid: ~A scr-obj-hei: ~A"
+            obwid obhei (box::screen-obj-wid osb) (box::screen-obj-hei osb))
+          (reset-global-scrolling)
+          (multiple-value-bind (ww wh) (window-inside-size *boxer-pane*)
+            (boxer::ogl-reshape ww wh))
+          (box::set-fixed-size osb obwid obhei))))))
+
 (defun repaint (&optional just-windows?)
+  #+lispworks (when (active *boxer-pane*)
   (adjust-global-scroll *boxer-pane*)
-  #+lispworks (opengl:rendering-on (*boxer-pane*)
-    (update-matrices-ubo bw::*boxgl-device*)
+   (opengl:rendering-on (*boxer-pane*)
+
     (when *reload-shaders*
       (update-boxgl-programs)
       (setf *reload-shaders* nil))
-    (repaint-internal just-windows?)))
+
+    (repaint-internal just-windows?)
+
+    (let ((glerr (gl:get-error)))
+      (if (not (eq glerr :zero)) (break "GL Error: ~A" glerr))))))
 
 ;;;; Ephemera: cursors, regions
 (defun repaint-cursor (&optional (cursor *point*))
@@ -245,6 +266,7 @@
 (defun repaint-in-eval (&optional force?)
   ;; if fast enuff...
   ; (bw::update-toolbar-font-buttons)
+  #+lispworks (opengl:rendering-on (*boxer-pane*)
   (let ((now (get-internal-real-time)))
     (when (or force?
               (and (>& now (+ *last-eval-repaint* *eval-repaint-quantum*))
@@ -256,5 +278,4 @@
         (unless (null bw::*suppressed-actions*)
           (funcall (pop bw::*suppressed-actions*)))
         (repaint-window *boxer-pane* t :process-state-label "eval")
-        (setq *last-repaint-duration* (- (get-internal-real-time) now))))
-)
+        (setq *last-repaint-duration* (- (get-internal-real-time) now))))))

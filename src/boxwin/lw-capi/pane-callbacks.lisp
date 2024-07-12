@@ -43,13 +43,10 @@
       ;; needed by shape-box updater in the redisplay inits but not set until
       ;; (boxer-eval::setup-evaluator) farther down
       (run-redisplay-inits))
-      (resize-handler-utility)
       (setf *boxer-pane-initialized* t)
 
     (opengl:rendering-on (*boxer-pane*)
       (log:debug "~%max-texture-size: ~A"  (gl:get-integer :max-texture-size))
       (setf boxer::*freetype-glyph-atlas* (boxer::make-glyph-atlas))
       (log:debug "~%Just created texture atlas: ~A" boxer::*freetype-glyph-atlas*))
-    )
-
-  (reset-global-scrolling))
+    ))

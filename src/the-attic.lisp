@@ -3662,6 +3662,41 @@ Modification History (most recent at top)
 ;;;; FILE: boxwin-opengl.lisp
 ;;;;
 
+;; careful, this called during startup before the outermost screen box
+;; is created (by the 1st call to redisplay)
+(defun resize-handler (window x y width height)
+  (declare (ignore x y))
+  (when (eq window *boxer-pane*)
+    (cond ((not (null *display-bootstrapping-no-boxes-yet*))
+           ;(rendering-on (*boxer-pane*) (gl-viewport 0 0 width height))
+           )
+          ((null *suppress-expose-handler*)
+           (resize-handler-utility width height)
+           (unless (null (Outermost-screen-box)) (boxer::repaint)))
+          (t ; something is running (probably eval)
+           (unless (member 'resize-handler-utility *suppressed-actions*)
+             (push 'resize-handler-utility *suppressed-actions*))))))
+
+(defun resize-handler-utility (&optional width height)
+  (opengl:rendering-on (*boxer-pane*)
+    (if (null width)
+        (multiple-value-bind (ww wh)
+            (window-inside-size *boxer-pane*)
+          (boxer::ogl-reshape ww wh))
+        (boxer::ogl-reshape width height)))
+  (check-for-window-resize))
+
+(defun check-for-window-resize ()
+  ;; fill up the *boxer-pane* width/height caches
+  ;; reset the outermost screen box
+  (let ((osb (outermost-screen-box *boxer-pane*)))
+    (unless (null osb)
+      (multiple-value-bind (obwid obhei)
+          (box::outermost-screen-box-size *boxer-pane*)
+        (unless (and (= obwid (box::screen-obj-wid osb))
+                     (= obhei (box::screen-obj-hei osb)))
+          (box::set-fixed-size osb obwid obhei))))))
+
 ;; sgithens 2024-07-10 Moving most of this work to main repaint function to avoid threading
 ;;                     issues
 ;; from boxer-pane-display-callback
