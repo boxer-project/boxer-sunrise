@@ -189,10 +189,11 @@
                        (setf (display-style-border-style
                               (slot-value self 'display-style-list))
                              boxtop)
-                       (draw-boxtop boxtop actual-obj 0 0 wid hei)
-                       ;			    (with-turtle-clipping (wid hei)
-                       ;			      (draw-boxtop boxtop actual-obj 0 0 wid hei))
-                       ))))
+                       (with-clipping-inside ((horizontal-scroll *boxer-pane*)
+                                              (vertical-scroll *boxer-pane*)
+                                              wid
+                                              hei)
+                         (draw-boxtop boxtop actual-obj 0 0 wid hei))))))
          (t ;; have to draw any background BEFORE inferiors
             (multiple-value-bind (lef top rig bot)
                                   (box-borders-widths box-type self)
