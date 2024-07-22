@@ -414,8 +414,19 @@ Modification History (most recent at top)
           (bp-row (interval-stop-bp interval))
           (bp-cha-no (interval-stop-bp interval))))
 
+(defclass graphics-sheet ()
+ ((draw-wid :accessor graphics-sheet-draw-wid :init-form *default-graphics-sheet-width*)
+  (draw-hei :init-form *default-graphics-sheet-height*)
+  (screen-objs :accessor graphics-sheet-)
+  (bit-array :accessor graphics-sheet-)
+  (object-list :accessor graphics-sheet-)
+  (superior-box :accessor graphics-sheet-)
+  (draw-mode :accessor graphics-sheet-)
+  (graphics-list :accessor graphics-sheet-)
+  (background :accessor graphics-sheet-)
+ ))
 
-(defstruct (graphics-sheet (:constructor
+(defstruct (graphics-sheet-skip (:constructor
                             %make-simple-graphics-sheet
                             (draw-wid draw-hei superior-box))
                            (:constructor
