@@ -415,43 +415,30 @@ Modification History (most recent at top)
           (bp-cha-no (interval-stop-bp interval))))
 
 (defclass graphics-sheet ()
- ((draw-wid :accessor graphics-sheet-draw-wid :init-form *default-graphics-sheet-width*)
-  (draw-hei :init-form *default-graphics-sheet-height*)
-  (screen-objs :accessor graphics-sheet-)
-  (bit-array :accessor graphics-sheet-)
-  (object-list :accessor graphics-sheet-)
-  (superior-box :accessor graphics-sheet-)
-  (draw-mode :accessor graphics-sheet-)
-  (graphics-list :accessor graphics-sheet-)
-  (background :accessor graphics-sheet-)
+ ((draw-wid :accessor graphics-sheet-draw-wid :initform *default-graphics-sheet-width* :initarg :draw-wid
+   :documentation "Width of graphics sheet in pixels")
+  (draw-hei :accessor graphics-sheet-draw-hei :initform *default-graphics-sheet-height* :initarg :draw-hei
+   :documentation "Height of graphics sheet in pixels")
+  (screen-objs :accessor graphics-sheet-screen-objs :initform nil
+   :documentation "")
+  (bit-array :accessor graphics-sheet-bit-array :initform nil
+   :documentation "An ogl-pixmap that acts as the background")
+  (object-list :accessor graphics-sheet-object-list :initform nil
+   :documentation "A list of turtle sprites")
+  (superior-box :accessor graphics-sheet-superior-box :initform nil :initarg :superior-box
+   :documentation "")
+  (draw-mode :accessor graphics-sheet-draw-mode :initform ':wrap :initarg :draw-mode
+   :documentation "Either ':wrap or ':clip for turtle drawing around edges")
+  (graphics-list :accessor graphics-sheet-graphics-list :initform (make-graphics-command-list)
+   :documentation "A graphics-command-list struct with the drawn turtle graphics commands")
+  (background :accessor graphics-sheet-background :initform nil
+   :documentation "A background color that is used in lieu of the pixmap bit-array member")
  ))
 
-(defstruct (graphics-sheet-skip (:constructor
-                            %make-simple-graphics-sheet
-                            (draw-wid draw-hei superior-box))
-                           (:constructor
-                            %make-graphics-sheet-with-graphics-list
-                            (draw-wid draw-hei superior-box))
-                           (:constructor make-graphics-sheet-from-file
-                                         (draw-wid draw-hei draw-mode))
-                           (:copier nil)
-                           (:predicate graphics-sheet?)
-                           (:print-function
-                            (lambda (gs s depth)
-                                    (declare (ignore depth))
-                                    (format s "#<Graphics-Sheet W-~D. H-~D.>"
-                                            (graphics-sheet-draw-wid gs)
-                                            (graphics-sheet-draw-hei gs)))))
-  (draw-wid *default-graphics-sheet-width*)   ;; Width of graphics sheet in pixels
-  (draw-hei *default-graphics-sheet-height*)  ;; Height of graphics sheet in pixels
-  (screen-objs nil)
-  (bit-array nil)                             ;; An ogl-pixmap that acts as the background
-  (object-list nil)                           ;; A list of turtle sprites
-  (superior-box nil)
-  (draw-mode ':wrap)                          ;; Either ':wrap or ':clip for turtle drawing around edges
-  (graphics-list nil)                         ;; A graphics-command-list struct with the drawn turtle graphics commands
-  (background nil)                            ;; A background color that is used in lieu of the pixmap bit-array member
-  )
+(defgeneric graphics-sheet? (x) (:method (x) nil) (:method ((x graphics-sheet)) t))
+
+(defun make-graphics-sheet (draw-wid draw-hei  &optional superior-box &key (draw-mode :wrap))
+  (make-instance 'graphics-sheet :draw-wid draw-wid :draw-hei draw-hei :superior-box superior-box :draw-mode draw-mode))
 
 ;; this can stay here cause its for a Struct and not a PCL Class
 ;; sgithens - See above on definition of deftype-checking-macros

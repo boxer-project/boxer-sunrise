@@ -189,7 +189,7 @@ Modification History (most recent at top)
 (defun make-color-internal (red green blue &optional alpha)
   (let* ((pixel (%make-color red green blue alpha))
          (box (make-color-box red green blue alpha))
-         (graphics-sheet (%make-simple-graphics-sheet
+         (graphics-sheet (make-graphics-sheet
                           *pen-color-graphics-width*
                           *pen-color-graphics-size* box)))
     (putprop box (list (cons pixel (if (null alpha)
@@ -262,7 +262,7 @@ Modification History (most recent at top)
                (setq alpha 100)))
         (let* ((pixel (%make-color red green blue alpha))
                (graphics-sheet (or (get-graphics-sheet box)
-                                   (%make-simple-graphics-sheet
+                                   (make-graphics-sheet
                                     *pen-color-graphics-width*
                                     *pen-color-graphics-size* box))))
           (putprop box (add-color-def (getprop box :color-definition)
@@ -453,7 +453,7 @@ Modification History (most recent at top)
   (let* ((rgb-values (pixel-rgb-values pix))
          (box (make-color-box (car rgb-values) (cadr rgb-values)
                               (caddr rgb-values)))
-         (graphics-sheet (%make-simple-graphics-sheet
+         (graphics-sheet (make-graphics-sheet
                           *pen-color-graphics-width*
                           *pen-color-graphics-size* box)))
     (putprop box (list (cons pix rgb-values)) :color-definition)
@@ -465,7 +465,7 @@ Modification History (most recent at top)
 (defun make-color-box-from-pixel (pix)
   (let* ((rgb-values (pixel-rgb-values pix))
          (box (make-vc (list (make-evrow-from-entries rgb-values))))
-         (graphics-sheet (%make-simple-graphics-sheet
+         (graphics-sheet (make-graphics-sheet
                           *pen-color-graphics-width*
                           *pen-color-graphics-size* box)))
     (setf (graphics-sheet-background graphics-sheet) pix)

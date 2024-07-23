@@ -133,18 +133,13 @@ parameters of the graphics box are bound. "
 
 ;;; Set Up Clipping and Offsets
 
-(defun make-graphics-sheet (wid hei &optional box)
-  (let ((new-gs (%make-graphics-sheet-with-graphics-list wid hei box)))
-    (setf (graphics-sheet-graphics-list new-gs) (make-graphics-command-list))
-    new-gs))
-
 (defun make-graphics-sheet-with-graphics-list (wid
                                                hei
                                                &optional
                                                box
                                                (sheet
                                                 (make-graphics-command-list)))
-  (let ((new-gs (%make-graphics-sheet-with-graphics-list wid hei box)))
+  (let ((new-gs (make-graphics-sheet wid hei box)))
     (setf (graphics-sheet-graphics-list new-gs) sheet)
     new-gs))
 

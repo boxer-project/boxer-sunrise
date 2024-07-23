@@ -400,9 +400,9 @@ Modification History (most recent at top)
     ;; first make sure there is a graphics sheet
     (when (null (graphics-info box))
       (setf (graphics-info box)
-            (%make-simple-graphics-sheet *pen-color-graphics-size*
-                                         *pen-color-graphics-size*
-                                         box)))
+            (make-graphics-sheet *pen-color-graphics-size*
+                                 *pen-color-graphics-size*
+                                 box)))
     ;; now that we are sure there is a graphics sheet, update
     ;; it by setting the background color
     (setf (graphics-sheet-background (graphics-info box)) value)

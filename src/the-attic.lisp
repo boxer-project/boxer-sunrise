@@ -3306,6 +3306,34 @@ Modification History (most recent at top)
 ;;;; FILE: boxdef.lisp
 ;;;;
 
+;; 2024-07-23 Replacing defstruct graphics-sheet with a defclass
+(defstruct (graphics-sheet (:constructor
+                            %make-simple-graphics-sheet
+                            (draw-wid draw-hei superior-box))
+                           (:constructor
+                            %make-graphics-sheet-with-graphics-list
+                            (draw-wid draw-hei superior-box))
+                           (:constructor make-graphics-sheet-from-file
+                                         (draw-wid draw-hei draw-mode))
+                           (:copier nil)
+                           (:predicate graphics-sheet?)
+                           (:print-function
+                            (lambda (gs s depth)
+                                    (declare (ignore depth))
+                                    (format s "#<Graphics-Sheet W-~D. H-~D.>"
+                                            (graphics-sheet-draw-wid gs)
+                                            (graphics-sheet-draw-hei gs)))))
+  (draw-wid *default-graphics-sheet-width*)   ;; Width of graphics sheet in pixels
+  (draw-hei *default-graphics-sheet-height*)  ;; Height of graphics sheet in pixels
+  (screen-objs nil)
+  (bit-array nil)                             ;; An ogl-pixmap that acts as the background
+  (object-list nil)                           ;; A list of turtle sprites
+  (superior-box nil)
+  (draw-mode ':wrap)                          ;; Either ':wrap or ':clip for turtle drawing around edges
+  (graphics-list nil)                         ;; A graphics-command-list struct with the drawn turtle graphics commands
+  (background nil)                            ;; A background color that is used in lieu of the pixmap bit-array member
+  )
+
 ;; 2024-06-21 Removing another unneeded member of graphics-sheet
   ;; these are obsolete....
   ;; used to avoid redundant prepare sheets (see bu::with-sprites-hidden)
@@ -14064,6 +14092,13 @@ OpenGL expects a list of X Y pairs"
 ;;;;
 ;;;; FILE: grfdfs.lisp
 ;;;;
+
+(defun make-graphics-sheet (wid hei &optional box)
+  (let (;(new-gs (%make-graphics-sheet-with-graphics-list wid hei box))
+        (new-gs (make-graphics-sheet wid hei box)))
+    (setf (graphics-sheet-graphics-list new-gs) (make-graphics-command-list))
+    new-gs))
+
 
 (defun update-absolute-pos-cache (screen-box cache
                                              box-x-offset box-y-offset
