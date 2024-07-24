@@ -90,5 +90,4 @@
         ((not (capi:clipboard-empty self :image))
          (paste-pict))
         (t
-         (boxer::com-paste)))
-  (boxer::repaint))
+         (boxer::com-paste))))

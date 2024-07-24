@@ -902,9 +902,7 @@ specified target. "
   (reset-region) (reset-editor-numeric-arg)
   (if (name-row? (point-row))
     (boxer-editor-error "You cannot make boxes on a name row. ")
-    (progn
-     (make-graphics-box-internal)
-     (repaint)))
+    (make-graphics-box-internal))
   boxer-eval::*novalue*)
 
 (defboxer-command com-make-big-graphics-box ()
@@ -912,9 +910,7 @@ specified target. "
   (reset-region) (reset-editor-numeric-arg)
   (if (name-row? (point-row))
     (boxer-editor-error "You cannot make boxes on a name row. ")
-    (progn
-     (make-graphics-box-internal 500. 400.)
-     (repaint)))
+    (make-graphics-box-internal 500. 400.))
   boxer-eval::*novalue*)
 
 (defboxer-command com-make-giant-graphics-box ()
@@ -922,9 +918,7 @@ specified target. "
   (reset-region) (reset-editor-numeric-arg)
   (if (name-row? (point-row))
     (boxer-editor-error "You cannot make boxes on a name row. ")
-    (progn
-     (make-graphics-box-internal 900. 500.)
-     (repaint)))
+    (make-graphics-box-internal 900. 500.))
   boxer-eval::*novalue*)
 
 
@@ -935,11 +929,9 @@ specified target. "
   (reset-region) (reset-editor-numeric-arg)
   (if (name-row? (point-row))
     (boxer-editor-error "You cannot make boxes on a name row. ")
-    (progn
-     (make-graphics-box-internal *default-graphics-box-width*
-                                 *default-graphics-box-height*
-                                 nil)
-     (repaint)))
+    (make-graphics-box-internal *default-graphics-box-width*
+                                *default-graphics-box-height*
+                                nil))
   boxer-eval::*novalue*)
 
 (defboxer-command com-make-transparent-graphics-box ()
@@ -947,11 +939,9 @@ specified target. "
   (reset-region) (reset-editor-numeric-arg)
   (if (name-row? (point-row))
     (boxer-editor-error "You cannot make boxes on a name row. ")
-    (progn
-     (make-graphics-box-internal *default-graphics-box-width*
-                                 *default-graphics-box-height*
-                                 t)
-     (repaint)))
+    (make-graphics-box-internal *default-graphics-box-width*
+                                *default-graphics-box-height*
+                                t))
   boxer-eval::*novalue*)
 
 
@@ -998,9 +988,7 @@ specified target. "
   (reset-region) (reset-editor-numeric-arg)
   (if (name-row? (point-row))
     (boxer-editor-error "You cannot make boxes on a name row. ")
-    (progn
-     (make-turtle-box-internal)
-     (repaint)))
+    (make-turtle-box-internal))
   boxer-eval::*novalue*)
 
 (defboxer-command com-make-big-turtle-box ()
@@ -1008,9 +996,7 @@ specified target. "
   (reset-region) (reset-editor-numeric-arg)
   (if (name-row? (point-row))
     (boxer-editor-error "You cannot make boxes on a name row. ")
-    (progn
-     (make-turtle-box-internal 500. 400.)
-     (repaint)))
+    (make-turtle-box-internal 500. 400.))
   boxer-eval::*novalue*)
 
 (defboxer-command com-make-giant-turtle-box ()
@@ -1018,9 +1004,8 @@ specified target. "
   (reset-region) (reset-editor-numeric-arg)
   (if (name-row? (point-row))
     (boxer-editor-error "You cannot make boxes on a name row. ")
-    (progn
-     (make-turtle-box-internal 900. 500.)
-     (repaint))))
+     (make-turtle-box-internal 900. 500.))
+  boxer-eval::*novalue*)
 
 
 ;;; specific versions...
@@ -1030,11 +1015,9 @@ specified target. "
   (reset-region) (reset-editor-numeric-arg)
   (if (name-row? (point-row))
     (boxer-editor-error "You cannot make boxes on a name row. ")
-    (progn
-     (make-turtle-box-internal *default-graphics-box-width*
-                               *default-graphics-box-height*
-                               nil)
-     (repaint)))
+    (make-turtle-box-internal *default-graphics-box-width*
+                              *default-graphics-box-height*
+                              nil))
   boxer-eval::*novalue*)
 
 (defboxer-command com-make-transparent-turtle-box ()
@@ -1042,11 +1025,9 @@ specified target. "
   (reset-region) (reset-editor-numeric-arg)
   (if (name-row? (point-row))
     (boxer-editor-error "You cannot make boxes on a name row. ")
-    (progn
-     (make-turtle-box-internal *default-graphics-box-width*
-                               *default-graphics-box-height*
-                               t)
-     (repaint)))
+    (make-turtle-box-internal *default-graphics-box-width*
+                              *default-graphics-box-height*
+                              t))
   boxer-eval::*novalue*)
 
 

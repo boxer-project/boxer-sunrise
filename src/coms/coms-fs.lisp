@@ -273,8 +273,7 @@ Modification History (most recent at top)
                 (setf (slot-value box 'name) nil))
               (insert-cha *point* box)
               ;; Add the newly opened file to the recents list
-              (add-recent-file filename)
-              (repaint)))))
+              (add-recent-file filename)))))
       ;; this marks the box superior to the box being loaded
       (mark-file-box-dirty (point-row))))
   boxer-eval::*novalue*)
@@ -287,7 +286,7 @@ Modification History (most recent at top)
 (defun set-file-box-properties (box)
   (set-always-zoom? box t))
 
-(defboxer-command com-new-file-box (&optional explicit-redisplay)
+(defboxer-command com-new-file-box
   "makes a File (data) box at the cursor location."
   (let ((region-to-box (or *region-being-defined* (get-current-region))))
     (reset-editor-numeric-arg)
@@ -315,7 +314,6 @@ Modification History (most recent at top)
              ;; mark the containing box before entering
              (mark-file-box-dirty (point-row))
              (com-enter-box)))))
-  (when explicit-redisplay (repaint))
   boxer-eval::*novalue*)
 
 ;; rewrite this to CONS less later....

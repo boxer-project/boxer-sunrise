@@ -594,7 +594,6 @@
       ((and (box? target) (not (null (displayed-screen-objs target))))
         (push *outermost-screen-box* *outermost-screen-box-stack*)
         (set-outermost-box target)
-        (repaint)
         (move-point (box-first-bp-values target))
         (set-point-screen-box (outermost-screen-box))
         (fill-doit-cursor-position-vector
@@ -617,7 +616,6 @@
       ((and (box? target) (not (null (displayed-screen-objs target))))
         (push *outermost-screen-box* *outermost-screen-box-stack*)
         (set-outermost-box target)
-        (repaint)
         (move-point (box-first-bp-values target))
         (set-point-screen-box (outermost-screen-box))
         (fill-doit-cursor-position-vector
@@ -661,7 +659,6 @@
       ((and (box? target) (superior? target *initial-box*))
         ;; need to make sure screen structure is up to date
         (process-editor-mutation-queue-within-eval)
-        (repaint)
         ;; might want to Bind *move-bp-zoom-pause-time* here for effect
         (let ((edrow (row-at-row-no target (1- row))))
           (if (null edrow)

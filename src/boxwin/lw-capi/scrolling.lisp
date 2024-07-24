@@ -84,8 +84,7 @@
           ((> (- new-scroll-amount) max-vertical-scroll)
            (setf new-scroll-amount (- max-vertical-scroll)))
           (t nil))
-    (setf (vertical-scroll *boxer-pane*) new-scroll-amount))
-  (boxer::repaint))
+    (setf (vertical-scroll *boxer-pane*) new-scroll-amount)))
 
 (defun horizontal-scroll-callback (interface sb how where)
   "For the OS outer scrollbars"
@@ -100,8 +99,7 @@
           ((> (- new-scroll-amount) max-horizontal-scroll)
            (setf new-scroll-amount (- max-horizontal-scroll)))
           (t nil))
-    (setf (horizontal-scroll *boxer-pane*) new-scroll-amount))
-  (boxer::repaint))
+    (setf (horizontal-scroll *boxer-pane*) new-scroll-amount)))
 
 (defun scroll-handler (output-pane direction scroll-operation scroll-amount-original &key interactive)
   "Scrolls the screen box that the mouse is in based on the direction of the scrolling gestures from
@@ -162,8 +160,7 @@
                (scroll-horizontal output-pane scroll-amount))
               ((equal direction :vertical)
                (scroll-vertical output-pane scroll-amount))
-              (t nil))
-       (boxer::repaint t)))))
+              (t nil))))))
 
 (defmethod scroll-vertical ((self capi:output-pane) scroll-amount)
   (let ((new-scroll-amount (+ (vertical-scroll self) (- scroll-amount)))

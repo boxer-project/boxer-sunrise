@@ -35,8 +35,7 @@
                                      (if color
                                        (let* ((rgb-hex-color (boxer::rgb->rgb-hex color)))
                                          (boxer::set-css-style (boxer::box-point-is-in) :background-color rgb-hex-color))
-                                       (boxer::remove-css-style (boxer::box-point-is-in) :background-color))
-                                     (boxer::repaint)))
+                                       (boxer::remove-css-style (boxer::box-point-is-in) :background-color))))
            (make-instance 'color-picker-menu
              :toolbar-title "Border" :name "BorderColor"
              :help-key "Change the box border color."
@@ -49,8 +48,7 @@
                                      (if color
                                        (let* ((rgb-hex-color (boxer::rgb->rgb-hex color)))
                                          (boxer::set-css-style (boxer::box-point-is-in) :border-color rgb-hex-color))
-                                       (boxer::remove-css-style (boxer::box-point-is-in) :border-color))
-                                     (boxer::repaint)))))
+                                       (boxer::remove-css-style (boxer::box-point-is-in) :border-color))))))
   ))
 
 (defun make-action-toolbar-items ()
@@ -76,30 +74,24 @@
                            :help-key "Open the box closet."
                            :selection-callback (lambda (huh frame)
                                                  (boxer::com-toggle-closets)
-                                                 (boxer::repaint)
                                                  (update-toolbar-items))
                            :retract-callback (lambda (huh frame)
                                                  (boxer::com-toggle-closets)
-                                                 (boxer::repaint)
                                                  (update-toolbar-items)))
            (make-instance 'capi:toolbar-button
                            :text "Top Level" :name "TopLevel" :image 8 :selected-image 9
                            :help-key "Switch to top level mouse/key definitions."
                            :selection-callback (lambda (huh frame)
-                                                 (boxer::com-toggle-vanilla-mode)
-                                                 (boxer::repaint))
+                                                 (boxer::com-toggle-vanilla-mode))
                            :retract-callback (lambda (huh frame)
-                                                 (boxer::com-toggle-vanilla-mode)
-                                                 (boxer::repaint)))
+                                                 (boxer::com-toggle-vanilla-mode)))
            (make-instance 'capi:toolbar-button
                            :text "Save File Box" :name "SaveFileBox" :image 10 :selected-image 11
                            :help-key "Save current file box."
                            :selection-callback (lambda (huh frame)
-                                                 (boxer::com-save-document)
-                                                 (boxer::repaint))
+                                                 (boxer::com-save-document))
                            :retract-callback (lambda (huh frame)
-                                                 (boxer::com-save-document)
-                                                 (boxer::repaint))))
+                                                 (boxer::com-save-document))))
          :interaction :multiple-selection
          :default-image-set
            (capi:make-general-image-set

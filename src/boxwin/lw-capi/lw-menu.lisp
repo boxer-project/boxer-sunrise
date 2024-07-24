@@ -278,8 +278,7 @@ Modification History (most recent at top)
 
 (defun new-file-box (data interface)
   (declare (ignore data interface))
-  (boxer::com-new-file-box)
-  (boxer::repaint))
+  (boxer::com-new-file-box))
 
 (defun open-file (data interface)
   (declare (ignore data interface))
@@ -287,8 +286,7 @@ Modification History (most recent at top)
 
 (defun close-file-box (data interface)
   (declare (ignore data interface))
-  (boxer::com-close-box)
-  (boxer::repaint))
+  (boxer::com-close-box))
 
 ;; 2021-06-30 boxer-bugs-46
 ;; This ideally will replace both menu-file-toggle and save-box-as
@@ -309,9 +307,7 @@ Modification History (most recent at top)
            (boxer::modified spb))
           ;; Box not yet marked/saved as file
           (t
-           (save-box-as data interface))
-           ))
-  (boxer::repaint))
+           (save-box-as data interface)))))
 
 (defun menu-file-box-as-file-print (mi)
   (declare (ignore mi))
@@ -366,8 +362,7 @@ Modification History (most recent at top)
           ((and has-file (not modified))
            (boxer::com-save-document))
           ((and has-file modified)
-           (boxer::com-save-document))))
-  (boxer::repaint))
+           (boxer::com-save-document)))))
 
 ;; boxer-bugs-46. We are changing "Save" to act as "Save..." (Save As) rather
 ;; than be greyed out and disabled
@@ -437,18 +432,15 @@ Modification History (most recent at top)
 
 (defun menu-cut-region (data interface)
   (declare (ignore data interface))
-  (boxer::com-cut-region)
-  (boxer::repaint))
+  (boxer::com-cut-region))
 
 (defun menu-copy-region (data interface)
   (declare (ignore data interface))
-  (boxer::com-copy-region)
-  (boxer::repaint))
+  (boxer::com-copy-region))
 
 (defun menu-retrieve (data interface)
   (declare (ignore data interface))
-  (boxer::com-retrieve)
-  (boxer::repaint))
+  (boxer::com-retrieve))
 
 (defun menu-clipboard-paste (d i)
   (declare (ignore d i))
@@ -457,8 +449,7 @@ Modification History (most recent at top)
 
 (defun menu-select-box-contents (data interface)
   (declare (ignore data interface))
-  (boxer::com-select-box-contents)
-  (boxer::repaint))
+  (boxer::com-select-box-contents))
 
 (defun menu-prefs (data interface)
   (declare (ignore data interface))
@@ -471,8 +462,7 @@ Modification History (most recent at top)
                 (boxer-eval::compiled-boxer-function-object insearch))))
     (if (null fun)
         (boxer::com-search-forward)
-      (funcall fun)))
-  (boxer::repaint))
+      (funcall fun))))
 
 ;; **** View Menu ****
 
@@ -486,21 +476,13 @@ Modification History (most recent at top)
   (declare (ignore data interface))
   (unless (>= (zoom-level *boxer-pane*) 4)
     (setf (zoom-level *boxer-pane*) (+ 0.25 (zoom-level *boxer-pane*))))
-
-  (reset-global-scrolling)
-
-  (boxer::repaint)
-  (boxer::repaint))
+  (reset-global-scrolling))
 
 (defun menu-zoom-out (data interface)
   (declare (ignore data interface))
   (unless (<=  (zoom-level *boxer-pane*) 0.50)
     (setf (zoom-level *boxer-pane*) (- (zoom-level *boxer-pane*) 0.25)))
-
-  (reset-global-scrolling)
-
-  (boxer::repaint)
-  (boxer::repaint))
+  (reset-global-scrolling))
 
 ;; **** Do Menu ****
 
@@ -525,38 +507,31 @@ Modification History (most recent at top)
 
 (defun menu-data-box (data interface)
   (declare (ignore data interface))
-  (boxer::com-make-and-enter-data-box)
-  (boxer::repaint))
+  (boxer::com-make-and-enter-data-box))
 
 (defun menu-doit-box (data interface)
   (declare (ignore data interface))
-  (boxer::com-make-and-enter-box)
-  (boxer::repaint))
+  (boxer::com-make-and-enter-box))
 
 (defun menu-turtle-box (data interface)
   (declare (ignore data interface))
-  (boxer::com-make-turtle-box)
-  (boxer::repaint))
+  (boxer::com-make-turtle-box))
 
 (defun menu-graphics-box (data interface)
   (declare (ignore data interface))
-  (boxer::com-make-graphics-box)
-  (boxer::repaint))
+  (boxer::com-make-graphics-box))
 
 (defun menu-sprite-box (data interface)
   (declare (ignore data interface))
-  (boxer::com-make-sprite-box)
-  (boxer::repaint))
+  (boxer::com-make-sprite-box))
 
 (defun menu-port (data interface)
   (declare (ignore data interface))
-  (boxer::com-place-port)
-  (boxer::repaint))
+  (boxer::com-place-port))
 
 (defun menu-unbox (data interface)
   (declare (ignore data interface))
-  (boxer::com-unboxify)
-  (boxer::repaint))
+  (boxer::com-unboxify))
 
 
 ;;; **** Font Menu ****
@@ -565,14 +540,12 @@ Modification History (most recent at top)
   (declare (ignore data interface))
   (unless (>= boxer::*font-size-baseline* 4)
     (setq boxer::*font-size-baseline* (+ 0.25 boxer::*font-size-baseline*)))
-  (boxer::repaint)
   (update-toolbar-font-buttons))
 
 (defun menu-font-smaller (data interface)
   (declare (ignore data interface))
   (unless (<=  boxer::*font-size-baseline* 0.50)
     (setq boxer::*font-size-baseline* (- boxer::*font-size-baseline* 0.25)))
-  (boxer::repaint)
   (update-toolbar-font-buttons))
 
 (defun get-current-font ()
@@ -600,8 +573,7 @@ Modification History (most recent at top)
   (let ((region (or boxer::*region-being-defined*
                     (boxer::get-current-region))))
     (cond ((not (null region))
-           (boxer::change-region-font region data)
-           (boxer::repaint))
+           (boxer::change-region-font region data))
           (t
            (setf (boxer::bfd-font-no boxer::*current-font-descriptor*)
                  (boxer::%set-font (boxer::bfd-font-no
@@ -621,8 +593,7 @@ Modification History (most recent at top)
   (let ((region (or boxer::*region-being-defined*
                     (boxer::get-current-region))))
     (cond ((not (null region))
-           (boxer::change-region-font-size region data)
-           (boxer::repaint))
+           (boxer::change-region-font-size region data))
           (t
            (setf (boxer::bfd-font-no boxer::*current-font-descriptor*)
                  (boxer::%set-font-size (boxer::bfd-font-no
@@ -653,8 +624,7 @@ Modification History (most recent at top)
                           (:bold   (boxer::bold-font?   current-font))
                           (:italic (boxer::italic-font? current-font)))))
     (cond ((not (null region))
-           (boxer::change-region-style region data (not attribute-on?))
-           (boxer::repaint))
+           (boxer::change-region-style region data (not attribute-on?)))
           (t
            (setf (boxer::bfd-font-no boxer::*current-font-descriptor*)
                  (boxer::set-font-style (boxer::bfd-font-no
@@ -675,8 +645,7 @@ Modification History (most recent at top)
   (let ((region (or boxer::*region-being-defined*
                     (boxer::get-current-region))))
     (cond ((not (null region))
-           (boxer::change-region-color region data)
-           (boxer::repaint))
+           (boxer::change-region-color region data))
           (t (setf (boxer::bfd-color boxer::*current-font-descriptor*) data))))
   (update-toolbar-font-buttons))
 
@@ -727,8 +696,7 @@ Modification History (most recent at top)
 
 (defun menu-name (data interface)
   (declare (ignore data interface))
-  (boxer::com-name-box)
-  (boxer::repaint))
+  (boxer::com-name-box))
 
 (defun box-check-menu-item-enabled? (mi)
   (declare (ignore mi))
@@ -743,8 +711,7 @@ Modification History (most recent at top)
 
 (defun menu-closet-flip (data interface)
   (declare (ignore data interface))
-  (boxer::com-toggle-closets)
-  (boxer::repaint))
+  (boxer::com-toggle-closets))
 
 (defun graphics-menu-item-print (mi)
   (declare (ignore mi))
@@ -763,8 +730,7 @@ Modification History (most recent at top)
 
 (defun menu-graphics-flip (data interface)
   (declare (ignore data interface))
-  (boxer::com-toggle-box-view)
-  (boxer::repaint))
+  (boxer::com-toggle-box-view))
 
 (defun type-menu-item-print (mi)
   (declare (ignore mi))
@@ -782,13 +748,11 @@ Modification History (most recent at top)
 
 (defun menu-data-doit-flip (data interface)
   (declare (ignore data interface))
-  (boxer::com-toggle-box-type)
-  (boxer::repaint))
+  (boxer::com-toggle-box-type))
 
 (defun menu-transparency-flip (data interface)
   (declare (ignore data interface))
-  (boxer::com-toggle-box-transparency)
-  (boxer::repaint))
+  (boxer::com-toggle-box-transparency))
 
 (defun trans-menu-item-print (mi)
   (declare (ignore mi))
@@ -802,8 +766,7 @@ Modification History (most recent at top)
   (declare (ignore data interface))
   (let ((spb (safe-point-box)))
     (when (boxer::box? spb)
-      (boxer::com-edit-box-properties spb)
-      (boxer::repaint))))
+      (boxer::com-edit-box-properties spb))))
 
 (defun vanilla-menu-item-print (mi)
   (declare (ignore mi))
@@ -824,18 +787,15 @@ Modification History (most recent at top)
 
 (defun menu-last-mark (data interface)
   (declare (ignore data interface))
-  (boxer::com-goto-previous-place)
-  (boxer::repaint))
+  (boxer::com-goto-previous-place))
 
 (defun menu-top-level (data interface)
   (declare (ignore data interface))
-  (boxer::com-goto-top-level)
-  (boxer::repaint))
+  (boxer::com-goto-top-level))
 
 (defun menu-zoom-to-target (data interface)
   (declare (ignore data interface))
-  (boxer::com-move-to-port-target)
-  (boxer::repaint))
+  (boxer::com-move-to-port-target))
 
 (defun menu-remember-place () (boxer::com-point-to-register))
 
@@ -891,7 +851,7 @@ Modification History (most recent at top)
            (setq boxer::*recorded-place-alist*
                  (delete register boxer::*recorded-place-alist*))
            (boxer::boxer-editor-warning "Place ~A is no longer in the editor" data))
-          (t (boxer::repaint)))))
+          (t nil))))
 
 ;;; **** MacOS Window Menu ****
 
@@ -907,8 +867,7 @@ Modification History (most recent at top)
 
 (defun menu-inputs-help (data interface)
   (declare (ignore data interface))
-  (boxer::com-prompt)
-  (boxer::repaint))
+  (boxer::com-prompt))
 
 (defun near-string ()
   (let ((c (boxer::prompter-chunk-before-point)))
@@ -924,8 +883,7 @@ Modification History (most recent at top)
                        (string-upcase
                         (capi::prompt-for-string
                          "List Boxes or Primitives whose name contains:"
-                         :initial-value (near-string))))))
-  (boxer::repaint))
+                         :initial-value (near-string)))))))
 
 (defun menu-key-mouse-help (data interface)
   (declare (ignore data interface))
