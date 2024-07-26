@@ -16,8 +16,25 @@
 ;;;;         Code for painting the cursor/blinker.
 (in-package :boxer)
 
-(defun draw-blinker (blinker)
-  (with-pen-color (*blinker-color*)
+;; timing
+(defvar delta-time 0.0) ;; time between current frame and last frame
+(defvar last-frame 0.0)
+(defvar blinker-time 0.0)
+(defvar blinker-on t
+  "Is the blinker cursor currently visible?")
+
+(defun toggle-blinker ()
+  (cond
+    (blinker-on
+      (setf boxer::*point-color* #(:rgb .3 .3 .9 .5))
+      (setf blinker-on nil)
+    )
+    (t
+      (setf boxer::*point-color* #(:rgb .3 .3 .9 .0))
+      (setf blinker-on t))))
+
+(defun draw-blinker (blinker &key (color *blinker-color*))
+  (with-pen-color (color)
     (let ((horiz (horizontal-scroll *boxer-pane*))
           (vert  (vertical-scroll *boxer-pane*)))
       (draw-rectangle (blinker-wid blinker) (blinker-hei blinker)

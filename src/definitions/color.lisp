@@ -53,6 +53,9 @@
 (defvar *closet-color* #(:rgb .94 .94 .97 1.0))
 (defvar *scroll-elevator-color* *gray* "Color for scrollbars")
 (defvar *blinker-color* #(:rgb .3 .3 .9 .5))
+(defvar *point-color* #(:rgb .3 .3 .9 .5)
+  "This is just for the cursor, whereas the *blinker-color* also controls highlighted text.
+   This way we can have the cursor point blink without the entire selected region blinking.")
 (defvar *popup-doc-color* #(:RGB 0.95 0.95 0.70 0.60) "a pale yellow...")
 (defvar *mouse-doc-highlight-color* #(:RGB 0.10 0.30 0.10 1.0))
 

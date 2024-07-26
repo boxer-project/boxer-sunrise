@@ -187,9 +187,9 @@
     (catch 'boxer::boxer-editor-top-level
       (let ((input (pop *boxer-eval-queue*)))
         (cond ((null input)
-               (unless just-redisplayed?
-                 (boxer::repaint)
-                 (setq just-redisplayed? t))
+               ;;  (unless just-redisplayed?
+               ;;    (boxer::repaint)
+               ;;    (setq just-redisplayed? t))
                #+lispworks (mp::process-allow-scheduling)
                (when (no-more-input?)
                  (boxer-idle-function)
@@ -197,7 +197,7 @@
                  ;; NOTE: when the idle function is fixed to actually document
                  ;; the mouse, we will need to change this to
                  ;; mp::process-allow-scheduling so it can run continously...
-                 #+lispworks (mp::process-wait-with-timeout "Boxer Input" 0.25
+                 #+lispworks (mp::process-wait-with-timeout "Boxer Input" 0.01
                                    #'(lambda ()
                                        (not (null (car *boxer-eval-queue*)))))))
               #+lispworks
@@ -222,12 +222,12 @@
                ;;
                ;; also check for double click by pausing and looking for a
                ;; double click event
-               (when (null just-redisplayed?) (boxer::repaint))
+               ;;  (when (null just-redisplayed?) (boxer::repaint))
                (handle-boxer-input input)
                (setq just-redisplayed? nil))
               ((and (symbolp input) (not (null (symbol-function input))))
-               (when (null just-redisplayed?)
-                 (boxer::repaint))
+               ;;  (when (null just-redisplayed?)
+               ;;    (boxer::repaint))
                (funcall input)
                (setq just-redisplayed? nil))
               ((and (consp input)

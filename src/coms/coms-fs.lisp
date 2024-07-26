@@ -286,7 +286,7 @@ Modification History (most recent at top)
 (defun set-file-box-properties (box)
   (set-always-zoom? box t))
 
-(defboxer-command com-new-file-box
+(defboxer-command com-new-file-box ()
   "makes a File (data) box at the cursor location."
   (let ((region-to-box (or *region-being-defined* (get-current-region))))
     (reset-editor-numeric-arg)

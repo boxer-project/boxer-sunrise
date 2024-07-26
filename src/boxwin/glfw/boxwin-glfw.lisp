@@ -75,22 +75,6 @@
   ((boxer-pane :initform (make-instance 'glfw-boxer-pane))
    (name-pane  :initform (make-instance 'glfw-boxer-name-pane))))
 
-;; timing
-(defvar delta-time 0.0) ;; time between current frame and last frame
-(defvar last-frame 0.0)
-(defvar blinker-time 0.0)
-(defvar blinker-on t)
-
-(defun toggle-blinker ()
-  (cond
-    (blinker-on
-      (setf boxer::*blinker-color* #(:rgb .3 .3 .9 .5))
-      (setf blinker-on nil)
-    )
-    (t
-      (setf boxer::*blinker-color* #(:rgb .3 .3 .9 .0))
-      (setf blinker-on t))))
-
 (defmethod display ((self glfw-boxer-frame))
   ;; (with-body-in-main-thread ()
     (cl-glfw3:with-init-window (:title "LearnOpenGL" :width scr-width :height scr-height
@@ -129,13 +113,13 @@
               ;; per-frame-time-logic
               ;; --------------------
               (let ((current-frame (%cl-glfw3:get-time)))
-                (setf delta-time (- current-frame last-frame)
-                      last-frame current-frame
-                      blinker-time (+ blinker-time delta-time)))
+                (setf box::delta-time (- current-frame box::last-frame)
+                      box::last-frame current-frame
+                      box::blinker-time (+ box::blinker-time box::delta-time)))
 
-              (when (> blinker-time 0.7)
-                (toggle-blinker)
-                (setf blinker-time 0.0))
+              (when (> box::blinker-time 0.7)
+                (box::toggle-blinker)
+                (setf box::blinker-time 0.0))
 
               ;; render
               ;; ------

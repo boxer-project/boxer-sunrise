@@ -89,7 +89,7 @@ Modification History (most recent at top)
 
 (defmethod ensure-row-is-displayed ((self row) screen-box
                                               &optional (direction -1) scroll-anyway)
-  (repaint) ;; TODO we really only need to rerun the pass-1 layout algorithm
+  ;; (repaint) ;; TODO we really only need to rerun the pass-1 layout algorithm
   (when (screen-objs (point-row))
     (let* ((point-row-y-offset (screen-obj-y-offset (car (screen-objs (point-row)))))
            (point-row-baseline-y-offset (- point-row-y-offset (baseline (car (screen-objs (point-row))))))

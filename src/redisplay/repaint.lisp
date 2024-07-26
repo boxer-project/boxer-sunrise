@@ -130,6 +130,15 @@
     (multiple-value-bind (max-wid max-hei)
                          (outermost-screen-box-size *redisplay-window*)
                        (repaint-fill-dimensions *outermost-screen-box* max-wid max-hei))
+
+    ;; sgithens 2024-07 This is a totally insane and bizarre workout for an issue where if you
+    ;; create and then delete graphics box, then the screen will go blank the next time you drag
+    ;; to resize the window. Some issue with clip not getting set back? Until correctly fixes, this
+    ;; manages to resize/reset the clip so it doens't occur.
+    (let ((res (resolution)))
+      (with-clipping-inside (0 0 (aref res 0) (aref res 1))
+        (+ 1 1)))
+
     (top-level-repaint-pass-2)))
 
 (defun update-window-title ()
@@ -154,15 +163,26 @@
           (box::outermost-screen-box-size *boxer-pane*)
         (unless (and (= obwid (display-style-fixed-wid (display-style-list osb)));(box::screen-obj-wid osb))
                      (= obhei (display-style-fixed-hei (display-style-list osb)))) ;(box::screen-obj-hei osb)))
-          (format t "check-for-window-resize: obwid: ~A obhei: ~A scr-obj-wid: ~A scr-obj-hei: ~A"
-            obwid obhei (box::screen-obj-wid osb) (box::screen-obj-hei osb))
           (reset-global-scrolling)
           (multiple-value-bind (ww wh) (window-inside-size *boxer-pane*)
             (boxer::ogl-reshape ww wh))
           (box::set-fixed-size osb obwid obhei))))))
 
 (defun repaint (&optional just-windows?)
-  #+lispworks (when (active *boxer-pane*)
+  #+lispworks
+  (when (active *boxer-pane*)
+
+  ;; Do the cursor math. TODO move this framerate somewhere more central
+  ;; since it's useful for other stuff. There is a similar bit in boxwin-glfw.
+  (let ((current-frame (get-internal-real-time)))
+    (setf delta-time (- current-frame last-frame)
+          last-frame current-frame
+          blinker-time (+ blinker-time delta-time)))
+
+  (when (> blinker-time 700)
+    (toggle-blinker)
+    (setf blinker-time 0.0))
+
   (adjust-global-scroll *boxer-pane*)
    (opengl:rendering-on (*boxer-pane*)
 
@@ -181,7 +201,7 @@
   ;; this updates the position & size
   (repaint-cursor-internal cursor)
   ;; now draw it
-  (draw-blinker (point-blinker *boxer-pane*)))
+  (draw-blinker (point-blinker *boxer-pane*) :color *point-color*))
 
 (defun repaint-cursor-internal (&optional (cursor *point*))
   (and (bp? cursor)
