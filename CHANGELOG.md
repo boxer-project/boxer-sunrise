@@ -1,5 +1,59 @@
 # Change Log
 
+## 3.4.20 2024-08-06
+
+This maintenance and refactoring release includes a number of small issues filed recently
+(thanks @rigdern !). In addition it fixes the regressions and issues that occasionally
+caused the openGL canvas to go white when resizing the window or scrolling. Lastly, this
+release continues to get us closer to a multiplatform (including web) GL app by fixing up
+the LispWorks event loop so repainting is constant on that platform as well. (You can see
+that the cursor now blinks when the window is focused!) From here we'll be continuing to
+speed up the rendering and rasterization across platforms. There is still some lag when
+resizing on LW, but we'll be tweaking that.
+
+### Full Change Log
+
+sunrise-20 Continued work and refactoring.
+  - Removing :opengl feature to simplify setup
+  - Removing :freetype-fonts from *features*
+  - Adding boxer-sunrise-glfw asdf component and simplifying startup
+  - Removing some non-standard declare statements that periodically caused issues on SBCL.
+  - Changing lispworks event loop to regularly repaint putting us in line with other implementations.
+    Adding property to the Boxer canvas to signal if the window is currently active
+  - Refactoring repaint and LW resizing
+    - archiving resize-handler, resize-handler-utility
+    - new version of check-for-window-resize to be called from repaint
+  - Removing extra repaint calls from all other the place now that we have a framerate
+  - Blinking LW cursor, fixes for blank screen
+  - Moving internal %resize-opengl-context call to repaint to avoid process/thread issues,
+    and adding scroll bar adjusts to repaint-in-eval.
+
+
+sunrise-78 Fixing up paste behavior (opposed to yank) and refactoring kill buffer
+  - Creating source part for combined killyankcutcopypasteundoredo functionality
+  - Moved kill-buffer vars and defuns to copy-paste-buffers.lisp
+  - Added option to kill-buffer-push to also add item to the new *current-paste-item*
+    that can set to true when cutting or pasting. Part of the problem was that even
+    basic deletion operations get put on the kill buffer.
+  - Added new commmand com-paste to use for OS type pasting.  The yank command is still
+    available for the emacs style usage.
+
+sunrise-87 Adding checks for minimum border widths on graphics boxes
+
+sunrise-92 Putting back new implementation of translate-graphics-command
+
+sunrise-99 Adding a few missing copy-trees to the css-style reference isn't shared between virtual copies.
+
+sunrise-102 Adding another nil check, although yank/copy/paste will need more attention at some point...
+
+sunrise-105 Adding clipping around graphics boxtop rendering.
+
+sunrise-111 Adding alpha to get-color-from-color-box
+
+refactor
+  - Switching internal matrices to 3d-matrix mat4 rather than the raw marr4 vector to simplify operations.
+  - Removing some extra ignore-errors to avoid missing issues when they happen.
+
 ## 3.4.19 2024-06-24
 
 This is the first maintenance release after the large redisdplay layout refactoring. This fixes a number of small
