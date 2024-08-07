@@ -165,6 +165,9 @@
                      (= obhei (display-style-fixed-hei (display-style-list osb)))) ;(box::screen-obj-hei osb)))
           (reset-global-scrolling)
           (multiple-value-bind (ww wh) (window-inside-size *boxer-pane*)
+            (opengl::%resize-opengl-context (capi-internals:representation *boxer-pane*)
+                            (opengl::context *boxer-pane*)
+                            ww wh)
             (boxer::ogl-reshape ww wh))
           (box::set-fixed-size osb obwid obhei))))))
 
@@ -293,9 +296,12 @@
                   (>& now (+ *last-eval-repaint* (* *eval-repaint-ratio*
                                                     *last-repaint-duration*)))))
         #+lispworks (capi::apply-in-pane-process *boxer-pane* #'bw::update-toolbar-font-buttons)
+        (adjust-global-scroll *boxer-pane*)
         (setq *last-eval-repaint* now)
         (process-editor-mutation-queue-within-eval)
         (unless (null bw::*suppressed-actions*)
           (funcall (pop bw::*suppressed-actions*)))
         (repaint-window *boxer-pane* t :process-state-label "eval")
+        (let ((glerr (gl:get-error)))
+          (if (not (eq glerr :zero)) (break "GL Error: ~A" glerr)))
         (setq *last-repaint-duration* (- (get-internal-real-time) now))))))

@@ -152,11 +152,14 @@
   (setf (opengl-pane-render-state opengl-pane) nil)
   (call-next-method))
 
-(defmethod capi::output-pane-resize :before ((opengl-pane opengl-pane)
-                                             x y width height)
-  (%resize-opengl-context (capi-internals:representation opengl-pane)
-                          (context opengl-pane)
-                          width height))
+;; sgithens 2024-08-06 Commenting this out, since it doesn't always get called
+;; from the same thread where current rendering work is happening.  For now calling
+;; %resize-opengl-context from our repaint methods when the canvas size changes.
+;; (defmethod capi::output-pane-resize :before ((opengl-pane opengl-pane)
+;;                                              x y width height)
+;;   (%resize-opengl-context (capi-internals:representation opengl-pane)
+;;                           (context opengl-pane)
+;;                           width height))
 
 (defun update-opengl-pane-after-scrolling (opengl-pane)
   (rendering-on (opengl-pane)
