@@ -1,5 +1,5 @@
 (defsystem "boxer-sunrise-glfw"
-  :version "3.4.19"
+  :version "3.4.20"
   :author "Steven Githens"
   :license ""
   :components ((:file "boxwin-glfw"))
