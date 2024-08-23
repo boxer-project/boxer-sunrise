@@ -96,6 +96,20 @@ Modification History (most recent at top)
 
 ;; "bubble help" used mostly for mouse documentation
 
+(defclass active-popup-menu ()
+  ((popup-menu :initform nil :initarg :popup-menu :accessor popup-menu
+    :documentation "The popup-menu instance for this context menu.")
+   (x :initform 0 :initarg :x :accessor x)
+   (y :initform 0 :initarg :y :accessor y)
+   (highlight-rect :initform '(0 0 0 0) :accessor highlight-rect
+    :documentation "List containing the width, height, x, y of the highlight for the hovered item.
+                    should be the correct items to feed straight to draw-rectangle.")
+   (current-hover-item :initform nil
+    :documentation "Item currently being hovered over in the menu. Can be nil if nothing is highlighted.")))
+
+(defun make-active-popup-menu (menu x y)
+  (make-instance 'active-popup-menu :popup-menu menu :x x :y y))
+
 (defclass popup-doc
   ()
   ((string :initarg :string :initform "" :accessor popup-doc-string)))
@@ -182,21 +196,26 @@ Modification History (most recent at top)
     ;; and another 1 for the border
     (values (+ wid 3) (+ hei 3))))
 
-(defmethod draw-menu ((menu popup-menu) x y)
-  (multiple-value-bind (mwid mhei) (menu-size menu)
-    (erase-rectangle mwid mhei x y)
-    (let ((acc-y (1+ y)))
-      (dolist (item (slot-value menu 'items))
-        (setq acc-y (+ acc-y (draw-item item x acc-y)))))
-    ;; draw the top & left borders
-    (draw-rectangle (- mwid 2) 1 x y)
-    (draw-rectangle 1 (- mhei 2) x y)
-    ;; and the bottom & right stubs
-    (draw-rectangle 4 1 x (+ y (- mhei 2)))
-    (draw-rectangle 1 4 (+ x (- mwid 2)) y)
-    ;; draw the shadow rects
-    (draw-rectangle (- mwid 4) 2 (+ x 4) (+ y (- mhei 2)))
-    (draw-rectangle 2 (- mhei 4) (+ x (- mwid 2)) (+ y 4))))
+(defmethod draw-menu ((item active-popup-menu))
+  (with-slots (popup-menu x y highlight-rect) item
+    (multiple-value-bind (mwid mhei) (menu-size popup-menu)
+      (erase-rectangle mwid mhei x y)
+      (let ((acc-y (1+ y)))
+        (dolist (item (slot-value popup-menu 'items))
+          (setq acc-y (+ acc-y (draw-item item x acc-y)))))
+      ;; draw the top & left borders
+      (draw-rectangle (- mwid 2) 1 x y)
+      (draw-rectangle 1 (- mhei 2) x y)
+      ;; and the bottom & right stubs
+      (draw-rectangle 4 1 x (+ y (- mhei 2)))
+      (draw-rectangle 1 4 (+ x (- mwid 2)) y)
+      ;; draw the shadow rects
+      (draw-rectangle (- mwid 4) 2 (+ x 4) (+ y (- mhei 2)))
+      (draw-rectangle 2 (- mhei 4) (+ x (- mwid 2)) (+ y 4))
+      ;; If an item is highlighted, draw it
+      (when highlight-rect
+        (with-pen-color (*blinker-color*)
+          (apply #'draw-rectangle highlight-rect))))))
 
 ;; the check for valid local coords should have already been made
 (defmethod track-item ((menu popup-menu) local-y)
@@ -217,86 +236,59 @@ Modification History (most recent at top)
 ;; funcalling the selected menu-item-action
 (defmethod menu-select ((menu popup-menu) x y)
   (multiple-value-bind (mwid mhei) (menu-size menu)
-    (let* ((window-width (sheet-inside-width *boxer-pane*)); what about %clip-rig?
-           (window-height (sheet-inside-height *boxer-pane*)) ; %clip-bot?
-           (fit-x (- (+ x mwid) window-width))
-           (fit-y (- (+ y mhei) window-height))
-           ;; if either fit-? vars are positive, we will be off the screen
-           (real-x (if (plusp fit-x) (- window-width mwid) x))
-           (real-y (if (plusp fit-y) (- window-height mhei) y))
+    (let* ((window-width (content-wid *boxer-pane*));  (sheet-inside-width *boxer-pane*)); what about %clip-rig?
+           (window-height (content-hei *boxer-pane*)); (sheet-inside-height *boxer-pane*)) ; %clip-bot?
+           ;; Make sure the menus are on the screen
+           (real-x (if (> (+ x mwid) window-width)
+                     (- window-width mwid)
+                     x))
+           (real-y (if (> (+ y mhei) window-height)
+                     (- window-height mhei)
+                     y))
            ;; current-item is bound out here because we'll need it after the
            ;; tracking loop exits...
+           (current-menu (make-active-popup-menu menu real-x real-y))
            (current-item nil))
       (unless (zerop (mouse-button-state))
         ;; make sure the mouse is still down
-        ;; if the original x and y aren't good, warp the mouse to the new location
-        ;; a more fine tuned way is to use fit-x and fit-y to shift the current
-        ;; mouse pos by the amount the menu is shifted (later...)
-        (drawing-on-window (*boxer-pane*)
-          ;; now draw the menu and loop
-          (unwind-protect
-            (progn
-              ;; draw menu
-              (draw-menu menu real-x real-y)
-              (swap-graphics-buffers)
-              ;; loop
-              (let ((current-y 0) (current-height 0))
-                #+lispworks (boxer-window::with-mouse-tracking ((mouse-x real-x) (mouse-y real-y))
-                  (let ((local-x (- mouse-x real-x)) (local-y (- mouse-y real-y)))
-                    (if (and (< 0 local-x mwid) (< 0 local-y mhei))
-                      ;; this means we are IN the popup
-                      (multiple-value-bind (ti iy ih)
-                                           (track-item menu local-y)
-                        (cond ((and (null current-item)
-                                    (not (slot-value ti 'enabled?)))
-                               ;; no current, selected item is disabled...
-                               )
-                              ((null current-item)
-                               ;; 1st time into the loop, set vars and then
-                               (setq current-item ti current-y iy current-height ih)
-                               ;; highlight
-                               (draw-menu menu real-x real-y)
-                               (with-pen-color (*blinker-color*)
-                                 (draw-rectangle (- mwid 3) ih
-                                                 (1+ real-x) (+ real-y iy)))
-                               (swap-graphics-buffers))
-                              ((eq ti current-item)) ; no change, do nothing
-                              ((not (slot-value ti 'enabled?))
-                               ;; redraw menu with nothing selected
-                               (draw-menu menu real-x real-y)
-                               (swap-graphics-buffers)
-                               (setq current-item nil))
-                              (t ; must be a new item selected,
-                               ;; redraw menu
-                               (draw-menu menu real-x real-y)
-                               ;; highlight selected item...
-                               (with-pen-color (*blinker-color*)
-                                 (draw-rectangle (- mwid 3) ih
-                                                 (1+ real-x) (+ real-y iy)))
-                               (swap-graphics-buffers)
-                               ;; set vars
-                               (setq current-item ti current-y iy current-height ih))))
-                      ;; we are OUT of the popup
-                      (cond ((null current-item)) ; nothing already selected
-                            (t ; redraw menu with nothing selected
-                             (draw-menu menu real-x real-y)
-                             (swap-graphics-buffers)
-                             (setq current-item nil))))))
-                ;; loop is done, either we are in and item or not
-                (unless (null current-item)
-                  ;; if we are in an item, flash and erase the highlighting
-                  (dotimes (i 5)
-                    (draw-menu menu real-x real-y)
-                    (swap-graphics-buffers) (snooze .05)
-                    (with-pen-color (*blinker-color*)
-                      (draw-rectangle (- mwid 3) current-height
-                                      (1+ real-x) (+ real-y current-y)))
-                    (swap-graphics-buffers) (snooze .05)))))))
+        ;; now draw the menu and loop
+        (unwind-protect
+          (progn
+            ;; loop
+            (setf (active-menu *boxer-pane*) current-menu)
+            (repaint)
+            (let ((current-y 0) (current-height 0))
+              #+lispworks (boxer-window::with-mouse-tracking ((mouse-x real-x) (mouse-y real-y))
+                (let ((local-x (- mouse-x real-x)) (local-y (- mouse-y real-y)))
+                  (if (and (< 0 local-x mwid) (< 0 local-y mhei))
+                    ;; this means we are IN the popup
+                    (multiple-value-bind (ti iy ih)
+                                          (track-item menu local-y)
+                      (cond ((and (null current-item)
+                                  (not (slot-value ti 'enabled?)))
+                              ;; no current, selected item is disabled...
+                              )
+                            ((null current-item)
+                              ;; 1st time into the loop, set vars and then
+                              (setf current-item ti current-y iy current-height ih
+                                    (highlight-rect (active-menu *boxer-pane*)) `(,(- mwid 3) ,ih ,(1+ real-x) ,(+ real-y iy))))
+                            ((eq ti current-item)) ; no change, do nothing
+                            ((not (slot-value ti 'enabled?))
+                              (setf current-item nil (highlight-rect (active-menu *boxer-pane*)) nil))
+                            (t ; must be a new item selected,
+                              (setf current-item ti current-y iy current-height ih
+                                    (highlight-rect (active-menu *boxer-pane*)) `(,(- mwid 3) ,ih ,(1+ real-x) ,(+ real-y iy))))))
+                    ;; we are OUT of the popup
+                    (cond ((null current-item)) ; nothing already selected
+                          (t ; redraw menu with nothing selected
+                            (setf current-item nil
+                                  (highlight-rect (active-menu *boxer-pane*)) nil)))))
+                (repaint)))))
         ;; funcall the action (note we are OUTSIDE of the drawing-on-window
         (unless (null current-item)
           (let ((action (slot-value current-item 'action)))
-            (unless (null action) (funcall action))))))))
-
+            (unless (null action) (funcall action))))
+        (setf (active-menu *boxer-pane*) nil)))))
 
 ;;; popup doc methods
 

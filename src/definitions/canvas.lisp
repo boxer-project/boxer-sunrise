@@ -75,6 +75,9 @@
 
    ;; Current Colors
    (backdrop-color :accessor backdrop-color :initform *white*)
+
+   ;; Current Context Menu and Other Mouse Actions
+   (active-menu :accessor active-menu :initform nil)
     ))
 
 (defmethod port-width ((self boxer-canvas))

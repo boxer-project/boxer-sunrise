@@ -116,6 +116,8 @@
                          (clear-window window)
                          (repaint-guts)
                          (repaint-mouse-docs)
+                         (when (active-menu *boxer-pane*)
+                           (draw-menu (active-menu *boxer-pane*)))
                          (let ((cur-transform (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)))
                            (set-transform bw::*boxgl-device* 0 0)
                            (repaint-dev-overlay process-state-label)
