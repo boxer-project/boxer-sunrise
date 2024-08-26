@@ -35,11 +35,11 @@
                     command operations have been applied to this texture. In a graphics command
                     display list, we can use this to pick back up painting to the texture without
                     repeating previous operations.")
-   (cached-ortho-matrix :initform nil :accessor cached-ortho-matrix
+   (cached-projection-matrix :initform nil :accessor cached-projection-matrix
     :documentation "We have to reset the drawing matrices for these canvases. This is what
                     we'll set it back to when we're done.")
    (cached-transform-matrix :initform nil :accessor cached-transform-matrix
-    :documentation "See the comments on cached-ortho-matrix.")
+    :documentation "See the comments on cached-projection-matrix.")
 
    (pen-color-cmd :initform nil :accessor graphics-canvas-pen-color-cmd
     :documentation "Vector of the last run gdispl command for changing the color, so it can be turned back
@@ -127,16 +127,16 @@
   "Enables the framebuffer backing this graphics-canvas, such that any GL operations will
    take place on it, until calling disable (or manually setting another framebuffer with GL
    calls).
-   This takes care of updating our ortho, transform, and other matrices for the shaders,
+   This takes care of updating our projection, transform, and other matrices for the shaders,
    as well as resetting the viewport for the framebuffer."
   (gl:bind-framebuffer :framebuffer (graphics-canvas-framebuffer self))
-  (setf (cached-ortho-matrix self) (boxgl-device-ortho-matrix device))
+  (setf (cached-projection-matrix self) (boxgl-device-projection-matrix device))
   (setf (cached-transform-matrix self) (boxgl-device-transform-matrix device))
   (let* ((pixmap (graphics-canvas-pixmap self))
          (wid (ogl-pixmap-width pixmap))
          (hei (ogl-pixmap-height pixmap))
-         (new-ortho-matrix (create-ortho-matrix wid hei)))
-    (setf (boxgl-device-ortho-matrix device) new-ortho-matrix)
+         (new-projection-matrix (create-ortho-matrix wid hei)))
+    (setf (boxgl-device-projection-matrix device) new-projection-matrix)
     (setf (boxgl-device-transform-matrix device) (create-transform-matrix 0 0))
     #+lispworks (opengl:gl-viewport 0 0 wid hei)
   (update-matrices-ubo device)))
@@ -144,7 +144,7 @@
 (defmethod disable ((self graphics-canvas) &key (device bw::*boxgl-device*))
   "See comments for enable. Resets the current framebuffer back to the default front/back buffers."
   (gl:bind-framebuffer :framebuffer 0)
-  (setf (boxgl-device-ortho-matrix device) (cached-ortho-matrix self))
+  (setf (boxgl-device-projection-matrix device) (cached-projection-matrix self))
   (setf (boxgl-device-transform-matrix device) (cached-transform-matrix self))
   #+lispworks (opengl:gl-viewport 0 0 (aref (resolution) 0) (aref (resolution) 1))
   (update-matrices-ubo device))
