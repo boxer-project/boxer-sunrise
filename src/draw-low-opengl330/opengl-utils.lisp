@@ -137,7 +137,7 @@ Modification History (most recent at the top)
             (setf (boxer::boxgl-device-pen-color bw::*boxgl-device*) ,old-color))))))
 
 (defun ogl-reshape (width height)
-  (setf (boxer::boxgl-device-ortho-matrix bw::*boxgl-device*)
+  (setf (boxer::boxgl-device-projection-matrix bw::*boxgl-device*)
         (boxer::create-ortho-matrix width height))
   #+lispworks (opengl:gl-viewport 0 0 width height))
 

@@ -117,7 +117,7 @@
    (matrices-ubo :accessor matrices-ubo
     :documentation "Integer describing the gl uniform buffer object we are storing our transformation
                     matrices and other information in.")
-   (ortho-matrix :accessor boxgl-device-ortho-matrix)
+   (projection-matrix :accessor boxgl-device-projection-matrix)
    (transform-matrix :accessor boxgl-device-transform-matrix
                      :initform (3d-matrices:meye 4))
    (model-matrix :accessor boxgl-device-model-matrix
@@ -606,7 +606,7 @@
     (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (boxgl-device-model-matrix device)))))
       (setf (gl:glaref arr i) (coerce item 'single-float))
       (incf i))
-    (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (boxgl-device-ortho-matrix device)))))
+    (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (boxgl-device-projection-matrix device)))))
       (setf (gl:glaref arr i) (coerce item 'single-float))
       (incf i))
     (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (boxgl-device-transform-matrix device)))))
@@ -674,7 +674,7 @@ inside an opengl:rendering-on macro invocation."
     (setf (matrices-ubo togo)
           (gl:gen-buffer)
 
-          (boxgl-device-ortho-matrix togo)
+          (boxgl-device-projection-matrix togo)
           (create-ortho-matrix wid hei)
 
           (boxgl-device-transform-matrix togo)
@@ -698,7 +698,7 @@ inside an opengl:rendering-on macro invocation."
 
     ;; Set up uniform buffer object for projection and transform matrices
     (gl:bind-buffer :uniform-buffer (matrices-ubo togo))
-    ;; number of floats: vec2 u_res, mat4 ortho, mat4 transform
+    ;; number of floats: vec2 u_res, mat4 projection, mat4 transform
     (%gl:buffer-data :uniform-buffer (* *cffi-float-size* (+ 4 2 (* 3 (* 4 4)))) (cffi:null-pointer) :static-draw)
     (gl:bind-buffer :uniform-buffer 0)
 

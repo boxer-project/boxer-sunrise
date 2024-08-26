@@ -7,7 +7,7 @@ out vec2 TexCoord;
 layout (std140) uniform Matrices
 {
     mat4 model;
-    mat4 ortho;
+    mat4 projection;
     mat4 transform;
     vec2 u_resolution;
     vec4 u_rgba;
@@ -15,6 +15,6 @@ layout (std140) uniform Matrices
 
 void main()
 {
-    gl_Position = ortho * transform * model * vec4(aPos, 1.0);
+    gl_Position = projection * transform * model * vec4(aPos, 1.0);
     TexCoord = vec2(aTexCoord.x, aTexCoord.y);
 }

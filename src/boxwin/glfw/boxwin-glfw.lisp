@@ -91,7 +91,7 @@
         (setf bw::*boxgl-device* (slot-value
                             (boxer::make-boxwin-330gl-device bw::*boxer-frame* bw::*boxer-pane* :wid scr-width :hei scr-height)
                             'boxer::draw-device))
-        (setf (boxer::boxgl-device-ortho-matrix bw::*boxgl-device*)
+        (setf (boxer::boxgl-device-projection-matrix bw::*boxgl-device*)
               (boxer::create-ortho-matrix scr-width scr-height))
 
         (boxer::update-matrices-ubo bw::*boxgl-device*)
