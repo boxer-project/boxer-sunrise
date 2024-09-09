@@ -444,9 +444,6 @@ Modification History (most recent at top)
 (defmethod type-font ((self graphics-cursor))
   (box-interface-value (slot-value self 'pen-width)))
 
-(defun font-name-from-font-no (font-no) font-no)
-
-
 (defmethod set-type-font ((self graphics-cursor) new-value
                                                  &optional dont-update-box)
   ;; Bash slots in the data structure only if we are NOT recording a shape

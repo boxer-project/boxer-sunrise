@@ -13505,6 +13505,8 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: gcmeth.lisp
 ;;;;
 
+(defun font-name-from-font-no (font-no) font-no)
+
 ;; similiar to synchronize-graphics-state except we synch to erasing
 ;; values instead of the intrinsic values of the sprite
 (defmethod synchronize-graphics-state-for-erase ((agent graphics-cursor)
