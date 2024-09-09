@@ -26173,6 +26173,14 @@ Modification History (most recent at top)
   *enable-mouse-toggle-box-type?*)
 
 ;;;;
+;;;; FILE: sprite.lisp
+;;;;
+
+;; unused ??
+(defvar *tvl-element-sprite-command-alist* '((up . penup) (down . pendown)))
+
+
+;;;;
 ;;;; FILE: surf.lisp
 ;;;;
 
