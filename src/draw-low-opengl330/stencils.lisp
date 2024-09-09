@@ -42,5 +42,5 @@
   (gl:stencil-mask #x00))
 
 (defun ignore-stencil ()
-  (gl:stencil-mask #xFF)
+  (gl:stencil-mask #x00)
   (gl:stencil-func :always 0 #xFF))

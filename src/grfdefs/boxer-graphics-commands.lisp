@@ -41,9 +41,13 @@
 
     (with-graphics-state (gl t)
       (when translate?
-        (setf prev-model (boxgl-device-model-matrix bw::*boxgl-device*)
-              trans-mat  (3d-matrices:mtranslation
-                          (3d-vectors:vec %drawing-half-width %drawing-half-height 0.0)))
+        (setf prev-model (boxgl-device-model-matrix bw::*boxgl-device*))
+        (if *use-opengl-framebuffers*
+          (setf trans-mat  (3d-matrices:mtranslation
+                             (3d-vectors:vec %drawing-half-width %drawing-half-height 0.0)))
+          (setf trans-mat  (3d-matrices:m* prev-model
+                           (3d-matrices:mtranslation
+                             (3d-vectors:vec %drawing-half-width %drawing-half-height 0.0)))))
 
         (setf (boxgl-device-model-matrix bw::*boxgl-device*) trans-mat)
         (update-matrices-ubo bw::*boxgl-device*))

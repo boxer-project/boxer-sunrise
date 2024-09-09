@@ -82,29 +82,6 @@ Modification History (most recent at the top)
 (DEFVAR *MAKE-TURTLE-WITH-NEW-GRAPHICS-BOX* NIL
         "Determines if graphics boxes are created with a turtle already in it. ")
 
-(defstruct (graphics-screen-sheet (:conc-name graphics-screen-sheet-)
-                                  (:predicate graphics-screen-sheet?)
-                                  (:constructor %make-g-screen-sheet
-                                                (actual-obj x-offset y-offset))
-                                  (:print-function
-                                   (lambda (gss str &rest other)
-                                           (declare (ignore other))
-                                           (format str "#<graph-scr-st x-~d. y-~d.>"
-                                                   (graphics-screen-sheet-x-offset
-                                                    gss)
-                                                   (graphics-screen-sheet-y-offset
-                                                    gss)))))
-  (x-offset 0.)
-  (y-offset 0.)
-  (screen-box nil)
-  (actual-obj nil))
-
-(defmacro check-graphics-screen-sheet-arg (x)
-  `(check-type ,x (satisfies graphics-screen-sheet?)
-                "A graphics screen sheet"))
-
-;;;NOTE:it must be loaded before any of the other display files
-
 (DEFSUBST MAKE-SCREEN-CHA (ACTUAL-CHA)
           ACTUAL-CHA)
 

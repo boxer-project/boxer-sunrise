@@ -347,7 +347,7 @@ Modification History (most recent at top)
   (setf (screen-rows self) new-sheet)
   (cond ((null new-sheet))
     ((graphics-screen-sheet? new-sheet)
-     (setf (graphics-screen-sheet-screen-box new-sheet) self))
+     (setf (screen-box new-sheet) self))
     (t (error "Trying to set the screen-sheet for ~A to ~A"
               self new-sheet))))
 

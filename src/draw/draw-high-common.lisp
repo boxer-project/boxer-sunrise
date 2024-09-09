@@ -60,8 +60,33 @@ the bootstrapping of the clipping and coordinate scaling variables."
 ;;; Scaling and Clipping Macros
 ;;;
 
+(defmacro with-world-matrix ((screen-obj) &body body)
+  (let ((cur-model-matrix (gensym)))
+    `(let* ((,cur-model-matrix (boxer::boxgl-device-model-matrix bw::*boxgl-device*)))
+       (unwind-protect
+           (progn
+             (apply-world-matrix ,screen-obj)
+             . ,body)
+         (progn
+           (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) ,cur-model-matrix)
+           (update-matrices-ubo bw::*boxgl-device*)
+           )
+         ))))
+
+(defmacro with-world-internal-matrix ((screen-obj) &body body)
+  (let ((cur-model-matrix (gensym)))
+    `(let* ((,cur-model-matrix (boxer::boxgl-device-model-matrix bw::*boxgl-device*)))
+       (unwind-protect
+           (progn
+             (apply-world-internal-matrix ,screen-obj)
+             . ,body)
+         (progn
+           (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) ,cur-model-matrix)
+           (update-matrices-ubo bw::*boxgl-device*)
+           )
+         ))))
+
 (defmacro with-origin-at ((x y) &body body)
-  "Opengl set-origin is RELATIVE !"
   (let ((fx (gensym)) (fy (gensym)) (ux (gensym)) (uy (gensym)))
     `(let* ((,fx (float ,x)) (,fy (float ,y))
             (,ux (float-minus ,fx)) (,uy (float-minus ,fy))
@@ -70,29 +95,42 @@ the bootstrapping of the clipping and coordinate scaling variables."
             (%origin-y-offset (+ %origin-y-offset ,y)))
        (unwind-protect
            (progn
-             (adjust-transform bw::*boxgl-device* ,fx ,fy)
+            nil
+            ;;  (adjust-transform bw::*boxgl-device* ,fx ,fy)
              . ,body)
-         (adjust-transform bw::*boxgl-device* ,ux ,uy)))))
+         nil
+        ;;  (adjust-transform bw::*boxgl-device* ,ux ,uy)
+         ))))
 
 (defun clip-stencil-rectangle (direction wid hei x y)
-    (write-to-stencil)
-    (with-pen-color (*transparent*)
-      (%draw-absolute-rectangle wid hei x y))
-    (render-inside-stencil))
+  (write-to-stencil)
+  (with-pen-color (*transparent*)
+    ;; (%draw-absolute-rectangle wid hei x y)
+    (draw-rectangle wid hei x y)
+    )
+  (render-inside-stencil))
 
 (defmacro with-clipping-inside ((x y wid hei) &body body)
   `(unwind-protect
-    (let ((%clip-lef (max %clip-lef (+ %origin-x-offset ,x)))
-          (%clip-top (max %clip-top (+ %origin-y-offset ,y)))
-          (%clip-rig (min %clip-rig (+ %origin-x-offset ,x ,wid)))
-          (%clip-bot (min %clip-bot (+ %origin-y-offset ,y ,hei))))
+    (let ((%clip-lef ,x) ; (max %clip-lef (+ %origin-x-offset ,x)))
+          (%clip-top ,y) ; (max %clip-top (+ %origin-y-offset ,y)))
+          (%clip-rig (+ ,x ,wid)) ; (min %clip-rig (+ %origin-x-offset ,x ,wid)))
+          (%clip-bot (+ ,y ,hei)) ; (min %clip-bot (+ %origin-y-offset ,y ,hei)))
+          )
       ;; make sure that the clipping parameters are always at least
       ;; as restrictive as the previous parameters
-      (clip-stencil-rectangle "> in " (- %clip-rig %clip-lef) (- %clip-bot %clip-top) %clip-lef %clip-top)
+      (clip-stencil-rectangle "> in2" ,wid ,hei ,x ,y)
+      ;; (clip-stencil-rectangle "> in " (- %clip-rig %clip-lef) (- %clip-bot %clip-top) %clip-lef %clip-top)
+      ;; nil
       . ,body)
 
     ;; reset the old clip region
-    (clip-stencil-rectangle "< out" (- %clip-rig %clip-lef) (- %clip-bot %clip-top) %clip-lef %clip-top)))
+    ;; (clip-stencil-rectangle "< out" (- %clip-rig %clip-lef) (- %clip-bot %clip-top) %clip-lef %clip-top)
+    (prog (ignore-stencil)
+      (gl:stencil-mask #x00)
+      (gl:stencil-func :always 0 #xFF))
+    ;; nil
+    ))
 
 ;;;
 ;;; Drawing functions

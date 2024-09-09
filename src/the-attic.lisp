@@ -8921,6 +8921,29 @@ Modification History (most recent at the top)
 ;;;; FILE: disdef.lisp
 ;;;;
 
+;; sgithens 2024-09-02 This has been converted to a regular defclass
+(defstruct (graphics-screen-sheet (:conc-name graphics-screen-sheet-)
+                                  (:predicate graphics-screen-sheet?)
+                                  (:constructor %make-g-screen-sheet
+                                                (actual-obj x-offset y-offset))
+                                  (:print-function
+                                   (lambda (gss str &rest other)
+                                           (declare (ignore other))
+                                           (format str "#<graph-scr-st x-~d. y-~d.>"
+                                                   (graphics-screen-sheet-x-offset
+                                                    gss)
+                                                   (graphics-screen-sheet-y-offset
+                                                    gss)))))
+  (x-offset 0.)
+  (y-offset 0.)
+  (screen-box nil)
+  (actual-obj nil))
+
+(defmacro check-graphics-screen-sheet-arg (x)
+  `(check-type ,x (satisfies graphics-screen-sheet?)
+                "A graphics screen sheet"))
+
+
 ;;; The X implementation requires that the font map stuff be set
 ;;; up BEFORE the redisplay inits are run but we better check first...
 (def-redisplay-initialization
@@ -14064,6 +14087,12 @@ OpenGL expects a list of X Y pairs"
 ;;;;
 ;;;; FILE: grfdfs.lisp
 ;;;;
+
+
+(defun graphics-screen-sheet-offsets (graphics-screen-sheet)
+  (values (screen-obj-x-offset graphics-screen-sheet)
+          (screen-obj-y-offset graphics-screen-sheet)))
+
 
 (defun update-absolute-pos-cache (screen-box cache
                                              box-x-offset box-y-offset
