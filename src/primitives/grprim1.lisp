@@ -57,26 +57,6 @@
 ;;; WITH-SPRITE-PRIMITIVE-ENVIRONMENT or the convenience macro
 ;;; DEFSPRITE-FUNCTION.
 
-;;; As far as I can tell, only wrap is implemented (EhL)
-
-;(defboxer-function bu:wrap ()
-;  (tell (graphics-box-near (box-being-told))
-;	:set-draw-mode :wrap)
-;  :noprint)
-
-; fence should be fixed before this command is implemented.
-;(defboxer-function bu:fence ()
-;  (tell (graphics-box-near (box-being-told))
-;	:set-draw-mode :fence)
-;  :noprint)
-
-;(defboxer-function bu:window ()
-;  (tell (graphics-box-near (box-being-told))
-;	:set-draw-mode :window)
-;  :noprint)
-
-
-
 ;;;; Update Functions
 
 ;; we need this because extract-number-from-box ONLY works

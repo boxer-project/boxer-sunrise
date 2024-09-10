@@ -1682,9 +1682,6 @@ Modification History (most recent at top)
   (boxer-eval::boxer-boolean (rc-position (box-or-port-target item)
                                     (box-or-port-target box))))
 
-;; old keyword based primitive
-;(DEFBOXER-FUNCTION NUMBER-OF (BOX SPECIFIER) (NUMBER-OF BOX SPECIFIER))
-
 ;;;; Accessors
 
 ;;; Items
