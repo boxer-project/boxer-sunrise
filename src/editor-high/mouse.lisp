@@ -213,7 +213,7 @@
                               (with-graphics-vars-bound ((screen-obj-actual-obj self) sheet)
                                 (dolist (turtle (reverse (graphics-sheet-object-list sheet)) ':graphics)
                                   (let ((under? (sprite-at-window-point turtle in-x in-y)))
-                                    (unless (null under?)
+                                    (when (and under? (shown? under?))
                                       (return under?)))))))
                            (t (get-position-in-border self x y))))))
 
