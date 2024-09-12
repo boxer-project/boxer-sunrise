@@ -455,7 +455,7 @@
 
 
 ;;;; Sprite search order manipulation
-(defsprite-function bu::push-to-back () (sprite turtle)
+(defsprite-function bu::bring-to-front () (sprite turtle)
   (let ((gb (get-graphics-box-from-sprite-box sprite)))
     (when (box? gb)
       (let ((gs (graphics-sheet gb)))
@@ -465,7 +465,7 @@
                         (list turtle))))))
     boxer-eval::*novalue*))
 
-(defsprite-function bu::bring-to-front () (sprite turtle)
+(defsprite-function bu::push-to-back () (sprite turtle)
   (let ((gb (get-graphics-box-from-sprite-box sprite)))
     (when (box? gb)
       (let ((gs (graphics-sheet gb)))
