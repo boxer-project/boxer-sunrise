@@ -21,6 +21,11 @@
 
 ; http://www.lispworks.com/documentation/lw71/DV/html/delivery-198.htm
 
+;; sunrise-109 This should likely go in .lispworks, but I don't want to depend
+;; on folks having that set up properly.
+;; https://www.lispworks.com/documentation/lw70/LW/html/lw-684.htm
+(lw:set-default-character-element-type 'character)
+
 ;; TODO The Application Builder tool doesn't seem to be loading the initialization file...
 #+win32 (load "Z:/quicklisp/setup.lisp")
 
