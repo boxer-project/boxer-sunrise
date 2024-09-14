@@ -56,12 +56,6 @@
     (sprite turtle)
   (turtle-distance turtle x y))
 
-
-;;; (defsprite-function bu::flash-name ()
-;;;         (sprite turtle)
-;;;   (flash-name turtle)
-;;;   boxer-eval::*novalue*)
-
 (defsprite-function bu::touching? ((bu::port-to other-sprite))
     (sprite turtle)
   (let ((ot (graphics-info (box-or-port-target other-sprite))))
@@ -380,34 +374,6 @@
   (type-box turtle box :right)
   boxer-eval::*novalue*)
 
-
-#|
-
-
-
-(defboxer-function bu:copy-self ()
-(copy-box (sprite-box-near (box-being-told)) nil))
-
-(defboxer-function bu:rotate (angle)
-(tell-named-sprite :rotate (numberize angle))
-':noprint)
-
-(defboxer-function bu:single-touching-sprite ()
-(let ((turtle (tell-named-sprite :sprite-under)))
-(if (turtle? turtle)
-(boxify (port-to-internal (tell turtle :sprite-box)))
-(make-box nil))))
-
-(defboxer-function bu:all-touching-sprites ()
-(let ((turtles (tell-named-sprite :all-sprites-in-contact))
-sprites)
-(dolist (turtle turtles)
-(setq sprites (cons (port-to-internal (tell turtle :sprite-box))
-sprites)))
-(make-box (list sprites))))
-
-|#
-
 ;;; Color
 
 (defun screen-color-from-turtle (turtle)
@@ -489,7 +455,7 @@ sprites)))
 
 
 ;;;; Sprite search order manipulation
-(defsprite-function bu::push-to-back () (sprite turtle)
+(defsprite-function bu::bring-to-front () (sprite turtle)
   (let ((gb (get-graphics-box-from-sprite-box sprite)))
     (when (box? gb)
       (let ((gs (graphics-sheet gb)))
@@ -499,7 +465,7 @@ sprites)))
                         (list turtle))))))
     boxer-eval::*novalue*))
 
-(defsprite-function bu::bring-to-front () (sprite turtle)
+(defsprite-function bu::push-to-back () (sprite turtle)
   (let ((gb (get-graphics-box-from-sprite-box sprite)))
     (when (box? gb)
       (let ((gs (graphics-sheet gb)))

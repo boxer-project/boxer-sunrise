@@ -211,9 +211,9 @@
                             ;; pointing to main area of box (where the SPRITES are)
                             (let ((in-x (- x il)) (in-y (- y it)))
                               (with-graphics-vars-bound ((screen-obj-actual-obj self) sheet)
-                                (dolist (turtle (graphics-sheet-object-list sheet) ':graphics)
+                                (dolist (turtle (reverse (graphics-sheet-object-list sheet)) ':graphics)
                                   (let ((under? (sprite-at-window-point turtle in-x in-y)))
-                                    (unless (null under?)
+                                    (when (and under? (shown? under?))
                                       (return under?)))))))
                            (t (get-position-in-border self x y))))))
 

@@ -41,11 +41,6 @@ Modification History (most recent at top)
 
 (in-package :boxer)
 
-
-
-;; unused ??
-;;(defvar *tvl-element-sprite-command-alist* '((up . penup) (down . pendown)))
-
 ;;; The relationship between the slot value of the turtle
 ;;; and the box is defined by:
 (defun sprite-instance-make-box-arg-from-slot-value (value)

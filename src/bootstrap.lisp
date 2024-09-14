@@ -23,6 +23,11 @@
 |#
 ; (setf *features* (cons :cl-opengl-no-check-error *features*))
 
+;; sunrise-109 This should likely go in .lispworks, but I don't want to depend
+;; on folks having that set up properly.
+;; https://www.lispworks.com/documentation/lw70/LW/html/lw-684.htm
+(lw:set-default-character-element-type 'character)
+
 (require "asdf")
 (require "uiop")
 

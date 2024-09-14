@@ -450,17 +450,6 @@ Modification History (most recent at top)
                    (inclusive-between? top2 top1 bottom1))))
         (and (horiz-touch?) (vert-touch?))))))
 
-(defmethod all-sprites-in-contact ((self graphics-object))
-  (let ((objects (graphics-object-list (slot-value self 'assoc-graphics-box)))
-        turtles)
-    (setq objects (fast-delq (top-sprite self) (copy-seq objects)))
-    (dolist (object objects)
-      (when (touching? self object)
-        (setq turtles (cons object turtles))))
-    turtles))
-
-
-
 ;;;; Useful Methods
 
 (defmethod turtle-distance ((self graphics-object) x y)

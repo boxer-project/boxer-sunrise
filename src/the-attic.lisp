@@ -42,6 +42,8 @@
 ;;;;   - landscape.lisp, landscape-prims.lisp - Historical Landscape extension
 ;;;;   - deep-print.lisp - Not super flushed out, but some interesting ideas about printing and supplying print
 ;;;;     hints to various boxes.
+;;;;   - dataprims.lisp - number-of... Apparently there used to be a defboxer-function keyword based style of primitive declaration
+;;;;   - grprim2.lisp, grmeth.lisp - all-sprites-in-contact and some other sprite overlapping utilities
 
 ;;;;
 ;;;; FILE: applefile.lisp
@@ -8627,6 +8629,9 @@ Modification History (most recent at top)
 ;;;; FILE: dataprims.lisp
 ;;;;
 
+;; old keyword based primitive
+;(DEFBOXER-FUNCTION NUMBER-OF (BOX SPECIFIER) (NUMBER-OF BOX SPECIFIER))
+
 (boxer-eval::defboxer-primitive bu::redirect ((boxer-eval::dont-copy port) (bu::port-to target))
   "retarget the port to the given box"
   (cond ((not (null *uc-copyright-free*))
@@ -13528,6 +13533,8 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: gcmeth.lisp
 ;;;;
 
+(defun font-name-from-font-no (font-no) font-no)
+
 ;; similiar to synchronize-graphics-state except we synch to erasing
 ;; values instead of the intrinsic values of the sprite
 (defmethod synchronize-graphics-state-for-erase ((agent graphics-cursor)
@@ -14827,6 +14834,15 @@ OpenGL expects a list of X Y pairs"
 ;;;; FILE: grmeth.lisp
 ;;;;
 
+(defmethod all-sprites-in-contact ((self graphics-object))
+  (let ((objects (graphics-object-list (slot-value self 'assoc-graphics-box)))
+        turtles)
+    (setq objects (fast-delq (top-sprite self) (copy-seq objects)))
+    (dolist (object objects)
+      (when (touching? self object)
+        (setq turtles (cons object turtles))))
+    turtles))
+
 ;; sgithens 2023-08-24 I believe we can get rid of this and just use enclosing-rectangle
 (defun enclosing-sprite-coords (sprite)
   (multiple-value-bind (left top right bottom)
@@ -15498,6 +15514,24 @@ CLOSED for renovations until I fix the string/font situation
 ;;;; FILE: grprim1.lisp
 ;;;;
 
+;;; As far as I can tell, only wrap is implemented (EhL)
+
+;(defboxer-function bu:wrap ()
+;  (tell (graphics-box-near (box-being-told))
+;	:set-draw-mode :wrap)
+;  :noprint)
+
+; fence should be fixed before this command is implemented.
+;(defboxer-function bu:fence ()
+;  (tell (graphics-box-near (box-being-told))
+;	:set-draw-mode :fence)
+;  :noprint)
+
+;(defboxer-function bu:window ()
+;  (tell (graphics-box-near (box-being-told))
+;	:set-draw-mode :window)
+;  :noprint)
+
 ;; sgithens 2022-02-25 from defboxer-primitive set-background
 #-opengl
 (drawing-on-bitmap ((graphics-sheet-bit-array gs))
@@ -15533,6 +15567,38 @@ CLOSED for renovations until I fix the string/font situation
 ;;;;
 ;;;; FILE: grprim2.lisp
 ;;;;
+
+;;; (defsprite-function bu::flash-name ()
+;;;         (sprite turtle)
+;;;   (flash-name turtle)
+;;;   boxer-eval::*novalue*)
+
+#|
+
+
+
+(defboxer-function bu:copy-self ()
+(copy-box (sprite-box-near (box-being-told)) nil))
+
+(defboxer-function bu:rotate (angle)
+(tell-named-sprite :rotate (numberize angle))
+':noprint)
+
+(defboxer-function bu:single-touching-sprite ()
+(let ((turtle (tell-named-sprite :sprite-under)))
+(if (turtle? turtle)
+(boxify (port-to-internal (tell turtle :sprite-box)))
+(make-box nil))))
+
+(defboxer-function bu:all-touching-sprites ()
+(let ((turtles (tell-named-sprite :all-sprites-in-contact))
+sprites)
+(dolist (turtle turtles)
+(setq sprites (cons (port-to-internal (tell turtle :sprite-box))
+sprites)))
+(make-box (list sprites))))
+
+|#
 
 (defsprite-function bu::no-op () (sprite turtle))
 
@@ -26198,6 +26264,14 @@ Modification History (most recent at top)
 
 (def-site-var "Enable-Mouse-Toggle-Box-Type?" :boolean
   *enable-mouse-toggle-box-type?*)
+
+;;;;
+;;;; FILE: sprite.lisp
+;;;;
+
+;; unused ??
+(defvar *tvl-element-sprite-command-alist* '((up . penup) (down . pendown)))
+
 
 ;;;;
 ;;;; FILE: surf.lisp
