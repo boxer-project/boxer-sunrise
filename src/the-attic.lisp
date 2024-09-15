@@ -8874,6 +8874,24 @@ Modification History (most recent at the top)
 ;;;; FILE: disdcl.lisp
 ;;;;
 
+(DEFVAR %ORIGIN-X-OFFSET 0
+        "Inside of a drawing-on-window, this variable is bound to x-offset of the
+   current drawing origin from the screen's actual x origin. With-origin-at
+   rebinds this variable (and %origin-y-offset) to change the screen position
+   of the drawing origin.")
+
+(DEFVAR %ORIGIN-Y-OFFSET 0
+        "Inside of a drawing-on-window, this variable is bound to y-offset of the
+   current drawing origin from the screen's actual y origin. With-origin-at
+   rebinds this variable (and %origin-x-offset) to change the screen position
+   of the drawing origin.")
+
+(DEFVAR %CLIP-LEF 0)
+(DEFVAR %CLIP-TOP 0)
+(DEFVAR %CLIP-RIG 0)
+(DEFVAR %CLIP-BOT 0)
+
+
 ;; sgithens 2024-03-04 this is just *boxer-pane* and was only used in like one remaining place...
 (DEFVAR %DRAWING-ARRAY NIL
         "Inside of a drawing-on-window, this variable is bound to %drawing-window's
@@ -9631,6 +9649,15 @@ Modification History (most recent at the top)
 ;;;;
 ;;;; FILE: draw-high-common.lisp
 ;;;;
+
+(defmacro drawing-on-window-bootstrap-clipping-and-scaling ((x y wid hei) &body body)
+  `(let* ((%origin-x-offset ,x) (%origin-y-offset ,y)
+          ;; absolute clipping parameters
+          (%clip-lef ,x) (%clip-top ,y)
+          (%clip-rig (+& %clip-lef (* (/ 1 (zoom-level *boxer-pane*)) ,wid)))
+          (%clip-bot (+& %clip-top (* (/ 1 (zoom-level *boxer-pane*)) ,hei))))
+     %clip-rig %clip-bot %origin-x-offset %origin-y-offset ;bound but never...
+     ,@body))
 
 (defmacro with-origin-at ((x y) &body body)
   (let ((fx (gensym)) (fy (gensym)) (ux (gensym)) (uy (gensym)))

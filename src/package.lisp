@@ -140,7 +140,6 @@
            :window-system-specific-start-boxer
            :status-line-display :redraw-status-line
            :force-redisplay
-           :%origin-x-offset :%origin-y-offset
            :input-code :input-bits
            ;; dribble symbols
            :*dribble-playback*

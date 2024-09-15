@@ -32,29 +32,15 @@ and binds all the magic variables that the drawing macros need including
 the bootstrapping of the clipping and coordinate scaling variables."
   (once-only (window)
     `(with-drawing-port ,window
-      (drawing-on-window-bootstrap-clipping-and-scaling
-       (0 0
-        (sheet-inside-width ,window) (sheet-inside-height ,window))
-        . ,body))))
-
-(defmacro drawing-on-window-bootstrap-clipping-and-scaling ((x y wid hei) &body body)
-  `(let* ((%origin-x-offset ,x) (%origin-y-offset ,y)
-          ;; absolute clipping parameters
-          (%clip-lef ,x) (%clip-top ,y)
-          (%clip-rig (+& %clip-lef (* (/ 1 (zoom-level *boxer-pane*)) ,wid)))
-          (%clip-bot (+& %clip-top (* (/ 1 (zoom-level *boxer-pane*)) ,hei))))
-     %clip-rig %clip-bot %origin-x-offset %origin-y-offset ;bound but never...
-     ,@body))
+        . ,body)))
 
 (defmacro drawing-on-bitmap ((bitmap) &body body)
   "Used instead of DRAWING-ON-WINDOW for bitmaps."
   (let ((bwidth-var (gensym)) (bheight-var (gensym)))
     `(let ((,bwidth-var (ogl-pixmap-width ,bitmap))
            (,bheight-var (ogl-pixmap-height ,bitmap)))
-       (drawing-on-window-bootstrap-clipping-and-scaling
-         (0 0 ,bwidth-var ,bheight-var)
          (with-system-dependent-bitmap-drawing (,bitmap ,bwidth-var ,bheight-var)
-           . ,body)))))
+           . ,body))))
 
 ;;;
 ;;; Scaling and Clipping Macros
@@ -89,32 +75,19 @@ the bootstrapping of the clipping and coordinate scaling variables."
 (defun clip-stencil-rectangle (direction wid hei x y)
   (write-to-stencil)
   (with-pen-color (*transparent*)
-    ;; (%draw-absolute-rectangle wid hei x y)
     (draw-rectangle wid hei x y)
     )
   (render-inside-stencil))
 
 (defmacro with-clipping-inside ((x y wid hei) &body body)
   `(unwind-protect
-    (let ((%clip-lef ,x) ; (max %clip-lef (+ %origin-x-offset ,x)))
-          (%clip-top ,y) ; (max %clip-top (+ %origin-y-offset ,y)))
-          (%clip-rig (+ ,x ,wid)) ; (min %clip-rig (+ %origin-x-offset ,x ,wid)))
-          (%clip-bot (+ ,y ,hei)) ; (min %clip-bot (+ %origin-y-offset ,y ,hei)))
-          )
-      ;; make sure that the clipping parameters are always at least
-      ;; as restrictive as the previous parameters
+    (progn
       (clip-stencil-rectangle "> in2" ,wid ,hei ,x ,y)
-      ;; (clip-stencil-rectangle "> in " (- %clip-rig %clip-lef) (- %clip-bot %clip-top) %clip-lef %clip-top)
-      ;; nil
       . ,body)
-
-    ;; reset the old clip region
-    ;; (clip-stencil-rectangle "< out" (- %clip-rig %clip-lef) (- %clip-bot %clip-top) %clip-lef %clip-top)
+    ;; reset the old clip region TODO make a stack for this
     (prog (ignore-stencil)
       (gl:stencil-mask #x00)
-      (gl:stencil-func :always 0 #xFF))
-    ;; nil
-    ))
+      (gl:stencil-func :always 0 #xFF))))
 
 ;;;
 ;;; Drawing functions

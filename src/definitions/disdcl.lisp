@@ -180,23 +180,6 @@
   "A list of symbols to funcall.  The symbols are generated from
    the forms in *redisplay-related-initializations*")
 
-(DEFVAR %ORIGIN-X-OFFSET 0
-        "Inside of a drawing-on-window, this variable is bound to x-offset of the
-   current drawing origin from the screen's actual x origin. With-origin-at
-   rebinds this variable (and %origin-y-offset) to change the screen position
-   of the drawing origin.")
-
-(DEFVAR %ORIGIN-Y-OFFSET 0
-        "Inside of a drawing-on-window, this variable is bound to y-offset of the
-   current drawing origin from the screen's actual y origin. With-origin-at
-   rebinds this variable (and %origin-x-offset) to change the screen position
-   of the drawing origin.")
-
-(DEFVAR %CLIP-LEF 0)
-(DEFVAR %CLIP-TOP 0)
-(DEFVAR %CLIP-RIG 0)
-(DEFVAR %CLIP-BOT 0)
-
 ;;;; Font Vars....
 
 (defvar %drawing-font-cha-hei 12)
