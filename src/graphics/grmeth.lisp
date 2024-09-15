@@ -573,7 +573,7 @@ Modification History (most recent at top)
 (defmethod draw ((self button))
   (unless (or (eq self *current-active-sprite*) (null (shown? self)))
     (let* ((prev-model (boxgl-device-model-matrix bw::*boxgl-device*))
-           (final-mat (model-matrix self)))
+           (final-mat (3d-matrices:m* prev-model (model-matrix self))))
 
       (setf (boxgl-device-model-matrix bw::*boxgl-device*) final-mat)
       (update-matrices-ubo bw::*boxgl-device*)

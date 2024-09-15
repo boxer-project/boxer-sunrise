@@ -105,12 +105,12 @@
                   x (+ y *folder-graphic-tab-height* *folder-graphic-height*)))
 
 ;; Note that the clipping, and origin has already been setup inside the redisplay
-(defun draw-boxtop (boxtop editor-box x y wid hei)
+(defmethod draw-boxtop ((self screen-box) boxtop editor-box x y wid hei)
   (let ((bp (getprop editor-box :boxtop)))
     (cond ((eq bp :name-only) (draw-text-boxtop editor-box boxtop x y wid hei))
       ((eq bp :folder) (draw-folder-boxtop editor-box boxtop x y))
-      ((eq bp :framed) (draw-graphics-boxtop boxtop x y wid hei t))
-      ((graphics-sheet? boxtop) (draw-graphics-boxtop boxtop x y wid hei))
+      ((eq bp :framed) (draw-graphics-boxtop self boxtop x y wid hei t))
+      ((graphics-sheet? boxtop) (draw-graphics-boxtop self boxtop x y wid hei))
       ((eq bp :xref)   (draw-xref-boxtop boxtop x y wid))
       ;; Note: we can find :FILE inside mac files.  It means to
       ;; draw the boxer file icon
@@ -168,18 +168,18 @@
     (with-graphics-vars-bound-internal boxtop
       (boxer-playback-graphics-list (graphics-sheet-graphics-list boxtop) :translate? t))))
 
-(defun draw-graphics-boxtop (boxtop x y wid hei &optional framed?)
+(defun draw-graphics-boxtop (scr-box boxtop x y wid hei &optional framed?)
   (cond ((null framed?)
          ;; just do the graphics
-         (draw-graphics-boxtop-internal boxtop x y wid hei))
-    (t ; there is a frame so handle that first (l,t,r,b)
-       (draw-rectangle 1 hei x y)
-       (draw-rectangle wid 1 x y)
-       (draw-rectangle 1 hei (+ x wid -1) y)
-       (draw-rectangle wid 1 x (+ y hei -1))
-       ;; then move the origin over before graphics
-       (with-origin-at (1 1)
-         (draw-graphics-boxtop-internal boxtop x y (- wid 2) (- hei 2))))))
+         (with-world-internal-matrix (scr-box)
+           (draw-graphics-boxtop-internal boxtop x y wid hei)))
+    (t (with-world-internal-matrix (scr-box)
+         (draw-graphics-boxtop-internal boxtop x y (- wid 2) (- hei 2)))
+       ;; draw the border frame
+       (draw-line 0 0 0 hei)
+       (draw-line 0 0 wid 0)
+       (draw-line 0 hei wid hei)
+       (draw-line wid 0 wid hei))))
 
 (defun draw-file-boxtop (boxtop x y wid)
   (let ((horiz-offset (floor (- wid 32) 2)))

@@ -21,6 +21,14 @@
 
 ;;;; Pass 2
 
+(defmethod apply-world-matrix ((self screen-obj))
+  (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) (world-matrix self))
+  (update-matrices-ubo bw::*boxgl-device*))
+
+(defmethod apply-world-internal-matrix ((self screen-obj))
+  (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) (world-internal-matrix self))
+  (update-matrices-ubo bw::*boxgl-device*))
+
 (DEFUN DRAW-PORT-BOX-ELLIPSIS? (SCREEN-BOX)
        (AND (PORT-BOX? (SLOT-VALUE SCREEN-BOX 'ACTUAL-OBJ))
             (BOX-ELLIPSIS-STYLE? (SLOT-VALUE SCREEN-BOX 'SCREEN-ROWS))))
@@ -64,14 +72,17 @@
 
 (defmethod repaint-cursors-regions ((self screen-box))
   (when (or (bps self) (region-in-screen-box? self))
-    (let ((cur-transform (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)))
-      (set-transform bw::*boxgl-device* 0 0)
+    ;; TODO convert to a with-XYZed-matrix
+    (let ((cur-model (boxer::boxgl-device-model-matrix bw::*boxgl-device*)))
+      (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) (3d-matrices:meye 4))
+      (update-matrices-ubo bw::*boxgl-device*)
       (when (bps self)
         (repaint-cursor *point*))
       (when (region-in-screen-box? self)
         (dolist (region *region-list*)
           (when (not (null region)) (interval-update-repaint-all-rows region))))
-      (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*) cur-transform))))
+      (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) cur-model)
+      (update-matrices-ubo bw::*boxgl-device*))))
 
 (defmethod repaint-inferiors-pass-2-sb ((self screen-box))
   (with-slots (wid hei box-type screen-rows scroll-x-offset scroll-y-offset x-got-clipped? y-got-clipped? actual-obj bps)
@@ -84,28 +95,27 @@
       (cond ((draw-port-box-ellipsis? self)
              (draw-port-box-ellipsis self il it))
             ((or x-got-clipped? y-got-clipped?)
-             (with-clipping-inside ((+ il (horizontal-scroll *boxer-pane*))
-                                    (+ it (vertical-scroll *boxer-pane*))
-                                    (- wid il ir)
-                                    (- hei it ib))
-               (with-origin-at (scroll-x-offset scroll-y-offset)
-                 (do-vector-contents (inf-screen-obj screen-rows :index-var-name row-no)
-                   ;; if row.y-pos > box.y-pos AND row.y-pos < box.y-pos + box.hei
-                   ;;   then render the row
-                   (let ((row-y-pos (second (multiple-value-list (xy-position inf-screen-obj))))
-                         (row-y-hei (screen-obj-hei inf-screen-obj))
-                         (box-y-pos (second (multiple-value-list (xy-position self)))))
-                     (when (and (> (+ row-y-hei row-y-pos) box-y-pos)
-                                (< row-y-pos (+ box-y-pos hei))
-                                (within-boxer-pane inf-screen-obj))
-                       (repaint-pass-2-sr inf-screen-obj))))
-                 (repaint-cursors-regions self))))
-            (t
-             (with-origin-at (scroll-x-offset scroll-y-offset)
+              (with-clipping-inside (il
+                                     it
+                                     (- wid ir il)
+                                     (- hei it ib))
+             (with-world-internal-matrix (self)
                (do-vector-contents (inf-screen-obj screen-rows :index-var-name row-no)
-                 (when (within-boxer-pane inf-screen-obj)
-                   (repaint-pass-2-sr inf-screen-obj)))
-               (repaint-cursors-regions self)))))))
+                 ;; if row.y-pos > box.y-pos AND row.y-pos < box.y-pos + box.hei
+                 ;;   then render the row
+                 (let ((row-y-pos (second (multiple-value-list (xy-position inf-screen-obj))))
+                       (row-y-hei (screen-obj-hei inf-screen-obj))
+                       (box-y-pos (second (multiple-value-list (xy-position self)))))
+                   (when (and (> (+ row-y-hei row-y-pos) box-y-pos)
+                             (< row-y-pos (+ box-y-pos hei))
+                             (within-boxer-pane inf-screen-obj))
+                     (repaint-pass-2-sr inf-screen-obj))))
+               (repaint-cursors-regions self))))
+            (t
+              (do-vector-contents (inf-screen-obj screen-rows :index-var-name row-no)
+                (when (within-boxer-pane inf-screen-obj)
+                  (repaint-pass-2-sr inf-screen-obj)))
+              (repaint-cursors-regions self))))))
 
 (defmethod repaint-inferiors-pass-2-sr ((self screen-row))
   (let* ((inf-x-offset 0)
@@ -156,18 +166,18 @@
   (with-slots (x-offset y-offset wid hei actual-obj)
     self
     (when actual-obj
-    (with-origin-at (x-offset y-offset)
-      (when (closet-row? actual-obj (superior-box actual-obj))
-        ;; this should get the inner width from the superior box
-        (with-pen-color (*closet-color*) (draw-rectangle wid hei 0 0)))
-      (repaint-inferiors-pass-2-sr self)
-      (got-repainted self)))))
+      (with-world-matrix (self)
+        (when (closet-row? actual-obj (superior-box actual-obj))
+          ;; this should get the inner width from the superior box
+          (with-pen-color (*closet-color*) (draw-rectangle wid hei 0 0)))
+        (repaint-inferiors-pass-2-sr self)
+        (got-repainted self)))))
 
 (defmethod repaint-pass-2-sb ((self screen-box))
-  (multiple-value-bind (x-pos y-pos) (xy-position self)
+  ;; (multiple-value-bind (x-pos y-pos) (xy-position self)
   (with-slots (x-offset y-offset wid hei actual-obj box-type)
     self
-    (with-origin-at (x-offset y-offset)
+    (with-world-matrix (self)
       (maintaining-pen-color
        ;; need this because we may be in the middle of a colored font run
        (%set-pen-color *foreground-color*)
@@ -189,11 +199,11 @@
                        (setf (display-style-border-style
                               (slot-value self 'display-style-list))
                              boxtop)
-                       (with-clipping-inside ((horizontal-scroll *boxer-pane*)
-                                              (vertical-scroll *boxer-pane*)
+                       (with-clipping-inside (0 ;(world-x-offset self) ;(horizontal-scroll *boxer-pane*)
+                                              0 ;(world-y-offset self) ;(vertical-scroll *boxer-pane*)
                                               wid
                                               hei)
-                         (draw-boxtop boxtop actual-obj 0 0 wid hei))))))
+                         (draw-boxtop self boxtop actual-obj 0 0 wid hei))))))
          (t ;; have to draw any background BEFORE inferiors
             (multiple-value-bind (lef top rig bot)
                                   (box-borders-widths box-type self)
@@ -204,59 +214,50 @@
             ;; draw any scroll info no
             (draw-scroll-info self)
             ;; Now deal with the Borders,
-            (box-borders-draw box-type self))))))) ;)
+            (box-borders-draw box-type self))))))
   ;; Make a note of the fact that this screen box has
   ;; been redisplayed (pass-1 and pass-2 complete).
   (got-repainted self))
 
-;;;redisplay for graphics boxes
-
-
 (defmethod repaint-inferiors-pass-2-sb ((SELF GRAPHICS-SCREEN-BOX))
-  (LET ((GRAPHICS-SHEET (GRAPHICS-SCREEN-SHEET-ACTUAL-OBJ
-                          (SCREEN-SHEET SELF))))
-         (multiple-value-bind (x y)
-                              (graphics-screen-sheet-offsets (screen-sheet self))
-                              (multiple-value-bind (il it ir ib)
-                                                   (box-borders-widths (slot-value self 'box-type) self)
-                                                   (let ((inner-width  (min (- (screen-obj-wid self) il ir)
-                                                                            (graphics-sheet-draw-wid graphics-sheet)))
-                                                         (inner-height (min (- (screen-obj-hei self) it ib)
-                                                                            (graphics-sheet-draw-hei graphics-sheet))))
-                                                     (with-origin-at (x y)
-                                                       (with-clipping-inside ((+ 0 (horizontal-scroll *boxer-pane*))
-                                                                              (+ 0 (vertical-scroll *boxer-pane*))
-                                                                              inner-width
-                                                                              inner-height)
-
-                                                         (when (not (null (graphics-sheet-background graphics-sheet)))
-                                                            (with-pen-color ((graphics-sheet-background graphics-sheet))
-                                                              (draw-rectangle inner-width inner-height 0 0)))
-                                                         (let ((ba (graphics-sheet-bit-array graphics-sheet)))
-                                                           (unless (null ba)
-                                                             (bitblt-to-screen
-                                                               (min inner-width  (ogl-pixmap-width  ba))
-                                                               (min inner-height (ogl-pixmap-height ba))
-                                                               ba 0 0 0 0)))
-                                                         ;; First draw the graphics list operations, then display the
-                                                         ;; framebuffer they just got painted to, assuming framebuffers
-                                                         ;; are in use.
-                                                         (unless (null (graphics-sheet-graphics-list graphics-sheet))
-                                                           (redisplay-graphics-sheet-graphics-list graphics-sheet self))
-                                                         ;; Draw the gl-model canvas / framebuffer
-                                                         (when *use-opengl-framebuffers*
-                                                          (let* ((wid (graphics-sheet-draw-wid graphics-sheet))
-                                                                  (hei (graphics-sheet-draw-hei graphics-sheet))
-                                                                  (canvas (get-graphics-canvas-for-screen-obj self wid hei))
-                                                                  (pixmap (graphics-canvas-pixmap canvas)))
-                                                            (bitblt-to-screen (min inner-width  (ogl-pixmap-width  pixmap))
-                                                                              (min inner-height (ogl-pixmap-height pixmap))
-                                                                              pixmap 0 0 0 0)))
-                                                         ;; then handle any sprite graphics...
-                                                         (unless (null (graphics-sheet-graphics-list graphics-sheet))
-                                                           (redisplay-graphics-sheet-sprites graphics-sheet self))
-                                                           )
-                                                           )))))) ;)
+  (LET ((GRAPHICS-SHEET (screen-obj-actual-obj (SCREEN-SHEET SELF))))
+    (multiple-value-bind (il it ir ib)
+                         (box-borders-widths (slot-value self 'box-type) self)
+                         (let ((inner-width  (min (- (screen-obj-wid self) il ir)
+                                                 (graphics-sheet-draw-wid graphics-sheet)))
+                               (inner-height (min (- (screen-obj-hei self) it ib)
+                                                 (graphics-sheet-draw-hei graphics-sheet))))
+                           (with-world-matrix ((screen-sheet self))
+                             (with-clipping-inside (0 ;(+ 0 (horizontal-scroll *boxer-pane*))
+                                                   0 ;(+ 0 (vertical-scroll *boxer-pane*))
+                                                   inner-width
+                                                   inner-height)
+                               (when (not (null (graphics-sheet-background graphics-sheet)))
+                                 (with-pen-color ((graphics-sheet-background graphics-sheet))
+                                   (draw-rectangle inner-width inner-height 0 0)))
+                               (let ((ba (graphics-sheet-bit-array graphics-sheet)))
+                                 (unless (null ba)
+                                   (bitblt-to-screen
+                                     (min inner-width  (ogl-pixmap-width  ba))
+                                     (min inner-height (ogl-pixmap-height ba))
+                                     ba 0 0 0 0)))
+                               ;; First draw the graphics list operations, then display the
+                               ;; framebuffer they just got painted to, assuming framebuffers
+                               ;; are in use.
+                               (unless (null (graphics-sheet-graphics-list graphics-sheet))
+                                 (redisplay-graphics-sheet-graphics-list graphics-sheet self))
+                               ;; Draw the gl-model canvas / framebuffer
+                               (when *use-opengl-framebuffers*
+                               (let* ((wid (graphics-sheet-draw-wid graphics-sheet))
+                                       (hei (graphics-sheet-draw-hei graphics-sheet))
+                                       (canvas (get-graphics-canvas-for-screen-obj self wid hei))
+                                       (pixmap (graphics-canvas-pixmap canvas)))
+                                 (bitblt-to-screen (min inner-width  (ogl-pixmap-width  pixmap))
+                                                   (min inner-height (ogl-pixmap-height pixmap))
+                                                   pixmap 0 0 0 0)))
+                               ;; then handle any sprite graphics...
+                               (unless (null (graphics-sheet-graphics-list graphics-sheet))
+                                 (redisplay-graphics-sheet-sprites graphics-sheet self))))))))
 
 ;;;; Screen Sprites....
 (defmethod repaint-pass-2-sb ((self sprite-screen-box))

@@ -150,17 +150,16 @@ parameters of the graphics box are bound. "
 
 (defun make-graphics-screen-sheet (actual-obj
                                    &optional (x-offset 0.) (y-offset 0.))
-  (%make-g-screen-sheet actual-obj x-offset y-offset))
-
-(defun graphics-screen-sheet-offsets (graphics-screen-sheet)
-  (values (graphics-screen-sheet-x-offset graphics-screen-sheet)
-          (graphics-screen-sheet-y-offset graphics-screen-sheet)))
+  (let ((togo (make-instance 'graphics-screen-sheet)))
+    (setf (screen-obj-x-offset togo) x-offset)
+    (setf (screen-obj-y-offset togo) y-offset)
+    togo))
 
 (defun set-graphics-screen-sheet-x-offset (graphics-screen-sheet new-x-offset)
-  (setf (graphics-screen-sheet-x-offset graphics-screen-sheet) new-x-offset))
+  (setf (screen-obj-x-offset graphics-screen-sheet) new-x-offset))
 
 (defun set-graphics-screen-sheet-y-offset (graphics-screen-sheet new-y-offset)
-  (setf (graphics-screen-sheet-y-offset graphics-screen-sheet) new-y-offset))
+  (setf (screen-obj-y-offset graphics-screen-sheet) new-y-offset))
 
 ;;accessors for graphics boxes
 

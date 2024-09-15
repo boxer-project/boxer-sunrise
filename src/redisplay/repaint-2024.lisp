@@ -1,6 +1,31 @@
 (in-package :boxer)
 
-(defmethod dimensions ((self screen-row) &optional (first-inf-x-offset 0) (first-inf-y-offset 0))
+(defvar *box-depth-mult* 1)
+
+(defmethod update-scene-graph ((self screen-obj) parent x-offset y-offset depth)
+  (setf (local-matrix self) (create-transform-matrix x-offset y-offset)) ;  (* depth *box-depth-mult*)))
+  (setf (local-internal-matrix self) (create-transform-matrix x-offset y-offset)) ; (+ .5 (* depth *box-depth-mult*))))
+  (setf (world-matrix self) (3d-matrices:m* (world-internal-matrix parent) (local-matrix self)))
+  (setf (world-x-offset self) (+ (world-x-offset parent) x-offset)
+        (world-y-offset self) (+ (world-y-offset parent) y-offset))
+  (setf (world-internal-matrix self) (3d-matrices:m* (world-internal-matrix parent) (local-internal-matrix self))))
+
+(defmethod update-scene-graph ((self screen-box) parent x-offset y-offset depth)
+  (let ((x-internal-offset (+ x-offset (scroll-x-offset self)))
+        (y-internal-offset (+ y-offset (scroll-y-offset self))))
+
+    (when (eq (display-style self) :shrunk)
+      (incf x-internal-offset 1)
+      (incf y-internal-offset 1))
+
+    (setf (local-matrix self) (create-transform-matrix x-offset y-offset)) ;  (* depth *box-depth-mult*)))
+    (setf (local-internal-matrix self) (create-transform-matrix x-internal-offset y-internal-offset)) ; (+ .5 (* depth *box-depth-mult*))))
+    (setf (world-matrix self) (3d-matrices:m* (world-internal-matrix parent) (local-matrix self)))
+    (setf (world-x-offset self) (+ (world-x-offset parent) x-internal-offset)
+          (world-y-offset self) (+ (world-y-offset parent) y-internal-offset))
+    (setf (world-internal-matrix self) (3d-matrices:m* (world-internal-matrix parent) (local-internal-matrix self)))))
+
+(defmethod dimensions ((self screen-row) depth &optional (first-inf-x-offset 0) (first-inf-y-offset 0))
   (with-slots (wid hei actual-obj screen-chas baseline x-offset y-offset)
     self
     (let* ((infs-new-wid 0)
@@ -37,6 +62,9 @@
                   (let ((new-obj (allocate-screen-obj-for-use-in
                                   inf-actual-obj (lowest-screen-box self))))
                     (set-screen-obj-offsets new-obj infs-new-wid inf-y-offset)
+                    ;; Scene graph hacking
+                    (update-scene-graph new-obj self infs-new-wid inf-y-offset depth)
+
                     new-obj)))
           (append-screen-cha self inf-screen-obj)
           ;; At this point we know that inf-screen-obj and inf-actual-obj
@@ -54,7 +82,7 @@
              ;; must be a box so let the box do some work...
              ;; that is, redisplay if it wants to and then make its
              ;; contribution to all the infs-screen-objs parameters
-             (multiple-value-bind (next-wid next-hei) (dimensions inf-screen-obj)
+             (multiple-value-bind (next-wid next-hei) (dimensions inf-screen-obj depth)
                 (setf infs-new-wid (+   infs-new-wid next-wid)
                       infs-new-hei (max infs-new-hei next-hei)
                       inf-x-offset (+ inf-x-offset next-wid))))))) ;; sgithens This may need to be 'wid'
@@ -64,7 +92,7 @@
             first-inf-y-offset 0))
     (values wid hei)))
 
-(defmethod internal-dimensions ((self graphics-screen-box) &optional
+(defmethod internal-dimensions ((self graphics-screen-box) depth &optional
                                                            (first-inf-x-offset 0) (first-inf-y-offset 0) ignore)
   (let* ((graphics-sheet (graphics-sheet (screen-obj-actual-obj self)))
          (desired-wid (graphics-sheet-draw-wid graphics-sheet))
@@ -76,18 +104,14 @@
         (set-screen-sheet self screen-sheet)))
     (let ((screen-sheet (screen-sheet self)))
       ;; now adjust the slots of the graphics-screen-sheet
-      (unless (= first-inf-x-offset
-                 (graphics-screen-sheet-x-offset screen-sheet))
-        (set-graphics-screen-sheet-x-offset screen-sheet first-inf-x-offset))
-      (unless (= first-inf-y-offset
-                 (graphics-screen-sheet-y-offset screen-sheet))
-        (set-graphics-screen-sheet-y-offset screen-sheet
-                                            first-inf-y-offset))
-      (setf (graphics-screen-sheet-actual-obj screen-sheet) graphics-sheet))
+      (set-graphics-screen-sheet-x-offset screen-sheet first-inf-x-offset)
+      (set-graphics-screen-sheet-y-offset screen-sheet first-inf-y-offset)
+      (setf (screen-obj-actual-obj screen-sheet) graphics-sheet)
+      (update-scene-graph (screen-sheet self) self first-inf-x-offset first-inf-y-offset depth))
     ;; make sure we have the Right graphics-sheet
     (unless (eq graphics-sheet
-                (graphics-screen-sheet-actual-obj (screen-sheet self)))
-      (setf (graphics-screen-sheet-actual-obj (screen-sheet self))
+                (screen-obj-actual-obj (screen-sheet self)))
+      (setf (screen-obj-actual-obj (screen-sheet self))
             graphics-sheet)
       )
     ;; error check, remove this SOON !!!!!!!
@@ -96,7 +120,7 @@
               (SCREEN-ROWS SELF) SELF)
         (VALUES desired-wid desired-hei))))
 
-(defmethod internal-dimensions ((self screen-box) &optional
+(defmethod internal-dimensions ((self screen-box) depth &optional
                                                   (first-inf-x-offset 0) (first-inf-y-offset 0) (scroll-to-inf nil))
   "This is like repaint inferiors
    This is the size of everything in the box without the borders"
@@ -158,14 +182,19 @@
 
                    ;; These offsets are for screen rows
                    (set-screen-obj-offsets inf-screen-obj inf-x-offset inf-y-offset)
+                   ;; Screen graph hacking
+                   (update-scene-graph inf-screen-obj self inf-x-offset inf-y-offset depth)
 
                    (multiple-value-bind (row-width row-height)
-                     (dimensions inf-screen-obj)
+                     (dimensions inf-screen-obj depth)
                      (setf inf-y-offset (+ inf-y-offset row-height)
                            infs-new-wid (max infs-new-wid row-width)
                            infs-new-hei (+ infs-new-hei row-height)))))))))))
 
-(defmethod dimensions ((self screen-box) &optional (first-inf-x-offset 0) (first-inf-y-offset 0))
+(defmethod dimensions ((self screen-box) depth &optional (first-inf-x-offset 0) (first-inf-y-offset 0))
+  ;; Increment for screen-box, but now for screen-rows
+  (setf depth (1+ depth))
+
   (with-slots (wid hei actual-obj scroll-to-actual-row box-type content-wid content-hei scroll-y-offset) self
     (let ((new-box-type (class-name (class-of actual-obj)))
           (new-display-style (display-style actual-obj))
@@ -203,7 +232,7 @@
         (multiple-value-bind (l-border-wid t-border-wid r-border-wid b-border-wid)
                              (box-borders-widths new-box-type self)
           (multiple-value-bind (internal-wid internal-hei)
-                               (internal-dimensions self l-border-wid t-border-wid)
+                               (internal-dimensions self depth l-border-wid t-border-wid)
             (multiple-value-bind (min-wid min-hei)
                                  (box-borders-minimum-size new-box-type self)
               (setf wid         (max min-wid (+ internal-wid l-border-wid r-border-wid))
@@ -217,7 +246,7 @@
          (multiple-value-bind (l-border-wid t-border-wid r-border-wid b-border-wid)
                               (box-borders-widths new-box-type self)
            (multiple-value-bind (internal-wid internal-hei)
-                                (internal-dimensions self l-border-wid t-border-wid)
+                                (internal-dimensions self depth l-border-wid t-border-wid)
              (multiple-value-bind (min-wid min-hei)
                                   (box-borders-minimum-size new-box-type self)
                (setf wid         (max min-wid (+  internal-wid l-border-wid r-border-wid))
@@ -247,11 +276,18 @@
        )))
     (values wid hei)))
 
-(defmethod dimensions ((self sprite-screen-box) &optional (first-inf-x-offset 0) (first-inf-y-offset 0))
+(defmethod dimensions ((self sprite-screen-box) depth &optional (first-inf-x-offset 0) (first-inf-y-offset 0))
   )
 
 (defun repaint-fill-dimensions (outer-screen-box pane-width pane-height)
-  (multiple-value-bind (wid hei) (dimensions outer-screen-box)
+  (setf (local-matrix outer-screen-box) (create-transform-matrix 9 9)) ;  (* depth *box-depth-mult*)))
+  (setf (local-internal-matrix outer-screen-box) (create-transform-matrix 9 9)) ; (+ .5 (* depth *box-depth-mult*))))
+  (setf (world-matrix outer-screen-box) (3d-matrices:m* (3d-matrices:meye 4) (local-matrix outer-screen-box)))
+  (setf (world-x-offset outer-screen-box) 9
+        (world-y-offset outer-screen-box) 9)
+  (setf (world-internal-matrix outer-screen-box) (3d-matrices:m* (3d-matrices:meye 4) (local-internal-matrix outer-screen-box)))
+
+  (multiple-value-bind (wid hei) (dimensions outer-screen-box 1)
     (log:debug "~% repaint-fill-dimensions: wid: ~A hei: ~A pane-width: ~A pane-height: ~A"
       wid hei pane-width pane-height)
     (setf (screen-obj-wid outer-screen-box) (if (eq (view-layout *boxer-pane*) :canvas-view)

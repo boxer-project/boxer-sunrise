@@ -312,7 +312,7 @@
        (deallocate-screen-obj-internal self)))))
 
 (defun clear-graphics-screen-sheet (gss)
-  (setf (graphics-screen-sheet-actual-obj gss) nil))
+  (setf (screen-obj-actual-obj gss) nil))
 
 (defmethod deallocate-self ((self graphics-screen-box))
   (when (getprop self :graphics-canvas)
@@ -688,11 +688,6 @@
     (typecase bt1
               (string (string= bt1 bt2))
               (t (eq bt1 bt2)))))
-
-;;; DRAW-BOXTOP moved to gdispl.lisp because of macro dependencies
-
-
-
 
 ;;; Things having to do with a window's outermost screen box.
 

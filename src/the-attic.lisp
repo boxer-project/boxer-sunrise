@@ -8874,6 +8874,24 @@ Modification History (most recent at the top)
 ;;;; FILE: disdcl.lisp
 ;;;;
 
+(DEFVAR %ORIGIN-X-OFFSET 0
+        "Inside of a drawing-on-window, this variable is bound to x-offset of the
+   current drawing origin from the screen's actual x origin. With-origin-at
+   rebinds this variable (and %origin-y-offset) to change the screen position
+   of the drawing origin.")
+
+(DEFVAR %ORIGIN-Y-OFFSET 0
+        "Inside of a drawing-on-window, this variable is bound to y-offset of the
+   current drawing origin from the screen's actual y origin. With-origin-at
+   rebinds this variable (and %origin-x-offset) to change the screen position
+   of the drawing origin.")
+
+(DEFVAR %CLIP-LEF 0)
+(DEFVAR %CLIP-TOP 0)
+(DEFVAR %CLIP-RIG 0)
+(DEFVAR %CLIP-BOT 0)
+
+
 ;; sgithens 2024-03-04 this is just *boxer-pane* and was only used in like one remaining place...
 (DEFVAR %DRAWING-ARRAY NIL
         "Inside of a drawing-on-window, this variable is bound to %drawing-window's
@@ -8925,6 +8943,29 @@ Modification History (most recent at the top)
 ;;;;
 ;;;; FILE: disdef.lisp
 ;;;;
+
+;; sgithens 2024-09-02 This has been converted to a regular defclass
+(defstruct (graphics-screen-sheet (:conc-name graphics-screen-sheet-)
+                                  (:predicate graphics-screen-sheet?)
+                                  (:constructor %make-g-screen-sheet
+                                                (actual-obj x-offset y-offset))
+                                  (:print-function
+                                   (lambda (gss str &rest other)
+                                           (declare (ignore other))
+                                           (format str "#<graph-scr-st x-~d. y-~d.>"
+                                                   (graphics-screen-sheet-x-offset
+                                                    gss)
+                                                   (graphics-screen-sheet-y-offset
+                                                    gss)))))
+  (x-offset 0.)
+  (y-offset 0.)
+  (screen-box nil)
+  (actual-obj nil))
+
+(defmacro check-graphics-screen-sheet-arg (x)
+  `(check-type ,x (satisfies graphics-screen-sheet?)
+                "A graphics screen sheet"))
+
 
 ;;; The X implementation requires that the font map stuff be set
 ;;; up BEFORE the redisplay inits are run but we better check first...
@@ -9608,6 +9649,31 @@ Modification History (most recent at the top)
 ;;;;
 ;;;; FILE: draw-high-common.lisp
 ;;;;
+
+(defmacro drawing-on-window-bootstrap-clipping-and-scaling ((x y wid hei) &body body)
+  `(let* ((%origin-x-offset ,x) (%origin-y-offset ,y)
+          ;; absolute clipping parameters
+          (%clip-lef ,x) (%clip-top ,y)
+          (%clip-rig (+& %clip-lef (* (/ 1 (zoom-level *boxer-pane*)) ,wid)))
+          (%clip-bot (+& %clip-top (* (/ 1 (zoom-level *boxer-pane*)) ,hei))))
+     %clip-rig %clip-bot %origin-x-offset %origin-y-offset ;bound but never...
+     ,@body))
+
+(defmacro with-origin-at ((x y) &body body)
+  (let ((fx (gensym)) (fy (gensym)) (ux (gensym)) (uy (gensym)))
+    `(let* ((,fx (float ,x)) (,fy (float ,y))
+            (,ux (float-minus ,fx)) (,uy (float-minus ,fy))
+            ;; keep track of scaling because bitblt doesn't respect OpenGL translation
+            (%origin-x-offset (+ %origin-x-offset ,x))
+            (%origin-y-offset (+ %origin-y-offset ,y)))
+       (unwind-protect
+           (progn
+            nil
+            ;;  (adjust-transform bw::*boxgl-device* ,fx ,fy)
+             . ,body)
+         nil
+        ;;  (adjust-transform bw::*boxgl-device* ,ux ,uy)
+         ))))
 
 (defmacro with-drawing-inside-region ((x y wid hei) &body body)
   "**** this is the reverse of the software version because the
@@ -14071,6 +14137,12 @@ OpenGL expects a list of X Y pairs"
 ;;;;
 ;;;; FILE: grfdfs.lisp
 ;;;;
+
+
+(defun graphics-screen-sheet-offsets (graphics-screen-sheet)
+  (values (screen-obj-x-offset graphics-screen-sheet)
+          (screen-obj-y-offset graphics-screen-sheet)))
+
 
 (defun update-absolute-pos-cache (screen-box cache
                                              box-x-offset box-y-offset

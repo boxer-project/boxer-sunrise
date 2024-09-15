@@ -79,7 +79,24 @@
     :documentation "Height of the internal content, may be smaller than the hei for scrolled content.")
    (x-got-clipped? :initform nil :accessor screen-obj-x-got-clipped?)
    (y-got-clipped? :initform nil :accessor screen-obj-y-got-clipped?)
-   (tick :initform -1 :accessor screen-obj-tick)))
+   (tick :initform -1 :accessor screen-obj-tick)
+
+   ;; local-matrix
+   (local-matrix :initform (create-transform-matrix 0 0) :accessor local-matrix
+    :documentation "Local matrix for this Box's Scene Graph.")
+   ;; local-internal-matrix
+   (local-internal-matrix :initform (3d-matrices:meye 4) :accessor local-internal-matrix
+    :documentation "Local matrix for the internal area, inside any borders, margin, and padding for the Box's content.")
+   ;; world-matrix
+   (world-matrix :initform (create-transform-matrix 0 0) :accessor world-matrix
+    :documentation "The scene graph location for this Box in world space.")
+   (world-x-offset :initform 0 :accessor world-x-offset
+    :documentation "The X location of this Box in world space.")
+   (world-y-offset :initform 0 :accessor world-y-offset
+    :documentation "The Y location of this Box in world space.")
+   (world-internal-matrix :initform (3d-matrices:meye 4) :accessor world-internal-matrix
+    :documentation "The scene graph location for the internal area (content without borders, margin, and padding)
+                    in world space.")))
 
 (defmethod screen-obj-hei ((self screen-obj))
   (floor (slot-value self 'hei)))
@@ -120,10 +137,10 @@
                        :accessor display-style-list)
    (superior-screen-box :initform nil :accessor superior-screen-box)
    ;; scrolling vars
-   (scroll-y-offset :initform 0
+   (scroll-y-offset :initform 0 :accessor scroll-y-offset
     :documentation "A negative value results in the box being scrolled down.
                     Essentially, neither the scroll-y/x-offset can be positive.")
-   (scroll-x-offset :initform 0
+   (scroll-x-offset :initform 0 :accessor scroll-x-offset
     :documentation "A negative value results in the box being scrolled to the right.")))
 
 (defgeneric screen-box? (x) (:method (x) nil) (:method ((x screen-box)) t))
@@ -137,6 +154,12 @@
   ())
 
 (defgeneric graphics-screen-box? (x) (:method (x) nil) (:method ((x graphics-screen-box)) t))
+
+(defclass graphics-screen-sheet
+  (screen-obj)
+  ((screen-box :initform nil :accessor screen-box)))
+
+(defgeneric graphics-screen-sheet? (x) (:method (x) nil) (:method ((x graphics-screen-sheet)) t))
 
 ;;; this is for graphics display of sprite boxes when the containing
 ;;; box is in text mode.  It has to inherit from screen-box so it can be toggled
@@ -156,23 +179,6 @@
 (defvar *redisplay-initialization-list* nil
   "A list of symbols to funcall.  The symbols are generated from
    the forms in *redisplay-related-initializations*")
-
-(DEFVAR %ORIGIN-X-OFFSET 0
-        "Inside of a drawing-on-window, this variable is bound to x-offset of the
-   current drawing origin from the screen's actual x origin. With-origin-at
-   rebinds this variable (and %origin-y-offset) to change the screen position
-   of the drawing origin.")
-
-(DEFVAR %ORIGIN-Y-OFFSET 0
-        "Inside of a drawing-on-window, this variable is bound to y-offset of the
-   current drawing origin from the screen's actual y origin. With-origin-at
-   rebinds this variable (and %origin-x-offset) to change the screen position
-   of the drawing origin.")
-
-(DEFVAR %CLIP-LEF 0)
-(DEFVAR %CLIP-TOP 0)
-(DEFVAR %CLIP-RIG 0)
-(DEFVAR %CLIP-BOT 0)
 
 ;;;; Font Vars....
 
