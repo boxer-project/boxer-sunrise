@@ -167,7 +167,7 @@
                      (= obhei (display-style-fixed-hei (display-style-list osb)))) ;(box::screen-obj-hei osb)))
           (reset-global-scrolling)
           (multiple-value-bind (ww wh) (window-inside-size *boxer-pane*)
-            (opengl::%resize-opengl-context (capi-internals:representation *boxer-pane*)
+            #+lispworks (opengl::%resize-opengl-context (capi-internals:representation *boxer-pane*)
                             (opengl::context *boxer-pane*)
                             ww wh)
             (boxer::ogl-reshape ww wh))
