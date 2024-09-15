@@ -72,14 +72,17 @@
 
 (defmethod repaint-cursors-regions ((self screen-box))
   (when (or (bps self) (region-in-screen-box? self))
-    (let ((cur-transform (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)))
-      (set-transform bw::*boxgl-device* 0 0)
+    ;; TODO convert to a with-XYZed-matrix
+    (let ((cur-model (boxer::boxgl-device-model-matrix bw::*boxgl-device*)))
+      (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) (3d-matrices:meye 4))
+      (update-matrices-ubo bw::*boxgl-device*)
       (when (bps self)
         (repaint-cursor *point*))
       (when (region-in-screen-box? self)
         (dolist (region *region-list*)
           (when (not (null region)) (interval-update-repaint-all-rows region))))
-      (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*) cur-transform))))
+      (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) cur-model)
+      (update-matrices-ubo bw::*boxgl-device*))))
 
 (defmethod repaint-inferiors-pass-2-sb ((self screen-box))
   (with-slots (wid hei box-type screen-rows scroll-x-offset scroll-y-offset x-got-clipped? y-got-clipped? actual-obj bps)
@@ -206,7 +209,7 @@
                                               0 ;(world-y-offset self) ;(vertical-scroll *boxer-pane*)
                                               wid
                                               hei)
-                         (draw-boxtop boxtop actual-obj 0 0 wid hei))))))
+                         (draw-boxtop self boxtop actual-obj 0 0 wid hei))))))
          (t ;; have to draw any background BEFORE inferiors
             (multiple-value-bind (lef top rig bot)
                                   (box-borders-widths box-type self)

@@ -13,6 +13,11 @@
 (defmethod update-scene-graph ((self screen-box) parent x-offset y-offset depth)
   (let ((x-internal-offset (+ x-offset (scroll-x-offset self)))
         (y-internal-offset (+ y-offset (scroll-y-offset self))))
+
+    (when (eq (display-style self) :shrunk)
+      (incf x-internal-offset 1)
+      (incf y-internal-offset 1))
+
     (setf (local-matrix self) (create-transform-matrix x-offset y-offset)) ;  (* depth *box-depth-mult*)))
     (setf (local-internal-matrix self) (create-transform-matrix x-internal-offset y-internal-offset)) ; (+ .5 (* depth *box-depth-mult*))))
     (setf (world-matrix self) (3d-matrices:m* (world-internal-matrix parent) (local-matrix self)))
