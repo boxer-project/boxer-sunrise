@@ -141,16 +141,16 @@
           (boxer::create-transform-matrix h v))
     (update-transform-matrix-ubo self))
 
-(defmethod adjust-transform ((self boxgl-device) h v)
-  "Translates the current transform matrix by an additional h and v distance.
-  Does not replace it from scratch. In the repaint code using this macro we typically
-  see the origin adjusted by some amount, and then un-adjusted by it with the negative
-  amounts to put it back."
-  (let* ((current-transform (boxer::boxgl-device-transform-matrix self))
-         (adjust-matrix (boxer::create-transform-matrix h v))
-         (new-transform (3d-matrices:m* current-transform adjust-matrix)))
-    (setf (boxer::boxgl-device-transform-matrix self) new-transform)
-    (update-transform-matrix-ubo self)))
+;; (defmethod adjust-transform ((self boxgl-device) h v)
+;;   "Translates the current transform matrix by an additional h and v distance.
+;;   Does not replace it from scratch. In the repaint code using this macro we typically
+;;   see the origin adjusted by some amount, and then un-adjusted by it with the negative
+;;   amounts to put it back."
+;;   (let* ((current-transform (boxer::boxgl-device-transform-matrix self))
+;;          (adjust-matrix (boxer::create-transform-matrix h v))
+;;          (new-transform (3d-matrices:m* current-transform adjust-matrix)))
+;;     (setf (boxer::boxgl-device-transform-matrix self) new-transform)
+;;     (update-transform-matrix-ubo self)))
 
 (defvar *gl-pixmap-texture-count* 0
   "The number of openGL textures we've created for ogl-pixmaps.")
