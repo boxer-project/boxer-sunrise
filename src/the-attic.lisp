@@ -9632,6 +9632,22 @@ Modification History (most recent at the top)
 ;;;; FILE: draw-high-common.lisp
 ;;;;
 
+(defmacro with-origin-at ((x y) &body body)
+  (let ((fx (gensym)) (fy (gensym)) (ux (gensym)) (uy (gensym)))
+    `(let* ((,fx (float ,x)) (,fy (float ,y))
+            (,ux (float-minus ,fx)) (,uy (float-minus ,fy))
+            ;; keep track of scaling because bitblt doesn't respect OpenGL translation
+            (%origin-x-offset (+ %origin-x-offset ,x))
+            (%origin-y-offset (+ %origin-y-offset ,y)))
+       (unwind-protect
+           (progn
+            nil
+            ;;  (adjust-transform bw::*boxgl-device* ,fx ,fy)
+             . ,body)
+         nil
+        ;;  (adjust-transform bw::*boxgl-device* ,ux ,uy)
+         ))))
+
 (defmacro with-drawing-inside-region ((x y wid hei) &body body)
   "**** this is the reverse of the software version because the
 WITH-CLIPPING-INSIDE macro should use the new coordinate system

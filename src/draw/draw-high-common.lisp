@@ -86,22 +86,6 @@ the bootstrapping of the clipping and coordinate scaling variables."
            )
          ))))
 
-(defmacro with-origin-at ((x y) &body body)
-  (let ((fx (gensym)) (fy (gensym)) (ux (gensym)) (uy (gensym)))
-    `(let* ((,fx (float ,x)) (,fy (float ,y))
-            (,ux (float-minus ,fx)) (,uy (float-minus ,fy))
-            ;; keep track of scaling because bitblt doesn't respect OpenGL translation
-            (%origin-x-offset (+ %origin-x-offset ,x))
-            (%origin-y-offset (+ %origin-y-offset ,y)))
-       (unwind-protect
-           (progn
-            nil
-            ;;  (adjust-transform bw::*boxgl-device* ,fx ,fy)
-             . ,body)
-         nil
-        ;;  (adjust-transform bw::*boxgl-device* ,ux ,uy)
-         ))))
-
 (defun clip-stencil-rectangle (direction wid hei x y)
   (write-to-stencil)
   (with-pen-color (*transparent*)

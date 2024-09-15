@@ -100,26 +100,22 @@
                                      (- wid ir il)
                                      (- hei it ib))
              (with-world-internal-matrix (self)
-              ;;  (with-origin-at (scroll-x-offset scroll-y-offset)
-                 (do-vector-contents (inf-screen-obj screen-rows :index-var-name row-no)
-                   ;; if row.y-pos > box.y-pos AND row.y-pos < box.y-pos + box.hei
-                   ;;   then render the row
-                   (let ((row-y-pos (second (multiple-value-list (xy-position inf-screen-obj))))
-                         (row-y-hei (screen-obj-hei inf-screen-obj))
-                         (box-y-pos (second (multiple-value-list (xy-position self)))))
-                     (when (and (> (+ row-y-hei row-y-pos) box-y-pos)
-                                (< row-y-pos (+ box-y-pos hei))
-                                (within-boxer-pane inf-screen-obj))
-                       (repaint-pass-2-sr inf-screen-obj))))
-                 (repaint-cursors-regions self))))
-            (t
-            ;;  (with-origin-at (scroll-x-offset scroll-y-offset)
                (do-vector-contents (inf-screen-obj screen-rows :index-var-name row-no)
-                 (when (within-boxer-pane inf-screen-obj)
-                   (repaint-pass-2-sr inf-screen-obj)))
-               (repaint-cursors-regions self)
-              ;;  )
-               )))))
+                 ;; if row.y-pos > box.y-pos AND row.y-pos < box.y-pos + box.hei
+                 ;;   then render the row
+                 (let ((row-y-pos (second (multiple-value-list (xy-position inf-screen-obj))))
+                       (row-y-hei (screen-obj-hei inf-screen-obj))
+                       (box-y-pos (second (multiple-value-list (xy-position self)))))
+                   (when (and (> (+ row-y-hei row-y-pos) box-y-pos)
+                             (< row-y-pos (+ box-y-pos hei))
+                             (within-boxer-pane inf-screen-obj))
+                     (repaint-pass-2-sr inf-screen-obj))))
+               (repaint-cursors-regions self))))
+            (t
+              (do-vector-contents (inf-screen-obj screen-rows :index-var-name row-no)
+                (when (within-boxer-pane inf-screen-obj)
+                  (repaint-pass-2-sr inf-screen-obj)))
+              (repaint-cursors-regions self))))))
 
 (defmethod repaint-inferiors-pass-2-sr ((self screen-row))
   (let* ((inf-x-offset 0)
@@ -170,7 +166,6 @@
   (with-slots (x-offset y-offset wid hei actual-obj)
     self
     (when actual-obj
-      ;; (with-origin-at (x-offset y-offset)
       (with-world-matrix (self)
         (when (closet-row? actual-obj (superior-box actual-obj))
           ;; this should get the inner width from the superior box
@@ -182,7 +177,6 @@
   ;; (multiple-value-bind (x-pos y-pos) (xy-position self)
   (with-slots (x-offset y-offset wid hei actual-obj box-type)
     self
-    ;; (with-origin-at (x-offset y-offset)
     (with-world-matrix (self)
       (maintaining-pen-color
        ;; need this because we may be in the middle of a colored font run
@@ -220,7 +214,7 @@
             ;; draw any scroll info no
             (draw-scroll-info self)
             ;; Now deal with the Borders,
-            (box-borders-draw box-type self)))))) ;) ;)
+            (box-borders-draw box-type self))))))
   ;; Make a note of the fact that this screen box has
   ;; been redisplayed (pass-1 and pass-2 complete).
   (got-repainted self))
@@ -233,7 +227,6 @@
                                                  (graphics-sheet-draw-wid graphics-sheet)))
                                (inner-height (min (- (screen-obj-hei self) it ib)
                                                  (graphics-sheet-draw-hei graphics-sheet))))
-                           ;; (with-origin-at (x y)
                            (with-world-matrix ((screen-sheet self))
                              (with-clipping-inside (0 ;(+ 0 (horizontal-scroll *boxer-pane*))
                                                    0 ;(+ 0 (vertical-scroll *boxer-pane*))
