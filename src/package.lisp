@@ -47,7 +47,6 @@
            :static-variables-alist
            :setup-editor
            :svref&
-           :cross-file-link-insert-self-action
            :fast-assq
            :deffile-property-handler
            :recompile-boxer :load-boxer :make-boxer :start-boxer :boxer
@@ -73,16 +72,11 @@
            :max-window-coord :min-window-coord
 
            ;; font vars
-           :%drawing-font :%drawing-fit
-           :%drawing-font-cha-wid
            :%drawing-font-cha-hei
            :%drawing-font-cha-ascent
-           :%drawing-font-cha-wid-table
            ;; inits
            :def-redisplay-initialization
            :run-redisplay-inits
-           ;; useful macros
-           :defsubst
 
            :wait-with-timeout :storage-chunk?
            :*outermost-dumping-box* :*initial-box*
@@ -134,8 +128,6 @@
            :setup-redisplay :setup-editor :not-null
            :redisplay :handle-boxer-input
            :deftype-checking-macros
-           :*cursor-blinker-wid*
-           :*cursor-blinker-min-hei*
            :window-system-specific-make-boxer
            :window-system-specific-start-boxer
            :status-line-display :redraw-status-line
@@ -195,22 +187,9 @@
     :dump-storage-chunk-plist-items
     :cross-file-port?
     :*dump-out-file-box-inferiors?*
-    :in-bfs-environment?
     :no-inferiors-for-file?
-    :dump-cross-file-port-reference
-    :load-server-box-id
-    :load-cross-file-contained-links
-    :load-cross-file-port-branch-links
-    :load-cross-file-target-branch-links
-    :load-cross-file-target-ends
-    :load-cross-file-link-id
     :no-cross-file-links?
-    :cross-file-link-insert-self-action
-    :cross-file-link-delete-self-action
-    :cross-file-port-insert-self-action
-    :cross-file-port-delete-self-action
     :cross-file-port-branch-links
-    :articulate-target-branch
     :dump-box-url :load-url :url-string?
     :url-box? :read-internal-url))
 
@@ -223,7 +202,6 @@
            :%bitblt-to-screen :%bitblt-from-screen
            :%draw-point
            :%draw-rectangle :%erase-rectangle :%draw-line :%draw-poly
-           :boxer-points->window-system-points :%draw-arc :%draw-filled-arc
            :set-outermost-screen-box-in-window
            :draw-cha :cha-wid :cha-hei
            :%draw-cha :%draw-string
