@@ -44,18 +44,21 @@
 (defparameter scr-width 800)
 (defparameter scr-height 600)
 
-(cl-glfw3:def-key-callback quit-on-escape (window key scancode action mod-keys)
+(defmacro def-key-callback (name (window key scancode action mod-keys) &body body)
+  `(%glfw:define-glfw-callback ,name
+       ((,window :pointer) (,key :int) (,scancode :int)
+       (,action %glfw::key-action) (,mod-keys %glfw::mod-keys))
+     ,@body))
+
+(def-key-callback key-callback (window key scancode action mod-keys)
   ;; (declare (ignore window scancode mod-keys))
-  (format t "~%glfw3 key-callback key3: ~A scancode: ~A action: ~A mod-keys: ~A input type: ~A"
+  (format t "~%glfw3 key-callback key: ~A scancode: ~A action: ~A mod-keys: ~A input type: ~A"
     key scancode action mod-keys (type-of key))
   (cond
     ((and (eq key :escape) (eq action :press))
      (cl-glfw3:set-window-should-close))
     ((eq action :press)
-     ;;  (boxer::handle-boxer-input (character key))
-     (boxer::insert-cha boxer::*point* (character key))
-     (format t "~%  the initial box now: ~A" boxer::*initial-box*)
-     )
+      (boxer::handle-boxer-input (code-char key)))
     (t
      (print "key-callback nothing")
      nil)))
@@ -67,6 +70,12 @@
 
 (defclass glfw-boxer-pane (boxer::boxer-canvas)
   ())
+
+(defmethod boxer::port-width ((self glfw-boxer-pane))
+  800)
+
+(defmethod boxer::port-height ((self glfw-boxer-pane))
+  600)
 
 (defclass glfw-boxer-name-pane ()
   ())
@@ -83,7 +92,7 @@
                                 :opengl-profile #x00032001
                                 #+os-macosx :opengl-forward-compat #+os-macosx t)
         (setf %gl:*gl-get-proc-address* #'cl-glfw3:get-proc-address)
-        (cl-glfw3:set-key-callback 'quit-on-escape)
+        (cl-glfw3:set-key-callback 'key-callback)
         (cl-glfw3:set-window-size-callback 'update-viewport)
 
         ;; START Duplicated from pane-callbacks

@@ -638,7 +638,7 @@ average datastructure.
 ;;;  and we can just use it.
 
 (defun make-evrow-from-row (row &optional sup-vc)
-  (declare (values evrow inner-links?))
+  #+lispworks (declare (values evrow inner-links?))
   (let ((cv? (slot-value row 'cached?))
 	(chunks (slot-value row 'cached-chunks))
 	(evrow? (or (slot-value row 'cached-evrow))))
@@ -1219,7 +1219,7 @@ average datastructure.
 ;;; Box Methods
 
 (defmethod virtual-copy-rows ((self box) &optional time whos-asking)
-  (declare (values rows inlinks? new? rows-entry))
+  #+lispworks (declare (values rows inlinks? new? rows-entry))
   ;; if the box is out on disk, bring it in
   ;; remember that this can lose or be Cancelled by the user
   (when (and (null (slot-value self 'first-inferior-row))
