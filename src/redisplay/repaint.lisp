@@ -109,7 +109,7 @@
   nil)
 
 
-(defun repaint-window (&OPTIONAL (WINDOW *BOXER-PANE*) (flush-buffer? t) &KEY (process-state-label "stopped"))
+(defun repaint-window (&optional (window *boxer-pane*) (flush-buffer? t) &KEY (process-state-label "stopped"))
     (check-for-window-resize)
     (update-matrices-ubo bw::*boxgl-device*)
     (REDISPLAYING-WINDOW (WINDOW)
@@ -125,12 +125,12 @@
                          (when flush-buffer? (swap-graphics-buffers window))))
 
 ;;; called also by printing routines.
-(defun repaint-guts ()
+(defun repaint-guts (&optional (window *boxer-pane*))
   (unless (null *outermost-screen-box*)
     ;; can happen asynch, during window startup if window systems tries to update before
     ;; all the boxer innards are created
     (multiple-value-bind (max-wid max-hei)
-                         (outermost-screen-box-size *redisplay-window*)
+                         (outermost-screen-box-size window)
                        (repaint-fill-dimensions *outermost-screen-box* max-wid max-hei))
 
     ;; sgithens 2024-07 This is a totally insane and bizarre workout for an issue where if you

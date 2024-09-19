@@ -22,11 +22,6 @@
 ;;; Re-implemented Utilities from boxwin-opengl and other places
 ;;;
 
-;; TODO refactor from boxwin-opengl.lisp
-(defun outermost-screen-box (&optional (window *boxer-pane*))
-  ;; (slot-value window 'outermost-screen-box)
-  )
-
 (defun window-system-dependent-redraw-status-line (string)
   ;; (capi:apply-in-pane-process *name-pane* #'(lambda ()
   ;;                                            (setf (capi::title-pane-text *name-pane*) string)))

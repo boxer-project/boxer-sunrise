@@ -202,7 +202,6 @@
            :%bitblt-to-screen :%bitblt-from-screen
            :%draw-point
            :%draw-rectangle :%erase-rectangle :%draw-line :%draw-poly
-           :set-outermost-screen-box-in-window
            :draw-cha :cha-wid :cha-hei
            :%draw-cha :%draw-string
            :string-wid :string-hei
@@ -225,7 +224,6 @@
            :*boxer-pane* :*name-pane* :*boxer-frame*
            :*point-blinker* :*mouse-blinker* :*sprite-blinker*
            ;; Window operations
-           :set-outermost-screen-box-in-window
            :window-system-dependent-redraw-status-line :clear-window
            ;; input functions
            :get-character-input :get-boxer-input

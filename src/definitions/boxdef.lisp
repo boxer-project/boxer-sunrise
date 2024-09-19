@@ -159,10 +159,6 @@ Modification History (most recent at top)
 
 ;;;; Variables Having To Do With Redisplay.
 
-(DEFVAR *REDISPLAY-WINDOW* NIL
-  "Inside of REDISPLAYING-WINDOW, this variable is bound to the window
-   being redisplayed.")
-
 (DEFVAR *OUTERMOST-SCREEN-BOX* NIL
   "Inside of REDISPLAYING-WINDOW, this variable is bound to the window
    being redisplayed's outermost-screen-box. This is the screen box which

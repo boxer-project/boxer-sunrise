@@ -44,6 +44,7 @@
 ;;;;     hints to various boxes.
 ;;;;   - dataprims.lisp - number-of... Apparently there used to be a defboxer-function keyword based style of primitive declaration
 ;;;;   - grprim2.lisp, grmeth.lisp - all-sprites-in-contact and some other sprite overlapping utilities
+;;;;   - dribble.lisp entire file... The Dribbler
 
 ;;;;
 ;;;; FILE: applefile.lisp
@@ -3307,6 +3308,11 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: boxdef.lisp
 ;;;;
+
+(DEFVAR *REDISPLAY-WINDOW* NIL
+  "Inside of REDISPLAYING-WINDOW, this variable is bound to the window
+   being redisplayed.")
+
 
 ;; 2024-06-21 Removing another unneeded member of graphics-sheet
   ;; these are obsolete....

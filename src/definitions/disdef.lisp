@@ -242,17 +242,12 @@ Modification History (most recent at the top)
                 . ,BODY))
 
 (DEFMACRO REDISPLAYING-WINDOW ((WINDOW) &BODY BODY)
-          `(LET* ((*REDISPLAY-WINDOW* ,WINDOW)
-                  ; (*OUTERMOST-SCREEN-BOX* (OUTERMOST-SCREEN-BOX ,WINDOW))
-                  (.OUTERMOST-SCREEN-BOX. *OUTERMOST-SCREEN-BOX*))
-                 (QUEUEING-SCREEN-OBJS-DEALLOCATION
-                  (DRAWING-ON-WINDOW (,WINDOW)
-                                     (UNWIND-PROTECT
-                                      (PROGN . ,BODY)
-                                      ;; Check to see if *outermost-screen-box* got changed during
-                                      ;; the redisplay. If it did, then tell the window about it.
-                                      (WHEN (NOT (EQ *OUTERMOST-SCREEN-BOX* .OUTERMOST-SCREEN-BOX.))
-                                            (SET-OUTERMOST-SCREEN-BOX-IN-WINDOW ,WINDOW *OUTERMOST-SCREEN-BOX*)))))))
+  `(LET* ((*OUTERMOST-SCREEN-BOX* (OUTERMOST-SCREEN-BOX ,WINDOW)))
+        (QUEUEING-SCREEN-OBJS-DEALLOCATION
+          (DRAWING-ON-WINDOW (,WINDOW)
+                              (UNWIND-PROTECT
+                              (PROGN . ,BODY)
+                              (SET-OUTERMOST-SCREEN-BOX-IN-WINDOW ,WINDOW *OUTERMOST-SCREEN-BOX*))))))
 
 ;;; random useful structs and stuff
 

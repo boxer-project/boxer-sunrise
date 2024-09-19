@@ -1308,17 +1308,11 @@ in macOS."
                                              (setf (capi::title-pane-text *name-pane*) string)))
   )
 
-(defun outermost-screen-box (&optional (window *boxer-pane*))
-  (slot-value window 'outermost-screen-box))
-
 (defun set-window-name (newname)
   (setf (capi::interface-title *boxer-frame*) "")
   ;; hack, seems to be some sort of caching issue which suppresses updates
   ;; under certain coditions...
   (setf (capi::interface-title *boxer-frame*) newname))
-
-(defun set-outermost-screen-box-in-window (window new-outermost-screen-box)
-  (setf (slot-value window 'outermost-screen-box) new-outermost-screen-box))
 
 ;;; "About Boxer" window ?
 (defun about-boxer-function ()

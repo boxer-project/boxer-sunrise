@@ -127,3 +127,9 @@
   (setf (horizontal-scroll *boxer-pane*) 0)
   (setf (vertical-scroll *boxer-pane*) 0)
   (boxer::set-transform bw::*boxgl-device* 0 0))
+
+(defun outermost-screen-box (&optional (window *boxer-pane*))
+  (slot-value window 'outermost-screen-box))
+
+(defun set-outermost-screen-box-in-window (window new-outermost-screen-box)
+  (setf (slot-value window 'outermost-screen-box) new-outermost-screen-box))
