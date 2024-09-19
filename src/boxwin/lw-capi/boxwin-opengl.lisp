@@ -1098,24 +1098,10 @@ in macOS."
      (flet ((,body-function-name () . ,body))
        (with-mouse-cursor (,action)
          (do ((last-mouse-x -1) (last-mouse-y -1))
-             ((if *dribble-playback*
-                  (progn (update-dribble-mouse-state)
-                         (box::zerop& (dribble-mouse-state-buttons)))
-                  (not (boxer-pane-mouse-down?)))
-              ;; record a button up state so the loop can terminate on
-              ;; playback
-              (record-mouse-state 0 ,original-x-variable ,original-y-variable)
+             ((not (boxer-pane-mouse-down?))
               (values ,original-x-variable ,original-y-variable moved-p))
-           (cond ((not (null *dribble-playback*))
-                  (let ((dx (dribble-mouse-state-x)) (dy (dribble-mouse-state-y)))
-                    (setq ,original-x-variable dx ,original-y-variable dy)))
-                 (t
-                  (multiple-value-setq  (,original-x-variable ,original-y-variable)
-                      (boxer-pane-mouse-position))
-                  (unless (and (= ,original-x-variable last-mouse-x)
-                               (= ,original-y-variable last-mouse-y))
-                    (record-mouse-state 2 ; anything non zero will do
-                                        ,original-x-variable ,original-y-variable))))
+           (multiple-value-setq  (,original-x-variable ,original-y-variable)
+               (boxer-pane-mouse-position))
            (unless moved-p
              (unless (and (= ,original-x-variable ,original-x-value)
                           (= ,original-y-variable ,original-y-value))
@@ -1127,32 +1113,27 @@ in macOS."
 
 (defun mouse-window-coords (&key (wait-action nil) (relative-to *boxer-pane*))
   (declare (ignore relative-to))
-  (cond ((not (null *dribble-playback*))
-         (update-dribble-mouse-state)
-         (values (dribble-mouse-state-x) (dribble-mouse-state-y)))
-        (t
-         (case wait-action
-           (nil) ; don't wait at all
-           ((:down :button-press)
-            ;; check for the mouse to be up before checking for the mouse to
-            ;; be down.  If we dont do this, then consecutive calls to
-            ;; xxx-on-click will just return immediately after the 1st click
-            ;; without waiting for the click
-            (with-mouse-cursor (:retarget)
-              (mp::process-wait "Mouse Wait"
-                                #'(lambda ()(not (boxer-pane-mouse-down?))))
-              (mp::process-wait "Mouse Wait"
-                                #'(lambda ()(boxer-pane-mouse-down?)))
-              ;; there should be a mouse event in the queue now so flush it
-              (flush-input)))
-           (:up
-            (with-mouse-cursor (:retarget)
-              (mp::process-wait "Mouse Wait"
-                                #'(lambda ()(not (boxer-pane-mouse-down?)))))))
-         (multiple-value-bind (mx my)
-             (boxer-pane-mouse-position)
-           (record-mouse-state 0 mx my)
-           (values mx my)))))
+  (case wait-action
+    (nil) ; don't wait at all
+    ((:down :button-press)
+     ;; check for the mouse to be up before checking for the mouse to
+     ;; be down.  If we dont do this, then consecutive calls to
+     ;; xxx-on-click will just return immediately after the 1st click
+     ;; without waiting for the click
+     (with-mouse-cursor (:retarget)
+       (mp::process-wait "Mouse Wait"
+                         #'(lambda ()(not (boxer-pane-mouse-down?))))
+       (mp::process-wait "Mouse Wait"
+                         #'(lambda ()(boxer-pane-mouse-down?)))
+       ;; there should be a mouse event in the queue now so flush it
+       (flush-input)))
+    (:up
+     (with-mouse-cursor (:retarget)
+       (mp::process-wait "Mouse Wait"
+                         #'(lambda ()(not (boxer-pane-mouse-down?)))))))
+  (multiple-value-bind (mx my)
+      (boxer-pane-mouse-position)
+    (values mx my)))
 
 (defun abort-gesture? (g)
   (and (typep g 'sys::gesture-spec)
@@ -1257,31 +1238,27 @@ in macOS."
 ;;
 
 (defun mouse-button-state ()
-  (if *dribble-playback*
-      (progn (update-dribble-mouse-state)
-             (dribble-mouse-state-buttons))
-      (let* ((raw-state (boxer-pane-mouse-down?))
-             (answer (cond ((null raw-state) 0)
-                           ;; encode shifts for mac compatibility
-                           (t
-                            (case raw-state
-                              (1 ; left, main, mac compat button
-                               (cond ((and (alt-key?) (control-key?)) 5)
-                                     ((alt-key?) 1)
-                                     ((control-key?) 4)
-                                     (t 2)))
-                              (2
-                               (cond ((and (alt-key?) (control-key?)) 13)
-                                     ((alt-key?) 9)
-                                     ((control-key?) 12)
-                                     (t 10)))
-                              (4
-                               (cond ((and (alt-key?) (control-key?)) 21)
-                                     ((alt-key?) 17)
-                                     ((control-key?) 20)
-                                     (t 18))))))))
-        (record-mouse-state answer 0 0)
-        answer)))
+  (let* ((raw-state (boxer-pane-mouse-down?))
+         (answer (cond ((null raw-state) 0)
+                       ;; encode shifts for mac compatibility
+                       (t
+                        (case raw-state
+                          (1 ; left, main, mac compat button
+                           (cond ((and (alt-key?) (control-key?)) 5)
+                                 ((alt-key?) 1)
+                                 ((control-key?) 4)
+                                 (t 2)))
+                          (2
+                           (cond ((and (alt-key?) (control-key?)) 13)
+                                 ((alt-key?) 9)
+                                 ((control-key?) 12)
+                                 (t 10)))
+                          (4
+                           (cond ((and (alt-key?) (control-key?)) 21)
+                                 ((alt-key?) 17)
+                                 ((control-key?) 20)
+                                 (t 18))))))))
+    answer))
 
 ;; mouse state prims
 (defun mouse-down? ()   (not (box::zerop& (mouse-button-state))))

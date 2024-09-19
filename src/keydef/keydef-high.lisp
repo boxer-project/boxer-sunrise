@@ -79,8 +79,6 @@
 (defvar *boxer-keystroke-history* nil
   "A list of all the keys pressed. ")
 
-(defvar *record-keystrokes* nil)
-
 (defvar *boxer-command-key-alist* nil
   "An association list of key names and command names. ")
 
@@ -553,7 +551,6 @@
                                               input
                                               (char-code input))
                                             (or bits (input-bits input)))))
-              (record-key-input input (or bits (input-bits input)))
               (if (or (null key-name)
                       (not (handle-boxer-key key-name
                                             (if (numberp input) input
@@ -561,7 +558,6 @@
                                             (or bits (input-bits input)))))
                 (unhandled-boxer-input key-name))))
           ((mouse-event? input)
-            (record-mouse-input input)
             (mouse-click-boxer-input-handler input))
           (t
             (unhandled-boxer-input input))))))

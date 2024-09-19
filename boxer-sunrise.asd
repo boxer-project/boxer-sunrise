@@ -242,7 +242,6 @@
                  (:file "keydef/keydef-lwm")
                  (:file "keydef/keydef-high")
                  (:file "keydef/alternate-names")
-                 (:file "keydef/dribble")
 
                  ;; Beginning of `COMS` module
                  ;; "Editor Commands Definitions"

@@ -134,12 +134,12 @@
            :force-redisplay
            :input-code :input-bits
            ;; dribble symbols
-           :*dribble-playback*
-           :update-dribble-mouse-state
-           :dribble-mouse-state-x
-           :dribble-mouse-state-y
-           :dribble-mouse-state-buttons
-           :record-mouse-state
+          ;;  :*dribble-playback*
+          ;;  :update-dribble-mouse-state
+          ;;  :dribble-mouse-state-x
+          ;;  :dribble-mouse-state-y
+          ;;  :dribble-mouse-state-buttons
+          ;;  :record-mouse-state
 
            :mouse-click-names :mouse-state-names :lookup-click-name
            :system-version

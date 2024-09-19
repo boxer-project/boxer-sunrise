@@ -41,6 +41,7 @@
 ;;;;   COM-KILL-TO-END-OF-ROW COM-YANK COM-YANK-NO-COPY COM-ROTATE-KILL-BUFFER
 ;;;;  Random useful things:
 ;;;;   COM-FORCE-REDISPLAY COM-BREAK COM-BUG COM-GOTO-TOP-LEVEL
+;;;;   COM-NOOP
 ;;;;
 ;;;;
 ;;;;
@@ -1389,3 +1390,7 @@ Argument is a character, naming the register."
 (defboxer-command com-forget-place ()
   "Clear the location stored in a register that records the current cursor position"
   )
+
+(defboxer-command com-noop (&rest ignore)
+  "Nothing Nothing Nothing"
+  ignore boxer-eval::*novalue*)
