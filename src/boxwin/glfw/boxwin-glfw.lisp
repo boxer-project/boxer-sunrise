@@ -39,24 +39,21 @@
 (defparameter scr-width 800)
 (defparameter scr-height 600)
 
-(defmacro def-key-callback (name (window key scancode action mod-keys) &body body)
-  `(%glfw:define-glfw-callback ,name
-       ((,window :pointer) (,key :int) (,scancode :int)
-       (,action %glfw::key-action) (,mod-keys %glfw::mod-keys))
-     ,@body))
-
-(def-key-callback key-callback (window key scancode action mod-keys)
-  ;; (declare (ignore window scancode mod-keys))
-  (format t "~%glfw3 key-callback key: ~A scancode: ~A action: ~A mod-keys: ~A input type: ~A"
-    key scancode action mod-keys (type-of key))
+(cl-glfw3:def-key-callback key-callback (window key scancode action mod-keys)
+  (declare (ignore window scancode mod-keys))
   (cond
-    ((and (eq key :escape) (eq action :press))
-     (cl-glfw3:set-window-should-close))
-    ((eq action :press)
-      (boxer::handle-boxer-input (code-char key)))
+    ((and (eq action :press) (eq key :backspace))
+     (boxer::handle-boxer-input (code-char 8)))
+    ((and (eq action :press) (eq key :enter))
+     (boxer::handle-boxer-input (code-char 13)))
+    ((and (eq action :press) (eq key :escape))
+     (boxer::handle-boxer-input (code-char 27)))
     (t
-     (print "key-callback nothing")
      nil)))
+
+(cl-glfw3:def-char-callback char-callback (window codepoint)
+  (declare  (ignore window))
+  (boxer::handle-boxer-input codepoint))
 
 ;; glfw: whenever the window size changed (by OS or user resize) this callback function executes"
 (cl-glfw3:def-window-size-callback update-viewport (window w h)
@@ -87,6 +84,7 @@
                                 :opengl-profile #x00032001
                                 #+os-macosx :opengl-forward-compat #+os-macosx t)
         (setf %gl:*gl-get-proc-address* #'cl-glfw3:get-proc-address)
+        (cl-glfw3:set-char-callback 'char-callback)
         (cl-glfw3:set-key-callback 'key-callback)
         (cl-glfw3:set-window-size-callback 'update-viewport)
 
