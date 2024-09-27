@@ -601,7 +601,8 @@
   (gl:bind-buffer :uniform-buffer (matrices-ubo device))
   ;; Currently we have two mat4 and one vec4
   (let* ((rgb (boxer::boxgl-device-pen-color device))
-         (arr (gl:alloc-gl-array :float (+ 4 2 (* 3 (* 4 4)))))
+         ;; Resolution is 2 floats and we have 3 4x4 matrices
+         (arr (gl:alloc-gl-array :float (+ 2 (* 3 (* 4 4)))))
           (i 0))
     (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (boxgl-device-model-matrix device)))))
       (setf (gl:glaref arr i) (coerce item 'single-float))
@@ -615,14 +616,6 @@
     (for:for ((item over (resolution)))
       (setf (gl:glaref arr i) (coerce item 'single-float))
       (incf i))
-    (setf (gl:glaref arr i) (coerce (aref rgb 1) 'single-float))
-    (incf i)
-    (setf (gl:glaref arr i) (coerce (aref rgb 2) 'single-float))
-    (incf i)
-    (setf (gl:glaref arr i) (coerce (aref rgb 3) 'single-float))
-    (incf i)
-    (setf (gl:glaref arr i) (coerce (aref rgb 4) 'single-float))
-    (incf i)
 
     (gl:buffer-sub-data :uniform-buffer arr)
     (gl:free-gl-array arr)
@@ -698,8 +691,8 @@ inside an opengl:rendering-on macro invocation."
 
     ;; Set up uniform buffer object for projection and transform matrices
     (gl:bind-buffer :uniform-buffer (matrices-ubo togo))
-    ;; number of floats: vec2 u_res, mat4 projection, mat4 transform
-    (%gl:buffer-data :uniform-buffer (* *cffi-float-size* (+ 4 2 (* 3 (* 4 4)))) (cffi:null-pointer) :static-draw)
+    ;; number of floats: mat4 model, mat4 projection, mat4 transform, vec2 u_res
+    (%gl:buffer-data :uniform-buffer (* *cffi-float-size* (+ 2 (* 3 (* 4 4)))) (cffi:null-pointer) :static-draw)
     (gl:bind-buffer :uniform-buffer 0)
 
     (%gl:bind-buffer-range :uniform-buffer 0 (matrices-ubo togo) 0 (* *cffi-float-size* (+ 4 2 (* 3 (* 4 4)))))

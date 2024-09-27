@@ -14,7 +14,6 @@ layout (std140) uniform Matrices
     mat4 projection;
     mat4 transform;
     vec2 u_resolution;
-    vec4 u_rgba;
 };
 
 void main()
