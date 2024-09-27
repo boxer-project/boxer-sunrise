@@ -55,7 +55,7 @@ the bootstrapping of the clipping and coordinate scaling variables."
              . ,body)
          (progn
            (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) ,cur-model-matrix)
-           (update-matrices-ubo bw::*boxgl-device*)
+           (update-model-matrix-ubo bw::*boxgl-device*)
            )
          ))))
 
@@ -68,7 +68,7 @@ the bootstrapping of the clipping and coordinate scaling variables."
              . ,body)
          (progn
            (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) ,cur-model-matrix)
-           (update-matrices-ubo bw::*boxgl-device*)
+           (update-model-matrix-ubo bw::*boxgl-device*)
            )
          ))))
 

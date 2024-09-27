@@ -597,6 +597,17 @@
     (gl:free-gl-array arr))
   (gl:bind-buffer :uniform-buffer 0))
 
+(defun update-model-matrix-ubo (device)
+  (gl:bind-buffer :uniform-buffer (matrices-ubo device))
+  (let ((arr (gl:alloc-gl-array :float (* 4 4)))
+        (i 0))
+    (for:for ((item over (3d-matrices:marr4 (3d-matrices:mtranspose (boxgl-device-model-matrix device)))))
+      (setf (gl:glaref arr i) (coerce item 'single-float))
+      (incf i))
+    (gl:buffer-sub-data :uniform-buffer arr :offset 0 :buffer-offset 0 :size (* *cffi-float-size* (* 4 4)))
+    (gl:free-gl-array arr))
+  (gl:bind-buffer :uniform-buffer 0))
+
 (defun update-matrices-ubo (device)
   (gl:bind-buffer :uniform-buffer (matrices-ubo device))
   ;; Currently we have two mat4 and one vec4

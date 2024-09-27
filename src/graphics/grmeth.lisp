@@ -576,7 +576,7 @@ Modification History (most recent at top)
            (final-mat (3d-matrices:m* prev-model (model-matrix self))))
 
       (setf (boxgl-device-model-matrix bw::*boxgl-device*) final-mat)
-      (update-matrices-ubo bw::*boxgl-device*)
+      (update-model-matrix-ubo bw::*boxgl-device*)
 
       ;; We need to override the drawing-half-width and drawing-half-height here
       ;; with the values from the shape box graphics-sheet, otherwise, if it's scaled or
@@ -594,7 +594,7 @@ Modification History (most recent at top)
         (boxer-playback-graphics-list (box-interface-value (slot-value self 'shape))))
 
       (setf (boxgl-device-model-matrix bw::*boxgl-device*) prev-model)
-      (update-matrices-ubo bw::*boxgl-device*)
+      (update-model-matrix-ubo bw::*boxgl-device*)
 
       (unless (eq (shown? self) ':no-subsprites)
         (dolist (subs (slot-value self 'subsprites))

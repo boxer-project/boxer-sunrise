@@ -23,11 +23,11 @@
 
 (defmethod apply-world-matrix ((self screen-obj))
   (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) (world-matrix self))
-  (update-matrices-ubo bw::*boxgl-device*))
+  (update-model-matrix-ubo bw::*boxgl-device*))
 
 (defmethod apply-world-internal-matrix ((self screen-obj))
   (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) (world-internal-matrix self))
-  (update-matrices-ubo bw::*boxgl-device*))
+  (update-model-matrix-ubo bw::*boxgl-device*))
 
 (DEFUN DRAW-PORT-BOX-ELLIPSIS? (SCREEN-BOX)
        (AND (PORT-BOX? (SLOT-VALUE SCREEN-BOX 'ACTUAL-OBJ))
@@ -75,14 +75,14 @@
     ;; TODO convert to a with-XYZed-matrix
     (let ((cur-model (boxer::boxgl-device-model-matrix bw::*boxgl-device*)))
       (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) (3d-matrices:meye 4))
-      (update-matrices-ubo bw::*boxgl-device*)
+      (update-model-matrix-ubo bw::*boxgl-device*)
       (when (bps self)
         (repaint-cursor *point*))
       (when (region-in-screen-box? self)
         (dolist (region *region-list*)
           (when (not (null region)) (interval-update-repaint-all-rows region))))
       (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) cur-model)
-      (update-matrices-ubo bw::*boxgl-device*))))
+      (update-model-matrix-ubo bw::*boxgl-device*))))
 
 (defmethod repaint-inferiors-pass-2-sb ((self screen-box))
   (with-slots (wid hei box-type screen-rows scroll-x-offset scroll-y-offset x-got-clipped? y-got-clipped? actual-obj bps)
