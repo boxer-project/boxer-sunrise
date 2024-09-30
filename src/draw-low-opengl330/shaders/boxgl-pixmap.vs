@@ -4,9 +4,10 @@ layout (location = 1) in vec2 aTexCoord;
 
 out vec2 TexCoord;
 
+uniform mat4 model;
+
 layout (std140) uniform Matrices
 {
-    mat4 model;
     mat4 projection;
     mat4 transform;
     vec2 u_resolution;

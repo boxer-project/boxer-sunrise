@@ -6,9 +6,10 @@ layout (location = 2) in vec4 a_circle_pos; // cx, cy, radius, pen-width
 out vec4 color;
 out vec4 circle_pos;
 
+uniform mat4 model;
+
 layout (std140) uniform Matrices
 {
-    mat4 model;
     mat4 projection;
     mat4 transform;
     vec2 u_resolution;

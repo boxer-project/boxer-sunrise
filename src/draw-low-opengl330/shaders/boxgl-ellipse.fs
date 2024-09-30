@@ -5,9 +5,10 @@ in vec4 color;
 in vec3 circle_pos;
 in vec2 ellipse_dims;
 
+uniform mat4 model;
+
 layout (std140) uniform Matrices
 {
-    mat4 model;
     mat4 projection;
     mat4 transform;
     vec2 u_resolution;

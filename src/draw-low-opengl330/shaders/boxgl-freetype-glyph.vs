@@ -2,9 +2,10 @@
 layout (location = 0) in vec4 vertex; // <vec2 pos, vec2 tex>
 out vec2 TexCoords;
 
+uniform mat4 model;
+
 layout (std140) uniform Matrices
 {
-    mat4 model;
     mat4 projection;
     mat4 transform;
     vec2 u_resolution;

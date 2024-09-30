@@ -7,9 +7,10 @@ layout (location = 2) in vec4 aColor; // We aren't using the alpha layer yet, bu
 out vec2 TexCoords;
 out vec4 theColor;
 
+uniform mat4 model;
+
 layout (std140) uniform Matrices
 {
-    mat4 model;
     mat4 projection;
     mat4 transform;
     vec2 u_resolution;
