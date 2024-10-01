@@ -19,40 +19,6 @@
 (in-package :boxer)
 
 ;;;
-;;; Prototyping / exploratory debug canvas similar to the one in The Book of Shaders
-;;;
-
-(defun gl-test-canvas (device)
-  "Running the test fragment shader"
-  (enable-gl-shader-program device (canvas-shader device))
-  (gl:draw-arrays :triangles 0 6))
-
-(defun setup-canvas-program (&key (vertex-shader "boxgl-canvas.vs") (fragment-shader "boxgl-canvas.fs"))
-  "Program to test and use shaders compatible with glslCanvas and examples from The Book of Shaders."
-  (let* ((canvas-program (gl:create-program))
-         (canvas-vao     (gl:gen-vertex-array))
-         (canvas-buffer  (gl:gen-buffer)))
-    (gl:attach-shader canvas-program (create-shader vertex-shader :vertex-shader))
-    (gl:attach-shader canvas-program (create-shader fragment-shader :fragment-shader))
-    (gl:link-program canvas-program)
-    (log:debug "~%canvas-program infolog: ~A" (gl:get-program-info-log canvas-program))
-
-    (gl:bind-vertex-array canvas-vao)
-    (gl:bind-buffer :array-buffer canvas-buffer)
-
-    (let* ((vertices #(-1.0 -1.0 1.0 -1.0 -1.0 1.0 -1.0 1.0 1.0 -1.0 1.0 1.0))
-           (arr (gl:alloc-gl-array :float (length vertices))))
-    (dotimes (i (length vertices))
-      (setf (gl:glaref arr i) (aref vertices i)))
-    (gl:buffer-data :array-buffer :static-draw arr)
-    (gl:free-gl-array arr))
-
-    (gl:enable-vertex-attrib-array 0)
-    (gl:vertex-attrib-pointer 0 2 :float nil 0 (cffi:null-pointer))
-
-    (make-instance 'boxgl-shader-program :program canvas-program :vao canvas-vao :buffer canvas-buffer)))
-
-;;;
 ;;; Circles on the Fragment Shader
 ;;;
 

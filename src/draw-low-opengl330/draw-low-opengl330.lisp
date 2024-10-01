@@ -98,9 +98,6 @@
    (pixmap-shader       :accessor pixmap-shader)
    (dashed-lines-shader :accessor dashed-lines-shader)
 
-   (canvas-shader       :accessor canvas-shader)
-   (circle-xyrad-uni    :accessor circle-xyrad-uni)
-
    (circle-shader       :accessor circle-shader)
    (arc-shader          :accessor arc-shader)
    (ellipse-shader      :accessor ellipse-shader)
@@ -639,9 +636,6 @@
         (dashed-lines-shader device)
         (setup-lines-program :vertex-shader "boxgl-dashed-lines.vs" :fragment-shader "boxgl-dashed-lines.fs")
 
-        (canvas-shader device)
-        (setup-canvas-program)
-
         (circle-shader device)
         (setup-circle-program)
 
@@ -683,10 +677,7 @@ inside an opengl:rendering-on macro invocation."
           (boxer::boxgl-device-pen-size togo)
           1)
 
-          (setf (circle-xyrad-uni togo)
-                (gl:get-uniform-location (shader-program (canvas-shader togo)) "circle_xyrad")
-
-                (text-color-uni togo)
+          (setf (text-color-uni togo)
                 (gl:get-uniform-location (shader-program (ft-glyph-shader togo)) "textColor")
 
                 (null-gl-elements-array togo)
