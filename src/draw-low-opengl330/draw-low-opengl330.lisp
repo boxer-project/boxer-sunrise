@@ -98,8 +98,6 @@
    (pixmap-shader       :accessor pixmap-shader)
    (dashed-lines-shader :accessor dashed-lines-shader)
 
-   (absolute-lines-shader :accessor absolute-lines-shader)
-
    (canvas-shader       :accessor canvas-shader)
    (circle-xyrad-uni    :accessor circle-xyrad-uni)
 
@@ -640,9 +638,6 @@
 
         (dashed-lines-shader device)
         (setup-lines-program :vertex-shader "boxgl-dashed-lines.vs" :fragment-shader "boxgl-dashed-lines.fs")
-
-        (absolute-lines-shader device)
-        (setup-lines-program :vertex-shader "boxgl-absolute-lines.vs" :fragment-shader "boxgl-lines.fs")
 
         (canvas-shader device)
         (setup-canvas-program)
