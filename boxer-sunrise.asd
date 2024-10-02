@@ -43,7 +43,7 @@
                                (:file "pixmap")
                                (:file "stencils")
                                (:file "graphics-canvas")
-                               (:file "simple-line-shapes")
+                              ;;  (:file "simple-line-shapes")
                                (:file "line-shapes")
                                (:file "shader-shapes")
                                (:file "box-models-meshes")
