@@ -212,7 +212,7 @@
 
     (%gl:uniform-block-binding lines-program (gl:get-uniform-block-index lines-program "Matrices") 0)
 
-    (make-instance 'boxgl-shader-program
+    (make-boxgl-shader-program
                          :program lines-program
                          :vao     lines-vao
                          :buffer  lines-buffer)))

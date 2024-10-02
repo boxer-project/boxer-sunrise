@@ -54,7 +54,7 @@
     (gl:enable-vertex-attrib-array 2)
     (gl:vertex-attrib-pointer 2 4 :float :false (* 11 *cffi-float-size*) (* 7 *cffi-float-size*))
 
-    (make-instance 'boxgl-shader-program :program canvas-program :vao canvas-vao :buffer canvas-buffer)))
+    (make-boxgl-shader-program :program canvas-program :vao canvas-vao :buffer canvas-buffer)))
 
 (defun gl-add-shader-circle (device cx cy radius filled? &key (rgb (boxgl-device-pen-color device))
                                                               (pen-size (boxgl-device-pen-size bw::*boxgl-device*)))
@@ -124,7 +124,7 @@
     (gl:enable-vertex-attrib-array 3)
     (gl:vertex-attrib-pointer 3 2 :float :false (* 13 *cffi-float-size*) (* 11 *cffi-float-size*))
 
-    (make-instance 'boxgl-shader-program :program canvas-program :vao canvas-vao :buffer canvas-buffer)))
+    (make-boxgl-shader-program :program canvas-program :vao canvas-vao :buffer canvas-buffer)))
 
 (defun gl-add-shader-arc (device cx cy radius start-angle arc-angle filled? &key (rgb (boxgl-device-pen-color device))
                                                               (pen-size (boxgl-device-pen-size bw::*boxgl-device*)))
@@ -194,7 +194,7 @@
     (gl:enable-vertex-attrib-array 3)
     (gl:vertex-attrib-pointer 3 2 :float :false (* 12 *cffi-float-size*) (* 10 *cffi-float-size*))
 
-    (make-instance 'boxgl-shader-program :program canvas-program :vao canvas-vao :buffer canvas-buffer)))
+    (make-boxgl-shader-program :program canvas-program :vao canvas-vao :buffer canvas-buffer)))
 
 (defun gl-add-shader-ellipse (device cx cy width height filled? &key (rgb (boxgl-device-pen-color device))
                                                                      (pen-size (boxgl-device-pen-size bw::*boxgl-device*)))

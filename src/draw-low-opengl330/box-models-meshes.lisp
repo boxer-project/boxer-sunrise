@@ -70,7 +70,8 @@
 (defmethod draw ((self boxer-gl-model))
   ;; Regular Line Shapes
   (let ((mesh (slot-value self 'xyz-rgba-mesh)))
-    (enable-gl-objects bw::*boxgl-device* :program (shader-program (lines-shader bw::*boxgl-device*))
+    (enable-gl-objects bw::*boxgl-device* :shader (lines-shader bw::*boxgl-device*)
+                                          :program (shader-program (lines-shader bw::*boxgl-device*))
                                           :vao     (mesh-vao mesh)
                                           :buffer  (mesh-vbo mesh))
     (gl:draw-arrays :triangles 0 (/ (mesh-pos mesh) 7))
@@ -79,7 +80,8 @@
   ;; Dashed Line Shapes
   (let ((mesh (slot-value self 'dashed-xyz-rgba-mesh))
         (res (resolution)))
-    (enable-gl-objects bw::*boxgl-device* :program (shader-program (dashed-lines-shader bw::*boxgl-device*))
+    (enable-gl-objects bw::*boxgl-device* :shader (dashed-lines-shader bw::*boxgl-device*)
+                                          :program (shader-program (dashed-lines-shader bw::*boxgl-device*))
                                           :vao     (mesh-vao mesh)
                                           :buffer  (mesh-vbo mesh))
     (gl:uniformf (gl:get-uniform-location (shader-program (dashed-lines-shader bw::*boxgl-device*)) "resolution")
@@ -89,7 +91,8 @@
 
   ;; Glyphs on the texture atlas
   (let ((mesh (slot-value self 'glyphs-xyz-txty-rgba-mesh)))
-    (enable-gl-objects bw::*boxgl-device* :program (shader-program (glyph-atlas-shader bw::*boxgl-device*))
+    (enable-gl-objects bw::*boxgl-device* :shader (glyph-atlas-shader bw::*boxgl-device*)
+                                          :program (shader-program (glyph-atlas-shader bw::*boxgl-device*))
                                           :vao     (mesh-vao mesh)
                                           :buffer  (mesh-vbo mesh))
     (gl:active-texture :texture0)
@@ -126,9 +129,10 @@
                         ))
           (arr (slot-value mesh 'arr)))
 
-      (enable-gl-objects device :program (shader-program (lines-shader device))
-                                            :vao     (mesh-vao mesh)
-                                            :buffer  (mesh-vbo mesh))
+      (enable-gl-objects device :shader (lines-shader device)
+                                :program (shader-program (lines-shader device))
+                                :vao     (mesh-vao mesh)
+                                :buffer  (mesh-vbo mesh))
 
       (dotimes (i (length vertices))
         (setf (gl:glaref arr i) (aref vertices i)))
@@ -155,9 +159,10 @@
                         ))
           (arr (slot-value mesh 'arr)))
 
-      (enable-gl-objects device :program (shader-program (lines-shader device))
-                                            :vao     (mesh-vao mesh)
-                                            :buffer  (mesh-vbo mesh))
+      (enable-gl-objects device :shader (lines-shader device)
+                                :program (shader-program (lines-shader device))
+                                :vao     (mesh-vao mesh)
+                                :buffer  (mesh-vbo mesh))
 
       (dotimes (i (length vertices))
         (setf (gl:glaref arr i) (aref vertices i)))
@@ -196,7 +201,8 @@
           (ty (box-glyph-ty glyph))
           (t-wid (box-glyph-t-width glyph))
           (t-hei (box-glyph-t-rows glyph)))
-      (enable-gl-objects device :program (shader-program (glyph-atlas-shader device))
+      (enable-gl-objects device :shader (glyph-atlas-shader device)
+                                :program (shader-program (glyph-atlas-shader device))
                                 :vao     (mesh-vao mesh)
                                 :buffer  (mesh-vbo mesh))
 

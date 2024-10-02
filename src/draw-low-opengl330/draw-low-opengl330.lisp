@@ -83,8 +83,16 @@
 
 (defclass boxgl-shader-program ()
   ((program :initarg :program :accessor shader-program)
+   (model-uniform :accessor model-uniform
+    :documentation "The uniform location of the model matrix for the program. We switch models alot, and fetching
+                    uniform is expensive.")
    (vao     :initarg :vao     :accessor shader-vao)
    (buffer  :initarg :buffer  :accessor shader-buffer)))
+
+(defun make-boxgl-shader-program (&key program (vao nil) (buffer nil))
+  (let ((togo (make-instance 'boxgl-shader-program :program program :vao vao :buffer buffer)))
+    (setf (model-uniform togo) (gl:get-uniform-location program "model"))
+    togo))
 
 (defclass boxgl-device ()
   ((lines-shader        :accessor lines-shader)
@@ -386,16 +394,16 @@
   (gl:draw-arrays :points 0 1)
   (unenable-shader-programs device))
 
-(defun enable-gl-objects (device &key (program nil) (vao nil) (buffer nil))
+(defun enable-gl-objects (device &key (shader nil) (program nil) (vao nil) (buffer nil))
   "Enable the Shader program with program-id. Checks the currently enabled program first to
   see if the operation is necessary. If it's already the current program, does nothing."
   (when  (and program
               (not (equal program (cur-program device))))
     (gl:use-program program)
     (setf (cur-program device) program))
-  (when (and program (> program 0))
+  (when (and shader (model-uniform shader))
     (gl:uniform-matrix-4fv
-      (gl:get-uniform-location program "model")
+      (model-uniform shader)
       (3d-matrices:marr4 (boxgl-device-model-matrix device))))
   (when  (and vao
               (not (equal vao (cur-vao device))))
@@ -407,7 +415,7 @@
     (setf (cur-buffer device) buffer)))
 
 (defun enable-gl-shader-program (device shader)
-  (enable-gl-objects device :program (shader-program shader) :vao (shader-vao shader) :buffer (shader-buffer shader)))
+  (enable-gl-objects device :shader shader :program (shader-program shader) :vao (shader-vao shader) :buffer (shader-buffer shader)))
 
 (defun unenable-shader-programs (device)
   (enable-gl-objects device :program 0 :vao 0 :buffer 0))
@@ -462,7 +470,7 @@
     (gl:bind-buffer :array-buffer 0)
     (gl:bind-texture :texture-2d 0)
 
-    (setf (boxer::glyph-atlas-shader device) (make-instance 'boxgl-shader-program :program glyph-program
+    (setf (boxer::glyph-atlas-shader device) (make-boxgl-shader-program :program glyph-program
                                                             :vao glyph-vao       :buffer  glyph-buffer))
 
     (%gl:uniform-block-binding glyph-program (gl:get-uniform-block-index glyph-program "Matrices") 0)
@@ -502,7 +510,7 @@
     (gl:bind-buffer :array-buffer 0)
     (gl:bind-texture :texture-2d 0)
 
-    (setf (boxer::ft-glyph-shader device) (make-instance 'boxgl-shader-program :program glyph-program
+    (setf (boxer::ft-glyph-shader device) (make-boxgl-shader-program :program glyph-program
                                                           :vao glyph-vao       :buffer  glyph-buffer))
 
     (%gl:uniform-block-binding glyph-program (gl:get-uniform-block-index glyph-program "Matrices") 0)
@@ -550,7 +558,7 @@
     ; (gl:bind-vertex-array 0)
     (gl:bind-texture :texture-2d 0)
 
-    (setf (boxer::pixmap-shader device) (make-instance 'boxgl-shader-program :program pixmap-program
+    (setf (boxer::pixmap-shader device) (make-boxgl-shader-program :program pixmap-program
                                                        :vao pixmap-vao       :buffer  pixmap-buffer))
 
     (%gl:uniform-block-binding pixmap-program (gl:get-uniform-block-index pixmap-program "Matrices") 0)))
@@ -592,7 +600,7 @@
 
 (defun update-model-matrix-ubo (device)
   (when (> (cur-program device) 0)
-    (gl:uniform-matrix-4fv (gl:get-uniform-location (cur-program device) "model")
+    (gl:uniform-matrix-4fv (model-uniform (cu))
                            (3d-matrices:marr4 (boxgl-device-model-matrix device)))))
 
 (defun update-matrices-ubo (device)
