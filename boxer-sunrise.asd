@@ -106,9 +106,6 @@
 
                  #+lispworks (:file "boxwin/lw-capi/outline-tree")
 
-                ;  #+lispworks (:file "boxwin/lw-capi/modern-opengl")
-
-                ;;  (:file "boxwin/lw-capi/hardcopy-lw")
                  (:file "boxwin/mousedoc")
                  (:file "boxwin/boxapp-data")
 
