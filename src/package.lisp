@@ -37,7 +37,6 @@
            :*current-opengl-font*
            :with-collection
            :collect
-           :sheet-inside-width :sheet-inside-height
            :with-turtle-clipping
            :alu-andca :alu-seta :alu-xor :alu-and :alu-ior :alu-setz
            :port-to
@@ -197,7 +196,6 @@
   (:use :common-lisp :boxer)
   (:nicknames :bw)
   (:export :*foreground-color* :*background-color*
-           :window-inside-size
            :window-pixel
            :%bitblt-to-screen :%bitblt-from-screen
            :%draw-point

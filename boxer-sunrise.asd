@@ -39,8 +39,7 @@
                 (
                  (:module "draw-low-opengl330"
                   :depends-on ()
-                  :components ((:file "platform-utils")
-                               (:file "pixmap")
+                  :components ((:file "pixmap")
                                (:file "stencils")
                                (:file "graphics-canvas")
                               ;;  (:file "simple-line-shapes")

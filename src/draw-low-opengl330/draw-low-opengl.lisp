@@ -193,7 +193,7 @@
 (defmacro with-drawing-port (view &body body)
   #+lispworks `(opengl::rendering-on (,view)
      ;; always start by drawing eveywhere
-     (ogl-reshape (sheet-inside-width ,view) (sheet-inside-height ,view))
+     (ogl-reshape (viewport-width ,view) (viewport-height ,view))
      . ,body))
 
 (defun clear-window (w)
@@ -393,7 +393,7 @@ the window font (ie, draw-string) has to change it back for this to work.
   ;; (bw::gl-read-buffer bw::*gl-front*) ; read from the (visible) front buffer
   (%pixblt-from-screen to-array (round fx)
                                 ;; not quite right especially with a translated fy
-                                (round (- (sheet-inside-height *boxer-pane*) (+ fy hei)))
+                                (round (- (viewport-height *boxer-pane*) (+ fy hei)))
                                 (round wid) (round hei) tx ty))
 
 ;;;;
@@ -410,7 +410,7 @@ the window font (ie, draw-string) has to change it back for this to work.
                      (gl:draw-buffer :back) ;gl:aux1)
                      (progn . ,body)
                      (gl:flush)
-                     (%pixblt-from-screen ,bitmap 0 (- (sheet-inside-height *boxer-pane*)
+                     (%pixblt-from-screen ,bitmap 0 (- (viewport-height *boxer-pane*)
                                                        (ogl-pixmap-height ,bitmap))
                                                     (ogl-pixmap-width  ,bitmap)
                                                     (ogl-pixmap-height ,bitmap)

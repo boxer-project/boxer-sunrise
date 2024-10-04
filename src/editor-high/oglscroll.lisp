@@ -106,7 +106,7 @@ Modification History (most recent at top)
         ((and (v-scrollable? screen-box) (< point-row-baseline-y-offset (- (slot-value screen-box 'scroll-y-offset))))
         (setf (slot-value screen-box 'scroll-y-offset) (- (- point-row-baseline-y-offset 4))))
         ((and (v-scrollable? *boxer-pane*)
-              (> (+ bp-y-coord (vertical-scroll *boxer-pane*)) (port-height *boxer-pane*)))
+              (> (+ bp-y-coord (vertical-scroll *boxer-pane*)) (viewport-height *boxer-pane*)))
          (setf (vertical-scroll *boxer-pane*) (- (+ bp-y-coord (vertical-scroll *boxer-pane*)))))
         (t
         nil)))))

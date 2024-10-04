@@ -62,7 +62,7 @@
   (let ((y-pos (second (multiple-value-list (xy-position item))))
         (vert-scroll (vertical-scroll *boxer-pane*)))
       (and (> (+ y-pos vert-scroll (screen-obj-hei item)) 0)
-           (< (+ y-pos vert-scroll) (* (/ 1 (zoom-level *boxer-pane*)) #+lispworks (gp:port-height *boxer-pane*))))))
+           (< (+ y-pos vert-scroll) (* (/ 1 (zoom-level *boxer-pane*)) (viewport-height *boxer-pane*))))))
 
 (defmethod region-in-screen-box? ((self screen-box) &optional (region-list *region-list*))
   (when (and (car region-list)

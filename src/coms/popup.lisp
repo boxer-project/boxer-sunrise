@@ -236,8 +236,8 @@ Modification History (most recent at top)
 ;; funcalling the selected menu-item-action
 (defmethod menu-select ((menu popup-menu) x y)
   (multiple-value-bind (mwid mhei) (menu-size menu)
-    (let* ((window-width (content-wid *boxer-pane*));  (sheet-inside-width *boxer-pane*)); what about %clip-rig?
-           (window-height (content-hei *boxer-pane*)); (sheet-inside-height *boxer-pane*)) ; %clip-bot?
+    (let* ((window-width (content-wid *boxer-pane*))
+           (window-height (content-hei *boxer-pane*))
            ;; Make sure the menus are on the screen
            (real-x (if (> (+ x mwid) window-width)
                      (- window-width mwid)
@@ -404,7 +404,7 @@ Modification History (most recent at top)
 ;; exceptions being if the mouse is near the right or bottom edges of the window
 (defun popup-doc-offset-coords (doc x y)
   (multiple-value-bind (w h)
-      (boxer::window-inside-size *boxer-pane*)
+      (viewport-size *boxer-pane*)
     (cond ((> (+ *popup-doc-edge-padding* y) h)
            (values (min x (- w (doc-width doc))) (- y (doc-height doc) 10)))
           (t (values (min x (- w (doc-width doc))) (+ y 26))))))
