@@ -132,7 +132,6 @@
                  (:file "grfdefs/grfdfs")
                  (:file "grfdefs/gdispl")
                  (:file "grfdefs/boxer-graphics-commands")
-                 (:file "grfdefs/graphics-commands")
                  (:file "grfdefs/graphics-clear")
 
                  ;; Boxtops use some macros from gdispl.lisp, this needs to be a
