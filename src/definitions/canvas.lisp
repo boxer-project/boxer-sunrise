@@ -92,6 +92,10 @@
 (defmethod viewport-size ((self boxer-canvas))
   (values (viewport-width self) (viewport-height self)))
 
+(defun resolution (&optional (pane *boxer-pane*))
+  "Returns the boxer canvas resolution as vector of size 2. #(x y)"
+  (make-array '(2) :initial-contents (list (viewport-width pane) (viewport-height pane))))
+
 (defmethod activate-canvas-view ((self boxer-canvas))
   (setf ;*backdrop-color* #(:rgb 0.89 0.89 0.89)
         (content-origin self) (list 120 20)

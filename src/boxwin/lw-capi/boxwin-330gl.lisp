@@ -23,11 +23,6 @@
    (frame)
    (pane)))
 
-(defun resolution (&optional (pane *boxer-pane*))
-  "Returns the boxer canvas resolution as vector of size 2. #(x y)"
-  (make-array '(2) :initial-contents #+lispworks (list (gp:port-width pane) (gp:port-height pane))
-                                     #+glfw-engine (list 800 600)))
-
 (defun make-boxwin-330gl-device (gl-frame gl-pane &key (wid 600) (hei 600))
   (let* ((gl-device nil)
          (device (make-instance 'boxwin-330gl-device)))

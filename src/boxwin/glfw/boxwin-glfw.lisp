@@ -63,10 +63,10 @@
 (defclass glfw-boxer-pane (boxer::boxer-canvas)
   ())
 
-(defmethod boxer::port-width ((self glfw-boxer-pane))
+(defmethod boxer::viewport-width ((self glfw-boxer-pane))
   800)
 
-(defmethod boxer::port-height ((self glfw-boxer-pane))
+(defmethod boxer::viewport-height ((self glfw-boxer-pane))
   600)
 
 (defclass glfw-boxer-name-pane ()

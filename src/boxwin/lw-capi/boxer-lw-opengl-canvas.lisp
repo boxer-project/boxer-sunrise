@@ -26,11 +26,11 @@
    (context :initform nil :initarg :context :accessor context)
    (render-state :initform nil :accessor opengl-pane-render-state)))
 
-(defmethod boxer::port-width ((self boxer-lw-opengl-canvas))
+(defmethod boxer::viewport-width ((self boxer-lw-opengl-canvas))
   "Give the width of the port or widget container the Boxer documents canvas. Calculation will be different
    depending on the GL and Widget toolkit used. Needed for scrollbars, panning, and other types of interactions."
   (capi:simple-pane-visible-width self))
 
-(defmethod boxer::port-height ((self boxer-lw-opengl-canvas))
-  "See port-width for description."
+(defmethod boxer::viewport-height ((self boxer-lw-opengl-canvas))
+  "See viewport-width for description."
   (capi:simple-pane-visible-height self))
