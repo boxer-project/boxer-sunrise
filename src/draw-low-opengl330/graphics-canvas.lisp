@@ -40,6 +40,8 @@
                     we'll set it back to when we're done.")
    (cached-transform-matrix :initform nil :accessor cached-transform-matrix
     :documentation "See the comments on cached-projection-matrix.")
+   (cached-model-matrix :initform nil :accessor cached-model-matrix
+    :documentation "See the comments on cached-projection-matrix.")
 
    (pen-color-cmd :initform nil :accessor graphics-canvas-pen-color-cmd
     :documentation "Vector of the last run gdispl command for changing the color, so it can be turned back
@@ -132,12 +134,14 @@
   (gl:bind-framebuffer :framebuffer (graphics-canvas-framebuffer self))
   (setf (cached-projection-matrix self) (boxgl-device-projection-matrix device))
   (setf (cached-transform-matrix self) (boxgl-device-transform-matrix device))
+  (setf (cached-model-matrix self) (boxgl-device-model-matrix device))
   (let* ((pixmap (graphics-canvas-pixmap self))
          (wid (ogl-pixmap-width pixmap))
          (hei (ogl-pixmap-height pixmap))
          (new-projection-matrix (create-ortho-matrix wid hei)))
     (setf (boxgl-device-projection-matrix device) new-projection-matrix)
     (setf (boxgl-device-transform-matrix device) (create-transform-matrix 0 0))
+    (setf (boxgl-device-model-matrix device) (3d-matrices:meye 4))
     #+lispworks (opengl:gl-viewport 0 0 wid hei)
   (update-matrices-ubo device)))
 
@@ -146,5 +150,69 @@
   (gl:bind-framebuffer :framebuffer 0)
   (setf (boxgl-device-projection-matrix device) (cached-projection-matrix self))
   (setf (boxgl-device-transform-matrix device) (cached-transform-matrix self))
+  (setf (boxgl-device-model-matrix device) (cached-model-matrix self))
   #+lispworks (opengl:gl-viewport 0 0 (aref (resolution) 0) (aref (resolution) 1))
   (update-matrices-ubo device))
+
+;;;
+;;; Routines for storing/filling/drawing a mesh for an above graphics-canvas
+;;;
+(defmethod get-canvas-mesh ((self plist-subclass))
+  (unless (slot-boundp self 'plist)
+    (setf (plist self) nil))
+
+  (let ((mesh (getprop self :mesh)))
+    (cond
+      ((null mesh)
+       (setf mesh (make-boxer-glyphs-xyz-txty-rgba-mesh))
+       (setup-xyz-txty-mesh (mesh-vao mesh) (mesh-vbo mesh) (* 5 6))
+       (putprop self mesh :mesh))
+      (t
+       nil))
+    mesh))
+
+(defun buffer-canvas-mesh (device mesh pixmap wid hei)
+  (enable-gl-objects device :shader (pixmap-shader device)
+                            :program (shader-program (pixmap-shader device))
+                            :vao     (mesh-vao mesh)
+                            :buffer  (mesh-vbo mesh))
+
+  (gl:pixel-store :unpack-alignment 4)
+
+  (create-pixmap-texture pixmap ) ;;pwid phei data)
+
+  (gl:active-texture :texture0)
+  (gl:bind-texture :texture-2d (ogl-pixmap-texture pixmap))
+
+  ;; The openGL text-coordinates go from 0 to 1 and originate in the bottom left corner.
+  ;; The boxer pixmap coordinates start from 0 and go to the width/heigh in pixels and
+  ;; originate in the top left corner.
+  (let* ((tex-coord-x1 (/ 0 (ogl-pixmap-width pixmap)))
+         (tex-coord-y1 (- 1 (/ (+ 0 hei) (ogl-pixmap-height pixmap))))
+         (tex-coord-x2 (/ (+ 0 wid) (ogl-pixmap-width pixmap)))
+         (tex-coord-y2 (- 1 (/ 0 (ogl-pixmap-height pixmap))))
+         (vertices (float-vector 0          0          0.0 tex-coord-x1 tex-coord-y2
+                                 0          (+ 0 hei)  0.0 tex-coord-x1 tex-coord-y1
+                                 (+ 0 wid)  0          0.0 tex-coord-x2 tex-coord-y2
+                                 (+ 0 wid)  (+ 0 hei)  0.0 tex-coord-x2 tex-coord-y1
+                                 0          (+ 0 hei)  0.0 tex-coord-x1 tex-coord-y1
+                                 (+ 0 wid)  0          0.0 tex-coord-x2 tex-coord-y2))
+         (arr (gl:alloc-gl-array :float (length vertices))))
+    (dotimes (i (length vertices))
+      (setf (gl:glaref arr i) (aref vertices i)))
+    (gl:buffer-data :array-buffer :static-draw arr)
+    (gl:free-gl-array arr))
+  (unenable-shader-programs device)
+  (setf (mesh-pos mesh) (+ (mesh-pos mesh) (* 5 6))))
+
+(defun draw-canvas-mesh (mesh pixmap)
+    (enable-gl-objects bw::*boxgl-device* :shader (pixmap-shader bw::*boxgl-device*)
+                                          :program (shader-program (pixmap-shader bw::*boxgl-device*))
+                                          :vao     (mesh-vao mesh)
+                                          :buffer  (mesh-vbo mesh))
+    (gl:active-texture :texture0)
+    (gl:bind-texture :texture-2d (ogl-pixmap-texture pixmap))
+
+    (gl:draw-arrays :triangles 0 6)
+    (gl:bind-texture :texture-2d 0)
+    (unenable-shader-programs bw::*boxgl-device*))

@@ -133,7 +133,7 @@
 ;;;; Our friend the turtle...
 
 (defclass turtle
-  (graphics-cursor)
+  (graphics-cursor plist-subclass)
   ((heading       :initform (%make-vv-box-interface 0 'heading))
    (home-position :initform (%make-iv-box-interface '(0.0 0.0) 'home-position))
    (sprite-size   :initform (%make-vv-box-interface 1.0 'sprite-size))
@@ -143,7 +143,9 @@
 (defgeneric turtle? (x) (:method (x) nil) (:method ((x turtle)) t))
 
 (defun make-turtle ()
-  (make-instance 'turtle))
+  (let ((togo (make-instance 'turtle)))
+    (setf (plist togo) nil)
+    togo))
 
 ;; sgithens TODO, for some reason this complains that graphics-object is unbound...
 ;; (deftype-checking-macros graphics-object "A Graphics Object")

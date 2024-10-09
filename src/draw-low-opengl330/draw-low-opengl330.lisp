@@ -528,6 +528,22 @@
     )
 )
 
+(defun setup-xyz-txty-mesh (vao vbo num-entries)
+  (gl:bind-vertex-array vao)
+  (gl:bind-buffer :array-buffer vbo)
+
+  (%gl:buffer-data :array-buffer (* num-entries 5 *cffi-float-size*) (cffi:null-pointer) :dynamic-draw)
+
+  (gl:enable-vertex-attrib-array 0)
+  ;; layout 0 is the x, y, z
+  (gl:vertex-attrib-pointer 0 3 :float :false (* 5 *cffi-float-size*) (cffi:null-pointer))
+  (gl:enable-vertex-attrib-array 1)
+  ;; layout 1 is the texture coords tx, ty
+  (gl:vertex-attrib-pointer 1 2 :float :false (* 5 *cffi-float-size*) (* 3 *cffi-float-size*))
+
+  (gl:bind-vertex-array 0)
+  (gl:bind-buffer :array-buffer 0))
+
 (defun setup-pixmap-program (device)
   (let* ((pixmap-program   (gl:create-program))
          (pixmap-vao       (gl:gen-vertex-array))
@@ -571,7 +587,7 @@
 
 (defun create-ortho-matrix (wid hei)
   "Create an orthogonal projection matrix for use in our shaders with the given width and height."
-  (let* ((ortho (3d-matrices:mortho 0 wid hei 0 -1.0 1.0))
+  (let* ((ortho (3d-matrices:mortho 0 wid hei 0 -1000 1000 )) ;-1.0 1.0))
          (zoom  (zoom-level *boxer-pane*))
          (origin (content-origin *boxer-pane*))
          (trans (3d-matrices:mtranslation (3d-vectors:vec (first origin) (second origin) 0))))

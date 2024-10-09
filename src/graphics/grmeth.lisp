@@ -582,16 +582,49 @@ Modification History (most recent at top)
       ;; with the values from the shape box graphics-sheet, otherwise, if it's scaled or
       ;; someething it will use the values from the upper level graphics box.  This is
       ;; primarily for correct operation of draw-wrap-line which uses these global values.
-      (if (box-interface-box (slot-value self 'shape))
-        ;; Occasionally there seems to be a shape that has it's interface value, but not
-        ;; the accompanying box
-        (let* ((gs (graphics-sheet (box-interface-box (slot-value self 'shape))))
-              (wid (graphics-sheet-draw-wid gs))
-              (hei (graphics-sheet-draw-hei gs))
-              (%drawing-half-width (/ wid 2))
-              (%drawing-half-height (/ hei 2)))
-          (boxer-playback-graphics-list (box-interface-value (slot-value self 'shape))))
-        (boxer-playback-graphics-list (box-interface-value (slot-value self 'shape))))
+
+      ;; Occasionally there seems to be a shape that has it's interface value, but not
+      ;; the accompanying box
+      ;; TODO: these heights really should only need calculating if something changed
+      (let* ((gs (if (box-interface-box (slot-value self 'shape))
+                    (graphics-sheet (box-interface-box (slot-value self 'shape)))
+                    nil))
+             (gl (box-interface-value (slot-value self 'shape)))
+             (extents (multiple-value-list (graphics-list-extent gl)))
+             (wid (if gs
+                   (graphics-sheet-draw-wid gs)
+                   (floor (first extents))))
+             (hei (if gs
+                   (graphics-sheet-draw-hei gs)
+                   (floor (second extents))))
+             (%drawing-half-width (/ wid 2))
+             (%drawing-half-height (/ hei 2))
+             (canvas nil)
+             (mesh nil))
+
+        (if *use-opengl-framebuffers*
+          (progn
+            (setf canvas (get-graphics-canvas-for-screen-obj self wid hei))
+            (setf mesh (get-canvas-mesh self))
+
+            ;; TODO this is duplicated from gdispl.lisp:redisplay-graphics-sheet-graphics-list
+            (when (> (%%sv-fill-pointer gl) (op-count canvas))
+              (enable canvas)
+              (unless (graphics-command-list-hidden gl)
+                (boxer-playback-graphics-list gl :start (op-count canvas)
+                   :graphics-canvas canvas :translate? t))
+              (setf (op-count canvas) (%%sv-fill-pointer gl))
+              (disable canvas)
+              (buffer-canvas-mesh bw::*boxgl-device* mesh (graphics-canvas-pixmap canvas) wid hei))
+
+            (let ((pixmap (graphics-canvas-pixmap canvas)))
+              (incf *render-debug-count*)
+              (setf final-mat (3d-matrices:m* final-mat
+                                              (3d-matrices:mtranslation (3d-vectors:vec (- (/ wid 2)) (- (/ hei 2)) 0.0)) ))
+              (setf (boxgl-device-model-matrix bw::*boxgl-device*) final-mat)
+              (update-model-matrix-ubo bw::*boxgl-device*)
+              (draw-canvas-mesh mesh pixmap)))
+          (boxer-playback-graphics-list gl :use-cur-model-matrix t)))
 
       (setf (boxgl-device-model-matrix bw::*boxgl-device*) prev-model)
       (update-model-matrix-ubo bw::*boxgl-device*)

@@ -178,7 +178,10 @@ multifont row, the common reference point will be the baseline instead of the to
     (list wid hei (name actual-obj) box-type (get-css-style actual-obj :border-color)
           (display-style-border-style (display-style-list actual-obj)))))
 
-(defmethod get-graphics-canvas-for-screen-obj ((self screen-obj) &optional wid hei)
+(defmethod get-graphics-canvas-for-screen-obj ((self plist-subclass) &optional wid hei)
+  (unless (slot-boundp self 'plist)
+    (setf (plist self) nil))
+
   (let ((paint-tex (getprop self :graphics-canvas)))
     (cond
       ((null paint-tex)
