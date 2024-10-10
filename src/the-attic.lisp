@@ -46,6 +46,7 @@
 ;;;;   - grprim2.lisp, grmeth.lisp - all-sprites-in-contact and some other sprite overlapping utilities
 ;;;;   - dribble.lisp entire file... The Dribbler
 ;;;;   - hardcopy-lw.lisp entire file... LW CAPI printing support which hasn't worked and has been removed for quite some time.
+;;;;   - com-refresh-display - Not sure when this would ever be needed again, but it's interesting
 
 ;;;;
 ;;;; FILE: applefile.lisp
@@ -7607,6 +7608,18 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: comsa.lisp
 ;;;;
+
+(defboxer-command COM-FORCE-REDISPLAY (&optional redraw-status-line?)
+  "clears and then redisplays the screen. "
+  (reset-editor-numeric-arg)
+  (when redraw-status-line? (redraw-status-line))
+  (repaint)
+  boxer-eval::*novalue*)
+
+(defboxer-command COM-FORCE-REDISPLAY-ALL ()
+  "Clears and then Redisplays the screen including the status line"
+  (com-force-redisplay t)
+  boxer-eval::*novalue*)
 
 ;; sgithens 2024-04-25 Older versions of page up/down that meticulously counted the screen-rows and moved the point
 ;;                     to them.
@@ -16687,6 +16700,11 @@ sprites)))
 ;;;;
 ;;;; FILE: keys-new.lisp
 ;;;;
+
+(defsearch-mode-key (bu::r-key 2) com-force-redisplay-all)
+;; Refresh Display
+(boxer-eval::defboxer-key (bu::r-key 2) com-force-redisplay)
+
 (boxer-eval::defboxer-key bu::ctrl-mouse-click-on-scroll-bar        com-mouse-page-scroll-box) ;; was previously Command on MacOS
 (boxer-eval::defboxer-key bu::option-mouse-click-on-scroll-bar         com-mouse-page-scroll-box)
 (boxer-eval::defboxer-key bu::alt-mouse-click-on-scroll-bar         com-mouse-page-scroll-box)
@@ -19318,6 +19336,10 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: lw-menu.lisp
 ;;;;
+
+(defun menu-redisplay (data interface)
+  (declare (ignore data interface))
+  (boxer::com-force-redisplay t))
 
 ;; capi:prompt-for-file chokes on raw mac filenames (with ":"'s)
 (defun massage-pathname (pathname)

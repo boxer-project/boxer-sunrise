@@ -890,10 +890,6 @@ Modification History (most recent at top)
    ;; get out of the menu process so we can poll for input
   (queue-event 'boxer::com-document-key))
 
-(defun menu-redisplay (data interface)
-  (declare (ignore data interface))
-  (boxer::com-force-redisplay t))
-
 ;; Sub Menus
 ;; Display Properties Sub Menu
 

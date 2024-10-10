@@ -40,7 +40,7 @@
 ;;;;  Killing Stuff:
 ;;;;   COM-KILL-TO-END-OF-ROW COM-YANK COM-YANK-NO-COPY COM-ROTATE-KILL-BUFFER
 ;;;;  Random useful things:
-;;;;   COM-FORCE-REDISPLAY COM-BREAK COM-BUG COM-GOTO-TOP-LEVEL
+;;;;   COM-BREAK COM-BUG COM-GOTO-TOP-LEVEL
 ;;;;   COM-NOOP
 ;;;;
 ;;;;
@@ -1049,18 +1049,6 @@ removes it from the kill buffer.  No copy is made."
 
 
 ;;;; Random useful things
-
-(defboxer-command COM-FORCE-REDISPLAY (&optional redraw-status-line?)
-  "clears and then redisplays the screen. "
-  (reset-editor-numeric-arg)
-  (when redraw-status-line? (redraw-status-line))
-  (repaint)
-  boxer-eval::*novalue*)
-
-(defboxer-command COM-FORCE-REDISPLAY-ALL ()
-  "Clears and then Redisplays the screen including the status line"
-  (com-force-redisplay t)
-  boxer-eval::*novalue*)
 
 (defboxer-command COM-BREAK ()
   "enters a LISP breakpoint. "

@@ -54,10 +54,6 @@
        (progn (setq *interrupt-flag* nil) t)
        (values nil (valid-input?))))
 
-(defvar just-redisplayed? nil)
-
-
-
 ;;; Mouse handling, mostly copied from clx
 (defstruct (mouse-event (:conc-name mouse-event-)
       (:predicate mouse-event?))
@@ -187,9 +183,6 @@
     (catch 'boxer::boxer-editor-top-level
       (let ((input (pop *boxer-eval-queue*)))
         (cond ((null input)
-               ;;  (unless just-redisplayed?
-               ;;    (boxer::repaint)
-               ;;    (setq just-redisplayed? t))
                #+lispworks (mp::process-allow-scheduling)
                (when (no-more-input?)
                  (boxer-idle-function)
@@ -209,11 +202,9 @@
                (let* ((data (sys::gesture-spec-data input))
                       (charcode (input-gesture->char-code input))
                       (charbits (sys:gesture-spec-modifiers input)))
-                     (handle-boxer-input charcode charbits)
-                     (setq just-redisplayed? nil)))
+                     (handle-boxer-input charcode charbits)))
               ((key-event? input)
-               (handle-boxer-input (input-code input) (input-bits input))
-               (setq just-redisplayed? nil))
+               (handle-boxer-input (input-code input) (input-bits input)))
               ((mouse-event? input)
                ;; be sure to call redisplay BEFORE the
                ;; processing of any mouse actions to
@@ -222,14 +213,9 @@
                ;;
                ;; also check for double click by pausing and looking for a
                ;; double click event
-               ;;  (when (null just-redisplayed?) (boxer::repaint))
-               (handle-boxer-input input)
-               (setq just-redisplayed? nil))
+               (handle-boxer-input input))
               ((and (symbolp input) (not (null (symbol-function input))))
-               ;;  (when (null just-redisplayed?)
-               ;;    (boxer::repaint))
-               (funcall input)
-               (setq just-redisplayed? nil))
+               (funcall input))
               ((and (consp input)
                     (or (functionp (car input))
                         (and (symbolp (car input))

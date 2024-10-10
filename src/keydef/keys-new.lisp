@@ -185,8 +185,6 @@
 
 (defsearch-mode-key (bu::.-key 2) com-abort-search)
 (defsearch-mode-key bu::help-key com-search-help)
-(defsearch-mode-key (bu::r-key 2) com-force-redisplay-all)
-
 
 ;; Doit
 (boxer-eval::defboxer-key bu::line-key com-doit-now)
@@ -203,9 +201,6 @@
 
 ;; Unbox
 (boxer-eval::defboxer-key (bu::@-key 2) com-unboxify)
-
-;; Refresh Display
-(boxer-eval::defboxer-key (bu::r-key 2) com-force-redisplay)
 
 ;; Help
 
