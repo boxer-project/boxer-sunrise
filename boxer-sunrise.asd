@@ -122,6 +122,7 @@
                  (:file "redisplay/repaint-pass-2")
                  (:file "redisplay/repaint")
                  (:file "redisplay/new-borders")
+                 (:file "draw-low-opengl330/perspective")
 
                  ;; Beginning of `GRFDEFS` module
                  ;; "Definitions for Sprite Graphics"

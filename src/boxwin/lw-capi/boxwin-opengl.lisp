@@ -611,10 +611,14 @@
                         (("Print" :accelerator #\p :callback 'window-hardcopy
                                   :callback-type :interface
                                   ;; 2021-04-17 Disabling printing as it's completely broken.
-                                  :enabled-function (lambda (menu-item) nil))))
+                                  :enabled-function (lambda (menu-item) nil))
+                         advanced-menu))
                        #+win32 ; Macs hang this on the application menu
                        (:component
                         (("Quit" :callback 'lw-quit)))))
+    (advanced-menu "Advanced" ((:component
+                                (("Dev Overlay" :callback 'toggle-dev-overlay)
+                                 ("Rotation Demo" :callback 'rotate-canvas-demo)))))
     (edit-menu "Edit" ((:component
                         (("Cut" :accelerator #\x  :callback 'menu-cut-region)
                          ("Copy" :accelerator #\c  :callback 'menu-copy-region)

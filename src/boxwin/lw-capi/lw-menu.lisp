@@ -428,6 +428,14 @@ Modification History (most recent at top)
   (lw-quit nil *boxer-pane*)
   boxer-eval::*novalue*)
 
+(defun toggle-dev-overlay (data interface)
+  (if boxer::*show-dev-overlay*
+    (setf boxer::*show-dev-overlay* nil)
+    (setf boxer::*show-dev-overlay* t)))
+
+(defun rotate-canvas-demo (data interface)
+  (bw::queue-event 'box::rotation-demo))
+
 ;;; **** Edit Menu ****
 
 (defun menu-cut-region (data interface)
