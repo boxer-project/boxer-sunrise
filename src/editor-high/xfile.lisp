@@ -224,6 +224,11 @@ Modification History (most recent at top)
                        sup-path)))
       (when (probe-file retry-path) (return retry-path)))))
 
+(defmethod os-open-xref ((self xref))
+  "Open/launch the xref file in it's corresponding application."
+  ;; TODO sgithens 2024-10-16 add linux/win32/webgl support
+  (external-program:run "open" (list (xref-pathname self))))
+
 ;; ==> Single click
 #+lispworks
 (defun edit-xref (box &optional (xref (getprop box :xref)))
@@ -240,7 +245,7 @@ Modification History (most recent at top)
                                                 "File not Found"
                                                 (xref-pathname xref)))
                  (t
-                  (applescript-open-xref xref))))
+                  (os-open-xref xref))))
     (:change
      (let ((newpath (open-xref-file-dialog)))  ;; should we use :directory (xref-pathname xref)
        ;; newpath can point to a boxer file which should be handled

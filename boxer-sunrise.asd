@@ -18,6 +18,7 @@
                :cl-json
                :cl-opengl
                :drakma
+               :external-program
                :for
                :html-entities
                :iterate

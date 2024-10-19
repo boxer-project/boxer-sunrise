@@ -907,7 +907,7 @@
                                             "File not Found"
                                             (xref-pathname xfile)))
       (t
-        (applescript-open-xref xfile)))
+        (os-open-xref xref)))
     boxer-eval::*novalue*))
 
 (boxer-eval::defboxer-primitive bu::edit-internal-xref ()
