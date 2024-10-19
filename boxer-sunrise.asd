@@ -205,8 +205,6 @@
                  (:file "graphics/gcmeth")
                  (:file "graphics/turtle")
                  (:file "graphics/sprite")
-                 ;; Beginning of `SCRIPT-SUPPORT` module
-                 (:file "script-support/applescript")
                  ;; Beginning of `RPRIMS` module
                  ;; 	   "Recursive primititives (only Update-Shape for now)"
                  (:file "primitives/recursive-prims")

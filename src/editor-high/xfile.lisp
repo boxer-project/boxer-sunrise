@@ -254,14 +254,14 @@ Modification History (most recent at top)
               (remove-xfile-props box)
               (mark-box-as-file box newpath))
              (t
-              (applescript-new-path-for-xref xref newpath)
+              (setf (xref-pathname xref) newpath)
               (set-xref-boxtop-info box)))
        (modified box)))
     (:move
      (let ((newpath (boxer-new-file-dialog :prompt "Move the Link file to:"
                                            :directory (xref-pathname xref))))
        (rename-file (xref-pathname xref) newpath)
-       (applescript-moved-path-for-xref xref newpath)))
+       (setf (xref-pathname xref) newpath)))
     (t ;; can come here if CANCELed from the dialog
        )))
 
