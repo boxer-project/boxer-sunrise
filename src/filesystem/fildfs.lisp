@@ -230,16 +230,6 @@ Modification History (most recent at the top)
 (defmacro store-bin-op-dispatch (value table number)
   `(setf (aref ,table ,number) ,value))
 
-;; AppGen lossage for complex form of defsetf
-#+mcl
-(defun %set-bin-op-dispatch (table number value)
-  (store-bin-op-dispatch value table number)
-  value)
-
-#+mcl
-(defsetf bin-op-dispatch %set-bin-op-dispatch)
-
-#-mcl
 (defsetf bin-op-dispatch (table number) (value)
   `(store-bin-op-dispatch ,value ,table ,number))
 

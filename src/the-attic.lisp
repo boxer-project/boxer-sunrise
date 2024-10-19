@@ -13375,6 +13375,15 @@ Modification History (most recent at top)
 ;;;; FILE: fildfs.lisp
 ;;;;
 
+;; AppGen lossage for complex form of defsetf
+#+mcl
+(defun %set-bin-op-dispatch (table number value)
+  (store-bin-op-dispatch value table number)
+  value)
+
+#+mcl
+(defsetf bin-op-dispatch %set-bin-op-dispatch)
+
 ;;;; Pathname Construction and manipulation...
 
 #+lispm
