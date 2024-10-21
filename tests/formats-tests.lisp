@@ -69,7 +69,14 @@
 (is (format nil "~A" (boxer::read-internal-1 bin-box-filename2)) "#<DATA-BOX EFG2 >")
 (is (format nil "~A" (boxer::read-internal-1 zip-box-filename2)) "#<DATA-BOX HIJK2 >")
 
+;; Unique filename tests
+(is (boxer::untitled-filename (merge-pathnames "data/unique-filenames/test1/"
+                                      (make-pathname :directory (pathname-directory *load-truename*)))) "Untitled.box")
+(is (boxer::untitled-filename (merge-pathnames "data/unique-filenames/test2/"
+                                      (make-pathname :directory (pathname-directory *load-truename*)))) "Untitled 3.box")
+
 )
+
 
 
 (finalize)

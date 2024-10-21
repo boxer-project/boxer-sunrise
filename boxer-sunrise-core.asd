@@ -11,7 +11,8 @@
   :version "3.4.20"
   :author "Steven Githens"
   :license ""
-  :depends-on ("uiop")
+  :depends-on ("uiop"
+               "3d-matrices")
   :components ((:module "src"
                 :components
                 ((:file "boxer-sunrise")

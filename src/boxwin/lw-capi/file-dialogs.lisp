@@ -71,9 +71,10 @@
   (multiple-value-bind (path success?)
         (capi:prompt-for-file prompt
                               :filters *boxer-save-file-filters*
-                              :pathname (merge-pathnames
-                                         (or directory "")
-                                         boxer::*boxer-pathname-default*)
+                              :pathname (boxer::untitled-filename
+                                          (cl-fad:merge-pathnames-as-directory
+                                            (or directory
+                                                (cl-fad:merge-pathnames-as-directory boxer::*boxer-pathname-default*))))
                               :operation :save
                               :if-does-not-exist :ok :owner *boxer-frame*)
     (if (null success?)

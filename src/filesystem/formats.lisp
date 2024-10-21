@@ -79,3 +79,18 @@
 
 (deffile-type-writer :text   read-text-file-internal)
 (deffile-type-writer :text/plain   read-text-file-internal)
+
+(defun untitled-filename (directory)
+  "Creates an untitled filename used to save a new box file. Checks to make sure
+   it doens't exist already."
+  (do ((i 1 (1+ i))
+       (filename nil)
+       (togo nil))
+      ((not (null togo))
+       togo)
+    (cond ((= i 1)
+           (setf filename "Untitled.box"))
+          (t
+           (setf filename (format nil "Untitled ~A.box" i))))
+    (unless (probe-file (cl-fad:merge-pathnames-as-file directory filename))
+      (setf togo (cl-fad:merge-pathnames-as-file directory filename)))))
