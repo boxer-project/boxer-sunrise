@@ -185,6 +185,10 @@ Modification History (most recent at top)
 (DEFVAR *OUTERMOST-SCREEN-BOX-STACK* NIL
   "Keeps track of the previous outermost screen boxes so that they can be returned to. ")
 
+(defvar *clipping-stack* nil
+  "Used during rendering, contains a list of 4 item lists (x1 y1 x2 y2) that define a nested
+   set of rectangles to clip.")
+
 ;;;; Fonts
 
 ;;; The editor interface to fonts is via font numbers (small fixnums) are

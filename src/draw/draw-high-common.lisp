@@ -72,22 +72,46 @@ the bootstrapping of the clipping and coordinate scaling variables."
            )
          ))))
 
-(defun clip-stencil-rectangle (direction wid hei x y)
-  (write-to-stencil)
-  (with-pen-color (*transparent*)
-    (draw-rectangle wid hei x y)
-    )
-  (render-inside-stencil))
+(defun calculate-clip-rectangle (stack)
+  "Takes a stack of lists each with 4 members: x1, y1, x2, y2 and finds the final
+   rectangle to be clipped on screen.
+
+   Assumes that each point x2,y2 is greater than x1,y1."
+  (destructuring-bind (x1 y1 x2 y2) (car stack)
+    (dolist (next (cdr stack))
+      (destructuring-bind (next-x1 next-y1 next-x2 next-y2) next
+        (setf x1 (max x1 next-x1) y1 (max y1 next-y1)
+              x2 (min x2 next-x2) y2 (min y2 next-y2))))
+    (list x1 y1 x2 y2)))
+
+(defun clip-stencil-rectangle (clip-stack)
+  (let ((prev-model (boxer::boxgl-device-model-matrix bw::*boxgl-device*))
+        (clip-coords (calculate-clip-rectangle clip-stack)))
+    (write-to-stencil)
+
+    (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) (3d-matrices:meye 4))
+    (update-model-matrix-ubo bw::*boxgl-device*)
+
+    (with-pen-color (*transparent*)
+      (destructuring-bind (x1 y1 x2 y2) clip-coords
+        (draw-rectangle (- x2 x1) (- y2 y1) x1 y1)))
+    (render-inside-stencil)
+
+    (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) prev-model)
+    (update-model-matrix-ubo bw::*boxgl-device*)))
 
 (defmacro with-clipping-inside ((x y wid hei) &body body)
   `(unwind-protect
     (progn
-      (clip-stencil-rectangle "> in2" ,wid ,hei ,x ,y)
+      (push (list ,x ,y (+ ,x ,wid) (+ ,y ,hei)) *clipping-stack*) ;,(+ x wid) ,(+ y hei)) *clipping-stack*)
+      (clip-stencil-rectangle *clipping-stack*)
       . ,body)
-    ;; reset the old clip region TODO make a stack for this
-    (prog (ignore-stencil)
-      (gl:stencil-mask #x00)
-      (gl:stencil-func :always 0 #xFF))))
+    ;; reset the old clip region
+    (progn
+      (pop *clipping-stack*)
+      (if (car *clipping-stack*)
+        (clip-stencil-rectangle *clipping-stack*)
+        (ignore-stencil)))))
 
 ;;;
 ;;; Drawing functions

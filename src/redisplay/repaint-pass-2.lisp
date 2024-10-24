@@ -85,7 +85,7 @@
       (update-model-matrix-ubo bw::*boxgl-device*))))
 
 (defmethod repaint-inferiors-pass-2-sb ((self screen-box))
-  (with-slots (wid hei box-type screen-rows scroll-x-offset scroll-y-offset x-got-clipped? y-got-clipped? actual-obj bps)
+  (with-slots (wid hei box-type screen-rows x-offset y-offset scroll-x-offset scroll-y-offset x-got-clipped? y-got-clipped? actual-obj bps)
     self
     (multiple-value-bind (il it ir ib)
                          (box-borders-widths box-type self)
@@ -95,8 +95,12 @@
       (cond ((draw-port-box-ellipsis? self)
              (draw-port-box-ellipsis self il it))
             ((or x-got-clipped? y-got-clipped?)
-              (with-clipping-inside (il
-                                     it
+              ;; TODO sgithens this x,y calculation should really be fixed up in the scene graph.
+              ;; I'm subtracing the scroll offsets because the world offset is shifted during scrolling, but
+              ;; that pinned top left corner should really be saved somewhere that doens't get changed even
+              ;; during scrolling.
+              (with-clipping-inside ((+ il (- (world-x-offset self) scroll-x-offset))
+                                     (+ it (- (world-y-offset self) scroll-y-offset))
                                      (- wid ir il)
                                      (- hei it ib))
              (with-world-internal-matrix (self)
@@ -199,8 +203,8 @@
                        (setf (display-style-border-style
                               (slot-value self 'display-style-list))
                              boxtop)
-                       (with-clipping-inside (0 ;(world-x-offset self) ;(horizontal-scroll *boxer-pane*)
-                                              0 ;(world-y-offset self) ;(vertical-scroll *boxer-pane*)
+                       (with-clipping-inside ((- (world-x-offset self) 1)
+                                              (- (world-y-offset self) 1)
                                               wid
                                               hei)
                          (draw-boxtop self boxtop actual-obj 0 0 wid hei))))))
@@ -228,10 +232,10 @@
                                (inner-height (min (- (screen-obj-hei self) it ib)
                                                  (graphics-sheet-draw-hei graphics-sheet))))
                            (with-world-matrix ((screen-sheet self))
-                             (with-clipping-inside (0 ;(+ 0 (horizontal-scroll *boxer-pane*))
-                                                   0 ;(+ 0 (vertical-scroll *boxer-pane*))
-                                                   inner-width
-                                                   inner-height)
+                             (with-clipping-inside ((world-x-offset self)
+                                                    (world-y-offset self)
+                                                    (content-wid self) ;inner-width
+                                                    (content-hei self)) ;inner-height
                                (when (not (null (graphics-sheet-background graphics-sheet)))
                                  (with-pen-color ((graphics-sheet-background graphics-sheet))
                                    (draw-rectangle inner-width inner-height 0 0)))
