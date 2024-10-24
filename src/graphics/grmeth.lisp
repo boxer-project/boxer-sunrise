@@ -618,7 +618,6 @@ Modification History (most recent at top)
               (buffer-canvas-mesh bw::*boxgl-device* mesh (graphics-canvas-pixmap canvas) wid hei))
 
             (let ((pixmap (graphics-canvas-pixmap canvas)))
-              (incf *render-debug-count*)
               (setf final-mat (3d-matrices:m* final-mat
                                               (3d-matrices:mtranslation (3d-vectors:vec (- (/ wid 2)) (- (/ hei 2)) 0.0)) ))
               (setf (boxgl-device-model-matrix bw::*boxgl-device*) final-mat)
