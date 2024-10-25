@@ -19921,6 +19921,24 @@ Modification History (most recent at top)
 ;;;; FILE: macros.lisp
 ;;;;
 
+;; #+lispworks
+;; (defmacro without-interrupts (&body body)
+;;   `(lispworks:without-interrupts ,@body))
+
+;; #+sbcl
+;; (defmacro without-interrupts (&body body)
+;;   `(sb-sys:without-interrupts ,@body))
+
+;; #-(or LISPM MCL lispworks sbcl)
+;; 2020-03-29 sgithens
+;; It appears that without-interrupts is not supported on modern OS version of lispworks...
+;; http://www.lispworks.com/documentation/lw71/LW/html/lw-1106.htm
+;; "without-interrupts is not supported in SMP LispWorks, that is on Microsoft Windows, Mac OS X, Linux,
+;;  FreeBSD, AIX and x86/x64 Solaris platforms."
+;;
+(DEFMACRO WITHOUT-INTERRUPTS (&BODY BODY)
+  `(PROGN ,@BODY))
+
 ;;; Lifted from PCL (comments and all) (it is shadowed in Boxsys.lisp)
 ;;; ONCE-ONLY does the same thing as it does in zetalisp.  I should have just
 ;;; lifted it from there but I am honest.  Not only that but this one is

@@ -488,32 +488,31 @@ Modification History (most recent at top)
                           ;; calculations, so just set values
                           (set-xy self x-dest y-dest dont-update-box))
                          (t
-                            (without-interrupts
-                               ;; We record the graphics commend before potentially wrapping the dest,
-                               ;; and then wrap the dest for the sprites new location. The line wrapping
-                               ;; is taken care of at draw time by draw-wrap-line
-                               (when (and (not (null pen-alu))
-                                          (not (zerop (pen-width self))))
-                                 (record-boxer-graphics-command-line-segment
-                                   (coerce x-start 'single-float)
-                                   (coerce y-start 'single-float)
-                                   (coerce x-dest 'single-float)
-                                   (coerce y-dest 'single-float)))
-                               (when (and (null (slot-value self
-                                                            'superior-turtle))
-                                          (eq %draw-mode ':wrap))
-                                 (setq x-dest (wrap-x-coordinate x-dest)
-                                       y-dest (wrap-y-coordinate y-dest)))
-                               ;; this may have to change...
-                               (cond ( %mouse-usurped
-                                      ;; don't update boxes during follow-mouse
-                                      (setf (box-interface-value x-position)
-                                            x-dest)
-                                      (setf (box-interface-value y-position)
-                                            y-dest))
-                                     (t
-                                      (set-xy self x-dest y-dest
-                                              dont-update-box))))))))))))
+                          ;; We record the graphics commend before potentially wrapping the dest,
+                          ;; and then wrap the dest for the sprites new location. The line wrapping
+                          ;; is taken care of at draw time by draw-wrap-line
+                          (when (and (not (null pen-alu))
+                                    (not (zerop (pen-width self))))
+                            (record-boxer-graphics-command-line-segment
+                              (coerce x-start 'single-float)
+                              (coerce y-start 'single-float)
+                              (coerce x-dest 'single-float)
+                              (coerce y-dest 'single-float)))
+                          (when (and (null (slot-value self
+                                                      'superior-turtle))
+                                    (eq %draw-mode ':wrap))
+                            (setq x-dest (wrap-x-coordinate x-dest)
+                                  y-dest (wrap-y-coordinate y-dest)))
+                          ;; this may have to change...
+                          (cond ( %mouse-usurped
+                                ;; don't update boxes during follow-mouse
+                                (setf (box-interface-value x-position)
+                                      x-dest)
+                                (setf (box-interface-value y-position)
+                                      y-dest))
+                                (t
+                                (set-xy self x-dest y-dest
+                                        dont-update-box)))))))))))
 
 
 ;;;;;;;; Graphics BUTTON methods

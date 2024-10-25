@@ -201,10 +201,9 @@ Modification History (most recent at top)
   (cond ((numberp new-heading)
          (if (not (null %learning-shape?))
              (set-heading-instance-var self (float-modulo new-heading 360.))
-             (without-interrupts
-               (set-heading-instance-var self
-                                         (float-modulo new-heading 360.)
-                                         dont-update-box))))
+             (set-heading-instance-var self
+                                       (float-modulo new-heading 360.)
+                                       dont-update-box)))
         (t (error "the argument, ~s, was not a number" new-heading))))
 
 (defmethod right ((self turtle) degrees)
