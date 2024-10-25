@@ -129,6 +129,8 @@
 
               ;; Duplicated from repaint.lisp repaint-window
               ;; (boxer::REDISPLAYING-WINDOW (*boxer-pane*)
+              (boxer::check-for-window-resize)
+
                          (clear-window *boxer-pane*)
                          (boxer::repaint-guts)
                         ;;  (repaint-mouse-docs)
