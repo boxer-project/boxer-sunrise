@@ -64,7 +64,7 @@
 
 (defun rotation-demo ()
   ;; (bw::queue-event 'box::rotation-demo)
-  (opengl:rendering-on (*boxer-pane*)
+  #+lispworks (opengl:rendering-on (*boxer-pane*)
    (let* ((prev-proj (boxgl-device-projection-matrix bw::*boxgl-device*))
           (prev-trans (boxgl-device-transform-matrix bw::*boxgl-device*))
           (view-matrix (3d-matrices:meye 4))
