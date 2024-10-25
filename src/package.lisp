@@ -207,7 +207,6 @@
            :make-offscreen-bitmap :copy-offscreen-bitmap :free-offscreen-bitmap
            :offscreen-bitmap-width :offscreen-bitmap-height
            :offscreen-bitmap-depth :with-system-dependent-bitmap-drawing
-           :with-drawing-port
            :offscreen-bitmap-image :set-offscreen-bitmap-image
            :offscreen-pixel :image-pixel
 

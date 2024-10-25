@@ -30,9 +30,10 @@
 must be called inside of. It basically prepares the window to be drawn on
 and binds all the magic variables that the drawing macros need including
 the bootstrapping of the clipping and coordinate scaling variables."
-  (once-only (window)
-    `(with-drawing-port ,window
-        . ,body)))
+  #+lispworks `(opengl::rendering-on (,window)
+    . ,body)
+  #+glfw-engine `(progn
+    . ,body))
 
 (defmacro drawing-on-bitmap ((bitmap) &body body)
   "Used instead of DRAWING-ON-WINDOW for bitmaps."

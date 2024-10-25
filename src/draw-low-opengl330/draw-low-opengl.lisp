@@ -190,12 +190,6 @@
         (set-font-info ,font-no)
         ,@body))))
 
-(defmacro with-drawing-port (view &body body)
-  #+lispworks `(opengl::rendering-on (,view)
-     ;; always start by drawing eveywhere
-     (ogl-reshape (viewport-width ,view) (viewport-height ,view))
-     . ,body))
-
 (defun clear-window (w)
   (let ((color (backdrop-color w)))
     (gl::clear-color (aref color 1)

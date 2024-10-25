@@ -10132,6 +10132,16 @@ Modification History (most recent at the top)
 ;;;; FILE: draw-high-common.lisp
 ;;;;
 
+;; sgithens 2024-10-25 Older version of drawing-on-window that used once-only
+(defmacro drawing-on-window ((window) &body body)
+  "DRAWING-ON-WINDOW is an &body macro which all the drawing macros in this
+must be called inside of. It basically prepares the window to be drawn on
+and binds all the magic variables that the drawing macros need including
+the bootstrapping of the clipping and coordinate scaling variables."
+  (once-only (window)
+    `(with-drawing-port ,window
+        . ,body)))
+
 (defmacro drawing-on-window-bootstrap-clipping-and-scaling ((x y wid hei) &body body)
   `(let* ((%origin-x-offset ,x) (%origin-y-offset ,y)
           ;; absolute clipping parameters
@@ -10387,6 +10397,14 @@ if it is out of bounds
 ;;;;
 ;;;; FILE: draw-low-opengl.lisp
 ;;;;
+
+(defmacro with-drawing-port (view &body body)
+  #+lispworks `(opengl::rendering-on (,view)
+     ;; always start by drawing eveywhere
+    ;;  (ogl-reshape (viewport-width ,view) (viewport-height ,view))
+     . ,body)
+  #+glfw-engine `(progn
+    . ,body))
 
 (defun my-clip-rect (lef top rig bot)
   ;; gl-scissor uses OpenGL coords (0,0) = bottom,left
@@ -19902,6 +19920,34 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: macros.lisp
 ;;;;
+
+;;; Lifted from PCL (comments and all) (it is shadowed in Boxsys.lisp)
+;;; ONCE-ONLY does the same thing as it does in zetalisp.  I should have just
+;;; lifted it from there but I am honest.  Not only that but this one is
+;;; written in Common Lisp.  I feel a lot like bootstrapping, or maybe more
+;;; like rebuilding Rome.
+(defmacro once-only (vars &body body)
+  (let ((gensym-var (gensym))
+        (run-time-vars (gensym))
+        (run-time-vals (gensym))
+        (expand-time-val-forms ()))
+    (dolist (var vars)
+      (push `(if (or (symbolp ,var)
+                     (numberp ,var)
+                     (and (listp ,var)
+                          (member (car ,var) '(quote function))))
+                 ,var
+                 (let ((,gensym-var (gensym)))
+                   (push ,gensym-var ,run-time-vars)
+                   (push ,var ,run-time-vals)
+                   ,gensym-var))
+            expand-time-val-forms))
+    `(let* (,run-time-vars
+            ,run-time-vals
+            (wrapped-body
+              ((lambda ,vars . ,body) . ,(reverse expand-time-val-forms))))
+       `((lambda ,(nreverse ,run-time-vars)  ,wrapped-body)
+         . ,(nreverse ,run-time-vals)))))
 
 ;; sgithens 2023-06-04 TODO Doesn't seem to be referenced anywhere
 (DEFMACRO SPLICE-LIST-INTO-LIST (INTO-LIST LIST BEFORE-ITEM)

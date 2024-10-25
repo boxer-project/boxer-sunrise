@@ -553,35 +553,6 @@
 (DEFMACRO WITHOUT-INTERRUPTS (&BODY BODY)
   `(PROGN ,@BODY))
 
-
-;;; Lifted from PCL (comments and all) (it is shadowed in Boxsys.lisp)
-;;; ONCE-ONLY does the same thing as it does in zetalisp.  I should have just
-;;; lifted it from there but I am honest.  Not only that but this one is
-;;; written in Common Lisp.  I feel a lot like bootstrapping, or maybe more
-;;; like rebuilding Rome.
-(defmacro once-only (vars &body body)
-  (let ((gensym-var (gensym))
-        (run-time-vars (gensym))
-        (run-time-vals (gensym))
-        (expand-time-val-forms ()))
-    (dolist (var vars)
-      (push `(if (or (symbolp ,var)
-                     (numberp ,var)
-                     (and (listp ,var)
-                          (member (car ,var) '(quote function))))
-                 ,var
-                 (let ((,gensym-var (gensym)))
-                   (push ,gensym-var ,run-time-vars)
-                   (push ,var ,run-time-vals)
-                   ,gensym-var))
-            expand-time-val-forms))
-    `(let* (,run-time-vars
-            ,run-time-vals
-            (wrapped-body
-              ((lambda ,vars . ,body) . ,(reverse expand-time-val-forms))))
-       `((lambda ,(nreverse ,run-time-vars)  ,wrapped-body)
-         . ,(nreverse ,run-time-vals)))))
-
 (DEFMACRO SPLICE-LIST-ONTO-LIST (ONTO-LIST LIST)
   `(SETF ,ONTO-LIST (NCONC ,ONTO-LIST ,LIST)))
 
