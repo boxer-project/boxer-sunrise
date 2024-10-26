@@ -394,22 +394,6 @@ the window font (ie, draw-string) has to change it back for this to work.
 ;;;; Boxer bitmaps
 ;;;;
 
-;; 2/28/2011: Use the back buffer instead because its hard to reliably get an aux
-;; buffer on different platforms...
-(defmacro with-system-dependent-bitmap-drawing ((bitmap &optional
-                                                        bitmap-width bitmap-height)
-                                                &body body)
-  (declare (ignore bitmap-width bitmap-height))
-  #+lispworks `(opengl::rendering-on (*boxer-pane*)
-                     (gl:draw-buffer :back) ;gl:aux1)
-                     (progn . ,body)
-                     (gl:flush)
-                     (%pixblt-from-screen ,bitmap 0 (- (viewport-height *boxer-pane*)
-                                                       (ogl-pixmap-height ,bitmap))
-                                                    (ogl-pixmap-width  ,bitmap)
-                                                    (ogl-pixmap-height ,bitmap)
-                                                    0 0 :back)))
-
 (defun clear-offscreen-bitmap (bm &optional (clear-color *background-color*))
   (clear-ogl-pixmap bm (make-offscreen-pixel
                                 (round (* (color-red clear-color) 255))

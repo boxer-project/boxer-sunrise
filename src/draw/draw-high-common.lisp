@@ -37,11 +37,15 @@ the bootstrapping of the clipping and coordinate scaling variables."
 
 (defmacro drawing-on-bitmap ((bitmap) &body body)
   "Used instead of DRAWING-ON-WINDOW for bitmaps."
-  (let ((bwidth-var (gensym)) (bheight-var (gensym)))
-    `(let ((,bwidth-var (ogl-pixmap-width ,bitmap))
-           (,bheight-var (ogl-pixmap-height ,bitmap)))
-         (with-system-dependent-bitmap-drawing (,bitmap ,bwidth-var ,bheight-var)
-           . ,body))))
+  `(drawing-on-window (*boxer-pane*)
+     (gl:draw-buffer :back) ;gl:aux1)
+     (progn . ,body)
+     (gl:flush)
+     (%pixblt-from-screen ,bitmap 0 (- (viewport-height *boxer-pane*)
+                                       (ogl-pixmap-height ,bitmap))
+                                    (ogl-pixmap-width  ,bitmap)
+                                    (ogl-pixmap-height ,bitmap)
+                                    0 0 :back)))
 
 ;;;
 ;;; Scaling and Clipping Macros
