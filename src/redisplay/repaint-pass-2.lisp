@@ -21,14 +21,6 @@
 
 ;;;; Pass 2
 
-(defmethod apply-world-matrix ((self screen-obj))
-  (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) (world-matrix self))
-  (update-model-matrix-ubo bw::*boxgl-device*))
-
-(defmethod apply-world-internal-matrix ((self screen-obj))
-  (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) (world-internal-matrix self))
-  (update-model-matrix-ubo bw::*boxgl-device*))
-
 (DEFUN DRAW-PORT-BOX-ELLIPSIS? (SCREEN-BOX)
        (AND (PORT-BOX? (SLOT-VALUE SCREEN-BOX 'ACTUAL-OBJ))
             (BOX-ELLIPSIS-STYLE? (SLOT-VALUE SCREEN-BOX 'SCREEN-ROWS))))
@@ -72,17 +64,13 @@
 
 (defmethod repaint-cursors-regions ((self screen-box))
   (when (or (bps self) (region-in-screen-box? self))
-    ;; TODO convert to a with-XYZed-matrix
-    (let ((cur-model (boxer::boxgl-device-model-matrix bw::*boxgl-device*)))
-      (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) (3d-matrices:meye 4))
+    (with-model-matrix ((3d-matrices:meye 4))
       (update-model-matrix-ubo bw::*boxgl-device*)
       (when (bps self)
         (repaint-cursor *point*))
       (when (region-in-screen-box? self)
         (dolist (region *region-list*)
-          (when (not (null region)) (interval-update-repaint-all-rows region))))
-      (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) cur-model)
-      (update-model-matrix-ubo bw::*boxgl-device*))))
+          (when (not (null region)) (interval-update-repaint-all-rows region)))))))
 
 (defmethod repaint-inferiors-pass-2-sb ((self screen-box))
   (with-slots (wid hei box-type screen-rows x-offset y-offset scroll-x-offset scroll-y-offset x-got-clipped? y-got-clipped? actual-obj bps)
@@ -103,7 +91,7 @@
                                      (+ it (- (world-y-offset self) scroll-y-offset))
                                      (- wid ir il)
                                      (- hei it ib))
-             (with-world-internal-matrix (self)
+             (with-model-matrix ((world-internal-matrix self))
                (do-vector-contents (inf-screen-obj screen-rows :index-var-name row-no)
                  ;; if row.y-pos > box.y-pos AND row.y-pos < box.y-pos + box.hei
                  ;;   then render the row
@@ -170,7 +158,7 @@
   (with-slots (x-offset y-offset wid hei actual-obj)
     self
     (when actual-obj
-      (with-world-matrix (self)
+      (with-model-matrix ((world-matrix self))
         (when (closet-row? actual-obj (superior-box actual-obj))
           ;; this should get the inner width from the superior box
           (with-pen-color (*closet-color*) (draw-rectangle wid hei 0 0)))
@@ -181,7 +169,7 @@
   ;; (multiple-value-bind (x-pos y-pos) (xy-position self)
   (with-slots (x-offset y-offset wid hei actual-obj box-type)
     self
-    (with-world-matrix (self)
+    (with-model-matrix ((world-matrix self))
       (maintaining-pen-color
        ;; need this because we may be in the middle of a colored font run
        (%set-pen-color *foreground-color*)
@@ -231,7 +219,7 @@
                                                  (graphics-sheet-draw-wid graphics-sheet)))
                                (inner-height (min (- (screen-obj-hei self) it ib)
                                                  (graphics-sheet-draw-hei graphics-sheet))))
-                           (with-world-matrix ((screen-sheet self))
+                           (with-model-matrix ((world-matrix (screen-sheet self)))
                              (with-clipping-inside ((world-x-offset self)
                                                     (world-y-offset self)
                                                     (content-wid self) ;inner-width

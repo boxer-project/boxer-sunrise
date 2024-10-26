@@ -172,9 +172,9 @@
 (defun draw-graphics-boxtop (scr-box boxtop x y wid hei &optional framed?)
   (cond ((null framed?)
          ;; just do the graphics
-         (with-world-internal-matrix (scr-box)
+         (with-model-matrix ((world-internal-matrix scr-box))
            (draw-graphics-boxtop-internal boxtop x y wid hei)))
-    (t (with-world-internal-matrix (scr-box)
+    (t (with-model-matrix ((world-internal-matrix scr-box))
          (draw-graphics-boxtop-internal boxtop x y (- wid 2) (- hei 2)))
        ;; draw the border frame
        (draw-line 0 0 0 hei)

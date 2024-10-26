@@ -47,31 +47,17 @@ the bootstrapping of the clipping and coordinate scaling variables."
 ;;; Scaling and Clipping Macros
 ;;;
 
-(defmacro with-world-matrix ((screen-obj) &body body)
+(defmacro with-model-matrix ((model-matrix) &body body)
   (let ((cur-model-matrix (gensym)))
     `(let* ((,cur-model-matrix (boxer::boxgl-device-model-matrix bw::*boxgl-device*)))
        (unwind-protect
            (progn
-             (apply-world-matrix ,screen-obj)
+             (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) ,model-matrix)
+             (update-model-matrix-ubo bw::*boxgl-device*)
              . ,body)
          (progn
            (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) ,cur-model-matrix)
-           (update-model-matrix-ubo bw::*boxgl-device*)
-           )
-         ))))
-
-(defmacro with-world-internal-matrix ((screen-obj) &body body)
-  (let ((cur-model-matrix (gensym)))
-    `(let* ((,cur-model-matrix (boxer::boxgl-device-model-matrix bw::*boxgl-device*)))
-       (unwind-protect
-           (progn
-             (apply-world-internal-matrix ,screen-obj)
-             . ,body)
-         (progn
-           (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) ,cur-model-matrix)
-           (update-model-matrix-ubo bw::*boxgl-device*)
-           )
-         ))))
+           (update-model-matrix-ubo bw::*boxgl-device*))))))
 
 (defun calculate-clip-rectangle (stack)
   "Takes a stack of lists each with 4 members: x1, y1, x2, y2 and finds the final
@@ -104,7 +90,7 @@ the bootstrapping of the clipping and coordinate scaling variables."
 (defmacro with-clipping-inside ((x y wid hei) &body body)
   `(unwind-protect
     (progn
-      (push (list ,x ,y (+ ,x ,wid) (+ ,y ,hei)) *clipping-stack*) ;,(+ x wid) ,(+ y hei)) *clipping-stack*)
+      (push (list ,x ,y (+ ,x ,wid) (+ ,y ,hei)) *clipping-stack*)
       (clip-stencil-rectangle *clipping-stack*)
       . ,body)
     ;; reset the old clip region
