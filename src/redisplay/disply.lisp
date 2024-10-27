@@ -722,14 +722,13 @@
 
 (DEFUN SET-OUTERMOST-SCREEN-BOX (NEW-OUTERMOST-SCREEN-BOX
                                  &OPTIONAL (WINDOW *BOXER-PANE*))
-       #+lispworks (REDISPLAYING-WINDOW (WINDOW)
+       (REDISPLAYING-WINDOW (WINDOW)
                             (UNLESS (EQ NEW-OUTERMOST-SCREEN-BOX *OUTERMOST-SCREEN-BOX*)
                                     (DECONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX *OUTERMOST-SCREEN-BOX*
                                                                                 WINDOW)
                                     (CONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX NEW-OUTERMOST-SCREEN-BOX
                                                                               WINDOW)
                                     (SETQ *OUTERMOST-SCREEN-BOX* NEW-OUTERMOST-SCREEN-BOX)))
-       #+glfw-engine (SETQ *OUTERMOST-SCREEN-BOX* NEW-OUTERMOST-SCREEN-BOX)
 
        (setf *outermost-screen-box* new-outermost-screen-box)
        (LET ((OLD-SCREEN-ROW (UNLESS (NULL NEW-OUTERMOST-SCREEN-BOX)
@@ -739,9 +738,7 @@
                   (KILL-SCREEN-CHAS-FROM OLD-SCREEN-ROW 0)
                   (if (fast-memq (superior old-screen-row) *outermost-screen-box-stack*)
                     (deallocate-inferiors (superior old-screen-row))
-                    (deallocate-self (superior old-screen-row))))
-            ;; (repaint-window window)
-            ))
+                    (deallocate-self (superior old-screen-row))))))
 
 (defun set-outermost-box (new-outermost-box
                           &optional (new-outermost-screen-box
