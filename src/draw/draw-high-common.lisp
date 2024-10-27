@@ -76,20 +76,12 @@ the bootstrapping of the clipping and coordinate scaling variables."
     (list x1 y1 x2 y2)))
 
 (defun clip-stencil-rectangle (clip-stack)
-  (let ((prev-model (boxer::boxgl-device-model-matrix bw::*boxgl-device*))
-        (clip-coords (calculate-clip-rectangle clip-stack)))
     (write-to-stencil)
-
-    (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) (3d-matrices:meye 4))
-    (update-model-matrix-ubo bw::*boxgl-device*)
-
-    (with-pen-color (*transparent*)
-      (destructuring-bind (x1 y1 x2 y2) clip-coords
-        (draw-rectangle (- x2 x1) (- y2 y1) x1 y1)))
-    (render-inside-stencil)
-
-    (setf (boxer::boxgl-device-model-matrix bw::*boxgl-device*) prev-model)
-    (update-model-matrix-ubo bw::*boxgl-device*)))
+    (with-model-matrix ((3d-matrices:meye 4))
+      (with-pen-color (*transparent*)
+        (destructuring-bind (x1 y1 x2 y2) (calculate-clip-rectangle clip-stack)
+          (draw-rectangle (- x2 x1) (- y2 y1) x1 y1)))
+      (render-inside-stencil)))
 
 (defmacro with-clipping-inside ((x y wid hei) &body body)
   `(unwind-protect
