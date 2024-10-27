@@ -35,8 +35,5 @@
 
 (defun draw-blinker (blinker &key (color *blinker-color*))
   (with-pen-color (color)
-    (let ((horiz (horizontal-scroll *boxer-pane*))
-          (vert  (vertical-scroll *boxer-pane*)))
       (draw-rectangle (blinker-wid blinker) (blinker-hei blinker)
-                      (+ horiz (blinker-x blinker))
-                      (+ vert (blinker-y blinker))))))
+                      (blinker-x blinker)   (blinker-y blinker))))
