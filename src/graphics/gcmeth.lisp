@@ -512,37 +512,6 @@ Modification History (most recent at top)
         (setf (graphics-command-list-font-no %graphics-list) font)
         (change-graphics-font font)))))
 
-;; this is like synchronize-graphics-state EXCEPT that it
-;; ONLY puts entries in the beginning of its graphics-command-list
-;; and DOESN'T try to side effect any bindings
-;;;
-;; This ignores color until we decide what whether or not is will be
-;; feasible/efficient to handle different colors in turtle shapes
-;; obviously, it is desireable but the question is "at what price ?"
-
-#|
-;; this version inherits the pen state fron the turtle
-
-(defmethod new-shape-preamble ((agent graphics-cursor) graphics-command-list)
-  (setf (graphics-command-list-agent graphics-command-list) agent)
-  (let ((pw (box-interface-value (slot-value agent 'pen-width)))
-    (alu (or (get-alu-from-pen
-          (box-interface-value (slot-value agent 'pen)))
-         alu-andca))
-    (font (box-interface-value (slot-value agent 'type-font)))
-    (%graphics-list graphics-command-list))
-    ;; the current alu of the turtle
-    (setf (graphics-command-list-alu graphics-command-list) alu)
-    (record-boxer-graphics-command-change-alu alu)
-    ;; the current pen-width of the turtle
-    (setf (graphics-command-list-pen-width graphics-command-list) pw)
-    (record-boxer-graphics-command-change-pen-width pw)
-    ;; the current type-font of the turtle...
-    (setf (graphics-command-list-font-no graphics-command-list) font)
-    (record-boxer-graphics-command-change-graphics-font font)))
-
-|#
-
 ;; we may want to conditionalize some of these for different displays
 (defun initial-shape-alu () alu-xor)
 (defun initial-shape-pen-symbol () 'bu::reverse) ; this should match the alu
