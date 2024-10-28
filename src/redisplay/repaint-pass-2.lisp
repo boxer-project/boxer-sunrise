@@ -220,10 +220,10 @@
                                (inner-height (min (- (screen-obj-hei self) it ib)
                                                  (graphics-sheet-draw-hei graphics-sheet))))
                            (with-model-matrix ((world-matrix (screen-sheet self)))
-                             (with-clipping-inside ((world-x-offset self)
-                                                    (world-y-offset self)
-                                                    (content-wid self) ;inner-width
-                                                    (content-hei self)) ;inner-height
+                             (with-clipping-inside ((+ ir (world-x-offset self))
+                                                    (+ it (world-y-offset self))
+                                                    inner-width
+                                                    inner-height)
                                (when (not (null (graphics-sheet-background graphics-sheet)))
                                  (with-pen-color ((graphics-sheet-background graphics-sheet))
                                    (draw-rectangle inner-width inner-height 0 0)))
