@@ -246,6 +246,8 @@ Modification History (most recent at top)
 
 (defmethod copy-graphics-slots ((old-graphics-object graphics-object)
                                 (new-graphics-object graphics-object))
+  ;; TODO sgithens 2024-10-28 Why isn't this  one calling next method?
+  ;;                          Seems like a bug?
   (setf (box-interface-value (slot-value new-graphics-object 'x-position))
         (box-interface-value (slot-value old-graphics-object 'x-position)))
   (setf (box-interface-value (slot-value new-graphics-object 'y-position))
