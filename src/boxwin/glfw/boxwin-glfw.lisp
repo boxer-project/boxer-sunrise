@@ -116,12 +116,7 @@
               ;; --------------------
               (let ((current-frame (%cl-glfw3:get-time)))
                 (setf box::delta-time (- current-frame box::last-frame)
-                      box::last-frame current-frame
-                      box::blinker-time (+ box::blinker-time box::delta-time)))
-
-              (when (> box::blinker-time 0.7)
-                (box::toggle-blinker)
-                (setf box::blinker-time 0.0))
+                      box::last-frame current-frame))
 
               ;; render
               ;; ------
