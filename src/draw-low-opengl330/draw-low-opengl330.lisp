@@ -616,7 +616,7 @@
 
 (defun update-model-matrix-ubo (device)
   (when (> (cur-program device) 0)
-    (gl:uniform-matrix-4fv (model-uniform (cu))
+    (gl:uniform-matrix-4fv (model-uniform device)
                            (3d-matrices:marr4 (boxgl-device-model-matrix device)))))
 
 (defun update-matrices-ubo (device)
