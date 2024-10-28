@@ -107,7 +107,12 @@
 ;; Note that the clipping, and origin has already been setup inside the redisplay
 (defmethod draw-boxtop ((self screen-box) boxtop editor-box x y wid hei)
   (let ((bp (getprop editor-box :boxtop)))
-    (cond ((eq bp :name-only) (draw-text-boxtop editor-box boxtop x y wid hei))
+    (cond
+      ((eq bp :name-only)
+       (start-drawing-screen-obj-model self)
+       ;; This should be on a mesh that only needs updating if the text changes
+       (draw-text-boxtop editor-box boxtop x y wid hei)
+       (stop-drawing-screen-obj-model))
       ((eq bp :folder) (draw-folder-boxtop editor-box boxtop x y))
       ((eq bp :framed) (draw-graphics-boxtop self boxtop x y wid hei t))
       ((graphics-sheet? boxtop) (draw-graphics-boxtop self boxtop x y wid hei))
