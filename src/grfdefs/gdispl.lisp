@@ -206,19 +206,7 @@ Modification History (most recent at the top)
 ;;;; 62   BOXER-FILLED-CIRCLE                          (X Y RADIUS)
 ;;;; 63   BOXER-CIRCLE                                 (X Y RADIUS)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-
 (defvar *default-graphics-list-initial-length* 16.)
-
-;; defined in vars.lisp
-;;(defvar *supress-graphics-recording?* nil
-;;  "When this is T, graphics commands are not recorded")
-
-;; defined in vars.lisp
-;;(defvar *graphics-command-recording-mode* ':window
-;;  "Should be either :WINDOW or :BOXER")
-
-) ; eval-when
 
 ;;; store information about the graphics-command that
 ;;; might be useful for other macros
