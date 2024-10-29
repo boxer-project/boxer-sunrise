@@ -739,6 +739,19 @@ Modification History (most recent at the top)
 
 ;; this is used by the redisplay...
 
+(defun playback-graphics-list-incrementally (gl canvas wid hei &key (mesh nil))
+  "When framebuffers are being used, this will play back any additional graphics operations on to the mesh/framebuffer,
+  only appending new ones since the last draw."
+  (when (> (%%sv-fill-pointer gl) (op-count canvas))
+              (enable canvas)
+              (unless (graphics-command-list-hidden gl)
+                (boxer-playback-graphics-list gl :start (op-count canvas)
+                   :graphics-canvas canvas :translate? t))
+              (setf (op-count canvas) (%%sv-fill-pointer gl))
+              (disable canvas)
+              (when mesh
+                (buffer-canvas-mesh bw::*boxgl-device* mesh (graphics-canvas-pixmap canvas) wid hei))))
+
 (defun redisplay-graphics-sheet-graphics-list (gs graphics-screen-box)
   "Draws the graphics-command-list of the graphics-sheet in member graphics-list. This typically contains
    everything that has been drawn or stamped by sprites and doesn't privately belong to them. This takes
@@ -750,12 +763,7 @@ Modification History (most recent at the top)
              (hei (graphics-sheet-draw-hei gs))
              (gl (graphics-sheet-graphics-list gs))
              (canvas (get-graphics-canvas-for-screen-obj graphics-screen-box wid hei)))
-        (when (> (%%sv-fill-pointer gl) (op-count canvas))
-          (enable canvas)
-          (unless (graphics-command-list-hidden gl)
-            (boxer-playback-graphics-list gl :start (op-count canvas) :graphics-canvas canvas :translate? t))
-          (setf (op-count canvas) (%%sv-fill-pointer gl))
-          (disable canvas)))
+        (playback-graphics-list-incrementally gl canvas wid hei))
       ; else
       (let ((gl (graphics-sheet-graphics-list gs)))
         (unless (graphics-command-list-hidden gl)

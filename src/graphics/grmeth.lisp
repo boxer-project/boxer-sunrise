@@ -608,15 +608,7 @@ Modification History (most recent at top)
             (setf canvas (get-graphics-canvas-for-screen-obj self wid hei))
             (setf mesh (get-canvas-mesh self))
 
-            ;; TODO this is duplicated from gdispl.lisp:redisplay-graphics-sheet-graphics-list
-            (when (> (%%sv-fill-pointer gl) (op-count canvas))
-              (enable canvas)
-              (unless (graphics-command-list-hidden gl)
-                (boxer-playback-graphics-list gl :start (op-count canvas)
-                   :graphics-canvas canvas :translate? t))
-              (setf (op-count canvas) (%%sv-fill-pointer gl))
-              (disable canvas)
-              (buffer-canvas-mesh bw::*boxgl-device* mesh (graphics-canvas-pixmap canvas) wid hei))
+            (playback-graphics-list-incrementally gl canvas wid hei :mesh mesh)
 
             (let ((pixmap (graphics-canvas-pixmap canvas)))
               (setf final-mat (3d-matrices:m* final-mat
