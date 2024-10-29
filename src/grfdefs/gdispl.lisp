@@ -849,23 +849,5 @@ Modification History (most recent at the top)
       (format t "~&    Graphics List")
       (show-graphics-list gl))))
 
-(defun clear-gl (box)
-  (clear-graphics-list (graphics-sheet-graphics-list (graphics-sheet box))))
-
-#|
-(defun test (box x y)
-  (drawing-on-window (*boxer-pane*)
-         (with-graphics-state
-         (with-graphics-vars-bound (box)
-         (change-pen-width 1)
-         (ellipse x y 60 60)
-         (centered-rectangle x y 42 42)
-         (line-segment (- x 30) y (- x 60) (- y 20))
-         (line-segment (- x 30) y (- x 60) (+ y 20))
-         (change-pen-width 4)
-         (line-segment (+ x 30) y (+ x 60) (- y 20))
-         (line-segment (+ x 30) y (+ x 60) (+ y 20))
-         (centered-string x (+ y 40) "Alien")))))
-|#
 
 

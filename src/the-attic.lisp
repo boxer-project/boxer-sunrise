@@ -12465,6 +12465,26 @@ Modification History (most recent at top)
 ;;;; FILE: gdispl.lisp
 ;;;;
 
+(defun clear-gl (box)
+  (clear-graphics-list (graphics-sheet-graphics-list (graphics-sheet box))))
+
+#|
+(defun test (box x y)
+  (drawing-on-window (*boxer-pane*)
+         (with-graphics-state
+         (with-graphics-vars-bound (box)
+         (change-pen-width 1)
+         (ellipse x y 60 60)
+         (centered-rectangle x y 42 42)
+         (line-segment (- x 30) y (- x 60) (- y 20))
+         (line-segment (- x 30) y (- x 60) (+ y 20))
+         (change-pen-width 4)
+         (line-segment (+ x 30) y (+ x 60) (- y 20))
+         (line-segment (+ x 30) y (+ x 60) (+ y 20))
+         (centered-string x (+ y 40) "Alien")))))
+|#
+
+
 ;; the default copy functions only copy slots. For bitmaps, we need
 ;; a separate copy of the bitmap as well
 ;; sgithens TODO fix these duplicate def warnings for sbcl
