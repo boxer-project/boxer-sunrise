@@ -162,7 +162,7 @@
     ;; and now, the name
     (draw-string *boxtop-text-font* name x (+ y 32))))
 
-(defun draw-graphics-boxtop-internal (boxtop x y wid hei)
+(defun draw-graphics-boxtop-internal (src-box boxtop x y wid hei)
   (unless (null (graphics-sheet-background boxtop))
     (with-pen-color ((graphics-sheet-background boxtop))
       (draw-rectangle wid hei x y)))
@@ -171,16 +171,21 @@
   ;; then handle any sprite graphics...
   (unless (null (graphics-sheet-graphics-list boxtop))
     (with-graphics-vars-bound-internal boxtop
-      (boxer-playback-graphics-list (graphics-sheet-graphics-list boxtop) :translate? t :use-cur-model-matrix t)
-      )))
+      (if *use-opengl-framebuffers*
+        (progn
+          (setf canvas (get-graphics-canvas-for-screen-obj src-box wid hei))
+          (setf mesh (get-canvas-mesh src-box))
+          (playback-graphics-list-incrementally (graphics-sheet-graphics-list boxtop) canvas wid hei :mesh mesh)
+          (draw-canvas-mesh mesh (graphics-canvas-pixmap canvas)))
+        (boxer-playback-graphics-list (graphics-sheet-graphics-list boxtop) :translate? t :use-cur-model-matrix t)))))
 
 (defun draw-graphics-boxtop (scr-box boxtop x y wid hei &optional framed?)
   (cond ((null framed?)
          ;; just do the graphics
          (with-model-matrix ((world-internal-matrix scr-box))
-           (draw-graphics-boxtop-internal boxtop x y wid hei)))
+           (draw-graphics-boxtop-internal scr-box boxtop x y wid hei)))
     (t (with-model-matrix ((world-internal-matrix scr-box))
-         (draw-graphics-boxtop-internal boxtop x y (- wid 2) (- hei 2)))
+         (draw-graphics-boxtop-internal scr-box boxtop x y (- wid 2) (- hei 2)))
        ;; draw the border frame
        (draw-line 0 0 0 hei)
        (draw-line 0 0 wid 0)
