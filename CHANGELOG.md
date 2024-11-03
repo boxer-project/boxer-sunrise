@@ -1,5 +1,113 @@
 # Change Log
 
+## 3.4.21 2024-10-31
+
+### Full Change Log
+
+This release includes a number of bugs fixes, and a rehaul in the rendering and screen-box
+code to implement a scene graph style of matrices and offsets.  In addition to crashes, the bug
+fixes address behavior on the z-ordering of sprites, behavior when linking to external files,
+and save file names.
+
+The scene graph work, does some of the final bits of refactoring different parts of the Boxer
+canvas in to their own computed dimensions and model matrices, so that different parts of a
+Boxer Microworld (individual boxes, turtles, etc) can be moved/zoomed/rotated around independently
+with a transform matrix.  This refactoring a number of bits, as well as removing more old context
+style defmacros which interfered with some of the GL drawing.
+
+Additionally, work as continued in this release on cleanup and work on the GLFW version of Boxer
+on sbcl/ecl. Basic typing and key input works, but it's still very early, and lots of input is
+still not working yet.
+
+scene-graph
+  - Further work on cleaning up the repaint, and shifts for the model matrices in the scene graph.
+  - Fixing up 1px indent of boxtops and cursor rendering.
+  - Archiving with-origin-at
+  - Removing old cumulative clip vars and cleaning up with-clipping-inside
+    - Archiving
+      - defvars %ORIGIN-X-OFFSET, %ORIGIN-Y-OFFSET, %CLIP-LEF, %CLIP-TOP, %CLIP-RIG,
+        %CLIP-BOT
+      - defmacro drawing-on-window-bootstrap-clipping-and-scaling
+  - Reworking stencil clipping for the scene-graph attributes.
+  - Checking the scrollbars when drawing the cursor is no longer necessary.
+  - Small adjustment to the clipping dimensions for graphics boxes.
+
+bugs-85 Fixing opening black box linked files as if using the Finder
+
+bugs-191 cleanup Removing manual redisplay bits from before constant rendering
+  - defvar just-redisplayed?
+  - defun menu-redisplay
+  - defboxer-command COM-FORCE-REDISPLAY, COM-FORCE-REDISPLAY-ALL
+
+sunrise-20
+  - Adding #+lispworks for capi internals adjustment.
+  - Legit key input on GLFW/SBCL
+  - Removing *REDISPLAY-WINDOW* and refactoring outermost-screen-box functions.
+  - It seems necessary to combine both key and char callbacks to get everything.
+  - Refactoring calculations involving the size of the boxer viewport.
+  - Adding window size check to glfw.
+  - Removing once-only version of drawing-on-window
+  - Removing defmacro with-drawing-port, once-only
+  - redisplaying-window works on glfw/sbcl now
+  - The regular cursor works now on glfw
+
+sunrise-91
+  - Initial demo with perspective matrix, adding advanced File menu for dev.
+  - Changing variable(s) name of ortho to projection matrix
+
+sunrise-97 Refactoring popup menus
+  - Created active-popup-menu class to be part of the global
+    boxer-canvas class, so rendering happens within the normal
+    repaint loop
+  - updated draw-menu and other bits of popup code for this
+
+sunrise-101 Swapping behavior of push-to-back and bring-to-front
+
+sunrise-109 Setting *default-character-element-type* on lispworks to 'character
+
+sunrise-113 Reversing the order sprites are looked up such that mouse clicks get the sprite on top when multiples are
+  stacked.
+
+sunrise-114 Requires sprites to be visible/shown in order to get area located.
+
+cleanup
+  - Removing unused u_rgba from shader uniform buffer.
+  - Removing absolute lines shader
+  - Removing canvas-shader
+  - Removing simple-shader, borders-arr, and borders-count.
+  - Removing now completely commented out graphics-commands.lisp
+
+perf
+  - Defun to update only the model matrice on the uniform buffer.
+  - Moving model matrix from the ubo to a regular uniform  for speed since it's updated often
+  - Caching model uniform location on each shader.
+  - Putting sprites on framebuffers.
+  - Putting text only boxtops on meshes
+  - Putting graphics-boxtop entries on a graphics-canvas w/ framebuffer.
+
+refactor
+  - Creating defmacro with-model-matrix to replace various with-xyzed-matrices
+  - Merging with-system-dependent-bitmap-drawing into drawing-on-bitmap.
+  - Changing defun clip-stencil-rectangle to use with-model-matrix
+  - Moving incremental gl drawing in to defun playback-graphics-list-incrementally
+
+minor-fix Changing the default filename to Untitled when saving a new box as file.
+
+the-attic
+  - Removing defun font-name-from-font-no
+  - Archiving *tvl-element-sprite-command-alist*
+  - Archiving
+    - defmethod all-sprites-in-contact
+    - defsprite-function flash-name
+    - defboxer-function copy-self, rotate, single-touching-sprite, all-touching-sprites, wrap, fence, window, NUMBER-OF
+  - Archiving the dribbler for now...
+  - Archiving hardcopy-lw.lisp
+  - Archiving applescript support.
+  - Archiving #+mcl specific version of bin-op-dispatch, %set-bin-op-dispatch
+  - Removing defmacro without-interrupts which has been empty for a while
+  - Archiving old commentd out version of new-shape-preamble
+  - Removing unused defun clear-gl and manual test function
+
 ## 3.4.20 2024-08-06
 
 This maintenance and refactoring release includes a number of small issues filed recently
