@@ -300,7 +300,9 @@ Modification History (most recent at the top)
     graphics-command))
 
 (defun deallocate-graphics-command-marker (graphics-command)
-  (deallocate-gc (gethash (aref graphics-command 0) *graphics-commands*) graphics-command))
+   (if (< (aref graphics-command 0) 32)
+     (deallocate-gc (gethash (+ (aref graphics-command 0) 32) *graphics-commands*) graphics-command)
+     (deallocate-gc (gethash (aref graphics-command 0) *graphics-commands*) graphics-command)))
 
 ;;; these should NEVER be changed.  These are the starting values
 ;;; for playback of graphics lists.  Changing these values will
