@@ -53,14 +53,19 @@
     :documentation "Vector of the last run gdispl command for changing the font, so it can be turned back
                     on when picking up in the list without starting from the beginning.")))
 
-(defun make-graphics-canvas (wid hei)
+(defun make-graphics-canvas (wid hei &optional in-pixmap)
   "Creates a new graphics-canvas, and all it's backing openGL resources  such a framebuffer, textures, etc.
    Should be called inside an openGL context"
   (let* ((framebuffer (gl:gen-framebuffer))
          (renderbuffer (gl:gen-renderbuffer))
          (texture (gl:gen-texture))
-         (pixmap (make-ogl-pixmap wid hei :texture texture))
+         (pixmap (if in-pixmap
+                     in-pixmap
+                     (make-ogl-pixmap wid hei :texture texture)))
          (togo (make-instance 'graphics-canvas :framebuffer framebuffer :pixmap pixmap :renderbuffer renderbuffer)))
+
+    (unless (ogl-pixmap-texture pixmap)
+      (setf (ogl-pixmap-texture pixmap) texture))
 
     (gl:bind-framebuffer :framebuffer (graphics-canvas-framebuffer togo))
 
