@@ -162,7 +162,8 @@
     ;; and now, the name
     (draw-string *boxtop-text-font* name x (+ y 32))))
 
-(defun draw-graphics-boxtop-internal (src-box boxtop x y wid hei)
+(defun draw-graphics-boxtop-internal (scr-box boxtop x y wid hei)
+  "Takes the screen-box, boxtop graphics-sheet, x, y, wid, and hei and draws the graphics boxtop."
   (unless (null (graphics-sheet-background boxtop))
     (with-pen-color ((graphics-sheet-background boxtop))
       (draw-rectangle wid hei x y)))
@@ -172,9 +173,19 @@
   (unless (null (graphics-sheet-graphics-list boxtop))
     (with-graphics-vars-bound-internal boxtop
       (if *use-opengl-framebuffers*
-        (progn
-          (setf canvas (get-graphics-canvas-for-screen-obj src-box wid hei))
-          (setf mesh (get-canvas-mesh src-box))
+        (let ((canvas (get-graphics-canvas-for-screen-obj scr-box wid hei))
+              (mesh (get-canvas-mesh scr-box)))
+          ;; TODO sgithens 2024-12-20
+          ;; Note: This is perhaps a bit of a workaround... The issue is that the graphics list here is
+          ;; on the boxtop box of the next lower box in scope, but since the containing box is shrunk it doesn't
+          ;; actually have a screen-object attached to it. So if you use something like the 'change' primitive to
+          ;; update it, it doesn't actually clear this screen canvas since this is a different box. So... for now
+          ;; we are adding copy of the graphics list on THIS screen box and seeing if it changed to determine whether
+          ;; or not to clear the graphics canvas.
+          (let ((cur-graphics-list (getprop scr-box :boxtop-graphics-list)))
+            (when (not (equalp cur-graphics-list (graphics-sheet-graphics-list boxtop)))
+              (clear canvas)
+              (putprop scr-box (graphics-sheet-graphics-list boxtop) :boxtop-graphics-list)))
           (playback-graphics-list-incrementally (graphics-sheet-graphics-list boxtop) canvas wid hei :mesh mesh)
           (draw-canvas-mesh mesh (graphics-canvas-pixmap canvas)))
         (boxer-playback-graphics-list (graphics-sheet-graphics-list boxtop) :translate? t :use-cur-model-matrix t)))))
