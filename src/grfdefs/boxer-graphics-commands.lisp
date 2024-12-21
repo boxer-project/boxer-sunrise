@@ -261,10 +261,7 @@
                      *graphics-state-current-alu*))
 
 (defextents-graphics-command (boxer-line-segment x0 y0 x1 y1)
-  (let ((delta #-mcl (ceiling *graphics-state-current-pen-width* 2)
-               ;; this has to stay until the non centered thick line bug in
-               ;; the mac implementation gets fixed
-               #+mcl *graphics-state-current-pen-width*))
+  (let ((delta (ceiling *graphics-state-current-pen-width* 2)))
     (values (- (min x0 x1) delta) (- (min y0 y1) delta)
             (+ (max x0 x1) delta) (+ (max y0 y1) delta))))
 
