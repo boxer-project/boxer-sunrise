@@ -196,7 +196,6 @@
   (:use :common-lisp :boxer)
   (:nicknames :bw)
   (:export :*foreground-color* :*background-color*
-           :window-pixel
            :%bitblt-to-screen :%bitblt-from-screen
            :%draw-point
            :%draw-rectangle :%erase-rectangle :%draw-line :%draw-poly

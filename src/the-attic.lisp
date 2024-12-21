@@ -10398,6 +10398,8 @@ if it is out of bounds
 ;;;; FILE: draw-low-opengl.lisp
 ;;;;
 
+(defun window-pixel (x y &optional (view *boxer-pane*)) (%get-pixel view x y))
+
 (defmacro with-drawing-port (view &body body)
   #+lispworks `(opengl::rendering-on (,view)
      ;; always start by drawing eveywhere
