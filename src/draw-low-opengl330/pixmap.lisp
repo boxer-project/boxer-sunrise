@@ -72,24 +72,7 @@ Modification History (most recent at top)
     ))
 
 (defun %pixblt-from-screen (to-array fx fy wid hei tx ty &optional (buffer :front))
-  (let* ((data (ogl-pixmap-data to-array))
-         (pwid (ogl-pixmap-width to-array))
-         (phei (ogl-pixmap-height to-array))
-         ;; remember that OpenGL coords, starts from lower left
-         ;; these are the converted fy value for the array
-         (oty (- phei (+ ty hei))))
-    ;; sgithens TODO 2023-04-06 Historically we were setting these pixelStore options but I don't
-    ;;          believe they are necessary any more. Remove in a few releases.
-    ;; set all the pixel storage modes...
-    ; (gl:pixel-store :pack-row-length (if (= wid pwid) 0 pwid))
-    ; (gl:pixel-store :pack-image-height (if (= hei phei) 0 phei))
-    ; (gl:pixel-store :pack-skip-pixels tx)
-    ; (gl:pixel-store :pack-skip-rows oty)
-
-    ;; read from the (visible) front buffer
-    ; (gl:read-buffer buffer)
-    ;; move the pixels....
-    (%gl:read-pixels fx fy wid hei *pixmap-data-type* *pixmap-data-format* data)))
+  (%gl:read-pixels fx fy wid hei *pixmap-data-type* *pixmap-data-format* (ogl-pixmap-data to-array)))
 
 ;; NOTE: this must match the format in *pixmap-data-type* and *pixmap-data-format*
 (defun make-offscreen-pixel (red green blue &optional (alpha 255))

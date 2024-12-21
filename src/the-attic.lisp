@@ -24455,6 +24455,29 @@ Modification History (most recent at top)
   (declare (ignore screen-box)) t)
 
 ;;;;
+;;;; FILE: pixmap.lisp
+;;;;
+
+;; sgithens 2024-12-21 old options used in %pixblt-from-screen...
+        ;;  (pwid (ogl-pixmap-width to-array))
+        ;;  (phei (ogl-pixmap-height to-array))
+         ;; remember that OpenGL coords, starts from lower left
+         ;; these are the converted fy value for the array
+        ;;  (oty (- phei (+ ty hei)))
+         )
+    ;; sgithens TODO 2023-04-06 Historically we were setting these pixelStore options but I don't
+    ;;          believe they are necessary any more. Remove in a few releases.
+    ;; set all the pixel storage modes...
+    ; (gl:pixel-store :pack-row-length (if (= wid pwid) 0 pwid))
+    ; (gl:pixel-store :pack-image-height (if (= hei phei) 0 phei))
+    ; (gl:pixel-store :pack-skip-pixels tx)
+    ; (gl:pixel-store :pack-skip-rows oty)
+
+    ;; read from the (visible) front buffer
+    ; (gl:read-buffer buffer)
+    ;; move the pixels....
+
+;;;;
 ;;;; FILE: popup.lisp
 ;;;;
 
