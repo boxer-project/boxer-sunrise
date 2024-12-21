@@ -2,7 +2,6 @@
 
 ## 3.4.21 2024-10-31
 
-### Full Change Log
 
 This release includes a number of bugs fixes, and a rehaul in the rendering and screen-box
 code to implement a scene graph style of matrices and offsets.  In addition to crashes, the bug
@@ -18,6 +17,8 @@ style defmacros which interfered with some of the GL drawing.
 Additionally, work as continued in this release on cleanup and work on the GLFW version of Boxer
 on sbcl/ecl. Basic typing and key input works, but it's still very early, and lots of input is
 still not working yet.
+
+### Full Change Log
 
 scene-graph
   - Further work on cleaning up the repaint, and shifts for the model matrices in the scene graph.
