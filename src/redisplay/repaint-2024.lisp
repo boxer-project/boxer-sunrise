@@ -3,14 +3,15 @@
 (defvar *box-depth-mult* 1)
 
 (defmethod update-scene-graph ((self screen-obj) parent x-offset y-offset depth)
-  (setf (local-matrix self) (create-transform-matrix x-offset y-offset)) ;  (* depth *box-depth-mult*)))
-  (setf (local-internal-matrix self) (create-transform-matrix x-offset y-offset)) ; (+ .5 (* depth *box-depth-mult*))))
+  (setf (local-matrix self) (create-transform-matrix x-offset y-offset (* depth *box-depth-mult*)))
+  (setf (local-internal-matrix self) (create-transform-matrix x-offset y-offset (+ .5 (* depth *box-depth-mult*))))
   (setf (world-matrix self) (3d-matrices:m* (world-internal-matrix parent) (local-matrix self)))
   (setf (world-x-offset self) (+ (world-x-offset parent) x-offset)
         (world-y-offset self) (+ (world-y-offset parent) y-offset))
   (setf (world-internal-matrix self) (3d-matrices:m* (world-internal-matrix parent) (local-internal-matrix self))))
 
 (defmethod update-scene-graph ((self screen-box) parent x-offset y-offset depth)
+  (setf (depth self) depth)
   (let ((x-internal-offset (+ x-offset (scroll-x-offset self)))
         (y-internal-offset (+ y-offset (scroll-y-offset self))))
 
@@ -18,8 +19,8 @@
       (incf x-internal-offset 1)
       (incf y-internal-offset 1))
 
-    (setf (local-matrix self) (create-transform-matrix x-offset y-offset)) ;  (* depth *box-depth-mult*)))
-    (setf (local-internal-matrix self) (create-transform-matrix x-internal-offset y-internal-offset)) ; (+ .5 (* depth *box-depth-mult*))))
+    (setf (local-matrix self) (create-transform-matrix x-offset y-offset (* depth *box-depth-mult*)))
+    (setf (local-internal-matrix self) (create-transform-matrix x-internal-offset y-internal-offset (+ .5 (* depth *box-depth-mult*))))
     (setf (world-matrix self) (3d-matrices:m* (world-internal-matrix parent) (local-matrix self)))
     (setf (world-x-offset self) (+ (world-x-offset parent) x-internal-offset)
           (world-y-offset self) (+ (world-y-offset parent) y-internal-offset))

@@ -141,7 +141,9 @@
     :documentation "A negative value results in the box being scrolled down.
                     Essentially, neither the scroll-y/x-offset can be positive.")
    (scroll-x-offset :initform 0 :accessor scroll-x-offset
-    :documentation "A negative value results in the box being scrolled to the right.")))
+    :documentation "A negative value results in the box being scrolled to the right.")
+   (depth :initform 0 :accessor depth
+    :documentation "The depth of this screenbox from the outermost screen-box.")))
 
 (defgeneric screen-box? (x) (:method (x) nil) (:method ((x screen-box)) t))
 

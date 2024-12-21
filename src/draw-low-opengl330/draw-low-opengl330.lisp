@@ -596,9 +596,9 @@
 
     ortho))
 
-(defun create-transform-matrix (x y)
+(defun create-transform-matrix (x y &optional (z 0))
   "Create a transform matrix offset from the origin by x and y."
-  (3d-matrices:mtranslation (3d-vectors:vec x y 0)))
+  (3d-matrices:mtranslation (3d-vectors:vec x y z)))
 
 (defun update-transform-matrix-ubo (device)
   "Update just the transform matrix in the matrices ubo. Slightly more efficient than updating everything in our
