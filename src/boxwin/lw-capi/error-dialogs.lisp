@@ -42,6 +42,10 @@ spoil your Boxer world. Quitting is a reliable fresh start.")
               :visible-min-height '(character 15)
               :visible-max-width '(character 80)
               :visible-max-height '(character 15))
+   (copy-backtrace capi:push-button
+                   :text "Copy Error to Clipboard"
+                   :callback #'(lambda (data int)
+                                 (capi:set-clipboard int (capi:editor-pane-text backtrace))))
    (continue capi:push-button
              :text "Restart"
              :callback #'(lambda (data int)
@@ -58,8 +62,8 @@ spoil your Boxer world. Quitting is a reliable fresh start.")
    (controls capi:column-layout
            '(message backtrace buttons))
    (buttons capi:row-layout
-            '(nil continue quit)
-            :ratios '(20 1 1))
+            '(nil copy-backtrace continue quit)
+            :ratios '(20 1 1 1))
   )
   (:default-initargs
    :title "Boxer Error"
