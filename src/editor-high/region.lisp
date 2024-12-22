@@ -400,8 +400,10 @@
                (set-bp-row (interval-stop-bp region) row)
                (set-bp-cha-no (interval-stop-bp region)
                               (+& cha-no (length-in-chas last-new-row)))
-               (set-bp-row bp row)
-               (set-bp-cha-no bp (+& cha-no (length-in-chas last-new-row))))
+               ;; This would keep the point at the beginning of the newly pasted section
+               ;;  (set-bp-row bp row)
+               ;;  (set-bp-cha-no bp (+& cha-no (length-in-chas last-new-row)))
+               )
               (t
                ;; looks like we have more than one row in the region so
                ;; insert the part of the region's first row
@@ -425,8 +427,10 @@
                         (set-bp-row (interval-stop-bp region) rr)
                         (set-bp-cha-no (interval-stop-bp region)
                                        (length-in-chas rr))
-                        (set-bp-row bp rr)
-                        (set-bp-cha-no bp (length-in-chas rr)))
+                        ;; This would keep the point at the beginning of the newly pasted section
+                        ;; (set-bp-row bp rr)
+                        ;; (set-bp-cha-no bp (length-in-chas rr))
+                        )
                        (t
                         (insert-row-after-row box rr
                                               previous-added-row)
