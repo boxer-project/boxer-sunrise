@@ -555,15 +555,15 @@ Modification History (most recent at top)
 
 ;;;; drawing
 
-(defmethod model-matrix ((self button))
+(defmethod model-matrix ((self button) &optional (x-adjust 0) (y-adjust 0))
   "Generates the model matrix for the sprites current heading, size (scale), and rotation."
   (let* ((ahead (absolute-heading self))
          (asize (absolute-size self))
          (ahead-rad (* ahead (/ pi 180)))
          (trans-mat (3d-matrices:mtranslation
                       (3d-vectors:vec
-                        (+ %drawing-half-width (absolute-x-position self))
-                        (- %drawing-half-height (absolute-y-position self)) 0.0)))
+                        (+ x-adjust (absolute-x-position self))
+                        (- y-adjust (absolute-y-position self)) 0.0)))
          (rot-mat (3d-matrices:nmrotate
                       (3d-matrices:meye 4) 3d-vectors:+vz+
                       ahead-rad))
@@ -574,7 +574,10 @@ Modification History (most recent at top)
 (defmethod draw ((self button))
   (unless (or (eq self *current-active-sprite*) (null (shown? self)))
     (let* ((prev-model (boxgl-device-model-matrix bw::*boxgl-device*))
-           (final-mat (3d-matrices:m* prev-model (model-matrix self))))
+           (final-mat (3d-matrices:m* prev-model (model-matrix self %drawing-half-width %drawing-half-height))))
+      ;; sgithens TODO 2024-12-26 Remove the drawing-half-width/height from above and also from the graphics command
+      ;; list playback, and move it to a matrix transform at a higher level, so individual drawback code doens't need
+      ;; to worry about it, especially when the transforms become more complex in the future (z-axis, rotations, etc)
 
       (setf (boxgl-device-model-matrix bw::*boxgl-device*) final-mat)
       (update-model-matrix-ubo bw::*boxgl-device*)

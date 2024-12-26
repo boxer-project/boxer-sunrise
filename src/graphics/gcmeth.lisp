@@ -717,8 +717,7 @@ Modification History (most recent at top)
   (let ((pen-mode (get-alu-from-pen (pen self))))
     (when (and pen-mode (not (no-graphics?)))
       (dub-graphics-list (box-interface-value (slot-value self 'shape))
-                         :model-matrix (model-matrix self)
-                         :inverse-matrix (3d-matrices:meye 4))
+                         :model-matrix (model-matrix self))
       ;; reset the state values which may have been bashed during the
       ;; dub to be the state value of the shape
       (synchronize-graphics-state self t))))

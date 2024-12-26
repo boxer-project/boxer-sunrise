@@ -324,7 +324,18 @@
    (transformation-template :initform nil)))
 
 (defdraw-graphics-command (boxer-transform-matrix matrix)
-  (setf (boxgl-device-model-matrix bw::*boxgl-device*) matrix)
+  (cond
+    ((eq matrix :pop)
+     (when *graphics-state-transform-matrix-stack* ;; Guard against extra :pop entries on stack
+       (setf (boxgl-device-model-matrix bw::*boxgl-device*) (pop *graphics-state-transform-matrix-stack*))))
+    (t
+      (push (boxgl-device-model-matrix bw::*boxgl-device*) *graphics-state-transform-matrix-stack*)
+      (let ((new-matrix nil))
+        (if (vectorp matrix)
+          (setf new-matrix (3d-matrices:mat4 matrix))
+          (setf new-matrix matrix))
+        (setf new-matrix (3d-matrices:m*  (boxgl-device-model-matrix bw::*boxgl-device*) new-matrix))
+        (setf (boxgl-device-model-matrix bw::*boxgl-device*) new-matrix))))
   (update-matrices-ubo bw::*boxgl-device*))
 
 ;; 39   BOXER-CENTERED-STRING             (X Y STRING)

@@ -426,6 +426,9 @@ Modification History (most recent at the top)
 
 (defvar *graphics-state-current-pen-color* *foreground-color*)
 
+(defvar *graphics-state-transform-matrix-stack* nil
+  "List stack for transform matrices during a gdispl playback.")
+
 ;;; the foreground color is usually undefined until boxer startup time
 (def-redisplay-initialization
   (progn
@@ -496,7 +499,8 @@ Modification History (most recent at the top)
            (,old-pen-color *graphics-state-current-pen-color*)
            (*graphics-state-current-pen-color*
             *initial-graphics-state-current-pen-color*)
-           (,old-font-no *graphics-state-current-font-no*))
+           (,old-font-no *graphics-state-current-font-no*)
+           (*graphics-state-transform-matrix-stack* nil))
        (unwind-protect
         (progn
          (unless (null ,gcl)
@@ -792,8 +796,7 @@ Modification History (most recent at the top)
 (defun dub-graphics-list (from-gl &key
                                   (to-gl %graphics-list)
                                   (action ':append)
-                                  (model-matrix nil)
-                                  (inverse-matrix nil))
+                                  (model-matrix nil))
   ;; Transform the drawing commands if a model has been provided
   (when model-matrix
     (sv-append to-gl `#(37 ,model-matrix)))
@@ -809,8 +812,8 @@ Modification History (most recent at the top)
           (do-vector-contents (command from-gl)
             (sv-append to-gl (copy-graphics-command command)))))
   ;; Invert the transformation if one has been supplied
-  (when inverse-matrix
-    (sv-append to-gl `#(37 ,inverse-matrix)))
+  (when model-matrix
+    (sv-append to-gl `#(37 :pop)))
   ;; now make sure the to-gl has the same current state as the from-gl
   (setf (graphics-command-list-agent to-gl) nil
         (graphics-command-list-alu to-gl) (graphics-command-list-alu from-gl)
