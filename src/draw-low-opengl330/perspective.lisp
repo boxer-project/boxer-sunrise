@@ -45,13 +45,16 @@
           do (sleep 0.01) do (next-paint view-matrix x-rot y-rot z-rot))
     (setf *box-depth-mult* 1)))
 
-(defun next-paint (view-matrix x-rot y-rot z-rot)
-  (let ((view-matrix (3d-matrices:meye 4))
-        (flip (3d-matrices:meye 4)))
-
+(defun flip-matrix-over-x-axis (matrix)
+  "Returns a new matrix with the y value inverted over the x-axis."
+  (let ((flip (3d-matrices:meye 4)))
     (setf (aref (3d-matrices:marr4 flip) 5) -1.0)
+    (3d-matrices:m* matrix flip)))
+
+(defun next-paint (view-matrix x-rot y-rot z-rot)
+  (let ((view-matrix (3d-matrices:meye 4)))
     (3d-matrices:nmtranslate view-matrix (3d-vectors:vec 0 0 -1900))
-    (setf view-matrix (3d-matrices:m* view-matrix flip))
+    (setf view-matrix (flip-matrix-over-x-axis view-matrix))
 
     (3d-matrices:nmrotate view-matrix 3d-vectors:+vx+ x-rot)
     (3d-matrices:nmrotate view-matrix 3d-vectors:+vy+ y-rot)
@@ -64,26 +67,26 @@
 
 (defun rotation-demo ()
   ;; (bw::queue-event 'box::rotation-demo)
-  #+lispworks (opengl:rendering-on (*boxer-pane*)
-   (let* ((prev-proj (boxgl-device-projection-matrix bw::*boxgl-device*))
-          (prev-trans (boxgl-device-transform-matrix bw::*boxgl-device*))
-          (view-matrix (3d-matrices:meye 4))
-          (flip (3d-matrices:meye 4)))
+  (drawing-on-window (*boxer-pane*)
+    (let* ((prev-proj (boxgl-device-projection-matrix bw::*boxgl-device*))
+           (prev-trans (boxgl-device-transform-matrix bw::*boxgl-device*))
+           (view-matrix (3d-matrices:meye 4))
+           (flip (3d-matrices:meye 4)))
 
-    (setf (aref (3d-matrices:marr4 flip) 5) -1.0)
+      (setf (aref (3d-matrices:marr4 flip) 5) -1.0)
 
-    (3d-matrices:nmtranslate view-matrix (3d-vectors:vec 0 0 -1900))
-    (setf view-matrix (3d-matrices:m* view-matrix flip))
+      (3d-matrices:nmtranslate view-matrix (3d-vectors:vec 0 0 -1900))
+      (setf view-matrix (3d-matrices:m* view-matrix flip))
 
-    (setf (boxgl-device-projection-matrix bw::*boxgl-device*)
-          (create-perspective-matrix (viewport-width *boxer-pane*) (viewport-height *boxer-pane*))
+      (setf (boxgl-device-projection-matrix bw::*boxgl-device*)
+            (create-perspective-matrix (viewport-width *boxer-pane*) (viewport-height *boxer-pane*))
 
-          (boxgl-device-transform-matrix bw::*boxgl-device*)
-          view-matrix)
+            (boxgl-device-transform-matrix bw::*boxgl-device*)
+            view-matrix)
 
-    (update-matrices-ubo bw::*boxgl-device*)
-    (rotations view-matrix)
+      (update-matrices-ubo bw::*boxgl-device*)
+      (rotations view-matrix)
 
-    (setf (boxgl-device-projection-matrix bw::*boxgl-device*) prev-proj
-          (boxgl-device-transform-matrix bw::*boxgl-device*) prev-trans)
-    (update-matrices-ubo bw::*boxgl-device*))))
+      (setf (boxgl-device-projection-matrix bw::*boxgl-device*) prev-proj
+            (boxgl-device-transform-matrix bw::*boxgl-device*) prev-trans)
+      (update-matrices-ubo bw::*boxgl-device*))))
