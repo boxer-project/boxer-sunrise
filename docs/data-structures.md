@@ -31,7 +31,7 @@ There are only a small handful of box types in the boxer system. These are:
 - File boxes
 
 For the most part all the properties for these different boxes lie in the main `defclass box`,
-and marker classes are uses for doit, data, file, and port boxes. Whether a boxe is considered
+and marker classes are uses for doit, data, file, and port boxes. Whether a box is considered
 a sprite or graphics box is determined by value of the `graphics-info` field in a box instance.
 
 ### box - defclass
@@ -47,7 +47,7 @@ boxdef.lisp
 | contained-links | | |
 | current-triggers | | |
 | display-style-list | | |
-| exports | | |
+| exports | symbol | If this value is `nil`, then the box will have a solid line and not export it's variables. If the value is `boxer-eval::.export-all-variables.` then it's a transparent box with the expected dashed lines. See `transparent.lisp` for more implementation details. |
 | first-inferior-row | row | |
 | flags | | |
 | graphics-info | | |
@@ -62,11 +62,27 @@ boxdef.lisp
 | tick | | |
 | trigger-cache | | |
 | virtual-copy-rows | | |
+| | |
+| oooooooooooooooooo | | |
 
 #### static-variables-alist
 
-The `static-variables-alist` is an alist containing values that are used internally but also kept in sync with boxes that
-are presented to users. For the most part these are values for sprites and graphics cursors consisting of:
+The `static-variables-alist` is an alist containing values that are used internally but also kept in sync with boxes that are presented to users. For the most part these are values for sprites and graphics cursors consisting of:
+
+- x-position
+- y-position
+- heading
+- shown?
+- pen
+- pen-width
+- type-font
+- pen-color
+- sprite-size
+- home-position
+
+Most of the functions for syncing and updating these are located in `grupfn.lisp`. (GRoup UPdate FunctioNs dot lisp). The framework and macros for working with these types of values are in `boxdef.lisp` under the "Box Interface Structures" portion.
+
+![Boxer Sprite with variables](./images/box-interface-values.png)
 
 ### row - defclass
 
@@ -133,7 +149,6 @@ disdcl.lisp:104
 | display-style-list | | |
 | force-redisplay-infs? | | |
 | hei | | |
-| max-scroll-wid | | |
 | name | | |
 | needs-redisplay-pass-2 | | |
 | screen-row | | |
@@ -165,8 +180,11 @@ in the architecture.
 
 ### defboxer-primitive
 
-### defrecursive-eval-primitive
+Allows writing primitives in a style similar to `defun` but obeys the evaluator's calling convention: pops arguments off VPDL stack, supports flavoured arguments, and pushes result onto VPDL stack.
 
-### defrecursive-funcall-primitive
+### defrecursive-eval-primitive / defrecursive-funcall-primitive
+
+Necessary for creating primitives that can evaluate Boxer code (`if`, `loop` etc.).
+Such primitives can't call the evaluator, they must be split into before/after/cleanup parts; state between those parts may be kept in global variables that will get saved/restored in a custom PDL frame type that gets defined for each such primitive.
 
 ### defboxer-key

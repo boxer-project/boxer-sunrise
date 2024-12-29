@@ -1,7 +1,7 @@
 ;;;; -*- Mode:lisp;Syntax:Common-Lisp; Package:BOXER; Base:10.-*-
 ;;;;
 ;;;;      Boxer
-;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;      Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -147,31 +147,6 @@
   (call-next-method))
 
 
-
-;;; These are used ONLY by the comaptability loader and should
-;;; eventually be flushed or moved to compat-loader.lisp
-
-(DEFMETHOD SEMI-INIT ((SELF BOX) INIT-PLIST)
-           (SETF   ;;these come from box proper
-                   (FIRST-INFERIOR-ROW SELF) (GETF INIT-PLIST ':SUPERIOR-ROW)
-                   (CACHED-ROWS SELF)        NIL
-                   (NAME SELF)       (WHEN (GETF INIT-PLIST :NAME)
-                                           (MAKE-NAME-ROW `(,(GETF INIT-PLIST :NAME))))
-                   (DISPLAY-STYLE-LIST SELF) (OR (GETF INIT-PLIST ':DISPLAY-STYLE-LIST)
-                                                 (DISPLAY-STYLE-LIST SELF)))
-           (WHEN (NAME-ROW? (slot-value self 'name))
-                 (SET-SUPERIOR-BOX (slot-value self 'name) SELF))
-           (SET-TYPE SELF (OR (GETF INIT-PLIST ':TYPE) 'DOIT-BOX)))
-
-(DEFMETHOD RETURN-INIT-PLIST-FOR-FILING ((SELF BOX))
-           `(:TYPE ,(class-name (class-of SELF))
-                    :DISPLAY-STYLE-LIST ,(DISPLAY-STYLE-LIST SELF)))
-
-
-
-
-
-
 ;;;these are messages to boxes which are used for moving up and down levels
 ;;;in box structures
 
@@ -184,10 +159,6 @@
     (maybe-run-trigger self 'bu::entry-trigger)))
 
 (defmethod enter ((self port-box) &optional (moved-p? t))
-  ;; if this is an unarticulated cross file port, relink it
-  (when (and (null (slot-value self 'ports))
-             (not (null (cross-file-port-branch-links self))))
-    (articulate-target-branch (car (cross-file-port-branch-links self))))
   (setq boxer-eval::*lexical-variables-root* (ports self))
   ;; is this appropriate ?
   (when (not (null moved-p?))
@@ -435,13 +406,6 @@
                  (funcall handler self (superior-box self))))
              |#
              (setf (cached-code self) nil)
-             (let ((old-gss (getf (slot-value self 'plist) 'old-graphics-sheets)))
-               (when (consp old-gss)
-                 (dolist (gs-pair old-gss)
-                   (let ((ba (graphics-sheet-bit-array (cdr gs-pair))))
-                     (unless (null ba) (free-offscreen-bitmap ba))))
-                 (setf (getf (slot-value self 'plist) 'old-graphics-sheets)
-                       nil)))
              (decache-build-function self)
              ;; decache visible-screen-objs
              (decache-visible-screen-objs self)
@@ -620,9 +584,6 @@
 ;;; inferior rows onto the queue for later processing
 
 (defmethod deallocate-self ((self box))
-  (when (storage-chunk? self)
-    ;; Inform the server that the box will be deleted
-    (boxnet::queue-for-server-deletion self))
   ;; should deallocate system dependent objects which have
   ;; been hung on the box
   (deallocate-system-dependent-structures self)
@@ -844,7 +805,7 @@ higher level copy operation. ")
       (with-mouse-cursor (:wait)
         ;; this does a tree walk so it can take a while
         (boxer-eval::evaluator-delete-self-action self superior-box))
-      (boxnet::storage-chunk-delete-self-action self)
+      ;; sgithens 2022-08-31 TODO Remove (boxnet::storage-chunk-delete-self-action self)
       (when (not-null (exports self))
         (boxer-eval::remove-all-exported-bindings self superior-box)
         (boxer-eval::unexport-inferior-properties self superior-box)))))
@@ -877,7 +838,7 @@ higher level copy operation. ")
       (update-bindings (slot-value self 'name) t))
     (when (not (null (slot-value self 'exports)))
       (when (not-null superior)
-        (boxnet::storage-chunk-insert-self-action self)
+        ;; sgithens 2022-08-31 TODO Remove (boxnet::storage-chunk-insert-self-action self)
         (boxer-eval::propagate-all-exported-bindings self superior)
         (boxer-eval::export-inferior-properties self superior)))
     (when (and (sprite-box? self) (not-null superior))
@@ -1388,6 +1349,13 @@ points to the Box which contains the lower BP,then the superior BP is returned"
 (defvar *boxer-status-string-alist* nil
   "An alist of unique ids or symbols and strings")
 
+(defvar *draw-status-line* t
+  "A boolean indicating whether we should draw the status line.
+
+  The initial usage of this is displabling the status line for
+  unit tests, during which the entire pane/editor is not brought
+  up.")
+
 (defun status-line-display (who what)
   (setq *boxer-status-string-alist*
         (delete who *boxer-status-string-alist* :key #'car))
@@ -1422,8 +1390,9 @@ points to the Box which contains the lower BP,then the superior BP is returned"
 
 (defun redraw-status-line (&rest ignore)
   (declare (ignore ignore))
-  (window-system-dependent-redraw-status-line
-   (get-boxer-status-string)))
+  (when *draw-status-line*
+    (window-system-dependent-redraw-status-line
+      (get-boxer-status-string))))
 
 ;;; use 'boxer-editor-error for status-line ID so it will get
 ;; flushed on subsequent keyboard input
@@ -1460,8 +1429,7 @@ points to the Box which contains the lower BP,then the superior BP is returned"
     (catch *input-throw-tag*
       (loop (multiple-value-bind (char bits)
                                  (get-character-input *boxer-pane*)
-                                 (declare (ignore bits))
-                                 (cond ((editor-abort-char? char)
+                                 (cond ((editor-abort-char? char bits)
                                         (status-line-undisplay 'boxer-editor-error)
                                         (return-from get-string-from-status-line (values "" T)))
                                    (t
@@ -1486,10 +1454,6 @@ points to the Box which contains the lower BP,then the superior BP is returned"
     (if cancelled? (values "" T) return-string)))
 
 ;;; Name Tab utilities
-
-;;  *FONT-NUMBER-FOR-NAMING* should be changed to...
-;; (defvar *name-tab-character-style* ':bold)
-;; this is now handled by the borders themselves
 
 (defmethod insert-cha-at-cha-no ((row name-row) cha cha-no)
   ;  "Gives the characters in the naming area a different font. "
@@ -1678,7 +1642,7 @@ points to the Box which contains the lower BP,then the superior BP is returned"
                                   NIL))))
              (set-superior-box cr box)
              (boxer-eval::set-box-transparency exporting-box t)
-             (set-name exporting-box (make-name-row '(bu::closet)))
+             (set-name exporting-box (make-name-row '(bu::drawer)))
              (setf (slot-value box 'closets) cr)
              (do-row-chas ((cha cr))
                (when (box? cha) (insert-self-action cha box)))

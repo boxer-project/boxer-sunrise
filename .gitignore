@@ -6,3 +6,6 @@
 *.x86f
 *~
 .#*
+data/boxersunrise.app/Contents/CodeResources
+data/boxersunrise.app/Contents/_CodeSignature/CodeResources
+.DS_Store

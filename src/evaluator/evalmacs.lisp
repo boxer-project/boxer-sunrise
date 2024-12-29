@@ -1,7 +1,7 @@
 ;;; -*- Syntax: Common-lisp; Base: 10; Package: EVAL -*-
 ;;;;
 ;;;;        Boxer
-;;;;        Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;        Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;        Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;        used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -52,10 +52,17 @@
     `(let ((,eval-completion-gensym nil))
        (catch 'boxer-error
          (unwind-protect
-          (compiler-let ()
+          ;; sgithens TODO 2024-03-18 This has been commented out for a while, but since it's in a pretty
+          ;;               critical location, going to wait a bit longer before removing it.  Especially
+          ;;               since it's needed in the stepper.
+          ; (compiler-let ()
                         (let ,(create-local-eval-state-vars-bvl)
-                          (compiler-let ()
-                                        (prog1 (progn . ,body) (setq ,eval-completion-gensym t)))))
+                          ; (compiler-let ()
+                                        (prog1 (progn . ,body) (setq ,eval-completion-gensym t))
+                          ; )
+                        )
+          ; )
+
           (unless ,eval-completion-gensym
             (when boxer::*boxer-system-hacker* (format t "~%Unwinding stack..."))
             (unwind-to-top-level)
@@ -168,19 +175,6 @@
 (defmacro squid-token? (thing)
   `(eq (special-token-type ,thing) 'self-quoting-internal-datum))
 
-;;;
-;;; Compiler interface
-;;;
-(defvar *old-compilation-speed* 0)
-
-(defmacro compile-lambda-if-possible (name lambda-form)
-  `(cond ((null *compile-boxer-generated-lambda?*) ,lambda-form)
-     ((eq *compile-boxer-generated-lambda?* :fast-compile)
-      (proclaim '(optimize (compilation-speed 3)))
-      (unwind-protect (symbol-function (compile ,name ,lambda-form))
-                      (proclaim `(optimize (compilation-speed ,*old-compilation-speed*)))))
-     (t
-      (symbol-function (compile ,name ,lambda-form)))))
 
 ;;;
 ;;; Polling/Interrupts

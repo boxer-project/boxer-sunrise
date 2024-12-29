@@ -1,6 +1,6 @@
 ;;;;
 ;;;;      Boxer
-;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;      Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -36,9 +36,9 @@
   "We support fonts of any size now, but these are the sizes that will be
   available from the drop down menu in the UI.")
 
-(defvar *font-size-baseline* 1
+(defvar *font-size-baseline* 1.0
   "This is the font zoom percentage. Default is 1, 100% In practice we are allowing this to be somewhere between .5
-  and 4... 50% to 400% zooming.")
+  and 4... 50% to 400% zooming. This should be a float.")
 
 (defvar *font-cache* nil ;
   "This is a regular list of `opengl-font` structs. Order is important during boxer execution
@@ -167,3 +167,20 @@
            (if to-on?
                (make-boxer-font (append (remove :ITALIC fontspec) '(:ITALIC)))
                (make-boxer-font (remove :ITALIC fontspec)))))))
+
+(defun initialize-fonts ()
+  (let ((arial-12 (make-boxer-font '("Arial" 12)))
+            (arial-16 (make-boxer-font '("Arial" 16)))
+            (arial-16-bold (make-boxer-font '("Arial" 16 :bold))))
+        (setq *normal-font-no*           arial-16
+              *default-font*             arial-16
+              *box-border-label-font-no* arial-12
+              *border-label-font*        arial-12
+              *box-border-name-font-no*  arial-16-bold
+              *border-name-font*         arial-16-bold
+              *sprite-type-font-no*      arial-16-bold
+              *initial-graphics-state-current-font-no* arial-16-bold
+              *graphics-state-current-font-no* arial-16-bold
+              *boxtop-text-font*         arial-16-bold
+              *default-font-descriptor* (make-bfd -1 *default-font*)
+              *current-font-descriptor* (make-bfd -1 *default-font*))))

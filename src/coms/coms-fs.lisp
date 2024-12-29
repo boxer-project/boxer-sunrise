@@ -7,7 +7,7 @@
  $Log$
 
     Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+    Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 
     Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
     used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -256,31 +256,24 @@ Modification History (most recent at top)
         (mark-file-box-clean box))))
   boxer-eval::*novalue*)
 
-(defboxer-command com-open-box-file (&optional explicit-redisplay file-to-open)
+(defboxer-command com-open-box-file (&optional file-to-open)
   "Inserts the contents of a Boxer file"
   (if (name-row? (point-row))
     (boxer-editor-error "Can't insert a (file) box while in a name")
     (progn
       (catch 'cancel-boxer-file-dialog
         (boxer-eval::report-eval-errors-in-editor
-          ;; (with-drawing-port *boxer-pane*
           (let* ((filename (or file-to-open (boxer-open-file-dialog)))
                  (box (read-internal filename)))
             (when (box? box)
               ;; if this was previously, a saved world box, we need to
               ;; fix up the name slot
-              (multiple-value-bind (ro? world-box?)
-                  #+mcl (boxer-file-info filename) ;; looks in resource fork
-                #-mcl (values nil nil)
-                (declare (ignore ro?))
-                (when (or world-box?
-                          (and (stringp (slot-value box 'name))
-                               (string= (slot-value box 'name) "WORLD")))
-                  (setf (slot-value box 'name) nil)))
+              (when (and (stringp (slot-value box 'name))
+                         (string= (slot-value box 'name) "WORLD"))
+                (setf (slot-value box 'name) nil))
               (insert-cha *point* box)
               ;; Add the newly opened file to the recents list
-              (add-recent-file filename)
-              (when explicit-redisplay (repaint))))))
+              (add-recent-file filename)))))
       ;; this marks the box superior to the box being loaded
       (mark-file-box-dirty (point-row))))
   boxer-eval::*novalue*)
@@ -293,7 +286,7 @@ Modification History (most recent at top)
 (defun set-file-box-properties (box)
   (set-always-zoom? box t))
 
-(defboxer-command com-new-file-box (&optional explicit-redisplay)
+(defboxer-command com-new-file-box ()
   "makes a File (data) box at the cursor location."
   (let ((region-to-box (or *region-being-defined* (get-current-region))))
     (reset-editor-numeric-arg)
@@ -316,13 +309,11 @@ Modification History (most recent at top)
            (let ((box (make-initialized-box :type 'data-box)))
              (set-file-box-properties box)
              (mark-box-as-file box)
-             #-opengl (add-redisplay-clue (point-row) ':insert)
              (set-type box 'data-box)
              (insert-cha *point* box ':fixed)
              ;; mark the containing box before entering
              (mark-file-box-dirty (point-row))
              (com-enter-box)))))
-  (when explicit-redisplay (repaint))
   boxer-eval::*novalue*)
 
 ;; rewrite this to CONS less later....
@@ -332,6 +323,14 @@ Modification History (most recent at top)
          (local-string (if (null nr) "[]" (text-string nr))))
     (cond ((null sb) local-string)
           (t (concatenate 'string (editor-location-string sb) "." local-string)))))
+
+(defun modified-boxes-for-close (&optional (box *initial-box*))
+  "Returns a subset of the boxes in *dirty-file-boxes*. Essentially, we only boxes which
+  are still connected hierarchicly below the *initial-box*. Occasionally the dirty file list
+  will contain some boxes which are no longer in the structure."
+  (remove-if-not #'(lambda (fb)
+                     (and (not (eq fb *initial-box*)) (superior? fb *initial-box*)))
+                 *dirty-file-boxes*))
 
 ;; look for modified inferior file boxes and offer to save them
 ;; should also look for RO boxes with no pathname
@@ -387,7 +386,7 @@ Modification History (most recent at top)
 (defboxer-command com-export-box-as (&optional (ffc *default-ffc*))
   "Write the contents of a box out in a different format"
   (catch 'cancel-boxer-file-dialog
-    (let ((filename (capi:prompt-for-file "Export box to..."
+    #+lispworks (let ((filename (capi:prompt-for-file "Export box to..."
                                           :filter (ffc-file-filter ffc)
                                           :filters *foreign-file-filters*
                                           :operation :save
@@ -395,9 +394,10 @@ Modification History (most recent at top)
                                           :if-does-not-exist :ok
                                           :owner *boxer-frame*)))
       ;; choose export type...
-      (with-hilited-box ((point-box))
-        (writing-foreign-file (stream ffc filename)
-          (export-box-internal (point-box) ffc stream))))))
+      (unless (null filename) ;; If the user hit cancel on the file dialog, filename is nil
+        (with-hilited-box ((point-box))
+          (writing-foreign-file (stream ffc filename)
+            (export-box-internal (point-box) ffc stream)))))))
 
 ;; if we are closing a box with a boxtop, need to put the boxtop onto the
 ;; :cached-boxtop prop for the box since the inferiors will get deallocated
@@ -486,20 +486,18 @@ Modification History (most recent at top)
 (defvar *name-link-boxes* t
   "When T, give link boxes the same name as the filename, NIL for unnamed link boxes")
 
-(defboxer-command com-open-link-file (&optional explicit-redisplay)
+(defboxer-command com-open-link-file ()
   "Inserts the contents of a Boxer file"
   (if (name-row? (point-row))
     (boxer-editor-error "Can't insert a (file) box while in a name")
     (progn
       (catch 'cancel-boxer-file-dialog
         (boxer-eval::report-eval-errors-in-editor
-          ;; (with-drawing-port *boxer-pane*
           (let* ((filename (open-xref-file-dialog))
                  (xbox (make-xfile-box filename)))
             (when *name-link-boxes*
               (set-name xbox (make-name-row (list (pathname-name filename)))))
-            (insert-cha *point* xbox)
-            (when explicit-redisplay (repaint)))))
+            (insert-cha *point* xbox))))
       ;; this marks the box superior to the box being loaded
       (mark-file-box-dirty (point-row))))
   boxer-eval::*novalue*)

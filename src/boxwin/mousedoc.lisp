@@ -1,6 +1,6 @@
 ;;;;
 ;;;;      Boxer
-;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;      Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -115,7 +115,17 @@
 ;; OpenGL uses 2 slots which cache the X,Y coords of where to draw the
 ;; highlighting
 
-(defvar *mouse-doc-status* (make-array 7))
+(defvar *mouse-doc-status* (make-array 7)
+  "This is currently a boxer storage vector of size 7 with the following components:
+    - 0 Place Symbol: :INSIDE :OUTSIDE :NAME :SCROLL-BAR :TYPE :BOTTOM-RIGHT :BOTTOM-LEFT
+                      :TOP-RIGHT :TOP-LEFT
+    - 1 Screen Box
+    - 2 x
+    - 3 y
+    - 4 popup-doc
+    - 5 popup-x
+    - 6 popup-y
+")
 
 ;; mouse status is a vector
 (defun mouse-doc-status () *mouse-doc-status*)
@@ -298,19 +308,18 @@
 (defun safe-get-sprite-mouse-doc (sprite-box)
   (when (boxer::sprite-box? sprite-box)
     (let ((doc nil))
-      (ignore-errors
        (setq doc
              (let* ((boxer-eval::*lexical-variables-root* sprite-box)
                     (docbox (boxer-eval::boxer-symeval 'bu::sprite-mouse-documentation)))
                (unless (eq docbox boxer-eval::*novalue*)
-                 (boxer::box-text-string docbox)))))
+                 (boxer::box-text-string docbox))))
       doc)))
 
 (defun mouse-place ()
   (multiple-value-bind (xpos ypos)
       (boxer-pane-mouse-position)
     (multiple-value-bind (area box)
-        (ignore-errors (boxer::mouse-documentation-area xpos ypos))
+        (boxer::mouse-documentation-area xpos ypos)
       (values area box))))
 
 (defun document-top-left-mouse (screen-box popup-only?)

@@ -12,7 +12,7 @@
 ;;;
 
     Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+    Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 
     Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
     used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -175,7 +175,6 @@ row instead. "
         (delete-cha-at-cha-no row i))
       (insert-row-chas bp (make-row '("   |")) :moving)))
      (when (not (null processed-returned-value))
-       #-opengl (add-redisplay-clue (bp-row bp) ':insert)
        (insert-row-chas bp (make-row `(,processed-returned-value)))))
       ;; make sure the bp used in printing gets deallocated
       (deallocate-bp bp))))
@@ -202,10 +201,7 @@ row instead. "
                                  (not new?))
            (modified (box-point-is-in))
            ;; now put the point in the closet
-           (move-point (row-first-bp-values closet-row))
-           (unless new?
-             (dolist (sr (screen-objs closet-row))
-               (set-force-redisplay-infs? sr))))
+           (move-point (row-first-bp-values closet-row)))
           (t
            ;; we must be partially scrolled, so insert the
            ;; closet-row as the 1st VISISBLE row
@@ -217,10 +213,7 @@ row instead. "
                                  (not new?))
            (set-scroll-to-actual-row (screen-box-point-is-in)
                                      closet-row)
-           (modified (box-point-is-in))
-           (unless new?
-             (dolist (sr (screen-objs closet-row))
-               (set-force-redisplay-infs? sr))))))
+           (modified (box-point-is-in)))))
   boxer-eval::*novalue*)
 
 (defboxer-command com-close-closets ()
@@ -297,14 +290,7 @@ row instead. "
                  (modified box)
                  ;; now put the point in the closet, If there is only one box
                  (when (eq box (box-point-is-in))
-                   (move-point (row-first-bp-values closet-row)))
-                 (let* ((bir (boxes-in-row closet-row))
-                        (sos (and bir (screen-objs (car bir)))))
-                   (unless (null sos)
-                     ;; don't need to set this if there were not any
-                     ;; screen objs BEFORE the explicit call to redisplay
-                     (dolist (sr (screen-objs closet-row))
-                       (set-force-redisplay-infs? sr)))))
+                   (move-point (row-first-bp-values closet-row))))
                 (t
                  ;; we must be partially scrolled, so insert the
                  ;; closet-row as the 1st VISISBLE row
@@ -313,12 +299,7 @@ row instead. "
                                         box (scroll-to-actual-row screen-box))
                                        (not new?))
                  (set-scroll-to-actual-row screen-box closet-row)
-                 (modified box)
-                 (let* ((bir (boxes-in-row closet-row))
-                        (sos (and bir (screen-objs (car bir)))))
-                   (unless (null sos)
-                     (dolist (sr (screen-objs closet-row))
-                       (set-force-redisplay-infs? sr))))))))
+                 (modified box)))))
             ((row-row-no box closet-row)
              ;; the closet row must be visible so we should remove it
              ;; moving the *point* out of the way if we have to...
@@ -371,7 +352,6 @@ row instead. "
          (when (and (not (eq (car arglist)
            'boxer-eval::*ignoring-definition-object*))
         (not (boxer-eval::flavored-input-marker? (car arglist))))
-     #-opengl (add-redisplay-clue (point-row) ':insert)
      (boxer-eval::step-replace-token
       chunk-no (let ((new-box (make-box '(()))))
            (set-name new-box
@@ -386,7 +366,6 @@ row instead. "
         (arglist-for-prompter
          (chunk-chunk (get-pointer-value chunk nil)))))
          (unless (null arglist)
-           #-opengl (add-redisplay-clue (point-row) ':insert)
            (insert-prompter-arglist
       arglist
       (end-of-chunk-cha-no (point-row) chunk)))))))))
@@ -429,20 +408,7 @@ row instead. "
   "Read a character and document it."
   (status-line-display 'com-document-key "Press a key or click the mouse...")
   (let* ((input (get-boxer-input *boxer-pane*))
-         (key-name (if (key-event? input)
-                     (lookup-key-name (input-code input)
-                                      (input-bits input))
-                     (let ((click  (mouse-event-click  input))
-                           (x-pos  (mouse-event-x-pos  input))
-                           (y-pos  (mouse-event-y-pos  input))
-                           (bits   (mouse-event-bits   input)))
-                       ;; now call the mouse tracker to see if we
-                       ;; are on a border area
-                       (multiple-value-bind (mouse-bp local-x local-y
-                                                      area)
-                    (mouse-position-values x-pos y-pos)
-                         (declare (ignore mouse-bp local-x local-y))
-                         (lookup-click-name click bits area)))))
+         (key-name (lookup-input-name input))
          (value (boxer-eval::boxer-symeval key-name))
          (*current-font-descriptor* (or *help-font-descriptor*
                                         *default-font-descriptor*)))
@@ -533,14 +499,10 @@ row instead. "
                   (let ((*current-font-descriptor*
                          (or *help-font-descriptor* *default-font-descriptor*)))
                     (make-box '(("To see inputs for a function")
-                                #-mcl(" press ctrl-<help> or ctrl-? after the name of the function.")
-                              ;#+mcl(" press cmd-<help> or cmd-? after the name of the function.")
-                                ;; option-shift-K is the apple glyph
-                                #+mcl(" press �-<help> or �-? after the name of the function.")
+                                (" press ctrl-<help> or ctrl-? after the name of the function.")
                                 ()
                                 ("To get help on a key stroke or mouse action")
-                                #-mcl(" press meta-<help> or meta-?")
-                                #+mcl(" press option-<help> or option-?")
+                                (" press meta-<help> or meta-?")
                                 ()
                                 ("To get help on the name or spelling of a command")
                                 ("use \"name-help <string>\", where string is a sequence")
@@ -557,74 +519,11 @@ followed by a return."
   (reset-region)
   (status-line-display 'com-insert-key-name "Press any key...")
   (let* ((input (get-boxer-input *boxer-pane*))
-   (key-name (if (key-event? input)
-                     (lookup-key-name (input-code input) (input-bits input))
-                     (let ((click  (mouse-event-click  input))
-                           (x-pos  (mouse-event-x-pos  input))
-                           (y-pos  (mouse-event-y-pos  input))
-                           (bits   (mouse-event-bits   input)))
-                       ;; now call the mouse tracker to see if we
-                       ;; are on a border area
-                       (multiple-value-bind (mouse-bp local-x local-y
-                                                      area)
-                    (mouse-position-values x-pos y-pos)
-                         (declare (ignore mouse-bp local-x local-y))
-                         (lookup-click-name click bits area)))))
+   (key-name (lookup-input-name input))
    (key-string (string key-name)))
     (status-line-undisplay 'com-insert-key-name)
     (unless (null key-name)
       (dotimes& (i (length key-string))
-  (insert-cha *point* (aref key-string i))))
-    #-opengl (add-redisplay-clue (point-row) ':insert))
+  (insert-cha *point* (aref key-string i)))))
   (com-return)
-  boxer-eval::*novalue*)
-
-
-
-#+mcl
-(defboxer-command com-link-to-mac-file ()
-  "Make a Link to a non boxer Macintosh file"
-  (boxer-editor-message "Choose a file to link to...")
-  (ccl::catch-cancel
-    (let* ((linkfile (ccl::choose-file-dialog :button-string "Link"))
-           (xbox (if (box-file? linkfile)
-                     (make-file-box linkfile)
-                     (make-xfile-box linkfile))))
-      (when (box? xbox) (insert-cha *point* xbox))))
-  (clear-editor-message)
-  boxer-eval::*novalue*)
-
-(defun box-file? (pathname)
-  (or #+mcl (eq (ccl:mac-file-type pathname) :BOXR)
-      ;; peek at the beginning bytes...
-      (let ((b0 (ldb (byte 8 0) bin-op-format-version))
-            (b1 (ldb (byte 8 8) bin-op-format-version))
-            f0 f1 f2 f3)
-        (with-open-file (s pathname :element-type '(unsigned-byte 8))
-          (setq f0 (read-byte s nil nil) f1 (read-byte s nil nil)
-                f2 (read-byte s nil nil) f3 (read-byte s nil nil)))
-        (unless (or (null f0) (null f1) (null f2) (null f3))
-          (or
-           (and (= b0 f0) (= b1 f1) (= f2 *version-number*) (= f3 0))
-           ;; byte swapping version...
-           (and (= b0 f1) (= b1 f0) (= f3 *version-number*) (= f2 0)))))))
-
-;; this should go somewhere else (file-prims.lisp ?)
-(defun make-file-box (pathname)
-  (multiple-value-bind (RO world maj min btype bname)
-      (boxer-file-info pathname)
-    (declare (ignore RO world maj min))
-    (let ((filebox (make-box '(()) btype bname)))
-      (mark-box-as-file filebox pathname)
-      (shrink filebox)
-      (setf (first-inferior-row filebox) nil)
-      filebox)))
-
-;; is (point-box) the right thing ?
-#+mcl
-(defboxer-command com-edit-mac-link ()
-  "Change the file a link points to"
-  (boxer-editor-message "Change the link's file...")
-  (ccl::catch-cancel (edit-mac-file-ref (point-box)))
-  (when (eq :normal (display-style (point-box))) (com-shrink-box))
   boxer-eval::*novalue*)

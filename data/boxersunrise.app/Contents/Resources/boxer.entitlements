@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- sgithens 2021-11-16 These entitlements are very much in-progress and not finalized yet. -->
+
+    <!-- <key>com.apple.security.app-sandbox</key>
+    <true/> -->
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+    <key>com.apple.security.network.client</key>
+    <true/>
+    <key>com.apple.security.network.server</key>
+    <true/>
+    <key>com.apple.security.temporary-exception.files.home-relative-path.read-write</key>
+    <array>
+    <string>Library/Application Support/Boxer/boxapp-data.lisp</string>
+    <string>Library/Preferences/Boxer.prf</string>
+    </array>
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+    <!-- <key>com.apple.developer.kernel.extended-virtual-addressing</key>
+    <true/> -->
+
+    <!-- https://github.com/gnachman/iTerm2/blob/master/iTerm2.entitlements -->
+    <key>com.apple.security.automation.apple-events</key>
+    <true/>
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+    <key>com.apple.security.device.audio-input</key>
+    <true/>
+    <key>com.apple.security.device.camera</key>
+    <true/>
+    <key>com.apple.security.personal-information.addressbook</key>
+    <true/>
+    <key>com.apple.security.personal-information.calendars</key>
+    <true/>
+    <key>com.apple.security.personal-information.location</key>
+    <true/>
+    <key>com.apple.security.personal-information.photos-library</key>
+    <true/>
+
+    <!-- https://github.com/gnachman/iTerm2/commit/323300a835e01fa73e3fc910d1cf0af0641eef86#diff-3f016271067aaf5e909fa9a1bda11c659c4ef11e0b7af522b2e031b19c9f4a09 -->
+    <key>com.apple.security.cs.allow-dyld-environment-variables</key>
+    <true/>
+    <!-- <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/> -->
+    <key>com.apple.security.cs.disable-executable-page-protection</key>
+    <true/>
+    <!-- <key>com.apple.security.cs.disable-library-validation</key>
+    <true/> -->
+</dict>
+</plist>

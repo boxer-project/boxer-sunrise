@@ -1,7 +1,7 @@
 ;;;;  -*- Mode:LISP;Syntax:Common-Lisp; Package:BOXER;-*-
 ;;;;
 ;;;;      Boxer
-;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;      Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those ;;;;  portions may be
 ;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is ;;;;  retained.
@@ -98,9 +98,7 @@
         (screen-obj-hei self) 0
         (screen-obj-x-got-clipped? self) nil
         (screen-obj-y-got-clipped? self) nil
-        (screen-obj-tick self) -1
-        (screen-obj-needs-redisplay-pass-2? self) nil
-        (screen-obj-force-redisplay-infs? self) nil))
+        (screen-obj-tick self) -1))
 
 
 ;;; temporary hack to debug screen-box allocation problem
@@ -145,12 +143,6 @@
         (slot-value self 'scroll-to-actual-row) nil
         (slot-value self 'scroll-x-offset) 0
         (slot-value self 'scroll-x-offset) 0)
-  ;  #-opengl
-  ;  (unless (null (slot-value self 'cached-border-info))
-  ;    (setf (basic-box-borders-cache-valid (slot-value self 'cached-border-info))
-  ;	  nil))
-  (unless (null (slot-value self 'cached-absolute-pos))
-    (setf (ab-pos-cache-valid (slot-value self 'cached-absolute-pos)) nil))
   (set-display-style self nil)
   (cond ((or (graphics-screen-box? self) (sprite-screen-box? self))
          ;; these go back on the graphics queue
@@ -183,8 +175,7 @@
 
 (defmethod re-init ((self graphics-screen-box) new-actual-obj)
   (declare (ignore new-actual-obj))
-  (call-next-method)
-  (setf (slot-value self 'force-redisplay-infs?) t))
+  (call-next-method))
 
 ;; sprite-screen-box RE-INIT: inherit from screen-box for now...
 
@@ -193,8 +184,7 @@
   ;; should this restore the original size ?
   (clear-storage-vector (slot-value self 'screen-chas))
   (setf (screen-chas-array-fds (slot-value self 'screen-chas)) nil)
-  (setf (screen-obj-force-redisplay-infs? self) nil
-        (slot-value self 'baseline) 0
+  (setf (slot-value self 'baseline) 0
         (slot-value self 'screen-box) nil))
 
 
@@ -303,6 +293,9 @@
 ;;; screen-objs of that type.
 
 (defmethod deallocate-self ((self screen-row))
+  (when (getprop self :gl-model)
+    (reset-meshes (getprop self :gl-model)))
+
   (when (null (slot-value self 'screen-box))
     (deallocate-inferiors self)
     (unless (null (screen-obj-actual-obj self))
@@ -319,9 +312,12 @@
        (deallocate-screen-obj-internal self)))))
 
 (defun clear-graphics-screen-sheet (gss)
-  (setf (graphics-screen-sheet-actual-obj gss) nil))
+  (setf (screen-obj-actual-obj gss) nil))
 
 (defmethod deallocate-self ((self graphics-screen-box))
+  (when (getprop self :graphics-canvas)
+    (clear (getprop self :graphics-canvas)))
+
   (delete-screen-obj (screen-obj-actual-obj self) self)
   (when (typep (screen-sheet self) 'graphics-screen-sheet)
     (clear-graphics-screen-sheet (screen-sheet self)))
@@ -380,22 +376,23 @@
   (values (screen-obj-wid screen-obj)
           (screen-obj-hei screen-obj)))
 
-(DEFUN SCREEN-BOXES-AND-WHITESPACE-SIZE (SCREEN-BOXES &AUX(WID 0) (HEI 0))
-       (LET ((FIRST-BOX (CAR SCREEN-BOXES))
-             (LAST-BOX (CAR (LAST SCREEN-BOXES))))
-            (SETQ WID (- (+ (SCREEN-OBJ-X-OFFSET LAST-BOX) (SCREEN-OBJ-WID LAST-BOX))
-                         (SCREEN-OBJ-X-OFFSET FIRST-BOX)))
-            (DOLIST (SCREEN-BOX SCREEN-BOXES)
-                    (SETQ HEI (MAX (SCREEN-OBJ-HEI SCREEN-BOX) HEI)))
-            (VALUES WID HEI)))
+;; sgithens TODO 2024-04-17 this appears unused anywhere
+;; (DEFUN SCREEN-BOXES-AND-WHITESPACE-SIZE (SCREEN-BOXES &AUX(WID 0) (HEI 0))
+;;        (LET ((FIRST-BOX (CAR SCREEN-BOXES))
+;;              (LAST-BOX (CAR (LAST SCREEN-BOXES))))
+;;             (SETQ WID (- (+ (SCREEN-OBJ-X-OFFSET LAST-BOX) (SCREEN-OBJ-WID LAST-BOX))
+;;                          (SCREEN-OBJ-X-OFFSET FIRST-BOX)))
+;;             (DOLIST (SCREEN-BOX SCREEN-BOXES)
+;;                     (SETQ HEI (MAX (SCREEN-OBJ-HEI SCREEN-BOX) HEI)))
+;;             (VALUES WID HEI)))
 
-(DEFUN MAP-OVER-SCREEN-OBJ (SCREEN-OBJ FN)
-       (FUNCALL FN SCREEN-OBJ)
-       (MAP-OVER-SCREEN-OBJS (INFERIORS SCREEN-OBJ) FN))
+;; (DEFUN MAP-OVER-SCREEN-OBJ (SCREEN-OBJ FN)
+;;        (FUNCALL FN SCREEN-OBJ)
+;;        (MAP-OVER-SCREEN-OBJS (INFERIORS SCREEN-OBJ) FN))
 
-(DEFUN MAP-OVER-SCREEN-OBJS (LIST-OF-SCREEN-OBJS FN)
-       (DOLIST (SCREEN-OBJ LIST-OF-SCREEN-OBJS)
-               (MAP-OVER-SCREEN-OBJ SCREEN-OBJ FN)))
+;; (DEFUN MAP-OVER-SCREEN-OBJS (LIST-OF-SCREEN-OBJS FN)
+;;        (DOLIST (SCREEN-OBJ LIST-OF-SCREEN-OBJS)
+;;                (MAP-OVER-SCREEN-OBJ SCREEN-OBJ FN)))
 
 
 (defun screen-obj-zero-size (screen-obj)
@@ -414,145 +411,12 @@
       (cha-hei)
       (screen-obj-hei screen-object))))
 
-;;; this erases ONLY characters to the end of the line
-;;; NOTE: this CAN'T just iterate through the screen chas erasing
-;;; characters BECAUSE the screen-chas may have been side effected
-;;; HOWEVER, any boxes will still have valid offsets and widths so
-;;; we use the boxes to delimit regions to erase.
-;;; If there are no boxes, we simply erase to the end of the row
-;;; This may actually turn out to be faster (especially in the X
-;;; implementation) because of fewer graphics commands
-
-(defun erase-chas-to-eol (cha-no screen-chas x-offset y-offset row-width
-                                 &optional boxes-too)
-  (let ((erase-height 0)
-        (current-x-offset x-offset))
-    (do-screen-chas-with-font-info (cha screen-chas :start cha-no)
-      (cond ((screen-cha? cha)
-             (setq erase-height (max erase-height (cha-hei))))
-        ((not (null boxes-too))
-         ;; we want to erase boxes as well as characters
-         ;; first, adjust the size of the erasing rectangle
-         (setq erase-height (max erase-height (screen-obj-hei cha)))
-         ;; now do all the things erase-screen-box would have done
-         ;(screen-obj-zero-size cha) ; huh ? this seems to break things
-         (set-needs-redisplay-pass-2? cha t)
-         (set-force-redisplay-infs?   cha t))
-        (t
-         ;; looks like we hit a box, and we want to preserve the box
-         ;; erase from the current-x-offset to the beginning of the box
-         (erase-rectangle (- (screen-obj-x-offset cha) current-x-offset)
-                          erase-height
-                          current-x-offset y-offset)
-         ;; now setup the values for the next block
-         (setq erase-height 0)
-         (setq current-x-offset (+ (screen-obj-x-offset cha)
-                                   (screen-obj-wid      cha))))))
-    ;; now finish off the rest of the row
-    (erase-rectangle (- row-width current-x-offset) erase-height
-                     current-x-offset y-offset)))
-
-(defun erase-screen-cha (screen-cha x-offset y-offset)
-  (if (not-null screen-cha)
-    (let ((wid (cha-wid screen-cha))
-          (hei (cha-hei)))
-      (erase-rectangle wid hei x-offset y-offset))
-    (barf "null screen-cha for some reason")))
-
-(defun erase-screen-box (screen-box x-offset y-offset)
-  (multiple-value-bind (wid hei)
-                       (screen-obj-size screen-box)
-                       (erase-rectangle wid hei x-offset y-offset))
-  (screen-obj-zero-size screen-box)
-  (set-needs-redisplay-pass-2? screen-box t)
-  (set-force-redisplay-infs? screen-box t))
-
-(defun erase-screen-chas (chas start-cha-no x-offset y-offset
-                               &optional stop-cha-no)
-  (do-screen-chas-with-font-info (cha-to-erase chas
-                                               :start start-cha-no
-                                               :stop stop-cha-no)
-    (let (obj-wid)
-      (cond ((screen-cha? cha-to-erase)
-             (setq obj-wid (cha-wid cha-to-erase))
-             (erase-screen-cha cha-to-erase x-offset y-offset))
-        (t
-         (setq obj-wid (screen-obj-wid cha-to-erase))
-         (erase-screen-box cha-to-erase x-offset y-offset)))
-      ;; now increment the x-offset (y-ofset doesn't change on the row)
-      (setq x-offset  (+ x-offset obj-wid)))))
-
-(defun erase-screen-obj (screen-obj)
-  (when (not-null screen-obj)
-    ;; sgithens TODO (check-screen-obj-arg screen-obj)
-    (multiple-value-bind (wid hei)
-                         (screen-obj-size screen-obj)
-                         (multiple-value-bind (x-offset y-offset)
-                                              (screen-obj-offsets screen-obj)
-                                              (erase-rectangle wid hei x-offset y-offset)
-                                              (screen-obj-zero-size screen-obj)
-                                              (set-needs-redisplay-pass-2? screen-obj t)
-                                              (set-force-redisplay-infs? screen-obj t)))))
-
-
-
-;;;; Utilities for Handling the screen-row-rdp1-info
-
-;;; informs pass-2 that pass-1 erased all the characters from the
-;;; optional cha-no arg to the end of the line
-(defun set-rdp1-info-to-erase-to-eol (info &optional cha-no offset)
-  (unless (eq (sr-rdp1-info-no-of-chas info) 'to-eol)
-    (setf (sr-rdp1-info-action info) ':insert)
-    (unless (null cha-no)
-      (setf (sr-rdp1-info-from-cha-no info) cha-no))
-    (unless (null offset)
-      (setf (sr-rdp1-info-from-offset info) offset))
-    (setf (sr-rdp1-info-no-of-chas  info) 'to-eol)))
-
-(defun rdp1-info-is-eol? (info)
-  (eq (sr-rdp1-info-no-of-chas info) 'to-eol))
-
-(defun still-inside-rdp1-info (info cha-no)
-  (cond ((numberp (sr-rdp1-info-no-of-chas info))
-         (<= cha-no
-             (+ (sr-rdp1-info-from-cha-no info)
-                (sr-rdp1-info-no-of-chas  info))))
-    ((eq (sr-rdp1-info-no-of-chas  info)
-         'to-eol))))
-
-
-;;; this cycles through the contents of the storage vector
-;;; starting from FROM and erases them an queues them for deallocation
-;;; returns the difference in offsets of any objects that would come
-;;; after th eobjects which have been erased
-(defun erase-and-queue-for-deallocation-screen-rows-from (sv from
-                                                             &optional to
-                                                             no-erase?)
-  (declare (values delta-x-offset delta-y-offset))
-  (unless (>=& from (storage-vector-active-length sv))
-    (multiple-value-bind (x y)
-                         (screen-obj-offsets (sv-nth from sv))
-                         (let ((wid 0) (hei 0))
-                           (do-vector-contents (screen-row sv :start from :stop to)
-                             (setq wid (max wid (screen-obj-wid screen-row))
-                                   hei (+  hei (screen-obj-hei screen-row)))
-                             ;; dunno why these next 3 should be here but leave it in for now...
-                             (screen-obj-zero-size screen-row)
-                             (set-needs-redisplay-pass-2? screen-row t)
-                             (set-force-redisplay-infs?  screen-row t)
-                             (queue-screen-obj-for-deallocation screen-row))
-                           ;; finally do the actual erasing
-                           (unless no-erase? (erase-rectangle wid hei x y))
-                           (values 0 hei)))))
-
 (defun queue-for-deallocation-screen-rows-from (sv from &optional to)
   (declare (values delta-x-offset delta-y-offset))
   (unless (>=& from (storage-vector-active-length sv))
     (do-vector-contents (screen-row sv :start from :stop to)
       ;; dunno why these next 3 should be here but leave it in for now...
       (screen-obj-zero-size screen-row)
-      ;     (set-needs-redisplay-pass-2? screen-row t)
-      ;     (set-force-redisplay-infs?  screen-row t)
       (queue-screen-obj-for-deallocation screen-row))))
 
 
@@ -595,9 +459,7 @@
         (numberp (display-style-fixed-hei ds)))))
 
 (defmethod set-display-style ((self box) new-value)
-  (setf (display-style-style (slot-value self 'display-style-list)) new-value)
-  (dolist (screen-box (screen-objs self))
-    (set-force-redisplay-infs? screen-box t)))
+  (setf (display-style-style (slot-value self 'display-style-list)) new-value))
 
 
 ;; boxes dimensions are now floats !
@@ -625,6 +487,10 @@
     ))
 
 (defmethod shrunken? ((self box))
+  (let ((style (display-style-style (slot-value self 'display-style-list))))
+    (or (eq style :shrunk) (eq style :supershrunk))))
+
+(defmethod shrunken? ((self screen-box))
   (let ((style (display-style-style (slot-value self 'display-style-list))))
     (or (eq style :shrunk) (eq style :supershrunk))))
 
@@ -691,8 +557,7 @@
 
 (defmethod set-display-style ((self screen-box) new-value)
   (setf (display-style-style (slot-value self 'display-style-list))
-        new-value)
-  (set-force-redisplay-infs? self t))
+        new-value))
 
 (defmethod border-style ((self screen-box))
   (display-style-border-style (slot-value self 'display-style-list)))
@@ -718,12 +583,12 @@
            (SET-DISPLAY-STYLE SELF ':NORMAL)
            (MODIFIED SELF))
 
+;; sgithens TODO I don't think these implementations are used...
+;; (DEFMETHOD SHRINK ((SELF SCREEN-BOX))
+;;            (SHRINK (SCREEN-OBJ-ACTUAL-OBJ SELF)))
 
-(DEFMETHOD SHRINK ((SELF SCREEN-BOX))
-           (SHRINK (SCREEN-OBJ-ACTUAL-OBJ SELF)))
-
-(DEFMETHOD UNSHRINK ((SELF SCREEN-BOX))
-           (UNSHRINK (SCREEN-OBJ-ACTUAL-OBJ SELF)))
+;; (DEFMETHOD UNSHRINK ((SELF SCREEN-BOX))
+;;            (UNSHRINK (SCREEN-OBJ-ACTUAL-OBJ SELF)))
 
 
 
@@ -824,11 +689,6 @@
               (string (string= bt1 bt2))
               (t (eq bt1 bt2)))))
 
-;;; DRAW-BOXTOP moved to gdispl.lisp because of macro dependencies
-
-
-
-
 ;;; Things having to do with a window's outermost screen box.
 
 (DEFUN OUTERMOST-BOX (&OPTIONAL (WINDOW *BOXER-PANE*))
@@ -860,51 +720,25 @@
                 (VALUES (SCREEN-OBJ-ACTUAL-OBJ PREVIOUS-OUTERMOST-SCREEN-BOX)
                         PREVIOUS-OUTERMOST-SCREEN-BOX))))
 
-(defun box-border-zoom-in (new-screen-box window)
-  (unless (null *zoom-step-pause-time*)
-    (drawing-on-window (window)
-                       (when (when (not-null new-screen-box)(visible? new-screen-box))
-                         (multiple-value-bind (new-screen-box-wid new-screen-box-hei)
-                                              (screen-obj-size new-screen-box)
-                                              (multiple-value-bind (new-screen-box-x new-screen-box-y)
-                                                                   (xy-position new-screen-box)
-                                                                   (multiple-value-bind (outermost-screen-box-wid
-                                                                                         outermost-screen-box-hei)
-                                                                                        (outermost-screen-box-size)
-                                                                                        (multiple-value-bind (outermost-screen-box-x
-                                                                                                              outermost-screen-box-y)
-                                                                                                             (outermost-screen-box-position)
-                                                                                                             (box-borders-zoom
-                                                                                                              (class-name (class-of (screen-obj-actual-obj new-screen-box)))
-                                                                                                              new-screen-box
-                                                                                                              outermost-screen-box-wid outermost-screen-box-hei
-                                                                                                              new-screen-box-wid new-screen-box-hei
-                                                                                                              outermost-screen-box-x outermost-screen-box-y
-                                                                                                              new-screen-box-x new-screen-box-y
-                                                                                                              20.)))))))))
+(DEFUN SET-OUTERMOST-SCREEN-BOX (NEW-OUTERMOST-SCREEN-BOX
+                                 &OPTIONAL (WINDOW *BOXER-PANE*))
+       (REDISPLAYING-WINDOW (WINDOW)
+                            (UNLESS (EQ NEW-OUTERMOST-SCREEN-BOX *OUTERMOST-SCREEN-BOX*)
+                                    (DECONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX *OUTERMOST-SCREEN-BOX*
+                                                                                WINDOW)
+                                    (CONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX NEW-OUTERMOST-SCREEN-BOX
+                                                                              WINDOW)
+                                    (SETQ *OUTERMOST-SCREEN-BOX* NEW-OUTERMOST-SCREEN-BOX)))
 
-(defun box-border-zoom-out (old-screen-box window)
-  (unless (null *zoom-step-pause-time*)
-    (drawing-on-window (window)
-                       (when (when (not-null old-screen-box)(visible? old-screen-box))
-                         (multiple-value-bind (old-screen-box-wid old-screen-box-hei)
-                                              (screen-obj-size old-screen-box)
-                                              (multiple-value-bind (old-screen-box-x old-screen-box-y)
-                                                                   (xy-position old-screen-box)
-                                                                   (multiple-value-bind (outermost-screen-box-wid
-                                                                                         outermost-screen-box-hei)
-                                                                                        (outermost-screen-box-size)
-                                                                                        (multiple-value-bind (outermost-screen-box-x
-                                                                                                              outermost-screen-box-y)
-                                                                                                             (outermost-screen-box-position)
-                                                                                                             (box-borders-zoom
-                                                                                                              (class-name (class-of (screen-obj-actual-obj old-screen-box)))
-                                                                                                              old-screen-box
-                                                                                                              old-screen-box-wid old-screen-box-hei
-                                                                                                              outermost-screen-box-wid outermost-screen-box-hei
-                                                                                                              old-screen-box-x old-screen-box-y
-                                                                                                              outermost-screen-box-x outermost-screen-box-y
-                                                                                                              16.)))))))))
+       (setf *outermost-screen-box* new-outermost-screen-box)
+       (LET ((OLD-SCREEN-ROW (UNLESS (NULL NEW-OUTERMOST-SCREEN-BOX)
+                                     (SCREEN-ROW NEW-OUTERMOST-SCREEN-BOX))))
+            (WHEN (SCREEN-ROW? OLD-SCREEN-ROW)
+                  ;; we need to break up the screen-structure
+                  (KILL-SCREEN-CHAS-FROM OLD-SCREEN-ROW 0)
+                  (if (fast-memq (superior old-screen-row) *outermost-screen-box-stack*)
+                    (deallocate-inferiors (superior old-screen-row))
+                    (deallocate-self (superior old-screen-row))))))
 
 (defun set-outermost-box (new-outermost-box
                           &optional (new-outermost-screen-box
@@ -928,13 +762,13 @@
        ;;;	   (redraw-status-line (name-string new-outermost-box))
        ;; outermost box based save document should uncomment next line...
        ;(set-window-name (current-file-status new-outermost-box))
-       (box-border-zoom-out new-outermost-screen-box window)
        (set-outermost-screen-box
         (allocate-outermost-screen-box-for-use-in new-outermost-box window
                                                   new-outermost-screen-box)
         window)
-       (update-shrink-proof-display)
-       (box-border-zoom-in old-outermost-screen-box window)))))
+        #+lispworks (update-shrink-proof-display)
+        #+lispworks (reset-global-scrolling)
+       ))))
 
 
 
@@ -944,34 +778,6 @@
     (status-line-display 'shrink-proof-screen "(Unshrinkable)")
     (status-line-undisplay 'shrink-proof-screen)))
 
-
-;;;these should go somewhere else eventually...
-(DEFMETHOD VISIBLE? ((SCREEN-OBJ SCREEN-OBJ))
-           (MEMBER SCREEN-OBJ
-                   (DISPLAYED-SCREEN-OBJS (SCREEN-OBJ-ACTUAL-OBJ SCREEN-OBJ))))
-
-
-(DEFUN SET-OUTERMOST-SCREEN-BOX (NEW-OUTERMOST-SCREEN-BOX
-                                 &OPTIONAL (WINDOW *BOXER-PANE*))
-       (REDISPLAYING-WINDOW (WINDOW)
-                            (UNLESS (EQ NEW-OUTERMOST-SCREEN-BOX *OUTERMOST-SCREEN-BOX*)
-                                    (DECONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX *OUTERMOST-SCREEN-BOX*
-                                                                                WINDOW)
-                                    (CONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX NEW-OUTERMOST-SCREEN-BOX
-                                                                              WINDOW)
-                                    (ERASE-SCREEN-OBJ *OUTERMOST-SCREEN-BOX*)
-                                    (SETQ *OUTERMOST-SCREEN-BOX* NEW-OUTERMOST-SCREEN-BOX)))
-       (SETQ *OUTERMOST-SCREEN-BOX* (boxer-window::outermost-screen-box)) ; why ??
-       (LET ((*COMPLETE-REDISPLAY-IN-PROGRESS?* T)
-             (OLD-SCREEN-ROW (UNLESS (NULL NEW-OUTERMOST-SCREEN-BOX)
-                                     (SCREEN-ROW NEW-OUTERMOST-SCREEN-BOX))))
-            (WHEN (SCREEN-ROW? OLD-SCREEN-ROW)
-                  ;; we need to break up the screen-structure
-                  (KILL-SCREEN-CHAS-FROM OLD-SCREEN-ROW 0)
-                  (if (fast-memq (superior old-screen-row) *outermost-screen-box-stack*)
-                    (deallocate-inferiors (superior old-screen-row))
-                    (deallocate-self (superior old-screen-row))))
-            (repaint-window window)))
 
 (DEFUN CONFIGURE-SCREEN-BOX-TO-BE-OUTERMOST-BOX (SCREEN-BOX
                                                  &OPTIONAL
@@ -991,23 +797,13 @@
     (set-fixed-size screen-box nil nil)
     (set-offsets screen-box 0 0)))
 
-
-(DEFUN REDISPLAY-CLUE (TYPE &REST ARGS)
-       (LET ((HANDLER (GET TYPE ':REDISPLAY-CLUE)))
-            (IF (NOT-NULL HANDLER)
-                (APPLY HANDLER TYPE ARGS)
-                (BARF "~S is an unknown type of redisplay-clue." TYPE))))
-
-(setf (get ':clear-screen ':redisplay-clue)
-      #'(lambda (&rest ignore)
-                (declare (ignore ignore))
-                (push '(:clear-screen) *redisplay-clues*)))
-
-
-
 (DEFUN OUTERMOST-SCREEN-BOX? (SCREEN-OBJ)
        (AND (SCREEN-BOX? SCREEN-OBJ)
             (EQ SCREEN-OBJ (boxer-window::outermost-screen-box))))
+
+(defgeneric xy-position (self)
+  (:method (self)
+    (values 0 0)))
 
 (defmethod xy-position ((self screen-row))
   (let ((superior (slot-value self 'screen-box)))
@@ -1028,48 +824,29 @@
                        (values (+ superior-x-off (slot-value self 'x-offset))
                                (+ superior-y-off (slot-value self 'y-offset)))))
 
-(defmethod window-xy-position ((self screen-obj))
-  (multiple-value-bind (superior-x-off superior-y-off)
-                       (cond ((outermost-screen-box? self)
-                              (values 0 0))
-                         (t
-                          (xy-position (superior self))))
-                       (values (+ superior-x-off (screen-obj-x-offset self))
-                               (+ superior-y-off (screen-obj-y-offset self)))))
-
-(defmethod window-x-position ((self screen-obj))
-  (cond ((outermost-screen-box? self) (slot-value self 'x-offset))
-    (t (+ (slot-value self 'x-offset)
-          (window-x-position (superior self))))))
-
-(defmethod window-y-position ((self screen-obj))
-  (cond ((outermost-screen-box? self) (slot-value self 'y-offset))
-    (t (+ (slot-value self 'y-offset)
-          (window-y-position (superior self))))))
 
 
-(DEFMETHOD NEXT-SCREEN-CHA-POSITION ((SELF SCREEN-CHAR-SUBCLASS))
-           (MULTIPLE-VALUE-BIND (X Y)
-                                (XY-POSITION SELF)
-                                (VALUES (+ X (SCREEN-OBJ-WID SELF)) Y)))
+;; sgithens TODO 2024-04-22 Doesn't appear to be used anywhere...
+;; (DEFMETHOD NEXT-SCREEN-CHA-POSITION ((SELF SCREEN-CHAR-SUBCLASS))
+;;            (MULTIPLE-VALUE-BIND (X Y)
+;;                                 (XY-POSITION SELF)
+;;                                 (VALUES (+ X (SCREEN-OBJ-WID SELF)) Y)))
 
-(DEFMETHOD FIRST-SCREEN-CHA-POSITION ((SELF SCREEN-ROW))
-           (XY-POSITION SELF))
+;; (DEFMETHOD FIRST-SCREEN-CHA-POSITION ((SELF SCREEN-ROW))
+;;            (XY-POSITION SELF))
 
-(DEFMETHOD FIRST-SCREEN-CHA-POSITION ((SELF SCREEN-BOX))
-           (MULTIPLE-VALUE-BIND (X Y)
-                                (XY-POSITION SELF)
-                                (MULTIPLE-VALUE-BIND (IL IT)
-                                                     (box-borders-widths (slot-value self 'box-type) self)
-                                                     (VALUES (+ X IL) (+ Y IT)))))
-
-
+;; (DEFMETHOD FIRST-SCREEN-CHA-POSITION ((SELF SCREEN-BOX))
+;;            (MULTIPLE-VALUE-BIND (X Y)
+;;                                 (XY-POSITION SELF)
+;;                                 (MULTIPLE-VALUE-BIND (IL IT)
+;;                                                      (box-borders-widths (slot-value self 'box-type) self)
+;;                                                      (VALUES (+ X IL) (+ Y IT)))))
 
 (defun outermost-screen-box-size (&optional (window *boxer-pane*))
   (multiple-value-bind (window-inner-wid window-inner-hei)
-                       (window-inside-size window)
-                       (values (- window-inner-wid (* 2 *space-around-outermost-screen-box*))
-                               (- window-inner-hei (* 2 *space-around-outermost-screen-box*)))))
+                       (viewport-size window)
+                       (values (- (* (/ 1 (zoom-level *boxer-pane*)) window-inner-wid) (* 2 *space-around-outermost-screen-box*))
+                               (- (* (/ 1 (zoom-level *boxer-pane*)) window-inner-hei) (* 2 *space-around-outermost-screen-box*)))))
 
 (defun outermost-screen-box-position (&optional ignore)
   (declare (ignore ignore))
@@ -1102,7 +879,7 @@
 ;;;
 
 (defun bp-coordinates (bp)
-  (declare (values abs-x abs-y size-hint))
+  "Returns (values abs-x abs-y size-hint))"
   (check-bp-arg bp)
   (let* ((row (bp-row bp))
          (cha-no (bp-cha-no bp))
@@ -1281,35 +1058,36 @@
       (sum (screen-object-width cha)))))
 
 
-(DEFMETHOD SCREEN-BP ((SELF SCREEN-CHAR-SUBCLASS))
-           (LET ((BP (MAKE-BP 'FIXED)))
-                (MOVE-BP BP (CHA-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
-                BP))
+;; sgithens TODO 2024-04-22 Doesn't appear to be used anywhere...
+;; (DEFMETHOD SCREEN-BP ((SELF SCREEN-CHAR-SUBCLASS))
+;;            (LET ((BP (MAKE-BP 'FIXED)))
+;;                 (MOVE-BP BP (CHA-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
+;;                 BP))
 
-(DEFMETHOD NEXT-SCREEN-BP ((SELF SCREEN-CHAR-SUBCLASS))
-           (LET ((BP (MAKE-BP 'FIXED)))
-                (MOVE-BP BP (CHA-NEXT-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
-                BP))
+;; (DEFMETHOD NEXT-SCREEN-BP ((SELF SCREEN-CHAR-SUBCLASS))
+;;            (LET ((BP (MAKE-BP 'FIXED)))
+;;                 (MOVE-BP BP (CHA-NEXT-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
+;;                 BP))
 
-(DEFMETHOD FIRST-SCREEN-BP ((SELF SCREEN-ROW))
-           (LET ((BP (MAKE-BP 'FIXED)))
-                (MOVE-BP BP (ROW-FIRST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
-                BP))
+;; (DEFMETHOD FIRST-SCREEN-BP ((SELF SCREEN-ROW))
+;;            (LET ((BP (MAKE-BP 'FIXED)))
+;;                 (MOVE-BP BP (ROW-FIRST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
+;;                 BP))
 
-(DEFMETHOD LAST-SCREEN-BP ((SELF SCREEN-ROW))
-           (LET ((BP (MAKE-BP 'FIXED)))
-                (MOVE-BP BP (ROW-LAST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
-                BP))
+;; (DEFMETHOD LAST-SCREEN-BP ((SELF SCREEN-ROW))
+;;            (LET ((BP (MAKE-BP 'FIXED)))
+;;                 (MOVE-BP BP (ROW-LAST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
+;;                 BP))
 
-(DEFMETHOD FIRST-SCREEN-BP ((SELF SCREEN-BOX))
-           (LET ((BP (MAKE-BP 'FIXED)))
-                (MOVE-BP BP (BOX-FIRST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
-                BP))
+;; (DEFMETHOD FIRST-SCREEN-BP ((SELF SCREEN-BOX))
+;;            (LET ((BP (MAKE-BP 'FIXED)))
+;;                 (MOVE-BP BP (BOX-FIRST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
+;;                 BP))
 
-(DEFMETHOD LAST-SCREEN-BP ((SELF SCREEN-BOX))
-           (LET ((BP (MAKE-BP 'FIXED)))
-                (MOVE-BP BP (BOX-LAST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
-                BP))
+;; (DEFMETHOD LAST-SCREEN-BP ((SELF SCREEN-BOX))
+;;            (LET ((BP (MAKE-BP 'FIXED)))
+;;                 (MOVE-BP BP (BOX-LAST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
+;;                 BP))
 
 ;;; returns the screen obj of box which is within
 (DEFUN INF-CURRENT-SCREEN-BOX (BOX)
@@ -1347,40 +1125,14 @@
          (>= y (+ y-coord (floor (/ *box-ellipsis-wid* 2.))))
          (<= wid 0)
          (<= hei 0)))
-    (draw-rectangle alu-seta *box-ellipsis-thickness* hei x y)
-    (draw-rectangle alu-seta wid *box-ellipsis-thickness*
+    (draw-rectangle *box-ellipsis-thickness* hei x y)
+    (draw-rectangle wid *box-ellipsis-thickness*
                     (+ x *box-ellipsis-thickness*) y)
-    (draw-rectangle alu-seta *box-ellipsis-thickness* hei
+    (draw-rectangle *box-ellipsis-thickness* hei
                     (+ x wid *box-ellipsis-thickness*) y)
-    (draw-rectangle alu-seta wid *box-ellipsis-thickness*
+    (draw-rectangle wid *box-ellipsis-thickness*
                     (+ x *box-ellipsis-thickness*)
                     (+ y hei (- *box-ellipsis-thickness*)))))
 
 (setf (get 'box-ellipsis-solid-lines 'draw-self)
       'box-ellipsis-solid-lines-draw-self)
-
-(define-box-ellipsis-style box-ellipsis-corner-dots)
-
-(defun box-ellipsis-corner-dots-draw-self (x-coord y-coord)
-  (do ((x x-coord (+ x *box-ellipsis-thickness* *box-ellipsis-spacing*))
-       (y y-coord (+ y *box-ellipsis-thickness* *box-ellipsis-spacing*))
-       (wid (- *box-ellipsis-wid* (* 2 *box-ellipsis-thickness*))
-            (- wid (* 2 (+ *box-ellipsis-thickness* *box-ellipsis-spacing*))))
-       (hei *box-ellipsis-hei*
-            (- hei (* 2 (+ *box-ellipsis-thickness* *box-ellipsis-spacing*)))))
-    ((or (>= x (+ x-coord (floor (/ *box-ellipsis-wid* 2.))))
-         (>= y (+ y-coord (floor (/ *box-ellipsis-wid* 2.))))
-         (<= wid 0)
-         (<= hei 0)))
-    (draw-rectangle alu-seta *box-ellipsis-thickness* *box-ellipsis-thickness*
-                    x y)
-    (draw-rectangle alu-seta *box-ellipsis-thickness* *box-ellipsis-thickness*
-                    (+ x wid *box-ellipsis-thickness*) y)
-    (draw-rectangle alu-seta *box-ellipsis-thickness* *box-ellipsis-thickness*
-                    x (+ y hei (- *box-ellipsis-thickness*)))
-    (draw-rectangle alu-seta *box-ellipsis-thickness* *box-ellipsis-thickness*
-                    (+ x wid *box-ellipsis-thickness*)
-                    (+ y hei (- *box-ellipsis-thickness*)))))
-
-(setf (get 'box-ellipsis-corner-dots 'draw-self)
-      'box-ellipsis-corner-dots-draw-self)

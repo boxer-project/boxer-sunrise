@@ -1,7 +1,7 @@
 ;;;; -*- Mode:LISP;Syntax:Common-Lisp; Package:BOXER; Base:8. -*-
 ;;;;
 ;;;;        Boxer
-;;;;        Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;        Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;        Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;        used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -342,7 +342,6 @@ region into a box. "
                       (t
                        (WITH-MULTIPLE-EXECUTION
                         (LET ((box (make-initialized-box-for-editor 'doit-box)))
-                             #-opengl(add-redisplay-clue (point-row) ':insert)
                              (INSERT-CHA *POINT* BOX ':FIXED)))
                        (mark-file-box-dirty (point-row)))))
                   boxer-eval::*novalue*)
@@ -369,7 +368,6 @@ Graphics-Data.  Ports toggle their targets. "
                       (t
                        (with-multiple-execution
                          (let ((box (make-initialized-box-for-editor)))
-                           #-opengl(add-redisplay-clue (point-row) ':insert)
                            (set-type box 'data-box)
                            (insert-cha *point* box ':fixed)))
                        (mark-file-box-dirty (point-row)))))
@@ -388,7 +386,6 @@ is shrunken."
   (multiple-value-bind (box-near before-or-after)
                        (box-point-is-near)
                        (let ((box (or box box-near)))
-                         (boxnet::with-server-errors
                           ;; can get a server error inside of the enter method
                           ;; in which case, do nothing
                           (cond ((null *editor-numeric-argument*)
@@ -401,7 +398,7 @@ is shrunken."
                                        (com-end-of-row)))
                                    (if (shrunken? box) (com-expand-box))))
                             (t (with-multiple-execution
-                                 (com-enter-box)))))))
+                                 (com-enter-box))))))
   boxer-eval::*novalue*)
 
 (defboxer-command COM-MOVE-TO-NEXT-BOX ()
@@ -439,13 +436,13 @@ the box if it is shrunken."
          (com-exit-box)
          (multiple-value-bind (box screen-box)
                               (point-next-box)
-                              (boxnet::with-server-errors
                                ;; can get a server error inside of the enter method
                                ;; in which case, do nothing
                                (unless (or (null box) (cha? box))
                                  (enter box)
-                                 (move-point (all-bp-values (box-first-bp-values box) screen-box)))
-                               (when (shrunken? box) (com-expand-box)))))
+                                 (move-point (all-bp-values (box-first-bp-values box) screen-box))
+                                 (when (shrunken? box) (com-expand-box)))
+                               ))
     (t (with-multiple-execution
          (com-enter-next-box))))
   boxer-eval::*novalue*)
@@ -459,7 +456,6 @@ the box if it is shrunken."
          (com-exit-box) (com-backward-cha)
          (multiple-value-bind (box screen-box)
                               (point-previous-box)
-                              (boxnet::with-server-errors
                                ;; can get a server error inside of the enter method
                                ;; in which case, do nothing
 
@@ -469,7 +465,7 @@ the box if it is shrunken."
                                                             (box-first-bp-values box)
                                                             screen-box)))
                                    (com-end-of-row))
-                                 (when (shrunken? box) (com-expand-box))))))
+                                 (when (shrunken? box) (com-expand-box)))))
     (t (with-multiple-execution
          (com-enter-previous-box))))
   boxer-eval::*novalue*)
@@ -621,7 +617,8 @@ then it is shrunken first. "
   (let ((box-display-style (display-style box)))
     (cond ((or (eq box (outermost-box))
                (eq box *initial-box*)))
-      ((or (eq box-display-style ':normal) (always-zoom? box))
+      ((or (eq box-display-style ':normal) (and (always-zoom? box) (not (graphics-box? box))))
+       ;; TODO above: As soon as we support full screen graphics boxes, remove the graphics-box? check
        ;;store away the old outermost screen box
        (push *outermost-screen-box* *outermost-screen-box-stack*)
        (set-outermost-box box screen-box)
@@ -807,7 +804,6 @@ current height and width. "
           (status-line-undisplay 'com-make-toolbox))
         (set-type tool-box 'data-box)
         (boxer-eval::set-box-transparency tool-box t)
-        #-opengl(add-redisplay-clue (point-row) ':insert)
         ;; insert the box
         (insert-cha *point* tool-box ':fixed))))
   boxer-eval::*novalue*)
@@ -858,7 +854,6 @@ specified target. "
                   (if (PORT-BOX? *COM-MAKE-PORT-CURRENT-PORT*)
                     (progn
                      (INSERT-CHA *POINT* *COM-MAKE-PORT-CURRENT-PORT*)
-                     #-opengl(add-redisplay-clue (point-row) ':insert)
                      (SETQ *COM-MAKE-PORT-CURRENT-PORT* NIL))
                     (make-generic-port))
                   (mark-file-box-dirty (point-row))
@@ -889,7 +884,6 @@ specified target. "
                *default-graphics-view-on?*)
       (setf (display-style-graphics-mode? (display-style-list box)) t))
     ;; show the graphics side if thats what we think is right
-    #-opengl(add-redisplay-clue (point-row) ':insert)
     (setf (bottom-right-hotspot-active? box) t)
     (insert-cha *point* box (if (and *include-sprite-box-in-new-graphics?*
                                      *name-new-sprites?*)
@@ -898,8 +892,7 @@ specified target. "
     (mark-file-box-dirty (point-row))
     (when (not (null *include-sprite-box-in-new-graphics?*))
       (let ((g-row (first-inferior-row box)))
-        (append-cha g-row (make-sprite-box))
-        #-opengl(add-redisplay-clue g-row ':insert))
+        (append-cha g-row (make-sprite-box)))
       (when (not (null *name-new-sprites?*))
         (com-enter-box) (com-enter-box)	(com-name-box)))))
 
@@ -909,9 +902,7 @@ specified target. "
   (reset-region) (reset-editor-numeric-arg)
   (if (name-row? (point-row))
     (boxer-editor-error "You cannot make boxes on a name row. ")
-    (progn
-     (make-graphics-box-internal)
-     (repaint)))
+    (make-graphics-box-internal))
   boxer-eval::*novalue*)
 
 (defboxer-command com-make-big-graphics-box ()
@@ -919,9 +910,7 @@ specified target. "
   (reset-region) (reset-editor-numeric-arg)
   (if (name-row? (point-row))
     (boxer-editor-error "You cannot make boxes on a name row. ")
-    (progn
-     (make-graphics-box-internal 500. 400.)
-     (repaint)))
+    (make-graphics-box-internal 500. 400.))
   boxer-eval::*novalue*)
 
 (defboxer-command com-make-giant-graphics-box ()
@@ -929,9 +918,7 @@ specified target. "
   (reset-region) (reset-editor-numeric-arg)
   (if (name-row? (point-row))
     (boxer-editor-error "You cannot make boxes on a name row. ")
-    (progn
-     (make-graphics-box-internal 900. 500.)
-     (repaint)))
+    (make-graphics-box-internal 900. 500.))
   boxer-eval::*novalue*)
 
 
@@ -942,11 +929,9 @@ specified target. "
   (reset-region) (reset-editor-numeric-arg)
   (if (name-row? (point-row))
     (boxer-editor-error "You cannot make boxes on a name row. ")
-    (progn
-     (make-graphics-box-internal *default-graphics-box-width*
-                                 *default-graphics-box-height*
-                                 nil)
-     (repaint)))
+    (make-graphics-box-internal *default-graphics-box-width*
+                                *default-graphics-box-height*
+                                nil))
   boxer-eval::*novalue*)
 
 (defboxer-command com-make-transparent-graphics-box ()
@@ -954,11 +939,9 @@ specified target. "
   (reset-region) (reset-editor-numeric-arg)
   (if (name-row? (point-row))
     (boxer-editor-error "You cannot make boxes on a name row. ")
-    (progn
-     (make-graphics-box-internal *default-graphics-box-width*
-                                 *default-graphics-box-height*
-                                 t)
-     (repaint)))
+    (make-graphics-box-internal *default-graphics-box-width*
+                                *default-graphics-box-height*
+                                t))
   boxer-eval::*novalue*)
 
 
@@ -1005,9 +988,7 @@ specified target. "
   (reset-region) (reset-editor-numeric-arg)
   (if (name-row? (point-row))
     (boxer-editor-error "You cannot make boxes on a name row. ")
-    (progn
-     (make-turtle-box-internal)
-     (repaint)))
+    (make-turtle-box-internal))
   boxer-eval::*novalue*)
 
 (defboxer-command com-make-big-turtle-box ()
@@ -1015,9 +996,7 @@ specified target. "
   (reset-region) (reset-editor-numeric-arg)
   (if (name-row? (point-row))
     (boxer-editor-error "You cannot make boxes on a name row. ")
-    (progn
-     (make-turtle-box-internal 500. 400.)
-     (repaint)))
+    (make-turtle-box-internal 500. 400.))
   boxer-eval::*novalue*)
 
 (defboxer-command com-make-giant-turtle-box ()
@@ -1025,9 +1004,8 @@ specified target. "
   (reset-region) (reset-editor-numeric-arg)
   (if (name-row? (point-row))
     (boxer-editor-error "You cannot make boxes on a name row. ")
-    (progn
-     (make-turtle-box-internal 900. 500.)
-     (repaint))))
+     (make-turtle-box-internal 900. 500.))
+  boxer-eval::*novalue*)
 
 
 ;;; specific versions...
@@ -1037,11 +1015,9 @@ specified target. "
   (reset-region) (reset-editor-numeric-arg)
   (if (name-row? (point-row))
     (boxer-editor-error "You cannot make boxes on a name row. ")
-    (progn
-     (make-turtle-box-internal *default-graphics-box-width*
-                               *default-graphics-box-height*
-                               nil)
-     (repaint)))
+    (make-turtle-box-internal *default-graphics-box-width*
+                              *default-graphics-box-height*
+                              nil))
   boxer-eval::*novalue*)
 
 (defboxer-command com-make-transparent-turtle-box ()
@@ -1049,11 +1025,9 @@ specified target. "
   (reset-region) (reset-editor-numeric-arg)
   (if (name-row? (point-row))
     (boxer-editor-error "You cannot make boxes on a name row. ")
-    (progn
-     (make-turtle-box-internal *default-graphics-box-width*
-                               *default-graphics-box-height*
-                               t)
-     (repaint)))
+    (make-turtle-box-internal *default-graphics-box-width*
+                              *default-graphics-box-height*
+                              t))
   boxer-eval::*novalue*)
 
 
@@ -1093,8 +1067,7 @@ Does Nothing if There is No Defined BoxTop"
                (or (graphics-screen-box? (car screen-objs))
                    (not-null graphics-sheet)))
       (dolist (sb screen-objs)
-        (toggle-type sb)
-        (set-force-redisplay-infs? sb t))
+        (toggle-type sb))
       (modified (box-screen-point-is-in)))))
 
 
@@ -1107,7 +1080,6 @@ Does Nothing if There is No Defined BoxTop"
   (if (name-row? (point-row))
     (boxer-editor-error "You cannot make boxes on a name row. ")
     (progn
-     #-opengl(add-redisplay-clue (point-row) ':insert)
      (cond ((not (null *name-new-sprites?*))
             (insert-cha *point* (make-sprite-box) ':fixed)
             (com-enter-box)

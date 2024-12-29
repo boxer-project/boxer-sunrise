@@ -1,7 +1,7 @@
 ;;;;  ; -*- Mode:LISP; Syntax: Common-Lisp; Package:BOXER;-*-
 ;;;;
 ;;;;      Boxer
-;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;      Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -65,38 +65,63 @@
 ;;; need to think more about whether the clipped? stuff is neccessary
 
 (defclass SCREEN-OBJ
-  ()
+  (plist-subclass)
   ((actual-obj :initform nil :accessor screen-obj-actual-obj)
    (x-offset :initform 0 :accessor screen-obj-x-offset)
    (y-offset :initform 0 :accessor screen-obj-y-offset)
-   (wid :initform 0 :accessor screen-obj-wid)
-   (hei :initform 0 :accessor screen-obj-hei)
+   (wid :initform 0 :accessor screen-obj-wid
+    :documentation "Width of the screen-obj, always a fixnum.")
+   (hei :initform 0 :accessor screen-obj-hei
+    :documentation "Height of the screen-obj, always a fixnum.")
+   (content-wid :initform 0 :accessor content-wid
+    :documentation "Width of the internal content, may be smaller than the wid for scrolled content.")
+   (content-hei :initform 0 :accessor content-hei
+    :documentation "Height of the internal content, may be smaller than the hei for scrolled content.")
    (x-got-clipped? :initform nil :accessor screen-obj-x-got-clipped?)
    (y-got-clipped? :initform nil :accessor screen-obj-y-got-clipped?)
-   ;   (new-wid :initform 0 :accessor screen-obj-new-wid)
-   ;   (new-hei :initform 0 :accessor screen-obj-new-hei)
-   ;   (new-x-got-clipped? :initform nil :accessor screen-obj-new-x-got-clipped?)
-   ;   (new-y-got-clipped? :initform nil :accessor screen-obj-new-y-got-clipped?)
    (tick :initform -1 :accessor screen-obj-tick)
-   (needs-redisplay-pass-2? :initform nil :accessor screen-obj-needs-redisplay-pass-2?)
-   (force-redisplay-infs? :initform nil :accessor screen-obj-force-redisplay-infs?))
-  (:metaclass block-compile-class))
+
+   ;; local-matrix
+   (local-matrix :initform (create-transform-matrix 0 0) :accessor local-matrix
+    :documentation "Local matrix for this Box's Scene Graph.")
+   ;; local-internal-matrix
+   (local-internal-matrix :initform (3d-matrices:meye 4) :accessor local-internal-matrix
+    :documentation "Local matrix for the internal area, inside any borders, margin, and padding for the Box's content.")
+   ;; world-matrix
+   (world-matrix :initform (create-transform-matrix 0 0) :accessor world-matrix
+    :documentation "The scene graph location for this Box in world space.")
+   (world-x-offset :initform 0 :accessor world-x-offset
+    :documentation "The X location of this Box in world space.")
+   (world-y-offset :initform 0 :accessor world-y-offset
+    :documentation "The Y location of this Box in world space.")
+   (world-internal-matrix :initform (3d-matrices:meye 4) :accessor world-internal-matrix
+    :documentation "The scene graph location for the internal area (content without borders, margin, and padding)
+                    in world space.")))
+
+(defmethod screen-obj-hei ((self screen-obj))
+  (floor (slot-value self 'hei)))
+
+(defmethod (setf screen-obj-hei) (value (self screen-obj))
+  (setf (slot-value self 'hei) (floor value)))
+
+(defmethod screen-obj-wid ((self screen-obj))
+  (floor (slot-value self 'wid)))
+
+(defmethod (setf screen-obj-wid) (value (self screen-obj))
+  (setf (slot-value self 'wid) (floor value)))
 
 (defgeneric screen-obj? (x) (:method (x) nil) (:method ((x screen-obj)) t))
 
 ;; These only exist as a mixin for the box flavor
 (defclass SCREEN-CHAR-SUBCLASS
   (screen-obj)
-  ((screen-row :initform nil :accessor screen-row))
-  (:metaclass block-compile-class))
+  ((screen-row :initform nil :accessor screen-row)))
 
 (defclass SCREEN-ROW
   (screen-obj)
   ((screen-box :initform nil :accessor screen-box)
    (screen-chas :initform (make-screen-chas-array) :accessor screen-chas)
-   ;   (out-of-synch-mark :initform nil :accessor out-of-synch-mark)
-   (baseline :initform 0 :accessor baseline))
-  (:metaclass block-compile-class))
+   (baseline :initform 0 :accessor baseline)))
 
 (defgeneric screen-row? (x) (:method (x) nil) (:method ((x screen-row)) t))
 
@@ -105,21 +130,20 @@
   (screen-char-subclass)
   ((screen-rows :initform (allocate-storage-vector 8.) :accessor screen-rows)
    (scroll-to-actual-row :initform nil :accessor scroll-to-actual-row)
-   ;; how much to slosh inferiors when the borders change
-   ;   (inf-shift :initform nil :accessor inf-shift)  ; remove?
    (name :initform nil :accessor name)
    (box-type :initform ':doit-box :accessor box-type)
    (bps :initform nil :accessor bps)
    (display-style-list :initform (make-display-style :style nil)
                        :accessor display-style-list)
    (superior-screen-box :initform nil :accessor superior-screen-box)
-   ;   (cached-border-info :initform nil :accessor cached-border-info)  ; remove?
-   (cached-absolute-pos :initform nil :accessor cached-absolute-pos)
    ;; scrolling vars
-   (scroll-y-offset :initform 0)
-   (scroll-x-offset :initform 0)
-   (max-scroll-wid  :initform nil))
-  (:metaclass block-compile-class))
+   (scroll-y-offset :initform 0 :accessor scroll-y-offset
+    :documentation "A negative value results in the box being scrolled down.
+                    Essentially, neither the scroll-y/x-offset can be positive.")
+   (scroll-x-offset :initform 0 :accessor scroll-x-offset
+    :documentation "A negative value results in the box being scrolled to the right.")
+   (depth :initform 0 :accessor depth
+    :documentation "The depth of this screenbox from the outermost screen-box.")))
 
 (defgeneric screen-box? (x) (:method (x) nil) (:method ((x screen-box)) t))
 
@@ -129,18 +153,22 @@
 
 (defclass GRAPHICS-SCREEN-BOX
   (screen-box)
-  ()
-  (:metaclass block-compile-class))
+  ())
 
 (defgeneric graphics-screen-box? (x) (:method (x) nil) (:method ((x graphics-screen-box)) t))
+
+(defclass graphics-screen-sheet
+  (screen-obj)
+  ((screen-box :initform nil :accessor screen-box)))
+
+(defgeneric graphics-screen-sheet? (x) (:method (x) nil) (:method ((x graphics-screen-sheet)) t))
 
 ;;; this is for graphics display of sprite boxes when the containing
 ;;; box is in text mode.  It has to inherit from screen-box so it can be toggled
 ;;; to/from vanilla screen-box's
 (defclass sprite-screen-box
   (screen-box)
-  ()
-  (:metaclass block-compile-class))
+  ())
 
 (defgeneric sprite-screen-box? (x) (:method (x) nil) (:method ((x sprite-screen-box)) t))
 
@@ -154,61 +182,10 @@
   "A list of symbols to funcall.  The symbols are generated from
    the forms in *redisplay-related-initializations*")
 
-(DEFVAR %DRAWING-WINDOW NIL
-        "Inside of a drawing-on-window, this variable is bound to the window which
-   was given as an argument to drawing-on window, makes sense right.")
-
-(DEFVAR %DRAWING-ARRAY NIL
-        "Inside of a drawing-on-window, this variable is bound to %drawing-window's
-   screen-array (Note that this value is valid because drawing-on-window does
-   a prepare-sheet of drawing-window.")
-
-(DEFVAR %ORIGIN-X-OFFSET 0
-        "Inside of a drawing-on-window, this variable is bound to x-offset of the
-   current drawing origin from the screen's actual x origin. With-origin-at
-   rebinds this variable (and %origin-y-offset) to change the screen position
-   of the drawing origin.")
-
-(DEFVAR %ORIGIN-Y-OFFSET 0
-        "Inside of a drawing-on-window, this variable is bound to y-offset of the
-   current drawing origin from the screen's actual y origin. With-origin-at
-   rebinds this variable (and %origin-x-offset) to change the screen position
-   of the drawing origin.")
-
-(DEFVAR %CLIP-LEF 0)
-(DEFVAR %CLIP-TOP 0)
-(DEFVAR %CLIP-RIG 0)
-(DEFVAR %CLIP-BOT 0)
-
 ;;;; Font Vars....
 
-(defvar %drawing-font-cha-hei)
-(defvar %drawing-font-cha-ascent)
-
-
-(defvar *redisplay-id* 0)
-(defvar *redisplay-in-progress?* nil)
-(defvar *redisplay-encore?* nil)
-(defvar *allow-redisplay-encore? nil)
-
-;; the innards of repaint-cursor can side effect the horizontal scrolling
-;; of the (point-screen-box).  If it does, then it will set this flag and then
-;; throw to 'scroll-x-changed TAG
-
-(defmacro redisplaying-unit (&body body)
-  `(let ((*redisplay-in-progress?* t)
-         (*redisplay-encore?* nil))
-     (catch 'scroll-x-changed
-       (unwind-protect
-        (progn . ,body)
-        (when (not (null *redisplay-encore?*))
-          (progn . ,body))
-        (setq *redisplay-id* (tick))))))
-
-(defun redisplay-in-progress? () *redisplay-in-progress?*)
-(defun redisplay-id () *redisplay-id*)
-
-
+(defvar %drawing-font-cha-hei 12)
+(defvar %drawing-font-cha-ascent 12)
 
 ;;;; Inits
 
@@ -227,5 +204,5 @@
 
 
 (defun show-redisplay-init-code (fun)
-  (pp (nth (position fun *redisplay-initialization-list*)
+  (pprint (nth (position fun *redisplay-initialization-list*)
            *redisplay-related-initializations*)))

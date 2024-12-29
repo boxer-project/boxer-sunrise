@@ -7,7 +7,7 @@
  $Log$
 
     Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+    Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 
     Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
     used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -46,7 +46,6 @@ Modification History (most recent at top)
 (defclass foreign-data
   ()
   ()
-  (:metaclass block-compile-class)
   (:documentation "A Mixin for Foreign data types inthe boxer evaluator"))
 
 ;; called from CHANGE.  <new-value> will be standard boxer data, possibly a

@@ -10,7 +10,7 @@
 ;;;
 
     Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+    Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 
     Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
     used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -254,24 +254,8 @@ Modification History (most recent at top)
                                         (1+ (LENGTH-IN-CHAS NEXT-OR-PREVIOUS-ROW)))))
                       (T . ,BODY))))
 
-
-
-;;; For Killing stuff
-
-;for control-y
-(DEFMACRO KILL-BUFFER-TOP ()
-          '(CAR *KILL-BUFFER*))
 
 ;;;; Variables...
-
-;;; Used by the Kill stuff
-(defvar *kill-buffer-last-direction* nil)
-
-(defvar *kill-buffer-length* 8)
-
-(defvar *kill-buffer* (make-list *kill-buffer-length*))
-
-(defvar *number-of-non-kill-commands-executed* 0)
 
 ;;; Used by search
 (DEFVAR *CASE-AFFECTS-STRING-SEARCH* NIL)
@@ -350,11 +334,11 @@ Modification History (most recent at top)
                                                                                                 (y from-y (+ y (fixr(/ half-delta-y
                                                                                                                        *cursor-animate-steps*)))))
                                                                                              ((>=& i *cursor-animate-steps*))
-                                                                                             (draw-rectangle alu-xor wid hei x y)
-                                                                                             (force-graphics-output)
+                                                                                             (draw-rectangle wid hei x y)
+                                                                                             (swap-graphics-buffers)
                                                                                              (snooze *zoom-step-pause-time*)
-                                                                                             (draw-rectangle alu-xor wid hei x y)
-                                                                                             (force-graphics-output)))
+                                                                                             (draw-rectangle wid hei x y)
+                                                                                             (swap-graphics-buffers)))
                                                                             (draw-trail-down ()
                                                                                              (do ((i 0 (1+& i))
                                                                                                   (wid (+ 3 delta-size)
@@ -368,11 +352,11 @@ Modification History (most recent at top)
                                                                                                      (+ y (fixr (/ half-delta-y
                                                                                                                    *cursor-animate-steps*)))))
                                                                                                ((>=& i *cursor-animate-steps*))
-                                                                                               (draw-rectangle alu-xor wid hei x y)
-                                                                                               (force-graphics-output)
+                                                                                               (draw-rectangle wid hei x y)
+                                                                                               (swap-graphics-buffers)
                                                                                                (snooze *zoom-step-pause-time*)
-                                                                                               (draw-rectangle alu-xor wid hei x y)
-                                                                                               (force-graphics-output))))
+                                                                                               (draw-rectangle wid hei x y)
+                                                                                               (swap-graphics-buffers))))
                                                                            ;; first get bigger...
                                                                            (draw-trail-up)
                                                                            ;; now get smaller
@@ -391,11 +375,11 @@ Modification History (most recent at top)
                                                                        (wid (+ right 8))
                                                                        (hei (- (screen-obj-hei screen-box) top bottom)))
                                                                    (dotimes (i 12)
-                                                                     (draw-rectangle alu-xor wid hei x y)
-                                                                     (force-graphics-output)
+                                                                     (draw-rectangle wid hei x y)
+                                                                     (swap-graphics-buffers)
                                                                      (snooze *zoom-step-pause-time*)
-                                                                     (draw-rectangle alu-xor wid hei x y)
-                                                                     (force-graphics-output))))))))
+                                                                     (draw-rectangle wid hei x y)
+                                                                     (swap-graphics-buffers))))))))
 
 (defun move-to-bp (bp &optional (moving-bp *point*))
   (let ((*zoom-step-pause-time* (if (zerop *move-bp-zoom-pause-time*)
@@ -556,13 +540,14 @@ Modification History (most recent at top)
                     (drawing-on-window (*boxer-pane*)
                                        (erase-rectangle width height x y)
                                        (funcall hilight-fun x y width height))
-                    (force-graphics-output)
+                    (swap-graphics-buffers)
                     (setq icon-on? T))
            (icon-off ()
                      (repaint)
                      (setq icon-on? nil)))
           (icon-on)
-          (multiple-value-bind (final-x final-y)
+          ;; TODO need a cross platform with-mouse-tracking
+          #+lispworks (multiple-value-bind (final-x final-y)
                                (boxer-window::with-mouse-tracking ((mouse-x x) (mouse-y y))
                                                                   (progn
                                                                    (cond ((and (null icon-on?)
@@ -580,12 +565,6 @@ Modification History (most recent at top)
                                (unless (null icon-on?) (icon-off))
                                ;; now return whether we are still on...
                                (and (<& min-x final-x max-x) (<& min-y final-y max-y))))))
-
-(defun mouse-still-down-after-pause? (pause-time)
-  (not
-   (or (wait-with-timeout nil pause-time #'(lambda () (zerop& (mouse-button-state))))
-       ;; one final check
-       (zerop& (mouse-button-state)))))
 
 ;;;; new port stuff
 
@@ -621,8 +600,7 @@ Modification History (most recent at top)
            (INSERT-CHA *POINT* *generic-port*)
            (set-mouse-cursor :retarget)
            (boxer-editor-message "Click on a Box to Select Port's Target")
-           (add-mode (retarget-port-mode))
-           #-opengl (add-redisplay-clue (point-row) ':insert))
+           (add-mode (retarget-port-mode)))
     (boxer-editor-error "Use the generic port you have made."))
   boxer-eval::*novalue*)
 
@@ -711,14 +689,8 @@ Modification History (most recent at top)
 ;;; rebinds various mouse keys
 
 (defun entering-region-mode ()
-  (let ((main-cut-name #+(or apple win32) (current-mouse-click-name 0 2)
-                       #-(or apple win32) (current-mouse-click-name 0 0))
-        (main-copy-name #+(or apple win32) (current-mouse-click-name 0 1)
-                        #-(or apple win32 )(current-mouse-click-name 2 0)))
-    (boxer-editor-message "~A to cut, or ~A to copy the region"
-                          main-cut-name main-copy-name)
     (set-mouse-cursor :region-mode)
-    (add-mode (region-mode))))
+    (add-mode (region-mode)))
 
 (defun exiting-region-mode (&optional (reset-mouse-cursor? t))
   (when reset-mouse-cursor? (reset-mouse-cursor))
@@ -735,24 +707,11 @@ Modification History (most recent at top)
 ;  (reset-mouse-cursor)
 ;  (setq *suitcase-mode* nil))
 
-(defvar *editor-abort-chars* #\c) ; sgithens TODO March 7, 2020
-  ;; #-mcl (list (make-char #\g 1) (make-char #\. 1)
-  ;;             ;; 200. is the STOP key on Suns
-  ;;             #+sun (make-char (code-char 200))
-  ;;             #+sun (make-char (code-char 200) 1))
-  ;; ;; MCL can't encode shift bits in character objects
-  ;; #+mcl (list #\Bell))
+(defvar *editor-abort-chars* '((#\g 2) (#\. 2)))
 
-#+mcl
-(defvar *unshifted-mac-editor-abort-chars* (list #\g #\.))
-
-(defun editor-abort-char? (char &optional bits)
-  #-mcl(declare (ignore bits))
-  (and (characterp char)
-       (or (member char *editor-abort-chars* :test #'char-equal)
-           #+mcl (and (=& bits 1)
-                      (member char *unshifted-mac-editor-abort-chars*
-                              :test #'char-equal)))))
+(defun editor-abort-char? (ch &optional (bits 0))
+  (let ((keystroke (list ch bits)))
+    (if (member keystroke *editor-abort-chars* :test #'equal) t nil)))
 
 ;; used in keydef-high
 (defvar *defined-input-device-platforms* nil
@@ -799,15 +758,6 @@ Modification History (most recent at top)
 
 (defvar *popup-doc-font*
   (make-boxer-font '("Arial" 8)))
-
-;; a pale yellow...
-;; try and get a close match to the usual Windows popup doc
-(defvar *popup-doc-color* #-(or lwwin opengl) (%make-color 95 95 70))
-(defvar *mouse-doc-highlight-color*)
-
-#+(or lwwin opengl)
-(def-redisplay-initialization (setq *popup-doc-color* (%make-color 95 95 70 60)
-                                    *mouse-doc-highlight-color* (%make-color 10 30 10)))
 
 ;; should be as big as the largest popup-doc
 (defvar *popup-doc-backing-store* nil)

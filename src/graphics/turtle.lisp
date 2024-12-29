@@ -10,7 +10,7 @@
 ;;;
 
     Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+    Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 
     Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
     used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -45,11 +45,9 @@ Modification History (most recent at top)
   init-plist ;; (declare (ignore init-plist)) doesn't work
   (shared-initialize self t)
   (let ((new-shape (copy-graphics-command-list
-		    *default-turtle-shape*)))
+                    *default-turtle-shape*)))
     (setf (slot-value self 'shape)
-	  (%make-sv-box-interface new-shape 'shape nil 'shape-box-updater)
-	  (slot-value self 'window-shape)
-	  (make-turtle-window-shape new-shape)))
+          (%make-sv-box-interface new-shape 'shape nil 'shape-box-updater)))
   self)
 
 (defmethod all-interface-slots ((self turtle))
@@ -58,31 +56,31 @@ Modification History (most recent at top)
 (defmethod link-interface-slots ((self turtle) sprite-box)
   (call-next-method)
   (install-interface-slot (slot-value self 'heading)
-			    'bu::heading sprite-box)
+                            'bu::heading sprite-box)
   (install-interface-slot (slot-value self 'sprite-size)
-			    'bu::sprite-size sprite-box)
+                            'bu::sprite-size sprite-box)
   (install-interface-slot (slot-value self 'home-position)
-			    'bu::home-position sprite-box))
+                            'bu::home-position sprite-box))
 
 (defmethod unlink-interface-slots ((self turtle) sprite-box)
   self ;; (declare (ignore self)) doesn't work yet
   (call-next-method)
   (uninstall-interface-slot (slot-value self 'heading)
-			    'bu::heading sprite-box)
+                            'bu::heading sprite-box)
   (uninstall-interface-slot (slot-value self 'sprite-size)
-			    'bu::sprite-size sprite-box)
+                            'bu::sprite-size sprite-box)
   (uninstall-interface-slot (slot-value self 'home-position)
-			    'bu::home-position sprite-box))
+                            'bu::home-position sprite-box))
 
 
 (defmethod copy-graphics-slots ((old-turtle turtle) (new-turtle turtle))
   (call-next-method)
   (setf (box-interface-value (slot-value new-turtle 'heading))
-	(box-interface-value (slot-value old-turtle 'heading)))
+        (box-interface-value (slot-value old-turtle 'heading)))
   (setf (box-interface-value (slot-value new-turtle 'sprite-size))
-	(box-interface-value (slot-value old-turtle 'sprite-size)))
+        (box-interface-value (slot-value old-turtle 'sprite-size)))
   (setf (box-interface-value (slot-value new-turtle 'home-position))
-	(box-interface-value (slot-value old-turtle 'home-position))))
+        (box-interface-value (slot-value old-turtle 'home-position))))
 
 
 (defmethod default-interface-boxes ((self turtle))
@@ -90,7 +88,7 @@ Modification History (most recent at top)
   (multiple-value-bind (in-box in-closet)
       (call-next-method)
     (values (append in-box (list 'heading))
-	    in-closet)))
+            in-closet)))
 
 (defmethod add-heading-box ((self turtle) box)
   (setf (box-interface-box (slot-value self 'heading)) box))
@@ -102,13 +100,13 @@ Modification History (most recent at top)
   (if (null (slot-value self 'superior-turtle))
       (box-interface-value (slot-value self 'heading))
       (+ (box-interface-value (slot-value self 'heading))
-	 (absolute-heading
-	   (slot-value self 'superior-turtle)))))
+         (absolute-heading
+           (slot-value self 'superior-turtle)))))
 
 (defmethod set-heading-instance-var ((self turtle) new-value
-				     &optional dont-update-box)
+                                     &optional dont-update-box)
   (let* ((h-slot (slot-value self 'heading))
-	 (box (box-interface-box h-slot)))
+         (box (box-interface-box h-slot)))
     (when (and (null dont-update-box) (not-null box))
       (bash-box-to-number box new-value))
     (setf (box-interface-value h-slot) new-value)))
@@ -117,10 +115,10 @@ Modification History (most recent at top)
   (box-interface-value (slot-value self 'home-position)))
 
 (defmethod set-home-position ((self turtle) new-x new-y
-			      &optional dont-update-box)
+                              &optional dont-update-box)
   (let* ((slot (slot-value self 'home-position))
-	 (box (box-interface-box slot))
-	 (new (list new-x new-y)))
+         (box (box-interface-box slot))
+         (new (list new-x new-y)))
     (when (and (null dont-update-box) (not (null box)))
       (bash-box-to-list-value box new))
     (setf (box-interface-value slot) new)))
@@ -145,42 +143,28 @@ Modification History (most recent at top)
 (defmethod top-sprite ((self turtle))
   (let ((superior-turtle (slot-value self 'superior-turtle)))
     (if (not (null superior-turtle))
-	(top-sprite superior-turtle)
-	self)))
-
-(defmethod scale-save-under ((self turtle) scale)
-  (let ((su (slot-value self 'save-under)))
-    (unless (or (null su) (eq su 'xor-redraw))
-      (let ((new-size (ceiling (* (save-under-size su) scale))))
-	(setf (save-under-size su) new-size
-	      (save-under-middle su) (round new-size 2))
-        (free-offscreen-bitmap (save-under-bitmap su))
-	(setf (save-under-bitmap su)
-	      (make-offscreen-bitmap *boxer-pane*
-				     new-size new-size))))))
+        (top-sprite superior-turtle)
+        self)))
 
 (defmethod set-sprite-size ((self turtle) new-size &optional dont-update-box)
   (cond ((<= new-size 0)
-	 (error
-	   "Argument to Set-sprite-size, ~d , was less than or equal to zero"
-	   new-size))
-	(t
-	 (let* ((slot (slot-value self 'sprite-size))
-		(box (box-interface-box slot)))
+         (error
+           "Argument to Set-sprite-size, ~d , was less than or equal to zero"
+           new-size))
+        (t
+         (let* ((slot (slot-value self 'sprite-size))
+                (box (box-interface-box slot)))
            (unless (= (box-interface-value slot) new-size)
-	     (when (and (null dont-update-box) (not (null box)))
-	       (bash-box-to-number box new-size))
-	     (scale-save-under self (/ new-size (box-interface-value slot)))
-	     (setf (box-interface-value slot) new-size))
-	   ;; invalidate the shape and extent caches
-	   (invalidate-window-shape-and-extent-caches self)))))
+             (when (and (null dont-update-box) (not (null box)))
+               (bash-box-to-number box new-size))
+             (setf (box-interface-value slot) new-size))))))
 
 (defmethod absolute-size ((self turtle))
   (let ((superior-turtle (slot-value self 'superior-turtle)))
     (if (not (null superior-turtle))
-	(* (box-interface-value (slot-value self 'sprite-size))
-	   (absolute-size superior-turtle))
-	(box-interface-value (slot-value self 'sprite-size)))))
+        (* (box-interface-value (slot-value self 'sprite-size))
+           (absolute-size superior-turtle))
+        (box-interface-value (slot-value self 'sprite-size)))))
 
 (defmethod sprite-size ((self turtle))
   (box-interface-value (slot-value self 'sprite-size)))
@@ -202,11 +186,11 @@ Modification History (most recent at top)
 
 (defmethod forward ((self turtle) distance)
   (let* ((head (heading self))
-	 (change-x (* distance (sind head)))
-	 (change-y (* distance (cosd head))))
+         (change-x (* distance (sind head)))
+         (change-y (* distance (cosd head))))
     (move-to self
-	     (+ change-x (x-position self))
-	     (+ change-y (y-position self)))))
+             (+ change-x (x-position self))
+             (+ change-y (y-position self)))))
 
 (defmethod go-home ((self turtle))
   (move-to self (home-x-pos self) (home-y-pos self))
@@ -215,23 +199,20 @@ Modification History (most recent at top)
 ;;; Turning around
 (defmethod turn-to ((self turtle) new-heading &optional dont-update-box)
   (cond ((numberp new-heading)
-	 (if (not (null %learning-shape?))
-	     (set-heading-instance-var self (float-modulo new-heading 360.))
-	     (without-interrupts
-	       (set-heading-instance-var self
-					 (float-modulo new-heading 360.)
-					 dont-update-box)
-	       ;; invalidate the shape and extent caches
-	       (invalidate-window-shape-and-extent-caches self))))
-	(t (error "the argument, ~s, was not a number" new-heading))))
+         (if (not (null %learning-shape?))
+             (set-heading-instance-var self (float-modulo new-heading 360.))
+             (set-heading-instance-var self
+                                       (float-modulo new-heading 360.)
+                                       dont-update-box)))
+        (t (error "the argument, ~s, was not a number" new-heading))))
 
 (defmethod right ((self turtle) degrees)
   (turn-to self (+ (heading self) degrees)))
 
 (defmethod turn-to-without-draw ((self turtle) new-heading)
   (cond ((numberp new-heading)
-	 (set-heading-instance-var self (float-modulo new-heading 360.)))
-	(t (error "the argument, ~s, was not a number" new-heading))))
+         (set-heading-instance-var self (float-modulo new-heading 360.)))
+        (t (error "the argument, ~s, was not a number" new-heading))))
 
 (defmethod rotate ((self turtle) degrees)
   (dolist (subs (slot-value self 'subsprites))
@@ -243,14 +224,14 @@ Modification History (most recent at top)
 
 (defmethod towards ((self turtle) x y)
   (let ((x-position (x-position self))
-	(y-position (y-position self)))
+        (y-position (y-position self)))
     (cond ((and (< (abs (- x x-position)) *vertical-tolerance*)
-		(> y y-position))
-	   0)
-	  ((< (abs (- x x-position)) *vertical-tolerance*)
-	   180.)
-	  (t (float-modulo (/ (* 180. (atan (- x x-position)
-					    (- y y-position))) pi) 360.)))))
+                (> y y-position))
+           0)
+          ((< (abs (- x x-position)) *vertical-tolerance*)
+           180.)
+          (t (float-modulo (/ (* 180. (atan (- x x-position)
+                                            (- y y-position))) pi) 360.)))))
 
 (defmethod set-heading ((self turtle) new-heading)
   (turn-to self new-heading))
@@ -260,7 +241,7 @@ Modification History (most recent at top)
 #|
 (defmethod save-state-and-reset ((self turtle))
   (setq %turtle-state
-	(list (x-position self) (y-position self) (heading self)))
+        (list (x-position self) (y-position self) (heading self)))
   (set-x-position self 0.0)
   (set-y-position self 0.0)
   (set-heading self 0))
@@ -274,12 +255,12 @@ Modification History (most recent at top)
 
 (defmethod return-state ((self turtle))
   (list (x-position self)
-	(y-position self)
-	(heading self)
-	(pen self)
-	(pen-color self)
-	(pen-width self)
-	(type-font self)))
+        (y-position self)
+        (heading self)
+        (pen self)
+        (pen-color self)
+        (pen-width self)
+        (type-font self)))
 
 (defmethod reset-turtle-and-return-state ((self turtle))
   (let ((turtle-state (return-state self)))

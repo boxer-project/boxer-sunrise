@@ -1,7 +1,7 @@
 ;;;; -*- Mode:LISP; Syntax:Common-Lisp;Package:BOXER;-*-
 ;;;;
 ;;;;      Boxer
-;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;      Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -70,20 +70,17 @@
 ;;; . Slots to implement nesting in the Boxer hierarchy
 ;;;
 
-(eval-when (load compile eval)
-           (defclass graphics-object
-             ()
-             ((x-position         :initform (%make-vv-box-interface 0.0 'x-position))
-              (y-position         :initform (%make-vv-box-interface 0.0 'y-position))
-              (subsprites         :initform nil :accessor subsprites)
-              (superior-turtle    :initform nil :accessor superior-turtle)
-              (sprite-box         :initform nil :accessor sprite-box)
-              (assoc-graphics-box :initform nil :accessor assoc-graphics-box))
-             (:metaclass block-compile-class)
-             ;; (:abstract-class t)
-             (:documentation
-              "Bare minimum for a graphics object, slots for box interface and position"))
-           )
+(defclass graphics-object
+  ()
+  ((x-position         :initform (%make-vv-box-interface 0.0 'x-position))
+   (y-position         :initform (%make-vv-box-interface 0.0 'y-position))
+   (subsprites         :initform nil :accessor subsprites)
+   (superior-turtle    :initform nil :accessor superior-turtle)
+   (sprite-box         :initform nil :accessor sprite-box)
+   (assoc-graphics-box :initform nil :accessor assoc-graphics-box))
+   (:documentation
+    "Bare minimum for a graphics object, slots for box interface and position"))
+
 
 (defgeneric graphics-object? (x) (:method (x) nil) (:method ((x graphics-object)) t))
 
@@ -94,12 +91,16 @@
 
 (defclass button
   (graphics-object)
-  ((shape      :initform nil)
-   (save-under :initform nil
-               :accessor turtle-save-under)
-   (window-shape :initform nil
-                 :accessor turtle-window-shape))
-  (:metaclass block-compile-class))
+  ((shape      :initform nil
+    :documentation
+    "This is a special-value-box-interface vector. The value is a graphics-command-list, the slot
+    is this shape slot, and the update function in the 5th vector position is shape-box-updater.
+
+    At the moment, users can update a shape with primitives change, change-graphics, and set-shape.
+    These have some slightly odd edge cases. See the following locations for where this happens.
+    - gcmeth:          defmethod set-shape
+    - recursive-prims: defrecursive-funcall-primitive update-shape
+    - grprim3:         defboxer-primitive change-graphics")))
 
 ;;;; This has the capability to draw lines when it moves
 
@@ -127,42 +128,24 @@
    (type-font :initform (%make-sv-box-interface
                          *sprite-type-font-no* 'type-font
                          nil 'type-font-box-updater))
-  )
-  (:metaclass block-compile-class))
+  ))
 
 ;;;; Our friend the turtle...
 
 (defclass turtle
-  (graphics-cursor)
+  (graphics-cursor plist-subclass)
   ((heading       :initform (%make-vv-box-interface 0 'heading))
    (home-position :initform (%make-iv-box-interface '(0.0 0.0) 'home-position))
    (sprite-size   :initform (%make-vv-box-interface 1.0 'sprite-size))
    (private-gl    :initform (make-graphics-command-list))
-   )
-  (:metaclass block-compile-class))
+   ))
 
 (defgeneric turtle? (x) (:method (x) nil) (:method ((x turtle)) t))
 
-;;;; block compile metaclass epilogue
-
-;; (block-compile-epilogue graphics-object)
-
-;; (block-compile-epilogue button)
-
-;; (block-compile-epilogue graphics-cursor)
-
-;; (block-compile-epilogue turtle)
-
 (defun make-turtle ()
-  (make-instance 'turtle))
-
-;; soon to be '(xor-redraw overlay)
-(defvar *valid-save-under-keywords* '(xor-redraw))
-
-(defstruct (save-under (:constructor make-save-under (bitmap middle size)))
-  (bitmap nil)
-  (middle 0)
-  (size))
+  (let ((togo (make-instance 'turtle)))
+    (setf (plist togo) nil)
+    togo))
 
 ;; sgithens TODO, for some reason this complains that graphics-object is unbound...
 ;; (deftype-checking-macros graphics-object "A Graphics Object")
@@ -170,11 +153,6 @@
 ;; (deftype-checking-macros graphics-cursor "A Graphics Cursor")
 ;; (deftype-checking-macros turtle "A Turtle")
 
-;;; Some useful variables that various types of objects need
-
-(defconstant *default-graphics-object-height* 10.0)
-
-(defconstant *default-graphics-object-width* 10.0)
 
 ;;; adding and removing graphics-objects to/from GRAPHICS-BOXES
 
@@ -218,7 +196,7 @@
 
 (defun array-coordinate-y (user-y)
   (float-minus %drawing-half-height
-               (float user-y) ; (* user-y *scrunch-factor*)
+               (float user-y)
                ))
 
 ;;; ARRAY ==> USER
@@ -227,7 +205,6 @@
   (float-minus (float array-x) %drawing-half-width))
 
 (defun user-coordinate-y (array-y)
-  ;(/ (- %drawing-half-height array-y) *scrunch-factor*)
   (float-minus %drawing-half-height (float array-y)))
 
 (defun user-coordinate-fix-x (array-x)
@@ -236,20 +213,11 @@
 
 (defun user-coordinate-fix-y (array-y)
   (declare (fixnum array-y))
-  ;(/ (- %drawing-half-height array-y) *scrunch-factor*)
   (float-minus %drawing-half-height (float array-y)))
 
 ;;; these want ARRAY coordinates
 
-(defun point-in-array? (x y)
-  (and (x-in-array? x)
-       (y-in-array? y)))
 
-(defsubst x-in-array? (x)
-  (and (>=& x 0) (<& x %drawing-width)))
-
-(defsubst y-in-array? (y)
-  (and (>=& y 0) (<& y %drawing-height)))
 
 ;;; normalize coordinates to the on screen position
 

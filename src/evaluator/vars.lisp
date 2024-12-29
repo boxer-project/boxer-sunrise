@@ -1,6 +1,6 @@
 ;;;;
 ;;;;      Boxer
-;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;      Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -84,12 +84,10 @@
 ;;; that context
 (defvar *background-poll-count* 20)
 
-;;; a hook for actions to be called inside the evaluator more often than
-;;; the polling function, for now, we use it to force screen updates in
-;;; double buffered systems
-(defvar *periodic-eval-action* #+carbon-compat 'boxer::flush-port-buffer
-                               #+opengl 'boxer::repaint-in-eval
-                               #-(or opengl carbon-compat) nil)
+(defvar *periodic-eval-action* 'boxer::repaint-in-eval
+  "A hook for actions to be called inside the evaluator more often than
+the polling function, for now, we use it to repain the screen during eval.
+Can be nil if no action is desired.")
 
 ;; this number should be less than *initial-poll-count*
 (defvar *periodic-eval-times*  '(100))
@@ -193,17 +191,16 @@
 (define-eval-var boxer::%turtle-state    :global nil)
 (define-eval-var boxer::%learning-shape-graphics-list :global nil)
 (define-eval-var boxer::%private-graphics-list :global nil)
-(define-eval-var boxer::*graphics-command-recording-mode* :global ':window)
+;; sgithens 2023-07-12 We are always in :boxer rather than :window mode now after
+;; transitioning to all Boxer coords for turtles. Eventually we may want to remove
+;; this variable.
+(define-eval-var boxer::*graphics-command-recording-mode* :global ':boxer)
 (define-eval-var boxer::*current-sprite* :global nil)
 
 (defvar boxer::*supress-graphics-recording?* nil)
 ;; this needs to be defined with a value of NIL for the benefit of other
 ;; (unrelated) redisplay initializers
 (define-eval-var boxer::*supress-graphics-recording?* :global nil)
-
-;; used in with-sprites-hidden
-(define-eval-var boxer::*prepared-graphics-box* :global nil)
-(define-eval-var boxer::*sprites-hidden* :global nil)
 
 ;; error handling
 (define-eval-var *error-handler-list* :global nil)

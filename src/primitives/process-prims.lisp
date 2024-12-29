@@ -3,7 +3,7 @@
 ;;;;   $Header: process-prims.lisp,v 1.0 90/01/24 22:15:51 boxer Exp $
 ;;;;
 ;;;;      Boxer
-;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;      Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -406,13 +406,13 @@ If the box was not entered with EDIT-BOX, just insert a return."
   :state-variables (*lexical-variables-root* *dynamic-variables-bottom*)
   :before
   (let* ((input (bw::get-boxer-input))
-         (mouse-p (not (or (system:gesture-spec-p input) (boxer::key-event? input)))))
+         (mouse-p (not (or #+lispworks (system:gesture-spec-p input) (boxer::key-event? input)))))
     (multiple-value-bind (name mouse-bp)
                          (if (not mouse-p)
-                           (progn (if (system:gesture-spec-p input)
+                           #+lispworks (progn (if (system:gesture-spec-p input)
                                       (let* ((data (sys::gesture-spec-data input))
                                           (charcode (bw::input-gesture->char-code input))
-                                          (charbits (bw::convert-gesture-spec-modifier input)))
+                                          (charbits (sys:gesture-spec-modifiers input)))
                                         (boxer::lookup-key-name (boxer::input-code charcode) charbits))
                                       (boxer::lookup-key-name (boxer::input-code input)
                                                               (boxer::input-bits input))))

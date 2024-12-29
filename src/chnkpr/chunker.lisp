@@ -1,7 +1,7 @@
 ;;;;  -*- Mode:Lisp; Syntax: Common-Lisp;package:Boxer; -*-
 ;;;;
 ;;;;      Boxer
-;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;      Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -417,7 +417,7 @@ Oldness and Oldossity.....
 ;;;  The main entry point into the chunker is CHUNK-ROW.
 
 (defun chunk-row (row &optional pointers-only?)
-  (declare (values pointers eval-objects))
+  "Returns (values pointers eval-objects))"
   (let ((stream (make-simple-row-stream-from-row row)))
     (with-local-formatting-info (stream)
       (chunk-top-level stream pointers-only?))))
@@ -513,7 +513,7 @@ Oldness and Oldossity.....
                                           :adjustable t
                                           :element-type
                                           #+(or excl lucid) 'string-char
-                                          #+(or lispworks mcl symbolics) 'character)))
+                                          #+(or lispworks mcl symbolics sbcl ecl) 'character)))
 
 (defun chunk-string ()
   (let ((cs (or (pop *chunk-strings*)
@@ -522,7 +522,7 @@ Oldness and Oldossity.....
                             :adjustable t
                             :element-type
                             #+(or excl lucid) 'string-char
-                            #+(or lispworks mcl symbolics) 'character))))
+                            #+(or lispworks mcl symbolics sbcl ecl) 'character))))
     (setf (fill-pointer cs) 0)
     cs))
 
@@ -643,7 +643,7 @@ Oldness and Oldossity.....
 
 
 (defun chunk (stream &optional left-formatting-property)
-  (declare (values lfp pname chunk rfp label eval-props))
+  "Returns (values lfp pname chunk rfp label eval-props))"
   (let (;; The values that will be returned
         (lfp (or left-formatting-property 0))
         pname
@@ -1341,7 +1341,7 @@ Oldness and Oldossity.....
                (let ((gr (vc-graphics obj)) (gs nil))
                  (when (and gr (setq gs (graphics-info-graphics-sheet gr))
                             (graphics-sheet-bit-array gs))
-                   (free-offscreen-bitmap (graphics-sheet-bit-array gs))))))
+                   (ogl-free-pixmap (graphics-sheet-bit-array gs))))))
            (setf (slot-value self 'cached-eval-objs) eval-objs)
            (setf (slot-value self 'cached?) 'all))
           (t

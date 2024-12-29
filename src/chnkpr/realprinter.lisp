@@ -1,7 +1,7 @@
 ;;;;-*- Mode:Lisp; Syntax: Common-Lisp; Base: 10.;package: Boxer-*-
 ;;;;
 ;;;;      Boxer
-;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;      Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -122,8 +122,7 @@
       (when (null (graphics-sheet newbox))
         (setf (display-style-graphics-mode? dsl) nil)
         (dolist (sb (screen-objs port))
-          (toggle-type sb)
-          (set-force-redisplay-infs? sb t)))))
+          (toggle-type sb)))))
   ;; this will uncrack any cracked ports...
   (inform-port-that-target-has-returned port)
   ;; if the port has been scrolled, we need to reset that info
@@ -408,8 +407,6 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
 
 (defun graphics-info-turtle (gi) (getf gi 'turtle))
 
-(defun graphics-info-av (gi) (getf gi 'av-info))
-
 ;;; copying closets
 ;; In general, only a pointer to the closet in the original box is retained
 ;; this can be a problem when an item in the closet is symeval'd and then
@@ -517,10 +514,8 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
           (setf (display-style-graphics-mode? (display-style-list box)) t))
         ;; check for other visual props which may occur with a graphics sheet
         ;; like av-info, gif?, jpeg?
-        (let ((av (graphics-info-av (vc-graphics vc))))
-          (unless (null av)
-            (unqueue-non-lisp-structure-for-deallocation av)
-            (putprop box av 'av-info)))
+        ;; 2024-04-17 av-info has been removed, but leaving this stub comment above for the future.
+
         ;; turtle needs to be handled AFTER the rows and the closets are
         ;; added because we might need the values in the boxes to properly
         ;; initialize the graphics-object
@@ -551,7 +546,7 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
     ;; way so that any subsprites in the inferior rows can be hooked up
     ;; to the supersprite correctly.  After the rows have been articulated,
     ;; we will link the turtle to the sprite box in a more careful way
-    (when (eq (vc-type vc) 'sprite-box)
+    (when (and (listp (vc-graphics vc)) (graphics-object? (cadr (vc-graphics vc))))
       (let* ((old-go (graphics-info-turtle (vc-graphics vc)))
              (go (if (null old-go)
                    (make-instance *default-graphics-object-class*)
@@ -565,7 +560,7 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
     ;; now that the rows have been calculated, we link the turtle into the
     ;; sprite box, checking for the possibility that some of the turtle's
     ;; instance variables have box values
-    (when (eq (vc-type vc) 'sprite-box)
+    (when (and (listp (vc-graphics vc)) (graphics-object? (cadr (vc-graphics vc))))
       (link-graphics-object-to-box (graphics-info box) box))
     (unless (null (vc-name vc))
       (set-name box (make-name-row (list (canonicalize-vc-name (vc-name vc))))))
@@ -598,12 +593,7 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
           (set-slot-value-from-binding (slot-value go slot-name) (car existing))))))
   ;; Now we can attach the graphics-object to the box
   (setf (graphics-info box) go)
-  (set-sprite-box go box)
-  (update-save-under go)
-  ;; make sure the window-shape-cache agrees with the (possibly) new shape
-  (update-window-shape-allocation go)
-  ;; force recompute of offsets and extents of the commands in the window shape
-  (invalidate-window-shape-and-extent-caches go))
+  (set-sprite-box go box))
 
 (defun set-slot-value-from-binding (slot binding)
   (let ((box (boxer-eval::static-variable-value binding)))

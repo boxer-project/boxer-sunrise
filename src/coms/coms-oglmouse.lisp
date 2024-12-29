@@ -11,7 +11,7 @@
 ;;;;    ;;;
 ;;;;
 ;;;;        Boxer
-;;;;        Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;        Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;        Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;        used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -172,19 +172,44 @@
   ;; Note that this is designed to be called in the Boxer process,
   ;; not in the Mouse Process -- This is important!!!
   window x y click-only? ;  (declare (ignore window x y click-only?))
-  ;; first, if there already is an existing region, flush it
-  (reset-region)
-  (let ((new-box (bp-box mouse-bp))
+  (let ((new-box (screen-obj-actual-obj (bp-screen-box mouse-bp)))
         (old-box (point-box))
         (new-row (bp-row mouse-bp))
         (mouse-screen-box (bp-screen-box mouse-bp))
         (new-cha-no (bp-cha-no mouse-bp)))
-    (when (and (not-null new-row) (box? new-box))
-      (unless (eq old-box new-box)
-        (send-exit-messages new-box mouse-screen-box)
-        (enter new-box (not (superior? old-box new-box))))
-      (move-point-1 new-row new-cha-no mouse-screen-box)
-      (com-expand-box)))
+    ;; If the mouse cursor isn't over some type of shrunken box, we aren't going to
+    ;; do anything. This prevents the region being reset after dragging to select some
+    ;; text, which is bound to mouse-down.  - sgithens 2021-10-18
+    (cond ((and (not-null new-row) (box? new-box) (shrunken? new-box)
+            ;; This handles the case of when you are on the top level box targetted by a port.
+            ;; Since com-mouse-expand-box is currently bound to mouse-click, if we click in a port, we
+            ;; don't want the expand message to be sent to the actual box that is targetted by the box.
+            ;; boxer-bugs-102
+            ;; 1. The box is not a port box
+            ;; 2. The screen-obj type is port
+            ;; TODO what if it's a port that's pointing to a port?
+            (eq mouse-screen-box (car (screen-objs new-box))))
+           (reset-region)
+           (unless (eq old-box new-box)
+             (send-exit-messages new-box mouse-screen-box)
+             (enter new-box (not (superior? old-box new-box))))
+           (move-point-1 new-row new-cha-no mouse-screen-box)
+           (com-expand-box))
+          ((and (not-null new-row) (box? new-box) (shrunken? new-box))
+           (reset-region)
+           (unless (eq old-box new-box)
+             (send-exit-messages new-box mouse-screen-box)
+             (enter new-box (not (superior? old-box new-box))))
+           (move-point-1 new-row new-cha-no mouse-screen-box)
+           ;; If this top level port is actually shrunk (not the box it point to),
+           ;; go ahead and exand it
+           (let* ((new-actual (screen-obj-actual-obj mouse-screen-box))
+                  (new-style-list (display-style-list new-actual))
+                  (new-style (display-style-style new-style-list)))
+             (when (member new-style '(:SHRUNK :SUPERSHRUNK))
+               (com-expand-box)
+             ))
+           )))
   boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-set-outermost-box (&optional (window *boxer-pane*)
@@ -239,10 +264,9 @@
                (not (name-row? new-row))
                (shrunken? (screen-obj-actual-obj (screen-box-point-is-in))))
       (com-expand-box)))
-  ;(repaint-cursor)
   boxer-eval::*novalue*)
 
-(defboxer-command com-mouse-define-region (&optional (window *boxer-pane*)
+#+lispworks (defboxer-command com-mouse-define-region (&optional (window *boxer-pane*)
                                                      (x (bw::boxer-pane-mouse-x))
                                                      (y (bw::boxer-pane-mouse-y))
                                                      (mouse-bp
@@ -255,14 +279,19 @@
   ;; first, if there already is an existing region, flush it
   (reset-region) ; might want to reposition instead when shift-clicking
   ;; then go to where the mouse is pointing
-  (let ((old-box (point-box)) (new-box (bp-box mouse-bp)) (new-row (bp-row mouse-bp))
-                              (mouse-screen-box (bp-screen-box mouse-bp)) (new-cha-no (bp-cha-no mouse-bp))
-                              ;; should probably eventually make this a global var...
-                              (mouse-position (fill-doit-cursor-position-vector
-                                               (make-process-doit-cursor-position) mouse-bp)))
+  (let ((old-box (point-box))
+        (new-box (bp-box mouse-bp))
+        (new-row (bp-row mouse-bp))
+        (mouse-screen-box (bp-screen-box mouse-bp))
+        (new-cha-no (bp-cha-no mouse-bp))
+        ;; should probably eventually make this a global var...
+        (mouse-position (fill-doit-cursor-position-vector
+                          (make-process-doit-cursor-position) mouse-bp)))
     (when (and (not shift?)
                ;; if the shift key is pressed, don't move the point...
-               (not-null new-row) (not-null new-cha-no) (not-null new-box))
+               (not-null new-row) (not-null new-cha-no) (not-null new-box)
+               (not (shrunken? mouse-screen-box))
+               )
       (unless (eq old-box new-box)
         (send-exit-messages new-box mouse-screen-box t )
         (enter new-box (not (superior? old-box new-box))))
@@ -275,14 +304,10 @@
              (restore-point-position mouse-position t))
         (t
          (move-point-1 new-row new-cha-no mouse-screen-box))))
-    (when (and (not (name-row? new-row))
-               (shrunken? (screen-obj-actual-obj (screen-box-point-is-in))))
-      (com-expand-box)
-      (repaint)))
-  (when (or (null click-only?) shift?)
+      )
+  (when (and (or (null click-only?) shift?)  (not (shrunken? (bp-screen-box mouse-bp))))
     ;; now go about dragging a region defined by *point* and the mouse-bp
     ;; unless the user is no longer holding the mouse button down
-    ; (repaint-cursor)
     ;; now track the mouse
     (multiple-value-bind (original-screen-row original-x)
                          (if shift?
@@ -572,9 +597,7 @@
                                                                 (setq *region-list*
                                                                       (fast-delq *region-being-defined* *region-list*)
                                                                       *region-being-defined*
-                                                                      nil)
-                                                                ;(repaint)
-                                                                ))
+                                                                      nil)))
                                                          (t
                                                           ;; region is still there so...
                                                           (entering-region-mode)))))
@@ -736,7 +759,7 @@
         "Can't Resize the Outermost Box. Resize the Window instead."))
       (t
        ;; mouse grab, interactive loop
-       (multiple-value-bind (box-window-x box-window-y)
+       #+lispworks (multiple-value-bind (box-window-x box-window-y)
                             (xy-position screen-box)
                             (multiple-value-bind (left top right bottom)
                                                  (box-borders-widths box-type screen-box)
@@ -750,15 +773,15 @@
                                                      (multiple-value-bind (n-min-x n-min-y n-max-x n-max-y)
                                                                           (box-borders-name-tab-values box-type screen-box)
                                                                           (declare (ignore n-min-x))
-                                                                          (setq minimum-track-wid (max& n-max-x minimum-track-wid)
+                                                                          (setq minimum-track-wid (max n-max-x minimum-track-wid)
                                                                                 minimum-track-hei (+ minimum-track-hei
                                                                                                      (- n-max-y n-min-y)))))
                                                    (multiple-value-bind (final-x final-y moved-p)
                                                                         (boxer-window::with-mouse-tracking ((mouse-x x) (mouse-y y)
                                                                                                                         :action :resize)
-                                                                                                           (let ((new-wid (max& minimum-track-wid
+                                                                                                           (let ((new-wid (max minimum-track-wid
                                                                                                                                 (- mouse-x box-window-x)))
-                                                                                                                 (new-hei (max& minimum-track-hei
+                                                                                                                 (new-hei (max minimum-track-hei
                                                                                                                                 (- mouse-y box-window-y)))
                                                                                                                  (last-wid (screen-obj-wid screen-box))
                                                                                                                  (last-hei (screen-obj-hei screen-box)))
@@ -778,8 +801,8 @@
                                                                                                                   ;; sized bitmaps inside of loop
                                                                                                                   (set-fixed-size actual-box
                                                                                                                                   (- new-wid left right)
-                                                                                                                                  (- new-hei top bottom)))
-                                                                                                                (repaint)
+                                                                                                                                  (- new-hei top bottom))
+                                                                                                                  (repaint))
                                                                                                                 ))))
                                                                         ;; finalize..
                                                                         (cond ((null moved-p)
@@ -1121,7 +1144,6 @@
            (com-toggle-closets))))))
   boxer-eval::*novalue*)
 
-(defvar *slow-graphics-toggle* nil)
 
 (defboxer-command com-mouse-bl-corner-toggle-box-view (&optional (window *boxer-pane*)
                                                                  (x (bw::boxer-pane-mouse-x))
@@ -1131,42 +1153,24 @@
                                                                  (click-only? t))
   "Toggle the box view"
   window x y ;  (declare (ignore window x y))
-  ;; first, if there already is an existing region, flush it
   (reset-region)
   (let* ((screen-box (bp-screen-box mouse-bp))
          (box (screen-obj-actual-obj screen-box))
          (screen-objs (screen-objs box))
-         (graphics-sheet (if (port-box? box)
-                           (slot-value (ports box) 'graphics-info)
-                           (slot-value box 'graphics-info)))
          (display-style (display-style-list box)))
     (cond ((and (not (display-style-graphics-mode? display-style))
-                (null graphics-sheet))
+                (not (graphics-box? box)))
            (boxer-editor-error "This box has no graphics"))
       ((eq screen-box *outermost-screen-box*)
        (boxer-editor-error "Can't toggle the view of the Outermost Box"))
-      ((if *slow-graphics-toggle*
-         (and (let ((waited? (mouse-still-down-after-pause?
-                              *mouse-action-pause-time*)))
-                ;; if the user has clicked, but not waited long enough,
-                ;; maybe warn about how to win
-                (when (and (null waited?) *warn-about-disabled-commands*)
-                  (boxer-editor-warning
-                   "You have to hold the mouse down for ~A seconds to confirm"
-                   *mouse-action-pause-time*))
-                waited?)
-              (mouse-corner-tracking (:bottom-left)
-                                     #'toggle-corner-fun screen-box))
-         (or click-only?
-             (mouse-corner-tracking (:bottom-left)
-                                    #'toggle-corner-fun screen-box)))
+      (t
        ;; modify the editor box
        (if (display-style-graphics-mode? display-style)
          (setf (display-style-graphics-mode? display-style) nil)
          (setf (display-style-graphics-mode? display-style) t))
        ;; then handle changes to the screen boxes
        (dolist (sb screen-objs)
-         (toggle-type sb) (set-force-redisplay-infs? sb t))
+         (toggle-type sb))
        (modified (box-screen-point-is-in)))))
   boxer-eval::*novalue*)
 
@@ -1258,9 +1262,6 @@
 ;;; The com-mouse-?-scroll commands dispatch to more specific action depending upon what
 ;;; scroll area was initially moused
 
-(defvar *only-scroll-current-box?* nil)
-(defvar *smooth-scrolling?* nil)  ; for now...
-
 (defboxer-command com-mouse-scroll-box (&optional (window *boxer-pane*)
                                                   (x (bw::boxer-pane-mouse-x))
                                                   (y (bw::boxer-pane-mouse-y))
@@ -1268,336 +1269,16 @@
                                                    (mouse-position-values x y))
                                                   (click-only? t))
   "Scroll or reposition the box"
-  window x				;  (declare (ignore window x))
+  window ;; (declare (ignore window))
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let* ((screen-box (bp-screen-box mouse-bp))
-         (edbox (screen-obj-actual-obj screen-box))
-         (box-type (box-type screen-box))
-         (fixed? (not (null (display-style-fixed-wid
-                             (display-style-list edbox))))))
-    (unless (and *only-scroll-current-box?* (neq screen-box (point-screen-box)))
-      (unless fixed? ; fix the box size during scrolling
-        (multiple-value-bind (current-wid current-hei)
-                             (screen-obj-size screen-box)
-                             (multiple-value-bind (l-wid t-wid r-wid b-wid)
-                                                  (box-borders-widths (box-type  (screen-box-point-is-in))
-                                                                      (screen-box-point-is-in))
-                                                  (set-fixed-size edbox
-                                                                  (- current-wid l-wid r-wid)
-                                                                  (- current-hei t-wid b-wid)))))
-      (case (get-scroll-position x y screen-box box-type)
-        (:v-up-button (if click-only?
-                        (com-scroll-up-row screen-box)
-                        (if *smooth-scrolling?*
-                          (mouse-smooth-scroll-internal screen-box :up)
-                          (mouse-line-scroll-internal screen-box :up))))
-        (:v-down-button (if click-only?
-                          (com-scroll-dn-row screen-box)
-                          (if *smooth-scrolling?*
-                            (mouse-smooth-scroll-internal screen-box :down)
-                            (mouse-line-scroll-internal screen-box :down))))
-        (:h-left-button (if click-only?
-                          (h-scroll-screen-box screen-box *horizontal-click-scroll-quantum*)
-                          (mouse-h-scroll screen-box :left)))
-        (:h-right-button (if click-only?
-                           (h-scroll-screen-box screen-box (- *horizontal-click-scroll-quantum*))
-                           (mouse-h-scroll screen-box :right)))
-        (:v-bar (mouse-in-v-scroll-bar-internal screen-box x y click-only?))
-        (:h-bar (mouse-in-h-scroll-bar-internal screen-box x y)))
-      ;; now restore the box, if we have fixed it before
-      (unless fixed? (set-fixed-size edbox nil nil))))
-  ;; if the cursor is in the box being scrolled (or some inferior), we
-  ;; need to make sure that it gets moved to where it will become visible
-  ;; The scroll-to-actual-row of the screen box is a good bet
-  boxer-eval::*novalue*)
-
-(defboxer-command com-mouse-page-scroll-box (&optional (window *boxer-pane*)
-                                                       (x (bw::boxer-pane-mouse-x))
-                                                       (y (bw::boxer-pane-mouse-y))
-                                                       (mouse-bp
-                                                        (mouse-position-values x y))
-                                                       (click-only? t))
-  "Scroll box by the page"
-  window
-  (reset-region)
-  (let* ((screen-box (bp-screen-box mouse-bp))
-         (box-type (box-type screen-box))
-         (fixed? (not (null (display-style-fixed-wid
-                             (display-style-list (screen-obj-actual-obj
-                                                  screen-box)))))))
-    (unless (and *only-scroll-current-box?* (neq screen-box (point-screen-box)))
-      (unless fixed? ; fix the box size during scrolling
-        (multiple-value-bind (wid hei)
-                             (screen-obj-size screen-box)
-                             (multiple-value-bind (left top right bottom)
-                                                  (box-borders-widths (box-type  (screen-box-point-is-in))
-                                                                      (screen-box-point-is-in))
-                                                  (set-fixed-size (screen-obj-actual-obj screen-box)
-                                                                  (- wid left right)
-                                                                  (- hei top bottom)))))
-      (case (get-scroll-position x y screen-box box-type)
-        (:v-up-button (if click-only?
-                        (com-scroll-up-one-screen-box (list screen-box))
-                        (mouse-page-scroll-internal :up screen-box)))
-        (:v-down-button (if click-only?
-                          (com-scroll-dn-one-screen-box (list screen-box))
-                          (mouse-page-scroll-internal :down screen-box)))
-        (:h-left-button (if click-only?
-                          (h-scroll-screen-box screen-box (* 2 *horizontal-click-scroll-quantum*))
-                          (mouse-h-scroll screen-box :left 2)))
-        (:h-right-button (if click-only?
-                           (h-scroll-screen-box screen-box (* 2 (- *horizontal-click-scroll-quantum*)))
-                           (mouse-h-scroll screen-box :right 2)))
-        (:v-bar (mouse-in-v-scroll-bar-internal screen-box x y click-only?))
-        (:h-bar (mouse-in-h-scroll-bar-internal screen-box x y)))
-      ;; now restore the box, if we have fixed it before
-      (unless fixed? (set-fixed-size (screen-obj-actual-obj screen-box) nil nil))))
-  ;; if the cursor is in the box being scrolled (or some inferior), we
-  ;; need to make sure that it gets moved to where it will become visible
-  ;; The scroll-to-actual-row of the screen box is a good bet
-  boxer-eval::*novalue*)
-
-
-(defboxer-command com-mouse-limit-scroll-box (&optional (window *boxer-pane*)
-                                                        (x (bw::boxer-pane-mouse-x))
-                                                        (y (bw::boxer-pane-mouse-y))
-                                                        (mouse-bp
-                                                         (mouse-position-values x y))
-                                                        (click-only? t))
-  "To the limit..."
-  window
-  (reset-region)
-  (let* ((screen-box (bp-screen-box mouse-bp))
-         (edbox (screen-obj-actual-obj screen-box))
          (box-type (box-type screen-box)))
-    (unless (and *only-scroll-current-box?* (neq screen-box (point-screen-box)))
-      (multiple-value-bind (left top right bottom)
-                           (box-borders-widths box-type screen-box)
-                           (declare (ignore left right))
-                           (multiple-value-bind (wid hei)
-                                                (screen-obj-size screen-box)
-                                                (declare (ignore wid))
-                                                (case (get-scroll-position x y screen-box box-type)
-                                                  (:v-up-button   (set-scroll-to-actual-row screen-box (first-inferior-row edbox)))
-                                                  (:v-down-button (set-scroll-to-actual-row screen-box
-                                                                                            (last-page-top-row edbox (- hei top bottom))))
-                                                  (:h-left-button  (h-scroll-screen-box screen-box 100000)) ; any large number will do...
-                                                  (:h-right-button (h-scroll-screen-box screen-box -100000))
-                                                  (:v-bar (mouse-in-v-scroll-bar-internal screen-box x y click-only?))
-                                                  (:h-bar (mouse-in-h-scroll-bar-internal screen-box x y)))))))
+    ;; (unless (neq screen-box (point-screen-box)) ;; This was to only let you scroll the box if the point is in it
+      (case (get-scroll-position x y screen-box box-type)
+        (:v-bar (mouse-in-v-scroll-bar-internal screen-box x y click-only?))
+        (:h-bar (mouse-in-h-scroll-bar-internal screen-box x y)))) ;)
   boxer-eval::*novalue*)
-
-(defun last-page-top-row (box hei)
-  (do ((row (last-inferior-row box) (previous-row row))
-       (acc-height 0))
-    ((or (null row) (>= acc-height hei))
-     (if (null row) (first-inferior-row box) (next-row row)))
-    (setq acc-height (+ acc-height (estimate-row-height row)))))
-
-(defvar *initial-scroll-pause-time* .5
-  "Seconds to pause after the 1st line scroll while holding the mouse")
-
-(defvar *scroll-pause-time* 0.1
-  "Seconds to pause between each line scroll while holding the mouse")
-
-(defvar *smooth-scroll-pause-time* 0.005
-  "Seconds to pause between each pixel scroll while holding the mouse")
-
-(defun last-scrolling-row (editor-box)
-  (previous-row (previous-row (last-inferior-row editor-box))))
-
-(defun mouse-line-scroll-internal (screen-box direction)
-  (if (eq direction :up)
-    (com-scroll-up-row screen-box)
-    (com-scroll-dn-row screen-box))
-  ;; do one thing, show it, then pause...
-  (capi::apply-in-pane-process *boxer-pane* #'repaint t)
-  (simple-wait-with-timeout *initial-scroll-pause-time* #'(lambda () (zerop& (mouse-button-state))))
-
-  ;; sgithens 2021-03-11 This `if` is a temporary crash fix, as this method keeps getting called when there are
-  ;; no previous rows for `last-scrolling-row`
-  (if (and (previous-row (last-inferior-row (screen-obj-actual-obj screen-box)))
-           (previous-row (previous-row (last-inferior-row (screen-obj-actual-obj screen-box)))))
-    ;; now loop
-    (let* ((edbox (screen-obj-actual-obj screen-box))
-          (1st-edrow (first-inferior-row edbox))
-          (last-edrow (last-scrolling-row edbox)))
-      (loop (when (or (zerop& (mouse-button-state))
-                      (and (eq direction :up) (eq (scroll-to-actual-row screen-box) 1st-edrow))
-                      (and (eq direction :down) (row-> (scroll-to-actual-row screen-box)
-                                                  last-edrow)))
-              ;; stop if the mouse is up or we hit one end or the other...
-              (return))
-        (if (eq direction :up)
-          (com-scroll-up-row screen-box)
-          (com-scroll-dn-row screen-box))
-        (repaint)
-        (simple-wait-with-timeout *scroll-pause-time*
-                                  #'(lambda () (zerop& (mouse-button-state))))))))
-
-;; pixel (as opposed to row) based scrolling
-;; should we quantize on integral row on exit ??
-;; no movement lines for now, presumably, disorientation should be less of a problem
-;; no initial pause, start scrolling right away
-
-(defvar *smooth-scroll-min-speed* 1)
-(defvar *smooth-scroll-med-speed* 2)
-(defvar *smooth-scroll-max-speed* 6) ; note must be less than (max-char-height)
-
-(defun mouse-smooth-scroll-internal (screen-box direction)
-  (drawing-on-window (*boxer-pane*)
-                     (queueing-screen-objs-deallocation
-                      (let* ((edbox (screen-obj-actual-obj screen-box))
-                             (1st-edrow (first-inferior-row edbox))
-                             (last-edrow (last-scrolling-row edbox))
-                             (slow-start-time (get-internal-real-time)))
-                        (multiple-value-bind (initial-mx initial-my) (mouse-window-coords)
-                                             (declare (ignore initial-mx))
-                                             (flet ((get-velocity ()
-                                                                  (let ((ydiff (- initial-my
-                                                                                  (multiple-value-bind (mx my) (mouse-window-coords)
-                                                                                                       (declare (ignore mx)) my)))
-                                                                        (tdiff (- (get-internal-real-time) slow-start-time)))
-                                                                    (if (eq direction :up)
-                                                                      (cond ((or (> ydiff 10)
-                                                                                 (> tdiff (* 2 internal-time-units-per-second)))
-                                                                             *smooth-scroll-max-speed*)
-                                                                        ((or (> ydiff 5)
-                                                                             (> tdiff internal-time-units-per-second))
-                                                                         *smooth-scroll-med-speed*)
-                                                                        (t *smooth-scroll-min-speed*))
-                                                                      (cond ((or (< ydiff -10)
-                                                                                 (> tdiff (* 2 internal-time-units-per-second)))
-                                                                             (- *smooth-scroll-max-speed*))
-                                                                        ((or (< ydiff -5)
-                                                                             (> tdiff internal-time-units-per-second))
-                                                                         (- *smooth-scroll-med-speed*))
-                                                                        (t (- *smooth-scroll-min-speed*)))))))
-                                                   ;; everything needs to happen inside the screen-box
-                                                   (let ((bwid (screen-obj-wid screen-box))
-                                                         (bhei (screen-obj-hei screen-box))
-                                                         (body-time (round (* *smooth-scroll-pause-time*
-                                                                              internal-time-units-per-second))))
-                                                     (multiple-value-bind (sb-x sb-y) (xy-position screen-box)
-                                                                          (with-drawing-inside-region (sb-x sb-y bwid bhei)
-                                                                            ;; grab the initial y pos as a baseline for acceleration
-                                                                            (loop (when (or (zerop& (mouse-button-state))
-                                                                                            (and (eq direction :up)
-                                                                                                 (or (eq (scroll-to-actual-row screen-box)
-                                                                                                         1st-edrow)
-                                                                                                     (null (scroll-to-actual-row screen-box)))
-                                                                                                 (zerop (slot-value screen-box 'scroll-y-offset)))
-                                                                                            (and (eq direction :down)
-                                                                                                 (row-> (or (scroll-to-actual-row screen-box)
-                                                                                                            (first-inferior-row edbox))
-                                                                                                   last-edrow)))
-                                                                                    (return))
-                                                                              (timed-body (body-time)
-                                                                                          (let ((vel (get-velocity)))
-                                                                                            (setq vel (pixel-scroll-screen-box screen-box vel))
-                                                                                            ;; sgithens TODO 2021-04-21 Crash fix, these don't exist anymore.
-                                                                                            ;; Can we remove this entire timed-body section?
-                                                                                            ;; (erase-scroll-buttons *last-scrolled-box* t)
-                                                                                            ;; (scroll-move-contents screen-box vel)
-                                                                                            )
-                                                                                          ;; (draw-scroll-buttons screen-box t)
-                                                                                          (force-graphics-output)))
-                                                                            ;; now maybe move the point so it is still visible after scrolling...
-                                                                            (let ((scroll-row (scroll-to-actual-row screen-box)))
-                                                                              (cond ((null scroll-row)
-                                                                                     (move-point-1 (first-inferior-row
-                                                                                                    (screen-obj-actual-obj screen-box))
-                                                                                                   0 screen-box))
-                                                                                ((and (not (zerop (slot-value screen-box 'scroll-y-offset)))
-                                                                                      (not (null (next-row scroll-row))))
-                                                                                 (move-point-1 (next-row scroll-row) 0 screen-box))
-                                                                                (t (move-point-1 scroll-row 0 screen-box))))
-                                                                            ;; finally cover up our mistakes...
-                                                                            ;(set-force-redisplay-infs? screen-box) ; looks bad...
-                                                                            )))))))))
-
-(defun mouse-page-scroll-internal (direction &rest screen-box-list)
-  (if (eq direction :up)
-    (com-scroll-up-one-screen-box screen-box-list)
-    (com-scroll-dn-one-screen-box screen-box-list))
-  (simple-wait-with-timeout *initial-scroll-pause-time*
-                            #'(lambda () (zerop& (mouse-button-state))))
-  (loop (when (zerop& (mouse-button-state)) (return))
-    (if (eq direction :up)
-      (com-scroll-up-one-screen-box screen-box-list)
-      (com-scroll-dn-one-screen-box screen-box-list))
-    (repaint)
-    (simple-wait-with-timeout *scroll-pause-time*
-                              #'(lambda ()
-                                        (zerop& (mouse-button-state))))))
-
-(defvar *max-scroll-grid-increment* 15
-  "Maximum number of pixels between each tick in the scroll bar grid")
-
-(defvar *min-scroll-grid-increment* 4
-  "Minimum number of pixels between each tick in the scroll bar grid")
-
-(defvar *scroll-grid-width* 10)
-
-(defun mouse-in-v-scroll-bar-internal (screen-box x y click-only?)
-  (let ((start-row (or (scroll-to-actual-row screen-box)
-                       (first-inferior-row (screen-obj-actual-obj screen-box)))))
-    (multiple-value-bind (v-min-y v-max-y)
-                         (v-scroll-info screen-box)
-                         (multiple-value-bind (box-window-x box-window-y)
-                                              (xy-position screen-box)
-                                              (declare (ignore box-window-x))
-                                              (let ((y-offset (+ box-window-y v-min-y))
-                                                    (v-working-height (- v-max-y v-min-y)))
-                                                (if click-only?
-                                                  (set-v-scroll-row screen-box (min (/ (max 0 (- y y-offset))
-                                                                                       v-working-height)
-                                                                                    1))
-                                                  (let* ((eb (screen-obj-actual-obj screen-box))
-                                                         (no-of-rows (length-in-rows eb)))
-                                                    ;; bind these so we dont have to calculate them for each iteration
-                                                    ;; of the tracking loop
-                                                    (boxer-window::with-mouse-tracking ((mouse-x x) (mouse-y y))
-                                                                                       (declare (ignore mouse-x))
-                                                                                       (set-v-scroll-row screen-box
-                                                                                                         (min (/ (max 0 (- mouse-y y-offset)) v-working-height) 1)
-                                                                                                         eb
-                                                                                                         no-of-rows)
-                                                                                       (repaint t)))))))
-    (maybe-move-point-after-scrolling screen-box
-                                      (if (row-> start-row
-                                            (or (scroll-to-actual-row screen-box)
-                                                (first-inferior-row (screen-obj-actual-obj
-                                                                     screen-box))))
-                                        :left
-                                        :right))))
-
-(defun set-v-scroll-row (screen-box fraction
-                                    &optional (ed-box (screen-obj-actual-obj screen-box))
-                                    (no-of-rows (length-in-rows ed-box)))
-  (set-scroll-to-actual-row screen-box
-                            (new-elevator-scrolled-row ed-box
-                                                       (floor (* fraction (1-& no-of-rows))))))
-
-
-;; there is only room to display 2 digits of row #'s
-(defun elevator-row-string (n)
-  (format nil "~D" n))
-
-;; we need to make sure that we don't leave just a single row for unfixed size
-;; boxes because that makes it hard to use the scrolling machinery
-;; should be smarter and estimate row heights so the lowest we go is still a boxful
-;; of text
-(defun new-elevator-scrolled-row (ed-box elevator-row-no)
-  (let ((elevator-row (row-at-row-no ed-box elevator-row-no)))
-    (cond ((and t ; (not (fixed-size? ed-box)) ;; note: Size is fixed temp, for ALL
-                (eq elevator-row (last-inferior-row ed-box)))
-           (or (previous-row elevator-row) elevator-row))
-      (t elevator-row))))
-
-
-
 
 (defboxer-command com-sprite-follow-mouse (&optional (window *boxer-pane*)
                                                      (x (bw::boxer-pane-mouse-x))
@@ -1612,6 +1293,5 @@
       (drawing-on-window (*boxer-pane*)
                          (let ((*current-sprite* box))
                            (bu::follow-mouse)
-                           ;(follow-mouse-internal (sprite-box-associated-turtle box))
                            ))))
   boxer-eval::*novalue*)

@@ -3,7 +3,7 @@
 ;;;;   $Header: misc-prims.lisp,v 1.0 90/01/24 22:14:49 boxer Exp $
 ;;;;
 ;;;;      Boxer
-;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;      Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -83,6 +83,8 @@
 
 
 
+(boxer-eval::defboxer-primitive bu::test-error ()
+  #-ecl (/ 2 0))
 
 ;;;;; Totally Random
 ;;; if there are enough of these, we might want to fork off a misc-prims file
@@ -353,18 +355,9 @@
                                      (t (snooze seconds)))))
                                 boxer-eval::*novalue*)
 
-#+opengl
-(boxer-eval::defboxer-primitive bu::redisplay () boxer-eval::*novalue*)
-
-#-opengl
 (boxer-eval::defboxer-primitive bu::redisplay ()
-                                ;(boxer-eval::reset-poll-count)
-                                (process-editor-mutation-queue-within-eval)
-                                (let ((*evaluation-in-progress?* nil))
-                                  ;; This is checked by CLX clipping, needs to be NIL for redisplay
-                                  (repaint-window *boxer-pane*))
-                                (invalidate-absolute-position-caches)
-                                boxer-eval::*novalue*)
+  (repaint)
+  boxer-eval::*novalue*)
 
 (defvar *verbose-date-and-time* t)
 
@@ -601,7 +594,6 @@
       ((and (box? target) (not (null (displayed-screen-objs target))))
         (push *outermost-screen-box* *outermost-screen-box-stack*)
         (set-outermost-box target)
-        (repaint)
         (move-point (box-first-bp-values target))
         (set-point-screen-box (outermost-screen-box))
         (fill-doit-cursor-position-vector
@@ -624,7 +616,6 @@
       ((and (box? target) (not (null (displayed-screen-objs target))))
         (push *outermost-screen-box* *outermost-screen-box-stack*)
         (set-outermost-box target)
-        (repaint)
         (move-point (box-first-bp-values target))
         (set-point-screen-box (outermost-screen-box))
         (fill-doit-cursor-position-vector
@@ -668,7 +659,6 @@
       ((and (box? target) (superior? target *initial-box*))
         ;; need to make sure screen structure is up to date
         (process-editor-mutation-queue-within-eval)
-        (repaint)
         ;; might want to Bind *move-bp-zoom-pause-time* here for effect
         (let ((edrow (row-at-row-no target (1- row))))
           (if (null edrow)
@@ -917,7 +907,7 @@
                                             "File not Found"
                                             (xref-pathname xfile)))
       (t
-        (applescript-open-xref xfile)))
+        (os-open-xref xref)))
     boxer-eval::*novalue*))
 
 (boxer-eval::defboxer-primitive bu::edit-internal-xref ()
@@ -933,19 +923,7 @@
 (boxer-eval::defboxer-primitive bu::show-key-name ()
   (status-line-display 'show-key-name "Press a key or click the mouse...")
   (let* ((input (get-boxer-input *boxer-pane*))
-          (key-name (if (key-event? input)
-                      (lookup-key-name (input-code input)(input-bits input))
-                      (let ((click  (mouse-event-click  input))
-                            (x-pos  (mouse-event-x-pos  input))
-                            (y-pos  (mouse-event-y-pos  input))
-                            (bits   (mouse-event-bits   input)))
-                        ;; now call the mouse tracker to see if we
-                        ;; are on a border area
-                        (multiple-value-bind (mouse-bp local-x local-y
-                                                      area)
-                                            (mouse-position-values x-pos y-pos)
-                                            (declare (ignore mouse-bp local-x local-y))
-                                            (lookup-click-name click bits area))))))
+         (key-name (lookup-input-name input)))
     (status-line-undisplay 'show-key-name)
     (make-vc (list (make-evrow-from-entry key-name)))))
 

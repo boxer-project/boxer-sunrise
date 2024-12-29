@@ -9,7 +9,7 @@
 ;;;
 
     Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+    Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 
     Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
     used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -50,15 +50,13 @@ Modification History (most recent at top)
 
 (in-package :boxer)
 
-(defun boxer::valid-boxer-license? () t)
-
-(defvar *boxer-version* "3.4.6")
+(defvar *boxer-version* "3.4.21 2024-10-31")
 
 (defun boxer-component-version ()
   "Returns the current semver version of boxer based on it's asdf configuration."
   ;; Oddly this value seems to get cached sometimes in asdf such that it sometimes returns the wrong version
   ;; if there are multiple boxers on the system.
-  ;; (slot-value (asdf/system:find-system :boxer-sunrise2) 'asdf/component:version)
+  ;; (slot-value (asdf/system:find-system :boxer-sunrise) 'asdf/component:version)
   *boxer-version*)
 
 (defun system-version ()
@@ -66,54 +64,12 @@ Modification History (most recent at top)
     Boxer version 3.2 Public OPENGL Release
 
   TODO: What was the passed in box argument used for previously?"
-  (concatenate 'string "Boxer version " (boxer-component-version) " BSD License OpenGL Release"))
+  (concatenate 'string "Boxer version " (boxer-component-version)
+               " BSD License openGL 3.2" #+macosx " macOS"  #+win32 " windows Experimental"))
 
+(defvar *resources-dir* nil
+  "This is the directory on disc where we can expect to find things like the Fonts and Images directories.")
 
-;;
-;; this could be a lot faster, we should be able to do a compile time
-;; check to see if TYPE is a class and then put in the appropriate code instead
-;; of the OR which is there now.
-(defmacro fast-iwmc-class-p (thing)
-  (warn "You need to define a version of FAST-IWMC-CLASS-P for ~A of ~A"
-        (lisp-implementation-version) (lisp-implementation-type))
-  `(typep ,thing 'structure))
-
-(defvar *include-compiled-type-checking* t)
-
-;; now does the compile time check for PCL-ness
-;; sgithens - 2019-11-17 This is currently used once in this file,
-;; 4 times in grobjs.lisp, many times in optimize-classes.lisp,
-;; and once in simple-stream.lisp. I'm not sure it will still be necessary
-;; for a modern SBCL CLOS type implementation. Not quite ready to delete it
-;; though...
-;; (defmacro deftype-checking-macros (type type-string)
-;;   (let ((predicate-name (intern (symbol-format nil "~a?" type)))
-;; 	(check-arg-name (intern (symbol-format nil "CHECK-~a-ARG" type)))
-;; 	(bcm-class (let ((class (find-class type nil)))
-;; 		     (when (typep class 'block-compile-class)
-;; 		       class))))
-;;     `(progn
-;;        (defsubst  ,predicate-name (x)
-;; 	 ,(if (null bcm-class)
-;; 	      `(typep x ',type)
-;; 	      (#+clos expand-clos-type-check #+pcl expand-pcl-type-check
-;;                #+mcl expand-mcl-type-check
-;;                'x type bcm-class)))
-;;        (defmacro  ,check-arg-name (x)
-;; 	 ,(when *include-compiled-type-checking*
-;; 	    ``(check-type ,x  (satisfies ,',predicate-name) ,,type-string))))))
-
-;; Previously this was in a source file lw-bcm.lisp, though on modern machines
-;; it seems unlikely we'll need to bring this forward. sgithens - 2019-11-17
-
-(defclass block-compile-class (standard-class)
-  ((counter :initform 0)))
-
-;; https://stackoverflow.com/questions/19446174/sbcl-clos-why-do-i-have-to-add-a-validate-superclass-method-here
-#+sbcl
-(defmethod sb-mop:validate-superclass ((class block-compile-class)
-                                       (super standard-class))
-  t)
 ;;;; Boxer Object Definitions
 ;;;  These are low level SUBCLASSes designed to be combined into higher level
 ;;;  BOXER objects Which eventually get instantiated
@@ -122,8 +78,7 @@ Modification History (most recent at top)
 
 (defclass plist-subclass
   ()
-  ((plist :initform nil :accessor plist))
-  (:metaclass block-compile-class))
+  ((plist :initform nil :accessor plist)))
 
 (defmethod getprop ((obj plist-subclass) indicator &optional default)
   (or (getf (slot-value obj 'plist) indicator) default))
@@ -149,7 +104,6 @@ Modification History (most recent at top)
                     :accessor contained-links)
    (branch-links :initform nil
                  :accessor branch-links))
-  (:metaclass block-compile-class)
   (:documentation "Interface to virtual copy"))
 
 ;; All of the methods are defined in the virtcopy files
@@ -167,30 +121,17 @@ Modification History (most recent at top)
 
 (DEFVAR *POINT* NIL)
 
-(DEFVAR *MARK* NIL)
-
-(DEFVAR *CURSOR-BLINKER-WID* 3.)
-
-(DEFVAR *CURSOR-BLINKER-MIN-HEI* 12.)
-
-(DEFVAR *MINIMUM-CURSOR-HEIGHT* 12.
-  "The minimum height to draw the cursor so that it doesn't dissapear.")
-
 (DEFVAR *MINIMUM-BOX-WID* 35. ; 25. ; changed to allow room for type label
   "The minimum width any box will be drawn on the screen.")
 
 ;;; +++ This depends on the height of the default font.  An alternative would be to change
 ;;; box-borders-minimum-size or whatever to look at the font, but I wasn't sure of that.
-(DEFVAR *MINIMUM-BOX-HEI* #+MCL 30. #-MCL 25
+(DEFVAR *MINIMUM-BOX-HEI* 25
   "The minimum height any box will be drawn on the screen.")
-
-(DEFVAR *MULTIPLICATION* 1)
 
 (DEFVAR *COM-MAKE-PORT-CURRENT-PORT* NIL
   "This variable is used to store newly created ports until they are inserted into the
    World. ")
-
-(DEFVAR *BOXER-READTABLE* (COPY-READTABLE nil))
 
 (defvar *print-boxer-structure* nil
   "Controls how verbose to print boxer structures (like *print-array*)")
@@ -198,10 +139,6 @@ Modification History (most recent at top)
 (DEFVAR *INITIAL-BOX* NIL
   "The initial box the editor starts with, this box cannot be deleted
    killed etc.")
-
-(DEFVAR *BOXER-FUNCTIONS* NIL
-  "This variable contains a list of symbols for all the
-   lisp functions imported to Boxer.")
 
 (DEFVAR *EDITOR-NUMERIC-ARGUMENT* NIL
   "Stores the value of whatever numeric argument for an editor function has accumalated. ")
@@ -216,32 +153,16 @@ Modification History (most recent at top)
 (DEFVAR *KILLED-REGION-BUFFER* NIL
   "this should be integrated into the generic kill buffer eventually")
 
-(DEFVAR *HIGHLIGHT-YANKED-REGION* NIL
-  "Controls whether freshly yanked back region should be highlighted. ")
-
 (DEFVAR *REGION-LIST* NIL)
 
 (defvar *following-mouse-region* nil)
 
 ;;;; Variables Having To Do With Redisplay.
 
-(DEFVAR *REDISPLAY-WINDOW* NIL
-  "Inside of REDISPLAYING-WINDOW, this variable is bound to the window
-   being redisplayed.")
-
 (DEFVAR *OUTERMOST-SCREEN-BOX* NIL
   "Inside of REDISPLAYING-WINDOW, this variable is bound to the window
    being redisplayed's outermost-screen-box. This is the screen box which
    represents that window outermost-box.")
-
-(DEFVAR *REDISPLAY-CLUES* NIL
-  "A list of redisplay-clues. This are hints left behind by the editor
-   to help the redisplay code figure out what is going on.")
-
-(DEFVAR *COMPLETE-REDISPLAY-IN-PROGRESS?* NIL
-  "Binding this variable to T around a call to redisplay will 'force'
-   the redisplay. That is it will cause a complete redisplay of the
-   screen. FORCE-REDISPLAY-WINDOW uses this.")
 
 (DEFVAR *SPACE-AROUND-OUTERMOST-SCREEN-BOX* #-mcl 9.  #+mcl 3.
   "This is the number of pixels between the outside of the outermost screen
@@ -264,8 +185,9 @@ Modification History (most recent at top)
 (DEFVAR *OUTERMOST-SCREEN-BOX-STACK* NIL
   "Keeps track of the previous outermost screen boxes so that they can be returned to. ")
 
-(DEFVAR *GRAY* nil
-  "Bound to a window system specific tiling pattern used for drawing shrunken boxes")
+(defvar *clipping-stack* nil
+  "Used during rendering, contains a list of 4 item lists (x1 y1 x2 y2) that define a nested
+   set of rectangles to clip.")
 
 ;;;; Fonts
 
@@ -351,7 +273,6 @@ Modification History (most recent at top)
                 :accessor actual-obj-screen-objs)
    (tick :initform 1
          :accessor actual-obj-tick))
-  (:metaclass block-compile-class)
   (:documentation "Used by editor objects to interface with the redisplay" ))
 
 ;;;; Instantiable Objects...
@@ -367,8 +288,7 @@ Modification History (most recent at top)
    (cached-chunks :initform nil :accessor cached-chunks)
    (cached-eval-objs :initform NIL :accessor cached-eval-objs)
    (cached-evrow :initform nil :accessor cached-evrow)
-   (inferior-links :initform nil))
-  (:metaclass block-compile-class))
+   (inferior-links :initform nil)))
 
 (defgeneric row? (x) (:method (x) nil) (:method ((x row)) t))
 
@@ -377,14 +297,29 @@ Modification History (most recent at top)
   (row)
   ((cached-name :initform nil :accessor cached-name :initarg :cached-name))
   ;; used for environmental info--a symbol in the BU package
-  (:metaclass block-compile-class))
+  )
 
 (defgeneric name-row? (x) (:method (x) nil) (:method ((x name-row)) t))
 
 (defclass fill-row
   (row)
-  ()
-  (:metaclass block-compile-class))
+  ())
+
+(defstruct (display-style (:predicate display-style?))
+  "
+  Display style is used primarily as a slot on `box` and `screenbox` classes, and contains
+  information about various aspects of it's current display.
+
+  - `style` The style slot takes a symbol which is one of :supershrunk, :shrunk, or :normal to
+    indicate the current size of the box. Note that when a box is full screened, it will retain
+    the style that it was before being full screened. This means the style could still be :shrunk
+    while the box is full screened, especially if the box property 'Shrink on Exit' is set.
+  "
+  (style :normal)
+  (fixed-wid nil)
+  (fixed-hei nil)
+  (graphics-mode? nil)
+  (border-style nil))
 
 ;; changed graphics-sheet to graphics-info to hold all graphical
 ;; objects - name change should help catch undone things
@@ -408,29 +343,25 @@ Modification History (most recent at top)
    (trigger-cache :initform nil :accessor trigger-cache)
    (current-triggers :initform nil :accessor current-triggers)
    (graphics-info :initform nil :accessor graphics-info)
-   (flags :initform 0 :accessor box-flags))
-  (:metaclass block-compile-class))
+   (flags :initform 0 :accessor box-flags)))
 
 (defgeneric box? (x) (:method (x) nil) (:method ((x box)) t))
 
 (defclass doit-box
   (box)
-  ()
-  (:metaclass block-compile-class))
+  ())
 
 (defgeneric doit-box? (x) (:method (x) nil) (:method ((x doit-box)) t))
 
 (defclass data-box
   (box)
-  ()
-  (:metaclass block-compile-class))
+  ())
 
 (defgeneric data-box? (x) (:method (x) nil) (:method ((x data-box)) t))
 
 (defclass port-box
   (box)
-  ()
-  (:metaclass block-compile-class))
+  ())
 
 (defgeneric port-box? (x) (:method (x) nil) (:method ((x port-box)) t))
 
@@ -472,7 +403,6 @@ Modification History (most recent at top)
             (:constructor %make-interval (start-bp stop-bp)))
   (start-bp nil)
   (stop-bp nil)
-  (visibility nil)
   (blinker-list nil)
   (box nil))
 
@@ -488,8 +418,6 @@ Modification History (most recent at top)
 (defstruct (graphics-sheet (:constructor
                             %make-simple-graphics-sheet
                             (draw-wid draw-hei superior-box))
-                           (:constructor %make-graphics-sheet-with-bitmap
-                                         (draw-wid draw-hei bit-array superior-box))
                            (:constructor
                             %make-graphics-sheet-with-graphics-list
                             (draw-wid draw-hei superior-box))
@@ -503,23 +431,15 @@ Modification History (most recent at top)
                                     (format s "#<Graphics-Sheet W-~D. H-~D.>"
                                             (graphics-sheet-draw-wid gs)
                                             (graphics-sheet-draw-hei gs)))))
-  (draw-wid *default-graphics-sheet-width*)
-  (draw-hei *default-graphics-sheet-height*)
+  (draw-wid *default-graphics-sheet-width*)   ;; Width of graphics sheet in pixels
+  (draw-hei *default-graphics-sheet-height*)  ;; Height of graphics sheet in pixels
   (screen-objs nil)
-  (bit-array nil)
-  (object-list nil)
+  (bit-array nil)                             ;; An ogl-pixmap that acts as the background
+  (object-list nil)                           ;; A list of turtle sprites
   (superior-box nil)
-  (draw-mode ':wrap)
-  (graphics-list nil)
-  (background nil)
-  (colormap nil)
-  (transform nil) ; opengl transform matrix
-
-  ;; these are obsolete....
-  (prepared-flag nil)
-  ;; used to avoid redundant prepare sheets (see bu::with-sprites-hidden)
-  (bit-array-dirty? nil)
-  ;; used to avoid saving cleared bitmap backgrounds
+  (draw-mode ':wrap)                          ;; Either ':wrap or ':clip for turtle drawing around edges
+  (graphics-list nil)                         ;; A graphics-command-list struct with the drawn turtle graphics commands
+  (background nil)                            ;; A background color that is used in lieu of the pixmap bit-array member
   )
 
 ;; this can stay here cause its for a Struct and not a PCL Class
@@ -665,7 +585,7 @@ Modification History (most recent at top)
 
 ;; a draw-low-xxx variable, defined here to suppress warnings in the following
 ;; Defstruct
-(defvar *foreground-color*)
+(defvar *foreground-color* #(:rgb 0.0 0.0 0.0 1.0))
 
 (defstruct (boxer-font-descriptor (:conc-name bfd-)
                                   (:predicate bfd?)
@@ -692,8 +612,6 @@ Modification History (most recent at top)
 ;;; package stuff that would be in pkg except it must be compiled
 ;;;
 
-(defun intern-in-boxer-user-package (symbol)
-  (intern (string symbol) 'boxer-user))
 (defun intern-in-bu-package (symbol)
   (intern (string symbol) 'bu))
 

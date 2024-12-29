@@ -1,7 +1,7 @@
 ;;;;  ;-*- Mode:Lisp; Package:boxer; Syntax: Common-Lisp; -*-
 ;;;;
 ;;;;      Boxer
-;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;      Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -67,8 +67,6 @@
   "Amount of space from the border to the inside of the box")
 
 (defvar *basic-border-width* 1) ; +1 for file boxes...
-
-(defvar *border-left-margin* 1) ; *border-inside-space*
 
 (defvar *border-label-font* nil)
 (defvar *border-name-font*  nil)
@@ -291,7 +289,18 @@
 ;; look in plist for now, probably not a good idea to use display-style-lists
 ;; unless colored borders become commonplace
 
-(defun get-border-color (box) (getprop box 'border-color *default-border-color*))
+(defun get-background-color (box)
+  (let ((color-rgb-hex (get-css-style box :background-color)))
+    (if color-rgb-hex
+      (rgb-hex->rgb color-rgb-hex)
+      nil)))
+
+(defun get-border-color (box)
+
+  (let ((color-rgb-hex (get-css-style box :border-color)))
+    (if color-rgb-hex
+      (rgb-hex->rgb color-rgb-hex)
+      *default-border-color*)))
 
 ;; hook for colored borders (fold transparency in here too ? (via line stipple))
 (defmacro with-border-drawing-styles ((actual-obj) &body body)
@@ -299,9 +308,11 @@
      . ,body))
 
 (defun box-borders-draw (box-type screen-box)
+  (start-drawing-screen-obj-model screen-box)
   (case box-type
     (port-box (port-borders-draw screen-box))
-    (t (plain-borders-draw screen-box))))
+    (t (plain-borders-draw screen-box)))
+  (stop-drawing-screen-obj-model))
 
 ;; this is drawn in a transformed coord system...
 (defun plain-borders-draw (screen-box)
@@ -315,6 +326,10 @@
   (if (null name)
       (+ y *border-outside-space* *noname-extension*)
     (+ y (border-name-protrusion name) *border-outside-space*)))
+
+(defvar *show-empty-name-rows* t
+  "Determines whether or not we render the name tabs on boxes when their names are zero length.
+  (ie. They don't have a name.)")
 
 (defun plain-borders-draw-1 (actual-obj x y outer-wid outer-hei)
   (let* ((name (name-string-or-null actual-obj) )
@@ -341,7 +356,14 @@
          (name-end-x 0) ; this will get set later
          (label-end-x 0)) ; this 2
     (with-border-drawing-styles (actual-obj)
-      (setq name-end-x (draw-borders-name name inner-left box-top name-top))
+      ;; We only render the name rows if the preference for rendering them is true, or they aren't empty,
+      ;; or the cursor is currently in the name row.
+      (if (or *show-empty-name-rows*
+              (> (length name) 0)
+              (and (eq actual-obj (screen-obj-actual-obj (cadddr *point*)))
+                   (name-row? (cadr *point*))))
+        (setq name-end-x (draw-borders-name name inner-left box-top name-top border-thickness))
+        (setq name-end-x inner-left))
       (setq label-end-x (draw-borders-label (box-type-label actual-obj) inner-left box-bottom))
       (draw-borders-walls box-left box-right inner-top inner-bottom box-top
                           box-bottom name-end-x label-end-x inner-right
@@ -361,40 +383,41 @@
         (top-y (+ box-top border-thickness)))
     (unless (null cr)
       (with-pen-color (*closet-color*)
-        (draw-rectangle alu-seta (- inner-right name-end-x) (- inner-top top-y 1)
+        (draw-rectangle (- inner-right name-end-x) (- inner-top top-y 1)
                         name-end-x top-y)))))
 
-(defun draw-borders-name (name name-x name-mid-y name-top-y)
-  (let ((current-x name-x)
-        (inside-name-width (if (null name)
-                               *noname-blank-width*
-                             (string-wid *border-name-font* name)))
-        (lower-slant-y (+ name-mid-y *border-inside-space*)))
-    (let ((end-x (+ current-x *border-name-slant-offset*)))
-      ;; the left "<" of the name
-      (draw-line current-x name-mid-y end-x name-top-y alu-seta t)
-      (draw-line current-x name-mid-y end-x lower-slant-y alu-seta t)
-      (setq current-x end-x))
-    (let ((end-x (+ current-x inside-name-width (* *border-name-padding* 2))))
-      ;; the name string itself
-      (unless (null name)
-        (draw-string alu-seta *border-name-font* name current-x
-                     (+ name-top-y *border-name-padding* *basic-border-width*)))
-      ;; the top & bottom
-      (draw-line current-x name-top-y end-x name-top-y alu-seta t)
-      (draw-line current-x lower-slant-y end-x lower-slant-y alu-seta t)
-      (setq current-x end-x))
-    (let ((end-x (+ current-x *border-name-slant-offset*)))
-      ;; the right ">"
-      (draw-line current-x name-top-y end-x name-mid-y alu-seta t)
-      (draw-line current-x lower-slant-y end-x name-mid-y alu-seta t)
-      end-x)))
+(defun draw-borders-name (name name-x name-mid-y name-top-y border-thickness)
+  (with-pen-size (border-thickness)
+    (let ((current-x name-x)
+          (inside-name-width (if (null name)
+                                *noname-blank-width*
+                              (string-wid *border-name-font* name)))
+          (lower-slant-y (+ name-mid-y *border-inside-space*)))
+      (let ((end-x (+ current-x *border-name-slant-offset*)))
+        ;; the left "<" of the name
+        (draw-line current-x name-mid-y end-x name-top-y)
+        (draw-line current-x name-mid-y end-x lower-slant-y)
+        (setq current-x end-x))
+      (let ((end-x (+ current-x inside-name-width (* *border-name-padding* 2))))
+        ;; the name string itself
+        (unless (null name)
+          (draw-string *border-name-font* name current-x
+                      (+ name-top-y *border-name-padding* *basic-border-width*)))
+        ;; the top & bottom
+        (draw-line current-x name-top-y end-x name-top-y)
+        (draw-line current-x lower-slant-y end-x lower-slant-y)
+        (setq current-x end-x))
+      (let ((end-x (+ current-x *border-name-slant-offset*)))
+        ;; the right ">"
+        (draw-line current-x name-top-y end-x name-mid-y)
+        (draw-line current-x lower-slant-y end-x name-mid-y)
+        end-x))))
 
 (defun draw-borders-label (label inner-left box-bottom)
   (cond ((null *show-border-type-labels*)
          inner-left)
         (t
-           (draw-string alu-seta *border-label-font* label
+           (draw-string *border-label-font* label
                         inner-left (- box-bottom
                                        (1+ (ffloor (string-hei *border-label-font*) 2))))
            (+ inner-left (string-wid *border-label-font* label)))))
@@ -421,13 +444,13 @@
                                       box-top box-bottom name-end-x label-end-x
                                       inner-right)
   ;; left
-  (draw-line box-left inner-top box-left inner-bottom alu-seta t)
+  (draw-line box-left inner-top box-left inner-bottom)
   ;; top
-  (draw-line name-end-x box-top inner-right box-top alu-seta t)
+  (draw-line name-end-x box-top inner-right box-top)
   ;; right
-  (draw-line box-right inner-top box-right inner-bottom alu-seta t)
+  (draw-line box-right inner-top box-right inner-bottom)
   ;; bottom
-  (draw-line label-end-x box-bottom inner-right box-bottom alu-seta t))
+  (draw-line label-end-x box-bottom inner-right box-bottom))
 
 (defun draw-borders-corners (box-type border-thickness
                                       box-left inner-left box-top inner-top
@@ -473,10 +496,10 @@
                                     box-right inner-right box-bottom inner-bottom
                                     border-thickness)
   (with-pen-size (border-thickness)
-    (draw-line box-left inner-top inner-left box-top alu-seta t) ; top left
-    (draw-line inner-right box-top box-right inner-top alu-seta t) ; top right
-    (draw-line inner-right box-bottom box-right inner-bottom alu-seta t);bottom right
-    (draw-line box-left inner-bottom inner-left box-bottom alu-seta t)) ; bot left
+    (draw-line box-left inner-top inner-left box-top) ; top left
+    (draw-line inner-right box-top box-right inner-top) ; top right
+    (draw-line inner-right box-bottom box-right inner-bottom);bottom right
+    (draw-line box-left inner-bottom inner-left box-bottom)) ; bot left
   (values (+ box-left 3) (+ box-top 3) (- box-right 3) (- box-bottom 3)))
 
 (defun port-borders-draw (screen-box)
@@ -513,21 +536,21 @@
          (name-start-x (+ box-left *port-name-indent*))
          (name-end-x 0)) ; this will get set later
     (with-border-drawing-styles (port)
-      ;; name
-      (setq name-end-x
-            (draw-port-name name name-start-x box-top name-top))
-      ;; walls
       (with-pen-size (border-thickness)
-        (draw-line box-left box-top box-left box-bottom alu-seta t) ; left
-        (draw-line box-left box-top name-start-x box-top alu-seta t) ; top
-        (draw-line name-end-x box-top box-right box-top alu-seta t) ; top, after name
-        (draw-line box-right box-top box-right box-bottom alu-seta t) ; right
-        (draw-line box-left box-bottom box-right box-bottom alu-seta t)) ; bottom
-      ;; struts
-      (draw-line box-left box-top i-strut-left i-strut-top alu-seta t)
-      (draw-line box-right box-top i-strut-right i-strut-top alu-seta t)
-      (draw-line box-right box-bottom i-strut-right i-strut-bottom alu-seta t)
-      (draw-line box-left box-bottom i-strut-left i-strut-bottom alu-seta t))))
+        ;; name
+        (setq name-end-x
+              (draw-port-name name name-start-x box-top name-top))
+        ;; walls
+        (draw-line box-left box-top box-left box-bottom) ; left
+        (draw-line box-left box-top name-start-x box-top) ; top
+        (draw-line name-end-x box-top box-right box-top) ; top, after name
+        (draw-line box-right box-top box-right box-bottom) ; right
+        (draw-line box-left box-bottom box-right box-bottom) ; bottom
+        ;; struts
+        (draw-line box-left box-top i-strut-left i-strut-top)
+        (draw-line box-right box-top i-strut-right i-strut-top)
+        (draw-line box-right box-bottom i-strut-right i-strut-bottom)
+        (draw-line box-left box-bottom i-strut-left i-strut-bottom)))))
 
 (defun draw-port-name (name name-x name-mid-y name-top-y)
   (let ((current-x name-x)
@@ -537,22 +560,22 @@
         (lower-slant-y (+ name-mid-y *border-inside-space*)))
     (let ((end-x (+ current-x *border-name-slant-offset*)))
       ;; the left "<" of the name
-      (draw-line current-x name-mid-y end-x name-top-y alu-seta t)
-      (draw-line current-x name-mid-y end-x lower-slant-y alu-seta t)
+      (draw-line current-x name-mid-y end-x name-top-y)
+      (draw-line current-x name-mid-y end-x lower-slant-y)
       (setq current-x end-x))
     (let ((end-x (+ current-x inside-name-width (* *border-name-padding* 2))))
       ;; the name string itself
       (unless (null name)
-        (draw-string alu-seta *border-name-font* name current-x
+        (draw-string *border-name-font* name current-x
                      (+ name-top-y *border-name-padding* *basic-border-width*)))
       ;; the top & bottom
-      (draw-line current-x name-top-y end-x name-top-y alu-seta t)
-      (draw-line current-x lower-slant-y end-x lower-slant-y alu-seta t)
+      (draw-line current-x name-top-y end-x name-top-y)
+      (draw-line current-x lower-slant-y end-x lower-slant-y)
       (setq current-x end-x))
     (let ((end-x (+ current-x *border-name-slant-offset*)))
       ;; the right ">"
-      (draw-line current-x name-top-y end-x name-mid-y alu-seta t)
-      (draw-line current-x lower-slant-y end-x name-mid-y alu-seta t)
+      (draw-line current-x name-top-y end-x name-mid-y)
+      (draw-line current-x lower-slant-y end-x name-mid-y)
       end-x)))
 
 
@@ -685,34 +708,34 @@
 (defun toggle-corner-fun (x y wid hei)
   (let ((rx (- (+ x wid) 2)) (by (- (+ y hei) 2)))
     (with-pen-color (*border-gui-color*)
-      (draw-line (+ x 2) y rx y alu-seta t) ; top arrow horizontal
-      (draw-line rx y rx by alu-seta t) ; top arrow right
-      (draw-line (+ x 1) (+ by 1) (- rx 1) (+ by 1) alu-seta t) ; bottom arrow horizontal
-      (draw-line (+ x 1) (+ y 2) (+ x 1) (+ by 1) alu-seta t) ; bottom arrow left
-      (draw-line x (+ y 3) (+ x 3) (+ y 3) alu-seta t) ; cross the bottom arrow head
-      (draw-line (- rx 1) (- by 2) (+ rx 2) (- by 2) alu-seta t)))) ; cross the top arrow head
+      (draw-line (+ x 2) y rx y) ; top arrow horizontal
+      (draw-line rx y rx by) ; top arrow right
+      (draw-line (+ x 1) (+ by 1) (- rx 1) (+ by 1)) ; bottom arrow horizontal
+      (draw-line (+ x 1) (+ y 2) (+ x 1) (+ by 1)) ; bottom arrow left
+      (draw-line x (+ y 3) (+ x 3) (+ y 3)) ; cross the bottom arrow head
+      (draw-line (- rx 1) (- by 2) (+ rx 2) (- by 2))))) ; cross the top arrow head
 
 (defun shrink-corner-fun (x y wid hei)
   (let ((fx (1- x)) (fy (1- y)) (lx (+ x wid)) (ly (+ y hei))
         (tsize (floor (min wid hei) 2)))
     (with-pen-color (*border-gui-color*)
-      (draw-poly alu-seta (list (cons fx (+ fy tsize)) (cons (+ fx tsize) fy)  ;; top left
-                                (cons (+ fx tsize) (+ fy tsize))))
-      (draw-poly alu-seta (list (cons (+ fx tsize 1) fy) (cons (+ fx tsize 1) (+ fy tsize)) ; top right
-                                (cons lx (+ fy tsize))))
-      (draw-poly alu-seta (list (cons fx (+ fy tsize 1)) (cons (+ fx tsize) (+ fy tsize 1)) ; bottom left
-                                (cons (+ fx tsize) ly)))
-      (draw-poly alu-seta (list (cons (+ fx tsize 1) (+ fy tsize 1)) (cons lx (+ fy tsize 1)) ; bottom right
-                                (cons (+ fx tsize 1) (1+ ly)))))))
+      (draw-poly (list (list fx (+ fy tsize)) (list (+ fx tsize) fy)  ;; top left
+                                (list (+ fx tsize) (+ fy tsize))))
+      (draw-poly (list (list (+ fx tsize 1) fy) (list (+ fx tsize 1) (+ fy tsize)) ; top right
+                                (list lx (+ fy tsize))))
+      (draw-poly (list (list fx (+ fy tsize 1)) (list (+ fx tsize) (+ fy tsize 1)) ; bottom left
+                                (list (+ fx tsize) ly)))
+      (draw-poly (list (list (+ fx tsize 1) (+ fy tsize 1)) (list lx (+ fy tsize 1)) ; bottom right
+                                (list (+ fx tsize 1) (1+ ly)))))))
 
 (defun expand-corner-fun (x y wid hei)
   (let ((lx (+ x wid)) (ly (+ y hei))
         (tside (floor (min wid hei) 2)))
     (with-pen-color (*border-gui-color*)
-      (draw-poly alu-seta (list (cons x y) (cons (+ x tside) y) (cons x (+ y tside)))) ; top left
-      (draw-poly alu-seta (list (cons (- lx tside) y) (cons lx y) (cons lx (+ y tside)))) ; top right
-      (draw-poly alu-seta (list (cons x ly) (cons x (- ly tside)) (cons (+ x tside) ly))) ; bottom left
-      (draw-poly alu-seta (list (cons (- lx tside) ly) (cons lx ly) (cons lx (- ly tside))))))) ; bottom R
+      (draw-poly (list (list x y) (list (+ x tside) y) (list x (+ y tside)))) ; top left
+      (draw-poly (list (list (- lx tside) y) (list lx y) (list lx (+ y tside)))) ; top right
+      (draw-poly (list (list x ly) (list x (- ly tside)) (list (+ x tside) ly))) ; bottom left
+      (draw-poly (list (list (- lx tside) ly) (list lx ly) (list lx (- ly tside))))))) ; bottom R
 
 
 (defun resize-corner-fun (x y wid hei)
@@ -720,7 +743,7 @@
 
 (defun default-gui-fun (x y wid hei)
   (with-pen-color (*border-gui-color*)
-    (draw-rectangle alu-seta wid hei x y)))
+    (draw-rectangle wid hei x y)))
 
 
 
@@ -734,22 +757,25 @@
   (let ((size (default-character-height)))
     (values size size)))
 
-(defun draw-super-shrunk-box (x y box-type)
-  (multiple-value-bind (wid hei)
-      (super-shrunk-size)
-    (let ((startx (+ x 1)) (starty (+ y 1))(endx (+ x wid -1)) (endy (+ y hei -2)))
-      (flet ((outer-box () (multiline2 startx starty endx starty endx endy
-                                       startx endy startx starty)))
-        (ecase box-type
-          (doit-box (outer-box)
-                    (let ((insx (+ startx 2)) (insy (+ starty 2))
-                          (inex (- endx 2)) (iney (- endy 2)))
-                      (multiline2 insx insy inex insy inex iney insx iney insx insy)))
-          (data-box (outer-box)
-                    (draw-rectangle alu-seta (- wid 7) (- hei 7)(+ startx 2) (+ starty 2)))
-          (port-box (outer-box)
-                    (draw-line startx starty endx endy alu-seta t)
-                    (draw-line startx endy endx starty alu-seta t)))))))
+(defun draw-super-shrunk-box (actual-obj x y box-type)
+  (with-border-drawing-styles (actual-obj)
+    (let ((border-thickness (border-thickness (display-style-border-style (display-style-list actual-obj)))))
+      (with-pen-size (border-thickness)
+        (multiple-value-bind (wid hei)
+            (super-shrunk-size)
+          (let ((startx (+ x 1)) (starty (+ y 1))(endx (+ x wid -1)) (endy (+ y hei -2)))
+            (flet ((outer-box () (multiline2 startx starty endx starty endx endy
+                                            startx endy startx starty)))
+              (ecase box-type
+                (doit-box (outer-box)
+                          (let ((insx (+ startx 2)) (insy (+ starty 2))
+                                (inex (- endx 2)) (iney (- endy 2)))
+                            (multiline2 insx insy inex insy inex iney insx iney insx insy)))
+                (data-box (outer-box)
+                          (draw-rectangle (- wid 7) (- hei 7)(+ startx 2) (+ starty 2)))
+                (port-box (outer-box)
+                          (draw-line startx starty endx endy)
+                          (draw-line startx endy endx starty))))))))))
 
 
 
@@ -767,18 +793,6 @@
       (dotimes (i cha-no) (incf x-pos (cha-wid (char name i)))))
     (values x-pos
             (+ y *border-outside-space* *border-name-padding* *basic-border-width*))))
-
-;;; stub...
-(defun box-borders-zoom (box-type screen-box
-          start-wid start-hei end-wid end-hei
-          start-x start-y end-x end-y
-          steps)
-  (declare (ignore box-type screen-box start-wid start-hei end-wid end-hei
-                   start-x start-y end-x end-y steps))
-  )
-
-
-
 
 ;;;; Mousing around
 ;;;; Mouse support
@@ -799,9 +813,7 @@
 
 ;; mouse clicks on empty file boxes use this to trigger a read of the box
 (defun insure-box-contents-for-click (box)
-  (cond ((and (port-box? box) (not (null (cross-file-port-branch-links box))))
-         (articulate-target-branch (car (cross-file-port-branch-links box))))
-        ((and (port-box? box)
+  (cond ((and (port-box? box)
               (box? (ports box))
               (null (slot-value (ports box) 'first-inferior-row)))
          ;; fill the port target
@@ -1013,42 +1025,11 @@
   (when (>= acc-wid x)
     (return (1- cha-no)))))))
 
-
-
-
-;;;; used in various border GUI's & popup docs
-;; these bitmaps are used to save *small* pieces of the screen before displaying
-;; popup menus or other GUI items
-;; we use an PDL allocation mechanism to prepare for a future which may include
-;; recursive walking menus
-
-(defvar *bitmap-backing-store* nil)
-
-(defun allocate-backing-store (w h)
-  (let ((existing (pop *bitmap-backing-store*)))
-    (cond ((null existing) (make-offscreen-bitmap *boxer-pane* w h))
-          ((or (< (offscreen-bitmap-width existing) w)
-               (< (offscreen-bitmap-height existing) h))
-           ;; existing bitmap is too small
-           (free-offscreen-bitmap existing)
-           ;; make a new one which is large enough. This should have the effect that
-           ;; the one bitmap will grow big enough to handle all situations
-           (make-offscreen-bitmap *boxer-pane* w h))
-          (t existing))))
-
-(defun deallocate-backing-store (bm)
-  (push bm *bitmap-backing-store*))
-
-
-;;; stuff from the old border-macros.lisp file
-
-
 (defvar *zoom-step-pause-time* 0
   "Seconds to pause between each step in zooming a box.
    Default is 0 meaning zoom as fast as the machine will go.")
 
 (defvar *show-border-type-labels* t)
-
 
 
 
@@ -1067,15 +1048,16 @@
          (half-y (+ y (floor *mouse-corner-highlight-size* 2)))
          (full-x (+ x *mouse-corner-highlight-size*))
          (full-y (+ y *mouse-corner-highlight-size*)))
-    (with-pen-color (*mouse-shrink-corner--background-color*)
-      (%draw-circle half-x half-y (* *mouse-corner-highlight-size* 0.7)  t))
-    (with-pen-color (*mouse-doc-highlight-color*)
-      (%draw-circle half-x half-y (* *mouse-corner-highlight-size* 0.7)  nil)
-      (draw-poly alu-seta (list (cons x y) (cons half-x half-y)
-                                (cons x full-y) (cons x y)))
-      (draw-poly alu-seta (list (cons full-x y) (cons full-x full-y)
-                                (cons half-x half-y) (cons full-x y)))
-      )))
+    (with-pen-size (1)
+      (with-pen-color (*mouse-shrink-corner--background-color*)
+        (draw-circle half-x half-y (* *mouse-corner-highlight-size* 0.7)  t))
+      (with-pen-color (*mouse-doc-highlight-color*)
+        (draw-circle half-x half-y (* *mouse-corner-highlight-size* 0.7)  nil)
+        (draw-poly (list (list x y) (list half-x half-y)
+                                  (list x full-y) (list x y)))
+        (draw-poly (list (list full-x y) (list full-x full-y)
+                                  (list half-x half-y) (list full-x y)))
+        ))))
 
 (defun draw-mouse-expand-corner (x-in y-in)
   "Currently two arrows facing away from each other, on a green circle with a black border."
@@ -1085,14 +1067,15 @@
          (half-y (+ y (/ *mouse-corner-highlight-size* 2)))
          (full-x (+ x *mouse-corner-highlight-size*))
          (full-y (+ y *mouse-corner-highlight-size*)))
-    (with-pen-color (*green*)
-      (%draw-circle half-x half-y (* *mouse-corner-highlight-size* 0.7)  t))
-    (with-pen-color (*mouse-doc-highlight-color*)
-      (%draw-circle half-x half-y (* *mouse-corner-highlight-size* 0.7)  nil)
-      (draw-poly alu-seta (list (cons x half-y) (cons (- half-x 1) y)
-                                (cons (- half-x 1) full-y) (cons x half-y)))
-      (draw-poly alu-seta (list (cons (+ half-x 1) y) (cons full-x half-y)
-                                (cons (+ half-x 1) full-y) (cons (+ half-x 1) y))))))
+    (with-pen-size (1)
+      (with-pen-color (*green*)
+        (draw-circle half-x half-y (* *mouse-corner-highlight-size* 0.7)  t))
+      (with-pen-color (*mouse-doc-highlight-color*)
+        (draw-circle half-x half-y (* *mouse-corner-highlight-size* 0.7)  nil)
+        (draw-poly (list (list x half-y) (list (- half-x 1) y)
+                                  (list (- half-x 1) full-y) (list x half-y)))
+        (draw-poly (list (list (+ half-x 1) y) (list full-x half-y)
+                                  (list (+ half-x 1) full-y) (list (+ half-x 1) y)))))))
 
 (defun draw-mouse-toggle-corner (x y)
   (with-pen-color (*mouse-doc-highlight-color*)
@@ -1107,13 +1090,12 @@
                  (- (+ x *mouse-corner-highlight-size*) 3)
                  (- (+ y *mouse-corner-highlight-size*) 2))
     ;; bottom arrow head
-    (draw-line x (+ y 4) (+ x 3) (+ y 4) alu-seta t)
+    (draw-line x (+ y 4) (+ x 3) (+ y 4))
     ;; top arrow head
     (draw-line (+ x *mouse-corner-highlight-size*)
                (- (+ y *mouse-corner-highlight-size*) 4)
                (- (+ x *mouse-corner-highlight-size*) 3)
-               (- (+ y *mouse-corner-highlight-size*) 4)
-               alu-seta t)))
+               (- (+ y *mouse-corner-highlight-size*) 4))))
 
 (defun draw-mouse-resize-corner (x-in y-in)
   "Currently a set of arrows pointing NW to SE on a white circle with black border."
@@ -1124,17 +1106,18 @@
         (full-x (+ x *mouse-corner-highlight-size*))
         (full-y (+ y *mouse-corner-highlight-size*))
         (half (/ *mouse-corner-highlight-size* 2)))
-    (with-pen-color (*white*)
-      (%draw-circle half-x half-y (* *mouse-corner-highlight-size* 0.7)  t))
-    (with-pen-color (*mouse-doc-highlight-color*)
-      (%draw-circle half-x half-y (* *mouse-corner-highlight-size* 0.7)  nil)
-      ;; TL arrowhead
-      (draw-poly alu-seta (list (cons x y) (cons (+ x half) y)
-                                (cons x (+ y half)) (cons x y)))
-      ;; BR arrowhead
-      (draw-poly alu-seta (list (cons full-x full-y) (cons (- full-x half) full-y)
-                                (cons full-x (- full-y half)) (cons full-x full-y)))
-      (draw-line x y full-x full-y alu-seta t))))
+    (with-pen-size (1)
+      (with-pen-color (*white*)
+        (draw-circle half-x half-y (* *mouse-corner-highlight-size* 0.7)  t))
+      (with-pen-color (*mouse-doc-highlight-color*)
+        (draw-circle half-x half-y (* *mouse-corner-highlight-size* 0.7)  nil)
+        ;; TL arrowhead
+        (draw-poly (list (list x y) (list (+ x half) y)
+                                  (list x (+ y half)) (list x y)))
+        ;; BR arrowhead
+        (draw-poly (list (list full-x full-y) (list (- full-x half) full-y)
+                                  (list full-x (- full-y half)) (list full-x full-y)))
+        (draw-line x y full-x full-y)))))
 
 ;;; OpenGL just adds things to be redrawn during regular redisplay
 
@@ -1155,3 +1138,32 @@
                   (bw::mouse-doc-status-popup-x)
                   (bw::mouse-doc-status-popup-y))))))
 
+(defmacro with-hilited-box ((box) &body body)
+  "Any operations inside this body will happen with box being hilighted. The default style is usually
+  a subtle blue background extending slightly beyond the borders. A typical use case of this is for
+  hilighting a box while it's being saved."
+  (let ((screen-box (gensym))
+        (screen-box-x (gensym))   (screen-box-y (gensym))
+        (screen-box-wid (gensym)) (screen-box-hei (gensym)))
+    `(drawing-on-window (*boxer-pane*)
+                        (let* ((,screen-box (or (car (displayed-screen-objs ,box))
+                                                (when (superior? (outermost-box) ,box)
+                                                  (outermost-screen-box))))
+                               ,screen-box-wid ,screen-box-hei)
+                          (multiple-value-bind (,screen-box-x ,screen-box-y)
+                                               (when (screen-box? ,screen-box)
+                                                 (setq ,screen-box-wid (screen-obj-wid ,screen-box)
+                                                        ,screen-box-hei (screen-obj-hei ,screen-box))
+                                                 (xy-position ,screen-box))
+                                               (unwind-protect
+                                                (progn
+                                                 (unless (null ,screen-box-x)
+                                                   (with-pen-color (*blinker-color*)
+                                                      (draw-rectangle
+                                                                      ,screen-box-wid ,screen-box-hei
+                                                                      ,screen-box-x ,screen-box-y))
+                                                   (swap-graphics-buffers))
+                                                 . ,body)
+                                                (unless (null ,screen-box-x)
+                                                  (repaint)
+                                                  (swap-graphics-buffers))))))))

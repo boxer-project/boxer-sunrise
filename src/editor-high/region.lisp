@@ -1,7 +1,7 @@
 ;;;; -*- Mode:LISP; Syntax: Common-Lisp; Package:BOXER ;-*-
 ;;;;
 ;;;;      Boxer
-;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;      Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -265,7 +265,6 @@
 
 (defun flush-region (region)
   (when (not (null region))
-    (make-interval-invisible region)
     (let ((i-box (interval-box region)))
       (unless (null i-box)
         (set-region i-box nil)))
@@ -305,7 +304,6 @@
                                 first-row
                                 (bp-cha-no region-start-bp)
                                 (bp-cha-no region-stop-bp))))
-               #-opengl (add-redisplay-clue first-row :delete)
                (set-bp-row (interval-start-bp region) killed-row)
                (set-bp-cha-no (interval-start-bp region) 0)
                (set-bp-row (interval-stop-bp region) killed-row)
@@ -328,8 +326,6 @@
                                  last-row
                                  0
                                  (bp-cha-no region-stop-bp))))
-                          ;; we can only remove from the last row
-                          #-opengl (add-redisplay-clue rr :delete)
                           ;; setup the stop-bp
                           (set-bp-row (interval-stop-bp region)
                                       region-last-row)
@@ -404,8 +400,10 @@
                (set-bp-row (interval-stop-bp region) row)
                (set-bp-cha-no (interval-stop-bp region)
                               (+& cha-no (length-in-chas last-new-row)))
-               (set-bp-row bp row)
-               (set-bp-cha-no bp (+& cha-no (length-in-chas last-new-row))))
+               ;; This would keep the point at the beginning of the newly pasted section
+               ;;  (set-bp-row bp row)
+               ;;  (set-bp-cha-no bp (+& cha-no (length-in-chas last-new-row)))
+               )
               (t
                ;; looks like we have more than one row in the region so
                ;; insert the part of the region's first row
@@ -429,8 +427,10 @@
                         (set-bp-row (interval-stop-bp region) rr)
                         (set-bp-cha-no (interval-stop-bp region)
                                        (length-in-chas rr))
-                        (set-bp-row bp rr)
-                        (set-bp-cha-no bp (length-in-chas rr)))
+                        ;; This would keep the point at the beginning of the newly pasted section
+                        ;; (set-bp-row bp rr)
+                        ;; (set-bp-cha-no bp (length-in-chas rr))
+                        )
                        (t
                         (insert-row-after-row box rr
                                               previous-added-row)
@@ -447,70 +447,17 @@
 ;;; corresponding to screen representation(s) for the rows which make
 ;;; up the region
 
-(defun allocate-region-row-blinker (screen-row)
-  (let ((new-blinker (make-region-row-blinker *boxer-pane* :visibility nil)))
-    (setf (bw::region-row-blinker-uid new-blinker) screen-row)
-    new-blinker))
-
-(defun turn-on-interval (region)
-  (unless (interval-visibility region)
-    (make-interval-visible region))
-  (setf (interval-visibility region) t))
-
-(defun turn-off-interval (region)
-  (when (interval-visibility region)
-    (make-interval-invisible region))
-  (setf (interval-visibility region) nil))
-
-;;; Accessor Macros...
-(defsubst region-row-blinker-wid (region)
-  (bw::blinker-width region))
-
-(defsubst region-row-blinker-hei (region)
-  (bw::blinker-height region))
-
-(defsubst region-row-blinker-x (region)
-  (bw::blinker-x region))
-
-(defsubst region-row-blinker-y (region)
-  (bw::blinker-y region))
-
-(defsubst region-row-blinker-visibility (region)
-  (bw::blinker-visibility region))
-
-(defsubst region-row-blinker-uid (region)
-  (bw::region-row-blinker-uid region))
-
-;;; setf's
-
-(defsetf region-row-blinker-wid (region) (new-wid)
-  `(setf (bw::blinker-width ,region) ,new-wid))
-
-(defsetf region-row-blinker-hei (region) (new-hei)
-  `(setf (bw::blinker-height ,region) ,new-hei))
-
-(defsetf region-row-blinker-x (region) (new-x)
-  `(setf (bw::blinker-x ,region) ,new-x))
-
-(defsetf region-row-blinker-y (region) (new-y)
-  `(setf (bw::blinker-y ,region) ,new-y))
-
-(defsetf region-row-blinker-visibility (region) (new-vis)
-  `(setf (bw::blinker-visibility ,region) ,new-vis))
-
-(defsetf region-row-blinker-uid (region) (new-uid)
-  `(setf (bw::region-row-blinker-uid ,region) ,new-uid))
-
-
-
 ;;; We provide two different messages for redisplay of regions.  One of them
 ;;; will just mark the screen rows corresponding to the region in
 ;;; the *CURRENT-SCREEN-BOX* while the other one will mark *ALL* the screen
 ;;; rows of the region.
 (defun remove-region-row-blinker (row-blinker)
-  (setf (region-row-blinker-visibility row-blinker) nil)
-  (setf (bw::sheet-blinker-list *boxer-pane*)
-        (fast-delq row-blinker (bw::sheet-blinker-list *boxer-pane*))))
+  ;; sgithens TODO 2023-03-23 There may be something useful to do here, such
+  ;; as removing it from the actual region list... investigate further.
+  ; (setf (region-row-blinker-visibility row-blinker) nil)
+  ; (setf (bw::sheet-blinker-list *boxer-pane*)
+  ;       (fast-delq row-blinker (bw::sheet-blinker-list *boxer-pane*)))
+)
 
 ;; Blinkers positions are with respect to the window WITH THE BORDERS INCLUDED
                                         ;(DEFMACRO FIXUP-COORDINATES-FOR-BLINKER (X Y BL)
@@ -519,7 +466,7 @@
                                         ;     (SETF ,Y (+ ,Y (SEND SHEET :TOP-MARGIN-SIZE)))))
 
 ;; used to make rows with 0 characters highlighted.
-(defvar *minimum-row-blinker-wid* 10)
+(defvar *minimum-row-blinker-wid* 0)
 
 (defun update-region-row-blinker (region-row-blinker)
   (let* ((screen-row (region-row-blinker-uid region-row-blinker))
@@ -529,18 +476,17 @@
         (xy-position screen-row)
                                         ;      ;; Blinker positions are measured with the borders included
                                         ;      (FIXUP-COORDINATES-FOR-BLINKER X Y REGION-ROW-BLINKER)
-      (when (or (not (= wid (region-row-blinker-wid region-row-blinker)))
-                (not (= hei (region-row-blinker-hei region-row-blinker)))
-                (not (= x   (region-row-blinker-x   region-row-blinker)))
-                (not (= y   (region-row-blinker-y   region-row-blinker))))
+      (when (or (not (= wid (blinker-wid region-row-blinker)))
+                (not (= hei (blinker-hei region-row-blinker)))
+                (not (= x   (blinker-x   region-row-blinker)))
+                (not (= y   (blinker-y   region-row-blinker))))
         ;; might be better to use timestamps (we might
         ;; have to use timestamps in addition anyway)
-        (with-open-blinker (region-row-blinker)
-          (setf (region-row-blinker-wid region-row-blinker)
-                (if (zerop wid) *minimum-row-blinker-wid* wid))
-          (setf (region-row-blinker-hei region-row-blinker) hei)
-          (setf (region-row-blinker-x region-row-blinker) x)
-          (setf (region-row-blinker-y region-row-blinker) y))))))
+        (setf (blinker-wid region-row-blinker)
+              (if (zerop wid) *minimum-row-blinker-wid* wid))
+        (setf (blinker-hei region-row-blinker) hei)
+        (setf (blinker-x region-row-blinker) x)
+        (setf (blinker-y region-row-blinker) y)))))
 
 (defun left-half-blinker-trim (blinker cha-no)
   (let* ((screen-row (region-row-blinker-uid blinker))
@@ -556,16 +502,16 @@
          (desired-wid (- row-wid amount-to-trim)))
     (multiple-value-bind (x y)
         (xy-position screen-row)
-      (when (or (not (= desired-wid        (region-row-blinker-wid blinker)))
-                (not (= row-hei            (region-row-blinker-hei blinker)))
+      (when (or (not (= desired-wid        (blinker-wid blinker)))
+                (not (= row-hei            (blinker-hei blinker)))
                 (not (= (+ x amount-to-trim)
-                        (region-row-blinker-x   blinker)))
-                (not (= y                  (region-row-blinker-y   blinker))))
-        (setf (region-row-blinker-wid blinker)
+                        (blinker-x   blinker)))
+                (not (= y                  (blinker-y   blinker))))
+        (setf (blinker-wid blinker)
               (if (zerop desired-wid) *minimum-row-blinker-wid* desired-wid))
-        (setf (region-row-blinker-hei blinker) row-hei)
-        (setf (region-row-blinker-x   blinker) (+ x amount-to-trim))
-        (setf (region-row-blinker-y   blinker) y)))))
+        (setf (blinker-hei blinker) row-hei)
+        (setf (blinker-x   blinker) (+ x amount-to-trim))
+        (setf (blinker-y   blinker) y)))))
 
 (defun right-half-blinker-trim (blinker cha-no)
   (let* ((screen-row (region-row-blinker-uid blinker))
@@ -582,15 +528,15 @@
          (desired-wid (- row-wid amount-to-trim)))
     (multiple-value-bind (x y)
         (xy-position screen-row)
-      (when (or (not (= desired-wid  (region-row-blinker-wid blinker)))
-                (not (= row-hei      (region-row-blinker-hei blinker)))
-                (not (= x            (region-row-blinker-x   blinker)))
-                (not (= y            (region-row-blinker-y   blinker))))
-        (setf (region-row-blinker-wid blinker)
+      (when (or (not (= desired-wid  (blinker-wid blinker)))
+                (not (= row-hei      (blinker-hei blinker)))
+                (not (= x            (blinker-x   blinker)))
+                (not (= y            (blinker-y   blinker))))
+        (setf (blinker-wid blinker)
               (if (zerop desired-wid) *minimum-row-blinker-wid* desired-wid))
-        (setf (region-row-blinker-hei blinker) row-hei)
-        (setf (region-row-blinker-x   blinker) x)
-        (setf (region-row-blinker-y   blinker) y)))))
+        (setf (blinker-hei blinker) row-hei)
+        (setf (blinker-x   blinker) x)
+        (setf (blinker-y   blinker) y)))))
 
 (defun both-ends-blinker-trim (blinker start-cha-no stop-cha-no)
   (let* ((screen-row (region-row-blinker-uid blinker))
@@ -616,15 +562,15 @@
          (desired-wid (- row-wid left-trim right-trim)))
     (multiple-value-bind (x y)
         (xy-position screen-row)
-      (when (or (not (= desired-wid     (region-row-blinker-wid blinker)))
-                (not (= row-hei         (region-row-blinker-hei blinker)))
-                (not (= (+ x left-trim) (region-row-blinker-x   blinker)))
-                (not (= y               (region-row-blinker-y   blinker))))
-        (setf (region-row-blinker-wid blinker)
+      (when (or (not (= desired-wid     (blinker-wid blinker)))
+                (not (= row-hei         (blinker-hei blinker)))
+                (not (= (+ x left-trim) (blinker-x   blinker)))
+                (not (= y               (blinker-y   blinker))))
+        (setf (blinker-wid blinker)
               (if (zerop desired-wid) *minimum-row-blinker-wid* desired-wid))
-        (setf (region-row-blinker-hei blinker) row-hei)
-        (setf (region-row-blinker-x   blinker) (+ x left-trim))
-        (setf (region-row-blinker-y   blinker) y)))))
+        (setf (blinker-hei blinker) row-hei)
+        (setf (blinker-x   blinker) (+ x left-trim))
+        (setf (blinker-y   blinker) y)))))
 
 ;; is the row conneted to the editor hierarchy ?
 ;; used for detemining whether we should bother trying to redisplay
@@ -652,7 +598,7 @@
                                                       (region-row-blinker-uid
                                                        reg)))))))
                      (cond ((null existing-region)
-                            (allocate-region-row-blinker screen-row))
+                            (make-region-row-blinker :uid screen-row))
                            (t
                             (setq row-blinkers (fast-delq existing-region
                                                           row-blinkers))
@@ -684,9 +630,6 @@
                       (setq displayed-rows
                             (append displayed-rows (displayed-screen-objs row))))
                     displayed-rows)))
-           (if (interval-visibility region)
-               (make-interval-visible region)
-               (make-interval-invisible region))
            (let ((starting-row (bp-row region-start-bp))
                  (starting-cha-no (bp-cha-no region-start-bp))
                  (stopping-row (bp-row region-stop-bp))
@@ -714,47 +657,4 @@
                         ;; finally, take care of all the other rows
                         (update-region-row-blinker blinker)))))))))
   ;; @ this point all the blinkers are the correct size and inthe right place...
-  (drawing-on-window (window)
-    (dolist (blinker (interval-blinker-list region)) (draw-blinker blinker)))
-  #-opengl
-  (flush-port-buffer window))
-
-
-;; these need to have with-drawing-port's wrapped around them because
-;; they get called OUTSIDE of the redisplay
-(defun make-interval-visible (region)
-  (dolist (row-blinker (interval-blinker-list region))
-    (setf (region-row-blinker-visibility row-blinker) t)))
-
-(defun make-interval-invisible (region)
-  (dolist (row-blinker (interval-blinker-list region))
-    (setf (region-row-blinker-visibility row-blinker) nil)))
-
-;;;; mousy stuff
-
-;;;; this function tells if the mouse is on top of the current region.
-
-
-(defun mouse-on-region-being-defined-p ()
-  (if (null boxer::*region-being-defined*)
-      nil
-      (let ((blinker-list (boxer::interval-blinker-list boxer::*region-being-defined*)))
-        (multiple-value-bind (m-x m-y) (bw::mouse-window-coords)
-          (dolist (b-row blinker-list)
-            (if (coords-on-blinker-row m-x m-y b-row)
-                (return t)))))))
-
-(defun coords-on-blinker-row (m-x m-y b-row)
-  (if (null b-row) nil)
-  (let* ((x-low (region-row-blinker-x b-row))
-         (x-high (+ (region-row-blinker-x b-row)
-                    (bw::region-row-blinker-width b-row)))
-
-         (y-low (region-row-blinker-y b-row))
-         (y-high (+ (region-row-blinker-y b-row)
-                    (bw::region-row-blinker-height b-row))))
-    (and (and (< m-x x-high) (> m-x x-low))
-         (and (< m-y y-high) (> m-y y-low)))))
-
-
-
+  (dolist (blinker (interval-blinker-list region)) (draw-blinker blinker)))

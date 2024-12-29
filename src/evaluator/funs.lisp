@@ -1,7 +1,7 @@
 ;;;; -*- Package: BOXER-EVAL; Mode: LISP; Base: 10; Syntax: Common-lisp -*-
 ;;;;
 ;;;;      Boxer
-;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;      Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -391,28 +391,6 @@
 (defun recursive-eval-setup-manual (list)
   (setq *sfun-continuation* '*run-list-sfun-continuation*)
   list)
-
-(defun make-boxer-primitive-internal (arglist code)
-  (let ((name (gensym)))
-    (proclaim `(special ,name))
-    (let ((lisp-function-object
-           (compile-lambda-if-possible
-            name
-            `(lambda ()
-                     (let ,(mapcar
-                            #'(lambda (u) `(,u (vpdl-pop-no-test)))
-                            (reverse arglist))
-                       . ,code)))))
-      (boxer-toplevel-set
-       name
-       (make-compiled-boxer-function
-        :arglist arglist
-        :precedence 0
-        :infix-p nil
-        :object lisp-function-object)))
-    name))
-
-
 
 ;;;; Functions which define keys.
 ;;;;

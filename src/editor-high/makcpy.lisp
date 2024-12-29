@@ -1,7 +1,7 @@
 ;;;; -*- Package: BOXER; Mode: LISP; Base: 10.; Syntax: Common-Lisp -*-
 ;;;;
 ;;;;      Boxer
-;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;      Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -56,21 +56,10 @@
     (setf (graphics-sheet-draw-mode new-sheet)
           (graphics-sheet-draw-mode from-sheet))
     (when (not (null (graphics-sheet-bit-array from-sheet)))
-      (let ((bm (make-offscreen-bitmap *boxer-pane* wid hei)))
+      (let ((bm (make-ogl-pixmap wid hei)))
         (setf (graphics-sheet-bit-array new-sheet) bm)
         (with-graphics-vars-bound-internal from-sheet
-          #-opengl
-          (drawing-on-bitmap (bm)
-                             (with-pen-color ((or (graphics-sheet-background from-sheet)
-                                                  *background-color*))
-                               (draw-rectangle alu-seta %drawing-width %drawing-height 0 0))
-                             (bitblt-to-screen alu-seta wid hei (graphics-sheet-bit-array from-sheet)
-                                               0 0 0 0))
-          #+opengl
-          (copy-offscreen-bitmap alu-seta wid hei (graphics-sheet-bit-array from-sheet) 0 0 bm 0 0)
-          ;; mark the dirty? flag
-          (setf (graphics-sheet-bit-array-dirty? new-sheet) t)
-          )))
+          (copy-pixmap-data wid hei (graphics-sheet-bit-array from-sheet) 0 0 bm 0 0))))
     new-sheet))
 
 (defmethod copy-box ((from-box box) &optional (copy-top-level-attributes? t))
@@ -134,7 +123,8 @@
   (let ((bt (getprop from-box :boxtop)))
     (unless (null bt) (putprop to-box bt :boxtop)))
   (when (copy-file? to-box)
-    (boxnet::record-copy-file-info from-box to-box))
+    ; (boxnet::record-copy-file-info from-box to-box)
+    (log:warn "Trying to copy old bfs-server document."))
   ;; graphics...
   (let ((gi (slot-value from-box 'graphics-info)))
     (cond ((null gi))
@@ -150,8 +140,6 @@
                 (t (copy-graphics-object gi)))))
          (setf (graphics-info to-box) new-graphics-object)
          (set-sprite-box new-graphics-object to-box)))))
-  (when (not (null (av-info from-box)))
-    (putprop to-box (copy-av-info (av-info from-box)) 'av-info))
   ;; other special properties...
   (dolist (pfun *copy-special-box-properties-hook*) (funcall pfun from-box to-box))
   ;; Copying these depend on whether we are at top level or not

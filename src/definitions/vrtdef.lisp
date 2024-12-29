@@ -12,7 +12,7 @@
 ;;;
 
     Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+    Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 
     Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
     used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -578,8 +578,6 @@ Modification History (most recent at top)
 ;; In general, it should only be T when the vc-rows-entry corresponds
 ;; to the initial chunking of the editor-box
 
-(eval-when
-    (:compile-toplevel :load-toplevel :execute)
 (defstruct (vc-rows-entry (:type vector)
         (:include virtual-copy-internal-slots)
         (:constructor %make-vc-rows-entry))
@@ -587,7 +585,6 @@ Modification History (most recent at top)
   (cached-binding-alist nil)
   (single-is-exact? nil)
   (editor-box-backpointer nil))
-)
 
 ;;; localize the lossage here...
 
@@ -595,7 +592,21 @@ Modification History (most recent at top)
   ;; aaacckkk !!! (checking for VCness vs VCRs )
   (and (simple-vector-p thing)
        (=& (length (the simple-vector thing))
-     #.(length (%make-vc-rows-entry)))))
+       ;; In order to remove this run-time evaluation read-macro
+       ;; we are hardcoding this value for now. It's not good. I
+       ;; would like to revert this to a normal struct, but need to
+       ;; look at all the other items in the code base that may
+       ;; depend on it being a simple vector. For now we have a unit
+       ;; test to catch if this value ever changes.
+       ;;
+       ;; We are removing the read-time evaluation macro such that
+       ;; the defstruct vc-rows-entry no longer needs to be wrapped in
+       ;; eval-when.
+       ;;
+       ;;   - sgithens 2022-01-12
+       ;;  #.(length (%make-vc-rows-entry))
+       10
+     )))
 
 
 ;;; Mutations of editor structure are an enormous time sink
@@ -659,7 +670,7 @@ Modification History (most recent at top)
 
 (defun deallocate-non-lisp-structures-in-graphics-sheet (gs)
   (let ((ba (graphics-sheet-bit-array gs)))
-    (unless (null ba) (free-offscreen-bitmap ba))))
+    (unless (null ba) (ogl-free-pixmap ba))))
 
 (setf (get 'graphics-sheet 'non-lisp-deallocation-function)
       #'deallocate-non-lisp-structures-in-graphics-sheet)

@@ -7,7 +7,7 @@
  $Log$
 
     Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+    Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 
     Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
     used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -85,8 +85,8 @@ There are several parts to this file.
   (forms nil)
   (eval-list nil))
 
-(defsubst cbo-code (x) (compiled-boxer-object-code x))
-(defsubst cbo-args (x) (compiled-boxer-object-args x))
+#+lispworks (defsubst cbo-code (x) (compiled-boxer-object-code x))
+#+lispworks (defsubst cbo-args (x) (compiled-boxer-object-args x))
 
 ;;;; Formal Arg Objects
 

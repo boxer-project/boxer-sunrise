@@ -12,7 +12,7 @@
 ;;;
 
     Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+    Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 
     Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
     used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -26,6 +26,7 @@
                 This file is part of the | BOXER | system
                                          +-------+
 
+    This file contains variables and macros for the display code.
 
 Modification History (most recent at the top)
 
@@ -60,83 +61,19 @@ Modification History (most recent at the top)
 
 (in-package :boxer)
 
-;;;this file contains all the macro and defsubsts
-;;;for the display code
-
-;;; this should be phased out either when the redisplay is converted to
-;;; the new character scheme or when box boxers are re-implememented
-
-;(DEFVAR *FONT-NUMBER-FOR-NAMING* #-symbolics 2.
-;            	                 #+symbolics (si:backtranslate-font fonts:medfntb)
-;  "The font number that specifies the font for names and variables. ")
-
-
-;;;; GRAY PATTERNS
-
-;; the default in the code is *gray* which should be bound to one of
-;; the particular grays defined below
-;; These are useful for drawing gray areas on the screen.
-;;
-;; We break these into compile-time definitions and load-type assignments
-;; so we don't have to have the window system loaded during compilation.
-;;
-;; The numeric grays are bound to patterns.  The other grays should
-;; be set up to be bound to particular numeric grays
-
-(defvar *gray0*)
-
-(defvar *gray1*)
-
-(defvar *gray2*)
-
-(defvar *gray3*)
-
-(defvar *gray4*)
-
-(defvar *gray5*)
-
-(defvar *filegray* nil)
-
-(defvar *graphicsgray* nil)
-
-;; Note: 0,1 and 5 look good 2,3 and 4 could use some tweaking...
-
-(defun initialize-gray-patterns ()
-  (setq *GRAY0* (boxer-window::make-pattern
-                 '((1 0 0 0 0 1 0 0 0 0)
-                   (0 0 1 0 0 0 0 1 0 0)
-                   (0 0 0 0 1 0 0 0 0 1)
-                   (0 1 0 0 0 0 1 0 0 0)
-                   (0 0 0 1 0 0 0 0 1 0))))
-  (setq *GRAY1* (boxer-window::make-pattern
-                 '((1 0 0 0 1 0 0 0)
-                   (0 1 0 0 0 1 0 0)
-                   (0 0 0 1 0 0 0 1)
-                   (0 0 1 0 0 0 1 0))))
-  (setq *GRAY2* (boxer-window::make-pattern
-                 '((1 0 0 0)
-                   (0 0 1 0)
-                   (0 1 0 0))))
-  (setq *GRAY3* (boxer-window::make-pattern
-                 '((1 0 0 0 1 0 1 0)
-                   (0 1 0 1 0 0 0 1)
-                   (1 0 0 0 1 0 1 0)
-                   (0 1 0 1 0 0 0 1))))
-  (setq *GRAY4* (boxer-window::make-pattern
-                 '((1 0 1 0 1 0 1 0)
-                   (0 1 0 0 0 1 0 0)
-                   (1 0 1 0 1 0 1 0))))
-  (setq *GRAY5* (boxer-window::make-pattern
-                 '((1 0 1 0 1 0 1 0)
-                   (0 1 0 1 0 1 0 1)
-                   (1 0 1 0 1 0 1 0)
-                   (0 1 0 1 0 1 0 1))))
-  ;; finally set up *gray* to be one of the grays we just defined
-  (setq *GRAY* *GRAY0*
-        *filegray* (boxer-window::make-pattern '((1 1) (1 1)))
-        *graphicsgray* *gray1*))
-
 ;;; Graphics defs and macros
+
+; (defvar *use-glist-performance* t
+;   "Whether or not to use the new c-buffering for the opengl drawing, although this
+;   can be used for other types of graphics command list performance work that is in
+;   progress as well.")
+
+(defvar *use-opengl-framebuffers* nil
+  "t or nil. If t, then use openGL framebuffers to back the graphics display list drawing
+   on turtle canvases.")
+
+(defvar *reload-shaders* nil
+  "When set to true, reload the shader programs before next repaint.")
 
 (DEFVAR *DEFAULT-GRAPHICS-SHEET-WIDTH* 320.)
 
@@ -145,54 +82,10 @@ Modification History (most recent at the top)
 (DEFVAR *MAKE-TURTLE-WITH-NEW-GRAPHICS-BOX* NIL
         "Determines if graphics boxes are created with a turtle already in it. ")
 
-(defstruct (graphics-screen-sheet (:conc-name graphics-screen-sheet-)
-                                  (:predicate graphics-screen-sheet?)
-                                  (:constructor %make-g-screen-sheet
-                                                (actual-obj x-offset y-offset))
-                                  (:print-function
-                                   (lambda (gss str &rest other)
-                                           (declare (ignore other))
-                                           (format str "#<graph-scr-st x-~d. y-~d.>"
-                                                   (graphics-screen-sheet-x-offset
-                                                    gss)
-                                                   (graphics-screen-sheet-y-offset
-                                                    gss)))))
-  (x-offset 0.)
-  (y-offset 0.)
-  (screen-box nil)
-  (actual-obj nil))
-
-(defmacro check-graphics-screen-sheet-arg (x)
-  `(check-type ,x (satisfies graphics-screen-sheet?)
-                "A graphics screen sheet"))
-
-(defstruct (display-style (:predicate display-style?)) ;; TODO sgithens add docstring for this
-  (style :normal)
-  (fixed-wid nil)
-  (fixed-hei nil)
-  (graphics-mode? nil)
-  (border-style nil))
-
-;;; The X implementation requires that the font map stuff be set
-;;; up BEFORE the redisplay inits are run but we better check first...
-(def-redisplay-initialization
-  (progn (initialize-gray-patterns)
-         (initialize-colors)
-         ;; moved here because FD's need init'd colors
-         (setq *default-font-descriptor* (make-bfd -1 *default-font*)
-               *current-font-descriptor* (make-bfd -1 *default-font*))
-         (drawing-on-window (boxer-window::*boxer-pane*)
-                            (set-font-info *normal-font-no*))))
-
-
-;;;NOTE:it must be loaded before any of the other display files
-
 (DEFSUBST MAKE-SCREEN-CHA (ACTUAL-CHA)
           ACTUAL-CHA)
 
 (DEFSUBST SCREEN-CHA? (SC) (CHARACTERP SC))
-
-(DEFMACRO CHA-WIDTH (CHA) `(CHA-WID ,CHA))
 
 (DEFVAR FREE-SCREEN-ROWS NIL
         "A list of free screen-rows.")
@@ -227,11 +120,6 @@ Modification History (most recent at the top)
                                (make-instance 'sprite-screen-box))))
     (re-init sprite-screen-box sprite-box)
     sprite-screen-box))
-
-(DEFUN ACTUAL-OBJ-OF-SCREEN-OBJ (SCREEN-OBJ)
-       (IF (SCREEN-CHA? SCREEN-OBJ)
-           SCREEN-OBJ
-           (SCREEN-OBJ-ACTUAL-OBJ SCREEN-OBJ)))
 
 (DEFUN ALLOCATE-SCREEN-ROW-INTERNAL (ACTUAL-ROW)
        (LET ((SCREEN-ROW (OR (POP FREE-SCREEN-ROWS) (MAKE-INSTANCE 'SCREEN-ROW))))
@@ -337,15 +225,6 @@ Modification History (most recent at the top)
 
 (DEFVAR *BOX-ELLIPSIS-CURRENT-STYLE* 'BOX-ELLIPSIS-SOLID-LINES)
 
-(DEFMACRO ALTERING-REGION ((REGION) &BODY BODY)
-          (WARN "ALTERING-REGION is obsolete.  Use with-open-blinker instead.")
-          `(WITHOUT-INTERRUPTS
-            (OPEN-BLINKER ,REGION)
-            (PROGN . ,BODY)))
-
-(defmacro with-real-time (&body body)
-  `(progn . ,body))
-
 ;;;****************************************************************;;;
 ;;;                      REDISPLAY MACROS                          ;;;
 ;;;****************************************************************;;;
@@ -363,100 +242,14 @@ Modification History (most recent at the top)
                 . ,BODY))
 
 (DEFMACRO REDISPLAYING-WINDOW ((WINDOW) &BODY BODY)
-          `(LET* ((*REDISPLAY-WINDOW* ,WINDOW)
-                  (*OUTERMOST-SCREEN-BOX* (OUTERMOST-SCREEN-BOX ,WINDOW))
-                  (.OUTERMOST-SCREEN-BOX. *OUTERMOST-SCREEN-BOX*))
-                 (QUEUEING-SCREEN-OBJS-DEALLOCATION
-                  (DRAWING-ON-WINDOW (,WINDOW)
-                                     (UNWIND-PROTECT
-                                      (PROGN . ,BODY)
-                                      ;; Check to see if *outermost-screen-box* got changed during
-                                      ;; the redisplay. If it did, then tell the window about it.
-                                      (WHEN (NOT (EQ *OUTERMOST-SCREEN-BOX* .OUTERMOST-SCREEN-BOX.))
-                                            (SET-OUTERMOST-SCREEN-BOX-IN-WINDOW ,WINDOW *OUTERMOST-SCREEN-BOX*)))))))
-
-(DEFMACRO REDISPLAYING-BOX (SCREEN-BOX &BODY BODY)
-          ;;this macro sets up the scaling for the redisplay of a particular box without having to
-          ;;redisplay the entire screen.  This means that the box to be redisplayed has to be a fixed
-          ;;sized box to avoid worrying about propagating changes in size to the superiors of the box.
-          `(QUEUEING-SCREEN-OBJS-DEALLOCATION
-            (MULTIPLE-VALUE-BIND (SUPERIOR-ORIGIN-X-OFFSET SUPERIOR-ORIGIN-Y-OFFSET)
-                                 (let ((ssb (superior ,screen-box)))
-                                   (if (screen-obj? ssb) (xy-position ssb) (values 0 0)))
-                                 (with-origin-at ((SCALE-X SUPERIOR-ORIGIN-X-OFFSET)
-                                                  (SCALE-Y SUPERIOR-ORIGIN-Y-OFFSET))
-                                   ,@BODY))))
-
-
+  `(LET* ((*OUTERMOST-SCREEN-BOX* (OUTERMOST-SCREEN-BOX ,WINDOW)))
+        (QUEUEING-SCREEN-OBJS-DEALLOCATION
+          (DRAWING-ON-WINDOW (,WINDOW)
+                              (UNWIND-PROTECT
+                              (PROGN . ,BODY)
+                              (SET-OUTERMOST-SCREEN-BOX-IN-WINDOW ,WINDOW *OUTERMOST-SCREEN-BOX*))))))
 
 ;;; random useful structs and stuff
-
-(defstruct (screen-row-rdp1-info (:type vector)
-                                 (:conc-name sr-rdp1-info-))
-  (action nil) ; a keyword
-  (from-cha-no 0)
-  (from-offset 0)
-  (no-of-chas 0)
-  (dist-to-move 0)
-  (width-to-move nil))
-
-;; we may want to resource these (but lets just cons them for now)
-;; we shouldn't need any more than 5-10 since only those rows which have
-;; changed will use them at any given time
-(defun allocate-sr-rdp1-info (&optional (from-cha-no 0) (from-offset 0))
-  (make-screen-row-rdp1-info :from-cha-no from-cha-no
-                             :from-offset from-offset))
-
-;; a stub for allocation
-(defun free-sr-rdp1-info (info) (declare (ignore info))  nil)
-
-;;; right now these are flushed by the got-redisplayed
-;;; method (probably not the best place)
-
-(defvar *repaint-during-eval?* :always
-  "Periodically update the screen during eval, valid values are :always,:changed-graphics, and :never")
-; :changed-graphics simulates the old behavior
-
-(defvar *screen-boxes-modified* ':toplevel
-  "Screen boxes modifed during eval")
-
-(defun queue-modified-graphics-box (gb)
-  (unless (or (eq *screen-boxes-modified* ':toplevel) (eq gb ':no-graphics))
-    (dolist (sb (displayed-screen-objs gb))
-      (unless (fast-memq sb *screen-boxes-modified*)
-        (push sb *screen-boxes-modified*)))))
-
-;;; right now these are flushed by the got-redisplayed
-;;; method (probably not the best place)
-
-(defvar *absolute-position-caches-filled* ':toplevel)
-
-(defstruct (ab-pos-cache (:type vector)
-                         (:constructor make-ab-pos-cache (x y iw ih sx sy)))
-  (x 0)
-  (y 0)
-  (iw 0)
-  (ih 0)
-  (sx 0)
-  (sy 0)
-  (valid nil)
-  )
-
-
-;; more stuff for the top-level-eval-wrapper....
-(defmacro with-screen-box-modification-tracking (&body body)
-  `(let ((*screen-boxes-modified* nil))
-     . ,body))
-
-;; might have to propagate modified to EB's after eval for proper
-;; final redisplay
-
-(defmacro with-absolute-position-cache-recording (&body body)
-  `(let ((*absolute-position-caches-filled* nil))
-     (unwind-protect
-      (progn . ,body)
-      (dolist (cache *absolute-position-caches-filled*)
-        (setf (ab-pos-cache-valid cache) nil)))))
 
 ;;;; Fonts
 
@@ -532,11 +325,3 @@ Modification History (most recent at the top)
                                :index-var-name ,index-name)
            (check-and-handle-font-changes ,index-name)
            . ,body)))))
-
-;;; for systems which buffer graphics
-;;; this applies equally to command buffering a la X or
-;;; double buffering a la OpenGL, OSX Quickdraw
-
-(defun force-graphics-output ()
-  ;; this is the new paradigm, defined in the draw-low- files
-  (flush-port-buffer))

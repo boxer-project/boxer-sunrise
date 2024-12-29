@@ -9,7 +9,7 @@
 ;;;
 
     Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+    Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 
     Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
     used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -54,24 +54,9 @@ Modification History (most recent at the top)
 
 (in-package :boxer)
 
-
-
-
 ;******************************************************************************
 ;*                              TOP  LEVEL  DEFINITIONS                       *
 ;******************************************************************************
-
-;;;; Pathname Construction and manipulation...
-
-#+lispm
-(fs:define-canonical-type :box "Box"	;default type for SAVE/READ
-  (:tops-20 "Box")
-  (:unix42 "box")
-  (:vms "Box")
-  (:its "Box"))
-
-#+lispm
-(defprop :box 16. :binary-file-byte-size)
 
 ;;;; Resources
 
@@ -116,8 +101,6 @@ Modification History (most recent at the top)
       (let ((,var .resource-thing.))
         . ,body)
       (deallocate-resource ',resource .resource-thing.))))
-
-
 
 ;;initializations...
 
@@ -222,7 +205,7 @@ Modification History (most recent at the top)
 (defvar %%bin-op-im-number-size (ash 1 11.))
 
 ;;; Currently supported version number
-(defvar *version-number* 12.)
+(defvar *version-number* 14.)
 
 ;;; Dumping variables
 
@@ -247,16 +230,6 @@ Modification History (most recent at the top)
 (defmacro store-bin-op-dispatch (value table number)
   `(setf (aref ,table ,number) ,value))
 
-;; AppGen lossage for complex form of defsetf
-#+mcl
-(defun %set-bin-op-dispatch (table number value)
-  (store-bin-op-dispatch value table number)
-  value)
-
-#+mcl
-(defsetf bin-op-dispatch %set-bin-op-dispatch)
-
-#-mcl
 (defsetf bin-op-dispatch (table number) (value)
   `(store-bin-op-dispatch ,value ,table ,number))
 
@@ -438,7 +411,7 @@ Modification History (most recent at the top)
 
 (defvar *bin-op-load-command-table* (make-bin-op-dispatch-table))
 
-(defvar *supported-obsolete-versions* '(5 6 7 8 9 10 11))
+(defvar *supported-obsolete-versions* '(5 6 7 8 9 10 11 12 13))
 
 (defvar *status-line-loading-format-string* "Loading ~D (~D %)")
 
@@ -738,51 +711,12 @@ Modification History (most recent at the top)
   "Whether to be forgiving about files ending with \".box\"")
 
 
-;;;; special file readers
-;; these can be platform specific (i.e. :pict for the mac) or
-;; they can work across platforms for defined standards like GIF
-;; EVERYTHING must support the types :boxer and :text
-
 (defun boxer-file-contents? (filename)
   (with-open-file (s filename :direction :input :element-type '(unsigned-byte 8.))
     (let ((1st-word (read-file-word-from-stream s nil nil)))  ; file can be empty
       (when 1st-word
         (or (= 1st-word bin-op-format-version)
             (= 1st-word *swapped-bin-op-format-version*))))))
-
-;; system dependent
-#+mcl
-(defvar *possible-boxer-file-mac-types* (list :text :???? :****
-                                              ;; OSX default for unknown
-                                              (intern
-                                               (make-string
-                                                4 :initial-element #\Null)
-                                               (find-package "KEYWORD"))))
-
-;; this should eventually use /etc/magic
-(defun file-type (filename)
-  (if (boxer-file-contents? filename) :boxer :text))
-
-(defvar *error-on-unknown-file-type* nil)
-
-(defvar *special-file-readers* nil)
-
-;; TYPE is a keyword returned by the file-type function
-;; FUNCTION is a function that takes 1 arg, a filename, and should return a box
-(defmacro deffile-type-reader (type function)
-  `(progn
-    (unless (fast-memq ',type *special-file-readers*)
-      (push ',type *special-file-readers*))
-    (setf (get ',type 'file-type-reader-function) ',function)))
-
-(defun get-special-file-reader (type)  (get type 'file-type-reader-function))
-
-;; the basic file readers...
-(deffile-type-reader :boxer load-binary-box-internal)
-
-(deffile-type-reader :text   read-text-file-internal)
-
-
 
 ;;; Hooks for file system interactions for loadable modules
 ;;; in general, function/methods get pushed onto these lists by the defs in
@@ -796,52 +730,3 @@ Modification History (most recent at the top)
    item to the stream")
 
 (defvar *load-module-init-keywords* nil)
-
-
-
-(defmacro with-hilited-box ((box) &body body)
-  (let ((screen-box (gensym))
-        (screen-box-x (gensym))   (screen-box-y (gensym))
-        (screen-box-wid (gensym)) (screen-box-hei (gensym)))
-    `(drawing-on-window (*boxer-pane*)
-                        (let* ((,screen-box (or (car (displayed-screen-objs ,box))
-                                                (when (superior? (outermost-box) ,box)
-                                                  (outermost-screen-box))))
-                               ,screen-box-wid ,screen-box-hei)
-                          (multiple-value-bind (,screen-box-x ,screen-box-y)
-                                               (when (screen-box? ,screen-box)
-                                                 (setq ,screen-box-wid (screen-obj-wid ,screen-box)
-                                                        ,screen-box-hei (screen-obj-hei ,screen-box))
-                                                 (xy-position ,screen-box))
-                                               (unwind-protect
-                                                (progn
-                                                 (unless (null ,screen-box-x)
-                                                   #+opengl
-                                                   (with-pen-color (bw::*blinker-color*)
-                                                     (box::with-blending-on
-                                                      (draw-rectangle alu-seta
-                                                                      ,screen-box-wid ,screen-box-hei
-                                                                      ,screen-box-x ,screen-box-y)))
-                                                   #-opengl
-                                                   (draw-rectangle alu-xor ,screen-box-wid ,screen-box-hei
-                                                                   ,screen-box-x ,screen-box-y)
-                                                   (force-graphics-output))
-                                                 . ,body)
-                                                (unless (null ,screen-box-x)
-                                                  #+opengl
-                                                  (repaint)
-                                                  #-opengl
-                                                  (draw-rectangle alu-xor ,screen-box-wid ,screen-box-hei
-                                                                  ,screen-box-x ,screen-box-y)
-                                                  (force-graphics-output))))))))
-
-;;;
-
-;; these network packages are loaded here to define the network stream classes...
-;; most of the normal usage for network stuff is in surf.lisp
-
-;; they define packages and functions which will be used in dumper and base64 among others
-#+lispworks
-(eval-when (eval load) (require "comm"))
-#+carbon-compat
-(eval-when (eval load) (require "OpenTransport"))

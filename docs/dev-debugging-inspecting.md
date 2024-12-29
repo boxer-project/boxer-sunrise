@@ -10,6 +10,26 @@ be accessed from a REPL.
 - boxer::*point* This contains a structure which includes the current row and screen-box of the cursor/point which can
   be inspected.
 
+## Box under mouse
+
+```lisp
+;; The following will return the location and box object currently under the mouse. This can be especially
+;; useful for getting a sprite or graphics box that is unavailable to having the cursor on it.
+> (bw::mouse-place)
+:SPRITE
+#<DATA-BOX  >
+```
+
+## Box Flags
+
+The current box flags under the mouse can be viewed with `(boxer:show-box-flags box)`.
+
+```lisp
+(in-package :boxer)
+
+(show-box-flags (screen-obj-actual-obj (cadr (multiple-value-list (bw::mouse-place)))))
+```
+
 ## Restarting the boxer canvas after investigating an error
 
 After debugging/inspecting an issue stopped execution while running Boxer in Lispworks, the world canvas can
@@ -19,12 +39,24 @@ be restarted at the REPL with:
 (bw::boxer-process-top-level-fn bw::*boxer-pane*)
 ```
 
+## Using `trace`
+
+ (trace (boxer::reset-region :break (equal boxer::*debug-reset-region* t)))
+
 ## Dumping the contents of a Box file
 
 Dumping the version and opcodes of a `.box` file can be done at the REPL with:
 
 ```
 
+```
+
+## Debugging test cases
+
+Currently we are using `prove` and you can set it to hit the debugger on errors with:
+
+```lisp
+(setf prove:*debug-on-error* t)
 ```
 
 ## Changing the keybindings at runtime

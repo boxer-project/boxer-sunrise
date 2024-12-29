@@ -7,7 +7,7 @@
  $Log$
 
     Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+    Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 
     Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
     used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -85,23 +85,34 @@ Modification History (most recent at top)
           :initform *default-font*
           :accessor menu-item-font)
    (enabled? :initform t)
-   (checked? :initform nil))
-  (:metaclass block-compile-class))
+   (checked? :initform nil)))
 
 (defvar *menu-item-margin* 8)
 
 (defclass popup-menu
   ()
   ((items :initarg :items :initform nil)
-   (default-item-no :initarg :default-item-no :initform 0))
-  (:metaclass block-compile-class))
+   (default-item-no :initarg :default-item-no :initform 0)))
 
 ;; "bubble help" used mostly for mouse documentation
 
+(defclass active-popup-menu ()
+  ((popup-menu :initform nil :initarg :popup-menu :accessor popup-menu
+    :documentation "The popup-menu instance for this context menu.")
+   (x :initform 0 :initarg :x :accessor x)
+   (y :initform 0 :initarg :y :accessor y)
+   (highlight-rect :initform '(0 0 0 0) :accessor highlight-rect
+    :documentation "List containing the width, height, x, y of the highlight for the hovered item.
+                    should be the correct items to feed straight to draw-rectangle.")
+   (current-hover-item :initform nil
+    :documentation "Item currently being hovered over in the menu. Can be nil if nothing is highlighted.")))
+
+(defun make-active-popup-menu (menu x y)
+  (make-instance 'active-popup-menu :popup-menu menu :x x :y y))
+
 (defclass popup-doc
   ()
-  ((string :initarg :string :initform "" :accessor popup-doc-string))
-  (:metaclass block-compile-class))
+  ((string :initarg :string :initform "" :accessor popup-doc-string)))
 
 
 
@@ -137,21 +148,21 @@ Modification History (most recent at top)
           (rebind-font-info ((get-menu-item-font item))
             (cond ((null check))
                   ((characterp check)
-                   (draw-cha alu-seta check (+ x 2) (+ y (cha-ascent))))
-                  (t (draw-cha alu-seta *default-check-char*
+                   (draw-cha check (+ x 2) (+ y (cha-ascent))))
+                  (t (draw-cha *default-check-char*
                                (+ x 2)  (+ y (cha-ascent)))))))
-        (draw-string alu-seta (get-menu-item-font item) (slot-value item 'title)
+        (draw-string (get-menu-item-font item) (slot-value item 'title)
                      (+ x *menu-item-margin*) (1+ y)))
       (progn
         (with-pen-color (*black*)
-          (draw-string alu-seta (get-menu-item-font item) (slot-value item 'title)
+          (draw-string (get-menu-item-font item) (slot-value item 'title)
                        (+ x *menu-item-margin*) (1+ y))
           (let ((check (slot-value item 'checked?)))
             (rebind-font-info ((get-menu-item-font item))
               (cond ((null check))
                     ((characterp check)
-                     (draw-cha alu-seta check (+ x 2)  (+ y (cha-ascent))))
-                    (t (draw-cha alu-seta *default-check-char*
+                     (draw-cha check (+ x 2)  (+ y (cha-ascent))))
+                    (t (draw-cha *default-check-char*
                                  (+ x 2)  (+ y (cha-ascent))))))))))
   ;; return height used up
   (+ (string-hei (get-menu-item-font item)) 2))
@@ -185,21 +196,26 @@ Modification History (most recent at top)
     ;; and another 1 for the border
     (values (+ wid 3) (+ hei 3))))
 
-(defmethod draw-menu ((menu popup-menu) x y)
-  (multiple-value-bind (mwid mhei) (menu-size menu)
-    (erase-rectangle mwid mhei x y)
-    (let ((acc-y (1+ y)))
-      (dolist (item (slot-value menu 'items))
-        (setq acc-y (+ acc-y (draw-item item x acc-y)))))
-    ;; draw the top & left borders
-    (draw-rectangle alu-seta (- mwid 2) 1 x y)
-    (draw-rectangle alu-seta 1 (- mhei 2) x y)
-    ;; and the bottom & right stubs
-    (draw-rectangle alu-seta 4 1 x (+ y (- mhei 2)))
-    (draw-rectangle alu-seta 1 4 (+ x (- mwid 2)) y)
-    ;; draw the shadow rects
-    (draw-rectangle alu-seta (- mwid 4) 2 (+ x 4) (+ y (- mhei 2)))
-    (draw-rectangle alu-seta 2 (- mhei 4) (+ x (- mwid 2)) (+ y 4))))
+(defmethod draw-menu ((item active-popup-menu))
+  (with-slots (popup-menu x y highlight-rect) item
+    (multiple-value-bind (mwid mhei) (menu-size popup-menu)
+      (erase-rectangle mwid mhei x y)
+      (let ((acc-y (1+ y)))
+        (dolist (item (slot-value popup-menu 'items))
+          (setq acc-y (+ acc-y (draw-item item x acc-y)))))
+      ;; draw the top & left borders
+      (draw-rectangle (- mwid 2) 1 x y)
+      (draw-rectangle 1 (- mhei 2) x y)
+      ;; and the bottom & right stubs
+      (draw-rectangle 4 1 x (+ y (- mhei 2)))
+      (draw-rectangle 1 4 (+ x (- mwid 2)) y)
+      ;; draw the shadow rects
+      (draw-rectangle (- mwid 4) 2 (+ x 4) (+ y (- mhei 2)))
+      (draw-rectangle 2 (- mhei 4) (+ x (- mwid 2)) (+ y 4))
+      ;; If an item is highlighted, draw it
+      (when highlight-rect
+        (with-pen-color (*blinker-color*)
+          (apply #'draw-rectangle highlight-rect))))))
 
 ;; the check for valid local coords should have already been made
 (defmethod track-item ((menu popup-menu) local-y)
@@ -220,95 +236,63 @@ Modification History (most recent at top)
 ;; funcalling the selected menu-item-action
 (defmethod menu-select ((menu popup-menu) x y)
   (multiple-value-bind (mwid mhei) (menu-size menu)
-    (let* ((window-width (sheet-inside-width *boxer-pane*)); what about %clip-rig?
-           (window-height (sheet-inside-height *boxer-pane*)) ; %clip-bot?
-           (fit-x (- (+ x mwid) window-width))
-           (fit-y (- (+ y mhei) window-height))
-           ;; if either fit-? vars are positive, we will be off the screen
-           (real-x (if (plusp fit-x) (- window-width mwid) x))
-           (real-y (if (plusp fit-y) (- window-height mhei) y))
+    (let* ((window-width (content-wid *boxer-pane*))
+           (window-height (content-hei *boxer-pane*))
+           ;; Make sure the menus are on the screen
+           (real-x (if (> (+ x mwid) window-width)
+                     (- window-width mwid)
+                     x))
+           (real-y (if (> (+ y mhei) window-height)
+                     (- window-height mhei)
+                     y))
            ;; current-item is bound out here because we'll need it after the
            ;; tracking loop exits...
+           (current-menu (make-active-popup-menu menu real-x real-y))
            (current-item nil))
       (unless (zerop (mouse-button-state))
         ;; make sure the mouse is still down
-        ;; if the original x and y aren't good, warp the mouse to the new location
-        ;; a more fine tuned way is to use fit-x and fit-y to shift the current
-        ;; mouse pos by the amount the menu is shifted (later...)
-        (drawing-on-window (*boxer-pane*)
-          (when (or *select-1st-item-on-popup* (plusp fit-x) (plusp fit-y))
-            (warp-pointer *boxer-pane* (+ real-x 5) (+ real-y 5)))
-          ;; now draw the menu and loop
-          (unwind-protect
-            (progn
-              ;; draw menu
-              (draw-menu menu real-x real-y)
-              (force-graphics-output)
-              ;; loop
-              (let ((current-y 0) (current-height 0))
-                (boxer-window::with-mouse-tracking ((mouse-x real-x) (mouse-y real-y))
-                  (let ((local-x (- mouse-x real-x)) (local-y (- mouse-y real-y)))
-                    (if (and (< 0 local-x mwid) (< 0 local-y mhei))
-                      ;; this means we are IN the popup
-                      (multiple-value-bind (ti iy ih)
-                                           (track-item menu local-y)
-                        (cond ((and (null current-item)
-                                    (not (slot-value ti 'enabled?)))
-                               ;; no current, selected item is disabled...
-                               )
-                              ((null current-item)
-                               ;; 1st time into the loop, set vars and then
-                               (setq current-item ti current-y iy current-height ih)
-                               ;; highlight
-                               (draw-menu menu real-x real-y)
-                               (with-pen-color (bw::*blinker-color*)
-                                 (with-blending-on
-                                   (draw-rectangle alu-seta (- mwid 3) ih
-                                                   (1+ real-x) (+ real-y iy))))
-                               (force-graphics-output))
-                              ((eq ti current-item)) ; no change, do nothing
-                              ((not (slot-value ti 'enabled?))
-                               ;; redraw menu with nothing selected
-                               (draw-menu menu real-x real-y)
-                               (force-graphics-output)
-                               (setq current-item nil))
-                              (t ; must be a new item selected,
-                               ;; redraw menu
-                               (draw-menu menu real-x real-y)
-                               ;; highlight selected item...
-                               (with-pen-color (bw::*blinker-color*)
-                                 (with-blending-on
-                                   (draw-rectangle alu-seta (- mwid 3) ih
-                                                   (1+ real-x) (+ real-y iy))))
-                               (force-graphics-output)
-                               ;; set vars
-                               (setq current-item ti current-y iy current-height ih))))
-                      ;; we are OUT of the popup
-                      (cond ((null current-item)) ; nothing already selected
-                            (t ; redraw menu with nothing selected
-                             (draw-menu menu real-x real-y)
-                             (force-graphics-output)
-                             (setq current-item nil))))))
-                ;; loop is done, either we are in and item or not
-                (unless (null current-item)
-                  ;; if we are in an item, flash and erase the highlighting
-                  (dotimes (i 5)
-                    (draw-menu menu real-x real-y)
-                    (force-graphics-output) (snooze .05)
-                    (with-pen-color (bw::*blinker-color*)
-                      (with-blending-on
-                        (draw-rectangle alu-seta (- mwid 3) current-height
-                                        (1+ real-x) (+ real-y current-y))))
-                    (force-graphics-output) (snooze .05)))))))
+        ;; now draw the menu and loop
+        (unwind-protect
+          (progn
+            ;; loop
+            (setf (active-menu *boxer-pane*) current-menu)
+            (repaint)
+            (let ((current-y 0) (current-height 0))
+              #+lispworks (boxer-window::with-mouse-tracking ((mouse-x real-x) (mouse-y real-y))
+                (let ((local-x (- mouse-x real-x)) (local-y (- mouse-y real-y)))
+                  (if (and (< 0 local-x mwid) (< 0 local-y mhei))
+                    ;; this means we are IN the popup
+                    (multiple-value-bind (ti iy ih)
+                                          (track-item menu local-y)
+                      (cond ((and (null current-item)
+                                  (not (slot-value ti 'enabled?)))
+                              ;; no current, selected item is disabled...
+                              )
+                            ((null current-item)
+                              ;; 1st time into the loop, set vars and then
+                              (setf current-item ti current-y iy current-height ih
+                                    (highlight-rect (active-menu *boxer-pane*)) `(,(- mwid 3) ,ih ,(1+ real-x) ,(+ real-y iy))))
+                            ((eq ti current-item)) ; no change, do nothing
+                            ((not (slot-value ti 'enabled?))
+                              (setf current-item nil (highlight-rect (active-menu *boxer-pane*)) nil))
+                            (t ; must be a new item selected,
+                              (setf current-item ti current-y iy current-height ih
+                                    (highlight-rect (active-menu *boxer-pane*)) `(,(- mwid 3) ,ih ,(1+ real-x) ,(+ real-y iy))))))
+                    ;; we are OUT of the popup
+                    (cond ((null current-item)) ; nothing already selected
+                          (t ; redraw menu with nothing selected
+                            (setf current-item nil
+                                  (highlight-rect (active-menu *boxer-pane*)) nil)))))
+                (repaint)))))
         ;; funcall the action (note we are OUTSIDE of the drawing-on-window
         (unless (null current-item)
           (let ((action (slot-value current-item 'action)))
-            (unless (null action) (funcall action))))))))
-
+            (unless (null action) (funcall action))))
+        (setf (active-menu *boxer-pane*) nil)))))
 
 ;;; popup doc methods
 
-(defvar *popup-mouse-documentation?* #+lwwin :unroll #+mcl T #+opengl :unroll
+(defvar *popup-mouse-documentation?* :unroll
   "Can be NIL (no documentation), :unroll or T")
 
 
@@ -332,21 +316,21 @@ Modification History (most recent at top)
          (full-wid (+ swid full-pad))
          (full-hei (+ shei full-pad)))
     ;; frame (left, top, right and bottom)
-    (draw-rectangle alu-seta *popup-doc-border-width* full-hei x y)
-    (draw-rectangle alu-seta full-wid *popup-doc-border-width* x y)
-    (draw-rectangle alu-seta *popup-doc-border-width* full-hei
+    (draw-rectangle *popup-doc-border-width* full-hei x y)
+    (draw-rectangle full-wid *popup-doc-border-width* x y)
+    (draw-rectangle *popup-doc-border-width* full-hei
                     (- (+ x full-wid) *popup-doc-border-width*) y)
-    (draw-rectangle alu-seta full-wid *popup-doc-border-width*
+    (draw-rectangle full-wid *popup-doc-border-width*
                     x (- (+ y full-hei) *popup-doc-border-width*))
     ;; background
     (with-pen-color (*popup-doc-color*)
-      (draw-rectangle alu-seta
+      (draw-rectangle
                       (+ swid (* *popup-doc-padding* 2))
                       (+ shei (* *popup-doc-padding* 2))
                       (+ x *popup-doc-border-width*)
                       (+ y *popup-doc-border-width*)))
     ;; doc string
-    (draw-string alu-seta *popup-doc-font* (slot-value self 'string)
+    (draw-string *popup-doc-font* (slot-value self 'string)
                  (+ x pad) (+ y pad)))
   ;; set the flag
   (setq *popup-doc-on?* t))
@@ -420,7 +404,7 @@ Modification History (most recent at top)
 ;; exceptions being if the mouse is near the right or bottom edges of the window
 (defun popup-doc-offset-coords (doc x y)
   (multiple-value-bind (w h)
-      (boxer::window-inside-size *boxer-pane*)
+      (viewport-size *boxer-pane*)
     (cond ((> (+ *popup-doc-edge-padding* y) h)
            (values (min x (- w (doc-width doc))) (- y (doc-height doc) 10)))
           (t (values (min x (- w (doc-width doc))) (+ y 26))))))
@@ -447,8 +431,7 @@ Modification History (most recent at top)
                             (box-top-y (name-string-or-null
                                         (screen-obj-actual-obj screen-box))
                                         0))))
-          (unless popup-only?
-            (bw::set-mouse-doc-status-xy corner-x corner-y))
+          (bw::set-mouse-doc-status-xy corner-x corner-y)
           ;; then (possibly) the popup doc
           (unless (or (null *popup-mouse-documentation?*)
                       (bw::popup-doc-delay))
@@ -476,12 +459,10 @@ Modification History (most recent at top)
           (declare (ignore lef top bot))
           (let ((corner-x (+ x (screen-obj-wid screen-box) (- rig)))
                 (corner-y (+ y delta-y
-                              ;; #+opengl
                               (box-top-y (name-string-or-null
                                           (screen-obj-actual-obj screen-box))
                                          0))))
-            (unless popup-only?
-              (bw::set-mouse-doc-status-xy corner-x corner-y))
+            (bw::set-mouse-doc-status-xy corner-x corner-y)
             ;;
             (unless (or (null *popup-mouse-documentation?*)
                         (bw::popup-doc-delay))
@@ -505,8 +486,7 @@ Modification History (most recent at top)
           (declare (ignore lef top rig))
           (let ((corner-x (+ x delta-x))
                 (corner-y (+ y (screen-obj-hei screen-box) (- bot))))
-            (unless popup-only?
-              (bw::set-mouse-doc-status-xy corner-x corner-y))
+            (bw::set-mouse-doc-status-xy corner-x corner-y)
             ;;
             (unless (or (null *popup-mouse-documentation?*)
                         (bw::popup-doc-delay))
@@ -527,8 +507,7 @@ Modification History (most recent at top)
         (declare (ignore lef top))
         (let ((corner-x (+ x (screen-obj-wid screen-box) (- rig)))
               (corner-y (+ y (screen-obj-hei screen-box) (- bot))))
-          (unless popup-only?
-            (bw::set-mouse-doc-status-xy corner-x corner-y))
+          (bw::set-mouse-doc-status-xy corner-x corner-y)
           (unless (or (null *popup-mouse-documentation?*)
                       (bw::popup-doc-delay))
             (multiple-value-bind (doc-x doc-y)
@@ -869,30 +848,15 @@ Modification History (most recent at top)
                                        (mouse-bp
                                         (mouse-position-values x y))
                                        (click-only? t))
-  "Pop up a box attribute menu"
+  "Pop up a box attribute menu, typically bound to a mouse-down."
   window x y ;  (declare (ignore window x y))
-  ;; first, if there already is an existing region, flush it
   (reset-region) (reset-editor-numeric-arg)
   (let* ((screen-box (bp-screen-box mouse-bp))
-         (box-type (box-type screen-box))
-         (swid (screen-obj-wid screen-box))
          (edbox (screen-obj-actual-obj screen-box))
          (*hotspot-mouse-box* edbox)
          (*hotspot-mouse-screen-box* screen-box))
-    (if (and (not click-only?)
-             (mouse-still-down-after-pause? 0)) ; maybe *mouse-action-pause-time* ?
-        (multiple-value-bind (left top right)
-            (box-borders-widths box-type screen-box)
-          (declare (ignore left))
-          ;; will probably have to fudge this for type tags near the edges of
-          ;; the screen-especially the bottom and right edges
-          (multiple-value-bind (abs-x abs-y) (xy-position screen-box)
-            (update-boxsize-closet-properties-menu edbox)
-            ;; the coms in the pop up rely on this variable
-            ;; (menu-select *tr-popup* (- (+ abs-x swid) right) (+ abs-y top))
-            (menu-select *boxsize-closet-properties-popup-menu* x y)
-            ))
-        ))
+    (update-boxsize-closet-properties-menu edbox)
+    (menu-select *boxsize-closet-properties-popup-menu* x y))
   boxer-eval::*novalue*)
 
 (defun bottom-left-hotspot-on? (edbox)
@@ -905,142 +869,48 @@ Modification History (most recent at top)
                                        (mouse-bp
                                         (mouse-position-values x y))
                                        (click-only? t))
-  "Pop up a box attribute menu"
+  "Pop up a box attribute menu, usually bound to a mouse-down."
   window x y ;  (declare (ignore window x y))
-  ;; first, if there already is an existing region, flush it
   (reset-region) (reset-editor-numeric-arg)
   (let* ((screen-box (bp-screen-box mouse-bp))
-         (box-type (box-type screen-box))
-         (shei (screen-obj-hei screen-box))
          (edbox (screen-obj-actual-obj screen-box))
          (*hotspot-mouse-box* edbox)
          (*hotspot-mouse-screen-box* screen-box))
-    (if (and (not click-only?)
-             (mouse-still-down-after-pause? 0)) ; maybe *mouse-action-pause-time* ?
-        (multiple-value-bind (left top right bottom)
-            (box-borders-widths box-type screen-box)
-          (declare (ignore top right))
-          ;; will probably have to fudge this for type tags near the edges of
-          ;; the screen-especially the bottom and right edges
-          (multiple-value-bind (abs-x abs-y) (xy-position screen-box)
-            (update-box-types-menu edbox)
-            ;; the coms in the pop up rely on this variable
-            (menu-select *box-types-popup-menu* x y
-                        ;;  (+ abs-x left) (- (+ abs-y shei) bottom)
-                         )
-                         ))
-        ;; for simple clicks we do the action (unless it is disabled)
-        (when (bottom-left-hotspot-on? edbox)
-          (com-hotspot-toggle-graphics edbox)))))
+    (update-box-types-menu edbox)
+    (menu-select *box-types-popup-menu* x y))
+  boxer-eval::*novalue*)
 
-(defun com-hotspot-unfix-box-size (&optional (box *hotspot-mouse-box*))
-  (com-unfix-box-size box))
 
-;; THings are setup so that this menu appears ONLY if the hotspot is enabled
-;; indicating that auto box sizing is active.  If manual box sizing is active
-;; we go straight to com-mouse-resize-box
-(defvar *br-popup* (make-instance 'popup-menu
-                     :items (list (make-instance 'menu-item
-                                    :title "Automatic Box Size"
-                                    :action 'com-hotspot-unfix-box-size)
-                                  (make-instance 'menu-item
-                                    :title "Manual Box Size"
-                                    :action 'com-mouse-toggle-br-hotspot))))
-
-(defun update-br-menu (box)
-  (declare (ignore box))
-  (let ((auto-item    (car  (menu-items *br-popup*)))
-        (manual-item  (cadr (menu-items *br-popup*))))
-    ;; We only see the menu if the spot is "off", an "on" spot means resize
-    ;; make sure "auto" is greyed out
-    (menu-item-disable  auto-item)
-    (menu-item-enable manual-item)))
 
 ;; NOTE: bottom right corner NEVER (currently) checks the global var, only
 ;; the local box flag is used...
 ;; active hotspot is interpreted to mean resizable
-(defboxer-command com-mouse-br-pop-up (&optional (window *boxer-pane*)
+
+(defboxer-command com-mouse-br-reset-box-size (&optional (window *boxer-pane*)
                                        (x (bw::boxer-pane-mouse-x))
                                        (y (bw::boxer-pane-mouse-y))
                                        (mouse-bp
                                        (mouse-position-values x y))
                                        (click-only? t))
-  "Pop up a box attribute menu"
-  window x y ;  (declare (ignore window x y))
-  ;; first, if there already is an existing region, flush it
+  "Sets the box back to autosized state, resetting any manual resizing."
+  window x y
   (reset-region) (reset-editor-numeric-arg)
   (let* ((screen-box (bp-screen-box mouse-bp))
-         (box-type (box-type screen-box))
-         (swid (screen-obj-wid screen-box))
-         (shei (screen-obj-hei screen-box))
          (edbox (screen-obj-actual-obj screen-box)))
-    (cond ((bottom-right-hotspot-active? edbox)
-           (if (or click-only? (not (mouse-still-down-after-pause? 0)))
-               ;; hotspot is on, but we only got a click, shortcut to restore menu
-               (progn
-                 (set-fixed-size edbox nil nil)
-                 (set-scroll-to-actual-row screen-box nil)
-                 (modified edbox)
-                 ;; turn the hotspot off so the menu will pop up next time
-                 (set-bottom-right-hotspot-active? edbox nil))
-               ;; otherwise, do the normal resize stuff
-               (com-mouse-resize-box window x y mouse-bp click-only?)))
-          (t ;; otherwise, update and present a menu
-           (multiple-value-bind (left top right bottom)
-               (box-borders-widths box-type screen-box)
-             (declare (ignore left top))
-             ;; will probably have to fudge this for type tags near the edges of
-             ;; the screen-especially the bottom and right edges
-             (multiple-value-bind (abs-x abs-y) (xy-position screen-box)
-               (update-br-menu edbox)
-               ;; the coms in the pop up rely on this variable
-               (let ((*hotspot-mouse-box* edbox)
-                     (*hotspot-mouse-screen-box* screen-box))
-                 (menu-select *br-popup*
-                              (- (+ abs-x swid) right)
-                              (- (+ abs-y shei) bottom))))))))
+      (set-fixed-size edbox nil nil)
+      (set-scroll-to-actual-row screen-box nil)
+      (modified edbox))
   boxer-eval::*novalue*)
 
 (defboxer-command com-mouse-br-resize-box (&optional (window *boxer-pane*)
-                                       (x (bw::boxer-pane-mouse-x))
-                                       (y (bw::boxer-pane-mouse-y))
-                                       (mouse-bp
-                                       (mouse-position-values x y))
-                                       (click-only? t))
-  "Pop up a box attribute menu"
-  window x y ;  (declare (ignore window x y))
+                                          (x (bw::boxer-pane-mouse-x))
+                                          (y (bw::boxer-pane-mouse-y))
+                                          (mouse-bp (mouse-position-values x y))
+                                          (click-only? t))
+  "Drag to resize the box."
   ;; first, if there already is an existing region, flush it
   (reset-region) (reset-editor-numeric-arg)
   (let* ((screen-box (bp-screen-box mouse-bp))
-         (box-type (box-type screen-box))
-         (swid (screen-obj-wid screen-box))
-         (shei (screen-obj-hei screen-box))
          (edbox (screen-obj-actual-obj screen-box)))
-    (cond (t (bottom-right-hotspot-active? edbox)
-           (if (or click-only? (not (mouse-still-down-after-pause? 0)))
-               ;; hotspot is on, but we only got a click, shortcut to restore menu
-               (progn
-                 (set-fixed-size edbox nil nil)
-                 (set-scroll-to-actual-row screen-box nil)
-                 (modified edbox)
-                 ;; turn the hotspot off so the menu will pop up next time
-                 (set-bottom-right-hotspot-active? edbox nil))
-               ;; otherwise, do the normal resize stuff
-               (com-mouse-resize-box window x y mouse-bp click-only?)))
-          (t ;; otherwise, update and present a menu
-            nil
-          ;;  (multiple-value-bind (left top right bottom)
-          ;;      (box-borders-widths box-type screen-box)
-          ;;    (declare (ignore left top))
-          ;;    ;; will probably have to fudge this for type tags near the edges of
-          ;;    ;; the screen-especially the bottom and right edges
-          ;;    (multiple-value-bind (abs-x abs-y) (xy-position screen-box)
-          ;;      (update-br-menu edbox)
-          ;;      ;; the coms in the pop up rely on this variable
-          ;;      (let ((*hotspot-mouse-box* edbox)
-          ;;            (*hotspot-mouse-screen-box* screen-box))
-          ;;        (menu-select *br-popup*
-          ;;                     (- (+ abs-x swid) right)
-          ;;                     (- (+ abs-y shei) bottom)))))
-                              )))
+      (com-mouse-resize-box window x y mouse-bp click-only?))
   boxer-eval::*novalue*)

@@ -1,7 +1,7 @@
 ;;;; -*- Mode:LISP; Syntax:Common-Lisp; Package:BOXER; -*-
 ;;;;
 ;;;;        Boxer
-;;;;        Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;        Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;        Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;        used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -59,8 +59,7 @@
                    (no-interface-box-error 'X-POSITION turtle)
                    (multiple-value-bind (new-x fix?)
                                         (check-and-get-number-arg box 'X-POSITION�)
-                                        (with-sprites-hidden t
-                                          (move-to turtle new-x (y-position turtle) (not fix?)))))))
+                                        (move-to turtle new-x (y-position turtle) (not fix?))))))
              boxer-eval::*novalue*)
            )
 
@@ -75,8 +74,7 @@
         (no-interface-box-error 'Y-POSITION turtle)
         (multiple-value-bind (new-y fix?)
                              (check-and-get-number-arg box 'Y-POSITION�)
-                             (with-sprites-hidden t
-                               (move-to turtle (x-position turtle) new-y (not fix?)))))))
+                             (move-to turtle (x-position turtle) new-y (not fix?))))))
   boxer-eval::*novalue*)
 
 (add-sprite-update-function y-position bu::update-y-position)
@@ -90,7 +88,7 @@
         (no-interface-box-error 'HEADING turtle)
         (multiple-value-bind (new-h fix?)
                              (check-and-get-number-arg box 'HEADING)
-                             (with-sprites-hidden nil (turn-to turtle new-h (not fix?)))))))
+                             (turn-to turtle new-h (not fix?))))))
   boxer-eval::*novalue*)
 
 (add-sprite-update-function heading bu::update-heading)
@@ -227,8 +225,7 @@
         (no-interface-box-error 'SPRITE-SIZE turtle)
         (multiple-value-bind (new-size fix?)
                              (check-and-get-size-arg box)
-                             (with-sprites-hidden nil
-                               (set-sprite-size turtle new-size (not fix?)))))))
+                             (set-sprite-size turtle new-size (not fix?))))))
   boxer-eval::*novalue*)
 
 (add-sprite-update-function sprite-size bu::update-sprite-size)

@@ -1,7 +1,7 @@
 ;; -*- Mode:LISP;Syntax:Common-Lisp; Package:BOXER; Base:8.-*-
 ;;;;
 ;;;;        Boxer
-;;;;        Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;        Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;        Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;        used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -58,9 +58,9 @@
 ;;; BOXER key names, we use an array to look them up in. This is kind
 ;;; of like ZWEI.
 
-(defvar *initial-platform* #+macosx  :lwm
+(defvar *initial-platform* #+(or os-macosx macosx)  :lwm
                            #+win32   :ibm-pc
-                           #+linux   :ibm-pc)
+                           #+linux   :linux)
 
 (defconstant *key-name-lookup-array-size* 328
   "For most implementations, this really ought to be based on char-code-limit
@@ -78,8 +78,6 @@
 
 (defvar *boxer-keystroke-history* nil
   "A list of all the keys pressed. ")
-
-(defvar *record-keystrokes* nil)
 
 (defvar *boxer-command-key-alist* nil
   "An association list of key names and command names. ")
@@ -116,7 +114,6 @@
            ~%its only argument."))
     (t
      (error "~S is a completely unknown type of Boxer Input." key-code))))
-
 
 (defun lookup-key-name (key-code key-bits)
   (and (array-in-bounds-p *key-names* key-code key-bits)
@@ -166,23 +163,46 @@
 ;;;; define known input devices platforms
 
 (eval-when (eval load)
-           ;; assume the default is more likely to be some kind of unix machine
-           ;; with a 3 button mouse, ignore possible function keys
-           (define-input-devices :default
-             ("CTRL" "META" "CTRL-META")
-             ("LEFT" "MIDDLE" "RIGHT" "LEFT-TWICE" "MIDDLE-TWICE" "RIGHT-TWICE")
-             nil)
-
            (define-input-devices :lwm  ; mac's under lispworks opengl port
-             ("CTRL" "COMMAND" "OPTION" "COMMAND-OPTION" )
-             ("CLICK" "MIDDLE-CLICK" "RIGHT-CLICK" "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK" "DOWN" "UP")
+             ("SHIFT" "CONTROL" "CONTROL-SHIFT" "OPTION"                                      ;;  1  2  3  4
+             "SHIFT-OPTION" "CONTROL-OPTION" "CONTROL-SHIFT-OPTION" "COMMAND"                 ;;  5  6  7  8
+             "SHIFT-COMMAND" "CONTROL-COMMAND" "CONTROL-SHIFT-COMMAND" "OPTION-COMMAND"       ;;  9 10 11 12
+             "SHIFT-OPTION-COMMAND" "CONTROL-OPTION-COMMAND" "CONTROL-SHIFT-OPTION-COMMAND")  ;;    13 14 15
+
+             ("CLICK" "MIDDLE-CLICK" "RIGHT-CLICK"                       ;; 0  1  2
+              "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK"  ;; 3  4  5
+              "DOWN" "MIDDLE-DOWN" "RIGHT-DOWN"                          ;; 6  7  8
+              "UP" "MIDDLE-UP" "RIGHT-UP")                               ;; 9 10 11
              *lwm-keyboard-key-name-alist*)
 
            ;; pick names to maximize compatibility with mac code
            ;; assign to left button to be plain "CLICK"
            (define-input-devices :ibm-pc
-             ("CTRL" "ALT" "CTRL-ALT")
-             ("CLICK" "MIDDLE-CLICK" "RIGHT-CLICK" "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK" "DOWN" "UP")
+            ("SHIFT"
+            "CTRL" "CTRL-SHIFT"
+            "ALT" "SHIFT-ALT" "CTRL-ALT" "CTRL-SHIFT-ALT"
+            "WIN" "SHIFT-WIN" "CTRL-WIN" "CTRL-SHIFT-WIN"
+            "ALT-WIN" "SHIFT-ALT-WIN" "CTRL-ALT-WIN"
+            "CTRL-SHIFT-ALT-WIN")
+
+             ("CLICK" "MIDDLE-CLICK" "RIGHT-CLICK"                       ;; 0  1  2
+              "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK"  ;; 3  4  5
+              "DOWN" "MIDDLE-DOWN" "RIGHT-DOWN"                          ;; 6  7  8
+              "UP" "MIDDLE-UP" "RIGHT-UP")                               ;; 9 10 11
+             *lwm-keyboard-key-name-alist*)
+
+           (define-input-devices :linux
+            ("SHIFT"
+            "CTRL" "CTRL-SHIFT"
+            "ALT" "SHIFT-ALT" "CTRL-ALT" "CTRL-SHIFT-ALT"
+            "META" "SHIFT-META" "CTRL-META" "CTRL-SHIFT-META"
+            "ALT-META" "SHIFT-ALT-META" "CTRL-ALT-META"
+            "CTRL-SHIFT-ALT-META")
+
+             ("CLICK" "MIDDLE-CLICK" "RIGHT-CLICK"                       ;; 0  1  2
+              "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK"  ;; 3  4  5
+              "DOWN" "MIDDLE-DOWN" "RIGHT-DOWN"                          ;; 6  7  8
+              "UP" "MIDDLE-UP" "RIGHT-UP")                               ;; 9 10 11
              *lwm-keyboard-key-name-alist*)
 )
 
@@ -193,11 +213,18 @@
 ;; defines keys (like function keys) which are specific to particular
 ;; kinds of keyboards
 
-;; first, common alphanumeric keys and their shifted names...
 (defun define-basic-keys (platform)
-  ;; Give names to all the standard character keys.  Alphabetic
-  ;; keys are by given the lowercase meaning, with "CAPITAL"
-  ;; defined as a shift key.
+  "Give names to all the standard character keys.  Alphabetic
+  keys are by given the lowercase meaning, with CAPITAL
+  defined as a shift key.
+
+  This handles most alphanumeric keys and special symbols.
+  "
+
+  ;; #o101 (65) is Capitol A in ascii/unicode and we loop until #o133 (91) which
+  ;; is #\[ the character right after Z. We define this character, and the character
+  ;; #o40 (32) which translates us to the lower case letters in ascii starting at
+  ;; 97 for #\a.
   (do* ((key-code #o101 (1+ key-code))
         (key-name (intern-in-bu-package
                    (format nil "~A-KEY" (string-upcase
@@ -216,9 +243,9 @@
   ;; symbol things on the keyboard like ! @ # ~ : etc.
 
   (do* ((key-code 0 (1+ key-code)))
-    ((= key-code #o177))
-    (unless (or (and (>= key-code #o101) (<= key-code #o132))
-                (and (>= key-code #o141) (<= key-code #o172)))
+    ((= key-code #o177))                                       ; Stops at the DEL key
+    (unless (or (and (>= key-code #o101) (<= key-code #o132))  ; Capitol A-Z in ascii
+                (and (>= key-code #o141) (<= key-code #o172))) ; Lower case a-z
       (define-key-and-all-its-shifted-key-names
         (intern-in-bu-package
          (format nil "~A-KEY" (string-upcase
@@ -282,7 +309,6 @@
     (boxer-eval::defboxer-key-internal ',key-name
                                        #'(lambda ()
                                                  (with-multiple-execution
-                                                   #-opengl (add-redisplay-clue (point-row) ':insert)
                                                    (insert-cha *point* ,char :moving))
                                                  (mark-file-box-dirty (point-row))
                                                  boxer-eval::*novalue*))
@@ -319,18 +345,6 @@
       (symbol-format nil "MOUSE-~A-ON-~A" button place))
      (t
       (symbol-format nil "~A-MOUSE-~A-ON-~A" shift button place)))))
-
-(defun current-mouse-click-name (button shift &optional place)
-  (let ((button-names (input-device-mouse-string
-                       *current-input-device-platform*))
-        (shift-names (input-device-shift-list
-                      *current-input-device-platform*)))
-    (unless (or (>= button (length button-names))
-                (> shift (length shift-names)))
-      (mouse-click-name-string (nth button button-names)
-                               (if (zerop& shift) nil
-                                 (nth (1-& shift) shift-names))
-                               place *current-input-device-platform*))))
 
 (defun setup-mouse-translation-table (platform
                                       &optional
@@ -506,42 +520,47 @@
 ;;; initial setup
 (eval-when (eval load)
            (initialize-input-lookup-arrays)
-           (make-input-devices *initial-platform* nil)
-           )
+           (make-input-devices *initial-platform* nil))
 
 
 
 ;;;;  Main dispatch function called by system dependent input loops or
 ;;;;  event handlers
 
+(defun remove-shift-bit (bits)
+  "Temporary function to remove the shift bit (see boxer-bugs-107) until we figure
+   out all the semantics of keyboard layouts and when to include/remove shift for
+   magic names."
+   (logandc2 bits 1))
+
 ;;; Hacked up to handle MCL's crippled character system
-(defun handle-boxer-input (input &optional bits)
-  ;;;	(increment-key-tick)		;for use with multiple-kill hack
-  (status-line-undisplay 'boxer-editor-error)
-  ;; increment the event counter
-  (next-boxer-event)
-  (boxer-eval::report-eval-errors-in-editor
-   ;; net prims in particular may signal eval errors as a response to
-   ;; an editor command, catch it at this level so the entire command
-   ;; gets aborted rather than just the net loading piece.
-   (COND ((key-event? input)
-          ;; Some sort of  key code. Try to lookup a name for it. If it
-          ;; has a name call boxer-eval:handle-boxer-key with the name.
-          (let ((key-name (lookup-key-name (if (numberp input)
-                                             input
-                                             (char-code input))
-                                           (or bits (input-bits input)))))
-            (record-key-input input (or bits (input-bits input)))
-            (if (or (null key-name)
-                    (not (handle-boxer-key key-name
-                                           (if (numberp input) input
-                                             (char-code input))
-                                           (or bits (input-bits input)))))
-              (unhandled-boxer-input key-name))))
-         ((mouse-event? input)
-          (record-mouse-input input)
-          (mouse-click-boxer-input-handler input))
-         (t (unhandled-boxer-input input)))))
+(defun handle-boxer-input (input &optional (raw-bits 0))
+  (let ((bits (remove-shift-bit raw-bits)))
+    ;;;	(increment-key-tick)		;for use with multiple-kill hack
+    (status-line-undisplay 'boxer-editor-error)
+    ;; increment the event counter
+    (next-boxer-event)
+    (boxer-eval::report-eval-errors-in-editor
+    ;; net prims in particular may signal eval errors as a response to
+    ;; an editor command, catch it at this level so the entire command
+    ;; gets aborted rather than just the net loading piece.
+    (COND ((key-event? input)
+            ;; Some sort of  key code. Try to lookup a name for it. If it
+            ;; has a name call boxer-eval:handle-boxer-key with the name.
+            (let ((key-name (lookup-key-name (if (numberp input)
+                                              input
+                                              (char-code input))
+                                            (or bits (input-bits input)))))
+              (if (or (null key-name)
+                      (not (handle-boxer-key key-name
+                                            (if (numberp input) input
+                                              (char-code input))
+                                            (or bits (input-bits input)))))
+                (unhandled-boxer-input key-name))))
+          ((mouse-event? input)
+            (mouse-click-boxer-input-handler input))
+          (t
+            (unhandled-boxer-input input))))))
 
 ;;; The following comment is preserved for posterity.
 ;; For now just be obnoxious
@@ -579,6 +598,28 @@
                                                   area)
                                mouse-bp local-x local-y)))
 
+(defun lookup-input-name (data)
+  "Takes a character/number (key-event?), mouse-event, or gesture-spec and returns
+  the boxer-user symbol for the input such as `A-KEY` or `MOUSE-CLICK`"
+  (cond ((characterp data)
+         (lookup-key-name (char-code data) 0))
+        ((numberp data)
+         (lookup-key-name data 0))
+        ((mouse-event? data)
+         (let ((click  (mouse-event-click  data))
+                       (x-pos  (mouse-event-x-pos  data))
+                       (y-pos  (mouse-event-y-pos  data))
+                       (bits   (mouse-event-bits   data)))
+                       ;; now call the mouse tracker to see if we
+                       ;; are on a border area
+                       (multiple-value-bind (mouse-bp local-x local-y
+                                                      area)
+                    (mouse-position-values x-pos y-pos)
+                         (declare (ignore mouse-bp local-x local-y))
+                         (lookup-click-name click bits area))))
+        #+lispworks ((sys:gesture-spec-p data)
+         (lookup-key-name (sys:gesture-spec-data data) (sys:gesture-spec-modifiers data)))
+        (t nil)))
 
 ;;; Documentation Support
 

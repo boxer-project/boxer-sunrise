@@ -10,7 +10,7 @@
 ;;;
 
     Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+    Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 
     Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
     used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -144,8 +144,7 @@ Modification History (most recent at top)
       (with-graphics-vars-bound (box)
         (clear-graphics-list %graphics-list)
         (do-vector-contents (shape-gc shape)
-          (sv-append %graphics-list
-                     (allocate-boxer->window-command shape-gc)))))
+          (sv-append %graphics-list shape-gc))))
     ;; make sure we are in graphics mode
     (setf (display-style-graphics-mode? (display-style-list box)) t))
 
@@ -157,55 +156,60 @@ Modification History (most recent at top)
     (queue-editor-object-for-mutation bi)))
 
 
-(defmethod set-shape ((self button) shape-box &optional dont-update-box)
+;; 2023-07-07 sgithens This has been updated to change both the shape slot and the graphics
+;; of the containing shape box. The sprite-box? and virtual-copy? options below may still
+;; need updates.
+(defmethod set-shape ((self button) new-shape-box &optional dont-update-box)
   (let* ((shape-slot (slot-value self 'shape))
-         (shape (box-interface-value shape-slot)))
-    (cond ((sprite-box? shape-box)
+         (shape     (box-interface-value shape-slot)) ;; This is our graphics list we're updating in the shape box
+         (shape-box (box-interface-box shape-slot))
+         (new-extents nil))
+
+    ;; If we're using diet sprites, and no other actions have uncovered it, this box may not exist yet.
+    (when shape-box
+      (clear-box shape-box))
+
+    (cond ((sprite-box? new-shape-box)
            ;; just copy the sprite's shape into the current shape
-           (dub-graphics-list (shape (slot-value shape-box
+           (dub-graphics-list (shape (slot-value new-shape-box
                                                  'associated-turtle))
-                              shape :replace))
-      ((and (virtual-copy? shape-box)
-            (fast-vc-has-sprite? shape-box))
+                              :to-gl shape :action :replace))
+      ((and (virtual-copy? new-shape-box)
+            (fast-vc-has-sprite? new-shape-box))
        ;; just copy the sprite's shape into the current shape
-       (dub-graphics-list (shape (getf (vc-graphics shape-box) 'turtle))
-                          shape :replace))
+       (dub-graphics-list (shape (getf (vc-graphics new-shape-box) 'turtle))
+                          :to-gl shape :action :replace))
       (t
        ;; must be some flavor of graphics box
        ;; need to convert to from window to turtle commands
-       (with-graphics-vars-bound (shape-box)
+       (with-graphics-vars-bound (new-shape-box)
          (clear-graphics-list shape)
+
          (unless (null %bit-array)
-           ;; if the shape-box has a background bitmap, lay that in first
-           (sv-append shape (make-boxer-graphics-command-centered-bitmap
-                             (new-offscreen-copy %bit-array)
-                             0 0 (offscreen-bitmap-width %bit-array)
-                             (offscreen-bitmap-height %bit-array))))
+           ;; if the new-shape-box has a background bitmap, lay that in first
+           (sv-append shape (record-boxer-graphics-command-centered-bitmap
+                             (copy-pixmap %bit-array)
+                             0 0 (ogl-pixmap-width %bit-array)
+                             (ogl-pixmap-height %bit-array))))
          (do-vector-contents (graphics-command %graphics-list)
            (sv-append shape (allocate-window->boxer-command
-                              graphics-command))))))
+                              graphics-command)))
+
+         (setf new-extents (boxer::graphics-command-list-extents shape))
+
+         ;; Again, if we're using diet sprites, and no other actions have uncovered it, this box may not exist yet.
+         (when shape-box
+           (setf (boxer::graphics-sheet-graphics-list (boxer::graphics-info shape-box))
+               shape)
+
+           (setf (boxer::graphics-sheet-draw-wid (boxer::graphics-info shape-box)) (floor (* 2 (+ (abs (nth 0 new-extents)) (abs (nth 2 new-extents))))))
+           (setf (boxer::graphics-sheet-draw-hei (boxer::graphics-info shape-box)) (floor (* 2 (+ (abs (nth 1 new-extents)) (abs (nth 3 new-extents))))))))))
+
     ;; handle any box interface...
-    (when (and (null dont-update-box)
-               (not (null (box-interface-box shape-slot))))
-      (shape-box-updater shape-slot))
-    ;; fixup other slots which depend on the shape...
-    (update-save-under self)
-    (update-window-shape-allocation self)
-    ;; now we need to initialize the save under...
-    (let ((assoc-graphics-box (slot-value self 'assoc-graphics-box))
-          (ahead (absolute-heading self))
-          (asize (absolute-size self)))
-      (unless (null assoc-graphics-box)
-        (with-graphics-vars-bound (assoc-graphics-box)
-          (update-window-shape (box-interface-value (slot-value self 'shape))
-                               (slot-value self 'window-shape)
-                               (absolute-x-position self)
-                               (absolute-y-position self)
-                               (* (cosd ahead) asize) (* (sind ahead) asize)
-                               asize)
-          (with-graphics-screen-parameters-once
-            (unless (eq (turtle-save-under self) 'xor-redraw)
-              (save-under-turtle self))))))))
+    ; (when (and (null dont-update-box)
+    ;            (not (null (box-interface-box shape-slot))))
+    ;   (shape-box-updater shape-slot))
+))
 
 
 
@@ -218,9 +222,7 @@ Modification History (most recent at top)
 (defmethod set-shown? ((self graphics-cursor) new-value
                                               &optional dont-update-box (explicit t))
   (let* ((slot (slot-value self 'shown?))
-         #-opengl (old-value (box-interface-value slot))
-         (box (box-interface-box slot))
-         #-opengl (top-guy (top-sprite self)))
+         (box (box-interface-box slot)))
     (multiple-value-bind (word value)
                          (case new-value
                            ((t bu::all bu::true) (values 'bu::true t))
@@ -228,19 +230,9 @@ Modification History (most recent at top)
                            ((:subsprites bu::subsprites) (values 'bu::subsprites :subsprites))
                            ((:no-subsprites bu::no-subsprites)
                             (values 'bu::no-subsprites ':no-subsprites)))
-                         #-opengl
-                         (unless (or (not explicit) (eq old-value value))
-                           ;; if the shown? values are different, then
-                           ;; erase (before changing the shown? values)
-                           (with-graphics-screen-parameters (erase top-guy)))
                          (when (and (null dont-update-box) (not (null box)))
                            (bash-box-to-single-value box word))
-                         (setf (box-interface-value slot) value)
-                         #-opengl
-                         (unless (or (not explicit) (eq old-value value))
-                           ;; if the shown? values are different, then we need to redraw
-                           (with-graphics-screen-parameters
-                             (when (shown? top-guy) (draw top-guy)))))))
+                         (setf (box-interface-value slot) value))))
 
 (defmethod shown?-symbol ((self graphics-cursor))
   (case (box-interface-value (slot-value self 'shown?))
@@ -293,8 +285,6 @@ Modification History (most recent at top)
     ((bu::xor xor bu::reverse) alu-xor)
     ((bu::erase erase) alu-andca)))
 
-(defvar *check-bit-array-color* t)
-
 (defmethod background-graphics-color ((self graphics-cursor))
   (or
    (let ((gb (slot-value self 'assoc-graphics-box)))
@@ -303,7 +293,7 @@ Modification History (most recent at top)
          (unless (null gs)
            (let ((bit-array (graphics-sheet-bit-array gs))
                  (background (graphics-sheet-background gs)))
-             (cond ((and *check-bit-array-color* (not (null bit-array)))
+             (cond ((not (null bit-array))
                     (with-graphics-vars-bound-internal gs
                       (let ((gb-x (fix-array-coordinate-x (x-position self)))
                             (gb-y (fix-array-coordinate-y (y-position self))))
@@ -327,49 +317,21 @@ Modification History (most recent at top)
         (when (and (null dont-update-box) (not (null box)))
           (bash-box-to-single-value box new-value))))
     (unless (or (null pen-alu) (eq %graphics-box :no-graphics))
-      (let ((erase-color (when (eq new-value 'bu::erase)
-                           (background-graphics-color self))))
-        (cond ((eq self (graphics-command-list-agent %graphics-list))
-               ;; if the current sprite is still the "owner" then just
-               ;; record the change in alu with special handling for
-               ;; erasing in a graphics box which has a background
-               (cond (erase-color
-                      (unless (eql *graphics-state-current-alu* alu-seta)
-                        (record-boxer-graphics-command-change-alu alu-seta)
-                        (change-alu alu-seta))
-                      (unless (eql *graphics-state-current-pen-color*
-                                   erase-color)
-                        (record-boxer-graphics-command-change-graphics-color
-                         erase-color)
-                        (change-graphics-color erase-color)))
-                 (t
-                  (unless (eql *graphics-state-current-alu* pen-alu)
-                    (record-boxer-graphics-command-change-alu pen-alu)
-                    (change-alu pen-alu))
-                  ;; check the validity of the color since it may
-                  ;; have been changed by a previous erase command, note
-                  ;; that we can't check the current value of the alu
-                  ;; for 'bu::erase because there may have been
-                  ;; an intervening PENUP command
-
-                  ;; always record when learning shape because we
-                  ;; can't side effect the sprite's state to
-                  ;; check if the current color is correcta
-                  (let ((gc (box-interface-value (slot-value self
-                                                             'pen-color))))
-                    (unless (eql *graphics-state-current-pen-color* gc)
-                      (record-boxer-graphics-command-change-graphics-color
-                       gc)
-                      (change-graphics-color gc))))))
-          (t
-           ;; first, make sure the current state of the graphics list
-           ;; matches the state of the drawing sprite, this is handled
-           ;; in a different way if the sprite is erasing
-           (cond (erase-color
-                  (synchronize-graphics-state-for-erase self erase-color))
-             (t (synchronize-graphics-state self)))
-           ;; Now that everything agrees, set the new "owner"
-           (setf (graphics-command-list-agent %graphics-list) self)))))))
+      (cond ((eq self (graphics-command-list-agent %graphics-list))
+             (unless (eql *graphics-state-current-alu* pen-alu)
+               (record-boxer-graphics-command-change-alu pen-alu)
+               (change-alu pen-alu))
+               ;; always record when learning shape because we
+               ;; can't side effect the sprite's state to
+               ;; check if the current color is correcta
+               (let ((gc (box-interface-value (slot-value self 'pen-color))))
+                 (unless (eql *graphics-state-current-pen-color* gc)
+                   (record-boxer-graphics-command-change-graphics-color gc)
+                   (change-graphics-color gc))))
+        (t
+         (synchronize-graphics-state self)
+         ;; Now that everything agrees, set the new "owner"
+         (setf (graphics-command-list-agent %graphics-list) self)))))) ;)
 
 (defmethod pen-width ((self graphics-cursor))
   (box-interface-value (slot-value self 'pen-width)))
@@ -413,12 +375,17 @@ Modification History (most recent at top)
     (cond ((null gs)
            ;; no graphics, check for 3 numbers...
            (let* ((entries (car (raw-unboxed-items box)))
-                  (red (car entries)) (green (cadr entries))
-                  (blue (caddr entries)))
+                  (red (car entries))
+                  (green (cadr entries))
+                  (blue (caddr entries))
+                  (alpha (if (cadddr entries)
+                           (cadddr entries)
+                           100)))
              (when (and (numberp red)   (<= 0 red   100)
                         (numberp green) (<= 0 green 100)
-                        (numberp blue)  (<= 0 blue  100))
-               (%make-color red green blue))))
+                        (numberp blue)  (<= 0 blue  100)
+                        (numberp alpha)  (<= 0 alpha  100))
+               (%make-color red green blue alpha))))
       (t (graphics-sheet-background gs)))))
 
 (defun color-box? (box)
@@ -477,9 +444,6 @@ Modification History (most recent at top)
 (defmethod type-font ((self graphics-cursor))
   (box-interface-value (slot-value self 'pen-width)))
 
-(defun font-name-from-font-no (font-no) font-no)
-
-
 (defmethod set-type-font ((self graphics-cursor) new-value
                                                  &optional dont-update-box)
   ;; Bash slots in the data structure only if we are NOT recording a shape
@@ -524,7 +488,8 @@ Modification History (most recent at top)
          (font (box-interface-value (slot-value agent 'type-font)))
          ;; this has to be bound explicitly here because this method can
          ;; be called INSIDE of update-shape
-         (*graphics-command-recording-mode* ':window)
+         ;; sgithens 2023-07-12 we are always in :boxer mode now
+         ;  (*graphics-command-recording-mode* ':window)
          ;; Do not supress recording of these synchronization commands
          (*supress-graphics-recording?* nil))
     (unless (and (not force?) (eq pen-state 'up))
@@ -546,59 +511,6 @@ Modification History (most recent at top)
         (record-boxer-graphics-command-change-graphics-font font)
         (setf (graphics-command-list-font-no %graphics-list) font)
         (change-graphics-font font)))))
-
-;; similiar to synchronize-graphics-state except we synch to erasing
-;; values instead of the intrinsic values of the sprite
-(defmethod synchronize-graphics-state-for-erase ((agent graphics-cursor)
-                                                 erase-color)
-  (let* ((pw (box-interface-value (slot-value agent 'pen-width)))
-         (font (box-interface-value (slot-value agent 'type-font)))
-         ;; this has to be bound explicitly here because this method can
-         ;; be called INSIDE of update-shape
-         (*graphics-command-recording-mode* ':window))
-    (unless (eql *graphics-state-current-alu* alu-seta)
-      (record-boxer-graphics-command-change-alu alu-seta)
-      (change-alu alu-seta))
-    (unless (eql *graphics-state-current-pen-width* pw)
-      (record-boxer-graphics-command-change-pen-width pw)
-      (change-pen-width pw))
-    (unless (color= *graphics-state-current-pen-color* erase-color)
-      (record-boxer-graphics-command-change-graphics-color erase-color)
-      (change-graphics-color erase-color))
-    (unless (eql *graphics-state-current-font-no* font)
-      (record-boxer-graphics-command-change-graphics-font font)
-      (change-graphics-font font))))
-
-;; this is like synchronize-graphics-state EXCEPT that it
-;; ONLY puts entries in the beginning of its graphics-command-list
-;; and DOESN'T try to side effect any bindings
-;;;
-;; This ignores color until we decide what whether or not is will be
-;; feasible/efficient to handle different colors in turtle shapes
-;; obviously, it is desireable but the question is "at what price ?"
-
-#|
-;; this version inherits the pen state fron the turtle
-
-(defmethod new-shape-preamble ((agent graphics-cursor) graphics-command-list)
-  (setf (graphics-command-list-agent graphics-command-list) agent)
-  (let ((pw (box-interface-value (slot-value agent 'pen-width)))
-    (alu (or (get-alu-from-pen
-          (box-interface-value (slot-value agent 'pen)))
-         alu-andca))
-    (font (box-interface-value (slot-value agent 'type-font)))
-    (%graphics-list graphics-command-list))
-    ;; the current alu of the turtle
-    (setf (graphics-command-list-alu graphics-command-list) alu)
-    (record-boxer-graphics-command-change-alu alu)
-    ;; the current pen-width of the turtle
-    (setf (graphics-command-list-pen-width graphics-command-list) pw)
-    (record-boxer-graphics-command-change-pen-width pw)
-    ;; the current type-font of the turtle...
-    (setf (graphics-command-list-font-no graphics-command-list) font)
-    (record-boxer-graphics-command-change-graphics-font font)))
-
-|#
 
 ;; we may want to conditionalize some of these for different displays
 (defun initial-shape-alu () alu-xor)
@@ -652,13 +564,7 @@ Modification History (most recent at top)
        (record-boxer-graphics-command-dot (x-position self)
                                           (y-position self)))
       ((not (no-graphics?))
-       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-             (array-y (fix-array-coordinate-y (absolute-y-position self))))
-         (record-boxer-graphics-command-dot array-x array-y)
-         #-opengl
-         (with-graphics-screen-parameters
-           (dot array-x array-y)))))))
-
+       (record-boxer-graphics-command-dot (x-position self) (y-position self))))))
 
 ;;;general rects
 
@@ -673,13 +579,8 @@ Modification History (most recent at top)
         (x-position self) (y-position self)
         (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
       ((not (no-graphics?))
-       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-             (array-y (fix-array-coordinate-y (absolute-y-position self))))
          (record-boxer-graphics-command-centered-rectangle
-          array-x array-y wid hei)
-         #-opengl
-         (with-graphics-screen-parameters
-           (centered-rectangle array-x array-y wid hei)))))))
+          (x-position self) (y-position self) wid hei)))))
 
 (defmethod hollow-turtle-rect ((self graphics-cursor) wid hei
                                                       &optional (orientation :centered))
@@ -692,13 +593,8 @@ Modification History (most recent at top)
         (x-position self) (y-position self)
         (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
       ((not (no-graphics?))
-       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-             (array-y (fix-array-coordinate-y (absolute-y-position self))))
-         (record-boxer-graphics-command-hollow-rectangle
-          array-x array-y wid hei)
-         #-opengl
-         (with-graphics-screen-parameters
-           (hollow-rectangle array-x array-y wid hei)))))))
+       (record-boxer-graphics-command-hollow-rectangle
+        (x-position self) (y-position self) wid hei)))))
 
 ;;; Circle, Ellipses and Arcs
 
@@ -713,13 +609,8 @@ Modification History (most recent at top)
         (x-position self) (y-position self)
         (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
       ((not (no-graphics?))
-       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-             (array-y (fix-array-coordinate-y (absolute-y-position self))))
          (record-boxer-graphics-command-filled-ellipse
-          array-x array-y wid hei)
-         #-opengl
-         (with-graphics-screen-parameters
-           (filled-ellipse array-x array-y wid hei)))))))
+          (x-position self) (y-position self) wid hei)))))
 
 (defmethod stamp-hollow-ellipse ((self graphics-cursor) wid hei
                                                         &optional (orientation :centered))
@@ -732,13 +623,8 @@ Modification History (most recent at top)
         (x-position self) (y-position self)
         (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
       ((not (no-graphics?))
-       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-             (array-y (fix-array-coordinate-y (absolute-y-position self))))
          (record-boxer-graphics-command-ellipse
-          array-x array-y wid hei)
-         #-opengl
-         (with-graphics-screen-parameters
-           (ellipse array-x array-y wid hei)))))))
+          (x-position self) (y-position self) wid hei)))))
 
 (defmethod stamp-circle ((self graphics-cursor) radius)
   (let ((alu (get-alu-from-pen
@@ -748,12 +634,8 @@ Modification History (most recent at top)
        (record-boxer-graphics-command-filled-circle
         (x-position self) (y-position self) (coerce radius 'boxer-float)))
       ((not (no-graphics?))
-       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-             (array-y (fix-array-coordinate-y (absolute-y-position self))))
          (record-boxer-graphics-command-filled-circle
-          array-x array-y radius)
-         (with-graphics-screen-parameters
-           (filled-circle array-x array-y radius)))))))
+          (x-position self) (y-position self) radius)))))
 
 (defmethod stamp-hollow-circle ((self graphics-cursor) radius)
   (let ((alu (get-alu-from-pen
@@ -763,11 +645,7 @@ Modification History (most recent at top)
        (record-boxer-graphics-command-circle
         (x-position self) (y-position self) (coerce radius 'boxer-float)))
       ((not (no-graphics?))
-       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-             (array-y (fix-array-coordinate-y (absolute-y-position self))))
-         (record-boxer-graphics-command-circle array-x array-y radius)
-         (with-graphics-screen-parameters
-           (circle array-x array-y radius)))))))
+         (record-boxer-graphics-command-circle (x-position self) (y-position self) radius)))))
 
 (defmethod stamp-wedge ((self graphics-cursor) radius sweep-angle)
   (let ((alu (get-alu-from-pen
@@ -778,13 +656,8 @@ Modification History (most recent at top)
         (x-position self) (y-position self) (coerce radius 'boxer-float)
         (heading self) sweep-angle))
       ((not (no-graphics?))
-       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-             (array-y (fix-array-coordinate-y (absolute-y-position self)))
-             (abheading (absolute-heading self)))
-         (record-boxer-graphics-command-wedge
-          array-x array-y radius abheading sweep-angle)
-         (with-graphics-screen-parameters
-           (wedge array-x array-y radius abheading sweep-angle)))))))
+        (record-boxer-graphics-command-wedge
+          (x-position self) (y-position self) radius (absolute-heading self) sweep-angle)))))
 
 (defmethod stamp-arc ((self graphics-cursor) radius sweep-angle)
   (let ((alu (get-alu-from-pen
@@ -795,26 +668,11 @@ Modification History (most recent at top)
         (x-position self) (y-position self) (coerce radius 'boxer-float)
         (heading self) sweep-angle))
       ((not (no-graphics?))
-       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-             (array-y (fix-array-coordinate-y (absolute-y-position self)))
-             (abheading (absolute-heading self)))
          (record-boxer-graphics-command-arc
-          array-x array-y radius abheading sweep-angle)
-         (with-graphics-screen-parameters
-           (arc array-x array-y radius abheading sweep-angle)))))))
+           (x-position self) (y-position self) radius (absolute-heading self) sweep-angle)))))
 
 
 ;;;; Pictures
-
-(defun new-offscreen-copy (ba)
-  (let* ((w (offscreen-bitmap-width ba)) (h (offscreen-bitmap-height ba))
-                                         (new-bm (make-offscreen-bitmap *boxer-pane* w h)))
-    #-opengl
-    (drawing-on-bitmap (new-bm)
-                       (copy-offscreen-bitmap alu-seta w h ba 0 0 new-bm 0 0))
-    #+opengl
-    (copy-offscreen-bitmap alu-seta w h ba 0 0 new-bm 0 0)
-    new-bm))
 
 (defmethod stamp-bitmap ((self graphics-cursor) bitmap wid hei
                                                 &optional (orientation :centered))
@@ -825,17 +683,11 @@ Modification History (most recent at top)
       ((not (null %learning-shape?))
        (record-boxer-graphics-command-centered-bitmap
         ;; shouldn't we be copying this bitmap here ???
-        (new-offscreen-copy bitmap) (x-position self) (y-position self)
+        (copy-pixmap bitmap) (x-position self) (y-position self)
         (coerce wid 'boxer-float) (coerce hei 'boxer-float)))
       ((not (no-graphics?))
-       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-             (array-y (fix-array-coordinate-y (absolute-y-position self)))
-             (nbitmap (new-offscreen-copy bitmap)))
          (record-boxer-graphics-command-centered-bitmap
-          nbitmap array-x array-y wid hei)
-         #-opengl
-         (with-graphics-screen-parameters
-           (centered-bitmap nbitmap array-x array-y wid hei)))))))
+          (copy-pixmap bitmap) (x-position self) (y-position self) wid hei)))))
 
 ;;; orientation can be :centered, :right or :left
 (defmethod type-box ((self graphics-cursor) box
@@ -852,39 +704,20 @@ Modification History (most recent at top)
               (:left (record-boxer-graphics-command-left-string
                       (x-position self) (y-position self) (box-text-string box)))))
       ((not (no-graphics?))
-       (let ((array-x (fix-array-coordinate-x (absolute-x-position self)))
-             (array-y (fix-array-coordinate-y (absolute-y-position self))))
          (ecase orientation
                 (:centered (record-boxer-graphics-command-centered-string
-                            array-x array-y (box-text-string box)))
+                             (x-position self) (y-position self) (box-text-string box)))
                 (:right (record-boxer-graphics-command-right-string
-                         array-x array-y (box-text-string box)))
+                          (x-position self) (y-position self) (box-text-string box)))
                 (:left (record-boxer-graphics-command-left-string
-                        array-x array-y (box-text-string box))))
-         #-opengl
-         (with-graphics-screen-parameters
-           (ecase orientation
-                  (:centered (centered-string array-x array-y
-                                              (box-text-string box)))
-                  (:right (right-string array-x array-y (box-text-string box)))
-                  (:left (left-string array-x array-y (box-text-string box))))))))))
+                          (x-position self) (y-position self) (box-text-string box))))))))
 
 
 (defmethod stamp ((self graphics-cursor))
   (let ((pen-mode (get-alu-from-pen (pen self))))
     (when (and pen-mode (not (no-graphics?)))
-      #-opengl
-      (with-graphics-screen-parameters
-        (let ((*currently-moving-sprite* :go-ahead-and-draw-anyway))
-          ;; shouldn't need this binding anymore now that this mechanism
-          ;; is limited to ONLY inside the with-sprite-prim-env macro
-          (draw self ; pen-mode   need to figure out how to set up state info
-                ; for the drawing of the shape....
-                )))
-      #+opengl
-      (draw-update self)
-      ;; the call to draw will insure the validity of the window-shape
-      (dub-graphics-list (slot-value self 'window-shape))
+      (dub-graphics-list (box-interface-value (slot-value self 'shape))
+                         :model-matrix (model-matrix self))
       ;; reset the state values which may have been bashed during the
       ;; dub to be the state value of the shape
       (synchronize-graphics-state self t))))

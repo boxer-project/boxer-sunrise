@@ -1,7 +1,7 @@
 ;; -*- Mode:LISP; Syntax:Common-Lisp; Package:(BOXER :USE (LISP) :NICKNAMES (BOX)) -*-
 ;;;;
 ;;;;      Boxer
-;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;      Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -535,158 +535,11 @@
 
 (defun cosd (x) (cos (float-times (float x) +degs->rads+)))
 
-;; #+lispworks
-;; (defmacro without-interrupts (&body body)
-;;   `(lispworks:without-interrupts ,@body))
-
-;; #+sbcl
-;; (defmacro without-interrupts (&body body)
-;;   `(sb-sys:without-interrupts ,@body))
-
-;; #-(or LISPM MCL lispworks sbcl)
-;; 2020-03-29 sgithens
-;; It appears that without-interrupts is not supported on modern OS version of lispworks...
-;; http://www.lispworks.com/documentation/lw71/LW/html/lw-1106.htm
-;; "without-interrupts is not supported in SMP LispWorks, that is on Microsoft Windows, Mac OS X, Linux,
-;;  FreeBSD, AIX and x86/x64 Solaris platforms."
-;;
-(DEFMACRO WITHOUT-INTERRUPTS (&BODY BODY)
-  `(PROGN ,@BODY))
-
-
-;;; Lifted from PCL (comments and all) (it is shadowed in Boxsys.lisp)
-;;; ONCE-ONLY does the same thing as it does in zetalisp.  I should have just
-;;; lifted it from there but I am honest.  Not only that but this one is
-;;; written in Common Lisp.  I feel a lot like bootstrapping, or maybe more
-;;; like rebuilding Rome.
-(defmacro once-only (vars &body body)
-  (let ((gensym-var (gensym))
-        (run-time-vars (gensym))
-        (run-time-vals (gensym))
-        (expand-time-val-forms ()))
-    (dolist (var vars)
-      (push `(if (or (symbolp ,var)
-                     (numberp ,var)
-                     (and (listp ,var)
-                          (member (car ,var) '(quote function))))
-                 ,var
-                 (let ((,gensym-var (gensym)))
-                   (push ,gensym-var ,run-time-vars)
-                   (push ,var ,run-time-vals)
-                   ,gensym-var))
-            expand-time-val-forms))
-    `(let* (,run-time-vars
-            ,run-time-vals
-            (wrapped-body
-              ((lambda ,vars . ,body) . ,(reverse expand-time-val-forms))))
-       `((lambda ,(nreverse ,run-time-vars)  ,wrapped-body)
-         . ,(nreverse ,run-time-vals)))))
-
-(DEFMACRO SPLICE-LIST-INTO-LIST (INTO-LIST LIST BEFORE-ITEM)
-  `(SETF ,INTO-LIST (SPLICE-LIST-INTO-LIST-1 ,INTO-LIST ,LIST ,BEFORE-ITEM)))
-
-(DEFMACRO SPLICE-ITEM-INTO-LIST (INTO-LIST ITEM BEFORE-ITEM)
-  `(SETF ,INTO-LIST (SPLICE-LIST-INTO-LIST-1 ,INTO-LIST `(,,ITEM) ,BEFORE-ITEM)))
-
-(DEFUN SPLICE-LIST-INTO-LIST-1 (INTO-LIST LIST BEFORE-ITEM)
-  (LET ((BEFORE-ITEM-POSITION (POSITION BEFORE-ITEM INTO-LIST)))
-    (COND ((OR (NULL BEFORE-ITEM-POSITION)
-               (=& BEFORE-ITEM-POSITION 0))
-           (NCONC LIST INTO-LIST)
-           LIST)
-          (T
-           (DO* ((TAIL INTO-LIST (CDR TAIL))
-                 (NEXT-ITEM (CADR TAIL) (CADR TAIL)))
-                ((EQ NEXT-ITEM BEFORE-ITEM)
-                 (NCONC LIST (CDR TAIL))
-                 (RPLACD TAIL LIST)
-                 INTO-LIST))))))
-
 (DEFMACRO SPLICE-LIST-ONTO-LIST (ONTO-LIST LIST)
   `(SETF ,ONTO-LIST (NCONC ,ONTO-LIST ,LIST)))
 
 (DEFMACRO SPLICE-ITEM-ONTO-LIST (ONTO-LIST ITEM)
   `(SPLICE-LIST-ONTO-LIST ,ONTO-LIST `(,,ITEM)))
-
-(DEFMACRO SPLICE-ITEM-OUT-OF-LIST (OUT-OF-LIST ITEM)
-  `(SETF ,OUT-OF-LIST (DELETE ,ITEM ,OUT-OF-LIST)))
-
-(DEFMACRO SPLICE-ITEM-AND-TAIL-OUT-OF-LIST (OUT-OF-LIST ITEM)
-  `(SETF ,OUT-OF-LIST (SPLICE-ITEM-AND-TAIL-OUT-OF-LIST-1 ,OUT-OF-LIST ,ITEM)))
-
-(DEFUN SPLICE-ITEM-AND-TAIL-OUT-OF-LIST-1 (OUT-OF-LIST ITEM)
-  (LET ((ITEM-POSITION (POSITION ITEM OUT-OF-LIST)))
-    (COND ((NULL ITEM-POSITION) OUT-OF-LIST)
-          ((=& ITEM-POSITION 0) NIL)
-          (T (RPLACD (NTHCDR (-& ITEM-POSITION 1) OUT-OF-LIST) NIL)
-             OUT-OF-LIST))))
-
-(DEFMACRO SPLICE-BETWEEN-ITEMS-OUT-OF-LIST (LIST FROM-ITEM TO-ITEM)
-  `(DO ((FROM-ITEM-PREVIOUS-CONS NIL FROM-ITEM-PREVIOUS-CONS)
-        (TO-ITEM-PREVIOUS-CONS NIL TO-ITEM-PREVIOUS-CONS)
-        (SCAN ,LIST (CDR SCAN)))
-       ((OR (NULL SCAN) (NOT-NULL TO-ITEM-PREVIOUS-CONS))
-        (COND ((NULL FROM-ITEM-PREVIOUS-CONS)
-               (SETF ,LIST (CDR TO-ITEM-PREVIOUS-CONS)))
-              (T
-               (RPLACD FROM-ITEM-PREVIOUS-CONS (CDR TO-ITEM-PREVIOUS-CONS))))
-        (RPLACD TO-ITEM-PREVIOUS-CONS NIL))
-     (COND ((EQ (CADR SCAN) ,FROM-ITEM)
-            (SETQ FROM-ITEM-PREVIOUS-CONS SCAN))
-           ((EQ (CADR SCAN) ,TO-ITEM)
-            (SETQ TO-ITEM-PREVIOUS-CONS SCAN)))))
-
-;;;new list splicing macros that use index numbers...
-
-(DEFMACRO SPLICE-LIST-INTO-LIST-AT (INTO-LIST LIST POSITION)
-  `(COND ((zerop& ,POSITION)
-          (SETF ,INTO-LIST (NCONC ,LIST ,INTO-LIST)))
-         ((>=& ,POSITION (LENGTH ,INTO-LIST))
-          (SETF ,INTO-LIST (NCONC ,INTO-LIST ,LIST)))
-         (T (SETF ,INTO-LIST (NCONC (SUBSEQ ,INTO-LIST 0 ,POSITION)
-                                    ,LIST
-                                    (NTHCDR ,POSITION ,INTO-LIST))))))
-
-(DEFMACRO SPLICE-ITEM-INTO-LIST-AT (INTO-LIST ITEM POSITION)
-  `(SPLICE-LIST-INTO-LIST-AT ,INTO-LIST `(,,ITEM) ,POSITION))
-
-(DEFMACRO SPLICE-ITEM-OUT-OF-LIST-AT (LIST POSITION)
-  `(COND ((=& ,POSITION 0)
-          (SETF ,LIST (CDR ,LIST)))
-         ((>=& ,POSITION (LENGTH ,LIST))
-          (SETF ,LIST (BUTLAST ,LIST)))
-         (T (SETF ,LIST (NCONC (SUBSEQ ,LIST 0 ,POSITION)
-                               (NTHCDR (+& ,POSITION 1) ,LIST))))))
-
-(DEFMACRO SPLICE-ITEM-AND-TAIL-OUT-OF-LIST-FROM (LIST POSITION)
-  `(COND ((>=& ,POSITION (LENGTH ,LIST)))
-         (T (SETF ,LIST (SUBSEQ ,LIST 0 ,POSITION)))))
-
-(DEFMACRO SPLICE-ITEMS-FROM-TO-OUT-OF-LIST (LIST START-POSITION STOP-POSITION)
-  `(COND ((>& ,START-POSITION ,STOP-POSITION)
-          (ERROR "The Starting number: ~S is greater than the ending number ~S"
-                 ,START-POSITION ,STOP-POSITION))
-         ((>=& ,START-POSITION (LENGTH ,LIST)))
-         ((=& ,START-POSITION ,STOP-POSITION)
-          (SPLICE-ITEM-OUT-OF-LIST-AT ,LIST ,START-POSITION))
-         ((>=& ,STOP-POSITION (LENGTH ,LIST))
-          (SPLICE-ITEM-AND-TAIL-OUT-OF-LIST-FROM ,LIST ,START-POSITION))
-         (T (SETF ,LIST (NCONC (SUBSEQ ,LIST 0 ,START-POSITION)
-                               (NTHCDR ,STOP-POSITION ,LIST))))))
-
-(DEFMACRO ITEMS-SPLICED-FROM-TO-FROM-LIST (LIST START-POSITION STOP-POSITION)
-  `(COND ((>& ,START-POSITION ,STOP-POSITION)
-          (ERROR "The Starting number: ~S is greater than the ending number ~S"
-                 ,START-POSITION ,STOP-POSITION))
-         ((>=& ,START-POSITION (LENGTH ,LIST))
-          '())
-         ((=& ,START-POSITION ,STOP-POSITION)
-          (LIST (NTH ,START-POSITION ,LIST)))
-         ((>=& ,STOP-POSITION (LENGTH ,LIST))
-          (NTHCDR ,START-POSITION ,LIST))
-         (T (SUBSEQ (NTHCDR ,START-POSITION ,LIST)
-                    0 (-& ,STOP-POSITION ,START-POSITION)))))
-
 
 (defmacro simple-wait-with-timeout (timeout function &rest args)
   `(let* ((initial-time (get-internal-real-time))
@@ -716,11 +569,6 @@
 (defmacro symbol-format (stream string &rest args)
   `(let ((*print-case* :upcase))
      (format ,stream ,string ,@args)))
-
-;;; do nothing in other implementations
-;;; #-mcl
-(defmacro at-user-level (&body body)
-  `(progn ,@body))
 
 ;;;; keyboard input event selectors
 
@@ -773,20 +621,6 @@ attributes given, or NIL if this is not possible."
                                  ((listp (car clause))
                                   (list* `(member ,key ',(car clause)
                                                   :test #'string-equal)
-                                         (cdr clause)))))
-                       clauses)))
-
-(defmacro char-case (key &rest clauses)
-  (list* 'cond (mapcar #'(lambda (clause)
-                           (cond ((eq (car clause) 'otherwise)
-                                  (list* t (cdr clause)))
-                                 ((eq (car clause) 't) clause)
-                                 ((characterp (car clause))
-                                  (list* `(char-equal ,key ,(car clause))
-                                         (cdr clause)))
-                                 ((listp (car clause))
-                                  (list* `(member ,key ',(car clause)
-                                                  :test #'char-equal)
                                          (cdr clause)))))
                        clauses)))
 

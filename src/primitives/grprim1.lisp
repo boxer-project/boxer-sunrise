@@ -1,7 +1,7 @@
 ;;;;  ;; -*- Mode:LISP; Syntax:Common-Lisp; Package:BOXER; -*-
 ;;;;
 ;;;;      Boxer
-;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;      Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -56,26 +56,6 @@
 ;;; Except in unusual cases, though, you should use the top level interface,
 ;;; WITH-SPRITE-PRIMITIVE-ENVIRONMENT or the convenience macro
 ;;; DEFSPRITE-FUNCTION.
-
-;;; As far as I can tell, only wrap is implemented (EhL)
-
-;(defboxer-function bu:wrap ()
-;  (tell (graphics-box-near (box-being-told))
-;	:set-draw-mode :wrap)
-;  :noprint)
-
-; fence should be fixed before this command is implemented.
-;(defboxer-function bu:fence ()
-;  (tell (graphics-box-near (box-being-told))
-;	:set-draw-mode :fence)
-;  :noprint)
-
-;(defboxer-function bu:window ()
-;  (tell (graphics-box-near (box-being-told))
-;	:set-draw-mode :window)
-;  :noprint)
-
-
 
 ;;;; Update Functions
 
@@ -152,20 +132,7 @@
         (boxer-eval::primitive-signal-error :graphics
               "No color in: " color))
        ((not (null (graphics-sheet-bit-array gs)))
-        ;; there is already a bitmapped background
-        ;; we'll draw the color on the background -- alternatively,
-        ;; we could do nothing, preferring to give bitmaps precedence
-                    #-opengl
-        (drawing-on-bitmap ((graphics-sheet-bit-array gs))
-           (with-pen-color (pix)
-       (draw-rectangle alu-seta
-           (graphics-sheet-draw-wid gs)
-           (graphics-sheet-draw-hei gs) 0 0)))
-                    #+opengl
-                    (opengl::clear-ogl-pixmap (graphics-sheet-bit-array gs)
-                                      (opengl::color->pixel pix))
-                    ;; mark the dirty? flag
-                    (setf (graphics-sheet-bit-array-dirty? gs) t)
+        (clear-ogl-pixmap (graphics-sheet-bit-array gs) pix)
         (modified-graphics gb))
        (t
         ;; first, set the color
@@ -193,36 +160,31 @@
 
 (defsprite-function bu::fd ((boxer-eval::numberize steps)) (sprite turtle)
   (steps-arg-check steps)
-  (with-sprites-hidden t
-      (forward turtle steps))
+  (forward turtle steps)
   boxer-eval::*novalue*)
 
 (defsprite-function bu::forward ((boxer-eval::numberize steps))
         (sprite turtle)
   (steps-arg-check steps)
-  (with-sprites-hidden t
-      (forward turtle steps))
+  (forward turtle steps)
   boxer-eval::*novalue*)
 
 (defsprite-function bu::bk ((boxer-eval::numberize steps))
         (sprite turtle)
   (steps-arg-check steps)
-  (with-sprites-hidden t
-      (forward turtle (- steps)))
+  (forward turtle (- steps))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::back ((boxer-eval::numberize steps))
         (sprite turtle)
   (steps-arg-check steps)
-  (with-sprites-hidden t
-      (forward turtle (- steps)))
+  (forward turtle (- steps))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::setxy ((boxer-eval::numberize x) (boxer-eval::numberize y))
         (sprite turtle)
   (steps-arg-check x) (steps-arg-check y)
-  (with-sprites-hidden t
-      (move-to turtle x y))
+  (move-to turtle x y)
   boxer-eval::*novalue*)
 
 (defun get-position-values (box)
@@ -245,16 +207,14 @@
   (multiple-value-bind (new-x new-y)
       (get-position-values position)
     (steps-arg-check new-x)  (steps-arg-check new-y)
-    (with-sprites-hidden t
-      (move-to turtle new-x new-y))
+    (move-to turtle new-x new-y)
     boxer-eval::*novalue*))
 
 (defsprite-function bu::setposition (position)
   (sprite turtle)
   (multiple-value-bind (new-x new-y)
       (get-position-values position)
-    (with-sprites-hidden t
-      (move-to turtle new-x new-y))
+      (move-to turtle new-x new-y)
     boxer-eval::*novalue*))
 
 (defsprite-function bu::set-home-position ((boxer-eval::dont-copy position))
@@ -266,46 +226,39 @@
 
 (defsprite-function bu::home ()
   (sprite turtle)
-  (with-sprites-hidden t
-    (go-home turtle))
+  (go-home turtle)
   boxer-eval::*novalue*)
 
 ;;;; Turning
 
 (defsprite-function bu::rt ((boxer-eval::numberize turns))
   (sprite turtle)
-  (with-sprites-hidden nil
-    (right turtle turns))
+  (right turtle turns)
   boxer-eval::*novalue*)
 
 (defsprite-function bu::right ((boxer-eval::numberize turns))
   (sprite turtle)
-  (with-sprites-hidden nil
-    (right turtle turns))
+  (right turtle turns)
   boxer-eval::*novalue*)
 
 (defsprite-function bu::lt ((boxer-eval::numberize turns))
   (sprite turtle)
-  (with-sprites-hidden nil
-    (right turtle (- turns)))
+  (right turtle (- turns))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::left ((boxer-eval::numberize turns))
   (sprite turtle)
-  (with-sprites-hidden nil
-    (right turtle (- turns)))
+  (right turtle (- turns))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::seth ((boxer-eval::numberize heading))
   (sprite turtle)
-  (with-sprites-hidden nil
-    (set-heading turtle heading))
+  (set-heading turtle heading)
   boxer-eval::*novalue*)
 
 (defsprite-function bu::setheading ((boxer-eval::numberize heading))
   (sprite turtle)
-  (with-sprites-hidden nil
-    (set-heading turtle heading))
+  (set-heading turtle heading)
   boxer-eval::*novalue*)
 
 ;;;; Pens
@@ -328,16 +281,6 @@
 (defsprite-function bu::pendown ()
   (sprite turtle)
   (set-pen turtle 'bu::down)
-  boxer-eval::*novalue*)
-
-(defsprite-function bu::pe ()
-  (sprite turtle)
-  (set-pen turtle 'bu::erase)
-  boxer-eval::*novalue*)
-
-(defsprite-function bu::penerase ()
-  (sprite turtle)
-  (set-pen turtle 'bu::erase)
   boxer-eval::*novalue*)
 
 (defsprite-function bu::set-pen-width ((boxer-eval::numberize width))
@@ -366,8 +309,8 @@
          (old-style? (when (integerp (car items)) (car items)))
          ;; old-style? supports previous font-map implementation
          (font (cond ((and old-style? (< old-style? 4))
-                      #+mcl "Courier" #-mcl *default-font-family*)
-                     (old-style? #+mcl "Geneva" #-mcl *default-font-family*)
+                           *default-font-family*)
+                     (old-style? *default-font-family*)
                      ((or (virtual-copy? (car items)) (box? (car items)))
                       ;; allow the use of a box for fonts with spaces in the name
                       (box-text-string (car items)))
@@ -383,11 +326,8 @@
                      (3 '(:bold :italic)))
                    (cddr items))))
     ;; reality checking
-    (cond #-lwwin ;; can be passed other platform fonts, rethink this
-          ((not (member font
-                        #-mcl *font-families*
-                        #+mcl ccl::*font-list*
-                        :test #'string-equal))
+    (cond ;; can be passed other platform fonts, rethink this
+          ((not (member font *font-families* :test #'string-equal))
            (unless no-errorp
              (boxer-eval::primitive-signal-error
               :sprite-font font " is not an installed Font")))
@@ -396,12 +336,6 @@
            (unless no-errorp
              (boxer-eval::primitive-signal-error
               :sprite-font "The 2nd item should be a font size")))
-          ((and (not #+mcl (member size *supported-font-sizes*)
-                     #-mcl (find size *font-sizes*))
-                (not (= size 7))) ; for compatibility
-           (unless no-errorp
-             (boxer-eval::primitive-signal-error
-              :sprite-font size " is an usupported font size")))
           ;; styles check
           (t
            (catch 'bad-style
@@ -440,19 +374,19 @@
 (defsprite-function bu::ht ()
   (sprite turtle)
   (when (absolute-shown? turtle)
-    (with-sprites-hidden nil (hide-turtle turtle)))
+    (hide-turtle turtle))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::hide ()
   (sprite turtle)
   (when (absolute-shown? turtle)
-    (with-sprites-hidden nil (hide-turtle turtle)))
+    (hide-turtle turtle))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::hideturtle ()
   (sprite turtle)
   (when (absolute-shown? turtle)
-    (with-sprites-hidden nil (hide-turtle turtle)))
+    (hide-turtle turtle))
   boxer-eval::*novalue*)
 
 (defsprite-function bu::st ()
@@ -487,8 +421,7 @@
 (defsprite-function bu::set-sprite-size ((boxer-eval::numberize size))
   (sprite turtle)
   (cond ((and (numberp size) (> size 0))
-   (with-sprites-hidden nil
-       (set-sprite-size turtle size))
+   (set-sprite-size turtle size)
    boxer-eval::*novalue*)
   (t (boxer-eval::primitive-signal-error :sprite-error
            "The Sprite Size Argument, " size
@@ -497,12 +430,10 @@
 (defsprite-function bu::setshape ((bu::port-to shape))
   (sprite turtle)
   (let ((shape-box (box-or-port-target shape)))
-    (with-sprites-hidden :change-shape
       (if (or (sprite-box? shape-box)
-        (graphics-box? shape-box)
-        (and (virtual-copy? shape-box)
-       (not (null (vc-graphics shape-box)))))
-    (set-shape turtle shape-box)
-    (boxer-eval::primitive-signal-error :sprite-error "Can't find a shape in: "
-          shape))))
+              (graphics-box? shape-box)
+              (and (virtual-copy? shape-box)
+                   (not (null (vc-graphics shape-box)))))
+        (set-shape turtle shape-box)
+        (boxer-eval::primitive-signal-error :sprite-error "Can't find a shape in: " shape)))
   boxer-eval::*novalue*)

@@ -1,5 +1,5 @@
 ;;;;      Boxer
-;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;      Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -23,7 +23,7 @@
 (defun uncolor->pixel (uncolor)
   (flet ((convert-color-component (cc)
                                   (floor (* cc 255))))
-        (opengl::make-offscreen-pixel (convert-color-component (svref uncolor 1))
+        (boxer::make-offscreen-pixel (convert-color-component (svref uncolor 1))
                                       (convert-color-component (svref uncolor 2))
                                       (convert-color-component (svref uncolor 3))
                                       (convert-color-component (svref uncolor 4)))))
@@ -31,14 +31,14 @@
 ;;; capi:clipboard returns IMAGES
 (defun copy-image-to-bitmap (image bm w h)
   (let ((ia (gp:make-image-access bw::*boxer-pane* image))
-        (bdata (opengl::ogl-pixmap-data bm)))
+        (bdata (boxer::ogl-pixmap-data bm)))
     (unwind-protect
      (progn
       (gp::image-access-transfer-from-image ia)
       (dotimes (y h)
         (dotimes (x w)
           (setf
-            (cffi:mem-aref bdata opengl::*pixmap-ffi-type* (+ x (* (- h y 1) w)))
+            (cffi:mem-aref bdata boxer::*pixmap-ffi-type* (+ x (* (- h y 1) w)))
                 (uncolor->pixel
                   (color:unconvert-color bw::*boxer-pane* (gp:image-access-pixel ia x y)))))))
      (gp:free-image-access ia))))
@@ -46,7 +46,7 @@
 (defun image-to-bitmap (image)
   (unless (null image)
     (let* ((wid (gp:image-width image)) (hei (gp:image-height image))
-           (bim (boxer::make-offscreen-bitmap bw::*boxer-pane* wid hei)))
+           (bim (boxer::make-ogl-pixmap wid hei)))
       (copy-image-to-bitmap image bim wid hei)
       (values bim wid hei))))
 
@@ -72,7 +72,6 @@
       (let* ((gb (boxer::make-box '(())))
              (gs (boxer::make-graphics-sheet wid hei gb)))
         (setf (boxer::graphics-sheet-bit-array gs) bm)
-        (setf (boxer::graphics-sheet-bit-array-dirty? gs) T)
         (setf (boxer::graphics-info gb) gs)
         (setf (boxer::display-style-graphics-mode?
                (boxer::display-style-list gb)) T)
@@ -85,10 +84,10 @@
          ;; this is the case we know we were the last one to set the clipboard and yank
          ;; in our most recent item.
          ;; http://www.lispworks.com/documentation/lw71/CAPI-W/html/capi-w-206.htm#82688
-         (boxer::com-yank))
+         (boxer::com-paste))
         ((not (capi:clipboard-empty self :string))
          (paste-text))
         ((not (capi:clipboard-empty self :image))
          (paste-pict))
-        (t (boxer::com-yank)))
-  (boxer::repaint))
+        (t
+         (boxer::com-paste))))

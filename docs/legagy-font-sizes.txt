@@ -1,0 +1,138 @@
+16      Arial 9
+32      Arial 10
+48      Arial 12
+64      Arial 14
+80      Arial 16
+96      Arial 20
+112     Arial 24
+17      Arial 9 Bold
+33      Arial 10 Bold
+49      Arial 12 Bold
+65      Arial 14 Bold
+81      Arial 16 Bold
+97      Arial 20 Bold
+113     Arial 24 Bold
+18      Arial 9 Italic
+34      Arial 10 Italic
+50      Arial 12 Italic
+66      Arial 14 Italic
+82      Arial 16 Italic
+98      Arial 20 Italic
+114     Arial 24 Italic
+19      Arial 9 Bold Italic
+35      Arial 10 Bold Italic
+51      Arial 12 Bold Italic
+67      Arial 14 Bold Italic
+83      Arial 16 Bold Italic
+99      Arial 20 Bold Italic
+115     Arial 24 Bold Italic
+65552   Courier New 9
+65568   Courier New 10
+65584   Courier New 12
+65600   Courier New 14
+65616   Courier New 16
+65632   Courier New 20
+65648   Courier New 24
+
+65553   Courier New 9 Bold
+65569   Courier New 10 Bold
+65585   Courier New 12 Bold
+65601   Courier New 14 Bold
+65617   Courier New 16 Bold
+65633   Courier New 20 Bold
+65649   Courier New 24 Bold
+
+65554   Courier New 9 Italic
+65570   Courier New 10 Italic
+65586   Courier New 12 Italic
+65602   Courier New 14 Italic
+65618   Courier New 16 Italic
+65634   Courier New 20 Italic
+65650   Courier New 24 Italic
+
+65555   Courier New 9 Bold Italic
+65571   Courier New 10 Bold Italic
+65587   Courier New 12 Bold Italic
+65603   Courier New 14 Bold Italic
+65619   Courier New 16 Bold Italic
+65635   Courier New 20 Bold Italic
+65651   Courier New 24 Bold Italic
+
+131088  Times New Roman 9
+131104  Times New Roman 10
+131120  Times New Roman 12
+131136  Times New Roman 14
+131152  Times New Roman 16
+131168  Times New Roman 20
+131184  Times New Roman 24
+
+131089  Times New Roman 9 Bold
+131105  Times New Roman 10 Bold
+131121  Times New Roman 12 Bold
+131137  Times New Roman 14 Bold
+131153  Times New Roman 16 Bold
+131169  Times New Roman 20 Bold
+131185  Times New Roman 24 Bold
+
+131090  Times New Roman 9 Italic
+131106  Times New Roman 10 Italic
+131122  Times New Roman 12 Italic
+131138  Times New Roman 14 Italic
+131154  Times New Roman 16 Italic
+131170  Times New Roman 20 Italic
+131186  Times New Roman 24 Italic
+
+131091  Times New Roman 9 Bold Italic
+131107  Times New Roman 10 Bold Italic
+131123  Times New Roman 12 Bold Italic
+131139  Times New Roman 14 Bold Italic
+131155  Times New Roman 16 Bold Italic
+131171  Times New Roman 20 Bold Italic
+131187  Times New Roman 24 Bold Italic
+
+196624  Verdana 9
+169640  Verdana 10
+196656  Verdana 12
+196672  Verdana 14
+196688  Verdana 16
+196704  Verdana 20
+196720  Verdana 24
+
+196625  Verdana 9 Bold
+196641  Verdana 10 Bold
+196657  Verdana 12 Bold
+196673  Verdana 14 Bold
+196689  Verdana 16 Bold
+196705  Verdana 20 Bold
+196721  Verdana 24 Bold
+
+196626  Verdana 9 Italic
+196642  Verdana 10 Italic
+196658  Verdana 12 Italic
+196674  Verdana 14 Italic
+196690  Verdana 16 Italic
+196706  Verdana 20 Italic
+196722  Verdana 24 Italic
+
+196627  Verdana 9 Bold Italic
+196643  Verdana 10 Bold Italic
+196659  Verdana 12 Bold Italic
+196675  Verdana 14 Bold Italic
+196691  Verdana 16 Bold Italic
+196707  Verdana 20 Bold Italic
+196723  Verdana 24 Bold Italic
+
+Legacy fonts 1 thru 7
+
+1       33
+2       34
+3       35
+4       0  ????
+5       1
+6       2
+7       3
+8       0
+9       1
+10      2
+11      3
+12      0

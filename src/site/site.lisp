@@ -7,7 +7,7 @@
 #|
 
     Boxer
-    Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+    Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 
     Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
     used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -34,34 +34,7 @@ Modification History (most recent at the top)
 
 (in-package :boxer)
 
-(defvar *default-site-directory*
-  #+unix "/usr/local/lib/boxer/"
-  #+mcl  "home:")
-
-(defvar *default-configuration-file-name* "config.text")
-
 (defvar *site-initialization-verbosity* nil)
-
-(defvar *site-initialization-handlers* nil)
-
-(defmacro def-site-var (token-name value-type variable)
-  (let ((handler-name (gensym)))
-    `(progn
-       (defun ,handler-name (value-string)
-	 (let ((new-value (coerce-config-value value-string ,value-type)))
-	   (unless (null *site-initialization-verbosity*)
-	     (format t "~%Initializing Site Variable ~A to ~A"
-		     ',variable new-value))
-	   (setq ,variable new-value)))
-       (let ((existing-entry (assoc ,token-name
-				    *site-initialization-handlers*
-				    :test #'string-equal)))
-	 (if (null existing-entry)
-	     (push (list ,token-name ',handler-name ',value-type)
-		   *site-initialization-handlers*)
-	     ;; just bash the slots in the existing entry
-	     (setf (cadr existing-entry)  ',handler-name
-		   (caddr existing-entry) ',value-type))))))
 
 ;;; Strings MUST BE COPIED !!!!
 (defun coerce-config-value (value-string type)
@@ -165,68 +138,3 @@ Modification History (most recent at the top)
 	      (t
 	       ;; must be a valid character
 	       (vector-push-extend char current-buffer)))))))
-
-
-(defun handle-site-initializations (&optional
-				    (site-file
-				     (or #+lucid (system::environment-variable "SITE_DIRECTORY")
-					 #+excl  (system::getenv "SITE_DIRECTORY")
-					 *default-configuration-file-name*)))
-  (let ((site-file (merge-pathnames site-file *default-site-directory*)))
-    (if (null (probe-file site-file))
-	(warn "~%The site file, ~A was not found.  ~%~
-                 Site initializations will not be performed" site-file)
-	(with-open-file (s site-file :direction :input)
-	  (loop
-	   (multiple-value-bind (valid? eof? keyword value)
-	       (read-config-line s *keyword-buffer* *value-buffer*)
-	     (cond (eof? (return))
-		   (valid? (handle-site-initialization keyword value)))
-	     (buffer-clear *keyword-buffer*)
-	     (buffer-clear *value-buffer*)))))))
-
-;;; this should take care to copy strings when appropriate since
-;;; the args it is being passed are the keyword and value buffers
-(defun handle-site-initialization (keyword value)
-  (let ((handler-entry (assoc keyword *site-initialization-handlers*
-			      :test #'string-equal)))
-    (if (null handler-entry)
-	(warn "~%No handler was found for the keyword: ~A" keyword)
-	(funcall (cadr handler-entry) value))))
-
-
-;;;;; Actual Site Inits
-
-(def-site-var "Site-Initialization-Verbosity" :boolean
-  *site-initialization-verbosity*)
-
-(def-site-var "Postscript-Printer-Name" :string *ps-postscript-printer*)
-
-(def-site-var "Postscript-Printer-Host" :string *ps-postscript-printer-host*)
-
-(def-site-var "Postscript-Header-File" :string *ps-header-file*)
-
-(def-site-var "Box-Server-Host" :string boxnet::*default-box-server-host*)
-
-(def-site-var "Bug-Report-Address" :string *bug-report-address*)
-
-(def-site-var "Local-Server-Directory"
-    :string boxnet::*local-server-directory*)
-
-;; also, look at the boxer preferences in sysprims.lisp
-
-(def-site-var "Decimal-Print-Precision" :number *decimal-print-precision*)
-
-(def-site-var "Print-Rationals" :boolean *print-rationals*)
-
-(def-site-var "Evaluator-Helpful" :boolean *evaluator-helpful*)
-
-(def-site-var "Default-Graphics-Box-Transparency" :boolean
-  *default-graphics-box-transparency*)
-
-(def-site-var "New-Sprites-Should-Be-Diet-Sprites?" :boolean
-  *new-sprites-should-be-diet-sprites?*)
-
-(def-site-var "Enable-Mouse-Toggle-Box-Type?" :boolean
-  *enable-mouse-toggle-box-type?*)
-

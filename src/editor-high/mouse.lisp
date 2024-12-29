@@ -1,7 +1,7 @@
 ;;;;-*- Mode:Lisp; Package:boxer; Syntax: Common-Lisp; -*-
 ;;;;
 ;;;;      Boxer
-;;;;      Copyright 1985-2020 Andrea A. diSessa and the Estate of Edward H. Lay
+;;;;      Copyright 1985-2022 Andrea A. diSessa and the Estate of Edward H. Lay
 ;;;;
 ;;;;      Portions of this code may be copyright 1982-1985 Massachusetts Institute of Technology. Those portions may be
 ;;;;      used for any purpose, including commercial ones, providing that notice of MIT copyright is retained.
@@ -199,21 +199,21 @@
                        (let ((display-style (display-style self)))
                          (cond ((or (eq display-style :supershrunk)
                                     (and (eq display-style ':shrunk)
-                                         (inclusive-between? x il (- (slot-value self 'wid) ir))
+                                         (inclusive-between? x il (- (screen-obj-wid self) ir))
                                          (inclusive-between? y (/ it 2)
-                                                             (- (slot-value self 'hei) ib)))
+                                                             (- (screen-obj-hei self) ib)))
                                     (and (eq display-style ':shrunk)
                                          (not (eq self *outermost-screen-box*))
                                          (boxtop (screen-obj-actual-obj self))))
                                 ':inside)
-                           ((and (<= il x (- (slot-value self 'wid) ir))
-                                 (<= it y (- (slot-value self 'hei) ib)))
+                           ((and (<= il x (- (screen-obj-wid self) ir))
+                                 (<= it y (- (screen-obj-hei self) ib)))
                             ;; pointing to main area of box (where the SPRITES are)
                             (let ((in-x (- x il)) (in-y (- y it)))
                               (with-graphics-vars-bound ((screen-obj-actual-obj self) sheet)
-                                (dolist (turtle (graphics-sheet-object-list sheet) ':graphics)
+                                (dolist (turtle (reverse (graphics-sheet-object-list sheet)) ':graphics)
                                   (let ((under? (sprite-at-window-point turtle in-x in-y)))
-                                    (unless (null under?)
+                                    (when (and under? (shown? under?))
                                       (return under?)))))))
                            (t (get-position-in-border self x y))))))
 
@@ -329,7 +329,7 @@
                  (return row))))
        (cond ((< local-x (screen-obj-x-offset screen-row))
               (values self (slot-value self 'x-offset) :left screen-row))
-         ((> local-x (- (slot-value self 'wid)
+         ((> local-x (- (screen-obj-wid self)
                         *border-retry-margin*))
           (values self (slot-value self 'x-offset) :right screen-row))
          (t (screen-obj-at screen-row local-x offset-y recurse?))))
@@ -367,15 +367,6 @@
          (values self acc-x (unless more-than-half-a-char? char)))
         (t (values self acc-x))))))
 
-(defun mouse-position-screen-values (global-x global-y)
-  (multiple-value-bind (so local-offset position)
-                       (screen-obj-at (outermost-screen-box) global-x global-y)
-                       (cond ((screen-row? so)
-                              (values so local-offset))
-                         (t
-                          ;; must be a screen box
-                          (values (screen-row so) local-offset position)))))
-
 (defun mouse-position-screen-row-values (global-x global-y)
   (multiple-value-bind (so local-offset position near-row)
                        (screen-obj-at (outermost-screen-box) global-x global-y)
@@ -404,9 +395,9 @@
 ;; leave a little extra space on the outside of the box
 (defmethod in-screen-box? ((self screen-box) x y)
   (and (< (+ (slot-value self 'x-offset) 2) x (+ (slot-value self 'x-offset)
-                                                 (slot-value self 'wid) -2))
+                                                 (screen-obj-wid self) -2))
        (< (+ (slot-value self 'y-offset) 2) y (+ (slot-value self 'y-offset)
-                                                 (slot-value self 'hei) -2))))
+                                                 (screen-obj-hei self) -2))))
 
 (defmethod screen-offset->cha-no ((self screen-row) x)
   (let ((acc-x 0) (cha-no 0))
