@@ -202,7 +202,7 @@
                (let* ((data (sys::gesture-spec-data input))
                       (charcode (input-gesture->char-code input))
                       (charbits (sys:gesture-spec-modifiers input)))
-                     (handle-boxer-input charcode charbits)))
+                     (handle-boxer-input charcode charbits (key-to-keep-shifted? data))))
               ((key-event? input)
                (handle-boxer-input (input-code input) (input-bits input)))
               ((mouse-event? input)

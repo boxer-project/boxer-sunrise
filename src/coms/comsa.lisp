@@ -318,8 +318,6 @@ argument (n), delete n characters. "
   "moves forward one character.  with
 numeric argument (n), moves forward
 n characters. "
-  ;; if there is a region, get rid of it
-  ;; (reset-region)
   (let ((start-row (point-row))
         (start-point (copy-bp  *point*)))
     (with-multiple-execution
@@ -339,8 +337,6 @@ n characters. "
   "moves forward one character.  with
 numeric argument (n), moves forward
 n characters. "
-  ;; if there is a region, get rid of it
-  ;; (reset-region)
   (let ((start-row (point-row))
         (start-point (copy-bp  *point*)))
     (with-multiple-execution
@@ -425,8 +421,6 @@ n characters. "
 row.  With numeric argument (n), moves
 up n rows.  Tries to stay as close as
 possible to the original column. "
-  ;; if there is a region, get rid of it
-  ;; (reset-region)
   (with-multiple-execution
       (let* ((start-point (copy-bp  *point*))
              (row (bp-row *point*))
@@ -453,9 +447,7 @@ possible to the original column. "
            (set-interval-bps *region-being-defined* (interval-start-bp *region-being-defined*) *point*))
           (t
            (setq *region-being-defined* (make-editor-region start-point *point*))
-           (push *region-being-defined* *region-list*)))
-        ))
-
+           (push *region-being-defined* *region-list*)))))
   boxer-eval::*novalue*)
 
 (defboxer-command COM-PREVIOUS-ROW ()
@@ -524,8 +516,6 @@ possible to the original column. "
 row.  with numeric argument (n), moves
 down n rows.  tries to stay as close as
 possible to the original column. "
-  ;; if there is a region, get rid of it
-  (reset-region)
   (with-multiple-execution
       (let* ((start-point (copy-bp  *point*))
              (row (bp-row *point*))
@@ -556,9 +546,7 @@ possible to the original column. "
            (set-interval-bps *region-being-defined* (interval-start-bp *region-being-defined*) *point*))
           (t
            (setq *region-being-defined* (make-editor-region start-point *point*))
-           (push *region-being-defined* *region-list*)))
-               ))
-
+           (push *region-being-defined* *region-list*)))))
   boxer-eval::*novalue*)
 
 (defboxer-command COM-NEXT-ROW ()

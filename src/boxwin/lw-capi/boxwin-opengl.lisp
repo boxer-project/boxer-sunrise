@@ -1159,6 +1159,12 @@ in macOS."
           (queue-event gesture)))
         (t (queue-event gesture))))
 
+(defun key-to-keep-shifted? (data)
+  "Some keys, such as the arrow keys, we want to preserve the shiftability so that different
+  commands can be run for them (such as keyboard text selecting.) Look inside boxer-key-handler
+  for further details."
+  (member data '(:left :right :down :up)))
+
 (defun boxer-key-handler (pane x y gesture)
   (declare (ignore x y))
   (let ((data (system:gesture-spec-data gesture))
@@ -1176,7 +1182,8 @@ in macOS."
                 (integerp data) ;; may be a symbol like :LEFT or :HELP and not an integer
                 (lower-case-p (code-char data)))
            (setf final-gesture (system:make-gesture-spec (char-code (char-upcase (code-char data))) 0)))
-          ((equal modifiers 1)
+          ((and (equal modifiers 1)
+                (not (key-to-keep-shifted? data)))
            (setf final-gesture (system:make-gesture-spec data 0))))
 
     (handle-gesture final-gesture)))

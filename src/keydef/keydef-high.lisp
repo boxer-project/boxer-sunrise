@@ -534,8 +534,8 @@
    (logandc2 bits 1))
 
 ;;; Hacked up to handle MCL's crippled character system
-(defun handle-boxer-input (input &optional (raw-bits 0))
-  (let ((bits (remove-shift-bit raw-bits)))
+(defun handle-boxer-input (input &optional (raw-bits 0) (keep-shift nil))
+  (let ((bits (if keep-shift raw-bits (remove-shift-bit raw-bits))))
     ;;;	(increment-key-tick)		;for use with multiple-kill hack
     (status-line-undisplay 'boxer-editor-error)
     ;; increment the event counter
