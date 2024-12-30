@@ -245,8 +245,8 @@
 ;; (boxer-eval::defboxer-key (bu::Right-Arrow-key 1) com-forward-word)
 (boxer-eval::defboxer-key (bu::Right-Arrow-key 1) com-forward-cha-define-region)
 
-(boxer-eval::defboxer-key (bu::Left-Arrow-key 2) com-backward-word)
-(boxer-eval::defboxer-key (bu::Right-Arrow-key 2) com-forward-word)
+(boxer-eval::defboxer-key (bu::Left-Arrow-key 4) com-backward-word)
+(boxer-eval::defboxer-key (bu::Right-Arrow-key 4) com-forward-word)
 
 ;; Lines
 (boxer-eval::defboxer-key bu::up-arrow-key com-previous-row)
@@ -255,8 +255,8 @@
 (boxer-eval::defboxer-key bu::down-arrow-key com-next-row)
 (boxer-eval::defboxer-key (bu::n-key 2) com-next-row)
 
-(boxer-eval::defboxer-key (bu::Left-Arrow-key 4) com-beginning-of-row)
-(boxer-eval::defboxer-key (bu::Right-Arrow-key 4) com-end-of-row)
+(boxer-eval::defboxer-key (bu::Left-Arrow-key 8) com-beginning-of-row)
+(boxer-eval::defboxer-key (bu::Right-Arrow-key 8) com-end-of-row)
 
 ;; Box Scroll
 ;; (boxer-eval::defboxer-key (bu::up-arrow-key 1) com-scroll-up-one-screen-box)
