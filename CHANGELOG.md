@@ -1,5 +1,78 @@
 # Change Log
 
+## 3.4.22 2024-12-30
+
+This release includes a number of small to medium bug/crash fixes, some small UI improvements and
+continuing work on the visual aspects and 3d components of our scene graph.
+
+A number of primitives for sampling pixels from a canvas were cleaned up for edge cases, they now
+sample from a framebuffer rather than the actual screen to account for scrolling, zooming, and other
+positioning. Usage of stamp-self was fixed as well, by pushing transform matrices to the graphics
+command list relative to the turtle, and popping them off after stamping the graphics commands.
+
+Some issues were fixed for displaying graphics boxtops with large graphics lists, and making sure
+they get reset when changes are made to the boxtop. This was causing issues with checkboxes in
+several microworlds. An issue with warning about changes between the first and second repaint stages
+was changed to a log rather than an error, this was causing frequent and annoying crashes.
+
+There are some improvements and standardizations to keyboard and UI operation as well. We've finally
+merged a several year old branch to allow selecting text using Shift plus an arrow key, as well as
+some more keybindings for navigation similar to other editors such as alt-left/right to jump words
+and cmd-left/right to jump beginning/ending of lines. ( Thanks @joshuahhh! )
+
+Lastly, work here continues to assign z-indices to various bits of the interface and scene graph to
+keep working towards interesting visual transitions and other interactions. The rotation demo will
+now lift boxes up to various levels based on their depth.
+
+### Full Change Log
+
+bugs-193 Fixing implementation of set-color-at primitive.
+
+sunrise-10 Selecting text with shift arrow keys
+  - Remaining cleanup, adding some options for 'shift' modifiers to get passed in.
+
+sunrise-100 draw-on-bitmap uses a framebuffer now instead of the raw screen buffer
+
+sunrise-107 Changing error to log:error
+  - The actual issue seems to ususally just be a small difference based on a font calculation.
+
+sunrise-112 Fixing stamp-self location
+  - This required a reworking of the graphics display list commands, so stamp-self will work
+    properly, however, existing draw operations will need to be redrawn for the effects to take
+    place.
+
+    This now always translates the stamp from 0,0 rather than a value which may change depending
+    on the size of the canvas and other environmental factors. This also adds a  option to
+    command 37 to pop off the transform matrix that was pushed on the draw stack.
+
+scene-graph
+  - Adding z-indices and depth to screen-box heirarchy
+
+ui
+  - Adding button on error dialog to copy error text to the system clipboard.
+  - Matching yank-region to other paste behavior such that the cursor is after the pasted content (not before it).
+  - Keybindings: alt-left/right jump word, cmd-left/right begin/end of line
+
+perf regression
+  - Fixing boxtop graphics to check to see if the graphics list has changed to clear the framebuffer.
+
+minor-fix
+  - Adding older style >32 display commands to look up properly in deallocate-graphics-command-marker.
+  - Typo in the heading location in the changelog
+  - Changing default preference for using framebuffers to t
+
+cleanup
+  - Removing old options pixel-store calls from %pixblt-from-screen
+  - Removing old #+mcl calculations for line segment extents.
+  - Pulling out matrix x-axis flip into defun and removing lispworks specific rendering-on
+
+format
+  - Converting edvc.lisp and virtcopy.lisp to spaces
+  - Converting eval.lisp to spaces
+
+the-attic
+  - Removing unused defun window-pixel
+
 ## 3.4.21 2024-10-31
 
 
