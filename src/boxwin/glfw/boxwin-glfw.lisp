@@ -216,7 +216,7 @@
   (setf boxer::*resources-dir* (merge-pathnames "data/boxersunrise.app/Contents/Resources/" project-dir))
   (setf boxer::*shaders-dir* (merge-pathnames "src/draw-low-opengl330/shaders/" project-dir))
 
-  (sb-int:set-floating-point-modes :traps nil)
+  #+sbcl (sb-int:set-floating-point-modes :traps nil)
 
   (window-system-specific-make-boxer)
   (window-system-specific-start-boxer))
