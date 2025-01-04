@@ -139,7 +139,7 @@ Modification History (most recent at the top)
 (defun ogl-reshape (width height)
   (setf (boxer::boxgl-device-projection-matrix bw::*boxgl-device*)
         (boxer::create-ortho-matrix width height))
-  #+lispworks (opengl:gl-viewport 0 0 width height))
+  (gl:viewport 0 0 width height))
 
 ;;; pixel conversion
 ;; color values are floats between 0.0 and 1.0

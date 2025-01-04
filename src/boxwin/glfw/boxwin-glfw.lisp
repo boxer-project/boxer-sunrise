@@ -58,16 +58,16 @@
 ;; glfw: whenever the window size changed (by OS or user resize) this callback function executes"
 (cl-glfw3:def-window-size-callback update-viewport (window w h)
   (declare (ignore window))
-  (gl:viewport 0 0 scr-width scr-height))
+  (setf scr-width w scr-height h))
 
 (defclass glfw-boxer-pane (boxer::boxer-canvas)
   ())
 
 (defmethod boxer::viewport-width ((self glfw-boxer-pane))
-  800)
+  scr-width)
 
 (defmethod boxer::viewport-height ((self glfw-boxer-pane))
-  600)
+  scr-height)
 
 (defclass glfw-boxer-name-pane ()
   ())
@@ -108,8 +108,6 @@
         (setf boxer::*freetype-glyph-atlas* (boxer::make-glyph-atlas))
         ;; END pane-callbacks duplication
 
-        (boxer::insert-cha boxer::*point* #\H)
-
         (loop until (cl-glfw3:window-should-close-p)
             do (progn
               ;; per-frame-time-logic
@@ -125,7 +123,7 @@
               ;; Duplicated from repaint.lisp repaint-window
               ;; (boxer::REDISPLAYING-WINDOW (*boxer-pane*)
               (boxer::check-for-window-resize)
-
+              (boxer::update-matrices-ubo bw::*boxgl-device*)
                          (clear-window *boxer-pane*)
                          (boxer::repaint-guts)
                         ;;  (repaint-mouse-docs)
