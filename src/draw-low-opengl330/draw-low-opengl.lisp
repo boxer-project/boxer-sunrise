@@ -226,7 +226,6 @@
 
 (defun %flush-port-buffer (&optional (pane *boxer-pane*))
   (update-framerate)
-  ; (opengl::rendering-on (pane) (opengl::gl-flush))
   #+lispworks (opengl:rendering-on (pane)
     (opengl::swap-buffers pane)))
 
@@ -284,21 +283,12 @@
                        1.0) ;; sgithens TODO I'm not sure we support alpha pen colors yet, may need to increment the box file version
          ))
         ((and (vectorp color) (eq :RGB (aref color 0)))
-        ;  (unless (equalp color (boxgl-device-pen-color bw::*boxgl-device*))
-          ; (format *standard-output* "~%Actually different 1 color: ~A ugh: ~A" color (boxgl-device-pen-color bw::*boxgl-device*))
-          (setf (boxgl-device-pen-color bw::*boxgl-device*) color)
-          ; (update-matrices-ubo bw::*boxgl-device*))
-          )
+          (setf (boxgl-device-pen-color bw::*boxgl-device*) color))
         ((color? color)
-        ;  (unless (equalp (bw::ogl-color->rgb color) (boxgl-device-pen-color bw::*boxgl-device*))
-          ; (format *standard-output* "~%Actually different 2 color: ~A ugh: ~A" (boxgl-device-pen-color bw::*boxgl-device*) (bw::ogl-color->rgb color))
-          (setf (boxgl-device-pen-color bw::*boxgl-device*) (bw::ogl-color->rgb color))
-          ; (update-matrices-ubo bw::*boxgl-device*)
-          )
+          (setf (boxgl-device-pen-color bw::*boxgl-device*) (bw::ogl-color->rgb color)))
 
         (t
-         (error "Bad color passed to %set-pen-color: ~A " color)))
-  )
+         (error "Bad color passed to %set-pen-color: ~A " color))))
 
 (defmacro with-pen-color ((color) &body body)
   `(maintaining-ogl-color

@@ -132,14 +132,6 @@
     (multiple-value-bind (max-wid max-hei)
                          (outermost-screen-box-size window)
                        (repaint-fill-dimensions *outermost-screen-box* max-wid max-hei))
-
-    ;; sgithens 2024-07 This is a totally insane and bizarre workout for an issue where if you
-    ;; create and then delete graphics box, then the screen will go blank the next time you drag
-    ;; to resize the window. Some issue with clip not getting set back? Until correctly fixes, this
-    ;; manages to resize/reset the clip so it doens't occur.
-    ;; (let ((res (resolution)))
-    ;;   (with-clipping-inside (0 0 (aref res 0) (aref res 1))
-    ;;     (+ 1 1)))
     (top-level-repaint-pass-2)))
 
 (defun update-window-title ()
