@@ -133,11 +133,13 @@
   (unless (box-ellipsis-style? screen-rows)
     (or
      (do-vector-contents (screen-row screen-rows)
-       (let ((relative-x (- x (screen-obj-x-offset screen-row)))
-             (relative-y (- y (screen-obj-y-offset screen-row))))
-         (when (position-in-screen-obj? relative-x relative-y
-                                        screen-row strict?)
-           (return screen-row))))
+       ;; sgithens 2025-01-11 Occasoinally the end section of this vector is filled with nils
+       (when screen-row
+         (let ((relative-x (- x (screen-obj-x-offset screen-row)))
+               (relative-y (- y (screen-obj-y-offset screen-row))))
+           (when (position-in-screen-obj? relative-x relative-y
+                                           screen-row strict?)
+             (return screen-row)))))
      ;; it's either going to find it or else, we assume its the last one
      (let ((infs-length (storage-vector-active-length screen-rows)))
        (if (zerop& infs-length)

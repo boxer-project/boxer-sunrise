@@ -101,6 +101,8 @@
           (t nil))
     (setf (horizontal-scroll *boxer-pane*) new-scroll-amount)))
 
+(defvar *scroll-handler-multiplier* 14)
+
 (defun scroll-handler (output-pane direction scroll-operation scroll-amount-original &key interactive)
   "Scrolls the screen box that the mouse is in based on the direction of the scrolling gestures from
    a trackpad or mouse."
@@ -112,7 +114,7 @@
   ;; polling repaint take care of it.
   (unless (not (null *suppress-expose-handler*))
     (multiple-value-bind (x y) (boxer-pane-mouse-position)
-      (let* ((scroll-amount (* scroll-amount-original 4)) ;; TODO This should really be pulled from the OS trackpad/mouse scroll settings
+      (let* ((scroll-amount (* scroll-amount-original *scroll-handler-multiplier*)) ;; TODO This should really be pulled from the OS trackpad/mouse scroll settings
             (mouse-bp (boxer::mouse-position-values x y))
             (mouse-screen-box (boxer::bp-screen-box mouse-bp))
             (mouse-actual-obj (slot-value mouse-screen-box 'boxer::actual-obj))
