@@ -25,6 +25,22 @@
               (cl-fad:merge-pathnames-as-directory *project-dir*  "src/boxwin/glfw/")
       asdf:*central-registry*))
 
+#+ecl
+(defmacro without-fpe-traps (&body body)
+  `(let ((bits (si:trap-fpe 'cl:last t)))
+     (unwind-protect
+          (progn
+            (si:trap-fpe t nil)
+            ,@body)
+       (si:trap-fpe bits t))))
+
 (setf *features* (cons :glfw-engine *features*))
 (ql:quickload :boxer-sunrise-glfw)
+
+#+ecl
+(without-fpe-traps
+  (bw::start-glfw-boxer *project-dir*))
+
+#-ecl
 (bw::start-glfw-boxer *project-dir*)
+
