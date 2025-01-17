@@ -763,7 +763,6 @@
                             (xy-position screen-box)
                             (multiple-value-bind (left top right bottom)
                                                  (box-borders-widths box-type screen-box)
-                                                 ;(drawing-on-window (*boxer-pane*)
                                                  (let ((minimum-track-wid *minimum-box-wid*)
                                                        (minimum-track-hei *minimum-box-hei*)
                                                        (first-movement-flag nil))
@@ -828,7 +827,6 @@
                                                                              ;; don't fill doit boxes !!
                                                                              (com-fill-box actual-box))
                                                                            (modified actual-box))))))))))
-  ;)
   boxer-eval::*novalue*)
 
 (defun status-line-size-report (screen-box wid hei)
