@@ -541,6 +541,12 @@
 (DEFMACRO SPLICE-ITEM-ONTO-LIST (ONTO-LIST ITEM)
   `(SPLICE-LIST-ONTO-LIST ,ONTO-LIST `(,,ITEM)))
 
+;;;
+;;; Time Utilities
+;;;
+(defun current-time-milliseconds ()
+  (* (/ (get-internal-real-time) internal-time-units-per-second) 1000))
+
 (defmacro simple-wait-with-timeout (timeout function &rest args)
   `(let* ((initial-time (get-internal-real-time))
           (end-time (+ (round (* internal-time-units-per-second ,timeout))

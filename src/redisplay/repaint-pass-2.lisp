@@ -207,7 +207,12 @@
             ;; draw any scroll info no
             (draw-scroll-info self)
             ;; Now deal with the Borders,
-            (box-borders-draw box-type self))))))
+            (box-borders-draw box-type self)
+
+            ;; check if the box is lightlighted
+            (if (is-box-highlighted? *boxer-pane* actual-obj)
+              (with-pen-color (*blinker-color*)
+                (draw-rectangle wid hei 0 0))))))))
   ;; Make a note of the fact that this screen box has
   ;; been redisplayed (pass-1 and pass-2 complete).
   (got-repainted self))

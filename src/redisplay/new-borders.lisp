@@ -1119,8 +1119,6 @@
                                   (list full-x (- full-y half)) (list full-x full-y)))
         (draw-line x y full-x full-y)))))
 
-;;; OpenGL just adds things to be redrawn during regular redisplay
-
 ;; called from boxer::repaint-window
 (defun repaint-mouse-docs ()
   (unless (null (bw::mouse-doc-status-x))
@@ -1142,28 +1140,8 @@
   "Any operations inside this body will happen with box being hilighted. The default style is usually
   a subtle blue background extending slightly beyond the borders. A typical use case of this is for
   hilighting a box while it's being saved."
-  (let ((screen-box (gensym))
-        (screen-box-x (gensym))   (screen-box-y (gensym))
-        (screen-box-wid (gensym)) (screen-box-hei (gensym)))
-    `(drawing-on-window (*boxer-pane*)
-                        (let* ((,screen-box (or (car (displayed-screen-objs ,box))
-                                                (when (superior? (outermost-box) ,box)
-                                                  (outermost-screen-box))))
-                               ,screen-box-wid ,screen-box-hei)
-                          (multiple-value-bind (,screen-box-x ,screen-box-y)
-                                               (when (screen-box? ,screen-box)
-                                                 (setq ,screen-box-wid (screen-obj-wid ,screen-box)
-                                                        ,screen-box-hei (screen-obj-hei ,screen-box))
-                                                 (xy-position ,screen-box))
-                                               (unwind-protect
-                                                (progn
-                                                 (unless (null ,screen-box-x)
-                                                   (with-pen-color (*blinker-color*)
-                                                      (draw-rectangle
-                                                                      ,screen-box-wid ,screen-box-hei
-                                                                      ,screen-box-x ,screen-box-y))
-                                                   (swap-graphics-buffers))
-                                                 . ,body)
-                                                (unless (null ,screen-box-x)
-                                                  (repaint)
-                                                  (swap-graphics-buffers))))))))
+  `(unwind-protect
+     (progn
+       (highlight-box *boxer-pane* ,box nil)
+       . ,body)
+     (highlight-box *boxer-pane* ,box t)))

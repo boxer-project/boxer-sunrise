@@ -73,12 +73,52 @@
                     is currently active. Primarily this is so we can make a decision to stop
                     rendering repeatedly when our window isn't the active window in the OS.")
 
+   ;; If any boxes are currently hilighted
+   (highlighted-box :accessor highlighted-box :initform nil
+    :documentation "Tuple to contain a box if one is to be highlighted, and optional internal time (in milliseconds)
+     to start counting until it's release. Ex: '(box nil) or '(box 2234242141)")
+
    ;; Current Colors
    (backdrop-color :accessor backdrop-color :initform *white*)
 
    ;; Current Context Menu and Other Mouse Actions
    (active-menu :accessor active-menu :initform nil)
     ))
+
+(defmethod is-box-highlighted? ((self boxer-canvas) box)
+  "In this rendering canvas, lets us know if the current box should be highlighted,
+   such as when the contents of the box are being saved, etc."
+   ;; If the highlighted-box member is null, than we can safely return false.
+   ;; Otherwise, it should be a tuple of either:
+   ;; (box nil)  or  (box timestamp)
+   ;; In the case of '(box nil) the box should be highlighted.  In the case of
+   ;; '(box timestamp) , we will wait the specified duration after the timestamp
+   ;; before turning it off by setting it all to nil.
+  (with-slots (highlighted-box) self
+    (cond ((null highlighted-box)
+           nil)
+          ((and (eq box (first highlighted-box))
+                (null (second highlighted-box)))
+           t)
+          ((and (eq box (first highlighted-box))
+                (> (- (current-time-milliseconds) (second highlighted-box)) 500))
+           (setf highlighted-box nil)
+           nil)
+          ((eq box (first highlighted-box))
+           t)
+          (t
+           nil))))
+
+(defmethod highlight-box ((self boxer-canvas) box ending?)
+  "Highlight the box. If ending? is t it means the action is complete, but should remain
+   lighted the remaining duration."
+  ;; See comments on is-box-highlighted? for how we are calculating this. As of now,
+  ;; only these two methods should mess with this variable so it can be extended in the
+  ;; future.
+  (with-slots (highlighted-box) self
+    (if ending?
+      (setf highlighted-box (list box (current-time-milliseconds)))
+      (setf highlighted-box (list box nil)))))
 
 (defmethod viewport-width ((self boxer-canvas))
   "Give the width of the port or widget container the Boxer documents canvas. Calculation will be different
