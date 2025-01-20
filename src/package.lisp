@@ -225,7 +225,6 @@
            :get-character-input :get-boxer-input
            ;; cursor and blinker manipulation
            :with-mouse-tracking
-           :with-mouse-tracking-inside;; these  bind...
            :mouse-x :mouse-y
            :mouse-button-state
            :mouse-window-coords
