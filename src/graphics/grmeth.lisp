@@ -572,7 +572,7 @@ Modification History (most recent at top)
     final-mat))
 
 (defmethod draw ((self button))
-  (unless (or (eq self *current-active-sprite*) (null (shown? self)))
+  (unless (null (shown? self))
     (let* ((prev-model (boxgl-device-model-matrix bw::*boxgl-device*))
            (final-mat (3d-matrices:m* prev-model (model-matrix self %drawing-half-width %drawing-half-height))))
       ;; sgithens TODO 2024-12-26 Remove the drawing-half-width/height from above and also from the graphics command

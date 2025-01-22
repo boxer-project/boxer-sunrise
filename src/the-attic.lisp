@@ -15253,6 +15253,9 @@ Modification History (most recent at top)
 ;;;; FILE: grfdfs.lisp
 ;;;;
 
+;; used to avoid redundant erases and draws of subsprites
+;; which happen to be the current active sprite
+(defvar *current-active-sprite* nil)
 
 (defun graphics-screen-sheet-offsets (graphics-screen-sheet)
   (values (screen-obj-x-offset graphics-screen-sheet)

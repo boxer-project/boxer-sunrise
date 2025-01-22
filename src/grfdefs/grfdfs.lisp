@@ -371,10 +371,6 @@ parameters of the graphics box are bound. "
      (with-sprite-primitive-environment (,sprite-var ,turtle-var t)
         . ,body)))
 
-;; used to avoid redundant erases and draws of subsprites
-;; which happen to be the current active sprite
-(defvar *current-active-sprite* nil)
-
 ;;; Cocoa drawing: sprites dont draw onto the screen, they just update the graphics
 ;;; list and periodically, the GB box space, on the screen is cleared, the
 ;;; graphics list is blasted out and then the sprites are redrawn (any existing
