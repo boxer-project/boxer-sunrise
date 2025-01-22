@@ -485,9 +485,7 @@ Modification History (most recent at top)
          (gc (box-interface-value (slot-value agent 'pen-color)))
          (pen-state (box-interface-value (slot-value agent 'pen)))
          (alu (get-alu-from-pen pen-state))
-         (font (box-interface-value (slot-value agent 'type-font)))
-         ;; Do not supress recording of these synchronization commands
-         (*supress-graphics-recording?* nil))
+         (font (box-interface-value (slot-value agent 'type-font))))
     (unless (and (not force?) (eq pen-state 'up))
       ;; don't need to synchronize if the sprite isn't going to be
       (unless (eql *graphics-state-current-alu* alu)

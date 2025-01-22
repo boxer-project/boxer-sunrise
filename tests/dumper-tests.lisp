@@ -25,8 +25,7 @@
 ;;; - Manually unzip the zip file, then compare the md5's of the original one and zipped one
 
 ;; Basic test of creating a box structure, saving it, re-opening it, and verifying a few bits
-(let* ((boxer::*supress-graphics-recording?* t)
-      (boxer::*draw-status-line* nil)
+(let* ((boxer::*draw-status-line* nil)
       (current-time (simple-name-timestamp))
       (new-tests-dir (cl-fad:merge-pathnames-as-directory cl-user::*boxer-project-dir*
                                                           (format nil "tests/data/testing/~A/" current-time)))

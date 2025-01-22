@@ -193,11 +193,6 @@ Can be nil if no action is desired.")
 (define-eval-var boxer::%private-graphics-list :global nil)
 (define-eval-var boxer::*current-sprite* :global nil)
 
-(defvar boxer::*supress-graphics-recording?* nil)
-;; this needs to be defined with a value of NIL for the benefit of other
-;; (unrelated) redisplay initializers
-(define-eval-var boxer::*supress-graphics-recording?* :global nil)
-
 ;; error handling
 (define-eval-var *error-handler-list* :global nil)
 (define-eval-var *error-signalled?* :global nil)

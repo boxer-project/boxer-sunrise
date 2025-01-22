@@ -11,8 +11,7 @@
     togo))
 
 ;; Tests for defun file-type
-(let* ((boxer::*supress-graphics-recording?* t)
-       (boxer::*draw-status-line* nil)
+(let* ((boxer::*draw-status-line* nil)
        (current-time (simple-name-timestamp))
        (tests-dir (cl-fad:merge-pathnames-as-directory cl-user::*boxer-project-dir*
                                                            (format nil "tests/data/testing/~A/" current-time)))

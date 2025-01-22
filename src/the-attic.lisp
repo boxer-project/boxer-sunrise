@@ -26205,6 +26205,16 @@ Modification History (most recent at top)
 ;;;; FILE: recursive-prims.lisp
 ;;;;
 
+;;;; WITHOUT-RECORDING
+
+(defrecursive-funcall-primitive bu::without-recording ((list-rest what))
+  :STACK-FRAME-ALLOCATION (10 5 10 10)
+  :STATE-VARIABLES (boxer::*supress-graphics-recording?*)
+  :BEFORE (progn (set-and-save-state-variables T)
+                 (recursive-funcall-invoke
+                  (make-interpreted-procedure-from-list (list what))))
+  :AFTER  (progn (restore-state-variables) nil))
+
 ;; Some interesting pre-opengl bits from defrecursive-funcall-primitive update-shape:
 (unless (null assoc-graphics-box)
                #-opengl
@@ -28296,6 +28306,11 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: vars.lisp
 ;;;;
+
+(defvar boxer::*supress-graphics-recording?* nil)
+;; this needs to be defined with a value of NIL for the benefit of other
+;; (unrelated) redisplay initializers
+(define-eval-var boxer::*supress-graphics-recording?* :global nil)
 
 ;; sgithens 2023-07-12 We are always in :boxer rather than :window mode now after
 ;; transitioning to all Boxer coords for turtles. Eventually we may want to remove

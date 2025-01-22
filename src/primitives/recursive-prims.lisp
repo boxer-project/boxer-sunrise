@@ -51,7 +51,6 @@
   :STACK-FRAME-ALLOCATION (1 1 1 1) ;; nested update-shapes?
   :STATE-VARIABLES (boxer::%learning-shape? boxer::%turtle-state
                     boxer::%learning-shape-graphics-list
-                    boxer::*graphics-command-recording-mode*
                     boxer::*current-sprite*)
   ;; look at with-graphics-vars-bound to see how the value of
   ;; %learning-shape-graphics-list gets into %graphics-list
@@ -173,13 +172,3 @@
                    (recursive-funcall-invoke
                     (make-interpreted-procedure-from-list (list what))))))
   :AFTER (progn (restore-state-variables) nil))
-
-;;;; WITHOUT-RECORDING
-
-(defrecursive-funcall-primitive bu::without-recording ((list-rest what))
-  :STACK-FRAME-ALLOCATION (10 5 10 10)
-  :STATE-VARIABLES (boxer::*supress-graphics-recording?*)
-  :BEFORE (progn (set-and-save-state-variables T)
-                 (recursive-funcall-invoke
-                  (make-interpreted-procedure-from-list (list what))))
-  :AFTER  (progn (restore-state-variables) nil))

@@ -2,8 +2,7 @@
 
 (plan nil)
 
-(let ((boxer::*supress-graphics-recording?* t)
-      (boxer::*draw-status-line* nil)
+(let ((boxer::*draw-status-line* nil)
       (henri-sun-v5 (merge-pathnames "data/boxfiles-v5/henri-sun-v5.box"
                                      (make-pathname :directory (pathname-directory *load-truename*)))))
 
