@@ -407,8 +407,6 @@
              |#
              (setf (cached-code self) nil)
              (decache-build-function self)
-             ;; decache visible-screen-objs
-             (decache-visible-screen-objs self)
              ;; finally mark this box as having been modified by THIS pass
              (mark-this-modified-pass self)
              (redisplay-related-modified))))))

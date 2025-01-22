@@ -15253,6 +15253,39 @@ Modification History (most recent at top)
 ;;;; FILE: grfdfs.lisp
 ;;;;
 
+;;; desperately needs to cache but have to figure out a good time to flush
+;;; the cache (modified won't work since graphics commands need to call
+;;; modified on the graphics-box)
+;(defun get-visible-screen-objs (graphics-box)
+;  (or (getprop graphics-box 'cached-vis-objs)
+;      (let ((sbs nil))
+;	;; first check the Box proper
+;	(dolist (sb (displayed-screen-objs graphics-box))
+;	  (when (graphics-screen-box? sb)
+;	    (push sb sbs)))
+;	;; then check any ports to the box
+;	(dolist (port (ports graphics-box))
+;	  (dolist (sb (displayed-screen-objs port))
+;	    (when (graphics-screen-box? sb)
+;	      (push sb sbs))))
+;	(putprop graphics-box sbs 'cached-vis-objs)
+;	sbs)))
+
+;; it will be OK to decache on modified now that I am going to implement
+;; the queueing implementation for modified
+
+;;
+;; 6/30/98 decaching on modified loses when a screen box is obscured by
+;; shrinking or graphics toggling a superior box.  No way to flush possible
+;; visible objects without a map over all inferiors.
+;; For now, modify the caching scheme to only persist for the suration of an
+;; evaluation.  Even this will lose when people start programmatically shrinking
+;; or toggling superiors, perhaps prims which affect the state of the screen
+;; should also flush the vis-obj caches.
+(defun decache-visible-screen-objs (box)
+  (unless (null (getprop box 'cached-vis-objs))
+    (putprop box nil 'cached-vis-objs)))
+
 ;; used to avoid redundant erases and draws of subsprites
 ;; which happen to be the current active sprite
 (defvar *current-active-sprite* nil)
