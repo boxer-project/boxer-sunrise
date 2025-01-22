@@ -109,27 +109,27 @@ parameters of the graphics box are bound. "
      (declare (fixnum %drawing-width %drawing-height))
      ;; should these be floats ???
      (let ((%drawing-half-width 0.0)
-	   (%drawing-half-height 0.0))
-	 (unless (null ,gr-sheet)
-	   ;; set the variables if it is possible to do so.  We
-	   ;; bind them and set them separately in order to centralize
-	   ;; this check
-	   (setq %bit-array (graphics-sheet-bit-array ,gr-sheet)
-		 %drawing-width (graphics-sheet-draw-wid ,gr-sheet)
-		 %drawing-height (graphics-sheet-draw-hei ,gr-sheet)
-		 %graphics-list (or %learning-shape-graphics-list
+           (%drawing-half-height 0.0))
+         (unless (null ,gr-sheet)
+           ;; set the variables if it is possible to do so.  We
+           ;; bind them and set them separately in order to centralize
+           ;; this check
+           (setq %bit-array (graphics-sheet-bit-array ,gr-sheet)
+                 %drawing-width (graphics-sheet-draw-wid ,gr-sheet)
+                 %drawing-height (graphics-sheet-draw-hei ,gr-sheet)
+                 %graphics-list (or %learning-shape-graphics-list
                                     %private-graphics-list
-				    (graphics-sheet-graphics-list ,gr-sheet)
-				    (let ((new-gl(make-graphics-command-list)))
-				      (setf (graphics-sheet-graphics-list
-					     ,gr-sheet)
-					    new-gl)
-				      new-gl))
-		 %draw-mode (graphics-sheet-draw-mode ,gr-sheet)
-		 %drawing-half-width (/ %drawing-width 2.0)
-		 %drawing-half-height (/ %drawing-height 2.0)))
-	 ;; now do the rest
-	 . ,body)))
+                                    (graphics-sheet-graphics-list ,gr-sheet)
+                                    (let ((new-gl(make-graphics-command-list)))
+                                      (setf (graphics-sheet-graphics-list
+                                             ,gr-sheet)
+                                            new-gl)
+                                      new-gl))
+                 %draw-mode (graphics-sheet-draw-mode ,gr-sheet)
+                 %drawing-half-width (/ %drawing-width 2.0)
+                 %drawing-half-height (/ %drawing-height 2.0)))
+         ;; now do the rest
+         . ,body)))
 
 ;;; Set Up Clipping and Offsets
 
@@ -382,19 +382,19 @@ parameters of the graphics box are bound. "
                                              &body body)
   `(let ((active-sprites (get-sprites)))
      (cond ((null active-sprites)
-	    ,(if (null no-sprite-error)
-		 '(boxer-eval::signal-error :sprite-error "Don't have a Sprite to Talk to")
-		 'boxer-eval::*novalue*))
-	   (t
-	    (let* ((,sprite-var active-sprites)
-		   (,turtle-var (get-sprite-turtle ,sprite-var))
-		   (,gboxvar (get-graphics-box-from-sprite-box ,sprite-var)))
-	      ;; get rid of bound but never used warnings
-	      ,sprite-var ,turtle-var
-	      (with-graphics-vars-bound (,gboxvar sheet)
-		  (prog1 (with-graphics-state (%graphics-list)
-			     (update-graphics-state ,turtle-var)
-			   ,@body))))))))
+            ,(if (null no-sprite-error)
+                 '(boxer-eval::signal-error :sprite-error "Don't have a Sprite to Talk to")
+                 'boxer-eval::*novalue*))
+           (t
+            (let* ((,sprite-var active-sprites)
+                   (,turtle-var (get-sprite-turtle ,sprite-var))
+                   (,gboxvar (get-graphics-box-from-sprite-box ,sprite-var)))
+              ;; get rid of bound but never used warnings
+              ,sprite-var ,turtle-var
+              (with-graphics-vars-bound (,gboxvar sheet)
+                  (prog1 (with-graphics-state (%graphics-list)
+                             (update-graphics-state ,turtle-var)
+                           ,@body))))))))
 
 
 ;;; This is used by sprite update functions when they are passed an illegal arg
