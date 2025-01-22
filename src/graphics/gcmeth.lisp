@@ -486,10 +486,6 @@ Modification History (most recent at top)
          (pen-state (box-interface-value (slot-value agent 'pen)))
          (alu (get-alu-from-pen pen-state))
          (font (box-interface-value (slot-value agent 'type-font)))
-         ;; this has to be bound explicitly here because this method can
-         ;; be called INSIDE of update-shape
-         ;; sgithens 2023-07-12 we are always in :boxer mode now
-         ;  (*graphics-command-recording-mode* ':window)
          ;; Do not supress recording of these synchronization commands
          (*supress-graphics-recording?* nil))
     (unless (and (not force?) (eq pen-state 'up))

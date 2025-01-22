@@ -28296,6 +28296,12 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: vars.lisp
 ;;;;
+
+;; sgithens 2023-07-12 We are always in :boxer rather than :window mode now after
+;; transitioning to all Boxer coords for turtles. Eventually we may want to remove
+;; this variable.
+(define-eval-var boxer::*graphics-command-recording-mode* :global ':boxer)
+
 ;; used in with-sprites-hidden
 (define-eval-var boxer::*prepared-graphics-box* :global nil)
 (define-eval-var boxer::*sprites-hidden* :global nil)

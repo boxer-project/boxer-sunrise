@@ -436,8 +436,7 @@ Modification History (most recent at the top)
         *graphics-state-current-pen-color* *foreground-color*)
 
   (setq *default-graphics-object-shape*
-        (let ((%graphics-list (make-turtle-shape 8))
-              (*graphics-command-recording-mode* ':boxer))
+        (let ((%graphics-list (make-turtle-shape 8)))
           (record-boxer-graphics-command-change-alu alu-seta)
           (record-boxer-graphics-command-change-pen-width 1)
           (record-boxer-graphics-command-centered-rectangle
@@ -445,8 +444,7 @@ Modification History (most recent at the top)
            *default-graphics-object-size* *default-graphics-object-size*)
           %graphics-list)
         *default-turtle-shape*
-        (let ((%graphics-list (make-turtle-shape 8))
-              (*graphics-command-recording-mode* ':boxer))
+        (let ((%graphics-list (make-turtle-shape 8)))
           (record-boxer-graphics-command-change-alu alu-seta)
           (record-boxer-graphics-command-change-pen-width 1)
           ;; the base line
