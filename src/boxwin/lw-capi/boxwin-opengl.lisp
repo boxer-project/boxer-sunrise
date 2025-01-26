@@ -916,12 +916,7 @@ in macOS."
   (capi:display boxer-window::*boxer-frame*))
 
 (defun window-system-specific-start-boxer ()
-  (when (member "-debug" sys:*line-arguments-list* :test #'string-equal)
-    (break "Start Boxer"))
   (setq boxer-eval::*current-process* nil)
-
-  (when (member "-debug" sys:*line-arguments-list* :test #'string-equal)
-    (opengl:describe-configuration *boxer-pane*))
 
   (boxer::load-appdata)
   (fixup-menus)
