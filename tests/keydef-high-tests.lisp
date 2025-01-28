@@ -45,6 +45,6 @@
 ; (is (symbol-name (boxer::lookup-input-name (bw::make-mouse-event))) "MOUSE-CLICK")
 
 ;; gesture-spec
-#+lispworks (is (symbol-name (boxer::lookup-input-name (sys:make-gesture-spec 97 0))) "A-KEY")
+#+lispworks (is (symbol-name (boxer::lookup-input-name (boxer::make-gesture-spec 97 0))) "A-KEY")
 
 (finalize)

@@ -41,15 +41,22 @@
 
 (cl-glfw3:def-key-callback key-callback (window key scancode action mod-keys)
   (declare (ignore window scancode mod-keys))
-  (cond
-    ((and (eq action :press) (eq key :backspace))
-     (boxer::handle-boxer-input (code-char 8)))
-    ((and (eq action :press) (eq key :enter))
-     (boxer::handle-boxer-input (code-char 13)))
-    ((and (eq action :press) (eq key :escape))
-     (boxer::handle-boxer-input (code-char 27)))
-    (t
-     nil)))
+  (let ((bits 0))
+    (when (member :control mod-keys)
+      (setf bits 2))
+    (cond
+      ((and (eq action :press) (eq key :backspace))
+       (boxer::handle-boxer-input (code-char 8)))
+      ((and (eq action :press) (eq key :enter))
+       (boxer::handle-boxer-input (code-char 13) bits))
+      ((and (eq action :press) (eq key :escape))
+       (boxer::handle-boxer-input (code-char 27)))
+      ((and (eq action :press) (member key '(:up :down :left :right)))
+       (let* ((data key)
+              (charcode (input-gesture->char-code (box::make-gesture-spec key bits))))
+         (handle-boxer-input charcode bits (box::key-to-keep-shifted? data))))
+      (t
+      nil))))
 
 (cl-glfw3:def-char-callback char-callback (window codepoint)
   (declare  (ignore window))

@@ -45,6 +45,15 @@
 
 (in-package :boxer)
 
+(defclass gesture-spec ()
+  ((data :initform nil :initarg :data :accessor gesture-spec-data)
+   (modifiers :initform nil :initarg :modifiers :accessor gesture-spec-modifiers)))
+
+(defun make-gesture-spec (data modifiers)
+  (make-instance 'gesture-spec :data data :modifiers modifiers))
+
+(defgeneric gesture-spec-p (x) (:method (x) nil) (:method ((x gesture-spec)) t))
+
 ;;;;KEY-NAMES
 
 ;;; This file defines :BOXER-FUNCTION names for the various keystrokes and
@@ -527,6 +536,12 @@
 ;;;;  Main dispatch function called by system dependent input loops or
 ;;;;  event handlers
 
+(defun key-to-keep-shifted? (data)
+  "Some keys, such as the arrow keys, we want to preserve the shiftability so that different
+  commands can be run for them (such as keyboard text selecting.) Look inside boxer-key-handler
+  for further details."
+  (member data '(:left :right :down :up)))
+
 (defun remove-shift-bit (bits)
   "Temporary function to remove the shift bit (see boxer-bugs-107) until we figure
    out all the semantics of keyboard layouts and when to include/remove shift for
@@ -617,8 +632,8 @@
                     (mouse-position-values x-pos y-pos)
                          (declare (ignore mouse-bp local-x local-y))
                          (lookup-click-name click bits area))))
-        #+lispworks ((sys:gesture-spec-p data)
-         (lookup-key-name (sys:gesture-spec-data data) (sys:gesture-spec-modifiers data)))
+        ((gesture-spec-p data)
+         (lookup-key-name (gesture-spec-data data) (gesture-spec-modifiers data)))
         (t nil)))
 
 ;;; Documentation Support

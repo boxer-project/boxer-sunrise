@@ -166,7 +166,7 @@
           (cond ((null ev) (return nil))
                 ((mouse-event? ev) (return ev))
                 ((key-event?   ev) (return ev))
-                #+lispworks ((system:gesture-spec-p ev) (return ev))
+                ((gesture-spec-p ev) (return ev))
                 (t (pop *boxer-eval-queue*))))))
 
 ;; on the mac, this checks to OS event queue to look for pending unhandled events
@@ -193,16 +193,15 @@
                  #+lispworks (mp::process-wait-with-timeout "Boxer Input" 0.01
                                    #'(lambda ()
                                        (not (null (car *boxer-eval-queue*)))))))
-              #+lispworks
-              ((system:gesture-spec-p input)
+              ((gesture-spec-p input)
                ;; We are adding this gesture condition in addition to the key-event? because at some point
                ;; during a lispworks major version change, the ability to encode the modifier keys as part of
                ;; the reader char seems to have gone away.  By adding an option to push an entire gesture-spec
                ;; to the *boxer-eval-queue* we can just manually pick out the char-code and input bits.
-               (let* ((data (sys::gesture-spec-data input))
+               (let* ((data (gesture-spec-data input))
                       (charcode (input-gesture->char-code input))
-                      (charbits (sys:gesture-spec-modifiers input)))
-                     (handle-boxer-input charcode charbits (key-to-keep-shifted? data))))
+                      (charbits (gesture-spec-modifiers input)))
+                 (handle-boxer-input charcode charbits (key-to-keep-shifted? data))))
               ((key-event? input)
                (handle-boxer-input (input-code input) (input-bits input)))
               ((mouse-event? input)

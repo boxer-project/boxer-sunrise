@@ -196,7 +196,7 @@ Modification History (most recent at top)
   the character code from the data bit.
   For resolution of the modifiers, see `convert-gesture-spec-modifier` which converts the
   gesture spec to boxers internal mapping of modifier keys."
-  #+lispworks (let ((data (sys::gesture-spec-data gesture)))
+  (let ((data (gesture-spec-data gesture)))
     (cond ((numberp data)
            (code-char data))
           ((symbolp data) ;; TODO sgithens, when does this have a symbol for data and how to handle it in boxer-command-loop-internal

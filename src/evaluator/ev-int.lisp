@@ -369,7 +369,7 @@
 (defmacro top-level-eval-wrapper (&body body)
   `(prog1
     (maintaining-point-position
-     (bw::with-suppressed-exposure-handling
+     (with-suppressed-exposure-handling
       (with-mouse-cursor-on
         (with-modified-queueing
           (with-non-lisp-structure-deallocation

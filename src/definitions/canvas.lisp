@@ -180,3 +180,43 @@
 
 (defun set-outermost-screen-box-in-window (window new-outermost-screen-box)
   (setf (slot-value window 'outermost-screen-box) new-outermost-screen-box))
+
+;;;
+;;; Mouse Cursor
+;;;
+
+(defun set-mouse-cursor (cursor)
+  "Changes the current style of the mouse cursor using a keyword. Currently supported keywords are:
+    :retarget (crosshairs)"
+  (set-mouse-cursor-internal cursor))
+
+(defun set-mouse-cursor-internal (cursor)
+  ;; These are all currently referenced at some point in the code from previous
+  ;; eras. We'll need to revisit them with some UI design. - sgithens 2020-10-09
+  (cond
+    ((eq cursor :retarget) ; retarget is when we are choosing the box target for a new port
+     #+lispworks (setf (capi:simple-pane-cursor *boxer-pane*) :crosshair))
+    ((eq cursor :hotspot) nil) ; TODO
+    ((eq cursor :type-tab) nil) ; TODO
+    ((eq cursor :name-box) nil) ; TODO
+    ((eq cursor :normal) nil) ; TODO
+    ((eq cursor :expandspot) nil) ; TODO
+    ((eq cursor :suitcase) nil) ; TODO
+    (t nil)))
+
+(defun reset-mouse-cursor ()
+  "Sets the current mouse cursor back to the system default."
+  #+lispworks (setf (capi:simple-pane-cursor *boxer-pane*) nil))
+
+;; we use this to supress full redisplays around file operations and eval
+;; there are 2? possible ways that redisplay can be called asynchronously, via the
+;; expose window handler or the resize window handler
+(defvar *suppress-expose-handler* nil)
+(defvar *suppressed-actions* nil)
+
+(defmacro with-suppressed-exposure-handling (&body body)
+  `(unwind-protect
+       (progn (setq *suppress-expose-handler* t)
+         . ,body)
+     (setq *suppress-expose-handler* nil
+           *suppressed-actions* nil)))
