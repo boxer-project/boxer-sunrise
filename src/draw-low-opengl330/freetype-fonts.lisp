@@ -294,7 +294,7 @@
                                     :tx tx :ty ty :advance advance :t-width width :t-rows rows)))
         (gl:tex-sub-image-2d :texture-2d 0 x y width rows :red :unsigned-byte buffer)
         (setf (gethash cache-key (glyph-atlas-glyphs atlas)) glyph)
-        (setf x (+ x width)))
+        (setf x (+ x width 1)))
         (setf max-width x)))
     (log:debug "~%pre-render: font-face: ~A spec: ~A ~% Final texture width for ~A ~A is ~A" font-face font-spec font-spec font-zoom max-width)))
 
