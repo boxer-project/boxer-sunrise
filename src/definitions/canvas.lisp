@@ -85,6 +85,13 @@
    (active-menu :accessor active-menu :initform nil)
     ))
 
+(defun box-in-heirarchy? (this-box box-to-find)
+  "Is 'this-box', or any boxes above it the 'box-to-find'."
+  (do ((cur-box this-box (superior-box cur-box)))
+      ((or (null cur-box)
+           (eq cur-box box-to-find))
+       (eq cur-box box-to-find))))
+
 (defmethod is-box-highlighted? ((self boxer-canvas) box)
   "In this rendering canvas, lets us know if the current box should be highlighted,
    such as when the contents of the box are being saved, etc."
@@ -97,10 +104,13 @@
   (with-slots (highlighted-box) self
     (cond ((null highlighted-box)
            nil)
-          ((and (eq box (first highlighted-box))
+          ((and (box-in-heirarchy? box (first highlighted-box))
                 (null (second highlighted-box)))
-           t)
-          ((and (eq box (first highlighted-box))
+           ;; This ensures that boxes don't get double highlighted.
+           (if (not (eq box highlighted-box))
+             (eq box (outermost-box))
+             t))
+          ((and (box-in-heirarchy? box (first highlighted-box))
                 (> (- (current-time-milliseconds) (second highlighted-box)) 500))
            (setf highlighted-box nil)
            nil)
