@@ -143,7 +143,7 @@
   (let* ((pixmap (graphics-canvas-pixmap self))
          (wid (ogl-pixmap-width pixmap))
          (hei (ogl-pixmap-height pixmap))
-         (new-projection-matrix (create-ortho-matrix wid hei)))
+         (new-projection-matrix (create-ortho-matrix wid hei :zoom 1.0)))
     (setf (boxgl-device-projection-matrix device) new-projection-matrix)
     (setf (boxgl-device-transform-matrix device) (create-transform-matrix 0 0))
     (setf (boxgl-device-model-matrix device) (3d-matrices:meye 4))
