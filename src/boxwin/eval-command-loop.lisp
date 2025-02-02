@@ -205,13 +205,6 @@
               ((key-event? input)
                (handle-boxer-input (input-code input) (input-bits input)))
               ((mouse-event? input)
-               ;; be sure to call redisplay BEFORE the
-               ;; processing of any mouse actions to
-               ;; insure that we have an up to date view
-               ;; of the editor
-               ;;
-               ;; also check for double click by pausing and looking for a
-               ;; double click event
                (handle-boxer-input input))
               ((and (symbolp input) (not (null (symbol-function input))))
                (funcall input))
