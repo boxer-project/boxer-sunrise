@@ -30,7 +30,7 @@
   (:use :common-lisp )
   (:nicknames :box)
   (:shadow :once-only)
-  (:export *suppress-expose-handler*
+  (:export *suppress-expose-handler* *SUPPRESSED-ACTIONS*
            :gesture-spec-modifiers :gesture-spec-data :make-gesture-spec
            :key-to-keep-shifted? :gesture-spec-p
            :symbol-format :set-font-info
