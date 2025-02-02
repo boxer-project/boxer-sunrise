@@ -1189,15 +1189,15 @@ in macOS."
   (mp::process-wait "Input" #'(lambda () (not (null *boxer-eval-queue*))))
 
   (loop (let ((ev (pop *boxer-eval-queue*)))
-          (when (or (key-event? ev) (mouse-event? ev) (system:gesture-spec-p ev))
+          (when (or (key-event? ev) (mouse-event? ev) (gesture-spec-p ev))
             (return ev)))))
 
 (defun get-character-input (window &key (plain-char-wanted? nil))
   (let ((input (get-boxer-input)))
-    (cond ((system:gesture-spec-p input)
-           (let* ((data (sys::gesture-spec-data input))
+    (cond ((gesture-spec-p input)
+           (let* ((data (gesture-spec-data input))
                   (charcode (input-gesture->char-code input))
-                  (charbits (sys:gesture-spec-modifiers input)))
+                  (charbits (gesture-spec-modifiers input)))
               (values charcode charbits)))
           ((key-event? input)
            (if (and plain-char-wanted?
