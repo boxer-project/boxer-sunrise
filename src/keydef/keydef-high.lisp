@@ -270,34 +270,7 @@
   (dolist (key-that-format-~c-loses-on  *keyboard-special-keys*)
     (define-key-and-all-its-shifted-key-names
       (car  key-that-format-~c-loses-on)
-      (char-code (cadr key-that-format-~c-loses-on)) platform))
-)
-
-;;; This is different from define-basic-keys in that we want to loop through
-;;; the existing array looking for possible translations rather than making
-;;; and filling a new array, because the size of the array is determined by the
-;;; capabilities of the window system
-(defun reset-keys (platform)
-  (let ((new-shifts (input-device-shift-list platform)))
-    (dotimes (i (array-dimension *key-names* 0))
-      (let ((unshifted-name (aref *key-names* i 0)))
-        ;; the unshifted names should be the same regardless of keyboard
-        (unless (null unshifted-name)
-          (do* ((shifts new-shifts (cdr shifts))
-                (shift-name (car shifts) (car shifts))
-                (bit 1 (1+ bit))
-                ;; get rid of possible "CAPITAL-" in the shifted names
-                (vanilla-name (if (search "CAPITAL-"
-                                          (symbol-name unshifted-name))
-                                (subseq (symbol-name unshifted-name) 8)
-                                unshifted-name)))
-            ((null shifts))
-            (let ((new-name (intern-in-bu-package
-                             (symbol-format nil "~A-~A"
-                                            shift-name vanilla-name))))
-              (check-key-rebinding (aref *key-names* i bit) new-name)
-              (setf (aref *key-names* i bit) new-name))))))))
-
+      (char-code (cadr key-that-format-~c-loses-on)) platform)))
 
 ;; this exists as a separate function because it may have to called
 ;; at startup time (e.g. for the X-Windows implementation, the particulars
@@ -393,51 +366,6 @@
     (setq *default-mouse-click-name-translation-table* table)
     (setf (get place-name 'click-translation-table) table)))
 
-;; the fundamental between setup-mouse-translation-table and
-;; reset-mouse-translation-table is that the reset version tries to
-;; use the existing translation arrays because the initial translation arrays
-;; will be hardware dependent.  Rather than allocating a new array which may
-;; not fit the inputs which the current window system is capable of generating,
-;; we iterate through the existing array looking for possible translations
-;; for each entry, entries with no translation are left alone and the input
-;; will continue to generate the old name
-(defun reset-mouse-translation-table (platform
-                                      &optional
-                                      place-name
-                                      (table
-                                       (make-mouse-click-name-translation-table
-                                        platform)
-                                       table-supplied?))
-  (when (not table-supplied?)
-    (warn "Reset-mouse-translation-table:table was not supplied, making one...")
-    ;; if we are making new ones, better install them
-    (if (null place-name)
-      (setq *default-mouse-click-name-translation-table* table)
-      (setf (get place-name 'click-translation-table) table)))
-  ;; more checking
-  (let ((current-buttons (array-dimension table 0))
-        (old-names (input-device-mouse-string *current-input-device-platform*)))
-    ;; this loses when switching back, we do need some sort of reality
-    ;; check here eventually
-    ;    (when (not (= current-buttons (length old-names)))
-    ;      (error "Mismatch between array size and..."))
-    (do* ((bit 0 (1+ bit))
-          (shift-list (cons nil (input-device-shift-list platform))
-                      (cdr shift-list))
-          (shift-name (car shift-list) (car shift-list)))
-      ((>=& bit (array-dimension table 1)))
-      (do* ((button 0 (1+& button))
-            (buttons old-names (cdr buttons))
-            (unshifted-translation (unshifted-click-translation
-                                    (aref table button 0) platform)))
-        ((>=& button current-buttons))
-        (unless (null unshifted-translation)
-          (let ((new-name (mouse-click-name-string unshifted-translation
-                                                   shift-name place-name platform)))
-            (unless (fast-memq platform *bound-input-device-platforms*)
-              (check-key-rebinding (aref table button bit) new-name))
-            (setf (aref table button bit) new-name)))))))
-
 ;;; the right fix is to add enough info to DEFINE-INPUT-DEVICES to
 ;;; enable a programmatic solution
 ;;; this is crocked up to do the following:
@@ -477,26 +405,18 @@
                 'bu::generic-mouse-click)
            (t (aref table click bits)))))))
 
-
-(defun set-mouse-translation-table (platform rebind?)
+(defun set-mouse-translation-table (platform)
   ;; setup the default click table...
-  (if rebind?
-    (reset-mouse-translation-table platform nil
-                                   *default-mouse-click-name-translation-table*)
-    (setup-mouse-translation-table platform nil))
+  (setup-mouse-translation-table platform nil)
   ;; now setup any tables for specific parts of the box borders
   (dolist (name (defined-mouse-border-areas))
-    (if rebind?
-      (reset-mouse-translation-table platform name
-                                     (get name 'click-translation-table))
-      (setup-mouse-translation-table platform name))))
+    (setup-mouse-translation-table platform name)))
 
 ;;; putting it all together
-(defun make-input-devices (platform &optional (rebind? t))
-  (set-mouse-translation-table platform rebind?)
-  (cond (rebind? (reset-keys platform))
-    (t (define-basic-keys platform)
-       (configure-for-keyboard platform)))
+(defun make-input-devices (platform)
+  (set-mouse-translation-table platform)
+  (define-basic-keys platform)
+  (configure-for-keyboard platform)
   (push platform *bound-input-device-platforms*)
   ;; this has to come last because the previous forms may need to refer
   ;; to the old value to see if any bindings need to be forwarded
@@ -529,7 +449,7 @@
 ;;; initial setup
 (eval-when (eval load)
            (initialize-input-lookup-arrays)
-           (make-input-devices *initial-platform* nil))
+           (make-input-devices *initial-platform*))
 
 
 
