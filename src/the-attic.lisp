@@ -17068,6 +17068,30 @@ sprites)))
 ;;;; FILE: keydef-high.lisp
 ;;;;
 
+;;; the right fix is to add enough info to DEFINE-INPUT-DEVICES to
+;;; enable a programmatic solution
+;;; this is crocked up to do the following:
+
+;; left :mac => nil
+;; middle :mac => click
+;; right :mac => nil
+;; click :sun = > middle
+;; plus the double click versions
+(defun unshifted-click-translation (current-name new-platform)
+  (case new-platform
+    (:mac (cond ((eq current-name (mouse-click-name-string "MIDDLE" nil
+                                                           nil :default))
+                 "CLICK")
+            ((eq current-name (mouse-click-name-string "MIDDLE-TWICE" nil
+                                                       nil :default))
+             "DOUBLE-CLICK")))
+    (t    (cond ((eq current-name (mouse-click-name-string "CLICK" nil
+                                                           nil :mac))
+                 "MIDDLE")
+            ((eq current-name (mouse-click-name-string "DOUBLE-CLICK" nil
+                                                       nil :mac))
+             "MIDDLE-TWICE")))))
+
 ;; the fundamental between setup-mouse-translation-table and
 ;; reset-mouse-translation-table is that the reset version tries to
 ;; use the existing translation arrays because the initial translation arrays

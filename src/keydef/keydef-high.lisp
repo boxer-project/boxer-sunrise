@@ -366,30 +366,6 @@
     (setq *default-mouse-click-name-translation-table* table)
     (setf (get place-name 'click-translation-table) table)))
 
-;;; the right fix is to add enough info to DEFINE-INPUT-DEVICES to
-;;; enable a programmatic solution
-;;; this is crocked up to do the following:
-
-;; left :mac => nil
-;; middle :mac => click
-;; right :mac => nil
-;; click :sun = > middle
-;; plus the double click versions
-(defun unshifted-click-translation (current-name new-platform)
-  (case new-platform
-    (:mac (cond ((eq current-name (mouse-click-name-string "MIDDLE" nil
-                                                           nil :default))
-                 "CLICK")
-            ((eq current-name (mouse-click-name-string "MIDDLE-TWICE" nil
-                                                       nil :default))
-             "DOUBLE-CLICK")))
-    (t    (cond ((eq current-name (mouse-click-name-string "CLICK" nil
-                                                           nil :mac))
-                 "MIDDLE")
-            ((eq current-name (mouse-click-name-string "DOUBLE-CLICK" nil
-                                                       nil :mac))
-             "MIDDLE-TWICE")))))
-
 (defun lookup-click-name (click bits &optional border-area)
   (cond ((>& click  (maximum-mouse-button-encoding)) 'bu::mouse-lots-o-clicks)
     ((or (null border-area)
