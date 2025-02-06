@@ -283,24 +283,7 @@
     (define-key-and-all-its-shifted-key-names
       (car special-key) (cadr special-key) platform)))
 
-
-;;; support for self-inserting non-standard characters
-
-(defmacro defself-inserting-key (key-name char)
-  `(progn
-    (boxer-eval::defboxer-key-internal ',key-name
-                                       #'(lambda ()
-                                                 (with-multiple-execution
-                                                   (insert-cha *point* ,char :moving))
-                                                 (mark-file-box-dirty (point-row))
-                                                 boxer-eval::*novalue*))
-    (boxer-command-define ',key-name
-                          (format nil "Insert the ~C character at the cursor." ,char))))
-
-
-
 ;;;; Mice
-
 
 ;;;; Click ==> name translation
 (defvar *default-mouse-click-name-translation-table*)

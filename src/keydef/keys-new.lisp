@@ -78,11 +78,6 @@
                                   "Inserts the ~C character at the cursor."
                                   char-to-insert)))))))
 
-;; the return of parens
-(defself-inserting-key BOXER-USER::|(-KEY| #\()
-(defself-inserting-key BOXER-USER::|)-KEY| #\))
-
-
 (boxer-eval::defboxer-key (bu::g-key 2) com-abort)
 ;; added escape 6/5/05
 (boxer-eval::defboxer-key bu::escape-key com-abort)

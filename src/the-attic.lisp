@@ -17068,6 +17068,19 @@ sprites)))
 ;;;; FILE: keydef-high.lisp
 ;;;;
 
+;;; support for self-inserting non-standard characters
+
+(defmacro defself-inserting-key (key-name char)
+  `(progn
+    (boxer-eval::defboxer-key-internal ',key-name
+                                       #'(lambda ()
+                                                 (with-multiple-execution
+                                                   (insert-cha *point* ,char :moving))
+                                                 (mark-file-box-dirty (point-row))
+                                                 boxer-eval::*novalue*))
+    (boxer-command-define ',key-name
+                          (format nil "Insert the ~C character at the cursor." ,char))))
+
 ;;; the right fix is to add enough info to DEFINE-INPUT-DEVICES to
 ;;; enable a programmatic solution
 ;;; this is crocked up to do the following:
@@ -17275,6 +17288,11 @@ sprites)))
 ;;;;
 ;;;; FILE: keys-new.lisp
 ;;;;
+
+;; the return of parens
+(defself-inserting-key BOXER-USER::|(-KEY| #\()
+(defself-inserting-key BOXER-USER::|)-KEY| #\))
+
 
 (defsearch-mode-key (bu::r-key 2) com-force-redisplay-all)
 ;; Refresh Display
