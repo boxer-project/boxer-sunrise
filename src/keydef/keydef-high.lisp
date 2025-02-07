@@ -147,19 +147,6 @@
     ((null shift-list))
     (define-key-name shifted-key-name key-code bit)))
 
-;; used to propagate bindings for old key names to new key names
-(defun check-key-rebinding (old-name new-name)
-  ;; first check the global table
-  (when (boundp old-name)
-    (boxer-eval::boxer-toplevel-set-nocache new-name
-                                            (boxer-eval::static-variable-value
-                                             (symbol-value old-name))))
-  ;; now check all the comtabs
-  (dolist (ct *existing-comtabs*)
-    (let ((old-value (gethash old-name ct)))
-      (unless (null old-value) (setf (gethash new-name ct) old-value)))))
-
-
 ;;; Special Keys for each type of machine
 (defvar *keyboard-special-keys*
   '((BU::SPACE-KEY        #\SPACE)
