@@ -199,9 +199,8 @@
                ;; the reader char seems to have gone away.  By adding an option to push an entire gesture-spec
                ;; to the *boxer-eval-queue* we can just manually pick out the char-code and input bits.
                (let* ((data (gesture-spec-data input))
-                      (charcode (input-gesture->char-code input))
                       (charbits (gesture-spec-modifiers input)))
-                 (handle-boxer-input charcode charbits (key-to-keep-shifted? data))))
+                 (handle-boxer-input data charbits (key-to-keep-shifted? data))))
               ((key-event? input)
                (handle-boxer-input (input-code input) (input-bits input)))
               ((mouse-event? input)

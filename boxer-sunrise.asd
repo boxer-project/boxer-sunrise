@@ -234,7 +234,6 @@
 
                  ;; Beginning of `KEYDEF`
                  ;; "How Boxer handles Input"
-                 (:file "keydef/keydef-lwm")
                  (:file "keydef/keydef-high")
                  (:file "keydef/alternate-names")
 

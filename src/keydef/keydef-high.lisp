@@ -54,6 +54,16 @@
 
 (defgeneric gesture-spec-p (x) (:method (x) nil) (:method ((x gesture-spec)) t))
 
+(defun input-gesture->char-code (gesture)
+  "This function takes a gesture-spec structure, looks at it's data field and returns
+   the character code from the data bit.
+  "
+  (let ((data (gesture-spec-data gesture)))
+    (cond ((numberp data)
+           (code-char data))
+          ((symbolp data)
+           data))))
+
 ;;;;KEY-NAMES
 
 ;;; This file defines :BOXER-FUNCTION names for the various keystrokes and
@@ -128,6 +138,26 @@
   (and (array-in-bounds-p *key-names* key-code key-bits)
        (aref *key-names* key-code key-bits )))
 
+(defun define-special-key-and-all-its-shifted-key-names (key-name &optional (platform :lwm))
+  "Returns a simple array (usually of length 16) with all the boxer-user interned names of the
+   key with all it's shifted/modified names.
+   Ex: #(BU::UP-ARROW-KEY BU::SHIFT-UP-ARROW-KEY BU::CONTROL-UP-ARROW-KEY BU::CONTROL-SHIFT-UP-ARROW-KEY BU::OPTION-UP-ARROW-KEY
+         BU::SHIFT-OPTION-UP-ARROW-KEY BU::CONTROL-OPTION-UP-ARROW-KEY BU::CONTROL-SHIFT-OPTION-UP-ARROW-KEY BU::COMMAND-UP-ARROW-KEY
+         BU::SHIFT-COMMAND-UP-ARROW-KEY BU::CONTROL-COMMAND-UP-ARROW-KEY BU::CONTROL-SHIFT-COMMAND-UP-ARROW-KEY BU::OPTION-COMMAND-UP-ARROW-KEY
+         BU::SHIFT-OPTION-COMMAND-UP-ARROW-KEY BU::CONTROL-OPTION-COMMAND-UP-ARROW-KEY BU::CONTROL-SHIFT-OPTION-COMMAND-UP-ARROW-KEY)
+  "
+  (let ((togo (make-array 16)))
+    (setf (aref togo 0) (intern-in-bu-package key-name))
+    (do* ((bit 1 (1+ bit))
+          (shift-list (input-device-shift-list platform) (cdr shift-list))
+          (shift-name (car shift-list) (car shift-list))
+          (shifted-key-name (intern-in-bu-package
+                           (symbol-format nil "~A-~A" shift-name key-name))
+                          (intern-in-bu-package
+                           (symbol-format nil "~A-~A" shift-name key-name))))
+      ((null shift-list))
+      (setf (aref togo bit) shifted-key-name))
+    togo))
 
 (defun define-key-and-all-its-shifted-key-names (key-name key-code platform)
   (if (and (< key-code char-code-limit)
@@ -169,7 +199,7 @@
               "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK"  ;; 3  4  5
               "DOWN" "MIDDLE-DOWN" "RIGHT-DOWN"                          ;; 6  7  8
               "UP" "MIDDLE-UP" "RIGHT-UP")                               ;; 9 10 11
-             *lwm-keyboard-key-name-alist*)
+           )
 
            ;; pick names to maximize compatibility with mac code
            ;; assign to left button to be plain "CLICK"
@@ -185,7 +215,7 @@
               "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK"  ;; 3  4  5
               "DOWN" "MIDDLE-DOWN" "RIGHT-DOWN"                          ;; 6  7  8
               "UP" "MIDDLE-UP" "RIGHT-UP")                               ;; 9 10 11
-             *lwm-keyboard-key-name-alist*)
+           )
 
            (define-input-devices :linux
             ("SHIFT"
@@ -199,8 +229,7 @@
               "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK"  ;; 3  4  5
               "DOWN" "MIDDLE-DOWN" "RIGHT-DOWN"                          ;; 6  7  8
               "UP" "MIDDLE-UP" "RIGHT-UP")                               ;; 9 10 11
-             *lwm-keyboard-key-name-alist*)
-)
+           ))
 
 
 ;;;; Now, setup the keyboard...
@@ -263,12 +292,12 @@
 ;; at startup time (e.g. for the X-Windows implementation, the particulars
 ;; of the keyboard are not generally known until then)
 
-(defun configure-for-keyboard (platform)
-  ;; finally, handle any machine/window system specific stuff
-  ;; that doesn't fit very well into common lisp chars
-  (dolist (special-key (input-device-special-keys platform))
-    (define-key-and-all-its-shifted-key-names
-      (car special-key) (cadr special-key) platform)))
+;; (defun configure-for-keyboard (platform)
+;;   ;; finally, handle any machine/window system specific stuff
+;;   ;; that doesn't fit very well into common lisp chars
+;;   (dolist (special-key *keyboard-special-keys*)
+;;     (define-key-and-all-its-shifted-key-names
+;;       (car special-key) (cadr special-key) platform)))
 
 ;;;; Mice
 
@@ -362,7 +391,7 @@
 (defun make-input-devices (platform)
   (set-mouse-translation-table platform)
   (define-basic-keys platform)
-  (configure-for-keyboard platform)
+  ;; (configure-for-keyboard platform)
   (push platform *bound-input-device-platforms*)
   ;; this has to come last because the previous forms may need to refer
   ;; to the old value to see if any bindings need to be forwarded
@@ -415,8 +444,11 @@
    (logandc2 bits 1))
 
 ;;; Hacked up to handle MCL's crippled character system
-(defun handle-boxer-input (input &optional (raw-bits 0) (keep-shift nil))
-  (let ((bits (if keep-shift raw-bits (remove-shift-bit raw-bits))))
+(defun handle-boxer-input (data &optional (raw-bits 0) (keep-shift nil))
+  (let ((bits (if keep-shift raw-bits (remove-shift-bit raw-bits)))
+        (input (if (numberp data)
+                 (code-char data)
+                 data)))
     ;;;	(increment-key-tick)		;for use with multiple-kill hack
     (status-line-undisplay 'boxer-editor-error)
     ;; increment the event counter
@@ -425,7 +457,14 @@
     ;; net prims in particular may signal eval errors as a response to
     ;; an editor command, catch it at this level so the entire command
     ;; gets aborted rather than just the net loading piece.
-    (COND ((key-event? input)
+    (COND ((symbolp input)
+           (let ((key-name (aref (gethash input *keyword-spec-commands*) bits)))
+             (if (or (null key-name)
+                      (not (handle-boxer-key key-name
+                                            nil
+                                            bits)))
+                (unhandled-boxer-input key-name))))
+          ((key-event? input)
             ;; Some sort of  key code. Try to lookup a name for it. If it
             ;; has a name call boxer-eval:handle-boxer-key with the name.
             (let ((key-name (lookup-key-name (if (numberp input)
@@ -531,3 +570,84 @@
       (when (eq command (cdr pair))
         (collect (car pair))))))
 
+
+(defparameter *keyword-spec-commands*
+  (serapeum:dict :up    (box::define-special-key-and-all-its-shifted-key-names 'UP-ARROW-KEY)
+                 :down  (box::define-special-key-and-all-its-shifted-key-names 'DOWN-ARROW-KEY)
+                 :left  (box::define-special-key-and-all-its-shifted-key-names 'LEFT-ARROW-KEY)
+                 :right (box::define-special-key-and-all-its-shifted-key-names 'RIGHT-ARROW-KEY)
+
+                 :home (box::define-special-key-and-all-its-shifted-key-names 'HOME-KEY)
+                 :end  (box::define-special-key-and-all-its-shifted-key-names 'END-KEY)
+
+                 :f1 (box::define-special-key-and-all-its-shifted-key-names 'F1-KEY)
+                 :f2 (box::define-special-key-and-all-its-shifted-key-names 'F2-KEY)
+                 :F3 (box::define-special-key-and-all-its-shifted-key-names 'F3-KEY)
+                 :F4 (box::define-special-key-and-all-its-shifted-key-names 'F4-KEY)
+                 :F5 (box::define-special-key-and-all-its-shifted-key-names 'F5-KEY)
+                 :F6 (box::define-special-key-and-all-its-shifted-key-names 'F6-KEY)
+                 :F7 (box::define-special-key-and-all-its-shifted-key-names 'F7-KEY)
+                 :F8 (box::define-special-key-and-all-its-shifted-key-names 'F8-KEY)
+                 :F9 (box::define-special-key-and-all-its-shifted-key-names 'F9-KEY)
+                 :F10 (box::define-special-key-and-all-its-shifted-key-names 'F10-KEY)
+                 :F11 (box::define-special-key-and-all-its-shifted-key-names 'F11-KEY)
+                 :F12 (box::define-special-key-and-all-its-shifted-key-names 'F12-KEY)
+                 :F13 (box::define-special-key-and-all-its-shifted-key-names 'F13-KEY)
+                 :F14 (box::define-special-key-and-all-its-shifted-key-names 'F14-KEY)
+                 :F15 (box::define-special-key-and-all-its-shifted-key-names 'F15-KEY)
+                 :F16 (box::define-special-key-and-all-its-shifted-key-names 'F16-KEY)
+                 :F17 (box::define-special-key-and-all-its-shifted-key-names 'F17-KEY)
+                 :F18 (box::define-special-key-and-all-its-shifted-key-names 'F18-KEY)
+                 :F19 (box::define-special-key-and-all-its-shifted-key-names 'F19-KEY)
+                 :F20 (box::define-special-key-and-all-its-shifted-key-names 'F20-KEY)
+                 :F21 (box::define-special-key-and-all-its-shifted-key-names 'F21-KEY)
+                 :F22 (box::define-special-key-and-all-its-shifted-key-names 'F22-KEY)
+                 :F23 (box::define-special-key-and-all-its-shifted-key-names 'F23-KEY)
+                 :F24 (box::define-special-key-and-all-its-shifted-key-names 'F24-KEY)
+                 :F25 (box::define-special-key-and-all-its-shifted-key-names 'F25-KEY)
+                 :F26 (box::define-special-key-and-all-its-shifted-key-names 'F26-KEY)
+                 :F27 (box::define-special-key-and-all-its-shifted-key-names 'F27-KEY)
+                 :F28 (box::define-special-key-and-all-its-shifted-key-names 'F28-KEY)
+                 :F29 (box::define-special-key-and-all-its-shifted-key-names 'F29-KEY)
+                 :F30 (box::define-special-key-and-all-its-shifted-key-names 'F30-KEY)
+                 :F31 (box::define-special-key-and-all-its-shifted-key-names 'F31-KEY)
+                 :F32 (box::define-special-key-and-all-its-shifted-key-names 'F32-KEY)
+                 :F33 (box::define-special-key-and-all-its-shifted-key-names 'F33-KEY)
+                 :F34 (box::define-special-key-and-all-its-shifted-key-names 'F34-KEY)
+                 :F35 (box::define-special-key-and-all-its-shifted-key-names 'F35-KEY)
+
+                 :prior (box::define-special-key-and-all-its-shifted-key-names 'PAGE-UP-KEY)
+                 :next  (box::define-special-key-and-all-its-shifted-key-names 'PAGE-DOWN-KEY)
+
+                 :clear-line (box::define-special-key-and-all-its-shifted-key-names 'CLEAR-LINE-KEY)
+
+                 :help (box::define-special-key-and-all-its-shifted-key-names 'HELP-KEY)
+
+                 :begin (box::define-special-key-and-all-its-shifted-key-names 'BEGIN-KEY)
+                 :select (box::define-special-key-and-all-its-shifted-key-names 'SELECT-KEY)
+                 :print (box::define-special-key-and-all-its-shifted-key-names 'PRINT-KEY)
+                 :execute (box::define-special-key-and-all-its-shifted-key-names 'EXECUTE-KEY)
+                 :insert (box::define-special-key-and-all-its-shifted-key-names 'INSERT-KEY)
+                 :undo (box::define-special-key-and-all-its-shifted-key-names 'UNDO-KEY)
+                 :redo (box::define-special-key-and-all-its-shifted-key-names 'REDO-KEY)
+                 :menu (box::define-special-key-and-all-its-shifted-key-names 'MENU-KEY)
+                 :find (box::define-special-key-and-all-its-shifted-key-names 'FIND-KEY)
+                 :cancel (box::define-special-key-and-all-its-shifted-key-names 'CANCEL-KEY)
+                 :break (box::define-special-key-and-all-its-shifted-key-names 'BREAK-KEY)
+                 :clear (box::define-special-key-and-all-its-shifted-key-names 'CLEAR-KEY)
+                 :pause (box::define-special-key-and-all-its-shifted-key-names 'PAUSE-KEY)
+                 :print-screen (box::define-special-key-and-all-its-shifted-key-names 'PRINT-SCREEN-KEY)
+                 :scroll-lock (box::define-special-key-and-all-its-shifted-key-names 'SCROLL-LOCK-KEY)
+                 :sys-req (box::define-special-key-and-all-its-shifted-key-names 'SYS-REQ-KEY)
+                 :reset (box::define-special-key-and-all-its-shifted-key-names 'RESET-KEY)
+                 :stop (box::define-special-key-and-all-its-shifted-key-names 'STOP-KEY)
+                 :user (box::define-special-key-and-all-its-shifted-key-names 'USER-KEY)
+                 :system (box::define-special-key-and-all-its-shifted-key-names 'SYSTEM-KEY)
+                 :clear-display (box::define-special-key-and-all-its-shifted-key-names 'CLEAR-DISPLAY-KEY)
+                 :insert-line (box::define-special-key-and-all-its-shifted-key-names 'INSERT-LINE-KEY)
+                 :delete-line (box::define-special-key-and-all-its-shifted-key-names 'DELETE-LINE-KEY)
+                 :insert-char (box::define-special-key-and-all-its-shifted-key-names 'INSERT-CHAR-KEY)
+                 :delete-char (box::define-special-key-and-all-its-shifted-key-names 'DELETE-CHAR-KEY)
+                 :delete-char (box::define-special-key-and-all-its-shifted-key-names 'DELETE-KEY)
+                 :prev-item (box::define-special-key-and-all-its-shifted-key-names 'PREV-ITEM-KEY)
+                 :next-item (box::define-special-key-and-all-its-shifted-key-names 'NEXT-ITEM-KEY)))

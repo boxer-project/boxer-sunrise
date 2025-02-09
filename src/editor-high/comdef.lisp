@@ -723,22 +723,18 @@ Modification History (most recent at top)
   "A list of all the platforms for which we have made input device names")
 
 
-(defmacro define-input-devices (platform shift-list mouse-string special-keys)
+(defmacro define-input-devices (platform shift-list mouse-string)
   `(progn
     (unless (member ',platform *defined-input-device-platforms*)
       (push ',platform *defined-input-device-platforms*))
     (setf (get ',platform :shift-list)   ',shift-list
-          (get ',platform :mouse-string) ',mouse-string
-          (get ',platform :special-keys) ,special-keys)))
+          (get ',platform :mouse-string) ',mouse-string)))
 
 (defun input-device-shift-list (platform)
   (get platform :shift-list))
 
 (defun input-device-mouse-string (platform)
   (get platform :mouse-string))
-
-(defun input-device-special-keys (platform)
-  (get platform :special-keys))
 
 (defun get-shift-names (shift-bits)
   (let ((name (nth (1- shift-bits)

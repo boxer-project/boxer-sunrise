@@ -52,11 +52,9 @@
       ((and (eq action :press) (eq key :escape))
        (boxer::handle-boxer-input (code-char 27)))
       ((and (eq action :press) (member key '(:up :down :left :right)))
-       (let* ((data key)
-              (charcode (input-gesture->char-code (box::make-gesture-spec key bits))))
-         (handle-boxer-input charcode bits (box::key-to-keep-shifted? data))))
+       (handle-boxer-input key bits (box::key-to-keep-shifted? key)))
       (t
-      nil))))
+       nil))))
 
 (cl-glfw3:def-char-callback char-callback (window codepoint)
   (declare  (ignore window))
