@@ -17516,6 +17516,23 @@ Modification History (most recent at top)
 ;;;; FILE: keys-new.lisp
 ;;;;
 
+;;;; temporary
+
+(boxer-eval::defboxer-key bu::F9-key com-toggle-closets)
+(boxer-eval::defboxer-key bu::R1-key com-prompt)
+#+apple(boxer-eval::defboxer-key (bu::escape-key 2) com-break)
+#+lispworks (boxer-eval::defboxer-key (bu::escape-key 2) com-break)
+#+(and lispworks win32) (boxer-eval::defboxer-key bu::pause-key com-break)
+#+(and lispworks macosx)(boxer-eval::defboxer-key (bu::F13-key 6) com-break)
+;; adds pause breaks when in dribble recording mode
+;; recording mode checks for this particular keypress (can't look
+;; for names at the recording level)
+#+apple
+(boxer-eval::defboxer-key (bu::f15-key 6) com-noop)
+#+apple
+(boxer-eval::defboxer-key (bu::f14-key 6) com-noop)
+
+
 ;; the return of parens
 (defself-inserting-key BOXER-USER::|(-KEY| #\()
 (defself-inserting-key BOXER-USER::|)-KEY| #\))

@@ -503,21 +503,6 @@
 
 (boxer-eval::defboxer-key bu::mouse-down-on-scroll-bar                com-mouse-scroll-box)
 
-;;;; temporary
-
-(boxer-eval::defboxer-key bu::F9-key com-toggle-closets)
-(boxer-eval::defboxer-key bu::R1-key com-prompt)
-#+apple(boxer-eval::defboxer-key (bu::escape-key 2) com-break)
-#+lispworks (boxer-eval::defboxer-key (bu::escape-key 2) com-break)
-#+(and lispworks win32) (boxer-eval::defboxer-key bu::pause-key com-break)
-#+(and lispworks macosx)(boxer-eval::defboxer-key (bu::F13-key 6) com-break)
-;; adds pause breaks when in dribble recording mode
-;; recording mode checks for this particular keypress (can't look
-;; for names at the recording level)
-#+apple
-(boxer-eval::defboxer-key (bu::f15-key 6) com-noop)
-#+apple
-(boxer-eval::defboxer-key (bu::f14-key 6) com-noop)
 ;;;
 (eval-when (load)
   (boxer-eval::boxer-toplevel-set 'bu::new-box-properties (make-new-box-properties-box))
