@@ -1201,13 +1201,7 @@ in macOS."
               (values charcode charbits)))
           ((key-event? input)
            (if (and plain-char-wanted?
-                    (or (not (zerop (input-bits input)))
-                        #+win32
-                        (member (code-char (input-code input))
-                                *pc-function-key-chars*)
-                        #+cocoa
-                        (member (input-code input)
-                                *lwm-system-char-events*)))
+                    (not (zerop (input-bits input))))
              (progn
                (beep)
                (status-line-display 'boxer::boxer-editor-error
