@@ -1075,11 +1075,6 @@ in macOS."
 
 ;;; Mouse tracking
 
-;; stub for now
-(defmacro with-mouse-cursor ((cursor) &body body)
-  cursor
-  `(progn . ,body))
-
 (defmacro with-mouse-tracking (((original-x-variable original-x-value)
         (original-y-variable original-y-value)
         &key

@@ -39,25 +39,39 @@
 (defparameter scr-width 800)
 (defparameter scr-height 600)
 
+(defparameter *current-input-code* nil)
+(defparameter *current-input-bits* 0)
+
 (cl-glfw3:def-key-callback key-callback (window key scancode action mod-keys)
-  (declare (ignore window scancode mod-keys))
-  (let ((bits 0))
+  (declare (ignore window scancode))
+  (let ((bits 0)
+        (key-value (cffi:foreign-enum-value '%glfw::key key)))
     (when (member :control mod-keys)
       (setf bits 2))
     (cond
       ((and (eq action :press) (eq key :backspace))
-       (boxer::handle-boxer-input (code-char 8)))
+       (handle-boxer-input (code-char 8)))
       ((and (eq action :press) (eq key :enter))
-       (boxer::handle-boxer-input (code-char 13) bits))
+       (handle-boxer-input (code-char 13) bits))
       ((and (eq action :press) (eq key :escape))
-       (boxer::handle-boxer-input (code-char 27)))
+       (handle-boxer-input (code-char 27)))
       ((and (eq action :press) (member key '(:up :down :left :right)))
        (handle-boxer-input key bits (box::key-to-keep-shifted? key)))
+      ((and (or (eq action :repeat) (eq action :press)) (< key-value 340))
+       (setf *current-input-code* key-value
+             *current-input-bits* bits))
+      ((and (eq action :release) (< key-value 340))
+       (when *current-input-code*
+         (handle-boxer-input *current-input-code* *current-input-bits*))
+       (setf *current-input-code* nil
+             *current-input-bits* 0))
       (t
        nil))))
 
 (cl-glfw3:def-char-callback char-callback (window codepoint)
   (declare  (ignore window))
+  (setf *current-input-code* nil
+        *current-input-bits* 0)
   (boxer::handle-boxer-input codepoint))
 
 ;; glfw: whenever the window size changed (by OS or user resize) this callback function executes"

@@ -195,6 +195,11 @@
 ;;; Mouse Cursor
 ;;;
 
+;; stub for now
+(defmacro with-mouse-cursor ((cursor) &body body)
+  cursor
+  `(progn . ,body))
+
 (defun set-mouse-cursor (cursor)
   "Changes the current style of the mouse cursor using a keyword. Currently supported keywords are:
     :retarget (crosshairs)"
