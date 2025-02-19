@@ -51,6 +51,7 @@
   :STACK-FRAME-ALLOCATION (1 1 1 1) ;; nested update-shapes?
   :STATE-VARIABLES (boxer::%learning-shape? boxer::%turtle-state
                     boxer::%learning-shape-graphics-list
+                    boxer::*graphics-command-recording-mode*
                     boxer::*current-sprite*)
   ;; look at with-graphics-vars-bound to see how the value of
   ;; %learning-shape-graphics-list gets into %graphics-list
