@@ -94,7 +94,8 @@ changes made to the box:
                 (start-review-modified-files-dialog interface))))
     (when togo
       ;; Stop rendering otherwise we get openGL errors during the close process
-      (setf (boxer::active *boxer-pane*) nil))))
+      (setf (boxer::active *boxer-pane*) nil))
+    togo))
 
 (defun start-review-modified-files-dialog (interface)
   "Launches the workflow of dialog boxes for reviewing/discarding unsaved files. Returns t if we should continue
