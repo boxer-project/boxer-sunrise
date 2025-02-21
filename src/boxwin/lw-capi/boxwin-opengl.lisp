@@ -966,6 +966,27 @@ in macOS."
   (declare (ignore window))
   (boxer::enter (boxer::point-box))
   (boxer::repaint)
+
+  ;; sgithens 2025-02-20 Happy Birthday Tim
+  ;; This is a crazy workaround to deal with the issue that CAPI panes sometimes
+  ;; don't get their correct size until you resize a window, or move something
+  ;; around in it... so we quickly toggle the visibility of one of the toolbars a
+  ;; few times to force the update.
+  (capi:apply-in-pane-process *boxer-pane*
+    #'(lambda () (update-visible-editor-panes)
+      (update-visible-editor-panes)
+      (boxer::repaint)
+      (let ((cur-toolbar *boxer-window-show-toolbar-p*))
+        (setf *boxer-window-show-toolbar-p* nil)
+        (update-visible-editor-panes)
+        (boxer::repaint)
+        (setf *boxer-window-show-toolbar-p* t)
+        (update-visible-editor-panes)
+        (boxer::repaint)
+        (setf *boxer-window-show-toolbar-p* cur-toolbar)
+        (update-visible-editor-panes)
+        (boxer::repaint))))
+
   (boxer-command-loop))
 
 (defun beep () (capi::beep-pane))
