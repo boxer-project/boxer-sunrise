@@ -83,17 +83,18 @@ changes made to the box:
 (defun lw-menu-quit (interface)
   "Checks the return from lw-quit before calling destroy. Using for hooks where it doesn't appear the
   'capi:confirm-destroy-function is being used."
-  (if (lw-quit interface)
-    (capi:destroy interface))
-)
+  (when (lw-quit interface)
+    (capi:destroy interface)))
 
 (defun lw-quit (interface)
   "Checks if there are modified files and starts the dialogs for it if there are. Returns t if we should continue to
   close the application."
-  (if (equal (length (boxer::modified-boxes-for-close)) 0)
-    t
-    (start-review-modified-files-dialog interface))
-)
+  (let ((togo (if (equal (length (boxer::modified-boxes-for-close)) 0)
+                t
+                (start-review-modified-files-dialog interface))))
+    (when togo
+      ;; Stop rendering otherwise we get openGL errors during the close process
+      (setf (boxer::active *boxer-pane*) nil))))
 
 (defun start-review-modified-files-dialog (interface)
   "Launches the workflow of dialog boxes for reviewing/discarding unsaved files. Returns t if we should continue
