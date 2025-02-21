@@ -4,6 +4,9 @@
 
 echo "Boxer Sunrise macOS Build and Notarize\n"
 
+# Update the timestamp on the app
+touch data/boxersunrise.app
+
 # Because of the issue with not loading cl-freetype2 until application start, we
 # are copying this source part to the area in the application bundle where it can
 # still be available after delivery
