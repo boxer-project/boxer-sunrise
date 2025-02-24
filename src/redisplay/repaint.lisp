@@ -164,8 +164,15 @@
             (boxer::ogl-reshape ww wh))
           (box::set-fixed-size osb obwid obhei))))))
 
+(defvar *quit-boxer* nil
+  "A flag to quit boxer, so we can do it from the repaint function to be sure we're not in the middle
+   of repainting when trying to close down. (Thusly spawning numerous openGL errors)")
+
 (defun repaint (&optional just-windows?)
   #+lispworks
+  (if *quit-boxer*
+    (lw:quit)
+
   (when (active *boxer-pane*)
 
   ;; Do the cursor math. TODO move this framerate somewhere more central
@@ -189,7 +196,7 @@
     (repaint-internal just-windows?)
 
     (let ((glerr (gl:get-error)))
-      (if (not (eq glerr :zero)) (break "GL Error: ~A" glerr))))))
+      (if (not (eq glerr :zero)) (break "GL Error: ~A" glerr)))))))
 
 ;;;; Ephemera: cursors, regions
 (defun repaint-cursor (&optional (cursor *point*))

@@ -85,11 +85,8 @@ changes made to the box:
   'capi:confirm-destroy-function is being used."
   (when (lw-quit interface)
     ;; Stop rendering otherwise we get openGL errors during the close process
-    (setf (boxer::active *boxer-pane*) nil)
-    (sleep 0.5)
-    (capi:destroy *boxer-pane*)
-    (capi:destroy interface)
-    (lw:quit)))
+    (capi:apply-in-pane-process *boxer-pane* #'(lambda ()
+      (queue-event :stop-and-quit)))))
 
 (defun lw-quit (interface)
   "Checks if there are modified files and starts the dialogs for it if there are. Returns t if we should continue to
@@ -99,9 +96,8 @@ changes made to the box:
                 (start-review-modified-files-dialog interface))))
     (when togo
       ;; Stop rendering otherwise we get openGL errors during the close process
-      (setf (boxer::active *boxer-pane*) nil)
-      (capi:destroy *boxer-pane*))
-    togo))
+      (queue-event :stop-and-quit))
+    nil))
 
 (defun start-review-modified-files-dialog (interface)
   "Launches the workflow of dialog boxes for reviewing/discarding unsaved files. Returns t if we should continue
