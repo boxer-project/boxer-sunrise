@@ -32,6 +32,7 @@
   (:shadow :once-only)
   (:export *suppress-expose-handler* *SUPPRESSED-ACTIONS*
            :gesture-spec-modifiers :gesture-spec-data :make-gesture-spec
+           :input-gesture->char-code
            :key-to-keep-shifted? :gesture-spec-p
            :symbol-format :set-font-info
            :draw-line

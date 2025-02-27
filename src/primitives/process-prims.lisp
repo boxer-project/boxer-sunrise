@@ -411,7 +411,7 @@ If the box was not entered with EDIT-BOX, just insert a return."
                          (if (not mouse-p)
                            (progn (if (gesture-spec-p input)
                                       (let* ((data (gesture-spec-data input))
-                                          (charcode (bw::input-gesture->char-code input))
+                                          (charcode (input-gesture->char-code input))
                                           (charbits (gesture-spec-modifiers input)))
                                         (boxer::lookup-key-name (boxer::input-code charcode) charbits))
                                       (boxer::lookup-key-name (boxer::input-code input)
