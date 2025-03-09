@@ -811,8 +811,7 @@ in macOS."
                (dolist (p (car args))
                  (boxer::insert-cha boxer::*point* (boxer::read-internal p)))
              (boxer::insert-cha boxer::*point*
-                                (boxer::read-internal (car args))))
-           (boxer::repaint)))))
+                                (boxer::read-internal (car args))))))))
 
 (defun do-tooltip-help (interface pane type key)
   (declare (ignorable interface pane))
