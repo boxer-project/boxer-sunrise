@@ -590,8 +590,9 @@ Modification History (most recent at top)
       ;; Occasionally there seems to be a shape that has it's interface value, but not
       ;; the accompanying box
       ;; TODO: these heights really should only need calculating if something changed
-      (let* ((gs (if (box-interface-box (slot-value self 'shape))
-                    (graphics-sheet (box-interface-box (slot-value self 'shape)))
+      (let* ((shape-box (box-interface-box (slot-value self 'shape)))
+             (gs (if shape-box
+                    (graphics-sheet shape-box)
                     nil))
              (gl (box-interface-value (slot-value self 'shape)))
              (extents (multiple-value-list (graphics-list-extent gl)))
@@ -608,8 +609,8 @@ Modification History (most recent at top)
 
         (if *use-opengl-framebuffers*
           (progn
-            (setf canvas (get-graphics-canvas-for-screen-obj self wid hei))
-            (setf mesh (get-canvas-mesh self))
+            (setf canvas (get-graphics-canvas-for-screen-obj shape-box wid hei))
+            (setf mesh (get-canvas-mesh shape-box))
 
             (playback-graphics-list-incrementally gl canvas wid hei :mesh mesh)
 

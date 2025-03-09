@@ -108,6 +108,12 @@
 
 (defmethod clear-graphics-canvas ((self box))
   "If this box has a graphics-canvas on any screen-boxes rendering it, clears them."
+  ;; We sometimes keep a copy of the canvas on the actual box itself, since when a graphics canvas
+  ;; is flipped to the graphics, the shape box may not have any screen-objs
+  (let ((canvas (getprop self :graphics-canvas)))
+        (when canvas
+          (clear canvas)))
+
   (dolist (item (get-visible-screen-objs self))
     (let ((canvas (getprop item :graphics-canvas)))
       (when canvas

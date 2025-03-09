@@ -98,8 +98,8 @@
                 (setf (boxer::box-interface-value shape-slot) new-graphics-list)
                 ;; ... now we also need to get it on to the graphics canvas of the shape
                 ;;     box inside the sprite
-                (boxer::clear-box (boxer::box-interface-box shape-slot))
-                (setf (boxer::graphics-sheet-graphics-list (boxer::graphics-info (boxer::box-interface-box shape-slot)))
+                (boxer::clear-box shape-box)
+                (setf (boxer::graphics-sheet-graphics-list (boxer::graphics-info shape-box))
                       new-graphics-list)
 
                 ;; We need to reset the size of the shape graphics box to fit the
