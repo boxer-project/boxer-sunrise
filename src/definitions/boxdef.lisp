@@ -81,6 +81,9 @@ Modification History (most recent at top)
   ((plist :initform nil :accessor plist)))
 
 (defmethod getprop ((obj plist-subclass) indicator &optional default)
+  (unless (slot-boundp obj 'plist)
+    (setf (plist obj) nil))
+
   (or (getf (slot-value obj 'plist) indicator) default))
 
 (defmethod removeprop ((obj plist-subclass) indicator)

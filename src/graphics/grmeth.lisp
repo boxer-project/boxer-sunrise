@@ -609,8 +609,11 @@ Modification History (most recent at top)
 
         (if *use-opengl-framebuffers*
           (progn
-            (setf canvas (get-graphics-canvas-for-screen-obj shape-box wid hei))
-            (setf mesh (get-canvas-mesh shape-box))
+            ;; For frame buffered turtles, we keep them on the actual graphics-object turtle object, since it's
+            ;; not guarenteed the sprite will actually have a shape box.
+            (setf canvas (get-graphics-canvas-for-screen-obj self wid hei))
+            (setf mesh (get-canvas-mesh self))
+
 
             (playback-graphics-list-incrementally gl canvas wid hei :mesh mesh)
 

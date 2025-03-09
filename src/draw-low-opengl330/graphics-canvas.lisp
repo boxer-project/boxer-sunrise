@@ -106,6 +106,11 @@
     (gl:clear :color-buffer-bit :depth-buffer-bit :stencil-buffer-bit)
     (disable self)))
 
+(defmethod clear-graphics-canvas ((self plist-subclass))
+  (let ((canvas (getprop self :graphics-canvas)))
+    (when canvas
+      (clear canvas))))
+
 (defmethod clear-graphics-canvas ((self box))
   "If this box has a graphics-canvas on any screen-boxes rendering it, clears them."
   ;; We sometimes keep a copy of the canvas on the actual box itself, since when a graphics canvas
