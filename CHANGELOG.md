@@ -1,5 +1,104 @@
 # Change Log
 
+## 3.4.23 2025-03-09
+
+This is primarily a bug fix release with some minor UI changes/additions. Quite a number of sources of
+occasional crashes have been fixed, including when starting/closing the applicaion on macOS arm. Work
+has been done on keyboard input and sources to allow eventual usage of arbitrary codepoints, until now,
+some of the higher order latin characters were unavailable as they were being used for special keys.
+
+Missing routines for calculating the bounding boxes of some turtle primitives have been put back in
+(ltype, rtype). The glyph atlas has been cleaned up a bit to have less visual artifacts visible. The
+save box highlighting has been reworked so that we always get a constant highlight duration, and this
+cleans up the repaint loop a bit more as well.
+
+The scroll multiplier for two finger scrolling has been increased, so scrolling should seem more on par
+speed wise with other applications.
+
+As usual there are a number of other small bug and crash fixes, along with a fair amount of continued
+under the hood cleanup and refactoring. More keyboard input works now in the SBCL/GLFW version now as
+we continue to modularize the codebase so that it will work across Lispworks, SBCL/ECL/GLFW, and
+ECL/Emscripten/WebGL.
+
+### Full Change Log
+
+bugs-30 Refactoring save highlighting to be stateful on the canvas rather than a messy standalone rendering loop.
+  Should be easier to change the timing now for fast saving files.
+  - Making sure sub-boxes don't get double highlighted when saving.
+
+bugs-199 Adding null check for screen-row and speed multiplier for faster scrolling.
+
+sunrise-20 Cross platform work
+  - Adding #+sbcl to specific float traps catching
+  - Minor cleanup for glfw window resizing.
+  - Adding #+ecl specific float traps catching for openGL
+  - Adding *SUPPRESSED-ACTIONS* to exports for package boxer
+  - Removing special keyboard latin overrides
+    - Previously, for keyboard keys that don't map directly to unicode chars we were assignign them codes from
+      higher latin chars. These are now appropriately kept as their symbols and interpreted as such.
+  - Fixing up logic between key and char callbacks in GLFW
+
+sunrise-43 sunrise-20 cross platform gesture input work
+  - Stubbed out a small internal gesture-spec to avoid depending on the LW structure
+  - A bit more work on the GLFW keybindings
+  - Centralized more bits into the keys support
+  - Updating get-character-input and get-boxer-input to use our internal gesture-spec.
+
+sunrise-69 Putting ltype and rtype extents back in.
+
+minor-fix
+  - ui Adding a little bit of padding between glyphs in the atlas so they don't bleed on to each other.
+  - Adding zoom level to create ortho matrix
+    - The framebuffer rendering was keeping the global zoom level for it's ortho matrix, adding an
+      arg to create-ortho-matrix so this can be kept at 1.0
+  - Updating timestamp on macOS app bundle when building.
+
+cleanup
+  - cleanup Removing commented out call to drawing-on-window
+  - Removing unused package symbol with-mouse-tracking-inside
+  - Removing obsolete comments
+  - Removing old platform specific bits for detecting plain chars.
+    - No longer needed since special keys are now kept as symbols.
+
+crash-fix
+  - Stopping rendering before destroying the window interface, so that openGL doesn't try to keep rendering during
+    the shutdown process.
+  - Returning quit review value and tweaks to get a clean shutdown on LWM/Arm
+  - Moving all lispworks quit invocations into the repaint function to be absolutely sure it's not repainting
+    when we are trying to quit.
+  - Fixing namespace on input-gesture->char-code call and adding to package.lisp
+  - Fixes for framebuffers on turtles, plist lookups
+
+regression
+  - Repairing sprite rendering with frame-buffers after update-shape
+    - Was clearing the texture and graphics-canvas list on only screen-objs, rather than the actual shape box
+      which is necessary because it usually isn't visible.
+    - Cleaning up some usage of shape-box vars
+
+format
+  - Converting grfdfs.lisp to space indentation
+
+gitignore
+  - adding dot vscode
+
+workaround
+  - Bizarre capi display work around.
+
+the-attic
+  - Removing unused *current-active-sprite* defvar.
+  - Removing *graphics-command-recording-mode* var
+    - No longer required since turtle graphics are always in their normal coordinates, and not
+      in any type of special pixel coordinates.
+  - Removing *supress-graphics-recording?* and without-recording
+    - Everything is double buffered now, so all changes do actually to be recorded *somewhere*
+  - Removing box plist property 'cached-vis-objs which hasn't been used in a long time.
+  - Removing lispworks command line args usage.
+  - Archiving reset-mouse-translation-table, reset-keys
+  - Archiving now unused defun unshifted-click-translation
+  - Removing no longer needed defself-inserting-key
+  - Archiving unused defun check-key-rebinding
+  - Removing old bizarre temporary keybindings
+
 ## 3.4.22 2024-12-30
 
 This release includes a number of small to medium bug/crash fixes, some small UI improvements and
