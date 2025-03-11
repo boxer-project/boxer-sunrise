@@ -136,14 +136,6 @@
            :status-line-display :redraw-status-line
            :force-redisplay
            :input-code :input-bits
-           ;; dribble symbols
-          ;;  :*dribble-playback*
-          ;;  :update-dribble-mouse-state
-          ;;  :dribble-mouse-state-x
-          ;;  :dribble-mouse-state-y
-          ;;  :dribble-mouse-state-buttons
-          ;;  :record-mouse-state
-
            :mouse-click-names :mouse-state-names :lookup-click-name
            :system-version
            :horizontal-scroll :vertical-scroll :zoom-level
@@ -249,25 +241,10 @@
 
 (in-package :boxer)
 
-#+(and clos (not pcl))
-(use-package 'clos)
-
-;;;; Set up the packages that we will be using
-
-;;; useful symbols from the boxer pkg (mostly from macros.lisp)
-;;; that we want ALL other packages to see.  There are import
-;;; statements below for specific symbols that should be seen
-;;; in specific packages
-
-(DEFMACRO DEFPROP (SYM VALUE INDICATOR)
-          `(SETF (GET ',SYM ',INDICATOR) ',VALUE))
-
 ;; Some useful variables and functions for dealing with the BU package
-
 (defvar pkg-boxer-user-package (find-package 'boxer-user))
 (defvar pkg-bu-package (find-package 'boxer-user))
 
 ;; Inherit External Symbols from BW
 (USE-PACKAGE 'BOXER-WINDOW)
-
 (use-package 'boxnet)

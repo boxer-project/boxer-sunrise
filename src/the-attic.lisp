@@ -24847,6 +24847,31 @@ Modification History (most recent at top)
   ; (or (eq *initial-box* (screen-obj-actual-obj screen-box)))
   (declare (ignore screen-box)) t)
 
+
+;;;;
+;;;; FILE: package.lisp
+;;;;
+
+           ;; dribble symbols
+          ;;  :*dribble-playback*
+          ;;  :update-dribble-mouse-state
+          ;;  :dribble-mouse-state-x
+          ;;  :dribble-mouse-state-y
+          ;;  :dribble-mouse-state-buttons
+          ;;  :record-mouse-state
+
+;;; useful symbols from the boxer pkg (mostly from macros.lisp)
+;;; that we want ALL other packages to see.  There are import
+;;; statements below for specific symbols that should be seen
+;;; in specific packages
+
+(DEFMACRO DEFPROP (SYM VALUE INDICATOR)
+          `(SETF (GET ',SYM ',INDICATOR) ',VALUE))
+
+#+(and clos (not pcl))
+(use-package 'clos)
+
+
 ;;;;
 ;;;; FILE: pixmap.lisp
 ;;;;
