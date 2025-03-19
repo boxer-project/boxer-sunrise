@@ -434,7 +434,7 @@ Modification History (most recent at top)
     (setf boxer::*show-dev-overlay* t)))
 
 (defun rotate-canvas-demo (data interface)
-  (bw::queue-event 'box::rotation-demo))
+  (bw::queue-event 'boxer-opengl::rotation-demo))
 
 ;;; **** Edit Menu ****
 

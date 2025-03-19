@@ -419,7 +419,7 @@ Modification History (most recent at top)
 (defmethod pen-color ((self graphics-cursor))
   (box-interface-value (slot-value self 'pen-color)))
 
-(defmethod set-pen-color ((self graphics-cursor) new-value
+(defmethod set-turtle-pen-color ((self graphics-cursor) new-value
                                                  &optional dont-update-box)
   ;; Bash slots in the data structure only if we are NOT recording a shape
   (when (null %learning-shape?)

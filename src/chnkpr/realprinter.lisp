@@ -608,8 +608,8 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
                        (check-and-get-pen-width-arg box)))
       (type-font (setf (box-interface-value slot)
                        (check-and-get-type-font-arg box)))
-      (pen-color (let ((nc (graphics-sheet-background (graphics-sheet box))))
-                   (when (color? nc) (setf (box-interface-value slot) nc))))
+      ;; (pen-color (let ((nc (graphics-sheet-background (graphics-sheet box))))
+      ;;              (when (color? nc) (setf (box-interface-value slot) nc))))
       (sprite-size (setf (box-interface-value slot)
                          (check-and-get-size-arg box))) ;; sgithens TODO boxer-bugs-49 I think this
                                                         ;; needs to get fixed up...

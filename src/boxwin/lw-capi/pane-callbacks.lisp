@@ -26,19 +26,18 @@
   (unless *boxer-pane-initialized*
     ;; modernGL inits
     (opengl:rendering-on (*boxer-pane*)
-      (boxer::opengl-enables)
+      (boxer-opengl::opengl-enables)
 
       (setf bw::*boxgl-device* (slot-value
                                   (boxer::make-boxwin-330gl-device bw::*boxer-frame* bw::*boxer-pane* :wid wid :hei hei)
                                   'boxer::draw-device))
 
-      (boxer::ogl-reshape wid hei)
-      (boxer::update-matrices-ubo bw::*boxgl-device*)
-      (%set-pen-color box::*foreground-color*))
+      (gl-reshape wid hei)
+      (update-gpu-matrices)
+      (set-pen-color box::*foreground-color*))
 
     (boxer::initialize-fonts)
 
-    (boxer::load-freetype-faces)
     (let ((boxer::%private-graphics-list nil))
       ;; needed by shape-box updater in the redisplay inits but not set until
       ;; (boxer-eval::setup-evaluator) farther down
@@ -47,6 +46,7 @@
 
     (opengl:rendering-on (*boxer-pane*)
       (log:debug "~%max-texture-size: ~A"  (gl:get-integer :max-texture-size))
-      (setf boxer::*freetype-glyph-atlas* (boxer::make-glyph-atlas))
-      (log:debug "~%Just created texture atlas: ~A" boxer::*freetype-glyph-atlas*))
+      (init-freetype-fonts)
+      (log:debug "~%Just created texture atlas"); boxer::*freetype-glyph-atlas*)
+      )
     ))

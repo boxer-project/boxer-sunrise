@@ -71,8 +71,8 @@ Modification History (most recent at top)
     (cffi:foreign-free (ogl-pixmap-data pixmap))
     ))
 
-(defun %pixblt-from-screen (to-array fx fy wid hei tx ty &optional (buffer :front))
-  (%gl:read-pixels fx fy wid hei *pixmap-data-type* *pixmap-data-format* (ogl-pixmap-data to-array)))
+(defun pixblt-from-screen (to-array fx fy wid hei tx ty &optional (buffer :front))
+  (%pixblt-from-screen to-array fx fy wid hei tx ty buffer :front))
 
 ;; NOTE: this must match the format in *pixmap-data-type* and *pixmap-data-format*
 (defun make-offscreen-pixel (red green blue &optional (alpha 255))
@@ -90,6 +90,13 @@ Modification History (most recent at top)
          (phei (ogl-pixmap-height pixmap))
          (ogl-y (- phei y 1)))
     (cffi:mem-aref data *pixmap-ffi-type* (+ x (* ogl-y pwid)))))
+
+;; NOTE: this must match the format in *pixmap-data-type* and *pixmap-data-format*
+(defun pixel->color (pixel)
+  `#(:rgb ,(/ (ldb *gl-rgba-rev-red-byte* pixel)   255.0)
+          ,(/ (ldb *gl-rgba-rev-green-byte* pixel) 255.0)
+          ,(/ (ldb *gl-rgba-rev-blue-byte* pixel)  255.0)
+          ,(/ (ldb *gl-rgba-rev-alpha-byte* pixel) 255.0)))
 
 (defun pixmap-pixel-color (pixmap x y)
   (pixel->color (pixmap-pixel pixmap x y)))
@@ -139,3 +146,9 @@ Modification History (most recent at top)
          (new-pixmap (make-ogl-pixmap w h)))
     (copy-pixmap-data w h pixmap 0 0 new-pixmap 0 0)
     new-pixmap))
+
+(defun deallocate-system-dependent-structures (box)
+  (let ((gi (graphics-info box)))
+    (when (graphics-sheet? gi)
+      (let ((bm (graphics-sheet-bit-array gi)))
+        (unless (null bm) (ogl-free-pixmap bm))))))

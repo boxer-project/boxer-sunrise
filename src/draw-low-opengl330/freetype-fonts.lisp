@@ -16,7 +16,7 @@
 ;;;;
 ;;;;   Utilities for Rendering Fonts using Freetype2.
 
-(in-package :boxer)
+(in-package :boxer-opengl)
 
 (defparameter *freetype-faces* nil
   "Hash table of freetype face instances.")
@@ -348,7 +348,7 @@
     (gl:bind-texture :texture-2d 0))
     atlas))
 
-(defmethod draw ((self glyph-atlas))
+(defmethod boxer::draw ((self glyph-atlas))
   "Debugging/inspection utility to just draw the entire glyph atlas texture on the screen."
   (enable-gl-shader-program bw::*boxgl-device* (ft-glyph-shader bw::*boxgl-device*))
   (gl:pixel-store :unpack-alignment 1) ;; is this really necessary when just drawing?

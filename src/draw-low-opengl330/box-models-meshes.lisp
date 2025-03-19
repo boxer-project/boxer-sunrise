@@ -15,7 +15,7 @@
 ;;;;
 ;;;;        Utilities for creating mesh and model structures in openGL.
 ;;;;
-(in-package :boxer)
+(in-package :boxer-opengl)
 
 ; Models and meshes for basic boxer items. Includes a mesh for primitives that can be drawn with
 ; triangles, such as lines, rectangles. Includes another mesh for characters that have their glyphs
@@ -67,7 +67,7 @@
         (mesh-pos (slot-value self 'dashed-xyz-rgba-mesh)) 0
         (mesh-pos (slot-value self 'glyphs-xyz-txty-rgba-mesh)) 0))
 
-(defmethod draw ((self boxer-gl-model))
+(defmethod boxer::draw ((self boxer-gl-model))
   ;; Regular Line Shapes
   (let ((mesh (slot-value self 'xyz-rgba-mesh)))
     (enable-gl-objects bw::*boxgl-device* :shader (lines-shader bw::*boxgl-device*)

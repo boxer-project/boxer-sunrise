@@ -24,7 +24,7 @@
 ;;;;
 ;;;;   Notes
 ;;;;     - gl:get-uniform-location is slow, so we store the uniform ids for each shader
-(in-package :boxer)
+(in-package :boxer-opengl)
 
 (defvar *cffi-float-size* nil
   "Looking up the float size does take some time, performance wise.")
@@ -94,7 +94,7 @@
     (setf (model-uniform togo) (gl:get-uniform-location program "model"))
     togo))
 
-(defclass boxgl-device ()
+(defclass box-opengl-device (boxgl-device)
   ((lines-shader        :accessor lines-shader)
 
    (ft-glyph-shader     :accessor ft-glyph-shader)
@@ -113,14 +113,11 @@
    (matrices-ubo :accessor matrices-ubo
     :documentation "Integer describing the gl uniform buffer object we are storing our transformation
                     matrices and other information in.")
-   (projection-matrix :accessor boxgl-device-projection-matrix)
-   (transform-matrix :accessor boxgl-device-transform-matrix
-                     :initform (3d-matrices:meye 4))
-   (model-matrix :accessor boxgl-device-model-matrix
-                 :initform (3d-matrices:meye 4))
+
+
 
    (pen-color :accessor boxgl-device-pen-color) ; current color in #(:rgb 1.0 1.0 1.0 1.0) format
-   (pen-size  :accessor boxgl-device-pen-size)
+
    (line-stipple :accessor line-stipple :initform nil
      :documentation "Boolean to indicate if we're currently drawing dashed lines.")
 
@@ -131,11 +128,7 @@
    (cur-vao :accessor cur-vao :initform 0)
    (cur-buffer :accessor cur-buffer :initform 0)))
 
-(defmethod set-transform ((self boxgl-device) h v)
-  "Sets the absolute values of the current transform matrix and updates the ubo."
-    (setf (boxer::boxgl-device-transform-matrix self)
-          (boxer::create-transform-matrix h v))
-    (update-transform-matrix-ubo self))
+
 
 ;; (defmethod adjust-transform ((self boxgl-device) h v)
 ;;   "Translates the current transform matrix by an additional h and v distance.
@@ -470,8 +463,8 @@
     (gl:bind-buffer :array-buffer 0)
     (gl:bind-texture :texture-2d 0)
 
-    (setf (boxer::glyph-atlas-shader device) (make-boxgl-shader-program :program glyph-program
-                                                            :vao glyph-vao       :buffer  glyph-buffer))
+    (setf (glyph-atlas-shader device) (make-boxgl-shader-program :program glyph-program
+                                                                 :vao glyph-vao       :buffer  glyph-buffer))
 
     (%gl:uniform-block-binding glyph-program (gl:get-uniform-block-index glyph-program "Matrices") 0)
 
@@ -510,8 +503,8 @@
     (gl:bind-buffer :array-buffer 0)
     (gl:bind-texture :texture-2d 0)
 
-    (setf (boxer::ft-glyph-shader device) (make-boxgl-shader-program :program glyph-program
-                                                          :vao glyph-vao       :buffer  glyph-buffer))
+    (setf (ft-glyph-shader device) (make-boxgl-shader-program :program glyph-program
+                                                              :vao glyph-vao  :buffer glyph-buffer))
 
     (%gl:uniform-block-binding glyph-program (gl:get-uniform-block-index glyph-program "Matrices") 0)
 
@@ -574,8 +567,8 @@
     ; (gl:bind-vertex-array 0)
     (gl:bind-texture :texture-2d 0)
 
-    (setf (boxer::pixmap-shader device) (make-boxgl-shader-program :program pixmap-program
-                                                       :vao pixmap-vao       :buffer  pixmap-buffer))
+    (setf (pixmap-shader device) (make-boxgl-shader-program :program pixmap-program
+                                                            :vao pixmap-vao       :buffer  pixmap-buffer))
 
     (%gl:uniform-block-binding pixmap-program (gl:get-uniform-block-index pixmap-program "Matrices") 0)))
 
@@ -593,10 +586,6 @@
     (3d-matrices:nmscale trans (3d-vectors:vec zoom zoom 1.0))
     (setf ortho (3d-matrices:m*  ortho trans))
     ortho))
-
-(defun create-transform-matrix (x y &optional (z 0))
-  "Create a transform matrix offset from the origin by x and y."
-  (3d-matrices:mtranslation (3d-vectors:vec x y z)))
 
 (defun update-transform-matrix-ubo (device)
   "Update just the transform matrix in the matrices ubo. Slightly more efficient than updating everything in our
@@ -622,7 +611,7 @@
 
   (gl:bind-buffer :uniform-buffer (matrices-ubo device))
   ;; Currently we have two mat4 and one vec4
-  (let* ((rgb (boxer::boxgl-device-pen-color device))
+  (let* ((rgb (boxgl-device-pen-color device))
          ;; Resolution is 2 floats and we have 2 4x4 matrices
          (arr (gl:alloc-gl-array :float (+ 2 (* 2 (* 4 4)))))
           (i 0))
@@ -664,7 +653,7 @@
   "Constructor to create a new boxgl-device renderer. Sets up initial shaders, buffers, etc.
 Needs to be run inside an active openGL context. Using the Lispworks OpenGL impl that means
 inside an opengl:rendering-on macro invocation."
-  (let ((togo (make-instance 'boxgl-device)))
+  (let ((togo (make-instance 'box-opengl-device)))
     (setf *cffi-float-size* (cffi:foreign-type-size :float))
 
     (gl:enable :blend)
@@ -682,10 +671,10 @@ inside an opengl:rendering-on macro invocation."
           (boxgl-device-transform-matrix togo)
           (create-transform-matrix 0 0)
 
-          (boxer::boxgl-device-pen-color togo)
+          (boxgl-device-pen-color togo)
           #(:rgb 0.0 0.0 0.0 1.0)
 
-          (boxer::boxgl-device-pen-size togo)
+          (boxgl-device-pen-size togo)
           1)
 
           (setf (text-color-uni togo)

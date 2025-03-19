@@ -15,7 +15,7 @@
 ;;;;
 ;;;;         Routines for using stencil buffers in Boxer.
 ;;;;
-(in-package :boxer)
+(in-package :boxer-opengl)
 
 (defun clear-stencil-buffer ()
   (gl:clear :stencil-buffer-bit))

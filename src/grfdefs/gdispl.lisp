@@ -519,7 +519,7 @@ Modification History (most recent at the top)
              (%set-pen-size *graphics-state-current-pen-width*))
            (when (not (color= ,old-pen-color
                                *graphics-state-current-pen-color*))
-             (%set-pen-color *graphics-state-current-pen-color*)))
+             (set-pen-color *graphics-state-current-pen-color*)))
          . ,body)
         (unless (null ,gcl)
           (setf (graphics-command-list-alu ,gcl) *graphics-state-current-alu*)
@@ -535,7 +535,7 @@ Modification History (most recent at the top)
           (when (not (=& ,old-pen-width *graphics-state-current-pen-width*))
             (%set-pen-size ,old-pen-width))
           (when (not (color= ,old-pen-color *graphics-state-current-pen-color*))
-            (%set-pen-color ,old-pen-color)))))))
+            (set-pen-color ,old-pen-color)))))))
 
 ;; a lightweight version of with-graphics-state.  Only the value of the
 ;; variables should be changed in the BODY (and NOT the window system's

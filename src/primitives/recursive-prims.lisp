@@ -101,7 +101,7 @@
                 (boxer::clear-box shape-box)
                 ;; For frame buffered turtles, we keep them on the actual graphics-object turtle object, since it's
                 ;; not guarenteed the sprite will actually have a shape box.
-                (boxer::clear-graphics-canvas turtle)
+                (clear-graphics-canvas turtle)
 
                 (setf (boxer::graphics-sheet-graphics-list (boxer::graphics-info shape-box))
                       new-graphics-list)

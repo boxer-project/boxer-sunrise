@@ -111,17 +111,17 @@
 
 (defun repaint-window (&optional (window *boxer-pane*) (flush-buffer? t) &KEY (process-state-label "stopped"))
     (check-for-window-resize)
-    (update-matrices-ubo bw::*boxgl-device*)
+    (update-gpu-matrices)
     (REDISPLAYING-WINDOW (WINDOW)
                          (clear-window window)
                          (repaint-guts)
                          (repaint-mouse-docs)
                          (when (active-menu *boxer-pane*)
                            (draw-menu (active-menu *boxer-pane*)))
-                         (let ((cur-transform (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)))
+                         (let ((cur-transform (boxgl-device-transform-matrix bw::*boxgl-device*)))
                            (set-transform bw::*boxgl-device* 0 0)
                            (repaint-dev-overlay process-state-label)
-                           (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*) cur-transform))
+                           (setf (boxgl-device-transform-matrix bw::*boxgl-device*) cur-transform))
                          (when flush-buffer? (swap-graphics-buffers window))))
 
 ;;; called also by printing routines.
@@ -158,10 +158,7 @@
                      (= obhei (display-style-fixed-hei (display-style-list osb))))
           (reset-global-scrolling)
           (multiple-value-bind (ww wh) (viewport-size *boxer-pane*)
-            #+lispworks (opengl::%resize-opengl-context (capi-internals:representation *boxer-pane*)
-                            (opengl::context *boxer-pane*)
-                            ww wh)
-            (boxer::ogl-reshape ww wh))
+            (gl-reshape ww wh))
           (box::set-fixed-size osb obwid obhei))))))
 
 (defvar *quit-boxer* nil
@@ -275,7 +272,16 @@
            (if (null sb) 17 (SCREEN-OBJ-HEI sb))))))
 
 
-
+;;; used by repaint-in-eval
+(defvar *last-eval-repaint* 0)
+
+(defvar *eval-repaint-quantum* 50
+  "Number of internal-time-units before the next buffer flush")
+
+(defvar *eval-repaint-ratio* 2)
+
+(defvar *last-repaint-duration* 0)
+
 
 ;;; This is called periodically during eval
 ;;; Try to avoid excessive repaints by:

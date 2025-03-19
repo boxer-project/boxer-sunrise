@@ -48,23 +48,9 @@ Modification History (most recent at the top)
 
 |#
 
-(in-package :boxer)
+(in-package :boxer-opengl)
 
-;; used directly
-(defun multiline2 (&rest x-and-y-s)
-  ;; sgithens TODO 2022-12-30 Set this up properly to be a single draw arrays call rather
-  ;;                          than a series of single line draws.
-  (let ((prev-x nil)
-        (prev-y nil))
-    (do* ((vertices x-and-y-s (cddr vertices))
-          (x (car vertices)  (car vertices))
-          (y (cadr vertices) (cadr vertices)))
-      ((null y)
-      (unless (null x) ; both run out @ same time
-        (error "Unpaired vertex in ~A" x-and-y-s)))
-      (when prev-x
-        (boxer::%draw-line prev-x prev-y x y))
-      (setf prev-x x prev-y y))))
+
 
 ;;;; FONTS
 
@@ -103,8 +89,8 @@ Modification History (most recent at the top)
 ;; Note: last value is "leading" which is the recommended space between lines
 
 (defun ogl-char-width (cha &optional (font *current-opengl-font*))
-  (let* ((glyph (boxer::find-box-glyph cha font boxer::*font-size-baseline*))
-         (advance (boxer::box-glyph-advance glyph)))
+  (let* ((glyph (find-box-glyph cha font boxer::*font-size-baseline*))
+         (advance (box-glyph-advance glyph)))
     ;; A number of our fixnum operations will fail if this isn't an integer.
     (floor advance)))
 
@@ -130,28 +116,21 @@ Modification History (most recent at the top)
 
 (defmacro maintaining-ogl-color (&body body)
   (let ((old-color (gensym)))
-    `(let ((,old-color (boxer::boxgl-device-pen-color bw::*boxgl-device*)))
+    `(let ((,old-color (boxgl-device-pen-color bw::*boxgl-device*)))
        (unwind-protect
         (progn . ,body)
-          (unless (equalp ,old-color (boxer::boxgl-device-pen-color bw::*boxgl-device*))
-            (setf (boxer::boxgl-device-pen-color bw::*boxgl-device*) ,old-color))))))
+          (unless (equalp ,old-color (boxgl-device-pen-color bw::*boxgl-device*))
+            (setf (boxgl-device-pen-color bw::*boxgl-device*) ,old-color))))))
 
 (defun ogl-reshape (width height)
-  (setf (boxer::boxgl-device-projection-matrix bw::*boxgl-device*)
-        (boxer::create-ortho-matrix width height))
+  (setf (boxgl-device-projection-matrix bw::*boxgl-device*)
+        (create-ortho-matrix width height))
   (gl:viewport 0 0 width height))
 
 ;;; pixel conversion
 ;; color values are floats between 0.0 and 1.0
 (defun float-color-to-byte-value (value)
   (round (* 255 (/ value 1.0))))
-
-;; NOTE: this must match the format in *pixmap-data-type* and *pixmap-data-format*
-(defun pixel->color (pixel)
-  `#(:rgb ,(/ (ldb *gl-rgba-rev-red-byte* pixel)   255.0)
-          ,(/ (ldb *gl-rgba-rev-green-byte* pixel) 255.0)
-          ,(/ (ldb *gl-rgba-rev-blue-byte* pixel)  255.0)
-          ,(/ (ldb *gl-rgba-rev-alpha-byte* pixel) 255.0)))
 
 ;;; circle, (eventually) arcs, ellipses
 ;;; lisp crib of http://slabode.exofire.net/circle_draw.shtml

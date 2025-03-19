@@ -21,37 +21,20 @@
 ;;;;        on each repaint. This is used so that we can update the screen reasonably after a
 ;;;;        turtle has painted a few million lines... or similar use cases.
 ;;;;
-(in-package :boxer)
+(in-package :boxer-opengl)
 
-(defclass graphics-canvas ()
-  ((pixmap :initform nil :accessor graphics-canvas-pixmap :initarg :pixmap
-    :documentation "The ogl-pixmap with the backing texture-id and dimensions.")
-   (renderbuffer :initform nil :accessor graphics-canvas-renderbuffer :initarg :renderbuffer
+(defclass opengl-graphics-canvas (graphics-canvas)
+  ((renderbuffer :initform nil :accessor graphics-canvas-renderbuffer :initarg :renderbuffer
     :documentation "")
    (framebuffer :initform nil :accessor graphics-canvas-framebuffer :initarg :framebuffer
     :documentation "Integer ID of the openGL framebuffer for this canvas.")
-   (op-count :initform 0 :accessor op-count
-    :documentation "A counter that can be used to document the number of graphics
-                    command operations have been applied to this texture. In a graphics command
-                    display list, we can use this to pick back up painting to the texture without
-                    repeating previous operations.")
    (cached-projection-matrix :initform nil :accessor cached-projection-matrix
     :documentation "We have to reset the drawing matrices for these canvases. This is what
                     we'll set it back to when we're done.")
    (cached-transform-matrix :initform nil :accessor cached-transform-matrix
     :documentation "See the comments on cached-projection-matrix.")
    (cached-model-matrix :initform nil :accessor cached-model-matrix
-    :documentation "See the comments on cached-projection-matrix.")
-
-   (pen-color-cmd :initform nil :accessor graphics-canvas-pen-color-cmd
-    :documentation "Vector of the last run gdispl command for changing the color, so it can be turned back
-                    on when picking up in the list without starting from the beginning.")
-   (pen-size-cmd  :initform nil :accessor graphics-canvas-pen-size-cmd
-    :documentation "Vector of the last run gdispl command for changing the pen size, so it can be turned back
-                    on when picking up in the list without starting from the beginning.")
-   (pen-font-cmd  :initform nil :accessor graphics-canvas-pen-font-cmd
-    :documentation "Vector of the last run gdispl command for changing the font, so it can be turned back
-                    on when picking up in the list without starting from the beginning.")))
+    :documentation "See the comments on cached-projection-matrix.")))
 
 (defun make-graphics-canvas (wid hei &optional in-pixmap)
   "Creates a new graphics-canvas, and all it's backing openGL resources  such a framebuffer, textures, etc.
@@ -62,7 +45,7 @@
          (pixmap (if in-pixmap
                      in-pixmap
                      (make-ogl-pixmap wid hei :texture texture)))
-         (togo (make-instance 'graphics-canvas :framebuffer framebuffer :pixmap pixmap :renderbuffer renderbuffer)))
+         (togo (make-instance 'opengl-graphics-canvas :framebuffer framebuffer :pixmap pixmap :renderbuffer renderbuffer)))
 
     (unless (ogl-pixmap-texture pixmap)
       (setf (ogl-pixmap-texture pixmap) texture))
@@ -141,7 +124,7 @@
       (gl:clear-color 0.0 0.0 0.0 0.0) ;; transparent
       (gl:clear :color-buffer-bit :depth-buffer-bit :stencil-buffer-bit))))
 
-(defmethod enable ((self graphics-canvas) &key (device bw::*boxgl-device*))
+(defmethod enable ((self opengl-graphics-canvas) &key (device bw::*boxgl-device*))
   "Enables the framebuffer backing this graphics-canvas, such that any GL operations will
    take place on it, until calling disable (or manually setting another framebuffer with GL
    calls).
@@ -161,7 +144,7 @@
     #+lispworks (opengl:gl-viewport 0 0 wid hei)
   (update-matrices-ubo device)))
 
-(defmethod disable ((self graphics-canvas) &key (device bw::*boxgl-device*))
+(defmethod disable ((self opengl-graphics-canvas) &key (device bw::*boxgl-device*))
   "See comments for enable. Resets the current framebuffer back to the default front/back buffers."
   (gl:bind-framebuffer :framebuffer 0)
   (setf (boxgl-device-projection-matrix device) (cached-projection-matrix self))
@@ -187,7 +170,7 @@
        nil))
     mesh))
 
-(defun buffer-canvas-mesh (device mesh pixmap wid hei)
+(defun %buffer-canvas-mesh (device mesh pixmap wid hei)
   (enable-gl-objects device :shader (pixmap-shader device)
                             :program (shader-program (pixmap-shader device))
                             :vao     (mesh-vao mesh)

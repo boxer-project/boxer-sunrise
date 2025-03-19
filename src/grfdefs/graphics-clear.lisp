@@ -35,8 +35,8 @@
         (when bitmap-p
           (cond ((not (null bit-array))
                  (clear-offscreen-bitmap bit-array (or bg *background-color*)))
-            ((color? bg)
-             (setf (graphics-sheet-background graphics-sheet) nil))
+            ;; ((color? bg)
+            ;;  (setf (graphics-sheet-background graphics-sheet) nil))
             ;; tiling pattern code here
             ))
         ;; Clear any framebuffers if present

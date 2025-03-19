@@ -16,7 +16,7 @@
 ;;;;        Shapes drawn with lines including obviously, lines and rectangles, and then a version
 ;;;;        of circles and arcs which use a configurable number of points to define their fidelity.
 ;;;;
-(in-package :boxer)
+(in-package :boxer-opengl)
 
 ;;;
 ;;;  Buffering commands to build up meshes of vertices.
