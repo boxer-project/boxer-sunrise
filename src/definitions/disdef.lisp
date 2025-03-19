@@ -277,7 +277,7 @@ Modification History (most recent at the top)
                                                    (set-font-info
                                                     (bfd-font-no (car remaining-font-descriptors)))
                                                    ,',(when cha-drawing?
-                                                        '(%set-pen-color
+                                                        '(set-pen-color
                                                           (bfd-color (car remaining-font-descriptors))))
                                                    (setq remaining-font-descriptors
                                                          (cdr remaining-font-descriptors))

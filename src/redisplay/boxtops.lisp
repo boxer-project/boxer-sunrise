@@ -150,7 +150,7 @@
     (cond ((not (null ic))
            ;; if there is a mac icon, prefer it...
            #-carbon-compat
-           (%bitblt-to-screen 32 32 ic 0 0 (+ x horiz-fudge) y)
+           (bitblt-to-screen 32 32 ic 0 0 (+ x horiz-fudge) y)
            #+carbon-compat
            (draw-iconref ic (+ x horiz-fudge) y)
            )
@@ -187,7 +187,7 @@
               (clear canvas)
               (putprop scr-box (graphics-sheet-graphics-list boxtop) :boxtop-graphics-list)))
           (playback-graphics-list-incrementally (graphics-sheet-graphics-list boxtop) canvas wid hei :mesh mesh)
-          (draw-canvas-mesh mesh (graphics-canvas-pixmap canvas)))
+          (boxer-opengl::draw-canvas-mesh mesh (graphics-canvas-pixmap canvas)))
         (boxer-playback-graphics-list (graphics-sheet-graphics-list boxtop) :translate? t :use-cur-model-matrix t)))))
 
 (defun draw-graphics-boxtop (scr-box boxtop x y wid hei &optional framed?)

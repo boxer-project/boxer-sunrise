@@ -206,7 +206,7 @@
               ((mouse-event? input)
                (handle-boxer-input input))
               ((eq input :stop-and-quit)
-               (capi:apply-in-pane-process *boxer-pane* #'(lambda ()
+               #+lispworks (capi:apply-in-pane-process *boxer-pane* #'(lambda ()
                 (setf (boxer::active *boxer-pane*) nil)
                 (setf boxer::*quit-boxer* t))))
               ((and (symbolp input) (not (null (symbol-function input))))

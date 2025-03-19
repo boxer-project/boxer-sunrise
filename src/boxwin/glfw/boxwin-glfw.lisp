@@ -108,23 +108,22 @@
         (cl-glfw3:set-window-size-callback 'update-viewport)
 
         ;; START Duplicated from pane-callbacks
-        (boxer::opengl-enables)
+        (boxer-opengl::opengl-enables)
         (setf bw::*boxgl-device* (slot-value
                             (boxer::make-boxwin-330gl-device bw::*boxer-frame* bw::*boxer-pane* :wid scr-width :hei scr-height)
                             'boxer::draw-device))
         (setf (boxer::boxgl-device-projection-matrix bw::*boxgl-device*)
-              (boxer::create-ortho-matrix scr-width scr-height))
+              (boxer-opengl::create-ortho-matrix scr-width scr-height))
 
-        (boxer::update-matrices-ubo bw::*boxgl-device*)
-        (%set-pen-color box::*foreground-color*)
+        (boxer-opengl::update-matrices-ubo bw::*boxgl-device*)
+        (set-pen-color box::*foreground-color*)
 
-        (boxer::load-freetype-faces)
         (let ((boxer::%private-graphics-list nil))
           ;; needed by shape-box updater in the redisplay inits but not set until
           ;; (boxer-eval::setup-evaluator) farther down
           (run-redisplay-inits))
 
-        (setf boxer::*freetype-glyph-atlas* (boxer::make-glyph-atlas))
+        (init-freetype-fonts)
         ;; END pane-callbacks duplication
 
         (loop until (cl-glfw3:window-should-close-p)
@@ -142,7 +141,7 @@
               ;; Duplicated from repaint.lisp repaint-window
               ;; (boxer::REDISPLAYING-WINDOW (*boxer-pane*)
               (boxer::check-for-window-resize)
-              (boxer::update-matrices-ubo bw::*boxgl-device*)
+              (boxer-opengl::update-matrices-ubo bw::*boxgl-device*)
                          (clear-window *boxer-pane*)
                          (boxer::repaint-guts)
                         ;;  (repaint-mouse-docs)

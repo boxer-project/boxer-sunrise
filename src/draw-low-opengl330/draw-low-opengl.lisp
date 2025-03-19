@@ -106,19 +106,7 @@
 ;;;;          search for &&& which marks stubs
 ;;;;
 
-(in-package :boxer)
-
-;;;
-;;; Constants and Variables
-;;;
-
-(defvar *boxer-frame* nil
-  "This frame contains *turtle-pane* *boxer-pane* etc.")
-
-(defvar *name-pane* nil)
-
-(defvar *boxer-pane* nil
-  "The pane which contains the actual boxer screen editor.")
+(in-package :boxer-opengl)
 
 (defun opengl-enables ()
   "Run our standard set of openGL enables and disables."
@@ -138,91 +126,13 @@
   (gl:hint :line-smooth-hint :nicest)
   (gl:hint :polygon-smooth-hint :nicest))
 
-;;; **** returns pixel value(window system dependent) at windw coords (x,y)
-;;; see BU::COLOR-AT in grprim3.lisp
-(defun window-pixel-color (x y &optional (view *boxer-pane*)) (pixel->color (%get-pixel view (floor x) (floor y))))
-
-;;;
-;;; Drawing and Geometry layout type Macros
-;;
-
-(defun %set-pen-size (v)
-  (setf (boxgl-device-pen-size bw::*boxgl-device*) v))
-
-;; needs to be happening inside a drawing-on-window (actually rendering-on)
-(defmacro with-pen-size ((newsize) &body body)
-  (let ((oldpsvar (gensym)) (nochangevar (gensym)) (newsizevar (gensym)))
-    `(let ((,oldpsvar (boxgl-device-pen-size bw::*boxgl-device*))
-           (,newsizevar (float ,newsize))
-           (,nochangevar nil))
-       (unwind-protect
-        (progn
-         (cond ((= ,newsizevar ,oldpsvar) (setq ,nochangevar t))
-           (t (%set-pen-size ,newsize)))
-         . ,body)
-        (unless ,nochangevar (%set-pen-size ,oldpsvar))))))
-
-(defmacro with-line-stippling ((pattern factor) &body body)
-  (let ((stipplevar (gensym)))
-    `(let ((,stipplevar (line-stipple bw::*boxgl-device*)))
-       (unwind-protect
-        (progn
-          (setf (line-stipple bw::*boxgl-device*) t)
-         . ,body)
-        (unless ,stipplevar
-          (setf (line-stipple bw::*boxgl-device*) nil))))))
-
-(defmacro maintaining-drawing-font (&body body)
-  (let ((font-var (gensym)))
-    `(let ((,font-var *current-opengl-font*))
-       (unwind-protect
-        (progn . ,body)
-        ;; NOTE: fonts aren't necessarily EQ
-        (unless (eql *current-opengl-font* ,font-var)
-          (setq *current-opengl-font* ,font-var))))))
-
-(defmacro rebind-font-info ((font-no) &body body)
-  `(let ((%drawing-font-cha-hei %drawing-font-cha-hei)
-         (%drawing-font-cha-ascent %drawing-font-cha-ascent))
-     (unless (null ,font-no)
-       (maintaining-drawing-font
-        (set-font-info ,font-no)
-        ,@body))))
-
-(defun clear-window (w)
+(defun %clear-window (w)
   (let ((color (backdrop-color w)))
     (gl::clear-color (aref color 1)
                      (aref color 2)
                      (aref color 3)
                      0.0))
   (gl:clear :color-buffer-bit :depth-buffer-bit :stencil-buffer-bit))
-
-;;; used by repaint-in-eval
-(defvar *last-eval-repaint* 0)
-
-(defvar *eval-repaint-quantum* 50
-  "Number of internal-time-units before the next buffer flush")
-
-(defvar *eval-repaint-ratio* 2)
-
-(defvar *last-repaint-duration* 0)
-
-;;; Things for measuring repaint times
-(defvar *last-framerate-time* (get-universal-time))
-(defvar *number-of-frames* 0)
-(defvar *current-framerate* 0)
-
-(defun update-framerate ()
-  "Register a repaint to update the statistics for the repaint rate."
-  ;; https://www.opengl-tutorial.org/miscellaneous/an-fps-counter
-  (let* ((current-time (get-universal-time))
-        (diff (- current-time *last-framerate-time*)))
-    (setq *number-of-frames* (1+ *number-of-frames*))
-    (when (>= diff 1)
-      (setq *current-framerate* (/ 1000.0 *number-of-frames*))
-      (setq *number-of-frames* 0)
-      (setq *last-framerate-time* (get-universal-time)))
-  ))
 
 (defun %flush-port-buffer (&optional (pane *boxer-pane*))
   (update-framerate)
@@ -239,7 +149,7 @@
                            (ogl-string-width (string string) font)
                            (ogl-string-width string font))))))
 
-(defun string-hei (font-no)
+(defun %string-hei (font-no)
   (let ((font (find-cached-font font-no)))
     (if (null font)
       (error "No cached font for ~X" font-no)
@@ -247,7 +157,7 @@
                           ;; most of the drawing code requires this to be a fixnum, thus the floor
                           (floor (ogl-font-height font))))))
 
-(defun string-ascent (font-no)
+(defun %string-ascent (font-no)
   (let ((font (find-cached-font font-no)))
     (if (null font)
       (error "No cached font for ~X" font-no)
@@ -257,18 +167,18 @@
 
 
 ;; proportional fonts
-(defun cha-wid (char)
+(defun %cha-wid (char)
   (ogl-char-width char))
 
-(defun cha-ascent () %drawing-font-cha-ascent)
 
-(defun cha-hei () %drawing-font-cha-hei)
+
+
 
 
 ;;;; COLOR (incomplete)
 
 ;;; neccessary but not sufficient...
-(Defun color? (thing) #+lispworks (typep thing 'opengl::gl-vector))
+;; (Defun color? (thing) #+lispworks (typep thing 'opengl::gl-vector))
 
 (defun %set-pen-color (color)
   "This expects either an already allocated GL 4 vector that represents a color, an RGB percentage vector
@@ -284,19 +194,11 @@
          ))
         ((and (vectorp color) (eq :RGB (aref color 0)))
           (setf (boxgl-device-pen-color bw::*boxgl-device*) color))
-        ((color? color)
-          (setf (boxgl-device-pen-color bw::*boxgl-device*) (bw::ogl-color->rgb color)))
+        ;; ((color? color)
+        ;;   (setf (boxgl-device-pen-color bw::*boxgl-device*) (bw::ogl-color->rgb color)))
 
         (t
          (error "Bad color passed to %set-pen-color: ~A " color))))
-
-(defmacro with-pen-color ((color) &body body)
-  `(maintaining-ogl-color
-    (bw::%set-pen-color ,color)
-    . ,body))
-
-(defmacro maintaining-pen-color (&body body)
-  `(maintaining-ogl-color . ,body))
 
 ;;;
 ;;; Drawing functions
@@ -359,9 +261,9 @@ the window font (ie, draw-string) has to change it back for this to work.
 (defun %draw-rectangle (width height x y)
   (gl-add-rect bw::*boxgl-device* x y width height))
 
-(defun %erase-rectangle (w h x y)
-  (with-pen-color (*background-color*)
-    (%draw-rectangle w h x y)))
+;; (defun %erase-rectangle (w h x y)
+;;   (with-pen-color (*background-color*)
+;;     (%draw-rectangle w h x y)))
 
 (defun %draw-string (font string x y)
   ;; The check for *cur-gl-model-screen-obj* happens inside of gl-add-string
@@ -389,12 +291,6 @@ the window font (ie, draw-string) has to change it back for this to work.
                                 (round (* (color-green clear-color) 255))
                                 (round (* (color-blue clear-color) 255)))))
 
-(defun deallocate-system-dependent-structures (box)
-  (let ((gi (graphics-info box)))
-    (when (graphics-sheet? gi)
-      (let ((bm (graphics-sheet-bit-array gi)))
-        (unless (null bm) (ogl-free-pixmap bm))))))
-
 ;; NOTE: these functions actually return COLORS rather than the raw (system dependent) pixel value
 ;; used to grab a pixel value from the screen
 (defvar *screen-pixel-buffer*)
@@ -407,3 +303,6 @@ the window font (ie, draw-string) has to change it back for this to work.
 
 (defun offscreen-pixel-color (x y pixmap)
   (pixel->color (pixmap-pixel pixmap x y)))
+
+(defun %pixblt-from-screen (to-array fx fy wid hei tx ty &optional (buffer :front))
+  (%gl:read-pixels fx fy wid hei *pixmap-data-type* *pixmap-data-format* (ogl-pixmap-data to-array)))

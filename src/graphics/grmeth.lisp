@@ -573,14 +573,14 @@ Modification History (most recent at top)
 
 (defmethod draw ((self button))
   (unless (null (shown? self))
-    (let* ((prev-model (boxgl-device-model-matrix bw::*boxgl-device*))
+    (let* ((prev-model (get-model-matrix))
            (final-mat (3d-matrices:m* prev-model (model-matrix self %drawing-half-width %drawing-half-height))))
       ;; sgithens TODO 2024-12-26 Remove the drawing-half-width/height from above and also from the graphics command
       ;; list playback, and move it to a matrix transform at a higher level, so individual drawback code doens't need
       ;; to worry about it, especially when the transforms become more complex in the future (z-axis, rotations, etc)
 
-      (setf (boxgl-device-model-matrix bw::*boxgl-device*) final-mat)
-      (update-model-matrix-ubo bw::*boxgl-device*)
+      (setf (get-model-matrix) final-mat)
+      (refresh-gpu-model-matrix)
 
       ;; We need to override the drawing-half-width and drawing-half-height here
       ;; with the values from the shape box graphics-sheet, otherwise, if it's scaled or
@@ -620,13 +620,13 @@ Modification History (most recent at top)
             (let ((pixmap (graphics-canvas-pixmap canvas)))
               (setf final-mat (3d-matrices:m* final-mat
                                               (3d-matrices:mtranslation (3d-vectors:vec (- (/ wid 2)) (- (/ hei 2)) 0.0)) ))
-              (setf (boxgl-device-model-matrix bw::*boxgl-device*) final-mat)
-              (update-model-matrix-ubo bw::*boxgl-device*)
-              (draw-canvas-mesh mesh pixmap)))
+              (setf (get-model-matrix) final-mat)
+              (refresh-gpu-model-matrix)
+              (boxer-opengl::draw-canvas-mesh mesh pixmap)))
           (boxer-playback-graphics-list gl :use-cur-model-matrix t)))
 
-      (setf (boxgl-device-model-matrix bw::*boxgl-device*) prev-model)
-      (update-model-matrix-ubo bw::*boxgl-device*)
+      (setf (get-model-matrix) prev-model)
+      (refresh-gpu-model-matrix)
 
       (unless (eq (shown? self) ':no-subsprites)
         (dolist (subs (slot-value self 'subsprites))

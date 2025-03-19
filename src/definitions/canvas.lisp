@@ -20,6 +20,14 @@
 ;;;;
 (in-package :boxer)
 
+(defvar *boxer-frame* nil
+  "This frame contains *turtle-pane* *boxer-pane* etc.")
+
+(defvar *name-pane* nil)
+
+(defvar *boxer-pane* nil
+  "The pane which contains the actual boxer screen editor.")
+
 (defstruct (blinker (:conc-name blinker-))
   (x 0)
   (y 0)
@@ -170,8 +178,8 @@
 
 (defmethod adjust-global-scroll ((self boxer-canvas))
   "Updates the global transform matrix based on the current values of the top level global scrollbars."
-  (setf (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)
-        (boxer::create-transform-matrix (horizontal-scroll self) (vertical-scroll self))))
+  (setf (boxgl-device-transform-matrix bw::*boxgl-device*)
+        (create-transform-matrix (horizontal-scroll self) (vertical-scroll self))))
 
 (defmethod v-scrollable? ((self boxer-canvas))
  (> (content-hei self) (viewport-height self)))

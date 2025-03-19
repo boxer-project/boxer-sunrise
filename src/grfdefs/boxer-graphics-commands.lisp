@@ -41,7 +41,7 @@
 
     (with-graphics-state (gl t)
       (when translate?
-        (setf prev-model (boxgl-device-model-matrix bw::*boxgl-device*))
+        (setf prev-model (get-model-matrix))
         (if use-cur-model-matrix
           (setf trans-mat  (3d-matrices:m* prev-model
                            (3d-matrices:mtranslation
@@ -49,8 +49,8 @@
           (setf trans-mat  (3d-matrices:mtranslation
                              (3d-vectors:vec %drawing-half-width %drawing-half-height 0.0))))
 
-        (setf (boxgl-device-model-matrix bw::*boxgl-device*) trans-mat)
-        (update-matrices-ubo bw::*boxgl-device*))
+        (setf (get-model-matrix) trans-mat)
+        (update-gpu-matrices))
 
       (when (and *use-opengl-framebuffers* graphics-canvas)
         (when (graphics-canvas-pen-color-cmd graphics-canvas)
@@ -74,8 +74,8 @@
                 ((member (aref command 0) '(2 34))
                 (setf (graphics-canvas-pen-font-cmd graphics-canvas) command)))))
       (when translate?
-        (setf (boxgl-device-model-matrix bw::*boxgl-device*) prev-model)
-        (update-matrices-ubo bw::*boxgl-device*)))))
+        (setf (get-model-matrix) prev-model)
+        (update-gpu-matrices)))))
 
 (defclass graphics-command ()
   ((name :initform nil)
@@ -280,7 +280,7 @@
 (defun change-graphics-color (new-color)
   (unless (color= new-color *graphics-state-current-pen-color*)
     (setq *graphics-state-current-pen-color* new-color)
-    (%set-pen-color new-color)))
+    (set-pen-color new-color)))
 
 ;; 36   BOXER-CHANGE-GRAPHICS-COLOR                  (NEW-COLOR)
 (defclass boxer-change-graphics-color (graphics-command)
@@ -291,7 +291,7 @@
 
 (defdraw-graphics-command (boxer-change-graphics-color new-color)
   (setf *graphics-state-current-pen-color* new-color)
-  (%set-pen-color new-color))
+  (set-pen-color new-color))
 
 (defmethod load-gc ((self boxer-change-graphics-color) command)
   (setf (aref command 1)
@@ -327,16 +327,16 @@
   (cond
     ((eq matrix :pop)
      (when *graphics-state-transform-matrix-stack* ;; Guard against extra :pop entries on stack
-       (setf (boxgl-device-model-matrix bw::*boxgl-device*) (pop *graphics-state-transform-matrix-stack*))))
+       (setf (get-model-matrix) (pop *graphics-state-transform-matrix-stack*))))
     (t
-      (push (boxgl-device-model-matrix bw::*boxgl-device*) *graphics-state-transform-matrix-stack*)
+      (push (get-model-matrix) *graphics-state-transform-matrix-stack*)
       (let ((new-matrix nil))
         (if (vectorp matrix)
           (setf new-matrix (3d-matrices:mat4 matrix))
           (setf new-matrix matrix))
-        (setf new-matrix (3d-matrices:m*  (boxgl-device-model-matrix bw::*boxgl-device*) new-matrix))
-        (setf (boxgl-device-model-matrix bw::*boxgl-device*) new-matrix))))
-  (update-matrices-ubo bw::*boxgl-device*))
+        (setf new-matrix (3d-matrices:m*  (get-model-matrix) new-matrix))
+        (setf (get-model-matrix) new-matrix))))
+  (update-gpu-matrices))
 
 ;; 39   BOXER-CENTERED-STRING             (X Y STRING)
 (defclass boxer-centered-string (graphics-command)
@@ -651,7 +651,7 @@
 (defdraw-graphics-command (boxer-wedge x y radius start-angle sweep-angle)
   (let ((y (- y)))
     (when (plusp radius)
-      (%draw-c-arc x y radius start-angle sweep-angle t))))
+      (draw-c-arc x y radius start-angle sweep-angle t))))
 
 (defextents-graphics-command (boxer-wedge x y radius start-angle sweep-angle)
   (values (- x radius) (- y radius)
@@ -680,7 +680,7 @@
 (defdraw-graphics-command (boxer-arc x y radius start-angle sweep-angle)
   (let ((y (- y)))
     (when (plusp radius)
-      (%draw-c-arc x y radius start-angle sweep-angle nil))))
+      (draw-c-arc x y radius start-angle sweep-angle nil))))
 
 (defextents-graphics-command (boxer-arc x y radius start-angle sweep-angle)
   (values (- x radius) (- y radius)

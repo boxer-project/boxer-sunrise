@@ -65,7 +65,7 @@
 (defmethod repaint-cursors-regions ((self screen-box))
   (when (or (bps self) (region-in-screen-box? self))
     (with-model-matrix ((3d-matrices:meye 4))
-      (update-model-matrix-ubo bw::*boxgl-device*)
+      (refresh-gpu-model-matrix)
       (when (bps self)
         (repaint-cursor *point*))
       (when (region-in-screen-box? self)
@@ -78,7 +78,7 @@
     (multiple-value-bind (il it ir ib)
                          (box-borders-widths box-type self)
       ;; sgithens TODO 2024-04-16 Get rid of this clear
-      (clear-stencil-buffer)
+      (boxer-opengl::clear-stencil-buffer)
 
       (cond ((draw-port-box-ellipsis? self)
              (draw-port-box-ellipsis self il it))
@@ -121,8 +121,8 @@
                                                    :cha-drawing? t)
       (cond ((screen-cha? inf-screen-obj)
              ;; draw the char
-             (if (get-glyph *freetype-glyph-atlas* `(,(opengl-font-fontspec *current-opengl-font*) ,inf-screen-obj ,(coerce *font-size-baseline* 'float)))
-              (when (needs-update gl-model)
+             (if (get-glyph `(,(opengl-font-fontspec *current-opengl-font*) ,inf-screen-obj ,(coerce *font-size-baseline* 'float)))
+              (when (boxer-opengl::needs-update gl-model)
                 (draw-cha inf-screen-obj
                           inf-x-offset (+ row-baseline inf-y-offset)
                           :gl-model gl-model))
@@ -173,7 +173,7 @@
     (with-model-matrix ((world-matrix self))
       (maintaining-pen-color
        ;; need this because we may be in the middle of a colored font run
-       (%set-pen-color *foreground-color*)
+       (set-pen-color *foreground-color*)
        ;; During redisplay-pass-2 the only part of the screen the redisplay
        ;; methods are allowed to draw in is the max of the region currently
        ;; occupied by the screen obj, and the space that will be occupied by

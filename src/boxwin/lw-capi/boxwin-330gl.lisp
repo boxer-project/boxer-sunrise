@@ -26,7 +26,7 @@
 (defun make-boxwin-330gl-device (gl-frame gl-pane &key (wid 600) (hei 600))
   (let* ((gl-device nil)
          (device (make-instance 'boxwin-330gl-device)))
-    (setf gl-device (make-boxgl-device wid hei))
+    (setf gl-device (boxer-opengl::make-boxgl-device wid hei))
     (setf (slot-value device 'frame) gl-frame)
     (setf (slot-value device 'pane) gl-pane)
     (setf (slot-value device 'draw-device) gl-device)

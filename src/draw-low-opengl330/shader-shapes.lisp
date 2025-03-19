@@ -16,7 +16,7 @@
 ;;;;        Shapes drawn primarily with math in fragment shaders.  Also, scaffolding to run the types of
 ;;;;        examples found in The Book of Shaders.
 ;;;;
-(in-package :boxer)
+(in-package :boxer-opengl)
 
 ;;;
 ;;; Circles on the Fragment Shader

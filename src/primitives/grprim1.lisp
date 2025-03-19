@@ -298,7 +298,7 @@
   (let ((color (get-color-from-color-box new-color)))
     (if (null color)
   (boxer-eval::primitive-signal-error :graphics "No color in: " new-color)
-  (set-pen-color turtle color)))
+  (set-turtle-pen-color turtle color)))
   boxer-eval::*novalue*)
 ;; )
 ;;; temporary hack until we have a better scheme for

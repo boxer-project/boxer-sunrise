@@ -30,7 +30,37 @@
   (:use :common-lisp )
   (:nicknames :box)
   (:shadow :once-only)
-  (:export *suppress-expose-handler* *SUPPRESSED-ACTIONS*
+  (:export :box :plist-subclass
+           *capogi-font-directory* *resources-dir* *shaders-dir*
+           *suppress-expose-handler* *SUPPRESSED-ACTIONS*
+           :+degs->rads+
+
+           :content-origin :resolution :update-gpu-matrices
+           :set-pen-color :create-transform-matrix :init-freetype-fonts
+           :string-wid :string-hei :find-cached-font :clear-window
+           :backdrop-color :cha-hei :opengl-font-fontspec
+           :*cur-gl-model-screen-obj* :*font-size-baseline* :cha-wid
+           :get-visible-screen-objs :pixel->color
+           :*foreground-color* :*background-color* :with-pen-color
+           :update-framerate :drawing-on-window :repaint-window
+
+           :make-ogl-pixmap :ogl-pixmap-width :ogl-pixmap-height :ogl-pixmap-texture
+           :ogl-pixmap-data :ogl-pixmap-update-texture-p :*pixmap-data-type* :*pixmap-data-format*
+           :pixmap-pixel
+
+           :graphics-canvas :graphics-canvas-pixmap :enable :disable :get-canvas-mesh :op-count
+           :graphics-canvas-pen-color-cmd :graphics-canvas-pen-size-cmd :graphics-canvas-pen-font-cmd
+           :clear-graphics-canvas :clear :resize
+           :viewport-height :viewport-width
+
+           :*update-bitmap?*
+
+           :boxgl-device :boxgl-device-pen-size :boxgl-device-projection-matrix
+           :boxgl-device-transform-matrix :boxgl-device-model-matrix
+
+           :gl-reshape
+
+           :*boxer-pane* :*name-pane* :*boxer-frame*
            :gesture-spec-modifiers :gesture-spec-data :make-gesture-spec
            :input-gesture->char-code
            :key-to-keep-shifted? :gesture-spec-p
@@ -191,13 +221,13 @@
 (defpackage :boxer-window
   (:use :common-lisp :boxer)
   (:nicknames :bw)
-  (:export :*foreground-color* :*background-color*
-           :%bitblt-to-screen :%bitblt-from-screen
-           :%draw-point
-           :%draw-rectangle :%erase-rectangle :%draw-line :%draw-poly
-           :draw-cha :cha-wid :cha-hei
-           :%draw-cha :%draw-string
-           :string-wid :string-hei
+  (:export ;;
+          ;;  :%bitblt-from-screen
+          ;;  :%draw-point
+          ;;  :%draw-rectangle :%erase-rectangle :%draw-line :%draw-poly
+          ;;  :draw-cha
+          ;;  :%draw-cha :%draw-string
+
            ;; bitmap functions
            :make-offscreen-bitmap :copy-offscreen-bitmap :free-offscreen-bitmap
            :offscreen-bitmap-width :offscreen-bitmap-height
@@ -206,17 +236,17 @@
            :offscreen-pixel :image-pixel
 
            :rebind-font-info
-           :%make-color :color? :color= :with-pen-color :%set-pen-color
+           :%make-color :color? :color=  :%set-pen-color
            :%set-pen-size :pixel-rgb-values
            :set-mouse-cursor :reset-mouse-cursor :with-mouse-cursor :beep
            :mouse-window-coords :mouse-button-state
 
            :outermost-screen-box
            ;; useful variables...
-           :*boxer-pane* :*name-pane* :*boxer-frame*
+
            :*point-blinker* :*mouse-blinker* :*sprite-blinker*
            ;; Window operations
-           :window-system-dependent-redraw-status-line :clear-window
+           :window-system-dependent-redraw-status-line
            ;; input functions
            :get-character-input :get-boxer-input
            ;; cursor and blinker manipulation
@@ -238,6 +268,10 @@
 
 (defpackage :boxer-lw-capi
   (:use :common-lisp))
+
+(defpackage :boxer-opengl
+  (:use :common-lisp)
+  (:use :boxer))
 
 (in-package :boxer)
 

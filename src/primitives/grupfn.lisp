@@ -204,7 +204,7 @@
                                            (box (box-interface-box slot)))
                                       (if (null box)
                                         (no-interface-box-error 'pen-color turtle)
-                                        (set-pen-color turtle (graphics-sheet-background
+                                        (set-turtle-pen-color turtle (graphics-sheet-background
                                                                (graphics-sheet box)) t))
                                       boxer-eval::*novalue*))))
 

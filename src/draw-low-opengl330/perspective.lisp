@@ -13,7 +13,7 @@
 ;;;;                  This file is part of the | BOXER | system
 ;;;;                                           +-------+
 ;;;;
-(in-package :boxer)
+(in-package :boxer-opengl)
 
 (defun create-perspective-matrix (wid hei)
   "Create an orthogonal projection matrix for use in our shaders with the given width and height."
