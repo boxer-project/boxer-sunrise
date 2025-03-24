@@ -57,6 +57,7 @@
 
            :boxgl-device :boxgl-device-pen-size :boxgl-device-projection-matrix
            :boxgl-device-transform-matrix :boxgl-device-model-matrix
+           :create-ortho-matrix
 
            :gl-reshape
 

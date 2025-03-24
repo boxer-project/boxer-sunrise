@@ -187,7 +187,7 @@
               (clear canvas)
               (putprop scr-box (graphics-sheet-graphics-list boxtop) :boxtop-graphics-list)))
           (playback-graphics-list-incrementally (graphics-sheet-graphics-list boxtop) canvas wid hei :mesh mesh)
-          (boxer-opengl::draw-canvas-mesh mesh (graphics-canvas-pixmap canvas)))
+          (draw-canvas-mesh mesh (graphics-canvas-pixmap canvas)))
         (boxer-playback-graphics-list (graphics-sheet-graphics-list boxtop) :translate? t :use-cur-model-matrix t)))))
 
 (defun draw-graphics-boxtop (scr-box boxtop x y wid hei &optional framed?)

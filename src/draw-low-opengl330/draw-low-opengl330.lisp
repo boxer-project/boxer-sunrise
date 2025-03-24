@@ -578,15 +578,6 @@
   (uiop:read-file-string
     (cl-fad:merge-pathnames-as-file shaders-dir filename)))
 
-(defun create-ortho-matrix (wid hei &key (zoom (zoom-level *boxer-pane*)))
-  "Create an orthogonal projection matrix for use in our shaders with the given width and height."
-  (let* ((ortho (3d-matrices:mortho 0 wid hei 0 -1000 1000))
-         (origin (content-origin *boxer-pane*))
-         (trans (3d-matrices:mtranslation (3d-vectors:vec (first origin) (second origin) 0))))
-    (3d-matrices:nmscale trans (3d-vectors:vec zoom zoom 1.0))
-    (setf ortho (3d-matrices:m*  ortho trans))
-    ortho))
-
 (defun update-transform-matrix-ubo (device)
   "Update just the transform matrix in the matrices ubo. Slightly more efficient than updating everything in our
    UBO array."

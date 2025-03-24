@@ -204,7 +204,7 @@
   (unenable-shader-programs device)
   (setf (mesh-pos mesh) (+ (mesh-pos mesh) (* 5 6))))
 
-(defun draw-canvas-mesh (mesh pixmap)
+(defun %draw-canvas-mesh (mesh pixmap)
     (enable-gl-objects bw::*boxgl-device* :shader (pixmap-shader bw::*boxgl-device*)
                                           :program (shader-program (pixmap-shader bw::*boxgl-device*))
                                           :vao     (mesh-vao mesh)

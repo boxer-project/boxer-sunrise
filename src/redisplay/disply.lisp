@@ -294,7 +294,7 @@
 
 (defmethod deallocate-self ((self screen-row))
   (when (getprop self :gl-model)
-    (boxer-opengl::reset-meshes (getprop self :gl-model)))
+    (reset-meshes (getprop self :gl-model)))
 
   (when (null (slot-value self 'screen-box))
     (deallocate-inferiors self)

@@ -622,7 +622,7 @@ Modification History (most recent at top)
                                               (3d-matrices:mtranslation (3d-vectors:vec (- (/ wid 2)) (- (/ hei 2)) 0.0)) ))
               (setf (get-model-matrix) final-mat)
               (refresh-gpu-model-matrix)
-              (boxer-opengl::draw-canvas-mesh mesh pixmap)))
+              (draw-canvas-mesh mesh pixmap)))
           (boxer-playback-graphics-list gl :use-cur-model-matrix t)))
 
       (setf (get-model-matrix) prev-model)

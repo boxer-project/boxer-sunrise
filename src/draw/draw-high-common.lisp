@@ -64,6 +64,9 @@
 (defun buffer-canvas-mesh (device mesh pixmap wid hei)
   (boxer-opengl::%buffer-canvas-mesh device mesh pixmap wid hei))
 
+(defun draw-canvas-mesh (mesh pixmap)
+  (boxer-opengl::%draw-canvas-mesh mesh pixmap))
+
 (defmethod clear-graphics-canvas (obj)
   ""
   (error "graphics-canvas clear-graphics-canvas needs an toolkit specific implementation"))
@@ -237,6 +240,15 @@ the bootstrapping of the clipping and coordinate scaling variables."
           (create-transform-matrix h v))
     (boxer-opengl::update-transform-matrix-ubo self))
 
+(defun create-ortho-matrix (wid hei &key (zoom (zoom-level *boxer-pane*)))
+  "Create an orthogonal projection matrix for use in our shaders with the given width and height."
+  (let* ((ortho (3d-matrices:mortho 0 wid hei 0 -1000 1000))
+         (origin (content-origin *boxer-pane*))
+         (trans (3d-matrices:mtranslation (3d-vectors:vec (first origin) (second origin) 0))))
+    (3d-matrices:nmscale trans (3d-vectors:vec zoom zoom 1.0))
+    (setf ortho (3d-matrices:m*  ortho trans))
+    ortho))
+
 ;;;
 ;;; Fonts
 ;;;
@@ -361,6 +373,14 @@ multifont row, the common reference point will be the baseline instead of the to
         (boxer-opengl::reset-meshes model)
         (setf (slot-value model 'boxer-opengl::cur-tick) tick)))
     model))
+
+;; TODO We need to make a proper flexible Boxer Mesh class
+(defmethod needs-update (obj)
+  (boxer-opengl::needs-update obj))
+
+;; TODO We need to make a proper flexible Boxer Mesh class
+(defmethod reset-meshes (obj)
+  (boxer-opengl::reset-meshes obj))
 
 (defmethod get-updated-tick ((self screen-obj))
   (actual-obj-tick (screen-obj-actual-obj self)))

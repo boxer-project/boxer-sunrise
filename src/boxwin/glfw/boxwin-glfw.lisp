@@ -113,9 +113,9 @@
                             (boxer::make-boxwin-330gl-device bw::*boxer-frame* bw::*boxer-pane* :wid scr-width :hei scr-height)
                             'boxer::draw-device))
         (setf (boxer::boxgl-device-projection-matrix bw::*boxgl-device*)
-              (boxer-opengl::create-ortho-matrix scr-width scr-height))
+              (create-ortho-matrix scr-width scr-height))
 
-        (boxer-opengl::update-matrices-ubo bw::*boxgl-device*)
+        (update-gpu-matrices)
         (set-pen-color box::*foreground-color*)
 
         (let ((boxer::%private-graphics-list nil))
@@ -141,7 +141,7 @@
               ;; Duplicated from repaint.lisp repaint-window
               ;; (boxer::REDISPLAYING-WINDOW (*boxer-pane*)
               (boxer::check-for-window-resize)
-              (boxer-opengl::update-matrices-ubo bw::*boxgl-device*)
+              (update-gpu-matrices)
                          (clear-window *boxer-pane*)
                          (boxer::repaint-guts)
                         ;;  (repaint-mouse-docs)

@@ -77,9 +77,6 @@
     self
     (multiple-value-bind (il it ir ib)
                          (box-borders-widths box-type self)
-      ;; sgithens TODO 2024-04-16 Get rid of this clear
-      (boxer-opengl::clear-stencil-buffer)
-
       (cond ((draw-port-box-ellipsis? self)
              (draw-port-box-ellipsis self il it))
             ((or x-got-clipped? y-got-clipped?)
@@ -122,7 +119,7 @@
       (cond ((screen-cha? inf-screen-obj)
              ;; draw the char
              (if (get-glyph `(,(opengl-font-fontspec *current-opengl-font*) ,inf-screen-obj ,(coerce *font-size-baseline* 'float)))
-              (when (boxer-opengl::needs-update gl-model)
+              (when (needs-update gl-model)
                 (draw-cha inf-screen-obj
                           inf-x-offset (+ row-baseline inf-y-offset)
                           :gl-model gl-model))
