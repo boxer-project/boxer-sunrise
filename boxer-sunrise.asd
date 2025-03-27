@@ -53,8 +53,6 @@
                                (:file "freetype-fonts")
                                (:file "draw-low-opengl")))
 
-                 (:file "boxwin/lw-capi/boxwin-330gl")
-
                  ;; Beginning of `DRAW` module
                  (:file "draw/draw-high-common")
 

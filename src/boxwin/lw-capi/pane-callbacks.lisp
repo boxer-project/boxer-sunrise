@@ -28,9 +28,7 @@
     (opengl:rendering-on (*boxer-pane*)
       (boxer-opengl::opengl-enables)
 
-      (setf bw::*boxgl-device* (slot-value
-                                  (boxer::make-boxwin-330gl-device bw::*boxer-frame* bw::*boxer-pane* :wid wid :hei hei)
-                                  'boxer::draw-device))
+      (setf bw::*boxgl-device* (boxer-opengl::make-boxgl-device wid hei))
 
       (gl-reshape wid hei)
       (update-gpu-matrices)

@@ -109,9 +109,7 @@
 
         ;; START Duplicated from pane-callbacks
         (boxer-opengl::opengl-enables)
-        (setf bw::*boxgl-device* (slot-value
-                            (boxer::make-boxwin-330gl-device bw::*boxer-frame* bw::*boxer-pane* :wid scr-width :hei scr-height)
-                            'boxer::draw-device))
+        (setf bw::*boxgl-device* (boxer-opengl::make-boxgl-device scr-width scr-height))
         (setf (boxer::boxgl-device-projection-matrix bw::*boxgl-device*)
               (create-ortho-matrix scr-width scr-height))
 
