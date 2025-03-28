@@ -193,7 +193,7 @@ the bootstrapping of the clipping and coordinate scaling variables."
            (refresh-gpu-model-matrix))))))
 
 (defun refresh-gpu-model-matrix ()
-  (boxer-opengl::update-model-matrix-ubo bw::*boxgl-device*))
+  (%refresh-gpu-model-matrix))
 
 (defun calculate-clip-rectangle (stack)
   "Takes a stack of lists each with 4 members: x1, y1, x2, y2 and finds the final
@@ -261,7 +261,10 @@ the bootstrapping of the clipping and coordinate scaling variables."
   (boxer-opengl::get-glyph boxer-opengl::*freetype-glyph-atlas* spec))
 
 (defun string-hei (font-no)
-  (boxer-opengl::%string-hei font-no))
+  (%string-hei font-no))
+
+(defun string-wid (font-no string)
+  (%string-wid font-no string))
 
 (defun string-ascent (font-no)
   (boxer-opengl::%string-ascent font-no))
@@ -292,7 +295,7 @@ multifont row, the common reference point will be the baseline instead of the to
   (boxer-opengl::%draw-ellipse x y width height filled?))
 
 (defun draw-line (x0 y0 x1 y1)
-  (boxer-opengl::%draw-line x0 y0 x1 y1))
+  (%draw-line x0 y0 x1 y1))
 
 (defun draw-point (x y)
   (%draw-point x y))
@@ -301,15 +304,14 @@ multifont row, the common reference point will be the baseline instead of the to
   (boxer-opengl::%draw-poly points))
 
 (defun draw-rectangle (w h x y)
-  (boxer-opengl::%draw-rectangle w h x y))
+  (%draw-rectangle w h x y))
 
 (defun draw-c-arc (x y radius start-angle sweep-angle &optional filled?)
   (boxer-opengl::%draw-c-arc x y radius start-angle sweep-angle filled?))
 
 (defun erase-rectangle (w h x y)
-  ;; (boxer-opengl::%erase-rectangle w h x y)
   (with-pen-color (*background-color*)
-    (boxer-opengl::%draw-rectangle w h x y)))
+     (draw-rectangle w h x y)))
 
 ;; used directly
 (defun multiline2 (&rest x-and-y-s)

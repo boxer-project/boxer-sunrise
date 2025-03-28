@@ -38,6 +38,10 @@
   :components ((:module "src"
                 :components
                 (
+                 #+text-repl-engine
+                 (:module "draw-low-empty"
+                  :components ((:file "empty-draw-bridge")))
+                 #+(or glfw-engine lispworks)
                  (:module "draw-low-opengl330"
                   :depends-on ()
                   :components ((:file "pixmap")
@@ -51,7 +55,8 @@
                                (:file "opengl-utils")
                                #+(not delivering)
                                (:file "freetype-fonts")
-                               (:file "draw-low-opengl")))
+                               (:file "draw-low-opengl")
+                               (:file "opengl-draw-bridge")))
 
                  ;; Beginning of `DRAW` module
                  (:file "draw/draw-high-common")

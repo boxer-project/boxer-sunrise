@@ -26,8 +26,20 @@
   (:export :input :inputs :true :false :port-to :datafy)
   )
 
+(defpackage :boxer-draw-bridge
+  (:use :common-lisp)
+  (:export
+           %draw-line
+           %set-pen-color
+           %string-hei
+           %string-wid
+           %draw-rectangle
+           %make-boxer-gl-model
+           %refresh-gpu-model-matrix
+           ))
+
 (defpackage :boxer
-  (:use :common-lisp )
+  (:use :common-lisp :boxer-draw-bridge)
   (:nicknames :box)
   (:shadow :once-only)
   (:export :box :plist-subclass
@@ -237,7 +249,7 @@
            :offscreen-pixel :image-pixel
 
            :rebind-font-info
-           :%make-color :color? :color=  :%set-pen-color
+           :%make-color :color? :color=
            :%set-pen-size :pixel-rgb-values
            :set-mouse-cursor :reset-mouse-cursor :with-mouse-cursor :beep
            :mouse-window-coords :mouse-button-state

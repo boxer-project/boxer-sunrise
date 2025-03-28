@@ -140,7 +140,7 @@
     (opengl::swap-buffers pane)))
 
 
-(defun string-wid (font-no string)
+(defun %string-wid (font-no string)
   (let ((font (find-cached-font font-no)))
     (if (null font)
       (error "No cached font for ~X" font-no)
