@@ -126,10 +126,3 @@ Modification History (most recent at the top)
   (setf (boxgl-device-projection-matrix bw::*boxgl-device*)
         (create-ortho-matrix width height))
   (gl:viewport 0 0 width height))
-
-;;; pixel conversion
-;; color values are floats between 0.0 and 1.0
-(defun float-color-to-byte-value (value)
-  (round (* 255 (/ value 1.0))))
-
-

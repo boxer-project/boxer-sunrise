@@ -23929,6 +23929,11 @@ Modification History (most recent at top)
 ;;;; FILE: opengl-utils.lisp
 ;;;;
 
+;;; pixel conversion
+;; color values are floats between 0.0 and 1.0
+(defun float-color-to-byte-value (value)
+  (round (* 255 (/ value 1.0))))
+
 ;; for debugging
 (eval-when (compile)
   (defvar *include-opengl-debugging?* nil)
