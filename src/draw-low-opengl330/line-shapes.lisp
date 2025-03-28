@@ -58,6 +58,10 @@
  )
   (unenable-shader-programs device))
 
+;;; circle, (eventually) arcs, ellipses
+;;; lisp crib of http://slabode.exofire.net/circle_draw.shtml
+(defun num-slices (radius) (round (* 10 (sqrt radius))))
+
 (defun gl-add-circle (device cx cy radius filled? &key (rgb (boxgl-device-pen-color device)))
   (enable-gl-shader-program device (lines-shader device))
 

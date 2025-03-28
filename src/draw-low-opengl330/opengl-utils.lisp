@@ -132,8 +132,4 @@ Modification History (most recent at the top)
 (defun float-color-to-byte-value (value)
   (round (* 255 (/ value 1.0))))
 
-;;; circle, (eventually) arcs, ellipses
-;;; lisp crib of http://slabode.exofire.net/circle_draw.shtml
-;;; should be moved to opengl directory
 
-(defun num-slices (radius) (round (* 10 (sqrt radius))))

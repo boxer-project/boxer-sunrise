@@ -23,6 +23,7 @@
 
 (defclass boxgl-device ()
   ((pen-size  :accessor boxgl-device-pen-size)
+   (pen-color :accessor boxgl-device-pen-color) ; current color in #(:rgb 1.0 1.0 1.0 1.0) format
    (projection-matrix :accessor boxgl-device-projection-matrix)
    (transform-matrix :accessor boxgl-device-transform-matrix
                      :initform (3d-matrices:meye 4))

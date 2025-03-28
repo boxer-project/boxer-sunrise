@@ -50,7 +50,7 @@
 
            :graphics-canvas :graphics-canvas-pixmap :enable :disable :get-canvas-mesh :op-count
            :graphics-canvas-pen-color-cmd :graphics-canvas-pen-size-cmd :graphics-canvas-pen-font-cmd
-           :clear-graphics-canvas :clear :resize
+           :clear-graphics-canvas :clear :resize :boxgl-device-pen-color
            :viewport-height :viewport-width
 
            :*update-bitmap?*

@@ -114,10 +114,6 @@
     :documentation "Integer describing the gl uniform buffer object we are storing our transformation
                     matrices and other information in.")
 
-
-
-   (pen-color :accessor boxgl-device-pen-color) ; current color in #(:rgb 1.0 1.0 1.0 1.0) format
-
    (line-stipple :accessor line-stipple :initform nil
      :documentation "Boolean to indicate if we're currently drawing dashed lines.")
 
