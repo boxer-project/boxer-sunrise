@@ -54,22 +54,6 @@ Modification History (most recent at the top)
 
 ;;;; FONTS
 
-;; this handles font parameter filling in the editor
-;; font parameter filling in sprite graphics is handled by change-graphics-font
-;; I believe this is only being used in ogl-set-font... below and can probably be removed
-(defun ogl-set-font (font)
-  (setq *current-opengl-font* font))
-
-(defun set-font-info (x)
-  (let* ((font-no (if x x *normal-font-no*))
-         (system-font (boxer::find-cached-font font-no)))
-    (ogl-set-font system-font)
-    (multiple-value-bind (ascent height  leading)
-                         (ogl-font-info system-font)
-                         (setq %drawing-font-cha-ascent ascent
-                               %drawing-font-cha-hei (+ height leading)))
-    font-no))
-
 ;;; External Interface
 ;; ogl-set-font
 ;; ogl-font-height
@@ -77,14 +61,6 @@ Modification History (most recent at the top)
 ;; ogl-draw-character
 ;; ogl-draw-string
 ;; ogl-string-width, height  (font string)
-
-(defmacro with-ogl-font ((font) &body body)
-  (let ((oldfont (gensym)))
-    `(let ((,oldfont *current-opengl-font*))
-       (unwind-protect
-        (progn
-         (let ((*current-opengl-font* ,font))
-           . ,body))))))
 
 ;; Note: last value is "leading" which is the recommended space between lines
 
@@ -95,12 +71,12 @@ Modification History (most recent at the top)
     (floor advance)))
 
 ;; the same for both char,string-height
-(defun ogl-font-height (font)
-  (* (cadr (boxer::opengl-font-fontspec font)) boxer::*font-size-baseline*))
+;; (defun ogl-font-height (font)
+;;   (* (cadr (boxer::opengl-font-fontspec font)) boxer::*font-size-baseline*))
 
-(defun ogl-font-ascent (font)
-  "sgithens TODO: temporary hack see ogl-font-height, the math for this should be even more different"
-  (ogl-font-height font))
+;; (defun ogl-font-ascent (font)
+;;   "sgithens TODO: temporary hack see ogl-font-height, the math for this should be even more different"
+;;   (ogl-font-height font))
 
 ;; returns ascent, height and leading (space between rows)
 ;; maybe shopuld return width info ?
@@ -113,14 +89,6 @@ Modification History (most recent at the top)
     (for:for ((i over string))
       (setf total (+ total (ogl-char-width i))))
     total))
-
-(defmacro maintaining-ogl-color (&body body)
-  (let ((old-color (gensym)))
-    `(let ((,old-color (boxgl-device-pen-color bw::*boxgl-device*)))
-       (unwind-protect
-        (progn . ,body)
-          (unless (equalp ,old-color (boxgl-device-pen-color bw::*boxgl-device*))
-            (setf (boxgl-device-pen-color bw::*boxgl-device*) ,old-color))))))
 
 (defun ogl-reshape (width height)
   (setf (boxgl-device-projection-matrix bw::*boxgl-device*)

@@ -47,6 +47,11 @@
            *suppress-expose-handler* *SUPPRESSED-ACTIONS*
            :+degs->rads+
 
+           :boxer-gl-model
+           :cur-tick
+           :needs-update
+           :draw
+
            :content-origin :resolution :update-gpu-matrices
            :set-pen-color :create-transform-matrix :init-freetype-fonts
            :string-wid :string-hei :find-cached-font :clear-window
@@ -71,7 +76,7 @@
            :boxgl-device-transform-matrix :boxgl-device-model-matrix
            :create-ortho-matrix
 
-           :gl-reshape
+           :gl-reshape :with-ogl-font :ogl-font-height :ogl-font-width :ogl-font-ascent
 
            :*boxer-pane* :*name-pane* :*boxer-frame*
            :gesture-spec-modifiers :gesture-spec-data :make-gesture-spec

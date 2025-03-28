@@ -59,6 +59,8 @@
                                (:file "opengl-draw-bridge")))
 
                  ;; Beginning of `DRAW` module
+                 (:file "draw/mesh")
+                 (:file "draw/model")
                  (:file "draw/draw-high-common")
 
                  (:file "definitions/boxer-styles")

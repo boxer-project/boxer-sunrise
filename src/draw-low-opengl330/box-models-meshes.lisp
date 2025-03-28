@@ -41,20 +41,13 @@
     (setup-xyz-txty-rgba-vao (mesh-vao mesh) (mesh-vbo mesh) size)
     mesh))
 
-(defclass boxer-gl-model ()
+(defclass boxer-opengl-model (boxer-gl-model)
   ((xyz-rgba-mesh :initform nil)
    (dashed-xyz-rgba-mesh :initform nil)
-   (glyphs-xyz-txty-rgba-mesh :initform nil)
+   (glyphs-xyz-txty-rgba-mesh :initform nil)))
 
-   (cur-tick     :initform 0 :accessor cur-tick
-    :documentation "A value to store and compare against in the future to see if the structure
-                   this model draws has changed, and needs to be rebuffered.
-                   This doesn't necessarily have to be an integer, but it should a string
-                   or some lisp structure that can be compared using `equal`.")
-   (needs-update :initform t :accessor needs-update)))
-
-(defun make-boxer-gl-model (&key (lines-size 1024) (glyphs-size 4096))
-  (let ((model (make-instance 'boxer-gl-model)))
+(defun make-boxer-opengl-model (&key (lines-size 1024) (glyphs-size 4096))
+  (let ((model (make-instance 'boxer-opengl-model)))
     (setf (slot-value model 'xyz-rgba-mesh) (make-boxer-xyz-rgba-mesh :size lines-size))
     (setf (slot-value model 'dashed-xyz-rgba-mesh) (make-boxer-xyz-rgba-mesh :size lines-size))
     (setf (slot-value model 'glyphs-xyz-txty-rgba-mesh) (make-boxer-glyphs-xyz-txty-rgba-mesh :size glyphs-size))

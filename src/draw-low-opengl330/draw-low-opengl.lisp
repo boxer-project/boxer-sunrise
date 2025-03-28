@@ -261,10 +261,6 @@ the window font (ie, draw-string) has to change it back for this to work.
 (defun %draw-rectangle (width height x y)
   (gl-add-rect bw::*boxgl-device* x y width height))
 
-;; (defun %erase-rectangle (w h x y)
-;;   (with-pen-color (*background-color*)
-;;     (%draw-rectangle w h x y)))
-
 (defun %draw-string (font string x y)
   ;; The check for *cur-gl-model-screen-obj* happens inside of gl-add-string
   (gl-add-string bw::*boxgl-device* (find-cached-font font) string x y))

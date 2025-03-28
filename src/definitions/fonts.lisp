@@ -142,6 +142,13 @@
 (defun %set-font-style (font-no style)
   (format t "~% %set-font-style font-no: ~a style: ~a" font-no style))
 
+(defun ogl-font-height (font)
+  (* (cadr (opengl-font-fontspec font)) *font-size-baseline*))
+
+(defun ogl-font-ascent (font)
+  "sgithens TODO: temporary hack see ogl-font-height, the math for this should be even more different"
+  (ogl-font-height font))
+
 (defun normal-font? (font-no)
   (not (font-style font-no)))
 
@@ -167,6 +174,24 @@
            (if to-on?
                (make-boxer-font (append (remove :ITALIC fontspec) '(:ITALIC)))
                (make-boxer-font (remove :ITALIC fontspec)))))))
+
+(defmacro with-ogl-font ((font) &body body)
+  (let ((oldfont (gensym)))
+    `(let ((,oldfont *current-opengl-font*))
+       (unwind-protect
+        (progn
+         (let ((*current-opengl-font* ,font))
+           . ,body))))))
+
+(defun set-font-info (x)
+  (let* ((font-no (if x x *normal-font-no*))
+         (system-font (boxer::find-cached-font font-no)))
+    (setf *current-opengl-font* system-font)
+    (multiple-value-bind (ascent height  leading)
+                         (values (ogl-font-ascent system-font) (ogl-font-height system-font) 1)
+                         (setq %drawing-font-cha-ascent ascent
+                               %drawing-font-cha-hei (+ height leading)))
+    font-no))
 
 (defun initialize-fonts ()
   (let ((arial-12 (make-boxer-font '("Arial" 12)))

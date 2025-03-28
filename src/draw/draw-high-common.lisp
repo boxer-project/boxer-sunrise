@@ -116,13 +116,18 @@ the bootstrapping of the clipping and coordinate scaling variables."
 (defun set-pen-color (color)
   (boxer-opengl::%set-pen-color color))
 
+(defmacro maintaining-pen-color (&body body)
+  (let ((old-color (gensym)))
+    `(let ((,old-color (boxgl-device-pen-color bw::*boxgl-device*)))
+       (unwind-protect
+        (progn . ,body)
+          (unless (equalp ,old-color (boxgl-device-pen-color bw::*boxgl-device*))
+            (setf (boxgl-device-pen-color bw::*boxgl-device*) ,old-color))))))
+
 (defmacro with-pen-color ((color) &body body)
-  `(boxer-opengl::maintaining-ogl-color
+  `(maintaining-pen-color
     (set-pen-color ,color)
     . ,body))
-
-(defmacro maintaining-pen-color (&body body)
-  `(boxer-opengl::maintaining-ogl-color . ,body))
 
 ;;; see BU::COLOR-AT in grprim3.lisp
 (defun window-pixel-color (x y &optional (view *boxer-pane*))
@@ -359,6 +364,9 @@ multifont row, the common reference point will be the baseline instead of the to
 ;;; iterating through a list of graphics commands, and before each graphic command is processed.
 ;;;
 
+(defun make-boxer-gl-model ()
+  (%make-boxer-gl-model))
+
 (defmethod get-boxgl-model-for-screen-obj ((self screen-obj))
   "Gets an instance of `boxer-gl-model` from the plist on the screen-obj, creating it if it doensn't exist
   yet. Also updates the cur-tick and needs-update properties of the model so we know if the screen-obj has
@@ -367,19 +375,19 @@ multifont row, the common reference point will be the baseline instead of the to
         (model (getprop self  :gl-model)))
 
     (unless model
-      (putprop self (boxer-opengl::make-boxer-gl-model) :gl-model)
+      (putprop self (make-boxer-gl-model) :gl-model)
       (setf model (getprop self  :gl-model)))
 
-    (if (equal tick (slot-value model 'boxer-opengl::cur-tick))
-      (setf (boxer-opengl::needs-update model) nil)
+    (if (equal tick (slot-value model 'cur-tick))
+      (setf (needs-update model) nil)
       (progn
         (boxer-opengl::reset-meshes model)
-        (setf (slot-value model 'boxer-opengl::cur-tick) tick)))
+        (setf (slot-value model 'cur-tick) tick)))
     model))
 
 ;; TODO We need to make a proper flexible Boxer Mesh class
-(defmethod needs-update (obj)
-  (boxer-opengl::needs-update obj))
+;; (defmethod needs-update (obj)
+;;   (boxer-opengl::needs-update obj))
 
 ;; TODO We need to make a proper flexible Boxer Mesh class
 (defmethod reset-meshes (obj)
