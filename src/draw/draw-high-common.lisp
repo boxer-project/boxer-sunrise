@@ -114,7 +114,7 @@ the bootstrapping of the clipping and coordinate scaling variables."
 ;;;
 
 (defun set-pen-color (color)
-  (boxer-opengl::%set-pen-color color))
+  (%set-pen-color color))
 
 (defmacro maintaining-pen-color (&body body)
   (let ((old-color (gensym)))
@@ -262,8 +262,8 @@ the bootstrapping of the clipping and coordinate scaling variables."
   (boxer-opengl::load-freetype-faces)
   (setf boxer-opengl::*freetype-glyph-atlas* (boxer-opengl::make-glyph-atlas)))
 
-(defun get-glyph (spec)
-  (boxer-opengl::get-glyph boxer-opengl::*freetype-glyph-atlas* spec))
+(defun find-glyph (spec)
+  (%find-glyph spec))
 
 (defun string-hei (font-no)
   (%string-hei font-no))
@@ -272,14 +272,14 @@ the bootstrapping of the clipping and coordinate scaling variables."
   (%string-wid font-no string))
 
 (defun string-ascent (font-no)
-  (boxer-opengl::%string-ascent font-no))
+  (%string-ascent font-no))
 
 (defun cha-hei () %drawing-font-cha-hei)
 
 (defun cha-ascent () %drawing-font-cha-ascent)
 
 (defun cha-wid (char)
-  (boxer-opengl::%cha-wid char))
+  (%cha-wid char))
 
 (defun clear-window (w)
   (boxer-opengl::%clear-window w))
@@ -291,7 +291,7 @@ the bootstrapping of the clipping and coordinate scaling variables."
 (defun draw-cha (char x y &key (gl-model nil))
   "Draw-cha needs to draw at the char's baseline rather than the top left corner.  In a
 multifont row, the common reference point will be the baseline instead of the top edge"
-  (boxer-opengl::%draw-cha x y char :gl-model gl-model))
+  (%draw-cha char x y :gl-model gl-model))
 
 (defun draw-circle (x y radius &optional filled?)
   (boxer-opengl::%draw-circle x y radius filled?))
@@ -331,11 +331,11 @@ multifont row, the common reference point will be the baseline instead of the to
       (unless (null x) ; both run out @ same time
         (error "Unpaired vertex in ~A" x-and-y-s)))
       (when prev-x
-        (boxer-opengl::%draw-line prev-x prev-y x y))
+        (draw-line prev-x prev-y x y))
       (setf prev-x x prev-y y))))
 
 (defun draw-string (font-no string region-x region-y)
-  (boxer-opengl::%draw-string font-no string region-x region-y))
+  (%draw-string font-no string region-x region-y))
 
 
 (defun bitblt-to-screen (wid hei from-array from-x from-y to-x to-y)
@@ -381,17 +381,13 @@ multifont row, the common reference point will be the baseline instead of the to
     (if (equal tick (slot-value model 'cur-tick))
       (setf (needs-update model) nil)
       (progn
-        (boxer-opengl::reset-meshes model)
+        (reset-meshes model)
         (setf (slot-value model 'cur-tick) tick)))
     model))
 
 ;; TODO We need to make a proper flexible Boxer Mesh class
 ;; (defmethod needs-update (obj)
 ;;   (boxer-opengl::needs-update obj))
-
-;; TODO We need to make a proper flexible Boxer Mesh class
-(defmethod reset-meshes (obj)
-  (boxer-opengl::reset-meshes obj))
 
 (defmethod get-updated-tick ((self screen-obj))
   (actual-obj-tick (screen-obj-actual-obj self)))

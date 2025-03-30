@@ -227,7 +227,7 @@ also, opengl-draw-arc expects positive angle args"
                        (* +degs->rads+ sweep-angle)
                        filled?)))
 
-(defun %draw-cha (x y char &key (gl-model nil))
+(defun %draw-cha (char x y &key (gl-model nil))
   "Font is managed by set-font-info.  Note that anything else that might change
 the window font (ie, draw-string) has to change it back for this to work.
 5/11/98 draw to baseline instead of top left"

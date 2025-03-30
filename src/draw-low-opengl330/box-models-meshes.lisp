@@ -53,14 +53,14 @@
     (setf (slot-value model 'glyphs-xyz-txty-rgba-mesh) (make-boxer-glyphs-xyz-txty-rgba-mesh :size glyphs-size))
     model))
 
-(defmethod reset-meshes ((self boxer-gl-model))
+(defmethod reset-meshes ((self boxer-opengl-model))
   (setf (cur-tick self) 0
         (needs-update self) t
         (mesh-pos (slot-value self 'xyz-rgba-mesh)) 0
         (mesh-pos (slot-value self 'dashed-xyz-rgba-mesh)) 0
         (mesh-pos (slot-value self 'glyphs-xyz-txty-rgba-mesh)) 0))
 
-(defmethod boxer::draw ((self boxer-gl-model))
+(defmethod draw ((self boxer-opengl-model))
   ;; Regular Line Shapes
   (let ((mesh (slot-value self 'xyz-rgba-mesh)))
     (enable-gl-objects bw::*boxgl-device* :shader (lines-shader bw::*boxgl-device*)
@@ -96,14 +96,9 @@
     (unenable-shader-programs bw::*boxgl-device*))
   )
 
-(defmethod check-tick ((self boxer-gl-model)))
-
-
 ;;; Drawing methods below
 
-
-
-(defmethod add-line ((self boxer-gl-model) device x0 y0 x1 y1 &key (rgb (boxgl-device-pen-color device))
+(defmethod add-line ((self boxer-opengl-model) device x0 y0 x1 y1 &key (rgb (boxgl-device-pen-color device))
                                                                  (pen-size (boxgl-device-pen-size bw::*boxgl-device*))
                                                                  (buffered-size (* *cffi-float-size* (* 7 6))))
   (unless (and (equal (coerce x0 'single-float) (coerce x1 'single-float)) (equal (coerce y0 'single-float) (coerce y1 'single-float)))
@@ -137,7 +132,7 @@
       (unenable-shader-programs device)
       (setf (mesh-pos mesh) (+ (mesh-pos mesh) (* 6 7))))))
 
-(defmethod add-rect ((self boxer-gl-model) device x y wid hei &key (rgb (boxgl-device-pen-color device))
+(defmethod add-rect ((self boxer-opengl-model) device x y wid hei &key (rgb (boxgl-device-pen-color device))
                                                                  (pen-size (boxgl-device-pen-size bw::*boxgl-device*))
                                                                  (buffered-size (* *cffi-float-size* (* 7 6))))
     (let* ((mesh (slot-value self 'xyz-rgba-mesh))
@@ -167,7 +162,7 @@
       (unenable-shader-programs device)
       (setf (mesh-pos mesh) (+ (mesh-pos mesh) (* 6 7)))))
 
-(defmethod add-char ((self boxer-gl-model) device x y ch &key (rgb (boxgl-device-pen-color device))
+(defmethod add-char ((self boxer-opengl-model) device x y ch &key (rgb (boxgl-device-pen-color device))
                                                               (baseline-bot nil)
                                                               (font *current-opengl-font*)
                                                               (font-zoom *font-size-baseline*)

@@ -29,13 +29,18 @@
 (defpackage :boxer-draw-bridge
   (:use :common-lisp)
   (:export
-           %draw-line
-           %set-pen-color
-           %string-hei
-           %string-wid
-           %draw-rectangle
-           %make-boxer-gl-model
-           %refresh-gpu-model-matrix
+           :%draw-line
+           :%set-pen-color
+           :%string-hei
+           :%string-wid
+           :%draw-rectangle
+           :%make-boxer-gl-model
+           :%refresh-gpu-model-matrix
+           :%string-ascent
+           :%draw-string
+           :%cha-wid
+           :%find-glyph
+           :%draw-cha
            ))
 
 (defpackage :boxer
@@ -51,6 +56,7 @@
            :cur-tick
            :needs-update
            :draw
+           :reset-meshes
 
            :content-origin :resolution :update-gpu-matrices
            :set-pen-color :create-transform-matrix :init-freetype-fonts
