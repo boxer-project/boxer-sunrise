@@ -29,7 +29,6 @@
 ;; %draw-canvas-mesh mesh pixmap))
 
 (defun %draw-cha (char x y &key (gl-model nil))
-  (format t "~%openg-gl draw bridge: char: ~A type: ~A" char (type-of char))
   (boxer-opengl::%draw-cha char x y :gl-model gl-model))
 
 ;; %draw-circle x y radius filled?))
