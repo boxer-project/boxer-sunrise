@@ -31,8 +31,6 @@
                :uiop
                :zip
                :zpng
-               :3d-matrices
-               :3d-vectors
                :boxer-sunrise-core
                )
   :components ((:module "src"

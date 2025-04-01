@@ -12,11 +12,13 @@
   :author "Steven Githens"
   :license ""
   :depends-on ("uiop"
-               "3d-matrices")
+               #-shim-3d-math "3d-matrices")
   :components ((:module "src"
                 :components
                 ((:file "boxer-sunrise")
                  (:file "package")
+                 #+shim-3d-math
+                 (:file "definitions/3d-math")
                  ;; DEFINITIONS
                  (:file "definitions/color")
                  (:file "definitions/macros")
