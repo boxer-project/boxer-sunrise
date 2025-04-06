@@ -13,7 +13,6 @@
                (:file "shader-shapes")
                (:file "box-models-meshes")
                (:file "draw-low-opengl330")
-               (:file "opengl-utils")
                #+(not delivering)
                (:file "freetype-fonts")
                (:file "draw-low-opengl")
