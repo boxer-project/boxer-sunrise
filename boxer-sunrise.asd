@@ -22,7 +22,6 @@
                :html-entities
                :iterate
                :log4cl
-               :pngload
                :qbase64
                :quri
                :uiop
