@@ -26,7 +26,6 @@
                :pngload
                :qbase64
                :quri
-               :serapeum
                :trivial-garbage
                :uiop
                :zip
