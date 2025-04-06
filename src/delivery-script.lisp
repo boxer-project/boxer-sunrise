@@ -72,7 +72,6 @@
 (ql:quickload :pngload)
 (ql:quickload :3d-vectors)
 (ql:quickload :3d-matrices)
-(ql:quickload :cl-glu)
 (ql:quickload :iterate)
 (ql:quickload :for)
 

@@ -14,7 +14,6 @@
   :depends-on (:alexandria
                :cffi
                :cl-fad
-               :cl-glu
                :cl-json
                :cl-opengl
                :drakma
