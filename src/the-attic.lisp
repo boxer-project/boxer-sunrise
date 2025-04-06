@@ -23929,6 +23929,37 @@ Modification History (most recent at top)
 ;;;; FILE: opengl-utils.lisp
 ;;;;
 
+;;; HISTORIC COMMENTS
+ Low level prims for dealing with fonts & colors
+
+Modification History (most recent at the top)
+
+ 8/12/14 charcode->oglfont-index
+ 4/23/14 added ogl-font-ascent
+ 2/23/14 %ogl-decache-font should clear to *opengl-font-cache-end* instead of *opengl-font-end*
+ 2/20/14 ogl-debug and related defvars....
+ 2/14/14 added  %print-opengl-font as :print-funtion to opengl-font's
+10/19/13 moved *use-capogi-fonts* here, %ogl-use-font checks it to dispatch to capogi caching
+ 7/12/13 re-enabled ogl- fun
+11/27/12 fill-oglfont-parameters: change widths array to be of floats
+ 8/29/12 new layer of type checking prims: ogl-draw-line, ogl-draw-rect, ogl-set-pen-size
+         multiline2
+ 8/22/12 full conversion to floats, all x,y coords, widths & heights
+12/10/11 added d-font (describe) for use in debugging
+ 7/05/11 %ogl-cache-font - break out special case for null %drawing-array
+         because OpenGL internals need to run inside of a rendering-on
+ 6/23/11 %ogl-cache-font (or ... *boxer-pane*)
+ *opengl-font-cache-end*, do-ofont-chars, ogl-char-width, fill-ogl-font-parameters
+ 2/02/11 break out ensure-oglfont-parameters from ogl-set-font
+ 4/28/10 added debug-opengl-print and friends
+ 4/17/10 removed make-opengl-font-no-cache
+11/25/09 ogl-reshape coerces to double floats instead of just calls to (float ...)
+11/05/09 pixel->color
+11/03/09 changed og-draw-string to use :external-format :unicode
+ 4/22/09 *unicode-window-1252*, charcode->oglfont-index, unicode->oglfont-index,
+          make-opengl-font-from-native-font, %ogl-cache-font hack unicode translation to window-1252
+
+
 ;;; pixel conversion
 ;; color values are floats between 0.0 and 1.0
 (defun float-color-to-byte-value (value)
