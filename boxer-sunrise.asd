@@ -30,6 +30,8 @@
                :3d-matrices
                :3d-vectors
                :boxer-sunrise-core
+               #+(or glfw-engine lispworks)
+               :boxer-sunrise-opengl
                )
   :components ((:module "src"
                 :components
@@ -37,22 +39,6 @@
                  #+text-repl-engine
                  (:module "draw-low-empty"
                   :components ((:file "empty-draw-bridge")))
-                 #+(or glfw-engine lispworks)
-                 (:module "draw-low-opengl330"
-                  :depends-on ()
-                  :components ((:file "pixmap")
-                               (:file "stencils")
-                               (:file "graphics-canvas")
-                              ;;  (:file "simple-line-shapes")
-                               (:file "line-shapes")
-                               (:file "shader-shapes")
-                               (:file "box-models-meshes")
-                               (:file "draw-low-opengl330")
-                               (:file "opengl-utils")
-                               #+(not delivering)
-                               (:file "freetype-fonts")
-                               (:file "draw-low-opengl")
-                               (:file "opengl-draw-bridge")))
 
                  ;; Beginning of `DRAW` module
                  (:file "draw/mesh")
@@ -124,7 +110,7 @@
                  (:file "redisplay/repaint-pass-2")
                  (:file "redisplay/repaint")
                  (:file "redisplay/new-borders")
-                 (:file "draw-low-opengl330/perspective")
+
 
                  ;; Beginning of `GRFDEFS` module
                  ;; "Definitions for Sprite Graphics"

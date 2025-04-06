@@ -68,10 +68,9 @@
 
 (ql:quickload :cl-freetype2)
 
-(setf asdf:*central-registry*
-      (list* '*default-pathname-defaults*
-             *boxer-project-dir*
-       asdf:*central-registry*))
+(pushnew *boxer-project-dir* ql:*local-project-directories* )
+(ql:register-local-projects)
+
 
 #+(and lispworks x64) (load (cl-fad:merge-pathnames-as-file *boxer-project-dir* "src/opengl-lw-8/examples/load.lisp"))
 

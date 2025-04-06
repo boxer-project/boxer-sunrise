@@ -293,10 +293,6 @@
 (defpackage :boxer-lw-capi
   (:use :common-lisp))
 
-(defpackage :boxer-opengl
-  (:use :common-lisp)
-  (:use :boxer))
-
 (in-package :boxer)
 
 ;; Some useful variables and functions for dealing with the BU package
