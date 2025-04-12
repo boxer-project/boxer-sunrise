@@ -340,7 +340,7 @@
                                                   (catch 'mouse-confusion
                                                     (unwind-protect
                                                      ;; the inner mouse tracking loop...
-                                                     (boxer-window::with-mouse-tracking ((raw-mouse-x x) (raw-mouse-y y))
+                                                     (with-mouse-tracking ((raw-mouse-x x) (raw-mouse-y y))
                                                                                         ;; first check to make sure that the mouse is still
                                                                                         ;; inside of the current-screen-box
                                                                                         ;; if it isn't, then reset the current-screen-box
@@ -776,7 +776,7 @@
                                                                                 minimum-track-hei (+ minimum-track-hei
                                                                                                      (- n-max-y n-min-y)))))
                                                    (multiple-value-bind (final-x final-y moved-p)
-                                                                        (boxer-window::with-mouse-tracking ((mouse-x x) (mouse-y y)
+                                                                        (with-mouse-tracking ((mouse-x x) (mouse-y y)
                                                                                                                         :action :resize)
                                                                                                            (let ((new-wid (max minimum-track-wid
                                                                                                                                 (- mouse-x box-window-x)))

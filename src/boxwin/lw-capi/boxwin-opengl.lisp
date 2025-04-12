@@ -1002,18 +1002,6 @@ in macOS."
 (defun event-id () *event-id*)
 (defun next-event-id () (incf *event-id*))
 
-;; mouse motion
-(defvar *track-mouse-x* 0
-  "Original x position in the window pane.")
-(defvar *track-mouse-y* 0
-  "Original y position in the window pane.")
-
-(defvar *document-mouse-x* 0
-  "Document x position based on transforming *track-mouse-x* with the current zoom and scroll values.")
-(defvar *document-mouse-y* 0
-  "Document y position based on transforming *track-mouse-y* with the current zoom and scroll values.")
-
-
 ;; this is called by the :motion input type
 (defun boxer-track-and-doc-mouse-handler (w x y)
   (next-event-id)
@@ -1031,20 +1019,10 @@ in macOS."
         *document-mouse-x* (boxer::viewport-to-document-x w x)
         *document-mouse-y* (boxer::viewport-to-document-y w y)))
 
-(defun boxer-pane-mouse-position ()
-  ;; must allow track mouse handler in the interface(boxer) process to run
-  (mp::process-allow-scheduling)
-  ;; (values *track-mouse-x* *track-mouse-y*)
-  (values *document-mouse-x* *document-mouse-y*)
-  )
-
 ;; (defun boxer-pane-mouse-x ()  (mp::process-allow-scheduling) *track-mouse-x*)
 ;; (defun boxer-pane-mouse-y ()  (mp::process-allow-scheduling) *track-mouse-y*)
 (defun boxer-pane-mouse-x ()  (mp::process-allow-scheduling) *document-mouse-x*)
 (defun boxer-pane-mouse-y ()  (mp::process-allow-scheduling) *document-mouse-y*)
-
-(defun boxer-pane-mouse-down? ()
-  *mouse-down-p*)
 
 ;; VK_SHIFT   = #x10
 ;; VK_CONTROL = #x11
@@ -1094,32 +1072,6 @@ in macOS."
     nil))
 
 ;;; Mouse tracking
-
-(defmacro with-mouse-tracking (((original-x-variable original-x-value)
-        (original-y-variable original-y-value)
-        &key
-                                event-skip timeout action
-                                (body-function-name (gensym)))
-             &body body)
-  (declare (ignore event-skip timeout))
-  `(let ((,original-x-variable ,original-x-value)
-         (,original-y-variable ,original-y-value)
-         (moved-p nil))
-     (flet ((,body-function-name () . ,body))
-       (with-mouse-cursor (,action)
-         (do ((last-mouse-x -1) (last-mouse-y -1))
-             ((not (boxer-pane-mouse-down?))
-              (values ,original-x-variable ,original-y-variable moved-p))
-           (multiple-value-setq  (,original-x-variable ,original-y-variable)
-               (boxer-pane-mouse-position))
-           (unless moved-p
-             (unless (and (= ,original-x-variable ,original-x-value)
-                          (= ,original-y-variable ,original-y-value))
-               (setq moved-p t)))
-           (unless (and (= ,original-x-variable last-mouse-x)
-                        (= ,original-y-variable last-mouse-y))
-             (setq last-mouse-x ,original-x-variable last-mouse-y ,original-y-variable)
-             (,body-function-name)))))))
 
 (defun mouse-window-coords (&key (wait-action nil) (relative-to *boxer-pane*))
   (declare (ignore relative-to))

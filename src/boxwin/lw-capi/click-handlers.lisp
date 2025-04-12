@@ -26,8 +26,6 @@
 (defconstant *click-2-byte-selector* (byte 1 1))
 (defconstant *click-3-byte-selector* (byte 1 2))
 
-(defvar *mouse-down-p* nil)
-
 (defvar *modern-press-no-1* 0
   "This will determine which press we're on, so we can emit click or double click
    on the release. Possible values are:

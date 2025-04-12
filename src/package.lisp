@@ -58,6 +58,14 @@
            :draw
            :reset-meshes
 
+           :*mouse-down-p*
+           :boxer-pane-mouse-down?
+           :*track-mouse-x*
+           :*track-mouse-y*
+           :*document-mouse-x*
+           :*document-mouse-y*
+           :boxer-pane-mouse-position
+
            :content-origin :resolution :update-gpu-matrices
            :set-pen-color :create-transform-matrix :init-freetype-fonts
            :string-wid :string-hei :find-cached-font :clear-window

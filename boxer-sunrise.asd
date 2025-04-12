@@ -81,17 +81,6 @@
                  ;; "The interface between the Boxer Editor and the window system"
                  ;; these are also window system specific
                  (:file "boxwin/eval-command-loop")
-                 #+lispworks (:file "boxwin/lw-capi/error-dialogs")
-                 #+lispworks (:file "boxwin/lw-capi/color-picker-menu")
-                 #+lispworks (:file "boxwin/lw-capi/lw-toolbar")
-                 #+lispworks (:file "boxwin/lw-capi/click-handlers")
-                 #+lispworks (:file "boxwin/lw-capi/pane-callbacks")
-                 #+lispworks (:file "boxwin/lw-capi/boxer-lw-opengl-canvas")
-                 #+lispworks (:file "boxwin/lw-capi/scrolling")
-                 #+lispworks (:file "boxwin/lw-capi/boxwin-opengl")
-                 #+lispworks (:file "boxwin/lw-capi/clipboard")
-
-                 #+lispworks (:file "boxwin/lw-capi/outline-tree")
 
                  (:file "boxwin/mousedoc")
                  (:file "boxwin/boxapp-data")
@@ -129,6 +118,7 @@
                  ;; Beginning of `EDITOR-HIGH` module
                  ;; "Higher level Editor Utilities"
                  (:file "editor-high/copy-paste-buffers")
+                 (:file "editor-high/mouse-tracking")
                  (:file "editor-high/mouse")
                  (:file "editor-high/simple-stream")
                  (:file "editor-high/makcpy")
@@ -243,12 +233,6 @@
                  ;; Beginning of `site` modules
                  ;; 	   "Utilities for Site specific customizations"
                  (:file "site/site")
-                 ;; Beginning of `menu` module
-                 ;;    "Menus for Harlequin Lispworks on the PC"
-                 #+lispworks (:file "boxwin/lw-capi/file-dialogs")
-                 #+lispworks (:file "boxwin/lw-capi/lw-menu")
-                 #+lispworks (:file "boxwin/lw-capi/preferences-dialog")
-                 #+lispworks (:file "boxwin/lw-capi/confirm-quit-dialogs")
 
                  ;; Beginning of `SYSPRIMS` module
                  ;;    "Primitives to tweak default system parameters"
