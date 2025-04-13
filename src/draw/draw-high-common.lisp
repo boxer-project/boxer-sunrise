@@ -281,8 +281,9 @@ the bootstrapping of the clipping and coordinate scaling variables."
 (defun cha-wid (char)
   (%cha-wid char))
 
-(defun clear-window (w)
-  (boxer-opengl::%clear-window w))
+(defun clear-window (color)
+  (%clear-window color))
+
 ;;;
 ;;; Drawing functions
 ;;;
@@ -415,8 +416,7 @@ multifont row, the common reference point will be the baseline instead of the to
        (putprop self (boxer-opengl::make-graphics-canvas wid hei) :graphics-canvas)
        (setf paint-tex (getprop self :graphics-canvas))
        (boxer-opengl::enable paint-tex)
-       (gl:clear-color 0.0 0.0 0.0 0.0) ;; transparent
-       (gl:clear :color-buffer-bit :depth-buffer-bit :stencil-buffer-bit)
+       (clear-window *transparent*)
        (boxer-opengl::opengl-enables)
        (boxer-opengl::disable paint-tex))
       ((or (not (equal wid (ogl-pixmap-width (boxer-opengl::graphics-canvas-pixmap paint-tex))))

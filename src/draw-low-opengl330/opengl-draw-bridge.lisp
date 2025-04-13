@@ -24,7 +24,9 @@
 (defun %cha-wid (char)
   (boxer-opengl::%cha-wid char))
 
-;; %clear-window w))
+(defun %clear-window (color)
+  (boxer-opengl::%clear-window color))
+
 ;; %draw-c-arc x y radius start-angle sweep-angle filled?))
 ;; %draw-canvas-mesh mesh pixmap))
 

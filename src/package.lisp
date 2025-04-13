@@ -41,6 +41,7 @@
            :%cha-wid
            :%find-glyph
            :%draw-cha
+           :%clear-window
            ))
 
 (defpackage :boxer

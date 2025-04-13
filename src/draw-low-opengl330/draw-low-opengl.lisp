@@ -126,12 +126,8 @@
   (gl:hint :line-smooth-hint :nicest)
   (gl:hint :polygon-smooth-hint :nicest))
 
-(defun %clear-window (w)
-  (let ((color (backdrop-color w)))
-    (gl::clear-color (aref color 1)
-                     (aref color 2)
-                     (aref color 3)
-                     0.0))
+(defun %clear-window (color)
+  (gl::clear-color (aref color 1) (aref color 2) (aref color 3) 0.0)
   (gl:clear :color-buffer-bit :depth-buffer-bit :stencil-buffer-bit))
 
 (defun %flush-port-buffer (&optional (pane *boxer-pane*))
