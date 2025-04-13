@@ -15,7 +15,6 @@
                :cffi
                :cl-fad
                :cl-json
-               :cl-opengl
                :drakma
                :external-program
                :for
@@ -34,6 +33,9 @@
   :components ((:module "src"
                 :components
                 (
+                 ;; temporary workaround until we get rid of the extra boxer-opengl:: references
+                 #+text-repl-engine
+                 (:file "draw-low-opengl330/package")
                  #+text-repl-engine
                  (:module "draw-low-empty"
                   :components ((:file "empty-draw-bridge")))

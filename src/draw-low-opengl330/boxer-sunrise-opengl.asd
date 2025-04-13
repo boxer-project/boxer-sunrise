@@ -2,8 +2,9 @@
   :version "3.4.23"
   :author "Steven Githens"
   :license "BSD-3-Clause"
-  :depends-on ("boxer-sunrise-core"
-               "3d-matrices")
+  :depends-on (:boxer-sunrise-core
+               :3d-matrices
+               :cl-opengl)
   :components ((:file "package")
                (:file "pixmap")
                (:file "stencils")
