@@ -16,5 +16,7 @@
                (:file "file-dialogs")
                (:file "lw-menu")
                (:file "preferences-dialog")
-               (:file "confirm-quit-dialogs"))
+               (:file "confirm-quit-dialogs")
+               ;; Bootstrap methods to startup boxer
+               (:file "start-boxer"))
   :description "CAPI GUI version of Boxer")

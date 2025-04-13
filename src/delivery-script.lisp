@@ -77,7 +77,7 @@
 
 ;; (ql:quickload :cl-freetype2)
 
-(asdf:load-system :boxer-sunrise)
+(asdf:load-system :boxer-sunrise-capi)
 
 (deliver 'boxer::start-boxer
         ;; We are currently using a custom tailored application folder template, that was
