@@ -42,6 +42,7 @@
            :%find-glyph
            :%draw-cha
            :%clear-window
+           :%pixblt-from-screen
            ))
 
 (defpackage :boxer

@@ -102,11 +102,7 @@ the bootstrapping of the clipping and coordinate scaling variables."
            (progn
              (enable ,canvas-var)
              (progn . ,body)
-             (%gl:read-pixels 0 0
-                              (ogl-pixmap-width  ,bitmap)
-                              (ogl-pixmap-height ,bitmap)
-                              *pixmap-data-type* *pixmap-data-format*
-                              (ogl-pixmap-data  ,bitmap)))
+             (pixblt-from-screen ,bitmap 0 0 (ogl-pixmap-width ,bitmap) (ogl-pixmap-height ,bitmap)))
            (disable ,canvas-var))))))
 
 ;;;

@@ -70,6 +70,9 @@
 ;; line-stipple bw::*boxgl-device*)))
 ;; load-freetype-faces)
 
+(defun %pixblt-from-screen (pixmap fx fy wid hei)
+  nil)
+
 (defun %make-boxer-gl-model ()
   (make-instance 'boxer:boxer-gl-model))
 

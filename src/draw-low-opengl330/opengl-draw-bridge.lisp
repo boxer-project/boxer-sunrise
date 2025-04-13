@@ -72,6 +72,9 @@
 ;; load-freetype-faces)
 ;; make-boxer-gl-model) :gl-model)
 
+(defun %pixblt-from-screen (pixmap fx fy wid hei)
+  (boxer-opengl::%pixblt-from-screen pixmap fx fy wid hei))
+
 (defun %make-boxer-gl-model ()
   (boxer-opengl::make-boxer-opengl-model))
 

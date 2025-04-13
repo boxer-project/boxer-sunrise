@@ -71,8 +71,8 @@ Modification History (most recent at top)
     (cffi:foreign-free (ogl-pixmap-data pixmap))
     ))
 
-(defun pixblt-from-screen (to-array fx fy wid hei tx ty &optional (buffer :front))
-  (%pixblt-from-screen to-array fx fy wid hei tx ty buffer :front))
+(defun pixblt-from-screen (pixmap fx fy wid hei)
+  (boxer-opengl::%pixblt-from-screen pixmap fx fy wid hei))
 
 ;; NOTE: this must match the format in *pixmap-data-type* and *pixmap-data-format*
 (defun make-offscreen-pixel (red green blue &optional (alpha 255))
