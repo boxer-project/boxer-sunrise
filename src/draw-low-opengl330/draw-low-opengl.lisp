@@ -165,15 +165,26 @@
                           ;; most of the drawing code requires this to be a fixnum, thus the floor
                           (floor (ogl-font-ascent font))))))
 
+(defun ogl-char-width (cha &optional (font *current-opengl-font*))
+  (let* ((glyph (find-box-glyph cha font boxer::*font-size-baseline*))
+         (advance (box-glyph-advance glyph)))
+    ;; A number of our fixnum operations will fail if this isn't an integer.
+    (floor advance)))
 
 ;; proportional fonts
 (defun %cha-wid (char)
   (ogl-char-width char))
 
+(defun ogl-string-width (string &optional (font *current-opengl-font*))
+  (let ((total 0))
+    (for:for ((i over string))
+      (setf total (+ total (ogl-char-width i))))
+    total))
 
-
-
-
+(defun ogl-reshape (width height)
+  (setf (boxgl-device-projection-matrix bw::*boxgl-device*)
+        (create-ortho-matrix width height))
+  (gl:viewport 0 0 width height))
 
 ;;;; COLOR (incomplete)
 

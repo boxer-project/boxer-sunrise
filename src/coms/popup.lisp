@@ -258,7 +258,7 @@ Modification History (most recent at top)
             (setf (active-menu *boxer-pane*) current-menu)
             (repaint)
             (let ((current-y 0) (current-height 0))
-              #+lispworks (boxer-window::with-mouse-tracking ((mouse-x real-x) (mouse-y real-y))
+              (with-mouse-tracking ((mouse-x real-x) (mouse-y real-y))
                 (let ((local-x (- mouse-x real-x)) (local-y (- mouse-y real-y)))
                   (if (and (< 0 local-x mwid) (< 0 local-y mhei))
                     ;; this means we are IN the popup

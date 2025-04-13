@@ -19,11 +19,8 @@
 (ql:quickload :cl-fad)
 (defvar *project-dir* (make-pathname :directory (butlast (pathname-directory *load-truename*))))
 
-(setf asdf:*central-registry*
-      (list* '*default-pathname-defaults*
-              *project-dir*
-              (cl-fad:merge-pathnames-as-directory *project-dir*  "src/boxwin/glfw/")
-      asdf:*central-registry*))
+(pushnew *project-dir* ql:*local-project-directories* )
+(ql:register-local-projects)
 
 #+ecl
 (defmacro without-fpe-traps (&body body)

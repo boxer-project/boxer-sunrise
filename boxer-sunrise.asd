@@ -14,7 +14,6 @@
   :depends-on (:alexandria
                :cffi
                :cl-fad
-               :cl-glu
                :cl-json
                :cl-opengl
                :drakma
@@ -23,15 +22,14 @@
                :html-entities
                :iterate
                :log4cl
-               :pngload
                :qbase64
                :quri
-               :serapeum
-               :trivial-garbage
                :uiop
                :zip
                :zpng
                :boxer-sunrise-core
+               #+(or glfw-engine lispworks)
+               :boxer-sunrise-opengl
                )
   :components ((:module "src"
                 :components
@@ -39,22 +37,6 @@
                  #+text-repl-engine
                  (:module "draw-low-empty"
                   :components ((:file "empty-draw-bridge")))
-                 #+(or glfw-engine lispworks)
-                 (:module "draw-low-opengl330"
-                  :depends-on ()
-                  :components ((:file "pixmap")
-                               (:file "stencils")
-                               (:file "graphics-canvas")
-                              ;;  (:file "simple-line-shapes")
-                               (:file "line-shapes")
-                               (:file "shader-shapes")
-                               (:file "box-models-meshes")
-                               (:file "draw-low-opengl330")
-                               (:file "opengl-utils")
-                               #+(not delivering)
-                               (:file "freetype-fonts")
-                               (:file "draw-low-opengl")
-                               (:file "opengl-draw-bridge")))
 
                  ;; Beginning of `DRAW` module
                  (:file "draw/mesh")
@@ -97,17 +79,6 @@
                  ;; "The interface between the Boxer Editor and the window system"
                  ;; these are also window system specific
                  (:file "boxwin/eval-command-loop")
-                 #+lispworks (:file "boxwin/lw-capi/error-dialogs")
-                 #+lispworks (:file "boxwin/lw-capi/color-picker-menu")
-                 #+lispworks (:file "boxwin/lw-capi/lw-toolbar")
-                 #+lispworks (:file "boxwin/lw-capi/click-handlers")
-                 #+lispworks (:file "boxwin/lw-capi/pane-callbacks")
-                 #+lispworks (:file "boxwin/lw-capi/boxer-lw-opengl-canvas")
-                 #+lispworks (:file "boxwin/lw-capi/scrolling")
-                 #+lispworks (:file "boxwin/lw-capi/boxwin-opengl")
-                 #+lispworks (:file "boxwin/lw-capi/clipboard")
-
-                 #+lispworks (:file "boxwin/lw-capi/outline-tree")
 
                  (:file "boxwin/mousedoc")
                  (:file "boxwin/boxapp-data")
@@ -126,7 +97,7 @@
                  (:file "redisplay/repaint-pass-2")
                  (:file "redisplay/repaint")
                  (:file "redisplay/new-borders")
-                 (:file "draw-low-opengl330/perspective")
+
 
                  ;; Beginning of `GRFDEFS` module
                  ;; "Definitions for Sprite Graphics"
@@ -145,6 +116,7 @@
                  ;; Beginning of `EDITOR-HIGH` module
                  ;; "Higher level Editor Utilities"
                  (:file "editor-high/copy-paste-buffers")
+                 (:file "editor-high/mouse-tracking")
                  (:file "editor-high/mouse")
                  (:file "editor-high/simple-stream")
                  (:file "editor-high/makcpy")
@@ -259,12 +231,6 @@
                  ;; Beginning of `site` modules
                  ;; 	   "Utilities for Site specific customizations"
                  (:file "site/site")
-                 ;; Beginning of `menu` module
-                 ;;    "Menus for Harlequin Lispworks on the PC"
-                 #+lispworks (:file "boxwin/lw-capi/file-dialogs")
-                 #+lispworks (:file "boxwin/lw-capi/lw-menu")
-                 #+lispworks (:file "boxwin/lw-capi/preferences-dialog")
-                 #+lispworks (:file "boxwin/lw-capi/confirm-quit-dialogs")
 
                  ;; Beginning of `SYSPRIMS` module
                  ;;    "Primitives to tweak default system parameters"

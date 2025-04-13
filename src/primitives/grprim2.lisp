@@ -343,7 +343,7 @@
                    (- (user-coordinate-y (- window-y min-y)) sup-y)))
             (multiple-value-bind (final-x final-y moved?)
                 (let ((%mouse-usurped t))
-                  (bw::with-mouse-tracking ((mouse-x min-x) (mouse-y min-y))
+                  (with-mouse-tracking ((mouse-x min-x) (mouse-y min-y))
                     (let ((new-x (translate-x mouse-x)) (new-y (translate-y mouse-y))
                           (turtle-x (x-position turtle)) (turtle-y (y-position turtle)))
                       (when (or (> (abs (- new-x turtle-x))

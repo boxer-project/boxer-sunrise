@@ -548,7 +548,7 @@ Modification History (most recent at top)
           (icon-on)
           ;; TODO need a cross platform with-mouse-tracking
           #+lispworks (multiple-value-bind (final-x final-y)
-                               (boxer-window::with-mouse-tracking ((mouse-x x) (mouse-y y))
+                               (with-mouse-tracking ((mouse-x x) (mouse-y y))
                                                                   (progn
                                                                    (cond ((and (null icon-on?)
                                                                                ;; if the icon is off, and we move back in
