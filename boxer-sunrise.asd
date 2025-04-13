@@ -239,8 +239,7 @@
                  ;; Beginning of `SYSPRIMS` module
                  ;;    "Primitives to tweak default system parameters"
                  (:file "primitives/sysprims")
-                 ;; Bootstrap methods to startup boxer
-                 (:file "start-boxer")
+
                 )))
   :description ""
   :long-description
