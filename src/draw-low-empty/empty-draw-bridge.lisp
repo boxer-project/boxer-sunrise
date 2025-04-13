@@ -23,7 +23,9 @@
 (defun %cha-wid (char)
   10)
 
-;; %clear-window w))
+(defun %clear-window (color)
+  nil)
+
 ;; %draw-c-arc x y radius start-angle sweep-angle filled?))
 ;; %draw-canvas-mesh mesh pixmap))
 
@@ -67,6 +69,9 @@
 ;; ignore-stencil)))))
 ;; line-stipple bw::*boxgl-device*)))
 ;; load-freetype-faces)
+
+(defun %pixblt-from-screen (pixmap fx fy wid hei)
+  nil)
 
 (defun %make-boxer-gl-model ()
   (make-instance 'boxer:boxer-gl-model))

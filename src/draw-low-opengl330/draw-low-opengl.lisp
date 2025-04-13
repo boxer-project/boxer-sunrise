@@ -126,12 +126,8 @@
   (gl:hint :line-smooth-hint :nicest)
   (gl:hint :polygon-smooth-hint :nicest))
 
-(defun %clear-window (w)
-  (let ((color (backdrop-color w)))
-    (gl::clear-color (aref color 1)
-                     (aref color 2)
-                     (aref color 3)
-                     0.0))
+(defun %clear-window (color)
+  (gl::clear-color (aref color 1) (aref color 2) (aref color 3) 0.0)
   (gl:clear :color-buffer-bit :depth-buffer-bit :stencil-buffer-bit))
 
 (defun %flush-port-buffer (&optional (pane *boxer-pane*))
@@ -280,13 +276,13 @@ the window font (ie, draw-string) has to change it back for this to work.
   ;; remember that  we are drawing from the lower left....
   (gl-add-pixmap bw::*boxgl-device* from-array (round tx) (round ty) (round wid) (round hei) fx fy))
 
-(defun %bitblt-from-screen (wid hei to-array fx fy tx ty)
+(defun %bitblt-from-screen (wid hei pixmap fx fy tx ty)
   ;; bw::gl-read-pixels
   ;; (bw::gl-read-buffer bw::*gl-front*) ; read from the (visible) front buffer
-  (%pixblt-from-screen to-array (round fx)
+  (%pixblt-from-screen pixmap (round fx)
                                 ;; not quite right especially with a translated fy
                                 (round (- (viewport-height *boxer-pane*) (+ fy hei)))
-                                (round wid) (round hei) tx ty))
+                                (round wid) (round hei)))
 
 ;;;;
 ;;;; Boxer bitmaps
@@ -311,5 +307,5 @@ the window font (ie, draw-string) has to change it back for this to work.
 (defun offscreen-pixel-color (x y pixmap)
   (pixel->color (pixmap-pixel pixmap x y)))
 
-(defun %pixblt-from-screen (to-array fx fy wid hei tx ty &optional (buffer :front))
-  (%gl:read-pixels fx fy wid hei *pixmap-data-type* *pixmap-data-format* (ogl-pixmap-data to-array)))
+(defun %pixblt-from-screen (pixmap fx fy wid hei)
+  (%gl:read-pixels fx fy wid hei *pixmap-data-type* *pixmap-data-format* (ogl-pixmap-data pixmap)))

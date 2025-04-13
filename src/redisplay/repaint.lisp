@@ -113,7 +113,7 @@
     (check-for-window-resize)
     (update-gpu-matrices)
     (REDISPLAYING-WINDOW (WINDOW)
-                         (clear-window window)
+                         (clear-window (backdrop-color window))
                          (repaint-guts)
                          (repaint-mouse-docs)
                          (when (active-menu *boxer-pane*)

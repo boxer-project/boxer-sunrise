@@ -140,7 +140,7 @@
               ;; (boxer::REDISPLAYING-WINDOW (*boxer-pane*)
               (boxer::check-for-window-resize)
               (update-gpu-matrices)
-                         (clear-window *boxer-pane*)
+                         (clear-window (backdrop-color *boxer-pane*))
                          (boxer::repaint-guts)
                         ;;  (repaint-mouse-docs)
                         ;;  (let ((cur-transform (boxer::boxgl-device-transform-matrix bw::*boxgl-device*)))
