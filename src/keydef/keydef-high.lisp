@@ -79,7 +79,8 @@
 
 (defvar *initial-platform* #+(or os-macosx macosx)  :lwm
                            #+win32   :ibm-pc
-                           #+linux   :linux)
+                           #+linux   :linux
+                           #+emscripten :lwm)
 
 (defconstant *key-name-lookup-array-size* 328
   "For most implementations, this really ought to be based on char-code-limit

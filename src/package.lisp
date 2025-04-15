@@ -20,6 +20,11 @@
 
 (proclaim '(optimize (debug 3)))
 
+#+emscripten
+(defpackage :log
+  (:use)
+  (:export :config :debug :info :error :warn))
+
 (defpackage :boxer-user
   (:use)
   (:nicknames :bu :boxer-users :pkg-bu-package :pkg-boxer-user-package)

@@ -17,6 +17,7 @@
                 :components
                 ((:file "boxer-sunrise")
                  (:file "package")
+                 (:file "definitions/boxlog" :if-feature :emscripten)
                  #+shim-3d-math
                  (:file "definitions/3d-math")
                  ;; DEFINITIONS

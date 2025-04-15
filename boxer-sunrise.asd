@@ -13,19 +13,19 @@
   :license ""
   :depends-on (:alexandria
                :cffi
-               :cl-fad
+               (:feature (:not :emscripten) :cl-fad)
                :cl-json
-               :drakma
-               :external-program
+               (:feature (:not :emscripten) :drakma)
+               (:feature (:not :emscripten) :external-program)
                :for
                :html-entities
                :iterate
-               :log4cl
+               (:feature (:not :emscripten) :log4cl)
                :qbase64
                :quri
                :uiop
-               :zip
-               :zpng
+               (:feature (:not :emscripten) :zip)
+               (:feature (:not :emscripten) :zpng)
                :boxer-sunrise-core
                #+(or glfw-engine lispworks)
                :boxer-sunrise-opengl
@@ -34,7 +34,7 @@
                 :components
                 (
                  ;; temporary workaround until we get rid of the extra boxer-opengl:: references
-                 #+text-repl-engine
+                 #+(or text-repl-engine emscripten)
                  (:file "draw-low-opengl330/package")
                  #+text-repl-engine
                  (:module "draw-low-empty"
@@ -122,7 +122,7 @@
                  (:file "editor-high/mouse")
                  (:file "editor-high/simple-stream")
                  (:file "editor-high/makcpy")
-                 (:file "editor-high/xfile")
+                 (:file "editor-high/xfile" :if-feature (:not :emscripten))
                  (:file "editor-high/region")
                  (:file "editor-high/oglscroll")
                  (:file "editor-high/mode")
@@ -133,7 +133,7 @@
                  (:file "impexp/impexp")
                  (:file "impexp/opml-export")
                  (:file "impexp/json-export")
-                 (:file "impexp/full-html-export")
+                 #-emscripten (:file "impexp/full-html-export")
                  ;; Beginning of `CHNKPR` module
                  ;; "This is the interface between the Editor and the Evaluator"
                  (:file "chnkpr/chunker")
@@ -166,14 +166,14 @@
                  ;; "Saving and Restoring Boxes To/From Files"
                  (:file "filesystem/dumper")
                  (:file "filesystem/loader")
-                 (:file "filesystem/boxer-document-format")
+                 #-emscripten (:file "filesystem/boxer-document-format")
                  (:file "filesystem/surf")
                  (:file "filesystem/datasources/url")
                  (:file "filesystem/datasources/net-url")
                  (:file "filesystem/datasources/local-url")
-                 (:file "filesystem/datasources/http-url")
+                 (:file "filesystem/datasources/http-url" :if-feature (:not :emscripten))
                  (:file "filesystem/datasources/helpers")
-                 (:file "filesystem/formats")
+                 (:file "filesystem/formats" :if-feature (:not :emscripten))
                  ;; Beginning of `TRIGGER` module
                  ;; "Box triggers for Constraint Propagation and Other Fun Stuff"
                  (:file "trigger/trigger")
