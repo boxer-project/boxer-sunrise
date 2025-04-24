@@ -20,7 +20,6 @@
                (:feature (:not :emscripten) :log4cl)
                :qbase64
                :quri
-               :uiop
                (:feature (:not :emscripten) :zip)
                (:feature (:not :emscripten) :zpng)
                :boxer-sunrise-core

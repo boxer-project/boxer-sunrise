@@ -32,7 +32,6 @@
 (in-package "CL-USER")
 (load-all-patches)
 (require :asdf)
-(require :uiop)
 
 (let ((quicklisp-init (merge-pathnames "quicklisp/setup.lisp" (user-homedir-pathname))))
   (when (probe-file quicklisp-init)
@@ -55,7 +54,7 @@
 
 (ql:quickload :log4cl)
 (ql:quickload :drakma)
-(ql:quickload :cl-json)
+;; (ql:quickload :cl-json)
 (ql:quickload :zpng)
 (ql:quickload :qbase64)
 (ql:quickload :html-entities)

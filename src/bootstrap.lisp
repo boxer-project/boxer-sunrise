@@ -29,7 +29,6 @@
 (lw:set-default-character-element-type 'character)
 
 (require "asdf")
-(require "uiop")
 
 ;; By default (quicklisp-quickstart:install) puts it at something like "C:/Users/<YOU>/quicklisp/setup.lisp".
 ;; This will be in most lisp installations init scripts, but startup scripts aren't available in LW Personal
