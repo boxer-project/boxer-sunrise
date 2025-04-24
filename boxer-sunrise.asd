@@ -14,12 +14,9 @@
   :depends-on (:alexandria
                :cffi
                (:feature (:not :emscripten) :cl-fad)
-               :cl-json
                (:feature (:not :emscripten) :drakma)
                (:feature (:not :emscripten) :external-program)
-               :for
                :html-entities
-               :iterate
                (:feature (:not :emscripten) :log4cl)
                :qbase64
                :quri

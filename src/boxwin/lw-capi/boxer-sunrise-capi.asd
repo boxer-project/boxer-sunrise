@@ -2,7 +2,8 @@
   :version "3.4.23"
   :author "Steven Githens"
   :license "BSD-3-Clause"
-  :depends-on ("boxer-sunrise")
+  :depends-on ("boxer-sunrise"
+               :for)
   :components ((:file "error-dialogs")
                (:file "color-picker-menu")
                (:file "lw-toolbar")
