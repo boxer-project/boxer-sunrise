@@ -3,6 +3,7 @@
   :author "Steven Githens"
   :license "BSD-3-Clause"
   :depends-on ("boxer-sunrise"
+               :boxer-sunrise-html-export
                :for)
   :components ((:file "error-dialogs")
                (:file "color-picker-menu")

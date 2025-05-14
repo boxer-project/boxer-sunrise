@@ -12,16 +12,12 @@
   :author "Steven Githens"
   :license ""
   :depends-on (:alexandria
-               :cffi
                (:feature (:not :emscripten) :cl-fad)
                (:feature (:not :emscripten) :drakma)
                (:feature (:not :emscripten) :external-program)
-               :html-entities
                (:feature (:not :emscripten) :log4cl)
-               :qbase64
                :quri
                (:feature (:not :emscripten) :zip)
-               (:feature (:not :emscripten) :zpng)
                :boxer-sunrise-core
                #+(or glfw-engine lispworks)
                :boxer-sunrise-opengl
@@ -129,7 +125,6 @@
                  (:file "impexp/impexp")
                  (:file "impexp/opml-export")
                  (:file "impexp/json-export")
-                 #-emscripten (:file "impexp/full-html-export")
                  ;; Beginning of `CHNKPR` module
                  ;; "This is the interface between the Editor and the Evaluator"
                  (:file "chnkpr/chunker")
