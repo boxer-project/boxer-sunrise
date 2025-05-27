@@ -138,6 +138,16 @@
       (setf highlighted-box (list box (current-time-milliseconds)))
       (setf highlighted-box (list box nil)))))
 
+(defmacro with-hilited-box ((box) &body body)
+  "Any operations inside this body will happen with box being hilighted. The default style is usually
+  a subtle blue background extending slightly beyond the borders. A typical use case of this is for
+  hilighting a box while it's being saved."
+  `(unwind-protect
+     (progn
+       (highlight-box *boxer-pane* ,box nil)
+       . ,body)
+     (highlight-box *boxer-pane* ,box t)))
+
 (defmethod viewport-width ((self boxer-canvas))
   "Give the width of the port or widget container the Boxer documents canvas. Calculation will be different
    depending on the GL and Widget toolkit used. Needed for scrollbars, panning, and other types of interactions."
@@ -243,3 +253,25 @@
          . ,body)
      (setq *suppress-expose-handler* nil
            *suppressed-actions* nil)))
+
+
+(defvar *mouse-border-areas*
+        '(:inside
+          :outside
+          :top-left
+          :top-right
+          :bottom-left
+          :bottom-right
+          :type
+          :name
+          :name-handle
+          :port-target-name
+          :port-target-type
+          :scroll-bar
+          :graphics
+          :sprite)
+  "A list of keywords describing mouse-sensitive portions of the box border")
+
+;; this is used in keydef-high
+(defun defined-mouse-border-areas ()
+  *mouse-border-areas*)

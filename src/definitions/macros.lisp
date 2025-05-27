@@ -136,11 +136,12 @@
     (push name *constant-folding-macros*))
   `(defmacro ,name ,args . ,body))
 
-(defun constant-folding-macro? (thing)
-  (fast-memq thing *constant-folding-macros*))
 
 (eval-when
     (:compile-toplevel :load-toplevel :execute)
+
+  (defun constant-folding-macro? (thing)
+    (fast-memq thing *constant-folding-macros*))
 
   (defun simplify-arg (arg)
     (cond ((constantp arg)

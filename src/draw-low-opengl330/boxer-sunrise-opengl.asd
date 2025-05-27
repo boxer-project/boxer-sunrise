@@ -5,6 +5,7 @@
   :depends-on (:boxer-sunrise-core
                :3d-matrices
                :cl-opengl
+               :cl-freetype2
                :for)
   :components ((:file "package")
                (:file "pixmap")

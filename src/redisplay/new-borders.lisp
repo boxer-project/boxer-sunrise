@@ -797,17 +797,10 @@
 ;;;; Mousing around
 ;;;; Mouse support
 
-(defvar *mouse-border-areas* nil
-  "A list of keywords describing mouse-sensitive portions of the box border")
-
-;; this is used in keydef-high
-(defun defined-mouse-border-areas ()
-  *mouse-border-areas*)
-
 (defmacro define-border-mouse-handler (name bp-values-handler)
   `(progn
-     (unless (member ',name *mouse-border-areas*)
-       (push ',name *mouse-border-areas*))
+     ;;  (unless (member ',name *mouse-border-areas*)
+     ;;    (push ',name *mouse-border-areas*))
      (setf (get ',name 'mouse-bp-values-handler) ,bp-values-handler)))
 
 
@@ -951,6 +944,13 @@
         (first-inferior-row actual-obj))
     0)))
 
+(define-border-mouse-handler :graphics #'(lambda (actual-obj &rest ignore)
+                                                 (declare (ignore ignore))
+                                                 (box-first-bp-values actual-obj)))
+
+(define-border-mouse-handler :sprite #'(lambda (actual-obj &rest ignore)
+                                               (declare (ignore ignore))
+                                               (box-first-bp-values actual-obj)))
 
 ;; this is called when the mouse code determines that the x,y position
 ;; is NOT within the inferiors of the box.  It should return either NIL,
@@ -1135,13 +1135,3 @@
         (draw-doc popup-doc
                   (bw::mouse-doc-status-popup-x)
                   (bw::mouse-doc-status-popup-y))))))
-
-(defmacro with-hilited-box ((box) &body body)
-  "Any operations inside this body will happen with box being hilighted. The default style is usually
-  a subtle blue background extending slightly beyond the borders. A typical use case of this is for
-  hilighting a box while it's being saved."
-  `(unwind-protect
-     (progn
-       (highlight-box *boxer-pane* ,box nil)
-       . ,body)
-     (highlight-box *boxer-pane* ,box t)))

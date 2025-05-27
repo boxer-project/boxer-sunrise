@@ -4,5 +4,5 @@
   :license ""
   :components ((:file "boxwin-glfw"))
   :depends-on (:cl-glfw3
-               :cl-freetype2
-               :boxer-sunrise))
+               :boxer-sunrise
+               :boxer-sunrise-redisplay))

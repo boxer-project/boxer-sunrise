@@ -185,16 +185,6 @@
         (t (error "Can't find a place in ~A for position ~D, ~D"
                   self x y))))))
 
-;;; tracking inside of graphics boxes...
-
-(define-border-mouse-handler :graphics #'(lambda (actual-obj &rest ignore)
-                                                 (declare (ignore ignore))
-                                                 (box-first-bp-values actual-obj)))
-
-(define-border-mouse-handler :sprite #'(lambda (actual-obj &rest ignore)
-                                               (declare (ignore ignore))
-                                               (box-first-bp-values actual-obj)))
-
 (defmethod get-area-of-box ((self graphics-screen-box) x y)
   (multiple-value-bind (il it ir ib)
                        (box-borders-widths (box-type self) self)

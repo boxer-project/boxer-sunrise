@@ -81,18 +81,6 @@
                  ;; "The Basic Structure of the Boxer Editor. "
                  (:file "editor/editor")
 
-                 ;; Beginning of `REDISPLAY` module
-                 ;; "The redisplay for the Editor"
-                 (:file "redisplay/blinkers")
-                 (:file "redisplay/disply")
-                 (:file "redisplay/lodisp")
-                 (:file "redisplay/dev-overlay")
-                 (:file "redisplay/repaint-2024")
-                 (:file "redisplay/repaint-pass-2")
-                 (:file "redisplay/repaint")
-                 (:file "redisplay/new-borders")
-
-
                  ;; Beginning of `GRFDEFS` module
                  ;; "Definitions for Sprite Graphics"
                  (:file "filesystem/fildfs")
@@ -102,10 +90,6 @@
                  (:file "grfdefs/gdispl")
                  (:file "grfdefs/boxer-graphics-commands")
                  (:file "grfdefs/graphics-clear")
-
-                 ;; Boxtops use some macros from gdispl.lisp, this needs to be a
-                 ;; bit reorged.
-                 (:file "redisplay/boxtops")
 
                  ;; Beginning of `EDITOR-HIGH` module
                  ;; "Higher level Editor Utilities"
