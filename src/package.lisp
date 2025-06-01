@@ -39,6 +39,9 @@
            :%string-hei
            :%string-wid
            :%draw-rectangle
+           :%draw-circle
+           :%draw-ellipse
+           :%draw-poly
            :%make-boxer-gl-model
            :%refresh-gpu-model-matrix
            :%string-ascent

@@ -33,15 +33,17 @@
 (defun %draw-cha (char x y &key (gl-model nil))
   (boxer-opengl::%draw-cha char x y :gl-model gl-model))
 
-;; %draw-circle x y radius filled?))
-;; %draw-ellipse x y width height filled?))
-;; %draw-line x0 y0 x1 y1))
+(defun %draw-circle (x y radius filled?)
+  (boxer-opengl::%draw-circle x y radius filled?))
+
+(defun %draw-ellipse (x y width height filled?)
+  (boxer-opengl::%draw-ellipse x y width height filled?))
 
 (defun %draw-line (x0 y0 x1 y1)
   (boxer-opengl::%draw-line x0 y0 x1 y1))
 
-;; %draw-poly points))
-;; %draw-rectangle w h x y)))
+(defun %draw-poly (points)
+  (boxer-opengl::%draw-poly points))
 
 (defun %draw-rectangle (w h x y)
   (boxer-opengl::%draw-rectangle w h x y))

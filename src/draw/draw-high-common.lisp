@@ -294,10 +294,10 @@ multifont row, the common reference point will be the baseline instead of the to
   (%draw-cha char x y :gl-model gl-model))
 
 (defun draw-circle (x y radius &optional filled?)
-  (boxer-opengl::%draw-circle x y radius filled?))
+  (%draw-circle x y radius filled?))
 
 (defun draw-ellipse (x y width height &optional filled?)
-  (boxer-opengl::%draw-ellipse x y width height filled?))
+  (%draw-ellipse x y width height filled?))
 
 (defun draw-line (x0 y0 x1 y1)
   (%draw-line x0 y0 x1 y1))
@@ -306,7 +306,7 @@ multifont row, the common reference point will be the baseline instead of the to
   (%draw-point x y))
 
 (defun draw-poly (points)
-  (boxer-opengl::%draw-poly points))
+  (%draw-poly points))
 
 (defun draw-rectangle (w h x y)
   (%draw-rectangle w h x y))

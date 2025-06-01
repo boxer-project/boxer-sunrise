@@ -32,14 +32,17 @@
 (defun %draw-cha (char x y &key (gl-model nil))
   nil)
 
-;; %draw-circle x y radius filled?))
-;; %draw-ellipse x y width height filled?))
-;; %draw-line x0 y0 x1 y1))
+(defun %draw-circle (x y radius filled?)
+  nil)
+
+(defun %draw-ellipse (x y width height filled?)
+  nil)
 
 (defun %draw-line (x0 y0 x1 y1)
   nil)
 
-;; %draw-poly points))
+(defun %draw-poly (points)
+  nil)
 
 (defun %draw-rectangle (w h x y)
   nil)

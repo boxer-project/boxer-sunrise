@@ -32,15 +32,18 @@
 (defun %draw-cha (char x y &key (gl-model nil))
   nil)
 
-;; %draw-circle x y radius filled?))
-;; %draw-ellipse x y width height filled?))
-;; %draw-line x0 y0 x1 y1))
+(defun %draw-circle (x y radius filled?)
+  nil)
+
+(defun %draw-ellipse (x y width height filled?)
+  nil)
 
 (defun %draw-line (x0 y0 x1 y1)
   (format t "~%draw-line4: ~A ~A ~A ~A" x0 y0 x1 y1)
   (cl-user::three-draw-line (floor x0) (floor y0) (floor x1) (floor y1)))
 
-;; %draw-poly points))
+(defun %draw-poly (points)
+  nil)
 
 (defun %draw-rectangle (w h x y)
   nil)
