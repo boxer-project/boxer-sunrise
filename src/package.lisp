@@ -95,7 +95,7 @@
 
            :boxgl-device :boxgl-device-pen-size :boxgl-device-projection-matrix
            :boxgl-device-transform-matrix :boxgl-device-model-matrix
-           :create-ortho-matrix
+           :create-ortho-matrix :line-stipple
 
            :gl-reshape :with-ogl-font :ogl-font-height :ogl-font-width :ogl-font-ascent
 

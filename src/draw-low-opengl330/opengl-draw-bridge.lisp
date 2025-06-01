@@ -68,7 +68,6 @@
 ;; enable paint-tex)
 ;; graphics-canvas-pixmap paint-tex))))
 ;; ignore-stencil)))))
-;; line-stipple bw::*boxgl-device*)))
 ;; load-freetype-faces)
 ;; make-boxer-gl-model) :gl-model)
 

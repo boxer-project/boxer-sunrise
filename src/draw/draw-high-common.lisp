@@ -24,6 +24,9 @@
 (defclass boxgl-device ()
   ((pen-size  :accessor boxgl-device-pen-size)
    (pen-color :accessor boxgl-device-pen-color) ; current color in #(:rgb 1.0 1.0 1.0 1.0) format
+   (line-stipple :accessor line-stipple :initform nil
+     :documentation "Boolean to indicate if we're currently drawing dashed lines.")
+
    (projection-matrix :accessor boxgl-device-projection-matrix)
    (transform-matrix :accessor boxgl-device-transform-matrix
                      :initform (3d-matrices:meye 4))
@@ -131,7 +134,7 @@ the bootstrapping of the clipping and coordinate scaling variables."
 
 (defmacro with-pen-size ((newsize) &body body)
   (let ((oldpsvar (gensym)) (nochangevar (gensym)) (newsizevar (gensym)))
-    `(let ((,oldpsvar (boxer-opengl::boxgl-device-pen-size bw::*boxgl-device*))
+    `(let ((,oldpsvar (boxgl-device-pen-size bw::*boxgl-device*))
            (,newsizevar (float ,newsize))
            (,nochangevar nil))
        (unwind-protect
@@ -142,17 +145,17 @@ the bootstrapping of the clipping and coordinate scaling variables."
         (unless ,nochangevar (%set-pen-size ,oldpsvar))))))
 
 (defun %set-pen-size (v)
-  (setf (boxer-opengl::boxgl-device-pen-size bw::*boxgl-device*) v))
+  (setf (boxgl-device-pen-size bw::*boxgl-device*) v))
 
 (defmacro with-line-stippling ((pattern factor) &body body)
   (let ((stipplevar (gensym)))
-    `(let ((,stipplevar (boxer-opengl::line-stipple bw::*boxgl-device*)))
+    `(let ((,stipplevar (line-stipple bw::*boxgl-device*)))
        (unwind-protect
         (progn
-          (setf (boxer-opengl::line-stipple bw::*boxgl-device*) t)
+          (setf (line-stipple bw::*boxgl-device*) t)
          . ,body)
         (unless ,stipplevar
-          (setf (boxer-opengl::line-stipple bw::*boxgl-device*) nil))))))
+          (setf (line-stipple bw::*boxgl-device*) nil))))))
 
 (defmacro maintaining-drawing-font (&body body)
   (let ((font-var (gensym)))

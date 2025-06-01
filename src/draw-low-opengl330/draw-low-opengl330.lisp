@@ -114,9 +114,6 @@
     :documentation "Integer describing the gl uniform buffer object we are storing our transformation
                     matrices and other information in.")
 
-   (line-stipple :accessor line-stipple :initform nil
-     :documentation "Boolean to indicate if we're currently drawing dashed lines.")
-
    (null-gl-elements-array :accessor null-gl-elements-array)
 
    ;; Currently bound Shader Program, vao, etc
