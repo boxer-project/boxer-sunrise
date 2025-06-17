@@ -253,13 +253,6 @@
    (command-args :initform '(x0 y0 x1 y1))
    (transformation-template :initform '(:x-transform :y-transform :x-transform :y-transform))))
 
-(defdraw-graphics-command (boxer-line-segment x0 y0 x1 y1)
-  "Takes a boxer command starting with 35:
-    ex #(35 -0.5 -0.5 0.0 0.5)"
-  ;; The y-axis needs to be flipped
-  (ck-mode-draw-line x0 (- y0) x1 (- y1)
-                     *graphics-state-current-alu*))
-
 (defextents-graphics-command (boxer-line-segment x0 y0 x1 y1)
   (let ((delta (ceiling *graphics-state-current-pen-width* 2)))
     (values (- (min x0 x1) delta) (- (min y0 y1) delta)
@@ -345,21 +338,6 @@
    (command-args :initform '(x y string))
    (transformation-template :initform '(:x-transform :y-transform nil))))
 
-(defdraw-graphics-command (boxer-centered-string x y text)
-  (let ((y (- y)))
-    (do* ((height (1+ (string-hei *graphics-state-current-font-no*)))
-          (s text (subseq s (let ((p (position #\newline s)))
-                              (if (null p) 0 (1+ p)))))
-          (trimmed-string (subseq s 0 (position #\newline s))
-                          (subseq s 0 (position #\newline s)))
-          (width (string-wid *graphics-state-current-font-no* trimmed-string)
-                 (string-wid *graphics-state-current-font-no* trimmed-string))
-          (wx (- x (/ width 2)) (- x (/ width 2)))
-          (wy y (+ wy height)))
-      ((not (position #\newline s))
-       (draw-string *graphics-state-current-font-no* trimmed-string wx wy))
-      (draw-string *graphics-state-current-font-no* trimmed-string wx wy))))
-
 (defextents-graphics-command (boxer-centered-string x y text)
   (let ((height 0) (s text) (width 0) (wx x))
     (loop
@@ -411,19 +389,6 @@
         (setq s (subseq s (let ((p (position #\newline s)))
                             (if (null p) 0 (1+& p)))))))))
 
-
-(defdraw-graphics-command (boxer-left-string x y text)
-  (let ((y (- y)))
-    (loop
-      (draw-string *graphics-state-current-font-no*
-                    (subseq text 0 (position #\newline text)) x y)
-      ;; If we have drawn the last line (the current line has no CR's)
-      (if (not (position #\newline text))
-        (return)
-        (setq text (subseq text (let ((p (position #\newline text)))
-                            (if (null p) 0 (1+ p))))
-              y (+ y 1 (string-hei *graphics-state-current-font-no*)))))))
-
 (defsprite-graphics-command (boxer-left-string x y text)
   (cond ((and (= x last-x) (= y last-y))
         (list 'bu::ltype (make-box (list (list (coerce string
@@ -458,22 +423,6 @@
         (setq s (subseq s (let ((p (position #\newline s)))
                             (if (null p) 0 (1+& p)))))))))
 
-
-(defdraw-graphics-command (boxer-right-string x y text)
-  (let ((y (- y))
-        (width 0)
-        (trimmed-string ""))
-    (loop
-      (setq trimmed-string (subseq text 0 (position #\newline text))
-            width (string-wid *graphics-state-current-font-no* trimmed-string))
-      (draw-string *graphics-state-current-font-no* trimmed-string (- x width) y)
-      ;; If we have drawn the last line (the current line has no CR's)
-      (if (not (position #\newline text))
-        (return)
-        (setq text (subseq text (let ((p (position #\newline text)))
-                                  (if (null p) 0 (1+ p))))
-              y (+ y (1+ (string-hei *graphics-state-current-font-no*))))))))
-
 (defsprite-graphics-command (boxer-right-string x y text)
   (cond ((and (= x last-x) (= y last-y))
         (list 'bu::rtype (make-box (list (list (coerce string
@@ -494,12 +443,6 @@
    (name :initform "boxer-centered-rectangle")
    (command-args :initform '(x y width height))
    (transformation-template :initform '(:x-transform :y-transform :coerce :coerce))))
-
-(defdraw-graphics-command (boxer-centered-rectangle x y w h)
-    (draw-rectangle w h
-                   (- x (/ w 2))
-                   ;; The y axis is flipped
-                   (- (+ y (/ h 2)))))
 
 (defextents-graphics-command (boxer-centered-rectangle x y width height)
   (let ((half-width (values (/ width 2.0)))
@@ -526,13 +469,6 @@
    (command-args :initform '(x y))
    (transformation-template :initform '(:x-transform :y-transform))))
 
-;; maybe this should be a circle ? Need to check relative speeds
-;; also, should probably use the pen-width ?
-(defdraw-graphics-command (boxer-dot x y)
-    (draw-rectangle *graphics-state-current-pen-width* *graphics-state-current-pen-width*
-                 (- x (/ *graphics-state-current-pen-width* 2))
-                 (- (+ y (/ *graphics-state-current-pen-width* 2)))))
-
 (defextents-graphics-command (boxer-dot x y)
   (let ((half-size (/ *graphics-state-current-pen-width* 2.0)))
     (declare (type boxer-float half-size))
@@ -556,25 +492,6 @@
    (name :initform "boxer-hollow-rectangle")
    (command-args :initform '(x y width height))
    (transformation-template :initform '(:x-transform :y-transform :coerce :coerce))))
-
-(defdraw-graphics-command (boxer-hollow-rectangle x y w h)
-  ;; sgithens TODO should we be using *graphics-state-current-pen-width*, rather then boxgl-device-pen-size?
-  ;;               Currently this doens't seem to be running in the graphics context that has that bound.
-  (let* ((pen-size (boxgl-device-pen-size bw::*boxgl-device*))
-         (right    (- (+ x (/ w 2)) (/ pen-size 2)))
-         (left     (+ (- x (/ w 2)) (/ pen-size 2)))
-         ;; Full right and left are flush with edge for the top
-         ;; and bottom line, otherwise there is rectangle missing
-         ;; from the corner.
-         (full-right (+ x (/ w 2)))
-         (full-left  (- x (/ w 2)))
-         ;; The y axis is flipped
-         (top      (- (- (+ y (/ h 2)) (/ pen-size 2))))
-         (bottom   (- (+ (- y (/ h 2)) (/ pen-size 2)))))
-    (draw-line right top right bottom)
-    (draw-line full-right bottom full-left bottom)
-    (draw-line left bottom left top)
-    (draw-line full-left top full-right top)))
 
 (defextents-graphics-command (boxer-hollow-rectangle x y width height)
   (let ((half-width (values (/ width 2.0)))
@@ -605,11 +522,6 @@
   (let ((togo (copy-seq command)))
     (setf (aref togo 1) (copy-pixmap (aref command 1)))
     togo))
-
-(defdraw-graphics-command (boxer-centered-bitmap bitmap x y wid hei)
-    (bitblt-to-screen wid hei bitmap 0 0
-                      (- x (floor wid 2))
-                      (- (+ y (floor hei 2)))))
 
 (defextents-graphics-command (boxer-centered-bitmap bitmap x y width height)
   (let ((half-width (/ width 2.0))
@@ -648,11 +560,6 @@
    (command-args :initform '(x y radius start-angle sweep-angle))
    (transformation-template :initform '(:x-transform :y-transform nil nil nil))))
 
-(defdraw-graphics-command (boxer-wedge x y radius start-angle sweep-angle)
-  (let ((y (- y)))
-    (when (plusp radius)
-      (draw-c-arc x y radius start-angle sweep-angle t))))
-
 (defextents-graphics-command (boxer-wedge x y radius start-angle sweep-angle)
   (values (- x radius) (- y radius)
           (+ x radius) (+ y radius)))
@@ -677,11 +584,6 @@
    (command-args :initform '(x y radius start-angle sweep-angle))
    (transformation-template :initform '(:x-transform :y-transform nil nil nil))))
 
-(defdraw-graphics-command (boxer-arc x y radius start-angle sweep-angle)
-  (let ((y (- y)))
-    (when (plusp radius)
-      (draw-c-arc x y radius start-angle sweep-angle nil))))
-
 (defextents-graphics-command (boxer-arc x y radius start-angle sweep-angle)
   (values (- x radius) (- y radius)
           (+ x radius) (+ y radius)))
@@ -703,10 +605,6 @@
    (name :initform "boxer-filled-ellipse")
    (command-args :initform '(x y width height))
    (transformation-template :initform '(:x-transform :y-transform :coerce :coerce))))
-
-(defdraw-graphics-command (boxer-filled-ellipse x y w h)
-  (let ((y (- y)))
-    (draw-ellipse x y w h t)))
 
 (defextents-graphics-command (boxer-filled-ellipse x y width height)
   (let ((half-width (/ width 2.0))
@@ -733,10 +631,6 @@
    (command-args :initform '(x y width height))
    (transformation-template :initform '(:x-transform :y-transform :coerce :coerce))))
 
-(defdraw-graphics-command (boxer-ellipse x y w h)
-  (let ((y (- y)))
-    (draw-ellipse x y w h nil)))
-
 (defextents-graphics-command (boxer-ellipse x y width height)
   (let ((half-width (/ width 2.0))
         (half-height (/  height 2.0)))
@@ -762,10 +656,6 @@
    (command-args :initform '(x y radius))
    (transformation-template :initform '(:x-transform :y-transform nil))))
 
-(defdraw-graphics-command (boxer-filled-circle x y radius)
-  (let ((y (- y)))
-    (draw-circle x y radius t)))
-
 (defextents-graphics-command (boxer-filled-circle x y radius)
   (values (- x radius) (- y radius) (+ x radius) (+ y radius)))
 
@@ -786,10 +676,6 @@
    (name :initform "boxer-circle")
    (command-args :initform '(x y radius))
    (transformation-template :initform '(:x-transform :y-transform nil))))
-
-(defdraw-graphics-command (boxer-circle x y radius)
-  (let ((y (- y)))
-    (draw-circle x y radius nil)))
 
 (defextents-graphics-command (boxer-circle x y radius)
   (values (- x radius) (- y radius) (+ x radius) (+ y radius)))

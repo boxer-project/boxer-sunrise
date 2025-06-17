@@ -12,5 +12,6 @@
                (:file "repaint-pass-2")
                (:file "repaint")
                (:file "new-borders")
-               (:file "boxtops"))
+               (:file "boxtops")
+               (:file "draw-graphics-commands"))
   :description "Boxer Redisplay/repaint")
