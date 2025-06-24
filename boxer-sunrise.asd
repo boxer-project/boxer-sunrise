@@ -32,11 +32,6 @@
                  (:module "draw-low-empty"
                   :components ((:file "empty-draw-bridge")))
 
-                 ;; Beginning of `DRAW` module
-                 (:file "draw/mesh")
-                 (:file "draw/model")
-                 (:file "draw/draw-high-common")
-
                  (:file "definitions/boxer-styles")
 
                  ;; Beginning of `DISPLAYDEFS` module
@@ -84,7 +79,6 @@
                  ;; Beginning of `GRFDEFS` module
                  ;; "Definitions for Sprite Graphics"
                  (:file "filesystem/fildfs")
-                 (:file "grfdefs/wrap-line")
                  (:file "grfdefs/grobjs")
                  (:file "grfdefs/grfdfs")
                  (:file "grfdefs/gdispl")

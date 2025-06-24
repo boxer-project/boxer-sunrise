@@ -571,67 +571,6 @@ Modification History (most recent at top)
          (final-mat (3d-matrices:m* trans-mat rot-mat scale-mat)))
     final-mat))
 
-(defmethod draw ((self button))
-  (unless (null (shown? self))
-    (let* ((prev-model (get-model-matrix))
-           (final-mat (3d-matrices:m* prev-model (model-matrix self %drawing-half-width %drawing-half-height))))
-      ;; sgithens TODO 2024-12-26 Remove the drawing-half-width/height from above and also from the graphics command
-      ;; list playback, and move it to a matrix transform at a higher level, so individual drawback code doens't need
-      ;; to worry about it, especially when the transforms become more complex in the future (z-axis, rotations, etc)
-
-      (setf (get-model-matrix) final-mat)
-      (refresh-gpu-model-matrix)
-
-      ;; We need to override the drawing-half-width and drawing-half-height here
-      ;; with the values from the shape box graphics-sheet, otherwise, if it's scaled or
-      ;; someething it will use the values from the upper level graphics box.  This is
-      ;; primarily for correct operation of draw-wrap-line which uses these global values.
-
-      ;; Occasionally there seems to be a shape that has it's interface value, but not
-      ;; the accompanying box
-      ;; TODO: these heights really should only need calculating if something changed
-      (let* ((shape-box (box-interface-box (slot-value self 'shape)))
-             (gs (if shape-box
-                    (graphics-sheet shape-box)
-                    nil))
-             (gl (box-interface-value (slot-value self 'shape)))
-             (extents (multiple-value-list (graphics-list-extent gl)))
-             (wid (if gs
-                   (graphics-sheet-draw-wid gs)
-                   (floor (first extents))))
-             (hei (if gs
-                   (graphics-sheet-draw-hei gs)
-                   (floor (second extents))))
-             (%drawing-half-width (/ wid 2))
-             (%drawing-half-height (/ hei 2))
-             (canvas nil)
-             (mesh nil))
-
-        (if *use-opengl-framebuffers*
-          (progn
-            ;; For frame buffered turtles, we keep them on the actual graphics-object turtle object, since it's
-            ;; not guarenteed the sprite will actually have a shape box.
-            (setf canvas (get-graphics-canvas-for-screen-obj self wid hei))
-            (setf mesh (get-canvas-mesh self))
-
-
-            (playback-graphics-list-incrementally gl canvas wid hei :mesh mesh)
-
-            (let ((pixmap (graphics-canvas-pixmap canvas)))
-              (setf final-mat (3d-matrices:m* final-mat
-                                              (3d-matrices:mtranslation (3d-vectors:vec (- (/ wid 2)) (- (/ hei 2)) 0.0)) ))
-              (setf (get-model-matrix) final-mat)
-              (refresh-gpu-model-matrix)
-              (draw-canvas-mesh mesh pixmap)))
-          (boxer-playback-graphics-list gl :use-cur-model-matrix t)))
-
-      (setf (get-model-matrix) prev-model)
-      (refresh-gpu-model-matrix)
-
-      (unless (eq (shown? self) ':no-subsprites)
-        (dolist (subs (slot-value self 'subsprites))
-          (draw subs))))))
-
 (defmethod show-turtle ((self button))
   (set-shown? self t))
 

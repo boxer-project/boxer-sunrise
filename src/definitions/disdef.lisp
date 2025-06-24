@@ -244,10 +244,9 @@ Modification History (most recent at the top)
 (DEFMACRO REDISPLAYING-WINDOW ((WINDOW) &BODY BODY)
   `(LET* ((*OUTERMOST-SCREEN-BOX* (OUTERMOST-SCREEN-BOX ,WINDOW)))
         (QUEUEING-SCREEN-OBJS-DEALLOCATION
-          (DRAWING-ON-WINDOW (,WINDOW)
-                              (UNWIND-PROTECT
-                              (PROGN . ,BODY)
-                              (SET-OUTERMOST-SCREEN-BOX-IN-WINDOW ,WINDOW *OUTERMOST-SCREEN-BOX*))))))
+          (UNWIND-PROTECT
+            (PROGN . ,BODY)
+            (SET-OUTERMOST-SCREEN-BOX-IN-WINDOW ,WINDOW *OUTERMOST-SCREEN-BOX*)))))
 
 ;;; random useful structs and stuff
 
@@ -266,6 +265,31 @@ Modification History (most recent at the top)
   (declare (ignore cha-no))
   (warn "recheck-font-state should be inside of with-font-hacking")
   '(error "recheck-font-state called outside of with-font-hacking"))
+
+(defmacro maintaining-drawing-font (&body body)
+  (let ((font-var (gensym)))
+    `(let ((,font-var *current-opengl-font*))
+       (unwind-protect
+        (progn . ,body)
+        ;; NOTE: fonts aren't necessarily EQ
+        (unless (eql *current-opengl-font* ,font-var)
+          (setq *current-opengl-font* ,font-var))))))
+
+(defmacro rebind-font-info ((font-no) &body body)
+  `(let ((%drawing-font-cha-hei %drawing-font-cha-hei)
+         (%drawing-font-cha-ascent %drawing-font-cha-ascent))
+     (unless (null ,font-no)
+       (maintaining-drawing-font
+        (set-font-info ,font-no)
+        ,@body))))
+
+(defmacro maintaining-pen-color (&body body)
+  (let ((old-color (gensym)))
+    `(let ((,old-color (boxgl-device-pen-color bw::*boxgl-device*)))
+       (unwind-protect
+        (progn . ,body)
+          (unless (equalp ,old-color (boxgl-device-pen-color bw::*boxgl-device*))
+            (setf (boxgl-device-pen-color bw::*boxgl-device*) ,old-color))))))
 
 (defmacro with-font-hacking ((font-descriptors
                               &key (start-cha-no 0) (cha-drawing? nil))

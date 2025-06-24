@@ -49,6 +49,8 @@
 ;;;;   - com-refresh-display - Not sure when this would ever be needed again, but it's interesting
 ;;;;   - applescript.lisp - Applescript support that was used for QT and opening external files, with some generic support
 ;;;;     for issueing commands.
+;;;;   - comdef.lisp - animate-cursor-move and animate-scrolling The old blocky animations used for zoom to target and
+;;;;     bringing the cursor in to view.
 
 ;;;;
 ;;;; FILE: applefile.lisp
@@ -7134,6 +7136,81 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: comdef.lisp
 ;;;;
+
+;; sgithens 2025-06-23 Archiving these very broken zoom to scroll commands for now...
+(defvar *cursor-animate-steps* 12.)
+(defvar *cursor-animate-growth-quantum* 3)
+
+(defun animate-cursor-move (dest-screen-box dest-row dest-cha-no)
+  (unless (null *zoom-step-pause-time*)
+    (drawing-on-window (*boxer-pane*)
+                       (with-temporary-bp (dest-bp(values dest-row dest-cha-no dest-screen-box))
+                         (multiple-value-bind (to-x to-y)
+                                              (bp-coordinates dest-bp)
+                                              (multiple-value-bind (from-x from-y)
+                                                                   (bp-coordinates *point*)
+                                                                   (let ((from-hei (get-cursor-height (bp-cha *point*)))
+                                                                         (to-hei (get-cursor-height (bp-cha dest-bp)))
+                                                                         (half-delta-x (fixr (/ (- to-x from-x) 2)))
+                                                                         (half-delta-y (fixr (/ (- to-y from-y) 2)))
+                                                                         (delta-size (* *cursor-animate-steps*
+                                                                                        *cursor-animate-growth-quantum*)))
+                                                                     (flet ((draw-trail-up ()
+                                                                                           (do ((i 0 (1+& i))
+                                                                                                (wid 3 (+ wid *cursor-animate-growth-quantum*))
+                                                                                                (hei from-hei (+ hei
+                                                                                                                 *cursor-animate-growth-quantum*))
+                                                                                                (x from-x (+ x (fixr(/ half-delta-x
+                                                                                                                       *cursor-animate-steps*))))
+                                                                                                (y from-y (+ y (fixr(/ half-delta-y
+                                                                                                                       *cursor-animate-steps*)))))
+                                                                                             ((>=& i *cursor-animate-steps*))
+                                                                                             (draw-rectangle wid hei x y)
+                                                                                             (swap-graphics-buffers)
+                                                                                             (snooze *zoom-step-pause-time*)
+                                                                                             (draw-rectangle wid hei x y)
+                                                                                             (swap-graphics-buffers)))
+                                                                            (draw-trail-down ()
+                                                                                             (do ((i 0 (1+& i))
+                                                                                                  (wid (+ 3 delta-size)
+                                                                                                       (- wid *cursor-animate-growth-quantum*))
+                                                                                                  (hei (+ to-hei delta-size)
+                                                                                                       (- hei *cursor-animate-growth-quantum*))
+                                                                                                  (x (- to-x half-delta-x)
+                                                                                                     (+ x (fixr (/ half-delta-x
+                                                                                                                   *cursor-animate-steps*))))
+                                                                                                  (y (- to-y half-delta-y)
+                                                                                                     (+ y (fixr (/ half-delta-y
+                                                                                                                   *cursor-animate-steps*)))))
+                                                                                               ((>=& i *cursor-animate-steps*))
+                                                                                               (draw-rectangle wid hei x y)
+                                                                                               (swap-graphics-buffers)
+                                                                                               (snooze *zoom-step-pause-time*)
+                                                                                               (draw-rectangle wid hei x y)
+                                                                                               (swap-graphics-buffers))))
+                                                                           ;; first get bigger...
+                                                                           (draw-trail-up)
+                                                                           ;; now get smaller
+                                                                           (draw-trail-down)))))))))
+
+(defun animate-scrolling (screen-box)
+  (unless (null *zoom-step-pause-time*)
+    (drawing-on-window (*boxer-pane*)
+                       (multiple-value-bind (box-x box-y)
+                                            (xy-position screen-box)
+                                            (multiple-value-bind (left top right bottom)
+                                                                 (box-borders-widths (box-type screen-box) screen-box)
+                                                                 (declare (ignore left))
+                                                                 (let ((x (- (+ box-x (screen-obj-wid screen-box)) right 4))
+                                                                       (y (+ box-y top))
+                                                                       (wid (+ right 8))
+                                                                       (hei (- (screen-obj-hei screen-box) top bottom)))
+                                                                   (dotimes (i 12)
+                                                                     (draw-rectangle wid hei x y)
+                                                                     (swap-graphics-buffers)
+                                                                     (snooze *zoom-step-pause-time*)
+                                                                     (draw-rectangle wid hei x y)
+                                                                     (swap-graphics-buffers))))))))
 
 ;; sgithens 2023-04-20 No longer used after cleaning up all the right click popup menu commands
 (defun mouse-still-down-after-pause? (pause-time)

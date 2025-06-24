@@ -741,52 +741,7 @@ Modification History (most recent at the top)
 (defun sprite-commands-for-new-position (new-x new-y)
   (list 'bu::penup 'bu::setxy new-x new-y 'bu::pendown))
 
-;; this is used by the redisplay...
 
-(defun playback-graphics-list-incrementally (gl canvas wid hei &key (mesh nil))
-  "When framebuffers are being used, this will play back any additional graphics operations on to the mesh/framebuffer,
-  only appending new ones since the last draw."
-  (when (> (%%sv-fill-pointer gl) (op-count canvas))
-              (enable canvas)
-              (unless (graphics-command-list-hidden gl)
-                (boxer-playback-graphics-list gl :start (op-count canvas)
-                   :graphics-canvas canvas :translate? t))
-              (setf (op-count canvas) (%%sv-fill-pointer gl))
-              (disable canvas)
-              (when mesh
-                (buffer-canvas-mesh bw::*boxgl-device* mesh (graphics-canvas-pixmap canvas) wid hei))))
-
-(defun redisplay-graphics-sheet-graphics-list (gs graphics-screen-box)
-  "Draws the graphics-command-list of the graphics-sheet in member graphics-list. This typically contains
-   everything that has been drawn or stamped by sprites and doesn't privately belong to them. This takes
-   in to account if openGL framebuffers are used and can paint to the framebuffer attached to the
-   screen-box."
-  (with-graphics-vars-bound ((screen-obj-actual-obj graphics-screen-box))
-    (if *use-opengl-framebuffers*
-      (let* ((wid (graphics-sheet-draw-wid gs))
-             (hei (graphics-sheet-draw-hei gs))
-             (gl (graphics-sheet-graphics-list gs))
-             (canvas (get-graphics-canvas-for-screen-obj graphics-screen-box wid hei)))
-        (playback-graphics-list-incrementally gl canvas wid hei))
-      ; else
-      (let ((gl (graphics-sheet-graphics-list gs)))
-        (unless (graphics-command-list-hidden gl)
-          (boxer-playback-graphics-list gl :translate? t))))))
-
-(defun redisplay-graphics-sheet-sprites (gs graphics-screen-box)
-  "Draws all the sprites in the the object-list slot of the related graphics-sheet.  Draws the sprites private
-   graphcis-command-list and issues each sprites draw method."
-  (with-graphics-vars-bound ((screen-obj-actual-obj graphics-screen-box))
-    (let ((sprites (graphics-sheet-object-list gs)))
-      (dolist (sprite sprites)
-        (when (turtle? sprite)
-          (let ((pgl (slot-value sprite 'private-gl)))
-            (unless (graphics-command-list-hidden pgl)
-              (boxer-playback-graphics-list pgl)
-              ))))
-      (dolist (sprite sprites)
-        (unless (null (shown? sprite))
-          (draw sprite))))))
 
 
 ;;; show probably do some type checking about compatibility

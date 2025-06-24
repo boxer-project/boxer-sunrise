@@ -226,21 +226,6 @@ parameters of the graphics box are bound. "
             (push sb sbs))))
       sbs)))
 
-
-;;; Here is the line drawing stuff
-
-;;;; This is the highest level drawing command.
-
-(defun ck-mode-draw-line (from-x from-y to-x to-y alu)
- (if (eq %draw-mode ':wrap)
-     (boxer-wrap:draw-wrap-line from-x (- from-y) to-x (- to-y))
-     (draw-clip-line from-x from-y to-x to-y)))
-
-(defun draw-clip-line (from-x from-y to-x to-y)
-  ;(draw-line from-x from-y to-x to-y alu t)
-  ;; draw-line will clip the coordinates making the slope wrong...
-  (draw-line from-x from-y to-x to-y))
-
 ;;;; Sprite Access
 
 ;;; this is the sprite scoping function.  Basically, we walk up the static

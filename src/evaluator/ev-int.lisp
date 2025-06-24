@@ -373,10 +373,6 @@
       (with-mouse-cursor-on
         (with-modified-queueing
           (with-non-lisp-structure-deallocation
-            (drawing-on-window (*boxer-pane*)
-                               ;; for the benefit of turtle graphics
-                               ;; do drawing-on-window once instead of with EVERY draw line
-                               ;; do the force-output so the cursor will disappear immediately.
                                (with-port-retargetting
                                  (unwind-protect
                                   (let (#-lispworks (*evaluation-in-progress?* t)
@@ -384,7 +380,7 @@
                                     #+lispworks (setq *evaluation-in-progress?* t)
                                     (with-editor-mutation-queueing
                                         . ,body))
-                                  #+lispworks (setq *evaluation-in-progress?* nil)))))))))
+                                  #+lispworks (setq *evaluation-in-progress?* nil))))))))
     (unless (null *post-eval-hook*)
       (if (listp *post-eval-hook*)
         (dolist (f *post-eval-hook*) (funcall f))
@@ -394,11 +390,6 @@
 (defmacro background-eval-wrapper (&body body)
   `(with-modified-queueing
      (with-non-lisp-structure-deallocation
-       (drawing-on-window (*boxer-pane*)
-                          ;; for the benefit of turtle graphics
-                          ;; do drawing-on-window once instead of with EVERY
-                          ;; draw line
-                          (swap-graphics-buffers)
                           ;; do the force-output so the cursor will
                           ;; disappear immediately.
                           (with-port-retargetting
@@ -407,8 +398,7 @@
                                (let (#-lispworks(*evaluation-in-progress?* t))
                                  #+lispworks (setq *evaluation-in-progress?* t)
                                  (with-absolute-position-cache-recording . ,body))
-                               #+lispworks (setq *evaluation-in-progress?* nil)
-                               )))))))
+                               #+lispworks (setq *evaluation-in-progress?* nil)))))))
 
 ;;; Set this variable to T to cause the cursor to be permanently restored
 ;;; to process start position when the process finishes.  NIL means

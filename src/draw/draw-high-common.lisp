@@ -115,13 +115,13 @@ the bootstrapping of the clipping and coordinate scaling variables."
 (defun set-pen-color (color)
   (%set-pen-color color))
 
-(defmacro maintaining-pen-color (&body body)
-  (let ((old-color (gensym)))
-    `(let ((,old-color (boxgl-device-pen-color bw::*boxgl-device*)))
-       (unwind-protect
-        (progn . ,body)
-          (unless (equalp ,old-color (boxgl-device-pen-color bw::*boxgl-device*))
-            (setf (boxgl-device-pen-color bw::*boxgl-device*) ,old-color))))))
+;; (defmacro maintaining-pen-color (&body body)
+;;   (let ((old-color (gensym)))
+;;     `(let ((,old-color (boxgl-device-pen-color bw::*boxgl-device*)))
+;;        (unwind-protect
+;;         (progn . ,body)
+;;           (unless (equalp ,old-color (boxgl-device-pen-color bw::*boxgl-device*))
+;;             (setf (boxgl-device-pen-color bw::*boxgl-device*) ,old-color))))))
 
 (defmacro with-pen-color ((color) &body body)
   `(maintaining-pen-color
@@ -156,23 +156,6 @@ the bootstrapping of the clipping and coordinate scaling variables."
          . ,body)
         (unless ,stipplevar
           (setf (line-stipple bw::*boxgl-device*) nil))))))
-
-(defmacro maintaining-drawing-font (&body body)
-  (let ((font-var (gensym)))
-    `(let ((,font-var *current-opengl-font*))
-       (unwind-protect
-        (progn . ,body)
-        ;; NOTE: fonts aren't necessarily EQ
-        (unless (eql *current-opengl-font* ,font-var)
-          (setq *current-opengl-font* ,font-var))))))
-
-(defmacro rebind-font-info ((font-no) &body body)
-  `(let ((%drawing-font-cha-hei %drawing-font-cha-hei)
-         (%drawing-font-cha-ascent %drawing-font-cha-ascent))
-     (unless (null ,font-no)
-       (maintaining-drawing-font
-        (set-font-info ,font-no)
-        ,@body))))
 
 ;;;
 ;;; Scaling and Clipping Macros

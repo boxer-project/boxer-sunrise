@@ -193,8 +193,7 @@
       (queue-event 'document-mouse-handler))))
 
 (defun document-mouse-handler ()
-  (multiple-value-bind (place screen-box)
-      (boxer::drawing-on-window (*boxer-pane*) (mouse-place))
+  (multiple-value-bind (place screen-box) (mouse-place)
     (cond ((and (eq place (mouse-doc-status-place))
                 (eq screen-box (mouse-doc-status-screen-box))
                 (or (null boxer::*popup-mouse-documentation?*)

@@ -307,80 +307,6 @@ Modification History (most recent at top)
 
 (defvar *move-bp-zoom-pause-time* 0.05)
 
-(defvar *cursor-animate-steps* 12.)
-(defvar *cursor-animate-growth-quantum* 3)
-
-(defun animate-cursor-move (dest-screen-box dest-row dest-cha-no)
-  (unless (null *zoom-step-pause-time*)
-    (drawing-on-window (*boxer-pane*)
-                       (with-temporary-bp (dest-bp(values dest-row dest-cha-no dest-screen-box))
-                         (multiple-value-bind (to-x to-y)
-                                              (bp-coordinates dest-bp)
-                                              (multiple-value-bind (from-x from-y)
-                                                                   (bp-coordinates *point*)
-                                                                   (let ((from-hei (get-cursor-height (bp-cha *point*)))
-                                                                         (to-hei (get-cursor-height (bp-cha dest-bp)))
-                                                                         (half-delta-x (fixr (/ (- to-x from-x) 2)))
-                                                                         (half-delta-y (fixr (/ (- to-y from-y) 2)))
-                                                                         (delta-size (* *cursor-animate-steps*
-                                                                                        *cursor-animate-growth-quantum*)))
-                                                                     (flet ((draw-trail-up ()
-                                                                                           (do ((i 0 (1+& i))
-                                                                                                (wid 3 (+ wid *cursor-animate-growth-quantum*))
-                                                                                                (hei from-hei (+ hei
-                                                                                                                 *cursor-animate-growth-quantum*))
-                                                                                                (x from-x (+ x (fixr(/ half-delta-x
-                                                                                                                       *cursor-animate-steps*))))
-                                                                                                (y from-y (+ y (fixr(/ half-delta-y
-                                                                                                                       *cursor-animate-steps*)))))
-                                                                                             ((>=& i *cursor-animate-steps*))
-                                                                                             (draw-rectangle wid hei x y)
-                                                                                             (swap-graphics-buffers)
-                                                                                             (snooze *zoom-step-pause-time*)
-                                                                                             (draw-rectangle wid hei x y)
-                                                                                             (swap-graphics-buffers)))
-                                                                            (draw-trail-down ()
-                                                                                             (do ((i 0 (1+& i))
-                                                                                                  (wid (+ 3 delta-size)
-                                                                                                       (- wid *cursor-animate-growth-quantum*))
-                                                                                                  (hei (+ to-hei delta-size)
-                                                                                                       (- hei *cursor-animate-growth-quantum*))
-                                                                                                  (x (- to-x half-delta-x)
-                                                                                                     (+ x (fixr (/ half-delta-x
-                                                                                                                   *cursor-animate-steps*))))
-                                                                                                  (y (- to-y half-delta-y)
-                                                                                                     (+ y (fixr (/ half-delta-y
-                                                                                                                   *cursor-animate-steps*)))))
-                                                                                               ((>=& i *cursor-animate-steps*))
-                                                                                               (draw-rectangle wid hei x y)
-                                                                                               (swap-graphics-buffers)
-                                                                                               (snooze *zoom-step-pause-time*)
-                                                                                               (draw-rectangle wid hei x y)
-                                                                                               (swap-graphics-buffers))))
-                                                                           ;; first get bigger...
-                                                                           (draw-trail-up)
-                                                                           ;; now get smaller
-                                                                           (draw-trail-down)))))))))
-
-(defun animate-scrolling (screen-box)
-  (unless (null *zoom-step-pause-time*)
-    (drawing-on-window (*boxer-pane*)
-                       (multiple-value-bind (box-x box-y)
-                                            (xy-position screen-box)
-                                            (multiple-value-bind (left top right bottom)
-                                                                 (box-borders-widths (box-type screen-box) screen-box)
-                                                                 (declare (ignore left))
-                                                                 (let ((x (- (+ box-x (screen-obj-wid screen-box)) right 4))
-                                                                       (y (+ box-y top))
-                                                                       (wid (+ right 8))
-                                                                       (hei (- (screen-obj-hei screen-box) top bottom)))
-                                                                   (dotimes (i 12)
-                                                                     (draw-rectangle wid hei x y)
-                                                                     (swap-graphics-buffers)
-                                                                     (snooze *zoom-step-pause-time*)
-                                                                     (draw-rectangle wid hei x y)
-                                                                     (swap-graphics-buffers))))))))
-
 (defun move-to-bp (bp &optional (moving-bp *point*))
   (let ((*zoom-step-pause-time* (if (zerop *move-bp-zoom-pause-time*)
                                   nil
@@ -427,8 +353,9 @@ Modification History (most recent at top)
                       row (bp-screen-box moving-bp))))
     (cond ((not-null screen-row)
            ;; the destination is visible already
-           (animate-cursor-move (screen-box screen-row)
-                                (bp-row bp) (bp-cha-no bp))
+           ;; sgithens TODO 2025-06-23
+           ;;  (animate-cursor-move (screen-box screen-row)
+           ;;                       (bp-row bp) (bp-cha-no bp))
            (move-bp moving-bp (bp-values bp))
            (set-bp-screen-box moving-bp (screen-box screen-row)))
       ((or (not (null (row-row-no (bp-box moving-bp) row)))
@@ -439,10 +366,9 @@ Modification History (most recent at top)
        (when (ensure-row-is-displayed (bp-row moving-bp)
                                       (bp-screen-box moving-bp)
                                       (if (row-> row old-row) 1 -1))
-         (animate-scrolling (bp-screen-box moving-bp))
-         ;; explicit call to redisplay to make sure screen structure
-         ;; gets created before more processing occurs
-         (repaint)))
+         ;; sgithens TODO 2025-06-23
+         ;; (animate-scrolling (bp-screen-box moving-bp))
+       ))
       (t
        (let* ((path (find-path-from-superior-to-inferior
                      (bp-box moving-bp) (bp-box bp)))
@@ -463,10 +389,9 @@ Modification History (most recent at top)
                                                        (car path))
                                                  old-row)
                                              1 -1))
-              (animate-scrolling (bp-screen-box moving-bp))
-              ;; explicit call to redisplay to make sure screen
-              ;; structure gets created before more processing occurs
-              (repaint))
+              ;; sgithens TODO 2025-06-23
+              ;; (animate-scrolling (bp-screen-box moving-bp))
+            )
             ;; check to see if the new-box is visible now, if it
             ;; isn't, it is probably because it is scrolled
             ;; horizontally since we've scrolled vertically to the
@@ -496,12 +421,13 @@ Modification History (most recent at top)
               ;; in graphics mode so we have to toggle it
               ;; before we can zoom it up
               (toggle-view-internal new-box)
-              (repaint))
+            )
             ;; move to lowest visible box, zoom, then try again
-            (animate-cursor-move
-             (visible-screen-obj-of-inferior-actual-obj
-              new-box (bp-screen-box moving-bp))
-             (first-inferior-row new-box) 0)
+            ;; sgithens TODO 2025-06-23
+            ;; (animate-cursor-move
+            ;;  (visible-screen-obj-of-inferior-actual-obj
+            ;;   new-box (bp-screen-box moving-bp))
+            ;;  (first-inferior-row new-box) 0)
             (move-bp moving-bp (box-first-bp-values new-box))
             (set-bp-screen-box
              moving-bp
@@ -537,14 +463,9 @@ Modification History (most recent at top)
         (max-y (+& y height *border-tab-hysteresis*))
         (icon-on? t))
     (flet ((icon-on ()
-                    (drawing-on-window (*boxer-pane*)
-                                       (erase-rectangle width height x y)
-                                       (funcall hilight-fun x y width height))
-                    (swap-graphics-buffers)
-                    (setq icon-on? T))
+             (setq icon-on? T))
            (icon-off ()
-                     (repaint)
-                     (setq icon-on? nil)))
+             (setq icon-on? nil)))
           (icon-on)
           ;; TODO need a cross platform with-mouse-tracking
           #+lispworks (multiple-value-bind (final-x final-y)

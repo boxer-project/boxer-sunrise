@@ -16,6 +16,16 @@
 ;;;;         Draw operations for graphics-commands
 (in-package :boxer)
 
+(defun ck-mode-draw-line (from-x from-y to-x to-y alu)
+ (if (eq %draw-mode ':wrap)
+     (boxer-wrap:draw-wrap-line from-x (- from-y) to-x (- to-y))
+     (draw-clip-line from-x from-y to-x to-y)))
+
+(defun draw-clip-line (from-x from-y to-x to-y)
+  ;(draw-line from-x from-y to-x to-y alu t)
+  ;; draw-line will clip the coordinates making the slope wrong...
+  (draw-line from-x from-y to-x to-y))
+
 (defdraw-graphics-command (boxer-line-segment x0 y0 x1 y1)
   "Takes a boxer command starting with 35:
     ex #(35 -0.5 -0.5 0.0 0.5)"
