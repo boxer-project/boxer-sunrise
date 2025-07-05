@@ -45,11 +45,13 @@
 
 (defconstant *non-caching-variable-uid* -2)
 (defconstant *deleted-variable-uid* -1)
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defvar *cached-variable-uid-counter* 0)
 
 ;;; We want the UID to wrap around to 0, but never become negative or a bignum.
 (defun make-cached-variable-uid ()
   (incf (the fixnum *cached-variable-uid-counter*)))
+)
 
 ;; Some sort of fixnum = might be necessary.
 (defmacro cache-uid-= (A B)
@@ -805,6 +807,7 @@ already exist.  I have enough trouble already with this hairy cache scheme."
 
 ;; Always use boxer-toplevel-set or boxer-toplevel-set-nocache
 ;; to write into a global variable (i.e., primitive).
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun boxer-toplevel-set (variable value)
   (cond ((boundp variable)
          (let ((object (symbol-value variable)))
@@ -814,6 +817,8 @@ already exist.  I have enough trouble already with this hairy cache scheme."
          value)
     (t (setf (symbol-value variable)
              (make-static-variable variable value)))))
+)
+
 
 ;; Use boxer-toplevel-set-nocache to write into things like keys and
 ;; mouse functions that you don't want to be cached.

@@ -76,11 +76,14 @@
 ;;; In order to provide fast conversion of LISPM character codes to
 ;;; BOXER key names, we use an array to look them up in. This is kind
 ;;; of like ZWEI.
-
-(defvar *initial-platform* #+(or os-macosx macosx)  :lwm
+(eval-when (:compile-toplevel :load-toplevel :execute)
+(defvar *initial-platform* ;; #+(or os-macosx macosx)  :lwm
                            #+win32   :ibm-pc
                            #+linux   :linux
-                           #+emscripten :lwm)
+                           #-(or win32 linux) :lwm
+                           ;;  #+emscripten :lwm
+                           )
+)
 
 (defconstant *key-name-lookup-array-size* 328
   "For most implementations, this really ought to be based on char-code-limit
@@ -99,8 +102,10 @@
 (defvar *boxer-keystroke-history* nil
   "A list of all the keys pressed. ")
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defvar *boxer-command-key-alist* nil
   "An association list of key names and command names. ")
+)
 
 (defvar *key-name-out-of-range-warning?* nil)
 
@@ -108,6 +113,7 @@
 (defun boxer-event-id () *boxer-event-id*)
 (defun next-boxer-event () (incf *boxer-event-id*))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun define-key-name (key-name key-code &optional (bits 0))
   (cond ((numberp key-code)
          (if (<& key-code (car (array-dimensions *key-names*)))
@@ -134,6 +140,7 @@
            ~%its only argument."))
     (t
      (error "~S is a completely unknown type of Boxer Input." key-code))))
+)
 
 (defun lookup-key-name (key-code key-bits)
   (and (array-in-bounds-p *key-names* key-code key-bits)
@@ -160,6 +167,7 @@
       (setf (aref togo bit) shifted-key-name))
     togo))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun define-key-and-all-its-shifted-key-names (key-name key-code platform)
   (if (and (< key-code char-code-limit)
            (upper-case-p (code-char key-code)))
@@ -189,48 +197,49 @@
 
 ;;;; define known input devices platforms
 
-(eval-when (eval load)
-           (define-input-devices :lwm  ; mac's under lispworks opengl port
-             ("SHIFT" "CONTROL" "CONTROL-SHIFT" "OPTION"                                      ;;  1  2  3  4
-             "SHIFT-OPTION" "CONTROL-OPTION" "CONTROL-SHIFT-OPTION" "COMMAND"                 ;;  5  6  7  8
-             "SHIFT-COMMAND" "CONTROL-COMMAND" "CONTROL-SHIFT-COMMAND" "OPTION-COMMAND"       ;;  9 10 11 12
-             "SHIFT-OPTION-COMMAND" "CONTROL-OPTION-COMMAND" "CONTROL-SHIFT-OPTION-COMMAND")  ;;    13 14 15
+;; (eval-when (eval load)
+(define-input-devices :lwm  ; mac's under lispworks opengl port
+  ("SHIFT" "CONTROL" "CONTROL-SHIFT" "OPTION"                                      ;;  1  2  3  4
+  "SHIFT-OPTION" "CONTROL-OPTION" "CONTROL-SHIFT-OPTION" "COMMAND"                 ;;  5  6  7  8
+  "SHIFT-COMMAND" "CONTROL-COMMAND" "CONTROL-SHIFT-COMMAND" "OPTION-COMMAND"       ;;  9 10 11 12
+  "SHIFT-OPTION-COMMAND" "CONTROL-OPTION-COMMAND" "CONTROL-SHIFT-OPTION-COMMAND")  ;;    13 14 15
 
-             ("CLICK" "MIDDLE-CLICK" "RIGHT-CLICK"                       ;; 0  1  2
-              "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK"  ;; 3  4  5
-              "DOWN" "MIDDLE-DOWN" "RIGHT-DOWN"                          ;; 6  7  8
-              "UP" "MIDDLE-UP" "RIGHT-UP")                               ;; 9 10 11
-           )
+  ("CLICK" "MIDDLE-CLICK" "RIGHT-CLICK"                       ;; 0  1  2
+  "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK"  ;; 3  4  5
+  "DOWN" "MIDDLE-DOWN" "RIGHT-DOWN"                          ;; 6  7  8
+  "UP" "MIDDLE-UP" "RIGHT-UP")                               ;; 9 10 11
+)
 
-           ;; pick names to maximize compatibility with mac code
-           ;; assign to left button to be plain "CLICK"
-           (define-input-devices :ibm-pc
-            ("SHIFT"
-            "CTRL" "CTRL-SHIFT"
-            "ALT" "SHIFT-ALT" "CTRL-ALT" "CTRL-SHIFT-ALT"
-            "WIN" "SHIFT-WIN" "CTRL-WIN" "CTRL-SHIFT-WIN"
-            "ALT-WIN" "SHIFT-ALT-WIN" "CTRL-ALT-WIN"
-            "CTRL-SHIFT-ALT-WIN")
+;; pick names to maximize compatibility with mac code
+;; assign to left button to be plain "CLICK"
+(define-input-devices :ibm-pc
+("SHIFT"
+"CTRL" "CTRL-SHIFT"
+"ALT" "SHIFT-ALT" "CTRL-ALT" "CTRL-SHIFT-ALT"
+"WIN" "SHIFT-WIN" "CTRL-WIN" "CTRL-SHIFT-WIN"
+"ALT-WIN" "SHIFT-ALT-WIN" "CTRL-ALT-WIN"
+"CTRL-SHIFT-ALT-WIN")
 
-             ("CLICK" "MIDDLE-CLICK" "RIGHT-CLICK"                       ;; 0  1  2
-              "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK"  ;; 3  4  5
-              "DOWN" "MIDDLE-DOWN" "RIGHT-DOWN"                          ;; 6  7  8
-              "UP" "MIDDLE-UP" "RIGHT-UP")                               ;; 9 10 11
-           )
+  ("CLICK" "MIDDLE-CLICK" "RIGHT-CLICK"                       ;; 0  1  2
+  "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK"  ;; 3  4  5
+  "DOWN" "MIDDLE-DOWN" "RIGHT-DOWN"                          ;; 6  7  8
+  "UP" "MIDDLE-UP" "RIGHT-UP")                               ;; 9 10 11
+)
 
-           (define-input-devices :linux
-            ("SHIFT"
-            "CTRL" "CTRL-SHIFT"
-            "ALT" "SHIFT-ALT" "CTRL-ALT" "CTRL-SHIFT-ALT"
-            "META" "SHIFT-META" "CTRL-META" "CTRL-SHIFT-META"
-            "ALT-META" "SHIFT-ALT-META" "CTRL-ALT-META"
-            "CTRL-SHIFT-ALT-META")
+(define-input-devices :linux
+("SHIFT"
+"CTRL" "CTRL-SHIFT"
+"ALT" "SHIFT-ALT" "CTRL-ALT" "CTRL-SHIFT-ALT"
+"META" "SHIFT-META" "CTRL-META" "CTRL-SHIFT-META"
+"ALT-META" "SHIFT-ALT-META" "CTRL-ALT-META"
+"CTRL-SHIFT-ALT-META")
 
-             ("CLICK" "MIDDLE-CLICK" "RIGHT-CLICK"                       ;; 0  1  2
-              "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK"  ;; 3  4  5
-              "DOWN" "MIDDLE-DOWN" "RIGHT-DOWN"                          ;; 6  7  8
-              "UP" "MIDDLE-UP" "RIGHT-UP")                               ;; 9 10 11
-           ))
+  ("CLICK" "MIDDLE-CLICK" "RIGHT-CLICK"                       ;; 0  1  2
+  "DOUBLE-CLICK" "DOUBLE-MIDDLE-CLICK" "DOUBLE-RIGHT-CLICK"  ;; 3  4  5
+  "DOWN" "MIDDLE-DOWN" "RIGHT-DOWN"                          ;; 6  7  8
+  "UP" "MIDDLE-UP" "RIGHT-UP")                               ;; 9 10 11
+)
+)
 
 
 ;;;; Now, setup the keyboard...
@@ -239,6 +248,7 @@
 ;; defines keys (like function keys) which are specific to particular
 ;; kinds of keyboards
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun define-basic-keys (platform)
   "Give names to all the standard character keys.  Alphabetic
   keys are by given the lowercase meaning, with CAPITAL
@@ -288,6 +298,7 @@
     (define-key-and-all-its-shifted-key-names
       (car  key-that-format-~c-loses-on)
       (char-code (cadr key-that-format-~c-loses-on)) platform)))
+)
 
 ;; this exists as a separate function because it may have to called
 ;; at startup time (e.g. for the X-Windows implementation, the particulars
@@ -312,6 +323,7 @@
 (defsubst maximum-mouse-button-encoding ()
   (-& (array-dimension *default-mouse-click-name-translation-table* 0) 1))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun make-mouse-click-name-translation-table (platform)
   (make-array `(,(length (input-device-mouse-string platform))
                 ,(1+ (length (input-device-shift-list platform))))
@@ -365,6 +377,7 @@
   (if (null place-name)
     (setq *default-mouse-click-name-translation-table* table)
     (setf (get place-name 'click-translation-table) table)))
+)
 
 (defun lookup-click-name (click bits &optional border-area)
   (cond ((>& click  (maximum-mouse-button-encoding)) 'bu::mouse-lots-o-clicks)
@@ -381,6 +394,7 @@
                 'bu::generic-mouse-click)
            (t (aref table click bits)))))))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun set-mouse-translation-table (platform)
   ;; setup the default click table...
   (setup-mouse-translation-table platform nil)
@@ -389,6 +403,7 @@
     (setup-mouse-translation-table platform name)))
 
 ;;; putting it all together
+
 (defun make-input-devices (platform)
   (set-mouse-translation-table platform)
   (define-basic-keys platform)
@@ -420,12 +435,13 @@
   (dolist (name (defined-mouse-border-areas))
     (setf (get name 'alternate-click-name-table)
           (make-mouse-click-name-translation-table *initial-platform*))))
+)
 
 ;
 ;;; initial setup
-(eval-when (eval load)
-           (initialize-input-lookup-arrays)
-           (make-input-devices *initial-platform*))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (initialize-input-lookup-arrays)
+  (make-input-devices *initial-platform*))
 
 
 

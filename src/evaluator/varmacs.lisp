@@ -22,8 +22,10 @@
 
 (in-package :boxer-eval)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defvar *number-of-eval-state-vars* 0)
 (defvar *eval-state-vars* nil)
+)
 
 ;;; Evaluator variables.
 ;;; The definitions themselves are in the VARS file.
@@ -48,6 +50,7 @@
 
 (defvar *original-dvbsv*)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun dummy-make-eval-state-vars-info (variable-name
                                         local-p
                                         local-initial-value
@@ -61,6 +64,7 @@
     (if (eq variable-name '*dynamic-variables-bottom*)
         (setq *original-dvbsv* new)
         new)))
+)
 
 ;;; Eval state vars live in a sorted list, so re-ordering the
 ;;; definitions won't matter.  Changing their names, however
@@ -68,8 +72,9 @@
 ;;; depending on their ordering information (i.e., process macros)
 ;;; can be compiled.  At this point, this means definitions are in
 ;;; one file.
-
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defvar *eval-state-vars-definitions-closed* nil)
+)
 
 (defun begin-eval-var-definitions ()
   (setq *eval-state-vars-definitions-closed* nil)
@@ -82,11 +87,14 @@
   (setq *eval-state-vars-definitions-closed* t)
   nil)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun declare-eval-state-variable-index-macro ()
   (when (null *eval-state-vars-definitions-closed*)
     (warn "Attempt to make use of eval-var ordering before all variables defined"))
   nil)
+)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun record-eval-var (variable-name local-p local-initial-value
                         global-p global-initial-value)
   (let ((existing-entry (find variable-name *eval-state-vars*
@@ -106,11 +114,13 @@
                            global-p global-initial-value)
                           *eval-state-vars*))))))
   variable-name)
+)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun eval-var-defined? (variable-name)
   (find variable-name *eval-state-vars* :key #'evsi-variable-name))
+)
 
-(eval-when (compile load eval)
   (defmacro define-eval-var (name &key
                                     (local nil local-specified-p)
                                     (global nil global-specified-p))
@@ -123,7 +133,6 @@
             ;; because the initializer might not be defined at this point.
             `(defvar ,name))
        (record-eval-var ',name ',local-specified-p ',local ',global-specified-p ',global)))
-  )
 
 ;; this is yukky.  maybe we should do it as a macro,
 ;; but then we'd have to recompile it every time we

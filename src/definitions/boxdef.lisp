@@ -278,6 +278,9 @@ Modification History (most recent at top)
          :accessor actual-obj-tick))
   (:documentation "Used by editor objects to interface with the redisplay" ))
 
+(defmethod screen-objs ((self actual-obj-subclass))
+  (mapcar #'cdr (actual-obj-screen-objs self)))
+
 ;;;; Instantiable Objects...
 
 (defclass row

@@ -42,7 +42,8 @@
 
 ;;; Precedences
 (defvar *infix-symbol-list* nil)
-(defconstant *default-precedence* 5)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defconstant *default-precedence* 5))
 (defconstant *default-single-arg-precedence* 5)
 (defconstant *default-multi-arg-precedence* 0)
 
@@ -50,9 +51,8 @@
 (defvar *novalue* (list '*novalue*))
 
 ;;; VPDL
-(eval-when (compile load eval)
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (define-eval-var *vpdl-grow-length* :global *default-vpdl-grow-length*)
-)
 (define-eval-var *vpdl-index*       :global 0)
 (define-eval-var *vpdl*             :global (make-vpdl))
 (define-eval-var *vpdl-size*        :global *default-vpdl-size*)
@@ -139,6 +139,7 @@ Can be nil if no action is desired.")
 
 ;;; Stepper variables
 (define-eval-var *stepping*             :global nil)
+)
 
 (defvar *stepper-initial-poll-count* 1)
 

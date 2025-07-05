@@ -137,6 +137,7 @@
 
 ;;; This default precedence works for all prefix functions except NOT,
 ;;; which needs to be treated "like" a multi-arg function.
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun calculate-default-precedence (arglist)
   (cond ((null arglist) *default-precedence*)
     ((null (cdr arglist)) *default-single-arg-precedence*)
@@ -147,6 +148,7 @@
 (defun numberize-flavor? (arg)
   (and (consp arg)
        (member 'numberize arg)))
+
 
 ;;; Takes a flavorized arglist and returns one with the flavors as the
 ;;; evaluator wants to see them.
@@ -198,6 +200,7 @@
                            :precedence ,precedence
                            :infix-p ',infixp
                            :object #',name)))))
+) ; eval-when
 
 #|				      (list `(progn (setq bad-arg ,(cadr var))
                             (setq ,(cadr var)
@@ -397,8 +400,10 @@
 ;; set in MAKE-INPUT-DEVICES (has to be declared here because the key
 ;; definition functions may need to use it to determine the appropriate
 ;; shifted key names)
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defvar boxer::*current-input-device-platform* nil
   "The input platform associated with the existing input device names")
+)
 
 ;;; Use exclusively this function for defining keys, and define the key
 ;;; function itself using DEFBOXER-COMMAND.  Using this function insures
@@ -420,6 +425,16 @@
       (boxer::record-vanilla-key ',key-name ',function)
       (boxer-toplevel-set-nocache ',key-name
                                   (boxer-eval::encapsulate-key-function ',function)))))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+(defun boxer::get-shift-names (shift-bits)
+  (let ((name (nth (1- shift-bits)
+                   (boxer::input-device-shift-list
+                    boxer::*current-input-device-platform*))))
+    (if (null name)
+      (error "Can't find shift names for shift bits: ~D" shift-bits)
+      name)))
+)
 
 (defun defboxer-key-internal (key-spec function)
   (let* ((shift-bits (if (listp key-spec) (cadr key-spec) 0))

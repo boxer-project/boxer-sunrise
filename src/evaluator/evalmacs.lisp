@@ -32,11 +32,10 @@
 
 (in-package :boxer-eval)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun intern-in-eval-package (thing)
   (intern (string thing) 'boxer-eval))
 
-(eval-when
- (:compile-toplevel :load-toplevel :execute)
  (defun create-local-eval-state-vars-bvl ()
    (mapcan #'(lambda (entry)
                      (if (evsi-local-p entry)
@@ -76,7 +75,9 @@
 (defvar *start-time*)
 (defvar *timing-overhead*)
 (defvar *last-timing-figure*)
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defvar *compile-with-debugging* t)
+)
 
 ;; sgithens March 7, 2020
 ;; (defun debug ()
@@ -211,7 +212,9 @@
 ;;;
 ;;; Stepper -- we have a separate evaluator for the stepper.
 ;;;
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defvar *compiling-stepper* nil)
+)
 
 (defmacro when-stepping (&body body)
   (if *compiling-stepper*

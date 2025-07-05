@@ -635,13 +635,14 @@ Modification History (most recent at top)
     (if (member keystroke *editor-abort-chars* :test #'equal) t nil)))
 
 ;; used in keydef-high
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defvar *defined-input-device-platforms* nil
   "A list of the input platforms for which we know how to make input names")
-
 
 ;; pushed onto in MAKE-INPUT-DEVICES
 (defvar *bound-input-device-platforms* nil
   "A list of all the platforms for which we have made input device names")
+)
 
 
 (defmacro define-input-devices (platform shift-list mouse-string)
@@ -651,21 +652,13 @@ Modification History (most recent at top)
     (setf (get ',platform :shift-list)   ',shift-list
           (get ',platform :mouse-string) ',mouse-string)))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun input-device-shift-list (platform)
   (get platform :shift-list))
 
 (defun input-device-mouse-string (platform)
   (get platform :mouse-string))
-
-(defun get-shift-names (shift-bits)
-  (let ((name (nth (1- shift-bits)
-                   (boxer::input-device-shift-list
-                    boxer::*current-input-device-platform*))))
-    (if (null name)
-      (error "Can't find shift names for shift bits: ~D" shift-bits)
-      name)))
-
-
+)
 
 ;; popup vars & macros
 
