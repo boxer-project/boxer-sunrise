@@ -283,9 +283,6 @@
         (superior-screen-box screen-box))
        window))))
 
-(defmethod screen-objs ((self actual-obj-subclass))
-  (mapcar #'cdr (actual-obj-screen-objs self)))
-
 ;;; Whenever any section of code is done with a screen-obj which they got by
 ;;; calling Allocate-Screen-Obj-For-Use-In they should deallocate that
 ;;; screen-obj by sending it a deallocate-self message. If there are no more
