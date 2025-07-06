@@ -451,9 +451,10 @@
 
 (defmethod fixed-size? ((self box))
   (let ((ds (slot-value self 'display-style-list)))
-    (or (eq (display-style-style ds) ':fixed)
-        (numberp (display-style-fixed-wid ds))
-        (numberp (display-style-fixed-hei ds)))))
+    (and (not (eq (car (actual-obj-screen-objs self)) *outermost-screen-box*))
+         (or (eq (display-style-style ds) ':fixed)
+           (numberp (display-style-fixed-wid ds))
+           (numberp (display-style-fixed-hei ds))))))
 
 (defmethod set-display-style ((self box) new-value)
   (setf (display-style-style (slot-value self 'display-style-list)) new-value))
