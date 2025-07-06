@@ -174,6 +174,7 @@
     (cond ((and (superior? original-box *initial-box*)
                 ;; is the box we started in still part of the hierarchy ?
                 ;; if so, be more detailed
+                original-screen-box
                 (not (null (screen-obj-actual-obj original-screen-box)))
                 (superior? (screen-obj-actual-obj original-screen-box)
                            *initial-box*))
@@ -470,10 +471,14 @@
                                ;; maybe we should store the invoking key/function
                                ;; in the doit-cursor-position, and base it on
                                ;; who did started it originally?
+                               #-embedded-boxer
                                (unless (eq process boxer-eval::*current-process*)
                                  (restore-point-position
                                   boxer-eval::*process-doit-cursor-position* t))
+
                                (print-returned-value-when-possible result error?)
+
+                               #-embedded-boxer
                                (unless (or *doit-restore-cursor-position*
                                            (eq process boxer-eval::*current-process*))
                                  (restore-point-position

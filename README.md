@@ -27,7 +27,7 @@ as node and a possible server side Boxer).
 
 ## Setting up your Development environment
 
-### macOS
+### macOS / Lispworks CAPI
 
 - Install Lispworks 8.0, including any patches available from Lispworks.
 - Install Quicklisp
@@ -57,7 +57,7 @@ as node and a possible server side Boxer).
 - `git clone git@github.com:boxer-project/boxer-sunrise.git`
 
 
-### Windows 10
+### Windows 10 / Lispworks CAPI
 
 These are the same as the above with the exception of the freetype2 libraries. Here is one way to install them using
 MSYS2. You may choose to use a different build system for Windows.
@@ -85,7 +85,7 @@ path accordingly to your system.)
 (load #P"~/code/boxer-sunrise/src/bootstrap.lisp")
 ```
 
-### Building the Boxer executable on MacOS
+### Building the Boxer executable on MacOS / Lispworks CAPI
 
 *in-progress These instructions are being updated still for several binary libraries that need to be included
 in the build*
@@ -122,6 +122,25 @@ rlwrap sbcl --load ./run-core-tests.lisp
 #Lispworks
 # From the editor run:
 (load #P"~/path/to/boxer-sunrise/run-core-tests.lisp")
+```
+
+## Boxer Shared Library / ECL
+
+Using ECL, the core Boxer engine and evaluator can be compiled down to a dynamic library, capable of being linked
+against in a C/C++ application.  This does not include the repaint or redisplay modules.  You'll need to have ECL
+and scons installed.  At the moment we're using scons just because one of the initial embedding environments we are
+working towards is Godot.
+
+To build and run the small test example:
+
+```sh
+# You need to have uiop from asdf somewhere in either your quicklisp local-projects, or in your boxer-sunrise tree
+# somewhere.  uiop is a top level asd module in the asdf repo
+# git clone https://gitlab.common-lisp.net/asdf/asdf.git
+
+build-boxer-shared-lib.sh # you may need to run this twice...
+scons
+./embedded-boxer
 ```
 
 ## Authors through the years

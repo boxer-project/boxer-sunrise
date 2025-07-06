@@ -584,7 +584,7 @@
 (defmethod deallocate-self ((self box))
   ;; should deallocate system dependent objects which have
   ;; been hung on the box
-  (deallocate-system-dependent-structures self)
+  #-embedded-boxer (deallocate-system-dependent-structures self)
   (do-box-rows ((row self))
     (deallocate-self row)))
 
@@ -1328,14 +1328,15 @@ points to the Box which contains the lower BP,then the superior BP is returned"
          ;; allow named box at top level
          (SET-NAME *INITIAL-BOX* "WORLD"))
        (SETQ *POINT* (MAKE-BP ':MOVING))
-       (SET-OUTERMOST-BOX *INITIAL-BOX*)	  ;this calls redisplay !
-       (SETF (SCREEN-ROW (CAR (SCREEN-OBJS *INITIAL-BOX*))) *BOXER-PANE*)
-       (SETF (SUPERIOR-SCREEN-BOX (CAR (SCREEN-OBJS *INITIAL-BOX*))) *BOXER-PANE*)
-       ;; some inits...
-       (initialize-horizontal-border-thicknesses)
+       #-embedded-boxer (progn
+         (SET-OUTERMOST-BOX *INITIAL-BOX*)	  ;this calls redisplay !
+         (SETF (SCREEN-ROW (CAR (SCREEN-OBJS *INITIAL-BOX*))) *BOXER-PANE*)
+         (SETF (SUPERIOR-SCREEN-BOX (CAR (SCREEN-OBJS *INITIAL-BOX*))) *BOXER-PANE*)
+         ;; some inits...
+         (initialize-horizontal-border-thicknesses))
        (MULTIPLE-VALUE-BIND (ROW CHA-NO)
                             (BOX-FIRST-BP-VALUES *INITIAL-BOX*)
-                            (MOVE-POINT-1 ROW CHA-NO (CAR (SCREEN-OBJS *INITIAL-BOX*)))))
+                            (MOVE-POINT-1 ROW CHA-NO #-embedded-boxer (CAR (SCREEN-OBJS *INITIAL-BOX*)))))
 
 
 
