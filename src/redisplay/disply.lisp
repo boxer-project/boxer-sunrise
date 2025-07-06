@@ -451,7 +451,7 @@
 
 (defmethod fixed-size? ((self box))
   (let ((ds (slot-value self 'display-style-list)))
-    (and (not (eq (car (actual-obj-screen-objs self)) *outermost-screen-box*))
+    (and (not (member *outermost-screen-box* (screen-objs self)))
          (or (eq (display-style-style ds) ':fixed)
            (numberp (display-style-fixed-wid ds))
            (numberp (display-style-fixed-hei ds))))))
@@ -728,7 +728,9 @@
                                                                               WINDOW)
                                     (SETQ *OUTERMOST-SCREEN-BOX* NEW-OUTERMOST-SCREEN-BOX)))
 
-       (setf *outermost-screen-box* new-outermost-screen-box)
+       (setf (scroll-x-offset new-outermost-screen-box) 0  ;; if this is a fixed size box, we need to reset the scroll
+             (scroll-y-offset new-outermost-screen-box) 0  ;; bars otherwise the cursor math will be off
+             *outermost-screen-box* new-outermost-screen-box)
        (LET ((OLD-SCREEN-ROW (UNLESS (NULL NEW-OUTERMOST-SCREEN-BOX)
                                      (SCREEN-ROW NEW-OUTERMOST-SCREEN-BOX))))
             (WHEN (SCREEN-ROW? OLD-SCREEN-ROW)

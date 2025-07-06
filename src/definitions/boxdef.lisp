@@ -311,21 +311,38 @@ Modification History (most recent at top)
   (row)
   ())
 
-(defstruct (display-style (:predicate display-style?))
-  "
-  Display style is used primarily as a slot on `box` and `screenbox` classes, and contains
-  information about various aspects of it's current display.
+(defclass display-style ()
+  ((style :initform :normal :accessor display-style-style :initarg :style
+    :documentation "The style slot takes a symbol which is one of :supershrunk, :shrunk, or :normal to
+     indicate the current size of the box. Note that when a box is full screened, it will retain
+     the style that it was before being full screened. This means the style could still be :shrunk
+     while the box is full screened, especially if the box property 'Shrink on Exit' is set.")
+   (fixed-wid :initform nil :reader display-style-fixed-wid :initarg :fixed-wid)
+   (fixed-hei :initform nil :reader display-style-fixed-hei :initarg :fixed-hei)
+   (graphics-mode? :initform nil :accessor display-style-graphics-mode? :initarg :graphics-mode?)
+   (border-style :initform nil :accessor display-style-border-style :initarg :border-style))
+  (:documentation "Display style is used primarily as a slot on `box` and `screenbox` classes, and contains
+                   information about various aspects of it's current display."))
 
-  - `style` The style slot takes a symbol which is one of :supershrunk, :shrunk, or :normal to
-    indicate the current size of the box. Note that when a box is full screened, it will retain
-    the style that it was before being full screened. This means the style could still be :shrunk
-    while the box is full screened, especially if the box property 'Shrink on Exit' is set.
-  "
-  (style :normal)
-  (fixed-wid nil)
-  (fixed-hei nil)
-  (graphics-mode? nil)
-  (border-style nil))
+(defun make-display-style (&key (style :normal) fixed-wid fixed-hei)
+  (make-instance 'display-style :style style :fixed-wid fixed-wid :fixed-hei fixed-hei))
+
+(defgeneric display-style? (x) (:method (x) nil) (:method ((x display-style)) t))
+
+(defun copy-display-style (to-copy)
+  (with-slots (style fixed-wid fixed-hei graphics-mode? border-style) to-copy
+    (make-instance 'display-style :style style :fixed-wid fixed-wid :fixed-hei fixed-hei
+                                  :graphics-mode? graphics-mode? :border-style border-style)))
+
+(defmethod (setf display-style-fixed-wid) (value (self display-style))
+  (if (numberp value)
+    (setf (slot-value self 'fixed-wid) (floor value)))
+    nil)
+
+(defmethod (setf display-style-fixed-hei) (value (self display-style))
+  (if (numberp value)
+    (setf (slot-value self 'fixed-hei) (floor value))
+    nil))
 
 ;; changed graphics-sheet to graphics-info to hold all graphical
 ;; objects - name change should help catch undone things
