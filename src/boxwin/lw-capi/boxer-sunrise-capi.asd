@@ -6,7 +6,8 @@
                :boxer-sunrise-redisplay
                :boxer-sunrise-html-export
                :for)
-  :components ((:file "error-dialogs")
+  :components ((:file "../mousedoc")
+               (:file "error-dialogs")
                (:file "color-picker-menu")
                (:file "lw-toolbar")
                (:file "click-handlers")

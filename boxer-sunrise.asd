@@ -58,7 +58,6 @@
                  ;; these are also window system specific
                  (:file "boxwin/eval-command-loop")
 
-                 (:file "boxwin/mousedoc")
                  (:file "boxwin/boxapp-data")
 
                  ;; Beginning of `EDITOR` module
