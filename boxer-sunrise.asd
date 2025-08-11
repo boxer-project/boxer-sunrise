@@ -21,15 +21,7 @@
                :boxer-sunrise-core)
   :components ((:module "src"
                 :components
-                (
-                 ;; temporary workaround until we get rid of the extra boxer-opengl:: references
-                 #+(or text-repl-engine emscripten)
-                 (:file "draw-low-opengl330/package")
-                 #+text-repl-engine
-                 (:module "draw-low-empty"
-                  :components ((:file "empty-draw-bridge")))
-
-                 (:file "definitions/boxer-styles")
+                ((:file "definitions/boxer-styles")
 
                  ;; Beginning of `DISPLAYDEFS` module
                  ;; "Some more Definitions for Drawing things"

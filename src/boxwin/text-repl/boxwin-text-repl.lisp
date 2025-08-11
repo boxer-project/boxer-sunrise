@@ -69,7 +69,16 @@
           1)
 
   (format t "~%Initial box: ~%~A" (boxer::textify-thing boxer::*initial-box*))
-  (boxer::repaint-guts)
+  ;; In order to put this back in we need to finish refactoring all the boxer-opengl::
+  ;; references out of draw-high-common.lisp
+  ;; This was the previous entry in boxer-sunrise.asd to work around it:
+    ;; temporary workaround until we get rid of the extra boxer-opengl:: references
+    ;;  #+(or text-repl-engine emscripten)
+    ;;  (:file "draw-low-opengl330/package")
+    ;;  #+text-repl-engine
+    ;;  (:module "draw-low-empty"
+    ;;   :components ((:file "empty-draw-bridge")))
+  ;; (boxer::repaint-guts)
   (handle-boxer-input #\B)
   (handle-boxer-input #\o)
   (handle-boxer-input #\x)
@@ -78,4 +87,5 @@
   (handle-boxer-input #\P)
   (handle-boxer-input #\L)
   (format t "~%Initial box: ~%~A" (boxer::textify-thing boxer::*initial-box*))
-  (boxer::repaint-guts))
+  ;; (boxer::repaint-guts)
+  )
