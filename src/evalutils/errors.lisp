@@ -169,13 +169,15 @@
 
 ;;; Signal interrupts by setting *last-interrupt-char*.
 
+(defvar *noisy-abort-key-chars* nil)
+
 ;;;
 ;;; Handling Interrupts
 ;;;
 (defun handle-interrupt-char ()
   (let ((char *last-interrupt-char*))
     (setq *last-interrupt-char* nil) ;we know it's ^G of some sort.
-    (if (member char bw::*noisy-abort-key-chars*)
+    (if (member char *noisy-abort-key-chars*)
       (signal-error :STOPPED!)
       (signal-error :STOPPED))))
 

@@ -40,8 +40,6 @@
 
 (defun flush-input () (setq *boxer-eval-queue* nil))
 
-(defvar *noisy-abort-key-chars* nil)
-
 (defvar *interrupt-flag* nil)
 
 (defun boxer-interrupt () (setq *interrupt-flag* t *boxer-eval-queue* nil))
