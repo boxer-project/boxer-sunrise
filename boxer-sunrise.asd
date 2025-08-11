@@ -18,10 +18,7 @@
                (:feature (:not :emscripten) :log4cl)
                :quri
                (:feature (:not :emscripten) :zip)
-               :boxer-sunrise-core
-               #+(or glfw-engine lispworks)
-               :boxer-sunrise-opengl
-               )
+               :boxer-sunrise-core)
   :components ((:module "src"
                 :components
                 (
