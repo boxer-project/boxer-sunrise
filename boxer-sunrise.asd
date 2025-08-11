@@ -56,9 +56,8 @@
                  ;; Beginning of `BOXWIN` module
                  ;; "The interface between the Boxer Editor and the window system"
                  ;; these are also window system specific
-                 (:file "boxwin/eval-command-loop")
-
-                 (:file "boxwin/boxapp-data")
+                 (:file "utilities/eval-command-loop")
+                 (:file "utilities/boxapp-data")
 
                  ;; Beginning of `EDITOR` module
                  ;; "The Basic Structure of the Boxer Editor. "
