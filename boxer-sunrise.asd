@@ -19,7 +19,7 @@
                :quri
                (:feature (:not :emscripten) :zip)
                :boxer-sunrise-core)
-  :components ((:module "src"
+  :components ((:module "core"
                 :components
                 ((:file "definitions/boxer-styles")
 

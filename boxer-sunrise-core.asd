@@ -13,7 +13,7 @@
   :license ""
   :depends-on ("uiop"
                #-shim-3d-math "3d-matrices")
-  :components ((:module "src"
+  :components ((:module "core"
                 :components
                 ((:file "boxer-sunrise")
                  (:file "package")
