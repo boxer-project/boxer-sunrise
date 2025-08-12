@@ -30,6 +30,6 @@
 (setf prove:*enable-colors* nil)
 (setf prove::*default-reporter* :tap)
 
-#+(and lispworks x64) (load (cl-fad:merge-pathnames-as-file *boxer-project-dir* "src/opengl-lw-8/examples/load.lisp"))
+#+(and lispworks x64) (load (cl-fad:merge-pathnames-as-file *boxer-project-dir* "boxwin/lw-capi/opengl-lw-8/examples/load.lisp"))
 
 (asdf:test-system :boxer-sunrise :reporter :list)

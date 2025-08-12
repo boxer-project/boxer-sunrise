@@ -12,8 +12,8 @@ touch data/boxersunrise.app
 # still be available after delivery
 mkdir -p data/boxersunrise.app/Contents/MacOS
 mkdir -p data/boxersunrise.app/Contents/PlugIns/shaders
-cp src/draw-low-opengl330/shaders/* data/boxersunrise.app/Contents/PlugIns/shaders
-cp src/draw-low-opengl330/freetype-fonts.lisp data/boxersunrise.app/Contents/PlugIns
+cp drawing/draw-low-opengl330/shaders/* data/boxersunrise.app/Contents/PlugIns/shaders
+cp drawing/draw-low-opengl330/freetype-fonts.lisp data/boxersunrise.app/Contents/PlugIns
 
 
 read -p "Lispworks Build and Delivery [enter]"

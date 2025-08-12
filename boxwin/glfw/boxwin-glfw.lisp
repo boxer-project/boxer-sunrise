@@ -228,7 +228,7 @@
 (defun start-glfw-boxer (project-dir)
   (setf boxer::*capogi-font-directory* (merge-pathnames "data/boxersunrise.app/Contents/Resources/Fonts/" project-dir))
   (setf boxer::*resources-dir* (merge-pathnames "data/boxersunrise.app/Contents/Resources/" project-dir))
-  (setf boxer::*shaders-dir* (merge-pathnames "src/draw-low-opengl330/shaders/" project-dir))
+  (setf boxer::*shaders-dir* (merge-pathnames "drawing/draw-low-opengl330/shaders/" project-dir))
 
   #+sbcl (sb-int:set-floating-point-modes :traps nil)
 

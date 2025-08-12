@@ -71,7 +71,7 @@
 (ql:register-local-projects)
 
 
-#+(and lispworks x64) (load (cl-fad:merge-pathnames-as-file *boxer-project-dir* "src/opengl-lw-8/examples/load.lisp"))
+#+(and lispworks x64) (load (cl-fad:merge-pathnames-as-file *boxer-project-dir* "boxwin/lw-capi/opengl-lw-8/examples/load.lisp"))
 
 
 ;; debugging on Apple Silicon
@@ -83,7 +83,7 @@
 (ql:quickload :boxer-sunrise-capi)
 (setf boxer::*capogi-font-directory* (merge-pathnames "data/boxersunrise.app/Contents/Resources/Fonts/" *boxer-project-dir*))
 (setf boxer::*resources-dir* (merge-pathnames "data/boxersunrise.app/Contents/Resources/" *boxer-project-dir*))
-(setf boxer::*shaders-dir* (merge-pathnames "src/draw-low-opengl330/shaders/" *boxer-project-dir*))
+(setf boxer::*shaders-dir* (merge-pathnames "drawing/draw-low-opengl330/shaders/" *boxer-project-dir*))
 
 
 (boxer-window::window-system-specific-make-boxer)
