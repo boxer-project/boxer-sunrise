@@ -17,7 +17,8 @@
 ;;;;  Work In Progress! GLFW Engine Bootstrap
 ;;;;
 (ql:quickload :cl-fad)
-(defvar *project-dir* (make-pathname :directory (butlast (pathname-directory *load-truename*))))
+(defvar *project-dir* (make-pathname :directory (butlast (butlast (pathname-directory *load-truename*)))))
+(print *project-dir*)
 
 (pushnew *project-dir* ql:*local-project-directories* )
 (ql:register-local-projects)
