@@ -4,5 +4,5 @@ import sys
 
 Program('embedded-boxer.c',
         LIBS=['libecl', 'libboxercore--all-systems'],
-        LIBPATH=['./']
+        LIBPATH=['./', '../']
 )
