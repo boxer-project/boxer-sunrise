@@ -30,4 +30,4 @@
 
 #+lispworks (load (example-file "opengl/examples/load"))
 
-(asdf:test-system :boxer-sunrise-core :reporter :list)
+(asdf:test-system :boxer-sunrise-definitions :reporter :list)

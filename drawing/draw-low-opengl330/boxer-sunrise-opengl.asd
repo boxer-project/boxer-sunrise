@@ -2,7 +2,7 @@
   :version "3.4.23"
   :author "Steven Githens"
   :license "BSD-3-Clause"
-  :depends-on (:boxer-sunrise-core
+  :depends-on (:boxer-sunrise-definitions
                :3d-matrices
                :cl-opengl
                :cl-freetype2

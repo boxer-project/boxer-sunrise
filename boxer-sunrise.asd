@@ -18,7 +18,7 @@
                (:feature (:not :emscripten) :log4cl)
                :quri
                (:feature (:not :emscripten) :zip)
-               :boxer-sunrise-core)
+               :boxer-sunrise-definitions)
   :components ((:module "core"
                 :components
                 ((:file "definitions/boxer-styles")

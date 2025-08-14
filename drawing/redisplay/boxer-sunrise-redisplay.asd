@@ -2,7 +2,7 @@
   :version "3.4.23"
   :author "Steven Githens"
   :license "BSD-3-Clause"
-  :depends-on (:boxer-sunrise-core
+  :depends-on (:boxer-sunrise-definitions
                :boxer-sunrise-opengl
                :boxer-sunrise-draw)
   :components ((:file "wrap-line")
