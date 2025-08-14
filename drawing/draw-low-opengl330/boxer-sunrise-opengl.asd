@@ -8,7 +8,6 @@
                :cl-freetype2
                :for)
   :components ((:file "package")
-               (:file "pixmap")
                (:file "stencils")
                (:file "graphics-canvas")
                ;;  (:file "simple-line-shapes")

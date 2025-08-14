@@ -96,6 +96,9 @@ the bootstrapping of the clipping and coordinate scaling variables."
   #+glfw-engine `(progn
     . ,body))
 
+(defun pixblt-from-screen (pixmap fx fy wid hei)
+  (%pixblt-from-screen pixmap fx fy wid hei))
+
 (defmacro drawing-on-bitmap ((bitmap) &body body)
   "Used instead of DRAWING-ON-WINDOW for bitmaps."
   (let ((canvas-var (gensym)))
