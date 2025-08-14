@@ -7,7 +7,7 @@
   Author: Steven Githens (steve@githens.org)
 |#
 
-(defsystem "boxer-sunrise"
+(defsystem "boxer-sunrise-core"
   :version "3.4.23"
   :author "Steven Githens"
   :license ""
@@ -19,9 +19,7 @@
                :quri
                (:feature (:not :emscripten) :zip)
                :boxer-sunrise-definitions)
-  :components ((:module "core"
-                :components
-                ((:file "definitions/boxer-styles")
+  :components   ((:file "definitions/boxer-styles")
 
                  ;; Beginning of `DISPLAYDEFS` module
                  ;; "Some more Definitions for Drawing things"
@@ -194,9 +192,6 @@
                  ;;    "Primitives to tweak default system parameters"
                  (:file "primitives/sysprims")
 
-                )))
+                )
   :description ""
-  :long-description
-  #.(read-file-string
-     (subpathname *load-pathname* "README.md"))
   :in-order-to ((test-op (test-op "boxer-sunrise-test"))))
