@@ -9,7 +9,17 @@ int main (int argc, char **argv) {
 
     printf("Hello embedded Boxer\n");
 
-    cl_object result = cl_eval(c_string_to_object("(bw::start-embedded-boxer nil)"));
+    cl_object result = cl_eval(c_string_to_object("(load \"embedded-utils.lisp\")"));
+    ecl_print(result, ECL_T);
+
+    result = cl_eval(c_string_to_object("(boxer::wowwow)"));
+    ecl_print(result, ECL_T);
+
+
+    result = cl_eval(c_string_to_object("(bw::start-embedded-boxer nil)"));
+    ecl_print(result, ECL_T);
+
+    result = cl_eval(c_string_to_object("(bw::input-evaluation-demo)"));
     ecl_print(result, ECL_T);
 
     printf("Goodbye embedded Boxer\n");

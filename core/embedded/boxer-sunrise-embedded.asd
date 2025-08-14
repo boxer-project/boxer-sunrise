@@ -3,4 +3,4 @@
   :author "Steven Githens"
   :license ""
   :components ((:file "boxer-embedded"))
-  :depends-on (:boxer-sunrise))
+  :depends-on (:boxer-sunrise-core))

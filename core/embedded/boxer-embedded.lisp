@@ -63,19 +63,15 @@
   (loop for char across stuff
     do (handle-boxer-input char)))
 
-(defun start-embedded-boxer (project-dir)
-  (format t "~%Preparing Embedded Boxer!")
-
-  (window-system-specific-make-boxer)
-  (window-system-specific-start-boxer)
-
+(defun input-evaluation-demo ()
+  "Simple demo inputing some characters and evaluating some math and the boxer-version primitive."
   (print-world-as-text "1.")
 
   (type-stuff "2 + 3 + 7.1")
   (print-world-as-text "2.")
 
   (boxer::doit-internal)
-  (print-world-as-text "3.2")
+  (print-world-as-text "3.")
 
   (handle-boxer-input #\Return)
   (type-stuff "boxer-version")
@@ -83,3 +79,8 @@
 
   (boxer::doit-internal)
   (print-world-as-text))
+
+(defun start-embedded-boxer (project-dir)
+  (format t "~%Starting Embedded Boxer!")
+  (window-system-specific-make-boxer)
+  (window-system-specific-start-boxer))
