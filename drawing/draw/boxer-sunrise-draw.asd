@@ -5,5 +5,6 @@
   :depends-on (:boxer-sunrise-definitions)
   :components ((:file "draw-high-common")
                (:file "mesh")
-               (:file "model"))
+               (:file "model")
+               (:file "drawing-prims"))
   :description "Boxer High Level Draw Methods")
