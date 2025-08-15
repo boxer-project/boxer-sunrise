@@ -1329,8 +1329,6 @@
 (boxer-eval::defboxer-primitive bu::shift-key?   () (boxer-eval::boxer-boolean (bw::shift-key?)))
 (boxer-eval::defboxer-primitive bu::capslock-key?() (boxer-eval::boxer-boolean (bw::capslock-key?)))
 
-(boxer-eval::defboxer-primitive bu::clear-input () (bw::flush-input) boxer-eval::*novalue*)
-
 ;;; temp for debugging crash reporter
 
 (boxer-eval::defboxer-primitive bu::lisp-error () (error "Foo !") boxer-eval::*novalue*)

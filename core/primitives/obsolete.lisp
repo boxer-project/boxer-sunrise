@@ -216,3 +216,9 @@
   (boxer-eval::primitive-signal-error :obsolete
                                       "fix-mac-file-graphics is deprecated and no longer available.")
   boxer-eval::*novalue*)
+
+(boxer-eval::defboxer-primitive bu::clear-input ()
+  ;; (bw::flush-input)
+  (boxer-eval::primitive-signal-error :obsolete
+                                      "clear-input is deprecated and no longer available.")
+  boxer-eval::*novalue*)
