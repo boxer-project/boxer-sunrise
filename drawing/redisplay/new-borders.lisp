@@ -789,8 +789,9 @@
          (corner-size (+ border-thickness *border-inside-space*))
          (x-pos (+ x *border-outside-space* corner-size
                    *border-name-slant-offset* *basic-border-width*)))
-    (rebind-font-info (*border-name-font*)
-      (dotimes (i cha-no) (incf x-pos (cha-wid (char name i)))))
+    (when name
+      (rebind-font-info (*border-name-font*)
+        (dotimes (i cha-no) (incf x-pos (cha-wid (char name i))))))
     (values x-pos
             (+ y *border-outside-space* *border-name-padding* *basic-border-width*))))
 
