@@ -336,13 +336,13 @@ Modification History (most recent at top)
 
 (defmethod (setf display-style-fixed-wid) (value (self display-style))
   (if (numberp value)
-    (setf (slot-value self 'fixed-wid) (floor value)))
-    nil)
+    (setf (slot-value self 'fixed-wid) (floor value))
+    (setf (slot-value self 'fixed-wid) nil)))
 
 (defmethod (setf display-style-fixed-hei) (value (self display-style))
   (if (numberp value)
     (setf (slot-value self 'fixed-hei) (floor value))
-    nil))
+    (setf (slot-value self 'fixed-hei) nil)))
 
 ;; changed graphics-sheet to graphics-info to hold all graphical
 ;; objects - name change should help catch undone things
