@@ -133,7 +133,8 @@ the bootstrapping of the clipping and coordinate scaling variables."
 
 ;;; see BU::COLOR-AT in grprim3.lisp
 (defun window-pixel-color (x y &optional (view *boxer-pane*))
-  (pixel->color (boxer-opengl::%get-pixel view (floor x) (floor y))))
+  (drawing-on-window (*boxer-pane*) ;; Needs to access the gl context outside the render loop
+    (pixel->color (boxer-opengl::%get-pixel view (floor x) (floor y)))))
 
 (defmacro with-pen-size ((newsize) &body body)
   (let ((oldpsvar (gensym)) (nochangevar (gensym)) (newsizevar (gensym)))
