@@ -119,6 +119,12 @@ Modification History (most recent at top)
         (setf (cffi:mem-aref data *pixmap-ffi-type* i) pixel-value)))
     (setf (ogl-pixmap-update-texture-p pixmap) t)))
 
+(defun clear-offscreen-bitmap (bm &optional (clear-color *background-color*))
+  (clear-ogl-pixmap bm (make-offscreen-pixel
+                         (round (* (color-red clear-color) 255))
+                         (round (* (color-green clear-color) 255))
+                         (round (* (color-blue clear-color) 255)))))
+
 ;; basic basic, probably a good candidate form optimization but currently only used by copy-graphics-sheet
 (defun copy-pixmap-data (wid hei from-pixmap from-x from-y to-pixmap to-x to-y)
   (when (and (ogl-pixmap-p from-pixmap)(ogl-pixmap-p to-pixmap))

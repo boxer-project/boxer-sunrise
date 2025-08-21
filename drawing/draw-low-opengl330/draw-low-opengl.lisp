@@ -288,11 +288,6 @@ the window font (ie, draw-string) has to change it back for this to work.
 ;;;; Boxer bitmaps
 ;;;;
 
-(defun clear-offscreen-bitmap (bm &optional (clear-color *background-color*))
-  (clear-ogl-pixmap bm (make-offscreen-pixel
-                                (round (* (color-red clear-color) 255))
-                                (round (* (color-green clear-color) 255))
-                                (round (* (color-blue clear-color) 255)))))
 
 ;; NOTE: these functions actually return COLORS rather than the raw (system dependent) pixel value
 ;; used to grab a pixel value from the screen
