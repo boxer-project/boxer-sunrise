@@ -1,5 +1,5 @@
 (asdf:defsystem "boxer-sunrise-opengl"
-  :version "3.4.23"
+  :version "3.4.24"
   :author "Steven Githens"
   :license "BSD-3-Clause"
   :depends-on (:boxer-sunrise-definitions
