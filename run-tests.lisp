@@ -25,6 +25,9 @@
 
 (ql:quickload :cl-freetype2)
 
+(pushnew *boxer-project-dir* ql:*local-project-directories* )
+(ql:register-local-projects)
+
 ;; This turns off the terminal color sequences and simplifies the characters in the
 ;; output so they display well in the lispworks listener.
 (setf prove:*enable-colors* nil)
@@ -32,4 +35,4 @@
 
 #+(and lispworks x64) (load (cl-fad:merge-pathnames-as-file *boxer-project-dir* "boxwin/lw-capi/opengl-lw-8/examples/load.lisp"))
 
-(asdf:test-system :boxer-sunrise :reporter :list)
+(asdf:test-system :boxer-sunrise-core :reporter :list)
