@@ -3,6 +3,8 @@
 (plan nil)
 
 (let ((boxer::*draw-status-line* nil)
+      (boxer::%LEARNING-SHAPE-GRAPHICS-LIST nil)
+      (boxer::%PRIVATE-GRAPHICS-LIST nil)
       (henri-sun-v5 (merge-pathnames "data/boxfiles-v5/henri-sun-v5.box"
                                      (make-pathname :directory (pathname-directory *load-truename*)))))
 
