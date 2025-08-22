@@ -1227,7 +1227,8 @@ removes it from the kill buffer.  No copy is made."
   (move-point (all-bp-values (box-first-bp-values *initial-box*)
                              (car (screen-objs *initial-box*))))
   (setq *outermost-screen-box-stack* nil)
-  (set-outermost-box *initial-box* (car (screen-objs *initial-box*)))
+  ;; (set-outermost-box *initial-box* (car (screen-objs *initial-box*)))
+  (set-outermost-screen-box (car (screen-objs *initial-box*)))
   (enter (point-box))
   boxer-eval::*novalue*)
 
