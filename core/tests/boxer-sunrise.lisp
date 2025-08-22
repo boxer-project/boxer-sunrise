@@ -1,6 +1,5 @@
 (defpackage boxer-sunrise-test
   (:use :cl
-        :boxer-sunrise
         :prove))
 (in-package :boxer-sunrise-test)
 

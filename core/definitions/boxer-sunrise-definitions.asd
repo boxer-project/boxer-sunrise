@@ -27,5 +27,4 @@
                (:file "disdcl")
                (:file "canvas")
                (:file "pixmap"))
-  :description ""
-  :in-order-to ((test-op (test-op "boxer-sunrise-core-test"))))
+  :description "")

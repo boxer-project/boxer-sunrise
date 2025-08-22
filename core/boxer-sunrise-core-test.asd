@@ -3,17 +3,17 @@
   Copyright (c) 2019 Steven Githens (steve@githens.org)
 |#
 
-(defsystem "boxer-sunrise-definitions-test"
+(defsystem "boxer-sunrise-core-test"
   :defsystem-depends-on ("prove-asdf")
   :author "Steven Githens"
   :license ""
-  :depends-on ("boxer-sunrise-definitions"
+  :depends-on ("boxer-sunrise-core"
                "prove")
   :components ((:module "tests"
                 :components
                 ((:test-file "boxer-sunrise")
                 (:test-file "boxdef-tests")
-                ;  (:test-file "stacks-tests")
+                ;; (:test-file "stacks-tests")
                 ;  (:test-file "boxapp-data-tests")
                 ;  (:test-file "comdef-tests")
                 ;  (:test-file "click-handlers-tests")
@@ -24,6 +24,6 @@
                 ; (:test-file "keydef-high-tests")
                 ; (:test-file "gdispl-tests")
                  )))
-  :description "Test system for boxer-sunrise-definitions"
+  :description "Test system for boxer sunrise core"
 
   :perform (test-op (op c) (symbol-call :prove-asdf :run-test-system c)))

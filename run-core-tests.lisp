@@ -23,11 +23,14 @@
                     *boxer-project-dir*
                     asdf:*central-registry*))
 
+(pushnew *boxer-project-dir* ql:*local-project-directories* )
+(ql:register-local-projects)
+
 ;; This turns off the terminal color sequences and simplifies the characters in the
 ;; output so they display well in the lispworks listener.
 (setf prove:*enable-colors* nil)
 (setf prove::*default-reporter* :tap)
 
-#+lispworks (load (example-file "opengl/examples/load"))
+;; #+lispworks (load (example-file "opengl/examples/load"))
 
-(asdf:test-system :boxer-sunrise-definitions :reporter :list)
+(asdf:test-system :boxer-sunrise-core :reporter :list)

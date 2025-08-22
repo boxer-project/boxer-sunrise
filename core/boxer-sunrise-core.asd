@@ -194,4 +194,4 @@
 
                 )
   :description ""
-  :in-order-to ((test-op (test-op "boxer-sunrise-test"))))
+  :in-order-to ((test-op (test-op "boxer-sunrise-core-test"))))
