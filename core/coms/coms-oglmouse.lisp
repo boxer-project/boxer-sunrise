@@ -741,7 +741,8 @@
   (reset-region)
   (let* ((screen-box (bp-screen-box mouse-bp))
          (actual-box (screen-obj-actual-obj screen-box))
-         (box-type (box-type screen-box)))
+         (box-type (box-type screen-box))
+         (pixel-correction 5))
     (cond ((null actual-box))
       ((shrunken? actual-box)
        ;; might as well open it
@@ -799,8 +800,8 @@
                                                                                                                   ;; suppress allocation of multiple different
                                                                                                                   ;; sized bitmaps inside of loop
                                                                                                                   (set-fixed-size actual-box
-                                                                                                                                  (- new-wid left right)
-                                                                                                                                  (- new-hei top bottom))
+                                                                                                                                  (+ new-wid pixel-correction)
+                                                                                                                                  (+ new-hei pixel-correction))
                                                                                                                   (repaint))
                                                                                                                 ))))
                                                                         ;; finalize..
@@ -816,12 +817,10 @@
                                                                            ;; make sure the mouse ended up in
                                                                            ;; a reasonable place
                                                                            (set-fixed-size actual-box
-                                                                                           (- (max minimum-track-wid
-                                                                                                   (- final-x box-window-x))
-                                                                                              left right)
-                                                                                           (- (max minimum-track-hei
-                                                                                                   (- final-y box-window-y))
-                                                                                              top bottom))
+                                                                                           (max minimum-track-wid
+                                                                                                   (- final-x box-window-x (- pixel-correction)))
+                                                                                           (max minimum-track-hei
+                                                                                                   (- final-y box-window-y (- pixel-correction))))
                                                                            (when (and (data-box? actual-box)
                                                                                       (auto-fill? actual-box))
                                                                              ;; don't fill doit boxes !!
