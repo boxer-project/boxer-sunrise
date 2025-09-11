@@ -8,7 +8,7 @@
 |#
 
 (defsystem "boxer-sunrise-core"
-  :version "3.4.24"
+  :version "3.4.25"
   :author "Steven Githens"
   :license ""
   :depends-on (:alexandria

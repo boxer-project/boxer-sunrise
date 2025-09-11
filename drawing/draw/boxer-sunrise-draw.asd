@@ -1,5 +1,5 @@
 (asdf:defsystem "boxer-sunrise-draw"
-  :version "3.4.24"
+  :version "3.4.25"
   :author "Steven Githens"
   :license "BSD-3-Clause"
   :depends-on (:boxer-sunrise-definitions)
