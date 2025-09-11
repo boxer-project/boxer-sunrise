@@ -699,7 +699,7 @@ Modification History (most recent at top)
 
 ;; we are guaranteed that pathname is valid
 (defun read-text-file-internal (pathname)
-  (with-open-file (s pathname :direction ':input)
+  (with-open-file (s pathname :direction ':input :element-type 'character :external-format '(:utf-8 :eol-style :lf))
     (let ((return-box (read-text-stream-internal s)))
       (putprop return-box :text :preferred-file-format)
       return-box)))
@@ -775,7 +775,8 @@ Modification History (most recent at top)
     boxer-eval::*novalue*))
 
 (defun write-text-file-internal (box pathname)
-  (with-open-file (fs pathname :direction ':output)
+  (with-open-file (fs pathname :direction ':output :element-type 'character
+                   :if-does-not-exist :create :external-format '(:utf-8 :eol-style :lf) :if-exists :supersede)
     (write-text-stream-internal box fs (namestring pathname))))
 
 ;;; Warn Option should be at Boxer User level instead of Lisp level

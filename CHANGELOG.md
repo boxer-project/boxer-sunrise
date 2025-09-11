@@ -1,5 +1,95 @@
 # Change Log
 
+## 3.4.24 2025-08-22
+
+This release contains a large amount of refactoring and decoupling among internal Boxer modules in
+continuing trajectory to support other platforms, operating systems, and the web. Most notably the
+rendering drawing portions have been completely separated out, as well as platform specific widget
+and openGL implementations. This has allowed a number of prototypes during the development cycle such
+as running a headless/text only Boxer, and an embedded Boxer core engine compiled using ECL. The
+resulting C/C++ shared library has allowed proof of concepts of running in a web browser using three.js
+as a rendering frontend, and using the open source Godot video game engine as the rendering and scene
+tree implementation.  Lots of exciting future work will proceed from this very detailed and meticulous
+refactoring. Outside of this some minor bugs and regressions have been fixed up as well.
+
+### Full Change Log
+
+sunrise-119
+  - Adding check for outermost screen box in method fixed-size?
+  - Fixing outermost screen box check
+  - Small fixes in setf for fixed-wid and fixed-size? checks
+
+sunrise-20
+  - Refactoring openGL specific parts into it's own :boxer-opengl package.
+  - Continuing to pull out openGL call to draw-high-common.lisp
+  - Removing boxwin-330gl class
+  - Creating the draw-bridge to seperate out graphics backends.
+  - Continuing separtion of graphics rendering from editor/evaluator
+  - prototyping matrix shim for wasm
+  - Using alexandria:plist-hash-table to remove dependency on serapeum
+  - Removing dependency on cl-glu
+  - Removing explicit dependency on trivial-garbage
+  - Removing dependancy on pngload
+  - Moving boxer-opengl and quicklisp local loading
+    - Moving boxer-opengl into it's own asdf system
+    - Fixing bootstrap scripts so they use quicklisp local project loading
+  - Beginning to refactor CAPI GUI into it's own defsystem
+  - Removing direct gl calls to clear-color and clear
+  - Cleaning up pixblt-from-screen
+  - Moving cl-opengl dep to boxer-sunrise-opengl
+  - Moving delivery start-boxer to boxer-sunrise-capi
+  - Initial work using three.js for rendering with emscripten
+  - Factoring html export into it's own ASDF system since it has several dependencies.
+  - Factoring out redisplay/repaint module into asdf system outside core boxer.
+  - Cleaning up %draw-circle, %draw-ellipse, %draw-poly
+  - Moving drawing commands for gdisp lists to the redisplay module
+  - Moving much of remaining draw-* calls to redisplay module
+  - Adding several eval-when compile-toplevel entries needed for compiling to shared libraries in ECL.
+  - Moved defmethod screen-objs to core engine
+  - asdf module, build scripts, and small example of using the embeddable Boxer Shared library.
+  - Switching display-style from struct to class. Fixing outermost screen box check and resetting scrolloffset
+    on full screen.
+  - Removing unnecessary opengl deps
+  - Removing no-op drawing from the text-repl for now
+  - Moving mousedoc.lisp to boxwin asd files.
+  - Moving boxwin to top level folder outside the core engine
+  - Moving lispworks opengl files next to other capi boxer code
+  - Coalescing draw, draw-low-empty, draw-low-opengl330, and redisplay modules into new top level drawing folder.
+  - Renaming src to core
+  - Renaming boxer-sunrise-core to definitions and co-locating the asd files.
+  - Moving embedded code and scripts out of toplevel
+  - Moving pixmap class into definitions.
+  - Temporarily moving freeze/snip prims to drawing module because they use drawing macros.
+
+crash-fix
+  - Incrementing bp x position through name chars only if name is set.
+
+regression
+  - bugs-171 Moving clear-offscreen-bitmap into pixmap.lisp
+  - bugs-172 bugs-193 Making sure gl:%get-pixel has a bound openGL context
+  - Setting outermost screenbox on cursor top level
+
+tests
+  - Fixing up existing tests configuration
+  - Putting most of the remaining test files back in. Cleaning up duplicate asdf files.
+
+refactor
+  - Moving pen-size to base class and num-slices to where it's used.
+  - Consolidating remainder of opengl-utils.lisp in to draw-low-opengl.lisp
+  - Removing unused deps cl-json/iterate. Moving :for dep to specific modules using it
+  - Moving currently empty *noisy-abort-key-chars* in to errors.lisp
+
+doco
+  - Docs and moving script for running GLFW Boxer
+
+cleanup
+  - Removing wildy obsolete delivery script. The current one is in the scripts folder.
+
+the-attic
+  - Removing unused things from package.lisp
+  - Archiving float-color-to-byte-value
+  - Moving clear-input to obsolete prims.
+
 ## 3.4.23 2025-03-09
 
 This is primarily a bug fix release with some minor UI changes/additions. Quite a number of sources of
