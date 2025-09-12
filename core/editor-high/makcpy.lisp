@@ -319,7 +319,7 @@
     (chas-array-assure-room ca (+& cl sl))
     (with-fast-chas-array-manipulation (ca chas)
       (dotimes& (i sl)
-        (setf (aref chas (+& cl i)) (aref string i)))
+        (setf (fast-chas-array-get-cha chas (+& cl i)) (aref string i)))
       (setf (chas-array-active-length ca) (+& cl sl)))))
 
 (defun make-row-from-string (string)
@@ -351,10 +351,10 @@
   (let ((cal (chas-array-active-length ca)))
     (chas-array-assure-room ca (+& cal 1))
     (with-fast-chas-array-manipulation (ca chas)
-      (setf (aref chas cal) c)
+      (setf (fast-chas-array-get-cha chas cal) c)
       (setf (chas-array-active-length ca) (1+& cal)))))
 
-(defun make-row (list)
+(defmethod make-row (list)
   (let* ((new-row (make-initialized-row))
          (ca (chas-array new-row))
          (idx 0)

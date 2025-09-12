@@ -3,6 +3,7 @@ import os
 import sys
 
 Program('embedded-boxer.c',
+        CPPPATH=["/opt/homebrew/include"],
         LIBS=['libecl', 'libboxercore--all-systems'],
-        LIBPATH=['./', '../']
+        LIBPATH=['./', '../', "/opt/homebrew/lib"]
 )

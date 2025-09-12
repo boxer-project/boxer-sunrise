@@ -107,11 +107,20 @@
           (t
            (barf "Bad Arg, ~A" arg)))))
 
-(defmacro fast-chas-array-get-cha (chas cha-no)
-  `(svref& ,chas ,cha-no))
+;; godot work converting to method that can be wrapped
+;; (defmacro fast-chas-array-get-cha (chas cha-no)
+;;   `(svref& ,chas ,cha-no))
+(defmethod fast-chas-array-get-cha (chas cha-no)
+  (svref& chas cha-no))
 
-(defmacro fast-chas-array-set-cha (chas cha-no new-value)
-  `(setf (svref& ,chas ,cha-no) ,new-value))
+(defmethod (setf fast-chas-array-get-cha) (value chas cha-no)
+  (setf (svref& chas cha-no) value))
+
+;; godot work converting to method that can be wrapped
+;; (defmacro fast-chas-array-set-cha (chas cha-no new-value)
+;;   `(setf (svref& ,chas ,cha-no) ,new-value))
+(defmethod fast-chas-array-set-cha (chas cha-no new-value)
+  (setf (svref& chas cha-no) new-value))
 
 (defmacro fast-chas-array-room (chas)
   `(length (the simple-vector ,chas)))
