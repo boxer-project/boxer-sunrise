@@ -286,7 +286,8 @@ Modification History (most recent at top)
 
 (defun close-file-box (data interface)
   (declare (ignore data interface))
-  (boxer::com-close-box))
+  (boxer::drawing-on-window (*boxer-pane*)
+    (boxer::com-close-box)))
 
 ;; 2021-06-30 boxer-bugs-46
 ;; This ideally will replace both menu-file-toggle and save-box-as

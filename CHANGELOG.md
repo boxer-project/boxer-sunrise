@@ -1,5 +1,13 @@
 # Change Log
 
+## 3.4.25 2025-09-11
+
+This small release addresses fixes for sunrise-120 and sunrise-121
+
+sunrise-120 Updating max for resize dragging on boxes
+
+sunrise-121 Adding encoding information for unicode text files.
+
 ## 3.4.24 2025-08-22
 
 This release contains a large amount of refactoring and decoupling among internal Boxer modules in

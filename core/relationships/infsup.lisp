@@ -716,6 +716,10 @@
 
 ;(defmethod superior-box ((row row)) (slot-value row 'superior-box))
 
+(defmethod superior-box (obj)
+  "A bit of a hack catch-all to eliminate certain crashes."
+  nil)
+
 (defmethod superior-box ((box box))
   (let ((sup-row (superior-row box)))
     (unless (null sup-row) (superior-box sup-row))))

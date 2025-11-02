@@ -181,7 +181,7 @@
          (border-color (boxer::get-css-style point-box :border-color))
          (file-modified nil))
 
-    (if point-box
+    (if (and point-box (boxer::current-file-box point-box))
       (multiple-value-bind (origin-type file-format read-only? fmodified?)
         (boxer::get-box-file-props (boxer::current-file-box point-box))
         (setf file-modified fmodified?)))
