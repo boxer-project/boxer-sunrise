@@ -320,7 +320,9 @@ Modification History (most recent at top)
    (fixed-wid :initform nil :reader display-style-fixed-wid :initarg :fixed-wid)
    (fixed-hei :initform nil :reader display-style-fixed-hei :initarg :fixed-hei)
    (graphics-mode? :initform nil :accessor display-style-graphics-mode? :initarg :graphics-mode?)
-   (border-style :initform nil :accessor display-style-border-style :initarg :border-style))
+   (border-style :initform nil :accessor display-style-border-style :initarg :border-style)
+   (parent :initform nil :accessor display-style-parent
+    :documentation "Optional box/screen-box/etc used to link this backwards."))
   (:documentation "Display style is used primarily as a slot on `box` and `screenbox` classes, and contains
                    information about various aspects of it's current display."))
 
