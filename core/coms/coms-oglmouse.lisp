@@ -266,7 +266,7 @@
       (com-expand-box)))
   boxer-eval::*novalue*)
 
-#+lispworks (defboxer-command com-mouse-define-region (&optional (window *boxer-pane*)
+(defboxer-command com-mouse-define-region (&optional (window *boxer-pane*)
                                                      (x (bw::boxer-pane-mouse-x))
                                                      (y (bw::boxer-pane-mouse-y))
                                                      (mouse-bp
@@ -309,7 +309,7 @@
     ;; now go about dragging a region defined by *point* and the mouse-bp
     ;; unless the user is no longer holding the mouse button down
     ;; now track the mouse
-    (multiple-value-bind (original-screen-row original-x)
+    #+lispworks (multiple-value-bind (original-screen-row original-x)
                          (if shift?
                            (let ((csr (current-screen-row (point-row))))
                              (values csr (cha-no->x-coord csr (point-cha-no))))
