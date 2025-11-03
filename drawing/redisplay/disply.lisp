@@ -426,42 +426,42 @@
 ;; rather than the size of the entire box label included
 
 (defmethod set-display-style-list ((box box) new-style)
-  (setf (slot-value box 'display-style-list) new-style))
+  (setf (display-style-list box) new-style))
 
 (defmethod set-display-style-list ((box screen-box) new-style)
-  (setf (slot-value box 'display-style-list) new-style))
+  (setf (display-style-list box) new-style))
 
 (defmethod display-style ((box box))
-  (display-style-style (slot-value box 'display-style-list)))
+  (display-style-style (display-style-list box)))
 
 ;;; IMPORTANT.  The numbers returned by the various FIXED-SIZE methods
 ;;; refer to the size that the INFERIORS want to be and NOT the size of
 ;;; the entire box since the size of the NAME can change
 
 (defmethod fixed-size ((self box))
-  (case (display-style-style (slot-value self 'display-style-list))
+  (case (display-style-style (display-style-list self))
     (:shrunk     (values *shrunk-box-wid* *shrunk-box-hei*))
     (:normal     (fixed-size-1 self))
     (otherwise   (fixed-size-1 self))))
 
 (defmethod fixed-size-1 ((self box))
-  (let ((display-style (slot-value self 'display-style-list)))
+  (let ((display-style (display-style-list self)))
     (values (display-style-fixed-wid display-style)
             (display-style-fixed-hei display-style))))
 
 (defmethod fixed-size? ((self box))
-  (let ((ds (slot-value self 'display-style-list)))
+  (let ((ds (display-style-list self)))
     (and (not (member *outermost-screen-box* (screen-objs self)))
          (numberp (display-style-fixed-wid ds))
          (numberp (display-style-fixed-hei ds)))))
 
 (defmethod set-display-style ((self box) new-value)
-  (setf (display-style-style (slot-value self 'display-style-list)) new-value))
+  (setf (display-style-style (display-style-list self)) new-value))
 
 
 ;; boxes dimensions are now floats !
 (defmethod set-fixed-size ((self box) new-fixed-wid new-fixed-hei)
-  (let ((display-style (slot-value self 'display-style-list)))
+  (let ((display-style (display-style-list self)))
     (unless (display-style-graphics-mode? display-style)
       ;; Special case:  if we were in graphics mode
       ;; then we want to leave the box in a shrink wrapping
@@ -484,20 +484,20 @@
     ))
 
 (defmethod shrunken? ((self box))
-  (let ((style (display-style-style (slot-value self 'display-style-list))))
+  (let ((style (display-style-style (display-style-list self))))
     (or (eq style :shrunk) (eq style :supershrunk))))
 
 (defmethod shrunken? ((self screen-box))
-  (let ((style (display-style-style (slot-value self 'display-style-list))))
+  (let ((style (display-style-style (display-style-list self))))
     (or (eq style :shrunk) (eq style :supershrunk))))
 
 ;;; border styles
 
 (defmethod border-style ((self box))
-  (display-style-border-style (slot-value self 'display-style-list)))
+  (display-style-border-style (display-style-list self)))
 
 (defmethod set-border-style ((self box) new-style)
-  (let ((display-style (slot-value self 'display-style-list)))
+  (let ((display-style (display-style-list self)))
     (setf (display-style-border-style display-style) new-style)))
 
 ;;; this will do until we have ports that export (hopefully never)
@@ -505,12 +505,12 @@
 (defmethod border-style ((self port-box))
   (let ((target (slot-value self 'ports)))
     (unless (null target)
-      (display-style-border-style (slot-value target 'display-style-list)))))
+      (display-style-border-style (display-style-list target)))))
 
 (defmethod set-border-style ((self port-box) new-style)
   (let ((target (slot-value self 'ports)))
     (unless (null target)
-      (let ((display-style (slot-value target 'display-style-list)))
+      (let ((display-style (display-style-list target)))
         (setf (display-style-border-style display-style) new-style)))))
 
 ;;;; Display Styles for Screen Boxes
@@ -518,7 +518,7 @@
 (defmethod display-style ((self screen-box))
   (let ((actual-obj-display-style-list
          (display-style-list (screen-obj-actual-obj self))))
-    (or (display-style-style (slot-value self 'display-style-list))
+    (or (display-style-style (display-style-list self))
         (display-style-style  actual-obj-display-style-list))))
 
 (defmethod fixed-size ((self screen-box))
@@ -537,7 +537,7 @@
 (defmethod fixed-size-1 ((self screen-box))
   (multiple-value-bind (actual-obj-fixed-wid actual-obj-fixed-hei)
                        (fixed-size-1 (screen-obj-actual-obj self))
-                       (let ((display-style (slot-value self 'display-style-list)))
+                       (let ((display-style (display-style-list self)))
                          (values (or (display-style-fixed-wid display-style)
                                      actual-obj-fixed-wid)
                                  (or (display-style-fixed-hei display-style)
@@ -553,18 +553,18 @@
   (values nil nil))
 
 (defmethod set-display-style ((self screen-box) new-value)
-  (setf (display-style-style (slot-value self 'display-style-list))
+  (setf (display-style-style (display-style-list self))
         new-value))
 
 (defmethod border-style ((self screen-box))
-  (display-style-border-style (slot-value self 'display-style-list)))
+  (display-style-border-style (display-style-list self)))
 
 (defmethod set-border-style ((self screen-box) new-style)
-  (let ((display-style (slot-value self 'display-style-list)))
+  (let ((display-style (display-style-list self)))
     (setf (display-style-border-style display-style) new-style)))
 
 (defmethod set-fixed-size ((self screen-box) new-fixed-wid new-fixed-hei)
-  (let ((display-style (slot-value self 'display-style-list)))
+  (let ((display-style (display-style-list self)))
     (setf (display-style-fixed-wid display-style) new-fixed-wid)
     (setf (display-style-fixed-hei display-style) new-fixed-hei)))
 
