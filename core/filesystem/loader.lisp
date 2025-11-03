@@ -569,7 +569,7 @@ Modification History (most recent at the top)
              ;; old style
              (dotimes& (i length)
                (let ((obj (bin-next-value stream)))
-                 (fast-chas-array-set-cha chas-array-chas i obj)
+                 (fast-chas-array-set-cha chas-array i obj)
                  ;; we don't do INSERT-SELF-ACTION because that needs
                  ;; to be done when the row is put into the box, not
                  ;; when the cha is put into the row.
@@ -582,12 +582,12 @@ Modification History (most recent at the top)
                   (loop (let ((obj (bin-next-value stream)))
                           ;; obj can be either a box or a string
                           (cond ((box? obj)
-                                 (fast-chas-array-set-cha chas-array-chas idx obj)
+                                 (fast-chas-array-set-cha chas-array idx obj)
                                  (set-superior-row obj new-row)
                                  (incf& idx))
                                 ((stringp obj)
                                  (dotimes (i (length obj))
-                                   (fast-chas-array-set-cha chas-array-chas
+                                   (fast-chas-array-set-cha chas-array
                                                             idx (char obj i))
                                    (incf& idx))))
                           (when (>=& idx length) (return nil))))))
@@ -597,6 +597,7 @@ Modification History (most recent at the top)
                     (insert-bfd new-row (make-bfd-from-file file-fd)))
                 ))))
     (setf (chas-array-active-length chas-array) length)
+    (setf (chas-array-parent-row chas-array)  new-row)
     new-row))
 
 ;; a file-fd is a list
@@ -626,14 +627,15 @@ Modification History (most recent at the top)
         (let ((new-row-name (bin-next-value stream)))
           (with-fast-chas-array-manipulation (chas-array chas-array-chas)
             (dotimes& (i length)
-              (fast-chas-array-set-cha chas-array-chas i (elt new-row-name i))))
+              (fast-chas-array-set-cha chas-array i (elt new-row-name i))))
         )
       )
       (t (with-fast-chas-array-manipulation (chas-array chas-array-chas)
         (dotimes& (i length)
           (let ((next-value (bin-next-value stream)))
-            (fast-chas-array-set-cha chas-array-chas i next-value))))))
+            (fast-chas-array-set-cha chas-array i next-value))))))
     (setf (chas-array-active-length chas-array) length)
+    (setf (chas-array-parent-row chas-array)  new-row)
     new-row))
 
 

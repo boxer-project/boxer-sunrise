@@ -278,15 +278,16 @@
     (flet ((make-length-n-chas-array (n)
                                      (let ((array (make-chas-array (max& *chas-array-default-size* n))))
                                        (setf (chas-array-active-length array) n)
+                                       (setf (chas-array-parent-row array) new-row)
                                        array)))
           (let* ((length (chas-array-active-length from-chas))
                  (to-chas (make-length-n-chas-array length)))
             (with-fast-chas-array-manipulation (to-chas fast-to-chas)
               (dotimes& (index length)
                 (if (cha? (fast-chas-array-get-cha fast-from-chas index))
-                  (setf (fast-chas-array-get-cha fast-to-chas index)
+                  (fast-chas-array-set-cha to-chas index
                         (fast-chas-array-get-cha fast-from-chas index))
-                  (setf (fast-chas-array-get-cha fast-to-chas index)
+                  (fast-chas-array-set-cha to-chas index
                         (let ((new-box (if copy-box-arg-supplied?
                                          (funcall *recursive-copy-box-function*
                                                   (fast-chas-array-get-cha
@@ -319,7 +320,7 @@
     (chas-array-assure-room ca (+& cl sl))
     (with-fast-chas-array-manipulation (ca chas)
       (dotimes& (i sl)
-        (setf (fast-chas-array-get-cha chas (+& cl i)) (aref string i)))
+        (fast-chas-array-set-cha ca (+& cl i) (aref string i)))
       (setf (chas-array-active-length ca) (+& cl sl)))))
 
 (defun make-row-from-string (string)
@@ -351,7 +352,7 @@
   (let ((cal (chas-array-active-length ca)))
     (chas-array-assure-room ca (+& cal 1))
     (with-fast-chas-array-manipulation (ca chas)
-      (setf (fast-chas-array-get-cha chas cal) c)
+      (fast-chas-array-set-cha ca cal c)
       (setf (chas-array-active-length ca) (1+& cal)))))
 
 (defmethod make-row (list)
@@ -404,7 +405,7 @@
     ;; that we need like...
     (shared-initialize box t)
     ;;...and...
-    (setf (slot-value box 'display-style-list) (make-display-style))
+    (setf (display-style-list box) (make-display-style))
     (insert-row-at-row-no box last-row 0)
     (do* ((rows-to-go (cdr rows) (cdr rows-to-go))
           (row (car rows-to-go) (car rows-to-go)))

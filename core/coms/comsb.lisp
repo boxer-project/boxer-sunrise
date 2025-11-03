@@ -187,12 +187,13 @@ region into a box. "
                                      (let ((array (make-chas-array (max& *chas-array-default-size*
                                                                          n))))
                                        (setf (chas-array-active-length array) n)
+                                       (setf (chas-array-parent-row array) new-row)
                                        array)))
           (let* ((length (chas-array-active-length from-chas))
                  (to-chas (make-length-n-chas-array length)))
             (with-fast-chas-array-manipulation (to-chas fast-to-chas)
               (dotimes& (index length)
-                (setf (fast-chas-array-get-cha fast-to-chas index)
+                (fast-chas-array-set-cha to-chas index
                       (fast-chas-array-get-cha fast-from-chas index)))
               to-chas)))))
 

@@ -431,15 +431,16 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
                                                              (let ((array (make-chas-array
                                                                            (max& *chas-array-default-size* n))))
                                                                (setf (chas-array-active-length array) n)
+                                                               (setf (chas-array-parent-row array) new-row)
                                                                array)))
                                   (let* ((length (chas-array-active-length from-chas))
                                          (to-chas (make-length-n-chas-array length)))
                                     (with-fast-chas-array-manipulation (to-chas fast-to-chas)
                                       (dotimes& (index length)
                                         (if (cha? (fast-chas-array-get-cha fast-from-chas index))
-                                          (setf (fast-chas-array-get-cha fast-to-chas index)
-                                                (fast-chas-array-get-cha fast-from-chas index))
-                                          (setf (fast-chas-array-get-cha fast-to-chas index)
+                                          (fast-chas-array-set-cha to-chas index
+                                                                   (fast-chas-array-get-cha fast-from-chas index))
+                                          (fast-chas-array-set-cha to-chas index
                                                 ;; here is the check for modified items
                                                 ;; in the closet...
                                                 (let ((new-box
@@ -480,9 +481,8 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
     ;; fixup some slots that the init method would have fixed
     (let ((new-ds (if (not (box? original))
                     (make-display-style)
-                    (copy-display-style (slot-value original
-                                                    'display-style-list)))))
-      (setf (slot-value box 'display-style-list) new-ds)
+                    (copy-display-style (display-style-list original)))))
+      (setf (display-style-list box) new-ds)
       ;; vc's never propogate transparency so make sure that
       ;; the result "looks" correct
       (setf (display-style-border-style new-ds)
@@ -651,7 +651,7 @@ Allowed values are :LEFT :RIGHT and :MERGE.")
   (let ((target (vp-target vp))
         (port (make-uninitialized-box 'port-box)))
     ;; fixup some slots that the init method would have fixed
-    (setf (slot-value port 'display-style-list) (make-display-style))
+    (setf (display-style-list port) (make-display-style))
     (setf (slot-value port 'tick) (tick))
     (unless (or ignore-name? (null (vp-name vp)))
       (set-name port (make-name-row (list (vp-name vp)))))
