@@ -101,7 +101,8 @@
           previous-row       (getf init-plist ':previous-row)
           next-row           (getf init-plist ':next-row)
           chas-array         (or (getf init-plist ':chas-array)
-                                 (make-chas-array)))))
+                                 (make-chas-array)))
+    (setf (chas-array-parent-row chas-array) self)))
 
 (defmethod initialize-instance ((self box)  &rest init-plist)
   (shared-initialize self t)
