@@ -127,7 +127,7 @@
                  (:file "filesystem/datasources/local-url")
                  (:file "filesystem/datasources/http-url" :if-feature (:not :emscripten))
                  (:file "filesystem/datasources/helpers")
-                 (:file "filesystem/formats" :if-feature (:not :emscripten))
+                 (:file "filesystem/formats") ; :if-feature (:not :emscripten))
                  ;; Beginning of `TRIGGER` module
                  ;; "Box triggers for Constraint Propagation and Other Fun Stuff"
                  (:file "trigger/trigger")

@@ -174,12 +174,15 @@ Modification History (most recent at the top)
 (define-load-command-for-value bin-op-package-symbol (stream)
   (let* ((package-string (let ((name (bin-next-value stream)))
                            (if (and *hack-symbol-package-names*
-                  (or (string= name "LUCID-COMMON-LISP")
-                      (string= name "COMMON-LISP")))
-                               "LISP"
-                               name)))
-         (package (find-package package-string))
+                                (or (string= name "LUCID-COMMON-LISP")
+                                    (string= name "COMMON-LISP")))
+                                            "LISP"
+                                            name)))
+         (package nil)
          (pname (bin-next-value stream)))
+    (if (and (member :ecl *features*) (equalp "LISP" package-string))
+      (setf package (find-package "COMMON-LISP"))
+      (setf package (find-package package-string)))
     (intern pname package)))
 
 (define-load-command-for-value bin-op-string-immediate (stream length)
