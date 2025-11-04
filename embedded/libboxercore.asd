@@ -1,5 +1,5 @@
 (defsystem "libboxercore"
-  :version "3.4.25"
+  :version "3.4.26"
   :author "Steven Githens"
   :license ""
   :depends-on (:uiop
