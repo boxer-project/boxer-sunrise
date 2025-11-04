@@ -1,5 +1,5 @@
 (asdf:defsystem "boxer-sunrise-html-export"
-  :version "3.4.25"
+  :version "3.4.26"
   :author "Steven Githens"
   :license "BSD-3-Clause"
   :depends-on ("boxer-sunrise-core"
