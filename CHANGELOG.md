@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.4.26 2025-10-22
+
+Another small bug release on top of 3.4.25
+
+sunrise-122 Wrapping menu items in drawing-on-window, and putting in some other crash checks.
+
 ## 3.4.25 2025-09-11
 
 This small release addresses fixes for sunrise-120 and sunrise-121
