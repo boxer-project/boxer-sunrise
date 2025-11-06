@@ -280,10 +280,29 @@
    :message-callback 'handle-OSX-events
    ))
 
+(capi:define-interface boxer-search-toolbar (capi:interface)
+  ()
+  (:panes
+   (search-input capi:text-input-pane
+    :title "Search: "
+    :callback-type :data
+    :text-change-callback 'update-search-text
+    :min-width nil :max-width :screen-width
+    :visible-min-height *boxer-status-pane-height*
+    :visible-max-height *boxer-status-pane-height*)
+   (found-number capi:title-pane
+    :text "No results")
+   (prev-found capi:button :text "<" :callback 'boxer::goto-prev-search-result)
+   (next-found capi:button :text ">" :callback 'boxer::goto-next-search-result)
+   (cancel-search capi:button :text "X" :callback 'searchbar-close))
+  (:layouts
+   (full capi:row-layout
+         '(search-input found-number prev-found next-found cancel-search))))
 
 (capi:define-interface boxer-frame (capi:interface)
   ()
   (:panes
+   (search-pane bw::boxer-search-toolbar)
    (text-toolbar
     capi:toolbar
     :image-width 16 :image-height 16
@@ -578,7 +597,7 @@
   (:layouts
    (boxer-layout capi:column-layout
                  ;; Note: This immediately gets re-layed-out in defun update-visible-editor-panes
-                 '(all-toolbars name-pane boxer-pane-w-scrollbar status-bar-pane) ;boxer-pane status-bar-pane)
+                 '(all-toolbars name-pane search-pane boxer-pane-w-scrollbar status-bar-pane)
                  :columns 1 :rows 2 :y-gap 0 :x-uniform-size-p t)
    (boxer-pane-w-scrollbar capi:grid-layout
                            '(boxer-pane outer-vertical-scroll outer-horizontal-scroll nil)
@@ -849,6 +868,8 @@ in macOS."
   "Determines whether or not the toolbar on the boxer editor window is shown.")
 (defvar *boxer-window-show-statusbar-p* t
   "Determines whether or not the status bar on the boxer editor window is shown.")
+(defvar *boxer-window-show-searchbar-p* nil
+  "Determines whether or not the search bar on the boxer editor window is shown.")
 
 (defvar *setup-editor-with-news?* t
   "If this is true we should for and load an init file on startup if it exists.
@@ -870,6 +891,8 @@ in macOS."
                 (push 'status-bar-pane new-desc))
      (push 'boxer-pane-w-scrollbar new-desc)
      (push 'name-pane new-desc)
+     (if *boxer-window-show-searchbar-p*
+       (push 'search-pane new-desc))
      (if *boxer-window-show-toolbar-p*
                 (push 'all-toolbars new-desc))
      (if layout

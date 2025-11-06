@@ -58,9 +58,27 @@
 
 (defmethod region-in-screen-box? ((self screen-box) &optional (region-list *region-list*))
   (when (and (car region-list)
-             (car (screen-objs (bp-row (interval-start-bp (car *region-list*))))))  ;; sunrise-102
-    (let ((region-screen-box (screen-box (car (screen-objs (bp-row (interval-start-bp (car *region-list*))))))))
+             (car (screen-objs (bp-row (interval-start-bp (car region-list))))))  ;; sunrise-102
+    (let ((region-screen-box (screen-box (car (screen-objs (bp-row (interval-start-bp (car region-list))))))))
       (eq self region-screen-box))))
+
+(defmethod search-match-in-screen-box? ((self screen-box))
+  (let ((togo nil))
+    (dolist (match (matches *current-search*))
+      (let ((region (region-interval match)))
+        (when (and region (region-in-screen-box? self (list region)))
+          (setf togo t))))
+    togo))
+
+(defmethod repaint-search-regions (self screen-box)
+  (when (search-match-in-screen-box? self)
+    (with-model-matrix ((3d-matrices:meye 4))
+      (refresh-gpu-model-matrix)
+      (dolist (match (matches *current-search*))
+        (let ((region (region-interval match)))
+          (when (and region (region-in-screen-box? self (list region)))
+            (when (not (null region))
+                (interval-update-repaint-all-rows region *boxer-pane* *search-highlight-color*))))))))
 
 (defmethod repaint-cursors-regions ((self screen-box))
   (when (or (bps self) (region-in-screen-box? self))
@@ -70,7 +88,9 @@
         (repaint-cursor *point*))
       (when (region-in-screen-box? self)
         (dolist (region *region-list*)
-          (when (not (null region)) (interval-update-repaint-all-rows region)))))))
+          (when (not (null region)) (interval-update-repaint-all-rows region))))))
+      ;; Paint search matches
+      (repaint-search-regions self))
 
 (defmethod repaint-inferiors-pass-2-sb ((self screen-box))
   (with-slots (wid hei box-type screen-rows x-offset y-offset scroll-x-offset scroll-y-offset x-got-clipped? y-got-clipped? actual-obj bps)

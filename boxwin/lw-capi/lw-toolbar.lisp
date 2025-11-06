@@ -268,3 +268,16 @@
             "System Mouse/Key Actions"
             "Mouse/Key Redefinitions Active")
           (round (* 100 (zoom-level *boxer-pane*))))))
+
+;;;
+;;; Search toolbar callbacks
+;;;
+
+(defun update-search-text (text one two three)
+  (drawing-on-window (*boxer-pane*)
+    (boxer::reset boxer::*current-search*)
+    (boxer::modern-search text)
+    (setf (capi:title-pane-text
+            (slot-value (slot-value bw::*boxer-frame* 'bw::search-pane) 'bw::found-number))
+          (format nil "~A" (boxer::num-matches boxer::*current-search*)))))
+

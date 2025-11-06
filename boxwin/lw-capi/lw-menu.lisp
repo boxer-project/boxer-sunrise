@@ -464,6 +464,18 @@ Modification History (most recent at top)
   (declare (ignore data interface))
   (boxer::com-boxer-preferences))
 
+(defun menu-searchbar-find (data interface)
+  (declare (ignore data interface))
+  (setf *boxer-window-show-searchbar-p* t)
+  (update-visible-editor-panes)
+  (capi:set-pane-focus (slot-value (slot-value *boxer-frame* 'search-pane) 'search-input)))
+
+(defun searchbar-close (data interface)
+  (declare (ignore data interface))
+  (setf *boxer-window-show-searchbar-p* nil)
+  (update-visible-editor-panes)
+  (boxer::cancel-search-text))
+
 (defun menu-find (data interface)
   (declare (ignore data interface))
   (let* ((insearch (boxer::mode-key 'bu::CTRL-F-KEY))

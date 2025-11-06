@@ -35,6 +35,7 @@ Modification History (most recent at top)
 
 (in-package :boxer)
 
+(defvar *search-highlight-color* #(:rgb .16 .63 .60 0.5))
 
 (defvar *read-in-files-during-search* nil)
 
@@ -46,6 +47,89 @@ Modification History (most recent at top)
 (defstruct box-pattern
   (name nil)
   (type :unspecified))
+
+;;;
+;;; Start Modern Search
+;;;
+
+(defclass search-match
+  ()
+  ((region-interval :accessor region-interval :initform nil :initarg :region-interval
+    :documentation "One of the text regions that matches the search. This is of struct type interval")
+   (selected-p :accessor selected-p :initform nil :initarg :selected-p
+    :documentation "Is this match currently selected/highlighted")))
+
+(defclass modern-search ()
+  ((matches :accessor matches :initform nil :initarg :matches)
+   (cur-location :accessor cur-location :initform 0 :initarg :cur-location)))
+
+(defmethod add-match ((self modern-search) match)
+  (setf (matches self) (cons match (matches self))))
+
+(defmethod num-matches ((self modern-search)) (length (matches self)))
+
+(defmethod next-result ((self modern-search) &key (direction :forward))
+  (with-slots (matches cur-location) self
+    (cond ((eq direction :forward)
+           (if (>= cur-location (num-matches self))
+             (setf cur-location 0)
+             (incf cur-location)))
+     (t
+      (if (eq 0 cur-location)
+        (setf cur-location (1- (num-matches self)))
+        (decf cur-location))))
+    (let* ((cur-interval (region-interval (nth cur-location matches)))
+         (cur-bp (interval-start-bp cur-interval)))
+      ;; or use move-with-offset which is supposed to rearrange things... maybe they need to be wrapped in a
+      ;; drawing-on-window... try this with the existing search once
+      (move-to-bp cur-bp))))
+
+(defmethod reset ((self modern-search))
+  (setf (matches self) nil
+        (cur-location self) 0))
+
+(defvar *current-search* (make-instance 'modern-search)
+  "Instance of modern-search for the current toolbar search.")
+
+(defun goto-next-search-result (&rest ignore)
+  (next-result *current-search*))
+
+(defun goto-prev-search-result (&rest ignore)
+  (next-result *current-search* :direction :back))
+
+(defun cancel-search-text (&rest ignore)
+  (reset *current-search*)
+  (setf (capi:text-input-pane-text (slot-value (slot-value bw::*boxer-frame* 'bw::search-pane) 'bw::search-input))
+        "")
+  (setf (capi:title-pane-text (slot-value (slot-value bw::*boxer-frame* 'bw::search-pane) 'bw::found-number))
+        (format nil "No results")))
+
+(defun modern-recursive-search (pattern new-bp stop-box)
+  (multiple-value-bind (found-row found-cha-no offset)
+                       (search-from pattern new-bp stop-box)
+    (when found-row
+      (add-match *current-search* (make-instance 'search-match :region-interval (%make-interval
+                                    (make-initialized-bp :fixed found-row found-cha-no)
+                                    (make-initialized-bp :fixed found-row (+ found-cha-no offset)))))
+      (modern-recursive-search
+        pattern
+        (make-initialized-bp :fixed found-row (+ found-cha-no offset))
+        stop-box))))
+
+(defun modern-search (text)
+  (when (> (length text) 0)
+    (let* ((top-box *initial-box*)
+           (new-bp (make-initialized-bp :fixed (first-inferior-row top-box) 0))
+           (stop-box top-box)
+           (pattern (make-storage-vector))
+           (result nil))
+      (map 'string (lambda (c) (sv-append pattern c)) text)
+      (modern-recursive-search pattern new-bp stop-box))))
+
+;;;
+;;; End Modern Search
+;;;
+
 
 (defun search-from (pattern bp stop-box)
   (let* ((start-row (bp-row bp))

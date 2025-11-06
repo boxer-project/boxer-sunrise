@@ -178,7 +178,7 @@
       (remove-region-row-blinker old-blinker))))
 
 (defun interval-update-repaint-all-rows (region &optional
-                                                  (window *boxer-pane*))
+                                                  (window *boxer-pane*) (color *blinker-color*))
   ;; we have to bind this because region redisplay can
   ;; legitimately be called OUTSIDE of normal redisplay
   (cond ((not (row-connected? (bp-row (interval-start-bp region))))
@@ -228,7 +228,7 @@
                         ;; finally, take care of all the other rows
                         (update-region-row-blinker blinker)))))))))
   ;; @ this point all the blinkers are the correct size and inthe right place...
-  (dolist (blinker (interval-blinker-list region)) (draw-blinker blinker)))
+  (dolist (blinker (interval-blinker-list region)) (draw-blinker blinker :color color)))
 
 ;; timing
 (defvar delta-time 0.0) ;; time between current frame and last frame
