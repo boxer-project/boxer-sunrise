@@ -1,0 +1,37 @@
+[gd_scene load_steps=4 format=3 uid="uid://dtrsap4yd72k0"]
+
+[ext_resource type="Script" uid="uid://3hwnn0pprkg" path="res://scripts/prototype_turtle_graphics.gd" id="1_y2nfe"]
+[ext_resource type="Script" uid="uid://b0ij7f1alb4w6" path="res://scripts/turtle.gd" id="2_0r413"]
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_y2nfe"]
+viewport_path = NodePath("SubViewportContainer/SubViewport")
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource("1_y2nfe")
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
+offset_right = 1150.0
+offset_bottom = 649.0
+
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+unique_name_in_owner = true
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(2000, 2000)
+render_target_update_mode = 4
+
+[node name="turtle" type="Node2D" parent="SubViewportContainer/SubViewport"]
+position = Vector2(472, 314)
+script = ExtResource("2_0r413")
+
+[node name="TurtleViewportSprite" type="Sprite2D" parent="."]
+visible = false
+position = Vector2(229, 434)
+scale = Vector2(0.224, 0.22)
+texture = SubResource("ViewportTexture_y2nfe")
+
+[node name="FinalSprite" type="Sprite2D" parent="."]
+position = Vector2(400, 400)
+scale = Vector2(0.5, 0.41)
+
+[connection signal="done_drawing" from="SubViewportContainer/SubViewport/turtle" to="." method="_on_turtle_done_drawing"]

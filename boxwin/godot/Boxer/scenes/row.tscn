@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://bqodvk5rb2nb4"]
+
+[ext_resource type="Script" uid="uid://8neavd8n1a5w" path="res://scripts/row.gd" id="1_7024n"]
+
+[node name="Row" type="HBoxContainer"]
+custom_minimum_size = Vector2(0, 11)
+theme_override_constants/separation = 0
+script = ExtResource("1_7024n")

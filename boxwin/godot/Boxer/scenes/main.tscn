@@ -1,0 +1,122 @@
+[gd_scene load_steps=14 format=3 uid="uid://pdlvpw8s1sse"]
+
+[ext_resource type="Script" uid="uid://cy2jvrckapxht" path="res://scripts/main.gd" id="1_jyhfs"]
+[ext_resource type="PackedScene" uid="uid://7nrew4abjpqi" path="res://scenes/cha.tscn" id="2_tbgi4"]
+[ext_resource type="PackedScene" uid="uid://btaai4vcs1547" path="res://scenes/Box.tscn" id="3_tefeu"]
+[ext_resource type="PackedScene" uid="uid://d1odxdo64y25e" path="res://scenes/cursor.tscn" id="4_o6xl0"]
+[ext_resource type="PackedScene" uid="uid://xqa6c27lew6w" path="res://scenes/toolbar.tscn" id="4_tefeu"]
+[ext_resource type="PackedScene" uid="uid://bqodvk5rb2nb4" path="res://scenes/row.tscn" id="4_tipki"]
+[ext_resource type="Theme" uid="uid://clyeptsut3tbs" path="res://themes/macOS_light.tres" id="5_o6xl0"]
+[ext_resource type="Script" uid="uid://cgbi3olobjs83" path="res://scripts/flipping_box.gd" id="5_tbgi4"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tefeu"]
+albedo_color = Color(1, 1, 1, 0)
+
+[sub_resource type="QuadMesh" id="QuadMesh_jyhfs"]
+material = SubResource("StandardMaterial3D_tefeu")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tbgi4"]
+cull_mode = 2
+albedo_color = Color(1, 1, 1, 0)
+
+[sub_resource type="Environment" id="Environment_tefeu"]
+ambient_light_source = 2
+ambient_light_color = Color(1, 1, 1, 1)
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_jyhfs"]
+viewport_path = NodePath("FlippingViewport")
+
+[node name="Main" type="Node"]
+script = ExtResource("1_jyhfs")
+cha_scene = ExtResource("2_tbgi4")
+box_scene = ExtResource("3_tefeu")
+row_scene = ExtResource("4_tipki")
+use_boxer_gdextension = true
+
+[node name="OpenFileDialog" type="FileDialog" parent="."]
+unique_name_in_owner = true
+title = "Open a File"
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+use_native_dialog = true
+
+[node name="TopLevelContainer" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="ToolbarContainer" parent="TopLevelContainer" instance=ExtResource("4_tefeu")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="MessageBarContainer" type="HBoxContainer" parent="TopLevelContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme = ExtResource("5_o6xl0")
+
+[node name="Message" type="Label" parent="TopLevelContainer/MessageBarContainer"]
+layout_mode = 2
+text = "local Boxer"
+
+[node name="OutermostBoxScroll" type="ScrollContainer" parent="TopLevelContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="World" parent="TopLevelContainer/OutermostBoxScroll" instance=ExtResource("3_tefeu")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="StatusBarContainer" type="HBoxContainer" parent="TopLevelContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme = ExtResource("5_o6xl0")
+
+[node name="RedefinitionStatus" type="Label" parent="TopLevelContainer/StatusBarContainer"]
+layout_mode = 2
+text = "Mouse/Key Redefinitions Active"
+
+[node name="ZoomStatus" type="Label" parent="TopLevelContainer/StatusBarContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Zoom 100%"
+
+[node name="Cursor" parent="." instance=ExtResource("4_o6xl0")]
+offset_left = 8.0
+offset_top = 6.0
+offset_right = 8.0
+offset_bottom = 6.0
+
+[node name="GDBoxer" type="GDBoxer" parent="."]
+
+[node name="ScreenClip" type="Sprite2D" parent="."]
+position = Vector2(2572, 244)
+
+[node name="FlippingViewport" type="SubViewport" parent="."]
+transparent_bg = true
+
+[node name="FlippingBox" type="MeshInstance3D" parent="FlippingViewport"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.470093)
+mesh = SubResource("QuadMesh_jyhfs")
+surface_material_override/0 = SubResource("StandardMaterial3D_tbgi4")
+script = ExtResource("5_tbgi4")
+
+[node name="Camera3D" type="Camera3D" parent="FlippingViewport"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1.88318)
+environment = SubResource("Environment_tefeu")
+
+[node name="FlippingSprite" type="Sprite2D" parent="."]
+visible = false
+position = Vector2(284, 454)
+texture = SubResource("ViewportTexture_jyhfs")
+
+[connection signal="canceled" from="OpenFileDialog" to="." method="_on_open_file_dialog_canceled"]
+[connection signal="file_selected" from="OpenFileDialog" to="." method="_on_open_file_dialog_file_selected"]
+[connection signal="row_inserted" from="TopLevelContainer/OutermostBoxScroll/World" to="Cursor" method="_on_world_row_inserted"]
+[connection signal="boxer_delete_cha" from="GDBoxer" to="." method="_on_gd_boxer_boxer_delete_cha"]
+[connection signal="boxer_delete_chas_between_cha_nos" from="GDBoxer" to="." method="_on_gd_boxer_boxer_delete_chas_between_cha_nos"]
+[connection signal="boxer_insert_cha" from="GDBoxer" to="." method="_on_gd_boxer_boxer_insert_cha"]
+[connection signal="boxer_point_location" from="GDBoxer" to="." method="_on_gd_boxer_boxer_point_location"]

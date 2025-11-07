@@ -1,0 +1,227 @@
+[gd_scene load_steps=10 format=3 uid="uid://btaai4vcs1547"]
+
+[ext_resource type="Script" uid="uid://dxo1mc5mvgcgt" path="res://scripts/Box.gd" id="1_g2tbl"]
+[ext_resource type="PackedScene" uid="uid://bqodvk5rb2nb4" path="res://scenes/row.tscn" id="2_oq5cr"]
+[ext_resource type="Script" uid="uid://cdsnr3b22x5qh" path="res://scripts/lower_right_corner.gd" id="3_bqn3j"]
+[ext_resource type="StyleBox" uid="uid://b52vdxkhfydle" path="res://themes/data_box_stylebox.tres" id="3_telwu"]
+[ext_resource type="VideoStream" uid="uid://c4c04u4iixdox" path="res://media/butterfly.ogv" id="5_ry43h"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_c2ln5"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bqn3j"]
+bg_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jjbh2"]
+content_margin_left = 10.0
+content_margin_top = 5.0
+content_margin_right = 10.0
+content_margin_bottom = 5.0
+bg_color = Color(0.643137, 0.494118, 0.968627, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_telwu"]
+bg_color = Color(0.580841, 0.185981, 0.465694, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.99872, 0.990998, 0.971391, 1)
+shadow_size = 2
+
+[node name="Box" type="BoxContainer"]
+offset_right = 127.0
+offset_bottom = 62.0
+size_flags_vertical = 0
+script = ExtResource("1_g2tbl")
+row_scene = ExtResource("2_oq5cr")
+
+[node name="BoxInternals" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="NameContainer" type="MarginContainer" parent="BoxInternals"]
+layout_mode = 2
+theme_override_constants/margin_left = 7
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = -2
+
+[node name="NameLineEdit" type="LineEdit" parent="BoxInternals/NameContainer" groups=["NameInputs"]]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/caret_color = Color(0.509804, 0.486275, 1, 0.403922)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_c2ln5")
+expand_to_text_length = true
+caret_blink = true
+
+[node name="NameRow" parent="BoxInternals/NameContainer" instance=ExtResource("2_oq5cr")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="OuterBorderPanel" type="PanelContainer" parent="BoxInternals"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = ExtResource("3_telwu")
+
+[node name="BoxPanel" type="PanelContainer" parent="BoxInternals/OuterBorderPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bqn3j")
+
+[node name="ClosetContainer" type="PanelContainer" parent="BoxInternals/OuterBorderPanel/BoxPanel"]
+visible = false
+layout_mode = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="BoxInternals/OuterBorderPanel/BoxPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_jjbh2")
+
+[node name="RowsBox" type="VBoxContainer" parent="BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ShrunkBox" type="Panel" parent="BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+
+[node name="GraphicsSheetBackground" type="ColorRect" parent="BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+color = Color(1, 1, 1, 0)
+
+[node name="GraphicsSprite" type="TextureRect" parent="BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+flip_v = true
+
+[node name="VideoPlayer" type="VideoStreamPlayer" parent="BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+stream = ExtResource("5_ry43h")
+autoplay = true
+paused = true
+loop = true
+
+[node name="Control" type="Control" parent="BoxInternals/OuterBorderPanel"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="LowerRightCorner" type="Panel" parent="BoxInternals/OuterBorderPanel/Control"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -13.0
+offset_top = -10.0
+offset_right = 7.0
+offset_bottom = 10.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_default_cursor_shape = 2
+script = ExtResource("3_bqn3j")
+
+[node name="UpperRightCorner" type="Panel" parent="BoxInternals/OuterBorderPanel/Control"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -13.0
+offset_top = -10.0
+offset_right = 7.0
+offset_bottom = 10.0
+grow_horizontal = 0
+mouse_default_cursor_shape = 2
+script = ExtResource("3_bqn3j")
+
+[node name="UpperLeftCorner" type="Panel" parent="BoxInternals/OuterBorderPanel/Control"]
+layout_mode = 1
+offset_left = -10.0
+offset_top = -10.0
+offset_right = 10.0
+offset_bottom = 10.0
+mouse_default_cursor_shape = 2
+script = ExtResource("3_bqn3j")
+
+[node name="LowerLeftCorner" type="Panel" parent="BoxInternals/OuterBorderPanel/Control"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = -10.0
+offset_top = -10.0
+offset_right = 10.0
+offset_bottom = 10.0
+grow_vertical = 0
+mouse_default_cursor_shape = 2
+script = ExtResource("3_bqn3j")
+
+[node name="TypeToggle" type="Panel" parent="BoxInternals/OuterBorderPanel/Control"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -10.0
+offset_right = 36.0
+offset_bottom = 10.0
+grow_vertical = 0
+mouse_default_cursor_shape = 2
+script = ExtResource("3_bqn3j")
+
+[node name="SuperShrunkBox" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+
+[node name="ShrunkPanel" type="Panel" parent="SuperShrunkBox"]
+custom_minimum_size = Vector2(25, 25)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_telwu")
+
+[connection signal="flipped" from="." to="." method="_on_flipped"]
+[connection signal="gui_input" from="BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer/ShrunkBox" to="." method="_on_shrunk_box_gui_input"]
+[connection signal="gui_input" from="BoxInternals/OuterBorderPanel/Control/LowerRightCorner" to="." method="_on_lower_right_corner_gui_input"]
+[connection signal="mouse_entered" from="BoxInternals/OuterBorderPanel/Control/LowerRightCorner" to="BoxInternals/OuterBorderPanel/Control/LowerRightCorner" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="BoxInternals/OuterBorderPanel/Control/LowerRightCorner" to="BoxInternals/OuterBorderPanel/Control/LowerRightCorner" method="_on_mouse_exited"]
+[connection signal="gui_input" from="BoxInternals/OuterBorderPanel/Control/UpperRightCorner" to="." method="_on_upper_right_corner_gui_input"]
+[connection signal="mouse_entered" from="BoxInternals/OuterBorderPanel/Control/UpperRightCorner" to="BoxInternals/OuterBorderPanel/Control/UpperRightCorner" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="BoxInternals/OuterBorderPanel/Control/UpperRightCorner" to="BoxInternals/OuterBorderPanel/Control/UpperRightCorner" method="_on_mouse_exited"]
+[connection signal="gui_input" from="BoxInternals/OuterBorderPanel/Control/UpperLeftCorner" to="." method="_on_upper_left_corner_gui_input"]
+[connection signal="mouse_entered" from="BoxInternals/OuterBorderPanel/Control/UpperLeftCorner" to="BoxInternals/OuterBorderPanel/Control/UpperLeftCorner" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="BoxInternals/OuterBorderPanel/Control/UpperLeftCorner" to="BoxInternals/OuterBorderPanel/Control/UpperLeftCorner" method="_on_mouse_exited"]
+[connection signal="gui_input" from="BoxInternals/OuterBorderPanel/Control/LowerLeftCorner" to="." method="_on_lower_left_corner_gui_input"]
+[connection signal="mouse_entered" from="BoxInternals/OuterBorderPanel/Control/LowerLeftCorner" to="BoxInternals/OuterBorderPanel/Control/LowerLeftCorner" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="BoxInternals/OuterBorderPanel/Control/LowerLeftCorner" to="BoxInternals/OuterBorderPanel/Control/LowerLeftCorner" method="_on_mouse_exited"]
+[connection signal="gui_input" from="BoxInternals/OuterBorderPanel/Control/TypeToggle" to="." method="_on_type_toggle_gui_input"]
+[connection signal="mouse_entered" from="BoxInternals/OuterBorderPanel/Control/TypeToggle" to="BoxInternals/OuterBorderPanel/Control/TypeToggle" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="BoxInternals/OuterBorderPanel/Control/TypeToggle" to="BoxInternals/OuterBorderPanel/Control/TypeToggle" method="_on_mouse_exited"]
+[connection signal="gui_input" from="SuperShrunkBox/ShrunkPanel" to="." method="_on_shrunk_panel_gui_input"]

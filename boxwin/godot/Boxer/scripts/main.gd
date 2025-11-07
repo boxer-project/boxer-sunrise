@@ -1,0 +1,176 @@
+extends Node
+
+@export var cha_scene: PackedScene
+@export var box_scene: PackedScene
+@export var row_scene: PackedScene
+
+# Whether to use the Boxer GDExtension or the prototype mode with Godot handling the input
+@export var use_boxer_gdextension = false
+
+# Keep track of our cursor which we move around the node tree
+var cursor
+var outermost_box = null
+
+var canvas_zoom = 1:
+    get:
+        return canvas_zoom
+    set(value):
+        # TODO max and min
+        canvas_zoom = value
+
+@export var show_toolbar = true:
+    get:
+        return show_toolbar
+    set(value):
+        show_toolbar = value
+        if %ToolbarContainer:
+            %ToolbarContainer.visible = value
+
+@export var show_statusbar = true:
+    get:
+        return show_statusbar
+    set(value):
+        show_statusbar = value
+        if %StatusBarContainer:
+            %StatusBarContainer.visible = value
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+    cursor = $Cursor
+    $TopLevelContainer/ToolbarContainer/BoxItems/BackgroundColor.color_changed.connect(cursor._box_background_color_changed)
+    cursor._box_background_color_changed
+    # Have the main world box take up the entire screen
+    %World/BoxInternals.custom_minimum_size = ((get_viewport().size - Vector2i(20, 20)) / Global.screen_scale)
+    outermost_box = %World
+    get_viewport().size_changed.connect(_root_viewport_size_changed)
+    _root_viewport_size_changed()
+
+    if use_boxer_gdextension:
+        print("About to bootstrap *initial-box*")
+
+
+# Called when the root's viewport size changes (i.e. when the window is resized).
+# This is done to handle multiple resolutions without losing quality.
+func _root_viewport_size_changed() -> void:
+    # The viewport is resized depending on the window height.
+    # To compensate for the larger resolution, the viewport sprite is scaled down.
+    %TopLevelContainer.size.x = Global.dpi_scale(get_viewport().size.x)
+    %TopLevelContainer.size.y = Global.dpi_scale(get_viewport().size.y)
+    %OutermostBoxScroll.size.y = Global.dpi_scale(get_viewport().size.y - %ToolbarContainer.size.y - %MessageBarContainer.size.y - %StatusBarContainer.size.y)
+
+
+func _process(delta: float) -> void:
+    %World.scale = Vector2(canvas_zoom, canvas_zoom)
+    %ZoomStatus.text = "Zoom {0}%".format([canvas_zoom * 100])
+
+func _on_box_full_screened(box) -> void:
+    print("Full Screening box: ", box)
+    box.position = Vector2(0, 0)
+    # TODO duplicated size calculation from _ready
+    box.get_node("BoxInternals").custom_minimum_size = (get_viewport().size - Vector2i(20, 20)) / Global.screen_scale
+
+func _on_box_flipped(box) -> void:
+    pass
+    ###
+    ### Below is the prototype code for animated box flipping using a texture and viewport
+    ###
+    #var padding := 7
+    #var box_outline := Rect2(box.global_position.x - padding, box.global_position.y, box.size.x + padding + 5, box.size.y + padding)
+    #print("Signal flipped box", box_outline)
+    #var img := get_viewport().get_texture().get_image().get_region(box_outline)
+    #$ScreenClip.texture = ImageTexture.create_from_image(img)
+    #var material = $FlippingViewport/FlippingBox.get_surface_override_material(0)
+    #material.albedo_texture = ImageTexture.create_from_image(img)
+    #$FlippingViewport/FlippingBox.flipping = true
+
+func eclboxer_key_input(event: InputEventKey) -> void:
+    # Sends keys/events to the ECL Backend
+    var bits = 0
+    # https://docs.godotengine.org/en/stable/classes/class_%40globalscope.html#enum-globalscope-key
+    if event is InputEventKey and event.pressed:
+        if event.ctrl_pressed:
+            bits = 2
+        if event.alt_pressed:
+            bits = 4
+        if event.meta_pressed:
+            bits = 8
+        print("\n>>>>> eclboxer_key_input: ", event, " ||| ctrl: ", event.ctrl_pressed, " mask: ", event.get_modifiers_mask(),
+          " bits: ", bits)
+        if event.keycode == KEY_BACKSPACE:
+            $GDBoxer.handle_character_input(8, bits)
+        elif event.keycode == KEY_UP:
+            $GDBoxer.handle_character_input(-1, bits)
+        elif event.keycode == KEY_DOWN:
+            $GDBoxer.handle_character_input(-2, bits)
+        elif event.keycode == KEY_LEFT:
+            $GDBoxer.handle_character_input(-3, bits)
+        elif event.keycode == KEY_RIGHT:
+            $GDBoxer.handle_character_input(-4, bits)
+        elif event.keycode == KEY_ENTER:
+            $GDBoxer.handle_character_input(13, bits)
+        # TODO hack for testing turtles
+        elif event.keycode == KEY_T and bits == 4:
+            $GDBoxer.handle_character_input(116, bits)
+        elif event.keycode < 4194304:
+            #print("Handling InputEvent: ", event)
+            # It seems that with a modifier, something like Ctrl-A returns 0 as the event.unicode. If this is
+            # the case we'll use the keycode.  This entire arena of issues requires more looking in to.
+            if event.unicode == 0:
+                $GDBoxer.handle_character_input(event.keycode, bits)
+            else:
+                $GDBoxer.handle_character_input(event.unicode, bits)
+        else:
+            pass
+
+func _unhandled_key_input(event: InputEvent) -> void:
+    #print("Main scene input: ", event, " Ctrl: ", event.ctrl_pressed)
+    if use_boxer_gdextension:
+        eclboxer_key_input(event)
+
+func _on_open_file_dialog_file_selected(path: String) -> void:
+    print("Opening file: ", path)
+    $GDBoxer.handle_open_file(path)
+    $%OutermostBoxScroll.grab_focus()
+    get_tree().call_group("NotCursorInput", "release_focus")
+
+func _on_open_file_dialog_canceled() -> void:
+    get_tree().call_group("NotCursorInput", "release_focus")
+
+#
+# SIGNALS FROM BOXER ENGINE
+#
+func _on_gd_boxer_boxer_insert_cha(row: Node, ch, cha_no: int) -> void:
+    # print("_on_gd_boxer_boxer_insert_cha: ", row, " ", ch)
+    if typeof(ch) == TYPE_INT:
+        var cha = cha_scene.instantiate()
+        cha.text = String.chr(ch)
+        row.add_cha(cha, cha_no)
+    else:
+        row.add_cha(ch, cha_no)
+
+func _on_gd_boxer_boxer_delete_cha(row: Object, cha_no: int) -> void:
+    row.remove_cha(cha_no)
+
+func _on_gd_boxer_boxer_delete_chas_between_cha_nos(row: Object, strt_cha_no: int, stop_cha_no: int) -> void:
+    row.remove_chas(strt_cha_no, stop_cha_no)
+
+func _on_gd_boxer_boxer_point_location(row: Object, cha_no: int) -> void:
+    print("\nUPdating the cursor in Godot3: ", row, " : ", cha_no, "\n")
+    cursor.cur_row = row
+    cursor.cur_idx = cha_no
+
+func make_box(boxer_box) -> BoxContainer:
+    # Optional first_row to use
+    var box = box_scene.instantiate()
+    box.boxer_box = boxer_box
+    box.full_screened.connect(_on_box_full_screened)
+    box.flipped.connect(_on_box_flipped)
+    box.current_row = null
+    box.first_inferior_row = null
+    box.delete_row_at_row_no(0)
+    return box
+
+func make_row(boxer_row): # -> HBoxContainer:
+    var row = row_scene.instantiate()
+    row.boxer_row = boxer_row
+    return row
