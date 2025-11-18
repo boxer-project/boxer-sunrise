@@ -1,5 +1,5 @@
 @tool
-extends Node2D
+extends Control
 
 signal done_drawing
 
@@ -47,6 +47,18 @@ func hollow_rectangle(x, y, width, height):
     draw_rect(Rect2(x - (width/2), -y - (height/2), width, height), pen_color,
         false, pen_width)
 
+# 60   BOXER-FILLED-ELLIPSE                         (X Y WIDTH HEIGHT)
+func filled_ellipse(x, y, width, height):
+    draw_set_transform(Vector2(), 0.0, Vector2(1.0, float(height) / width))
+    draw_circle(Vector2(x, -y), width / 2.0, pen_color)
+    draw_set_transform(Vector2())
+
+# 61   BOXER-ELLIPSE                                (X Y WIDTH HEIGHT)
+func ellipse(x, y, width, height):
+    draw_set_transform(Vector2(), 0.0, Vector2(1.0, float(height) / width))
+    draw_circle(Vector2(x, -y), width / 2.0, pen_color, false, pen_width)
+    draw_set_transform(Vector2())
+
 # 62   BOXER-FILLED-CIRCLE                          (X Y RADIUS)
 func filled_circle(x, y, radius):
     draw_circle(Vector2(x, -y), radius, pen_color)
@@ -54,6 +66,43 @@ func filled_circle(x, y, radius):
 # 63   BOXER-CIRCLE                                 (X Y RADIUS)
 func circle(x, y, radius):
     draw_circle(Vector2(x, -y), radius, pen_color, false, pen_width)
+
+func draw_graphics_command(com: Array):
+    var op_code = com[0]
+    if op_code == 33:
+        pen_width = com[1]
+    elif op_code == 35:
+        line_segment(com[1], com[2], com[3], com[4])
+    elif op_code == 36:
+        pen_color = com[1]
+    # TODO These Strings aren't all justified properly yet
+    elif op_code == 39:
+        centered_string(com[1], com[2], com[3])
+    elif op_code == 40:
+        left_string(com[1], com[2], com[3])
+    elif op_code == 41:
+        right_string(com[1], com[2], com[3])
+    elif op_code == 42:
+        centered_rectangle(com[1], com[2], com[3], com[4])
+    elif op_code == 44:
+        hollow_rectangle(com[1], com[2], com[3], com[4])
+    elif op_code == 60:
+        filled_ellipse(com[1], com[2], com[3], com[4])
+    elif op_code == 61:
+        ellipse(com[1], com[2], com[3], com[4])
+    elif op_code == 62:
+        filled_circle(com[1], com[2], com[3])
+    elif op_code == 63:
+        circle(com[1], com[2], com[3])
+
+func draw_graphics_command_list(com_list: Array):
+    for com in com_list:
+        draw_graphics_command(com)
+
+var to_draw = []
+#     [35, 0.0, 0.0, 0.0, 20],
+#     [35, 0.0, 20.0, 20, 20]
+# ]
 
 func demo1():
     pen_color = Color.BLACK
@@ -104,7 +153,7 @@ var total = 0
 var drawn = false
 var captured = false
 
-func _process(delta):
+func _process(_delta):
     await RenderingServer.frame_post_draw
     if !captured and drawn:
         captured = true
@@ -114,10 +163,13 @@ func _process(delta):
 
 
 func _draw():
-    if !captured:
-        demo1()
-        drawn = true
-        
+    draw_graphics_command_list(to_draw)
+
+    # demo1()
+    # if !captured:
+    #     demo1()
+    #     drawn = true
+
     #demo_perf_lag()
 
 func _ready() -> void:

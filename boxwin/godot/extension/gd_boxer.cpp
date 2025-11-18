@@ -19,6 +19,8 @@ void GDBoxer::_bind_methods() {
 
     ClassDB::bind_method(D_METHOD("toggle_box_type", "ch", "bits"), &GDBoxer::handle_character_input);
 
+    ClassDB::bind_method(D_METHOD("shutdown_lisp"), &GDBoxer::shutdown_lisp);
+
     ADD_SIGNAL(MethodInfo("boxer_insert_cha", PropertyInfo(Variant::OBJECT, "row"), PropertyInfo(Variant::INT, "ch"),
          PropertyInfo(Variant::INT, "cha_no")));
     ADD_SIGNAL(MethodInfo("boxer_delete_cha", PropertyInfo(Variant::OBJECT, "row"), PropertyInfo(Variant::INT, "cha_no")));
@@ -30,6 +32,10 @@ void GDBoxer::_bind_methods() {
 /*
  * Bound Methods
  */
+
+void GDBoxer::shutdown_lisp() {
+    cl_shutdown();
+}
 
 void GDBoxer::toggle_box_type() {
 //   PackedByteArray
@@ -232,6 +238,67 @@ cl_object lisp_boxer_set_graphics_sheet_bit_array(cl_object box, cl_object width
     return ECL_NIL;
 }
 
+cl_object lisp_boxer_clear_box(cl_object box, cl_object bitmap, cl_object graphics_list) {
+    Object *godot_box = Variant((Object *)ecl_foreign_data_pointer_safe(box));
+    godot_box->call("clear_box", Variant(true), Variant(true));
+    return ECL_NIL;
+}
+
+Variant convert_ecl_to_godot (cl_object value) {
+    if (ECL_SINGLE_FLOAT_P(value)) {
+        return Variant(ecl_single_float(value));
+    }
+    else if (ECL_DOUBLE_FLOAT_P(value)) {
+        return Variant(ecl_double_float(value));
+    }
+    else if (ECL_LONG_FLOAT_P(value)) {
+        return Variant((float)ecl_long_float(value));
+    }
+    else if (ECL_FIXNUMP(value)) {
+        return Variant((int)ecl_fixnum(value));
+    }
+    else if (ECL_VECTORP(value)) {
+        if (value->vector.fillp > 0 && ECL_SYMBOLP(ecl_aref1(value, 0)) &&
+            strcmp((char*)cl_symbol_name(ecl_aref1(value, 0)), "RGB")) {
+            float r = ecl_single_float(ecl_aref1(value, 1));
+            float g = ecl_single_float(ecl_aref1(value, 2));
+            float b = ecl_single_float(ecl_aref1(value, 3));
+            float a = 1.0;
+            if (value->vector.fillp > 4)
+                a = ecl_single_float(ecl_aref1(value, 4));
+            return Variant(Color(r, g, b, a));
+        }
+        else {
+            // TODO - We don't need vectors for any other drawing commands, but we may want
+            // this conversion routine for other operations eventually.
+            return 0;
+        }
+    }
+    else if (ECL_BASE_STRING_P(value)) {
+        char * name = ecl_base_string_pointer_safe (ecl_null_terminated_base_string(value));
+        return Variant(name);
+    }
+    else if (ECL_EXTENDED_STRING_P(value)) {
+        char * name = ecl_base_string_pointer_safe (ecl_null_terminated_base_string(value));
+        return Variant(name);
+    }
+    else {
+        UtilityFunctions::print("Couldn't figure out type:", ecl_t_of(value));
+        return 0;
+    }
+}
+
+/*
+ * Turtle Graphics Commands
+ */
+cl_object lisp_boxer_push_graphics_command(cl_object box, cl_object op_code, cl_object arg1, cl_object arg2, cl_object arg3, cl_object arg4, cl_object arg5) {
+    int op = (int)ecl_fixnum(op_code);
+    Object *godot_box = Variant((Object *)ecl_foreign_data_pointer_safe(box));
+    godot_box->call("push_graphics_command", (int)ecl_fixnum(op_code), convert_ecl_to_godot(arg1), convert_ecl_to_godot(arg2),
+                    convert_ecl_to_godot(arg3), convert_ecl_to_godot(arg4), convert_ecl_to_godot(arg5));
+    return ECL_NIL;
+}
+
 /*
  * MISC
  */
@@ -340,6 +407,19 @@ void GDBoxer::_ready() {
 
     aux = ecl_make_symbol("GDBOXER-SET-GRAPHICS-SHEET-BIT-ARRAY", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_set_graphics_sheet_bit_array, 4);
+
+    aux = ecl_make_symbol("GDBOXER-CLEAR-BOX", "BOXER");
+    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_clear_box, 3);
+
+    //
+    // Turtle Graphics
+    //
+    aux = ecl_make_symbol("GDBOXER-PUSH-GRAPHICS-COMMAND", "BOXER");
+    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_push_graphics_command, 7);
+
+    //
+    // MISC
+    //
 
     aux = ecl_make_symbol("GDBOXER-SET-PROPERTY", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_set_property, 3);

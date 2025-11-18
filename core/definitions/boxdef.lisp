@@ -445,7 +445,8 @@ Modification History (most recent at top)
    (screen-objs :initform nil :accessor graphics-sheet-screen-objs :initarg :screen-objs)
    (bit-array :initform nil :accessor graphics-sheet-bit-array :initarg :bit-array)                             ;; An ogl-pixmap that acts as the background
    (object-list :initform nil :accessor graphics-sheet-object-list :initarg :object-list)                           ;; A list of turtle sprites
-   (superior-box :initform nil :accessor graphics-sheet-superior-box :initarg :superior-box)
+   (superior-box :initform nil :accessor graphics-sheet-superior-box :initarg :superior-box
+    :documentation "The graphics box with this graphics-sheet in it's graphics-info slot.")
    (draw-mode :initform ':wrap :accessor graphics-sheet-draw-mode :initarg :draw-mode)                          ;; Either ':wrap or ':clip for turtle drawing around edges
    (graphics-list :initform nil :accessor graphics-sheet-graphics-list :initarg :graphics-list)                         ;; A graphics-command-list struct with the drawn turtle graphics commands
    (background :initform nil :accessor graphics-sheet-background :initarg :background)                            ;; A background color that is used in lieu of the pixmap bit-array member

@@ -136,6 +136,11 @@ func _on_open_file_dialog_file_selected(path: String) -> void:
 func _on_open_file_dialog_canceled() -> void:
     get_tree().call_group("NotCursorInput", "release_focus")
 
+func _notification(what):
+    if what == NOTIFICATION_WM_CLOSE_REQUEST:
+        $GDBoxer.shutdown_lisp()
+        get_tree().quit() # default behavior
+
 #
 # SIGNALS FROM BOXER ENGINE
 #

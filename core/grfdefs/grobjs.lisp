@@ -77,7 +77,8 @@
    (subsprites         :initform nil :accessor subsprites)
    (superior-turtle    :initform nil :accessor superior-turtle)
    (sprite-box         :initform nil :accessor sprite-box)
-   (assoc-graphics-box :initform nil :accessor assoc-graphics-box))
+   (assoc-graphics-box :initform nil :accessor assoc-graphics-box
+    :documentation "The actual box object this graphics-object belongs to."))
    (:documentation
     "Bare minimum for a graphics object, slots for box interface and position"))
 

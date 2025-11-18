@@ -62,6 +62,7 @@ var box_contents = BoxContents.TEXT:
         %RowsBox.visible = false
         %GraphicsSheetBackground.visible = false
         %GraphicsSprite.visible = false
+        %TurtleGraphics.visible = false
         %VideoPlayer.visible = false
         %PanelContainer.custom_minimum_size = Vector2(0,0)
         if value == BoxContents.TEXT:
@@ -69,6 +70,7 @@ var box_contents = BoxContents.TEXT:
         elif value == BoxContents.GRAPHICS:
             %GraphicsSprite.visible = true
             %GraphicsSheetBackground.visible = true
+            %TurtleGraphics.visible = true
             %PanelContainer.custom_minimum_size = Vector2(draw_wid, draw_hei)
         elif value == BoxContents.VIDEO:
             %VideoPlayer.visible = true
@@ -251,14 +253,6 @@ func _on_lower_left_corner_gui_input(event: InputEvent) -> void:
         print("Flip to graphics x: ", self.global_position.x, " y: ", self.global_position.y,
           " w: ", self.size.x, " h: ", self.size.y)
         graphics_mode_p = !graphics_mode_p
-        # self.emit_signal("flipped", self)
-        # if box_contents == BoxContents.TEXT:
-        #     box_contents = BoxContents.GRAPHICS
-        # elif box_contents == BoxContents.GRAPHICS:
-        #     box_contents = BoxContents.TEXT
-            #box_contents = BoxContents.VIDEO
-        #elif box_contents == BoxContents.VIDEO:
-            #box_contents = BoxContents.TEXT
 
 
 func _on_type_toggle_gui_input(event: InputEvent) -> void:
@@ -267,3 +261,14 @@ func _on_type_toggle_gui_input(event: InputEvent) -> void:
             box_type = BoxType.DOIT
         elif box_type == BoxType.DOIT:
             box_type = BoxType.DATA
+
+func push_graphics_command(opcode, arg1, arg2, arg3, arg4, arg5):
+    print("PUSGHING GRAPHICS COMMSND: ", opcode, " , ", arg1, " , ", arg2, " , ", arg3, " , ", arg4, " , ", arg5)
+    %TurtleGraphics.to_draw.append([opcode, arg1, arg2, arg3, arg4, arg5])
+
+func clear_box(bitmap = true, graphics_list = true):
+    if graphics_list:
+        %TurtleGraphics.to_draw = []
+    if bitmap:
+        # TODO
+        pass

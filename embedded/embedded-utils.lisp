@@ -248,6 +248,35 @@
 ;;;
 ;;; GRAPHICS-SHEETS
 ;;;
+(defmethod clear-box :after ((self box) &key (bitmap-p t) (graphics-list-p t))
+  (gdboxer-clear-box (fetch-godot-obj self) bitmap-p graphics-list-p))
+
+(defun godot-update-graphics-sheet (box sheet)
+  (let* (;(box (graphics-sheet-superior-box sheet))
+         (godot-box (fetch-godot-obj box))
+         (pixmap (graphics-sheet-bit-array sheet)))
+    ;; draw-wid draw-hei
+    (gdboxer-set-graphics-sheet-draw-dims godot-box (graphics-sheet-draw-wid sheet) (graphics-sheet-draw-hei sheet))
+
+    ;; bit-array
+    (when pixmap
+      (gdboxer-set-graphics-sheet-bit-array godot-box (ogl-pixmap-width pixmap) (ogl-pixmap-height pixmap) (ogl-pixmap-texture pixmap)))
+
+    ;; draw-mode
+
+    ;; graphics-command-list
+    (let ((gl (graphics-sheet-graphics-list sheet)))
+      (when gl
+        (do-vector-contents (command gl)
+          (when (eq 35 (aref command 0))
+            (gdboxer-push-graphics-command godot-box (aref command 0) (aref command 1) (aref command 2) (aref command 3) (aref command 4) nil)))))
+
+    ;; background
+    (let ((value (graphics-sheet-background sheet)))
+      (when value
+        (gdboxer-set-graphics-sheet-background (fetch-godot-obj box) (aref value 1) (aref value 2) (aref value 3) (aref value 4))))
+  ))
+
 (defmethod (setf graphics-sheet-background) :after (value sheet)
   (let ((box (graphics-sheet-superior-box sheet)))
     (when box
@@ -263,17 +292,13 @@
 ;; )
 
 (defmethod (setf graphics-info) :after ((sheet graphics-sheet) box)
-  (let* ((godot-box (fetch-godot-obj box))
-         (pixmap (graphics-sheet-bit-array sheet)))
-
+  (let* ((godot-box (fetch-godot-obj box)))
     (gdboxer-set-property godot-box "flipped_box_type" 1)
-    ;; TODO TODO TODO Extract these properties as graphics-sheet setf wrappers for updates
-    ;; draw_wid, draw_hei
-    (gdboxer-set-graphics-sheet-draw-dims godot-box (graphics-sheet-draw-wid sheet) (graphics-sheet-draw-hei sheet))
+    (godot-update-graphics-sheet box sheet)))
 
-    ;; bit-array
-    (when pixmap
-      (gdboxer-set-graphics-sheet-bit-array godot-box (ogl-pixmap-width pixmap) (ogl-pixmap-height pixmap) (ogl-pixmap-texture pixmap)))))
+;;;
+;;; GRAPHICS-OBJECTS
+;;;
 
 (defmethod (setf graphics-info) :after ((sheet graphics-object) box)
   (format t "setf graphics-info with Turtle type object~%")
@@ -283,6 +308,14 @@
 ;;
 ;; Hacking
 ;;
+
+(defmethod append-graphics-command :after (gclist com-list)
+  (format t "APPEND GRAPHICS COMMAND AFTER: ~A~%" com-list)
+  (let* ((agent (graphics-command-list-agent %graphics-list))
+         (graphics-box (assoc-graphics-box agent))
+         (godot-box (fetch-godot-obj graphics-box)))
+    ;; This is not very elegent, however the longest graphics command is never more than 6 params
+    (gdboxer-push-graphics-command godot-box (nth 0 com-list) (nth 1 com-list) (nth 2 com-list) (nth 3 com-list) (nth 4 com-list) (nth 5 com-list))))
 
 (defun repaint-in-eval (&optional force?)
   nil)
@@ -371,6 +404,10 @@
 ;;;
 ;;; Draw high
 ;;;
+
+(defun %set-pen-size (v)
+  ;; (setf (boxgl-device-pen-size bw::*boxgl-device*) v)
+  nil)
 
 (defun set-pen-color (color)
   ;; (%set-pen-color color)

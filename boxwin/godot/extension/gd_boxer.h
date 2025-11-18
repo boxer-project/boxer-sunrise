@@ -24,6 +24,7 @@ public:
     void handle_mouse_input(int action, Variant row, int pos, int click, int bits, int area);
     void handle_open_file(Variant path);
     void toggle_box_type();
+    void shutdown_lisp();
 
     // void link_box_node_with_cl_box(Node);
 };
