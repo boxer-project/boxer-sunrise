@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://pdlvpw8s1sse"]
+[gd_scene load_steps=15 format=3 uid="uid://pdlvpw8s1sse"]
 
 [ext_resource type="Script" uid="uid://cy2jvrckapxht" path="res://scripts/main.gd" id="1_jyhfs"]
 [ext_resource type="PackedScene" uid="uid://7nrew4abjpqi" path="res://scenes/cha.tscn" id="2_tbgi4"]
@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://bqodvk5rb2nb4" path="res://scenes/row.tscn" id="4_tipki"]
 [ext_resource type="Theme" uid="uid://clyeptsut3tbs" path="res://themes/macOS_light.tres" id="5_o6xl0"]
 [ext_resource type="Script" uid="uid://cgbi3olobjs83" path="res://scripts/flipping_box.gd" id="5_tbgi4"]
+[ext_resource type="Script" uid="uid://bjghqrhlr4ubh" path="res://scripts/boxer_menu_bar.gd" id="9_85g3d"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tefeu"]
 albedo_color = Color(1, 1, 1, 0)
@@ -112,6 +113,17 @@ environment = SubResource("Environment_tefeu")
 visible = false
 position = Vector2(284, 454)
 texture = SubResource("ViewportTexture_jyhfs")
+
+[node name="BoxerMenuBar" type="MenuBar" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("9_85g3d")
+
+[node name="MenuWow" type="PopupMenu" parent="BoxerMenuBar"]
+system_menu_id = 2
+item_count = 1
+item_0/text = "This item!"
+item_0/id = 0
 
 [connection signal="canceled" from="OpenFileDialog" to="." method="_on_open_file_dialog_canceled"]
 [connection signal="file_selected" from="OpenFileDialog" to="." method="_on_open_file_dialog_file_selected"]

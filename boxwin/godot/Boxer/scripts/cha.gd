@@ -8,4 +8,4 @@ func _on_gui_input(event: InputEvent) -> void:
         clicked.emit(self)
         var pos = self.get_parent().chas.find(self)
         print("Cha clicked2: ", self, " parent: ", self.get_parent().boxer_row, " pos: ", pos)
-        $/root/Main/GDBoxer.handle_mouse_input(0, boxerref, pos + 1, 0, 0, 0)
+        $/root/Main.handle_mouse_input(0, boxerref, pos + 1, 0, 0, 0)

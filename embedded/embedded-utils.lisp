@@ -153,9 +153,7 @@
       (gdboxer-delete-row-at-row-no godot-box 0))))
 
 (defun godot-insert-row-at-row-no (box godot-box row godot-row pos)
-  ;; (unless (row-row-no box row)
-    (gdboxer-insert-row-at-row-no godot-box godot-row pos)
-    ;; )
+  (gdboxer-insert-row-at-row-no godot-box godot-row pos)
   godot-row)
 
 ;;;
@@ -308,6 +306,51 @@
 ;;
 ;; Hacking
 ;;
+
+(defvar *next-event* #(0 0 0 0))
+
+(defun ecl-boxer-command-loop-internal ()
+  ;; (flush-input)
+  (loop
+    ;; (when *clicked-startup-file*
+    ;;   (queue-event *clicked-startup-file*)
+    ;;   (setf *clicked-startup-file* nil))
+    (catch 'boxer::boxer-editor-top-level
+      (let ((input (fetch-event-from-queue *next-event*)))
+        (cond ((null input)
+               nil)
+              ((equal 0 (aref input 0))
+               nil)
+              (t
+                (format t "Lisp: Handling keyboard input: ~A,  ~A" (aref input 1) (aref input 2))
+                (godot-handle-boxer-input (aref input 1) (aref input 2)))
+              ((gesture-spec-p input)
+               ;; We are adding this gesture condition in addition to the key-event? because at some point
+               ;; during a lispworks major version change, the ability to encode the modifier keys as part of
+               ;; the reader char seems to have gone away.  By adding an option to push an entire gesture-spec
+               ;; to the *boxer-eval-queue* we can just manually pick out the char-code and input bits.
+               (let* ((data (gesture-spec-data input))
+                      (charbits (gesture-spec-modifiers input)))
+                 (handle-boxer-input data charbits (key-to-keep-shifted? data))))
+              ((key-event? input)
+               (handle-boxer-input (input-code input) (input-bits input)))
+              ((mouse-event? input)
+               (handle-boxer-input input))
+              ((eq input :stop-and-quit)
+               #+lispworks (capi:apply-in-pane-process *boxer-pane* #'(lambda ()
+                (setf (boxer::active *boxer-pane*) nil)
+                (setf boxer::*quit-boxer* t))))
+              ((and (symbolp input) (not (null (symbol-function input))))
+               (funcall input))
+              ((and (consp input)
+                    (or (functionp (car input))
+                        (and (symbolp (car input))
+                             (not (null (symbol-function (car input)))))))
+               (apply (car input) (cdr input)))
+              ((not (null boxer::*boxer-system-hacker*))
+               (error "Unknown object, ~A, in event queue" input)))
+        )
+      )))
 
 (defmethod append-graphics-command :after (gclist com-list)
   (format t "APPEND GRAPHICS COMMAND AFTER: ~A~%" com-list)
@@ -497,6 +540,11 @@
 ;;;
 ;;; TODO Why aren't these somewhere in core??
 ;;;
+
+;; (defvar BOXER-WINDOW::*CLICKED-STARTUP-FILE* nil)
+
+(defun repaint (&optional just-windows?)
+  nil)
 
 (defmethod fixed-size? ((self box))
   (let ((ds (display-style-list self)))

@@ -34,6 +34,8 @@ var canvas_zoom = 1:
         if %StatusBarContainer:
             %StatusBarContainer.visible = value
 
+var lisp_thread: Thread
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
     cursor = $Cursor
@@ -46,7 +48,62 @@ func _ready() -> void:
     _root_viewport_size_changed()
 
     if use_boxer_gdextension:
-        print("About to bootstrap *initial-box*")
+        print("About to bootstrap THREADED *initial-box*")
+
+    lisp_thread = Thread.new()
+    var world_node = get_node("/root/Main/TopLevelContainer/OutermostBoxScroll/World")
+    var first_row_node = get_node("/root/Main/TopLevelContainer/OutermostBoxScroll/World/BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer/RowsBox/Row")
+    first_row_node.parent_box = world_node
+    lisp_thread.start(_start_lisp.bind($GDBoxer, get_node("/root/Main"), world_node, first_row_node))
+
+func _notification(what):
+    if what == NOTIFICATION_WM_CLOSE_REQUEST:
+        $GDBoxer.shutdown_lisp()
+        # lisp_thread?
+        get_tree().quit() # default behavior
+
+###
+### Access to embedded boxer
+###
+func _start_lisp(lisp_node, main_node, world_node, first_row_node):
+    lisp_node.startup_lisp(main_node, world_node, first_row_node)
+
+var boxer_event_queue = []
+func fetch_event_from_queue():
+    # print("Main.gd fetch from event queue")
+    var next = boxer_event_queue.pop_back()
+    if next:
+        return next
+    else:
+        return []
+
+func handle_character_input(code, bits):
+    boxer_event_queue.push_front([code, bits])
+
+func handle_open_file(path):
+    $GDBoxer.handle_open_file(path)
+
+func handle_mouse_input(action, row, pos, click, bits, area):
+    $GDBoxer.handle_mouse_input(action, row, pos, click, bits, area)
+
+###
+### Queue from Lisp -> Boxer
+###
+var boxer_scene_queue = []
+
+func push_to_scene_queue(arr):
+    boxer_scene_queue.push_front(arr)
+
+func handle_scene_queue():
+    var next = boxer_scene_queue.pop_back()
+    if next:
+        print("Applying2: ", next[0], " : ", next[1], " : ", next.slice(2, next.size()))
+        next[0].callv(next[1], next.slice(2, next.size()))
+
+###
+### End access to embedded boxer
+###
+
 
 
 # Called when the root's viewport size changes (i.e. when the window is resized).
@@ -59,9 +116,10 @@ func _root_viewport_size_changed() -> void:
     %OutermostBoxScroll.size.y = Global.dpi_scale(get_viewport().size.y - %ToolbarContainer.size.y - %MessageBarContainer.size.y - %StatusBarContainer.size.y)
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
     %World.scale = Vector2(canvas_zoom, canvas_zoom)
     %ZoomStatus.text = "Zoom {0}%".format([canvas_zoom * 100])
+    handle_scene_queue()
 
 func _on_box_full_screened(box) -> void:
     print("Full Screening box: ", box)
@@ -97,28 +155,28 @@ func eclboxer_key_input(event: InputEventKey) -> void:
         print("\n>>>>> eclboxer_key_input: ", event, " ||| ctrl: ", event.ctrl_pressed, " mask: ", event.get_modifiers_mask(),
           " bits: ", bits)
         if event.keycode == KEY_BACKSPACE:
-            $GDBoxer.handle_character_input(8, bits)
+            handle_character_input(8, bits)
         elif event.keycode == KEY_UP:
-            $GDBoxer.handle_character_input(-1, bits)
+            handle_character_input(-1, bits)
         elif event.keycode == KEY_DOWN:
-            $GDBoxer.handle_character_input(-2, bits)
+            handle_character_input(-2, bits)
         elif event.keycode == KEY_LEFT:
-            $GDBoxer.handle_character_input(-3, bits)
+            handle_character_input(-3, bits)
         elif event.keycode == KEY_RIGHT:
-            $GDBoxer.handle_character_input(-4, bits)
+            handle_character_input(-4, bits)
         elif event.keycode == KEY_ENTER:
-            $GDBoxer.handle_character_input(13, bits)
+            handle_character_input(13, bits)
         # TODO hack for testing turtles
         elif event.keycode == KEY_T and bits == 4:
-            $GDBoxer.handle_character_input(116, bits)
+            handle_character_input(116, bits)
         elif event.keycode < 4194304:
             #print("Handling InputEvent: ", event)
             # It seems that with a modifier, something like Ctrl-A returns 0 as the event.unicode. If this is
             # the case we'll use the keycode.  This entire arena of issues requires more looking in to.
             if event.unicode == 0:
-                $GDBoxer.handle_character_input(event.keycode, bits)
+                handle_character_input(event.keycode, bits)
             else:
-                $GDBoxer.handle_character_input(event.unicode, bits)
+                handle_character_input(event.unicode, bits)
         else:
             pass
 
@@ -129,17 +187,12 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 func _on_open_file_dialog_file_selected(path: String) -> void:
     print("Opening file: ", path)
-    $GDBoxer.handle_open_file(path)
+    handle_open_file(path)
     $%OutermostBoxScroll.grab_focus()
     get_tree().call_group("NotCursorInput", "release_focus")
 
 func _on_open_file_dialog_canceled() -> void:
     get_tree().call_group("NotCursorInput", "release_focus")
-
-func _notification(what):
-    if what == NOTIFICATION_WM_CLOSE_REQUEST:
-        $GDBoxer.shutdown_lisp()
-        get_tree().quit() # default behavior
 
 #
 # SIGNALS FROM BOXER ENGINE

@@ -1,3 +1,4 @@
+@icon("res://media/icons/Box_scene_icon.svg")
 extends BoxContainer
 
 @onready var data_box_stylebox = ResourceLoader.load("res://themes/data_box_stylebox.tres")
@@ -165,8 +166,8 @@ func insert_row_at_row_no(row: Node, row_no: int) -> Node:
     if row.get_parent():
         var row_parent = row.get_parent()
         row_parent.remove_child(row)
-    %RowsBox.add_child(row)
-    %RowsBox.move_child(row, row_no)
+    rows_box.add_child.call_deferred(row)
+    rows_box.move_child.call_deferred(row, row_no)
     return row
 
 func delete_row_at_row_no(pos: int) -> void:
@@ -174,8 +175,14 @@ func delete_row_at_row_no(pos: int) -> void:
     if to_remove:
         to_remove.queue_free()
 
+# rows_box and name_row are here because %var lookups don't work across threads in our queues
+@onready
+var rows_box = %RowsBox
+
+@onready
+var name_row = %NameRow
 func get_name_row():
-    return %NameRow
+    return name_row
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -233,7 +240,6 @@ func _on_shrunk_panel_gui_input(event: InputEvent) -> void:
 func _on_shrunk_box_gui_input(event: InputEvent) -> void:
     pass
     if event is InputEventMouseButton and event.pressed:
-        # $/root/Main/GDBoxer.handle_mouse_input(1, self.rows[0].boxer_row, 0, 0, 0, 0)
         display_style = DisplayStyle.NORMAL
 
 
