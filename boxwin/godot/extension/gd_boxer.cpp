@@ -59,43 +59,59 @@ void GDBoxer::handle_mouse_input(int action, Variant boxer_row, int pos, int cli
  * Functions and signals to send updates from Boxer -> Godot. These are made available to our lisp code.
  */
 
+cl_object convert_godot_to_ecl(Variant value) {
+    UtilityFunctions::print("convert_godot_to_ecl: type: ", value.get_type(), " name: ", value.get_type_name(value.get_type()));
+    int type = value.get_type();
+    if (value.INT == type) {
+        return ecl_make_fixnum((int)value);
+    }
+    else if (value.OBJECT == type) {
+        // BoxerLispRef godot_obj = (BoxerLispRef) ((Object) value);
+        // return ecl_make_foreign_data(ECL_NIL, 0, ((BoxerLispRef*) ((Object*) value))->boxer_obj);
+        return ((BoxerLispRef*) ((Object*) value))->boxer_obj;
+    }
+    else if (value.STRING == type) {
+        godot::String str = String(value);
+        // TODO does this handle unicode??? try and maybe switch to str.utf8()?
+        return ecl_make_simple_base_string(str.ascii(), str.length());
+    }
+    else {
+        return ECL_NIL;
+    }
+}
+
 // Caller from common lisp will pass in a vector to fill
 cl_object fetch_event_from_queue(cl_object event_arr) {
     Array next = main_boxer_node->call("fetch_event_from_queue");
     if (next.size() > 0) {
-        // cl_object togo = cl_eval(cl_eval(c_string_to_object("#(0 0)")));
-        ecl_aset(event_arr, 0, ecl_make_fixnum(1));
-        ecl_aset(event_arr, 1, ecl_make_fixnum((int)next[0]));
-        ecl_aset(event_arr, 2, ecl_make_fixnum((int)next[1]));
-        // return event_arr;
+        for (int i = 0; i < next.size(); i++) {
+            ecl_aset(event_arr, i, convert_godot_to_ecl(next[i]));
+        }
     }
     else {
         ecl_aset(event_arr, 0, ecl_make_fixnum(0));
-        // return ECL_NIL;
     }
     return event_arr;
 }
 
 cl_object lisp_boxer_insert_cha_signal(cl_object row, cl_object ch, cl_object cha_no)  {
+    Variant ch_var;
     if ECL_FIXNUMP (ch)
-    {
-        main_boxer_node->call_deferred("_on_gd_boxer_boxer_insert_cha",
-            Variant((Object*) ecl_foreign_data_pointer_safe(row)),
-            Variant((int) ecl_fixnum(ch)),
-            Variant((int) ecl_fixnum(cha_no)));
-    }
-    else {
-        // the_gdboxer_node->emit_signal("boxer_insert_cha",
-        main_boxer_node->call_deferred("_on_gd_boxer_boxer_insert_cha",
-            Variant((Object*) ecl_foreign_data_pointer_safe(row)),
-            Variant((Object*) ecl_foreign_data_pointer_safe(ch)),
-            Variant((int) ecl_fixnum(cha_no)));
-    }
+        ch_var = Variant((int)ecl_fixnum(ch));
+    else
+        ch_var = Variant((Object *)ecl_foreign_data_pointer_safe(ch));
+    Array togo = Array();
+    togo.push_back(main_boxer_node);
+    togo.push_back("_on_gd_boxer_boxer_insert_cha");
+    togo.push_back(Variant((Object *)ecl_foreign_data_pointer_safe(row)));
+    togo.push_back(ch_var);
+    togo.push_back(Variant((int)ecl_fixnum(cha_no)));
+    main_boxer_node->call("push_to_scene_queue", togo);
     return ECL_NIL;
 }
 
 cl_object lisp_boxer_delete_cha_signal(cl_object row, cl_object cha_no)  {
-    // the_gdboxer_node->emit_signal("boxer_delete_cha",
+
     main_boxer_node->call_deferred("_on_gd_boxer_boxer_delete_cha",
         Variant((Object*) ecl_foreign_data_pointer_safe(row)),
         Variant((int) ecl_fixnum(cha_no)));
@@ -129,10 +145,16 @@ cl_object lisp_boxer_delete_row_at_row_no(cl_object box, cl_object pos) {
 }
 
 cl_object lisp_boxer_point_location(cl_object row, cl_object cha_no) {
-    // UtilityFunctions::print("\nlisp_boxer_point_location!!");
-    the_gdboxer_node->emit_signal("boxer_point_location",
-        Variant((Object*) ecl_foreign_data_pointer_safe(row)),
-        Variant((int) ecl_fixnum(cha_no)));
+    Array togo = Array();
+    togo.push_back(main_boxer_node);
+    togo.push_back("_on_gd_boxer_boxer_point_location");
+    togo.push_back(Variant((Object*) ecl_foreign_data_pointer_safe(row)));
+    togo.push_back(Variant((int) ecl_fixnum(cha_no)));
+    main_boxer_node->call("push_to_scene_queue", togo);
+
+    // the_gdboxer_node->emit_signal("boxer_point_location",
+    //     Variant((Object*) ecl_foreign_data_pointer_safe(row)),
+    //     Variant((int) ecl_fixnum(cha_no)));
     return ECL_NIL;
 }
 
@@ -318,7 +340,6 @@ cl_object lisp_boxer_set_property(cl_object box, cl_object prop_name, cl_object 
     UtilityFunctions::print("C++ lisp_boxer_set_property\n");
     Object *godot_box = Variant((Object *)ecl_foreign_data_pointer_safe(box));
     UtilityFunctions::print("C++ lisp_boxer_set_property 2\n");
-    // StringName *godot_prop_name = (StringName *)ecl_foreign_data_pointer_safe(prop_name);
     char * name = ecl_base_string_pointer_safe (ecl_null_terminated_base_string(prop_name));
     UtilityFunctions::print("C++ lisp_boxer_set_property 3\n");
     // godot_box->set("display_style", (int)ecl_fixnum(prop_value));
@@ -326,6 +347,11 @@ cl_object lisp_boxer_set_property(cl_object box, cl_object prop_name, cl_object 
     UtilityFunctions::print("C++ lisp_boxer_set_property 4\n");
     return ECL_NIL;
 }
+
+// void define_ecl_lisp_func(const char* lisp_name, () c_func, int num_args) {
+//     cl_object aux = ecl_make_symbol(lisp_name, "BOXER");
+//     ecl_def_c_function(aux, (cl_objectfn_fixed) c_func, num_args);
+// }
 
 // main_boxer_node, world_node, first_row_node
 void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node) {
@@ -351,6 +377,7 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
 
     aux = ecl_make_symbol("FETCH-EVENT-FROM-QUEUE", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) fetch_event_from_queue, 1);
+    // define_ecl_lisp_func("FETCH-EVENT-FROM-QUEUE", fetch_event_from_queue, 1);
 
     aux = ecl_make_symbol("GDBOXER-MAKE-ROW", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_make_row, 1);
@@ -443,10 +470,6 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
     // END SIGNAL SETUP
     //
 
-    // litmus test
-    // result = cl_eval(c_string_to_object("(boxer::wowwow)"));
-    // ecl_print(result, ECL_T);
-
     result = cl_eval(c_string_to_object("(bw::start-embedded-boxer nil)"));
     ecl_print(result, ECL_T);
 
@@ -454,25 +477,19 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
     ecl_print(result, ECL_T);
 
     // Setup the Global node
-    // main_boxer_node = get_node<Node>("/root/Main");
     main_boxer_node = m_node;
 
-    // Bootstrap the *initial-box* and it's first row
-    // Node *world_node = get_node<Node>("/root/Main/TopLevelContainer/OutermostBoxScroll/World");
-
-    // UtilityFunctions::print("\nDoes this really worksBBB?: ", ClassDB::class_exists(world_node::get_class_static()));
-    // Node *first_row_node = get_node<Node>("/root/Main/TopLevelContainer/OutermostBoxScroll/World/BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer/RowsBox/Row");
     cl_object cl_world_node = ecl_make_foreign_data(ECL_NIL, 0, world_node);
     cl_object cl_first_row_node = ecl_make_foreign_data(ECL_NIL, 0, first_row_node);
     cl_object link_initial_box_to_node_fun_name = ecl_make_symbol("LINK_INITIAL_BOX_TO_NODE", "BOXER");
     result = cl_funcall(3, link_initial_box_to_node_fun_name, cl_world_node, cl_first_row_node);
 
-    // result = cl_eval(c_string_to_object("(bw::type-stuff \"123\")"));
-
     UtilityFunctions::print("Goodbye from GD Boxer Ready 2.7");
     UtilityFunctions::print("About to start boxer-command-loop-internal...");
     cl_object eval_loop = ecl_make_symbol("ECL-BOXER-COMMAND-LOOP-INTERNAL", "BOXER");
     cl_funcall(1, eval_loop);
+
+    cl_shutdown();
 }
 
 void GDBoxer::shutdown_lisp() {
@@ -488,22 +505,10 @@ GDBoxer::~GDBoxer() {
 
 // BoxerLispRef
 BoxerLispRef::BoxerLispRef() {
-
 }
 
 BoxerLispRef::~BoxerLispRef() {
 }
 
 void BoxerLispRef::_bind_methods() {
-    // ClassDB::bind_method(D_METHOD("handle_character_input", "ch", "bits"), &GDBoxer::handle_character_input);
-    // ClassDB::bind_method(D_METHOD("handle_mouse_input", "row", "pos", "click", "bits", "area"), &GDBoxer::handle_mouse_input);
-
-    // ClassDB::bind_method(D_METHOD("toggle_box_type", "ch", "bits"), &GDBoxer::handle_character_input);
-
-    // ADD_SIGNAL(MethodInfo("boxer_insert_cha", PropertyInfo(Variant::OBJECT, "row"), PropertyInfo(Variant::INT, "ch"),
-    //      PropertyInfo(Variant::INT, "cha_no")));
-    // ADD_SIGNAL(MethodInfo("boxer_delete_cha", PropertyInfo(Variant::OBJECT, "row"), PropertyInfo(Variant::INT, "cha_no")));
-    // ADD_SIGNAL(MethodInfo("boxer_delete_chas_between_cha_nos", PropertyInfo(Variant::OBJECT, "row"),
-    //     PropertyInfo(Variant::INT, "strt_cha_no"), PropertyInfo(Variant::INT, "stop_cha_no")));
-    // ADD_SIGNAL(MethodInfo("boxer_point_location", PropertyInfo(Variant::OBJECT, "row"), PropertyInfo(Variant::INT, "cha_no")));
 }

@@ -1,14 +1,12 @@
-[gd_resource type="Theme" load_steps=3 format=3 uid="uid://clyeptsut3tbs"]
+[gd_resource type="Theme" load_steps=2 format=3 uid="uid://clyeptsut3tbs"]
 
-[ext_resource type="FontFile" uid="uid://iv50tu11bqyr" path="res://fonts/HelveticaNeue.ttc" id="1_3cf26"]
 [ext_resource type="StyleBox" uid="uid://df0vuka75vw3" path="res://themes/macOS_light_stylebox.tres" id="1_5ws5d"]
 
 [resource]
 default_base_scale = 1.0
-default_font = ExtResource("1_3cf26")
 default_font_size = 0
 Button/colors/font_color = Color(0, 0, 0, 1)
-Button/fonts/font = ExtResource("1_3cf26")
+Button/fonts/font = null
 Button/styles/normal = ExtResource("1_5ws5d")
 ColorPickerButton/colors/icon_disabled_color = Color(0, 0, 0, 0)
 ColorPickerButton/styles/normal = ExtResource("1_5ws5d")

@@ -38,6 +38,8 @@ var lisp_thread: Thread
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
+    boxer_event_queue_mutex = Mutex.new()
+    boxer_scene_queue_mutex = Mutex.new()
     cursor = $Cursor
     $TopLevelContainer/ToolbarContainer/BoxItems/BackgroundColor.color_changed.connect(cursor._box_background_color_changed)
     cursor._box_background_color_changed
@@ -56,10 +58,14 @@ func _ready() -> void:
     first_row_node.parent_box = world_node
     lisp_thread.start(_start_lisp.bind($GDBoxer, get_node("/root/Main"), world_node, first_row_node))
 
+    _on_gd_boxer_boxer_point_location(first_row_node, 0)
+
 func _notification(what):
     if what == NOTIFICATION_WM_CLOSE_REQUEST:
-        $GDBoxer.shutdown_lisp()
-        # lisp_thread?
+        boxer_event_queue_mutex.lock()
+        boxer_event_queue.push_front([4])
+        boxer_event_queue_mutex.unlock()
+        lisp_thread.wait_to_finish()
         get_tree().quit() # default behavior
 
 ###
@@ -68,37 +74,63 @@ func _notification(what):
 func _start_lisp(lisp_node, main_node, world_node, first_row_node):
     lisp_node.startup_lisp(main_node, world_node, first_row_node)
 
+# boxer_event_queue will be
+# 0 - Type of event
+#     0 - nothing (this is not actually pushed from here ever)
+#     1 - Keyboard event
+#     2 - Mouse event
+#     3 - Lisp Function call in Boxer package
+#         ex. [3, 2, "functionname", "arg1", "etc"]
+#     4 - Shutdown and exit
 var boxer_event_queue = []
+var boxer_event_queue_mutex: Mutex
 func fetch_event_from_queue():
-    # print("Main.gd fetch from event queue")
+    boxer_event_queue_mutex.lock()
     var next = boxer_event_queue.pop_back()
+    boxer_event_queue_mutex.unlock()
     if next:
         return next
     else:
         return []
 
 func handle_character_input(code, bits):
-    boxer_event_queue.push_front([code, bits])
+    boxer_event_queue_mutex.lock()
+    boxer_event_queue.push_front([1, code, bits])
+    boxer_event_queue_mutex.unlock()
 
 func handle_open_file(path):
-    $GDBoxer.handle_open_file(path)
+    boxer_event_queue_mutex.lock()
+    boxer_event_queue.push_front([3, 1, "GODOT-OPEN-FILE", path])
+    boxer_event_queue_mutex.unlock()
 
 func handle_mouse_input(action, row, pos, click, bits, area):
-    $GDBoxer.handle_mouse_input(action, row, pos, click, bits, area)
+    boxer_event_queue_mutex.lock()
+    boxer_event_queue.push_front([2, action, row, pos, click, bits, area])
+    boxer_event_queue_mutex.unlock()
 
 ###
 ### Queue from Lisp -> Boxer
 ###
 var boxer_scene_queue = []
+var boxer_scene_queue_mutex: Mutex
 
+# The scene queue is an array or arrays. The elements of each array are:
+#   0 - godot node to apply function call to
+#   1 - String with the name of the function
+#   2..x Remaining arguments to function
 func push_to_scene_queue(arr):
+    boxer_scene_queue_mutex.lock()
     boxer_scene_queue.push_front(arr)
+    boxer_scene_queue_mutex.unlock()
 
 func handle_scene_queue():
+    boxer_scene_queue_mutex.lock()
     var next = boxer_scene_queue.pop_back()
-    if next:
-        print("Applying2: ", next[0], " : ", next[1], " : ", next.slice(2, next.size()))
+    while next:
+        print("Applying3: ", next[0], " : ", next[1], " : ", next.slice(2, next.size()))
         next[0].callv(next[1], next.slice(2, next.size()))
+        next = boxer_scene_queue.pop_back()
+    boxer_scene_queue_mutex.unlock()
 
 ###
 ### End access to embedded boxer
@@ -119,7 +151,8 @@ func _root_viewport_size_changed() -> void:
 func _process(_delta: float) -> void:
     %World.scale = Vector2(canvas_zoom, canvas_zoom)
     %ZoomStatus.text = "Zoom {0}%".format([canvas_zoom * 100])
-    handle_scene_queue()
+    if boxer_scene_queue.size() > 0:
+        handle_scene_queue()
 
 func _on_box_full_screened(box) -> void:
     print("Full Screening box: ", box)
@@ -199,6 +232,9 @@ func _on_open_file_dialog_canceled() -> void:
 #
 func _on_gd_boxer_boxer_insert_cha(row: Node, ch, cha_no: int) -> void:
     # print("_on_gd_boxer_boxer_insert_cha: ", row, " ", ch)
+    if not row:
+        print("Why is there no row to print: ", ch, " on???")
+        return
     if typeof(ch) == TYPE_INT:
         var cha = cha_scene.instantiate()
         cha.text = String.chr(ch)
@@ -213,7 +249,7 @@ func _on_gd_boxer_boxer_delete_chas_between_cha_nos(row: Object, strt_cha_no: in
     row.remove_chas(strt_cha_no, stop_cha_no)
 
 func _on_gd_boxer_boxer_point_location(row: Object, cha_no: int) -> void:
-    print("\nUPdating the cursor in Godot3: ", row, " : ", cha_no, "\n")
+    print("\nUPdating the cursor in Godot: ", row, " : ", cha_no, "\n")
     cursor.cur_row = row
     cursor.cur_idx = cha_no
 

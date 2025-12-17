@@ -1,13 +1,11 @@
-[gd_scene load_steps=3 format=3 uid="uid://7nrew4abjpqi"]
+[gd_scene load_steps=2 format=3 uid="uid://7nrew4abjpqi"]
 
 [ext_resource type="Script" uid="uid://dwju2ptwvobhq" path="res://scripts/cha.gd" id="1_3v4y2"]
-[ext_resource type="FontFile" uid="uid://iv50tu11bqyr" path="res://fonts/HelveticaNeue.ttc" id="1_hwtw4"]
 
 [node name="cha" type="Label"]
 size_flags_vertical = 0
 mouse_filter = 0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = ExtResource("1_hwtw4")
 theme_override_font_sizes/font_size = 14
 script = ExtResource("1_3v4y2")
 

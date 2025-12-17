@@ -14,13 +14,14 @@ signal flipped(box)
 #@export var fixedSize = false
 #func set_fixed_size()
 
-
 var rows = []
 var first_inferior_row
 var current_row = null
 
 # Reference to the actual Boxer box object in common lisp
 var boxer_box
+
+var skip_position = false
 
 # defclass Box.name -> name
 #   (this is actually a NameRow object in lisp)
@@ -52,6 +53,10 @@ func toggle_to_data():
 func toggle_to_doit():
     box_type = BoxType.DOIT
 
+func show_turtle_graphics(status):
+    # Takes a boolean determining whether to show the turtle graphics
+    %TurtleGraphics.visible = status
+
 # Graphics and Sprite boxes still have text on their flipped side in addition to the graphics or sprite
 enum BoxContents {TEXT, GRAPHICS, VIDEO}
 var box_contents = BoxContents.TEXT:
@@ -59,19 +64,18 @@ var box_contents = BoxContents.TEXT:
         return box_contents
     set(value):
         box_contents = value
-        # print("UPdateing box_contents: ", value)
         %RowsBox.visible = false
         %GraphicsSheetBackground.visible = false
-        %GraphicsSprite.visible = false
-        %TurtleGraphics.visible = false
+        %GraphicsSheetBitArray.visible = false
+        show_turtle_graphics(false)
         %VideoPlayer.visible = false
         %PanelContainer.custom_minimum_size = Vector2(0,0)
         if value == BoxContents.TEXT:
             %RowsBox.visible = true
         elif value == BoxContents.GRAPHICS:
-            %GraphicsSprite.visible = true
+            %GraphicsSheetBitArray.visible = true
             %GraphicsSheetBackground.visible = true
-            %TurtleGraphics.visible = true
+            show_turtle_graphics(true)
             %PanelContainer.custom_minimum_size = Vector2(draw_wid, draw_hei)
         elif value == BoxContents.VIDEO:
             %VideoPlayer.visible = true
@@ -93,7 +97,7 @@ func set_background(red, green, blue, alpha):
 func set_bit_array(width, height, arr: PackedInt32Array):
     var texture = ImageTexture.create_from_image(
         Image.create_from_data(width, height, false, Image.FORMAT_RGBA8 , arr.to_byte_array()))
-    %GraphicsSprite.texture = texture
+    %GraphicsSheetBitArray.texture = texture
 
 ###
 #
@@ -166,6 +170,8 @@ func insert_row_at_row_no(row: Node, row_no: int) -> Node:
     if row.get_parent():
         var row_parent = row.get_parent()
         row_parent.remove_child(row)
+    if rows_box == null:
+        rows_box = %RowsBox
     rows_box.add_child.call_deferred(row)
     rows_box.move_child.call_deferred(row, row_no)
     return row
@@ -195,6 +201,8 @@ func _ready() -> void:
 
 ## Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
+    if rows_box == null: rows_box = %RowsBox
+    if name_row == null: name_row = %NameRow
     update_display_style(display_style)
     if flipped_box_type == FlippedBoxType.GRAPHICS:
         graphics_mode_p = graphics_mode_p
@@ -223,7 +231,6 @@ func _on_lower_right_corner_gui_input(event: InputEvent) -> void:
 
 
 func _on_upper_left_corner_gui_input(event: InputEvent) -> void:
-    pass
     if event is InputEventMouseButton and event.pressed:
         if display_style == DisplayStyle.NORMAL or display_style == DisplayStyle.FIXED:
             display_style = DisplayStyle.SHRUNK
@@ -232,19 +239,16 @@ func _on_upper_left_corner_gui_input(event: InputEvent) -> void:
 
 
 func _on_shrunk_panel_gui_input(event: InputEvent) -> void:
-    pass
     if event is InputEventMouseButton and event.pressed:
         display_style = DisplayStyle.SHRUNK
 
 
 func _on_shrunk_box_gui_input(event: InputEvent) -> void:
-    pass
     if event is InputEventMouseButton and event.pressed:
         display_style = DisplayStyle.NORMAL
 
 
 func _on_upper_right_corner_gui_input(event: InputEvent) -> void:
-    pass
     if event is InputEventMouseButton and event.pressed:
         if display_style == DisplayStyle.NORMAL or display_style == DisplayStyle.FIXED:
             #display_style = DisplayStyle.NORMAL
@@ -269,12 +273,11 @@ func _on_type_toggle_gui_input(event: InputEvent) -> void:
             box_type = BoxType.DATA
 
 func push_graphics_command(opcode, arg1, arg2, arg3, arg4, arg5):
-    print("PUSGHING GRAPHICS COMMSND: ", opcode, " , ", arg1, " , ", arg2, " , ", arg3, " , ", arg4, " , ", arg5)
-    %TurtleGraphics.to_draw.append([opcode, arg1, arg2, arg3, arg4, arg5])
+    %TurtleGraphics.append_draw_command([opcode, arg1, arg2, arg3, arg4, arg5])
 
 func clear_box(bitmap = true, graphics_list = true):
     if graphics_list:
-        %TurtleGraphics.to_draw = []
+        %TurtleGraphics.clear_draw_commands()
     if bitmap:
         # TODO
         pass

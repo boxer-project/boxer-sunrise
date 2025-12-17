@@ -20,7 +20,6 @@ public:
 
     // void _ready() override;
 
-    // void handle_character_input(int ch, int raw_bits);
     void handle_mouse_input(int action, Variant row, int pos, int click, int bits, int area);
     void handle_open_file(Variant path);
     void toggle_box_type();

@@ -104,6 +104,14 @@ var to_draw = []
 #     [35, 0.0, 20.0, 20, 20]
 # ]
 
+func append_draw_command(com):
+    # This function is where we'll make performance decisions, such as wiping out the to_draw
+    # and not redrawing all of them for things like the performance lag microworld
+    to_draw.append(com)
+
+func clear_draw_commands():
+    to_draw = []
+
 func demo1():
     pen_color = Color.BLACK
     pen_width = 1.0

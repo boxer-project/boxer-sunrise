@@ -62,6 +62,7 @@
 
 (defun godot-insert-cha-signal (godot-row cha cha-no)
   (when godot-row
+    (format t "lisp insert cha: ~A ~A ~A~%" godot-row cha cha-no)
     (if (cha? cha)
       (gdboxer-insert-cha-signal godot-row (char-code cha) cha-no)
       (gdboxer-insert-cha-signal godot-row (fetch-godot-obj cha) cha-no))))
@@ -105,7 +106,7 @@
     togo))
 
 (defmethod (setf superior-box) :after (sup-box row)
-  (format t "superior-box1.3: ~A ~A name-row: ~A~%" sup-box row (name-row? row))
+  ;; (format t "superior-box1.3: ~A ~A name-row: ~A~%" sup-box row (name-row? row))
   (when sup-box
     (let* ((godot-box (fetch-godot-obj sup-box))
            (godot-row nil))
@@ -117,7 +118,10 @@
         (setf godot-row (gdboxer-make-row row))
         (putprop row godot-row :gdnode)
         (fill-in-godot-row godot-row row))
-      (when (name-row? row)
+      ;; TODO TODO TODO, this null pointer check is because I'm still figuring out how to get the name row...
+      ;; because we make this box and try to get the name-row before it's added to the scene treee...
+      ;; so I can add the turtle boxes now, but the names of the rows aren't showing up
+      (when (and (name-row? row) (not (ffi:null-pointer-p godot-row)))
         (putprop row godot-row :gdnode)
         (fill-in-godot-row godot-row row)
         (gdboxer-set-superior-box godot-row godot-box)))))
@@ -307,9 +311,45 @@
 ;; Hacking
 ;;
 
-(defvar *next-event* #(0 0 0 0))
+; Hacking in vector support, TODO, put back in main and recompile it
+(defun make-name-row (list &optional (cached-name nil))
+  (let* ((new-row (make-instance 'name-row :cached-name cached-name))
+         (ca (chas-array new-row))
+         (idx 0)
+         (length (length list)))
+    (dolist (item list)
+      (cond ((numberp item)
+             (fast-string-into-chas-array (format nil "~a" item) ca))
+        ((stringp item)
+         (fast-string-into-chas-array item ca))
+        ((symbolp item)
+         (fast-string-into-chas-array (symbol-name item) ca))
+        ((box? item) (error "You must be losing to put ~A here" item))
+        ((vectorp item)
+         (fast-string-into-chas-array (map 'string #'(lambda (x) x) item) ca))
+        (t (error "Don't know how to make a row out of ~S" item)))
+      (incf& idx)
+      (unless (=& idx length)
+        (fast-chas-array-append-cha ca #\space)))
+    new-row))
+
+(defun setup-standard-colors ()
+;; (def-redisplay-initialization
+  ;; set up some standard colors for sprites
+  (dolist (color *standard-colors*)
+      (let ((colorbox (boxer::make-color-internal
+                       (cadr color) (caddr color) (cadddr color)))
+            (variable-name (boxer::intern-in-bu-package
+                            (string-upcase (car color)))))
+        (boxer-eval::boxer-toplevel-set variable-name colorbox))))
+
+(defvar *next-event* #(0 0 0 0 0 0 0 0 0 0 0 0))
 
 (defun ecl-boxer-command-loop-internal ()
+  ;; initialization
+  ;; This is having some sort of error due to parent rows not being able to be added and such things
+  ;; (setup-standard-colors)
+
   ;; (flush-input)
   (loop
     ;; (when *clicked-startup-file*
@@ -321,9 +361,19 @@
                nil)
               ((equal 0 (aref input 0))
                nil)
-              (t
-                (format t "Lisp: Handling keyboard input: ~A,  ~A" (aref input 1) (aref input 2))
+              ((equal 1 (aref input 0))
+                (format t "Lisp: Handling keyboard input: ~A,  ~A~%" (aref input 1) (aref input 2))
                 (godot-handle-boxer-input (aref input 1) (aref input 2)))
+              ((equal 2 (aref input 0))
+                (format t "Lisp: Handling Mouse input: ~A~%" input)
+                (godot-handle-mouse-input (aref input 1) (aref input 2) (aref input 3) (aref input 4)
+                                          (aref input 5) (aref input 6)))
+              ((equal 3 (aref input 0))
+               (format t "Lisp: Handlign function call: ~A~%" input)
+               (funcall (find-symbol (aref input 2) "BOXER") (aref input 3)))
+              ((equal 4 (aref input 0))
+               (format t "Lisp: Exiting~%")
+               (return))
               ((gesture-spec-p input)
                ;; We are adding this gesture condition in addition to the key-event? because at some point
                ;; during a lispworks major version change, the ability to encode the modifier keys as part of
@@ -581,6 +631,10 @@
 (DEFMETHOD UNSHRINK ((SELF BOX))
            (SET-DISPLAY-STYLE SELF ':NORMAL)
            (MODIFIED SELF))
+
+(defmethod supershrink ((self box))
+  (set-display-style self ':supershrunk)
+  (modified self))
 
 (defmethod set-display-style ((self box) new-value)
   ;; sgithens hack, make sure this gets set on new boxes...

@@ -112,7 +112,7 @@ custom_minimum_size = Vector2(20, 20)
 layout_mode = 2
 color = Color(1, 1, 1, 0)
 
-[node name="GraphicsSprite" type="TextureRect" parent="BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer"]
+[node name="GraphicsSheetBitArray" type="TextureRect" parent="BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -122,10 +122,7 @@ flip_v = true
 
 [node name="TurtleGraphics" type="Control" parent="BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer"]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
 script = ExtResource("4_c8a2c")
 
 [node name="VideoPlayer" type="VideoStreamPlayer" parent="BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer"]
