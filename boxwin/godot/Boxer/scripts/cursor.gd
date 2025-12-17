@@ -26,13 +26,12 @@ func _ready() -> void:
 
 func update_location():
     # Update the cursor location based on our cur_row and cur_idx
-    # var cha: Control
-    if cur_row and (cur_idx <= cur_row.chas.size()):
+    if cur_row and (cur_idx <= cur_row.get_child_count()):
         if cur_idx == 0:
             self.global_position.x = cur_row.global_position.x
             self.global_position.y = cur_row.global_position.y
-        elif cur_row.chas.size() > 0:
-            var cha = cur_row.chas[cur_idx-1]
+        elif cur_row.get_child_count() > 0:
+            var cha = cur_row.get_child(cur_idx-1)
             if cha.skip_position:
                 cha.skip_position = false
                 return
