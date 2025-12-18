@@ -4,5 +4,8 @@
 
 [node name="Row" type="HBoxContainer"]
 custom_minimum_size = Vector2(0, 11)
+mouse_behavior_recursive = 2
 theme_override_constants/separation = 0
 script = ExtResource("1_7024n")
+
+[connection signal="gui_input" from="." to="." method="_on_gui_input"]

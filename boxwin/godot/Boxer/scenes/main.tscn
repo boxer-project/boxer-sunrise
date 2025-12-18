@@ -46,6 +46,8 @@ use_native_dialog = true
 unique_name_in_owner = true
 offset_right = 40.0
 offset_bottom = 40.0
+mouse_filter = 2
+mouse_behavior_recursive = 1
 
 [node name="ToolbarContainer" parent="TopLevelContainer" instance=ExtResource("4_tefeu")]
 unique_name_in_owner = true
@@ -64,6 +66,7 @@ text = "local Boxer"
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
+mouse_filter = 2
 
 [node name="World" parent="TopLevelContainer/OutermostBoxScroll" instance=ExtResource("3_tefeu")]
 unique_name_in_owner = true
@@ -117,6 +120,7 @@ texture = SubResource("ViewportTexture_jyhfs")
 [node name="BoxerMenuBar" type="MenuBar" parent="."]
 offset_right = 40.0
 offset_bottom = 40.0
+mouse_filter = 2
 script = ExtResource("9_85g3d")
 
 [node name="MenuWow" type="PopupMenu" parent="BoxerMenuBar"]
