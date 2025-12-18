@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://8neavd8n1a5w" path="res://scripts/row.gd" id="1_7024n"]
 
 [node name="Row" type="HBoxContainer"]
-custom_minimum_size = Vector2(0, 11)
+custom_minimum_size = Vector2(0, 20)
 mouse_behavior_recursive = 2
 theme_override_constants/separation = 0
 script = ExtResource("1_7024n")

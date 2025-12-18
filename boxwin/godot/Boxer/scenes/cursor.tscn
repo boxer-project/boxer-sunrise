@@ -4,9 +4,9 @@
 [ext_resource type="StyleBox" uid="uid://bt4pe0pg4o63j" path="res://themes/cursor_stylebox.tres" id="1_s0nli"]
 
 [node name="Cursor" type="PanelContainer"]
-custom_minimum_size = Vector2(2, 12)
+custom_minimum_size = Vector2(2, 20)
 offset_right = 2.0
-offset_bottom = 10.0
+offset_bottom = 20.0
 size_flags_vertical = 3
 theme_override_styles/panel = ExtResource("1_s0nli")
 script = ExtResource("1_fsq4c")

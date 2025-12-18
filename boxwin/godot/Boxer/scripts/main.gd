@@ -179,12 +179,16 @@ func eclboxer_key_input(event: InputEventKey) -> void:
     var bits = 0
     # https://docs.godotengine.org/en/stable/classes/class_%40globalscope.html#enum-globalscope-key
     if event is InputEventKey and event.pressed:
+        # TODO Ideally Shift should be bit 1 but there are some edge cases we need to review before
+        #      adding that back in here.
+        if event.shift_pressed:
+            bits = bits | 1
         if event.ctrl_pressed:
-            bits = 2
+            bits = bits | 2
         if event.alt_pressed:
-            bits = 4
+            bits = bits | 4
         if event.meta_pressed:
-            bits = 8
+            bits = bits | 8
         print("\n>>>>> eclboxer_key_input: ", event, " ||| ctrl: ", event.ctrl_pressed, " mask: ", event.get_modifiers_mask(),
           " bits: ", bits)
         if event.keycode == KEY_BACKSPACE:

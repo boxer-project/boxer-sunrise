@@ -30,6 +30,7 @@ func update_location():
         if cur_idx == 0:
             self.global_position.x = cur_row.global_position.x
             self.global_position.y = cur_row.global_position.y
+            self.size.y = 20
         elif cur_row.get_child_count() > 0:
             var cha = cur_row.get_child(cur_idx-1)
             if cha.skip_position:
@@ -38,9 +39,11 @@ func update_location():
             var x = cha.global_position.x + cha.size.x
             var y = cha.global_position.y
             self.global_position = Vector2(x, y)
+            self.size.y = cha.size.y
         else:
             self.global_position.x = cur_row.global_position.x
             self.global_position.y = cur_row.global_position.y
+            self.size.y = 20
 
 func _on_blink_timer_timeout() -> void:
     if cursorOn == true:
