@@ -311,6 +311,11 @@
 ;; Hacking
 ;;
 
+;; Sometimes nil screen-boxes end up in the mix...
+(DEFMETHOD SUPERIOR? (self ANOTHER-BOX)
+  "is the arg a superior of the box ?"
+  nil)
+
 ; Hacking in vector support, TODO, put back in main and recompile it
 (defun make-name-row (list &optional (cached-name nil))
   (let* ((new-row (make-instance 'name-row :cached-name cached-name))
