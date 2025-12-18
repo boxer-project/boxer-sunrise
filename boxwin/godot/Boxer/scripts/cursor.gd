@@ -9,15 +9,9 @@ var cur_row
 var cur_cha
 var cur_idx = 0
 
-func _process(delta: float) -> void:
-    # var name_edits = get_tree().get_nodes_in_group("NameInputs")
-    # paused = false
-    # for name_edit in name_edits:
-    #     if name_edit.has_focus():
-    #         paused = true
-
-    # var list = []
-    # list.size
+func _process(_delta: float) -> void:
+    # This is happening in the process loop, because it might take a while for a cha's position to stabilize.
+    # See skip_position member on chas, boxes
     update_location()
 
 # Called when the node enters the scene tree for the first time.
@@ -52,10 +46,3 @@ func _on_blink_timer_timeout() -> void:
     else:
         self.add_theme_stylebox_override("panel", transparent_stylebox)
         cursorOn = true
-
-func _box_background_color_changed(color):
-    var box: BoxContainer
-    box = cur_row.parent_box
-    print("changing box background color", color, box)
-    box.get_node("%OuterBorderPanel").add_theme_color_override("bg_color", color)
-    box.get_node("%BoxPanel").add_theme_color_override("bg_color", color)

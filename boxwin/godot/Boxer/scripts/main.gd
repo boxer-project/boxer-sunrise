@@ -41,8 +41,6 @@ func _ready() -> void:
     boxer_event_queue_mutex = Mutex.new()
     boxer_scene_queue_mutex = Mutex.new()
     cursor = $Cursor
-    $TopLevelContainer/ToolbarContainer/BoxItems/BackgroundColor.color_changed.connect(cursor._box_background_color_changed)
-    cursor._box_background_color_changed
     # Have the main world box take up the entire screen
     %World/BoxInternals.custom_minimum_size = ((get_viewport().size - Vector2i(20, 20)) / Global.screen_scale)
     outermost_box = %World
