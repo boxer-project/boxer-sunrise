@@ -192,8 +192,9 @@ func get_name_row():
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-    current_row = add_row()
-    first_inferior_row = current_row
+    if self.name == "World":
+        current_row = add_row()
+        first_inferior_row = current_row
     # Sometimes the box_type is set in lisp before it's added to the scene tree so
     # the styles don't update
     box_type = box_type
