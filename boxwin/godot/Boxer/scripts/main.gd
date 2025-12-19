@@ -106,6 +106,11 @@ func handle_mouse_input(action, row, pos, click, bits, area):
     boxer_event_queue.push_front([2, action, row, pos, click, bits, area])
     boxer_event_queue_mutex.unlock()
 
+func handle_paste_text(text):
+    boxer_event_queue_mutex.lock()
+    boxer_event_queue.push_front([3, 1, "GODOT-PASTE-TEXT", text])
+    boxer_event_queue_mutex.unlock()
+
 ###
 ### Queue from Lisp -> Boxer
 ###
@@ -125,7 +130,7 @@ func handle_scene_queue():
     boxer_scene_queue_mutex.lock()
     var next = boxer_scene_queue.pop_back()
     while next:
-        print("Applying3: ", next[0], " : ", next[1], " : ", next.slice(2, next.size()))
+        print("Applying: ", next[0], " : ", next[1], " : ", next.slice(2, next.size()))
         next[0].callv(next[1], next.slice(2, next.size()))
         next = boxer_scene_queue.pop_back()
     boxer_scene_queue_mutex.unlock()
@@ -151,6 +156,15 @@ func _process(_delta: float) -> void:
     %ZoomStatus.text = "Zoom {0}%".format([canvas_zoom * 100])
     if boxer_scene_queue.size() > 0:
         handle_scene_queue()
+
+    if Input.is_action_just_pressed("ui_paste"):
+        paste_to_boxer()
+
+func paste_to_boxer():
+    if DisplayServer.clipboard_has():
+        handle_paste_text(DisplayServer.clipboard_get())
+    elif DisplayServer.clipboard_has_image():
+        print("TODO Paste Image from Clipboard")
 
 func _on_box_full_screened(box) -> void:
     print("Full Screening box: ", box)
@@ -251,7 +265,6 @@ func _on_gd_boxer_boxer_delete_chas_between_cha_nos(row: Object, strt_cha_no: in
     row.remove_chas(strt_cha_no, stop_cha_no)
 
 func _on_gd_boxer_boxer_point_location(row: Object, cha_no: int) -> void:
-    print("\nUPdating the cursor in Godot: ", row, " : ", cha_no, "\n")
     cursor.cur_row = row
     cursor.cur_idx = cha_no
 
