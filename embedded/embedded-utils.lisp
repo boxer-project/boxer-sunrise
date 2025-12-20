@@ -307,9 +307,27 @@
   (let* ((godot-box (fetch-godot-obj box)))
     (gdboxer-set-property godot-box "flipped_box_type" 2)))
 
+;;;
+;;; Clipboard Cut/Paste
+;;;
+
+;; TODO partially duped from clipboard.lisp/paste-text
+(defun godot-paste-text (text)
+  (unless (null text)
+    (dotimes (i (length text))
+      (let ((char (aref text i)))
+        (if (member char '(#\Newline #\Return #\Linefeed))
+            (boxer::insert-row boxer::*point*
+                                (boxer::make-initialized-row) :moving)
+            (boxer::insert-cha boxer::*point* char :moving))))
+    (godot-update-point-location)))
+
+
 ;;
 ;; Hacking
 ;;
+
+(defmethod SCROLL-TO-ACTUAL-ROW (obj) nil)
 
 ;; Sometimes nil screen-boxes end up in the mix...
 (DEFMETHOD SUPERIOR? (self ANOTHER-BOX)
@@ -375,7 +393,8 @@
                                           (aref input 5) (aref input 6)))
               ((equal 3 (aref input 0))
                (format t "Lisp: Handlign function call: ~A~%" input)
-               (funcall (find-symbol (aref input 2) "BOXER") (aref input 3)))
+               (apply (find-symbol (aref input 2) "BOXER")
+                 (loop as i from 3 to (+ 2 (aref input 1)) collect (aref input i))))
               ((equal 4 (aref input 0))
                (format t "Lisp: Exiting~%")
                (return))

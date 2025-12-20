@@ -4,6 +4,8 @@ extends Node
 @export var box_scene: PackedScene
 @export var row_scene: PackedScene
 
+@onready var open_dialog: FileDialog = get_node("/root/Main/OpenFileDialog")
+
 # Whether to use the Boxer GDExtension or the prototype mode with Godot handling the input
 @export var use_boxer_gdextension = false
 
@@ -111,6 +113,11 @@ func handle_paste_text(text):
     boxer_event_queue.push_front([3, 1, "GODOT-PASTE-TEXT", text])
     boxer_event_queue_mutex.unlock()
 
+func handle_toggle_closet():
+    boxer_event_queue_mutex.lock()
+    boxer_event_queue.push_front([3, 0, "COM-TOGGLE-CLOSETS"])
+    boxer_event_queue_mutex.unlock()
+
 ###
 ### Queue from Lisp -> Boxer
 ###
@@ -159,6 +166,16 @@ func _process(_delta: float) -> void:
 
     if Input.is_action_just_pressed("ui_paste"):
         paste_to_boxer()
+    if Input.is_action_just_pressed("ui_zoom_in"):
+        canvas_zoom += 0.25
+    if Input.is_action_just_pressed("ui_zoom_out"):
+        canvas_zoom -= 0.25
+    if Input.is_action_just_pressed("ui_open"):
+        open_dialog.popup_centered()
+    if Input.is_action_just_pressed("ui_toggle_closet"):
+        print("Boxer Toggle Closet")
+        handle_toggle_closet()
+
 
 func paste_to_boxer():
     if DisplayServer.clipboard_has():
