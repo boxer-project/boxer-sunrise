@@ -60,14 +60,12 @@ void GDBoxer::handle_mouse_input(int action, Variant boxer_row, int pos, int cli
  */
 
 cl_object convert_godot_to_ecl(Variant value) {
-    UtilityFunctions::print("convert_godot_to_ecl: type: ", value.get_type(), " name: ", value.get_type_name(value.get_type()));
+    // UtilityFunctions::print("convert_godot_to_ecl: type: ", value.get_type(), " name: ", value.get_type_name(value.get_type()));
     int type = value.get_type();
     if (value.INT == type) {
         return ecl_make_fixnum((int)value);
     }
     else if (value.OBJECT == type) {
-        // BoxerLispRef godot_obj = (BoxerLispRef) ((Object) value);
-        // return ecl_make_foreign_data(ECL_NIL, 0, ((BoxerLispRef*) ((Object*) value))->boxer_obj);
         return ((BoxerLispRef*) ((Object*) value))->boxer_obj;
     }
     else if (value.STRING == type) {
