@@ -489,7 +489,8 @@
   (let ((click-bp (MAKE-INITIALIZED-BP :fixed row pos))
         (action (case action-code
                   (0 'BOXER-USER::MOUSE-DOWN)
-                  (1 'BOXER-USER::MOUSE-CLICK)))
+                  (1 'BOXER-USER::MOUSE-CLICK)
+                  (3 'BOXER-USER::MOUSE-DOUBLE-CLICK)))
         (area (case area-code
                 (0 :inside)
                 (otherwise nil))))
