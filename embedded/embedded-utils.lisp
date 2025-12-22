@@ -81,8 +81,10 @@
     new-row))
 
 (defmethod set-name :after ((self box) new-name-row)
+  (format t "~%set-name: self: ~A new-name-row: ~A" self new-name-row)
   ;; TODO Occasionally new-name-row is a String, but I think that's literally just for the
   ;; WORLD name-row, but still revisit this.
+
   (let* ((godot-box (fetch-godot-obj self))
          (godot-name-row nil))
     (setf godot-name-row (gdboxer-get-name-row godot-box))
@@ -92,8 +94,7 @@
     (let ((cha-no 0))
       (do-row-chas ((cha new-name-row))
         (godot-insert-cha-signal godot-name-row cha cha-no)
-        (incf cha-no))))
-        )
+        (incf cha-no)))))
 
 (defun gdboxer-make-box-internal (box)
   (let ((togo (gdboxer-make-box box)))
@@ -106,7 +107,7 @@
     togo))
 
 (defmethod (setf superior-box) :after (sup-box row)
-  ;; (format t "superior-box1.3: ~A ~A name-row: ~A~%" sup-box row (name-row? row))
+  (format t "superior-box1.3: ~A ~A name-row?: ~A~%" sup-box row (name-row? row))
   (when sup-box
     (let* ((godot-box (fetch-godot-obj sup-box))
            (godot-row nil))
@@ -121,10 +122,15 @@
       ;; TODO TODO TODO, this null pointer check is because I'm still figuring out how to get the name row...
       ;; because we make this box and try to get the name-row before it's added to the scene treee...
       ;; so I can add the turtle boxes now, but the names of the rows aren't showing up
-      (when (and (name-row? row) (not (ffi:null-pointer-p godot-row)))
-        (putprop row godot-row :gdnode)
-        (fill-in-godot-row godot-row row)
-        (gdboxer-set-superior-box godot-row godot-box)))))
+      (cond
+        ((and (name-row? row) (not (ffi:null-pointer-p godot-row)))
+         (putprop row godot-row :gdnode)
+         (fill-in-godot-row godot-row row)
+         (gdboxer-set-superior-box godot-row godot-box))
+        ((name-row? row) ;; must be null still, we'll set the special godot property to fill it in later
+         (format t "~% I hope the name is just a string: ~A" (name sup-box))
+         (gdboxer-set-property godot-box "queued_name" (coerce (name sup-box) 'string))
+         (gdboxer-set-property godot-box "queued_name_row_boxerref" godot-row))))))
 
 (defmethod (setf previous-row) :after (value row)
   (format t "previous-row: ~A ~A~%" value row))

@@ -9,6 +9,7 @@ signal full_screened
 signal flipped(box)
 
 @export var row_scene: PackedScene
+@export var cha_scene: PackedScene
 
 # This is the analog of a boxes fixed display style property
 #@export var fixedSize = false
@@ -185,6 +186,9 @@ func delete_row_at_row_no(pos: int) -> void:
 @onready
 var rows_box = %RowsBox
 
+var queued_name = null
+var queued_name_row_boxerref = null
+
 @onready
 var name_row = %NameRow
 func get_name_row():
@@ -198,6 +202,18 @@ func _ready() -> void:
     # Sometimes the box_type is set in lisp before it's added to the scene tree so
     # the styles don't update
     box_type = box_type
+
+    # This is a hopefully temporary, bizarre workaround for the issue that we can't
+    # populate this name row before the box is added to the scene tree, because until it
+    # is you can't access subnodes in it's tree
+    if queued_name:
+        for ch in queued_name:
+            var cha = cha_scene.instantiate()
+            cha.text = ch
+            %NameRow.add_cha(cha, %NameRow.get_child_count())
+        queued_name = null
+        %NameRow.boxer_row = queued_name_row_boxerref
+        queued_name_row_boxerref = null
     pass
 
 ## Called every frame. 'delta' is the elapsed time since the previous frame.

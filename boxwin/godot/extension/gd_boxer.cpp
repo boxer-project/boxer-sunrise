@@ -335,21 +335,12 @@ cl_object lisp_boxer_push_graphics_command(cl_object box, cl_object op_code, cl_
  * MISC
  */
 cl_object lisp_boxer_set_property(cl_object box, cl_object prop_name, cl_object prop_value) {
-    UtilityFunctions::print("C++ lisp_boxer_set_property\n");
+    // TODO, should this be on the insert queue?
     Object *godot_box = Variant((Object *)ecl_foreign_data_pointer_safe(box));
-    UtilityFunctions::print("C++ lisp_boxer_set_property 2\n");
     char * name = ecl_base_string_pointer_safe (ecl_null_terminated_base_string(prop_name));
-    UtilityFunctions::print("C++ lisp_boxer_set_property 3\n");
-    // godot_box->set("display_style", (int)ecl_fixnum(prop_value));
-    godot_box->set_deferred(name, (int)ecl_fixnum(prop_value));
-    UtilityFunctions::print("C++ lisp_boxer_set_property 4\n");
+    godot_box->set_deferred(name, convert_ecl_to_godot(prop_value));
     return ECL_NIL;
 }
-
-// void define_ecl_lisp_func(const char* lisp_name, () c_func, int num_args) {
-//     cl_object aux = ecl_make_symbol(lisp_name, "BOXER");
-//     ecl_def_c_function(aux, (cl_objectfn_fixed) c_func, num_args);
-// }
 
 // main_boxer_node, world_node, first_row_node
 void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node) {

@@ -1,7 +1,8 @@
-[gd_scene load_steps=11 format=3 uid="uid://btaai4vcs1547"]
+[gd_scene load_steps=12 format=3 uid="uid://btaai4vcs1547"]
 
 [ext_resource type="Script" uid="uid://dxo1mc5mvgcgt" path="res://scripts/Box.gd" id="1_g2tbl"]
 [ext_resource type="PackedScene" uid="uid://bqodvk5rb2nb4" path="res://scenes/row.tscn" id="2_oq5cr"]
+[ext_resource type="PackedScene" uid="uid://7nrew4abjpqi" path="res://scenes/cha.tscn" id="3_atdk8"]
 [ext_resource type="Script" uid="uid://cdsnr3b22x5qh" path="res://scripts/lower_right_corner.gd" id="3_bqn3j"]
 [ext_resource type="StyleBox" uid="uid://b52vdxkhfydle" path="res://themes/data_box_stylebox.tres" id="3_telwu"]
 [ext_resource type="Script" uid="uid://b0ij7f1alb4w6" path="res://scripts/turtle.gd" id="4_c8a2c"]
@@ -45,6 +46,7 @@ offset_bottom = 62.0
 size_flags_vertical = 0
 script = ExtResource("1_g2tbl")
 row_scene = ExtResource("2_oq5cr")
+cha_scene = ExtResource("3_atdk8")
 
 [node name="BoxInternals" type="VBoxContainer" parent="."]
 layout_mode = 2
