@@ -259,6 +259,11 @@
 (defmethod clear-box :after ((self box) &key (bitmap-p t) (graphics-list-p t))
   (gdboxer-clear-box (fetch-godot-obj self) bitmap-p graphics-list-p))
 
+(defun godot-init-graphics-sheet (box)
+  ;; For use in on-ready. If this is a graphics box, then update it's sheet
+  (when (graphics-box? box)
+    (godot-update-graphics-sheet box (graphics-info box))))
+
 (defun godot-update-graphics-sheet (box sheet)
   (let* (;(box (graphics-sheet-superior-box sheet))
          (godot-box (fetch-godot-obj box))
@@ -275,9 +280,9 @@
     ;; graphics-command-list
     (let ((gl (graphics-sheet-graphics-list sheet)))
       (when gl
-        (do-vector-contents (command gl)
-          (when (eq 35 (aref command 0))
-            (gdboxer-push-graphics-command godot-box (aref command 0) (aref command 1) (aref command 2) (aref command 3) (aref command 4) nil)))))
+        (do-vector-contents (com gl)
+          (let ((command (coerce com 'list)))
+            (gdboxer-push-graphics-command godot-box (nth 0 command) (nth 1 command) (nth 2 command) (nth 3 command) (nth 4 command) (nth 5 command))))))
 
     ;; background
     (let ((value (graphics-sheet-background sheet)))

@@ -173,8 +173,8 @@ func insert_row_at_row_no(row: Node, row_no: int) -> Node:
         row_parent.remove_child(row)
     if rows_box == null:
         rows_box = %RowsBox
-    rows_box.add_child.call_deferred(row)
-    rows_box.move_child.call_deferred(row, row_no)
+    rows_box.add_child(row)
+    rows_box.move_child(row, row_no)
     return row
 
 func delete_row_at_row_no(pos: int) -> void:
@@ -215,6 +215,7 @@ func _ready() -> void:
         %NameRow.boxer_row = queued_name_row_boxerref
         queued_name_row_boxerref = null
     pass
+    $/root/Main.handle_boxer_func_1("GODOT-INIT-GRAPHICS-SHEET", boxer_box)
 
 ## Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:

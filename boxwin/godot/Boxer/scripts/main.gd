@@ -118,6 +118,11 @@ func handle_toggle_closet():
     boxer_event_queue.push_front([3, 0, "COM-TOGGLE-CLOSETS"])
     boxer_event_queue_mutex.unlock()
 
+func handle_boxer_func_1(func_name, arg0):
+    boxer_event_queue_mutex.lock()
+    boxer_event_queue.push_front([3, 1, func_name, arg0])
+    boxer_event_queue_mutex.unlock()
+
 ###
 ### Queue from Lisp -> Boxer
 ###
