@@ -168,17 +168,22 @@ cl_object lisp_boxer_point_location(cl_object row, cl_object cha_no) {
 cl_object lisp_boxer_make_box(cl_object boxer_box) {
     BoxerLispRef* bbox = memnew(BoxerLispRef);
     bbox->boxer_obj = boxer_box;
-
     Object* godot_box = main_boxer_node->call("make_box", Variant((Object *) bbox));
     return ecl_make_foreign_data(ECL_NIL, 0, godot_box);
 }
 
 cl_object lisp_boxer_make_row(cl_object boxer_row) {
-    // UtilityFunctions::print("Going to try and make a row6...\n");
     BoxerLispRef* brow = memnew(BoxerLispRef);
     brow->boxer_obj = boxer_row;
     Object *godot_row = main_boxer_node->call("make_row", Variant((Object *) brow));
     return ecl_make_foreign_data(ECL_NIL, 0, godot_row);
+}
+
+cl_object lisp_boxer_make_turtle(cl_object boxer_turtle) {
+    BoxerLispRef* bturtle = memnew(BoxerLispRef);
+    bturtle->boxer_obj = boxer_turtle;
+    Object *godot_turtle = main_boxer_node->call("make_turtle", Variant((Object *) bturtle));
+    return ecl_make_foreign_data(ECL_NIL, 0, godot_turtle);
 }
 
 
@@ -341,6 +346,12 @@ cl_object lisp_boxer_push_graphics_command(cl_object box, cl_object op_code, cl_
     return ECL_NIL;
 }
 
+cl_object lisp_boxer_add_turtle_to_graphics(cl_object box, cl_object turtle) {
+    Object *godot_box = Variant((Object *)ecl_foreign_data_pointer_safe(box));
+    Object *godot_turtle = Variant((Object *)ecl_foreign_data_pointer_safe(turtle));
+    godot_box->call_deferred("add_turtle", godot_turtle);
+    return ECL_NIL;
+}
 /*
  * MISC
  */
@@ -380,6 +391,9 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
 
     aux = ecl_make_symbol("GDBOXER-MAKE-ROW", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_make_row, 1);
+
+    aux = ecl_make_symbol("GDBOXER-MAKE-TURTLE", "BOXER");
+    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_make_turtle, 1);
 
     aux = ecl_make_symbol("GDBOXER-GET-NAME-ROW", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_get_name_row, 1);
@@ -458,6 +472,8 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
     aux = ecl_make_symbol("GDBOXER-PUSH-GRAPHICS-COMMAND", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_push_graphics_command, 7);
 
+    aux = ecl_make_symbol("GODOT-ADD-TURTLE-TO-GRAPHICS", "BOXER");
+    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_add_turtle_to_graphics, 2);
     //
     // MISC
     //

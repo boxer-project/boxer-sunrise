@@ -3,6 +3,7 @@ extends Node
 @export var cha_scene: PackedScene
 @export var box_scene: PackedScene
 @export var row_scene: PackedScene
+@export var turtle_scene: PackedScene
 
 @onready var open_dialog: FileDialog = get_node("/root/Main/OpenFileDialog")
 
@@ -305,3 +306,9 @@ func make_row(boxer_row): # -> HBoxContainer:
     var row = row_scene.instantiate()
     row.boxer_row = boxer_row
     return row
+
+func make_turtle(boxer_turtle):
+    var turtle = turtle_scene.instantiate()
+    turtle.boxer_turtle = boxer_turtle
+    turtle.append_draw_command([63, 0, 0, 10])
+    return turtle

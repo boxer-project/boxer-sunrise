@@ -19,6 +19,13 @@
       (fill-in-godot-row godot-row self))
     godot-row))
 
+(defmethod fetch-godot-obj ((self turtle))
+  (let* ((godot-turtle (getprop self :gdnode)))
+    (unless godot-turtle
+      (setf godot-turtle (gdboxer-make-turtle self))
+      (putprop self godot-turtle :gdnode))
+    godot-turtle))
+
 ;;; sgithens Prototyping wrapping box construction and "stuff"
 (defmethod initialize-instance :after ((self box)  &rest init-plist)
   (format t "Just initialized a box! ~A doit: ~A data: ~A~%" self (doit-box? self) (data-box? self)))
@@ -253,6 +260,16 @@
         (godot-box (fetch-godot-obj box)))
     (godot-insert-row-at-row-no box godot-box row godot-row (1+ after-row-no))))
 
+;; Adding removing sprites from a box
+(defmethod add-graphics-object :after ((self box) turtle)
+  (format t "add-graphics-object box: ~A graphics-obj: ~A" self turtle)
+  (let ((godot-box    (fetch-godot-obj self))
+        (godot-turtle (fetch-godot-obj turtle)))
+    (godot-add-turtle-to-graphics godot-box godot-turtle)))
+
+(defmethod remove-graphics-object :after ((self box) old-object)
+  (format t "remove-graphics-object box: ~A graphics-obj: ~A" self old-object))
+
 ;;;
 ;;; GRAPHICS-SHEETS
 ;;;
@@ -262,7 +279,13 @@
 (defun godot-init-graphics-sheet (box)
   ;; For use in on-ready. If this is a graphics box, then update it's sheet
   (when (graphics-box? box)
-    (godot-update-graphics-sheet box (graphics-info box))))
+    (godot-update-graphics-sheet box (graphics-info box)))
+  (when (sprite-box? box)
+    (godot-update-graphics-object box)))
+
+(defun godot-update-graphics-object (box)
+  (let* ((godot-box (fetch-godot-obj box)))
+    (gdboxer-set-property godot-box "flipped_box_type" 2)))
 
 (defun godot-update-graphics-sheet (box sheet)
   (let* (;(box (graphics-sheet-superior-box sheet))
@@ -317,6 +340,13 @@
   (format t "setf graphics-info with Turtle type object~%")
   (let* ((godot-box (fetch-godot-obj box)))
     (gdboxer-set-property godot-box "flipped_box_type" 2)))
+
+(defmethod move-to :after ((self graphics-object) x-dest y-dest
+                    &optional dont-update-box)
+  (let* ((godot-turtle (fetch-godot-obj self)))
+    (gdboxer-set-property godot-turtle "position_x" x-dest)
+    (gdboxer-set-property godot-turtle "position_y" y-dest)
+  ))
 
 ;;;
 ;;; Clipboard Cut/Paste

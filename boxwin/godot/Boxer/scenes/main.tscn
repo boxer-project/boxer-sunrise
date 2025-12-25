@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://pdlvpw8s1sse"]
+[gd_scene load_steps=16 format=3 uid="uid://pdlvpw8s1sse"]
 
 [ext_resource type="Script" uid="uid://cy2jvrckapxht" path="res://scripts/main.gd" id="1_jyhfs"]
 [ext_resource type="PackedScene" uid="uid://7nrew4abjpqi" path="res://scenes/cha.tscn" id="2_tbgi4"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://d1odxdo64y25e" path="res://scenes/cursor.tscn" id="4_o6xl0"]
 [ext_resource type="PackedScene" uid="uid://xqa6c27lew6w" path="res://scenes/toolbar.tscn" id="4_tefeu"]
 [ext_resource type="PackedScene" uid="uid://bqodvk5rb2nb4" path="res://scenes/row.tscn" id="4_tipki"]
+[ext_resource type="PackedScene" uid="uid://mjcxt81qohg3" path="res://scenes/turtle.tscn" id="5_choun"]
 [ext_resource type="Theme" uid="uid://clyeptsut3tbs" path="res://themes/macOS_light.tres" id="5_o6xl0"]
 [ext_resource type="Script" uid="uid://cgbi3olobjs83" path="res://scripts/flipping_box.gd" id="5_tbgi4"]
 [ext_resource type="Script" uid="uid://bjghqrhlr4ubh" path="res://scripts/boxer_menu_bar.gd" id="9_85g3d"]
@@ -32,6 +33,7 @@ script = ExtResource("1_jyhfs")
 cha_scene = ExtResource("2_tbgi4")
 box_scene = ExtResource("3_tefeu")
 row_scene = ExtResource("4_tipki")
+turtle_scene = ExtResource("5_choun")
 use_boxer_gdextension = true
 
 [node name="OpenFileDialog" type="FileDialog" parent="."]
@@ -51,6 +53,7 @@ mouse_behavior_recursive = 1
 
 [node name="ToolbarContainer" parent="TopLevelContainer" instance=ExtResource("4_tefeu")]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 
 [node name="MessageBarContainer" type="HBoxContainer" parent="TopLevelContainer"]

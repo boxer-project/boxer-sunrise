@@ -299,3 +299,6 @@ func clear_box(bitmap = true, graphics_list = true):
     if bitmap:
         # TODO
         pass
+
+func add_turtle(turtle):
+    %TurtleGraphics.add_child(turtle)

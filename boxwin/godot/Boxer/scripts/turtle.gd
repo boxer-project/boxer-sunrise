@@ -3,6 +3,10 @@ extends Control
 
 signal done_drawing
 
+# Optional link back to a boxer graphics-object / turtle instance, if this script is
+# being used as the top level script for a scene
+var boxer_turtle
+
 var default_font : Font = ThemeDB.fallback_font;
 
 var pen_color = Color.BLACK;
@@ -182,3 +186,15 @@ func _draw():
 
 func _ready() -> void:
     pass
+
+var position_x:
+    get:
+        return self.position.x
+    set(value):
+        self.position.x = value
+
+var position_y:
+    get:
+        return -self.position.y
+    set(value):
+        self.position.y = -value
