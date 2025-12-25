@@ -109,19 +109,24 @@ cl_object lisp_boxer_insert_cha_signal(cl_object row, cl_object ch, cl_object ch
 }
 
 cl_object lisp_boxer_delete_cha_signal(cl_object row, cl_object cha_no)  {
-
-    main_boxer_node->call_deferred("_on_gd_boxer_boxer_delete_cha",
-        Variant((Object*) ecl_foreign_data_pointer_safe(row)),
-        Variant((int) ecl_fixnum(cha_no)));
+    Array togo = Array();
+    togo.push_back(main_boxer_node);
+    togo.push_back("_on_gd_boxer_boxer_delete_cha");
+    togo.push_back(Variant((Object *)ecl_foreign_data_pointer_safe(row)));
+    togo.push_back(Variant((int)ecl_fixnum(cha_no)));
+    main_boxer_node->call("push_to_scene_queue", togo);
     return ECL_NIL;
 }
 
 cl_object lisp_boxer_delete_chas_between_cha_nos(cl_object row, cl_object strt_cha_no, cl_object stop_cha_no)  {
     // the_gdboxer_node->emit_signal("boxer_delete_chas_between_cha_nos",
-    main_boxer_node->call_deferred("_on_gd_boxer_boxer_delete_chas_between_cha_nos",
-        Variant((Object*) ecl_foreign_data_pointer_safe(row)),
-        Variant((int) ecl_fixnum(strt_cha_no)),
-        Variant((int) ecl_fixnum(stop_cha_no)));
+    Array togo = Array();
+    togo.push_back(main_boxer_node);
+    togo.push_back("_on_gd_boxer_boxer_delete_chas_between_cha_nos");
+    togo.push_back(Variant((Object *)ecl_foreign_data_pointer_safe(row)));
+    togo.push_back(Variant((int)ecl_fixnum(strt_cha_no)));
+    togo.push_back(Variant((int)ecl_fixnum(stop_cha_no)));
+    main_boxer_node->call("push_to_scene_queue", togo);
     return ECL_NIL;
 }
 
@@ -138,7 +143,11 @@ cl_object lisp_boxer_insert_row_at_row_no(cl_object box, cl_object row, cl_objec
 cl_object lisp_boxer_delete_row_at_row_no(cl_object box, cl_object pos) {
     UtilityFunctions::print("lisp_boxer_delete_row_at_row_no\n");
     Object* godot_box = Variant((Object*) ecl_foreign_data_pointer_safe(box));
-    godot_box->call_deferred("delete_row_at_row_no", Variant((int) ecl_fixnum(pos)));
+    Array togo = Array();
+    togo.push_back(godot_box);
+    togo.push_back("delete_row_at_row_no");
+    togo.push_back(Variant((int) ecl_fixnum(pos)));
+    main_boxer_node->call("push_to_scene_queue", togo);
     return ECL_NIL;
 }
 
@@ -149,10 +158,6 @@ cl_object lisp_boxer_point_location(cl_object row, cl_object cha_no) {
     togo.push_back(Variant((Object*) ecl_foreign_data_pointer_safe(row)));
     togo.push_back(Variant((int) ecl_fixnum(cha_no)));
     main_boxer_node->call("push_to_scene_queue", togo);
-
-    // the_gdboxer_node->emit_signal("boxer_point_location",
-    //     Variant((Object*) ecl_foreign_data_pointer_safe(row)),
-    //     Variant((int) ecl_fixnum(cha_no)));
     return ECL_NIL;
 }
 
@@ -169,10 +174,9 @@ cl_object lisp_boxer_make_box(cl_object boxer_box) {
 }
 
 cl_object lisp_boxer_make_row(cl_object boxer_row) {
-    UtilityFunctions::print("Going to try and make a row6...\n");
+    // UtilityFunctions::print("Going to try and make a row6...\n");
     BoxerLispRef* brow = memnew(BoxerLispRef);
     brow->boxer_obj = boxer_row;
-    // Object *godot_row = main_boxer_node->call("make_row", Variant((Object *) brow));
     Object *godot_row = main_boxer_node->call("make_row", Variant((Object *) brow));
     return ecl_make_foreign_data(ECL_NIL, 0, godot_row);
 }
@@ -271,7 +275,13 @@ cl_object lisp_boxer_set_graphics_sheet_bit_array(cl_object box, cl_object width
 
 cl_object lisp_boxer_clear_box(cl_object box, cl_object bitmap, cl_object graphics_list) {
     Object *godot_box = Variant((Object *)ecl_foreign_data_pointer_safe(box));
-    godot_box->call_deferred("clear_box", Variant(true), Variant(true));
+
+    Array togo = Array();
+    togo.push_back(godot_box);
+    togo.push_back("clear_box");
+    togo.push_back(Variant(true));
+    togo.push_back(Variant(true));
+    main_boxer_node->call("push_to_scene_queue", togo);
     return ECL_NIL;
 }
 
