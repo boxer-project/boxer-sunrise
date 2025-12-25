@@ -170,7 +170,7 @@
       (gdboxer-delete-row-at-row-no godot-box 0))))
 
 (defun godot-insert-row-at-row-no (box godot-box row godot-row pos)
-  (gdboxer-insert-row-at-row-no godot-box godot-row pos)
+  (gdboxer-call-godot (coerce (list godot-box "insert_row_at_row_no" godot-row pos) 'vector))
   godot-row)
 
 ;;;

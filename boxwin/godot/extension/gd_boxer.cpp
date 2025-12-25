@@ -130,16 +130,6 @@ cl_object lisp_boxer_delete_chas_between_cha_nos(cl_object row, cl_object strt_c
     return ECL_NIL;
 }
 
-cl_object lisp_boxer_insert_row_at_row_no(cl_object box, cl_object row, cl_object row_no) {
-    Array togo = Array();
-    togo.push_back(Variant((Object*) ecl_foreign_data_pointer_safe(box)));
-    togo.push_back("insert_row_at_row_no");
-    togo.push_back(Variant((Object *)ecl_foreign_data_pointer_safe(row)));
-    togo.push_back(Variant((int)ecl_fixnum(row_no)));
-    main_boxer_node->call("push_to_scene_queue", togo);
-    return ECL_NIL;
-}
-
 cl_object lisp_boxer_delete_row_at_row_no(cl_object box, cl_object pos) {
     UtilityFunctions::print("lisp_boxer_delete_row_at_row_no\n");
     Object* godot_box = Variant((Object*) ecl_foreign_data_pointer_safe(box));
@@ -303,6 +293,9 @@ Variant convert_ecl_to_godot (cl_object value) {
     else if (ECL_FIXNUMP(value)) {
         return Variant((int)ecl_fixnum(value));
     }
+    else if (ECL_FOREIGN_DATA_P(value)) {
+        return Variant((Object *)ecl_foreign_data_pointer_safe(value));
+    }
     // The strings need to come before vector and other sequences, since they are also sequences.
     else if (ECL_BASE_STRING_P(value)) {
         char * name = ecl_base_string_pointer_safe (ecl_null_terminated_base_string(value));
@@ -363,6 +356,15 @@ cl_object lisp_boxer_set_property(cl_object box, cl_object prop_name, cl_object 
     return ECL_NIL;
 }
 
+cl_object lisp_boxer_push_to_scene_queue(cl_object args_vector) {
+    Array togo = Array();
+    for (int i = 0; i < args_vector->vector.fillp; i++) {
+        togo.push_back(convert_ecl_to_godot(ecl_aref1(args_vector, i)));
+    }
+    main_boxer_node->call("push_to_scene_queue", togo);
+    return ECL_NIL;
+}
+
 // main_boxer_node, world_node, first_row_node
 void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node) {
     cl_object result;
@@ -416,9 +418,6 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
 
     aux = ecl_make_symbol("GDBOXER-SET-SUPERIOR-BOX", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_set_superior_box, 2);
-
-    aux = ecl_make_symbol("GDBOXER-INSERT-ROW-AT-ROW-NO", "BOXER");
-    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_insert_row_at_row_no, 3);
 
     aux = ecl_make_symbol("GDBOXER-POINT-LOCATION", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_point_location, 2);
@@ -480,6 +479,9 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
 
     aux = ecl_make_symbol("GDBOXER-SET-PROPERTY", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_set_property, 3);
+
+    aux = ecl_make_symbol("GDBOXER-CALL-GODOT", "BOXER");
+    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_push_to_scene_queue, 1);
 
     //
     // END SIGNAL SETUP
