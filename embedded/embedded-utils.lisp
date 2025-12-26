@@ -56,12 +56,12 @@
 (DEFMETHOD DELETE-CHA-AT-CHA-NO :after ((SELF ROW) CHA-NO)
   (let ((row (fetch-godot-obj self)))
     (when row
-      (gdboxer-delete-cha-signal row cha-no))))
+      (godot-call-main "_on_gd_boxer_boxer_delete_cha" row cha-no))))
 
 (defmethod delete-chas-between-cha-nos :after ((self row) strt-cha-no stop-cha-no)
   (let ((row (fetch-godot-obj self)))
     (when row
-      (gdboxer-delete-chas-between-cha-nos-signal row strt-cha-no stop-cha-no))))
+      (godot-call-main "_on_gd_boxer_boxer_delete_chas_between_cha_nos" row strt-cha-no stop-cha-no))))
 
 ;;;
 ;;; ROWS
@@ -69,10 +69,10 @@
 
 (defun godot-insert-cha-signal (godot-row cha cha-no)
   (when godot-row
-    (format t "lisp insert cha: ~A ~A ~A~%" godot-row cha cha-no)
+    ;; (format t "lisp insert cha: ~A ~A ~A~%" godot-row cha cha-no)
     (if (cha? cha)
-      (gdboxer-insert-cha-signal godot-row (char-code cha) cha-no)
-      (gdboxer-insert-cha-signal godot-row (fetch-godot-obj cha) cha-no))))
+      (godot-call-main "_on_gd_boxer_boxer_insert_cha" godot-row (char-code cha) cha-no)
+      (godot-call-main "_on_gd_boxer_boxer_insert_cha" godot-row (fetch-godot-obj cha) cha-no))))
 
 (defun fill-in-godot-row (godot-row row)
   "Fill in the godot-row with the contents of row, assuming nothing has been added to it yet."
@@ -159,7 +159,7 @@
   ;; TODO sgithens Does this get a negative value or something for the closet row?
   (format t "TODO TODO TODO delete-row-at-row-no3.0: ~A pos: ~A check-closet: ~A~%" box pos check-closet)
   (let ((godot-box (fetch-godot-obj box)))
-    (gdboxer-delete-row-at-row-no godot-box pos)));)
+    (godot-call godot-box "delete_row_at_row_no" pos)))
 
 (defmethod delete-row ((self box) row &optional (check-closet t))
   (break "TODO TODO TODO delete-row: ~A pos: ~A check-closet: ~A~%" box pos check-closet))
@@ -167,10 +167,10 @@
 (defmethod kill-box-contents :before ((self box) &optional (check-closet t))
   (let ((godot-box (fetch-godot-obj self)))
     (dotimes (i (length-in-rows self))
-      (gdboxer-delete-row-at-row-no godot-box 0))))
+      (godot-call godot-box "delete_row_at_row_no" 0))))
 
 (defun godot-insert-row-at-row-no (box godot-box row godot-row pos)
-  (gdboxer-call-godot (coerce (list godot-box "insert_row_at_row_no" godot-row pos) 'vector))
+  (godot-call godot-box "insert_row_at_row_no" godot-row pos)
   godot-row)
 
 ;;;
@@ -273,8 +273,18 @@
 ;;;
 ;;; GRAPHICS-SHEETS
 ;;;
+(defun gboolean (value)
+  (if value 1 0))
+
+(defun godot-call (godot-obj func_name &rest args)
+  (gdboxer-call-godot (coerce (append (list godot-obj func_name) args) 'vector)))
+
+(defun godot-call-main (func_name &rest args)
+  (gdboxer-call-godot-main (coerce (append (list func_name) args) 'vector)))
+
+
 (defmethod clear-box :after ((self box) &key (bitmap-p t) (graphics-list-p t))
-  (gdboxer-clear-box (fetch-godot-obj self) bitmap-p graphics-list-p))
+  (godot-call (fetch-godot-obj self) "clear_box" (gboolean bitmap-p) (gboolean graphics-list-p)))
 
 (defun godot-init-graphics-sheet (box)
   ;; For use in on-ready. If this is a graphics box, then update it's sheet
