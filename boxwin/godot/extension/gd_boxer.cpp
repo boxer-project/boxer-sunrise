@@ -135,13 +135,6 @@ cl_object lisp_boxer_get_name_row(cl_object box) {
     return ecl_make_foreign_data(ECL_NIL, 0, godot_name_row);
 }
 
-cl_object lisp_boxer_set_superior_box (cl_object row, cl_object superior_box) {
-    Object* godot_row = Variant((Object*) ecl_foreign_data_pointer_safe(row));
-    Object* godot_superior_box = Variant((Object*) ecl_foreign_data_pointer_safe(superior_box));
-    godot_row->call("set_superior_box", godot_superior_box);
-    return ECL_NIL;
-}
-
 /*
  * PACKED BYTE ARRAYS
  */
@@ -327,10 +320,6 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
     ecl_init_module(NULL, init_lib_BOXER_CORE_LISP);
 
     //
-    // setup signal and other common lisp -> C++ calls
-    //
-
-    //
     // Constructing
     //
     cl_object aux = ecl_make_symbol("GDBOXER-MAKE-BOX", "BOXER");
@@ -352,9 +341,6 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
     //
     // ROWS
     //
-
-    aux = ecl_make_symbol("GDBOXER-SET-SUPERIOR-BOX", "BOXER");
-    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_set_superior_box, 2);
 
     aux = ecl_make_symbol("GDBOXER-POINT-LOCATION", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_point_location, 2);

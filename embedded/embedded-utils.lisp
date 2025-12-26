@@ -133,7 +133,7 @@
         ((and (name-row? row) (not (ffi:null-pointer-p godot-row)))
          (putprop row godot-row :gdnode)
          (fill-in-godot-row godot-row row)
-         (gdboxer-set-superior-box godot-row godot-box))
+         (godot-call godot-row "set_superior_box" godot-box))
         ((name-row? row) ;; must be null still, we'll set the special godot property to fill it in later
          (format t "~% I hope the name is just a string: ~A" (name sup-box))
          (gdboxer-set-property godot-box "queued_name" (coerce (name sup-box) 'string))
