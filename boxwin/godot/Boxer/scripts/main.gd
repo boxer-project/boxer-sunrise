@@ -114,15 +114,21 @@ func handle_paste_text(text):
     boxer_event_queue.push_front([3, 1, "GODOT-PASTE-TEXT", text])
     boxer_event_queue_mutex.unlock()
 
+func handle_request_cursor_update():
+    boxer_event_queue_mutex.lock()
+    boxer_event_queue.push_front([3, 0, "GODOT-UPDATE-POINT-LOCATION"])
+    boxer_event_queue_mutex.unlock()
+
 func handle_toggle_closet():
     boxer_event_queue_mutex.lock()
     boxer_event_queue.push_front([3, 0, "COM-TOGGLE-CLOSETS"])
     boxer_event_queue_mutex.unlock()
 
 func handle_boxer_func_1(func_name, arg0):
-    boxer_event_queue_mutex.lock()
-    boxer_event_queue.push_front([3, 1, func_name, arg0])
-    boxer_event_queue_mutex.unlock()
+    if boxer_event_queue_mutex:
+        boxer_event_queue_mutex.lock()
+        boxer_event_queue.push_front([3, 1, func_name, arg0])
+        boxer_event_queue_mutex.unlock()
 
 ###
 ### Queue from Lisp -> Boxer
@@ -288,8 +294,12 @@ func _on_gd_boxer_boxer_delete_chas_between_cha_nos(row: Object, strt_cha_no: in
     row.remove_chas(strt_cha_no, stop_cha_no)
 
 func _on_gd_boxer_boxer_point_location(row: Object, cha_no: int) -> void:
-    cursor.cur_row = row
-    cursor.cur_idx = cha_no
+    if not row:
+        print("Ugh, where is the row2??")
+        # handle_request_cursor_update()
+    else:
+        cursor.cur_row = row
+        cursor.cur_idx = cha_no
 
 func make_box(boxer_box) -> BoxContainer:
     # Optional first_row to use

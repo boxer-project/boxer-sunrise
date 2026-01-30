@@ -198,3 +198,21 @@ var position_y:
         return -self.position.y
     set(value):
         self.position.y = -value
+
+var locked_scale:
+    get:
+        return self.scale.x
+    set(value):
+        self.scale = Vector2(value, value)
+
+var shownp = true:
+    get:
+        return shownp
+    set(value):
+        # we still can't pass in bools correctly from lisp
+        if value: shownp = true
+        else: shownp = false
+
+
+func push_graphics_command(opcode, arg1, arg2, arg3, arg4, arg5):
+    append_draw_command([opcode, arg1, arg2, arg3, arg4, arg5])
