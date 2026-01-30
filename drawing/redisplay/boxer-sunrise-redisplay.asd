@@ -9,7 +9,7 @@
                (:file "draw-gdispl-graphics")
                (:file "draw-scrollbars")
                (:file "blinkers")
-               (:file "disply")
+              ;;  (:file "disply")
                (:file "lodisp")
                (:file "dev-overlay")
                (:file "repaint-2024")
