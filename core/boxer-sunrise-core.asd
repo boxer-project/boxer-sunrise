@@ -24,7 +24,7 @@
                  ;; Beginning of `DISPLAYDEFS` module
                  ;; "Some more Definitions for Drawing things"
                  (:file "definitions/disdef")
-                 (:file "drawing/redisplay/disply")
+                 (:file "../drawing/redisplay/disply")
 
                  ;; Beginning of `RELATIONSHIPS` module
                  ;; "The basic underlying structure of the Editor is defined here"

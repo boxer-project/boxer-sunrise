@@ -215,6 +215,7 @@
      (let ((result (make-error-result)))
        (cond (*stepping*
               (stepper-signal-error result))
+         #-embedded-boxer
          ((not (eq *current-process* *doit-key-process*))
           ;; if the current process is a background process,
           ;; then we need to setup the error and then

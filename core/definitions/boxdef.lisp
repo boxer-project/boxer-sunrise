@@ -444,7 +444,9 @@ Modification History (most recent at top)
    (draw-hei :initform *default-graphics-sheet-height* :accessor graphics-sheet-draw-hei :initarg :draw-hei)  ;; Height of graphics sheet in pixels
    (screen-objs :initform nil :accessor graphics-sheet-screen-objs :initarg :screen-objs)
    (bit-array :initform nil :accessor graphics-sheet-bit-array :initarg :bit-array)                             ;; An ogl-pixmap that acts as the background
-   (object-list :initform nil :accessor graphics-sheet-object-list :initarg :object-list)                           ;; A list of turtle sprites
+   (object-list :initform nil :accessor graphics-sheet-object-list :initarg :object-list
+    :documentation "A list of turtle sprites (graphics-objects). The order determines the z-order in which they
+     are drawn in order. So the last object of the list will be on top visually (ie. drawn last).")
    (superior-box :initform nil :accessor graphics-sheet-superior-box :initarg :superior-box
     :documentation "The graphics box with this graphics-sheet in it's graphics-info slot.")
    (draw-mode :initform ':wrap :accessor graphics-sheet-draw-mode :initarg :draw-mode)                          ;; Either ':wrap or ':clip for turtle drawing around edges

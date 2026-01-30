@@ -260,16 +260,6 @@
         (godot-box (fetch-godot-obj box)))
     (godot-insert-row-at-row-no box godot-box row godot-row (1+ after-row-no))))
 
-;; Adding removing sprites from a box
-(defmethod add-graphics-object :after ((self box) turtle)
-  (format t "add-graphics-object box: ~A graphics-obj: ~A" self turtle)
-  (let ((godot-box    (fetch-godot-obj self))
-        (godot-turtle (fetch-godot-obj turtle)))
-    (godot-add-turtle-to-graphics godot-box godot-turtle)))
-
-(defmethod remove-graphics-object :after ((self box) old-object)
-  (format t "remove-graphics-object box: ~A graphics-obj: ~A" self old-object))
-
 ;;;
 ;;; GRAPHICS-SHEETS
 ;;;
@@ -342,9 +332,45 @@
     (gdboxer-set-property godot-box "flipped_box_type" 1)
     (godot-update-graphics-sheet box sheet)))
 
+
+
 ;;;
 ;;; GRAPHICS-OBJECTS
 ;;;
+
+(defun apply-graphics-list (godot-obj gl)
+  ;; (let ((gl (graphics-sheet-graphics-list sheet)))
+  (when gl
+    (do-vector-contents (com gl)
+      (let ((command (coerce com 'list)))
+        (godot-call godot-obj "push_graphics_command"
+          (nth 0 command) (nth 1 command) (nth 2 command) (nth 3 command) (nth 4 command) (nth 5 command))))))
+            ;; )
+
+;; Adding removing sprites from a box
+(defmethod add-graphics-object :after ((self box) turtle)
+  (format t "add-graphics-object box: ~A graphics-obj: ~A~%" self turtle)
+  (format t "   the shape2: ~A~%" (box-interface-value (slot-value turtle 'shape)))
+  (let ((godot-box    (fetch-godot-obj self))
+        (godot-turtle (fetch-godot-obj turtle)))
+    (godot-add-turtle-to-graphics godot-box godot-turtle)
+
+    ;; shape
+    (apply-graphics-list godot-turtle (box-interface-value (slot-value turtle 'shape)))
+    ;; position
+    (gdboxer-set-property godot-turtle "position_x" (box-interface-value (slot-value turtle 'x-position)))
+    (gdboxer-set-property godot-turtle "position_y" (box-interface-value (slot-value turtle 'y-position)))
+    ;; heading
+    (gdboxer-set-property godot-turtle "rotation_degrees" (box-interface-value (slot-value turtle 'heading)))
+    ;; size
+    (gdboxer-set-property godot-turtle "locked_scale" (box-interface-value (slot-value turtle 'sprite-size)))
+    ;; shown?
+    (gdboxer-set-property godot-turtle "visible" (gboolean (box-interface-value (slot-value turtle 'shown?))))
+
+    ))
+
+(defmethod remove-graphics-object :after ((self box) old-object)
+  (format t "remove-graphics-object box: ~A graphics-obj: ~A" self old-object))
 
 (defmethod (setf graphics-info) :after ((sheet graphics-object) box)
   (format t "setf graphics-info with Turtle type object~%")
@@ -355,8 +381,21 @@
                     &optional dont-update-box)
   (let* ((godot-turtle (fetch-godot-obj self)))
     (gdboxer-set-property godot-turtle "position_x" x-dest)
-    (gdboxer-set-property godot-turtle "position_y" y-dest)
-  ))
+    (gdboxer-set-property godot-turtle "position_y" y-dest)))
+
+(defmethod turn-to :after ((self turtle) new-heading &optional dont-update-box)
+  (format t "turn-to: new-heading: ~A~%" new-heading)
+  (let* ((godot-turtle (fetch-godot-obj self)))
+    (gdboxer-set-property godot-turtle "rotation_degrees" new-heading)))
+
+(defmethod set-sprite-size ((self turtle) new-size &optional dont-update-box)
+  (let* ((godot-turtle (fetch-godot-obj self)))
+    (gdboxer-set-property godot-turtle "locked_scale" new-size)))
+
+(defmethod set-shown? ((self graphics-cursor) new-value
+                                              &optional dont-update-box (explicit t))
+  (let* ((godot-turtle (fetch-godot-obj self)))
+    (gdboxer-set-property godot-turtle "visible" (gboolean new-value))))
 
 ;;;
 ;;; Clipboard Cut/Paste
@@ -378,12 +417,18 @@
 ;; Hacking
 ;;
 
+(defmethod row-row-no (self row)
+ ;; if row is null...
+ 0)
+
 (defmethod SCROLL-TO-ACTUAL-ROW (obj) nil)
 
 ;; Sometimes nil screen-boxes end up in the mix...
 (DEFMETHOD SUPERIOR? (self ANOTHER-BOX)
   "is the arg a superior of the box ?"
   nil)
+
+(defmethod CIRCULAR-PORT? (self &optional ignore) nil)
 
 ; Hacking in vector support, TODO, put back in main and recompile it
 (defun make-name-row (list &optional (cached-name nil))
@@ -505,6 +550,7 @@
 (defun godot-update-point-location ()
   "Update the location of point in Godot, using the current Boxer *point*."
   (let ((godot-row (fetch-godot-obj (bp-row *point*))))
+    (format t "~%Update point location: bp-row: ~A godot-obj: ~A" (bp-row *point*) godot-row)
     (when godot-row
       (gdboxer-point-location (fetch-godot-obj (bp-row *point*)) (bp-cha-no *point*)))))
 
@@ -522,7 +568,7 @@
     (t
      (handle-boxer-input data bits)))
 
-  (format t "~%>>POINT2.0: ~A : ~A : ~A : ~A~%" *point* (bp-row *point*)
+  (format t "~%>>POINT2.01: ~A : ~A : ~A : ~A~%" *point* (bp-row *point*)
     (fetch-godot-obj (bp-row *point*)) (bp-cha-no *point*))
 
   (godot-update-point-location)
@@ -666,6 +712,58 @@
 ;;;
 ;;; TODO Why aren't these somewhere in core??
 ;;;
+
+;; straight from disply.lisp, which should just be brought in to the project.
+(defun boxtop (editor-box)
+  (let ((boxtop-prop (getprop editor-box :boxtop)))
+    ;; nil prop means the same as standard...
+    ;; NOTE: prop can be a graphics box if the box is a black box with a boxtop
+    (cond ((graphics-sheet? boxtop-prop)
+           ;; special case in top level of fileboxes
+           boxtop-prop)
+      ((or (null boxtop-prop)
+           (eq boxtop-prop :standard)
+           ;; for compatibility with mac files
+           (eq boxtop-prop :file)
+           (eq boxtop-prop :framed))
+       (let* ((target (box-or-port-target editor-box))
+              (bt-box (cond ((box? target)
+                             (boxer-eval::lookup-static-variable-in-box-only
+                              target 'bu::boxtop))
+                        ((virtual-copy? target)
+                         (lookup-variable-in-virtual-copy target
+                                                          'bu::boxtop)))))
+         (cond ((box? bt-box) (graphics-sheet bt-box))
+           ((virtual-copy? bt-box)
+            (graphics-info-graphics-sheet (vc-graphics bt-box)))
+           (t (let ((cache (getprop editor-box :cached-boxtop)))
+                (if (and (eq boxtop-prop :file) (null cache))
+                  (boxtop-namestring editor-box)
+                  cache))))))
+      ((and (symbolp boxtop-prop)
+            (eq (symbol-package boxtop-prop) pkg-bu-package))
+       (let* ((boxer-eval::*lexical-variables-root* editor-box)
+              (bt-box (boxer-eval::boxer-symeval boxtop-prop)))
+         (cond ((box? bt-box) (graphics-sheet bt-box))
+           ((virtual-copy? bt-box)
+            (graphics-info-graphics-sheet (vc-graphics bt-box)))
+           (t nil))))
+      ((eq boxtop-prop :xref)
+       ;; allow xrefs to have user boxtops
+       (let* ((target (box-or-port-target editor-box))
+              (bt-box (cond ((box? target)
+                             (boxer-eval::lookup-static-variable-in-box-only
+                              target 'bu::boxtop))
+                        ((virtual-copy? target)
+                         (lookup-variable-in-virtual-copy target
+                                                          'bu::boxtop)))))
+         (cond ((box? bt-box) (graphics-sheet bt-box))
+           ((virtual-copy? bt-box)
+            (graphics-info-graphics-sheet (vc-graphics bt-box)))
+           (t (getprop editor-box :xref)))))
+      ((fast-memq boxtop-prop '(:name-only :folder))
+       (boxtop-namestring editor-box))
+      (t boxtop-prop))))
 
 ;; (defvar BOXER-WINDOW::*CLICKED-STARTUP-FILE* nil)
 
