@@ -207,7 +207,7 @@
                        ;; we can tell in pass-1 if it changes (and, therefore,
                        ;; need to erase the old one...
                        (setf (display-style-border-style
-                              (slot-value self 'display-style-list))
+                              (display-style-list self))
                              boxtop)
                        (with-clipping-inside ((- (world-x-offset self) 1)
                                               (- (world-y-offset self) 1)

@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://7nrew4abjpqi"]
+
+[ext_resource type="Script" uid="uid://dwju2ptwvobhq" path="res://scripts/cha.gd" id="1_3v4y2"]
+
+[node name="cha" type="Label"]
+size_flags_vertical = 0
+mouse_filter = 0
+mouse_behavior_recursive = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 14
+script = ExtResource("1_3v4y2")
+
+[connection signal="gui_input" from="." to="." method="_on_gui_input"]

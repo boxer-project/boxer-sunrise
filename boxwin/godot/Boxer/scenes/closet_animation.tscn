@@ -1,0 +1,149 @@
+[gd_scene load_steps=8 format=3 uid="uid://51okxw4e3ni5"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0gehb"]
+bg_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0l7jx"]
+bg_color = Color(1, 1, 1, 1)
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6yhe2"]
+bg_color = Color(0.840525, 0.775115, 0.991335, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qnq06"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+expand_margin_left = 5.0
+expand_margin_right = 5.0
+
+[sub_resource type="Animation" id="Animation_k31ov"]
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CanvasLayer/Panel/Box/Closet:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-2, -92), Vector2(-5, -6)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CanvasLayer/Panel/Box/Label:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(7, 13), Vector2(6, 89)]
+}
+
+[sub_resource type="Animation" id="Animation_lc51q"]
+resource_name = "closet hide"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CanvasLayer/Panel/Box/Closet:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.01, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-4, -91), Vector2(-4, -4)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CanvasLayer/Panel/Box/Label:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.01, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(7, 13), Vector2(7, 87)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_uogsl"]
+_data = {
+&"RESET": SubResource("Animation_k31ov"),
+&"closet hide": SubResource("Animation_lc51q")
+}
+
+[node name="Prototyping" type="Node"]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Panel" type="Panel" parent="CanvasLayer"]
+offset_left = 27.0
+offset_top = 33.0
+offset_right = 486.0
+offset_bottom = 399.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_0gehb")
+
+[node name="Box" type="Panel" parent="CanvasLayer/Panel"]
+clip_children = 2
+layout_mode = 0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 458.0
+offset_bottom = 365.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_0l7jx")
+
+[node name="Closet" type="Panel" parent="CanvasLayer/Panel/Box"]
+layout_mode = 0
+offset_left = -2.0
+offset_top = -92.0
+offset_right = 465.0
+offset_bottom = -7.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_6yhe2")
+
+[node name="Label" type="Label" parent="CanvasLayer/Panel/Box"]
+layout_mode = 0
+offset_left = 7.0
+offset_top = 13.0
+offset_right = 453.0
+offset_bottom = 247.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 12
+text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+autowrap_mode = 2
+
+[node name="Label2" type="Label" parent="CanvasLayer/Panel"]
+layout_mode = 0
+offset_left = 14.0
+offset_top = -17.0
+offset_right = 63.0
+offset_bottom = 8.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_qnq06")
+text = "World"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_uogsl")
+}
+speed_scale = 0.565

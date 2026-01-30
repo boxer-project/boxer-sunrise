@@ -24,6 +24,7 @@
                  ;; Beginning of `DISPLAYDEFS` module
                  ;; "Some more Definitions for Drawing things"
                  (:file "definitions/disdef")
+                 (:file "../drawing/redisplay/disply")
 
                  ;; Beginning of `RELATIONSHIPS` module
                  ;; "The basic underlying structure of the Editor is defined here"
@@ -127,7 +128,7 @@
                  (:file "filesystem/datasources/local-url")
                  (:file "filesystem/datasources/http-url" :if-feature (:not :emscripten))
                  (:file "filesystem/datasources/helpers")
-                 (:file "filesystem/formats" :if-feature (:not :emscripten))
+                 (:file "filesystem/formats") ; :if-feature (:not :emscripten))
                  ;; Beginning of `TRIGGER` module
                  ;; "Box triggers for Constraint Propagation and Other Fun Stuff"
                  (:file "trigger/trigger")

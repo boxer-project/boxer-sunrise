@@ -66,7 +66,8 @@
                        (:copier nil) ;; we do this ourselves
                        )
   (bps nil)
-  (fds nil))
+  (fds nil)
+  (parent-row nil))
 
 
 (defun make-chas-array (&optional (length *chas-array-default-size*))
@@ -107,11 +108,20 @@
           (t
            (barf "Bad Arg, ~A" arg)))))
 
-(defmacro fast-chas-array-get-cha (chas cha-no)
-  `(svref& ,chas ,cha-no))
+;; godot work converting to method that can be wrapped
+;; (defmacro fast-chas-array-get-cha (chas cha-no)
+;;   `(svref& ,chas ,cha-no))
+(defmethod fast-chas-array-get-cha (chas cha-no)
+  (svref& chas cha-no))
 
-(defmacro fast-chas-array-set-cha (chas cha-no new-value)
-  `(setf (svref& ,chas ,cha-no) ,new-value))
+(defmethod (setf fast-chas-array-get-cha) (value chas cha-no)
+  (setf (svref& chas cha-no) value))
+
+;; godot work converting to method that can be wrapped
+;; (defmacro fast-chas-array-set-cha (chas cha-no new-value)
+;;   `(setf (svref& ,chas ,cha-no) ,new-value))
+(defmethod fast-chas-array-set-cha (chas-arr cha-no new-value)
+  (setf (svref& (chas-array-chas chas-arr) cha-no) new-value))
 
 (defmacro fast-chas-array-room (chas)
   `(length (the simple-vector ,chas)))
@@ -120,7 +130,7 @@
   (fast-chas-array-get-cha (chas-array-chas chas-array) cha-no))
 
 (defsubst chas-array-set-cha (chas-array cha-no new-value)
-  (fast-chas-array-set-cha (chas-array-chas chas-array) cha-no new-value))
+  (fast-chas-array-set-cha chas-array cha-no new-value))
 
 (defsubst chas-array-room (chas-array)
   (fast-chas-array-room (chas-array-chas chas-array)))
@@ -154,7 +164,7 @@
   (do ((chas (chas-array-chas chas-array))
        (orig-cha-no (-& old-active-length 1) (-& orig-cha-no 1)))
       ((<& orig-cha-no strt-cha-no))
-    (fast-chas-array-set-cha chas
+    (fast-chas-array-set-cha chas-array
                              (+& orig-cha-no distance)
                              (fast-chas-array-get-cha chas orig-cha-no))))
 
@@ -163,7 +173,7 @@
   (do ((chas (chas-array-chas chas-array))
        (orig-cha-no strt-cha-no (+& orig-cha-no 1)))
       ((>=& orig-cha-no old-active-length))
-    (fast-chas-array-set-cha chas
+    (fast-chas-array-set-cha chas-array ;chas
                              (+& orig-cha-no distance)
                              (fast-chas-array-get-cha chas orig-cha-no))))
 
@@ -480,8 +490,7 @@
            (setq ,var
                  (fast-chas-array-get-cha ,chas ,cha-no));(SETQ ,VAR <foo>)
            (macrolet ((change-cha (new-cha)
-                        `(setf (fast-chas-array-get-cha ,',chas ,',cha-no)
-                               ,new-cha)))
+                        `(fast-chas-array-set-cha ,',chas-array ,',cha-no ,new-cha)))
              . ,body))))))
 
 (defmethod length-in-chas ((self row))

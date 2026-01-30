@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+import os
+import sys
+
+env = SConscript("godot-cpp/SConstruct")
+
+# For reference:
+# - CCFLAGS are compilation flags shared between C and C++
+# - CFLAGS are for C-specific compilation flags
+# - CXXFLAGS are for C++-specific compilation flags
+# - CPPFLAGS are for pre-processor flags
+# - CPPDEFINES are for pre-processor defines
+# - LINKFLAGS are for linking flags
+
+# tweak this if you want to use different folders, or more folders, to store your source code in.
+env.Append(CPPPATH=["extension/", "/opt/homebrew/include"])
+env.Append(LIBS=['libecl', 'libboxercore--all-systems'])
+env.Append(LIBPATH=["/opt/homebrew/lib", "../../"]) #'/Users/sgithens/code/boxer-godot-integration-cleanup/boxer-sunrise'])
+sources = Glob("extension/*.cpp")
+
+if env["platform"] == "macos":
+    library = env.SharedLibrary(
+        "Boxer/bin/libgd_boxer.{}.{}.framework/libgd_boxer.{}.{}".format(
+            env["platform"], env["target"], env["platform"], env["target"]
+        ),
+        source=sources,
+    )
+elif env["platform"] == "ios":
+    if env["ios_simulator"]:
+        library = env.StaticLibrary(
+            "Boxer/bin/libgd_boxer.{}.{}.simulator.a".format(env["platform"], env["target"]),
+            source=sources,
+        )
+    else:
+        library = env.StaticLibrary(
+            "Boxer/bin/libgd_boxer.{}.{}.a".format(env["platform"], env["target"]),
+            source=sources,
+        )
+else:
+    library = env.SharedLibrary(
+        "Boxer/bin/libgd_boxer{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
+        source=sources,
+    )
+
+Default(library)

@@ -209,6 +209,7 @@ Modification History (most recent at the top)
 
 ;;; Dumping variables
 
+(eval-when (compile load eval)
 (defvar *bin-dump-table*)
 (defvar *bin-dump-index*)
 (defvar *bin-dump-package*)
@@ -235,6 +236,7 @@ Modification History (most recent at the top)
 
 ;; so we can get the commands from their number format and vice versa
 (defvar *bin-op-command-name-table* (make-bin-op-dispatch-table))
+  )
 
 (defmacro define-bin-op (name value index)
   `(progn
@@ -399,6 +401,7 @@ Modification History (most recent at the top)
 (define-resource bin-load-table ()
   :constructor (make-array #o1000 :adjustable t))
 
+(eval-when (compile load eval)
 (defvar *no-value-marker* (list 'no-value))
 (defvar *bin-next-command-function*)
 
@@ -422,7 +425,7 @@ Modification History (most recent at the top)
 (defvar *autoloading-namestring* nil)
 
 (defvar *warn-about-outlink-ports* t)
-
+)
 (defmacro with-post-load-autoloading ((fs) &body body)
   `(let ((*in-autoload-environment* t)
          (*autoload-list* nil)

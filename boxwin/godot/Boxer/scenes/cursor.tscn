@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3 uid="uid://d1odxdo64y25e"]
+
+[ext_resource type="Script" uid="uid://cfflyku5ibaxj" path="res://scripts/cursor.gd" id="1_fsq4c"]
+[ext_resource type="StyleBox" uid="uid://bt4pe0pg4o63j" path="res://themes/cursor_stylebox.tres" id="1_s0nli"]
+
+[node name="Cursor" type="PanelContainer"]
+custom_minimum_size = Vector2(2, 20)
+offset_right = 2.0
+offset_bottom = 20.0
+size_flags_vertical = 3
+theme_override_styles/panel = ExtResource("1_s0nli")
+script = ExtResource("1_fsq4c")
+
+[node name="BlinkTimer" type="Timer" parent="."]
+wait_time = 0.75
+autostart = true
+
+[connection signal="timeout" from="BlinkTimer" to="." method="_on_blink_timer_timeout"]

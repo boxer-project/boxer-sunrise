@@ -846,7 +846,7 @@ Modification History (most recent at the top)
            (null (display-style-graphics-mode? ds)) (null (display-style-border-style ds))))
 
     (defmethod dump-canonicalized-display-style ((self box) stream)
-      (let ((ds (slot-value self 'display-style-list))
+      (let ((ds (display-style-list self))
             (shrink-dump? (no-inferiors-for-file? self)))
         (cond ((and (null (display-style-graphics-mode? ds))
                     (null (display-style-border-style ds)))

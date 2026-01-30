@@ -336,6 +336,9 @@ Modification History (most recent at the top)
   (pen-color *initial-graphics-state-current-pen-color*)
   (hidden nil))
 
+(defmethod append-graphics-command (gclist com-list)
+  (sv-append gclist (coerce com-list 'vector)))
+
 ;; used by hi speed incremental redisplay to keep track
 (defstruct (graphics-command-list-state (:copier %copy-graphics-command-list-state) ; prevent conflict
                                         (:constructor %make-graphics-command-list-state))
@@ -484,6 +487,7 @@ Modification History (most recent at the top)
       (record-boxer-graphics-command-change-graphics-font
        *initial-graphics-state-current-font-no*))))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defmacro with-graphics-state ((gcl &optional use-initial-values) &body body)
   (let ((old-pen-width (gensym))
         (old-pen-color (gensym))
@@ -536,6 +540,7 @@ Modification History (most recent at the top)
             (%set-pen-size ,old-pen-width))
           (when (not (color= ,old-pen-color *graphics-state-current-pen-color*))
             (set-pen-color ,old-pen-color)))))))
+) ; eval-when
 
 ;; a lightweight version of with-graphics-state.  Only the value of the
 ;; variables should be changed in the BODY (and NOT the window system's

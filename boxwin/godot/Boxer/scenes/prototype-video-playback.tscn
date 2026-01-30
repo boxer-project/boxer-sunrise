@@ -1,0 +1,27 @@
+[gd_scene load_steps=2 format=3 uid="uid://d4cgsj6idbflq"]
+
+[ext_resource type="VideoStream" uid="uid://b5qfhtpjp1gkr" path="res://output.ogv" id="1_pc8ts"]
+
+[node name="Node2D" type="Node2D"]
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="LineEdit" type="LineEdit" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 32
+placeholder_text = "Wow text"
+expand_to_text_length = true
+
+[node name="Control" type="Control" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="VideoStreamPlayer" type="VideoStreamPlayer" parent="VBoxContainer/Control"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+stream = ExtResource("1_pc8ts")
+volume_db = 3.74
+autoplay = true

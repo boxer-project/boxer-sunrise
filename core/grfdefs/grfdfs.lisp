@@ -52,6 +52,8 @@ Modification History (most recent at top)
 
 ;;; drawing defs
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+
 (defvar %bit-array 'i-bet-you-forgot-to-bind-%bit-array
   "The bit-array of the graphics-box being operated on")
 
@@ -79,6 +81,8 @@ Modification History (most recent at top)
 
 (defmacro no-graphics? () '(eq %graphics-box :no-graphics))
 
+) ; eval-when
+
 ;;; if drawing with more than one sprite becomes common, it may be worthwhile
 ;;; to optimize the macrolet'd with-sprites-hidden to only hide all the
 ;;; sprites once per graphics-box instead of once per turtle...
@@ -88,15 +92,7 @@ Modification History (most recent at top)
         ((virtual-copy? box) (graphics-info-graphics-sheet (vc-graphics box)))
         (t (graphics-info box))))
 
-(defmacro with-graphics-vars-bound ((to-box &optional (gr-sheet (gensym)))
-                                    &body body)
-  "This macro sets up an environment where commonly used
-parameters of the graphics box are bound. "
-  `(let ((,gr-sheet (graphics-sheet-from-box ,to-box))
-         ;; sometimes it is convenient to be able to access the box
-         (%graphics-box ,to-box))
-     (with-graphics-vars-bound-internal ,gr-sheet . ,body)))
-
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defmacro with-graphics-vars-bound-internal (gr-sheet &body body)
   `(let ((%graphics-sheet ,gr-sheet)
          (%bit-array nil)
@@ -130,6 +126,16 @@ parameters of the graphics box are bound. "
                  %drawing-half-height (/ %drawing-height 2.0)))
          ;; now do the rest
          . ,body)))
+
+(defmacro with-graphics-vars-bound ((to-box &optional (gr-sheet (gensym)))
+                                    &body body)
+  "This macro sets up an environment where commonly used
+parameters of the graphics box are bound. "
+  `(let ((,gr-sheet (graphics-sheet-from-box ,to-box))
+         ;; sometimes it is convenient to be able to access the box
+         (%graphics-box ,to-box))
+     (with-graphics-vars-bound-internal ,gr-sheet . ,body)))
+) ; eval-when
 
 ;;; Set Up Clipping and Offsets
 
@@ -308,23 +314,11 @@ parameters of the graphics box are bound. "
 ;;; function to the appropriate sprite(s).  The body of the function can assume
 ;;; that there is a sprite-box bound to sprite-var
 
-(defmacro defsprite-function (name-descriptor arglist (sprite-var turtle-var)
-                              &body body)
-  `(boxer-eval::defboxer-primitive ,name-descriptor ,arglist
-     (with-sprite-primitive-environment (,sprite-var ,turtle-var)
-        . ,body)))
-
-(defmacro defsprite-trigger-function (name-descriptor arglist
-                                                      (sprite-var turtle-var)
-                                                      &body body)
-  `(boxer-eval::defboxer-primitive ,name-descriptor ,arglist
-     (with-sprite-primitive-environment (,sprite-var ,turtle-var t)
-        . ,body)))
-
 ;;; Cocoa drawing: sprites dont draw onto the screen, they just update the graphics
 ;;; list and periodically, the GB box space, on the screen is cleared, the
 ;;; graphics list is blasted out and then the sprites are redrawn (any existing
 ;;; background can also be draw first)
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defmacro with-sprite-primitive-environment ((sprite-var turtle-var
                                                          &optional
                                                          no-sprite-error
@@ -345,6 +339,20 @@ parameters of the graphics box are bound. "
                   (prog1 (with-graphics-state (%graphics-list)
                              (update-graphics-state ,turtle-var)
                            ,@body))))))))
+
+(defmacro defsprite-function (name-descriptor arglist (sprite-var turtle-var)
+                              &body body)
+  `(boxer-eval::defboxer-primitive ,name-descriptor ,arglist
+     (with-sprite-primitive-environment (,sprite-var ,turtle-var)
+        . ,body)))
+
+(defmacro defsprite-trigger-function (name-descriptor arglist
+                                                      (sprite-var turtle-var)
+                                                      &body body)
+  `(boxer-eval::defboxer-primitive ,name-descriptor ,arglist
+     (with-sprite-primitive-environment (,sprite-var ,turtle-var t)
+        . ,body)))
+) ; eval-when
 
 
 ;;; This is used by sprite update functions when they are passed an illegal arg

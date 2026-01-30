@@ -170,7 +170,7 @@
             'bu::pendown))))
 
 (defun record-boxer-graphics-command-change-alu (new-alu)
-  (sv-append %graphics-list (coerce (list 32 new-alu) 'vector)))
+  (append-graphics-command %graphics-list (list 32 new-alu)))
 
 (defun change-alu (new-alu)
   (unless (=& new-alu *graphics-state-current-alu*)
@@ -197,7 +197,7 @@
   (list 'bu::set-pen-width new-width))
 
 (defun record-boxer-graphics-command-change-pen-width (new-width)
-  (sv-append %graphics-list (coerce (list 33 new-width) 'vector)))
+  (append-graphics-command %graphics-list (list 33 new-width)))
 
 (defun change-pen-width (new-width)
   (unless (=& new-width *graphics-state-current-pen-width*)
@@ -239,7 +239,7 @@
     (t (dump-boxer-thing command stream))))
 
 (defun record-boxer-graphics-command-change-graphics-font (new-font-no)
-  (sv-append %graphics-list (coerce (list 34 new-font-no) 'vector)))
+  (append-graphics-command %graphics-list (list 34 new-font-no)))
 
 (defun change-graphics-font (new-font-no)
   (unless (=& new-font-no *graphics-state-current-font-no*)
@@ -268,7 +268,7 @@
             (list 'bu::setxy x1 y1)))))
 
 (defun record-boxer-graphics-command-line-segment (x0 y0 x1 y1)
-  (sv-append %graphics-list (coerce (list 35 x0 y0 x1 y1) 'vector)))
+  (append-graphics-command %graphics-list (list 35 x0 y0 x1 y1)))
 
 (defun change-graphics-color (new-color)
   (unless (color= new-color *graphics-state-current-pen-color*)
@@ -307,7 +307,7 @@
   (list 'bu::set-pen-color new-color))
 
 (defun record-boxer-graphics-command-change-graphics-color (new-color)
-  (sv-append %graphics-list (coerce (list 36 new-color) 'vector)))
+  (append-graphics-command %graphics-list (list 36 new-color)))
 
 ;; 37   BOXER-TRANSFORM-MATRIX                       (. . .)
 (defclass boxer-transform-matrix (graphics-command)
@@ -367,7 +367,7 @@
                                                 'simple-string)))))))))
 
 (defun record-boxer-graphics-command-centered-string (x y text)
-  (sv-append %graphics-list (coerce (list 39 x y text) 'vector)))
+  (append-graphics-command %graphics-list (list 39 x y text)))
 
 ;;;; 40   BOXER-LEFT-STRING          (X Y STRING)
 (defclass boxer-left-string (graphics-command)
@@ -401,7 +401,7 @@
                                                 'simple-string)))))))))
 
 (defun record-boxer-graphics-command-left-string (x y text)
-  (sv-append %graphics-list (coerce (list 40 x y text) 'vector)))
+  (append-graphics-command %graphics-list (list 40 x y text)))
 
 ;;;; 41   BOXER-RIGHT-STRING         (X Y STRING)
 (defclass boxer-right-string (graphics-command)
@@ -435,7 +435,7 @@
                                                 'simple-string)))))))))
 
 (defun record-boxer-graphics-command-right-string (x y text)
-  (sv-append %graphics-list (coerce (list 41 x y text) 'vector)))
+  (append-graphics-command %graphics-list (list 41 x y text)))
 
 ;; 42   BOXER-CENTERED-RECTANGLE       (X Y WIDTH HEIGHT)
 (defclass boxer-centered-rectangle (graphics-command)
@@ -460,7 +460,7 @@
             (list 'bu::stamp-rect width height)))))
 
 (defun record-boxer-graphics-command-centered-rectangle (x y width height)
-  (sv-append %graphics-list (coerce (list 42 x y width height) 'vector)))
+  (append-graphics-command %graphics-list (list 42 x y width height)))
 
 ;; 43   BOXER-DOT                      (X Y)
 (defclass boxer-dot (graphics-command)
@@ -484,7 +484,7 @@
             (list 'bu::dot)))))
 
 (defun record-boxer-graphics-command-dot (x y)
-  (sv-append %graphics-list (coerce (list 43 x y) 'vector)))
+  (append-graphics-command %graphics-list (list 43 x y)))
 
 ;; 44   BOXER-HOLLOW-RECTANGLE                   (X Y WIDTH HEIGHT)
 (defclass boxer-hollow-rectangle (graphics-command)
@@ -509,7 +509,7 @@
             (list 'bu::stamp-hollow-rect width height)))))
 
 (defun record-boxer-graphics-command-hollow-rectangle (x y width height)
-  (sv-append %graphics-list (coerce (list 44 x y width height) 'vector)))
+  (append-graphics-command %graphics-list (list 44 x y width height)))
 
 ;; 47   BOXER-CENTERED-BITMAP          (BITMAP X Y WIDTH HEIGHT)
 (defclass boxer-centered-bitmap (graphics-command)
@@ -551,7 +551,7 @@
   (ogl-free-pixmap (aref command 1)))
 
 (defun record-boxer-graphics-command-centered-bitmap (bitmap x y width height)
-  (sv-append %graphics-list (coerce (list 47 bitmap x y width height) 'vector)))
+  (append-graphics-command %graphics-list (list 47 bitmap x y width height)))
 
 ;; 58   BOXER-WEDGE                    (X Y RADIUS START-ANGLE SWEEP-ANGLE)
 (defclass boxer-wedge (graphics-command)
@@ -574,7 +574,7 @@
             (list 'bu::stamp-wedge radius sweep-angle)))))
 
 (defun record-boxer-graphics-command-wedge (x y radius start-angle sweep-angle)
-  (sv-append %graphics-list (coerce (list 58 x y radius start-angle sweep-angle) 'vector)))
+  (append-graphics-command %graphics-list (list 58 x y radius start-angle sweep-angle)))
 
 
 ;; 59   BOXER-ARC                      (X Y RADIUS START-ANGLE SWEEP-ANGLE)
@@ -597,7 +597,7 @@
             (list 'bu::stamp-arc radius sweep-angle)))))
 
 (defun record-boxer-graphics-command-arc (x y radius start-angle sweep-angle)
-  (sv-append %graphics-list (coerce (list 59 x y radius start-angle sweep-angle) 'vector)))
+  (append-graphics-command %graphics-list (list 59 x y radius start-angle sweep-angle)))
 
 ;; 60   BOXER-FILLED-ELLIPSE        (X Y WIDTH HEIGHT)
 (defclass boxer-filled-ellipse (graphics-command)
@@ -622,7 +622,7 @@
             (list 'bu::stamp-ellipse width height)))))
 
 (defun record-boxer-graphics-command-filled-ellipse (x y width height)
-  (sv-append %graphics-list (coerce (list 60 x y width height) 'vector)))
+  (append-graphics-command %graphics-list (list 60 x y width height)))
 
 ;; 61   BOXER-ELLIPSE               (X Y WIDTH HEIGHT)
 (defclass boxer-ellipse (graphics-command)
@@ -647,7 +647,7 @@
             (list 'bu::stamp-hollow-ellipse width height)))))
 
 (defun record-boxer-graphics-command-ellipse (x y width height)
-  (sv-append %graphics-list (coerce (list 61 x y width height) 'vector)))
+  (append-graphics-command %graphics-list (list 61 x y width height)))
 
 ;; 62   BOXER-FILLED-CIRCLE        (X Y RADIUS)
 (defclass boxer-filled-circle (graphics-command)
@@ -668,7 +668,7 @@
             (list 'bu::stamp-circle radius)))))
 
 (defun record-boxer-graphics-command-filled-circle (x y radius)
-  (sv-append %graphics-list (coerce (list 62 x y radius) 'vector)))
+  (append-graphics-command %graphics-list (list 62 x y radius)))
 
 ;; 63   BOXER-CIRCLE               (X Y RADIUS)
 (defclass boxer-circle (graphics-command)
@@ -689,7 +689,7 @@
             (list 'bu::stamp-hollow-circle radius)))))
 
 (defun record-boxer-graphics-command-circle (x y radius)
-  (sv-append %graphics-list (coerce (list 63 x y radius) 'vector)))
+  (append-graphics-command %graphics-list (list 63 x y radius)))
 
 (defparameter *graphics-commands*
   (alexandria:plist-hash-table (list

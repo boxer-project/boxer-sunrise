@@ -92,5 +92,6 @@
            (setf filename "Untitled.box"))
           (t
            (setf filename (format nil "Untitled ~A.box" i))))
+    #-emscripten
     (unless (probe-file (cl-fad:merge-pathnames-as-file directory filename))
       (setf togo (cl-fad:merge-pathnames-as-file directory filename)))))

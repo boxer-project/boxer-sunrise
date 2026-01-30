@@ -76,8 +76,10 @@
    (y-position         :initform (%make-vv-box-interface 0.0 'y-position))
    (subsprites         :initform nil :accessor subsprites)
    (superior-turtle    :initform nil :accessor superior-turtle)
-   (sprite-box         :initform nil :accessor sprite-box)
-   (assoc-graphics-box :initform nil :accessor assoc-graphics-box))
+   (sprite-box         :initform nil :accessor sprite-box
+    :documentation "The sprite box this graphics-object is part of.")
+   (assoc-graphics-box :initform nil :accessor assoc-graphics-box
+    :documentation "The graphics box this sprite (and potentially other sprites) are inside of."))
    (:documentation
     "Bare minimum for a graphics object, slots for box interface and position"))
 

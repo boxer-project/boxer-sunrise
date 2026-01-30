@@ -26,5 +26,5 @@
                (:file "fonts")
                (:file "disdcl")
                (:file "canvas")
-               (:file "pixmap"))
+               #-embedded-boxer (:file "pixmap"))
   :description "")
