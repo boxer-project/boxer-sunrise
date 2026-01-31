@@ -17050,6 +17050,19 @@ sprites)))
 ;;;; FILE: infsup.lisp
 ;;;;
 
+(defmethod insert-row-before-row ((box box) row before-row
+                                  &optional (check-closet t))
+  (let ((prev-row (previous-row before-row)))
+    (set-superior-box row box)
+    (set-previous-row row prev-row)
+    (set-previous-row before-row row)
+    (set-next-row row before-row)
+    (if (not-null prev-row)    ; we are not inserting into the beginning...
+        (set-next-row prev-row row)
+        (set-first-inferior-row box row)))
+  (when (or (null check-closet) (not (eq row (slot-value box 'closets))))
+    (do-row-chas ((c row)) (unless (cha? c) (insert-self-action c)))))
+
 ;;; These are no longer used.  They work (6/6/88), but do much useless work,
 ;;; and KILL-ROW was ever called.  See KILL-BOX-CONTENTS, the more efficient
 ;;; replacement.
@@ -25488,6 +25501,45 @@ Modification History (most recent at the top)
   (cond ((true? clause) *true*)
         ((false? clause) (setq *boolean-clauses* nil) *false*)
         (t (signal-error :any-of clause "neither true nor false"))))
+
+;;;;
+;;;; FILE: process-prims.lisp
+;;;;
+
+;; sgithens 2026-01-05 not used anywhere
+(defboxer-primitive bu::process-allow-schedule ()
+  (cond ((null *boxer-processes*) *novalue*)
+    (t (setq *sfun-continuation*
+             '*access-evaluator-state-sfun-continuation*)
+       #'(lambda ()
+                 (setf (process-variable *current-process* *sfun-continuation*)
+                       '*std-sfun-continuation*)
+                 (setf (process-variable *current-process* *returned-value*)
+                       *novalue*)
+                 (let ((next-process (next-runnable-process)))
+                   ;; if there's no other runnable process, just return.
+                   (cond ((null next-process)
+                          (setq *returned-value* *novalue*)
+                          (setq *sfun-continuation* '*std-sfun-continuation*)
+                          NIL)
+                     (t
+                      ;; This cursor move here is questionable.
+                      ;; but what are we supposed to do? The lexical root
+                      ;; might be different.  (But we face this problem
+                      ;; with TELL also).
+                      (boxer::restore-point-position
+                       (process-variable *current-process*
+                                         *process-doit-cursor-position*)
+                       t)
+                      ;			(setf (process-variable *current-process*
+                      ;						*sfun-continuation*)
+                      ;			      '*std-sfun-continuation*)
+                      (setf (process-variable *current-process* *sfun-continuation*)
+                            '*eval-loop-sfun-continuation*)
+                      (setf (process-variable *current-process*
+                                              *returned-value*)
+                            *novalue*)
+                      t)))))))
 
 ;;;;
 ;;;; FILE: ps.lisp

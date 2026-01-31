@@ -251,9 +251,6 @@
           ;; I'm not sure this putprop is really necessary??
           (putprop row (godot-insert-row-at-row-no box godot-box row godot-row row-no) :gdnode)))))
 
-(defmethod insert-row-before-row :before ((box box) row before-row &optional (check-closet t))
-  (break "Wraping insert-row-before-row: row: ~A" row))
-
 (defmethod insert-row-after-row :after ((box box) row after-row &optional (check-closet t))
   (let ((after-row-no (row-row-no box after-row))
         (godot-row (fetch-godot-obj row))

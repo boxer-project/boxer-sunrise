@@ -219,41 +219,6 @@
                   t)
                  t))))
 
-
-(defboxer-primitive bu::process-allow-schedule ()
-  (cond ((null *boxer-processes*) *novalue*)
-    (t (setq *sfun-continuation*
-             '*access-evaluator-state-sfun-continuation*)
-       #'(lambda ()
-                 (setf (process-variable *current-process* *sfun-continuation*)
-                       '*std-sfun-continuation*)
-                 (setf (process-variable *current-process* *returned-value*)
-                       *novalue*)
-                 (let ((next-process (next-runnable-process)))
-                   ;; if there's no other runnable process, just return.
-                   (cond ((null next-process)
-                          (setq *returned-value* *novalue*)
-                          (setq *sfun-continuation* '*std-sfun-continuation*)
-                          NIL)
-                     (t
-                      ;; This cursor move here is questionable.
-                      ;; but what are we supposed to do? The lexical root
-                      ;; might be different.  (But we face this problem
-                      ;; with TELL also).
-                      (boxer::restore-point-position
-                       (process-variable *current-process*
-                                         *process-doit-cursor-position*)
-                       t)
-                      ;			(setf (process-variable *current-process*
-                      ;						*sfun-continuation*)
-                      ;			      '*std-sfun-continuation*)
-                      (setf (process-variable *current-process* *sfun-continuation*)
-                            '*eval-loop-sfun-continuation*)
-                      (setf (process-variable *current-process*
-                                              *returned-value*)
-                            *novalue*)
-                      t)))))))
-
 ;; assumes that the evaluator is already running
 (defun resume-process-waiting-for (process)
   ;; Makes current process be the first process in :PAUSE for PROCESS and

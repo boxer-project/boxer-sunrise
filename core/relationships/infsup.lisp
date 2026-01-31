@@ -693,7 +693,7 @@
 ;;; delete-row-at-row-no
 ;;; delete-row
 ;;;
-;;; insert-row-before-row
+;;; insert-row-before-row  2026-01-30 archived
 ;;; insert-row-after-row
 ;;;
 ;;; kill-box-contents
@@ -821,19 +821,6 @@
 ;;; Operations that take existing box rows as position specifiers. These
 ;;; operations are built on top of the operations that take row positions
 ;;; as position specifiers.
-
-(defmethod insert-row-before-row ((box box) row before-row
-                                  &optional (check-closet t))
-  (let ((prev-row (previous-row before-row)))
-    (set-superior-box row box)
-    (set-previous-row row prev-row)
-    (set-previous-row before-row row)
-    (set-next-row row before-row)
-    (if (not-null prev-row)    ; we are not inserting into the beginning...
-        (set-next-row prev-row row)
-        (set-first-inferior-row box row)))
-  (when (or (null check-closet) (not (eq row (slot-value box 'closets))))
-    (do-row-chas ((c row)) (unless (cha? c) (insert-self-action c)))))
 
 (defmethod insert-row-after-row ((box box) row after-row
                                  &optional (check-closet t))
