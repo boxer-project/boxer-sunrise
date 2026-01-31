@@ -99,10 +99,11 @@ Modification History (most recent at top)
 
 (defun cancel-search-text (&rest ignore)
   (reset *current-search*)
+  #+lispworks (progn
   (setf (capi:text-input-pane-text (slot-value (slot-value bw::*boxer-frame* 'bw::search-pane) 'bw::search-input))
         "")
   (setf (capi:title-pane-text (slot-value (slot-value bw::*boxer-frame* 'bw::search-pane) 'bw::found-number))
-        (format nil "No results")))
+        (format nil "No results"))))
 
 (defun modern-recursive-search (pattern new-bp stop-box)
   (multiple-value-bind (found-row found-cha-no offset)
