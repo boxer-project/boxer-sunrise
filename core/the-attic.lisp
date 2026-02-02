@@ -7394,6 +7394,17 @@ Modification History (most recent at top)
 ;;;; FILE: coms-oglmouse.lisp
 ;;;;
 
+(defvar *enable-mouse-toggle-box-type?* t
+  "Setting this to `t` allows the type label to have a click that swaps the box between
+  doit and data.")
+
+(defvar *slow-box-type-toggle* nil
+  "If this is set to `t` then the user must hold down the click on the data label for a bit
+  before it will toggle. The amount of time is specified in `*mouse-action-pause-time*`.")
+
+(defvar *mouse-action-pause-time* .6)
+
+
 ;; we need to make sure that we don't leave just a single row for unfixed size
 ;; boxes because that makes it hard to use the scrolling machinery
 ;; should be smarter and estimate row heights so the lowest we go is still a boxful
