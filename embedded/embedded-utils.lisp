@@ -641,105 +641,13 @@
 )
 
 ;;;
-;;; TODO Why aren't these somewhere in core??
+;;; TODO Hack overrides
 ;;;
-
-;; straight from disply.lisp, which should just be brought in to the project.
-(defun boxtop (editor-box)
-  (let ((boxtop-prop (getprop editor-box :boxtop)))
-    ;; nil prop means the same as standard...
-    ;; NOTE: prop can be a graphics box if the box is a black box with a boxtop
-    (cond ((graphics-sheet? boxtop-prop)
-           ;; special case in top level of fileboxes
-           boxtop-prop)
-      ((or (null boxtop-prop)
-           (eq boxtop-prop :standard)
-           ;; for compatibility with mac files
-           (eq boxtop-prop :file)
-           (eq boxtop-prop :framed))
-       (let* ((target (box-or-port-target editor-box))
-              (bt-box (cond ((box? target)
-                             (boxer-eval::lookup-static-variable-in-box-only
-                              target 'bu::boxtop))
-                        ((virtual-copy? target)
-                         (lookup-variable-in-virtual-copy target
-                                                          'bu::boxtop)))))
-         (cond ((box? bt-box) (graphics-sheet bt-box))
-           ((virtual-copy? bt-box)
-            (graphics-info-graphics-sheet (vc-graphics bt-box)))
-           (t (let ((cache (getprop editor-box :cached-boxtop)))
-                (if (and (eq boxtop-prop :file) (null cache))
-                  (boxtop-namestring editor-box)
-                  cache))))))
-      ((and (symbolp boxtop-prop)
-            (eq (symbol-package boxtop-prop) pkg-bu-package))
-       (let* ((boxer-eval::*lexical-variables-root* editor-box)
-              (bt-box (boxer-eval::boxer-symeval boxtop-prop)))
-         (cond ((box? bt-box) (graphics-sheet bt-box))
-           ((virtual-copy? bt-box)
-            (graphics-info-graphics-sheet (vc-graphics bt-box)))
-           (t nil))))
-      ((eq boxtop-prop :xref)
-       ;; allow xrefs to have user boxtops
-       (let* ((target (box-or-port-target editor-box))
-              (bt-box (cond ((box? target)
-                             (boxer-eval::lookup-static-variable-in-box-only
-                              target 'bu::boxtop))
-                        ((virtual-copy? target)
-                         (lookup-variable-in-virtual-copy target
-                                                          'bu::boxtop)))))
-         (cond ((box? bt-box) (graphics-sheet bt-box))
-           ((virtual-copy? bt-box)
-            (graphics-info-graphics-sheet (vc-graphics bt-box)))
-           (t (getprop editor-box :xref)))))
-      ((fast-memq boxtop-prop '(:name-only :folder))
-       (boxtop-namestring editor-box))
-      (t boxtop-prop))))
-
-;; (defvar BOXER-WINDOW::*CLICKED-STARTUP-FILE* nil)
 
 (defun repaint (&optional just-windows?)
   nil)
 
-(defmethod fixed-size? ((self box))
-  (let ((ds (display-style-list self)))
-    (and (not (member *outermost-screen-box* (screen-objs self)))
-         (numberp (display-style-fixed-wid ds))
-         (numberp (display-style-fixed-hei ds)))))
-
-(defmethod display-style ((box box))
-  (display-style-style (display-style-list box)))
-
-
-(defmethod set-display-style-list ((box box) new-style)
-  (setf (display-style-list box) new-style))
-
-(defmethod set-border-style ((self box) new-style)
-  (let ((display-style (display-style-list self)))
-    (setf (display-style-border-style display-style) new-style)))
-
-(defmethod border-style ((self port-box))
-  (let ((target (slot-value self 'ports)))
-    (unless (null target)
-      (display-style-border-style (display-style-list target)))))
-
 (defmethod shrunken? (oof) nil)
-
-(defmethod shrunken? ((self box))
-  (let ((style (display-style-style (display-style-list self))))
-    (or (eq style :shrunk) (eq style :supershrunk))))
-
-(DEFMETHOD SHRINK ((SELF BOX))
-           (SET-DISPLAY-STYLE SELF ':SHRUNK)
-           (MODIFIED SELF))
-
-(DEFMETHOD UNSHRINK ((SELF BOX))
-           (SET-DISPLAY-STYLE SELF ':NORMAL)
-           (MODIFIED SELF))
-
-(defmethod supershrink ((self box))
-  (set-display-style self ':supershrunk)
-  (modified self))
 
 (defmethod set-display-style ((self box) new-value)
   ;; sgithens hack, make sure this gets set on new boxes...
@@ -748,7 +656,8 @@
   (setf (display-style-style (display-style-list self)) new-value))
 
 (defmethod clear-graphics-canvas (obj)
-  "")
+  ;; TODO this needs to be overridden for each implementation
+  nil)
 
 ;; Traces
 ;; (trace boxer-eval::boxer-eval)
