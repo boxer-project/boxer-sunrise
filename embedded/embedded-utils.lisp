@@ -625,73 +625,7 @@
   ;; (%set-pen-color color)
   nil)
 
-;;;
-;;; Hacking pixmaps
-;;;
 
-(defclass ogl-pixmap ()
-  ((width             :initarg :width             :initform 0   :accessor ogl-pixmap-width)
-   (height            :initarg :height            :initform 0   :accessor ogl-pixmap-height)
-   ;; In Godot we're going to make this texture be a PackedByteArray
-   (texture           :initarg :texture           :accessor ogl-pixmap-texture)
-   (update-texture-p  :initarg :update-texture-p  :initform nil :accessor ogl-pixmap-update-texture-p
-    :documentation "If this is true, then changes have been made to the pixel data and should be
-                    redrawn to the GL texture.")
-   (data              :initarg :data              :initform nil :accessor ogl-pixmap-data)
-   (depth             :initarg :depth             :initform 32  :accessor ogl-pixmap-depth)))
-
-(defgeneric ogl-pixmap-p (x) (:method (x) nil) (:method ((x ogl-pixmap)) t))
-
-(defun make-ogl-pixmap (width height &key (texture 0))
-  (cond ((and (integerp width)  (not (minusp width))
-              (integerp height) (not (minusp height)))
-        ;;  (format t "Make OGL Pixmap size-of2: ~A  count: ~A~%" (ffi:size-of-foreign-type :unsigned-int) (* width height))
-         (make-instance 'ogl-pixmap :width width :height height
-                        :data (ffi:allocate-foreign-object :unsigned-int (* width height))
-                        :texture (gdboxer-make-packed-byte-array (* width height)))
-        )
-        (t (error "Pixmap dimensions, (~S, ~S) must be non-negative integers"
-                  width height))))
-
-(defun ogl-free-pixmap (pixmap)
-  (when (ogl-pixmap-p pixmap)
-    ;; TODO TODO TODO
-    ;; (cffi:foreign-free (ogl-pixmap-data pixmap))
-    ))
-
-(defun pixmap-pixel (pixmap x y)
-  (let* ((data (ogl-pixmap-data pixmap))
-         (pwid (ogl-pixmap-width pixmap))
-         (phei (ogl-pixmap-height pixmap))
-         (ogl-y (- phei y 1)))
-    (ffi::%foreign-data-ref data (+ x (* ogl-y pwid)) :unsigned-int)
-    ))
-
-(defun set-pixmap-pixel (pixmap x y newpixel)
-  (let* ((data (ogl-pixmap-data pixmap))
-         (pwid (ogl-pixmap-width pixmap))
-         (phei (ogl-pixmap-height pixmap))
-         (ogl-y (- phei y 1)))
-    (ffi::%foreign-data-set data (+ x (* ogl-y pwid)) :unsigned-int newpixel)
-    ;; (format t " pix: ~A ~A " (+ x (* ogl-y pwid)) newpixel)
-    (gdboxer-packed-byte-array-set (ogl-pixmap-texture pixmap) (+ x (* ogl-y pwid)) newpixel))
-  (setf (ogl-pixmap-update-texture-p pixmap) t))
-
-;; (defsetf pixmap-pixel set-pixmap-pixel)
-
-(defmethod (setf pixmap-pixel) (value pixmap x y)
-  (set-pixmap-pixel pixmap x y value))
-
-(defvar *gl-rgba-rev-alpha-byte* (byte 8 24))
-(defvar *gl-rgba-rev-blue-byte* (byte 8 16))
-(defvar *gl-rgba-rev-green-byte* (byte 8 8))
-(defvar *gl-rgba-rev-red-byte* (byte 8 0))
-
-;; NOTE: this must match the format in *pixmap-data-type* and *pixmap-data-format*
-(defun make-offscreen-pixel (red green blue &optional (alpha 255))
-  (dpb alpha *gl-rgba-rev-alpha-byte*
-       (dpb blue *gl-rgba-rev-blue-byte*
-            (dpb green *gl-rgba-rev-green-byte* red))))
 
 ;;;
 ;;; XREF

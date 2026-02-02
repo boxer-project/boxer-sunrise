@@ -54,13 +54,18 @@ Modification History (most recent at top)
    (data              :initarg :data              :initform nil :accessor ogl-pixmap-data)
    (depth             :initarg :depth             :initform 32  :accessor ogl-pixmap-depth)))
 
-(defun make-ogl-pixmap (width height &key (texture 0))
+(defun make-ogl-pixmap (width height &key #-embedded-boxer (texture 0)
+                                          #+embedded-boxer (texture (gdboxer-make-packed-byte-array (* width height))))
   (cond ((and (integerp width)  (not (minusp width))
               (integerp height) (not (minusp height)))
          (make-instance 'ogl-pixmap :width width :height height :texture texture
-                           :data (cffi:foreign-alloc *pixmap-ffi-type*
+                           :data #-embedded-boxer
+                                 (cffi:foreign-alloc *pixmap-ffi-type*
                                                      :initial-element 0
-                                                     :count (* width height))))
+                                                     :count (* width height))
+                                 #+embedded-boxer
+                                 (ffi:allocate-foreign-object *pixmap-ffi-type* (* width height))
+                                                     ))
         (t (error "Pixmap dimensions, (~S, ~S) must be non-negative integers"
                   width height))))
 
@@ -68,7 +73,8 @@ Modification History (most recent at top)
 
 (defun ogl-free-pixmap (pixmap)
   (when (ogl-pixmap-p pixmap)
-    (cffi:foreign-free (ogl-pixmap-data pixmap))
+    #-embedded-boxer (cffi:foreign-free (ogl-pixmap-data pixmap))
+    ;; TODO #+embedded-boxer
     ))
 
 ;; NOTE: this must match the format in *pixmap-data-type* and *pixmap-data-format*
@@ -86,7 +92,8 @@ Modification History (most recent at top)
          (pwid (ogl-pixmap-width pixmap))
          (phei (ogl-pixmap-height pixmap))
          (ogl-y (- phei y 1)))
-    (cffi:mem-aref data *pixmap-ffi-type* (+ x (* ogl-y pwid)))))
+    #-embedded-boxer (cffi:mem-aref data *pixmap-ffi-type* (+ x (* ogl-y pwid)))
+    #+embedded-boxer (ffi::%foreign-data-ref data (+ x (* ogl-y pwid)) *pixmap-ffi-type*)))
 
 ;; NOTE: this must match the format in *pixmap-data-type* and *pixmap-data-format*
 (defun pixel->color (pixel)
@@ -103,7 +110,9 @@ Modification History (most recent at top)
          (pwid (ogl-pixmap-width pixmap))
          (phei (ogl-pixmap-height pixmap))
          (ogl-y (- phei y 1)))
-    (setf (cffi:mem-aref data *pixmap-ffi-type* (+ x (* ogl-y pwid))) newpixel))
+    #-embedded-boxer (setf (cffi:mem-aref data *pixmap-ffi-type* (+ x (* ogl-y pwid))) newpixel)
+    #+embedded-boxer (ffi::%foreign-data-set data (+ x (* ogl-y pwid)) *pixmap-ffi-type* newpixel)
+    #+embedded-boxer (gdboxer-packed-byte-array-set (ogl-pixmap-texture pixmap) (+ x (* ogl-y pwid)) newpixel))
   (setf (ogl-pixmap-update-texture-p pixmap) t))
 
 (defsetf pixmap-pixel set-pixmap-pixel)
@@ -116,7 +125,9 @@ Modification History (most recent at top)
           (data (ogl-pixmap-data pixmap)))
       (declare (fixnum w h))
       (dotimes (i (* w h))
-        (setf (cffi:mem-aref data *pixmap-ffi-type* i) pixel-value)))
+        #-embedded-boxer (setf (cffi:mem-aref data *pixmap-ffi-type* i) pixel-value)
+        ;; TODO #+embedded-boxer
+        ))
     (setf (ogl-pixmap-update-texture-p pixmap) t)))
 
 (defun clear-offscreen-bitmap (bm &optional (clear-color *background-color*))
@@ -138,9 +149,12 @@ Modification History (most recent at top)
            (actual-hei (min hei (- th to-y) (- fh from-y))))
       (dotimes (y actual-hei)
         (dotimes (x actual-wid)
+          #-embedded-boxer
           (setf
               (cffi:mem-aref tdata *pixmap-ffi-type* (+ (+ x to-x)   (* (- th (+ y to-y)   1) tw)))
-              (cffi:mem-aref fdata *pixmap-ffi-type* (+ (+ x from-x) (* (- fh (+ y from-y) 1) fw)))))))
+              (cffi:mem-aref fdata *pixmap-ffi-type* (+ (+ x from-x) (* (- fh (+ y from-y) 1) fw))))
+          ;; TODO #+embedded-boxer
+          )))
     (setf (ogl-pixmap-update-texture-p to-pixmap) t)))
 
 (defun copy-pixmap (pixmap)
