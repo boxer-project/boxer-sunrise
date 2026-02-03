@@ -99,10 +99,14 @@ func handle_character_input(code, bits):
     boxer_event_queue.push_front([1, code, bits])
     boxer_event_queue_mutex.unlock()
 
+func handle_boxer_func_1(func_name, arg0):
+    if boxer_event_queue_mutex:
+        boxer_event_queue_mutex.lock()
+        boxer_event_queue.push_front([3, 1, func_name, arg0])
+        boxer_event_queue_mutex.unlock()
+
 func handle_open_file(path):
-    boxer_event_queue_mutex.lock()
-    boxer_event_queue.push_front([3, 1, "GODOT-OPEN-FILE", path])
-    boxer_event_queue_mutex.unlock()
+    handle_boxer_func_1("GODOT-OPEN-FILE", path)
 
 func handle_mouse_input(action, row, pos, click, bits, area):
     boxer_event_queue_mutex.lock()
@@ -110,9 +114,7 @@ func handle_mouse_input(action, row, pos, click, bits, area):
     boxer_event_queue_mutex.unlock()
 
 func handle_paste_text(text):
-    boxer_event_queue_mutex.lock()
-    boxer_event_queue.push_front([3, 1, "GODOT-PASTE-TEXT", text])
-    boxer_event_queue_mutex.unlock()
+    handle_boxer_func_1("GODOT-PASTE-TEXT", text)
 
 func handle_request_cursor_update():
     boxer_event_queue_mutex.lock()
@@ -124,11 +126,6 @@ func handle_toggle_closet():
     boxer_event_queue.push_front([3, 0, "COM-TOGGLE-CLOSETS"])
     boxer_event_queue_mutex.unlock()
 
-func handle_boxer_func_1(func_name, arg0):
-    if boxer_event_queue_mutex:
-        boxer_event_queue_mutex.lock()
-        boxer_event_queue.push_front([3, 1, func_name, arg0])
-        boxer_event_queue_mutex.unlock()
 
 ###
 ### Queue from Lisp -> Boxer
