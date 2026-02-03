@@ -285,10 +285,7 @@ func _on_lower_left_corner_gui_input(event: InputEvent) -> void:
 
 func _on_type_toggle_gui_input(event: InputEvent) -> void:
     if event is InputEventMouseButton and event.pressed:
-        if box_type == BoxType.DATA:
-            box_type = BoxType.DOIT
-        elif box_type == BoxType.DOIT:
-            box_type = BoxType.DATA
+        $/root/Main.handle_boxer_func_1("UI-TOGGLE-BOX-TYPE", boxer_box)
 
 func push_graphics_command(opcode, arg1, arg2, arg3, arg4, arg5):
     %TurtleGraphics.append_draw_command([opcode, arg1, arg2, arg3, arg4, arg5])

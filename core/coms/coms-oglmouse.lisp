@@ -1203,6 +1203,14 @@
           (modified box-to-name)))))
   boxer-eval::*novalue*)
 
+;; TODO sgithens 2026-02-03
+;; This should perhaps be a new category of defboxer-command, perhaps there the optional
+;; default value is the current *point* box..., or maybe another category of mouse locations
+(defun ui-toggle-box-type (box)
+  (when (or (data-box? box) (doit-box? box))
+    (toggle-type box)
+    (mark-file-box-dirty box)))
+
 (defboxer-command com-mouse-border-toggle-type (&optional (window *boxer-pane*)
                                                           (x (bw::boxer-pane-mouse-x))
                                                           (y (bw::boxer-pane-mouse-y))
@@ -1213,14 +1221,8 @@
   window x y ;  (declare (ignore window x y))
   ;; first, if there already is an existing region, flush it
   (reset-region)
-  (let* ((screen-box (bp-screen-box mouse-bp))
-         (box-type (box-type screen-box)))
-    (when (or (eq box-type 'data-box) (eq box-type 'doit-box))
-      (toggle-type (bp-box mouse-bp))
-      (mark-file-box-dirty (bp-box mouse-bp))))
+  (ui-toggle-box-type (bp-box mouse-bp))
   boxer-eval::*novalue*)
-
-
 
 ;;; Note: These scroll bar commands can now be triggerd by action in the horizontal
 ;;; as well as the (usual) vertical scroll bar
