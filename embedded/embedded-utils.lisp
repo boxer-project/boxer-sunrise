@@ -106,9 +106,9 @@
 (defun gdboxer-make-box-internal (box)
   (let ((togo (gdboxer-make-box box)))
     (cond ((doit-box? box)
-           (gdboxer-toggle-to-doit togo))
+           (godot-call togo "toggle_to_doit"))
           ((data-box? box)
-           (gdboxer-toggle-to-data togo))
+           (godot-call togo "toggle_to_data"))
           (t
            nil))
     togo))
@@ -215,9 +215,9 @@
   (let ((godot-box (fetch-godot-obj self)))
     (when godot-box
       (cond ((equalp (symbol-name new-type) "DOIT-BOX")
-           (gdboxer-toggle-to-doit godot-box))
+           (godot-call godot-box "toggle_to_doit"))
           ((equalp (symbol-name new-type) "DATA-BOX")
-           (gdboxer-toggle-to-data godot-box))
+           (godot-call godot-box "toggle_to_data"))
           (t
            nil)))))
 

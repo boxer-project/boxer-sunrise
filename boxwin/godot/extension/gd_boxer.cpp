@@ -158,23 +158,6 @@ cl_object lisp_boxer_packed_byte_array_set(cl_object pbarray, cl_object index, c
 }
 
 /*
- * BOXES
- */
-cl_object lisp_boxer_toggle_to_data(cl_object box) {
-    UtilityFunctions::print("lisp_boxer_toggle_to_data\n");
-    Object* godot_box = Variant((Object*) ecl_foreign_data_pointer_safe(box));
-    godot_box->call_deferred("toggle_to_data");
-    return ECL_NIL;
-}
-
-cl_object lisp_boxer_toggle_to_doit(cl_object box) {
-    UtilityFunctions::print("lisp_boxer_toggle_to_doit\n");
-    Object* godot_box = Variant((Object*) ecl_foreign_data_pointer_safe(box));
-    godot_box->call_deferred("toggle_to_doit");
-    return ECL_NIL;
-}
-
-/*
  * Display Style Lists
  */
 
@@ -353,16 +336,6 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
 
     aux = ecl_make_symbol("GDBOXER-PACKED-BYTE-ARRAY-SET", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_packed_byte_array_set, 3);
-
-
-    //
-    // BOXES
-    //
-    aux = ecl_make_symbol("GDBOXER-TOGGLE-TO-DATA", "BOXER");
-    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_toggle_to_data, 1);
-
-    aux = ecl_make_symbol("GDBOXER-TOGGLE-TO-DOIT", "BOXER");
-    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_toggle_to_doit, 1);
 
     //
     // Display Style Lists
