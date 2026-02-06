@@ -29182,6 +29182,56 @@ Modification History (most recent at top)
 ;;;; FILE: xfile.lisp
 ;;;;
 
+#+mcl
+(defun fill-icon-cache (box xref creator ftype)
+  (let ((path (mac-file-ref-pathname xref)))
+    ;; see if we can fill the icon cache
+    (cond ((null path))
+          ((probe-file path)
+           ;; it is possible to have a bad path, especially when reading
+           ;; in boxes from other machines which may have other machine
+           ;; dependent pathnames in them
+           (setf (mac-file-ref-icon-cache xref)
+                 #-carbon-compat
+                 (ccl::file-icon (or creator
+                                     (when path
+                                       (ccl::mac-file-creator path)))
+                                 (or ftype
+                                     (when path
+                                       (ccl::mac-file-type  path))))
+                 #+carbon-compat
+                 (let ((icr (if (and creator ftype)
+                              (get-iconref creator ftype)
+                              (get-iconref-from-file path)
+                              )))
+                   (when (iconref? icr) icr))
+                 ))
+          (t
+           ;; should probably try and do somethign reasable here
+           ;; If the containing box and the xref has been moved via the
+           ;; Finder, then the pathname in the boxer file will be
+           ;; incorrect, so try looking in the directory of the
+           ;; containing box
+           (let* ((cfb (current-file-box box))
+                  (cfb-path (or (and cfb (getprop cfb :associated-file))
+                                *autoloading-namestring*))
+                  (retry-path (and cfb-path
+                                   (find-xref-retry-path path cfb-path))))
+             (when (and retry-path (probe-file retry-path))
+               (setf (mac-file-ref-pathname xref) retry-path)
+               (setf (mac-file-ref-icon-cache xref)
+                     #-carbon-compat
+                     (ccl::file-icon (or creator
+                                         (ccl::mac-file-creator retry-path))
+                                     (or ftype
+                                         (ccl::mac-file-type  retry-path)))
+                     #+carbon-compat
+                     (let ((icr (if (and creator ftype)
+                                  (get-iconref creator ftype)
+                                  (get-iconref-from-file retry-path))))
+                       (when (iconref? icr) icr))
+                     )))))))
+
 ;; come here when single clicked on a file link
 ;; check to see if the file is a box
 #+mcl
