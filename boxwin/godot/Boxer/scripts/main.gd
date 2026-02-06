@@ -99,6 +99,12 @@ func handle_character_input(code, bits):
     boxer_event_queue.push_front([1, code, bits])
     boxer_event_queue_mutex.unlock()
 
+func handle_boxer_func_0(func_name):
+    if boxer_event_queue_mutex:
+        boxer_event_queue_mutex.lock()
+        boxer_event_queue.push_front([3, 0, func_name])
+        boxer_event_queue_mutex.unlock()
+
 func handle_boxer_func_1(func_name, arg0):
     if boxer_event_queue_mutex:
         boxer_event_queue_mutex.lock()
@@ -181,6 +187,8 @@ func _process(_delta: float) -> void:
         canvas_zoom -= 0.25
     if Input.is_action_just_pressed("ui_open"):
         open_dialog.popup_centered()
+    if Input.is_action_just_pressed("ui_save"):
+        handle_boxer_func_0("COM-SAVE-DOCUMENT")
     if Input.is_action_just_pressed("ui_toggle_closet"):
         print("Boxer Toggle Closet")
         handle_toggle_closet()

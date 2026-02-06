@@ -367,33 +367,19 @@ Modification History (most recent at top)
     ))
 
 (defun make-backup-if-necessary (dest-pathname)
+  ;; looks like there already is a file with that name
   (when (probe-file dest-pathname)
-    ;; looks like there already is a file with that name
-    (rename-file dest-pathname
-                 ;; on windows systems, we have to preserve the pathname type
-                 #+win32
-                 (merge-pathnames (concatenate 'string
-                                               (pathname-name dest-pathname)
-                                               *file-backup-suffix*)
-                                  dest-pathname)
-                 #+mcl
-                 (let ((old-name (file-namestring dest-pathname)))
-                   ;; have to check for possible 31 char length
-                   (cond ((>= (length old-name) 31)
-                          (merge-pathnames
-                           (concatenate 'string
-                                        (subseq old-name 0 30)
-                                        *file-backup-suffix*)
-                           dest-pathname))
-                         (t
-              (concatenate 'string
-                     (namestring dest-pathname)
-                                       *file-backup-suffix*))))
-                 #-(or mcl win32)
-     (concatenate 'string
-            (namestring dest-pathname)
-            *file-backup-suffix*)
-                 #+mcl :if-exists #+mcl :supersede)))
+    (let ((backup-filename ;; on windows systems, we have to preserve the pathname type
+                           #+win32
+                           (merge-pathnames (concatenate 'string
+                                                         (pathname-name dest-pathname)
+                                                         *file-backup-suffix*)
+                                             dest-pathname)
+                           #-win32
+                           (concatenate 'string (namestring dest-pathname) *file-backup-suffix*)))
+      (when (probe-file backup-filename)
+        (delete-file backup-filename))
+      (rename-file dest-pathname backup-filename))))
 
 
 ;; used to be READ

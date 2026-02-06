@@ -78,7 +78,7 @@
                  (:file "editor-high/mouse")
                  (:file "editor-high/simple-stream")
                  (:file "editor-high/makcpy")
-                 (:file "editor-high/xfile" :if-feature (:not :emscripten))
+                 (:file "editor-high/xfile")
                  (:file "editor-high/region")
                  (:file "editor-high/oglscroll")
                  (:file "editor-high/mode")
