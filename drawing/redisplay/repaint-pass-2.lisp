@@ -70,7 +70,7 @@
           (setf togo t))))
     togo))
 
-(defmethod repaint-search-regions (self screen-box)
+(defmethod repaint-search-regions ((self screen-box))
   (when (search-match-in-screen-box? self)
     (with-model-matrix ((3d-matrices:meye 4))
       (refresh-gpu-model-matrix)
