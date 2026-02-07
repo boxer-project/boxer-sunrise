@@ -8,8 +8,8 @@
 [ext_resource type="PackedScene" uid="uid://bqodvk5rb2nb4" path="res://scenes/row.tscn" id="4_tipki"]
 [ext_resource type="PackedScene" uid="uid://mjcxt81qohg3" path="res://scenes/turtle.tscn" id="5_choun"]
 [ext_resource type="Theme" uid="uid://clyeptsut3tbs" path="res://themes/macOS_light.tres" id="5_o6xl0"]
-[ext_resource type="Script" uid="uid://cgbi3olobjs83" path="res://scripts/flipping_box.gd" id="5_tbgi4"]
-[ext_resource type="Script" uid="uid://bjghqrhlr4ubh" path="res://scripts/boxer_menu_bar.gd" id="9_85g3d"]
+[ext_resource type="Script" path="res://scripts/flipping_box.gd" id="5_tbgi4"]
+[ext_resource type="Script" path="res://scripts/boxer_menu_bar.gd" id="9_85g3d"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tefeu"]
 albedo_color = Color(1, 1, 1, 0)
