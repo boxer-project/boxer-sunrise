@@ -12,19 +12,18 @@
   :author "Steven Githens"
   :license ""
   :depends-on ("uiop"
-               #-shim-3d-math "3d-matrices")
+               (:feature (:not :shim-3d-math) :3d-matrices))
   :components ((:file "package")
-               (:file "boxlog" :if-feature :emscripten)
-               #+shim-3d-math
-               (:file "3d-math")
+               (:file "boxlog" :if-feature :embedded-boxer)
+               (:file "3d-math" :if-feature :shim-3d-math)
                ;; DEFINITIONS
                (:file "color")
                (:file "macros")
                (:file "storage")
-               (:file "boxdef")
+               (:file "boxdef" :depends-on ("package" "macros"))
                (:file "vrtdef")
                (:file "fonts")
-               (:file "disdcl")
+               (:file "disdcl" :depends-on ("storage" "3d-math"))
                (:file "canvas")
                (:file "pixmap"))
   :description "")
