@@ -76,6 +76,7 @@
                             (find-package "BOXNET")))))
     (if (null class)
         (error "Don't know how to make a ~A url" type)
+        #-embedded-boxer
         (make-instance class
                        :scheme-string (if no-decode
                                           scheme-string

@@ -11,12 +11,13 @@
   :version "3.4.26"
   :author "Steven Githens"
   :license ""
-  :depends-on (:alexandria
+  :depends-on (:uiop
+               :alexandria
                (:feature (:not :emscripten) :cl-fad)
                (:feature (:not :emscripten) :drakma)
                (:feature (:not :emscripten) :external-program)
                (:feature (:not :emscripten) :log4cl)
-               :quri
+               (:feature (:not :embedded-boxer) :quri)
                (:feature (:not :emscripten) :zip)
                :boxer-sunrise-definitions)
   :components   ((:file "definitions/boxer-styles")
