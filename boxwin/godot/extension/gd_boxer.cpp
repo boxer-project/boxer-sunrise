@@ -244,23 +244,6 @@ Variant convert_ecl_to_godot (cl_object value) {
 }
 
 /*
- * Turtle Graphics Commands
- */
-cl_object lisp_boxer_push_graphics_command(cl_object box, cl_object op_code, cl_object arg1, cl_object arg2, cl_object arg3, cl_object arg4, cl_object arg5) {
-    int op = (int)ecl_fixnum(op_code);
-    Object *godot_box = Variant((Object *)ecl_foreign_data_pointer_safe(box));
-    godot_box->call_deferred("push_graphics_command", (int)ecl_fixnum(op_code), convert_ecl_to_godot(arg1), convert_ecl_to_godot(arg2),
-                    convert_ecl_to_godot(arg3), convert_ecl_to_godot(arg4), convert_ecl_to_godot(arg5));
-    return ECL_NIL;
-}
-
-cl_object lisp_boxer_add_turtle_to_graphics(cl_object box, cl_object turtle) {
-    Object *godot_box = Variant((Object *)ecl_foreign_data_pointer_safe(box));
-    Object *godot_turtle = Variant((Object *)ecl_foreign_data_pointer_safe(turtle));
-    godot_box->call_deferred("add_turtle", godot_turtle);
-    return ECL_NIL;
-}
-/*
  * MISC
  */
 cl_object lisp_boxer_set_property(cl_object box, cl_object prop_name, cl_object prop_value) {
@@ -355,14 +338,6 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
     aux = ecl_make_symbol("GDBOXER-SET-GRAPHICS-SHEET-BIT-ARRAY", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_set_graphics_sheet_bit_array, 4);
 
-    //
-    // Turtle Graphics
-    //
-    aux = ecl_make_symbol("GDBOXER-PUSH-GRAPHICS-COMMAND", "BOXER");
-    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_push_graphics_command, 7);
-
-    aux = ecl_make_symbol("GODOT-ADD-TURTLE-TO-GRAPHICS", "BOXER");
-    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_add_turtle_to_graphics, 2);
     //
     // MISC
     //

@@ -302,7 +302,7 @@
       (when gl
         (do-vector-contents (com gl)
           (let ((command (coerce com 'list)))
-            (gdboxer-push-graphics-command godot-box (nth 0 command) (nth 1 command) (nth 2 command) (nth 3 command) (nth 4 command) (nth 5 command))))))
+            (godot-call godot-box "push_graphics_command" (nth 0 command) (nth 1 command) (nth 2 command) (nth 3 command) (nth 4 command) (nth 5 command))))))
 
     ;; background
     (let ((value (graphics-sheet-background sheet)))
@@ -350,7 +350,7 @@
   (format t "   the shape2: ~A~%" (box-interface-value (slot-value turtle 'shape)))
   (let ((godot-box    (fetch-godot-obj self))
         (godot-turtle (fetch-godot-obj turtle)))
-    (godot-add-turtle-to-graphics godot-box godot-turtle)
+    (godot-call godot-box "add_turtle" godot-turtle)
 
     ;; shape
     (apply-graphics-list godot-turtle (box-interface-value (slot-value turtle 'shape)))
@@ -525,7 +525,7 @@
          (graphics-box (assoc-graphics-box agent))
          (godot-box (fetch-godot-obj graphics-box)))
     ;; This is not very elegent, however the longest graphics command is never more than 6 params
-    (gdboxer-push-graphics-command godot-box (nth 0 com-list) (nth 1 com-list) (nth 2 com-list) (nth 3 com-list) (nth 4 com-list) (nth 5 com-list))))
+    (godot-call godot-box "push_graphics_command" (nth 0 com-list) (nth 1 com-list) (nth 2 com-list) (nth 3 com-list) (nth 4 com-list) (nth 5 com-list))))
 
 (defun repaint-in-eval (&optional force?)
   nil)
