@@ -20272,6 +20272,133 @@ Modification History (most recent at top)
     (set-offscreen-bitmap-image pixmap pixdata)
 
 ;;;;
+;;;; FILE: lodisp.lisp
+;;;;
+
+; sgithens TODO ... this defun doesn't seem to be anywhere, unless it's generated
+; somewhere by a macro
+(defun check-screen-row-arg (screen-row) t)
+
+;; sgithens TODO 2024-04-17 appears to no longer be used...
+(defmethod insert-screen-cha-at-cha-no ((self screen-row) new-screen-cha cha-no)
+  (sv-insert-at (slot-value self 'screen-chas) cha-no new-screen-cha)
+  (when (screen-box? new-screen-cha)
+    (setf (screen-row new-screen-cha) self)))
+
+(defmethod insert-screen-chas-at-cha-no ((self screen-row)
+                                         new-screen-chas-list cha-no)
+  (sv-multiple-insert-at (slot-value self 'screen-chas) cha-no
+                         new-screen-chas-list)
+  (dolist (new-screen-cha new-screen-chas-list)
+    (when (screen-box? new-screen-cha)
+      (setf (screen-row new-screen-cha) self))))
+
+(defmethod insert-screen-row ((self screen-box) new-screen-row before-screen-row)
+  (check-screen-row-arg new-screen-row)
+  (cond ((null (screen-box new-screen-row))
+         (setf (screen-box new-screen-row) self)
+         (if (not-null before-screen-row)
+           (sv-insert-before (slot-value self 'screen-rows)
+                             new-screen-row before-screen-row)
+           (sv-append (slot-value self 'screen-rows) new-screen-row)))
+    (t
+     (barf "The screen-row ~S is already part of ~S"
+           new-screen-row (screen-box new-screen-row)))))
+
+;; sgithens TODO 2024-04-17 appears to no longer be used...
+(defmethod append-screen-row ((self screen-box) new-screen-row)
+  (check-screen-row-arg new-screen-row)
+  (cond ((null (screen-box new-screen-row))
+         (setf (screen-box new-screen-row) self)
+         (sv-append (slot-value self 'screen-rows) new-screen-row))
+    (t
+     ;; Oops..
+     (barf "The screen row ~s is already part of ~S"
+           new-screen-row (screen-box new-screen-row)))))
+
+;; sgithens TODO 2024-04-17 appears to no longer be used...
+(defmethod delete-screen-cha-at-cha-no ((self screen-row) cha-no)
+  (let ((cha-to-delete (sv-nth cha-no (slot-value self 'screen-chas))))
+    (sv-delete-at (slot-value self 'screen-chas) cha-no)
+    (when (screen-box? cha-to-delete)
+      (setf (screen-row cha-to-delete) nil))))
+
+(defmethod delete-screen-chas-from-to ((self screen-row) from-cha-no to-cha-no)
+  (do-vector-contents (cha-to-delete (slot-value self 'screen-chas)
+                                     :start from-cha-no :stop to-cha-no)
+    (when (screen-box? cha-to-delete)
+      (setf (screen-row cha-to-delete) nil)))
+  (sv-delete-from-to (slot-value self 'screen-chas) from-cha-no to-cha-no))
+
+(defmethod delete-screen-row ((self screen-box) screen-row-to-delete)
+  (check-screen-row-arg screen-row-to-delete)
+  (cond ((eq (screen-box screen-row-to-delete) self)
+         (setf (screen-box screen-row-to-delete) nil)
+         (sv-delete-item (slot-value self 'screen-rows) screen-row-to-delete))
+    (t
+     ;; Oops..
+     (barf "The screen-row ~S is not part of the screen-box ~S"
+           screen-row-to-delete self))))
+
+(defmethod delete-screen-rows-from-to ((self screen-box
+                                             ) from-row-no to-row-no)
+  (do-vector-contents (row-to-delete (slot-value self 'screen-rows)
+                                     :start from-row-no :stop to-row-no)
+    (setf (screen-box row-to-delete) nil))
+  (sv-delete-from-to (slot-value self 'screen-rows) from-row-no to-row-no))
+
+;; sgithens TODO 2024-04-17 appears to no longer be used...
+(defmethod kill-screen-cha ((self screen-row) screen-cha-to-kill)
+  (check-screen-cha-arg screen-cha-to-kill)
+  (cond ((eq (screen-row screen-cha-to-kill) self)
+         (do-self-and-next-sv-contents (cha-to-kill
+                                        (slot-value self 'screen-chas)
+                                        screen-cha-to-kill)
+           (when (screen-box? cha-to-kill)
+             (setf (screen-row cha-to-kill) nil)))
+         (sv-delete-from-item-to-end (slot-value self 'screen-chas)
+                                     screen-cha-to-kill))
+    (t
+     ;; Oops..
+     (barf "The screen cha ~S is not part of the screen row ~S"
+           screen-cha-to-kill self))))
+
+;;; this does the same thing except it conses a list of the killed chas
+(defmethod kill-screen-chas-and-return-them ((self screen-row) screen-cha-to-kill)
+  (check-screen-cha-arg screen-cha-to-kill)
+  (cond ((eq (screen-row screen-cha-to-kill) self)
+         (let ((chas-to-return nil))
+           (do-self-and-next-sv-contents (cha-to-kill
+                                          (slot-value self 'screen-chas)
+                                          screen-cha-to-kill)
+             (push cha-to-kill chas-to-return)
+             (when (screen-box? cha-to-kill)
+               (setf (screen-row cha-to-kill) nil)))
+           (sv-delete-from-item-to-end (slot-value self 'screen-chas)
+                                       screen-cha-to-kill)
+           (nreverse chas-to-return)))
+    (t
+     ;; Oops..
+     (barf "The screen cha ~S is not part of the screen row ~S"
+           screen-cha-to-kill self))))
+
+;; sgithens TODO 2024-04-17 appears to no longer be used...
+(defmethod first-screen-cha ((self screen-row))
+  (unless (zerop& (storage-vector-active-length (slot-value self 'screen-chas)))
+    (sv-nth 0 (slot-value self 'screen-chas))))
+
+;; sgithens TODO 2024-04-17 appears to no longer be used...
+(defmethod screen-cha-at-cha-no ((self screen-row) cha-no)
+  (when (<& cha-no
+            (storage-vector-active-length
+             (slot-value self 'screen-chas)))
+    (sv-nth cha-no (slot-value self 'screen-chas))))
+
+(defmethod screen-cha-cha-no ((self screen-row) cha)
+  (sv-place cha (slot-value self 'screen-chas)))
+
+
+;;;;
 ;;;; FILE: lw-menu.lisp
 ;;;;
 
