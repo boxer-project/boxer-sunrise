@@ -548,19 +548,18 @@ Modification History (most recent at top)
 
 ;;;;; get the box the mouse points to.
 (defun get-box-under-mouse ()
-  (drawing-on-window (*boxer-pane*)
-                     ;; need to get the offsets set up so the mouse coords
-                     ;; are returned relative to the *boxer-pane* rather than
-                     ;; the *boxer-frame*
-                     ;; This also binds the font map
-                     (multiple-value-bind (x y)
-                                          (mouse-window-coords)
-                                          (let* ((mbp (mouse-position-values x y))
-                                                 (mrow (bp-row mbp)))
-                                            (if (and (row? mrow) (not (null (superior-box mrow))))
-                                              (superior-box mrow)
-                                              ;; maybe should error out instead ?
-                                              nil)))))
+  ;; need to get the offsets set up so the mouse coords
+  ;; are returned relative to the *boxer-pane* rather than
+  ;; the *boxer-frame*
+  ;; This also binds the font map
+  (multiple-value-bind (x y)
+                      (mouse-window-coords)
+                      (let* ((mbp (mouse-position-values x y))
+                              (mrow (bp-row mbp)))
+                        (if (and (row? mrow) (not (null (superior-box mrow))))
+                          (superior-box mrow)
+                          ;; maybe should error out instead ?
+                          nil))))
 
 (defun clean-mouse-port-state ()
   (reset-mouse-cursor)
