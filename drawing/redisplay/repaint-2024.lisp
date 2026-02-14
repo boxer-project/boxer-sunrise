@@ -59,7 +59,7 @@
           ;; now match screen and editor...
           (setq inf-screen-obj
                 (if (cha? inf-actual-obj)
-                  (make-screen-cha inf-actual-obj)
+                  inf-actual-obj
                   (let ((new-obj (allocate-screen-obj-for-use-in
                                   inf-actual-obj (lowest-screen-box self))))
                     (set-screen-obj-offsets new-obj infs-new-wid inf-y-offset)
