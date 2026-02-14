@@ -74,9 +74,6 @@ Modification History (most recent at the top)
 
 (DEFVAR *DEFAULT-GRAPHICS-SHEET-HEIGHT* 200.)
 
-(DEFVAR *MAKE-TURTLE-WITH-NEW-GRAPHICS-BOX* NIL
-        "Determines if graphics boxes are created with a turtle already in it. ")
-
 (DEFSUBST MAKE-SCREEN-CHA (ACTUAL-CHA)
           ACTUAL-CHA)
 
