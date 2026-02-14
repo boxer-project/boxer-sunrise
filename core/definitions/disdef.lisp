@@ -63,11 +63,6 @@ Modification History (most recent at the top)
 
 ;;; Graphics defs and macros
 
-; (defvar *use-glist-performance* t
-;   "Whether or not to use the new c-buffering for the opengl drawing, although this
-;   can be used for other types of graphics command list performance work that is in
-;   progress as well.")
-
 (defvar *use-opengl-framebuffers* t
   "t or nil. If t, then use openGL framebuffers to back the graphics display list drawing
    on turtle canvases.")
