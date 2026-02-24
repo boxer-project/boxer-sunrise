@@ -26,6 +26,7 @@
                  ;; "Some more Definitions for Drawing things"
                  (:file "definitions/disdef")
                  (:file "../drawing/redisplay/disply")
+                 (:file "../drawing/redisplay/lodisp")
 
                  ;; Beginning of `RELATIONSHIPS` module
                  ;; "The basic underlying structure of the Editor is defined here"

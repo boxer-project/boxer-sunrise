@@ -911,6 +911,29 @@
             (com-collapse-box))))))
   boxer-eval::*novalue*)
 
+(defun mouse-tl-corner-collapse-box (mouse-bp)
+  "make the box one size larger"
+  ;; first, if there already is an existing region, flush it
+  (reset-region)
+  (let ((screen-box (bp-screen-box mouse-bp)))
+    (let ((new-box (bp-box mouse-bp))
+          (new-row (bp-row mouse-bp))
+          (new-cha-no (bp-cha-no mouse-bp)))
+      (when (and (not-null new-row)
+                  (box? new-box))
+        (let* ((edbox (and screen-box (screen-obj-actual-obj screen-box)))
+                (ds (and edbox (display-style edbox))))
+          (cond ((and (not (eq screen-box (outermost-screen-box)))
+                      (eq ds :supershrunk)))
+            ((and (not (eq screen-box (outermost-screen-box)))
+                  (eq ds :shrunk))
+              (com-collapse-box edbox))
+            (t
+              (send-exit-messages new-box screen-box)
+              (move-point-1 new-row new-cha-no screen-box)
+              (com-collapse-box)))))))
+  boxer-eval::*novalue*)
+
 (defboxer-command com-mouse-tl-corner-collapse-box (&optional (window *boxer-pane*)
                                                               (x (bw::boxer-pane-mouse-x))
                                                               (y (bw::boxer-pane-mouse-y))
@@ -919,28 +942,7 @@
                                                               (click-only? t))
   "make the box one size larger"
   window x y  ; (declare (ignore window x y))
-  ;; first, if there already is an existing region, flush it
-  (reset-region)
-  (let ((screen-box (bp-screen-box mouse-bp)))
-    (when (or click-only?
-              (mouse-corner-tracking (:top-left) #'shrink-corner-fun screen-box))
-      (let ((new-box (bp-box mouse-bp))
-            (new-row (bp-row mouse-bp))
-            (new-cha-no (bp-cha-no mouse-bp)))
-        (when (and (not-null new-row)
-                   (box? new-box))
-          (let* ((edbox (and screen-box (screen-obj-actual-obj screen-box)))
-                 (ds (and edbox (display-style edbox))))
-            (cond ((and (not (eq screen-box (outermost-screen-box)))
-                        (eq ds :supershrunk)))
-              ((and (not (eq screen-box (outermost-screen-box)))
-                    (eq ds :shrunk))
-               (com-collapse-box edbox))
-              (t
-               (send-exit-messages new-box screen-box)
-               (move-point-1 new-row new-cha-no screen-box)
-               (com-collapse-box))))))))
-  boxer-eval::*novalue*)
+  (mouse-tl-corner-collapse-box mouse-bp))
 
 (defboxer-command com-mouse-br-corner-shrink-box (&optional (window *boxer-pane*)
                                                             (x (bw::boxer-pane-mouse-x))

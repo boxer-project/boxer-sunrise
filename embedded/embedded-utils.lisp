@@ -45,6 +45,39 @@
   (format t "setf bp-cha-no: ~A ~A~%" value bp))
 
 ;;;
+;;; Filling in screen-objs
+;;;
+
+(defun print-box-tree (&optional (obj *initial-box*) (depth 0))
+  (cond
+    ((box? obj)
+     (format t "~%~V,,,' A+ Box: ~A Style: ~A Screen-objs: #~A ~A"
+       (* 2 depth) "" (name obj) (display-style-style (display-style-list obj))
+       (length (screen-objs obj)) (screen-objs obj))
+     (do-box-rows ((row obj))
+      (print-box-tree row (1+ depth))
+     ))
+    ((row? obj)
+     (format t "~%~V,,,' A- Row: ~A Screen-objs: #~A ~A"
+       (* 2 depth) "" obj (length (screen-objs obj)) (screen-objs obj))
+     (do-row-chas ((cha obj))
+      (when (box? cha)
+        (print-box-tree cha (1+ depth)))))))
+
+;; (defun print-screen-box-tree )
+
+(defun fill-in-screen-objs (&optional (obj *initial-box*))
+  (cond
+   ((box? obj)
+    (do-box-rows ((row obj))
+      (allocate-screen-obj-for-use-in row (car (screen-objs obj)))
+      (fill-in-screen-objs row)))
+   ((row? obj)
+    (do-row-chas ((cha obj))
+      (when (box? cha)
+        (fill-in-screen-objs cha))))))
+
+;;;
 ;;; CHAS
 ;;;
 (defmethod fast-chas-array-set-cha :after (chas-arr cha-no cha)
@@ -418,6 +451,15 @@
  ;; if row is null...
  0)
 
+;; Both of these need to be overridden to avoid calling non embedded code. This
+(defmethod ensure-row-is-displayed ((self row) screen-box
+                                              &optional (direction -1) scroll-anyway)
+  nil)
+
+(defmethod ensure-row-is-displayed ((row name-row) screen-box
+                                                   &optional (direction -1) scroll-anyway)
+  nil)
+
 (defmethod SCROLL-TO-ACTUAL-ROW (obj) nil)
 
 ;; Sometimes nil screen-boxes end up in the mix...
@@ -564,13 +606,11 @@
      (handle-boxer-input :right bits))
     (t
      (handle-boxer-input data bits)))
-
-  (format t "~%>>POINT2.01: ~A : ~A : ~A : ~A~%" *point* (bp-row *point*)
-    (fetch-godot-obj (bp-row *point*)) (bp-cha-no *point*))
-
-  (godot-update-point-location)
-
-  (format t "~%Current Doc: ~%~A~%" (boxer::textify-thing boxer::*initial-box*)))
+  ;; (format t "~%Current Doc: ~%~A~%" (boxer::textify-thing boxer::*initial-box*))
+  (format t "~%Filling in screen objs3")
+  (fill-in-screen-objs)
+  (print-box-tree)
+  (godot-update-point-location))
 
 (defun godot-handle-mouse-input (action-code row pos click bits area-code)
   ;; Action encoding
@@ -592,17 +632,10 @@
     (handle-boxer-mouse-click action *boxer-pane* 0 0 click-bp t 6 0 area))
   (godot-update-point-location))
 
-(defmethod allocate-screen-obj-for-use-in ((self actual-obj-subclass) use-in-screen-box)
-  nil); oof
-
 (DEFUN BOX-SCREEN-POINT-IS-IN ()	  ;returns the box that the screen part of
       ;;  (SCREEN-OBJ-ACTUAL-OBJ (POINT-SCREEN-BOX))
   (point-box)
        )	;*point* refers to
-
-(DEFMETHOD SUPERIOR-SCREEN-BOX (obj)
-          ;;  (SCREEN-BOX SCREEN-OBJ)
-  nil)
 
 (DEFMETHOD DISPLAYED-SCREEN-OBJS (obj
                                   &OPTIONAL (WINDOW *BOXER-PANE*))
@@ -612,6 +645,18 @@
   *initial-box*
       ;;  (SCREEN-OBJ-ACTUAL-OBJ (boxer-window::outermost-screen-box WINDOW))
        )
+
+;;;
+;;; Mouse Commands
+;;;
+
+(defun shrink-box (box)
+  ;; TODO this should eventually take screen-box once that's hooked up correctly
+  (let ((bp (make-bp :fixed)))
+    (setf (bp-row bp) (first-inferior-row box)
+          (bp-cha-no bp) 0
+          (bp-screen-box bp) (car (screen-objs box)))
+    (mouse-tl-corner-collapse-box bp)))
 
 ;;;
 ;;; Draw high
