@@ -3,9 +3,9 @@
 [ext_resource type="Script" uid="uid://dxo1mc5mvgcgt" path="res://scripts/Box.gd" id="1_g2tbl"]
 [ext_resource type="PackedScene" uid="uid://bqodvk5rb2nb4" path="res://scenes/row.tscn" id="2_oq5cr"]
 [ext_resource type="PackedScene" uid="uid://7nrew4abjpqi" path="res://scenes/cha.tscn" id="3_atdk8"]
-[ext_resource type="Script" uid="uid://cdsnr3b22x5qh" path="res://scripts/lower_right_corner.gd" id="3_bqn3j"]
+[ext_resource type="Script" path="res://scripts/lower_right_corner.gd" id="3_bqn3j"]
 [ext_resource type="StyleBox" uid="uid://b52vdxkhfydle" path="res://themes/data_box_stylebox.tres" id="3_telwu"]
-[ext_resource type="Script" uid="uid://b0ij7f1alb4w6" path="res://scripts/turtle.gd" id="4_c8a2c"]
+[ext_resource type="Script" path="res://scripts/turtle.gd" id="4_c8a2c"]
 [ext_resource type="VideoStream" uid="uid://c4c04u4iixdox" path="res://media/butterfly.ogv" id="5_ry43h"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_c2ln5"]
@@ -216,7 +216,7 @@ layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
 
-[node name="ShrunkPanel" type="Panel" parent="SuperShrunkBox"]
+[node name="SuperShrunkPanel" type="Panel" parent="SuperShrunkBox"]
 custom_minimum_size = Vector2(25, 25)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_telwu")
@@ -238,4 +238,4 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_telwu")
 [connection signal="gui_input" from="BoxInternals/OuterBorderPanel/Control/TypeToggle" to="." method="_on_type_toggle_gui_input"]
 [connection signal="mouse_entered" from="BoxInternals/OuterBorderPanel/Control/TypeToggle" to="BoxInternals/OuterBorderPanel/Control/TypeToggle" method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="BoxInternals/OuterBorderPanel/Control/TypeToggle" to="BoxInternals/OuterBorderPanel/Control/TypeToggle" method="_on_mouse_exited"]
-[connection signal="gui_input" from="SuperShrunkBox/ShrunkPanel" to="." method="_on_shrunk_panel_gui_input"]
+[connection signal="gui_input" from="SuperShrunkBox/SuperShrunkPanel" to="." method="_on_super_shrunk_panel_gui_input"]

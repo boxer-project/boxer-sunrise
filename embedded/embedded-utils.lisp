@@ -650,21 +650,21 @@
 ;;; Mouse Commands
 ;;;
 
-(defun shrink-box (box)
-  ;; TODO this should eventually take screen-box once that's hooked up correctly
+(defun border-click-bp (box)
+  "Builds a bp from an actual-box that can be used for mouse commands."
   (let ((bp (make-bp :fixed)))
     (setf (bp-row bp) (first-inferior-row box)
           (bp-cha-no bp) 0
           (bp-screen-box bp) (car (screen-objs box)))
-    (mouse-tl-corner-collapse-box bp)))
+    bp))
+
+(defun shrink-box (box)
+  ;; TODO this should eventually take screen-box once that's hooked up correctly
+  (mouse-tl-corner-collapse-box (border-click-bp box)))
 
 (defun expand-box (box)
   ;; TODO this should eventually take screen-box once that's hooked up correctly
-  (let ((bp (make-bp :fixed)))
-    (setf (bp-row bp) (first-inferior-row box)
-          (bp-cha-no bp) 0
-          (bp-screen-box bp) (car (screen-objs box)))
-    (mouse-tr-corner-expand-box bp)))
+  (mouse-tr-corner-expand-box (border-click-bp box)))
 
 
 ;;;
