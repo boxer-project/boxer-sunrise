@@ -7394,6 +7394,205 @@ Modification History (most recent at top)
 ;;;; FILE: coms-oglmouse.lisp
 ;;;;
 
+(defboxer-command com-mouse-br-corner-collapse-box (&optional (window *boxer-pane*)
+                                                              (x (bw::boxer-pane-mouse-x))
+                                                              (y (bw::boxer-pane-mouse-y))
+                                                              (mouse-bp
+                                                               (mouse-position-values x y))
+                                                              (click-only? t))
+  "make the box one size larger"
+  window x y  ; (declare (ignore window x y))
+  ;; first, if there already is an existing region, flush it
+  (reset-region)
+  (let ((screen-box (bp-screen-box mouse-bp)))
+    (when (or click-only?
+              (mouse-corner-tracking (:bottom-right) #'shrink-corner-fun screen-box))
+      (let ((new-box (bp-box mouse-bp))
+            (new-row (bp-row mouse-bp))
+            (new-cha-no (bp-cha-no mouse-bp)))
+        (when (and (not-null new-row)
+                   (box? new-box))
+          (unless (and (not (eq screen-box (outermost-screen-box)))
+                       (and screen-box
+                            (shrunken? (screen-obj-actual-obj screen-box))))
+            (send-exit-messages new-box screen-box)
+            (move-point-1 new-row new-cha-no screen-box)
+            (com-collapse-box))))))
+  boxer-eval::*novalue*)
+
+(defboxer-command com-mouse-br-corner-shrink-box (&optional (window *boxer-pane*)
+                                                            (x (bw::boxer-pane-mouse-x))
+                                                            (y (bw::boxer-pane-mouse-y))
+                                                            (mouse-bp
+                                                             (mouse-position-values x y))
+                                                            (click-only? t))
+  "make the box one size larger"
+  window x y ;  (declare (ignore window x y))
+  ;; first, if there already is an existing region, flush it
+  (reset-region)
+  (let ((screen-box (bp-screen-box mouse-bp)))
+    (when (or click-only?
+              (mouse-corner-tracking (:bottom-right) #'shrink-corner-fun screen-box))
+      (let ((new-box (bp-box mouse-bp))
+            (new-row (bp-row mouse-bp))
+            (new-cha-no (bp-cha-no mouse-bp)))
+        (when (and (not-null new-row)
+                   (box? new-box))
+          (let* ((edbox (and screen-box (screen-obj-actual-obj screen-box)))
+                 (ds (and edbox (display-style edbox))))
+            (cond ((and (not (eq screen-box (outermost-screen-box)))
+                        (eq ds :supershrunk)))
+              ((and (not (eq screen-box (outermost-screen-box)))
+                    (eq ds :shrunk))
+               (com-shrink-box edbox))
+              (t
+               (send-exit-messages new-box screen-box)
+               (move-point-1 new-row new-cha-no screen-box)
+               (com-shrink-box))))))))
+  boxer-eval::*novalue*)
+
+(defboxer-command com-mouse-tl-corner-super-shrink-box (&optional (window *boxer-pane*)
+                                                                  (x (bw::boxer-pane-mouse-x))
+                                                                  (y (bw::boxer-pane-mouse-y))
+                                                                  (mouse-bp
+                                                                   (mouse-position-values x y))
+                                                                  (click-only? t))
+  "make the box one size larger"
+  window x y ;  (declare (ignore window x y))
+  ;; first, if there already is an existing region, flush it
+  (reset-region)
+  (let ((screen-box (bp-screen-box mouse-bp)))
+    (when (or click-only?
+              (mouse-corner-tracking (:top-left) #'shrink-corner-fun screen-box))
+      (let ((new-box (bp-box mouse-bp))
+            (new-row (bp-row mouse-bp))
+            (new-cha-no (bp-cha-no mouse-bp)))
+        (when (and (not-null new-row)
+                   (box? new-box))
+          (unless (and (not (eq screen-box (outermost-screen-box)))
+                       screen-box
+                       (eq :supershrunk
+                           (display-style (screen-obj-actual-obj screen-box))))
+            (send-exit-messages new-box screen-box)
+            (move-point-1 new-row new-cha-no screen-box)
+            (com-super-shrink-box))))))
+  boxer-eval::*novalue*)
+
+(defboxer-command com-mouse-br-corner-expand-box (&optional (window *boxer-pane*)
+                                                            (x (bw::boxer-pane-mouse-x))
+                                                            (y (bw::boxer-pane-mouse-y))
+                                                            (mouse-bp
+                                                             (mouse-position-values x y))
+                                                            click-only?)
+  "make the box one size larger"
+  window x y  ;  (declare (ignore window x y))
+  ;; first, if there already is an existing region, flush it
+  (reset-region)
+  (let ((screen-box (bp-screen-box mouse-bp)))
+    (when (or click-only?
+              (mouse-corner-tracking (:bottom-right) #'expand-corner-fun screen-box))
+      (let ((old-box (point-box))
+            (new-box (bp-box mouse-bp))
+            (new-row (bp-row mouse-bp))
+            (mouse-screen-box (bp-screen-box mouse-bp))
+            (new-cha-no (bp-cha-no mouse-bp)))
+        (when (and (not-null new-row) (box? new-box))
+          (unless (eq old-box new-box)
+            (send-exit-messages new-box mouse-screen-box)
+            (enter new-box (not (superior? old-box new-box))))
+          (move-point-1 new-row new-cha-no mouse-screen-box)
+          (com-expand-box)))))
+  boxer-eval::*novalue*)
+
+(defboxer-command com-mouse-br-corner-set-outermost-box (&optional (window *boxer-pane*)
+                                                                   (x (bw::boxer-pane-mouse-x))
+                                                                   (y (bw::boxer-pane-mouse-y))
+                                                                   (mouse-bp
+                                                                    (mouse-position-values x y))
+                                                                   (click-only? t))
+  "make the box one size larger"
+  window x y ;  (declare (ignore window x y))
+  ;; first, if there already is an existing region, flush it
+  (reset-region)
+  (let ((screen-box (bp-screen-box mouse-bp)))
+    (when (or click-only?
+              (mouse-corner-tracking (:bottom-right) #'expand-corner-fun screen-box))
+      (let ((old-box (point-box))
+            (new-box (bp-box mouse-bp))
+            (new-row (bp-row mouse-bp))
+            (mouse-screen-box (bp-screen-box mouse-bp))
+            (new-cha-no (bp-cha-no mouse-bp)))
+        (when (and (not-null new-row) (box? new-box))
+          (unless (eq old-box new-box)
+            (send-exit-messages new-box mouse-screen-box)
+            (enter new-box (not (superior? old-box new-box))))
+          (move-point-1 new-row new-cha-no mouse-screen-box)
+          (if (and (graphics-box? new-box)
+                   (display-style-graphics-mode? (display-style-list new-box)))
+            (com-expand-box)
+            (com-set-outermost-box))))))
+  boxer-eval::*novalue*)
+
+(defboxer-command com-mouse-tr-corner-toggle-closet (&optional (window *boxer-pane*)
+                                                               (x (bw::boxer-pane-mouse-x))
+                                                               (y (bw::boxer-pane-mouse-y))
+                                                               (mouse-bp
+                                                                (mouse-position-values x y))
+                                                               click-only?)
+  "Open the closet if it is closed and
+   close the closet if it is open."
+  window x y click-only?;  (declare (ignore window x y click-only?))
+  ;; first, if there already is an existing region, flush it
+  (reset-region)
+  (let ((screen-box (bp-screen-box mouse-bp)))
+    (cond ((closet-locked? screen-box)
+           (when *warn-about-disabled-commands*
+             (boxer-editor-warning "The Closet is currently locked")))
+      ((or ;click-only?     ; try and suppress accidental closet clicks
+           (mouse-corner-tracking (:top-right) #'toggle-corner-fun screen-box))
+       (let ((old-box (point-box))
+             (new-box (bp-box mouse-bp))
+             (new-row (bp-row mouse-bp))
+             (mouse-screen-box (bp-screen-box mouse-bp))
+             (new-cha-no (bp-cha-no mouse-bp)))
+         (when (and (not-null new-row) (box? new-box))
+           (unless (eq old-box new-box)
+             (send-exit-messages new-box mouse-screen-box)
+             (enter new-box (not (superior? old-box new-box))))
+           (move-point-1 new-row new-cha-no mouse-screen-box)
+           (com-toggle-closets))))))
+  boxer-eval::*novalue*)
+
+(defboxer-command com-mouse-tl-corner-toggle-closet (&optional (window *boxer-pane*)
+                                                               (x (bw::boxer-pane-mouse-x))
+                                                               (y (bw::boxer-pane-mouse-y))
+                                                               (mouse-bp
+                                                                (mouse-position-values x y))
+                                                               (click-only? t))
+  "Open the closet if it is closed and
+   close the closet if it is open."
+  window x y click-only?;  (declare (ignore window x y click-only?))
+  ;; first, if there already is an existing region, flush it
+  (reset-region)
+  (let ((screen-box (bp-screen-box mouse-bp)))
+    (cond ((closet-locked? screen-box)
+           (when *warn-about-disabled-commands*
+             (boxer-editor-warning "The Closet is currently locked")))
+      ((or ;click-only?     ; try and suppress accidental closet clicks
+           (mouse-corner-tracking (:top-left) #'toggle-corner-fun screen-box))
+       (let ((old-box (point-box))
+             (new-box (bp-box mouse-bp))
+             (new-row (bp-row mouse-bp))
+             (mouse-screen-box (bp-screen-box mouse-bp))
+             (new-cha-no (bp-cha-no mouse-bp)))
+         (when (and (not-null new-row) (box? new-box))
+           (unless (eq old-box new-box)
+             (send-exit-messages new-box mouse-screen-box)
+             (enter new-box (not (superior? old-box new-box))))
+           (move-point-1 new-row new-cha-no mouse-screen-box)
+           (com-toggle-closets))))))
+  boxer-eval::*novalue*)
+
 (defvar *enable-mouse-toggle-box-type?* t
   "Setting this to `t` allows the type label to have a click that swaps the box between
   doit and data.")
