@@ -251,31 +251,18 @@ func _on_lower_right_corner_gui_input(event: InputEvent) -> void:
 func _on_upper_left_corner_gui_input(event: InputEvent) -> void:
     if event is InputEventMouseButton and event.pressed:
         $/root/Main.handle_boxer_func_1("SHRINK-BOX", boxer_box)
-        # if display_style == DisplayStyle.NORMAL or display_style == DisplayStyle.FIXED:
-        #     display_style = DisplayStyle.SHRUNK
-        # elif display_style == DisplayStyle.SHRUNK:
-        #     display_style = DisplayStyle.SUPERSHRUNK
-
 
 func _on_shrunk_panel_gui_input(event: InputEvent) -> void:
     if event is InputEventMouseButton and event.pressed:
         display_style = DisplayStyle.SHRUNK
 
-
 func _on_shrunk_box_gui_input(event: InputEvent) -> void:
     if event is InputEventMouseButton and event.pressed:
         display_style = DisplayStyle.NORMAL
 
-
 func _on_upper_right_corner_gui_input(event: InputEvent) -> void:
     if event is InputEventMouseButton and event.pressed:
-        if display_style == DisplayStyle.NORMAL or display_style == DisplayStyle.FIXED:
-            #display_style = DisplayStyle.NORMAL
-            print("Full screening box...")
-            full_screened.emit(self)
-        elif display_style == DisplayStyle.SHRUNK:
-            display_style = DisplayStyle.NORMAL
-
+        $/root/Main.handle_boxer_func_1("EXPAND-BOX", boxer_box)
 
 func _on_lower_left_corner_gui_input(event: InputEvent) -> void:
     if event is InputEventMouseButton and event.pressed:

@@ -843,48 +843,6 @@
                                                                              (round reporting-wid cwid)
                                                                              (floor (+ 2 reporting-hei) chei))))))))
 
-(defmacro mouse-corner-tracking ((corner) hilite-fun screen-box)
-  (let ((delta-x (gensym)) (delta-y (gensym))
-                           (box-window-x (gensym)) (box-window-y (gensym))
-                           (width (gensym)) (height (gensym)))
-    (ecase corner
-           (:top-left
-            `(multiple-value-bind (,box-window-x ,box-window-y)
-                                  (xy-position ,screen-box)
-                                  (multiple-value-bind (,delta-x ,delta-y ,width ,height)
-                                                       (tl-corner-tracking-info ,screen-box)
-                                                       (track-mouse-area ,hilite-fun
-                                                                          :x (+ ,box-window-x ,delta-x)
-                                                                          :y (+ ,box-window-y ,delta-y)
-                                                                          :width ,width :height ,height))))
-           (:top-right
-            `(multiple-value-bind (,box-window-x ,box-window-y)
-                                  (xy-position ,screen-box)
-                                  (multiple-value-bind (,delta-x ,delta-y ,width ,height)
-                                                       (tr-corner-tracking-info ,screen-box)
-                                                       (track-mouse-area ,hilite-fun
-                                                                          :x (+ ,box-window-x ,delta-x)
-                                                                          :y (+ ,box-window-y ,delta-y)
-                                                                          :width ,width :height ,height))))
-           (:bottom-left
-            `(multiple-value-bind (,box-window-x ,box-window-y)
-                                  (xy-position ,screen-box)
-                                  (multiple-value-bind (,delta-x ,delta-y ,width ,height)
-                                                       (bl-corner-tracking-info ,screen-box)
-                                                       (track-mouse-area ,hilite-fun
-                                                                          :x (+ ,box-window-x ,delta-x)
-                                                                          :y (+ ,box-window-y ,delta-y)
-                                                                          :width ,width :height ,height))))
-           (:bottom-right
-            `(multiple-value-bind (,box-window-x ,box-window-y)
-                                  (xy-position ,screen-box)
-                                  (multiple-value-bind (,delta-x ,delta-y ,width ,height)
-                                                       (br-corner-tracking-info ,screen-box)
-                                                       (track-mouse-area ,hilite-fun
-                                                                          :x (+ ,box-window-x ,delta-x)
-                                                                          :y (+ ,box-window-y ,delta-y)
-                                                                          :width ,width :height ,height)))))))
-
 (defun mouse-tl-corner-collapse-box (mouse-bp)
   "make the box one size larger"
   ;; first, if there already is an existing region, flush it
@@ -918,6 +876,24 @@
   window x y  ; (declare (ignore window x y))
   (mouse-tl-corner-collapse-box mouse-bp))
 
+(defun mouse-tr-corner-expand-box (mouse-bp)
+  "make the box one size larger"
+  ;; first, if there already is an existing region, flush it
+  (reset-region)
+  (let ((screen-box (bp-screen-box mouse-bp)))
+    (let ((old-box (point-box))
+          (new-box (bp-box mouse-bp))
+          (new-row (bp-row mouse-bp))
+          (mouse-screen-box (bp-screen-box mouse-bp))
+          (new-cha-no (bp-cha-no mouse-bp)))
+      (when (and (not-null new-row) (box? new-box))
+        (unless (eq old-box new-box)
+          (send-exit-messages new-box mouse-screen-box)
+          (enter new-box (not (superior? old-box new-box))))
+        (move-point-1 new-row new-cha-no mouse-screen-box)
+        (com-expand-box))))
+  boxer-eval::*novalue*)
+
 (defboxer-command com-mouse-tr-corner-expand-box (&optional (window *boxer-pane*)
                                                             (x (bw::boxer-pane-mouse-x))
                                                             (y (bw::boxer-pane-mouse-y))
@@ -926,23 +902,7 @@
                                                             (click-only? t))
   "make the box one size larger"
   window x y  ;  (declare (ignore window x y))
-  ;; first, if there already is an existing region, flush it
-  (reset-region)
-  (let ((screen-box (bp-screen-box mouse-bp)))
-    (when (or click-only?
-              (mouse-corner-tracking (:top-right) #'expand-corner-fun screen-box))
-      (let ((old-box (point-box))
-            (new-box (bp-box mouse-bp))
-            (new-row (bp-row mouse-bp))
-            (mouse-screen-box (bp-screen-box mouse-bp))
-            (new-cha-no (bp-cha-no mouse-bp)))
-        (when (and (not-null new-row) (box? new-box))
-          (unless (eq old-box new-box)
-            (send-exit-messages new-box mouse-screen-box)
-            (enter new-box (not (superior? old-box new-box))))
-          (move-point-1 new-row new-cha-no mouse-screen-box)
-          (com-expand-box)))))
-  boxer-eval::*novalue*)
+  (mouse-tr-corner-expand-box mouse-bp))
 
 (defboxer-command com-mouse-bl-corner-toggle-box-view (&optional (window *boxer-pane*)
                                                                  (x (bw::boxer-pane-mouse-x))

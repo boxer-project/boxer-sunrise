@@ -7394,6 +7394,48 @@ Modification History (most recent at top)
 ;;;; FILE: coms-oglmouse.lisp
 ;;;;
 
+(defmacro mouse-corner-tracking ((corner) hilite-fun screen-box)
+  (let ((delta-x (gensym)) (delta-y (gensym))
+                           (box-window-x (gensym)) (box-window-y (gensym))
+                           (width (gensym)) (height (gensym)))
+    (ecase corner
+           (:top-left
+            `(multiple-value-bind (,box-window-x ,box-window-y)
+                                  (xy-position ,screen-box)
+                                  (multiple-value-bind (,delta-x ,delta-y ,width ,height)
+                                                       (tl-corner-tracking-info ,screen-box)
+                                                       (track-mouse-area ,hilite-fun
+                                                                          :x (+ ,box-window-x ,delta-x)
+                                                                          :y (+ ,box-window-y ,delta-y)
+                                                                          :width ,width :height ,height))))
+           (:top-right
+            `(multiple-value-bind (,box-window-x ,box-window-y)
+                                  (xy-position ,screen-box)
+                                  (multiple-value-bind (,delta-x ,delta-y ,width ,height)
+                                                       (tr-corner-tracking-info ,screen-box)
+                                                       (track-mouse-area ,hilite-fun
+                                                                          :x (+ ,box-window-x ,delta-x)
+                                                                          :y (+ ,box-window-y ,delta-y)
+                                                                          :width ,width :height ,height))))
+           (:bottom-left
+            `(multiple-value-bind (,box-window-x ,box-window-y)
+                                  (xy-position ,screen-box)
+                                  (multiple-value-bind (,delta-x ,delta-y ,width ,height)
+                                                       (bl-corner-tracking-info ,screen-box)
+                                                       (track-mouse-area ,hilite-fun
+                                                                          :x (+ ,box-window-x ,delta-x)
+                                                                          :y (+ ,box-window-y ,delta-y)
+                                                                          :width ,width :height ,height))))
+           (:bottom-right
+            `(multiple-value-bind (,box-window-x ,box-window-y)
+                                  (xy-position ,screen-box)
+                                  (multiple-value-bind (,delta-x ,delta-y ,width ,height)
+                                                       (br-corner-tracking-info ,screen-box)
+                                                       (track-mouse-area ,hilite-fun
+                                                                          :x (+ ,box-window-x ,delta-x)
+                                                                          :y (+ ,box-window-y ,delta-y)
+                                                                          :width ,width :height ,height)))))))
+
 (defboxer-command com-mouse-br-corner-collapse-box (&optional (window *boxer-pane*)
                                                               (x (bw::boxer-pane-mouse-x))
                                                               (y (bw::boxer-pane-mouse-y))

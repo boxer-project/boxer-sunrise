@@ -658,6 +658,15 @@
           (bp-screen-box bp) (car (screen-objs box)))
     (mouse-tl-corner-collapse-box bp)))
 
+(defun expand-box (box)
+  ;; TODO this should eventually take screen-box once that's hooked up correctly
+  (let ((bp (make-bp :fixed)))
+    (setf (bp-row bp) (first-inferior-row box)
+          (bp-cha-no bp) 0
+          (bp-screen-box bp) (car (screen-objs box)))
+    (mouse-tr-corner-expand-box bp)))
+
+
 ;;;
 ;;; Draw high
 ;;;
