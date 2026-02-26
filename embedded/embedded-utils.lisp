@@ -290,6 +290,32 @@
         (godot-box (fetch-godot-obj box)))
     (godot-insert-row-at-row-no box godot-box row godot-row (1+ after-row-no))))
 
+(defmethod godot-update-boxtop (obj)
+  nil)
+
+(defmethod godot-update-boxtop ((self box))
+  (format t "gdboxer-update-boxtop: ~A~%" (getprop self :boxtop))
+  (format t "  the result from boxtop defun: ~A~%" (boxtop self))
+  (let ((godot-box (fetch-godot-obj self))
+        (boxtop (getprop self :boxtop))
+        (boxtop_code 1))
+    ;; See Box.gd enum BoxtopType
+    (cond ((eq boxtop :name-only)
+           (setf boxtop_code 3))
+      ((eq boxtop :framed)
+       (setf boxtop_code 2))
+      ((eq boxtop :folder)
+       (setf boxtop_code 4))
+      ((eq boxtop :xref)
+       (setf boxtop_code 6))
+      ((eq boxtop :standard)
+       (setf boxtop_code 1))
+      (t
+       (format t "UNKNOWS BOXTOP TYPE: ~A~%" boxtop)
+      ;;  (setf boxtop 0)
+       ))
+    (gdboxer-set-property godot-box "boxtop_type" boxtop_code)))
+
 ;;;
 ;;; GRAPHICS-SHEETS
 ;;;

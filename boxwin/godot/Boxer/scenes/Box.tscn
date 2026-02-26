@@ -222,6 +222,7 @@ layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_telwu")
 
 [connection signal="flipped" from="." to="." method="_on_flipped"]
+[connection signal="gui_input" from="." to="." method="_on_gui_input"]
 [connection signal="gui_input" from="BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer/ShrunkBox" to="." method="_on_shrunk_box_gui_input"]
 [connection signal="gui_input" from="BoxInternals/OuterBorderPanel/Control/LowerRightCorner" to="." method="_on_lower_right_corner_gui_input"]
 [connection signal="mouse_entered" from="BoxInternals/OuterBorderPanel/Control/LowerRightCorner" to="BoxInternals/OuterBorderPanel/Control/LowerRightCorner" method="_on_mouse_entered"]

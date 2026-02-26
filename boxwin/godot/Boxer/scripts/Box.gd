@@ -31,6 +31,20 @@ var skip_position = false
 # defclass Display-Style.style -> dislay-style-style
 enum DisplayStyle {SUPERSHRUNK = 0, SHRUNK = 1, NORMAL = 2, FIXED = 3}
 
+# Boxtops
+# These are from the :boxtop entry in a box's plist
+# Regular :standard
+# Framed  :framed  <- I'm not totally sure what this is supposed to do...
+# Named   :name-only  Just a rectangle with the name
+# Named graphic  :boxer-user::hmm  The actual symbol of the box
+# Folder  :folder     Picture of a folder with the name underneath
+#         :file
+#         :xref
+# If it's standard/framed and there is a box named boxtop inside of it, use that.`
+enum BoxtopType {NONE = 0, STANDARD = 1, FRAMED = 2, NAME_ONLY = 3, FOLDER = 4, GRAPHIC = 5, XREF = 6}
+var boxtop_type = BoxtopType.NONE
+
+# Box Type
 enum BoxType {DATA, DOIT, PORT}
 var box_type = BoxType.DATA:
     get:
@@ -134,6 +148,21 @@ var display_style = DisplayStyle.NORMAL:
         update_display_style(value)
         display_style = value
 
+func shrink_box():
+    if boxtop_type == BoxtopType.NAME_ONLY:
+        $BoxInternals.visible = true
+        $SuperShrunkBox.visible = false
+        %RowsBox.visible = false
+        %ShrunkBox.visible = true
+        %OuterBorderPanel.visible = false
+    else:
+        # Default to regular standard shrunk
+        $BoxInternals.visible = true
+        $SuperShrunkBox.visible = false
+        %RowsBox.visible = false
+        %ShrunkBox.visible = true
+        %OuterBorderPanel.visible = true
+
 func update_display_style(value):
     match value:
         DisplayStyle.FIXED:
@@ -141,16 +170,19 @@ func update_display_style(value):
             $SuperShrunkBox.visible = false
             %RowsBox.visible = true
             %ShrunkBox.visible = false
+            %OuterBorderPanel.visible = true
         DisplayStyle.NORMAL:
             $BoxInternals.visible = true
             $SuperShrunkBox.visible = false
             %RowsBox.visible = true
             %ShrunkBox.visible = false
+            %OuterBorderPanel.visible = true
         DisplayStyle.SHRUNK:
-            $BoxInternals.visible = true
-            $SuperShrunkBox.visible = false
-            %RowsBox.visible = false
-            %ShrunkBox.visible = true
+            shrink_box()
+            # $BoxInternals.visible = true
+            # $SuperShrunkBox.visible = false
+            # %RowsBox.visible = false
+            # %ShrunkBox.visible = true
         DisplayStyle.SUPERSHRUNK:
             $BoxInternals.visible = false
             $SuperShrunkBox.visible = true
@@ -203,6 +235,8 @@ func _ready() -> void:
     # the styles don't update
     box_type = box_type
 
+    %NameRow.parent_box = self # Set reference to this box in name-row
+
     # This is a hopefully temporary, bizarre workaround for the issue that we can't
     # populate this name row before the box is added to the scene tree, because until it
     # is you can't access subnodes in it's tree
@@ -214,7 +248,7 @@ func _ready() -> void:
         queued_name = null
         %NameRow.boxer_row = queued_name_row_boxerref
         queued_name_row_boxerref = null
-    pass
+
     $/root/Main.handle_boxer_func_1("GODOT-INIT-GRAPHICS-SHEET", boxer_box)
 
 ## Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -224,6 +258,8 @@ func _process(_delta: float) -> void:
     update_display_style(display_style)
     if flipped_box_type == FlippedBoxType.GRAPHICS:
         graphics_mode_p = graphics_mode_p
+    if boxtop_type == BoxtopType.NONE:
+        $/root/Main.handle_boxer_func_1("GODOT-UPDATE-BOXTOP", boxer_box)
 
 var moving = false
 var moved = false
@@ -289,3 +325,8 @@ func clear_box(bitmap = true, graphics_list = true):
 
 func add_turtle(turtle):
     %TurtleGraphics.add_child(turtle)
+
+func _on_gui_input(event: InputEvent) -> void:
+    if event is InputEventMouseButton and event.is_pressed():
+        if display_style == DisplayStyle.SHRUNK:
+            $/root/Main.handle_boxer_func_1("EXPAND-BOX", boxer_box)
