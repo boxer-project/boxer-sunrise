@@ -54,10 +54,10 @@ func _ready() -> void:
         print("About to bootstrap THREADED *initial-box*")
 
     lisp_thread = Thread.new()
-    var world_node = get_node("/root/Main/TopLevelContainer/OutermostBoxScroll/World")
-    var first_row_node = get_node("/root/Main/TopLevelContainer/OutermostBoxScroll/World/BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer/RowsBox/Row")
+    var world_node = get_node("TopLevelContainer/OutermostBoxScroll/World")
+    var first_row_node = get_node("TopLevelContainer/OutermostBoxScroll/World/BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer/RowsBox/Row")
     first_row_node.parent_box = world_node
-    lisp_thread.start(_start_lisp.bind($GDBoxer, get_node("/root/Main"), world_node, first_row_node))
+    lisp_thread.start(_start_lisp.bind($GDBoxer, self, world_node, first_row_node))
 
     _on_gd_boxer_boxer_point_location(first_row_node, 0)
 
