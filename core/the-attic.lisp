@@ -51,6 +51,8 @@
 ;;;;     for issueing commands.
 ;;;;   - comdef.lisp - animate-cursor-move and animate-scrolling The old blocky animations used for zoom to target and
 ;;;;     bringing the cursor in to view.
+;;;;   - comsa.lisp - Interesting. stuff here for creating bug email templates and primitives to do so.
+;;;;     Plus a number of commands for printing the screen
 
 ;;;;
 ;;;; FILE: applefile.lisp
@@ -8301,6 +8303,98 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: comsa.lisp
 ;;;;
+
+;; should include boxer-version, extensions loaded , any site info ? & instructions
+;; sending mechanism (exit, button, ???)
+(defvar *bug-report-address* "bug-boxer@pyxisystems.com")
+
+(defvar *bug-report-instructions-rows*
+  '(("Please describe the problem.")
+    ("A small example which reproduces the problem would be especially helpful")
+    ("When you are done, clicking on the \"Send Mail\" button will send this box")
+    ("or you can save the box in a file by clicking on the \"Save File\" button")))
+
+(defun make-bug-mail-template ()
+  (let* ((system-string (system-version))
+         (xtens (mapcar #'boxer-extension-pretty-name *boxer-extensions*))
+         (file-button (make-box (list
+                                 (list
+                                  (make-box (list (list "save"))
+                                            'doit-box "MOUSE-CLICK")))
+                                'data-box "Save File"))
+         (mail-button (make-box (list
+                                 (list
+                                  (make-box (list
+                                             (list "mail-document"
+                                                   (make-box (list
+                                                              (list *bug-report-address*)))))
+                                            'doit-box "MOUSE-CLICK")))
+                                'data-box "Send Mail"))
+         (template (make-box (append *bug-report-instructions-rows*
+                                     (list (list file-button mail-button))
+                                     (list (list system-string))))))
+    (unless (null xtens) (append-row template (make-row xtens)))
+    (dotimes (i 2) (append-row template (make-row '())))
+    (putprop file-button :name-only :boxtop) (shrink file-button)
+    (putprop mail-button :name-only :boxtop) (shrink mail-button)
+    (set-storage-chunk? template t)
+    (mark-file-box-dirty template)
+    (set-border-style template :thick)
+    (modified template)
+    template))
+
+;;; we want to insert the bug-report-box, not just return the value so it can
+;;; work from menus
+(defboxer-command COM-BUG ()
+  "sends a bug report about BOXER. "
+  (reset-region)
+  (reset-editor-numeric-arg)
+  (multiple-value-bind (result error?)
+      (boxer-eval::boxer-eval '(bu::bug-report-template))
+    (cond ((not (null error?)))
+          (t (insert-cha *point* result))))
+  boxer-eval::*novalue*)
+
+(defboxer-command com-print-screen ()
+  "make a temporary ps file, and spool. Remove the temp file."
+  (let ((*print-outermost-box* (null *editor-numeric-argument*)))
+    (when (status-line-y-or-n-p (format nil "Print the screen on ~A (y or n) ?"
+                                        *ps-postscript-printer*))
+      (status-line-clear)
+      (make-ps-file (outermost-screen-box) nil))
+    boxer-eval::*novalue*))
+
+;; phase out, use numeric arg as above
+(defboxer-command com-print-screen-no-border ()
+  "make a temporary ps file, and spool. Remove the temp file."
+  (let ((*print-outermost-box* nil))
+    (when (status-line-y-or-n-p (format nil "Print the screen on ~A (y or n) ?"
+                                        *ps-postscript-printer*))
+      (status-line-clear)
+      (make-ps-file (outermost-screen-box) nil))
+    boxer-eval::*novalue*))
+
+(defboxer-command com-print-screen-to-file ()
+  "Writes a postscript file from the screen into the file
+   specified by Postscript-Filename"
+  (let ((*print-outermost-box* (null *editor-numeric-argument*)))
+    (when (status-line-y-or-n-p (format nil "Print the screen to file ~A: ?"
+                                        *ps-file*))
+      (status-line-clear)
+      (make-ps-file (outermost-screen-box) *ps-file*))
+    boxer-eval::*novalue*))
+
+;; phase out, use numeric arg as above
+(defboxer-command com-print-screen-to-file-no-border ()
+  "Writes a postscript file from the screen into the file
+   specified by Postscript-Filename"
+  (let ((*print-outermost-box* nil))
+    (when (status-line-y-or-n-p (format nil "Print the screen to file ~A: ?"
+                                        *ps-file*))
+      (status-line-clear)
+      (make-ps-file (outermost-screen-box) *ps-file*))
+    boxer-eval::*novalue*))
+
 
 (defboxer-command COM-FORCE-REDISPLAY (&optional redraw-status-line?)
   "clears and then redisplays the screen. "

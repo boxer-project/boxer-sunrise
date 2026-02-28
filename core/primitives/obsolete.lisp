@@ -222,3 +222,14 @@
   (boxer-eval::primitive-signal-error :obsolete
                                       "clear-input is deprecated and no longer available.")
   boxer-eval::*novalue*)
+
+;; Email bug templates
+(boxer-eval::defboxer-primitive bu::bug-report-template ()
+  ;; (make-bug-mail-template)
+  (boxer-eval::primitive-signal-error :obsolete
+                                      "bug-report-template is deprecated and no longer available."))
+
+(boxer-eval::defboxer-primitive bu::boxer-bug-report-template ()
+  ;; (make-bug-mail-template)
+  (boxer-eval::primitive-signal-error :obsolete
+                                      "boxer-bug-report-template is deprecated and no longer available."))
