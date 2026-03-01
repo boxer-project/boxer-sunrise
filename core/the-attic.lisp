@@ -25497,6 +25497,32 @@ Modification History (most recent at the top)
 ;;;;
 ;;;; FILE: popup.lisp
 ;;;;
+(defboxer-command com-mouse-toggle-tl-hotspot (&optional (box *hotspot-mouse-box*))
+  "Enables or Disables the top left Hotspot"
+  (if *global-hotspot-control?*
+      (setq *top-left-hotspots-on?* (not *top-left-hotspots-on?*))
+      (set-top-left-hotspot-active? box (not (top-left-hotspot-active? box))))
+  boxer-eval::*novalue*)
+
+(defboxer-command com-mouse-toggle-tr-hotspot (&optional (box *hotspot-mouse-box*))
+  "Enables or Disables the top right Hotspot"
+  (if *global-hotspot-control?*
+      (setq *top-right-hotspots-on?* (not *top-right-hotspots-on?*))
+      (set-top-right-hotspot-active? box (not (top-right-hotspot-active? box))))
+  boxer-eval::*novalue*)
+
+(defboxer-command com-mouse-toggle-bl-hotspot (&optional (box *hotspot-mouse-box*))
+  "Enables or Disables the bottom left Hotspot"
+  (if *global-hotspot-control?*
+      (setq *bottom-left-hotspots-on?* (not *bottom-left-hotspots-on?*))
+      (set-bottom-left-hotspot-active? box (not (bottom-left-hotspot-active? box))))
+  boxer-eval::*novalue*)
+
+;; br hotspot ignores global flag
+(defboxer-command com-mouse-toggle-br-hotspot (&optional (box *hotspot-mouse-box*))
+  "Enables or Disables the Bottom Right Hotspot"
+  (set-bottom-right-hotspot-active? box (not (bottom-right-hotspot-active? box)))
+  boxer-eval::*novalue*)
 
 (defun com-hotspot-unfix-box-size (&optional (box *hotspot-mouse-box*))
   (com-unfix-box-size box))

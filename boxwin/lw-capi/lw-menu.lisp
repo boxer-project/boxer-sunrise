@@ -1405,10 +1405,8 @@ Modification History (most recent at top)
               ;; should we mark the file box dirty flag for such minor changes ?
               (:always-zoom  (boxer::set-always-zoom?  box (cadr change)))
               (:shrink-on-exit (boxer::set-shrink-on-exit? box (cadr change)))
-              (:manual-size (cond ((null (cadr change))
-                                   (boxer::com-mouse-toggle-br-hotspot box)
-                                   (boxer::com-unfix-box-size box))
-                                  (t (boxer::com-mouse-toggle-br-hotspot box))))
+              (:manual-size (when (null (cadr change))
+                              (boxer::com-unfix-box-size box)))
               (:autofill (boxer::set-auto-fill? box (cadr change))
                          (when (and (boxer::data-box? box)
                                     ;; is it ever the right thing to fill doit boxe?
