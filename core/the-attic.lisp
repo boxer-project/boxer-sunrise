@@ -7139,6 +7139,61 @@ Modification History (most recent at top)
 ;;;; FILE: comdef.lisp
 ;;;;
 
+;; sgithens 2026-03-06 The last usage of this was from defboxer-command com-mouse-border-name-box...
+;; (when (or click-only?
+    ;;           (multiple-value-bind (box-window-x box-window-y)
+    ;;                                (xy-position screen-box)
+    ;;                                (multiple-value-bind (delta-x delta-y width height)
+    ;;                                                     (name-tab-tracking-info screen-box)
+    ;;                                                     (track-mouse-area #'default-gui-fun
+    ;;                                                                       :x (+ box-window-x delta-x)
+    ;;                                                                       :y (+ box-window-y delta-y)
+    ;;                                                                       :width width
+    ;;                                                                       :height height))))
+
+;;;; mouse tracking support
+
+(defvar *border-tab-hysteresis* 5)
+
+;;; handles tracking of the mouse.
+;;; we may have to pass screen-box into restore-fun (getting the port strut right)
+
+(defun track-mouse-area (hilight-fun &key x y width height)
+  ;; inputs may be floats now...
+  (setq x (floor x) y (floor y)
+        width (ceiling width) height (ceiling height))
+  (let ((min-x (-& x *border-tab-hysteresis*))
+        (min-y (-& y *border-tab-hysteresis*))
+        (max-x (+& x width *border-tab-hysteresis*))
+        (max-y (+& y height *border-tab-hysteresis*))
+        (icon-on? t))
+    (flet ((icon-on ()
+             (setq icon-on? T))
+           (icon-off ()
+             (setq icon-on? nil)))
+          (icon-on)
+          ;; TODO need a cross platform with-mouse-tracking
+          #+lispworks (multiple-value-bind (final-x final-y)
+                               (with-mouse-tracking ((mouse-x x) (mouse-y y))
+                                                                  (progn
+                                                                   (cond ((and (null icon-on?)
+                                                                               ;; if the icon is off, and we move back in
+                                                                               (<& min-x mouse-x max-x) (<& min-y mouse-y max-y))
+                                                                          ;; then turn the icon back on
+                                                                          (icon-on))
+                                                                     ((and icon-on?
+                                                                           ;; if the icon is on and we move out
+                                                                           (or (not (<& min-x mouse-x max-x))
+                                                                               (not (<& min-y mouse-y max-y))))
+                                                                      ;; then turn off the visual indicator
+                                                                      (icon-off)))))
+                               ;; first turn the icon off if it is on...
+                               (unless (null icon-on?) (icon-off))
+                               ;; now return whether we are still on...
+                               (and (<& min-x final-x max-x) (<& min-y final-y max-y))))))
+
+
+
 ;; sgithens 2025-06-23 Archiving these very broken zoom to scroll commands for now...
 (defvar *cursor-animate-steps* 12.)
 (defvar *cursor-animate-growth-quantum* 3)
@@ -24399,6 +24454,150 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: new-borders.lisp
 ;;;;
+
+
+
+;; sgithens 2026-03-06 track-mouse-area removed
+
+(defun visible-corner-size (screen-box)
+  (+ (border-thickness (display-style-border-style
+                        (screen-obj-actual-obj screen-box)))
+     *border-inside-space*))
+
+;; Tracking-Info functions....
+;; these return x, y, width, height for use with track-mouse-area
+;; x, y is relative to the TL corner of the box
+;; there should be a tracking-info function for every mouseable part of a box's borders
+
+(defun tl-corner-tracking-info (screen-box)
+  (let* ((actual-obj (screen-obj-actual-obj screen-box))
+         (name (name-string-or-null actual-obj))
+         (border-style (display-style-border-style (display-style-list actual-obj)))
+         (border-thickness (border-thickness border-style))
+         ;; important info that is not in an instance var
+         ;(name-top *border-outside-space*)
+         ;; where the name tab begins vertically
+         (box-top (box-top-y name 0))
+         ;; where the box walls begins vertically
+         (box-left *border-outside-space*)
+         ;; where the box walls proper begin horizontally
+         (corner-size (+ border-thickness *border-inside-space*)))
+    (values box-left box-top corner-size corner-size)))
+
+(defun tr-corner-tracking-info (screen-box)
+  (let* ((actual-obj (screen-obj-actual-obj screen-box))
+         (name (name-string-or-null actual-obj))
+         (border-style (display-style-border-style (display-style-list actual-obj)))
+         (border-thickness (border-thickness border-style))
+         ;; important info that is not in an instance var
+         ;(name-top *border-outside-space*)
+         ;; where the name tab begins vertically
+         (box-top (box-top-y name 0))
+         (box-right (- (screen-obj-wid screen-box)
+                        border-thickness *border-outside-space*))
+         ;; where the box walls proper begin horizontally
+         (corner-size (+ border-thickness *border-inside-space*))
+         (inner-right (- box-right *border-inside-space*)))
+    (values inner-right box-top corner-size corner-size)))
+
+(defun br-corner-tracking-info (screen-box)
+  (let* ((actual-obj (screen-obj-actual-obj screen-box))
+         (box-type (class-name (class-of actual-obj)))
+         (border-style (display-style-border-style (display-style-list actual-obj)))
+         (border-thickness (border-thickness border-style))
+         (box-right (- (screen-obj-wid screen-box)
+                       border-thickness *border-outside-space*))
+         (box-bottom (- (screen-obj-hei screen-box)
+                        border-thickness (border-label-protrusion)
+                        *border-outside-space*))
+         (corner-size (+ border-thickness *border-inside-space*))
+         (inner-right (- box-right *border-inside-space*))
+         (inner-bottom (- box-bottom *border-inside-space*)))
+    (values inner-right inner-bottom corner-size corner-size)))
+
+(defun bl-corner-tracking-info (screen-box)
+  (let* ((actual-obj (screen-obj-actual-obj screen-box))
+         (box-type (class-name (class-of actual-obj)))
+         (border-style (display-style-border-style (display-style-list actual-obj)))
+         (border-thickness (border-thickness border-style))
+         (box-left *border-outside-space*)
+         (box-bottom (- (screen-obj-hei screen-box)
+                        border-thickness (border-label-protrusion)
+                        *border-outside-space*))
+         (corner-size (+ border-thickness *border-inside-space*))
+         (inner-bottom (- box-bottom *border-inside-space*)))
+    (values box-left inner-bottom corner-size corner-size)))
+
+(defun type-tab-tracking-info (screen-box)
+  (let* ((actual-obj (screen-obj-actual-obj screen-box))
+         (border-style (display-style-border-style (display-style-list actual-obj)))
+         (border-thickness (border-thickness border-style))
+         (label (box-type-label actual-obj))
+         (box-bottom (- (screen-obj-hei screen-box)
+                          border-thickness (border-label-protrusion)
+                          *border-outside-space*))
+         (corner-size (+ border-thickness *border-inside-space*))
+         (inner-left (+ *border-outside-space* corner-size)))
+    (values inner-left (- box-bottom (ffloor (string-hei *border-label-font*) 2))
+            (string-wid *border-label-font* label)
+            (string-hei *border-label-font*))))
+
+(defun name-tab-tracking-info (screen-box)
+  (let* ((actual-obj (screen-obj-actual-obj screen-box))
+         (border-style (display-style-border-style (display-style-list actual-obj)))
+         (border-thickness (border-thickness border-style))
+         (corner-size (+ border-thickness *border-inside-space*))
+         (inner-left (+ *border-outside-space* corner-size)))
+    (values inner-left *border-outside-space*
+            (+ *noname-blank-width* (* 2 *border-name-slant-offset*)
+               (* 2 *basic-border-width*))
+            (+ corner-size *noname-extension*))))
+
+
+;;; GUI interface
+;;; these draw the particular GUI element when the mouse is over the corner
+;;; drawing opens the possibility of supersizing interface elements for novices
+;;; how about interface color ?
+(defun toggle-corner-fun (x y wid hei)
+  (let ((rx (- (+ x wid) 2)) (by (- (+ y hei) 2)))
+    (with-pen-color (*border-gui-color*)
+      (draw-line (+ x 2) y rx y) ; top arrow horizontal
+      (draw-line rx y rx by) ; top arrow right
+      (draw-line (+ x 1) (+ by 1) (- rx 1) (+ by 1)) ; bottom arrow horizontal
+      (draw-line (+ x 1) (+ y 2) (+ x 1) (+ by 1)) ; bottom arrow left
+      (draw-line x (+ y 3) (+ x 3) (+ y 3)) ; cross the bottom arrow head
+      (draw-line (- rx 1) (- by 2) (+ rx 2) (- by 2))))) ; cross the top arrow head
+
+(defun shrink-corner-fun (x y wid hei)
+  (let ((fx (1- x)) (fy (1- y)) (lx (+ x wid)) (ly (+ y hei))
+        (tsize (floor (min wid hei) 2)))
+    (with-pen-color (*border-gui-color*)
+      (draw-poly (list (list fx (+ fy tsize)) (list (+ fx tsize) fy)  ;; top left
+                                (list (+ fx tsize) (+ fy tsize))))
+      (draw-poly (list (list (+ fx tsize 1) fy) (list (+ fx tsize 1) (+ fy tsize)) ; top right
+                                (list lx (+ fy tsize))))
+      (draw-poly (list (list fx (+ fy tsize 1)) (list (+ fx tsize) (+ fy tsize 1)) ; bottom left
+                                (list (+ fx tsize) ly)))
+      (draw-poly (list (list (+ fx tsize 1) (+ fy tsize 1)) (list lx (+ fy tsize 1)) ; bottom right
+                                (list (+ fx tsize 1) (1+ ly)))))))
+
+(defun expand-corner-fun (x y wid hei)
+  (let ((lx (+ x wid)) (ly (+ y hei))
+        (tside (floor (min wid hei) 2)))
+    (with-pen-color (*border-gui-color*)
+      (draw-poly (list (list x y) (list (+ x tside) y) (list x (+ y tside)))) ; top left
+      (draw-poly (list (list (- lx tside) y) (list lx y) (list lx (+ y tside)))) ; top right
+      (draw-poly (list (list x ly) (list x (- ly tside)) (list (+ x tside) ly))) ; bottom left
+      (draw-poly (list (list (- lx tside) ly) (list lx ly) (list lx (- ly tside))))))) ; bottom R
+
+
+(defun resize-corner-fun (x y wid hei)
+  (default-gui-fun x y wid hei))
+
+(defun default-gui-fun (x y wid hei)
+  (with-pen-color (*border-gui-color*)
+    (draw-rectangle wid hei x y)))
+
 
 ;; sgithens TODO 2024-06-11 Doesn't seem to be used anywhere
 (defvar *border-left-margin* 1) ; *border-inside-space*
