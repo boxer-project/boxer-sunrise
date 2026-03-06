@@ -206,7 +206,7 @@ Modification History (most recent at top)
            (- max-inner-scroll))
           (t new-scroll))))
 
-(defun mouse-in-v-scroll-bar-internal (screen-box x y click-only?)
+(defun mouse-in-v-scroll-bar-internal (screen-box x y)
   "When the mouse clicks inside a manually sized boxes scrollbar, this method is
    called to track the mouse and scroll the box until the mouse is let up."
   (with-slots (content-hei hei) screen-box

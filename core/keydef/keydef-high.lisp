@@ -515,16 +515,14 @@
         (click  (mouse-event-click  blip))
         (x-pos  (mouse-event-x-pos  blip))
         (y-pos  (mouse-event-y-pos  blip))
-        (bits   (mouse-event-bits   blip))
-        (click? (eq (mouse-event-type   blip)
-                    ':mouse-click)))
+        (bits   (mouse-event-bits   blip)))
     ;; now call the mouse tracker to see if we are on a border area
     (multiple-value-bind (mouse-bp local-x local-y area)
                          (mouse-position-values x-pos y-pos)
                          (declare (ignore local-x local-y))
                          (let ((click-name (lookup-click-name click bits area)))
                            (handle-boxer-mouse-click
-                            click-name window x-pos y-pos mouse-bp click? click bits area)))))
+                            click-name mouse-bp  click bits area)))))
 
 
 (defun get-mouse-click-name (blip)

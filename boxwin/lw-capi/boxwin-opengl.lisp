@@ -1089,8 +1089,7 @@ in macOS."
   ;; (let ((me (make-mouse-event :x-pos *track-mouse-x* :y-pos *track-mouse-y* :bits bits
                               :click  (+ button (if double? 3 0))
                               :number-of-clicks (if double? 2 1)
-                              :last-time-stamp (get-internal-real-time)
-                              :type :mouse-hold))) ; or  :mouse-click
+                              :last-time-stamp (get-internal-real-time))))
     (queue-event me)
     nil))
 

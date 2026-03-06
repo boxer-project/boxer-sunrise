@@ -56,7 +56,6 @@
 (defstruct (mouse-event (:conc-name mouse-event-)
       (:predicate mouse-event?))
   ;; these are required slots that handle-boxer-input uses
-  (type :mouse-click) ;; other option is :mouse-hold
   (window *boxer-pane*)
   (x-pos 0)
   (y-pos 0)

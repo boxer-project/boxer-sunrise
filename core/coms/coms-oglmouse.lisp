@@ -88,16 +88,10 @@
 
 ;;;; MOUSE-CLICKS
 
-(defboxer-command com-mouse-collapse-box (&optional (window *boxer-pane*)
-                                                    (x (bw::boxer-pane-mouse-x))
-                                                    (y (bw::boxer-pane-mouse-y))
-                                                    (mouse-bp
-                                                      (mouse-position-values x y))
-                                                    (click-only? t))
+(defboxer-command com-mouse-collapse-box (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "make the one step smaller"
   ;; Note that this is designed to be called in the Boxer process,
   ;; not in the Mouse Process -- This is important!!!
-  window x y click-only?    ;  (declare (ignore window x y click-only?))
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let ((new-box (bp-box mouse-bp))
@@ -111,16 +105,10 @@
       (com-collapse-box)))
   boxer-eval::*novalue*)
 
-(defboxer-command com-mouse-shrink-box (&optional (window *boxer-pane*)
-                                                  (x (bw::boxer-pane-mouse-x))
-                                                  (y (bw::boxer-pane-mouse-y))
-                                                  (mouse-bp
-                                                   (mouse-position-values x y))
-                                                  (click-only? t))
+(defboxer-command com-mouse-shrink-box (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "make the box tiny"
   ;; Note that this is designed to be called in the Boxer process,
   ;; not in the Mouse Process -- This is important!!!
-  window x y click-only? ; (declare (ignore window x y click-only?))
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let ((new-box (bp-box mouse-bp))
@@ -134,16 +122,10 @@
       (com-shrink-box)))
   boxer-eval::*novalue*)
 
-(defboxer-command com-mouse-super-shrink-box (&optional (window *boxer-pane*)
-                                                        (x (bw::boxer-pane-mouse-x))
-                                                        (y (bw::boxer-pane-mouse-y))
-                                                        (mouse-bp
-                                                         (mouse-position-values x y))
-                                                        (click-only? t))
+(defboxer-command com-mouse-super-shrink-box (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "make the box tiny"
   ;; Note that this is designed to be called in the Boxer process,
   ;; not in the Mouse Process -- This is important!!!
-  window x y click-only? ; (declare (ignore window x y click-only?))
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let ((new-box (bp-box mouse-bp))
@@ -162,16 +144,10 @@
         (com-super-shrink-box))))
   boxer-eval::*novalue*)
 
-(defboxer-command com-mouse-expand-box (&optional (window *boxer-pane*)
-                                                  (x (bw::boxer-pane-mouse-x))
-                                                  (y (bw::boxer-pane-mouse-y))
-                                                  (mouse-bp
-                                                   (mouse-position-values x y))
-                                                  click-only?)
+(defboxer-command com-mouse-expand-box (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "make the box one step bigger"
   ;; Note that this is designed to be called in the Boxer process,
   ;; not in the Mouse Process -- This is important!!!
-  window x y click-only? ;  (declare (ignore window x y click-only?))
   (let ((new-box (screen-obj-actual-obj (bp-screen-box mouse-bp)))
         (old-box (point-box))
         (new-row (bp-row mouse-bp))
@@ -212,16 +188,10 @@
            )))
   boxer-eval::*novalue*)
 
-(defboxer-command com-mouse-set-outermost-box (&optional (window *boxer-pane*)
-                                                         (x (bw::boxer-pane-mouse-x))
-                                                         (y (bw::boxer-pane-mouse-y))
-                                                         (mouse-bp
-                                                          (mouse-position-values x y))
-                                                         (click-only? t))
+(defboxer-command com-mouse-set-outermost-box (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "make the box full screen"
   ;; Note that this is designed to be called in the Boxer process,
   ;; not in the Mouse Process -- This is important!!!
-  window x y click-only? ;  (declare (ignore window x y click-only?))
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let ((old-box (point-box))
@@ -238,16 +208,10 @@
         (com-set-outermost-box))))
   boxer-eval::*novalue*)
 
-(defboxer-command com-mouse-move-point (&optional (window *boxer-pane*)
-                                                  (x (bw::boxer-pane-mouse-x))
-                                                  (y (bw::boxer-pane-mouse-y))
-                                                  (mouse-bp (mouse-position-values x y))
-                                                  click-only?
-                                                  (box-proc nil))
+(defboxer-command com-mouse-move-point (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))) (box-proc nil))
   "Go there"
   ;; Note that this is designed to be called in the Boxer process,
   ;; not in the Mouse Process -- This is important!!!
-  window x y click-only? ;  (declare (ignore window x y click-only?))
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let ((old-box (point-box))
@@ -266,16 +230,8 @@
       (com-expand-box)))
   boxer-eval::*novalue*)
 
-(defboxer-command com-mouse-define-region (&optional (window *boxer-pane*)
-                                                     (x (bw::boxer-pane-mouse-x))
-                                                     (y (bw::boxer-pane-mouse-y))
-                                                     (mouse-bp
-                                                      (mouse-position-values x y))
-                                                     (click-only? t)
-                                                     (shift?
-                                                      (bw::shift-key-pressed?)))
+(defboxer-command com-mouse-define-region (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "Define a region with the mouse"
-  window ; (declare (ignore window))
   ;; first, if there already is an existing region, flush it
   (reset-region) ; might want to reposition instead when shift-clicking
   ;; then go to where the mouse is pointing
@@ -287,11 +243,8 @@
         ;; should probably eventually make this a global var...
         (mouse-position (fill-doit-cursor-position-vector
                           (make-process-doit-cursor-position) mouse-bp)))
-    (when (and (not shift?)
-               ;; if the shift key is pressed, don't move the point...
-               (not-null new-row) (not-null new-cha-no) (not-null new-box)
-               (not (shrunken? mouse-screen-box))
-               )
+    (when (and (not-null new-row) (not-null new-cha-no) (not-null new-box)
+               (not (shrunken? mouse-screen-box)))
       (unless (eq old-box new-box)
         (send-exit-messages new-box mouse-screen-box t )
         (enter new-box (not (superior? old-box new-box))))
@@ -305,15 +258,14 @@
         (t
          (move-point-1 new-row new-cha-no mouse-screen-box))))
       )
-  (when (and (or (null click-only?) shift?)  (not (shrunken? (bp-screen-box mouse-bp))))
+  (when (not (shrunken? (bp-screen-box mouse-bp)))
     ;; now go about dragging a region defined by *point* and the mouse-bp
     ;; unless the user is no longer holding the mouse button down
     ;; now track the mouse
+    (let ((x (bw::boxer-pane-mouse-x))
+          (y (bw::boxer-pane-mouse-y)))
     #+lispworks (multiple-value-bind (original-screen-row original-x)
-                         (if shift?
-                           (let ((csr (current-screen-row (point-row))))
-                             (values csr (cha-no->x-coord csr (point-cha-no))))
-                           (mouse-position-screen-row-values x y))
+                                     (mouse-position-screen-row-values x y)
                          (let ((original-screen-box (screen-box original-screen-row)))
                            ;; should this be (bp-screen-box mouse-bp) ?
                            (multiple-value-bind (original-context-x original-context-y)
@@ -334,9 +286,6 @@
                                                       (mark-screen-row original-screen-row)
                                                       (mouse-x original-x) (mark-x original-x) (mark-screen-box nil)
                                                       (context-x original-context-x)(context-y original-context-y))
-                                                  (when shift?
-                                                    (multiple-value-setq (mouse-screen-row mouse-x)
-                                                                         (mouse-position-screen-row-values x y)))
                                                   (catch 'mouse-confusion
                                                     (unwind-protect
                                                      ;; the inner mouse tracking loop...
@@ -602,15 +551,10 @@
                                                           ;; region is still there so...
                                                           (entering-region-mode)))))
                                                     )			; Matches catch 'mouse-confusion
-                                                  boxer-eval::*novalue*)))))
+                                                  boxer-eval::*novalue*))))))
   boxer-eval::*novalue*)
 
-(defboxer-command com-mouse-doit-now (&optional (window *boxer-pane*)
-                                                (x (bw::boxer-pane-mouse-x))
-                                                (y (bw::boxer-pane-mouse-y))
-                                                (mouse-bp
-                                                 (mouse-position-values x y))
-                                                (click-only? t))
+(defboxer-command com-mouse-doit-now (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "Go there and doit"
   ;; first, if there already is an existing region, flush it
   (reset-region)
@@ -620,9 +564,9 @@
       ((and (shrunken? actual-box)
             (not (eq screen-box (outermost-screen-box))))
        ;; might as well open it
-       (com-mouse-set-outermost-box window x y mouse-bp click-only?))
+       (com-mouse-expand-box mouse-bp))
       (t
-       (com-mouse-move-point window x y mouse-bp click-only?)
+       (com-mouse-move-point mouse-bp)
        (com-doit-now)
        boxer-eval::*novalue*))))
 
@@ -707,8 +651,8 @@
 
 ;; yank back the suitcase
 
-(defun com-bring-back-region (window x y mouse-bp click-only?)
-  (com-mouse-move-point window x y mouse-bp click-only?)
+(defun com-bring-back-region (mouse-bp)
+  (com-mouse-move-point mouse-bp)
   (cond ((not (null *suitcase-region*))
          (yank-region  *point* *suitcase-region*)
          ;; if successful, no need to reset...
@@ -729,28 +673,20 @@
 ;; (defvar *warn-about-disabled-commands* t)
 ;; (defvar *only-shrink-wrap-text-boxes* nil)
 
-(defboxer-command com-mouse-resize-box (&optional (window *boxer-pane*)
-                                                  (x (bw::boxer-pane-mouse-x))
-                                                  (y (bw::boxer-pane-mouse-y))
-                                                  (mouse-bp
-                                                   (mouse-position-values x y))
-                                                  (click-only? t))
+(defboxer-command com-mouse-resize-box (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "Resize the box with the mouse.  Just clicking unfixes the box size"
-  window x y  ;  (declare (ignore window x y))
   ;; first, if there already is an existing region, flush it
   (reset-region)
-  (let* ((screen-box (bp-screen-box mouse-bp))
+  (let* ((x (bw::boxer-pane-mouse-x))
+         (y (bw::boxer-pane-mouse-y))
+         (screen-box (bp-screen-box mouse-bp))
          (actual-box (screen-obj-actual-obj screen-box))
          (box-type (box-type screen-box))
          (pixel-correction 5))
     (cond ((null actual-box))
       ((shrunken? actual-box)
        ;; might as well open it
-       (com-mouse-expand-box window x y mouse-bp click-only?))
-      ((not (null click-only?))
-       ;; reset the scrolling to the top
-       (set-scroll-to-actual-row screen-box nil)
-       (set-fixed-size actual-box nil nil))
+       (com-mouse-expand-box mouse-bp))
       ((and *only-shrink-wrap-text-boxes* (null (graphics-sheet actual-box)))
        (when *warn-about-disabled-commands*
          (boxer-editor-warning
@@ -843,7 +779,7 @@
                                                                              (round reporting-wid cwid)
                                                                              (floor (+ 2 reporting-hei) chei))))))))
 
-(defun mouse-tl-corner-collapse-box (mouse-bp)
+(defboxer-command com-mouse-collapse-box (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "make the box one size larger"
   ;; first, if there already is an existing region, flush it
   (reset-region)
@@ -866,17 +802,7 @@
               (com-collapse-box)))))))
   boxer-eval::*novalue*)
 
-(defboxer-command com-mouse-tl-corner-collapse-box (&optional (window *boxer-pane*)
-                                                              (x (bw::boxer-pane-mouse-x))
-                                                              (y (bw::boxer-pane-mouse-y))
-                                                              (mouse-bp
-                                                               (mouse-position-values x y))
-                                                              (click-only? t))
-  "make the box one size larger"
-  window x y  ; (declare (ignore window x y))
-  (mouse-tl-corner-collapse-box mouse-bp))
-
-(defun mouse-tr-corner-expand-box (mouse-bp)
+(defboxer-command com-mouse-expand-box (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "make the box one size larger"
   ;; first, if there already is an existing region, flush it
   (reset-region)
@@ -891,27 +817,12 @@
           (send-exit-messages new-box mouse-screen-box)
           (enter new-box (not (superior? old-box new-box))))
         (move-point-1 new-row new-cha-no mouse-screen-box)
-        (com-expand-box))))
+        (when (shrunken? new-box)
+          (com-expand-box)))))
   boxer-eval::*novalue*)
 
-(defboxer-command com-mouse-tr-corner-expand-box (&optional (window *boxer-pane*)
-                                                            (x (bw::boxer-pane-mouse-x))
-                                                            (y (bw::boxer-pane-mouse-y))
-                                                            (mouse-bp
-                                                             (mouse-position-values x y))
-                                                            (click-only? t))
-  "make the box one size larger"
-  window x y  ;  (declare (ignore window x y))
-  (mouse-tr-corner-expand-box mouse-bp))
-
-(defboxer-command com-mouse-bl-corner-toggle-box-view (&optional (window *boxer-pane*)
-                                                                 (x (bw::boxer-pane-mouse-x))
-                                                                 (y (bw::boxer-pane-mouse-y))
-                                                                 (mouse-bp
-                                                                  (mouse-position-values x y))
-                                                                 (click-only? t))
+(defboxer-command com-mouse-bl-corner-toggle-box-view (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "Toggle the box view"
-  window x y ;  (declare (ignore window x y))
   (reset-region)
   (let* ((screen-box (bp-screen-box mouse-bp))
          (box (screen-obj-actual-obj screen-box))
@@ -933,27 +844,21 @@
        (modified (box-screen-point-is-in)))))
   boxer-eval::*novalue*)
 
-(defboxer-command com-mouse-border-name-box (&optional (window *boxer-pane*)
-                                                       (x (bw::boxer-pane-mouse-x))
-                                                       (y (bw::boxer-pane-mouse-y))
-                                                       (mouse-bp
-                                                        (mouse-position-values x y))
-                                                       (click-only? t))
+(defboxer-command com-mouse-border-name-box (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "Bring up a name tab for the box"
-  window x y   ;  (declare (ignore window x y))
   ;; first, if there already is an existing region, flush it
   (reset-region)
   (let ((screen-box (bp-screen-box mouse-bp)))
-    (when (or click-only?
-              (multiple-value-bind (box-window-x box-window-y)
-                                   (xy-position screen-box)
-                                   (multiple-value-bind (delta-x delta-y width height)
-                                                        (name-tab-tracking-info screen-box)
-                                                        (track-mouse-area #'default-gui-fun
-                                                                          :x (+ box-window-x delta-x)
-                                                                          :y (+ box-window-y delta-y)
-                                                                          :width width
-                                                                          :height height))))
+    ;; (when (or click-only?
+    ;;           (multiple-value-bind (box-window-x box-window-y)
+    ;;                                (xy-position screen-box)
+    ;;                                (multiple-value-bind (delta-x delta-y width height)
+    ;;                                                     (name-tab-tracking-info screen-box)
+    ;;                                                     (track-mouse-area #'default-gui-fun
+    ;;                                                                       :x (+ box-window-x delta-x)
+    ;;                                                                       :y (+ box-window-y delta-y)
+    ;;                                                                       :width width
+    ;;                                                                       :height height))))
       (if (eq (bp-box mouse-bp) *initial-box*)
         (boxer-editor-error  "You cannot name the outermost box")
         (let ((box-to-name (screen-obj-actual-obj (bp-screen-box mouse-bp))))
@@ -962,28 +867,17 @@
           (send-exit-messages box-to-name screen-box)
           (move-point-1 (slot-value box-to-name 'name)
                         0 (bp-screen-box mouse-bp))
-          (modified box-to-name)))))
+          (modified box-to-name)))) ;)
   boxer-eval::*novalue*)
 
-;; TODO sgithens 2026-02-03
-;; This should perhaps be a new category of defboxer-command, perhaps there the optional
-;; default value is the current *point* box..., or maybe another category of mouse locations
-(defun ui-toggle-box-type (box)
-  (when (or (data-box? box) (doit-box? box))
-    (toggle-type box)
-    (mark-file-box-dirty box)))
-
-(defboxer-command com-mouse-border-toggle-type (&optional (window *boxer-pane*)
-                                                          (x (bw::boxer-pane-mouse-x))
-                                                          (y (bw::boxer-pane-mouse-y))
-                                                          (mouse-bp
-                                                           (mouse-position-values x y))
-                                                          (click-only? t))
+(defboxer-command com-mouse-toggle-type (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "Toggle the type of the box"
-  window x y ;  (declare (ignore window x y))
   ;; first, if there already is an existing region, flush it
   (reset-region)
-  (ui-toggle-box-type (bp-box mouse-bp))
+  (let ((box (bp-box mouse-bp)))
+    (when (or (data-box? box) (doit-box? box))
+      (toggle-type box)
+      (mark-file-box-dirty box)))
   boxer-eval::*novalue*)
 
 ;;; Note: These scroll bar commands can now be triggerd by action in the horizontal
@@ -991,32 +885,22 @@
 ;;; The com-mouse-?-scroll commands dispatch to more specific action depending upon what
 ;;; scroll area was initially moused
 
-(defboxer-command com-mouse-scroll-box (&optional (window *boxer-pane*)
-                                                  (x (bw::boxer-pane-mouse-x))
-                                                  (y (bw::boxer-pane-mouse-y))
-                                                  (mouse-bp
-                                                   (mouse-position-values x y))
-                                                  (click-only? t))
+(defboxer-command com-mouse-scroll-box (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "Scroll or reposition the box"
-  window ;; (declare (ignore window))
   ;; first, if there already is an existing region, flush it
   (reset-region)
-  (let* ((screen-box (bp-screen-box mouse-bp))
+  (let* ((x (bw::boxer-pane-mouse-x))
+         (y (bw::boxer-pane-mouse-y))
+         (screen-box (bp-screen-box mouse-bp))
          (box-type (box-type screen-box)))
     ;; (unless (neq screen-box (point-screen-box)) ;; This was to only let you scroll the box if the point is in it
       (case (get-scroll-position x y screen-box box-type)
-        (:v-bar (mouse-in-v-scroll-bar-internal screen-box x y click-only?))
-        (:h-bar (mouse-in-h-scroll-bar-internal screen-box x y)))) ;)
+        (:v-bar (mouse-in-v-scroll-bar-internal screen-box x y))
+        (:h-bar (mouse-in-h-scroll-bar-internal screen-box x y))))
   boxer-eval::*novalue*)
 
-(defboxer-command com-sprite-follow-mouse (&optional (window *boxer-pane*)
-                                                     (x (bw::boxer-pane-mouse-x))
-                                                     (y (bw::boxer-pane-mouse-y))
-                                                     (mouse-bp
-                                                      (mouse-position-values x y))
-                                                     (click-only? t))
+(defboxer-command com-sprite-follow-mouse (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "Grabs a sprite with the mouse and moves it around"
-  window x y click-only? ; (declare (ignore window x y click-only?))
   (let ((box (bp-box mouse-bp)))
     (when (sprite-box? box)
       (let ((*current-sprite* box))

@@ -724,42 +724,30 @@ Modification History (most recent at top)
   (or (and *global-hotspot-control?* *top-right-hotspots-on?*)
       (and (not *global-hotspot-control?*) (top-right-hotspot-active? edbox))))
 
-(defboxer-command com-mouse-boxsize-closet-properties-pop-up (&optional (window *boxer-pane*)
-                                       (x (bw::boxer-pane-mouse-x))
-                                       (y (bw::boxer-pane-mouse-y))
-                                       (mouse-bp
-                                        (mouse-position-values x y))
-                                       (click-only? t))
+(defboxer-command com-mouse-boxsize-closet-properties-pop-up (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "Pop up a box attribute menu, typically bound to a mouse-down."
-  window x y ;  (declare (ignore window x y))
   (reset-region) (reset-editor-numeric-arg)
   (let* ((screen-box (bp-screen-box mouse-bp))
          (edbox (screen-obj-actual-obj screen-box))
          (*hotspot-mouse-box* edbox)
          (*hotspot-mouse-screen-box* screen-box))
     (update-boxsize-closet-properties-menu edbox)
-    (menu-select *boxsize-closet-properties-popup-menu* x y))
+    (menu-select *boxsize-closet-properties-popup-menu* (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y)))
   boxer-eval::*novalue*)
 
 (defun bottom-left-hotspot-on? (edbox)
   (or (and *global-hotspot-control?* *bottom-left-hotspots-on?*)
       (and (not *global-hotspot-control?*) (bottom-left-hotspot-active? edbox))))
 
-(defboxer-command com-mouse-box-types-pop-up (&optional (window *boxer-pane*)
-                                       (x (bw::boxer-pane-mouse-x))
-                                       (y (bw::boxer-pane-mouse-y))
-                                       (mouse-bp
-                                        (mouse-position-values x y))
-                                       (click-only? t))
+(defboxer-command com-mouse-box-types-pop-up (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "Pop up a box attribute menu, usually bound to a mouse-down."
-  window x y ;  (declare (ignore window x y))
   (reset-region) (reset-editor-numeric-arg)
   (let* ((screen-box (bp-screen-box mouse-bp))
          (edbox (screen-obj-actual-obj screen-box))
          (*hotspot-mouse-box* edbox)
          (*hotspot-mouse-screen-box* screen-box))
     (update-box-types-menu edbox)
-    (menu-select *box-types-popup-menu* x y))
+    (menu-select *box-types-popup-menu* (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y)))
   boxer-eval::*novalue*)
 
 
@@ -768,12 +756,7 @@ Modification History (most recent at top)
 ;; the local box flag is used...
 ;; active hotspot is interpreted to mean resizable
 
-(defboxer-command com-mouse-br-reset-box-size (&optional (window *boxer-pane*)
-                                       (x (bw::boxer-pane-mouse-x))
-                                       (y (bw::boxer-pane-mouse-y))
-                                       (mouse-bp
-                                       (mouse-position-values x y))
-                                       (click-only? t))
+(defboxer-command com-mouse-br-reset-box-size (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "Sets the box back to autosized state, resetting any manual resizing."
   window x y
   (reset-region) (reset-editor-numeric-arg)
@@ -784,15 +767,11 @@ Modification History (most recent at top)
       (modified edbox))
   boxer-eval::*novalue*)
 
-(defboxer-command com-mouse-br-resize-box (&optional (window *boxer-pane*)
-                                          (x (bw::boxer-pane-mouse-x))
-                                          (y (bw::boxer-pane-mouse-y))
-                                          (mouse-bp (mouse-position-values x y))
-                                          (click-only? t))
+(defboxer-command com-mouse-br-resize-box (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "Drag to resize the box."
   ;; first, if there already is an existing region, flush it
   (reset-region) (reset-editor-numeric-arg)
   (let* ((screen-box (bp-screen-box mouse-bp))
          (edbox (screen-obj-actual-obj screen-box)))
-      (com-mouse-resize-box window x y mouse-bp click-only?))
+      (com-mouse-resize-box mouse-bp))
   boxer-eval::*novalue*)

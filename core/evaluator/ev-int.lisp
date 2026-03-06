@@ -604,8 +604,7 @@
 ;; 3/5/01 changed the search order to check for alternate name binding BEFORE
 ;; regular click name.
 
-(defun handle-boxer-mouse-click (name window x y mouse-bp clicked?
-                                      click bits area)
+(defun handle-boxer-mouse-click (name mouse-bp click bits area)
   (unless (null (bp-row mouse-bp))
     (let ((value (let ((boxer-eval::*lexical-variables-root* (bp-box mouse-bp)))
                    (or (mode-key name)
@@ -620,25 +619,22 @@
       (cond ((eq value boxer-eval::*novalue*) nil)
         ((boxer-eval::boxer-function? value)
          (cond ((boxer-eval::compiled-boxer-function? value)
-                (let ((result
-                       (funcall
-                        (boxer-eval::compiled-boxer-function-object value)
-                        window x y mouse-bp clicked?)))
+                (let ((result (funcall (boxer-eval::compiled-boxer-function-object value) mouse-bp)))
                   (unless (or (null result) (eq result boxer-eval::*novalue*))
                     (insert-cha
                      *point* (convert-doit-result-for-printing result))))
                 (maybe-handle-trigger-in-editor)
                 t)
            (t
-            (com-mouse-move-point window x y mouse-bp clicked?)
+            (com-mouse-move-point mouse-bp)
             (handle-boxer-key-doit-box name)
             t)))
         ((data-box? value)
-         (com-mouse-move-point window x y mouse-bp clicked?)
+         (com-mouse-move-point mouse-bp)
          (handle-boxer-key-data-box value)
          t)
         ((doit-box? value)
-         (com-mouse-move-point window x y mouse-bp clicked? t)
+         (com-mouse-move-point mouse-bp t)
          (handle-boxer-key-doit-box (virtual-copy value))
          t)
         (t nil)))))
