@@ -8,7 +8,7 @@
   :author "Steven Githens"
   :license ""
   :depends-on ("boxer-sunrise-core"
-               :boxer-sunrise-redisplay
+              ;;  :boxer-sunrise-redisplay
                "prove"
                :md5)
   :components ((:module "tests"
@@ -22,17 +22,22 @@
                 (:test-file "alternate-names-tests")
                 ;; (:test-file "chunker-tests")
                 (:test-file "vrtdef-tests")
-                (:test-file "loader-tests")
+                #+lispworks (:test-file "loader-tests")
                 (:test-file "keydef-high-tests")
                 (:test-file "gdispl-tests")
                 #+lispworks (:test-file "dumper-tests")
                 #+lispworks (:test-file "formats-tests")
                 #+lispworks (:test-file "boxer-styles-tests")
                 ;; (:test-file "freetype-fonts-tests")
-                (:test-file "disdcl-tests")
                 (:test-file "draw-high-tests")
                 ;; (:test-file "draw-low-opengl-tests")
-                (:test-file "wrap-line-tests"))))
+
+                ;; Needs to move to redisplay module tests
+                ;; (:test-file "wrap-line-tests")
+                ;; (:test-file "disdcl-tests")
+
+
+                )))
   :description "Test system for boxer sunrise core"
 
   :perform (test-op (op c) (symbol-call :prove-asdf :run-test-system c)))

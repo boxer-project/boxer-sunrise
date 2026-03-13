@@ -114,14 +114,14 @@ Examples of running the unit tests on ECL, SBCL, and Lispworks are below:
 # I like to wrap these in rlwrap in case I need to use the REPL, but it's optional
 
 #ECL
-rlwrap ecl --load ./run-core-tests.lisp
+rlwrap ecl --load ./run-tests.lisp
 
 #SBCL
-rlwrap sbcl --load ./run-core-tests.lisp
+rlwrap sbcl --load ./run-tests.lisp
 
 #Lispworks
 # From the editor run:
-(load #P"~/path/to/boxer-sunrise/run-core-tests.lisp")
+(load #P"~/path/to/boxer-sunrise/run-tests.lisp")
 ```
 
 ## Boxer Shared Library / ECL

@@ -14,7 +14,7 @@
 
 (defvar *boxer-project-dir* (make-pathname :directory (pathname-directory *load-truename*)))
 
-(pushnew
+#+lispworks (pushnew
   (cl-fad:merge-pathnames-as-directory *boxer-project-dir* "data/boxersunrise.app/Contents/Frameworks/")
   cffi:*foreign-library-directories* :test #'equal)
 
@@ -23,7 +23,7 @@
                     *boxer-project-dir*
                     asdf:*central-registry*))
 
-(ql:quickload :cl-freetype2)
+#+lispworks (ql:quickload :cl-freetype2)
 
 (pushnew *boxer-project-dir* ql:*local-project-directories* )
 (ql:register-local-projects)
