@@ -24,9 +24,9 @@ func _on_gui_input(event: InputEvent) -> void:
         var parent_box = self.get_parent().parent_box
         # If the box is shrunk we should expand it rather than handle the click
         if parent_box.display_style == parent_box.DisplayStyle.SHRUNK:
-            $/root/Main.handle_boxer_func_1("EXPAND-BOX", parent_box.boxer_box)
+            parent_box.com_mouse_expand_box()
         else:
             clicked.emit(self)
             var pos = get_index()
             print("Cha clicked2: ", self, " parent: ", self.get_parent().boxer_row, " pos: ", pos)
-            $/root/Main.handle_mouse_input(0, boxerref, pos + 1, 0, 0, 0)
+            $/root/Main.handle_mouse_input(0, boxerref, pos + 1, 0, Global.BoxArea.INSIDE)

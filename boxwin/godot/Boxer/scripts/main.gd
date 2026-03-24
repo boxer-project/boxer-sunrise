@@ -111,12 +111,18 @@ func handle_boxer_func_1(func_name, arg0):
         boxer_event_queue.push_front([3, 1, func_name, arg0])
         boxer_event_queue_mutex.unlock()
 
+func handle_boxer_func_2(func_name, arg0, arg1):
+    if boxer_event_queue_mutex:
+        boxer_event_queue_mutex.lock()
+        boxer_event_queue.push_front([3, 2, func_name, arg0, arg1])
+        boxer_event_queue_mutex.unlock()
+
 func handle_open_file(path):
     handle_boxer_func_1("GODOT-OPEN-FILE", path)
 
-func handle_mouse_input(action, row, pos, click, bits, area):
+func handle_mouse_input(action, row, pos, bits, area):
     boxer_event_queue_mutex.lock()
-    boxer_event_queue.push_front([2, action, row, pos, click, bits, area])
+    boxer_event_queue.push_front([2, action, row, pos, bits, area])
     boxer_event_queue_mutex.unlock()
 
 func handle_paste_text(text):
@@ -222,19 +228,9 @@ func _on_box_flipped(box) -> void:
 
 func eclboxer_key_input(event: InputEventKey) -> void:
     # Sends keys/events to the ECL Backend
-    var bits = 0
     # https://docs.godotengine.org/en/stable/classes/class_%40globalscope.html#enum-globalscope-key
     if event is InputEventKey and event.pressed:
-        # TODO Ideally Shift should be bit 1 but there are some edge cases we need to review before
-        #      adding that back in here.
-        if event.shift_pressed:
-            bits = bits | 1
-        if event.ctrl_pressed:
-            bits = bits | 2
-        if event.alt_pressed:
-            bits = bits | 4
-        if event.meta_pressed:
-            bits = bits | 8
+        var bits = Global.input_bits(event)
         print("\n>>>>> eclboxer_key_input: ", event, " ||| ctrl: ", event.ctrl_pressed, " mask: ", event.get_modifiers_mask(),
           " bits: ", bits)
         if event.keycode == KEY_BACKSPACE:

@@ -20,7 +20,9 @@ var first_inferior_row
 var current_row = null
 
 # Reference to the actual Boxer box object in common lisp
+# Variables prefixed with boxer_* will refer to BoxerLispRef instance pointers
 var boxer_box
+var boxer_screen_box
 
 var skip_position = false
 
@@ -258,7 +260,7 @@ func _process(_delta: float) -> void:
     update_display_style(display_style)
     if flipped_box_type == FlippedBoxType.GRAPHICS:
         graphics_mode_p = graphics_mode_p
-    if boxtop_type == BoxtopType.NONE:
+    if boxtop_type == BoxtopType.NONE and boxer_box:
         $/root/Main.handle_boxer_func_1("GODOT-UPDATE-BOXTOP", boxer_box)
 
 var moving = false
@@ -283,24 +285,24 @@ func _on_lower_right_corner_gui_input(event: InputEvent) -> void:
             $BoxInternals.size.y + event.relative.y)
         self.display_style = DisplayStyle.FIXED
 
+func com_mouse_expand_box():
+    $/root/Main.handle_boxer_func_2("CALL-MOUSE-BP-COM", boxer_screen_box, "COM-MOUSE-EXPAND-BOX")
 
 func _on_upper_left_corner_gui_input(event: InputEvent) -> void:
     if event is InputEventMouseButton and event.pressed:
-        $/root/Main.handle_boxer_func_1("SHRINK-BOX", boxer_box)
+        Global.handle_mouse_input(event, %RowsBox.get_child(0).boxer_row, 0, Global.BoxArea.TOP_LEFT)
 
 func _on_super_shrunk_panel_gui_input(event: InputEvent) -> void:
     if event is InputEventMouseButton and event.pressed:
-        $/root/Main.handle_boxer_func_1("EXPAND-BOX", boxer_box)
-        # display_style = DisplayStyle.SHRUNK
+        com_mouse_expand_box()
 
 func _on_shrunk_box_gui_input(event: InputEvent) -> void:
     if event is InputEventMouseButton and event.pressed:
-        $/root/Main.handle_boxer_func_1("EXPAND-BOX", boxer_box)
-        # display_style = DisplayStyle.NORMAL
+        com_mouse_expand_box()
 
 func _on_upper_right_corner_gui_input(event: InputEvent) -> void:
     if event is InputEventMouseButton and event.pressed:
-        $/root/Main.handle_boxer_func_1("EXPAND-BOX", boxer_box)
+        Global.handle_mouse_input(event, %RowsBox.get_child(0).boxer_row, 0, Global.BoxArea.TOP_RIGHT)
 
 func _on_lower_left_corner_gui_input(event: InputEvent) -> void:
     if event is InputEventMouseButton and event.pressed:
@@ -311,7 +313,7 @@ func _on_lower_left_corner_gui_input(event: InputEvent) -> void:
 
 func _on_type_toggle_gui_input(event: InputEvent) -> void:
     if event is InputEventMouseButton and event.pressed:
-        $/root/Main.handle_boxer_func_1("UI-TOGGLE-BOX-TYPE", boxer_box)
+        Global.handle_mouse_input(event, %RowsBox.get_child(0).boxer_row, 0, Global.BoxArea.TYPE)
 
 func push_graphics_command(opcode, arg1, arg2, arg3, arg4, arg5):
     %TurtleGraphics.append_draw_command([opcode, arg1, arg2, arg3, arg4, arg5])
@@ -329,4 +331,4 @@ func add_turtle(turtle):
 func _on_gui_input(event: InputEvent) -> void:
     if event is InputEventMouseButton and event.is_pressed():
         if display_style == DisplayStyle.SHRUNK:
-            $/root/Main.handle_boxer_func_1("EXPAND-BOX", boxer_box)
+            com_mouse_expand_box()

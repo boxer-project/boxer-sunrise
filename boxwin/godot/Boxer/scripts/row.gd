@@ -57,16 +57,16 @@ func _on_gui_input(event: InputEvent) -> void:
         if event.double_click: action_code = 3
         # print("Row GUI Input: ", event)
         if get_child_count() == 0:
-            $/root/Main.handle_mouse_input(action_code, boxer_row, 0, 0, 0, 0)
+            Global.handle_mouse_input(action_code, boxer_row, 0, Global.BoxArea.INSIDE)
         elif sentence_end_xpos() < event.position.x:
             # Is this past the last character?
-            $/root/Main.handle_mouse_input(action_code, boxer_row, get_child_count(), 0, 0, 0)
+            Global.handle_mouse_input(action_code, boxer_row, get_child_count(), Global.BoxArea.INSIDE)
         elif get_child(0).position.x > event.position.x:
             # Is this before the first character?
-            $/root/Main.handle_mouse_input(action_code, boxer_row, 0, 0, 0, 0)
+            Global.handle_mouse_input(action_code, boxer_row, 0, Global.BoxArea.INSIDE)
         else:
             #loop through the chas
             for child in get_children():
                 if xpos_in_cha(event.position.x, child):
-                    $/root/Main.handle_mouse_input(action_code, boxer_row, child.get_index()+1, 0, 0, 0)
+                    Global.handle_mouse_input(action_code, boxer_row, child.get_index()+1, Global.BoxArea.INSIDE)
 

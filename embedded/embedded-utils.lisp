@@ -66,12 +66,14 @@
 
 ;; (defun print-screen-box-tree )
 
+;; TODO This will need to be adjusted for ports
 (defun fill-in-screen-objs (&optional (obj *initial-box*))
   (cond
    ((box? obj)
     (do-box-rows ((row obj))
       (allocate-screen-obj-for-use-in row (car (screen-objs obj)))
-      (fill-in-screen-objs row)))
+      (fill-in-screen-objs row))
+    (gdboxer-update-screen-box (fetch-godot-obj obj) (car (screen-objs obj))))
    ((row? obj)
     (do-row-chas ((cha obj))
       (when (box? cha)
@@ -374,15 +376,6 @@
     (when box
       (gdboxer-set-graphics-sheet-background (fetch-godot-obj box) (aref value 1) (aref value 2) (aref value 3) (aref value 4)))))
 
-;; (defmethod (setf graphics-sheet-bit-array) :after (pixmap sheet)
-;;   (format t "~%Set graphics sheet BIT ARRAY~%")
-;;   (let* ((box (graphics-sheet-superior-box sheet))
-;;          (godot-box (getprop box :gdnode)))
-;;     (format t "~%SETTING GRAPHICS_SHEET_HACKGROUND 2.3: ~A ~%" value)
-;;     (gdboxer-set-graphics-sheet-bit-array godot-box (ogl-pixmap-width pixmap) (ogl-pixmap-height pixmap)
-;;       (ogl-pixmap-data pixmap)))
-;; )
-
 (defmethod (setf graphics-info) :after ((sheet graphics-sheet) box)
   (let* ((godot-box (fetch-godot-obj box)))
     (gdboxer-set-property godot-box "flipped_box_type" 1)
@@ -533,7 +526,6 @@
   ;; initialization
   ;; This is having some sort of error due to parent rows not being able to be added and such things
   ;; (setup-standard-colors)
-
   ;; (flush-input)
   (loop
     ;; (when *clicked-startup-file*
@@ -550,10 +542,8 @@
                 (godot-handle-boxer-input (aref input 1) (aref input 2)))
               ((equal 2 (aref input 0))
                 (format t "Lisp: Handling Mouse input: ~A~%" input)
-                (godot-handle-mouse-input (aref input 1) (aref input 2) (aref input 3) (aref input 4)
-                                          (aref input 5) (aref input 6)))
+                (godot-handle-mouse-input (aref input 1) (aref input 2) (aref input 3) (aref input 4) (aref input 5)))
               ((equal 3 (aref input 0))
-               (format t "Lisp: Handlign function call: ~A~%" input)
                (apply (find-symbol (aref input 2) "BOXER")
                  (loop as i from 3 to (+ 2 (aref input 1)) collect (aref input i))))
               ((equal 4 (aref input 0))
@@ -584,8 +574,8 @@
                (apply (car input) (cdr input)))
               ((not (null boxer::*boxer-system-hacker*))
                (error "Unknown object, ~A, in event queue" input)))
-        )
-      )))
+        (when (not (equal 0 (aref input 0)))
+          (fill-in-screen-objs))))))
 
 (defmethod append-graphics-command :after (gclist com-list)
   (format t "APPEND GRAPHICS COMMAND AFTER: ~A~%" com-list)
@@ -638,7 +628,7 @@
   (print-box-tree)
   (godot-update-point-location))
 
-(defun godot-handle-mouse-input (action-code row pos click bits area-code)
+(defun godot-handle-mouse-input (action-code row pos bits area-code)
   ;; Action encoding
   ;; Action is: 0 - press/MOUSE-DOWN 1 - click/MOUSE-CLICK 2 - release/MOUSE-UP 3 - double click/ MOUSE-DOUBLE-CLICK
 
@@ -650,12 +640,21 @@
         (action (case action-code
                   (0 'BOXER-USER::MOUSE-DOWN)
                   (1 'BOXER-USER::MOUSE-CLICK)
+                  (2 'BOXER-USER::MOUSE-UP)
                   (3 'BOXER-USER::MOUSE-DOUBLE-CLICK)))
         (area (case area-code
                 (0 :inside)
+                (1 :outside)
+                (2 :name)
+                (3 :scroll-bar)
+                (4 :type)
+                (5 :bottom-right)
+                (6 :bottom-left)
+                (7 :top-right)
+                (8 :top-left)
                 (otherwise nil))))
     ;; (handle-boxer-mouse-click 'BOXER-USER::MOUSE-DOWN *boxer-pane* 0 0 click-bp t 6 0 nil)
-    (handle-boxer-mouse-click action *boxer-pane* 0 0 click-bp t 6 0 area))
+    (handle-boxer-mouse-click (lookup-click-name 0 0 area) click-bp 6 0 area))
   (godot-update-point-location))
 
 (DEFUN BOX-SCREEN-POINT-IS-IN ()	  ;returns the box that the screen part of
@@ -676,22 +675,13 @@
 ;;; Mouse Commands
 ;;;
 
-(defun border-click-bp (box)
-  "Builds a bp from an actual-box that can be used for mouse commands."
+(defun call-mouse-bp-com (screen-box com-name)
+  "Calls a com-mouse-xyzed boxer command by creating a mouse-bp from the screen box."
   (let ((bp (make-bp :fixed)))
-    (setf (bp-row bp) (first-inferior-row box)
+    (setf (bp-row bp) (first-inferior-row (screen-obj-actual-obj screen-box))
           (bp-cha-no bp) 0
-          (bp-screen-box bp) (car (screen-objs box)))
-    bp))
-
-(defun shrink-box (box)
-  ;; TODO this should eventually take screen-box once that's hooked up correctly
-  (mouse-tl-corner-collapse-box (border-click-bp box)))
-
-(defun expand-box (box)
-  ;; TODO this should eventually take screen-box once that's hooked up correctly
-  (mouse-tr-corner-expand-box (border-click-bp box)))
-
+          (bp-screen-box bp) screen-box)
+  (funcall (symbol-function (find-symbol com-name :boxer)) bp)))
 
 ;;;
 ;;; Draw high

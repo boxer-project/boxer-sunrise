@@ -448,7 +448,7 @@
 (boxer-eval::defboxer-key bu::mouse-right-down-on-top-right  com-mouse-boxsize-closet-properties-pop-up)
 
 
-(boxer-eval::defboxer-key bu::mouse-click-on-top-right com-mouse-tr-corner-expand-box)
+(boxer-eval::defboxer-key bu::mouse-click-on-top-right com-mouse-expand-box)
 (boxer-eval::defboxer-key bu::mouse-double-click-on-top-right com-mouse-set-outermost-box)
 
 ;;;  Top Left Corner:
@@ -459,7 +459,7 @@
 (boxer-eval::defboxer-key bu::mouse-right-down-on-top-left com-mouse-boxsize-closet-properties-pop-up)
 (boxer-eval::defboxer-key bu::ctrl-mouse-down-on-top-left com-mouse-boxsize-closet-properties-pop-up)
 
-(boxer-eval::defboxer-key bu::mouse-click-on-top-left com-mouse-tl-corner-collapse-box)
+(boxer-eval::defboxer-key bu::mouse-click-on-top-left com-mouse-collapse-box)
 (boxer-eval::defboxer-key bu::mouse-double-click-on-top-left com-mouse-super-shrink-box)
 
 ;;;  Bottom Left Corner:
@@ -486,7 +486,7 @@
 ;;;    Double Click: Nothing
 ;;;    Right Click: Context Menu
 
-(boxer-eval::defboxer-key bu::mouse-click-on-type   com-mouse-border-toggle-type)
+(boxer-eval::defboxer-key bu::mouse-click-on-type   com-mouse-toggle-type)
 
 ;;;
 ;;; Box Name Row

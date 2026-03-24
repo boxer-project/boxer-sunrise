@@ -113,6 +113,18 @@ cl_object lisp_boxer_make_box(cl_object boxer_box) {
     return ecl_make_foreign_data(ECL_NIL, 0, godot_box);
 }
 
+/*
+ * box - Godot box instance
+ * boxer_screen_box - Lisp screen-box instance
+ */
+cl_object lisp_boxer_update_screen_box(cl_object box, cl_object boxer_screen_box) {
+    Object *godot_box = Variant((Object *)ecl_foreign_data_pointer_safe(box));
+    BoxerLispRef* bscreen_box = memnew(BoxerLispRef);
+    bscreen_box->boxer_obj = boxer_screen_box;
+    godot_box->set_deferred("boxer_screen_box", bscreen_box);
+    return ECL_NIL;
+}
+
 cl_object lisp_boxer_make_row(cl_object boxer_row) {
     BoxerLispRef* brow = memnew(BoxerLispRef);
     brow->boxer_obj = boxer_row;
@@ -290,6 +302,9 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
     //
     cl_object aux = ecl_make_symbol("GDBOXER-MAKE-BOX", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_make_box, 1);
+
+    aux = ecl_make_symbol("GDBOXER-UPDATE-SCREEN-BOX", "BOXER");
+    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_update_screen_box, 2);
 
     aux = ecl_make_symbol("FETCH-EVENT-FROM-QUEUE", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) fetch_event_from_queue, 1);
