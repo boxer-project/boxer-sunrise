@@ -1056,38 +1056,6 @@
     (do-vector-contents (cha (slot-value row 'screen-chas) :stop cha-no)
       (sum (screen-object-width cha)))))
 
-
-;; sgithens TODO 2024-04-22 Doesn't appear to be used anywhere...
-;; (DEFMETHOD SCREEN-BP ((SELF SCREEN-CHAR-SUBCLASS))
-;;            (LET ((BP (MAKE-BP 'FIXED)))
-;;                 (MOVE-BP BP (CHA-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
-;;                 BP))
-
-;; (DEFMETHOD NEXT-SCREEN-BP ((SELF SCREEN-CHAR-SUBCLASS))
-;;            (LET ((BP (MAKE-BP 'FIXED)))
-;;                 (MOVE-BP BP (CHA-NEXT-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
-;;                 BP))
-
-;; (DEFMETHOD FIRST-SCREEN-BP ((SELF SCREEN-ROW))
-;;            (LET ((BP (MAKE-BP 'FIXED)))
-;;                 (MOVE-BP BP (ROW-FIRST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
-;;                 BP))
-
-;; (DEFMETHOD LAST-SCREEN-BP ((SELF SCREEN-ROW))
-;;            (LET ((BP (MAKE-BP 'FIXED)))
-;;                 (MOVE-BP BP (ROW-LAST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
-;;                 BP))
-
-;; (DEFMETHOD FIRST-SCREEN-BP ((SELF SCREEN-BOX))
-;;            (LET ((BP (MAKE-BP 'FIXED)))
-;;                 (MOVE-BP BP (BOX-FIRST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
-;;                 BP))
-
-;; (DEFMETHOD LAST-SCREEN-BP ((SELF SCREEN-BOX))
-;;            (LET ((BP (MAKE-BP 'FIXED)))
-;;                 (MOVE-BP BP (BOX-LAST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
-;;                 BP))
-
 ;;; returns the screen obj of box which is within
 (DEFUN INF-CURRENT-SCREEN-BOX (BOX)
        (CAR (MEMBER (BP-SCREEN-BOX *POINT*) (DISPLAYED-SCREEN-OBJS BOX)

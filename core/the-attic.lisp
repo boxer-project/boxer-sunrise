@@ -10110,6 +10110,38 @@ Modification History (most recent at the top)
 ;;;; FILE: disply.lisp
 ;;;;
 
+;; sgithens TODO 2024-04-22 Doesn't appear to be used anywhere...
+(DEFMETHOD SCREEN-BP ((SELF SCREEN-CHAR-SUBCLASS))
+           (LET ((BP (MAKE-BP 'FIXED)))
+                (MOVE-BP BP (CHA-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
+                BP))
+
+(DEFMETHOD NEXT-SCREEN-BP ((SELF SCREEN-CHAR-SUBCLASS))
+           (LET ((BP (MAKE-BP 'FIXED)))
+                (MOVE-BP BP (CHA-NEXT-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
+                BP))
+
+(DEFMETHOD FIRST-SCREEN-BP ((SELF SCREEN-ROW))
+           (LET ((BP (MAKE-BP 'FIXED)))
+                (MOVE-BP BP (ROW-FIRST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
+                BP))
+
+(DEFMETHOD LAST-SCREEN-BP ((SELF SCREEN-ROW))
+           (LET ((BP (MAKE-BP 'FIXED)))
+                (MOVE-BP BP (ROW-LAST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
+                BP))
+
+(DEFMETHOD FIRST-SCREEN-BP ((SELF SCREEN-BOX))
+           (LET ((BP (MAKE-BP 'FIXED)))
+                (MOVE-BP BP (BOX-FIRST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
+                BP))
+
+(DEFMETHOD LAST-SCREEN-BP ((SELF SCREEN-BOX))
+           (LET ((BP (MAKE-BP 'FIXED)))
+                (MOVE-BP BP (BOX-LAST-BP-VALUES (SCREEN-OBJ-ACTUAL-OBJ SELF)))
+                BP))
+
+
 ;;;these should go somewhere else eventually...
 (DEFMETHOD VISIBLE? ((SCREEN-OBJ SCREEN-OBJ))
            (MEMBER SCREEN-OBJ
