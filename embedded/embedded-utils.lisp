@@ -77,6 +77,8 @@
    ((row? obj)
     (do-row-chas ((cha obj))
       (when (box? cha)
+        (when (null (screen-objs cha))
+          (allocate-screen-obj-for-use-in cha (car (screen-objs obj))))
         (fill-in-screen-objs cha))))))
 
 ;;;
