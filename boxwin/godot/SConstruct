@@ -13,10 +13,10 @@ env = SConscript("godot-cpp/SConstruct")
 # - LINKFLAGS are for linking flags
 
 # tweak this if you want to use different folders, or more folders, to store your source code in.
-env.Append(CPPPATH=["extension/", "/opt/homebrew/include"])
+env.Append(CPPPATH=["modules/boxer/", "/opt/homebrew/include"])
 env.Append(LIBS=['libecl', 'libboxercore--all-systems'])
 env.Append(LIBPATH=["/opt/homebrew/lib", "../../"]) #'/Users/sgithens/code/boxer-godot-integration-cleanup/boxer-sunrise'])
-sources = Glob("extension/*.cpp")
+sources = Glob("modules/boxer/*.cpp")
 
 if env["platform"] == "macos":
     library = env.SharedLibrary(
