@@ -1,8 +1,20 @@
 #include "gd_boxer.h"
+
+#ifdef BOXER_GDEXTENSION
 #include <godot_cpp/core/class_db.hpp>
+#define BOXER_PRINT UtilityFunctions::print
+#define BOXER_STRING godot::String
+#else
+#include "core/object/class_db.h"
+#define BOXER_PRINT print_line
+#define BOXER_STRING String
+#endif
+
 #include <ecl/ecl.h>
 
+#ifdef BOXER_GDEXTENSION
 using namespace godot;
+#endif
 
 extern "C" {
     void init_lib_BOXER_CORE_LISP(cl_object);
@@ -36,15 +48,18 @@ void GDBoxer::toggle_box_type() {
 }
 
 void GDBoxer::handle_open_file(Variant path) {
-    godot::String str_path = String(path);
-    UtilityFunctions::print("\nhandle_open_file1.11: ", path, " hmm: ", str_path, " hmm2: ", str_path.utf8());
-
+    BOXER_STRING str_path = String(path);
+    // TODO make this work in core engine
+    #ifdef BOXER_GDEXTENSION
+    BOXER_PRINT("\nhandle_open_file1.11: ", path, " hmm: ", str_path, " hmm2: ", str_path.utf8());
     cl_object handle_boxer_open_file_funname = ecl_make_symbol("GODOT-OPEN-FILE", "BOXER");
     cl_funcall(2, handle_boxer_open_file_funname, ecl_make_simple_base_string(str_path.ascii(), str_path.length()));
+    #endif
+
 }
 
 void GDBoxer::handle_mouse_input(int action, Variant boxer_row, int pos, int click, int bits, int area) {
-    UtilityFunctions::print("\nGodot: handle_mouse_input");
+    BOXER_PRINT("\nGodot: handle_mouse_input");
     cl_object handle_boxer_mouse_funname = ecl_make_symbol("GODOT-HANDLE-MOUSE-INPUT", "BOXER");
     cl_funcall(7, handle_boxer_mouse_funname,
         ecl_make_fixnum(action),
@@ -60,7 +75,7 @@ void GDBoxer::handle_mouse_input(int action, Variant boxer_row, int pos, int cli
  */
 
 cl_object convert_godot_to_ecl(Variant value) {
-    // UtilityFunctions::print("convert_godot_to_ecl: type: ", value.get_type(), " name: ", value.get_type_name(value.get_type()));
+    // BOXER_PRINT("convert_godot_to_ecl: type: ", value.get_type(), " name: ", value.get_type_name(value.get_type()));
     int type = value.get_type();
     if (value.INT == type) {
         return ecl_make_fixnum((int)value);
@@ -69,9 +84,13 @@ cl_object convert_godot_to_ecl(Variant value) {
         return ((BoxerLispRef*) ((Object*) value))->boxer_obj;
     }
     else if (value.STRING == type) {
-        godot::String str = String(value);
+        BOXER_STRING str = String(value);
         // TODO does this handle unicode??? try and maybe switch to str.utf8()?
+#ifdef BOXER_GDEXTENSION
         return ecl_make_simple_base_string(str.ascii(), str.length());
+#else
+        return ecl_make_simple_base_string(str.ascii().ptr(), str.length());
+#endif
     }
     else {
         return ECL_NIL;
@@ -141,7 +160,7 @@ cl_object lisp_boxer_make_turtle(cl_object boxer_turtle) {
 
 
 cl_object lisp_boxer_get_name_row(cl_object box) {
-    UtilityFunctions::print("lisp_boxer_get_name_row\n");
+    BOXER_PRINT("lisp_boxer_get_name_row\n");
     Object* godot_box = Variant((Object*) ecl_foreign_data_pointer_safe(box));
     Object* godot_name_row = godot_box->call("get_name_row");
     return ecl_make_foreign_data(ECL_NIL, 0, godot_name_row);
@@ -151,13 +170,13 @@ cl_object lisp_boxer_get_name_row(cl_object box) {
  * PACKED BYTE ARRAYS
  */
 cl_object lisp_boxer_make_packed_byte_array(cl_object size) {
-    UtilityFunctions::print("Going to try and make a PACKED BYTE ARRAY...\n");
+    BOXER_PRINT("Going to try and make a PACKED BYTE ARRAY...\n");
     PackedInt32Array *pba = memnew(PackedInt32Array);
     int arr_size = ecl_fixnum(size);
     pba->resize(arr_size);
-    UtilityFunctions::print(" Made a PBA:");
-    UtilityFunctions::print(pba->size());
-    UtilityFunctions::print(pba);
+    BOXER_PRINT(" Made a PBA:");
+    BOXER_PRINT(pba->size());
+    BOXER_PRINT(pba);
     return ecl_make_foreign_data(ECL_NIL, 0, pba);
 }
 
@@ -250,7 +269,7 @@ Variant convert_ecl_to_godot (cl_object value) {
         }
     }
     else {
-        UtilityFunctions::print("Couldn't figure out type:", ecl_t_of(value));
+        BOXER_PRINT("Couldn't figure out type:", ecl_t_of(value));
         return 0;
     }
 }
@@ -289,7 +308,7 @@ cl_object lisp_boxer_push_with_main_node(cl_object args_vector) {
 void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node) {
     cl_object result;
 
-    UtilityFunctions::print("Hello from GD Boxer Ready 4.5");
+    BOXER_PRINT("Hello from GD Boxer Ready 4.6");
 
     char * wow = static_cast<char*>(malloc(sizeof(char)));
     wow[0] = 65;
@@ -384,8 +403,8 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
     cl_object link_initial_box_to_node_fun_name = ecl_make_symbol("LINK_INITIAL_BOX_TO_NODE", "BOXER");
     result = cl_funcall(3, link_initial_box_to_node_fun_name, cl_world_node, cl_first_row_node);
 
-    UtilityFunctions::print("Goodbye from GD Boxer Ready 2.7");
-    UtilityFunctions::print("About to start boxer-command-loop-internal...");
+    BOXER_PRINT("Goodbye from GD Boxer Ready 2.7");
+    BOXER_PRINT("About to start boxer-command-loop-internal...");
     cl_object eval_loop = ecl_make_symbol("ECL-BOXER-COMMAND-LOOP-INTERNAL", "BOXER");
     cl_funcall(1, eval_loop);
 

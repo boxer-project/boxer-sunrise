@@ -1,10 +1,17 @@
 #ifndef GDBOXER_H
 #define GDBOXER_H
 
+#ifdef BOXER_GDEXTENSION
 #include <godot_cpp/classes/node.hpp>
+#else
+#include "scene/main/node.h"
+#endif
+
 #include <ecl/ecl.h>
 
+#ifdef BOXER_GDEXTENSION
 namespace godot {
+#endif
 
 class GDBoxer : public Node {
     GDCLASS(GDBoxer, Node)
@@ -47,6 +54,8 @@ public:
     cl_object boxer_obj;
 };
 
+#ifdef BOXER_GDEXTENSION
 }
+#endif
 
 #endif

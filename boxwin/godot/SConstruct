@@ -12,6 +12,9 @@ env = SConscript("godot-cpp/SConstruct")
 # - CPPDEFINES are for pre-processor defines
 # - LINKFLAGS are for linking flags
 
+# Used to determine if we are acting as a GDExtension rather than a core godot module
+env.Append(CPPDEFINES=[('BOXER_GDEXTENSION')])
+
 # tweak this if you want to use different folders, or more folders, to store your source code in.
 env.Append(CPPPATH=["modules/boxer/", "/opt/homebrew/include"])
 env.Append(LIBS=['libecl', 'libboxercore--all-systems'])
