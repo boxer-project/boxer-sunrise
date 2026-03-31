@@ -15,6 +15,21 @@
 ;;;;
 ;;;;     Embedded Boxer
 ;;;;     Primarily used for testing separeation of the evaluation engine and the graphics layer
+(in-package :boxer)
+
+;; TODO Copied in from repaint.lisp
+(defun get-port-chain (screen-box)
+  (let ((ports nil))
+    (do ((sb screen-box (superior-screen-box sb)))
+      ((not (screen-box? sb))  ; not NIL check cause screen top is *boxer-pane*
+                               (nreverse ports))
+      (let ((actual-obj (screen-obj-actual-obj sb)))
+        (when (port-box? actual-obj) (push actual-obj ports))))))
+
+;; TODO Backfilling from draw-high-common
+(defun create-transform-matrix (x y &optional (z 0))
+  nil)
+
 (in-package :boxer-window)
 
 (defun window-system-dependent-redraw-status-line (string)

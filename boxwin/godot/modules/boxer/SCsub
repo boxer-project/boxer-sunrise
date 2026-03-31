@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+env.Append(CPPPATH=[Dir("/home/sgithens/code/ecl/ecl-host/include/").abspath])
+
+# Dir('libpath').abspath
+env_boxer = env_modules.Clone()
+
+# Godot source files
+env_boxer.add_source_files(env.modules_sources, "*.cpp")
+
+if env['platform'] == 'web':
+    env_boxer.Append(CPPPATH=[Dir("/home/sgithens/code/ecl/ecl-wasm").abspath])
+    env.Append(LIBPATH=[Dir('/home/sgithens/code/wecl/Code/wasm-ecl').abspath])
+    env.Append(CCFLAGS=["-sERROR_ON_UNDEFINED_SYMBOLS=0", "-sSUPPORT_LONGJMP=1", "-sWASM_WORKERS=1", "-sSHARED_MEMORY=1"])
+    env.Append(LINKFLAGS=["-sERROR_ON_UNDEFINED_SYMBOLS=0", "-sSUPPORT_LONGJMP=1", "-sWASM_WORKERS=1", "-sSHARED_MEMORY=1"])
+    env.Append(LIBS=['ecl', 'eclgc', 'eclgmp', 'liblibboxercore'])
+else:
+    env_boxer.Append(CPPPATH=[Dir("/Users/sgithens/code/ecl/ecl-host/include/").abspath])
+    env.Append(LIBPATH=[Dir('/Users/sgithens/code/ecl/ecl-host/lib/').abspath])
+    env.Append(LIBS=['ecl', 'liblibboxercore'])
+
+# Check with the documentation of the external library to see which library
+# files should be included/linked.
