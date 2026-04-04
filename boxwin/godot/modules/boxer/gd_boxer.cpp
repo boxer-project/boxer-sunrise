@@ -17,7 +17,11 @@ using namespace godot;
 #endif
 
 extern "C" {
+#ifdef BOXER_GDEXTENSION
     void init_lib_BOXER_CORE_LISP(cl_object);
+#else
+    void init_lib_libboxercore(cl_object);
+#endif
 }
 
 GDBoxer* the_gdboxer_node;
@@ -309,12 +313,18 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
     cl_object result;
 
     BOXER_PRINT("Hello from GD Boxer Ready 4.6");
+    // Setup the Global node
+    main_boxer_node = m_node;
 
     char * wow = static_cast<char*>(malloc(sizeof(char)));
     wow[0] = 65;
     cl_boot(1, &wow);
 
+#ifdef BOXER_GDEXTENSION
     ecl_init_module(NULL, init_lib_BOXER_CORE_LISP);
+#else
+    ecl_init_module(NULL, init_lib_libboxercore);
+#endif
 
     //
     // Constructing
@@ -392,11 +402,10 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
     result = cl_eval(c_string_to_object("(bw::start-embedded-boxer nil)"));
     ecl_print(result, ECL_T);
 
+#ifdef BOXER_GDEXTENSION
     result = cl_eval(c_string_to_object("(load \"/Users/sgithens/code/boxer-sunrise/embedded/embedded-utils.lisp\")"));
     ecl_print(result, ECL_T);
-
-    // Setup the Global node
-    main_boxer_node = m_node;
+#endif
 
     cl_object cl_world_node = ecl_make_foreign_data(ECL_NIL, 0, world_node);
     cl_object cl_first_row_node = ecl_make_foreign_data(ECL_NIL, 0, first_row_node);

@@ -129,6 +129,9 @@
   ;; TODO Occasionally new-name-row is a String, but I think that's literally just for the
   ;; WORLD name-row, but still revisit this.
 
+  ;; TODO sgithens 2026-04-02 There are some issues here still with WASM and new-name-row being
+  ;; a simple array? (concatenate 'string new-name-row) doesn't seem to fully solve it
+  #-emscripten
   (let* ((godot-box (fetch-godot-obj self))
          (godot-name-row nil))
     (setf godot-name-row (gdboxer-get-name-row godot-box))
