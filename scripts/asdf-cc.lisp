@@ -7,10 +7,11 @@
   (c::get-target-info))
 
 (defvar *wasm-target*
-  (c:read-target-info "/home/sgithens/code/boxer-sunrise/scripts/target-info.lsp"))
+  (c:read-target-info "./scripts/target-info.lsp"))
 
 (defparameter *cc-target* *host-target*)
-(defparameter *cc-cache-dir* #P"/tmp/ecl-cc-cache/")
+;; (defparameter *cc-cache-dir* #P"/tmp/ecl-cc-cache/")
+(defparameter *cc-cache-dir* (uiop:merge-pathnames* "ecl-cc-cache/" (uiop:getcwd)))
 
 ;;; CROSS-LOAD-OP and cache invalidation. We default to :minimal - that means
 ;;; that cross-loader will install bytecmp and simply load the source code. This
@@ -33,16 +34,11 @@
      (flet ((cc-path ()
               (merge-pathnames "**/*.*"
                                (uiop:ensure-directory-pathname *cc-cache-dir*))))
-       (print "What the fuck is going on?")
-       (print (cc-path))
        (let ((asdf::*output-translations* `(((t ,(cc-path)))))
              (*load-system-operation* 'load-source-op)
              (*features* (remove-duplicates
                           ;; sgithens hack
                           (list* :emscripten :text-repl-engine :embedded-boxer :shim-3d-math :asdf :asdf2 :asdf3 :asdf3.1 *features*))))
-         (print "with asdf compilation unit: ")
-         (print *features*)
-        ;;  (pprint body)
          ,@body))))
 
 (defun cross-compile (system &rest args

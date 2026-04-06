@@ -10,13 +10,19 @@ echo $(pwd)
 
 ${ECL_TO_RUN} --load ./scripts/static-wasm-lib.lisp
 
-read -p "Moving to /tmp/ecl-cc-cache to copy liblibboxercore.a [ENTER]"
-cd /tmp/ecl-cc-cache
+read -p "Moving to ./ecl-cc-cache to copy liblibboxercore.a [ENTER]"
+pushd ./ecl-cc-cache
 cp  home/sgithens/code/boxer-sunrise/embedded/liblibboxercore.a ~/code/wecl/Code/wasm-ecl/
+popd
 
 read -p "Going to move to godot-wasm and build now... [ENTER]"
-cd ~/code/godot-wasm/
+pushd ~/code/godot-wasm/
 scons custom_modules=/home/sgithens/code/boxer-sunrise/boxwin/godot/modules/ platform=web target=template_release
+popd
 
 read -p "Run web export from Godot project [ENTER]"
-LD_LIBRARY_PATH=~/code/ecl/ecl-host/lib/ ./bin/godot.linuxbsd.editor.x86_64 --path ~/code/boxer-sunrise/boxwin/godot/Boxer/ --export-release "Web" ~/Desktop/test-binary/Boxer\ Godot\ release.html
+mkdir ./html-exports
+LD_LIBRARY_PATH=~/code/ecl/ecl-host/lib/ ~/code/godot-wasm/bin/godot.linuxbsd.editor.x86_64 \
+  --path ~/code/boxer-sunrise/boxwin/godot/Boxer/ --export-release "Web" ~/code/boxer-sunrise/html-exports/index.html
+
+
