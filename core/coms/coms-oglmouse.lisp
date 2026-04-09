@@ -802,7 +802,9 @@
               (com-collapse-box)))))))
   boxer-eval::*novalue*)
 
-(defboxer-command com-mouse-expand-box (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
+
+(defboxer-command com-mouse-expand-box (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y)))
+                                                  (fullscreen nil))
   "make the box one size larger"
   ;; first, if there already is an existing region, flush it
   (reset-region)
@@ -817,9 +819,14 @@
           (send-exit-messages new-box mouse-screen-box)
           (enter new-box (not (superior? old-box new-box))))
         (move-point-1 new-row new-cha-no mouse-screen-box)
-        (when (shrunken? new-box)
+        (when (or (shrunken? mouse-screen-box) fullscreen)
           (com-expand-box)))))
   boxer-eval::*novalue*)
+
+(defboxer-command com-mouse-expand-fullscreen-box (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
+  "Similar to com-mouse-expand-box, but if it's already at 'normal' size, continues to fullscreen it.
+   Useful for binding to clicking on the top-right corner of a box."
+  (com-mouse-expand-box mouse-bp t))
 
 (defboxer-command com-mouse-bl-corner-toggle-box-view (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "Toggle the box view"

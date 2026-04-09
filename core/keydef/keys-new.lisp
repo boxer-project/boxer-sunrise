@@ -448,7 +448,7 @@
 (boxer-eval::defboxer-key bu::mouse-right-down-on-top-right  com-mouse-boxsize-closet-properties-pop-up)
 
 
-(boxer-eval::defboxer-key bu::mouse-click-on-top-right com-mouse-expand-box)
+(boxer-eval::defboxer-key bu::mouse-click-on-top-right com-mouse-expand-fullscreen-box)
 (boxer-eval::defboxer-key bu::mouse-double-click-on-top-right com-mouse-set-outermost-box)
 
 ;;;  Top Left Corner:
