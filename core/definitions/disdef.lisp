@@ -125,7 +125,11 @@ Modification History (most recent at the top)
 
 
 (DEFUN ALLOCATE-SCREEN-OBJ-INTERNAL (ACTUAL-OBJ)
-       (COND ((and (box? actual-obj)
+       (COND ((and (port-box? actual-obj)
+                   (graphics-box? (ports actual-obj))
+                   (display-style-graphics-mode? (display-style-list actual-obj)))
+              (ALLOCATE-GRAPHICS-SCREEN-BOX-INTERNAL ACTUAL-OBJ))
+            ((and (box? actual-obj)
                    (display-style-graphics-mode? (display-style-list actual-obj)))
               (let ((gi (graphics-info actual-obj)))
                 (cond ((graphics-sheet? gi)
@@ -135,10 +139,6 @@ Modification History (most recent at the top)
                   (t
                    (barf "Can't allocate a graphics screen obj for ~S"
                          actual-obj)))))
-             ((and (port-box? actual-obj)
-                   (graphics-box? (ports actual-obj))
-                   (display-style-graphics-mode? (display-style-list actual-obj)))
-              (ALLOCATE-GRAPHICS-SCREEN-BOX-INTERNAL ACTUAL-OBJ))
              ((BOX? ACTUAL-OBJ) (ALLOCATE-SCREEN-BOX-INTERNAL ACTUAL-OBJ))
              ((ROW? ACTUAL-OBJ) (ALLOCATE-SCREEN-ROW-INTERNAL ACTUAL-OBJ))
              ((GRAPHICS-SHEET? ACTUAL-OBJ)
