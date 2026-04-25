@@ -117,6 +117,12 @@ func handle_boxer_func_2(func_name, arg0, arg1):
         boxer_event_queue.push_front([3, 2, func_name, arg0, arg1])
         boxer_event_queue_mutex.unlock()
 
+func handle_boxer_func_3(func_name, arg0, arg1, arg2):
+    if boxer_event_queue_mutex:
+        boxer_event_queue_mutex.lock()
+        boxer_event_queue.push_front([3, 3, func_name, arg0, arg1, arg2])
+        boxer_event_queue_mutex.unlock()
+
 func handle_open_file(path):
     handle_boxer_func_1("GODOT-OPEN-FILE", path)
 
@@ -124,9 +130,6 @@ func handle_mouse_input(action, row, pos, bits, area):
     boxer_event_queue_mutex.lock()
     boxer_event_queue.push_front([2, action, row, pos, bits, area])
     boxer_event_queue_mutex.unlock()
-
-func handle_paste_text(text):
-    handle_boxer_func_1("GODOT-PASTE-TEXT", text)
 
 func handle_request_cursor_update():
     boxer_event_queue_mutex.lock()
@@ -199,12 +202,17 @@ func _process(_delta: float) -> void:
         print("Boxer Toggle Closet")
         handle_toggle_closet()
 
-
 func paste_to_boxer():
     if DisplayServer.clipboard_has():
-        handle_paste_text(DisplayServer.clipboard_get())
+        handle_boxer_func_1("GODOT-PASTE-TEXT", DisplayServer.clipboard_get())
     elif DisplayServer.clipboard_has_image():
-        print("TODO Paste Image from Clipboard")
+        var img = DisplayServer.clipboard_get_image()
+        img.convert(Image.FORMAT_RGBA8)
+        var pix_array = []
+        for x in img.get_width():
+            for y in img.get_height():
+                pix_array.append(img.get_pixel(x,y).to_rgba32())
+        handle_boxer_func_3("GODOT-PASTE-IMAGE", img.get_width(), img.get_height(), pix_array)
 
 func _on_box_full_screened(box) -> void:
     print("Full Screening box: ", box)

@@ -96,6 +96,13 @@ cl_object convert_godot_to_ecl(Variant value) {
         return ecl_make_simple_base_string(str.ascii().ptr(), str.length());
 #endif
     }
+    else if (value.ARRAY == type) {
+        cl_object togo = cl_make_array(1, ecl_make_fixnum(((Array)value).size()));
+        for (int i = 0; i < ((Array)value).size(); i++) {
+            ecl_aset1(togo, i, convert_godot_to_ecl(((Array)value)[i]));
+        }
+        return togo;
+    }
     else {
         return ECL_NIL;
     }

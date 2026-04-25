@@ -466,6 +466,44 @@
             (boxer::insert-cha boxer::*point* char :moving))))
     (godot-update-point-location)))
 
+(defun swap-endian-u32 (n)
+  "Pixels coming in from Godot need to be swapped for our pixmap pixel format."
+  (logand #xFFFFFFFF
+          (logior (ash (logand n #x000000FF) 24)
+                  (ash (logand n #x0000FF00)  8)
+                  (ash (logand n #x00FF0000) -8)
+                  (ash (logand n #xFF000000) -24))))
+
+(defun copy-godot-array-to-bitmap (data pixmap w h)
+  "This copies the array of pixels from a Godot Image converted to unsigned 32 bit integers
+(ie. In Godot: img.get_pixel(x, y).to_rgba32() ) to our pixmap pixel format.
+
+    These are from Boxer                               a       b       g       r
+    (make-offscreen-pixel 255 0 0)  4278190335  11111111000000000000000011111111
+    (make-offscreen-pixel 0 255 0)  4278255360  11111111000000001111111100000000
+    (make-offscreen-pixel 0 0 255)  4294901760  11111111111111110000000000000000
+
+    These are from Godot                        r       g       b       a
+    green                             16711935  00000000111111110000000011111111
+    blue                                 65535  00000000000000001111111111111111"
+  (let ((count 0))
+    (dotimes (x w)
+      (dotimes (y h)
+        (let ((next-pixel (swap-endian-u32 (aref data count))))
+          (set-pixmap-pixel pixmap x y next-pixel)
+          (incf count))))))
+
+;; TODO refactor this from the duped paste-pict in clipboard.lisp
+(defun godot-paste-image (width height data)
+  (let* ((gb (boxer::make-box '(())))
+         (gs (boxer::make-graphics-sheet width height gb))
+         (image (make-ogl-pixmap width height)))
+    (copy-godot-array-to-bitmap data image width height)
+    (setf (boxer::graphics-sheet-bit-array gs) image)
+    (setf (boxer::graphics-info gb) gs)
+    (setf (boxer::display-style-graphics-mode? (boxer::display-style-list gb)) T)
+    (boxer::insert-cha boxer::*point* gb :moving)
+    (godot-init-graphics-sheet gb)))
 
 ;;
 ;; Hacking
