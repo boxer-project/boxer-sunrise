@@ -126,9 +126,9 @@ func handle_boxer_func_3(func_name, arg0, arg1, arg2):
 func handle_open_file(path):
     handle_boxer_func_1("GODOT-OPEN-FILE", path)
 
-func handle_mouse_input(action, row, pos, bits, area):
+func handle_mouse_input(action, row, pos, scr_box, bits, area):
     boxer_event_queue_mutex.lock()
-    boxer_event_queue.push_front([2, action, row, pos, bits, area])
+    boxer_event_queue.push_front([2, action, row, pos, scr_box, bits, area])
     boxer_event_queue_mutex.unlock()
 
 func handle_request_cursor_update():

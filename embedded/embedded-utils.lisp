@@ -585,7 +585,7 @@
                 (godot-handle-boxer-input (aref input 1) (aref input 2)))
               ((equal 2 (aref input 0))
                 (format t "Lisp: Handling Mouse input: ~A~%" input)
-                (godot-handle-mouse-input (aref input 1) (aref input 2) (aref input 3) (aref input 4) (aref input 5)))
+                (godot-handle-mouse-input (aref input 1) (aref input 2) (aref input 3) (aref input 4) (aref input 5) (aref input 6)))
               ((equal 3 (aref input 0))
                (apply (find-symbol (aref input 2) "BOXER")
                  (loop as i from 3 to (+ 2 (aref input 1)) collect (aref input i))))
@@ -671,7 +671,7 @@
   (print-box-tree)
   (godot-update-point-location))
 
-(defun godot-handle-mouse-input (action-code row pos bits area-code)
+(defun godot-handle-mouse-input (action-code row pos scr-box bits area-code)
   ;; Action encoding
   ;; Action is: 0 - press/MOUSE-DOWN 1 - click/MOUSE-CLICK 2 - release/MOUSE-UP 3 - double click/ MOUSE-DOUBLE-CLICK
 
@@ -680,11 +680,6 @@
   ;; :OUTSIDE :NAME :SCROLL-BAR :TYPE :BOTTOM-RIGHT :BOTTOM-LEFT
   ;; :TOP-RIGHT :TOP-LEFT
   (let ((click-bp (MAKE-INITIALIZED-BP :fixed row pos))
-        (action (case action-code
-                  (0 'BOXER-USER::MOUSE-DOWN)
-                  (1 'BOXER-USER::MOUSE-CLICK)
-                  (2 'BOXER-USER::MOUSE-UP)
-                  (3 'BOXER-USER::MOUSE-DOUBLE-CLICK)))
         (area (case area-code
                 (0 :inside)
                 (1 :outside)
@@ -696,8 +691,8 @@
                 (7 :top-right)
                 (8 :top-left)
                 (otherwise nil))))
-    ;; (handle-boxer-mouse-click 'BOXER-USER::MOUSE-DOWN *boxer-pane* 0 0 click-bp t 6 0 nil)
-    (handle-boxer-mouse-click (lookup-click-name 0 0 area) click-bp 6 0 area))
+    (setf (bp-screen-box click-bp) scr-box)
+    (handle-boxer-mouse-click (lookup-click-name action-code bits area) click-bp 6 0 area))
   (godot-update-point-location))
 
 (DEFUN BOX-SCREEN-POINT-IS-IN ()	  ;returns the box that the screen part of

@@ -37,5 +37,6 @@ func input_bits(event: InputEventWithModifiers):
 enum BoxArea {INSIDE = 0, OUTSIDE = 1, NAME = 2, SCROLL_BAR = 3, TYPE = 4, BOTTOM_RIGHT = 5, BOTTOM_LEFT = 6,
     TOP_RIGHT = 7, TOP_LEFT = 8}
 
-func handle_mouse_input(event, boxer_row, pos, area = BoxArea.INSIDE):
-    $/root/Main.handle_mouse_input(Global.mouse_action(event), boxer_row, pos, Global.input_bits(event), area)
+func handle_mouse_input(event, row, pos, area = BoxArea.INSIDE):
+    $/root/Main.handle_mouse_input(Global.mouse_action(event), row.boxer_row, pos, row.parent_box.boxer_screen_box,
+        Global.input_bits(event), area)

@@ -54,15 +54,15 @@ func xpos_in_cha(x, cha_node):
 func _on_gui_input(event: InputEvent) -> void:
     if event is InputEventMouseButton and event.is_pressed():
         if get_child_count() == 0:
-            Global.handle_mouse_input(event, boxer_row, 0, Global.BoxArea.INSIDE)
+            Global.handle_mouse_input(event, self, 0, Global.BoxArea.INSIDE)
         elif sentence_end_xpos() < event.position.x:
             # Is this past the last character?
-            Global.handle_mouse_input(event, boxer_row, get_child_count(), Global.BoxArea.INSIDE)
+            Global.handle_mouse_input(event, self, get_child_count(), Global.BoxArea.INSIDE)
         elif get_child(0).position.x > event.position.x:
             # Is this before the first character?
-            Global.handle_mouse_input(event, boxer_row, 0, Global.BoxArea.INSIDE)
+            Global.handle_mouse_input(event, self, 0, Global.BoxArea.INSIDE)
         else:
             #loop through the chas
             for child in get_children():
                 if xpos_in_cha(event.position.x, child):
-                    Global.handle_mouse_input(event, boxer_row, child.get_index()+1, Global.BoxArea.INSIDE)
+                    Global.handle_mouse_input(event, self, child.get_index()+1, Global.BoxArea.INSIDE)
