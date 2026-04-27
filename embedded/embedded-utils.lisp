@@ -73,6 +73,7 @@
     (do-box-rows ((row obj))
       (allocate-screen-obj-for-use-in row (car (screen-objs obj)))
       (fill-in-screen-objs row))
+    (set-display-style (car (screen-objs obj)) (display-style obj))
     (gdboxer-update-screen-box (fetch-godot-obj obj) (car (screen-objs obj))))
    ((row? obj)
     (do-row-chas ((cha obj))
