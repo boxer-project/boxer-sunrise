@@ -9,8 +9,31 @@
 [ext_resource type="PackedScene" uid="uid://mjcxt81qohg3" path="res://scenes/turtle.tscn" id="5_choun"]
 [ext_resource type="Theme" uid="uid://clyeptsut3tbs" path="res://themes/macOS_light.tres" id="5_o6xl0"]
 [ext_resource type="Script" path="res://scripts/flipping_box.gd" id="5_tbgi4"]
+[ext_resource type="Script" uid="uid://rq6s8cpuio4s" path="res://addons/SimpleSampler/sampler.gd" id="6_trceg"]
+[ext_resource type="AudioStream" uid="uid://o5pwkcdpex4o" path="res://samples/synth/Ab4.ogg" id="8_jbj1t"]
 [ext_resource type="Script" path="res://scripts/boxer_menu_bar.gd" id="9_85g3d"]
+[ext_resource type="AudioStream" uid="uid://bf67urmbgussm" path="res://samples/synth/B4.ogg" id="9_muem4"]
+[ext_resource type="AudioStream" uid="uid://d2ul4xbuec4jg" path="res://samples/synth/E4.ogg" id="10_dp3eg"]
 [ext_resource type="AudioStream" uid="uid://dvqduqpq41kd" path="res://scripts/Meow.wav" id="11_ya4ey"]
+[ext_resource type="Script" uid="uid://dtpmtwvvk0ac7" path="res://addons/SimpleSampler/sample_resource.gd" id="13_trceg"]
+
+[sub_resource type="Resource" id="Resource_trceg"]
+script = ExtResource("13_trceg")
+stream = ExtResource("8_jbj1t")
+tone = "G#"
+metadata/_custom_type_script = "uid://dtpmtwvvk0ac7"
+
+[sub_resource type="Resource" id="Resource_0ld40"]
+script = ExtResource("13_trceg")
+stream = ExtResource("9_muem4")
+tone = "B"
+metadata/_custom_type_script = "uid://dtpmtwvvk0ac7"
+
+[sub_resource type="Resource" id="Resource_gqmmt"]
+script = ExtResource("13_trceg")
+stream = ExtResource("10_dp3eg")
+tone = "E"
+metadata/_custom_type_script = "uid://dtpmtwvvk0ac7"
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tefeu"]
 albedo_color = Color(1, 1, 1, 0)
@@ -44,6 +67,13 @@ ok_button_text = "Open"
 file_mode = 0
 access = 2
 use_native_dialog = true
+
+[node name="NotePlayer" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+volume_db = 9.391
+script = ExtResource("6_trceg")
+samples = Array[ExtResource("13_trceg")]([SubResource("Resource_trceg"), SubResource("Resource_0ld40"), SubResource("Resource_gqmmt")])
+metadata/_custom_type_script = "uid://rq6s8cpuio4s"
 
 [node name="TopLevelContainer" type="VBoxContainer" parent="."]
 unique_name_in_owner = true

@@ -6,6 +6,7 @@ extends Node
 @export var turtle_scene: PackedScene
 
 @onready var open_dialog: FileDialog = get_node("/root/Main/OpenFileDialog")
+@onready var note_player: Sampler = get_node("/root/Main/NotePlayer")
 
 # Whether to use the Boxer GDExtension or the prototype mode with Godot handling the input
 @export var use_boxer_gdextension = false
@@ -331,3 +332,11 @@ func make_turtle(boxer_turtle):
     turtle.boxer_turtle = boxer_turtle
     turtle.append_draw_command([63, 0, 0, 10])
     return turtle
+
+
+
+###
+### Music / Audio
+###
+func play_note(note):
+    note_player.play_note(note.strip_edges())

@@ -412,6 +412,8 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
 #ifdef BOXER_GDEXTENSION
     result = cl_eval(c_string_to_object("(load \"/Users/sgithens/code/boxer-sunrise/embedded/embedded-utils.lisp\")"));
     ecl_print(result, ECL_T);
+    result = cl_eval(c_string_to_object("(load \"/Users/sgithens/code/boxer-sunrise/embedded/music-prims.lisp\")"));
+    ecl_print(result, ECL_T);
 #endif
 
     cl_object cl_world_node = ecl_make_foreign_data(ECL_NIL, 0, world_node);
