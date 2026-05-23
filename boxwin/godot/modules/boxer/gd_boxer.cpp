@@ -84,6 +84,9 @@ cl_object convert_godot_to_ecl(Variant value) {
     if (value.INT == type) {
         return ecl_make_fixnum((int)value);
     }
+    else if (value.FLOAT == type) {
+        return ecl_make_single_float((double)value);
+    }
     else if (value.OBJECT == type) {
         return ((BoxerLispRef*) ((Object*) value))->boxer_obj;
     }
@@ -413,6 +416,8 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
     result = cl_eval(c_string_to_object("(load \"/Users/sgithens/code/boxer-sunrise/embedded/embedded-utils.lisp\")"));
     ecl_print(result, ECL_T);
     result = cl_eval(c_string_to_object("(load \"/Users/sgithens/code/boxer-sunrise/embedded/music-prims.lisp\")"));
+    ecl_print(result, ECL_T);
+    result = cl_eval(c_string_to_object("(load \"/Users/sgithens/code/boxer-sunrise/embedded/video-prims.lisp\")"));
     ecl_print(result, ECL_T);
 #endif
 

@@ -1,5 +1,6 @@
 @tool
-extends Control
+extends VideoStreamPlayer
+# extends Control
 
 signal done_drawing
 
@@ -216,3 +217,37 @@ var shownp = true:
 
 func push_graphics_command(opcode, arg1, arg2, arg3, arg4, arg5):
     append_draw_command([opcode, arg1, arg2, arg3, arg4, arg5])
+
+###
+### Video Commands
+###
+
+func boxer_open_video(video_path):
+    stream = load(video_path)
+    $/root/Main.handle_boxer_func_2("SET-VIDEO-LENGTH", boxer_turtle, get_stream_length())
+    %VideoPositionTimer.start()
+    play()
+
+func boxer_stop_video():
+    stop()
+    %VideoPositionTimer.stop()
+
+func boxer_video_speed(video_speed):
+    speed_scale = video_speed
+
+func boxer_loop_video():
+    loop = true
+    play()
+
+func boxer_pause():
+    paused = !paused
+    if paused:
+        %VideoPositionTimer.stop()
+    else:
+        %VideoPositionTimer.start()
+
+func boxer_seek(pos):
+    stream_position = pos
+
+func _on_video_position_timer_timeout() -> void:
+    $/root/Main.handle_boxer_func_2("SET-VIDEO-POSITION", boxer_turtle, stream_position)

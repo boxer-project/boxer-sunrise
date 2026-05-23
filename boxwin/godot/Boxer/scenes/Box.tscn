@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://7nrew4abjpqi" path="res://scenes/cha.tscn" id="3_atdk8"]
 [ext_resource type="Script" path="res://scripts/lower_right_corner.gd" id="3_bqn3j"]
 [ext_resource type="StyleBox" uid="uid://b52vdxkhfydle" path="res://themes/data_box_stylebox.tres" id="3_telwu"]
-[ext_resource type="Script" path="res://scripts/turtle.gd" id="4_c8a2c"]
+[ext_resource type="Script" uid="uid://b0ij7f1alb4w6" path="res://scripts/turtle.gd" id="4_c8a2c"]
 [ext_resource type="StyleBox" uid="uid://cebglqqecg4iv" path="res://themes/doit_box_stylebox.tres" id="4_o41fb"]
 [ext_resource type="VideoStream" uid="uid://c4c04u4iixdox" path="res://media/butterfly.ogv" id="5_ry43h"]
 
@@ -71,6 +71,7 @@ theme_override_styles/panel = ExtResource("3_telwu")
 
 [node name="BoxPanel" type="PanelContainer" parent="BoxInternals/OuterBorderPanel"]
 unique_name_in_owner = true
+clip_contents = true
 layout_mode = 2
 mouse_filter = 1
 theme_override_styles/panel = SubResource("StyleBoxFlat_bqn3j")
@@ -110,7 +111,7 @@ size_flags_horizontal = 0
 size_flags_vertical = 0
 flip_v = true
 
-[node name="TurtleGraphics" type="Control" parent="BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer"]
+[node name="TurtleGraphics" type="VideoStreamPlayer" parent="BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -123,7 +124,6 @@ unique_name_in_owner = true
 visible = false
 layout_mode = 2
 stream = ExtResource("5_ry43h")
-autoplay = true
 paused = true
 loop = true
 
