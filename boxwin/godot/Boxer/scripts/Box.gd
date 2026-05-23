@@ -251,7 +251,7 @@ func _ready() -> void:
         %NameRow.boxer_row = queued_name_row_boxerref
         queued_name_row_boxerref = null
 
-    $/root/Main.handle_boxer_func_1("GODOT-INIT-GRAPHICS-SHEET", boxer_box)
+    $/root/Main.handle_boxer_func("GODOT-INIT-GRAPHICS-SHEET", boxer_box)
 
 ## Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:

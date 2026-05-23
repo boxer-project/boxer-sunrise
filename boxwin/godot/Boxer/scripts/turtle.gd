@@ -224,7 +224,7 @@ func push_graphics_command(opcode, arg1, arg2, arg3, arg4, arg5):
 
 func boxer_open_video(video_path):
     stream = load(video_path)
-    $/root/Main.handle_boxer_func_2("SET-VIDEO-LENGTH", boxer_turtle, get_stream_length())
+    $/root/Main.handle_boxer_func("SET-VIDEO-LENGTH", boxer_turtle, get_stream_length())
     %VideoPositionTimer.start()
     play()
 
@@ -250,4 +250,4 @@ func boxer_seek(pos):
     stream_position = pos
 
 func _on_video_position_timer_timeout() -> void:
-    $/root/Main.handle_boxer_func_2("SET-VIDEO-POSITION", boxer_turtle, stream_position)
+    $/root/Main.handle_boxer_func("SET-VIDEO-POSITION", boxer_turtle, stream_position)
