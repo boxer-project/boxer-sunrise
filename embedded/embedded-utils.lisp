@@ -26,6 +26,10 @@
       (putprop self godot-turtle :gdnode))
     godot-turtle))
 
+(defmethod fetch-godot-obj ((self screen-box))
+  ;; This may need updates for when we fill in ports
+  (fetch-godot-obj (screen-obj-actual-obj self)))
+
 ;;; sgithens Prototyping wrapping box construction and "stuff"
 (defmethod initialize-instance :after ((self box)  &rest init-plist)
   (format t "Just initialized a box! ~A doit: ~A data: ~A~%" self (doit-box? self) (data-box? self)))
@@ -48,6 +52,24 @@
 ;;; Filling in screen-objs
 ;;;
 
+(defun print-screen-obj-tree (&optional (scr-obj (outermost-screen-box)) (depth 0))
+  (cond
+    ((screen-box? scr-obj)
+     (format t "~%~V,,,' A+ Screen-Box: ~A #Screen-rows: ~A"
+       (* 2 depth) "" scr-obj (storage-vector-active-length (screen-rows scr-obj)))
+     (format t "~% What::: ~A ~A" (type-of (screen-rows scr-obj)) (screen-rows scr-obj))
+     (do-vector-contents (inf-scr-obj (screen-rows scr-obj))
+       (print-screen-obj-tree inf-scr-obj (1+ depth))))
+    ((screen-row? scr-obj)
+     (format t "~%~V,,,' A- Screen-Row: ~A"
+       (* 2 depth) "" scr-obj)
+     (do-vector-contents (inf-screen-obj boxer::screen-chas)
+        (when (not (screen-cha? inf-screen-obj))
+          (print-screen-obj-tree inf-screen-obj (1+ depth)))))
+    (t
+     (format t "~%~V,,,' A- Unidentified object: ~A"
+       (* 2 depth) "" scr-obj))))
+
 (defun print-box-tree (&optional (obj *initial-box*) (depth 0))
   (cond
     ((box? obj)
@@ -64,8 +86,6 @@
       (when (box? cha)
         (print-box-tree cha (1+ depth)))))))
 
-;; (defun print-screen-box-tree )
-
 ;; TODO This will need to be adjusted for ports
 (defun fill-in-screen-objs (&optional (obj *initial-box*))
   (cond
@@ -74,7 +94,8 @@
       (allocate-screen-obj-for-use-in row (car (screen-objs obj)))
       (fill-in-screen-objs row))
     (set-display-style (car (screen-objs obj)) (display-style obj))
-    (gdboxer-update-screen-box (fetch-godot-obj obj) (car (screen-objs obj))))
+    (gdboxer-update-screen-box (fetch-godot-obj obj) (car (screen-objs obj))) ;; adjust for ports
+    (putprop (car (screen-objs obj)) (fetch-godot-obj obj) :gdnode)) ;; adjust for ports
    ((row? obj)
     (do-row-chas ((cha obj))
       (when (box? cha)
@@ -155,7 +176,6 @@
     togo))
 
 (defmethod (setf superior-box) :after (sup-box row)
-  (format t "superior-box1.3: ~A ~A name-row?: ~A~%" sup-box row (name-row? row))
   (when sup-box
     (let* ((godot-box (fetch-godot-obj sup-box))
            (godot-row nil))
@@ -180,19 +200,14 @@
          (gdboxer-set-property godot-box "queued_name" (coerce (name sup-box) 'string))
          (gdboxer-set-property godot-box "queued_name_row_boxerref" godot-row))))))
 
-(defmethod (setf previous-row) :after (value row)
-  (format t "previous-row: ~A ~A~%" value row))
-
 (defmethod (setf next-row) :after (value row)
   ;; We're going to implement this for cases where the value is not nil, meaning an
   ;; actual row is getting put in next.
-  (format t "next-row: ~A ~A~%" value row)
   (when value
     (let ((row-no (row-row-no (superior-box row) row))
           (godot-box (fetch-godot-obj (superior-box row)))
           (godot-row (fetch-godot-obj row))
           (godot-value (fetch-godot-obj value)))
-      (format t "   rows no: ~A~%" row-no)
       (when row-no
         (godot-insert-row-at-row-no (superior-box row) godot-box value godot-value (1+ row-no))))))
 
@@ -246,6 +261,12 @@
 ;;; BOXES
 ;;;
 
+;; Full Screening Boxes
+(defmethod set-outermost-screen-box-in-window :after ((window boxer-canvas) new-outermost-screen-box)
+  (format t "~%Wrapping set outermost screen box in window")
+  (godot-call-main "set_outermost_screenbox" (fetch-godot-obj new-outermost-screen-box)))
+
+
 (defmethod display-style-list :before ((self box))
   (setf (display-style-parent (slot-value self 'display-style-list)) self))
 
@@ -269,14 +290,7 @@
           (godot-box (fetch-godot-obj box)))
       (godot-insert-row-at-row-no box godot-box row godot-row 0))))
 
-(defmethod (setf superior-row) :after (value box)
-  (format t "superior-row: ~A ~A~%" value box))
-
-(defmethod (setf name) :after (value box)
-  (format t "name: ~A ~A~%" value box))
-
 (defmethod (setf display-style-list) :after (ds box)
-  (format t "setf display-style-list: ~A ~A~%" ds box)
   (setf (display-style-parent ds) box)
   (godot-update-display-style ds))
 
@@ -284,7 +298,6 @@
                                        &optional (check-closet t))
   "This could either be a brand new row (which doens't have a gdnode) or an existing
    row that just needs to be moved to a different place."
-  (format t "insert-row-at-row-no box: ~A row: ~A row-no: ~A~%" box row row-no )
   (let ((godot-row (fetch-godot-obj row))
         (godot-box (fetch-godot-obj box)))
       (progn
@@ -629,6 +642,7 @@
     ;; This is not very elegent, however the longest graphics command is never more than 6 params
     (godot-call godot-box "push_graphics_command" (nth 0 com-list) (nth 1 com-list) (nth 2 com-list) (nth 3 com-list) (nth 4 com-list) (nth 5 com-list))))
 
+;; still being used hardcoded in sleep primitive...
 (defun repaint-in-eval (&optional force?)
   nil)
 
@@ -705,11 +719,6 @@
                                   &OPTIONAL (WINDOW *BOXER-PANE*))
   '())
 
-(DEFUN OUTERMOST-BOX (&OPTIONAL (WINDOW *BOXER-PANE*))
-  *initial-box*
-      ;;  (SCREEN-OBJ-ACTUAL-OBJ (boxer-window::outermost-screen-box WINDOW))
-       )
-
 ;;;
 ;;; Mouse Commands
 ;;;
@@ -733,30 +742,6 @@
 (defun set-pen-color (color)
   ;; (%set-pen-color color)
   nil)
-
-
-
-;;;
-;;; XREF
-;;;
-(defstruct xref
-  (pathname nil)
-  (icon-cache nil)
-  (mime-type nil)
-  (active-info nil))
-
-(defun set-xref-boxtop-info (box &optional creator ftype)
-  ;; TODO TODO TODO
-)
-
-;;;
-;;; TODO Hack overrides
-;;;
-
-(defun repaint (&optional just-windows?)
-  nil)
-
-(defmethod shrunken? (oof) nil)
 
 (defmethod set-display-style ((self box) new-value)
   ;; sgithens hack, make sure this gets set on new boxes...
