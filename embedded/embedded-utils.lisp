@@ -545,28 +545,6 @@
 
 (defmethod CIRCULAR-PORT? (self &optional ignore) nil)
 
-; Hacking in vector support, TODO, put back in main and recompile it
-(defun make-name-row (list &optional (cached-name nil))
-  (let* ((new-row (make-instance 'name-row :cached-name cached-name))
-         (ca (chas-array new-row))
-         (idx 0)
-         (length (length list)))
-    (dolist (item list)
-      (cond ((numberp item)
-             (fast-string-into-chas-array (format nil "~a" item) ca))
-        ((stringp item)
-         (fast-string-into-chas-array item ca))
-        ((symbolp item)
-         (fast-string-into-chas-array (symbol-name item) ca))
-        ((box? item) (error "You must be losing to put ~A here" item))
-        ((vectorp item)
-         (fast-string-into-chas-array (map 'string #'(lambda (x) x) item) ca))
-        (t (error "Don't know how to make a row out of ~S" item)))
-      (incf& idx)
-      (unless (=& idx length)
-        (fast-chas-array-append-cha ca #\space)))
-    new-row))
-
 (defun setup-standard-colors ()
 ;; (def-redisplay-initialization
   ;; set up some standard colors for sprites
