@@ -100,27 +100,6 @@
         (screen-obj-y-got-clipped? self) nil
         (screen-obj-tick self) -1))
 
-
-;;; temporary hack to debug screen-box allocation problem
-(defvar *currently-allocated-screen-boxes* nil)
-
-(defun debug-sb-alloc (sb)
-  (if (fast-memq sb *currently-allocated-screen-boxes*)
-    (cerror "go ahead" "The screen box, ~S, is ALREADY allocated" sb)
-    (push sb *currently-allocated-screen-boxes*)))
-
-(defun debug-sb-dealloc (sb)
-  (if (fast-memq sb *currently-allocated-screen-boxes*)
-    (setq *currently-allocated-screen-boxes*
-          (fast-delq sb *currently-allocated-screen-boxes*))
-    (cerror
-     "go ahead"
-     "The screen box being deallocated, ~S, does not seem to be in use"
-     sb)))
-
-
-
-
 ;;; MAKE-INSTANCE calls INITIALIZE.
 ;;; ALLOCATE-SCREEN-OBJ-* calls RE-INIT on an old object that it's
 ;;; about to re-use.
@@ -137,7 +116,6 @@
 ;;; screen boxes
 
 (defmethod de-allocate-init ((self screen-box))
-  ;(debug-sb-dealloc self)
   (call-next-method)
   (setf (slot-value self 'superior-screen-box) nil
         (slot-value self 'scroll-to-actual-row) nil
@@ -159,7 +137,6 @@
 ;;; screen rows
 
 (defmethod re-init ((self screen-box) new-actual-obj)
-  ;  (debug-sb-alloc self)
   (call-next-method)
   (setf (slot-value self 'scroll-x-offset) 0
         (slot-value self 'scroll-y-offset) 0)
@@ -353,11 +330,6 @@
   (declare (special screen-objs-deallocation-queue))
   (splice-item-onto-list screen-objs-deallocation-queue screen-obj))
 
-(defun queue-screen-objs-for-deallocation-from (sv start &optional stop)
-  (do-vector-contents (obj sv :start start :stop stop)
-    (unless (screen-cha? obj)
-      (queue-screen-obj-for-deallocation obj))))
-
 (defun screen-obj-offsets (screen-obj)
   (values (screen-obj-x-offset screen-obj)
           (screen-obj-y-offset screen-obj)))
@@ -372,25 +344,6 @@
 (defun screen-obj-size (screen-obj)
   (values (screen-obj-wid screen-obj)
           (screen-obj-hei screen-obj)))
-
-;; sgithens TODO 2024-04-17 this appears unused anywhere
-;; (DEFUN SCREEN-BOXES-AND-WHITESPACE-SIZE (SCREEN-BOXES &AUX(WID 0) (HEI 0))
-;;        (LET ((FIRST-BOX (CAR SCREEN-BOXES))
-;;              (LAST-BOX (CAR (LAST SCREEN-BOXES))))
-;;             (SETQ WID (- (+ (SCREEN-OBJ-X-OFFSET LAST-BOX) (SCREEN-OBJ-WID LAST-BOX))
-;;                          (SCREEN-OBJ-X-OFFSET FIRST-BOX)))
-;;             (DOLIST (SCREEN-BOX SCREEN-BOXES)
-;;                     (SETQ HEI (MAX (SCREEN-OBJ-HEI SCREEN-BOX) HEI)))
-;;             (VALUES WID HEI)))
-
-;; (DEFUN MAP-OVER-SCREEN-OBJ (SCREEN-OBJ FN)
-;;        (FUNCALL FN SCREEN-OBJ)
-;;        (MAP-OVER-SCREEN-OBJS (INFERIORS SCREEN-OBJ) FN))
-
-;; (DEFUN MAP-OVER-SCREEN-OBJS (LIST-OF-SCREEN-OBJS FN)
-;;        (DOLIST (SCREEN-OBJ LIST-OF-SCREEN-OBJS)
-;;                (MAP-OVER-SCREEN-OBJ SCREEN-OBJ FN)))
-
 
 (defun screen-obj-zero-size (screen-obj)
   (setf (screen-obj-wid screen-obj) 0)
@@ -823,24 +776,6 @@
                        (values (+ superior-x-off (slot-value self 'x-offset))
                                (+ superior-y-off (slot-value self 'y-offset)))))
 
-
-
-;; sgithens TODO 2024-04-22 Doesn't appear to be used anywhere...
-;; (DEFMETHOD NEXT-SCREEN-CHA-POSITION ((SELF SCREEN-CHAR-SUBCLASS))
-;;            (MULTIPLE-VALUE-BIND (X Y)
-;;                                 (XY-POSITION SELF)
-;;                                 (VALUES (+ X (SCREEN-OBJ-WID SELF)) Y)))
-
-;; (DEFMETHOD FIRST-SCREEN-CHA-POSITION ((SELF SCREEN-ROW))
-;;            (XY-POSITION SELF))
-
-;; (DEFMETHOD FIRST-SCREEN-CHA-POSITION ((SELF SCREEN-BOX))
-;;            (MULTIPLE-VALUE-BIND (X Y)
-;;                                 (XY-POSITION SELF)
-;;                                 (MULTIPLE-VALUE-BIND (IL IT)
-;;                                                      (box-borders-widths (slot-value self 'box-type) self)
-;;                                                      (VALUES (+ X IL) (+ Y IT)))))
-
 (defun outermost-screen-box-size (&optional (window *boxer-pane*))
   (multiple-value-bind (window-inner-wid window-inner-hei)
                        (viewport-size window)
@@ -1048,13 +983,6 @@
                                     (if (screen-box? so) (slot-value so 'scroll-x-offset) 0))
                                  (+ superior-y-offset (screen-obj-y-offset so)
                                     (if (screen-box? so) (slot-value so 'scroll-y-offset) 0))))))
-
-
-
-(defmethod cha-no->x-coord ((row screen-row) cha-no)
-  (with-summation
-    (do-vector-contents (cha (slot-value row 'screen-chas) :stop cha-no)
-      (sum (screen-object-width cha)))))
 
 ;;; returns the screen obj of box which is within
 (DEFUN INF-CURRENT-SCREEN-BOX (BOX)

@@ -10110,6 +10110,70 @@ Modification History (most recent at the top)
 ;;;; FILE: disply.lisp
 ;;;;
 
+;; sgithens 2026-05-01 I think we can remove these
+;;; temporary hack to debug screen-box allocation problem
+(defvar *currently-allocated-screen-boxes* nil)
+
+(defun debug-sb-alloc (sb)
+  (if (fast-memq sb *currently-allocated-screen-boxes*)
+    (cerror "go ahead" "The screen box, ~S, is ALREADY allocated" sb)
+    (push sb *currently-allocated-screen-boxes*)))
+
+(defun debug-sb-dealloc (sb)
+  (if (fast-memq sb *currently-allocated-screen-boxes*)
+    (setq *currently-allocated-screen-boxes*
+          (fast-delq sb *currently-allocated-screen-boxes*))
+    (cerror
+     "go ahead"
+     "The screen box being deallocated, ~S, does not seem to be in use"
+     sb)))
+
+;; sgithens 2026-05-01 Appears unused
+(defun queue-screen-objs-for-deallocation-from (sv start &optional stop)
+  (do-vector-contents (obj sv :start start :stop stop)
+    (unless (screen-cha? obj)
+      (queue-screen-obj-for-deallocation obj))))
+
+;; sgithens 2026-05-01 No longer used...
+(defmethod cha-no->x-coord ((row screen-row) cha-no)
+  (with-summation
+    (do-vector-contents (cha (slot-value row 'screen-chas) :stop cha-no)
+      (sum (screen-object-width cha)))))
+
+;; sgithens TODO 2024-04-22 Doesn't appear to be used anywhere...
+(DEFMETHOD NEXT-SCREEN-CHA-POSITION ((SELF SCREEN-CHAR-SUBCLASS))
+           (MULTIPLE-VALUE-BIND (X Y)
+                                (XY-POSITION SELF)
+                                (VALUES (+ X (SCREEN-OBJ-WID SELF)) Y)))
+
+(DEFMETHOD FIRST-SCREEN-CHA-POSITION ((SELF SCREEN-ROW))
+           (XY-POSITION SELF))
+
+(DEFMETHOD FIRST-SCREEN-CHA-POSITION ((SELF SCREEN-BOX))
+           (MULTIPLE-VALUE-BIND (X Y)
+                                (XY-POSITION SELF)
+                                (MULTIPLE-VALUE-BIND (IL IT)
+                                                     (box-borders-widths (slot-value self 'box-type) self)
+                                                     (VALUES (+ X IL) (+ Y IT)))))
+
+;; sgithens TODO 2024-04-17 this appears unused anywhere
+(DEFUN SCREEN-BOXES-AND-WHITESPACE-SIZE (SCREEN-BOXES &AUX(WID 0) (HEI 0))
+       (LET ((FIRST-BOX (CAR SCREEN-BOXES))
+             (LAST-BOX (CAR (LAST SCREEN-BOXES))))
+            (SETQ WID (- (+ (SCREEN-OBJ-X-OFFSET LAST-BOX) (SCREEN-OBJ-WID LAST-BOX))
+                         (SCREEN-OBJ-X-OFFSET FIRST-BOX)))
+            (DOLIST (SCREEN-BOX SCREEN-BOXES)
+                    (SETQ HEI (MAX (SCREEN-OBJ-HEI SCREEN-BOX) HEI)))
+            (VALUES WID HEI)))
+
+(DEFUN MAP-OVER-SCREEN-OBJ (SCREEN-OBJ FN)
+       (FUNCALL FN SCREEN-OBJ)
+       (MAP-OVER-SCREEN-OBJS (INFERIORS SCREEN-OBJ) FN))
+
+(DEFUN MAP-OVER-SCREEN-OBJS (LIST-OF-SCREEN-OBJS FN)
+       (DOLIST (SCREEN-OBJ LIST-OF-SCREEN-OBJS)
+               (MAP-OVER-SCREEN-OBJ SCREEN-OBJ FN)))
+
 ;; sgithens TODO 2024-04-22 Doesn't appear to be used anywhere...
 (DEFMETHOD SCREEN-BP ((SELF SCREEN-CHAR-SUBCLASS))
            (LET ((BP (MAKE-BP 'FIXED)))
