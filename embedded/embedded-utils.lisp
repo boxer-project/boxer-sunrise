@@ -2,7 +2,13 @@
 
 (defun link_initial_box_to_node (gdnode gdrow)
   (putprop *initial-box* gdnode :gdnode)
-  (putprop (first-inferior-row *initial-box*) gdrow :gdnode))
+  (putprop (first-inferior-row *initial-box*) gdrow :gdnode)
+
+  (let ((godot-name-row (gdboxer-get-name-row gdnode))
+        (world-name (name *initial-box*)))
+    ;; Currently the initial box name is always a string...
+    (dotimes (cha-no (length world-name))
+      (godot-insert-cha-signal godot-name-row (char world-name cha-no) cha-no))))
 
 (defmethod fetch-godot-obj ((self box))
   (let* ((godot-box (getprop self :gdnode)))
