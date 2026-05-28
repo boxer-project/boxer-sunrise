@@ -8,9 +8,6 @@ extends Node
 @onready var open_dialog: FileDialog = get_node("/root/Main/OpenFileDialog")
 @onready var note_player: Sampler = get_node("/root/Main/NotePlayer")
 
-# Whether to use the Boxer GDExtension or the prototype mode with Godot handling the input
-@export var use_boxer_gdextension = false
-
 # Keep track of our cursor which we move around the node tree
 var cursor
 var outermost_box = null
@@ -50,9 +47,6 @@ func _ready() -> void:
     outermost_box = %World
     get_viewport().size_changed.connect(_root_viewport_size_changed)
     _root_viewport_size_changed()
-
-    if use_boxer_gdextension:
-        print("About to bootstrap THREADED *initial-box*")
 
     lisp_thread = Thread.new()
     var world_node = get_node("TopLevelContainer/OutermostBoxScroll/World")
@@ -252,8 +246,7 @@ func eclboxer_key_input(event: InputEventKey) -> void:
 
 func _unhandled_key_input(event: InputEvent) -> void:
     #print("Main scene input: ", event, " Ctrl: ", event.ctrl_pressed)
-    if use_boxer_gdextension:
-        eclboxer_key_input(event)
+    eclboxer_key_input(event)
 
 func _on_open_file_dialog_file_selected(path: String) -> void:
     print("Opening file: ", path)

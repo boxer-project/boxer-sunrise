@@ -58,7 +58,6 @@ cha_scene = ExtResource("2_tbgi4")
 box_scene = ExtResource("3_tefeu")
 row_scene = ExtResource("4_tipki")
 turtle_scene = ExtResource("5_choun")
-use_boxer_gdextension = true
 
 [node name="OpenFileDialog" type="FileDialog" parent="."]
 unique_name_in_owner = true
