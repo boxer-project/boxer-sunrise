@@ -4,6 +4,8 @@
   (putprop *initial-box* gdnode :gdnode)
   (putprop (first-inferior-row *initial-box*) gdrow :gdnode)
 
+  (gdboxer-set-property gdrow "boxer_row" (first-inferior-row *initial-box*))
+
   (let ((godot-name-row (gdboxer-get-name-row gdnode))
         (world-name (name *initial-box*)))
     ;; Currently the initial box name is always a string...

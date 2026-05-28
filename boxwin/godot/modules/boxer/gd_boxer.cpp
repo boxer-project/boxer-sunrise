@@ -256,6 +256,11 @@ Variant convert_ecl_to_godot (cl_object value) {
     else if (ECL_FOREIGN_DATA_P(value)) {
         return Variant((Object *)ecl_foreign_data_pointer_safe(value));
     }
+    else if (ECL_INSTANCEP(value)) {
+        BoxerLispRef* bref = memnew(BoxerLispRef);
+        bref->boxer_obj = value;
+        return Variant((Object *)bref);
+    }
     // The strings need to come before vector and other sequences, since they are also sequences.
     else if (ECL_BASE_STRING_P(value)) {
         char * name = ecl_base_string_pointer_safe (ecl_null_terminated_base_string(value));
