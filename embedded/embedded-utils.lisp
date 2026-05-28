@@ -30,23 +30,8 @@
   ;; This may need updates for when we fill in ports
   (fetch-godot-obj (screen-obj-actual-obj self)))
 
-;;; sgithens Prototyping wrapping box construction and "stuff"
-(defmethod initialize-instance :after ((self box)  &rest init-plist)
-  (format t "Just initialized a box! ~A doit: ~A data: ~A~%" self (doit-box? self) (data-box? self)))
-
 (defmethod initialize-instance :after ((self row)  &rest init-plist)
   (fetch-godot-obj self))
-
-(defmethod initialize-instance :after ((self name-row)  &rest init-plist)
-  nil ;; (fetch-godot-obj self)
-  )
-
-;;; Cursor and point
-(defmethod (setf bp-row) :after (value bp)
-  (format t "setf bp-row: ~A ~A~%" value bp))
-
-(defmethod (setf bp-cha-no) :after (value bp)
-  (format t "setf bp-cha-no: ~A ~A~%" value bp))
 
 ;;;
 ;;; Filling in screen-objs
@@ -147,7 +132,6 @@
     new-row))
 
 (defmethod set-name :after ((self box) new-name-row)
-  (format t "~%set-name: self: ~A new-name-row: ~A" self new-name-row)
   ;; TODO Occasionally new-name-row is a String, but I think that's literally just for the
   ;; WORLD name-row, but still revisit this.
 
@@ -196,7 +180,6 @@
          (fill-in-godot-row godot-row row)
          (godot-call godot-row "set_superior_box" godot-box))
         ((name-row? row) ;; must be null still, we'll set the special godot property to fill it in later
-         (format t "~% I hope the name is just a string: ~A" (name sup-box))
          (gdboxer-set-property godot-box "queued_name" (coerce (name sup-box) 'string))
          (gdboxer-set-property godot-box "queued_name_row_boxerref" godot-row))))))
 
