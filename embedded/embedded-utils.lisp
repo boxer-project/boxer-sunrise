@@ -549,14 +549,8 @@
 (defvar *next-event* #(0 0 0 0 0 0 0 0 0 0 0 0))
 
 (defun ecl-boxer-command-loop-internal ()
-  ;; initialization
-  ;; This is having some sort of error due to parent rows not being able to be added and such things
-  ;; (setup-standard-colors)
-  ;; (flush-input)
+  (setf boxer-eval::*periodic-eval-action* nil)
   (loop
-    ;; (when *clicked-startup-file*
-    ;;   (queue-event *clicked-startup-file*)
-    ;;   (setf *clicked-startup-file* nil))
     (catch 'boxer::boxer-editor-top-level
       (let ((input (fetch-event-from-queue *next-event*)))
         (cond ((null input)
@@ -564,10 +558,8 @@
               ((equal 0 (aref input 0))
                nil)
               ((equal 1 (aref input 0))
-                (format t "Lisp: Handling keyboard input: ~A,  ~A~%" (aref input 1) (aref input 2))
                 (godot-handle-boxer-input (aref input 1) (aref input 2)))
               ((equal 2 (aref input 0))
-                (format t "Lisp: Handling Mouse input: ~A~%" input)
                 (godot-handle-mouse-input (aref input 1) (aref input 2) (aref input 3) (aref input 4) (aref input 5) (aref input 6)))
               ((equal 3 (aref input 0))
                (apply (find-symbol (aref input 2) "BOXER")
@@ -649,10 +641,11 @@
      (handle-boxer-input :right bits))
     (t
      (handle-boxer-input data bits)))
-  ;; (format t "~%Current Doc: ~%~A~%" (boxer::textify-thing boxer::*initial-box*))
-  (format t "~%Filling in screen objs3")
   (fill-in-screen-objs)
-  (print-box-tree)
+
+  ;; (print-box-tree)
+  ;; (format t "~%Printing screen-objs")
+  ;; (print-screen-obj-tree)
   (godot-update-point-location))
 
 (defun godot-handle-mouse-input (action-code row pos scr-box bits area-code)
@@ -721,18 +714,3 @@
 (defmethod clear-graphics-canvas (obj)
   ;; TODO this needs to be overridden for each implementation
   nil)
-
-;; Traces
-;; (trace boxer-eval::boxer-eval)
-;; (trace boxer-eval::make-error-result)
-;; ;; (trace boxer::bin-load-next-command)
-;; (trace boxer::handle-boxer-mouse-click)
-;; (trace boxer::com-open-box-file)
-
-;; (trace boxer::insert-row-at-row-no)
-;; (trace (setf boxer::next-row))
-;; (trace (setf boxer::first-inferior-row))
-;; (trace boxer::godot-insert-row-at-row-no)
-;; (trace boxer::gdboxer-insert-row-at-row-no)
-;; (trace boxer::kill-box-contents)
-;; (trace boxer::insert-row-after-row)
