@@ -12885,6 +12885,12 @@ Modification History (most recent at top)
 ;;;; FILE: editor.lisp
 ;;;;
 
+;; 2026-06-01 These don't seem to be used anywhere
+(defmethod first-inferior-obj ((self port-box))
+  (let ((target (ports self)))
+    (when (not-null target) (first-inferior-row target))))
+
+
             ;; sgithens TODO 2024-01-19 This old graphics sheet is not being used
             ;; anywhere...
              (let ((old-gss (getf (slot-value self 'plist) 'old-graphics-sheets)))
@@ -17546,6 +17552,60 @@ sprites)))
 ;;;;
 ;;;; FILE: infsup.lisp
 ;;;;
+
+;; 2026-06-01 These don't seem to be used anywhere
+(defmacro fast-chas-array-room (chas)
+  `(length (the simple-vector ,chas)))
+
+(defsubst chas-array-room (chas-array)
+  (fast-chas-array-room (chas-array-chas chas-array)))
+
+(defmethod insert-list-of-chas-at-cha-no ((self row) list-of-chas cha-no)
+  (do* ((remaining-chas list-of-chas (cdr remaining-chas))
+        (CHA (CAR REMAINING-CHAS))
+        (present-cha-no cha-no (1+ present-cha-no)))
+       ((null remaining-chas))
+    (insert-cha-at-cha-no self cha present-cha-no)
+    (unless (cha? CHA)
+      (SET-SUPERIOR-ROW CHA SELF)
+      (insert-self-action cha))))
+
+(defmethod append-list-of-chas ((self row) list-of-chas)
+  (insert-list-of-chas-at-cha-no self list-of-chas
+                                 (chas-array-active-length (chas-array self))))
+
+(defun obj-contains-obj? (outer inner)
+  (do ((inner inner (superior-obj inner)))
+      ((null inner) nil)
+    (cond ((eq inner outer)
+           (return t)))))
+
+(defun nth-superior-box (box n)
+  (do ((i 0 (1+& i))
+       (superior box (superior-box superior)))
+      ((null superior) nil)
+    (and (=& i n) (return superior))))
+
+;; Needs these to keep reDisplay code alive.
+
+(defmethod first-inferior-obj ((self row))
+  (cha-at-cha-no self 0))
+
+(defmethod next-obj ((self box))
+  (let ((superior-row (slot-value self 'superior-row)))
+    (cha-at-cha-no superior-row (+ (cha-cha-no superior-row self) 1))))
+
+(defmethod first-inferior-obj ((box box))
+  (slot-value box 'first-inferior-row))
+
+(defmethod next-obj ((row row))
+  (slot-value row 'next-row))
+
+
+
+
+
+
 
 (defmethod insert-row-before-row ((box box) row before-row
                                   &optional (check-closet t))

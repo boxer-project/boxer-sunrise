@@ -698,10 +698,6 @@ higher level copy operation. ")
   (let ((target (ports self)))
     (when (not-null target) (first-inferior-row target))))
 
-(defmethod first-inferior-obj ((self port-box))
-  (let ((target (ports self)))
-    (when (not-null target) (first-inferior-row target))))
-
 (defmethod row-at-row-no ((self port-box) row-no)
   (let ((target (ports self)))
     (when (not-null target) (row-at-row-no target row-no))))

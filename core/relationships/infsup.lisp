@@ -123,17 +123,11 @@
 (defmethod fast-chas-array-set-cha (chas-arr cha-no new-value)
   (setf (svref& (chas-array-chas chas-arr) cha-no) new-value))
 
-(defmacro fast-chas-array-room (chas)
-  `(length (the simple-vector ,chas)))
-
 (defsubst chas-array-get-cha (chas-array cha-no)
   (fast-chas-array-get-cha (chas-array-chas chas-array) cha-no))
 
 (defsubst chas-array-set-cha (chas-array cha-no new-value)
   (fast-chas-array-set-cha chas-array cha-no new-value))
-
-(defsubst chas-array-room (chas-array)
-  (fast-chas-array-room (chas-array-chas chas-array)))
 
 (defsubst chas-array-assure-room (chas-array required-room)
   (sv-assure-room chas-array required-room))
@@ -586,17 +580,6 @@
          (insert-self-action cha)))
   (MODIFIED SELF))
 
-
-(defmethod insert-list-of-chas-at-cha-no ((self row) list-of-chas cha-no)
-  (do* ((remaining-chas list-of-chas (cdr remaining-chas))
-        (CHA (CAR REMAINING-CHAS))
-        (present-cha-no cha-no (1+ present-cha-no)))
-       ((null remaining-chas))
-    (insert-cha-at-cha-no self cha present-cha-no)
-    (unless (cha? CHA)
-      (SET-SUPERIOR-ROW CHA SELF)
-      (insert-self-action cha))))
-
 (DEFMETHOD DELETE-CHA-AT-CHA-NO ((SELF ROW) CHA-NO)
   (LET ((CHA (CHA-AT-CHA-NO SELF CHA-NO)))
     (CHAS-ARRAY-DELETE-CHA (CHAS-ARRAY SELF) CHA-NO)
@@ -658,11 +641,6 @@
 
 (defmethod append-cha ((self row) cha)
   (insert-cha-at-cha-no self cha (chas-array-active-length (chas-array self))))
-
-(defmethod append-list-of-chas ((self row) list-of-chas)
-  (insert-list-of-chas-at-cha-no self list-of-chas
-                                 (chas-array-active-length (chas-array self))))
-
 
 ;;; Box rows are kept a doubly linked list. The box points to its first row,
 ;;; and each row has pointers to its next and previous rows. The first row in
@@ -943,12 +921,6 @@
              (and box2 (putprop box2 mark-this-pass '
                                 :lowest-common-superior-mark)))))))
 
-(defun obj-contains-obj? (outer inner)
-  (do ((inner inner (superior-obj inner)))
-      ((null inner) nil)
-    (cond ((eq inner outer)
-           (return t)))))
-
 (defun box-contains-box? (outer-box inner-box)
   (do ((inner (superior-box inner-box) (superior-box inner)))
       ((null inner) nil)
@@ -959,13 +931,6 @@
   (do ((i 0 (1+& i))
        (box inner-box (superior-box box)))
       ((or (null box) (eq box outer-box)) i)))
-
-(defun nth-superior-box (box n)
-  (do ((i 0 (1+& i))
-       (superior box (superior-box superior)))
-      ((null superior) nil)
-    (and (=& i n) (return superior))))
-
 
 ;;;;FIND-PATH
 
@@ -1046,23 +1011,6 @@
              (maybe-handle-trigger-in-editor)
              (send-exit-messages destination-box
                                  destination-screen-box)))))
-
-
-;; Needs these to keep reDisplay code alive.
-
-(defmethod first-inferior-obj ((self row))
-  (cha-at-cha-no self 0))
-
-(defmethod next-obj ((self box))
-  (let ((superior-row (slot-value self 'superior-row)))
-    (cha-at-cha-no superior-row (+ (cha-cha-no superior-row self) 1))))
-
-(defmethod first-inferior-obj ((box box))
-  (slot-value box 'first-inferior-row))
-
-(defmethod next-obj ((row row))
-  (slot-value row 'next-row))
-
 
 ;;; New, faster mapping function.
 ;;; Uses DOLIST paradigm instead of MAPC paradigm to eliminate lexical context
