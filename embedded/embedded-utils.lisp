@@ -99,6 +99,25 @@
 ;;;
 ;;; CHAS
 ;;;
+
+(defmethod chas-array-slide-chas-pos :after (chas-array strt-cha-no
+                                  distance old-active-length)
+  (let ((row (chas-array-parent-row chas-array)))
+    (when row
+      (let ((godot-row (fetch-godot-obj row)))
+        (format t "%Embedded: chas-array-slide-chas-pos: start: ~A dist: ~A old-length: ~A"
+          strt-cha-no distance old-active-length)
+        (godot-call godot-row "slide_chas_pos" strt-cha-no distance)
+        ))))
+
+(defmethod chas-array-slide-chas-neg :after (chas-array strt-cha-no
+                                  distance old-active-length)
+  (let ((row (chas-array-parent-row chas-array)))
+    (when row
+      (let ((godot-row (fetch-godot-obj row)))
+        (format t "%Embedded: chas-array-slide-chas-neg: start: ~A dist: ~A old-length: ~A"
+          strt-cha-no distance old-active-length)))))
+
 (defmethod fast-chas-array-set-cha :after (chas-arr cha-no cha)
   (let ((row (chas-array-parent-row chas-arr)))
     (when row
@@ -106,9 +125,12 @@
         (godot-insert-cha-signal godot-row cha cha-no)))))
 
 (DEFMETHOD DELETE-CHA-AT-CHA-NO :after ((SELF ROW) CHA-NO)
-  (let ((row (fetch-godot-obj self)))
-    (when row
-      (godot-call-main "_on_gd_boxer_boxer_delete_cha" row cha-no))))
+  (let ((godot-row (fetch-godot-obj self)))
+    (when godot-row
+      ;; Delete-cha-at-cha-no works by setting a cha, then sliding the size of chas-array
+      ;; Once we implement slide-cha-neg in godot, and array sizing from regular slide chas,
+      ;; this entire defmethod :after may not be necessary anymore
+      (godot-call godot-row "sync_row_size" (length-in-chas self)))))
 
 (defmethod delete-chas-between-cha-nos :after ((self row) strt-cha-no stop-cha-no)
   (let ((row (fetch-godot-obj self)))
@@ -121,10 +143,9 @@
 
 (defun godot-insert-cha-signal (godot-row cha cha-no)
   (when godot-row
-    ;; (format t "lisp insert cha: ~A ~A ~A~%" godot-row cha cha-no)
     (if (cha? cha)
-      (godot-call-main "_on_gd_boxer_boxer_insert_cha" godot-row (char-code cha) cha-no)
-      (godot-call-main "_on_gd_boxer_boxer_insert_cha" godot-row (fetch-godot-obj cha) cha-no))))
+      (godot-call godot-row "set_cha" (char-code cha) cha-no)
+      (godot-call godot-row "set_cha" (fetch-godot-obj cha) cha-no))))
 
 (defun fill-in-godot-row (godot-row row)
   "Fill in the godot-row with the contents of row, assuming nothing has been added to it yet."

@@ -2,6 +2,9 @@ extends Label
 
 signal clicked
 
+func _to_string() -> String:
+    return "Cha: " + self.text
+
 # A bizarre hack to keep our cursor from skipping to the front. For some reason the first time we get the position
 # of this it hasn't been moved to it's correct sibling location yet.
 #

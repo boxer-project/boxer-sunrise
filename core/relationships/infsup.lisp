@@ -153,7 +153,7 @@
            (chas-array-slide-fds chas-array strt-cha-no distance)))
     (chas-array-slide-bps chas-array strt-cha-no distance)))
 
-(defun chas-array-slide-chas-pos (chas-array strt-cha-no
+(defmethod chas-array-slide-chas-pos (chas-array strt-cha-no
                                   distance old-active-length)
   (do ((chas (chas-array-chas chas-array))
        (orig-cha-no (-& old-active-length 1) (-& orig-cha-no 1)))
@@ -162,7 +162,7 @@
                              (+& orig-cha-no distance)
                              (fast-chas-array-get-cha chas orig-cha-no))))
 
-(defun chas-array-slide-chas-neg (chas-array strt-cha-no
+(defmethod chas-array-slide-chas-neg (chas-array strt-cha-no
                                   distance old-active-length)
   (do ((chas (chas-array-chas chas-array))
        (orig-cha-no strt-cha-no (+& orig-cha-no 1)))

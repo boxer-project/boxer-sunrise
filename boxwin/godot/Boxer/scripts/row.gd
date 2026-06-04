@@ -1,11 +1,10 @@
 extends HBoxContainer
 
-# Args: Parent row, cha (self), and position
-signal cha_inserted
-
 var parent_box
 # Reference to the actual boxer row object in common lisp
 var boxer_row
+
+@export var cha_scene: PackedScene
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -19,9 +18,29 @@ func remove_chas(start_index, stop_index) -> void:
     for i in range(stop_index - start_index):
         remove_cha(start_index)
 
-func add_cha(cha, idx: int) -> int:
+func sync_row_size(count: int) -> void:
+    # Some operations in Boxer lisp update the row by setting the size of the
+    # vector, which may be assumed to delete cha's from the end of it.
+    var children = get_children()
+    # TODO check to see that count <= current size
+    for i in range(children.size() - count):
+        var child = children[children.size() - 1 - i]
+        child.queue_free()
+
+func make_cha_scene(ch):
+    var cha = cha_scene.instantiate()
+    cha.text = ch
+    return cha
+
+func set_cha(ch, idx: int) -> int:
+    var cha
+    if typeof(ch) == TYPE_INT:
+        cha = make_cha_scene(String.chr(ch))
+    else:
+        cha = ch
+
+    # This function actually sets the cha, replacing the current cha at this index
     if cha.get_parent():
-        print("Removing cha: ", cha, " from parent")
         var parent_row = cha.get_parent()
         parent_row.remove_child(cha)
 
@@ -34,8 +53,19 @@ func add_cha(cha, idx: int) -> int:
     # Adds a cha (Glyph or Box) to the row's chas
     add_child(cha)
     move_child(cha, idx)
-    cha_inserted.emit(self, cha, idx)
     return idx
+
+###
+###  Fast Cha Array Set and Char Sliding (see infsup.lisp)
+###
+func slide_chas_pos(start, distance):
+    for i in distance:
+        var cha = $/root/Main.make_cha_scene(" ")
+        add_child(cha)
+        move_child(cha, start)
+
+func slide_chas_neg(start, distance):
+    pass
 
 # For C++
 func set_superior_box(box):

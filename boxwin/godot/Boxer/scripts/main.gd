@@ -260,17 +260,6 @@ func _on_open_file_dialog_canceled() -> void:
 #
 # SIGNALS FROM BOXER ENGINE
 #
-func _on_gd_boxer_boxer_insert_cha(row: Node, ch, cha_no: int) -> void:
-    # print("_on_gd_boxer_boxer_insert_cha: ", row, " ", ch)
-    if not row:
-        print("Why is there no row to print: ", ch, " on???")
-        return
-    if typeof(ch) == TYPE_INT:
-        var cha = cha_scene.instantiate()
-        cha.text = String.chr(ch)
-        row.add_cha(cha, cha_no)
-    else:
-        row.add_cha(ch, cha_no)
 
 func _on_gd_boxer_boxer_delete_cha(row: Object, cha_no: int) -> void:
     row.remove_cha(cha_no)
