@@ -69,6 +69,10 @@
      (format t "~%~V,,,' A+ Box: ~A Style: ~A Screen-objs: #~A ~A"
        (* 2 depth) "" (name obj) (display-style-style (display-style-list obj))
        (length (screen-objs obj)) (screen-objs obj))
+     (format t "~%~V,,,' A+      Size: ~A"
+       (* 2 depth) "" (if (fixed-size? obj)
+                        (multiple-value-list (fixed-size obj))
+                        "Dynamic"))
      (do-box-rows ((row obj))
       (print-box-tree row (1+ depth))
      ))
@@ -644,12 +648,10 @@
 (defun godot-update-point-location ()
   "Update the location of point in Godot, using the current Boxer *point*."
   (let ((godot-row (fetch-godot-obj (bp-row *point*))))
-    (format t "~%Update point location: bp-row: ~A godot-obj: ~A" (bp-row *point*) godot-row)
     (when godot-row
       (gdboxer-point-location (fetch-godot-obj (bp-row *point*)) (bp-cha-no *point*)))))
 
 (defun godot-handle-boxer-input (data bits)
-  (format t "~%godot-handle-boxer-input3: ~A bits: ~A~%" data bits)
   (cond
     ((eq data -1)
      (handle-boxer-input :up bits))
