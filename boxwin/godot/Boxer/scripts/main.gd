@@ -49,8 +49,8 @@ func _ready() -> void:
     _root_viewport_size_changed()
 
     lisp_thread = Thread.new()
-    var world_node = get_node("TopLevelContainer/OutermostBoxScroll/World")
-    var first_row_node = get_node("TopLevelContainer/OutermostBoxScroll/World/BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer/RowsBox/Row")
+    var world_node = get_node("%World")
+    var first_row_node = get_node("%World/BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer/RowsBox/Row")
     first_row_node.parent_box = world_node
     lisp_thread.start(_start_lisp.bind($GDBoxer, self, world_node, first_row_node))
 
@@ -138,7 +138,6 @@ func handle_scene_queue():
     boxer_scene_queue_mutex.lock()
     var next = boxer_scene_queue.pop_back()
     while next:
-        print("Applying: ", next[0], " : ", next[1], " : ", next.slice(2, next.size()))
         next[0].callv(next[1], next.slice(2, next.size()))
         next = boxer_scene_queue.pop_back()
     boxer_scene_queue_mutex.unlock()
@@ -290,6 +289,36 @@ func make_row(boxer_row): # -> HBoxContainer:
     var row = row_scene.instantiate()
     row.boxer_row = boxer_row
     return row
+
+func set_outermost_screenbox(box: Control):
+    # The outermost_box is the currently fullscreened box.
+
+    ## 0.5
+    # If %FullscreenedBoxPlaceholder is not null, move the current outermost_box
+    # to it's location, and set it to null.
+
+    ## 1
+    # Unless the new box is %World, find it's parent and index, and move the
+    # %FullscreenedBoxPlaceholder to it's location
+
+    ## 2
+    # Unless the new box is %World, move %World to the %OutermostWaitingArea
+
+    ## 3
+    # Move the new box to the OutermostBoxHolder, and update it's size and display style
+
+    print("It's time to fullscreen this godot box3: ", box)
+    # %World.hide()
+    %World.reparent(%OutermostWaitingArea)
+    # %OutermostBoxHolder.remove_child(%World)
+    box.reparent(%OutermostBoxHolder)
+
+    # Copied from _ready for now
+    box.position = Vector2(0, 0)
+    box.get_node("BoxInternals").custom_minimum_size = ((get_viewport().size - Vector2i(20, 20)) / Global.screen_scale)
+    outermost_box = box
+    # we're going to have to set this back when the box is no longer fullscreened...
+    box.display_style = box.DisplayStyle.NORMAL
 
 func make_turtle(boxer_turtle):
     var turtle = turtle_scene.instantiate()

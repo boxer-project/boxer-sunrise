@@ -59,9 +59,9 @@ enum FlippedBoxType {NONE = 0, GRAPHICS = 1, SPRITE = 2}
 var flipped_box_type = FlippedBoxType.NONE
 
 func update_box_type(value):
-    if value == BoxType.DATA:
+    if value == BoxType.DATA && data_box_stylebox:
         $BoxInternals/OuterBorderPanel.add_theme_stylebox_override("panel", data_box_stylebox)
-    elif value == BoxType.DOIT:
+    elif value == BoxType.DOIT && doit_box_stylebox:
         $BoxInternals/OuterBorderPanel.add_theme_stylebox_override("panel", doit_box_stylebox)
 
 func toggle_to_data():
@@ -146,7 +146,6 @@ var display_style = DisplayStyle.NORMAL:
     get:
         return display_style
     set(value):
-        print("BLAM Set diaplay_style: ", display_style)
         update_display_style(value)
         display_style = value
 
@@ -246,7 +245,7 @@ func _ready() -> void:
         for ch in queued_name:
             var cha = cha_scene.instantiate()
             cha.text = ch
-            %NameRow.add_cha(cha, %NameRow.get_child_count())
+            %NameRow.set_cha(cha, %NameRow.get_child_count())
         queued_name = null
         %NameRow.boxer_row = queued_name_row_boxerref
         queued_name_row_boxerref = null
@@ -260,8 +259,12 @@ func _process(_delta: float) -> void:
     update_display_style(display_style)
     if flipped_box_type == FlippedBoxType.GRAPHICS:
         graphics_mode_p = graphics_mode_p
-    if boxtop_type == BoxtopType.NONE and boxer_box:
-        $/root/Main.handle_boxer_func_1("GODOT-UPDATE-BOXTOP", boxer_box)
+    # if boxtop_type == BoxtopType.NONE and boxer_box:
+    #     $/root/Main.handle_boxer_func("GODOT-UPDATE-BOXTOP", boxer_box)
+    if %NameRow and %NameRow.get_child_count() == 0:
+        %NameRow.hide()
+    else:
+        %NameRow.show()
 
 var moving = false
 var moved = false
@@ -324,8 +327,3 @@ func clear_box(bitmap = true, graphics_list = true):
 
 func add_turtle(turtle):
     %TurtleGraphics.add_child(turtle)
-
-func _on_gui_input(event: InputEvent) -> void:
-    if event is InputEventMouseButton and event.is_pressed():
-        if display_style == DisplayStyle.SHRUNK:
-            com_mouse_expand_box()

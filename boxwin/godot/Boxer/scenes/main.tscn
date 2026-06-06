@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://pdlvpw8s1sse"]
+[gd_scene load_steps=25 format=3 uid="uid://pdlvpw8s1sse"]
 
 [ext_resource type="Script" uid="uid://cy2jvrckapxht" path="res://scripts/main.gd" id="1_jyhfs"]
 [ext_resource type="PackedScene" uid="uid://7nrew4abjpqi" path="res://scenes/cha.tscn" id="2_tbgi4"]
@@ -101,11 +101,22 @@ layout_mode = 2
 size_flags_vertical = 3
 mouse_behavior_recursive = 2
 
-[node name="World" parent="TopLevelContainer/OutermostBoxScroll" instance=ExtResource("3_tefeu")]
+[node name="OutermostBoxHolder" type="Node2D" parent="TopLevelContainer/OutermostBoxScroll"]
 unique_name_in_owner = true
-layout_mode = 2
+
+[node name="World" parent="TopLevelContainer/OutermostBoxScroll/OutermostBoxHolder" instance=ExtResource("3_tefeu")]
+unique_name_in_owner = true
+offset_right = 330.0
+offset_bottom = 40.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
+
+[node name="OutermostWaitingArea" type="Node2D" parent="TopLevelContainer/OutermostBoxScroll"]
+unique_name_in_owner = true
+visible = false
+
+[node name="FullscreenedBoxPlaceHolder" type="Node2D" parent="TopLevelContainer/OutermostBoxScroll"]
+unique_name_in_owner = true
 
 [node name="StatusBarContainer" type="HBoxContainer" parent="TopLevelContainer"]
 unique_name_in_owner = true
@@ -168,7 +179,7 @@ stream = ExtResource("11_ya4ey")
 
 [connection signal="canceled" from="OpenFileDialog" to="." method="_on_open_file_dialog_canceled"]
 [connection signal="file_selected" from="OpenFileDialog" to="." method="_on_open_file_dialog_file_selected"]
-[connection signal="row_inserted" from="TopLevelContainer/OutermostBoxScroll/World" to="Cursor" method="_on_world_row_inserted"]
+[connection signal="row_inserted" from="TopLevelContainer/OutermostBoxScroll/OutermostBoxHolder/World" to="Cursor" method="_on_world_row_inserted"]
 [connection signal="boxer_delete_cha" from="GDBoxer" to="." method="_on_gd_boxer_boxer_delete_cha"]
 [connection signal="boxer_delete_chas_between_cha_nos" from="GDBoxer" to="." method="_on_gd_boxer_boxer_delete_chas_between_cha_nos"]
 [connection signal="boxer_insert_cha" from="GDBoxer" to="." method="_on_gd_boxer_boxer_insert_cha"]

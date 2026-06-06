@@ -19,11 +19,16 @@ config/icon="res://icon.svg"
 [autoload]
 
 Global="*res://scripts/Global.gd"
+NoteValue="*res://addons/SimpleSampler/note_value.gd"
 
 [display]
 
 window/size/viewport_width=1570
 window/size/viewport_height=2100
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/SimpleSampler/plugin.cfg", "res://addons/gut/plugin.cfg")
 
 [file_customization]
 

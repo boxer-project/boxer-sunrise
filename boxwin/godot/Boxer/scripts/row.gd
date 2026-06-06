@@ -60,7 +60,7 @@ func set_cha(ch, idx: int) -> int:
 ###
 func slide_chas_pos(start, distance):
     for i in distance:
-        var cha = $/root/Main.make_cha_scene(" ")
+        var cha = make_cha_scene(" ")
         add_child(cha)
         move_child(cha, start)
 
