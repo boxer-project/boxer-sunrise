@@ -275,7 +275,6 @@
 
 ;; Full Screening Boxes
 (defmethod set-outermost-screen-box-in-window :after ((window boxer-canvas) new-outermost-screen-box)
-  (format t "~%Wrapping set outermost screen box in window")
   (godot-call-main "set_outermost_screenbox" (fetch-godot-obj new-outermost-screen-box)))
 
 
@@ -399,13 +398,13 @@
     ;; background
     (let ((value (graphics-sheet-background sheet)))
       (when value
-        (gdboxer-set-graphics-sheet-background (fetch-godot-obj box) (aref value 1) (aref value 2) (aref value 3) (aref value 4))))
+        (godot-call (fetch-godot-obj box) "set_background" (aref value 1) (aref value 2) (aref value 3) (aref value 4))))
   ))
 
 (defmethod (setf graphics-sheet-background) :after (value sheet)
   (let ((box (graphics-sheet-superior-box sheet)))
     (when box
-      (gdboxer-set-graphics-sheet-background (fetch-godot-obj box) (aref value 1) (aref value 2) (aref value 3) (aref value 4)))))
+      (godot-call (fetch-godot-obj box) "set_background" (aref value 1) (aref value 2) (aref value 3) (aref value 4)))))
 
 (defmethod (setf graphics-info) :after ((sheet graphics-sheet) box)
   (let* ((godot-box (fetch-godot-obj box)))

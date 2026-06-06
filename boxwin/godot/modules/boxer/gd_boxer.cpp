@@ -216,13 +216,6 @@ cl_object lisp_boxer_set_graphics_mode_p(cl_object box, cl_object enabled) {
  * GRAPHICS SHEET BOXES
  */
 
-cl_object lisp_boxer_set_graphics_sheet_background(cl_object box, cl_object red, cl_object green, cl_object blue, cl_object alpha) {
-    Object* godot_box = Variant((Object*) ecl_foreign_data_pointer_safe(box));
-    godot_box->call_deferred("set_background",
-                    ecl_single_float(red), ecl_single_float(green), ecl_single_float(blue), ecl_single_float(alpha));
-    return ECL_NIL;
-}
-
 cl_object lisp_boxer_set_graphics_sheet_draw_dims(cl_object box, cl_object width, cl_object height) {
     Object* godot_box = Variant((Object*) ecl_foreign_data_pointer_safe(box));
     godot_box->set_deferred("draw_wid", (int) ecl_fixnum(width));
@@ -388,9 +381,6 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
     //
     // GRAPHICS SHEET BOXES
     //
-    aux = ecl_make_symbol("GDBOXER-SET-GRAPHICS-SHEET-BACKGROUND", "BOXER");
-    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_set_graphics_sheet_background, 5);
-
     aux = ecl_make_symbol("GDBOXER-SET-GRAPHICS-SHEET-DRAW-DIMS", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_set_graphics_sheet_draw_dims, 3);
 
