@@ -1,0 +1,73 @@
+[gd_scene load_steps=4 format=3 uid="uid://dfbrfeapmxcdq"]
+
+[ext_resource type="Script" uid="uid://dl6nb7w066pf3" path="res://scripts/prototype_turtle_viewport.gd" id="1_75bdi"]
+[ext_resource type="Script" uid="uid://btbt1ojgfvi2w" path="res://scripts/prototype-turtle-viewport-turtle.gd" id="1_kjsn1"]
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_kjsn1"]
+viewport_path = NodePath("SubViewportContainer/SubViewport")
+
+[node name="PrototypeTurtleViewport" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_75bdi")
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
+layout_mode = 0
+offset_left = 364.0
+offset_top = 116.0
+offset_right = 876.0
+offset_bottom = 628.0
+
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+unique_name_in_owner = true
+disable_3d = true
+transparent_bg = true
+handle_input_locally = false
+render_target_update_mode = 4
+
+[node name="Turtle" type="Control" parent="SubViewportContainer/SubViewport"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1474.0
+offset_bottom = 1416.0
+script = ExtResource("1_kjsn1")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 170.0
+offset_top = 454.0
+offset_right = 682.0
+offset_bottom = 966.0
+texture = SubResource("ViewportTexture_kjsn1")
+
+[node name="Captured" type="TextureRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 6.0
+offset_top = 53.0
+offset_right = 46.0
+offset_bottom = 93.0
+
+[node name="SnapButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 190.0
+offset_top = 3.0
+offset_right = 237.0
+offset_bottom = 34.0
+text = "Snap"
+
+[node name="ClearButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 260.0
+offset_top = 1.0
+offset_right = 309.0
+offset_bottom = 32.0
+text = "Clear"
+
+[connection signal="pressed" from="SnapButton" to="." method="_on_snap_button_pressed"]
+[connection signal="pressed" from="ClearButton" to="." method="_on_clear_button_pressed"]
