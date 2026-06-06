@@ -206,7 +206,7 @@
 (defun outermost-screen-box (&optional (window *boxer-pane*))
   (slot-value window 'outermost-screen-box))
 
-(defun set-outermost-screen-box-in-window (window new-outermost-screen-box)
+(defmethod set-outermost-screen-box-in-window ((window boxer-canvas) new-outermost-screen-box)
   (setf (slot-value window 'outermost-screen-box) new-outermost-screen-box))
 
 ;;;
