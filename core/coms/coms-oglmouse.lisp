@@ -629,6 +629,18 @@
 ;; (defvar *warn-about-disabled-commands* t)
 ;; (defvar *only-shrink-wrap-text-boxes* nil)
 
+(defun mouse-box-resize (actual-box new-wid new-hei)
+  "Function to set the new box size and corresponding data structure adjustments after having been
+dragged either with the lispworks with-mouse-tracking or a mouse event from Godot."
+  ;; make sure the mouse ended up in
+  ;; a reasonable place
+  (set-fixed-size actual-box new-wid new-hei)
+  (when (and (data-box? actual-box)
+            (auto-fill? actual-box))
+    ;; don't fill doit boxes !!
+    (com-fill-box actual-box))
+  (modified actual-box))
+
 (defboxer-command com-mouse-resize-box (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "Resize the box with the mouse.  Just clicking unfixes the box size"
   ;; first, if there already is an existing region, flush it
@@ -706,18 +718,11 @@
                                                                                  (progn (set-scroll-to-actual-row screen-box nil)
                                                                                         (set-fixed-size actual-box nil nil))))
                                                                           (t
-                                                                           ;; make sure the mouse ended up in
-                                                                           ;; a reasonable place
-                                                                           (set-fixed-size actual-box
-                                                                                           (max minimum-track-wid
-                                                                                                   (- final-x box-window-x (- pixel-correction)))
-                                                                                           (max minimum-track-hei
-                                                                                                   (- final-y box-window-y (- pixel-correction))))
-                                                                           (when (and (data-box? actual-box)
-                                                                                      (auto-fill? actual-box))
-                                                                             ;; don't fill doit boxes !!
-                                                                             (com-fill-box actual-box))
-                                                                           (modified actual-box))))))))))
+                                                                           (mouse-box-resize actual-box
+                                                                                             (max minimum-track-wid
+                                                                                                  (- final-x box-window-x (- pixel-correction)))
+                                                                                             (max minimum-track-hei
+                                                                                                  (- final-y box-window-y (- pixel-correction)))))))))))))
   boxer-eval::*novalue*)
 
 (defun status-line-size-report (screen-box wid hei)

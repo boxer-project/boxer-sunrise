@@ -87,6 +87,12 @@
 (defun fill-in-screen-objs (&optional (obj *initial-box*))
   (cond
    ((box? obj)
+
+    (if (fixed-size? obj)
+      (multiple-value-bind (wid hei) (fixed-size obj)
+        (godot-call (fetch-godot-obj obj) "set_fixed_box_size" wid hei))
+     (godot-call (fetch-godot-obj obj) "reset_box_size"))
+
     (do-box-rows ((row obj))
       (allocate-screen-obj-for-use-in row (car (screen-objs obj)))
       (fill-in-screen-objs row))
@@ -732,6 +738,10 @@
   (setf (display-style-parent (display-style-list self)) self)
 
   (setf (display-style-style (display-style-list self)) new-value))
+
+;; Needed from repaint...
+(defmethod set-scroll-to-actual-row ((self screen-box) new-value)
+  nil)
 
 (defmethod clear-graphics-canvas (obj)
   ;; TODO this needs to be overridden for each implementation

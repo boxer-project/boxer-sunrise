@@ -266,27 +266,41 @@ func _process(_delta: float) -> void:
     else:
         %NameRow.show()
 
+
+
+func set_fixed_box_size(wid, hei):
+    var scrolled: ScrollContainer = %PanelContainer
+    scrolled.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+    scrolled.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+    # scrolled.size = Vector2(wid, hei)
+    scrolled.custom_minimum_size = Vector2(wid, hei)
+    self.display_style = DisplayStyle.FIXED
+
+func reset_box_size():
+    var scrolled: ScrollContainer = %PanelContainer
+    scrolled.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+    scrolled.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+    # scrolled.reset_size()
+    scrolled.custom_minimum_size = Vector2(0, 0)
+    self.display_style = DisplayStyle.NORMAL
+
 var moving = false
 var moved = false
 
 func _on_lower_right_corner_gui_input(event: InputEvent) -> void:
-    #print("on lower right corner: ", event)
     if event is InputEventMouseButton and event.pressed:
         moving = event.pressed
     elif event is InputEventMouseButton and not event.pressed:
         moving = event.pressed
         if not moved:
-            # single click means to set the box back to fixed size
-            print("Back to normal3...")
-            $BoxInternals.custom_minimum_size = Vector2(0,0)
-            self.display_style = DisplayStyle.NORMAL
+            Global.handle_mouse_input(event, %RowsBox.get_child(0), 0, Global.BoxArea.BOTTOM_RIGHT)
+        else:
+            $/root/Main.handle_boxer_func("MOUSE-BOX-RESIZE", boxer_box, %PanelContainer.size.x, %PanelContainer.size.y)
         moved = false
     elif event is InputEventMouseMotion and moving:
-        #print("Relative change: ", event.relative.x, " , ", event.relative.y)
         moved = true
-        $BoxInternals.custom_minimum_size = Vector2($BoxInternals.size.x + event.relative.x,
-            $BoxInternals.size.y + event.relative.y)
-        self.display_style = DisplayStyle.FIXED
+        %PanelContainer.custom_minimum_size = Vector2(%PanelContainer.size.x + event.relative.x,
+            %PanelContainer.size.y + event.relative.y)
 
 func _on_upper_left_corner_gui_input(event: InputEvent) -> void:
     if event is InputEventMouseButton and event.pressed:
