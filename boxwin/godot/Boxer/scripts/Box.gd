@@ -298,6 +298,8 @@ func _on_lower_right_corner_gui_input(event: InputEvent) -> void:
             $/root/Main.handle_boxer_func("MOUSE-BOX-RESIZE", boxer_box, %PanelContainer.size.x, %PanelContainer.size.y)
         moved = false
     elif event is InputEventMouseMotion and moving:
+        %PanelContainer.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+        %PanelContainer.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
         moved = true
         %PanelContainer.custom_minimum_size = Vector2(%PanelContainer.size.x + event.relative.x,
             %PanelContainer.size.y + event.relative.y)
