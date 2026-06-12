@@ -268,8 +268,6 @@
     (let ((i-box (interval-box region)))
       (unless (null i-box)
         (set-region i-box nil)))
-    (dolist (blinker (interval-blinker-list region))
-      (remove-region-row-blinker blinker))
     (setq *region-list* (fast-delq region *region-list*))
     (when (eq region *region-being-defined*)
       (setq *region-being-defined* nil))
@@ -435,13 +433,3 @@
                         (insert-row-after-row box rr
                                               previous-added-row)
                         (setq previous-added-row rr))))))))))
-
-
-
-(defun remove-region-row-blinker (row-blinker)
-  ;; sgithens TODO 2023-03-23 There may be something useful to do here, such
-  ;; as removing it from the actual region list... investigate further.
-  ; (setf (region-row-blinker-visibility row-blinker) nil)
-  ; (setf (bw::sheet-blinker-list *boxer-pane*)
-  ;       (fast-delq row-blinker (bw::sheet-blinker-list *boxer-pane*)))
-)

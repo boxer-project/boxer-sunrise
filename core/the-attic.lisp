@@ -27847,6 +27847,16 @@ Modification History (most recent at top)
 ;;;; FILE: region.lisp
 ;;;;
 
+
+
+(defun remove-region-row-blinker (row-blinker)
+  ;; sgithens TODO 2023-03-23 There may be something useful to do here, such
+  ;; as removing it from the actual region list... investigate further.
+  ; (setf (region-row-blinker-visibility row-blinker) nil)
+  ; (setf (bw::sheet-blinker-list *boxer-pane*)
+  ;       (fast-delq row-blinker (bw::sheet-blinker-list *boxer-pane*)))
+)
+
 (defun allocate-region-row-blinker (screen-row)
   (let ((new-blinker (make-region-row-blinker)))
     (setf (region-row-blinker-uid new-blinker) screen-row)
