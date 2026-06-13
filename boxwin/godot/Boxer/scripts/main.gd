@@ -326,6 +326,26 @@ func make_turtle(boxer_turtle):
     turtle.append_draw_command([63, 0, 0, 10])
     return turtle
 
+###
+### Highlighting
+###
+
+func highlight_row(row: HBoxContainer, start: int, end: int):
+    if start == 0 and end == 0: # We are before the first character of the row
+        return
+    var panel = PanelContainer.new()
+    var style = StyleBoxFlat.new()
+    var start_child = row.get_child(start)
+    var end_child = row.get_child(end-1)
+    style.bg_color = Color(0.5, 0.48, 1.0, 0.4)
+    panel.add_theme_stylebox_override("panel", style)
+    panel.size = end_child.global_position + end_child.size - start_child.global_position
+    panel.global_position = start_child.global_position
+    %SelectedRegions.add_child(panel)
+
+func reset_highlights():
+    for highlight in %SelectedRegions.get_children():
+        highlight.queue_free()
 
 
 ###

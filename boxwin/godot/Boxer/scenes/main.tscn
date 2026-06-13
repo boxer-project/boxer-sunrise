@@ -133,10 +133,14 @@ layout_mode = 2
 text = "Zoom 100%"
 
 [node name="Cursor" parent="." instance=ExtResource("4_o6xl0")]
+unique_name_in_owner = true
 offset_left = 8.0
 offset_top = 6.0
 offset_right = 8.0
 offset_bottom = 6.0
+
+[node name="SelectedRegions" type="Node" parent="."]
+unique_name_in_owner = true
 
 [node name="GDBoxer" type="GDBoxer" parent="."]
 

@@ -100,11 +100,44 @@
     (gdboxer-update-screen-box (fetch-godot-obj obj) (car (screen-objs obj))) ;; adjust for ports
     (putprop (car (screen-objs obj)) (fetch-godot-obj obj) :gdnode)) ;; adjust for ports
    ((row? obj)
-    (do-row-chas ((cha obj))
-      (when (box? cha)
-        (when (null (screen-objs cha))
-          (allocate-screen-obj-for-use-in cha (car (screen-objs obj))))
-        (fill-in-screen-objs cha))))))
+    (let ((godot-row (fetch-godot-obj obj))
+          (cha-no 0)
+          (cur-bfd nil)
+          (cur-font nil)
+          (cur-color nil))
+        (do-row-chas ((cha obj))
+          (cond ((box? cha)
+                 (when (null (screen-objs cha))
+                   (allocate-screen-obj-for-use-in cha (car (screen-objs obj))))
+                 (fill-in-screen-objs cha))
+            (t
+             (setf cur-bfd (closest-bfd obj cha-no))
+             (setf cur-font (bfd-font-no cur-bfd)
+                   cur-color (bfd-color cur-bfd))
+
+             (godot-call godot-row "set_cha_size" cha-no (font-size cur-font))
+             (godot-call godot-row "set_cha_color" cha-no (aref cur-color 1) (aref cur-color 2) (aref cur-color 3) (aref cur-color 4))))
+
+          (incf cha-no)))))
+
+    ;; Selected Region Highlighting
+    ;; TODO make *region-list* manipulation observable
+    (cond (*region-list*
+           (godot-call-main "reset_highlights")
+           (dolist (region *region-list*)
+            (with-region-top-level-bps (region :start-bp-name start-bp :stop-bp-name  stop-bp)
+              (flet ((first-row? (row) (eq row (bp-row start-bp)))
+                     (last-row?  (row) (eq row (bp-row stop-bp))))
+                (do-region-rows (rr region)
+                  (let ((start-idx 0)
+                        (end-idx (length-in-chas rr)))
+                    (when (first-row? rr)
+                      (setf start-idx (bp-cha-no start-bp)))
+                    (when (last-row? rr)
+                      (setf end-idx (bp-cha-no stop-bp)))
+                    (godot-call-main "highlight_row" (fetch-godot-obj rr) start-idx end-idx)))))))
+     (t
+      (godot-call-main "reset_highlights"))))
 
 ;;;
 ;;; CHAS
@@ -660,13 +693,13 @@
 (defun godot-handle-boxer-input (data bits)
   (cond
     ((eq data -1)
-     (handle-boxer-input :up bits))
+     (handle-boxer-input :up bits t))
     ((eq data -2)
-     (handle-boxer-input :down bits))
+     (handle-boxer-input :down bits t))
     ((eq data -3)
-     (handle-boxer-input :left bits))
+     (handle-boxer-input :left bits t))
     ((eq data -4)
-     (handle-boxer-input :right bits))
+     (handle-boxer-input :right bits t))
     (t
      (handle-boxer-input data bits)))
   (fill-in-screen-objs)

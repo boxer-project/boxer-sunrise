@@ -55,6 +55,15 @@ func set_cha(ch, idx: int) -> int:
     move_child(cha, idx)
     return idx
 
+func set_cha_size(idx: int, font_size: int) -> void:
+    var cha: Label = get_child(idx)
+    cha.add_theme_font_size_override("font_size", font_size)
+
+func set_cha_color(idx: int, red, green, blue, alpha):
+    var cha: Label = get_child(idx)
+    var c = Color(red, green, blue, alpha)
+    cha.add_theme_color_override("font_color", c)
+
 ###
 ###  Fast Cha Array Set and Char Sliding (see infsup.lisp)
 ###
