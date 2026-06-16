@@ -779,3 +779,31 @@
 (defmethod clear-graphics-canvas (obj)
   ;; TODO this needs to be overridden for each implementation
   nil)
+
+;;;
+;;; Overridden Boxer Commands
+;;;
+(defboxer-command com-mouse-boxsize-closet-properties-pop-up (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
+  "Pop up a box attribute menu, typically bound to a mouse-down."
+  (reset-region) (reset-editor-numeric-arg)
+  (let* ((screen-box (bp-screen-box mouse-bp))
+         (edbox (screen-obj-actual-obj screen-box)))
+    (setf *hotspot-mouse-box* edbox
+          *hotspot-mouse-screen-box* screen-box)
+    (format t "~%ECL com-mouse-boxsize-closet-properties-pop-up scr-box: ~A godot-obj: ~A~%" (bp-screen-box mouse-bp) (fetch-godot-obj (bp-screen-box mouse-bp)))
+    (godot-call-main "closet_properties_pop_up")
+    )
+
+  boxer-eval::*novalue*)
+
+(defboxer-command com-mouse-box-types-pop-up (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
+  "Pop up a box attribute menu, usually bound to a mouse-down."
+  (reset-region) (reset-editor-numeric-arg)
+  (let* ((screen-box (bp-screen-box mouse-bp))
+         (edbox (screen-obj-actual-obj screen-box)))
+    (setf *hotspot-mouse-box* edbox
+          *hotspot-mouse-screen-box* screen-box)
+    (godot-call-main "box_types_pop_up"))
+  boxer-eval::*novalue*)
+
+

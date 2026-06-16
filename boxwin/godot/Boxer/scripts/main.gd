@@ -347,6 +347,16 @@ func reset_highlights():
     for highlight in %SelectedRegions.get_children():
         highlight.queue_free()
 
+###
+### Popups
+###
+func closet_properties_pop_up():
+    %ClosetPropertiesPopup.position = get_viewport().get_mouse_position()
+    %ClosetPropertiesPopup.show()
+
+func box_types_pop_up():
+    %BoxTypesPopup.position = get_viewport().get_mouse_position()
+    %BoxTypesPopup.show()
 
 ###
 ### Music / Audio

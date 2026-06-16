@@ -1,0 +1,30 @@
+[gd_scene load_steps=2 format=3 uid="uid://djsgxosaq5u6t"]
+
+[ext_resource type="Script" uid="uid://doax08ne22xm4" path="res://scripts/Closet_Properties_Popup.gd" id="1_bmarm"]
+
+[node name="ClosetPropertiesPopup" type="PopupMenu"]
+oversampling_override = 1.0
+size = Vector2i(140, 174)
+visible = true
+item_count = 7
+item_0/text = "FullScreen"
+item_0/checkable = 2
+item_0/id = 0
+item_1/text = "Normal"
+item_1/checkable = 2
+item_1/id = 1
+item_2/text = "Shrunk"
+item_2/checkable = 2
+item_2/id = 2
+item_3/text = "Supershrunk"
+item_3/checkable = 2
+item_3/id = 3
+item_4/id = 4
+item_4/separator = true
+item_5/text = "Open Closet"
+item_5/id = 5
+item_6/text = "Properties"
+item_6/id = 6
+script = ExtResource("1_bmarm")
+
+[connection signal="id_pressed" from="." to="." method="_on_id_pressed"]
