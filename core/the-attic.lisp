@@ -27865,6 +27865,22 @@ Modification History (most recent at top)
 ;;;; FILE: region.lisp
 ;;;;
 
+;; sgithens 2026-06-13 No longer used...
+(defun set-box (interval new-box)
+  (setf (interval-box interval) new-box))
+
+;; sgithens 2026-06-13 No longer used...
+(defun get-local-region (&optional (bp *point*))
+  (region (bp-box bp)))
+
+;; sgithens 2026-06-13 No longer used...
+(defun install-region (region &optional (bp *point*))
+  (set-box region (bp-box bp))
+  (set-region (bp-box bp) region)
+  (when (eq region *region-being-defined*)
+    (setq *region-being-defined* nil))
+  (when (eq region *following-mouse-region*)
+    (setq *following-mouse-region* nil)))
 
 
 (defun remove-region-row-blinker (row-blinker)

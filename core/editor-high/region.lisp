@@ -228,9 +228,6 @@
             ((box? superior-box) (get-region-check-superiors superior-box))
             (t nil)))))
 
-(defun set-box (interval new-box)
-  (setf (interval-box interval) new-box))
-
 (defmethod set-region ((self box) new-region)
   (setf (region self) new-region)
   (modified self))
@@ -244,17 +241,6 @@
   (let ((box (point-box)))
     (unless (null box)
       (get-region-check-superiors box))))
-
-(defun get-local-region (&optional (bp *point*))
-  (region (bp-box bp)))
-
-(defun install-region (region &optional (bp *point*))
-  (set-box region (bp-box bp))
-  (set-region (bp-box bp) region)
-  (when (eq region *region-being-defined*)
-    (setq *region-being-defined* nil))
-  (when (eq region *following-mouse-region*)
-    (setq *following-mouse-region* nil)))
 
 
 
