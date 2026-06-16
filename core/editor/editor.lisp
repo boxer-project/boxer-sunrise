@@ -1133,23 +1133,6 @@ points to the Box which contains the lower BP,then the superior BP is returned"
   (set-bp-row bp new-row)
   (set-bp-cha-no bp new-cha-no))
 
-;(DEFUN BP-COMPUTE-NEW-SCREEN-BOX 'IGNORE)
-
-(DEFUN BP-COMPUTE-NEW-SCREEN-BOX-OUT (OLD-BOX NEW-BOX OLD-SCREEN-BOX)
-       (LET ((LEVEL (LEVEL-OF-SUPERIORITY NEW-BOX OLD-BOX))
-             (NEW-SCREEN-BOX OLD-SCREEN-BOX))
-            (DOTIMES (I LEVEL)
-                     (SETQ NEW-SCREEN-BOX (SCREEN-BOX NEW-SCREEN-BOX)))
-            NEW-SCREEN-BOX))
-
-(DEFUN BP-COMPUTE-NEW-SCREEN-BOX-IN (OLD-BOX NEW-BOX OLD-SCREEN-BOX)
-       (COND ((EQ NEW-BOX OLD-BOX) OLD-SCREEN-BOX)
-             (T
-              (ALLOCATE-SCREEN-OBJ-FOR-USE-IN
-               NEW-BOX
-               (BP-COMPUTE-NEW-SCREEN-BOX-IN
-                OLD-BOX (SUPERIOR-BOX NEW-BOX) OLD-SCREEN-BOX)))))
-
 (DEFUN VISIBLE-SCREEN-OBJ-OF-INFERIOR-ACTUAL-OBJ (INFERIOR-ACTUAL-OBJ
                                                   SUPERIOR-SCREEN-OBJ)
        (CAR (MEMBER SUPERIOR-SCREEN-OBJ (DISPLAYED-SCREEN-OBJS INFERIOR-ACTUAL-OBJ)
