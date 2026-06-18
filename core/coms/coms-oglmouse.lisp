@@ -214,13 +214,14 @@
         (t
          (move-point-1 new-row new-cha-no mouse-screen-box))))
       )
+  #+lispworks
   (when (not (shrunken? (bp-screen-box mouse-bp)))
     ;; now go about dragging a region defined by *point* and the mouse-bp
     ;; unless the user is no longer holding the mouse button down
     ;; now track the mouse
     (let ((x (bw::boxer-pane-mouse-x))
           (y (bw::boxer-pane-mouse-y)))
-    #+lispworks (multiple-value-bind (original-screen-row original-x)
+                (multiple-value-bind (original-screen-row original-x)
                                      (mouse-position-screen-row-values x y)
                          (let ((original-screen-box (screen-box original-screen-row)))
                            ;; should this be (bp-screen-box mouse-bp) ?

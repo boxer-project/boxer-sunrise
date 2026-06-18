@@ -274,7 +274,7 @@ func set_fixed_box_size(wid, hei):
     scrolled.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
     # scrolled.size = Vector2(wid, hei)
     scrolled.custom_minimum_size = Vector2(wid, hei)
-    self.display_style = DisplayStyle.FIXED
+    # self.display_style = DisplayStyle.FIXED
 
 func reset_box_size():
     var scrolled: ScrollContainer = %PanelContainer
@@ -282,7 +282,7 @@ func reset_box_size():
     scrolled.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
     # scrolled.reset_size()
     scrolled.custom_minimum_size = Vector2(0, 0)
-    self.display_style = DisplayStyle.NORMAL
+    # self.display_style = DisplayStyle.NORMAL
 
 var moving = false
 var moved = false
@@ -305,30 +305,27 @@ func _on_lower_right_corner_gui_input(event: InputEvent) -> void:
             %PanelContainer.size.y + event.relative.y)
 
 func _on_upper_left_corner_gui_input(event: InputEvent) -> void:
-    if event is InputEventMouseButton and event.pressed:
+    if event is InputEventMouseButton:
         Global.handle_mouse_input(event, %RowsBox.get_child(0), 0, Global.BoxArea.TOP_LEFT)
 
 func _on_super_shrunk_panel_gui_input(event: InputEvent) -> void:
-    if event is InputEventMouseButton and event.pressed:
+    if event is InputEventMouseButton:
         Global.handle_mouse_input(event, %RowsBox.get_child(0), 0, Global.BoxArea.INSIDE)
 
 func _on_shrunk_box_gui_input(event: InputEvent) -> void:
-    if event is InputEventMouseButton and event.pressed:
+    if event is InputEventMouseButton:
         Global.handle_mouse_input(event, %RowsBox.get_child(0), 0, Global.BoxArea.INSIDE)
 
 func _on_upper_right_corner_gui_input(event: InputEvent) -> void:
-    if event is InputEventMouseButton and event.pressed:
+    if event is InputEventMouseButton:
         Global.handle_mouse_input(event, %RowsBox.get_child(0), 0, Global.BoxArea.TOP_RIGHT)
 
 func _on_lower_left_corner_gui_input(event: InputEvent) -> void:
-    if event is InputEventMouseButton and event.pressed:
-        print("Flip to graphics x: ", self.global_position.x, " y: ", self.global_position.y,
-          " w: ", self.size.x, " h: ", self.size.y)
-        graphics_mode_p = !graphics_mode_p
-
+    if event is InputEventMouseButton:
+        Global.handle_mouse_input(event, %RowsBox.get_child(0), 0, Global.BoxArea.BOTTOM_LEFT)
 
 func _on_type_toggle_gui_input(event: InputEvent) -> void:
-    if event is InputEventMouseButton and event.pressed:
+    if event is InputEventMouseButton:
         Global.handle_mouse_input(event, %RowsBox.get_child(0), 0, Global.BoxArea.TYPE)
 
 func push_graphics_command(opcode, arg1, arg2, arg3, arg4, arg5):

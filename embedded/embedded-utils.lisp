@@ -709,6 +709,43 @@
   ;; (print-screen-obj-tree)
   (godot-update-point-location))
 
+(defun mouse-update-selected-region (row pos scr-box)
+  "Pop up a box attribute menu, usually bound to a mouse-down."
+    (let* ((mark-bp *point*)
+           (mouse-bp (MAKE-INITIALIZED-BP :fixed row pos))
+           (mark-row (bp-row mark-bp))
+           (mouse-row (bp-row mouse-bp))
+           (mark-cha-no (bp-cha-no mark-bp))
+           (mouse-cha-no (bp-cha-no mouse-bp)))
+      (setf (bp-screen-box mouse-bp) scr-box)
+      (setf *region-being-defined*
+        (if (or (row-> mark-row mouse-row)
+                (and (eq mark-row mouse-row)
+                    (> mark-cha-no mouse-cha-no)))
+          (make-editor-region mouse-bp mark-bp)
+          (make-editor-region mark-bp mouse-bp))))
+    (setf *region-list* nil)
+    (push *region-being-defined* *region-list*)
+    (cond (*region-list*
+           (godot-call-main "reset_highlights")
+           (dolist (region *region-list*)
+            (with-region-top-level-bps (region :start-bp-name start-bp :stop-bp-name  stop-bp)
+              (flet ((first-row? (row) (eq row (bp-row start-bp)))
+                     (last-row?  (row) (eq row (bp-row stop-bp))))
+                (do-region-rows (rr region)
+                  (let ((start-idx 0)
+                        (end-idx (length-in-chas rr)))
+                    (when (first-row? rr)
+                      (setf start-idx (bp-cha-no start-bp)))
+                    (when (last-row? rr)
+                      (setf end-idx (bp-cha-no stop-bp)))
+                    (godot-call-main "highlight_row" (fetch-godot-obj rr) start-idx end-idx)))))))
+     (t
+      (godot-call-main "reset_highlights")))
+
+    (format t "~%highlighted region: ~A~%" *region-list*)
+  boxer-eval::*novalue*)
+
 (defun godot-handle-mouse-input (action-code row pos scr-box bits area-code)
   ;; Action encoding
   ;; Action is: 0 - press/MOUSE-DOWN 1 - click/MOUSE-CLICK 2 - release/MOUSE-UP 3 - double click/ MOUSE-DOUBLE-CLICK

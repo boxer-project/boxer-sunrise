@@ -1,4 +1,5 @@
 extends Label
+class_name Cha
 
 func _to_string() -> String:
     return "Cha: " + self.text
@@ -19,7 +20,6 @@ func _to_string() -> String:
 var skip_position = true
 
 func _on_gui_input(event: InputEvent) -> void:
-    if event is InputEventMouseButton and event.is_pressed():
-        var pos = get_index()
-        print("Cha clicked2: ", self, " parent: ", self.get_parent().boxer_row, " pos: ", pos)
-        Global.handle_mouse_input(event, self.get_parent(), pos + 1, Global.BoxArea.INSIDE)
+    var pos = get_index()
+    print("Cha clicked2: ", self, " parent: ", self.get_parent().boxer_row, " pos: ", pos)
+    Global.handle_mouse_input(event, self.get_parent(), pos + 1, Global.BoxArea.INSIDE)
