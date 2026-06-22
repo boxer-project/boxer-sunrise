@@ -229,6 +229,8 @@ func eclboxer_key_input(event: InputEventKey) -> void:
             handle_character_input(-4, bits)
         elif event.keycode == KEY_ENTER:
             handle_character_input(13, bits)
+        elif event.keycode == KEY_TAB:
+            handle_character_input(9, bits)
         # TODO hack for testing turtles
         elif event.keycode == KEY_T and bits == 4:
             handle_character_input(116, bits)
