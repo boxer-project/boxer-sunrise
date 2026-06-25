@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://dxo1mc5mvgcgt" path="res://scripts/Box.gd" id="1_g2tbl"]
 [ext_resource type="PackedScene" uid="uid://bqodvk5rb2nb4" path="res://scenes/row.tscn" id="2_oq5cr"]
 [ext_resource type="PackedScene" uid="uid://7nrew4abjpqi" path="res://scenes/cha.tscn" id="3_atdk8"]
-[ext_resource type="Script" path="res://scripts/lower_right_corner.gd" id="3_bqn3j"]
+[ext_resource type="Script" uid="uid://cdsnr3b22x5qh" path="res://scripts/lower_right_corner.gd" id="3_bqn3j"]
 [ext_resource type="StyleBox" uid="uid://b52vdxkhfydle" path="res://themes/data_box_stylebox.tres" id="3_telwu"]
 [ext_resource type="Script" uid="uid://b0ij7f1alb4w6" path="res://scripts/turtle.gd" id="4_c8a2c"]
 [ext_resource type="StyleBox" uid="uid://cebglqqecg4iv" path="res://themes/doit_box_stylebox.tres" id="4_o41fb"]
@@ -97,6 +97,8 @@ unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 
 [node name="GraphicsSheetBackground" type="ColorRect" parent="BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer"]
 unique_name_in_owner = true
@@ -148,6 +150,7 @@ grow_horizontal = 0
 grow_vertical = 0
 mouse_default_cursor_shape = 2
 script = ExtResource("3_bqn3j")
+box_area = 5
 
 [node name="UpperRightCorner" type="Panel" parent="BoxInternals/OuterBorderPanel/Control"]
 layout_mode = 1
@@ -161,6 +164,7 @@ offset_bottom = 10.0
 grow_horizontal = 0
 mouse_default_cursor_shape = 2
 script = ExtResource("3_bqn3j")
+box_area = 7
 
 [node name="UpperLeftCorner" type="Panel" parent="BoxInternals/OuterBorderPanel/Control"]
 layout_mode = 1
@@ -170,6 +174,7 @@ offset_right = 10.0
 offset_bottom = 10.0
 mouse_default_cursor_shape = 2
 script = ExtResource("3_bqn3j")
+box_area = 8
 
 [node name="LowerLeftCorner" type="Panel" parent="BoxInternals/OuterBorderPanel/Control"]
 layout_mode = 1
@@ -183,6 +188,7 @@ offset_bottom = 10.0
 grow_vertical = 0
 mouse_default_cursor_shape = 2
 script = ExtResource("3_bqn3j")
+box_area = 6
 
 [node name="TypeToggle" type="Panel" parent="BoxInternals/OuterBorderPanel/Control"]
 layout_mode = 1
@@ -196,6 +202,7 @@ offset_bottom = 10.0
 grow_vertical = 0
 mouse_default_cursor_shape = 2
 script = ExtResource("3_bqn3j")
+box_area = 4
 
 [node name="SuperShrunkBox" type="PanelContainer" parent="."]
 visible = false

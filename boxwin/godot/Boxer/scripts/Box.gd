@@ -1,5 +1,6 @@
 @icon("res://media/icons/Box_scene_icon.svg")
 extends BoxContainer
+class_name Box
 
 @onready var data_box_stylebox = ResourceLoader.load("res://themes/data_box_stylebox.tres")
 @onready var doit_box_stylebox = ResourceLoader.load("res://themes/doit_box_stylebox.tres")
@@ -18,6 +19,9 @@ signal flipped(box)
 var rows = []
 var first_inferior_row
 var current_row = null
+
+func get_first_row():
+    return %RowsBox.get_child(0)
 
 # Reference to the actual Boxer box object in common lisp
 # Variables prefixed with boxer_* will refer to BoxerLispRef instance pointers

@@ -253,7 +253,7 @@
          (godot-call godot-row "set_superior_box" godot-box))
         ((name-row? row) ;; must be null still, we'll set the special godot property to fill it in later
          (gdboxer-set-property godot-box "queued_name" (coerce (name sup-box) 'string))
-         (gdboxer-set-property godot-box "queued_name_row_boxerref" godot-row))))))
+         (gdboxer-set-property godot-box "queued_name_row_boxerref" row))))))
 
 (defmethod (setf next-row) :after (value row)
   ;; We're going to implement this for cases where the value is not nil, meaning an

@@ -66,6 +66,7 @@ unique_name_in_owner = true
 title = "Open a File"
 ok_button_text = "Open"
 file_mode = 0
+display_mode = 1
 access = 2
 use_native_dialog = true
 
@@ -189,6 +190,7 @@ visible = false
 
 [node name="BoxTypesPopup" parent="." instance=ExtResource("18_dp3eg")]
 unique_name_in_owner = true
+visible = false
 
 [connection signal="canceled" from="OpenFileDialog" to="." method="_on_open_file_dialog_canceled"]
 [connection signal="file_selected" from="OpenFileDialog" to="." method="_on_open_file_dialog_file_selected"]
