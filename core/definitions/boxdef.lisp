@@ -440,19 +440,24 @@ Modification History (most recent at top)
           (bp-cha-no (interval-stop-bp interval))))
 
 (defclass graphics-sheet ()
-  ((draw-wid :initform *default-graphics-sheet-width* :accessor graphics-sheet-draw-wid :initarg :draw-wid)   ;; Width of graphics sheet in pixels
-   (draw-hei :initform *default-graphics-sheet-height* :accessor graphics-sheet-draw-hei :initarg :draw-hei)  ;; Height of graphics sheet in pixels
+  ((draw-wid :initform *default-graphics-sheet-width* :accessor graphics-sheet-draw-wid :initarg :draw-wid
+    :documentation "Width of graphics sheet in pixels")
+   (draw-hei :initform *default-graphics-sheet-height* :accessor graphics-sheet-draw-hei :initarg :draw-hei
+    :documentation "Height of graphics sheet in pixels")
    (screen-objs :initform nil :accessor graphics-sheet-screen-objs :initarg :screen-objs)
-   (bit-array :initform nil :accessor graphics-sheet-bit-array :initarg :bit-array)                             ;; An ogl-pixmap that acts as the background
+   (bit-array :initform nil :accessor graphics-sheet-bit-array :initarg :bit-array
+    :documentation "An ogl-pixmap that acts as the background")
    (object-list :initform nil :accessor graphics-sheet-object-list :initarg :object-list
     :documentation "A list of turtle sprites (graphics-objects). The order determines the z-order in which they
      are drawn in order. So the last object of the list will be on top visually (ie. drawn last).")
    (superior-box :initform nil :accessor graphics-sheet-superior-box :initarg :superior-box
     :documentation "The graphics box with this graphics-sheet in it's graphics-info slot.")
-   (draw-mode :initform ':wrap :accessor graphics-sheet-draw-mode :initarg :draw-mode)                          ;; Either ':wrap or ':clip for turtle drawing around edges
-   (graphics-list :initform nil :accessor graphics-sheet-graphics-list :initarg :graphics-list)                         ;; A graphics-command-list struct with the drawn turtle graphics commands
-   (background :initform nil :accessor graphics-sheet-background :initarg :background)                            ;; A background color that is used in lieu of the pixmap bit-array member
-  ))
+   (draw-mode :initform ':wrap :accessor graphics-sheet-draw-mode :initarg :draw-mode
+    :documentation "Either ':wrap or ':clip for turtle drawing around edges")
+   (graphics-list :initform nil :accessor graphics-sheet-graphics-list :initarg :graphics-list
+    :documentation "A graphics-command-list struct with the drawn turtle graphics commands")
+   (background :initform nil :accessor graphics-sheet-background :initarg :background
+    :documentation "A background color that is used in lieu of the pixmap bit-array member")))
 
 (defgeneric graphics-sheet? (x) (:method (x) nil) (:method ((x graphics-sheet)) t))
 
