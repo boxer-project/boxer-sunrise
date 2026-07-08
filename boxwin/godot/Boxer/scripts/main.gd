@@ -11,6 +11,8 @@ extends Node
 # Keep track of our cursor which we move around the node tree
 var cursor
 var outermost_box = null
+var outermost_box_prev_row: Row = null
+var outermost_box_prev_pos: int = 0
 
 var canvas_zoom = 1:
     get:
@@ -294,33 +296,41 @@ func make_row(boxer_row): # -> HBoxContainer:
 
 func set_outermost_screenbox(box: Control):
     # The outermost_box is the currently fullscreened box.
+    # TODO TODO TODO Eventually the position of the previous outermost box will need to be passed in
+    # from lisp in case it changed while this box was full screened.
 
-    ## 0.5
-    # If %FullscreenedBoxPlaceholder is not null, move the current outermost_box
-    # to it's location, and set it to null.
+    var prev_outermost_box: Box = null
+    ###
+    ### Replace the previous box
+    ###
+    if outermost_box_prev_row != null and outermost_box != %World:
+        outermost_box.reparent(outermost_box_prev_row)
+        outermost_box_prev_row.move_child(outermost_box, outermost_box_prev_pos)
+        prev_outermost_box = outermost_box
 
-    ## 1
-    # Unless the new box is %World, find it's parent and index, and move the
-    # %FullscreenedBoxPlaceholder to it's location
-
-    ## 2
-    # Unless the new box is %World, move %World to the %OutermostWaitingArea
-
-    ## 3
-    # Move the new box to the OutermostBoxHolder, and update it's size and display style
-
-    print("It's time to fullscreen this godot box3: ", box)
-    # %World.hide()
-    %World.reparent(%OutermostWaitingArea)
-    # %OutermostBoxHolder.remove_child(%World)
-    box.reparent(%OutermostBoxHolder)
+    ###
+    ### Full screen the new box
+    ###
+    if box == %World:
+        %World.reparent(%OutermostBoxHolder)
+        # outermost_box_prev = null
+        outermost_box_prev_row = null
+        outermost_box_prev_pos = 0
+    else:
+        %World.reparent(%OutermostWaitingArea)
+        outermost_box_prev_row = box.get_parent()
+        outermost_box_prev_pos = box.get_index()
+        box.reparent(%OutermostBoxHolder)
 
     # Copied from _ready for now
     box.position = Vector2(0, 0)
     box.get_node("BoxInternals").custom_minimum_size = ((get_viewport().size - Vector2i(20, 20)) / Global.screen_scale)
     outermost_box = box
-    # we're going to have to set this back when the box is no longer fullscreened...
-    box.display_style = box.DisplayStyle.NORMAL
+
+    if prev_outermost_box:
+        prev_outermost_box.get_node("BoxInternals").custom_minimum_size = Vector2(0, 0)
+        prev_outermost_box.reset_size()
+        prev_outermost_box.reset_box_size()
 
 func make_turtle(boxer_turtle):
     var turtle = turtle_scene.instantiate()

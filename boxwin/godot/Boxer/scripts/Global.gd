@@ -130,7 +130,7 @@ func handle_mouse_input(event: InputEventMouse, row, pos, area = BoxArea.INSIDE)
     elif event is InputEventMouseMotion and cur_pressed != null:
         ##TODO We can't select backwards right now, because the top-most control is the highlighted text, we need
         # to get underneath it to get to the cha, box, or row
-        var control = get_viewport().gui_get_hovered_control()
+        var control = get_boxer_control(get_viewport().gui_get_hovered_control())
         # If this is a cha
         if control is Cha:
             var cha_boxer_row = control.get_parent().boxer_row

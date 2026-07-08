@@ -204,16 +204,35 @@ mouse_default_cursor_shape = 2
 script = ExtResource("3_bqn3j")
 box_area = 4
 
-[node name="SuperShrunkBox" type="PanelContainer" parent="."]
-visible = false
+[node name="Boxtops" type="Control" parent="."]
 layout_mode = 2
+
+[node name="SuperShrunkBox" type="PanelContainer" parent="Boxtops"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_right = 25.0
+offset_bottom = 25.0
 size_flags_horizontal = 0
 size_flags_vertical = 0
 
-[node name="SuperShrunkPanel" type="Panel" parent="SuperShrunkBox"]
+[node name="SuperShrunkPanel" type="Panel" parent="Boxtops/SuperShrunkBox"]
 custom_minimum_size = Vector2(25, 25)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_telwu")
+
+[node name="NameOnlyBoxtop" type="PanelContainer" parent="Boxtops"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_styles/panel = ExtResource("4_o41fb")
+
+[node name="name" type="Label" parent="Boxtops/NameOnlyBoxtop"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "This is the Box Name"
 
 [connection signal="flipped" from="." to="." method="_on_flipped"]
 [connection signal="gui_input" from="BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer/ShrunkBox" to="." method="_on_shrunk_box_gui_input"]
@@ -232,4 +251,6 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_telwu")
 [connection signal="gui_input" from="BoxInternals/OuterBorderPanel/Control/TypeToggle" to="." method="_on_type_toggle_gui_input"]
 [connection signal="mouse_entered" from="BoxInternals/OuterBorderPanel/Control/TypeToggle" to="BoxInternals/OuterBorderPanel/Control/TypeToggle" method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="BoxInternals/OuterBorderPanel/Control/TypeToggle" to="BoxInternals/OuterBorderPanel/Control/TypeToggle" method="_on_mouse_exited"]
-[connection signal="gui_input" from="SuperShrunkBox/SuperShrunkPanel" to="." method="_on_super_shrunk_panel_gui_input"]
+[connection signal="gui_input" from="Boxtops/SuperShrunkBox/SuperShrunkPanel" to="." method="_on_super_shrunk_panel_gui_input"]
+[connection signal="gui_input" from="Boxtops/NameOnlyBoxtop" to="." method="_on_name_only_boxtop_gui_input"]
+[connection signal="gui_input" from="Boxtops/NameOnlyBoxtop/name" to="." method="_on_name_only_boxtop_gui_input"]

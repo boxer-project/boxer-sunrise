@@ -23,6 +23,9 @@ var current_row = null
 func get_first_row():
     return %RowsBox.get_child(0)
 
+func is_outermost_box():
+    return $/root/Main.outermost_box == self
+
 # Reference to the actual Boxer box object in common lisp
 # Variables prefixed with boxer_* will refer to BoxerLispRef instance pointers
 var boxer_box
@@ -153,46 +156,46 @@ var display_style = DisplayStyle.NORMAL:
         update_display_style(value)
         display_style = value
 
+func hide_boxtops():
+    for boxtop in $Boxtops.get_children():
+        boxtop.hide()
+
 func shrink_box():
     if boxtop_type == BoxtopType.NAME_ONLY:
-        $BoxInternals.visible = true
-        $SuperShrunkBox.visible = false
-        %RowsBox.visible = false
-        %ShrunkBox.visible = true
-        %OuterBorderPanel.visible = false
+        $BoxInternals.visible = false
+        hide_boxtops()
+        %NameOnlyBoxtop.visible = true
     else:
         # Default to regular standard shrunk
         $BoxInternals.visible = true
-        $SuperShrunkBox.visible = false
+        hide_boxtops()
         %RowsBox.visible = false
         %ShrunkBox.visible = true
         %OuterBorderPanel.visible = true
 
+func regular_display_box():
+    # Currently used for FIXED, NORMAL, and fullscreen boxes
+    $BoxInternals.visible = true
+    hide_boxtops()
+    %RowsBox.visible = true
+    %ShrunkBox.visible = false
+    %OuterBorderPanel.visible = true
+
 func update_display_style(value):
-    match value:
-        DisplayStyle.FIXED:
-            $BoxInternals.visible = true
-            $SuperShrunkBox.visible = false
-            %RowsBox.visible = true
-            %ShrunkBox.visible = false
-            %OuterBorderPanel.visible = true
-        DisplayStyle.NORMAL:
-            $BoxInternals.visible = true
-            $SuperShrunkBox.visible = false
-            %RowsBox.visible = true
-            %ShrunkBox.visible = false
-            %OuterBorderPanel.visible = true
-        DisplayStyle.SHRUNK:
-            shrink_box()
-            # $BoxInternals.visible = true
-            # $SuperShrunkBox.visible = false
-            # %RowsBox.visible = false
-            # %ShrunkBox.visible = true
-        DisplayStyle.SUPERSHRUNK:
-            $BoxInternals.visible = false
-            $SuperShrunkBox.visible = true
-        _:
-            pass
+    if is_outermost_box():
+        regular_display_box()
+    else:
+        match value:
+            DisplayStyle.FIXED, DisplayStyle.NORMAL:
+                regular_display_box()
+            DisplayStyle.SHRUNK:
+                shrink_box()
+            DisplayStyle.SUPERSHRUNK:
+                $BoxInternals.visible = false
+                hide_boxtops()
+                %SuperShrunkBox.visible = true
+            _:
+                pass
 
 func add_row() -> Node:
     var row = row_scene.instantiate()
@@ -313,6 +316,10 @@ func _on_upper_left_corner_gui_input(event: InputEvent) -> void:
         Global.handle_mouse_input(event, %RowsBox.get_child(0), 0, Global.BoxArea.TOP_LEFT)
 
 func _on_super_shrunk_panel_gui_input(event: InputEvent) -> void:
+    if event is InputEventMouseButton:
+        Global.handle_mouse_input(event, %RowsBox.get_child(0), 0, Global.BoxArea.INSIDE)
+
+func _on_name_only_boxtop_gui_input(event: InputEvent) -> void:
     if event is InputEventMouseButton:
         Global.handle_mouse_input(event, %RowsBox.get_child(0), 0, Global.BoxArea.INSIDE)
 
