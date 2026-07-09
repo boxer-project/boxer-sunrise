@@ -24,7 +24,10 @@ func get_first_row():
     return %RowsBox.get_child(0)
 
 func is_outermost_box():
-    return $/root/Main.outermost_box == self
+    if !self.is_inside_tree():
+        return false
+    else:
+        return $/root/Main.outermost_box == self
 
 # Reference to the actual Boxer box object in common lisp
 # Variables prefixed with boxer_* will refer to BoxerLispRef instance pointers
@@ -77,10 +80,6 @@ func toggle_to_data():
 func toggle_to_doit():
     box_type = BoxType.DOIT
 
-func show_turtle_graphics(status):
-    # Takes a boolean determining whether to show the turtle graphics
-    %TurtleGraphics.visible = status
-
 # Graphics and Sprite boxes still have text on their flipped side in addition to the graphics or sprite
 enum BoxContents {TEXT, GRAPHICS, VIDEO}
 var box_contents = BoxContents.TEXT:
@@ -89,21 +88,15 @@ var box_contents = BoxContents.TEXT:
     set(value):
         box_contents = value
         %RowsBox.visible = false
-        %GraphicsSheetBackground.visible = false
-        %GraphicsSheetBitArray.visible = false
-        show_turtle_graphics(false)
-        %VideoPlayer.visible = false
+        %GraphicsSheet.visible = false
         %PanelContainer.custom_minimum_size = Vector2(0,0)
         if value == BoxContents.TEXT:
             %RowsBox.visible = true
         elif value == BoxContents.GRAPHICS:
-            %GraphicsSheetBitArray.visible = true
-            %GraphicsSheetBackground.visible = true
-            show_turtle_graphics(true)
+            %GraphicsSheet.visible = true
             %PanelContainer.custom_minimum_size = Vector2(draw_wid, draw_hei)
         elif value == BoxContents.VIDEO:
-            %VideoPlayer.visible = true
-
+            pass
 ###
 #
 #  Vars from optional Graphics Sheet which graphics boxes have.
@@ -112,16 +105,12 @@ var box_contents = BoxContents.TEXT:
 
 var draw_wid: int
 var draw_hei: int
-var background: Color
 
 func set_background(red, green, blue, alpha):
-    background = Color(red, green, blue, alpha)
-    %GraphicsSheetBackground.color = background
+    %GraphicsSheet.set_background(red, green, blue, alpha)
 
 func set_bit_array(width, height, arr: PackedInt32Array):
-    var texture = ImageTexture.create_from_image(
-        Image.create_from_data(width, height, false, Image.FORMAT_RGBA8 , arr.to_byte_array()))
-    %GraphicsSheetBitArray.texture = texture
+    %GraphicsSheet.set_bit_array(width, height, arr)
 
 ###
 #
@@ -266,8 +255,8 @@ func _process(_delta: float) -> void:
     update_display_style(display_style)
     if flipped_box_type == FlippedBoxType.GRAPHICS:
         graphics_mode_p = graphics_mode_p
-    # if boxtop_type == BoxtopType.NONE and boxer_box:
-    #     $/root/Main.handle_boxer_func("GODOT-UPDATE-BOXTOP", boxer_box)
+    if boxtop_type == BoxtopType.NONE and boxer_box:
+        $/root/Main.handle_boxer_func("GODOT-UPDATE-BOXTOP", boxer_box)
     if %NameRow and %NameRow.get_child_count() == 0:
         %NameRow.hide()
     else:
@@ -340,14 +329,10 @@ func _on_type_toggle_gui_input(event: InputEvent) -> void:
         Global.handle_mouse_input(event, %RowsBox.get_child(0), 0, Global.BoxArea.TYPE)
 
 func push_graphics_command(opcode, arg1, arg2, arg3, arg4, arg5):
-    %TurtleGraphics.append_draw_command([opcode, arg1, arg2, arg3, arg4, arg5])
+    %GraphicsSheet.push_graphics_command(opcode, arg1, arg2, arg3, arg4, arg5)
 
 func clear_box(bitmap = true, graphics_list = true):
-    if graphics_list:
-        %TurtleGraphics.clear_draw_commands()
-    if bitmap:
-        # TODO
-        pass
+    %GraphicsSheet.clear_box(bitmap, graphics_list)
 
 func add_turtle(turtle):
-    %TurtleGraphics.add_child(turtle)
+    %GraphicsSheet.add_turtle(turtle)

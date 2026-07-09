@@ -1,0 +1,29 @@
+[gd_scene load_steps=3 format=3 uid="uid://1h0du8hdutug"]
+
+[ext_resource type="Script" uid="uid://bcaqs7kl1npij" path="res://scripts/GraphicsSheet.gd" id="1_13w8w"]
+[ext_resource type="Script" uid="uid://b0ij7f1alb4w6" path="res://scripts/turtle.gd" id="1_f0w6q"]
+
+[node name="GraphicsSheet" type="PanelContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_13w8w")
+
+[node name="GraphicsSheetBackground" type="ColorRect" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+color = Color(1, 1, 1, 0)
+
+[node name="GraphicsSheetBitArray" type="TextureRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+flip_v = true
+
+[node name="TurtleGraphics" type="VideoStreamPlayer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+script = ExtResource("1_f0w6q")
