@@ -423,8 +423,7 @@
          (godot-box (fetch-godot-obj box))
          (pixmap (graphics-sheet-bit-array sheet)))
     ;; draw-wid draw-hei
-    (gdboxer-set-property godot-box "draw_wid" (graphics-sheet-draw-wid sheet))
-    (gdboxer-set-property godot-box "draw_hei" (graphics-sheet-draw-hei sheet))
+    (godot-call godot-box "set_draw_dims" (graphics-sheet-draw-wid sheet) (graphics-sheet-draw-hei sheet))
 
     ;; bit-array
     (when pixmap

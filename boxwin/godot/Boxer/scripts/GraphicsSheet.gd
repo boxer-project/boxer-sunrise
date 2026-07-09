@@ -2,6 +2,13 @@ extends PanelContainer
 class_name GraphicsSheet
 
 var background: Color
+var draw_wid: int
+var draw_hei: int
+
+func set_draw_dims(wid: int, hei: int):
+    draw_wid = wid
+    draw_hei = hei
+    self.custom_minimum_size = Vector2(wid, hei)
 
 func set_background(red, green, blue, alpha):
     background = Color(red, green, blue, alpha)

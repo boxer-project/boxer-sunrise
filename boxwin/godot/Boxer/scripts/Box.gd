@@ -94,7 +94,6 @@ var box_contents = BoxContents.TEXT:
             %RowsBox.visible = true
         elif value == BoxContents.GRAPHICS:
             %GraphicsSheet.visible = true
-            %PanelContainer.custom_minimum_size = Vector2(draw_wid, draw_hei)
         elif value == BoxContents.VIDEO:
             pass
 ###
@@ -102,15 +101,23 @@ var box_contents = BoxContents.TEXT:
 #  Vars from optional Graphics Sheet which graphics boxes have.
 #
 ###
-
-var draw_wid: int
-var draw_hei: int
+func set_draw_dims(wid: int, hei: int):
+    %GraphicsSheet.set_draw_dims(wid, hei)
 
 func set_background(red, green, blue, alpha):
     %GraphicsSheet.set_background(red, green, blue, alpha)
 
 func set_bit_array(width, height, arr: PackedInt32Array):
     %GraphicsSheet.set_bit_array(width, height, arr)
+
+func push_graphics_command(opcode, arg1, arg2, arg3, arg4, arg5):
+    %GraphicsSheet.push_graphics_command(opcode, arg1, arg2, arg3, arg4, arg5)
+
+func clear_box(bitmap = true, graphics_list = true):
+    %GraphicsSheet.clear_box(bitmap, graphics_list)
+
+func add_turtle(turtle):
+    %GraphicsSheet.add_turtle(turtle)
 
 ###
 #
@@ -327,12 +334,3 @@ func _on_lower_left_corner_gui_input(event: InputEvent) -> void:
 func _on_type_toggle_gui_input(event: InputEvent) -> void:
     if event is InputEventMouseButton:
         Global.handle_mouse_input(event, %RowsBox.get_child(0), 0, Global.BoxArea.TYPE)
-
-func push_graphics_command(opcode, arg1, arg2, arg3, arg4, arg5):
-    %GraphicsSheet.push_graphics_command(opcode, arg1, arg2, arg3, arg4, arg5)
-
-func clear_box(bitmap = true, graphics_list = true):
-    %GraphicsSheet.clear_box(bitmap, graphics_list)
-
-func add_turtle(turtle):
-    %GraphicsSheet.add_turtle(turtle)
