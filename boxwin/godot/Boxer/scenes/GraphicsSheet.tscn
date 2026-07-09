@@ -1,11 +1,14 @@
-[gd_scene load_steps=3 format=3 uid="uid://1h0du8hdutug"]
+[gd_scene load_steps=4 format=3 uid="uid://1h0du8hdutug"]
 
 [ext_resource type="Script" uid="uid://bcaqs7kl1npij" path="res://scripts/GraphicsSheet.gd" id="1_13w8w"]
 [ext_resource type="Script" uid="uid://b0ij7f1alb4w6" path="res://scripts/turtle.gd" id="1_f0w6q"]
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_13w8w"]
+
 [node name="GraphicsSheet" type="PanelContainer"]
 offset_right = 40.0
 offset_bottom = 40.0
+theme_override_styles/panel = SubResource("StyleBoxEmpty_13w8w")
 script = ExtResource("1_13w8w")
 
 [node name="GraphicsSheetBackground" type="ColorRect" parent="."]

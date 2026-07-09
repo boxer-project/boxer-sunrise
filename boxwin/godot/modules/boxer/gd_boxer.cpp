@@ -216,13 +216,6 @@ cl_object lisp_boxer_set_graphics_mode_p(cl_object box, cl_object enabled) {
  * GRAPHICS SHEET BOXES
  */
 
-cl_object lisp_boxer_set_graphics_sheet_draw_dims(cl_object box, cl_object width, cl_object height) {
-    Object* godot_box = Variant((Object*) ecl_foreign_data_pointer_safe(box));
-    godot_box->set_deferred("draw_wid", (int) ecl_fixnum(width));
-    godot_box->set_deferred("draw_hei", (int)ecl_fixnum(height));
-    return ECL_NIL;
-}
-
 cl_object lisp_boxer_set_graphics_sheet_bit_array(cl_object box, cl_object width, cl_object height, cl_object pixmap_data) {
     Object *godot_box = Variant((Object *)ecl_foreign_data_pointer_safe(box));
     PackedInt32Array *pba = (PackedInt32Array *)ecl_foreign_data_pointer_safe(pixmap_data);
@@ -381,9 +374,6 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
     //
     // GRAPHICS SHEET BOXES
     //
-    aux = ecl_make_symbol("GDBOXER-SET-GRAPHICS-SHEET-DRAW-DIMS", "BOXER");
-    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_set_graphics_sheet_draw_dims, 3);
-
     aux = ecl_make_symbol("GDBOXER-SET-GRAPHICS-SHEET-BIT-ARRAY", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_set_graphics_sheet_bit_array, 4);
 
