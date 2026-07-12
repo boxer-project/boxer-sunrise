@@ -108,7 +108,7 @@
       (when (eq (type-of top) 'graphics-sheet)
         (let ((godot-graphics-sheet (fetch-godot-obj top)))
           (godot-update-graphics-sheet top top)
-          (godot-call (fetch-godot-obj obj) "set_graphics_boxtop" godot-graphics-sheet)))
+          (godot-call (fetch-godot-obj obj) "set_graphics_boxtop" godot-graphics-sheet))))
 
     (set-display-style (car (screen-objs obj)) (display-style obj))
     (gdboxer-update-screen-box (fetch-godot-obj obj) (car (screen-objs obj))) ;; adjust for ports
