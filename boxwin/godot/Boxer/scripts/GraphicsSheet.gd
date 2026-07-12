@@ -1,6 +1,11 @@
 extends PanelContainer
 class_name GraphicsSheet
 
+# Reference to the actual boxer graphics-sheet object in common lisp
+# May be null if it's the usual graphics-sheet in a box. This is needed
+# for graphics boxtops.
+var boxer_graphics_sheet
+
 var background: Color
 var draw_wid: int
 var draw_hei: int

@@ -119,6 +119,11 @@ func clear_box(bitmap = true, graphics_list = true):
 func add_turtle(turtle):
     %GraphicsSheet.add_turtle(turtle)
 
+func set_graphics_boxtop(graphics_sheet):
+    %Boxtops.add_child(graphics_sheet)
+    boxtop_type = BoxtopType.GRAPHIC
+    shrink_box()
+
 ###
 #
 #  Vars from box.display-style
@@ -161,6 +166,13 @@ func shrink_box():
         $BoxInternals.visible = false
         hide_boxtops()
         %NameOnlyBoxtop.visible = true
+    elif boxtop_type == BoxtopType.GRAPHIC:
+        $BoxInternals.visible = false
+        for boxtop in %Boxtops.get_children():
+            if boxtop is GraphicsSheet:
+                boxtop.visible = true
+            else:
+                boxtop.visible = false
     else:
         # Default to regular standard shrunk
         $BoxInternals.visible = true

@@ -4,6 +4,7 @@ extends Node
 @export var box_scene: PackedScene
 @export var row_scene: PackedScene
 @export var turtle_scene: PackedScene
+@export var graphics_sheet_scene: PackedScene
 
 @onready var open_dialog: FileDialog = get_node("/root/Main/OpenFileDialog")
 @onready var note_player: Sampler = get_node("/root/Main/NotePlayer")
@@ -294,6 +295,17 @@ func make_row(boxer_row): # -> HBoxContainer:
     row.boxer_row = boxer_row
     return row
 
+func make_turtle(boxer_turtle):
+    var turtle = turtle_scene.instantiate()
+    turtle.boxer_turtle = boxer_turtle
+    return turtle
+
+func make_graphics_sheet(boxer_graphics_sheet):
+    var graphics_sheet = graphics_sheet_scene.instantiate()
+    graphics_sheet.boxer_graphics_sheet = boxer_graphics_sheet
+    return graphics_sheet
+
+
 func set_outermost_screenbox(box: Control):
     # The outermost_box is the currently fullscreened box.
     # TODO TODO TODO Eventually the position of the previous outermost box will need to be passed in
@@ -332,11 +344,6 @@ func set_outermost_screenbox(box: Control):
         prev_outermost_box.reset_size()
         prev_outermost_box.reset_box_size()
 
-func make_turtle(boxer_turtle):
-    var turtle = turtle_scene.instantiate()
-    turtle.boxer_turtle = boxer_turtle
-    turtle.append_draw_command([63, 0, 0, 10])
-    return turtle
 
 ###
 ### Highlighting

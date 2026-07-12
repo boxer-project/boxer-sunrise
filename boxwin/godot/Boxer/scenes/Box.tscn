@@ -179,15 +179,14 @@ mouse_default_cursor_shape = 2
 script = ExtResource("3_bqn3j")
 box_area = 4
 
-[node name="Boxtops" type="Control" parent="."]
+[node name="Boxtops" type="PanelContainer" parent="."]
+unique_name_in_owner = true
 layout_mode = 2
 
 [node name="SuperShrunkBox" type="PanelContainer" parent="Boxtops"]
 unique_name_in_owner = true
 visible = false
-layout_mode = 0
-offset_right = 25.0
-offset_bottom = 25.0
+layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
 
@@ -199,9 +198,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_telwu")
 [node name="NameOnlyBoxtop" type="PanelContainer" parent="Boxtops"]
 unique_name_in_owner = true
 visible = false
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+layout_mode = 2
 theme_override_styles/panel = ExtResource("4_o41fb")
 
 [node name="name" type="Label" parent="Boxtops/NameOnlyBoxtop"]

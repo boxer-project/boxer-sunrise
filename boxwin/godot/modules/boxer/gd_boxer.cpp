@@ -172,6 +172,12 @@ cl_object lisp_boxer_make_turtle(cl_object boxer_turtle) {
     return ecl_make_foreign_data(ECL_NIL, 0, godot_turtle);
 }
 
+cl_object lisp_boxer_make_graphics_sheet(cl_object boxer_graphics_sheet) {
+    BoxerLispRef* bgraphics_sheet = memnew(BoxerLispRef);
+    bgraphics_sheet->boxer_obj = boxer_graphics_sheet;
+    Object *godot_graphics_sheet = main_boxer_node->call("make_graphics_sheet", Variant((Object *) bgraphics_sheet));
+    return ecl_make_foreign_data(ECL_NIL, 0, godot_graphics_sheet);
+}
 
 cl_object lisp_boxer_get_name_row(cl_object box) {
     BOXER_PRINT("lisp_boxer_get_name_row\n");
@@ -345,6 +351,9 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
 
     aux = ecl_make_symbol("GDBOXER-MAKE-TURTLE", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_make_turtle, 1);
+
+    aux = ecl_make_symbol("GDBOXER-MAKE-GRAPHICS-SHEET", "BOXER");
+    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_make_graphics_sheet, 1);
 
     aux = ecl_make_symbol("GDBOXER-GET-NAME-ROW", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_get_name_row, 1);

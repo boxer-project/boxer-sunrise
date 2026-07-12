@@ -439,7 +439,7 @@ Modification History (most recent at top)
           (bp-row (interval-stop-bp interval))
           (bp-cha-no (interval-stop-bp interval))))
 
-(defclass graphics-sheet ()
+(defclass graphics-sheet (plist-subclass)
   ((draw-wid :initform *default-graphics-sheet-width* :accessor graphics-sheet-draw-wid :initarg :draw-wid
     :documentation "Width of graphics sheet in pixels")
    (draw-hei :initform *default-graphics-sheet-height* :accessor graphics-sheet-draw-hei :initarg :draw-hei

@@ -19,6 +19,13 @@
       (putprop self godot-box :gdnode))
     godot-box))
 
+(defmethod fetch-godot-obj ((self graphics-sheet))
+  (let* ((godot-graphics-sheet (getprop self :gdnode)))
+    (unless godot-graphics-sheet
+      (setf godot-graphics-sheet (gdboxer-make-graphics-sheet self))
+      (putprop self godot-graphics-sheet :gdnode))
+    godot-graphics-sheet))
+
 (defmethod fetch-godot-obj ((self row))
   (let* ((godot-row (getprop self :gdnode)))
     (unless godot-row
@@ -91,11 +98,18 @@
     (if (fixed-size? obj)
       (multiple-value-bind (wid hei) (fixed-size obj)
         (godot-call (fetch-godot-obj obj) "set_fixed_box_size" wid hei))
-     (godot-call (fetch-godot-obj obj) "reset_box_size"))
+      (godot-call (fetch-godot-obj obj) "reset_box_size"))
 
     (do-box-rows ((row obj))
       (allocate-screen-obj-for-use-in row (car (screen-objs obj)))
       (fill-in-screen-objs row))
+
+    (let ((top (boxtop obj)))
+      (when (eq (type-of top) 'graphics-sheet)
+        (let ((godot-graphics-sheet (fetch-godot-obj top)))
+          (godot-update-graphics-sheet top top)
+          (godot-call (fetch-godot-obj obj) "set_graphics_boxtop" godot-graphics-sheet)))
+
     (set-display-style (car (screen-objs obj)) (display-style obj))
     (gdboxer-update-screen-box (fetch-godot-obj obj) (car (screen-objs obj))) ;; adjust for ports
     (putprop (car (screen-objs obj)) (fetch-godot-obj obj) :gdnode)) ;; adjust for ports
@@ -373,7 +387,7 @@
   (format t "  the result from boxtop defun: ~A~%" (boxtop self))
   (let ((godot-box (fetch-godot-obj self))
         (boxtop (getprop self :boxtop))
-        (boxtop_code 1))
+        (boxtop_code 0))
     ;; See Box.gd enum BoxtopType
     (cond ((eq boxtop :name-only)
            (setf boxtop_code 3))
@@ -419,8 +433,8 @@
     (gdboxer-set-property godot-box "flipped_box_type" 2)))
 
 (defun godot-update-graphics-sheet (box sheet)
-  (let* (;(box (graphics-sheet-superior-box sheet))
-         (godot-box (fetch-godot-obj box))
+  ;; `box` can either be the box or the graphics-sheet itself (for boxtops)
+  (let* ((godot-box (fetch-godot-obj box))
          (pixmap (graphics-sheet-bit-array sheet)))
     ;; draw-wid draw-hei
     (godot-call godot-box "set_draw_dims" (graphics-sheet-draw-wid sheet) (graphics-sheet-draw-hei sheet))
@@ -441,7 +455,7 @@
     ;; background
     (let ((value (graphics-sheet-background sheet)))
       (when value
-        (godot-call (fetch-godot-obj box) "set_background" (aref value 1) (aref value 2) (aref value 3) (aref value 4))))
+        (godot-call godot-box "set_background" (aref value 1) (aref value 2) (aref value 3) (aref value 4))))
   ))
 
 (defmethod (setf graphics-sheet-background) :after (value sheet)
