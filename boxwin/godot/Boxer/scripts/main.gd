@@ -177,6 +177,7 @@ func _root_viewport_size_changed() -> void:
 
 func _process(_delta: float) -> void:
     %World.scale = Vector2(canvas_zoom, canvas_zoom)
+    %Cursor.scale = Vector2(canvas_zoom, canvas_zoom)
     %ZoomStatus.text = "Zoom {0}%".format([canvas_zoom * 100])
     update_outermost_box_size(%OutermostBoxHolder.get_child(0))
 
