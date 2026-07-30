@@ -14409,6 +14409,29 @@ Modification History (most recent at top)
 ;;;; FILE: funs.lisp
 ;;;;
 
+;; really only a placeholder
+#+lispworks
+(defun compiled-boxer-function-name (function)
+  (let ((function (compiled-boxer-function-object function)))
+    (if #+win32 (system::compiled-code-p function)
+      #+mac   (system::simple-compiled-function-p function)
+      (system::function-dspec function)
+      ;; try the common lisp thing
+      (multiple-value-bind (exp env name)
+                           (function-lambda-expression function)
+                           (declare (ignore exp env))
+                           name))))
+
+#-(or lispm lucid excl mcl lispworks)
+(defun compiled-boxer-function-name (function)
+  ;  (warn
+  ;   "~%The function, Compiled-Boxer-Function-Name, needs to be defined for ~A"
+  ;   (lisp-implementation-type))
+  (multiple-value-bind (exp env name)
+                       (function-lambda-expression function)
+                       (declare (ignore exp env))
+                       name))
+
 (defun make-boxer-primitive-internal (arglist code)
   (let ((name (gensym)))
     (proclaim `(special ,name))
