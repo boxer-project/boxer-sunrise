@@ -120,6 +120,8 @@ func add_turtle(turtle):
     %GraphicsSheet.add_turtle(turtle)
 
 func set_graphics_boxtop(graphics_sheet):
+    graphics_sheet.gui_input.connect(_on_shrunk_box_gui_input)
+    # TODO Add check to see if this is already a child
     %Boxtops.add_child(graphics_sheet)
     boxtop_type = BoxtopType.GRAPHIC
     shrink_box()
@@ -166,6 +168,10 @@ func shrink_box():
         $BoxInternals.visible = false
         hide_boxtops()
         %NameOnlyBoxtop.visible = true
+        var shrunk_name = ""
+        for cha in %NameRow.get_children():
+            shrunk_name += cha.text
+        %NameOnlyBoxtop/name.text = shrunk_name
     elif boxtop_type == BoxtopType.GRAPHIC:
         $BoxInternals.visible = false
         for boxtop in %Boxtops.get_children():
@@ -323,15 +329,8 @@ func _on_upper_left_corner_gui_input(event: InputEvent) -> void:
     if event is InputEventMouseButton:
         Global.handle_mouse_input(event, %RowsBox.get_child(0), 0, Global.BoxArea.TOP_LEFT)
 
-func _on_super_shrunk_panel_gui_input(event: InputEvent) -> void:
-    if event is InputEventMouseButton:
-        Global.handle_mouse_input(event, %RowsBox.get_child(0), 0, Global.BoxArea.INSIDE)
-
-func _on_name_only_boxtop_gui_input(event: InputEvent) -> void:
-    if event is InputEventMouseButton:
-        Global.handle_mouse_input(event, %RowsBox.get_child(0), 0, Global.BoxArea.INSIDE)
-
 func _on_shrunk_box_gui_input(event: InputEvent) -> void:
+    # Catch all event function for shrunk, supershunk, name, graphics boxtops
     if event is InputEventMouseButton:
         Global.handle_mouse_input(event, %RowsBox.get_child(0), 0, Global.BoxArea.INSIDE)
 

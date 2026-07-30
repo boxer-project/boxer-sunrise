@@ -40,13 +40,27 @@ var canvas_zoom = 1:
 
 var lisp_thread: Thread
 
+func update_outermost_box_size(box: Box):
+    # Adjusts `box` to take up the entire size of the window, needed for when the window is resized by the user.
+    # TODO this is not quite the right size since the toolbars and whatnot are included
+    var size: Vector2 = get_viewport().size
+    var internals: Container = box.get_node("BoxInternals")
+
+    if internals.size.x > size.x:
+        size.x = internals.size.x
+    if internals.size.y > size.y:
+        size.y = internals.size.y
+
+    internals.custom_minimum_size = ((size - Vector2(20, 20)) / Global.screen_scale)
+    %OutermostBoxHolder.size = internals.size
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
     boxer_event_queue_mutex = Mutex.new()
     boxer_scene_queue_mutex = Mutex.new()
     cursor = $Cursor
     # Have the main world box take up the entire screen
-    %World/BoxInternals.custom_minimum_size = ((get_viewport().size - Vector2i(20, 20)) / Global.screen_scale)
+    update_outermost_box_size(%World)
     outermost_box = %World
     get_viewport().size_changed.connect(_root_viewport_size_changed)
     _root_viewport_size_changed()
@@ -164,6 +178,9 @@ func _root_viewport_size_changed() -> void:
 func _process(_delta: float) -> void:
     %World.scale = Vector2(canvas_zoom, canvas_zoom)
     %ZoomStatus.text = "Zoom {0}%".format([canvas_zoom * 100])
+    update_outermost_box_size(%OutermostBoxHolder.get_child(0))
+
+
     if boxer_scene_queue.size() > 0:
         handle_scene_queue()
 

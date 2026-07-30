@@ -86,9 +86,47 @@ offset_bottom = 40.0
 mouse_filter = 2
 mouse_behavior_recursive = 1
 
+[node name="HBoxContainer" type="HBoxContainer" parent="TopLevelContainer"]
+layout_mode = 2
+
+[node name="EventQueueLabel" type="Label" parent="TopLevelContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "Event Queue:"
+
+[node name="EventQueueSize" type="Label" parent="TopLevelContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "0"
+
+[node name="label" type="Label" parent="TopLevelContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "Lisp Queue:"
+
+[node name="LispQueueSize" type="Label" parent="TopLevelContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "Event Queue:"
+
+[node name="PrintScrObjs" type="Button" parent="TopLevelContainer/HBoxContainer"]
+z_index = 4096
+z_as_relative = false
+layout_mode = 2
+mouse_behavior_recursive = 2
+text = "Print Scr-0bjs
+"
+
+[node name="PrintActObjs" type="Button" parent="TopLevelContainer/HBoxContainer"]
+layout_mode = 2
+mouse_behavior_recursive = 2
+text = "Print Act-Objs
+"
+
 [node name="ToolbarContainer" parent="TopLevelContainer" instance=ExtResource("4_tefeu")]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 
 [node name="MessageBarContainer" type="HBoxContainer" parent="TopLevelContainer"]
@@ -106,22 +144,15 @@ layout_mode = 2
 size_flags_vertical = 3
 mouse_behavior_recursive = 2
 
-[node name="OutermostBoxHolder" type="Node2D" parent="TopLevelContainer/OutermostBoxScroll"]
+[node name="OutermostBoxHolder" type="PanelContainer" parent="TopLevelContainer/OutermostBoxScroll"]
 unique_name_in_owner = true
+layout_mode = 2
 
 [node name="World" parent="TopLevelContainer/OutermostBoxScroll/OutermostBoxHolder" instance=ExtResource("3_tefeu")]
 unique_name_in_owner = true
-offset_right = 330.0
-offset_bottom = 40.0
+layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-
-[node name="OutermostWaitingArea" type="Node2D" parent="TopLevelContainer/OutermostBoxScroll"]
-unique_name_in_owner = true
-visible = false
-
-[node name="FullscreenedBoxPlaceHolder" type="Node2D" parent="TopLevelContainer/OutermostBoxScroll"]
-unique_name_in_owner = true
 
 [node name="StatusBarContainer" type="HBoxContainer" parent="TopLevelContainer"]
 unique_name_in_owner = true
@@ -137,6 +168,11 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Zoom 100%"
 
+[node name="OutermostWaitingArea" type="Node2D" parent="."]
+unique_name_in_owner = true
+visible = false
+position = Vector2(0, 89)
+
 [node name="Cursor" parent="." instance=ExtResource("4_o6xl0")]
 unique_name_in_owner = true
 offset_left = 8.0
@@ -150,6 +186,7 @@ unique_name_in_owner = true
 [node name="GDBoxer" type="GDBoxer" parent="."]
 
 [node name="ScreenClip" type="Sprite2D" parent="."]
+visible = false
 position = Vector2(2572, 244)
 
 [node name="FlippingViewport" type="SubViewport" parent="."]
@@ -171,12 +208,14 @@ position = Vector2(284, 454)
 texture = SubResource("ViewportTexture_jyhfs")
 
 [node name="BoxerMenuBar" type="MenuBar" parent="."]
+visible = false
 offset_right = 40.0
 offset_bottom = 40.0
 mouse_filter = 2
 script = ExtResource("9_85g3d")
 
 [node name="MenuWow" type="PopupMenu" parent="BoxerMenuBar"]
+oversampling_override = 1.0
 system_menu_id = 2
 item_count = 1
 item_0/text = "This item!"
@@ -196,6 +235,8 @@ visible = false
 
 [connection signal="canceled" from="OpenFileDialog" to="." method="_on_open_file_dialog_canceled"]
 [connection signal="file_selected" from="OpenFileDialog" to="." method="_on_open_file_dialog_file_selected"]
+[connection signal="pressed" from="TopLevelContainer/HBoxContainer/PrintScrObjs" to="." method="_on_print_scr_objs_pressed"]
+[connection signal="pressed" from="TopLevelContainer/HBoxContainer/PrintActObjs" to="." method="_on_print_act_objs_pressed"]
 [connection signal="row_inserted" from="TopLevelContainer/OutermostBoxScroll/OutermostBoxHolder/World" to="Cursor" method="_on_world_row_inserted"]
 [connection signal="boxer_delete_cha" from="GDBoxer" to="." method="_on_gd_boxer_boxer_delete_cha"]
 [connection signal="boxer_delete_chas_between_cha_nos" from="GDBoxer" to="." method="_on_gd_boxer_boxer_delete_chas_between_cha_nos"]

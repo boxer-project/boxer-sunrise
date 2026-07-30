@@ -20,5 +20,6 @@ func _to_string() -> String:
 var skip_position = true
 
 func _on_gui_input(event: InputEvent) -> void:
-    var pos = get_index()
-    Global.handle_mouse_input(event, self.get_parent(), pos + 1, Global.BoxArea.INSIDE)
+    if event is InputEventMouseButton:
+        var pos = get_index()
+        Global.handle_mouse_input(event, self.get_parent(), pos + 1, Global.BoxArea.INSIDE)
