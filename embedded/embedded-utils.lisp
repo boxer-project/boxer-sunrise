@@ -52,43 +52,6 @@
 ;;; Filling in screen-objs
 ;;;
 
-(defun print-screen-obj-tree (&optional (scr-obj (outermost-screen-box)) (depth 0))
-  (cond
-    ((screen-box? scr-obj)
-     (format t "~%~V,,,' A+ Screen-Box: ~A #Screen-rows: ~A"
-       (* 2 depth) "" scr-obj (storage-vector-active-length (screen-rows scr-obj)))
-     (format t "~% What::: ~A ~A" (type-of (screen-rows scr-obj)) (screen-rows scr-obj))
-     (do-vector-contents (inf-scr-obj (screen-rows scr-obj))
-       (print-screen-obj-tree inf-scr-obj (1+ depth))))
-    ((screen-row? scr-obj)
-     (format t "~%~V,,,' A- Screen-Row: ~A"
-       (* 2 depth) "" scr-obj)
-     (do-vector-contents (inf-screen-obj boxer::screen-chas)
-        (when (not (screen-cha? inf-screen-obj))
-          (print-screen-obj-tree inf-screen-obj (1+ depth)))))
-    (t
-     (format t "~%~V,,,' A- Unidentified object: ~A"
-       (* 2 depth) "" scr-obj))))
-
-(defun print-box-tree (&optional (obj *initial-box*) (depth 0))
-  (cond
-    ((box? obj)
-     (format t "~%~V,,,' A+ Box: ~A Style: ~A Screen-objs: #~A ~A"
-       (* 2 depth) "" (name obj) (display-style-style (display-style-list obj))
-       (length (screen-objs obj)) (screen-objs obj))
-     (format t "~%~V,,,' A+      Size: ~A"
-       (* 2 depth) "" (if (fixed-size? obj)
-                        (multiple-value-list (fixed-size obj))
-                        "Dynamic"))
-     (do-box-rows ((row obj))
-      (print-box-tree row (1+ depth))
-     ))
-    ((row? obj)
-     (format t "~%~V,,,' A- Row: ~A Screen-objs: #~A ~A"
-       (* 2 depth) "" obj (length (screen-objs obj)) (screen-objs obj))
-     (do-row-chas ((cha obj))
-      (when (box? cha)
-        (print-box-tree cha (1+ depth)))))))
 
 ;; TODO This will need to be adjusted for ports
 (defun fill-in-screen-objs (&optional (obj *initial-box*))
