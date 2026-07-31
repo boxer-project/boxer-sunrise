@@ -120,22 +120,24 @@ func handle_mouse_input(event: InputEventMouse, row, pos, area = BoxArea.INSIDE)
 
         # If it's a click, emit both the released and the click
         if action <= 2:
-            $/root/Main.handle_mouse_input(action + 9, row.boxer_row, pos, row.parent_box.boxer_screen_box,
+            $/root/Main.handle_mouse_input(action + 9, row.boxer_row, pos, row.parent_box.boxer_box,
                 Global.input_bits(event), area)
-            $/root/Main.handle_mouse_input(action, row.boxer_row, pos, row.parent_box.boxer_screen_box,
+            $/root/Main.handle_mouse_input(action, row.boxer_row, pos, row.parent_box.boxer_box,
                 Global.input_bits(event), area)
         else:
-            $/root/Main.handle_mouse_input(action, row.boxer_row, pos, row.parent_box.boxer_screen_box,
+            $/root/Main.handle_mouse_input(action, row.boxer_row, pos, row.parent_box.boxer_box,
                 Global.input_bits(event), area)
-    elif event is InputEventMouseMotion and cur_pressed != null:
-        ##TODO We can't select backwards right now, because the top-most control is the highlighted text, we need
-        # to get underneath it to get to the cha, box, or row
-        var control = get_boxer_control(get_viewport().gui_get_hovered_control())
-        # If this is a cha
-        if control is Cha:
-            var cha_boxer_row = control.get_parent().boxer_row
-            var cha_pos = control.get_index()
-            var cha_boxer_screen_box = control.get_parent().parent_box.boxer_screen_box
+    # TODO TODO TODO sgithens: This is currently buggy and impeeding other work... get back to this later.
+    #
+    # elif event is InputEventMouseMotion and cur_pressed != null:
+    #     ##TODO We can't select backwards right now, because the top-most control is the highlighted text, we need
+    #     # to get underneath it to get to the cha, box, or row
+    #     var control = get_boxer_control(get_viewport().gui_get_hovered_control())
+    #     # If this is a cha
+    #     if control is Cha:
+    #         var cha_boxer_row = control.get_parent().boxer_row
+    #         var cha_pos = control.get_index()
+    #         var cha_boxer_screen_box = control.get_parent().parent_box.boxer_screen_box
 
-            print("handle mouse input motion dragging: ", control, )
-            $/root/Main.handle_boxer_func("MOUSE-UPDATE-SELECTED-REGION", cha_boxer_row, cha_pos, cha_boxer_screen_box)
+    #         print("handle mouse input motion dragging: ", control, )
+    #         $/root/Main.handle_boxer_func("MOUSE-UPDATE-SELECTED-REGION", cha_boxer_row, cha_pos, cha_boxer_screen_box)
