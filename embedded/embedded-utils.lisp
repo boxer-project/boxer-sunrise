@@ -162,17 +162,18 @@
 ;;;
 
 (defun godot-insert-cha-signal (godot-row cha cha-no)
-  (when godot-row
+  (when (and godot-row (not (ffi:null-pointer-p godot-row)))
     (if (cha? cha)
       (godot-call godot-row "set_cha" (char-code cha) cha-no)
       (godot-call godot-row "set_cha" (fetch-godot-obj cha) cha-no))))
 
 (defun fill-in-godot-row (godot-row row)
   "Fill in the godot-row with the contents of row, assuming nothing has been added to it yet."
-  (let ((cha-no 0))
+  (when (chas-array row)
+    (let ((cha-no 0))
       (do-row-chas ((cha row))
         (godot-insert-cha-signal godot-row cha cha-no)
-        (incf cha-no))))
+        (incf cha-no)))))
 
 (defmethod make-row :around (list)
   (let* ((new-row (call-next-method))
@@ -198,15 +199,27 @@
         (godot-insert-cha-signal godot-name-row cha cha-no)
         (incf cha-no)))))
 
+(defmethod fixup-screen-obj ((self box))
+  "Returns the box first screen-obj"
+  (let ((scr-box (car (screen-objs self))))
+    (unless scr-box
+      (setf scr-box (make-instance 'screen-box))
+      (setf (screen-obj-actual-obj scr-box) self)
+      (when (superior-box self)
+        (push (cons (car (screen-objs (superior-box self))) scr-box)
+                (slot-value self 'screen-objs))))
+    scr-box))
+
 (defun gdboxer-make-box-internal (box)
-  (let ((togo (gdboxer-make-box box)))
+  (let ((godot-box (gdboxer-make-box box)))
     (cond ((doit-box? box)
-           (godot-call togo "toggle_to_doit"))
+           (godot-call godot-box "toggle_to_doit"))
           ((data-box? box)
-           (godot-call togo "toggle_to_data"))
+           (godot-call godot-box "toggle_to_data"))
           (t
            nil))
-    togo))
+    (fixup-screen-obj box)
+    godot-box))
 
 (defmethod (setf superior-box) :after (sup-box row)
   (when sup-box
@@ -350,7 +363,7 @@
   (format t "  the result from boxtop defun: ~A~%" (boxtop self))
   (let ((godot-box (fetch-godot-obj self))
         (boxtop (getprop self :boxtop))
-        (boxtop_code 0))
+        (boxtop_code 1))
     ;; See Box.gd enum BoxtopType
     (cond ((eq boxtop :name-only)
            (setf boxtop_code 3))
@@ -367,6 +380,18 @@
       ;;  (setf boxtop 0)
        ))
     (gdboxer-set-property godot-box "boxtop_type" boxtop_code)))
+
+;;;
+;;; SCREEN-BOXES
+;;;
+
+(defmethod screen-obj-actual-obj ((self boxer-canvas))
+  nil
+)
+
+(defmethod shrunken? ((self screen-box))
+  ;; Overriding existing shrunken to use actual-objs rather than the screen-objs
+  (shrunken? (screen-obj-actual-obj self)))
 
 ;;;
 ;;; GRAPHICS-SHEETS
