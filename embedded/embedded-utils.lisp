@@ -302,12 +302,36 @@
 (defmethod (setf display-style-graphics-mode?) :after (new-graphics-mode dis-style)
   (godot-update-display-style dis-style))
 
+(defmethod set-fixed-size :after ((self box) new-fixed-wid new-fixed-hei)
+  ;; TODO
+)
+
 ;;;
 ;;; BOXES
 ;;;
 
+(defmethod (setf superior-row) :after (row box)
+  (when (and row box)
+    (let ((godot-row (fetch-godot-obj row))
+          (godot-box (fetch-godot-obj box)))
+      ;; Set up the attached screen-box, which will always be there for the main tree. There may be extra ones
+      ;; for port subtrees
+      ;; (format t "~%Superior row after: ~A ~A~%" (name box) (superior-box row))
+      ;; (let ((new-scr-box (allocate-screen-obj-for-use-in box (car (screen-objs (superior-box row))))))
+      ;;   (setf (screen-obj-actual-obj new-scr-box) box)
+      ;;   (gdboxer-update-screen-box godot-box new-scr-box)
+      ;; )
+      )))
+
 ;; Full Screening Boxes
-(defmethod set-outermost-screen-box-in-window :after ((window boxer-canvas) new-outermost-screen-box)
+(defmethod set-outermost-screen-box-in-window :before ((window boxer-canvas) new-outermost-screen-box)
+  ;; TODO Check if it's the *initial-box* first
+  ;; (let* ((cur-outermost-screenbox (slot-value window 'outermost-screen-box))
+  ;;        (cur-outermost-box  (screen-obj-actual-obj cur-outermost-screenbox))
+  ;;        (cur-parent-row (superior-row cur-outermost-box)))
+
+  ;; )
+
   (godot-call-main "set_outermost_screenbox" (fetch-godot-obj new-outermost-screen-box)))
 
 
@@ -508,7 +532,6 @@
     (gdboxer-set-property godot-turtle "position_y" y-dest)))
 
 (defmethod turn-to :after ((self turtle) new-heading &optional dont-update-box)
-  (format t "turn-to: new-heading: ~A~%" new-heading)
   (let* ((godot-turtle (fetch-godot-obj self)))
     (gdboxer-set-property godot-turtle "rotation_degrees" new-heading)))
 
@@ -656,17 +679,16 @@
                              (not (null (symbol-function (car input)))))))
                (apply (car input) (cdr input)))
               ((not (null boxer::*boxer-system-hacker*))
-               (error "Unknown object, ~A, in event queue" input)))
-        (when (not (equal 0 (aref input 0)))
-          (fill-in-screen-objs))))))
+               (error "Unknown object, ~A, in event queue" input)))))))
 
 (defmethod append-graphics-command :after (gclist com-list)
-  (format t "APPEND GRAPHICS COMMAND AFTER: ~A~%" com-list)
-  (let* ((agent (graphics-command-list-agent %graphics-list))
-         (graphics-box (assoc-graphics-box agent))
-         (godot-box (fetch-godot-obj graphics-box)))
-    ;; This is not very elegent, however the longest graphics command is never more than 6 params
-    (godot-call godot-box "push_graphics_command" (nth 0 com-list) (nth 1 com-list) (nth 2 com-list) (nth 3 com-list) (nth 4 com-list) (nth 5 com-list))))
+  (if (graphics-command-list-agent %graphics-list)
+    (let* ((agent (graphics-command-list-agent %graphics-list))
+          (graphics-box (assoc-graphics-box agent))
+          (godot-box (fetch-godot-obj graphics-box)))
+      ;; This is not very elegent, however the longest graphics command is never more than 6 params
+      (godot-call godot-box "push_graphics_command" (nth 0 com-list) (nth 1 com-list) (nth 2 com-list) (nth 3 com-list) (nth 4 com-list) (nth 5 com-list)))
+    (format t " Godot Boxer Append-graphics-list NULL %graphics-list")))
 
 ;; still being used hardcoded in sleep primitive...
 (defun repaint-in-eval (&optional force?)
@@ -704,7 +726,6 @@
      (handle-boxer-input :right bits t))
     (t
      (handle-boxer-input data bits)))
-  (fill-in-screen-objs)
 
   ;; (print-box-tree)
   ;; (format t "~%Printing screen-objs")
@@ -748,7 +769,7 @@
     (format t "~%highlighted region: ~A~%" *region-list*)
   boxer-eval::*novalue*)
 
-(defun godot-handle-mouse-input (action-code row pos scr-box bits area-code)
+(defun godot-handle-mouse-input (action-code row pos actual-box bits area-code)
   ;; Action encoding
   ;; Action is: 0 - press/MOUSE-DOWN 1 - click/MOUSE-CLICK 2 - release/MOUSE-UP 3 - double click/ MOUSE-DOUBLE-CLICK
 
@@ -768,7 +789,7 @@
                 (7 :top-right)
                 (8 :top-left)
                 (otherwise nil))))
-    (setf (bp-screen-box click-bp) scr-box)
+    (setf (bp-screen-box click-bp) (fixup-screen-obj actual-box))
     (handle-boxer-mouse-click (lookup-click-name action-code bits area) click-bp 6 0 area))
   (godot-update-point-location))
 
