@@ -164,6 +164,9 @@
                  (:file "primitives/build")
                  (:file "primitives/misc-prims")
 
+                 #+(and lispworks macosx)
+                 (:file "primitives/video-prims-macos")
+
                  (:file "primitives/obsolete")
 
                  ;; Beginning of `KEYDEF`
