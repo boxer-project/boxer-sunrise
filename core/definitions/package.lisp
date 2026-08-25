@@ -20,6 +20,11 @@
 
 (proclaim '(optimize (debug 3)))
 
+#+embedded-boxer
+(defpackage :cffi
+  (:use)
+  (:export :mem-aref))
+
 #+emscripten
 (defpackage :log
   (:use)
