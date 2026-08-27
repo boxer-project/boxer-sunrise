@@ -1,5 +1,6 @@
 @tool
 extends VideoStreamPlayer
+class_name Turtle
 # extends Control
 
 signal done_drawing
@@ -52,6 +53,11 @@ func hollow_rectangle(x, y, width, height):
     draw_rect(Rect2(x - (width/2), -y - (height/2), width, height), pen_color,
         false, pen_width)
 
+# 47   BOXER-CENTERED-BITMAP                        (BITMAP X Y WIDTH HEIGHT)
+func centered_bitmap(bitmap: ImageTexture, x, y, _width, _height):
+    var bitmap_size = bitmap.get_size()
+    draw_texture(bitmap, Vector2(x - (bitmap_size.x / 2), -y - (bitmap_size.y / 2)))
+
 # 60   BOXER-FILLED-ELLIPSE                         (X Y WIDTH HEIGHT)
 func filled_ellipse(x, y, width, height):
     draw_set_transform(Vector2(), 0.0, Vector2(1.0, float(height) / width))
@@ -91,6 +97,8 @@ func draw_graphics_command(com: Array):
         centered_rectangle(com[1], com[2], com[3], com[4])
     elif op_code == 44:
         hollow_rectangle(com[1], com[2], com[3], com[4])
+    elif op_code == 47:
+        centered_bitmap(com[1], com[2], com[3], com[4], com[5])
     elif op_code == 60:
         filled_ellipse(com[1], com[2], com[3], com[4])
     elif op_code == 61:
@@ -112,7 +120,15 @@ var to_draw = []
 func append_draw_command(com):
     # This function is where we'll make performance decisions, such as wiping out the to_draw
     # and not redrawing all of them for things like the performance lag microworld
-    to_draw.append(com)
+
+    # Turning the PackedInt32Array to an ImageTexture takes a bit of extra work here
+    if com[0] == 47:
+        var image = Image.create_from_data(com[4], com[5], false, Image.FORMAT_RGBA8 , com[1].to_byte_array())
+        image.flip_y()
+        var texture = ImageTexture.create_from_image(image)
+        to_draw.append([com[0], texture, com[2], com[3], com[4], com[5]])
+    else:
+        to_draw.append(com)
 
 func clear_draw_commands():
     to_draw = []

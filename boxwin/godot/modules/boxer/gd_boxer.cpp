@@ -296,6 +296,21 @@ cl_object lisp_boxer_set_property(cl_object box, cl_object prop_name, cl_object 
     return ECL_NIL;
 }
 
+cl_object lisp_boxer_push_boxer_centered_bitmap(cl_object godot_obj, cl_object pbarray, cl_object x, cl_object y, cl_object width, cl_object height) {
+    PackedInt32Array *pba = (PackedInt32Array *)ecl_foreign_data_pointer_safe(pbarray);
+    Array togo = Array();
+    togo.push_back(convert_ecl_to_godot(godot_obj));
+    togo.push_back("push_graphics_command");
+    togo.push_back(47);
+    togo.push_back(Variant(*pba));
+    togo.push_back(convert_ecl_to_godot(x));
+    togo.push_back(convert_ecl_to_godot(y));
+    togo.push_back(convert_ecl_to_godot(width));
+    togo.push_back(convert_ecl_to_godot(height));
+    main_boxer_node->call("push_to_scene_queue", togo);
+    return ECL_NIL;
+}
+
 cl_object lisp_boxer_push_to_scene_queue(cl_object args_vector) {
     Array togo = Array();
     for (int i = 0; i < args_vector->vector.fillp; i++) {
@@ -373,6 +388,10 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
 
     aux = ecl_make_symbol("GDBOXER-PACKED-BYTE-ARRAY-SET", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_packed_byte_array_set, 3);
+
+    aux = ecl_make_symbol("GDBOXER-DRAW-BOXER-CENTERED-BITMAP", "BOXER");
+    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_push_boxer_centered_bitmap, 6);
+
 
     //
     // Display Style Lists

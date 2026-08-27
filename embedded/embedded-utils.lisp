@@ -462,7 +462,7 @@
       (when gl
         (do-vector-contents (com gl)
           (let ((command (coerce com 'list)))
-            (godot-call godot-box "push_graphics_command" (nth 0 command) (nth 1 command) (nth 2 command) (nth 3 command) (nth 4 command) (nth 5 command))))))
+            (push-graphics-command godot-box (nth 0 command) (nth 1 command) (nth 2 command) (nth 3 command) (nth 4 command) (nth 5 command))))))
 
     ;; background
     (let ((value (graphics-sheet-background sheet)))
@@ -487,13 +487,10 @@
 ;;;
 
 (defun apply-graphics-list (godot-obj gl)
-  ;; (let ((gl (graphics-sheet-graphics-list sheet)))
   (when gl
     (do-vector-contents (com gl)
       (let ((command (coerce com 'list)))
-        (godot-call godot-obj "push_graphics_command"
-          (nth 0 command) (nth 1 command) (nth 2 command) (nth 3 command) (nth 4 command) (nth 5 command))))))
-            ;; )
+        (push-graphics-command godot-obj (nth 0 command) (nth 1 command) (nth 2 command) (nth 3 command) (nth 4 command) (nth 5 command))))))
 
 ;; Adding removing sprites from a box
 (defmethod add-graphics-object :after ((self box) turtle)
@@ -681,13 +678,20 @@
               ((not (null boxer::*boxer-system-hacker*))
                (error "Unknown object, ~A, in event queue" input)))))))
 
+(defun push-graphics-command (godot-box arg0 arg1 arg2 arg3 arg4 arg5)
+  (cond
+    ((= arg0 47)
+     (gdboxer-draw-boxer-centered-bitmap godot-box  (ogl-pixmap-texture arg1) arg2 arg3 arg4 arg5))
+    (t
+     (godot-call godot-box "push_graphics_command" arg0 arg1 arg2 arg3 arg4 arg5))))
+
 (defmethod append-graphics-command :after (gclist com-list)
   (if (graphics-command-list-agent %graphics-list)
     (let* ((agent (graphics-command-list-agent %graphics-list))
           (graphics-box (assoc-graphics-box agent))
           (godot-box (fetch-godot-obj graphics-box)))
       ;; This is not very elegent, however the longest graphics command is never more than 6 params
-      (godot-call godot-box "push_graphics_command" (nth 0 com-list) (nth 1 com-list) (nth 2 com-list) (nth 3 com-list) (nth 4 com-list) (nth 5 com-list)))
+      (push-graphics-command godot-box (nth 0 com-list) (nth 1 com-list) (nth 2 com-list) (nth 3 com-list) (nth 4 com-list) (nth 5 com-list)))
     (format t " Godot Boxer Append-graphics-list NULL %graphics-list")))
 
 ;; still being used hardcoded in sleep primitive...
