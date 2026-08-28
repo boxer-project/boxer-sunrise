@@ -680,6 +680,11 @@
 
 (defun push-graphics-command (godot-box arg0 arg1 arg2 arg3 arg4 arg5)
   (cond
+    ((= arg0 34)
+     ;; We are going to add some more information here, so the command sent to godot will be:
+     ;; 34 font-no font-name size bold?-0/1 italic?-0/1
+     (let ((font-no arg1))
+       (godot-call godot-box "push_graphics_command" arg0 font-no (font-name font-no) (font-size font-no) (gboolean (bold-font? font-no)) (gboolean (italic-font? font-no)))))
     ((= arg0 47)
      (gdboxer-draw-boxer-centered-bitmap godot-box  (ogl-pixmap-texture arg1) arg2 arg3 arg4 arg5))
     (t

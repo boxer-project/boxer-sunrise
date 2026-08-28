@@ -35,19 +35,19 @@ func change_graphics_color(color):
 # 39   BOXER-CENTERED-STRING                        (X Y STRING)
 func centered_string(x, y, string):
     var string_size: Vector2 = current_font.get_multiline_string_size(string, HORIZONTAL_ALIGNMENT_CENTER,
-        -1, current_font_size)
-    draw_string(current_font, Vector2(x - (string_size.x / 2), -y + (string_size.y / 2)), string, HORIZONTAL_ALIGNMENT_CENTER,
-        -1, current_font_size, pen_color)
+        -1, current_font_size, -1, TextServer.BREAK_MANDATORY)
+    draw_multiline_string(current_font, Vector2(x - (string_size.x / 2), -y + (string_size.y / 2)), string, HORIZONTAL_ALIGNMENT_CENTER,
+        -1, current_font_size, -1, pen_color, TextServer.BREAK_MANDATORY)
 
 # 40   BOXER-LEFT-STRING                            (X Y STRING)
 func left_string(x, y, string):
-    draw_string(current_font, Vector2(x, -y), string, HorizontalAlignment.HORIZONTAL_ALIGNMENT_LEFT,
-        -1, current_font_size, pen_color)
+    draw_multiline_string(current_font, Vector2(x,  -y), string, HORIZONTAL_ALIGNMENT_CENTER,
+        -1, current_font_size, -1, pen_color, TextServer.BREAK_MANDATORY)
 
 # 41   BOXER-RIGHT-STRING                           (X Y STRING)
 func right_string(x, y, string):
-    draw_string(current_font, Vector2(x, -y), string, HorizontalAlignment.HORIZONTAL_ALIGNMENT_RIGHT,
-        -1, current_font_size, pen_color)
+    draw_multiline_string(current_font, Vector2(x,  -y), string, HORIZONTAL_ALIGNMENT_CENTER,
+        -1, current_font_size, -1, pen_color, TextServer.BREAK_MANDATORY)
 
 # 42   BOXER-CENTERED-RECTANGLE                     (X Y WIDTH HEIGHT)
 func centered_rectangle(x, y, width, height):
@@ -87,6 +87,9 @@ func draw_graphics_command(com: Array):
     var op_code = com[0]
     if op_code == 33:
         pen_width = com[1]
+    elif op_code == 34:
+        current_font_size  = com[3]
+        current_font = Global.get_boxer_font(com[1], com[2], com[3], com[4], com[5])
     elif op_code == 35:
         line_segment(com[1], com[2], com[3], com[4])
     elif op_code == 36:

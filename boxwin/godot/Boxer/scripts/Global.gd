@@ -14,6 +14,9 @@ func dpi_scale(value: float):
     # Scale the size based on the hiDPI scale
     return value / screen_scale
 
+###
+### Mouse and Keyboard Input
+###
 
 # This will be a vector of [row,  pos, area] which will be used on press and releases to determine
 # if we are on the same widget and should emit a Boxer MOUSE-CLICK
@@ -141,3 +144,44 @@ func handle_mouse_input(event: InputEventMouse, row, pos, area = BoxArea.INSIDE)
 
     #         print("handle mouse input motion dragging: ", control, )
     #         $/root/Main.handle_boxer_func("MOUSE-UPDATE-SELECTED-REGION", cha_boxer_row, cha_pos, cha_boxer_screen_box)
+
+###
+### Font Support
+###
+
+var font_cache: Dictionary = {}
+var default_sans: Font = load("res://fonts/NotoSans-VariableFont_wdth,wght.ttf")
+var default_sans_italic: Font = load("res://fonts/NotoSans-Italic-VariableFont_wdth,wght.ttf")
+var default_serif: Font = load("res://fonts/NotoSerif-VariableFont_wdth,wght.ttf")
+var default_serif_italic: Font = load("res://fonts/NotoSerif-Italic-VariableFont_wdth,wght.ttf")
+var default_monospace: Font = load("res://fonts/NotoSansMono-VariableFont_wdth,wght.ttf")
+
+func get_weighted_font(font: Font, is_bold):
+    var togo = font
+    if is_bold:
+        var fv: FontVariation = FontVariation.new()
+        fv.base_font = font
+        fv.variation_embolden = 1.0
+        togo = fv
+    return togo
+
+func get_boxer_font(font_no: int, font_name: String, _size: int, is_bold, is_italic):
+    if font_cache.has(font_no):
+        return font_cache[font_no]
+
+    if font_name.to_lower() == "arial" and is_italic:
+        font_cache[font_no] = get_weighted_font(default_sans_italic, is_bold)
+    elif font_name.to_lower() == "arial":
+        font_cache[font_no] = get_weighted_font(default_sans, is_bold)
+    elif font_name.to_lower() == "times new roman" and is_italic:
+        font_cache[font_no] = get_weighted_font(default_serif_italic, is_bold)
+    elif font_name.to_lower() == "times new roman":
+        font_cache[font_no] = get_weighted_font(default_serif, is_bold)
+    elif font_name.to_lower() == "courier new":
+        font_cache[font_no] = get_weighted_font(default_monospace, is_bold)
+    else:
+        print("No font matched: ", font_name)
+        return default_sans
+
+    return font_cache[font_no]
+
