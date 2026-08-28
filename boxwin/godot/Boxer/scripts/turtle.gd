@@ -9,7 +9,10 @@ signal done_drawing
 # being used as the top level script for a scene
 var boxer_turtle
 
-var default_font : Font = ThemeDB.fallback_font;
+var default_font : Font = ThemeDB.fallback_font
+var current_font : Font = default_font
+var default_font_size : int = ThemeDB.fallback_font_size
+var current_font_size : int = default_font_size
 
 var pen_color = Color.BLACK;
 var pen_width = 1.0;
@@ -31,18 +34,20 @@ func change_graphics_color(color):
 
 # 39   BOXER-CENTERED-STRING                        (X Y STRING)
 func centered_string(x, y, string):
-    draw_string(default_font, Vector2(x, -y), string, HorizontalAlignment.HORIZONTAL_ALIGNMENT_CENTER,
-        -1, ThemeDB.fallback_font_size, pen_color)
+    var string_size: Vector2 = current_font.get_multiline_string_size(string, HORIZONTAL_ALIGNMENT_CENTER,
+        -1, current_font_size)
+    draw_string(current_font, Vector2(x - (string_size.x / 2), -y + (string_size.y / 2)), string, HORIZONTAL_ALIGNMENT_CENTER,
+        -1, current_font_size, pen_color)
 
 # 40   BOXER-LEFT-STRING                            (X Y STRING)
 func left_string(x, y, string):
-    draw_string(default_font, Vector2(x, -y), string, HorizontalAlignment.HORIZONTAL_ALIGNMENT_LEFT,
-        -1, ThemeDB.fallback_font_size, pen_color)
+    draw_string(current_font, Vector2(x, -y), string, HorizontalAlignment.HORIZONTAL_ALIGNMENT_LEFT,
+        -1, current_font_size, pen_color)
 
 # 41   BOXER-RIGHT-STRING                           (X Y STRING)
 func right_string(x, y, string):
-    draw_string(default_font, Vector2(x, -y), string, HorizontalAlignment.HORIZONTAL_ALIGNMENT_RIGHT,
-        -1, ThemeDB.fallback_font_size, pen_color)
+    draw_string(current_font, Vector2(x, -y), string, HorizontalAlignment.HORIZONTAL_ALIGNMENT_RIGHT,
+        -1, current_font_size, pen_color)
 
 # 42   BOXER-CENTERED-RECTANGLE                     (X Y WIDTH HEIGHT)
 func centered_rectangle(x, y, width, height):
