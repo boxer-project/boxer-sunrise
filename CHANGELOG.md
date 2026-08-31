@@ -1,5 +1,111 @@
 # Change Log
 
+## 3.4.27 2025-04-09
+
+Maintenance release fixing several crashes, compatibility with some historical microworlds, and regressions.
+Under the hood, this release has numerous refactorings and updates for compiling the Boxer Core library to a C/C++
+shared or static library, and work on the next generation frontends written in Godot for various platforms and WASM.
+
+WIP - Search Toolbar Foundations
+
+godot
+  - First major commit of godot frontend WIP
+  - Filling in majority of turtle drawing operations. Compile time eval-whens on some graphics state vars and macros.
+  - First steps of setting up event queues.
+  - WIP Lot's of in progress work and fleshing out of features.
+  - Removing unnecessary chas member array
+  - Recentering turtles again with anchors. Fixing mouse input from getting swallowed by menu node.
+  - BitOr Shifting mod key input. Adjusting cursor height to match current cha and larger min value.
+  - Cleaning up cursor code.
+  - Setting up mouse clicks on rest of row.
+  - Workaround for nil screen-boxes
+  - Fixing issue with double rows in new boxes
+  - Making sure cha scenes don't take all the mouse input
+  - Paste text from system clipboard. Minor log cleanup.
+  - WIP PasteText, Zoom, Toggle Closets, Open keybindings.
+  - Adding double clicks
+  - Workaround for populating name-row sub nodes
+  - Displaying graphics-sheets on node ready
+  - Cleaning up gd extension
+  - Sprite godot objects and positioning.
+  - Initial direct marshalling from Lisp -> GDScript
+  - Replacing hardcoded c++ methods with godot-call marshalling
+  - Cleaning up set_superior_box
+  - refactor A number of the operations in disply.lisp are general purpose, moving to core
+  - Remaining small build tweaks before merge
+  - Removing pixmap hacks from embedded boxer code.
+  - Refactoring com-mouse-border-toggle-type and hooking up to Godot boxes.
+  - Removing custom cpp functions for toggling box type, using generic godot-call now
+  - cleanup Moving some lisp calls to handle_boxer_func_1
+  - Cleaning up save document backup file keeping and adding Godot keybinding for saving file boxes.
+  - Cleaning up defs asdf component.
+  - Small changes to asdf files for building as a static library
+  - refactor Moving turtle commands over to godot-call
+  - Fixing global scrollbars
+  - refactor Adding screen-objs to godot tree, hooking up top left corner.
+  - Streaming mouse commands a bit more, godot box expanding
+    - Archiving mouse-corner-tracking
+    - Cleaning up com-mouse-tr-corner-expand-box
+    - Godot binding
+  - Cleaning up shrunk/supershrunk panel clicks
+  - More boxtops
+  - Minor change to use relative node path lookup for WASM.
+  - Adding embedded-utils for static library emscripten builds
+  - refactor Smoothing out mouse handling on box areas
+  - Small fix in fill-in-screen-objs for boxes without a screen-obj yet.
+  - Updating handle_mouse_input usages
+  - Moving extension dir to modules/ so that we can build both an extension and internal godot module.
+  - C macros to allow building as both a GDExtension and core godot module
+  - Few remaining bits to compile as a builtin godot module.
+  - Remaining items keeping WASM from working
+    - Template export settings
+    - ECL init method difference
+    - Moving main node setup at beginning of lisp startup
+    - There is still an issue with box names being set
+  - Adding uiop for certain ECL library builds.
+  - Build scripts for BOXER WASM
+  - Temporarily adding build scripts until they are part of ecl
+  - Slowly cleaning up wasm build scripts and parameterizing paths.
+
+regression
+  - Removing drawing-on-window usage from get-box-under-mouse for clicking port targets.
+  - Fixing up top-right corner to fullscreen again.
+
+minor
+  - Wrapping defmethod args
+
+crash-fix
+  - Moving port? check for allocating screen boxes up the cond statement.
+
+doco
+  - turtle slot documentation
+
+refactor
+  - Removign extra params from defboxer-command mouse entries: window x y click-only?
+
+tests
+  - tests Fixing up test runner
+  - Adding redisplay tests back in on lispworks
+
+cleanup
+  - Removing threejs prototype
+
+the-attic
+  - Archiving unused insert-row-before-row and process-allow-schedule
+  - Archiving *enable-mouse-toggle-box-type?*, *slow-box-type-toggle*, *mouse-action-pause-time*
+  - Removing MCL bits from xfile, as well as external-program usage for embedded.
+  - Archiving a number of methods from lodisp that haven't been used in ages.
+  - Removing no longer used var *use-glist-performance*
+  - Removing unused defvar *MAKE-TURTLE-WITH-NEW-GRAPHICS-BOX*
+  - Removing defun make-screen-cha which just returned it's arg
+  - Archiving unused defboxer-commands com-mouse-br-corner-collapse-box, com-mouse-br-corner-shrink-box,
+      com-mouse-tl-corner-super-shrink-box, com-mouse-br-corner-expand-box, com-mouse-br-corner-set-outermost-box,
+      com-mouse-tr-corner-toggle-closet, com-mouse-tl-corner-toggle-closet
+  - Moving some older bug email templating and print screen prims to the attic.
+  - Archived com-mouse-toggle-{tl,tr,bl,br}-hotspot commands.
+  - Archiving track-mouse-area and related -tracking-info functions.
+  - Archiving unused *-screen-bp methods from disply.lisp
+
 ## 3.4.26 2025-10-22
 
 Another small bug release on top of 3.4.25
