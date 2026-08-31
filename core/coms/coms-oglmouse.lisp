@@ -144,50 +144,6 @@
         (com-super-shrink-box))))
   boxer-eval::*novalue*)
 
-(defboxer-command com-mouse-expand-box (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
-  "make the box one step bigger"
-  ;; Note that this is designed to be called in the Boxer process,
-  ;; not in the Mouse Process -- This is important!!!
-  (let ((new-box (screen-obj-actual-obj (bp-screen-box mouse-bp)))
-        (old-box (point-box))
-        (new-row (bp-row mouse-bp))
-        (mouse-screen-box (bp-screen-box mouse-bp))
-        (new-cha-no (bp-cha-no mouse-bp)))
-    ;; If the mouse cursor isn't over some type of shrunken box, we aren't going to
-    ;; do anything. This prevents the region being reset after dragging to select some
-    ;; text, which is bound to mouse-down.  - sgithens 2021-10-18
-    (cond ((and (not-null new-row) (box? new-box) (shrunken? new-box)
-            ;; This handles the case of when you are on the top level box targetted by a port.
-            ;; Since com-mouse-expand-box is currently bound to mouse-click, if we click in a port, we
-            ;; don't want the expand message to be sent to the actual box that is targetted by the box.
-            ;; boxer-bugs-102
-            ;; 1. The box is not a port box
-            ;; 2. The screen-obj type is port
-            ;; TODO what if it's a port that's pointing to a port?
-            (eq mouse-screen-box (car (screen-objs new-box))))
-           (reset-region)
-           (unless (eq old-box new-box)
-             (send-exit-messages new-box mouse-screen-box)
-             (enter new-box (not (superior? old-box new-box))))
-           (move-point-1 new-row new-cha-no mouse-screen-box)
-           (com-expand-box))
-          ((and (not-null new-row) (box? new-box) (shrunken? new-box))
-           (reset-region)
-           (unless (eq old-box new-box)
-             (send-exit-messages new-box mouse-screen-box)
-             (enter new-box (not (superior? old-box new-box))))
-           (move-point-1 new-row new-cha-no mouse-screen-box)
-           ;; If this top level port is actually shrunk (not the box it point to),
-           ;; go ahead and exand it
-           (let* ((new-actual (screen-obj-actual-obj mouse-screen-box))
-                  (new-style-list (display-style-list new-actual))
-                  (new-style (display-style-style new-style-list)))
-             (when (member new-style '(:SHRUNK :SUPERSHRUNK))
-               (com-expand-box)
-             ))
-           )))
-  boxer-eval::*novalue*)
-
 (defboxer-command com-mouse-set-outermost-box (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "make the box full screen"
   ;; Note that this is designed to be called in the Boxer process,
@@ -258,13 +214,14 @@
         (t
          (move-point-1 new-row new-cha-no mouse-screen-box))))
       )
+  #+lispworks
   (when (not (shrunken? (bp-screen-box mouse-bp)))
     ;; now go about dragging a region defined by *point* and the mouse-bp
     ;; unless the user is no longer holding the mouse button down
     ;; now track the mouse
     (let ((x (bw::boxer-pane-mouse-x))
           (y (bw::boxer-pane-mouse-y)))
-    #+lispworks (multiple-value-bind (original-screen-row original-x)
+                (multiple-value-bind (original-screen-row original-x)
                                      (mouse-position-screen-row-values x y)
                          (let ((original-screen-box (screen-box original-screen-row)))
                            ;; should this be (bp-screen-box mouse-bp) ?
@@ -673,6 +630,18 @@
 ;; (defvar *warn-about-disabled-commands* t)
 ;; (defvar *only-shrink-wrap-text-boxes* nil)
 
+(defun mouse-box-resize (actual-box new-wid new-hei)
+  "Function to set the new box size and corresponding data structure adjustments after having been
+dragged either with the lispworks with-mouse-tracking or a mouse event from Godot."
+  ;; make sure the mouse ended up in
+  ;; a reasonable place
+  (set-fixed-size actual-box new-wid new-hei)
+  (when (and (data-box? actual-box)
+            (auto-fill? actual-box))
+    ;; don't fill doit boxes !!
+    (com-fill-box actual-box))
+  (modified actual-box))
+
 (defboxer-command com-mouse-resize-box (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "Resize the box with the mouse.  Just clicking unfixes the box size"
   ;; first, if there already is an existing region, flush it
@@ -750,18 +719,11 @@
                                                                                  (progn (set-scroll-to-actual-row screen-box nil)
                                                                                         (set-fixed-size actual-box nil nil))))
                                                                           (t
-                                                                           ;; make sure the mouse ended up in
-                                                                           ;; a reasonable place
-                                                                           (set-fixed-size actual-box
-                                                                                           (max minimum-track-wid
-                                                                                                   (- final-x box-window-x (- pixel-correction)))
-                                                                                           (max minimum-track-hei
-                                                                                                   (- final-y box-window-y (- pixel-correction))))
-                                                                           (when (and (data-box? actual-box)
-                                                                                      (auto-fill? actual-box))
-                                                                             ;; don't fill doit boxes !!
-                                                                             (com-fill-box actual-box))
-                                                                           (modified actual-box))))))))))
+                                                                           (mouse-box-resize actual-box
+                                                                                             (max minimum-track-wid
+                                                                                                  (- final-x box-window-x (- pixel-correction)))
+                                                                                             (max minimum-track-hei
+                                                                                                  (- final-y box-window-y (- pixel-correction)))))))))))))
   boxer-eval::*novalue*)
 
 (defun status-line-size-report (screen-box wid hei)

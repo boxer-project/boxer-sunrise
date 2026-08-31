@@ -39,6 +39,34 @@ Modification History (most recent at top)
 (defvar *pixmap-ffi-type* :unsigned-int
   "The pointer type for foreign-alloc and reference of pixmap data")
 
+;; Nearly Straight from CFFI cffi-ecl.lisp
+#+embedded-boxer
+(defun mem-ref (ptr type &optional (offset 0))
+  "Dereference an object of TYPE at OFFSET bytes from PTR."
+  (let* (;(type (cffi-type->ecl-type type))
+         (type-size (ffi:size-of-foreign-type type)))
+    (si:foreign-data-ref-elt
+     (si:foreign-data-recast ptr (+ offset type-size) :void) offset type)))
+
+#+embedded-boxer
+(defun mem-set (value ptr type &optional (offset 0))
+  "Set an object of TYPE at OFFSET bytes from PTR."
+  (let* (;(type (cffi-type->ecl-type type))
+         (type-size (ffi:size-of-foreign-type type)))
+    (si:foreign-data-set-elt
+     (si:foreign-data-recast ptr (+ offset type-size) :void)
+     offset type value)))
+
+#+embedded-boxer
+(defun cffi:mem-aref (ptr type &optional (index 0))
+  "Like MEM-REF except for accessing 1d arrays."
+  (mem-ref ptr type (* index (ffi:size-of-foreign-type type))))
+
+#+embedded-boxer
+(defun (setf cffi:mem-aref) (new-value ptr type &optional (index 0))
+  (mem-set new-value ptr type (* index (ffi:size-of-foreign-type type))))
+
+
 (defvar *gl-rgba-rev-alpha-byte* (byte 8 24))
 (defvar *gl-rgba-rev-blue-byte* (byte 8 16))
 (defvar *gl-rgba-rev-green-byte* (byte 8 8))
@@ -92,8 +120,7 @@ Modification History (most recent at top)
          (pwid (ogl-pixmap-width pixmap))
          (phei (ogl-pixmap-height pixmap))
          (ogl-y (- phei y 1)))
-    #-embedded-boxer (cffi:mem-aref data *pixmap-ffi-type* (+ x (* ogl-y pwid)))
-    #+embedded-boxer (ffi::%foreign-data-ref data (+ x (* ogl-y pwid)) *pixmap-ffi-type*)))
+    (cffi:mem-aref data *pixmap-ffi-type* (+ x (* ogl-y pwid)))))
 
 ;; NOTE: this must match the format in *pixmap-data-type* and *pixmap-data-format*
 (defun pixel->color (pixel)
@@ -110,8 +137,7 @@ Modification History (most recent at top)
          (pwid (ogl-pixmap-width pixmap))
          (phei (ogl-pixmap-height pixmap))
          (ogl-y (- phei y 1)))
-    #-embedded-boxer (setf (cffi:mem-aref data *pixmap-ffi-type* (+ x (* ogl-y pwid))) newpixel)
-    #+embedded-boxer (ffi::%foreign-data-set data (+ x (* ogl-y pwid)) *pixmap-ffi-type* newpixel)
+    (setf (cffi:mem-aref data *pixmap-ffi-type* (+ x (* ogl-y pwid))) newpixel)
     #+embedded-boxer (gdboxer-packed-byte-array-set (ogl-pixmap-texture pixmap) (+ x (* ogl-y pwid)) newpixel))
   (setf (ogl-pixmap-update-texture-p pixmap) t))
 
@@ -125,9 +151,7 @@ Modification History (most recent at top)
           (data (ogl-pixmap-data pixmap)))
       (declare (fixnum w h))
       (dotimes (i (* w h))
-        #-embedded-boxer (setf (cffi:mem-aref data *pixmap-ffi-type* i) pixel-value)
-        ;; TODO #+embedded-boxer
-        ))
+        (setf (cffi:mem-aref data *pixmap-ffi-type* i) pixel-value)))
     (setf (ogl-pixmap-update-texture-p pixmap) t)))
 
 (defun clear-offscreen-bitmap (bm &optional (clear-color *background-color*))
@@ -149,12 +173,12 @@ Modification History (most recent at top)
            (actual-hei (min hei (- th to-y) (- fh from-y))))
       (dotimes (y actual-hei)
         (dotimes (x actual-wid)
-          #-embedded-boxer
           (setf
               (cffi:mem-aref tdata *pixmap-ffi-type* (+ (+ x to-x)   (* (- th (+ y to-y)   1) tw)))
               (cffi:mem-aref fdata *pixmap-ffi-type* (+ (+ x from-x) (* (- fh (+ y from-y) 1) fw))))
-          ;; TODO #+embedded-boxer
-          )))
+          #+embedded-boxer
+          (gdboxer-packed-byte-array-set (ogl-pixmap-texture to-pixmap) (+ (+ x to-x)   (* (- th (+ y to-y)   1) tw))
+                                         (cffi:mem-aref fdata *pixmap-ffi-type* (+ (+ x from-x) (* (- fh (+ y from-y) 1) fw)))))))
     (setf (ogl-pixmap-update-texture-p to-pixmap) t)))
 
 (defun copy-pixmap (pixmap)

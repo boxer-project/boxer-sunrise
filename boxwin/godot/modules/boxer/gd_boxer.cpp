@@ -84,6 +84,9 @@ cl_object convert_godot_to_ecl(Variant value) {
     if (value.INT == type) {
         return ecl_make_fixnum((int)value);
     }
+    else if (value.FLOAT == type) {
+        return ecl_make_single_float((double)value);
+    }
     else if (value.OBJECT == type) {
         return ((BoxerLispRef*) ((Object*) value))->boxer_obj;
     }
@@ -95,6 +98,13 @@ cl_object convert_godot_to_ecl(Variant value) {
 #else
         return ecl_make_simple_base_string(str.ascii().ptr(), str.length());
 #endif
+    }
+    else if (value.ARRAY == type) {
+        cl_object togo = cl_make_array(1, ecl_make_fixnum(((Array)value).size()));
+        for (int i = 0; i < ((Array)value).size(); i++) {
+            ecl_aset1(togo, i, convert_godot_to_ecl(((Array)value)[i]));
+        }
+        return togo;
     }
     else {
         return ECL_NIL;
@@ -162,6 +172,12 @@ cl_object lisp_boxer_make_turtle(cl_object boxer_turtle) {
     return ecl_make_foreign_data(ECL_NIL, 0, godot_turtle);
 }
 
+cl_object lisp_boxer_make_graphics_sheet(cl_object boxer_graphics_sheet) {
+    BoxerLispRef* bgraphics_sheet = memnew(BoxerLispRef);
+    bgraphics_sheet->boxer_obj = boxer_graphics_sheet;
+    Object *godot_graphics_sheet = main_boxer_node->call("make_graphics_sheet", Variant((Object *) bgraphics_sheet));
+    return ecl_make_foreign_data(ECL_NIL, 0, godot_graphics_sheet);
+}
 
 cl_object lisp_boxer_get_name_row(cl_object box) {
     BOXER_PRINT("lisp_boxer_get_name_row\n");
@@ -206,20 +222,6 @@ cl_object lisp_boxer_set_graphics_mode_p(cl_object box, cl_object enabled) {
  * GRAPHICS SHEET BOXES
  */
 
-cl_object lisp_boxer_set_graphics_sheet_background(cl_object box, cl_object red, cl_object green, cl_object blue, cl_object alpha) {
-    Object* godot_box = Variant((Object*) ecl_foreign_data_pointer_safe(box));
-    godot_box->call_deferred("set_background",
-                    ecl_single_float(red), ecl_single_float(green), ecl_single_float(blue), ecl_single_float(alpha));
-    return ECL_NIL;
-}
-
-cl_object lisp_boxer_set_graphics_sheet_draw_dims(cl_object box, cl_object width, cl_object height) {
-    Object* godot_box = Variant((Object*) ecl_foreign_data_pointer_safe(box));
-    godot_box->set_deferred("draw_wid", (int) ecl_fixnum(width));
-    godot_box->set_deferred("draw_hei", (int)ecl_fixnum(height));
-    return ECL_NIL;
-}
-
 cl_object lisp_boxer_set_graphics_sheet_bit_array(cl_object box, cl_object width, cl_object height, cl_object pixmap_data) {
     Object *godot_box = Variant((Object *)ecl_foreign_data_pointer_safe(box));
     PackedInt32Array *pba = (PackedInt32Array *)ecl_foreign_data_pointer_safe(pixmap_data);
@@ -245,6 +247,11 @@ Variant convert_ecl_to_godot (cl_object value) {
     }
     else if (ECL_FOREIGN_DATA_P(value)) {
         return Variant((Object *)ecl_foreign_data_pointer_safe(value));
+    }
+    else if (ECL_INSTANCEP(value)) {
+        BoxerLispRef* bref = memnew(BoxerLispRef);
+        bref->boxer_obj = value;
+        return Variant((Object *)bref);
     }
     // The strings need to come before vector and other sequences, since they are also sequences.
     else if (ECL_BASE_STRING_P(value)) {
@@ -286,6 +293,21 @@ cl_object lisp_boxer_set_property(cl_object box, cl_object prop_name, cl_object 
     Object *godot_box = Variant((Object *)ecl_foreign_data_pointer_safe(box));
     char * name = ecl_base_string_pointer_safe (ecl_null_terminated_base_string(prop_name));
     godot_box->set_deferred(name, convert_ecl_to_godot(prop_value));
+    return ECL_NIL;
+}
+
+cl_object lisp_boxer_push_boxer_centered_bitmap(cl_object godot_obj, cl_object pbarray, cl_object x, cl_object y, cl_object width, cl_object height) {
+    PackedInt32Array *pba = (PackedInt32Array *)ecl_foreign_data_pointer_safe(pbarray);
+    Array togo = Array();
+    togo.push_back(convert_ecl_to_godot(godot_obj));
+    togo.push_back("push_graphics_command");
+    togo.push_back(47);
+    togo.push_back(Variant(*pba));
+    togo.push_back(convert_ecl_to_godot(x));
+    togo.push_back(convert_ecl_to_godot(y));
+    togo.push_back(convert_ecl_to_godot(width));
+    togo.push_back(convert_ecl_to_godot(height));
+    main_boxer_node->call("push_to_scene_queue", togo);
     return ECL_NIL;
 }
 
@@ -345,6 +367,9 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
     aux = ecl_make_symbol("GDBOXER-MAKE-TURTLE", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_make_turtle, 1);
 
+    aux = ecl_make_symbol("GDBOXER-MAKE-GRAPHICS-SHEET", "BOXER");
+    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_make_graphics_sheet, 1);
+
     aux = ecl_make_symbol("GDBOXER-GET-NAME-ROW", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_get_name_row, 1);
 
@@ -364,6 +389,10 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
     aux = ecl_make_symbol("GDBOXER-PACKED-BYTE-ARRAY-SET", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_packed_byte_array_set, 3);
 
+    aux = ecl_make_symbol("GDBOXER-DRAW-BOXER-CENTERED-BITMAP", "BOXER");
+    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_push_boxer_centered_bitmap, 6);
+
+
     //
     // Display Style Lists
     //
@@ -373,12 +402,6 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
     //
     // GRAPHICS SHEET BOXES
     //
-    aux = ecl_make_symbol("GDBOXER-SET-GRAPHICS-SHEET-BACKGROUND", "BOXER");
-    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_set_graphics_sheet_background, 5);
-
-    aux = ecl_make_symbol("GDBOXER-SET-GRAPHICS-SHEET-DRAW-DIMS", "BOXER");
-    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_set_graphics_sheet_draw_dims, 3);
-
     aux = ecl_make_symbol("GDBOXER-SET-GRAPHICS-SHEET-BIT-ARRAY", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_set_graphics_sheet_bit_array, 4);
 
@@ -404,6 +427,10 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
 
 #ifdef BOXER_GDEXTENSION
     result = cl_eval(c_string_to_object("(load \"/Users/sgithens/code/boxer-sunrise/embedded/embedded-utils.lisp\")"));
+    ecl_print(result, ECL_T);
+    result = cl_eval(c_string_to_object("(load \"/Users/sgithens/code/boxer-sunrise/embedded/music-prims.lisp\")"));
+    ecl_print(result, ECL_T);
+    result = cl_eval(c_string_to_object("(load \"/Users/sgithens/code/boxer-sunrise/embedded/video-prims.lisp\")"));
     ecl_print(result, ECL_T);
 #endif
 

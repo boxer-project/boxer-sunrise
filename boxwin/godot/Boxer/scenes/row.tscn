@@ -1,11 +1,13 @@
-[gd_scene load_steps=2 format=3 uid="uid://bqodvk5rb2nb4"]
+[gd_scene load_steps=3 format=3 uid="uid://bqodvk5rb2nb4"]
 
 [ext_resource type="Script" uid="uid://8neavd8n1a5w" path="res://scripts/row.gd" id="1_7024n"]
+[ext_resource type="PackedScene" uid="uid://7nrew4abjpqi" path="res://scenes/cha.tscn" id="2_5i3ed"]
 
 [node name="Row" type="HBoxContainer"]
 custom_minimum_size = Vector2(0, 20)
 mouse_behavior_recursive = 2
 theme_override_constants/separation = 0
 script = ExtResource("1_7024n")
+cha_scene = ExtResource("2_5i3ed")
 
 [connection signal="gui_input" from="." to="." method="_on_gui_input"]

@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://pdlvpw8s1sse"]
+[gd_scene load_steps=28 format=3 uid="uid://pdlvpw8s1sse"]
 
 [ext_resource type="Script" uid="uid://cy2jvrckapxht" path="res://scripts/main.gd" id="1_jyhfs"]
 [ext_resource type="PackedScene" uid="uid://7nrew4abjpqi" path="res://scenes/cha.tscn" id="2_tbgi4"]
@@ -9,8 +9,34 @@
 [ext_resource type="PackedScene" uid="uid://mjcxt81qohg3" path="res://scenes/turtle.tscn" id="5_choun"]
 [ext_resource type="Theme" uid="uid://clyeptsut3tbs" path="res://themes/macOS_light.tres" id="5_o6xl0"]
 [ext_resource type="Script" path="res://scripts/flipping_box.gd" id="5_tbgi4"]
+[ext_resource type="PackedScene" uid="uid://1h0du8hdutug" path="res://scenes/GraphicsSheet.tscn" id="6_0ld40"]
+[ext_resource type="Script" uid="uid://rq6s8cpuio4s" path="res://addons/SimpleSampler/sampler.gd" id="6_trceg"]
+[ext_resource type="AudioStream" uid="uid://o5pwkcdpex4o" path="res://samples/synth/Ab4.ogg" id="8_jbj1t"]
 [ext_resource type="Script" path="res://scripts/boxer_menu_bar.gd" id="9_85g3d"]
+[ext_resource type="AudioStream" uid="uid://bf67urmbgussm" path="res://samples/synth/B4.ogg" id="9_muem4"]
+[ext_resource type="AudioStream" uid="uid://d2ul4xbuec4jg" path="res://samples/synth/E4.ogg" id="10_dp3eg"]
 [ext_resource type="AudioStream" uid="uid://dvqduqpq41kd" path="res://scripts/Meow.wav" id="11_ya4ey"]
+[ext_resource type="Script" uid="uid://dtpmtwvvk0ac7" path="res://addons/SimpleSampler/sample_resource.gd" id="13_trceg"]
+[ext_resource type="PackedScene" uid="uid://djsgxosaq5u6t" path="res://scenes/Closet_Properties_Popup.tscn" id="17_muem4"]
+[ext_resource type="PackedScene" uid="uid://dlmc8on3q1qvh" path="res://scenes/Box_Types_Popup.tscn" id="18_dp3eg"]
+
+[sub_resource type="Resource" id="Resource_trceg"]
+script = ExtResource("13_trceg")
+stream = ExtResource("8_jbj1t")
+tone = "G#"
+metadata/_custom_type_script = "uid://dtpmtwvvk0ac7"
+
+[sub_resource type="Resource" id="Resource_0ld40"]
+script = ExtResource("13_trceg")
+stream = ExtResource("9_muem4")
+tone = "B"
+metadata/_custom_type_script = "uid://dtpmtwvvk0ac7"
+
+[sub_resource type="Resource" id="Resource_gqmmt"]
+script = ExtResource("13_trceg")
+stream = ExtResource("10_dp3eg")
+tone = "E"
+metadata/_custom_type_script = "uid://dtpmtwvvk0ac7"
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tefeu"]
 albedo_color = Color(1, 1, 1, 0)
@@ -35,15 +61,23 @@ cha_scene = ExtResource("2_tbgi4")
 box_scene = ExtResource("3_tefeu")
 row_scene = ExtResource("4_tipki")
 turtle_scene = ExtResource("5_choun")
-use_boxer_gdextension = true
+graphics_sheet_scene = ExtResource("6_0ld40")
 
 [node name="OpenFileDialog" type="FileDialog" parent="."]
 unique_name_in_owner = true
 title = "Open a File"
 ok_button_text = "Open"
 file_mode = 0
+display_mode = 1
 access = 2
 use_native_dialog = true
+
+[node name="NotePlayer" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+volume_db = 9.391
+script = ExtResource("6_trceg")
+samples = Array[ExtResource("13_trceg")]([SubResource("Resource_trceg"), SubResource("Resource_0ld40"), SubResource("Resource_gqmmt")])
+metadata/_custom_type_script = "uid://rq6s8cpuio4s"
 
 [node name="TopLevelContainer" type="VBoxContainer" parent="."]
 unique_name_in_owner = true
@@ -52,9 +86,47 @@ offset_bottom = 40.0
 mouse_filter = 2
 mouse_behavior_recursive = 1
 
+[node name="HBoxContainer" type="HBoxContainer" parent="TopLevelContainer"]
+layout_mode = 2
+
+[node name="EventQueueLabel" type="Label" parent="TopLevelContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "Event Queue:"
+
+[node name="EventQueueSize" type="Label" parent="TopLevelContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "0"
+
+[node name="label" type="Label" parent="TopLevelContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "Lisp Queue:"
+
+[node name="LispQueueSize" type="Label" parent="TopLevelContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "Event Queue:"
+
+[node name="PrintScrObjs" type="Button" parent="TopLevelContainer/HBoxContainer"]
+z_index = 4096
+z_as_relative = false
+layout_mode = 2
+mouse_behavior_recursive = 2
+text = "Print Scr-0bjs
+"
+
+[node name="PrintActObjs" type="Button" parent="TopLevelContainer/HBoxContainer"]
+layout_mode = 2
+mouse_behavior_recursive = 2
+text = "Print Act-Objs
+"
+
 [node name="ToolbarContainer" parent="TopLevelContainer" instance=ExtResource("4_tefeu")]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 
 [node name="MessageBarContainer" type="HBoxContainer" parent="TopLevelContainer"]
@@ -72,7 +144,11 @@ layout_mode = 2
 size_flags_vertical = 3
 mouse_behavior_recursive = 2
 
-[node name="World" parent="TopLevelContainer/OutermostBoxScroll" instance=ExtResource("3_tefeu")]
+[node name="OutermostBoxHolder" type="PanelContainer" parent="TopLevelContainer/OutermostBoxScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="World" parent="TopLevelContainer/OutermostBoxScroll/OutermostBoxHolder" instance=ExtResource("3_tefeu")]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -92,15 +168,25 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Zoom 100%"
 
+[node name="OutermostWaitingArea" type="Node2D" parent="."]
+unique_name_in_owner = true
+visible = false
+position = Vector2(0, 89)
+
 [node name="Cursor" parent="." instance=ExtResource("4_o6xl0")]
+unique_name_in_owner = true
 offset_left = 8.0
 offset_top = 6.0
 offset_right = 8.0
 offset_bottom = 6.0
 
+[node name="SelectedRegions" type="Node" parent="."]
+unique_name_in_owner = true
+
 [node name="GDBoxer" type="GDBoxer" parent="."]
 
 [node name="ScreenClip" type="Sprite2D" parent="."]
+visible = false
 position = Vector2(2572, 244)
 
 [node name="FlippingViewport" type="SubViewport" parent="."]
@@ -122,12 +208,14 @@ position = Vector2(284, 454)
 texture = SubResource("ViewportTexture_jyhfs")
 
 [node name="BoxerMenuBar" type="MenuBar" parent="."]
+visible = false
 offset_right = 40.0
 offset_bottom = 40.0
 mouse_filter = 2
 script = ExtResource("9_85g3d")
 
 [node name="MenuWow" type="PopupMenu" parent="BoxerMenuBar"]
+oversampling_override = 1.0
 system_menu_id = 2
 item_count = 1
 item_0/text = "This item!"
@@ -137,9 +225,19 @@ item_0/id = 0
 unique_name_in_owner = true
 stream = ExtResource("11_ya4ey")
 
+[node name="ClosetPropertiesPopup" parent="." instance=ExtResource("17_muem4")]
+unique_name_in_owner = true
+visible = false
+
+[node name="BoxTypesPopup" parent="." instance=ExtResource("18_dp3eg")]
+unique_name_in_owner = true
+visible = false
+
 [connection signal="canceled" from="OpenFileDialog" to="." method="_on_open_file_dialog_canceled"]
 [connection signal="file_selected" from="OpenFileDialog" to="." method="_on_open_file_dialog_file_selected"]
-[connection signal="row_inserted" from="TopLevelContainer/OutermostBoxScroll/World" to="Cursor" method="_on_world_row_inserted"]
+[connection signal="pressed" from="TopLevelContainer/HBoxContainer/PrintScrObjs" to="." method="_on_print_scr_objs_pressed"]
+[connection signal="pressed" from="TopLevelContainer/HBoxContainer/PrintActObjs" to="." method="_on_print_act_objs_pressed"]
+[connection signal="row_inserted" from="TopLevelContainer/OutermostBoxScroll/OutermostBoxHolder/World" to="Cursor" method="_on_world_row_inserted"]
 [connection signal="boxer_delete_cha" from="GDBoxer" to="." method="_on_gd_boxer_boxer_delete_cha"]
 [connection signal="boxer_delete_chas_between_cha_nos" from="GDBoxer" to="." method="_on_gd_boxer_boxer_delete_chas_between_cha_nos"]
 [connection signal="boxer_insert_cha" from="GDBoxer" to="." method="_on_gd_boxer_boxer_insert_cha"]

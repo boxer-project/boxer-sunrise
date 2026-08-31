@@ -329,3 +329,50 @@ Modification History (most recent at the top)
      (process-manual-box cha stream (1+ indent-level))
      (format stream "~%")
      (return))))))))
+
+;;;
+;;; Diagnostic Routines for printing out Actual and Screen structure
+;;;
+
+(defvar *diagnostic-indent-size* 4)
+
+(defun print-screen-obj-tree (&optional (scr-obj (outermost-screen-box)) (depth 0))
+  (cond
+    ((screen-box? scr-obj)
+     (format t "~%~V,,,' A+ Screen-Box: ~A #Screen-rows: ~A"
+       (* *diagnostic-indent-size* depth) "" scr-obj (storage-vector-active-length (screen-rows scr-obj)))
+     (do-vector-contents (inf-scr-obj (screen-rows scr-obj))
+       (print-screen-obj-tree inf-scr-obj (1+ depth))))
+    ((screen-row? scr-obj)
+     (format t "~%~V,,,' A- Screen-Row: ~A"
+       (* *diagnostic-indent-size* depth) "" scr-obj)
+     (do-vector-contents (inf-screen-obj (screen-chas scr-obj))
+        (when (not (screen-cha? inf-screen-obj))
+          (print-screen-obj-tree inf-screen-obj (1+ depth)))))
+    (t
+     (format t "~%~V,,,' A- Unidentified object: ~A"
+       (* *diagnostic-indent-size* depth) "" scr-obj))))
+
+(defun print-box-tree (&optional (obj *initial-box*) (depth 0))
+  (cond
+    ((box? obj)
+     (format t "~%~V,,,' A+ Box: ~A Style: ~A Screen-objs: #~A ~A"
+       (* *diagnostic-indent-size* depth) "" (name obj) (display-style-style (display-style-list obj))
+       (length (screen-objs obj)) (screen-objs obj))
+     (format t "~%~V,,,' A       Size: ~A"
+       (* *diagnostic-indent-size* depth) "" (if (fixed-size? obj)
+                        (multiple-value-list (fixed-size obj))
+                        "Dynamic"))
+     (format t "~%~V,,,' A       scr-box-act-obj: ~A"
+       (* *diagnostic-indent-size* depth) "" (if (car (screen-objs obj))
+                                               (screen-obj-actual-obj (car (screen-objs obj)))
+                                               (screen-objs obj)))
+     (do-box-rows ((row obj))
+      (print-box-tree row (1+ depth))
+     ))
+    ((row? obj)
+     (format t "~%~V,,,' A- Row: ~A Screen-objs: #~A ~A"
+       (* *diagnostic-indent-size* depth) "" obj (length (screen-objs obj)) (screen-objs obj))
+     (do-row-chas ((cha obj))
+      (when (box? cha)
+        (print-box-tree cha (1+ depth)))))))

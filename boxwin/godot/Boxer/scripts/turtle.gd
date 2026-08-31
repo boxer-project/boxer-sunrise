@@ -1,5 +1,7 @@
 @tool
-extends Control
+extends VideoStreamPlayer
+class_name Turtle
+# extends Control
 
 signal done_drawing
 
@@ -7,7 +9,10 @@ signal done_drawing
 # being used as the top level script for a scene
 var boxer_turtle
 
-var default_font : Font = ThemeDB.fallback_font;
+var default_font : Font = ThemeDB.fallback_font
+var current_font : Font = default_font
+var default_font_size : int = ThemeDB.fallback_font_size
+var current_font_size : int = default_font_size
 
 var pen_color = Color.BLACK;
 var pen_width = 1.0;
@@ -29,18 +34,20 @@ func change_graphics_color(color):
 
 # 39   BOXER-CENTERED-STRING                        (X Y STRING)
 func centered_string(x, y, string):
-    draw_string(default_font, Vector2(x, -y), string, HorizontalAlignment.HORIZONTAL_ALIGNMENT_CENTER,
-        -1, ThemeDB.fallback_font_size, pen_color)
+    var string_size: Vector2 = current_font.get_multiline_string_size(string, HORIZONTAL_ALIGNMENT_CENTER,
+        -1, current_font_size)
+    draw_string(current_font, Vector2(x - (string_size.x / 2), -y + (string_size.y / 2)), string, HORIZONTAL_ALIGNMENT_CENTER,
+        -1, current_font_size, pen_color)
 
 # 40   BOXER-LEFT-STRING                            (X Y STRING)
 func left_string(x, y, string):
-    draw_string(default_font, Vector2(x, -y), string, HorizontalAlignment.HORIZONTAL_ALIGNMENT_LEFT,
-        -1, ThemeDB.fallback_font_size, pen_color)
+    draw_string(current_font, Vector2(x, -y), string, HorizontalAlignment.HORIZONTAL_ALIGNMENT_LEFT,
+        -1, current_font_size, pen_color)
 
 # 41   BOXER-RIGHT-STRING                           (X Y STRING)
 func right_string(x, y, string):
-    draw_string(default_font, Vector2(x, -y), string, HorizontalAlignment.HORIZONTAL_ALIGNMENT_RIGHT,
-        -1, ThemeDB.fallback_font_size, pen_color)
+    draw_string(current_font, Vector2(x, -y), string, HorizontalAlignment.HORIZONTAL_ALIGNMENT_RIGHT,
+        -1, current_font_size, pen_color)
 
 # 42   BOXER-CENTERED-RECTANGLE                     (X Y WIDTH HEIGHT)
 func centered_rectangle(x, y, width, height):
@@ -50,6 +57,11 @@ func centered_rectangle(x, y, width, height):
 func hollow_rectangle(x, y, width, height):
     draw_rect(Rect2(x - (width/2), -y - (height/2), width, height), pen_color,
         false, pen_width)
+
+# 47   BOXER-CENTERED-BITMAP                        (BITMAP X Y WIDTH HEIGHT)
+func centered_bitmap(bitmap: ImageTexture, x, y, _width, _height):
+    var bitmap_size = bitmap.get_size()
+    draw_texture(bitmap, Vector2(x - (bitmap_size.x / 2), -y - (bitmap_size.y / 2)))
 
 # 60   BOXER-FILLED-ELLIPSE                         (X Y WIDTH HEIGHT)
 func filled_ellipse(x, y, width, height):
@@ -90,6 +102,8 @@ func draw_graphics_command(com: Array):
         centered_rectangle(com[1], com[2], com[3], com[4])
     elif op_code == 44:
         hollow_rectangle(com[1], com[2], com[3], com[4])
+    elif op_code == 47:
+        centered_bitmap(com[1], com[2], com[3], com[4], com[5])
     elif op_code == 60:
         filled_ellipse(com[1], com[2], com[3], com[4])
     elif op_code == 61:
@@ -111,7 +125,15 @@ var to_draw = []
 func append_draw_command(com):
     # This function is where we'll make performance decisions, such as wiping out the to_draw
     # and not redrawing all of them for things like the performance lag microworld
-    to_draw.append(com)
+
+    # Turning the PackedInt32Array to an ImageTexture takes a bit of extra work here
+    if com[0] == 47:
+        var image = Image.create_from_data(com[4], com[5], false, Image.FORMAT_RGBA8 , com[1].to_byte_array())
+        image.flip_y()
+        var texture = ImageTexture.create_from_image(image)
+        to_draw.append([com[0], texture, com[2], com[3], com[4], com[5]])
+    else:
+        to_draw.append(com)
 
 func clear_draw_commands():
     to_draw = []
@@ -216,3 +238,37 @@ var shownp = true:
 
 func push_graphics_command(opcode, arg1, arg2, arg3, arg4, arg5):
     append_draw_command([opcode, arg1, arg2, arg3, arg4, arg5])
+
+###
+### Video Commands
+###
+
+func boxer_open_video(video_path):
+    stream = load(video_path)
+    $/root/Main.handle_boxer_func("SET-VIDEO-LENGTH", boxer_turtle, get_stream_length())
+    %VideoPositionTimer.start()
+    play()
+
+func boxer_stop_video():
+    stop()
+    %VideoPositionTimer.stop()
+
+func boxer_video_speed(video_speed):
+    speed_scale = video_speed
+
+func boxer_loop_video():
+    loop = true
+    play()
+
+func boxer_pause():
+    paused = !paused
+    if paused:
+        %VideoPositionTimer.stop()
+    else:
+        %VideoPositionTimer.start()
+
+func boxer_seek(pos):
+    stream_position = pos
+
+func _on_video_position_timer_timeout() -> void:
+    $/root/Main.handle_boxer_func("SET-VIDEO-POSITION", boxer_turtle, stream_position)

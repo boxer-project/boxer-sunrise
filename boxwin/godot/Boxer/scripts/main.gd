@@ -4,15 +4,16 @@ extends Node
 @export var box_scene: PackedScene
 @export var row_scene: PackedScene
 @export var turtle_scene: PackedScene
+@export var graphics_sheet_scene: PackedScene
 
 @onready var open_dialog: FileDialog = get_node("/root/Main/OpenFileDialog")
-
-# Whether to use the Boxer GDExtension or the prototype mode with Godot handling the input
-@export var use_boxer_gdextension = false
+@onready var note_player: Sampler = get_node("/root/Main/NotePlayer")
 
 # Keep track of our cursor which we move around the node tree
 var cursor
 var outermost_box = null
+var outermost_box_prev_row: Row = null
+var outermost_box_prev_pos: int = 0
 
 var canvas_zoom = 1:
     get:
@@ -39,23 +40,34 @@ var canvas_zoom = 1:
 
 var lisp_thread: Thread
 
+func update_outermost_box_size(box: Box):
+    # Adjusts `box` to take up the entire size of the window, needed for when the window is resized by the user.
+    # TODO this is not quite the right size since the toolbars and whatnot are included
+    var size: Vector2 = get_viewport().size
+    var internals: Container = box.get_node("BoxInternals")
+
+    if internals.size.x > size.x:
+        size.x = internals.size.x
+    if internals.size.y > size.y:
+        size.y = internals.size.y
+
+    internals.custom_minimum_size = ((size - Vector2(20, 20)) / Global.screen_scale)
+    %OutermostBoxHolder.size = internals.size
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
     boxer_event_queue_mutex = Mutex.new()
     boxer_scene_queue_mutex = Mutex.new()
     cursor = $Cursor
     # Have the main world box take up the entire screen
-    %World/BoxInternals.custom_minimum_size = ((get_viewport().size - Vector2i(20, 20)) / Global.screen_scale)
+    update_outermost_box_size(%World)
     outermost_box = %World
     get_viewport().size_changed.connect(_root_viewport_size_changed)
     _root_viewport_size_changed()
 
-    if use_boxer_gdextension:
-        print("About to bootstrap THREADED *initial-box*")
-
     lisp_thread = Thread.new()
-    var world_node = get_node("TopLevelContainer/OutermostBoxScroll/World")
-    var first_row_node = get_node("TopLevelContainer/OutermostBoxScroll/World/BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer/RowsBox/Row")
+    var world_node = get_node("%World")
+    var first_row_node = get_node("%World/BoxInternals/OuterBorderPanel/BoxPanel/PanelContainer/RowsBox/Row")
     first_row_node.parent_box = world_node
     lisp_thread.start(_start_lisp.bind($GDBoxer, self, world_node, first_row_node))
 
@@ -99,34 +111,19 @@ func handle_character_input(code, bits):
     boxer_event_queue.push_front([1, code, bits])
     boxer_event_queue_mutex.unlock()
 
-func handle_boxer_func_0(func_name):
+func handle_boxer_func(func_name: String, ...args):
     if boxer_event_queue_mutex:
         boxer_event_queue_mutex.lock()
-        boxer_event_queue.push_front([3, 0, func_name])
-        boxer_event_queue_mutex.unlock()
-
-func handle_boxer_func_1(func_name, arg0):
-    if boxer_event_queue_mutex:
-        boxer_event_queue_mutex.lock()
-        boxer_event_queue.push_front([3, 1, func_name, arg0])
-        boxer_event_queue_mutex.unlock()
-
-func handle_boxer_func_2(func_name, arg0, arg1):
-    if boxer_event_queue_mutex:
-        boxer_event_queue_mutex.lock()
-        boxer_event_queue.push_front([3, 2, func_name, arg0, arg1])
+        boxer_event_queue.push_front([3, args.size(), func_name] + args)
         boxer_event_queue_mutex.unlock()
 
 func handle_open_file(path):
-    handle_boxer_func_1("GODOT-OPEN-FILE", path)
+    handle_boxer_func("GODOT-OPEN-FILE", path)
 
-func handle_mouse_input(action, row, pos, bits, area):
+func handle_mouse_input(action, row, pos, scr_box, bits, area):
     boxer_event_queue_mutex.lock()
-    boxer_event_queue.push_front([2, action, row, pos, bits, area])
+    boxer_event_queue.push_front([2, action, row, pos, scr_box, bits, area])
     boxer_event_queue_mutex.unlock()
-
-func handle_paste_text(text):
-    handle_boxer_func_1("GODOT-PASTE-TEXT", text)
 
 func handle_request_cursor_update():
     boxer_event_queue_mutex.lock()
@@ -158,7 +155,6 @@ func handle_scene_queue():
     boxer_scene_queue_mutex.lock()
     var next = boxer_scene_queue.pop_back()
     while next:
-        print("Applying: ", next[0], " : ", next[1], " : ", next.slice(2, next.size()))
         next[0].callv(next[1], next.slice(2, next.size()))
         next = boxer_scene_queue.pop_back()
     boxer_scene_queue_mutex.unlock()
@@ -181,7 +177,11 @@ func _root_viewport_size_changed() -> void:
 
 func _process(_delta: float) -> void:
     %World.scale = Vector2(canvas_zoom, canvas_zoom)
+    %Cursor.scale = Vector2(canvas_zoom, canvas_zoom)
     %ZoomStatus.text = "Zoom {0}%".format([canvas_zoom * 100])
+    update_outermost_box_size(%OutermostBoxHolder.get_child(0))
+
+
     if boxer_scene_queue.size() > 0:
         handle_scene_queue()
 
@@ -194,17 +194,22 @@ func _process(_delta: float) -> void:
     if Input.is_action_just_pressed("ui_open"):
         open_dialog.popup_centered()
     if Input.is_action_just_pressed("ui_save"):
-        handle_boxer_func_0("COM-SAVE-DOCUMENT")
+        handle_boxer_func("COM-SAVE-DOCUMENT")
     if Input.is_action_just_pressed("ui_toggle_closet"):
         print("Boxer Toggle Closet")
         handle_toggle_closet()
 
-
 func paste_to_boxer():
     if DisplayServer.clipboard_has():
-        handle_paste_text(DisplayServer.clipboard_get())
+        handle_boxer_func("GODOT-PASTE-TEXT", DisplayServer.clipboard_get())
     elif DisplayServer.clipboard_has_image():
-        print("TODO Paste Image from Clipboard")
+        var img = DisplayServer.clipboard_get_image()
+        img.convert(Image.FORMAT_RGBA8)
+        var pix_array = []
+        for x in img.get_width():
+            for y in img.get_height():
+                pix_array.append(img.get_pixel(x,y).to_rgba32())
+        handle_boxer_func("GODOT-PASTE-IMAGE", img.get_width(), img.get_height(), pix_array)
 
 func _on_box_full_screened(box) -> void:
     print("Full Screening box: ", box)
@@ -245,6 +250,8 @@ func eclboxer_key_input(event: InputEventKey) -> void:
             handle_character_input(-4, bits)
         elif event.keycode == KEY_ENTER:
             handle_character_input(13, bits)
+        elif event.keycode == KEY_TAB:
+            handle_character_input(9, bits)
         # TODO hack for testing turtles
         elif event.keycode == KEY_T and bits == 4:
             handle_character_input(116, bits)
@@ -261,8 +268,7 @@ func eclboxer_key_input(event: InputEventKey) -> void:
 
 func _unhandled_key_input(event: InputEvent) -> void:
     #print("Main scene input: ", event, " Ctrl: ", event.ctrl_pressed)
-    if use_boxer_gdextension:
-        eclboxer_key_input(event)
+    eclboxer_key_input(event)
 
 func _on_open_file_dialog_file_selected(path: String) -> void:
     print("Opening file: ", path)
@@ -276,17 +282,6 @@ func _on_open_file_dialog_canceled() -> void:
 #
 # SIGNALS FROM BOXER ENGINE
 #
-func _on_gd_boxer_boxer_insert_cha(row: Node, ch, cha_no: int) -> void:
-    # print("_on_gd_boxer_boxer_insert_cha: ", row, " ", ch)
-    if not row:
-        print("Why is there no row to print: ", ch, " on???")
-        return
-    if typeof(ch) == TYPE_INT:
-        var cha = cha_scene.instantiate()
-        cha.text = String.chr(ch)
-        row.add_cha(cha, cha_no)
-    else:
-        row.add_cha(ch, cha_no)
 
 func _on_gd_boxer_boxer_delete_cha(row: Object, cha_no: int) -> void:
     row.remove_cha(cha_no)
@@ -321,5 +316,87 @@ func make_row(boxer_row): # -> HBoxContainer:
 func make_turtle(boxer_turtle):
     var turtle = turtle_scene.instantiate()
     turtle.boxer_turtle = boxer_turtle
-    turtle.append_draw_command([63, 0, 0, 10])
     return turtle
+
+func make_graphics_sheet(boxer_graphics_sheet):
+    var graphics_sheet = graphics_sheet_scene.instantiate()
+    graphics_sheet.boxer_graphics_sheet = boxer_graphics_sheet
+    return graphics_sheet
+
+
+func set_outermost_screenbox(box: Control):
+    # The outermost_box is the currently fullscreened box.
+    # TODO TODO TODO Eventually the position of the previous outermost box will need to be passed in
+    # from lisp in case it changed while this box was full screened.
+
+    var prev_outermost_box: Box = null
+    ###
+    ### Replace the previous box
+    ###
+    if outermost_box_prev_row != null and outermost_box != %World:
+        outermost_box.reparent(outermost_box_prev_row)
+        outermost_box_prev_row.move_child(outermost_box, outermost_box_prev_pos)
+        prev_outermost_box = outermost_box
+
+    ###
+    ### Full screen the new box
+    ###
+    if box == %World:
+        %World.reparent(%OutermostBoxHolder)
+        # outermost_box_prev = null
+        outermost_box_prev_row = null
+        outermost_box_prev_pos = 0
+    else:
+        %World.reparent(%OutermostWaitingArea)
+        outermost_box_prev_row = box.get_parent()
+        outermost_box_prev_pos = box.get_index()
+        box.reparent(%OutermostBoxHolder)
+
+    # Copied from _ready for now
+    box.position = Vector2(0, 0)
+    box.get_node("BoxInternals").custom_minimum_size = ((get_viewport().size - Vector2i(20, 20)) / Global.screen_scale)
+    outermost_box = box
+
+    if prev_outermost_box:
+        prev_outermost_box.get_node("BoxInternals").custom_minimum_size = Vector2(0, 0)
+        prev_outermost_box.reset_size()
+        prev_outermost_box.reset_box_size()
+
+
+###
+### Highlighting
+###
+
+func highlight_row(row: HBoxContainer, start: int, end: int):
+    if start == 0 and end == 0: # We are before the first character of the row
+        return
+    var panel = PanelContainer.new()
+    var style = StyleBoxFlat.new()
+    var start_child = row.get_child(start)
+    var end_child = row.get_child(end-1)
+    style.bg_color = Color(0.5, 0.48, 1.0, 0.4)
+    panel.add_theme_stylebox_override("panel", style)
+    panel.size = end_child.global_position + end_child.size - start_child.global_position
+    panel.global_position = start_child.global_position
+    %SelectedRegions.add_child(panel)
+
+func reset_highlights():
+    for highlight in %SelectedRegions.get_children():
+        highlight.queue_free()
+
+###
+### Popups
+###
+func closet_properties_pop_up():
+    %ClosetPropertiesPopup.position = get_viewport().get_mouse_position()
+    %ClosetPropertiesPopup.show()
+
+func box_types_pop_up():
+    %BoxTypesPopup.position = get_viewport().get_mouse_position()
+    %BoxTypesPopup.show()
+
+###
+### Music / Audio
+###
+func play_note(note):
+    note_player.play_note(note.strip_edges())

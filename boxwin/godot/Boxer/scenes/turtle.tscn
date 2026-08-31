@@ -1,10 +1,16 @@
-[gd_scene load_steps=2 format=3 uid="uid://mjcxt81qohg3"]
+[gd_scene load_steps=3 format=3 uid="uid://mjcxt81qohg3"]
 
 [ext_resource type="Script" uid="uid://b0ij7f1alb4w6" path="res://scripts/turtle.gd" id="1_diba4"]
+[ext_resource type="VideoStream" uid="uid://c4c04u4iixdox" path="res://media/butterfly.ogv" id="2_1l2iw"]
 
-[node name="Turtle" type="Control"]
-layout_mode = 3
-anchors_preset = 0
+[node name="Turtle" type="VideoStreamPlayer"]
 offset_right = 40.0
 offset_bottom = 40.0
+stream = ExtResource("2_1l2iw")
 script = ExtResource("1_diba4")
+
+[node name="VideoPositionTimer" type="Timer" parent="."]
+unique_name_in_owner = true
+wait_time = 0.25
+
+[connection signal="timeout" from="VideoPositionTimer" to="." method="_on_video_position_timer_timeout"]

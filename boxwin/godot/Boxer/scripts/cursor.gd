@@ -30,7 +30,8 @@ func update_location():
             if cha.skip_position:
                 cha.skip_position = false
                 return
-            var x = cha.global_position.x + cha.size.x
+            var main = $/root/Main
+            var x = cha.global_position.x + (cha.size.x * main.get("canvas_zoom"))
             var y = cha.global_position.y
             self.global_position = Vector2(x, y)
             self.size.y = cha.size.y

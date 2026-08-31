@@ -2,7 +2,15 @@
 
 (defun link_initial_box_to_node (gdnode gdrow)
   (putprop *initial-box* gdnode :gdnode)
-  (putprop (first-inferior-row *initial-box*) gdrow :gdnode))
+  (putprop (first-inferior-row *initial-box*) gdrow :gdnode)
+
+  (gdboxer-set-property gdrow "boxer_row" (first-inferior-row *initial-box*))
+
+  (let ((godot-name-row (gdboxer-get-name-row gdnode))
+        (world-name (name *initial-box*)))
+    ;; Currently the initial box name is always a string...
+    (dotimes (cha-no (length world-name))
+      (godot-insert-cha-signal godot-name-row (char world-name cha-no) cha-no))))
 
 (defmethod fetch-godot-obj ((self box))
   (let* ((godot-box (getprop self :gdnode)))
@@ -10,6 +18,13 @@
       (setf godot-box (gdboxer-make-box-internal self))
       (putprop self godot-box :gdnode))
     godot-box))
+
+(defmethod fetch-godot-obj ((self graphics-sheet))
+  (let* ((godot-graphics-sheet (getprop self :gdnode)))
+    (unless godot-graphics-sheet
+      (setf godot-graphics-sheet (gdboxer-make-graphics-sheet self))
+      (putprop self godot-graphics-sheet :gdnode))
+    godot-graphics-sheet))
 
 (defmethod fetch-godot-obj ((self row))
   (let* ((godot-row (getprop self :gdnode)))
@@ -26,64 +41,103 @@
       (putprop self godot-turtle :gdnode))
     godot-turtle))
 
-;;; sgithens Prototyping wrapping box construction and "stuff"
-(defmethod initialize-instance :after ((self box)  &rest init-plist)
-  (format t "Just initialized a box! ~A doit: ~A data: ~A~%" self (doit-box? self) (data-box? self)))
+(defmethod fetch-godot-obj ((self screen-box))
+  ;; This may need updates for when we fill in ports
+  (fetch-godot-obj (screen-obj-actual-obj self)))
 
 (defmethod initialize-instance :after ((self row)  &rest init-plist)
   (fetch-godot-obj self))
-
-(defmethod initialize-instance :after ((self name-row)  &rest init-plist)
-  nil ;; (fetch-godot-obj self)
-  )
-
-;;; Cursor and point
-(defmethod (setf bp-row) :after (value bp)
-  (format t "setf bp-row: ~A ~A~%" value bp))
-
-(defmethod (setf bp-cha-no) :after (value bp)
-  (format t "setf bp-cha-no: ~A ~A~%" value bp))
 
 ;;;
 ;;; Filling in screen-objs
 ;;;
 
-(defun print-box-tree (&optional (obj *initial-box*) (depth 0))
-  (cond
-    ((box? obj)
-     (format t "~%~V,,,' A+ Box: ~A Style: ~A Screen-objs: #~A ~A"
-       (* 2 depth) "" (name obj) (display-style-style (display-style-list obj))
-       (length (screen-objs obj)) (screen-objs obj))
-     (do-box-rows ((row obj))
-      (print-box-tree row (1+ depth))
-     ))
-    ((row? obj)
-     (format t "~%~V,,,' A- Row: ~A Screen-objs: #~A ~A"
-       (* 2 depth) "" obj (length (screen-objs obj)) (screen-objs obj))
-     (do-row-chas ((cha obj))
-      (when (box? cha)
-        (print-box-tree cha (1+ depth)))))))
-
-;; (defun print-screen-box-tree )
 
 ;; TODO This will need to be adjusted for ports
 (defun fill-in-screen-objs (&optional (obj *initial-box*))
   (cond
    ((box? obj)
+
+    (if (fixed-size? obj)
+      (multiple-value-bind (wid hei) (fixed-size obj)
+        (godot-call (fetch-godot-obj obj) "set_fixed_box_size" wid hei))
+      (godot-call (fetch-godot-obj obj) "reset_box_size"))
+
     (do-box-rows ((row obj))
       (allocate-screen-obj-for-use-in row (car (screen-objs obj)))
       (fill-in-screen-objs row))
-    (gdboxer-update-screen-box (fetch-godot-obj obj) (car (screen-objs obj))))
+
+    (let ((top (boxtop obj)))
+      (when (eq (type-of top) 'graphics-sheet)
+        (let ((godot-graphics-sheet (fetch-godot-obj top)))
+          (godot-update-graphics-sheet top top)
+          (godot-call (fetch-godot-obj obj) "set_graphics_boxtop" godot-graphics-sheet))))
+
+    (set-display-style (car (screen-objs obj)) (display-style obj))
+    (gdboxer-update-screen-box (fetch-godot-obj obj) (car (screen-objs obj))) ;; adjust for ports
+    (putprop (car (screen-objs obj)) (fetch-godot-obj obj) :gdnode)) ;; adjust for ports
    ((row? obj)
-    (do-row-chas ((cha obj))
-      (when (box? cha)
-        (when (null (screen-objs cha))
-          (allocate-screen-obj-for-use-in cha (car (screen-objs obj))))
-        (fill-in-screen-objs cha))))))
+    (let ((godot-row (fetch-godot-obj obj))
+          (cha-no 0)
+          (cur-bfd nil)
+          (cur-font nil)
+          (cur-color nil))
+        (do-row-chas ((cha obj))
+          (cond ((box? cha)
+                 (when (null (screen-objs cha))
+                   (allocate-screen-obj-for-use-in cha (car (screen-objs obj))))
+                 (fill-in-screen-objs cha))
+            (t
+             (setf cur-bfd (closest-bfd obj cha-no))
+             (setf cur-font (bfd-font-no cur-bfd)
+                   cur-color (bfd-color cur-bfd))
+
+             (godot-call godot-row "set_cha_size" cha-no (font-size cur-font))
+             (godot-call godot-row "set_cha_color" cha-no (aref cur-color 1) (aref cur-color 2) (aref cur-color 3) (aref cur-color 4))))
+
+          (incf cha-no)))))
+
+    ;; Selected Region Highlighting
+    ;; TODO make *region-list* manipulation observable
+    (cond (*region-list*
+           (godot-call-main "reset_highlights")
+           (dolist (region *region-list*)
+            (with-region-top-level-bps (region :start-bp-name start-bp :stop-bp-name  stop-bp)
+              (flet ((first-row? (row) (eq row (bp-row start-bp)))
+                     (last-row?  (row) (eq row (bp-row stop-bp))))
+                (do-region-rows (rr region)
+                  (let ((start-idx 0)
+                        (end-idx (length-in-chas rr)))
+                    (when (first-row? rr)
+                      (setf start-idx (bp-cha-no start-bp)))
+                    (when (last-row? rr)
+                      (setf end-idx (bp-cha-no stop-bp)))
+                    (godot-call-main "highlight_row" (fetch-godot-obj rr) start-idx end-idx)))))))
+     (t
+      (godot-call-main "reset_highlights"))))
 
 ;;;
 ;;; CHAS
 ;;;
+
+(defmethod chas-array-slide-chas-pos :after (chas-array strt-cha-no
+                                  distance old-active-length)
+  (let ((row (chas-array-parent-row chas-array)))
+    (when row
+      (let ((godot-row (fetch-godot-obj row)))
+        (format t "%Embedded: chas-array-slide-chas-pos: start: ~A dist: ~A old-length: ~A"
+          strt-cha-no distance old-active-length)
+        (godot-call godot-row "slide_chas_pos" strt-cha-no distance)
+        ))))
+
+(defmethod chas-array-slide-chas-neg :after (chas-array strt-cha-no
+                                  distance old-active-length)
+  (let ((row (chas-array-parent-row chas-array)))
+    (when row
+      (let ((godot-row (fetch-godot-obj row)))
+        (format t "%Embedded: chas-array-slide-chas-neg: start: ~A dist: ~A old-length: ~A"
+          strt-cha-no distance old-active-length)))))
+
 (defmethod fast-chas-array-set-cha :after (chas-arr cha-no cha)
   (let ((row (chas-array-parent-row chas-arr)))
     (when row
@@ -91,9 +145,12 @@
         (godot-insert-cha-signal godot-row cha cha-no)))))
 
 (DEFMETHOD DELETE-CHA-AT-CHA-NO :after ((SELF ROW) CHA-NO)
-  (let ((row (fetch-godot-obj self)))
-    (when row
-      (godot-call-main "_on_gd_boxer_boxer_delete_cha" row cha-no))))
+  (let ((godot-row (fetch-godot-obj self)))
+    (when godot-row
+      ;; Delete-cha-at-cha-no works by setting a cha, then sliding the size of chas-array
+      ;; Once we implement slide-cha-neg in godot, and array sizing from regular slide chas,
+      ;; this entire defmethod :after may not be necessary anymore
+      (godot-call godot-row "sync_row_size" (length-in-chas self)))))
 
 (defmethod delete-chas-between-cha-nos :after ((self row) strt-cha-no stop-cha-no)
   (let ((row (fetch-godot-obj self)))
@@ -105,18 +162,18 @@
 ;;;
 
 (defun godot-insert-cha-signal (godot-row cha cha-no)
-  (when godot-row
-    ;; (format t "lisp insert cha: ~A ~A ~A~%" godot-row cha cha-no)
+  (when (and godot-row (not (ffi:null-pointer-p godot-row)))
     (if (cha? cha)
-      (godot-call-main "_on_gd_boxer_boxer_insert_cha" godot-row (char-code cha) cha-no)
-      (godot-call-main "_on_gd_boxer_boxer_insert_cha" godot-row (fetch-godot-obj cha) cha-no))))
+      (godot-call godot-row "set_cha" (char-code cha) cha-no)
+      (godot-call godot-row "set_cha" (fetch-godot-obj cha) cha-no))))
 
 (defun fill-in-godot-row (godot-row row)
   "Fill in the godot-row with the contents of row, assuming nothing has been added to it yet."
-  (let ((cha-no 0))
+  (when (chas-array row)
+    (let ((cha-no 0))
       (do-row-chas ((cha row))
         (godot-insert-cha-signal godot-row cha cha-no)
-        (incf cha-no))))
+        (incf cha-no)))))
 
 (defmethod make-row :around (list)
   (let* ((new-row (call-next-method))
@@ -125,7 +182,6 @@
     new-row))
 
 (defmethod set-name :after ((self box) new-name-row)
-  (format t "~%set-name: self: ~A new-name-row: ~A" self new-name-row)
   ;; TODO Occasionally new-name-row is a String, but I think that's literally just for the
   ;; WORLD name-row, but still revisit this.
 
@@ -143,18 +199,29 @@
         (godot-insert-cha-signal godot-name-row cha cha-no)
         (incf cha-no)))))
 
+(defmethod fixup-screen-obj ((self box))
+  "Returns the box first screen-obj"
+  (let ((scr-box (car (screen-objs self))))
+    (unless scr-box
+      (setf scr-box (make-instance 'screen-box))
+      (setf (screen-obj-actual-obj scr-box) self)
+      (when (superior-box self)
+        (push (cons (car (screen-objs (superior-box self))) scr-box)
+                (slot-value self 'screen-objs))))
+    scr-box))
+
 (defun gdboxer-make-box-internal (box)
-  (let ((togo (gdboxer-make-box box)))
+  (let ((godot-box (gdboxer-make-box box)))
     (cond ((doit-box? box)
-           (godot-call togo "toggle_to_doit"))
+           (godot-call godot-box "toggle_to_doit"))
           ((data-box? box)
-           (godot-call togo "toggle_to_data"))
+           (godot-call godot-box "toggle_to_data"))
           (t
            nil))
-    togo))
+    (fixup-screen-obj box)
+    godot-box))
 
 (defmethod (setf superior-box) :after (sup-box row)
-  (format t "superior-box1.3: ~A ~A name-row?: ~A~%" sup-box row (name-row? row))
   (when sup-box
     (let* ((godot-box (fetch-godot-obj sup-box))
            (godot-row nil))
@@ -175,23 +242,17 @@
          (fill-in-godot-row godot-row row)
          (godot-call godot-row "set_superior_box" godot-box))
         ((name-row? row) ;; must be null still, we'll set the special godot property to fill it in later
-         (format t "~% I hope the name is just a string: ~A" (name sup-box))
          (gdboxer-set-property godot-box "queued_name" (coerce (name sup-box) 'string))
-         (gdboxer-set-property godot-box "queued_name_row_boxerref" godot-row))))))
-
-(defmethod (setf previous-row) :after (value row)
-  (format t "previous-row: ~A ~A~%" value row))
+         (gdboxer-set-property godot-box "queued_name_row_boxerref" row))))))
 
 (defmethod (setf next-row) :after (value row)
   ;; We're going to implement this for cases where the value is not nil, meaning an
   ;; actual row is getting put in next.
-  (format t "next-row: ~A ~A~%" value row)
   (when value
     (let ((row-no (row-row-no (superior-box row) row))
           (godot-box (fetch-godot-obj (superior-box row)))
           (godot-row (fetch-godot-obj row))
           (godot-value (fetch-godot-obj value)))
-      (format t "   rows no: ~A~%" row-no)
       (when row-no
         (godot-insert-row-at-row-no (superior-box row) godot-box value godot-value (1+ row-no))))))
 
@@ -241,9 +302,38 @@
 (defmethod (setf display-style-graphics-mode?) :after (new-graphics-mode dis-style)
   (godot-update-display-style dis-style))
 
+(defmethod set-fixed-size :after ((self box) new-fixed-wid new-fixed-hei)
+  ;; TODO
+)
+
 ;;;
 ;;; BOXES
 ;;;
+
+(defmethod (setf superior-row) :after (row box)
+  (when (and row box)
+    (let ((godot-row (fetch-godot-obj row))
+          (godot-box (fetch-godot-obj box)))
+      ;; Set up the attached screen-box, which will always be there for the main tree. There may be extra ones
+      ;; for port subtrees
+      ;; (format t "~%Superior row after: ~A ~A~%" (name box) (superior-box row))
+      ;; (let ((new-scr-box (allocate-screen-obj-for-use-in box (car (screen-objs (superior-box row))))))
+      ;;   (setf (screen-obj-actual-obj new-scr-box) box)
+      ;;   (gdboxer-update-screen-box godot-box new-scr-box)
+      ;; )
+      )))
+
+;; Full Screening Boxes
+(defmethod set-outermost-screen-box-in-window :before ((window boxer-canvas) new-outermost-screen-box)
+  ;; TODO Check if it's the *initial-box* first
+  ;; (let* ((cur-outermost-screenbox (slot-value window 'outermost-screen-box))
+  ;;        (cur-outermost-box  (screen-obj-actual-obj cur-outermost-screenbox))
+  ;;        (cur-parent-row (superior-row cur-outermost-box)))
+
+  ;; )
+
+  (godot-call-main "set_outermost_screenbox" (fetch-godot-obj new-outermost-screen-box)))
+
 
 (defmethod display-style-list :before ((self box))
   (setf (display-style-parent (slot-value self 'display-style-list)) self))
@@ -268,14 +358,7 @@
           (godot-box (fetch-godot-obj box)))
       (godot-insert-row-at-row-no box godot-box row godot-row 0))))
 
-(defmethod (setf superior-row) :after (value box)
-  (format t "superior-row: ~A ~A~%" value box))
-
-(defmethod (setf name) :after (value box)
-  (format t "name: ~A ~A~%" value box))
-
 (defmethod (setf display-style-list) :after (ds box)
-  (format t "setf display-style-list: ~A ~A~%" ds box)
   (setf (display-style-parent ds) box)
   (godot-update-display-style ds))
 
@@ -283,7 +366,6 @@
                                        &optional (check-closet t))
   "This could either be a brand new row (which doens't have a gdnode) or an existing
    row that just needs to be moved to a different place."
-  (format t "insert-row-at-row-no box: ~A row: ~A row-no: ~A~%" box row row-no )
   (let ((godot-row (fetch-godot-obj row))
         (godot-box (fetch-godot-obj box)))
       (progn
@@ -324,6 +406,18 @@
     (gdboxer-set-property godot-box "boxtop_type" boxtop_code)))
 
 ;;;
+;;; SCREEN-BOXES
+;;;
+
+(defmethod screen-obj-actual-obj ((self boxer-canvas))
+  nil
+)
+
+(defmethod shrunken? ((self screen-box))
+  ;; Overriding existing shrunken to use actual-objs rather than the screen-objs
+  (shrunken? (screen-obj-actual-obj self)))
+
+;;;
 ;;; GRAPHICS-SHEETS
 ;;;
 (defun gboolean (value)
@@ -351,11 +445,11 @@
     (gdboxer-set-property godot-box "flipped_box_type" 2)))
 
 (defun godot-update-graphics-sheet (box sheet)
-  (let* (;(box (graphics-sheet-superior-box sheet))
-         (godot-box (fetch-godot-obj box))
+  ;; `box` can either be the box or the graphics-sheet itself (for boxtops)
+  (let* ((godot-box (fetch-godot-obj box))
          (pixmap (graphics-sheet-bit-array sheet)))
     ;; draw-wid draw-hei
-    (gdboxer-set-graphics-sheet-draw-dims godot-box (graphics-sheet-draw-wid sheet) (graphics-sheet-draw-hei sheet))
+    (godot-call godot-box "set_draw_dims" (graphics-sheet-draw-wid sheet) (graphics-sheet-draw-hei sheet))
 
     ;; bit-array
     (when pixmap
@@ -368,18 +462,18 @@
       (when gl
         (do-vector-contents (com gl)
           (let ((command (coerce com 'list)))
-            (godot-call godot-box "push_graphics_command" (nth 0 command) (nth 1 command) (nth 2 command) (nth 3 command) (nth 4 command) (nth 5 command))))))
+            (push-graphics-command godot-box (nth 0 command) (nth 1 command) (nth 2 command) (nth 3 command) (nth 4 command) (nth 5 command))))))
 
     ;; background
     (let ((value (graphics-sheet-background sheet)))
       (when value
-        (gdboxer-set-graphics-sheet-background (fetch-godot-obj box) (aref value 1) (aref value 2) (aref value 3) (aref value 4))))
+        (godot-call godot-box "set_background" (aref value 1) (aref value 2) (aref value 3) (aref value 4))))
   ))
 
 (defmethod (setf graphics-sheet-background) :after (value sheet)
   (let ((box (graphics-sheet-superior-box sheet)))
     (when box
-      (gdboxer-set-graphics-sheet-background (fetch-godot-obj box) (aref value 1) (aref value 2) (aref value 3) (aref value 4)))))
+      (godot-call (fetch-godot-obj box) "set_background" (aref value 1) (aref value 2) (aref value 3) (aref value 4)))))
 
 (defmethod (setf graphics-info) :after ((sheet graphics-sheet) box)
   (let* ((godot-box (fetch-godot-obj box)))
@@ -393,13 +487,10 @@
 ;;;
 
 (defun apply-graphics-list (godot-obj gl)
-  ;; (let ((gl (graphics-sheet-graphics-list sheet)))
   (when gl
     (do-vector-contents (com gl)
       (let ((command (coerce com 'list)))
-        (godot-call godot-obj "push_graphics_command"
-          (nth 0 command) (nth 1 command) (nth 2 command) (nth 3 command) (nth 4 command) (nth 5 command))))))
-            ;; )
+        (push-graphics-command godot-obj (nth 0 command) (nth 1 command) (nth 2 command) (nth 3 command) (nth 4 command) (nth 5 command))))))
 
 ;; Adding removing sprites from a box
 (defmethod add-graphics-object :after ((self box) turtle)
@@ -438,7 +529,6 @@
     (gdboxer-set-property godot-turtle "position_y" y-dest)))
 
 (defmethod turn-to :after ((self turtle) new-heading &optional dont-update-box)
-  (format t "turn-to: new-heading: ~A~%" new-heading)
   (let* ((godot-turtle (fetch-godot-obj self)))
     (gdboxer-set-property godot-turtle "rotation_degrees" new-heading)))
 
@@ -466,6 +556,44 @@
             (boxer::insert-cha boxer::*point* char :moving))))
     (godot-update-point-location)))
 
+(defun swap-endian-u32 (n)
+  "Pixels coming in from Godot need to be swapped for our pixmap pixel format."
+  (logand #xFFFFFFFF
+          (logior (ash (logand n #x000000FF) 24)
+                  (ash (logand n #x0000FF00)  8)
+                  (ash (logand n #x00FF0000) -8)
+                  (ash (logand n #xFF000000) -24))))
+
+(defun copy-godot-array-to-bitmap (data pixmap w h)
+  "This copies the array of pixels from a Godot Image converted to unsigned 32 bit integers
+(ie. In Godot: img.get_pixel(x, y).to_rgba32() ) to our pixmap pixel format.
+
+    These are from Boxer                               a       b       g       r
+    (make-offscreen-pixel 255 0 0)  4278190335  11111111000000000000000011111111
+    (make-offscreen-pixel 0 255 0)  4278255360  11111111000000001111111100000000
+    (make-offscreen-pixel 0 0 255)  4294901760  11111111111111110000000000000000
+
+    These are from Godot                        r       g       b       a
+    green                             16711935  00000000111111110000000011111111
+    blue                                 65535  00000000000000001111111111111111"
+  (let ((count 0))
+    (dotimes (x w)
+      (dotimes (y h)
+        (let ((next-pixel (swap-endian-u32 (aref data count))))
+          (set-pixmap-pixel pixmap x y next-pixel)
+          (incf count))))))
+
+;; TODO refactor this from the duped paste-pict in clipboard.lisp
+(defun godot-paste-image (width height data)
+  (let* ((gb (boxer::make-box '(())))
+         (gs (boxer::make-graphics-sheet width height gb))
+         (image (make-ogl-pixmap width height)))
+    (copy-godot-array-to-bitmap data image width height)
+    (setf (boxer::graphics-sheet-bit-array gs) image)
+    (setf (boxer::graphics-info gb) gs)
+    (setf (boxer::display-style-graphics-mode? (boxer::display-style-list gb)) T)
+    (boxer::insert-cha boxer::*point* gb :moving)
+    (godot-init-graphics-sheet gb)))
 
 ;;
 ;; Hacking
@@ -493,28 +621,6 @@
 
 (defmethod CIRCULAR-PORT? (self &optional ignore) nil)
 
-; Hacking in vector support, TODO, put back in main and recompile it
-(defun make-name-row (list &optional (cached-name nil))
-  (let* ((new-row (make-instance 'name-row :cached-name cached-name))
-         (ca (chas-array new-row))
-         (idx 0)
-         (length (length list)))
-    (dolist (item list)
-      (cond ((numberp item)
-             (fast-string-into-chas-array (format nil "~a" item) ca))
-        ((stringp item)
-         (fast-string-into-chas-array item ca))
-        ((symbolp item)
-         (fast-string-into-chas-array (symbol-name item) ca))
-        ((box? item) (error "You must be losing to put ~A here" item))
-        ((vectorp item)
-         (fast-string-into-chas-array (map 'string #'(lambda (x) x) item) ca))
-        (t (error "Don't know how to make a row out of ~S" item)))
-      (incf& idx)
-      (unless (=& idx length)
-        (fast-chas-array-append-cha ca #\space)))
-    new-row))
-
 (defun setup-standard-colors ()
 ;; (def-redisplay-initialization
   ;; set up some standard colors for sprites
@@ -528,14 +634,8 @@
 (defvar *next-event* #(0 0 0 0 0 0 0 0 0 0 0 0))
 
 (defun ecl-boxer-command-loop-internal ()
-  ;; initialization
-  ;; This is having some sort of error due to parent rows not being able to be added and such things
-  ;; (setup-standard-colors)
-  ;; (flush-input)
+  (setf boxer-eval::*periodic-eval-action* nil)
   (loop
-    ;; (when *clicked-startup-file*
-    ;;   (queue-event *clicked-startup-file*)
-    ;;   (setf *clicked-startup-file* nil))
     (catch 'boxer::boxer-editor-top-level
       (let ((input (fetch-event-from-queue *next-event*)))
         (cond ((null input)
@@ -543,11 +643,9 @@
               ((equal 0 (aref input 0))
                nil)
               ((equal 1 (aref input 0))
-                (format t "Lisp: Handling keyboard input: ~A,  ~A~%" (aref input 1) (aref input 2))
                 (godot-handle-boxer-input (aref input 1) (aref input 2)))
               ((equal 2 (aref input 0))
-                (format t "Lisp: Handling Mouse input: ~A~%" input)
-                (godot-handle-mouse-input (aref input 1) (aref input 2) (aref input 3) (aref input 4) (aref input 5)))
+                (godot-handle-mouse-input (aref input 1) (aref input 2) (aref input 3) (aref input 4) (aref input 5) (aref input 6)))
               ((equal 3 (aref input 0))
                (apply (find-symbol (aref input 2) "BOXER")
                  (loop as i from 3 to (+ 2 (aref input 1)) collect (aref input i))))
@@ -578,18 +676,25 @@
                              (not (null (symbol-function (car input)))))))
                (apply (car input) (cdr input)))
               ((not (null boxer::*boxer-system-hacker*))
-               (error "Unknown object, ~A, in event queue" input)))
-        (when (not (equal 0 (aref input 0)))
-          (fill-in-screen-objs))))))
+               (error "Unknown object, ~A, in event queue" input)))))))
+
+(defun push-graphics-command (godot-box arg0 arg1 arg2 arg3 arg4 arg5)
+  (cond
+    ((= arg0 47)
+     (gdboxer-draw-boxer-centered-bitmap godot-box  (ogl-pixmap-texture arg1) arg2 arg3 arg4 arg5))
+    (t
+     (godot-call godot-box "push_graphics_command" arg0 arg1 arg2 arg3 arg4 arg5))))
 
 (defmethod append-graphics-command :after (gclist com-list)
-  (format t "APPEND GRAPHICS COMMAND AFTER: ~A~%" com-list)
-  (let* ((agent (graphics-command-list-agent %graphics-list))
-         (graphics-box (assoc-graphics-box agent))
-         (godot-box (fetch-godot-obj graphics-box)))
-    ;; This is not very elegent, however the longest graphics command is never more than 6 params
-    (godot-call godot-box "push_graphics_command" (nth 0 com-list) (nth 1 com-list) (nth 2 com-list) (nth 3 com-list) (nth 4 com-list) (nth 5 com-list))))
+  (if (graphics-command-list-agent %graphics-list)
+    (let* ((agent (graphics-command-list-agent %graphics-list))
+          (graphics-box (assoc-graphics-box agent))
+          (godot-box (fetch-godot-obj graphics-box)))
+      ;; This is not very elegent, however the longest graphics command is never more than 6 params
+      (push-graphics-command godot-box (nth 0 com-list) (nth 1 com-list) (nth 2 com-list) (nth 3 com-list) (nth 4 com-list) (nth 5 com-list)))
+    (format t " Godot Boxer Append-graphics-list NULL %graphics-list")))
 
+;; still being used hardcoded in sleep primitive...
 (defun repaint-in-eval (&optional force?)
   nil)
 
@@ -610,30 +715,65 @@
 (defun godot-update-point-location ()
   "Update the location of point in Godot, using the current Boxer *point*."
   (let ((godot-row (fetch-godot-obj (bp-row *point*))))
-    (format t "~%Update point location: bp-row: ~A godot-obj: ~A" (bp-row *point*) godot-row)
     (when godot-row
       (gdboxer-point-location (fetch-godot-obj (bp-row *point*)) (bp-cha-no *point*)))))
 
 (defun godot-handle-boxer-input (data bits)
-  (format t "~%godot-handle-boxer-input3: ~A bits: ~A~%" data bits)
   (cond
     ((eq data -1)
-     (handle-boxer-input :up bits))
+     (handle-boxer-input :up bits t))
     ((eq data -2)
-     (handle-boxer-input :down bits))
+     (handle-boxer-input :down bits t))
     ((eq data -3)
-     (handle-boxer-input :left bits))
+     (handle-boxer-input :left bits t))
     ((eq data -4)
-     (handle-boxer-input :right bits))
+     (handle-boxer-input :right bits t))
     (t
      (handle-boxer-input data bits)))
-  ;; (format t "~%Current Doc: ~%~A~%" (boxer::textify-thing boxer::*initial-box*))
-  (format t "~%Filling in screen objs3")
-  (fill-in-screen-objs)
-  (print-box-tree)
+
+  ;; (print-box-tree)
+  ;; (format t "~%Printing screen-objs")
+  ;; (print-screen-obj-tree)
   (godot-update-point-location))
 
-(defun godot-handle-mouse-input (action-code row pos bits area-code)
+(defun mouse-update-selected-region (row pos scr-box)
+  "Pop up a box attribute menu, usually bound to a mouse-down."
+    (let* ((mark-bp *point*)
+           (mouse-bp (MAKE-INITIALIZED-BP :fixed row pos))
+           (mark-row (bp-row mark-bp))
+           (mouse-row (bp-row mouse-bp))
+           (mark-cha-no (bp-cha-no mark-bp))
+           (mouse-cha-no (bp-cha-no mouse-bp)))
+      (setf (bp-screen-box mouse-bp) scr-box)
+      (setf *region-being-defined*
+        (if (or (row-> mark-row mouse-row)
+                (and (eq mark-row mouse-row)
+                    (> mark-cha-no mouse-cha-no)))
+          (make-editor-region mouse-bp mark-bp)
+          (make-editor-region mark-bp mouse-bp))))
+    (setf *region-list* nil)
+    (push *region-being-defined* *region-list*)
+    (cond (*region-list*
+           (godot-call-main "reset_highlights")
+           (dolist (region *region-list*)
+            (with-region-top-level-bps (region :start-bp-name start-bp :stop-bp-name  stop-bp)
+              (flet ((first-row? (row) (eq row (bp-row start-bp)))
+                     (last-row?  (row) (eq row (bp-row stop-bp))))
+                (do-region-rows (rr region)
+                  (let ((start-idx 0)
+                        (end-idx (length-in-chas rr)))
+                    (when (first-row? rr)
+                      (setf start-idx (bp-cha-no start-bp)))
+                    (when (last-row? rr)
+                      (setf end-idx (bp-cha-no stop-bp)))
+                    (godot-call-main "highlight_row" (fetch-godot-obj rr) start-idx end-idx)))))))
+     (t
+      (godot-call-main "reset_highlights")))
+
+    (format t "~%highlighted region: ~A~%" *region-list*)
+  boxer-eval::*novalue*)
+
+(defun godot-handle-mouse-input (action-code row pos actual-box bits area-code)
   ;; Action encoding
   ;; Action is: 0 - press/MOUSE-DOWN 1 - click/MOUSE-CLICK 2 - release/MOUSE-UP 3 - double click/ MOUSE-DOUBLE-CLICK
 
@@ -642,11 +782,6 @@
   ;; :OUTSIDE :NAME :SCROLL-BAR :TYPE :BOTTOM-RIGHT :BOTTOM-LEFT
   ;; :TOP-RIGHT :TOP-LEFT
   (let ((click-bp (MAKE-INITIALIZED-BP :fixed row pos))
-        (action (case action-code
-                  (0 'BOXER-USER::MOUSE-DOWN)
-                  (1 'BOXER-USER::MOUSE-CLICK)
-                  (2 'BOXER-USER::MOUSE-UP)
-                  (3 'BOXER-USER::MOUSE-DOUBLE-CLICK)))
         (area (case area-code
                 (0 :inside)
                 (1 :outside)
@@ -658,8 +793,8 @@
                 (7 :top-right)
                 (8 :top-left)
                 (otherwise nil))))
-    ;; (handle-boxer-mouse-click 'BOXER-USER::MOUSE-DOWN *boxer-pane* 0 0 click-bp t 6 0 nil)
-    (handle-boxer-mouse-click (lookup-click-name 0 0 area) click-bp 6 0 area))
+    (setf (bp-screen-box click-bp) (fixup-screen-obj actual-box))
+    (handle-boxer-mouse-click (lookup-click-name action-code bits area) click-bp 6 0 area))
   (godot-update-point-location))
 
 (DEFUN BOX-SCREEN-POINT-IS-IN ()	  ;returns the box that the screen part of
@@ -670,11 +805,6 @@
 (DEFMETHOD DISPLAYED-SCREEN-OBJS (obj
                                   &OPTIONAL (WINDOW *BOXER-PANE*))
   '())
-
-(DEFUN OUTERMOST-BOX (&OPTIONAL (WINDOW *BOXER-PANE*))
-  *initial-box*
-      ;;  (SCREEN-OBJ-ACTUAL-OBJ (boxer-window::outermost-screen-box WINDOW))
-       )
 
 ;;;
 ;;; Mouse Commands
@@ -700,51 +830,44 @@
   ;; (%set-pen-color color)
   nil)
 
-
-
-;;;
-;;; XREF
-;;;
-(defstruct xref
-  (pathname nil)
-  (icon-cache nil)
-  (mime-type nil)
-  (active-info nil))
-
-(defun set-xref-boxtop-info (box &optional creator ftype)
-  ;; TODO TODO TODO
-)
-
-;;;
-;;; TODO Hack overrides
-;;;
-
-(defun repaint (&optional just-windows?)
-  nil)
-
-(defmethod shrunken? (oof) nil)
-
 (defmethod set-display-style ((self box) new-value)
   ;; sgithens hack, make sure this gets set on new boxes...
   (setf (display-style-parent (display-style-list self)) self)
 
   (setf (display-style-style (display-style-list self)) new-value))
 
+;; Needed from repaint...
+(defmethod set-scroll-to-actual-row ((self screen-box) new-value)
+  nil)
+
 (defmethod clear-graphics-canvas (obj)
   ;; TODO this needs to be overridden for each implementation
   nil)
 
-;; Traces
-;; (trace boxer-eval::boxer-eval)
-;; (trace boxer-eval::make-error-result)
-;; ;; (trace boxer::bin-load-next-command)
-;; (trace boxer::handle-boxer-mouse-click)
-;; (trace boxer::com-open-box-file)
+;;;
+;;; Overridden Boxer Commands
+;;;
+(defboxer-command com-mouse-boxsize-closet-properties-pop-up (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
+  "Pop up a box attribute menu, typically bound to a mouse-down."
+  (reset-region) (reset-editor-numeric-arg)
+  (let* ((screen-box (bp-screen-box mouse-bp))
+         (edbox (screen-obj-actual-obj screen-box)))
+    (setf *hotspot-mouse-box* edbox
+          *hotspot-mouse-screen-box* screen-box)
+    (format t "~%ECL com-mouse-boxsize-closet-properties-pop-up scr-box: ~A godot-obj: ~A~%" (bp-screen-box mouse-bp) (fetch-godot-obj (bp-screen-box mouse-bp)))
+    (godot-call-main "closet_properties_pop_up")
+    )
 
-;; (trace boxer::insert-row-at-row-no)
-;; (trace (setf boxer::next-row))
-;; (trace (setf boxer::first-inferior-row))
-;; (trace boxer::godot-insert-row-at-row-no)
-;; (trace boxer::gdboxer-insert-row-at-row-no)
-;; (trace boxer::kill-box-contents)
-;; (trace boxer::insert-row-after-row)
+  boxer-eval::*novalue*)
+
+(defboxer-command com-mouse-box-types-pop-up (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
+  "Pop up a box attribute menu, usually bound to a mouse-down."
+  (reset-region) (reset-editor-numeric-arg)
+  (let* ((screen-box (bp-screen-box mouse-bp))
+         (edbox (screen-obj-actual-obj screen-box)))
+    (setf *hotspot-mouse-box* edbox
+          *hotspot-mouse-screen-box* screen-box)
+    (godot-call-main "box_types_pop_up"))
+  boxer-eval::*novalue*)
+
+

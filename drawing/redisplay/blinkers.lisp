@@ -173,19 +173,13 @@
                            (t
                             (setq row-blinkers (fast-delq existing-region
                                                           row-blinkers))
-                            existing-region))))))
-    (dolist (old-blinker row-blinkers)
-      (remove-region-row-blinker old-blinker))))
+                            existing-region))))))))
 
 (defun interval-update-repaint-all-rows (region &optional
                                                   (window *boxer-pane*) (color *blinker-color*))
   ;; we have to bind this because region redisplay can
   ;; legitimately be called OUTSIDE of normal redisplay
   (cond ((not (row-connected? (bp-row (interval-start-bp region))))
-         ;; the region is no longer part of the visible editor hierarchy
-         ;; so blank it....
-         (dolist (blinker (interval-blinker-list region))
-           (remove-region-row-blinker blinker))
          (setf (interval-blinker-list region) nil))
         (t
          (with-region-top-level-bps (region :start-bp-name region-start-bp

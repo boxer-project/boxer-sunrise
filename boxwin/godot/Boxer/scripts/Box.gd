@@ -1,5 +1,6 @@
 @icon("res://media/icons/Box_scene_icon.svg")
 extends BoxContainer
+class_name Box
 
 @onready var data_box_stylebox = ResourceLoader.load("res://themes/data_box_stylebox.tres")
 @onready var doit_box_stylebox = ResourceLoader.load("res://themes/doit_box_stylebox.tres")
@@ -18,6 +19,15 @@ signal flipped(box)
 var rows = []
 var first_inferior_row
 var current_row = null
+
+func get_first_row():
+    return %RowsBox.get_child(0)
+
+func is_outermost_box():
+    if !self.is_inside_tree():
+        return false
+    else:
+        return $/root/Main.outermost_box == self
 
 # Reference to the actual Boxer box object in common lisp
 # Variables prefixed with boxer_* will refer to BoxerLispRef instance pointers
@@ -59,9 +69,9 @@ enum FlippedBoxType {NONE = 0, GRAPHICS = 1, SPRITE = 2}
 var flipped_box_type = FlippedBoxType.NONE
 
 func update_box_type(value):
-    if value == BoxType.DATA:
+    if value == BoxType.DATA && data_box_stylebox:
         $BoxInternals/OuterBorderPanel.add_theme_stylebox_override("panel", data_box_stylebox)
-    elif value == BoxType.DOIT:
+    elif value == BoxType.DOIT && doit_box_stylebox:
         $BoxInternals/OuterBorderPanel.add_theme_stylebox_override("panel", doit_box_stylebox)
 
 func toggle_to_data():
@@ -69,10 +79,6 @@ func toggle_to_data():
 
 func toggle_to_doit():
     box_type = BoxType.DOIT
-
-func show_turtle_graphics(status):
-    # Takes a boolean determining whether to show the turtle graphics
-    %TurtleGraphics.visible = status
 
 # Graphics and Sprite boxes still have text on their flipped side in addition to the graphics or sprite
 enum BoxContents {TEXT, GRAPHICS, VIDEO}
@@ -82,39 +88,43 @@ var box_contents = BoxContents.TEXT:
     set(value):
         box_contents = value
         %RowsBox.visible = false
-        %GraphicsSheetBackground.visible = false
-        %GraphicsSheetBitArray.visible = false
-        show_turtle_graphics(false)
-        %VideoPlayer.visible = false
+        %GraphicsSheet.visible = false
         %PanelContainer.custom_minimum_size = Vector2(0,0)
         if value == BoxContents.TEXT:
             %RowsBox.visible = true
         elif value == BoxContents.GRAPHICS:
-            %GraphicsSheetBitArray.visible = true
-            %GraphicsSheetBackground.visible = true
-            show_turtle_graphics(true)
-            %PanelContainer.custom_minimum_size = Vector2(draw_wid, draw_hei)
+            %GraphicsSheet.visible = true
         elif value == BoxContents.VIDEO:
-            %VideoPlayer.visible = true
-
+            pass
 ###
 #
 #  Vars from optional Graphics Sheet which graphics boxes have.
 #
 ###
-
-var draw_wid: int
-var draw_hei: int
-var background: Color
+func set_draw_dims(wid: int, hei: int):
+    %GraphicsSheet.set_draw_dims(wid, hei)
 
 func set_background(red, green, blue, alpha):
-    background = Color(red, green, blue, alpha)
-    %GraphicsSheetBackground.color = background
+    %GraphicsSheet.set_background(red, green, blue, alpha)
 
 func set_bit_array(width, height, arr: PackedInt32Array):
-    var texture = ImageTexture.create_from_image(
-        Image.create_from_data(width, height, false, Image.FORMAT_RGBA8 , arr.to_byte_array()))
-    %GraphicsSheetBitArray.texture = texture
+    %GraphicsSheet.set_bit_array(width, height, arr)
+
+func push_graphics_command(opcode, arg1, arg2, arg3, arg4, arg5):
+    %GraphicsSheet.push_graphics_command(opcode, arg1, arg2, arg3, arg4, arg5)
+
+func clear_box(bitmap = true, graphics_list = true):
+    %GraphicsSheet.clear_box(bitmap, graphics_list)
+
+func add_turtle(turtle):
+    %GraphicsSheet.add_turtle(turtle)
+
+func set_graphics_boxtop(graphics_sheet):
+    graphics_sheet.gui_input.connect(_on_shrunk_box_gui_input)
+    # TODO Add check to see if this is already a child
+    %Boxtops.add_child(graphics_sheet)
+    boxtop_type = BoxtopType.GRAPHIC
+    shrink_box()
 
 ###
 #
@@ -146,50 +156,60 @@ var display_style = DisplayStyle.NORMAL:
     get:
         return display_style
     set(value):
-        print("BLAM Set diaplay_style: ", display_style)
         update_display_style(value)
         display_style = value
 
+func hide_boxtops():
+    for boxtop in $Boxtops.get_children():
+        boxtop.hide()
+
 func shrink_box():
     if boxtop_type == BoxtopType.NAME_ONLY:
-        $BoxInternals.visible = true
-        $SuperShrunkBox.visible = false
-        %RowsBox.visible = false
-        %ShrunkBox.visible = true
-        %OuterBorderPanel.visible = false
+        $BoxInternals.visible = false
+        hide_boxtops()
+        %NameOnlyBoxtop.visible = true
+        var shrunk_name = ""
+        for cha in %NameRow.get_children():
+            shrunk_name += cha.text
+        %NameOnlyBoxtop/name.text = shrunk_name
+    elif boxtop_type == BoxtopType.GRAPHIC:
+        $BoxInternals.visible = false
+        for boxtop in %Boxtops.get_children():
+            if boxtop is GraphicsSheet:
+                boxtop.visible = true
+            else:
+                boxtop.visible = false
     else:
         # Default to regular standard shrunk
         $BoxInternals.visible = true
-        $SuperShrunkBox.visible = false
+        hide_boxtops()
         %RowsBox.visible = false
         %ShrunkBox.visible = true
         %OuterBorderPanel.visible = true
 
+func regular_display_box():
+    # Currently used for FIXED, NORMAL, and fullscreen boxes
+    $BoxInternals.visible = true
+    hide_boxtops()
+    %RowsBox.visible = true
+    %ShrunkBox.visible = false
+    %OuterBorderPanel.visible = true
+
 func update_display_style(value):
-    match value:
-        DisplayStyle.FIXED:
-            $BoxInternals.visible = true
-            $SuperShrunkBox.visible = false
-            %RowsBox.visible = true
-            %ShrunkBox.visible = false
-            %OuterBorderPanel.visible = true
-        DisplayStyle.NORMAL:
-            $BoxInternals.visible = true
-            $SuperShrunkBox.visible = false
-            %RowsBox.visible = true
-            %ShrunkBox.visible = false
-            %OuterBorderPanel.visible = true
-        DisplayStyle.SHRUNK:
-            shrink_box()
-            # $BoxInternals.visible = true
-            # $SuperShrunkBox.visible = false
-            # %RowsBox.visible = false
-            # %ShrunkBox.visible = true
-        DisplayStyle.SUPERSHRUNK:
-            $BoxInternals.visible = false
-            $SuperShrunkBox.visible = true
-        _:
-            pass
+    if is_outermost_box():
+        regular_display_box()
+    else:
+        match value:
+            DisplayStyle.FIXED, DisplayStyle.NORMAL:
+                regular_display_box()
+            DisplayStyle.SHRUNK:
+                shrink_box()
+            DisplayStyle.SUPERSHRUNK:
+                $BoxInternals.visible = false
+                hide_boxtops()
+                %SuperShrunkBox.visible = true
+            _:
+                pass
 
 func add_row() -> Node:
     var row = row_scene.instantiate()
@@ -246,12 +266,12 @@ func _ready() -> void:
         for ch in queued_name:
             var cha = cha_scene.instantiate()
             cha.text = ch
-            %NameRow.add_cha(cha, %NameRow.get_child_count())
+            %NameRow.set_cha(cha, %NameRow.get_child_count())
         queued_name = null
         %NameRow.boxer_row = queued_name_row_boxerref
         queued_name_row_boxerref = null
 
-    $/root/Main.handle_boxer_func_1("GODOT-INIT-GRAPHICS-SHEET", boxer_box)
+    $/root/Main.handle_boxer_func("GODOT-INIT-GRAPHICS-SHEET", boxer_box)
 
 ## Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
@@ -261,74 +281,67 @@ func _process(_delta: float) -> void:
     if flipped_box_type == FlippedBoxType.GRAPHICS:
         graphics_mode_p = graphics_mode_p
     if boxtop_type == BoxtopType.NONE and boxer_box:
-        $/root/Main.handle_boxer_func_1("GODOT-UPDATE-BOXTOP", boxer_box)
+        $/root/Main.handle_boxer_func("GODOT-UPDATE-BOXTOP", boxer_box)
+    if %NameRow and %NameRow.get_child_count() == 0:
+        %NameRow.hide()
+    else:
+        %NameRow.show()
+
+
+
+func set_fixed_box_size(wid, hei):
+    var scrolled: ScrollContainer = %PanelContainer
+    scrolled.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+    scrolled.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+    # scrolled.size = Vector2(wid, hei)
+    scrolled.custom_minimum_size = Vector2(wid, hei)
+    # self.display_style = DisplayStyle.FIXED
+
+func reset_box_size():
+    var scrolled: ScrollContainer = %PanelContainer
+    scrolled.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+    scrolled.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+    # scrolled.reset_size()
+    scrolled.custom_minimum_size = Vector2(0, 0)
+    # self.display_style = DisplayStyle.NORMAL
 
 var moving = false
 var moved = false
 
 func _on_lower_right_corner_gui_input(event: InputEvent) -> void:
-    #print("on lower right corner: ", event)
     if event is InputEventMouseButton and event.pressed:
         moving = event.pressed
     elif event is InputEventMouseButton and not event.pressed:
         moving = event.pressed
         if not moved:
-            # single click means to set the box back to fixed size
-            print("Back to normal3...")
-            $BoxInternals.custom_minimum_size = Vector2(0,0)
-            self.display_style = DisplayStyle.NORMAL
+            Global.handle_mouse_input(event, %RowsBox.get_child(0), 0, Global.BoxArea.BOTTOM_RIGHT)
+        else:
+            $/root/Main.handle_boxer_func("MOUSE-BOX-RESIZE", boxer_box, %PanelContainer.size.x, %PanelContainer.size.y)
         moved = false
     elif event is InputEventMouseMotion and moving:
-        #print("Relative change: ", event.relative.x, " , ", event.relative.y)
+        %PanelContainer.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+        %PanelContainer.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
         moved = true
-        $BoxInternals.custom_minimum_size = Vector2($BoxInternals.size.x + event.relative.x,
-            $BoxInternals.size.y + event.relative.y)
-        self.display_style = DisplayStyle.FIXED
-
-func com_mouse_expand_box():
-    $/root/Main.handle_boxer_func_2("CALL-MOUSE-BP-COM", boxer_screen_box, "COM-MOUSE-EXPAND-BOX")
+        %PanelContainer.custom_minimum_size = Vector2(%PanelContainer.size.x + event.relative.x,
+            %PanelContainer.size.y + event.relative.y)
 
 func _on_upper_left_corner_gui_input(event: InputEvent) -> void:
-    if event is InputEventMouseButton and event.pressed:
-        Global.handle_mouse_input(event, %RowsBox.get_child(0).boxer_row, 0, Global.BoxArea.TOP_LEFT)
-
-func _on_super_shrunk_panel_gui_input(event: InputEvent) -> void:
-    if event is InputEventMouseButton and event.pressed:
-        com_mouse_expand_box()
+    if event is InputEventMouseButton:
+        Global.handle_mouse_input(event, %RowsBox.get_child(0), 0, Global.BoxArea.TOP_LEFT)
 
 func _on_shrunk_box_gui_input(event: InputEvent) -> void:
-    if event is InputEventMouseButton and event.pressed:
-        com_mouse_expand_box()
+    # Catch all event function for shrunk, supershunk, name, graphics boxtops
+    if event is InputEventMouseButton:
+        Global.handle_mouse_input(event, %RowsBox.get_child(0), 0, Global.BoxArea.INSIDE)
 
 func _on_upper_right_corner_gui_input(event: InputEvent) -> void:
-    if event is InputEventMouseButton and event.pressed:
-        Global.handle_mouse_input(event, %RowsBox.get_child(0).boxer_row, 0, Global.BoxArea.TOP_RIGHT)
+    if event is InputEventMouseButton:
+        Global.handle_mouse_input(event, %RowsBox.get_child(0), 0, Global.BoxArea.TOP_RIGHT)
 
 func _on_lower_left_corner_gui_input(event: InputEvent) -> void:
-    if event is InputEventMouseButton and event.pressed:
-        print("Flip to graphics x: ", self.global_position.x, " y: ", self.global_position.y,
-          " w: ", self.size.x, " h: ", self.size.y)
-        graphics_mode_p = !graphics_mode_p
-
+    if event is InputEventMouseButton:
+        Global.handle_mouse_input(event, %RowsBox.get_child(0), 0, Global.BoxArea.BOTTOM_LEFT)
 
 func _on_type_toggle_gui_input(event: InputEvent) -> void:
-    if event is InputEventMouseButton and event.pressed:
-        Global.handle_mouse_input(event, %RowsBox.get_child(0).boxer_row, 0, Global.BoxArea.TYPE)
-
-func push_graphics_command(opcode, arg1, arg2, arg3, arg4, arg5):
-    %TurtleGraphics.append_draw_command([opcode, arg1, arg2, arg3, arg4, arg5])
-
-func clear_box(bitmap = true, graphics_list = true):
-    if graphics_list:
-        %TurtleGraphics.clear_draw_commands()
-    if bitmap:
-        # TODO
-        pass
-
-func add_turtle(turtle):
-    %TurtleGraphics.add_child(turtle)
-
-func _on_gui_input(event: InputEvent) -> void:
-    if event is InputEventMouseButton and event.is_pressed():
-        if display_style == DisplayStyle.SHRUNK:
-            com_mouse_expand_box()
+    if event is InputEventMouseButton:
+        Global.handle_mouse_input(event, %RowsBox.get_child(0), 0, Global.BoxArea.TYPE)

@@ -14,11 +14,86 @@ func dpi_scale(value: float):
     # Scale the size based on the hiDPI scale
     return value / screen_scale
 
-func mouse_action(event: InputEventMouseButton):
+
+# This will be a vector of [row,  pos, area] which will be used on press and releases to determine
+# if we are on the same widget and should emit a Boxer MOUSE-CLICK
+var cur_pressed = null # [row, pos, area]
+
+func get_mouse_location():
+    var control = get_boxer_control(get_viewport().gui_get_hovered_control())
+    if control is BoxHotspot:
+        return [control.get_box().get_first_row(), 0, control.box_area]
+    elif control is Cha:
+        # TODO, check if it's in the name row
+        return [control.get_parent(), control.get_index(), BoxArea.INSIDE]
+    elif control is Row:
+        # Add the math to determine where in the row we are... this is already done somewhere else,
+        # just pull it out.
+        return [control, 0, BoxArea.INSIDE]
+    elif control is Box:
+        return [control.get_first_row(), 0, BoxArea.INSIDE]
+
+func get_boxer_control(control: Node):
+    # Returns the Cha, Row, or Box currently underneath the mouse pointer. If we're not under
+    # any of those returns null.
+    if control == null:
+        return null
+    elif control is BoxHotspot or control is Cha or control is Row or control is Box:
+        return control
+    else:
+        return get_boxer_control(control.get_parent())
+
+func get_parent_box(item: Node):
+    # Return the first Box parent of this node. An example use is getting the box a hotspot belongs to.
+    if item == null:
+        return null
+    elif item is Box:
+        return item
+    else:
+        return get_parent_box(item.get_parent())
+
+
+func mouse_action(event: InputEventMouseButton, row, pos, area):
     "Return the boxer mouse code for the button action.
     ie. 0 - press/MOUSE-DOWN 1 - click/MOUSE-CLICK 2 - release/MOUSE-UP 3 - double click/ MOUSE-DOUBLE-CLICK, etc"
-    var action_code = 0
-    if event.double_click: action_code = 3
+    #  0 - Primary Button, usually left click
+    #  1 - Third Button
+    #  2 - Secondary Button, usually right click
+    #  3 - Primary Double Click
+    #  4 - Middle Double Click
+    #  5 - Right Double Click
+    #  6 - Primary Down
+    #  7 - Middle Down
+    #  8 - Right Down
+    #  9 - Primary Up
+    # 10 - Middle Up
+    # 11 - Right Up
+    var action_code: int
+    if event.button_index == MOUSE_BUTTON_LEFT:
+        action_code = 6
+    elif event.button_index == MOUSE_BUTTON_RIGHT:
+        action_code = 8
+    elif event.button_index == MOUSE_BUTTON_MIDDLE:
+        action_code = 7
+
+    # Double Clicked
+    if event.double_click:
+        action_code -= 3
+        cur_pressed = null
+    # Mouse Press Down
+    elif event.pressed:
+        cur_pressed = [row, pos, area]
+    # Mouse Release
+    else:
+        # Click
+        var hover = get_mouse_location()
+        if cur_pressed != null && cur_pressed[0] == hover[0] && cur_pressed[1] == hover[1] && cur_pressed[2] == hover[2]:
+            action_code -= 6
+        # Release Up
+        else:
+            action_code += 3
+        cur_pressed = null
+
     return action_code
 
 func input_bits(event: InputEventWithModifiers):
@@ -35,7 +110,34 @@ func input_bits(event: InputEventWithModifiers):
     return bits
 
 enum BoxArea {INSIDE = 0, OUTSIDE = 1, NAME = 2, SCROLL_BAR = 3, TYPE = 4, BOTTOM_RIGHT = 5, BOTTOM_LEFT = 6,
-    TOP_RIGHT = 7, TOP_LEFT = 8}
+    TOP_RIGHT = 7, TOP_LEFT = 8, NAME_HANDLE = 9, GRAPHICS = 10, SPRITE = 11}
 
-func handle_mouse_input(event, boxer_row, pos, area = BoxArea.INSIDE):
-    $/root/Main.handle_mouse_input(Global.mouse_action(event), boxer_row, pos, Global.input_bits(event), area)
+func handle_mouse_input(event: InputEventMouse, row, pos, area = BoxArea.INSIDE):
+    if event is InputEventMouseButton:
+        var action: int = Global.mouse_action(event, row, pos, area)
+
+        # TODO do double clicks in Godot emit all the stuff before them?
+
+        # If it's a click, emit both the released and the click
+        if action <= 2:
+            $/root/Main.handle_mouse_input(action + 9, row.boxer_row, pos, row.parent_box.boxer_box,
+                Global.input_bits(event), area)
+            $/root/Main.handle_mouse_input(action, row.boxer_row, pos, row.parent_box.boxer_box,
+                Global.input_bits(event), area)
+        else:
+            $/root/Main.handle_mouse_input(action, row.boxer_row, pos, row.parent_box.boxer_box,
+                Global.input_bits(event), area)
+    # TODO TODO TODO sgithens: This is currently buggy and impeeding other work... get back to this later.
+    #
+    # elif event is InputEventMouseMotion and cur_pressed != null:
+    #     ##TODO We can't select backwards right now, because the top-most control is the highlighted text, we need
+    #     # to get underneath it to get to the cha, box, or row
+    #     var control = get_boxer_control(get_viewport().gui_get_hovered_control())
+    #     # If this is a cha
+    #     if control is Cha:
+    #         var cha_boxer_row = control.get_parent().boxer_row
+    #         var cha_pos = control.get_index()
+    #         var cha_boxer_screen_box = control.get_parent().parent_box.boxer_screen_box
+
+    #         print("handle mouse input motion dragging: ", control, )
+    #         $/root/Main.handle_boxer_func("MOUSE-UPDATE-SELECTED-REGION", cha_boxer_row, cha_pos, cha_boxer_screen_box)

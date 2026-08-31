@@ -1,11 +1,11 @@
 extends HBoxContainer
-
-# Args: Parent row, cha (self), and position
-signal cha_inserted
+class_name Row
 
 var parent_box
 # Reference to the actual boxer row object in common lisp
 var boxer_row
+
+@export var cha_scene: PackedScene
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -19,9 +19,29 @@ func remove_chas(start_index, stop_index) -> void:
     for i in range(stop_index - start_index):
         remove_cha(start_index)
 
-func add_cha(cha, idx: int) -> int:
+func sync_row_size(count: int) -> void:
+    # Some operations in Boxer lisp update the row by setting the size of the
+    # vector, which may be assumed to delete cha's from the end of it.
+    var children = get_children()
+    # TODO check to see that count <= current size
+    for i in range(children.size() - count):
+        var child = children[children.size() - 1 - i]
+        child.queue_free()
+
+func make_cha_scene(ch):
+    var cha = cha_scene.instantiate()
+    cha.text = ch
+    return cha
+
+func set_cha(ch, idx: int) -> int:
+    var cha
+    if typeof(ch) == TYPE_INT:
+        cha = make_cha_scene(String.chr(ch))
+    else:
+        cha = ch
+
+    # This function actually sets the cha, replacing the current cha at this index
     if cha.get_parent():
-        print("Removing cha: ", cha, " from parent")
         var parent_row = cha.get_parent()
         parent_row.remove_child(cha)
 
@@ -34,8 +54,28 @@ func add_cha(cha, idx: int) -> int:
     # Adds a cha (Glyph or Box) to the row's chas
     add_child(cha)
     move_child(cha, idx)
-    cha_inserted.emit(self, cha, idx)
     return idx
+
+func set_cha_size(idx: int, font_size: int) -> void:
+    var cha: Label = get_child(idx)
+    cha.add_theme_font_size_override("font_size", font_size)
+
+func set_cha_color(idx: int, red, green, blue, alpha):
+    var cha: Label = get_child(idx)
+    var c = Color(red, green, blue, alpha)
+    cha.add_theme_color_override("font_color", c)
+
+###
+###  Fast Cha Array Set and Char Sliding (see infsup.lisp)
+###
+func slide_chas_pos(start, distance):
+    for i in distance:
+        var cha = make_cha_scene(" ")
+        add_child(cha)
+        move_child(cha, start)
+
+func slide_chas_neg(start, distance):
+    pass
 
 # For C++
 func set_superior_box(box):
@@ -52,17 +92,17 @@ func xpos_in_cha(x, cha_node):
     return x >= cha_node.position.x && x <= cha_node.position.x + cha_node.size.x
 
 func _on_gui_input(event: InputEvent) -> void:
-    if event is InputEventMouseButton and event.is_pressed():
+    if event is InputEventMouse:
         if get_child_count() == 0:
-            Global.handle_mouse_input(event, boxer_row, 0, Global.BoxArea.INSIDE)
+            Global.handle_mouse_input(event, self, 0, Global.BoxArea.INSIDE)
         elif sentence_end_xpos() < event.position.x:
             # Is this past the last character?
-            Global.handle_mouse_input(event, boxer_row, get_child_count(), Global.BoxArea.INSIDE)
+            Global.handle_mouse_input(event, self, get_child_count(), Global.BoxArea.INSIDE)
         elif get_child(0).position.x > event.position.x:
             # Is this before the first character?
-            Global.handle_mouse_input(event, boxer_row, 0, Global.BoxArea.INSIDE)
+            Global.handle_mouse_input(event, self, 0, Global.BoxArea.INSIDE)
         else:
             #loop through the chas
             for child in get_children():
                 if xpos_in_cha(event.position.x, child):
-                    Global.handle_mouse_input(event, boxer_row, child.get_index()+1, Global.BoxArea.INSIDE)
+                    Global.handle_mouse_input(event, self, child.get_index()+1, Global.BoxArea.INSIDE)

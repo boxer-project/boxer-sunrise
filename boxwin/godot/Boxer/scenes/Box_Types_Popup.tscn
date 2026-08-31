@@ -1,0 +1,26 @@
+[gd_scene load_steps=2 format=3 uid="uid://dlmc8on3q1qvh"]
+
+[ext_resource type="Script" uid="uid://dpqlmgimafwep" path="res://scripts/Box_Types_Popup.gd" id="1_qck45"]
+
+[node name="PopupMenu" type="PopupMenu"]
+oversampling_override = 1.0
+size = Vector2i(145, 120)
+visible = true
+item_count = 5
+item_0/text = "Text  Side"
+item_0/checkable = 2
+item_0/id = 0
+item_1/text = "Graphics Side"
+item_1/checkable = 2
+item_1/id = 1
+item_2/id = 2
+item_2/separator = true
+item_3/text = "Data"
+item_3/checkable = 2
+item_3/id = 3
+item_4/text = "Doit"
+item_4/checkable = 2
+item_4/id = 4
+script = ExtResource("1_qck45")
+
+[connection signal="id_pressed" from="." to="." method="_on_id_pressed"]

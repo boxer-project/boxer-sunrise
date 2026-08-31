@@ -10110,6 +10110,70 @@ Modification History (most recent at the top)
 ;;;; FILE: disply.lisp
 ;;;;
 
+;; sgithens 2026-05-01 I think we can remove these
+;;; temporary hack to debug screen-box allocation problem
+(defvar *currently-allocated-screen-boxes* nil)
+
+(defun debug-sb-alloc (sb)
+  (if (fast-memq sb *currently-allocated-screen-boxes*)
+    (cerror "go ahead" "The screen box, ~S, is ALREADY allocated" sb)
+    (push sb *currently-allocated-screen-boxes*)))
+
+(defun debug-sb-dealloc (sb)
+  (if (fast-memq sb *currently-allocated-screen-boxes*)
+    (setq *currently-allocated-screen-boxes*
+          (fast-delq sb *currently-allocated-screen-boxes*))
+    (cerror
+     "go ahead"
+     "The screen box being deallocated, ~S, does not seem to be in use"
+     sb)))
+
+;; sgithens 2026-05-01 Appears unused
+(defun queue-screen-objs-for-deallocation-from (sv start &optional stop)
+  (do-vector-contents (obj sv :start start :stop stop)
+    (unless (screen-cha? obj)
+      (queue-screen-obj-for-deallocation obj))))
+
+;; sgithens 2026-05-01 No longer used...
+(defmethod cha-no->x-coord ((row screen-row) cha-no)
+  (with-summation
+    (do-vector-contents (cha (slot-value row 'screen-chas) :stop cha-no)
+      (sum (screen-object-width cha)))))
+
+;; sgithens TODO 2024-04-22 Doesn't appear to be used anywhere...
+(DEFMETHOD NEXT-SCREEN-CHA-POSITION ((SELF SCREEN-CHAR-SUBCLASS))
+           (MULTIPLE-VALUE-BIND (X Y)
+                                (XY-POSITION SELF)
+                                (VALUES (+ X (SCREEN-OBJ-WID SELF)) Y)))
+
+(DEFMETHOD FIRST-SCREEN-CHA-POSITION ((SELF SCREEN-ROW))
+           (XY-POSITION SELF))
+
+(DEFMETHOD FIRST-SCREEN-CHA-POSITION ((SELF SCREEN-BOX))
+           (MULTIPLE-VALUE-BIND (X Y)
+                                (XY-POSITION SELF)
+                                (MULTIPLE-VALUE-BIND (IL IT)
+                                                     (box-borders-widths (slot-value self 'box-type) self)
+                                                     (VALUES (+ X IL) (+ Y IT)))))
+
+;; sgithens TODO 2024-04-17 this appears unused anywhere
+(DEFUN SCREEN-BOXES-AND-WHITESPACE-SIZE (SCREEN-BOXES &AUX(WID 0) (HEI 0))
+       (LET ((FIRST-BOX (CAR SCREEN-BOXES))
+             (LAST-BOX (CAR (LAST SCREEN-BOXES))))
+            (SETQ WID (- (+ (SCREEN-OBJ-X-OFFSET LAST-BOX) (SCREEN-OBJ-WID LAST-BOX))
+                         (SCREEN-OBJ-X-OFFSET FIRST-BOX)))
+            (DOLIST (SCREEN-BOX SCREEN-BOXES)
+                    (SETQ HEI (MAX (SCREEN-OBJ-HEI SCREEN-BOX) HEI)))
+            (VALUES WID HEI)))
+
+(DEFUN MAP-OVER-SCREEN-OBJ (SCREEN-OBJ FN)
+       (FUNCALL FN SCREEN-OBJ)
+       (MAP-OVER-SCREEN-OBJS (INFERIORS SCREEN-OBJ) FN))
+
+(DEFUN MAP-OVER-SCREEN-OBJS (LIST-OF-SCREEN-OBJS FN)
+       (DOLIST (SCREEN-OBJ LIST-OF-SCREEN-OBJS)
+               (MAP-OVER-SCREEN-OBJ SCREEN-OBJ FN)))
+
 ;; sgithens TODO 2024-04-22 Doesn't appear to be used anywhere...
 (DEFMETHOD SCREEN-BP ((SELF SCREEN-CHAR-SUBCLASS))
            (LET ((BP (MAKE-BP 'FIXED)))
@@ -12821,6 +12885,30 @@ Modification History (most recent at top)
 ;;;; FILE: editor.lisp
 ;;;;
 
+;; sgithens 2026-06-10 No longer used...
+;(DEFUN BP-COMPUTE-NEW-SCREEN-BOX 'IGNORE)
+
+(DEFUN BP-COMPUTE-NEW-SCREEN-BOX-OUT (OLD-BOX NEW-BOX OLD-SCREEN-BOX)
+       (LET ((LEVEL (LEVEL-OF-SUPERIORITY NEW-BOX OLD-BOX))
+             (NEW-SCREEN-BOX OLD-SCREEN-BOX))
+            (DOTIMES (I LEVEL)
+                     (SETQ NEW-SCREEN-BOX (SCREEN-BOX NEW-SCREEN-BOX)))
+            NEW-SCREEN-BOX))
+
+(DEFUN BP-COMPUTE-NEW-SCREEN-BOX-IN (OLD-BOX NEW-BOX OLD-SCREEN-BOX)
+       (COND ((EQ NEW-BOX OLD-BOX) OLD-SCREEN-BOX)
+             (T
+              (ALLOCATE-SCREEN-OBJ-FOR-USE-IN
+               NEW-BOX
+               (BP-COMPUTE-NEW-SCREEN-BOX-IN
+                OLD-BOX (SUPERIOR-BOX NEW-BOX) OLD-SCREEN-BOX)))))
+
+;; 2026-06-01 These don't seem to be used anywhere
+(defmethod first-inferior-obj ((self port-box))
+  (let ((target (ports self)))
+    (when (not-null target) (first-inferior-row target))))
+
+
             ;; sgithens TODO 2024-01-19 This old graphics sheet is not being used
             ;; anywhere...
              (let ((old-gss (getf (slot-value self 'plist) 'old-graphics-sheets)))
@@ -14320,6 +14408,29 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: funs.lisp
 ;;;;
+
+;; really only a placeholder
+#+lispworks
+(defun compiled-boxer-function-name (function)
+  (let ((function (compiled-boxer-function-object function)))
+    (if #+win32 (system::compiled-code-p function)
+      #+mac   (system::simple-compiled-function-p function)
+      (system::function-dspec function)
+      ;; try the common lisp thing
+      (multiple-value-bind (exp env name)
+                           (function-lambda-expression function)
+                           (declare (ignore exp env))
+                           name))))
+
+#-(or lispm lucid excl mcl lispworks)
+(defun compiled-boxer-function-name (function)
+  ;  (warn
+  ;   "~%The function, Compiled-Boxer-Function-Name, needs to be defined for ~A"
+  ;   (lisp-implementation-type))
+  (multiple-value-bind (exp env name)
+                       (function-lambda-expression function)
+                       (declare (ignore exp env))
+                       name))
 
 (defun make-boxer-primitive-internal (arglist code)
   (let ((name (gensym)))
@@ -17482,6 +17593,60 @@ sprites)))
 ;;;;
 ;;;; FILE: infsup.lisp
 ;;;;
+
+;; 2026-06-01 These don't seem to be used anywhere
+(defmacro fast-chas-array-room (chas)
+  `(length (the simple-vector ,chas)))
+
+(defsubst chas-array-room (chas-array)
+  (fast-chas-array-room (chas-array-chas chas-array)))
+
+(defmethod insert-list-of-chas-at-cha-no ((self row) list-of-chas cha-no)
+  (do* ((remaining-chas list-of-chas (cdr remaining-chas))
+        (CHA (CAR REMAINING-CHAS))
+        (present-cha-no cha-no (1+ present-cha-no)))
+       ((null remaining-chas))
+    (insert-cha-at-cha-no self cha present-cha-no)
+    (unless (cha? CHA)
+      (SET-SUPERIOR-ROW CHA SELF)
+      (insert-self-action cha))))
+
+(defmethod append-list-of-chas ((self row) list-of-chas)
+  (insert-list-of-chas-at-cha-no self list-of-chas
+                                 (chas-array-active-length (chas-array self))))
+
+(defun obj-contains-obj? (outer inner)
+  (do ((inner inner (superior-obj inner)))
+      ((null inner) nil)
+    (cond ((eq inner outer)
+           (return t)))))
+
+(defun nth-superior-box (box n)
+  (do ((i 0 (1+& i))
+       (superior box (superior-box superior)))
+      ((null superior) nil)
+    (and (=& i n) (return superior))))
+
+;; Needs these to keep reDisplay code alive.
+
+(defmethod first-inferior-obj ((self row))
+  (cha-at-cha-no self 0))
+
+(defmethod next-obj ((self box))
+  (let ((superior-row (slot-value self 'superior-row)))
+    (cha-at-cha-no superior-row (+ (cha-cha-no superior-row self) 1))))
+
+(defmethod first-inferior-obj ((box box))
+  (slot-value box 'first-inferior-row))
+
+(defmethod next-obj ((row row))
+  (slot-value row 'next-row))
+
+
+
+
+
+
 
 (defmethod insert-row-before-row ((box box) row before-row
                                   &optional (check-closet t))
@@ -27722,6 +27887,32 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: region.lisp
 ;;;;
+
+;; sgithens 2026-06-13 No longer used...
+(defun set-box (interval new-box)
+  (setf (interval-box interval) new-box))
+
+;; sgithens 2026-06-13 No longer used...
+(defun get-local-region (&optional (bp *point*))
+  (region (bp-box bp)))
+
+;; sgithens 2026-06-13 No longer used...
+(defun install-region (region &optional (bp *point*))
+  (set-box region (bp-box bp))
+  (set-region (bp-box bp) region)
+  (when (eq region *region-being-defined*)
+    (setq *region-being-defined* nil))
+  (when (eq region *following-mouse-region*)
+    (setq *following-mouse-region* nil)))
+
+
+(defun remove-region-row-blinker (row-blinker)
+  ;; sgithens TODO 2023-03-23 There may be something useful to do here, such
+  ;; as removing it from the actual region list... investigate further.
+  ; (setf (region-row-blinker-visibility row-blinker) nil)
+  ; (setf (bw::sheet-blinker-list *boxer-pane*)
+  ;       (fast-delq row-blinker (bw::sheet-blinker-list *boxer-pane*)))
+)
 
 (defun allocate-region-row-blinker (screen-row)
   (let ((new-blinker (make-region-row-blinker)))

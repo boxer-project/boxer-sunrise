@@ -228,9 +228,6 @@
             ((box? superior-box) (get-region-check-superiors superior-box))
             (t nil)))))
 
-(defun set-box (interval new-box)
-  (setf (interval-box interval) new-box))
-
 (defmethod set-region ((self box) new-region)
   (setf (region self) new-region)
   (modified self))
@@ -245,17 +242,6 @@
     (unless (null box)
       (get-region-check-superiors box))))
 
-(defun get-local-region (&optional (bp *point*))
-  (region (bp-box bp)))
-
-(defun install-region (region &optional (bp *point*))
-  (set-box region (bp-box bp))
-  (set-region (bp-box bp) region)
-  (when (eq region *region-being-defined*)
-    (setq *region-being-defined* nil))
-  (when (eq region *following-mouse-region*)
-    (setq *following-mouse-region* nil)))
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -268,8 +254,6 @@
     (let ((i-box (interval-box region)))
       (unless (null i-box)
         (set-region i-box nil)))
-    (dolist (blinker (interval-blinker-list region))
-      (remove-region-row-blinker blinker))
     (setq *region-list* (fast-delq region *region-list*))
     (when (eq region *region-being-defined*)
       (setq *region-being-defined* nil))
@@ -435,13 +419,3 @@
                         (insert-row-after-row box rr
                                               previous-added-row)
                         (setq previous-added-row rr))))))))))
-
-
-
-(defun remove-region-row-blinker (row-blinker)
-  ;; sgithens TODO 2023-03-23 There may be something useful to do here, such
-  ;; as removing it from the actual region list... investigate further.
-  ; (setf (region-row-blinker-visibility row-blinker) nil)
-  ; (setf (bw::sheet-blinker-list *boxer-pane*)
-  ;       (fast-delq row-blinker (bw::sheet-blinker-list *boxer-pane*)))
-)
