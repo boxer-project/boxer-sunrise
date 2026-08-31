@@ -78,7 +78,9 @@
         (let ((region (region-interval match)))
           (when (and region (region-in-screen-box? self (list region)))
             (when (not (null region))
-                (interval-update-repaint-all-rows region *boxer-pane* *search-highlight-color*))))))))
+                (if (selected-p match)
+                  (interval-update-repaint-all-rows region *boxer-pane* *current-highlighted-search-color*)
+                  (interval-update-repaint-all-rows region *boxer-pane* *search-highlight-color*)))))))))
 
 (defmethod repaint-cursors-regions ((self screen-box))
   (when (or (bps self) (region-in-screen-box? self))

@@ -36,6 +36,7 @@ Modification History (most recent at top)
 (in-package :boxer)
 
 (defvar *search-highlight-color* #(:rgb .16 .63 .60 0.5))
+(defvar *current-highlighted-search-color* #(:rgb 1.0 .95 .63 0.5))
 
 (defvar *read-in-files-during-search* nil)
 
@@ -52,8 +53,7 @@ Modification History (most recent at top)
 ;;; Start Modern Search
 ;;;
 
-(defclass search-match
-  ()
+(defclass search-match ()
   ((region-interval :accessor region-interval :initform nil :initarg :region-interval
     :documentation "One of the text regions that matches the search. This is of struct type interval")
    (selected-p :accessor selected-p :initform nil :initarg :selected-p
@@ -71,7 +71,7 @@ Modification History (most recent at top)
 (defmethod next-result ((self modern-search) &key (direction :forward))
   (with-slots (matches cur-location) self
     (cond ((eq direction :forward)
-           (if (>= cur-location (num-matches self))
+           (if (>= (1+ cur-location) (num-matches self))
              (setf cur-location 0)
              (incf cur-location)))
      (t
@@ -82,7 +82,12 @@ Modification History (most recent at top)
          (cur-bp (interval-start-bp cur-interval)))
       ;; or use move-with-offset which is supposed to rearrange things... maybe they need to be wrapped in a
       ;; drawing-on-window... try this with the existing search once
-      (move-to-bp cur-bp))))
+      (move-to-bp cur-bp))
+
+    ;; Reset everything to selected-p false, then highlight the current result
+    (dolist (i matches)
+      (setf (selected-p i) nil))
+    (setf (selected-p (nth cur-location matches)) t)))
 
 (defmethod reset ((self modern-search))
   (setf (matches self) nil
@@ -125,7 +130,8 @@ Modification History (most recent at top)
            (pattern (make-storage-vector))
            (result nil))
       (map 'string (lambda (c) (sv-append pattern c)) text)
-      (modern-recursive-search pattern new-bp stop-box))))
+      (modern-recursive-search pattern new-bp stop-box)
+      (setf (matches *current-search*) (reverse (matches *current-search*))))))
 
 ;;;
 ;;; End Modern Search

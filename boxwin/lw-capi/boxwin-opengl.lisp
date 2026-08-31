@@ -654,7 +654,7 @@
                                        :accelerator #\a
                                        :enabled-function 'box-check-menu-item-enabled?)))
                        (:component (("Preferences..." :callback 'menu-prefs)))
-                       ("Find" :accelerator #\f :callback 'menu-find)))
+                       ("Find" :accelerator #\f :callback 'menu-searchbar-find ))) ; 'menu-find <- Old emacs style find
     (boxer-view-menu "View" ((:component
                               (("Zoom +" :accelerator #\=
                                          :callback 'menu-zoom-in)

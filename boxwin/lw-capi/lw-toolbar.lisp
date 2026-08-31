@@ -279,5 +279,5 @@
     (boxer::modern-search text)
     (setf (capi:title-pane-text
             (slot-value (slot-value bw::*boxer-frame* 'bw::search-pane) 'bw::found-number))
-          (format nil "~A" (boxer::num-matches boxer::*current-search*)))))
+          (format nil "~A found" (boxer::num-matches boxer::*current-search*)))))
 

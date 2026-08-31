@@ -138,7 +138,7 @@
 (boxer-eval::defboxer-key (bu::.-key 2) com-abort)
 
 ;; Find
-(boxer-eval::defboxer-key (bu::f-key 8) com-search-forward)
+(boxer-eval::defboxer-key (bu::f-key 12) com-search-forward)
 
 (boxer-eval::defboxer-key (bu::f-key 4) com-search-backward)
 
