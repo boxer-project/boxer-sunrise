@@ -1,6 +1,63 @@
 # Change Log
 
-## 3.4.27 2025-04-09
+## 3.4.28 2026-08-31
+
+This release contains some maintenance work and crash fixes, but largely revolves around continuing work
+on the multiplatform Godot release and UI , as well as introducing primitives for video and enabling
+the new search bar.
+
+The inprogress new Search toolbar is now bound to Command-F by default, with the existing emacs style search
+bound to Command-Option-F. This moves towards a modern search similar to that found in desktop authoring packages
+such as Word and Pages, but also that of a strictly text authoring environment like VS Code.  There are still
+some minor issues with searching closets and expanding/shrinking boxes containing matches which will be addressed
+in upcoming releases.
+
+This release also introduces a number of video primitives, that are similar to ones included in Boxer long ago.
+These allow starting, stopping, seeking, and other operations.  On macOS/lispworks these open and control a
+quicktime player outside Boxer.  In the Godot builds, these will play in a graphics box.
+The new primitives are:
+  - open-video
+  - pause-video
+  - stop-video
+  - seek-video
+  - set-video-speed
+  - loop-video
+  - get-video-length
+  - get-vidoe-position
+
+Lastly, this release includes a large amount of work on the new Godot UI, the work is still progressing quite
+rapidly, and due to the verbosity we're not listing the specific changes in this log.  It's hopefull for that
+the next release there will be a usable platform build as well as a hosted WASM version to try out.
+
+video Video prims for desktop macOS with Quicktime
+
+search Minor cleanup and enabling of newer search bar. Old search is still bound to option-command-f
+
+sunrise-20
+  - Sometimes SBCL and ECL send in box names as a vector of characters rather than a string
+
+crash-fix Moving port? check for allocating screen boxes up the cond statement.
+
+doco Docstrings for defclass graphics-sheet
+
+refactor
+  - Cleaning up defun compiled-boxer-function-name across different lisps
+  - Moving debug tree prints into mcl-utils
+
+the-attic
+  - Archiving *currently-allocated-screen-boxes*, debug-sb-alloc, debug-sb-dealloc,
+    queue-screen-objs-for-deallocation-from,cha-no->x-coord, NEXT-SCREEN-CHA-POSITION,
+    FIRST-SCREEN-CHA-POSITION, SCREEN-BOXES-AND-WHITESPACE-SIZE, MAP-OVER-SCREEN-OBJ, and
+    MAP-OVER-SCREEN-OBJS from disply.lisp
+  - Archiving unused functions from editor.lisp/infsup.lisp
+    fast-chas-array-room, chas-array-room, insert-list-of-chas-at-cha-no,
+    append-list-of-chas, obj-contains-obj?, nth-superior-box, first-inferior-obj,
+    next-obj, first-inferior-obj, next-obj
+  - Archiving remove-region-row-blinker, BP-COMPUTE-NEW-SCREEN-BOX-OUT, BP-COMPUTE-NEW-SCREEN-BOX-IN,
+    set-box, get-local-region, and install-region
+
+
+## 3.4.27 2026-04-09
 
 Maintenance release fixing several crashes, compatibility with some historical microworlds, and regressions.
 Under the hood, this release has numerous refactorings and updates for compiling the Boxer Core library to a C/C++
