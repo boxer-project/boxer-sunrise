@@ -180,7 +180,6 @@ cl_object lisp_boxer_make_graphics_sheet(cl_object boxer_graphics_sheet) {
 }
 
 cl_object lisp_boxer_get_name_row(cl_object box) {
-    BOXER_PRINT("lisp_boxer_get_name_row\n");
     Object* godot_box = Variant((Object*) ecl_foreign_data_pointer_safe(box));
     Object* godot_name_row = godot_box->call("get_name_row");
     return ecl_make_foreign_data(ECL_NIL, 0, godot_name_row);
@@ -259,8 +258,13 @@ Variant convert_ecl_to_godot (cl_object value) {
         return Variant(name);
     }
     else if (ECL_EXTENDED_STRING_P(value)) {
-        char * name = ecl_base_string_pointer_safe (ecl_null_terminated_base_string(value));
-        return Variant(name);
+        // ecl_null_terminated_base_string won't work here for unicode, so we'll copy the chars to a Godot String
+        cl_index len = ecl_length(value);
+        String togo;
+        for (cl_index i = 0; i < len; i++) {
+            togo += (char32_t)ecl_char(value, i);
+        }
+        return Variant(togo);
     }
     else if (ECL_VECTORP(value)) {
         if (value->vector.fillp > 0 && ECL_SYMBOLP(ecl_aref1(value, 0)) &&
