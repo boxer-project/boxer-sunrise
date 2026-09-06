@@ -134,9 +134,9 @@ unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("5_o6xl0")
 
-[node name="Message" type="Label" parent="TopLevelContainer/MessageBarContainer"]
+[node name="BoxerStatusLine" type="Label" parent="TopLevelContainer/MessageBarContainer"]
+unique_name_in_owner = true
 layout_mode = 2
-text = "local Boxer"
 
 [node name="OutermostBoxScroll" type="ScrollContainer" parent="TopLevelContainer"]
 unique_name_in_owner = true

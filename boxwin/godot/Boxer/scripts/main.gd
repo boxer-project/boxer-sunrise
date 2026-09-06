@@ -362,6 +362,11 @@ func set_outermost_screenbox(box: Control):
         prev_outermost_box.reset_size()
         prev_outermost_box.reset_box_size()
 
+###
+### Message and Status Line Area
+###
+func set_status_line(data: String):
+    %BoxerStatusLine.text = data
 
 ###
 ### Highlighting

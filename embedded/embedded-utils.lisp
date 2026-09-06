@@ -635,6 +635,9 @@
 
 (defun ecl-boxer-command-loop-internal ()
   (setf boxer-eval::*periodic-eval-action* nil)
+  ;; Our overriden impl may not have been active on the first call of redisplay line...
+  (redraw-status-line)
+
   (loop
     (catch 'boxer::boxer-editor-top-level
       (let ((input (fetch-event-from-queue *next-event*)))
@@ -852,6 +855,10 @@
 ;;;
 ;;; Overridden Boxer Commands
 ;;;
+
+(defun window-system-dependent-redraw-status-line (string)
+  (godot-call-main "set_status_line" string))
+
 (defboxer-command com-mouse-boxsize-closet-properties-pop-up (&optional (mouse-bp (mouse-position-values (bw::boxer-pane-mouse-x) (bw::boxer-pane-mouse-y))))
   "Pop up a box attribute menu, typically bound to a mouse-down."
   (reset-region) (reset-editor-numeric-arg)
