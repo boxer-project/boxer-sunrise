@@ -95,26 +95,36 @@
              (godot-call godot-row "set_cha_size" cha-no (font-size cur-font))
              (godot-call godot-row "set_cha_color" cha-no (aref cur-color 1) (aref cur-color 2) (aref cur-color 3) (aref cur-color 4))))
 
-          (incf cha-no)))))
+          (incf cha-no))))))
 
-    ;; Selected Region Highlighting
-    ;; TODO make *region-list* manipulation observable
-    (cond (*region-list*
-           (godot-call-main "reset_highlights")
-           (dolist (region *region-list*)
-            (with-region-top-level-bps (region :start-bp-name start-bp :stop-bp-name  stop-bp)
-              (flet ((first-row? (row) (eq row (bp-row start-bp)))
-                     (last-row?  (row) (eq row (bp-row stop-bp))))
-                (do-region-rows (rr region)
-                  (let ((start-idx 0)
-                        (end-idx (length-in-chas rr)))
-                    (when (first-row? rr)
-                      (setf start-idx (bp-cha-no start-bp)))
-                    (when (last-row? rr)
-                      (setf end-idx (bp-cha-no stop-bp)))
-                    (godot-call-main "highlight_row" (fetch-godot-obj rr) start-idx end-idx)))))))
-     (t
-      (godot-call-main "reset_highlights"))))
+(defun update-selected-regions (&optional (regions (selected-region-list *boxer-pane*)))
+  (cond (regions
+         (godot-call-main "reset_highlights")
+         (dolist (region regions)
+         (with-region-top-level-bps (region :start-bp-name start-bp :stop-bp-name  stop-bp)
+           (flet ((first-row? (row) (eq row (bp-row start-bp)))
+                   (last-row?  (row) (eq row (bp-row stop-bp))))
+             (do-region-rows (rr region)
+               (let ((start-idx 0)
+                     (end-idx (length-in-chas rr)))
+                 (when (first-row? rr)
+                   (setf start-idx (bp-cha-no start-bp)))
+                 (when (last-row? rr)
+                   (setf end-idx (bp-cha-no stop-bp)))
+                 (godot-call-main "highlight_row" (fetch-godot-obj rr) start-idx end-idx)))))))
+    (t
+     (godot-call-main "reset_highlights"))))
+
+(defmethod push-selected-region :after ((self boxer-canvas) region)
+  (update-selected-regions))
+
+(defmethod delete-selected-region :after ((self boxer-canvas) region)
+  (update-selected-regions))
+
+(defmethod set-interval-bps :after (interval bp1 bp2)
+  ;; TODO at the moment this method is only used for *region-being-defined*, if that changed we would
+  ;; need to check for that.
+  (update-selected-regions))
 
 ;;;
 ;;; CHAS
@@ -760,7 +770,7 @@
           (make-editor-region mouse-bp mark-bp)
           (make-editor-region mark-bp mouse-bp))))
     (setf *region-list* nil)
-    (push *region-being-defined* *region-list*)
+    (push-selected-region *boxer-pane* *region-being-defined*)
     (cond (*region-list*
            (godot-call-main "reset_highlights")
            (dolist (region *region-list*)

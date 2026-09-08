@@ -211,7 +211,7 @@
         (make-editor-region new-start-bp new-stop-bp)))))
 
 
-(defun set-interval-bps (interval bp1 bp2)
+(defmethod set-interval-bps (interval bp1 bp2)
   (setf (interval-start-bp interval) bp1)
   (setf (interval-stop-bp interval) bp2))
 
@@ -254,11 +254,9 @@
     (let ((i-box (interval-box region)))
       (unless (null i-box)
         (set-region i-box nil)))
-    (setq *region-list* (fast-delq region *region-list*))
+    (delete-selected-region *boxer-pane* region)
     (when (eq region *region-being-defined*)
       (setq *region-being-defined* nil))
-    (when (eq region *following-mouse-region*)
-      (setq *following-mouse-region* nil))
     (deallocate-region region)))
 
 (defun deallocate-region (region)

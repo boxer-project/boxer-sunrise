@@ -3679,6 +3679,16 @@ Modification History (most recent at top)
 ;;;; FILE: boxdef.lisp
 ;;;;
 
+;; sgithens 2026-09-07 No longer used...
+(DEFVAR *KILLED-REGION-BUFFER* NIL
+  "this should be integrated into the generic kill buffer eventually")
+
+;; Being moved to graphics-canvas selected-region-list...
+(DEFVAR *REGION-LIST* NIL)
+
+;; sgithens 2026-09-07 No longer used...
+(defvar *following-mouse-region* nil)
+
 (DEFVAR *REDISPLAY-WINDOW* NIL
   "Inside of REDISPLAYING-WINDOW, this variable is bound to the window
    being redisplayed.")

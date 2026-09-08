@@ -91,7 +91,20 @@
 
    ;; Current Context Menu and Other Mouse Actions
    (active-menu :accessor active-menu :initform nil)
+
+   ;; Regions of text Highlighted with the mouse or keyboard operations
+   (selected-region-list :accessor selected-region-list :initform nil
+    :documentation "A list of interval structs for the currently selected regions of text/content.
+     This replaces the older global variable *region-list*.")
     ))
+
+(defmethod push-selected-region ((self boxer-canvas) region)
+  "Adds a selected interval."
+  (push region (selected-region-list self)))
+
+(defmethod delete-selected-region ((self boxer-canvas) region)
+  "Removes this particular region from the list of selected interval structs."
+  (setf (selected-region-list self) (fast-delq region (selected-region-list self))))
 
 (defun box-in-heirarchy? (this-box box-to-find)
   "Is 'this-box', or any boxes above it the 'box-to-find'."

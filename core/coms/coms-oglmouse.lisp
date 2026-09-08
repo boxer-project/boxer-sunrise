@@ -463,7 +463,7 @@
                                                                                                                               (> mark-cha-no mouse-cha-no)))
                                                                                                                    (make-editor-region mouse-bp mark-bp)
                                                                                                                    (make-editor-region mark-bp mouse-bp))))
-                                                                                                         (push *region-being-defined* *region-list*)
+                                                                                                         (push-selected-region *boxer-pane* *region-being-defined*)
                                                                                                          (repaint))
                                                                                                     ((or (row-> mark-row mouse-row)
                                                                                                          (and (eq mark-row mouse-row)
@@ -500,10 +500,8 @@
                                                                    (=& mark-cha-no mouse-cha-no))
                                                               ;; no region to define so make sure we clean up the blinkers
                                                               (unless (null *region-being-defined*)
-                                                                (setq *region-list*
-                                                                      (fast-delq *region-being-defined* *region-list*)
-                                                                      *region-being-defined*
-                                                                      nil)))
+                                                                (delete-selected-region *boxer-pane* *region-being-defined*)
+                                                                (setq *region-being-defined* nil)))
                                                          (t
                                                           ;; region is still there so...
                                                           (entering-region-mode)))))

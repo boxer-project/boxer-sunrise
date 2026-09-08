@@ -328,7 +328,7 @@ n characters. "
            (set-interval-bps *region-being-defined* (interval-start-bp *region-being-defined*) *point*))
           (t
            (setq *region-being-defined* (make-editor-region start-point *point*))
-           (push *region-being-defined* *region-list*)))
+           (push-selected-region *boxer-pane* *region-being-defined*)))
     )
   boxer-eval::*novalue*
 )
@@ -347,7 +347,7 @@ n characters. "
            (set-interval-bps *region-being-defined* (interval-start-bp *region-being-defined*) *point*))
           (t
            (setq *region-being-defined* (make-editor-region start-point *point*))
-           (push *region-being-defined* *region-list*)))
+           (push-selected-region *boxer-pane* *region-being-defined*)))
     )
   boxer-eval::*novalue*
 )
@@ -447,7 +447,7 @@ possible to the original column. "
            (set-interval-bps *region-being-defined* (interval-start-bp *region-being-defined*) *point*))
           (t
            (setq *region-being-defined* (make-editor-region start-point *point*))
-           (push *region-being-defined* *region-list*)))))
+           (push-selected-region *boxer-pane* *region-being-defined*)))))
   boxer-eval::*novalue*)
 
 (defboxer-command COM-PREVIOUS-ROW ()
@@ -546,7 +546,7 @@ possible to the original column. "
            (set-interval-bps *region-being-defined* (interval-start-bp *region-being-defined*) *point*))
           (t
            (setq *region-being-defined* (make-editor-region start-point *point*))
-           (push *region-being-defined* *region-list*)))))
+           (push-selected-region *boxer-pane* *region-being-defined*)))))
   boxer-eval::*novalue*)
 
 (defboxer-command COM-NEXT-ROW ()
@@ -909,7 +909,7 @@ argument, deletes that many lines."
               (bp-row stop-bp) stop-row (bp-cha-no stop-bp) stop-cha-no)
         (setq *region-being-defined*
               (make-editor-region start-bp stop-bp))
-        (push *region-being-defined* *region-list*)
+        (push-selected-region *boxer-pane* *region-being-defined*)
         (entering-region-mode))))
   boxer-eval::*novalue*)
 
@@ -1002,7 +1002,7 @@ removes it from the kill buffer.  No copy is made."
     (unless (bp-= start-bp stop-bp)
       (setq *region-being-defined* (make-editor-region start-bp stop-bp)
             *last-retrieved-region* *region-being-defined*)
-      (push *region-being-defined* *region-list*)
+      (push-selected-region *boxer-pane* *region-being-defined*)
       (entering-region-mode))
     (mark-file-box-dirty (point-row))
     boxer-eval::*novalue*))

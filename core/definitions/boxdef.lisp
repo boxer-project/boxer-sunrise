@@ -153,13 +153,6 @@ Modification History (most recent at top)
 (DEFVAR *REGION-BEING-DEFINED* NIL
   "Bound to a region which is in the process of being delineated.  NIL Otherwise.")
 
-(DEFVAR *KILLED-REGION-BUFFER* NIL
-  "this should be integrated into the generic kill buffer eventually")
-
-(DEFVAR *REGION-LIST* NIL)
-
-(defvar *following-mouse-region* nil)
-
 ;;;; Variables Having To Do With Redisplay.
 
 (DEFVAR *OUTERMOST-SCREEN-BOX* NIL

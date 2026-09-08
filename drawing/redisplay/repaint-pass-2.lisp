@@ -56,7 +56,7 @@
       (and (> (+ y-pos vert-scroll (screen-obj-hei item)) 0)
            (< (+ y-pos vert-scroll) (* (/ 1 (zoom-level *boxer-pane*)) (viewport-height *boxer-pane*))))))
 
-(defmethod region-in-screen-box? ((self screen-box) &optional (region-list *region-list*))
+(defmethod region-in-screen-box? ((self screen-box) &optional (region-list (selected-region-list *boxer-pane*)))
   (when (and (car region-list)
              (car (screen-objs (bp-row (interval-start-bp (car region-list))))))  ;; sunrise-102
     (let ((region-screen-box (screen-box (car (screen-objs (bp-row (interval-start-bp (car region-list))))))))
@@ -89,7 +89,7 @@
       (when (bps self)
         (repaint-cursor *point*))
       (when (region-in-screen-box? self)
-        (dolist (region *region-list*)
+        (dolist (region (selected-region-list *boxer-pane*))
           (when (not (null region)) (interval-update-repaint-all-rows region))))))
       ;; Paint search matches
       (repaint-search-regions self))
