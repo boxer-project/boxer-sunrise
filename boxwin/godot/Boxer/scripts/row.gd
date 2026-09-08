@@ -9,7 +9,12 @@ var boxer_row
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-    pass
+    child_order_changed.connect(request_typography_update)
+    request_typography_update()
+
+func request_typography_update():
+    # Send a request back to Boxer Lisp to update any fonts, colors, or sizes for the text in this row
+    $/root/Main.handle_boxer_func("UPDATE-ROW-TYPOGRAPHY", boxer_row)
 
 func remove_cha(index) -> void:
     var cha = get_child(index)

@@ -77,6 +77,10 @@
     (gdboxer-update-screen-box (fetch-godot-obj obj) (car (screen-objs obj))) ;; adjust for ports
     (putprop (car (screen-objs obj)) (fetch-godot-obj obj) :gdnode)) ;; adjust for ports
    ((row? obj)
+    nil)))
+
+(defun update-row-typography (obj) ; obj should be a row
+  (when obj
     (let ((godot-row (fetch-godot-obj obj))
           (cha-no 0)
           (cur-bfd nil)
@@ -95,7 +99,7 @@
              (godot-call godot-row "set_cha_size" cha-no (font-size cur-font))
              (godot-call godot-row "set_cha_color" cha-no (aref cur-color 1) (aref cur-color 2) (aref cur-color 3) (aref cur-color 4))))
 
-          (incf cha-no))))))
+          (incf cha-no)))))
 
 (defun update-selected-regions (&optional (regions (selected-region-list *boxer-pane*)))
   (cond (regions
