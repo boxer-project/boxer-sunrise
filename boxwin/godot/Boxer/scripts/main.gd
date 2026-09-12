@@ -9,11 +9,18 @@ extends Node
 @onready var open_dialog: FileDialog = get_node("/root/Main/OpenFileDialog")
 @onready var note_player: Sampler = get_node("/root/Main/NotePlayer")
 
+###
+### Global Vars for State of Boxer Canvas
+###
 # Keep track of our cursor which we move around the node tree
 var cursor
 var outermost_box = null
 var outermost_box_prev_row: Row = null
 var outermost_box_prev_pos: int = 0
+
+var cur_font_no: int
+var cur_font_color: Color = Color.BLACK
+var cur_font_size: int = 16
 
 var canvas_zoom = 1:
     get:
@@ -115,6 +122,17 @@ func handle_boxer_func(func_name: String, ...args):
     if boxer_event_queue_mutex:
         boxer_event_queue_mutex.lock()
         boxer_event_queue.push_front([3, args.size(), func_name] + args)
+        boxer_event_queue_mutex.unlock()
+
+func handle_boxer_func_unique(func_name: String, ...args):
+    # Ensures that only one copy of this function is in the queue
+    # If it's already in the queue, removes existing one and puts
+    # the new copy at the end
+    if boxer_event_queue_mutex:
+        boxer_event_queue_mutex.lock()
+        var new_item = [3, args.size(), func_name] + args
+        boxer_event_queue = boxer_event_queue.filter(func(value): return value != new_item)
+        boxer_event_queue.push_front(new_item)
         boxer_event_queue_mutex.unlock()
 
 func handle_open_file(path):

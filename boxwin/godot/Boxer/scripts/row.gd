@@ -14,7 +14,8 @@ func _ready() -> void:
 
 func request_typography_update():
     # Send a request back to Boxer Lisp to update any fonts, colors, or sizes for the text in this row
-    $/root/Main.handle_boxer_func("UPDATE-ROW-TYPOGRAPHY", boxer_row)
+    if is_inside_tree():
+        $/root/Main.handle_boxer_func_unique("UPDATE-ROW-TYPOGRAPHY", boxer_row)
 
 func remove_cha(index) -> void:
     var cha = get_child(index)
@@ -42,6 +43,10 @@ func set_cha(ch, idx: int) -> int:
     var cha
     if typeof(ch) == TYPE_INT:
         cha = make_cha_scene(String.chr(ch))
+        if is_inside_tree():
+            cha.add_theme_font_override("font", Global.font_cache.get($/root/Main.cur_font_no, Global.default_sans))
+            cha.add_theme_font_size_override("font_size", $/root/Main.cur_font_size)
+            cha.add_theme_color_override("font", $/root/Main.cur_font_color)
     else:
         cha = ch
 
@@ -60,6 +65,11 @@ func set_cha(ch, idx: int) -> int:
     add_child(cha)
     move_child(cha, idx)
     return idx
+
+func set_cha_font(idx: int, font_no, font_name, font_size, bold_p, italic_p):
+    var cha: Label = get_child(idx)
+    cha.add_theme_font_override("font", Global.get_boxer_font(font_no, font_name, font_size, bold_p, italic_p))
+    cha.add_theme_font_size_override("font_size", font_size)
 
 func set_cha_size(idx: int, font_size: int) -> void:
     var cha: Label = get_child(idx)

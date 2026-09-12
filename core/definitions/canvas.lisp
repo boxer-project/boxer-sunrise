@@ -96,7 +96,23 @@
    (selected-region-list :accessor selected-region-list :initform nil
     :documentation "A list of interval structs for the currently selected regions of text/content.
      This replaces the older global variable *region-list*.")
+
+   (cur-font-no :accessor cur-font-no :initform nil
+    :documentation "An integer containing the current active font at point.")
+   (cur-font-color :accessor cur-font-color :initform nil
+    :documentation "A Boxer #(:rgb...) color vector the current font color at point.")
     ))
+
+(defmethod point-font-changed? ((self boxer-canvas))
+  "Returns true if either the current font-no or color have changed. Nil otherwise"
+  (let ((cur-bfd (get-current-font))
+        (togo nil))
+    (setf togo (or (not (equalp (cur-font-no self) (bfd-font-no cur-bfd)))
+                   (not (equalp (cur-font-color self) (bfd-color cur-bfd)))))
+    (when togo
+      (setf (cur-font-no self)    (bfd-font-no cur-bfd)
+            (cur-font-color self) (bfd-color cur-bfd)))
+    togo))
 
 (defmethod push-selected-region ((self boxer-canvas) region)
   "Adds a selected interval."

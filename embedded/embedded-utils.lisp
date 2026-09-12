@@ -4,6 +4,8 @@
   (putprop *initial-box* gdnode :gdnode)
   (putprop (first-inferior-row *initial-box*) gdrow :gdnode)
 
+  (setup-initial-fonts)
+
   (gdboxer-set-property gdrow "boxer_row" (first-inferior-row *initial-box*))
 
   (let ((godot-name-row (gdboxer-get-name-row gdnode))
@@ -96,7 +98,7 @@
              (setf cur-font (bfd-font-no cur-bfd)
                    cur-color (bfd-color cur-bfd))
 
-             (godot-call godot-row "set_cha_size" cha-no (font-size cur-font))
+             (godot-call godot-row "set_cha_font" cha-no cur-font (font-name cur-font) (font-size cur-font) (gboolean (bold-font? cur-font)) (gboolean (italic-font? cur-font)))
              (godot-call godot-row "set_cha_color" cha-no (aref cur-color 1) (aref cur-color 2) (aref cur-color 3) (aref cur-color 4))))
 
           (incf cha-no)))))
@@ -485,9 +487,10 @@
   ))
 
 (defmethod (setf graphics-sheet-background) :after (value sheet)
-  (let ((box (graphics-sheet-superior-box sheet)))
-    (when box
-      (godot-call (fetch-godot-obj box) "set_background" (aref value 1) (aref value 2) (aref value 3) (aref value 4)))))
+  (when value
+    (let ((box (graphics-sheet-superior-box sheet)))
+      (when (and box (fetch-godot-obj box))
+        (godot-call (fetch-godot-obj box) "set_background" (aref value 1) (aref value 2) (aref value 3) (aref value 4))))))
 
 (defmethod (setf graphics-info) :after ((sheet graphics-sheet) box)
   (let* ((godot-box (fetch-godot-obj box)))
@@ -635,22 +638,26 @@
 
 (defmethod CIRCULAR-PORT? (self &optional ignore) nil)
 
-(defun setup-standard-colors ()
-;; (def-redisplay-initialization
-  ;; set up some standard colors for sprites
-  (dolist (color *standard-colors*)
-      (let ((colorbox (boxer::make-color-internal
-                       (cadr color) (caddr color) (cadddr color)))
-            (variable-name (boxer::intern-in-bu-package
-                            (string-upcase (car color)))))
-        (boxer-eval::boxer-toplevel-set variable-name colorbox))))
+
+(defun setup-initial-fonts ()
+  (loop for cur-font in *font-cache*
+        for i from 0
+        do (godot-call-main "get_boxer_font" i (font-name i) (font-size i) (gboolean (bold-font? i)) (gboolean (italic-font? i)))))
 
 (defvar *next-event* #(0 0 0 0 0 0 0 0 0 0 0 0))
+
+(defun update-current-font ()
+  (when (point-font-changed? *boxer-pane*)
+    (gdboxer-set-main-property "cur_font_size" (font-size (cur-font-no *boxer-pane*)))
+    (gdboxer-set-main-property "cur_font_no" (cur-font-no *boxer-pane*))
+    (gdboxer-set-main-property "cur_font_color" (cur-font-color *boxer-pane*))))
 
 (defun ecl-boxer-command-loop-internal ()
   (setf boxer-eval::*periodic-eval-action* nil)
   ;; Our overriden impl may not have been active on the first call of redisplay line...
   (redraw-status-line)
+
+
 
   (loop
     (catch 'boxer::boxer-editor-top-level
@@ -669,31 +676,9 @@
               ((equal 4 (aref input 0))
                (format t "Lisp: Exiting~%")
                (return))
-              ((gesture-spec-p input)
-               ;; We are adding this gesture condition in addition to the key-event? because at some point
-               ;; during a lispworks major version change, the ability to encode the modifier keys as part of
-               ;; the reader char seems to have gone away.  By adding an option to push an entire gesture-spec
-               ;; to the *boxer-eval-queue* we can just manually pick out the char-code and input bits.
-               (let* ((data (gesture-spec-data input))
-                      (charbits (gesture-spec-modifiers input)))
-                 (handle-boxer-input data charbits (key-to-keep-shifted? data))))
-              ((key-event? input)
-               (handle-boxer-input (input-code input) (input-bits input)))
-              ((mouse-event? input)
-               (handle-boxer-input input))
-              ((eq input :stop-and-quit)
-               #+lispworks (capi:apply-in-pane-process *boxer-pane* #'(lambda ()
-                (setf (boxer::active *boxer-pane*) nil)
-                (setf boxer::*quit-boxer* t))))
-              ((and (symbolp input) (not (null (symbol-function input))))
-               (funcall input))
-              ((and (consp input)
-                    (or (functionp (car input))
-                        (and (symbolp (car input))
-                             (not (null (symbol-function (car input)))))))
-               (apply (car input) (cdr input)))
               ((not (null boxer::*boxer-system-hacker*))
-               (error "Unknown object, ~A, in event queue" input)))))))
+               (error "Unknown object, ~A, in event queue" input))))
+      (update-current-font))))
 
 (defun push-graphics-command (godot-box arg0 arg1 arg2 arg3 arg4 arg5)
   (cond

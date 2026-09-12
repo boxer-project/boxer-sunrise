@@ -569,11 +569,6 @@ Modification History (most recent at top)
     (setq boxer::*font-size-baseline* (- boxer::*font-size-baseline* 0.25)))
   (update-toolbar-font-buttons))
 
-(defun get-current-font ()
-  (let ((region (or boxer::*region-being-defined* (boxer::get-current-region))))
-    (cond ((null region) boxer::*current-font-descriptor*)
-          (t (boxer::bp-closest-bfd (boxer::interval-start-bp region))))))
-
 ;; adds a check mark to the string if it matches the current font
 ;; note that this may have to recalculate the items because of newly added fonts
 (defun set-font-menu-selection (menu)

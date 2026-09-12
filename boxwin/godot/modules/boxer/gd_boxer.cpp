@@ -300,6 +300,12 @@ cl_object lisp_boxer_set_property(cl_object box, cl_object prop_name, cl_object 
     return ECL_NIL;
 }
 
+cl_object lisp_boxer_set_main_node_property(cl_object prop_name, cl_object prop_value) {
+    char * name = ecl_base_string_pointer_safe (ecl_null_terminated_base_string(prop_name));
+    main_boxer_node->set_deferred(name, convert_ecl_to_godot(prop_value));
+    return ECL_NIL;
+}
+
 cl_object lisp_boxer_push_boxer_centered_bitmap(cl_object godot_obj, cl_object pbarray, cl_object x, cl_object y, cl_object width, cl_object height) {
     PackedInt32Array *pba = (PackedInt32Array *)ecl_foreign_data_pointer_safe(pbarray);
     Array togo = Array();
@@ -416,6 +422,9 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
     aux = ecl_make_symbol("GDBOXER-SET-PROPERTY", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_set_property, 3);
 
+    aux = ecl_make_symbol("GDBOXER-SET-MAIN-PROPERTY", "BOXER");
+    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_set_main_node_property, 2);
+
     aux = ecl_make_symbol("GDBOXER-CALL-GODOT", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_push_to_scene_queue, 1);
 
@@ -427,6 +436,9 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
     //
 
     result = cl_eval(c_string_to_object("(bw::start-embedded-boxer nil)"));
+    ecl_print(result, ECL_T);
+
+    result = cl_eval(c_string_to_object("(box::run-redisplay-inits)"));
     ecl_print(result, ECL_T);
 
 #ifdef BOXER_GDEXTENSION

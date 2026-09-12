@@ -88,6 +88,11 @@
 (defun font-family-alias (family-name)
   (cdr (assoc family-name *font-family-aliases* :test #'string-equal)))
 
+(defun get-current-font ()
+  (let ((region (or *region-being-defined* (get-current-region))))
+    (cond ((null region) *current-font-descriptor*)
+          (t (bp-closest-bfd (interval-start-bp region))))))
+
 (defun make-boxer-font (rawfontspec &key (translate-relative-sizes t))
   "Makes a boxer font using the fontspec, or returns the existing font from the cache. The returned value is an integer
   with the key for the font during this runtime. These keys can change between executions of Boxer and are only meant

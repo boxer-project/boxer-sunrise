@@ -63,6 +63,7 @@
   (:nicknames :box)
   (:shadow :once-only)
   (:export :box :plist-subclass
+           :get-current-font
            *capogi-font-directory* *resources-dir* *shaders-dir*
            *suppress-expose-handler* *SUPPRESSED-ACTIONS*
            :+degs->rads+
