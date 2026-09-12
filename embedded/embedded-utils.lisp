@@ -896,4 +896,7 @@
     (godot-call-main "box_types_pop_up"))
   boxer-eval::*novalue*)
 
-
+;;;
+;;; Keybindings
+;;;
+(boxer-eval::defboxer-key (bu::a-key 8) com-select-box-contents)
