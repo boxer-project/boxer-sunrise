@@ -125,6 +125,10 @@ mouse_behavior_recursive = 2
 text = "Print Act-Objs
 "
 
+[node name="PauseStart" type="Button" parent="TopLevelContainer/HBoxContainer"]
+layout_mode = 2
+text = "Pause Queues"
+
 [node name="ToolbarContainer" parent="TopLevelContainer" instance=ExtResource("4_tefeu")]
 unique_name_in_owner = true
 layout_mode = 2
@@ -233,6 +237,9 @@ visible = false
 unique_name_in_owner = true
 visible = false
 
+[connection signal="font_changed" from="." to="TopLevelContainer/ToolbarContainer" method="_on_main_font_changed"]
+[connection signal="font_color_changed" from="." to="TopLevelContainer/ToolbarContainer" method="_on_main_font_color_changed"]
+[connection signal="font_size_changed" from="." to="TopLevelContainer/ToolbarContainer" method="_on_main_font_size_changed"]
 [connection signal="canceled" from="OpenFileDialog" to="." method="_on_open_file_dialog_canceled"]
 [connection signal="file_selected" from="OpenFileDialog" to="." method="_on_open_file_dialog_file_selected"]
 [connection signal="pressed" from="TopLevelContainer/HBoxContainer/PrintScrObjs" to="." method="_on_print_scr_objs_pressed"]

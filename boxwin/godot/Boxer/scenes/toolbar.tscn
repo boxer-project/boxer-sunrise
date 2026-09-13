@@ -17,55 +17,14 @@ script = ExtResource("2_wdy5x")
 layout_mode = 2
 size_flags_horizontal = 2
 
-[node name="Font" type="OptionButton" parent="TextItems"]
+[node name="Font" type="LineEdit" parent="TextItems"]
+unique_name_in_owner = true
 layout_mode = 2
-selected = 0
-item_count = 4
-popup/item_0/text = "Arial"
-popup/item_0/id = 0
-popup/item_1/text = "Courier New"
-popup/item_1/id = 1
-popup/item_2/text = "Times New Romain"
-popup/item_2/id = 2
-popup/item_3/text = "Verdana"
-popup/item_3/id = 3
+expand_to_text_length = true
 
-[node name="Size" type="OptionButton" parent="TextItems"]
+[node name="Size" type="SpinBox" parent="TextItems"]
+unique_name_in_owner = true
 layout_mode = 2
-selected = 5
-item_count = 16
-popup/item_0/text = "8"
-popup/item_0/id = 0
-popup/item_1/text = "9"
-popup/item_1/id = 1
-popup/item_2/text = "10"
-popup/item_2/id = 2
-popup/item_3/text = "11"
-popup/item_3/id = 3
-popup/item_4/text = "12"
-popup/item_4/id = 4
-popup/item_5/text = "14"
-popup/item_5/id = 5
-popup/item_6/text = "16"
-popup/item_6/id = 6
-popup/item_7/text = "18"
-popup/item_7/id = 7
-popup/item_8/text = "20"
-popup/item_8/id = 8
-popup/item_9/text = "22"
-popup/item_9/id = 9
-popup/item_10/text = "24"
-popup/item_10/id = 10
-popup/item_11/text = "26"
-popup/item_11/id = 11
-popup/item_12/text = "28"
-popup/item_12/id = 12
-popup/item_13/text = "36"
-popup/item_13/id = 13
-popup/item_14/text = "48"
-popup/item_14/id = 14
-popup/item_15/text = "72"
-popup/item_15/id = 15
 
 [node name="ColorOptions" type="OptionButton" parent="TextItems"]
 visible = false
@@ -100,6 +59,7 @@ layout_mode = 2
 text = "Color"
 
 [node name="FontColor" type="ColorPickerButton" parent="TextItems"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 0
 text = "    "
@@ -176,7 +136,6 @@ popup/item_9/id = 9
 popup/item_10/text = "Gray"
 popup/item_10/id = 10
 
-[connection signal="item_selected" from="TextItems/Size" to="." method="_on_size_item_selected"]
 [connection signal="color_changed" from="TextItems/FontColor" to="." method="_on_font_color_color_changed"]
 [connection signal="pressed" from="MiscIcons/Open" to="." method="_on_open_pressed"]
 [connection signal="color_changed" from="BoxItems/BackgroundColor" to="." method="_on_background_color_color_changed"]

@@ -18,9 +18,23 @@ var outermost_box = null
 var outermost_box_prev_row: Row = null
 var outermost_box_prev_pos: int = 0
 
-var cur_font_no: int
-var cur_font_color: Color = Color.BLACK
-var cur_font_size: int = 16
+signal font_changed(font_no, font)
+var cur_font_no: int:
+    set(value):
+        cur_font_no = value
+        font_changed.emit(value, Global.font_cache.get(value, Global.default_sans))
+
+signal font_color_changed(font_color)
+var cur_font_color: Color = Color.BLACK:
+    set(value):
+        cur_font_color = value
+        font_color_changed.emit(value)
+
+signal font_size_changed(font_size)
+var cur_font_size: int = 16:
+    set(value):
+        cur_font_size = value
+        font_size_changed.emit(value)
 
 var canvas_zoom = 1:
     get:

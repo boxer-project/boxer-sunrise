@@ -3,9 +3,6 @@ extends Node
 
 @export var screen_scale: float
 
-@export var cur_font_size = 14
-@export var cur_font_color = Color("black")
-
 func _ready() -> void:
     screen_scale = DisplayServer.screen_get_scale()
     get_viewport().content_scale_factor = screen_scale
@@ -179,9 +176,12 @@ func get_boxer_font(font_no: int, font_name: String, _size: int, is_bold, is_ita
         font_cache[font_no] = get_weighted_font(default_serif, is_bold)
     elif font_name.to_lower() == "courier new":
         font_cache[font_no] = get_weighted_font(default_monospace, is_bold)
+    elif is_italic:
+        font_cache[font_no] = get_weighted_font(default_sans_italic, is_bold)
+        print("No font matched (italic): ", font_name)
     else:
+        font_cache[font_no] = get_weighted_font(default_sans, is_bold)
         print("No font matched: ", font_name)
-        return default_sans
 
     return font_cache[font_no]
 
