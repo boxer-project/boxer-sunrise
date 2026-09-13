@@ -1052,8 +1052,7 @@ removes it from the kill buffer.  No copy is made."
                           (progn
                             (insert-row-chas *point* thing :moving))))
         ((interval? thing)
-         (yank-region *point* thing)
-         (setq *current-editor-region* thing))
+         (yank-region *point* thing))
         ((eq thing :newline)
          (insert-row *point* (make-initialized-row) :moving))
         ((listp thing) (insert-list-of-things thing))

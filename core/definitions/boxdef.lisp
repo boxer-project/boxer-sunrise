@@ -148,8 +148,6 @@ Modification History (most recent at top)
 
 ;;;Region Variables
 
-(DEFVAR *CURRENT-EDITOR-REGION* NIL)
-
 (DEFVAR *REGION-BEING-DEFINED* NIL
   "Bound to a region which is in the process of being delineated.  NIL Otherwise.")
 

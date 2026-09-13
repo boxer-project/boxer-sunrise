@@ -3679,6 +3679,10 @@ Modification History (most recent at top)
 ;;;; FILE: boxdef.lisp
 ;;;;
 
+;; sgithens 2026-09-08 I think this can be removed...
+(DEFVAR *CURRENT-EDITOR-REGION* NIL)
+
+
 ;; sgithens 2026-09-07 No longer used...
 (DEFVAR *KILLED-REGION-BUFFER* NIL
   "this should be integrated into the generic kill buffer eventually")
