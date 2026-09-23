@@ -334,6 +334,21 @@ Modification History (most recent at the top)
 ;;; Diagnostic Routines for printing out Actual and Screen structure
 ;;;
 
+
+(defmethod is-visible? (obj)
+  nil)
+
+;; TODO what about if we're in a graphics-box that is flipped to the graphic side??
+(defmethod is-visible? ((self box))
+  (cond
+    ((eq self (outermost-box))
+     t)
+    ((and (not (shrunken? (superior-box (superior-row self))))
+          (is-visible? (superior-row self))))))
+
+(defmethod is-visible? ((self row))
+  (is-visible? (superior-box self)))
+
 (defvar *diagnostic-indent-size* 4)
 
 (defun print-screen-obj-tree (&optional (scr-obj (outermost-screen-box)) (depth 0))
@@ -359,10 +374,10 @@ Modification History (most recent at the top)
      (format t "~%~V,,,' A+ Box: ~A Style: ~A Screen-objs: #~A ~A"
        (* *diagnostic-indent-size* depth) "" (name obj) (display-style-style (display-style-list obj))
        (length (screen-objs obj)) (screen-objs obj))
-     (format t "~%~V,,,' A       Size: ~A"
+     (format t "~%~V,,,' A       Size: ~A visible: ~A"
        (* *diagnostic-indent-size* depth) "" (if (fixed-size? obj)
                         (multiple-value-list (fixed-size obj))
-                        "Dynamic"))
+                        "Dynamic") (is-visible? obj))
      (format t "~%~V,,,' A       scr-box-act-obj: ~A"
        (* *diagnostic-indent-size* depth) "" (if (car (screen-objs obj))
                                                (screen-obj-actual-obj (car (screen-objs obj)))
