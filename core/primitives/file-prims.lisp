@@ -412,7 +412,9 @@ Modification History (most recent at top)
              ;; read-internal-1 do the work so that we can have a complete
              ;; pathname available for the bookeeping operations which follow
              ;; a successful read-internal-1
-             (box (unless (null pathname) (read-internal-1 name pathname))))
+             (box (unless (null pathname)
+               (with-hilited-box ((outermost-box))
+                 (read-internal-1 name pathname)))))
         ;; now do the box/file bookkeeping,
         ;; NOTE: It has to be here AFTER the initialize-box-from-box
         (cond ((box? box)
@@ -462,7 +464,9 @@ Modification History (most recent at top)
                                (t
                                 (read-text-file-internal pathname))))
                         (t
+                         (status-line-display 'loading-box (format nil "Loading Box from ~A" pathname))
                          (funcall special-file-reader-function pathname))))))
+      (status-line-undisplay 'loading-box)
       box)
     ;; now handle file stickyness if we want to
     (unless (null *sticky-file-defaulting?*)

@@ -174,6 +174,7 @@
   `(unwind-protect
      (progn
        (highlight-box *boxer-pane* ,box nil)
+       #+lispworks(repaint)
        . ,body)
      (highlight-box *boxer-pane* ,box t)))
 
