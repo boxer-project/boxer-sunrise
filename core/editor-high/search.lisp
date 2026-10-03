@@ -110,17 +110,21 @@ Modification History (most recent at top)
   (setf (capi:title-pane-text (slot-value (slot-value bw::*boxer-frame* 'bw::search-pane) 'bw::found-number))
         (format nil "No results"))))
 
-(defun modern-recursive-search (pattern new-bp stop-box)
-  (multiple-value-bind (found-row found-cha-no offset)
-                       (search-from pattern new-bp stop-box)
-    (when found-row
-      (add-match *current-search* (make-instance 'search-match :region-interval (%make-interval
-                                    (make-initialized-bp :fixed found-row found-cha-no)
-                                    (make-initialized-bp :fixed found-row (+ found-cha-no offset)))))
-      (modern-recursive-search
-        pattern
-        (make-initialized-bp :fixed found-row (+ found-cha-no offset))
-        stop-box))))
+(defun modern-iterative-search (pattern new-bp stop-box)
+  (loop
+    (multiple-value-bind (found-row found-cha-no offset)
+        (search-from pattern new-bp stop-box)
+      (unless found-row
+        (return nil))
+      (add-match *current-search*
+                 (make-instance 'search-match
+                   :region-interval
+                   (%make-interval
+                    (make-initialized-bp :fixed found-row found-cha-no)
+                    (make-initialized-bp :fixed found-row (+ found-cha-no offset)))))
+      ;; Advance the search start to the end of this match
+      (setf new-bp
+            (make-initialized-bp :fixed found-row (+ found-cha-no offset))))))
 
 (defun modern-search (text)
   (when (> (length text) 0)
@@ -130,13 +134,19 @@ Modification History (most recent at top)
            (pattern (make-storage-vector))
            (result nil))
       (map 'string (lambda (c) (sv-append pattern c)) text)
-      (modern-recursive-search pattern new-bp stop-box)
+      (modern-iterative-search pattern new-bp stop-box)
       (setf (matches *current-search*) (reverse (matches *current-search*))))))
 
 ;;;
 ;;; End Modern Search
 ;;;
 
+(defmethod full-next-row ((self row))
+  "Version of next-row accessor, that jumps to the main body rows if the current row is the closet and the
+   closet is closed."
+  (if (and (closet-row? self (superior-box self)) (not (closet-opened? (superior-box self))))
+    (first-inferior-row (superior-box self))
+    (next-row self)))
 
 (defun search-from (pattern bp stop-box)
   (let* ((start-row (bp-row bp))
@@ -144,7 +154,7 @@ Modification History (most recent at top)
          (start-box (superior-box start-row)))
     (catch 'pattern-found
       (loop
-       (do ((row start-row (next-row row))
+       (do ((row start-row (full-next-row row))
             (cha-no start-cha-no 0))
            ((null row) nil)
          (multiple-value-bind (found-row found-cha-no)
