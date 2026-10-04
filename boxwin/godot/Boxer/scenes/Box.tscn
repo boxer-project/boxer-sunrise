@@ -189,16 +189,19 @@ visible = false
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
+mouse_filter = 2
 
 [node name="SuperShrunkPanel" type="Panel" parent="Boxtops/SuperShrunkBox"]
 custom_minimum_size = Vector2(25, 25)
 layout_mode = 2
+mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_telwu")
 
 [node name="NameOnlyBoxtop" type="PanelContainer" parent="Boxtops"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
+mouse_filter = 2
 theme_override_styles/panel = ExtResource("4_o41fb")
 
 [node name="name" type="Label" parent="Boxtops/NameOnlyBoxtop"]
@@ -223,6 +226,4 @@ text = "This is the Box Name"
 [connection signal="gui_input" from="BoxInternals/OuterBorderPanel/Control/TypeToggle" to="." method="_on_type_toggle_gui_input"]
 [connection signal="mouse_entered" from="BoxInternals/OuterBorderPanel/Control/TypeToggle" to="BoxInternals/OuterBorderPanel/Control/TypeToggle" method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="BoxInternals/OuterBorderPanel/Control/TypeToggle" to="BoxInternals/OuterBorderPanel/Control/TypeToggle" method="_on_mouse_exited"]
-[connection signal="gui_input" from="Boxtops/SuperShrunkBox/SuperShrunkPanel" to="." method="_on_shrunk_box_gui_input"]
-[connection signal="gui_input" from="Boxtops/NameOnlyBoxtop" to="." method="_on_shrunk_box_gui_input"]
-[connection signal="gui_input" from="Boxtops/NameOnlyBoxtop/name" to="." method="_on_shrunk_box_gui_input"]
+[connection signal="gui_input" from="Boxtops" to="." method="_on_shrunk_box_gui_input"]
