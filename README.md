@@ -82,7 +82,7 @@ path accordingly to your system.)
 
 ```lisp
 ;; This needs to be a full path to the bootstrap file
-(load #P"~/code/boxer-sunrise/src/bootstrap.lisp")
+(load #P"~/code/boxer-sunrise/core/bootstrap.lisp")
 ```
 
 ### Building the Boxer executable on MacOS / Lispworks CAPI
