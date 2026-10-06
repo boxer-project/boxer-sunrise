@@ -900,6 +900,10 @@ in macOS."
 
 (defun window-system-specific-make-boxer ()
 
+  (log:info "Creating boxer version: ~A" boxer::*boxer-version*)
+  (dolist (feature *features*)
+    (log:info "  Feature: ~A" feature))
+
   (setq *boxer-frame* (make-instance 'boxer-frame))
   ;; after creation, set some variables
   (setq *boxer-pane* (slot-value *boxer-frame* 'boxer-pane)
