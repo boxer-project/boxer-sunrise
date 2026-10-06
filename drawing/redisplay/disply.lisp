@@ -758,14 +758,18 @@
     (values 0 0)))
 
 (defmethod xy-position ((self screen-row))
-  (let ((superior (slot-value self 'screen-box)))
+  (let ((superior (and (slot-boundp self 'screen-box)
+                       (slot-value self 'screen-box))))
     (multiple-value-bind (superior-x-off superior-y-off)
-                         (cond ((null superior) (values 0 0))
-                           (t (xy-position superior)))
-                         (values (+ superior-x-off (screen-obj-x-offset self)
-                                    (slot-value superior 'scroll-x-offset))
-                                 (+ superior-y-off (screen-obj-y-offset self)
-                                    (slot-value superior 'scroll-y-offset))))))
+                         (if superior
+                             (xy-position superior)
+                             (values 0 0))
+                         (values (+ superior-x-off
+                                   (screen-obj-x-offset self)
+                                   (if superior (slot-value superior 'scroll-x-offset) 0))
+                                 (+ superior-y-off
+                                   (screen-obj-y-offset self)
+                                   (if superior (slot-value superior 'scroll-y-offset) 0))))))
 
 (defmethod xy-position ((self screen-box))
   (multiple-value-bind (superior-x-off superior-y-off)
