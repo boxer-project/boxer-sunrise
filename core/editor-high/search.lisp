@@ -97,10 +97,12 @@ Modification History (most recent at top)
   "Instance of modern-search for the current toolbar search.")
 
 (defun goto-next-search-result (&rest ignore)
-  (next-result *current-search*))
+  (when (matches *current-search*)
+    (next-result *current-search*)))
 
 (defun goto-prev-search-result (&rest ignore)
-  (next-result *current-search* :direction :back))
+  (when (matches *current-search*)
+    (next-result *current-search* :direction :back)))
 
 (defun cancel-search-text (&rest ignore)
   (reset *current-search*)
