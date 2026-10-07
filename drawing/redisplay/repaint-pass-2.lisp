@@ -117,6 +117,7 @@
                  (let ((row-y-pos (second (multiple-value-list (xy-position inf-screen-obj))))
                        (row-y-hei (screen-obj-hei inf-screen-obj))
                        (box-y-pos (second (multiple-value-list (xy-position self)))))
+                   (setf (screen-box inf-screen-obj) self)
                    (when (and (> (+ row-y-hei row-y-pos) box-y-pos)
                              (< row-y-pos (+ box-y-pos hei))
                              (within-boxer-pane inf-screen-obj))
@@ -124,6 +125,7 @@
                (repaint-cursors-regions self))))
             (t
               (do-vector-contents (inf-screen-obj screen-rows :index-var-name row-no)
+                (setf (screen-box inf-screen-obj) self)
                 (when (within-boxer-pane inf-screen-obj)
                   (repaint-pass-2-sr inf-screen-obj)))
               (repaint-cursors-regions self))))))
