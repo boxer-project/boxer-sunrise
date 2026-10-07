@@ -79,10 +79,12 @@ Modification History (most recent at top)
         (setf cur-location (1- (num-matches self)))
         (decf cur-location))))
     (let* ((cur-interval (region-interval (nth cur-location matches)))
-         (cur-bp (interval-start-bp cur-interval)))
-      ;; or use move-with-offset which is supposed to rearrange things... maybe they need to be wrapped in a
-      ;; drawing-on-window... try this with the existing search once
-      (move-to-bp cur-bp))
+           (cur-bp (interval-start-bp cur-interval)))
+      (move-to-bp cur-bp)
+      (let ((cur-row (bp-row cur-bp)))
+        ;; Open the closet we're in if it's closed
+        (when (and (closet-row? cur-row (superior-box cur-row)) (not (closet-opened? (superior-box cur-row))))
+          (com-open-closets))))
 
     ;; Reset everything to selected-p false, then highlight the current result
     (dolist (i matches)
