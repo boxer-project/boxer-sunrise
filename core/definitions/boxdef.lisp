@@ -50,7 +50,7 @@ Modification History (most recent at top)
 
 (in-package :boxer)
 
-(defvar *boxer-version* "3.4.28 2026-08-31")
+(defvar *boxer-version* "3.4.29 2026-10-07")
 
 (defun boxer-component-version ()
   "Returns the current semver version of boxer based on it's asdf configuration."

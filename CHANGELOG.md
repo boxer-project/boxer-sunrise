@@ -1,5 +1,43 @@
 # Change Log
 
+## 3.4.29 2026-10-07
+
+This is largely a maintanence release for our stable Lispworks desktop Boxer, with an emphasis on improving
+the newer modern search and highlighting, adding more dressing for wait times while files load, and fixing
+other crashes. Additionally, another round of work has been done on the Godot desktop and web versions of
+Boxer, which are not yet ready for public consumption but are quickly filling out feature wise.
+
+search
+  - Speedup and Closet Fix
+    - Switching from a recursive search to a loop to fix stack overflow
+    - Fixing an issue when searching a closed closet row that doesn't correctly move on to the
+      main body of the box to search.
+  - Fixing back/forward buttons for when there are no matches.
+  - Adding check in xy-position for unbound screen-box slots
+  - Move  to the search and open the closet row if we're in it.
+  - Adding another failsafe to ensure screen-rows have a parent screen-box.
+
+ui Highlighting canvas when loading large files.
+
+debug Adding system info logging on startup
+
+crash-fix Alternate key platform names hasn't been filled in for a while, turning feature off for now.
+
+utils
+  - Adding is-visible? method to determine if any given box is visible somewhere on the canvas with scrolling
+
+godot
+  - Fixing up extended character (unicode) handling in ecl -> godot translation
+  - Fixing up status-line-message prim
+  - Reworking text highlighting so that it all goes through defmethods that can be advised.
+  - Updating font colors/sizes on row updates.
+  - Select all keybinding for godot macOS
+  - Fixing up font matching and caches between frontend and evaluator
+  - Syncing up signals for font changes with toolbar.
+  - Changing RowBox to fill horizontally so we can click past the end of the row to move the cursor.
+
+the-attic Archiving *CURRENT-EDITOR-REGION*
+
 ## 3.4.28 2026-08-31
 
 This release contains some maintenance work and crash fixes, but largely revolves around continuing work
