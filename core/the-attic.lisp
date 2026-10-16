@@ -53,6 +53,7 @@
 ;;;;     bringing the cursor in to view.
 ;;;;   - comsa.lisp - Interesting. stuff here for creating bug email templates and primitives to do so.
 ;;;;     Plus a number of commands for printing the screen
+;;;;   - file-prims.lisp - Salvage world, this old system to save your box maybe via the terminal? If redisplay crashed.
 
 ;;;;
 ;;;; FILE: applefile.lisp
@@ -14060,6 +14061,34 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: file-prims.lisp
 ;;;;
+
+;; sgithens 2026-09-28 I think we're safe to remove this...
+;; ;;; In case redisplay breaks,. people can still do...
+(defun salvage-boxer-world (&optional (save-name "salvaged-world") (verbose t))
+  (let ((world-save-name (merge-pathnames save-name *boxer-pathname-default*)))
+    ;; first make sure the name is ok
+    (loop (when (yes-or-no-p "~%Save Your Boxer World in ~A ? "
+           world-save-name)
+      ;; we are happy with the name, then save it away
+      ;; otherwise, prompt for a new name
+      (format t "~%New File Name to Save in: ")
+      (setq world-save-name
+      (merge-pathnames (read-line) world-save-name))))
+    ;; then save it away verbosely
+    (when verbose (format t "~%Dumping boxer world to ~A" world-save-name))
+    (dump-top-level-box *initial-box* world-save-name)
+    ;; now verify
+    (when verbose (format t "~%Verifying Saved file"))
+    (load-binary-box-internal world-save-name)
+    (format t "~%Boxer World Saved to ~A" world-save-name)
+    (values)))
+
+;;; spread it around
+#+lispworks (import 'salvage-boxer-world (find-package 'user))
+#+lispworks (import 'salvage-boxer-world (find-package :boxer-window))
+#+lispworks (import 'salvage-boxer-world (find-package :boxer-eval))
+;; might as well be paranoid...
+#+lispworks (import 'salvage-boxer-world (find-package :boxer-user))
 
 ;; sgithens 2024-02-21 In MCL, this is how we used to dynamically update the top macOS menus
 #| ;; this is now handled (as it should be) in the menu-update
