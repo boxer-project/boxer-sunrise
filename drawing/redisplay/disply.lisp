@@ -1008,30 +1008,3 @@
                 (LET ((NEW-HISTORY (COPY-SEQ PORT-REDISPLAY-HISTORY)))
                      (SETF (CDR (ASSOC PORT NEW-HISTORY)) (1+ (CDR ENTRY)))
                      NEW-HISTORY))))
-
-;;; some styles...
-
-(define-box-ellipsis-style box-ellipsis-solid-lines)
-
-(defun box-ellipsis-solid-lines-draw-self (x-coord y-coord)
-  (do ((x x-coord (+ x *box-ellipsis-thickness* *box-ellipsis-spacing*))
-       (y y-coord (+ y *box-ellipsis-thickness* *box-ellipsis-spacing*))
-       (wid (- *box-ellipsis-wid* (* 2 *box-ellipsis-thickness*))
-            (- wid (* 2 (+ *box-ellipsis-thickness* *box-ellipsis-spacing*))))
-       (hei *box-ellipsis-hei*
-            (- hei (* 2 (+ *box-ellipsis-thickness* *box-ellipsis-spacing*)))))
-    ((or (>= x (+ x-coord (floor (/ *box-ellipsis-wid* 2.))))
-         (>= y (+ y-coord (floor (/ *box-ellipsis-wid* 2.))))
-         (<= wid 0)
-         (<= hei 0)))
-    (draw-rectangle *box-ellipsis-thickness* hei x y)
-    (draw-rectangle wid *box-ellipsis-thickness*
-                    (+ x *box-ellipsis-thickness*) y)
-    (draw-rectangle *box-ellipsis-thickness* hei
-                    (+ x wid *box-ellipsis-thickness*) y)
-    (draw-rectangle wid *box-ellipsis-thickness*
-                    (+ x *box-ellipsis-thickness*)
-                    (+ y hei (- *box-ellipsis-thickness*)))))
-
-(setf (get 'box-ellipsis-solid-lines 'draw-self)
-      'box-ellipsis-solid-lines-draw-self)

@@ -9919,6 +9919,35 @@ Modification History (most recent at the top)
 ;;;; FILE: disdef.lisp
 ;;;;
 
+;;; The various types of Ellipsi (Ellipses (?)) are stored as symbols in the screen-row
+;;; slots of the screen-box.  The drawing function is the DRAW-SELF property of the symbol
+
+(DEFVAR *DEFINED-BOX-ELLIPSIS-STYLES* NIL)
+
+(DEFMACRO DEFINE-BOX-ELLIPSIS-STYLE (NAME)
+          (let ((erase-name (intern (symbol-format nil "~A-ERASE-SELF" name)))
+                (size-name  (intern (symbol-format nil "~A-SIZE" name))))
+            `(PROGN 'COMPILE
+                    (PUSH ',NAME *DEFINED-BOX-ELLIPSIS-STYLES*)   ;; default erase adn size properties
+                    ;; we can overide this with some other definition later
+                    (defun ,erase-name (x-coord y-coord)
+                      (erase-rectangle *box-ellipsis-wid* *box-ellipsis-hei*
+                                       x-coord y-coord))
+                    (setf (get ',name 'erase-self) ',erase-name)
+                    (DEFUN ,size-name ()
+                            (VALUES *BOX-ELLIPSIS-WID* *BOX-ELLIPSIS-HEI*))
+                    (setf (get ',name 'size) ',size-name))))
+
+(DEFUN DRAW-PORT-BOX-ELLIPSIS (SCREEN-BOX X Y)
+  (FUNCALL (GET (SLOT-VALUE SCREEN-BOX 'SCREEN-ROWS) 'DRAW-SELF) X Y))
+
+;;; some styles...
+
+(define-box-ellipsis-style box-ellipsis-solid-lines)
+
+(setf (get 'box-ellipsis-solid-lines 'draw-self)
+      'box-ellipsis-solid-lines-draw-self)
+
 ;; sgithens 2024-09-02 This has been converted to a regular defclass
 (defstruct (graphics-screen-sheet (:conc-name graphics-screen-sheet-)
                                   (:predicate graphics-screen-sheet?)

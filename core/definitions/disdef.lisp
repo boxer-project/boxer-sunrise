@@ -191,28 +191,10 @@ Modification History (most recent at the top)
 (DEFVAR *BOX-ELLIPSIS-THICKNESS* 1.)
 (DEFVAR *BOX-ELLIPSIS-SPACING*   2.)
 
-;;; The various types of Ellipsi (Ellipses (?)) are stored as symbols in the screen-row
-;;; slots of the screen-box.  The drawing function is the DRAW-SELF property of the symbol
-(DEFVAR *DEFINED-BOX-ELLIPSIS-STYLES* NIL)
-
 (DEFUN BOX-ELLIPSIS-STYLE? (THING)
-       (AND (SYMBOLP THING) (MEMBER THING *DEFINED-BOX-ELLIPSIS-STYLES*)))
+       (eq thing :BOX-ELLIPSIS-SOLID-LINES))
 
-(DEFMACRO DEFINE-BOX-ELLIPSIS-STYLE (NAME)
-          (let ((erase-name (intern (symbol-format nil "~A-ERASE-SELF" name)))
-                (size-name  (intern (symbol-format nil "~A-SIZE" name))))
-            `(PROGN 'COMPILE
-                    (PUSH ',NAME *DEFINED-BOX-ELLIPSIS-STYLES*)   ;; default erase adn size properties
-                    ;; we can overide this with some other definition later
-                    (defun ,erase-name (x-coord y-coord)
-                      (erase-rectangle *box-ellipsis-wid* *box-ellipsis-hei*
-                                       x-coord y-coord))
-                    (setf (get ',name 'erase-self) ',erase-name)
-                    (DEFUN ,size-name ()
-                            (VALUES *BOX-ELLIPSIS-WID* *BOX-ELLIPSIS-HEI*))
-                    (setf (get ',name 'size) ',size-name))))
-
-(DEFVAR *BOX-ELLIPSIS-CURRENT-STYLE* 'BOX-ELLIPSIS-SOLID-LINES)
+(DEFVAR *BOX-ELLIPSIS-CURRENT-STYLE* :BOX-ELLIPSIS-SOLID-LINES)
 
 ;;;****************************************************************;;;
 ;;;                      REDISPLAY MACROS                          ;;;

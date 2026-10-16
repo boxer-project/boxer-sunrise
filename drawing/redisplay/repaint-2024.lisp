@@ -144,7 +144,7 @@
                ;; inferiors slot of the screen box
                (setq screen-rows *box-ellipsis-current-style*)
                ;; then return the necessary values
-               (funcall (get *box-ellipsis-current-style* 'size)))
+               (values *box-ellipsis-wid* *box-ellipsis-hei*))
               (t
                ;; If the port has an ellipsis marker when it shouldn't,
                ;; then erase and remove it
