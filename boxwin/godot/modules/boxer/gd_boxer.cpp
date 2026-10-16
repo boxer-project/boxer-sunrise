@@ -28,8 +28,6 @@ GDBoxer* the_gdboxer_node;
 Node* main_boxer_node;
 
 void GDBoxer::_bind_methods() {
-    // Action is: 0 - press/MOUSE-DOWN 1 - click/MOUSE-CLICK 2 - release/MOUSE-UP 3 - double click/ MOUSE-DOUBLE-CLICK
-    ClassDB::bind_method(D_METHOD("handle_mouse_input", "action", "row", "pos", "click", "bits", "area"), &GDBoxer::handle_mouse_input);
     ClassDB::bind_method(D_METHOD("handle_open_file", "path"), &GDBoxer::handle_open_file);
 
     ClassDB::bind_method(D_METHOD("startup_lisp"), &GDBoxer::startup_lisp);
@@ -60,18 +58,6 @@ void GDBoxer::handle_open_file(Variant path) {
     cl_funcall(2, handle_boxer_open_file_funname, ecl_make_simple_base_string(str_path.ascii(), str_path.length()));
     #endif
 
-}
-
-void GDBoxer::handle_mouse_input(int action, Variant boxer_row, int pos, int click, int bits, int area) {
-    BOXER_PRINT("\nGodot: handle_mouse_input");
-    cl_object handle_boxer_mouse_funname = ecl_make_symbol("GODOT-HANDLE-MOUSE-INPUT", "BOXER");
-    cl_funcall(7, handle_boxer_mouse_funname,
-        ecl_make_fixnum(action),
-        ((BoxerLispRef*) ((Object*) boxer_row))->boxer_obj,
-        ecl_make_fixnum(pos),
-        ecl_make_fixnum(click),
-        ecl_make_fixnum(bits),
-        ecl_make_fixnum(area));
 }
 
 /*
@@ -362,7 +348,7 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
     // Constructing
     //
     cl_object aux = ecl_make_symbol("GDBOXER-MAKE-BOX", "BOXER");
-    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_make_box, 1);
+    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_make_box, 2);
 
     aux = ecl_make_symbol("GDBOXER-UPDATE-SCREEN-BOX", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_update_screen_box, 2);
