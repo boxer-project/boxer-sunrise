@@ -56,18 +56,10 @@ func get_parent_box(item: Node):
 func mouse_action(event: InputEventMouseButton, row, pos, area):
     "Return the boxer mouse code for the button action.
     ie. 0 - press/MOUSE-DOWN 1 - click/MOUSE-CLICK 2 - release/MOUSE-UP 3 - double click/ MOUSE-DOUBLE-CLICK, etc"
-    #  0 - Primary Button, usually left click
-    #  1 - Third Button
-    #  2 - Secondary Button, usually right click
-    #  3 - Primary Double Click
-    #  4 - Middle Double Click
-    #  5 - Right Double Click
-    #  6 - Primary Down
-    #  7 - Middle Down
-    #  8 - Right Down
-    #  9 - Primary Up
-    # 10 - Middle Up
-    # 11 - Right Up
+    #  0 - Primary Button (usually left)     4 - Middle Double Click    8 - Right Down
+    #  1 - Third Button                      5 - Right Double Click     9 - Primary Up
+    #  2 - Secondary Button (usually right)  6 - Primary Down          10 - Middle Up
+    #  3 - Primary Double Click              7 - Middle Down           11 - Right Up
     var action_code: int
     if event.button_index == MOUSE_BUTTON_LEFT:
         action_code = 6
@@ -120,12 +112,12 @@ func handle_mouse_input(event: InputEventMouse, row, pos, area = BoxArea.INSIDE)
 
         # If it's a click, emit both the released and the click
         if action <= 2:
-            $/root/Main.handle_mouse_input(action + 9, row.boxer_row, pos, row.parent_box.boxer_box,
+            $/root/Main.handle_mouse_input(action + 9, row.boxer_row, pos, row.parent_box.boxer_screen_box,
                 Global.input_bits(event), area)
-            $/root/Main.handle_mouse_input(action, row.boxer_row, pos, row.parent_box.boxer_box,
+            $/root/Main.handle_mouse_input(action, row.boxer_row, pos, row.parent_box.boxer_screen_box,
                 Global.input_bits(event), area)
         else:
-            $/root/Main.handle_mouse_input(action, row.boxer_row, pos, row.parent_box.boxer_box,
+            $/root/Main.handle_mouse_input(action, row.boxer_row, pos, row.parent_box.boxer_screen_box,
                 Global.input_bits(event), area)
     # TODO TODO TODO sgithens: This is currently buggy and impeeding other work... get back to this later.
     #
@@ -184,4 +176,3 @@ func get_boxer_font(font_no: int, font_name: String, _size: int, is_bold, is_ita
         print("No font matched: ", font_name)
 
     return font_cache[font_no]
-

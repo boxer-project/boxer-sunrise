@@ -4,6 +4,7 @@ class_name Row
 var parent_box
 # Reference to the actual boxer row object in common lisp
 var boxer_row
+var boxer_screen_row
 
 @export var cha_scene: PackedScene
 

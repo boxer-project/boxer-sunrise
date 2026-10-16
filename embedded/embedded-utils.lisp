@@ -1,12 +1,105 @@
 (in-package :boxer)
 
+;;;
+;;; Godot Repaint Pass 1
+;;;
+
+(defmethod godot-dimensions ((self screen-row) depth)
+  (with-slots (wid hei actual-obj screen-chas baseline x-offset y-offset) self
+    ;; Watch out, this is a little flaky since we aren't going through the
+    ;; normal deletion protocol for inferior screen boxes
+    (clear-storage-vector screen-chas)
+
+    (do* ((cha-no 0 (+ cha-no 1))
+          (inf-actual-obj (cha-at-cha-no actual-obj cha-no)
+                          (cha-at-cha-no actual-obj cha-no))
+          (inf-screen-obj))
+
+      ;; do* check /return
+      ((null inf-actual-obj)
+        nil)
+
+      ;; do* statements
+      ;; now match screen and editor...
+      (setq inf-screen-obj
+            (if (cha? inf-actual-obj)
+              inf-actual-obj
+              (allocate-screen-obj-for-use-in
+                              inf-actual-obj (lowest-screen-box self))))
+      (append-screen-cha self inf-screen-obj)
+      (unless (screen-cha? inf-screen-obj)
+        (godot-dimensions inf-screen-obj depth)))))
+
+(defmethod godot-dimensions ((self screen-box) depth)
+  ;; Increment for screen-box, but now for screen-rows
+  (setf depth (1+ depth))
+
+  ;; Bits from internal-dimensions
+  (with-slots (actual-obj box-type screen-rows ) self
+    (port-redisplaying-history (actual-obj)
+      (cond ((and (port-box? actual-obj)
+                  (port-has-been-displayed-enough? actual-obj))
+              ;; The Actual Box is part of a circular structure AND
+              ;; we have already displayed the port the required number
+              ;; of times, so we erase and remove whatever is in
+              ;; the box, then...
+              (when (and (not-null screen-rows)
+                        (not (box-ellipsis-style? screen-rows)))
+                (queue-for-deallocation-screen-rows-from screen-rows 0)
+                (kill-screen-rows-from self 0))
+              ;; put a Box ellipsis marker into the
+              ;; inferiors slot of the screen box
+              (setq screen-rows *box-ellipsis-current-style*))
+            (t
+              ;; If the port has an ellipsis marker when it shouldn't,
+              ;; then erase and remove it
+              (when (and (port-box? actual-obj)
+                        (box-ellipsis-style? screen-rows))
+                ;; PORTNOTE: still needed ?
+                (setq screen-rows (allocate-storage-vector 8)))
+
+            (do*
+              ;; Vars
+              ((row-no 0 (1+ row-no))
+              (inf-actual-obj (first-inferior-row actual-obj)
+                              (next-row inf-actual-obj))
+              (inf-screen-obj (screen-row-at-row-no self row-no inf-actual-obj)
+                              (screen-row-at-row-no self row-no inf-actual-obj)))
+              ;; End / Result
+              ((or (null inf-actual-obj))
+                ;; If there are less rows than the last repaint we'll need to trim the extra
+                ;; screen-rows
+                (sv-delete-to-end screen-rows row-no)
+                nil)
+              ;; Step
+              (setf (slot-value inf-screen-obj 'actual-obj) inf-actual-obj)
+              (setf (screen-box inf-screen-obj) self)
+              (setf (slot-value inf-actual-obj 'screen-objs) (list (cons self inf-screen-obj)))
+              (godot-dimensions inf-screen-obj depth)))))))
+
+(defmethod godot-dimensions ((self sprite-screen-box) depth)
+  nil)
+
+;;;
+;;; End Godot Repaint Pass 1
+;;;
+
 (defun link_initial_box_to_node (gdnode gdrow)
+  (godot-dimensions *outermost-screen-box* 1)
+
+  (putprop *outermost-screen-box* gdnode :gdnode)
+  (putprop (first-screen-row *outermost-screen-box*) gdrow :gdnode)
+
   (putprop *initial-box* gdnode :gdnode)
   (putprop (first-inferior-row *initial-box*) gdrow :gdnode)
 
   (setup-initial-fonts)
 
+  (gdboxer-set-property gdnode "boxer_box" *initial-box*)
+  (gdboxer-set-property gdnode "boxer_screen_box" *outermost-screen-box*)
+
   (gdboxer-set-property gdrow "boxer_row" (first-inferior-row *initial-box*))
+  (gdboxer-set-property gdrow "boxer_screen_row" (first-screen-row *outermost-screen-box*))
 
   (let ((godot-name-row (gdboxer-get-name-row gdnode))
         (world-name (name *initial-box*)))
@@ -15,9 +108,10 @@
       (godot-insert-cha-signal godot-name-row (char world-name cha-no) cha-no))))
 
 (defmethod fetch-godot-obj ((self box))
+  (fixup-screen-obj self)
   (let* ((godot-box (getprop self :gdnode)))
     (unless godot-box
-      (setf godot-box (gdboxer-make-box-internal self))
+      (setf godot-box (gdboxer-make-box-internal self (car (screen-objs self))))
       (putprop self godot-box :gdnode))
     godot-box))
 
@@ -215,26 +309,31 @@
         (godot-insert-cha-signal godot-name-row cha cha-no)
         (incf cha-no)))))
 
+(defmethod fixup-screen-obj (obj)
+  nil)
+
 (defmethod fixup-screen-obj ((self box))
   "Returns the box first screen-obj"
   (let ((scr-box (car (screen-objs self))))
     (unless scr-box
       (setf scr-box (make-instance 'screen-box))
+
       (setf (screen-obj-actual-obj scr-box) self)
+      (setf (slot-value self 'screen-objs) (list (cons self scr-box)))
+
       (when (superior-box self)
         (push (cons (car (screen-objs (superior-box self))) scr-box)
                 (slot-value self 'screen-objs))))
     scr-box))
 
-(defun gdboxer-make-box-internal (box)
-  (let ((godot-box (gdboxer-make-box box)))
+(defun gdboxer-make-box-internal (box scr-box)
+  (let ((godot-box (gdboxer-make-box box scr-box)))
     (cond ((doit-box? box)
            (godot-call godot-box "toggle_to_doit"))
           ((data-box? box)
            (godot-call godot-box "toggle_to_data"))
           (t
            nil))
-    (fixup-screen-obj box)
     godot-box))
 
 (defmethod (setf superior-box) :after (sup-box row)
@@ -399,8 +498,6 @@
   nil)
 
 (defmethod godot-update-boxtop ((self box))
-  (format t "gdboxer-update-boxtop: ~A~%" (getprop self :boxtop))
-  (format t "  the result from boxtop defun: ~A~%" (boxtop self))
   (let ((godot-box (fetch-godot-obj self))
         (boxtop (getprop self :boxtop))
         (boxtop_code 1))
@@ -416,7 +513,7 @@
       ((eq boxtop :standard)
        (setf boxtop_code 1))
       (t
-       (format t "UNKNOWS BOXTOP TYPE: ~A~%" boxtop)
+      ;;  (format t "UNKNOWS BOXTOP TYPE: ~A~%" boxtop)
       ;;  (setf boxtop 0)
        ))
     (gdboxer-set-property godot-box "boxtop_type" boxtop_code)))
@@ -428,6 +525,9 @@
 (defmethod screen-obj-actual-obj ((self boxer-canvas))
   nil
 )
+
+(defmethod shrunken? (obj)
+  nil)
 
 (defmethod shrunken? ((self screen-box))
   ;; Overriding existing shrunken to use actual-objs rather than the screen-objs
@@ -678,7 +778,8 @@
                (return))
               ((not (null boxer::*boxer-system-hacker*))
                (error "Unknown object, ~A, in event queue" input))))
-      (update-current-font))))
+      (update-current-font)
+      (godot-dimensions *outermost-screen-box* 1))))
 
 (defun push-graphics-command (godot-box arg0 arg1 arg2 arg3 arg4 arg5)
   (cond
@@ -800,7 +901,10 @@
                 (7 :top-right)
                 (8 :top-left)
                 (otherwise nil))))
-    (setf (bp-screen-box click-bp) (fixup-screen-obj actual-box))
+    (setf (bp-screen-box click-bp)
+          (if (screen-box? actual-box)
+              actual-box
+              (fixup-screen-obj actual-box)))
     (handle-boxer-mouse-click (lookup-click-name action-code bits area) click-bp 6 0 area))
   (godot-update-point-location))
 

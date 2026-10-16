@@ -125,10 +125,12 @@ cl_object lisp_boxer_point_location(cl_object row, cl_object cha_no) {
  * Straightforard creation/make versions of functions to call from Boxer -> Godot
  */
 
-cl_object lisp_boxer_make_box(cl_object boxer_box) {
+cl_object lisp_boxer_make_box(cl_object boxer_box, cl_object boxer_screen_box) {
     BoxerLispRef* bbox = memnew(BoxerLispRef);
     bbox->boxer_obj = boxer_box;
-    Object* godot_box = main_boxer_node->call("make_box", Variant((Object *) bbox));
+    BoxerLispRef* bscreenbox = memnew(BoxerLispRef);
+    bscreenbox->boxer_obj = boxer_screen_box;
+    Object* godot_box = main_boxer_node->call("make_box", Variant((Object *) bbox), Variant((Object *) bscreenbox));
     return ecl_make_foreign_data(ECL_NIL, 0, godot_box);
 }
 

@@ -329,10 +329,11 @@ func _on_gd_boxer_boxer_point_location(row: Object, cha_no: int) -> void:
         cursor.cur_row = row
         cursor.cur_idx = cha_no
 
-func make_box(boxer_box) -> BoxContainer:
+func make_box(boxer_box, boxer_screen_box) -> BoxContainer:
     # Optional first_row to use
     var box = box_scene.instantiate()
     box.boxer_box = boxer_box
+    box.boxer_screen_box = boxer_screen_box
     box.full_screened.connect(_on_box_full_screened)
     box.flipped.connect(_on_box_flipped)
     box.current_row = null

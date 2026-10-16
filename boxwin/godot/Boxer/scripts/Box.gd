@@ -242,6 +242,7 @@ var rows_box = %RowsBox
 
 var queued_name = null
 var queued_name_row_boxerref = null
+var queued_name_screen_row = null
 
 @onready
 var name_row = %NameRow
@@ -269,7 +270,9 @@ func _ready() -> void:
             %NameRow.set_cha(cha, %NameRow.get_child_count())
         queued_name = null
         %NameRow.boxer_row = queued_name_row_boxerref
+        %NameRow.boxer_screen_row = queued_name_screen_row
         queued_name_row_boxerref = null
+        queued_name_screen_row = null
 
     $/root/Main.handle_boxer_func("GODOT-INIT-GRAPHICS-SHEET", boxer_box)
 
@@ -280,8 +283,8 @@ func _process(_delta: float) -> void:
     update_display_style(display_style)
     if flipped_box_type == FlippedBoxType.GRAPHICS:
         graphics_mode_p = graphics_mode_p
-    if boxtop_type == BoxtopType.NONE and boxer_box:
-        $/root/Main.handle_boxer_func("GODOT-UPDATE-BOXTOP", boxer_box)
+    # if boxtop_type == BoxtopType.NONE and boxer_box:
+    #     $/root/Main.handle_boxer_func("GODOT-UPDATE-BOXTOP", boxer_box)
     if %NameRow and %NameRow.get_child_count() == 0:
         %NameRow.hide()
     else:
