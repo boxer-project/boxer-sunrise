@@ -110,10 +110,10 @@
 
 
 (defun repaint-window (&optional (window *boxer-pane*) (flush-buffer? t) &KEY (process-state-label "stopped"))
-    (check-for-window-resize)
-    (update-gpu-matrices)
     (drawing-on-window (window)
       (REDISPLAYING-WINDOW (WINDOW)
+                         (check-for-window-resize)
+                         (update-gpu-matrices)
                          (clear-window (backdrop-color window))
                          (repaint-guts)
                          (repaint-mouse-docs)

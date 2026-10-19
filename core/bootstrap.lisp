@@ -71,7 +71,7 @@
 (ql:register-local-projects)
 
 
-#+(and lispworks x64) (load (cl-fad:merge-pathnames-as-file *boxer-project-dir* "boxwin/lw-capi/opengl-lw-8/examples/load.lisp"))
+#+(and lispworks) (load (cl-fad:merge-pathnames-as-file *boxer-project-dir* "boxwin/lw-capi/opengl-lw-8/examples/load.lisp"))
 
 
 ;; debugging on Apple Silicon
