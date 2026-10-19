@@ -945,7 +945,6 @@ in macOS."
   (setq boxer-eval::*current-process* nil)
 
   (boxer::load-appdata)
-  (fixup-menus)
   ;; win32 needs this rendering context here
   (opengl:rendering-on (*boxer-pane*)
     (setup-editor boxer::*initial-box*))

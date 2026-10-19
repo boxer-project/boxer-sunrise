@@ -23,6 +23,9 @@
 (defun boxer-pane-display-callback (canvas x y wid hei)
   ;; canvas ignore
 
+  (when *boxer-pane-initialized*
+    (box::check-for-window-resize))
+
   (unless *boxer-pane-initialized*
     ;; modernGL inits
     (opengl:rendering-on (*boxer-pane*)
@@ -47,4 +50,6 @@
       (init-freetype-fonts)
       (log:debug "~%Just created texture atlas"); boxer::*freetype-glyph-atlas*)
       )
+
+    (fixup-menus)
     ))
