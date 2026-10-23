@@ -47,7 +47,7 @@
 
 ; (load (example-file "opengl/examples/load"))
 (ql:quickload :cl-fad)
-#+(and lispworks x64 macosx) (load (cl-fad:merge-pathnames-as-file *boxer-project-dir* "boxwin/lw-capi/opengl-lw-8/examples/load.lisp"))
+#+(and lispworks macosx) (load (cl-fad:merge-pathnames-as-file *boxer-project-dir* "boxwin/lw-capi/opengl-lw-8/examples/load.lisp"))
 #+(and lispworks x64 win32) (load #P"z:/code/boxer-sunrise/boxwin/lw-capi/opengl-lw-8/examples/load.lisp")
 
 (setf *features* (cons :delivering *features*))
@@ -75,6 +75,9 @@
 (ql:quickload :for)
 
 ;; (ql:quickload :cl-freetype2)
+
+(pushnew *boxer-project-dir* ql:*local-project-directories* )
+(ql:register-local-projects)
 
 (asdf:load-system :boxer-sunrise-capi)
 
