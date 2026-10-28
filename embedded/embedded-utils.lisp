@@ -61,10 +61,10 @@
             (do*
               ;; Vars
               ((row-no 0 (1+ row-no))
-              (inf-actual-obj (first-inferior-row actual-obj)
-                              (next-row inf-actual-obj))
-              (inf-screen-obj (screen-row-at-row-no self row-no inf-actual-obj)
-                              (screen-row-at-row-no self row-no inf-actual-obj)))
+               (inf-actual-obj (first-inferior-row actual-obj)
+                               (next-row inf-actual-obj))
+               (inf-screen-obj (screen-row-at-row-no self row-no inf-actual-obj)
+                               (screen-row-at-row-no self row-no inf-actual-obj)))
               ;; End / Result
               ((or (null inf-actual-obj))
                 ;; If there are less rows than the last repaint we'll need to trim the extra
@@ -123,12 +123,12 @@
     godot-graphics-sheet))
 
 (defmethod fetch-godot-obj ((self row))
-  (let* ((godot-row (getprop self :gdnode)))
-    (unless godot-row
-      (setf godot-row (gdboxer-make-row self))
-      (putprop self godot-row :gdnode)
-      (fill-in-godot-row godot-row self))
-    godot-row))
+  ;; Hack for now until we remove usage of this
+  (let ((first-scr-obj (car (screen-objs self))))
+    (unless first-scr-obj
+      (setf first-scr-obj (fixup-screen-obj self))
+      (setf (slot-value self 'screen-objs) (list (cons self first-scr-obj))))
+    (fetch-godot-obj first-scr-obj)))
 
 (defmethod fetch-godot-obj ((self turtle))
   (let* ((godot-turtle (getprop self :gdnode)))
@@ -138,11 +138,19 @@
     godot-turtle))
 
 (defmethod fetch-godot-obj ((self screen-box))
-  ;; This may need updates for when we fill in ports
+  ;; TODO just for now, get this from the actual box
   (fetch-godot-obj (screen-obj-actual-obj self)))
 
-(defmethod initialize-instance :after ((self row)  &rest init-plist)
-  (fetch-godot-obj self))
+(defmethod fetch-godot-obj ((self screen-row))
+  (let ((godot-row (getprop self :gdnode)))
+    (unless godot-row
+      (setf godot-row (gdboxer-make-row self))
+      (putprop self godot-row :gdnode)
+      (fill-in-godot-row godot-row (screen-obj-actual-obj self)))
+    godot-row))
+
+;; (defmethod initialize-instance :after ((self row)  &rest init-plist)
+;;   (fetch-godot-obj self))
 
 ;;;
 ;;; Filling in screen-objs
@@ -248,12 +256,6 @@
         (format t "%Embedded: chas-array-slide-chas-neg: start: ~A dist: ~A old-length: ~A"
           strt-cha-no distance old-active-length)))))
 
-(defmethod fast-chas-array-set-cha :after (chas-arr cha-no cha)
-  (let ((row (chas-array-parent-row chas-arr)))
-    (when row
-      (let ((godot-row (fetch-godot-obj row)))
-        (godot-insert-cha-signal godot-row cha cha-no)))))
-
 (DEFMETHOD DELETE-CHA-AT-CHA-NO :after ((SELF ROW) CHA-NO)
   (let ((godot-row (fetch-godot-obj self)))
     (when godot-row
@@ -312,6 +314,15 @@
 (defmethod fixup-screen-obj (obj)
   nil)
 
+(defmethod fixup-screen-obj ((self row))
+  "Returns the first screen-obj, creating it if necessary."
+  ;; See lodisp screen-row-at-row-no for creation mechanics. TODO refactor
+  (let ((scr-row (car (screen-objs self))))
+    (unless scr-row
+      (setf scr-row (make-instance 'screen-row))
+      (re-init scr-row self))
+    scr-row))
+
 (defmethod fixup-screen-obj ((self box))
   "Returns the box first screen-obj"
   (let ((scr-box (car (screen-objs self))))
@@ -345,7 +356,8 @@
                         (fetch-godot-obj row)))
       (unless godot-row
         (format t "setf superior-box with nil row.")
-        (setf godot-row (gdboxer-make-row row))
+        (error "Does this ever happen?")
+        (setf godot-row (gdboxer-make-row row)) ;; <--- this needs to be updated to be a screen row!
         (putprop row godot-row :gdnode)
         (fill-in-godot-row godot-row row))
       ;; TODO TODO TODO, this null pointer check is because I'm still figuring out how to get the name row...
@@ -779,7 +791,8 @@
               ((not (null boxer::*boxer-system-hacker*))
                (error "Unknown object, ~A, in event queue" input))))
       (update-current-font)
-      (godot-dimensions *outermost-screen-box* 1))))
+      ;; (godot-dimensions *outermost-screen-box* 1)
+      (godot-update-point-location))))
 
 (defun push-graphics-command (godot-box arg0 arg1 arg2 arg3 arg4 arg5)
   (cond
@@ -822,9 +835,13 @@
 
 (defun godot-update-point-location ()
   "Update the location of point in Godot, using the current Boxer *point*."
-  (let ((godot-row (fetch-godot-obj (bp-row *point*))))
+  ;; This is an interesting issue, the cursors in Boxer have never really supported the issue of
+  ;; existing in the target box as well as the ports box. This might be a good time to add multiple
+  ;; cursor support in Godot Boxer to support this properly. For now we'll set the cursor to the
+  ;; first screen obj on the row.
+  (let ((godot-row (fetch-godot-obj (car (screen-objs (bp-row *point*))))));; (fetch-godot-obj (bp-row *point*))))
     (when godot-row
-      (gdboxer-point-location (fetch-godot-obj (bp-row *point*)) (bp-cha-no *point*)))))
+      (gdboxer-point-location godot-row (bp-cha-no *point*)))))
 
 (defun godot-handle-boxer-input (data bits)
   (cond
@@ -837,12 +854,7 @@
     ((eq data -4)
      (handle-boxer-input :right bits t))
     (t
-     (handle-boxer-input data bits)))
-
-  ;; (print-box-tree)
-  ;; (format t "~%Printing screen-objs")
-  ;; (print-screen-obj-tree)
-  (godot-update-point-location))
+     (handle-boxer-input data bits))))
 
 (defun mouse-update-selected-region (row pos scr-box)
   "Pop up a box attribute menu, usually bound to a mouse-down."
@@ -881,7 +893,7 @@
     (format t "~%highlighted region: ~A~%" *region-list*)
   boxer-eval::*novalue*)
 
-(defun godot-handle-mouse-input (action-code row pos actual-box bits area-code)
+(defun godot-handle-mouse-input (action-code scr-row pos actual-box bits area-code)
   ;; Action encoding
   ;; Action is: 0 - press/MOUSE-DOWN 1 - click/MOUSE-CLICK 2 - release/MOUSE-UP 3 - double click/ MOUSE-DOUBLE-CLICK
 
@@ -889,7 +901,7 @@
   ;; 0 :INSIDE
   ;; :OUTSIDE :NAME :SCROLL-BAR :TYPE :BOTTOM-RIGHT :BOTTOM-LEFT
   ;; :TOP-RIGHT :TOP-LEFT
-  (let ((click-bp (MAKE-INITIALIZED-BP :fixed row pos))
+  (let ((click-bp (MAKE-INITIALIZED-BP :fixed (screen-obj-actual-obj scr-row) pos))
         (area (case area-code
                 (0 :inside)
                 (1 :outside)

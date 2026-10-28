@@ -341,9 +341,9 @@ func make_box(boxer_box, boxer_screen_box) -> BoxContainer:
     box.delete_row_at_row_no(0)
     return box
 
-func make_row(boxer_row): # -> HBoxContainer:
+func make_row(boxer_screen_row): # -> HBoxContainer:
     var row = row_scene.instantiate()
-    row.boxer_row = boxer_row
+    row.boxer_screen_row = boxer_screen_row
     return row
 
 func make_turtle(boxer_turtle):

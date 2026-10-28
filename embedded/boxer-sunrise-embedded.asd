@@ -4,6 +4,7 @@
   :license ""
   :components ((:file "boxer-embedded")
               ;;  #+emscripten (:file "embedded-utils")
+              ;;  #+emscripten (:file "godot-advice")
               ;;  #+emscripten (:file "music-prims")
               ;;  #+emscripten (:file "video-prims")
                )

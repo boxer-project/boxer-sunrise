@@ -112,12 +112,12 @@ func handle_mouse_input(event: InputEventMouse, row, pos, area = BoxArea.INSIDE)
 
         # If it's a click, emit both the released and the click
         if action <= 2:
-            $/root/Main.handle_mouse_input(action + 9, row.boxer_row, pos, row.parent_box.boxer_screen_box,
+            $/root/Main.handle_mouse_input(action + 9, row.boxer_screen_row, pos, row.parent_box.boxer_screen_box,
                 Global.input_bits(event), area)
-            $/root/Main.handle_mouse_input(action, row.boxer_row, pos, row.parent_box.boxer_screen_box,
+            $/root/Main.handle_mouse_input(action, row.boxer_screen_row, pos, row.parent_box.boxer_screen_box,
                 Global.input_bits(event), area)
         else:
-            $/root/Main.handle_mouse_input(action, row.boxer_row, pos, row.parent_box.boxer_screen_box,
+            $/root/Main.handle_mouse_input(action, row.boxer_screen_row, pos, row.parent_box.boxer_screen_box,
                 Global.input_bits(event), area)
     # TODO TODO TODO sgithens: This is currently buggy and impeeding other work... get back to this later.
     #
