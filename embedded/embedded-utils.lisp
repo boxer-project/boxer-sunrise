@@ -378,10 +378,9 @@
   (when value
     (let ((row-no (row-row-no (superior-box row) row))
           (godot-box (fetch-godot-obj (superior-box row)))
-          (godot-row (fetch-godot-obj row))
           (godot-value (fetch-godot-obj value)))
       (when row-no
-        (godot-insert-row-at-row-no (superior-box row) godot-box value godot-value (1+ row-no))))))
+        (godot-insert-row-at-row-no godot-box godot-value (1+ row-no))))))
 
 (defmethod delete-row-at-row-no :after ((box box) pos &optional (check-closet t))
   ;; TODO sgithens Does this get a negative value or something for the closet row?
@@ -397,7 +396,7 @@
     (dotimes (i (length-in-rows self))
       (godot-call godot-box "delete_row_at_row_no" 0))))
 
-(defun godot-insert-row-at-row-no (box godot-box row godot-row pos)
+(defun godot-insert-row-at-row-no (godot-box godot-row pos)
   (godot-call godot-box "insert_row_at_row_no" godot-row pos)
   godot-row)
 
@@ -483,7 +482,7 @@
   (when (and row box)
     (let ((godot-row (fetch-godot-obj row))
           (godot-box (fetch-godot-obj box)))
-      (godot-insert-row-at-row-no box godot-box row godot-row 0))))
+      (godot-insert-row-at-row-no godot-box godot-row 0))))
 
 (defmethod (setf display-style-list) :after (ds box)
   (setf (display-style-parent ds) box)
@@ -498,13 +497,13 @@
       (progn
         (when (and godot-box (not (eq row-no (row-row-no box row))))
           ;; I'm not sure this putprop is really necessary??
-          (putprop row (godot-insert-row-at-row-no box godot-box row godot-row row-no) :gdnode)))))
+          (putprop row (godot-insert-row-at-row-no godot-box godot-row row-no) :gdnode)))))
 
 (defmethod insert-row-after-row :after ((box box) row after-row &optional (check-closet t))
   (let ((after-row-no (row-row-no box after-row))
         (godot-row (fetch-godot-obj row))
         (godot-box (fetch-godot-obj box)))
-    (godot-insert-row-at-row-no box godot-box row godot-row (1+ after-row-no))))
+    (godot-insert-row-at-row-no godot-box godot-row (1+ after-row-no))))
 
 (defmethod godot-update-boxtop (obj)
   nil)
