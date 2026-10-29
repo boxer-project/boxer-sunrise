@@ -146,9 +146,9 @@ cl_object lisp_boxer_update_screen_box(cl_object box, cl_object boxer_screen_box
     return ECL_NIL;
 }
 
-cl_object lisp_boxer_make_row(cl_object boxer_row) {
+cl_object lisp_boxer_make_row(cl_object boxer_screen_row) {
     BoxerLispRef* brow = memnew(BoxerLispRef);
-    brow->boxer_obj = boxer_row;
+    brow->boxer_obj = boxer_screen_row;
     Object *godot_row = main_boxer_node->call("make_row", Variant((Object *) brow));
     return ecl_make_foreign_data(ECL_NIL, 0, godot_row);
 }

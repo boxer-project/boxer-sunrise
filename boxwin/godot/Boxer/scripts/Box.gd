@@ -269,7 +269,8 @@ func _ready() -> void:
             cha.text = ch
             %NameRow.set_cha(cha, %NameRow.get_child_count())
         queued_name = null
-        %NameRow.boxer_row = queued_name_row_boxerref
+        # TODO update this to use the screen row
+        # %NameRow.boxer_row = queued_name_row_boxerref
         %NameRow.boxer_screen_row = queued_name_screen_row
         queued_name_row_boxerref = null
         queued_name_screen_row = null

@@ -98,7 +98,6 @@
   (gdboxer-set-property gdnode "boxer_box" *initial-box*)
   (gdboxer-set-property gdnode "boxer_screen_box" *outermost-screen-box*)
 
-  (gdboxer-set-property gdrow "boxer_row" (first-inferior-row *initial-box*))
   (gdboxer-set-property gdrow "boxer_screen_row" (first-screen-row *outermost-screen-box*))
 
   (let ((godot-name-row (gdboxer-get-name-row gdnode))

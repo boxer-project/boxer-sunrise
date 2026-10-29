@@ -3,20 +3,21 @@ class_name Row
 
 var parent_box
 # Reference to the actual boxer row object in common lisp
-var boxer_row
 var boxer_screen_row
 
 @export var cha_scene: PackedScene
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-    child_order_changed.connect(request_typography_update)
-    request_typography_update()
+    # child_order_changed.connect(request_typography_update)
+    # request_typography_update()
+    pass
 
 func request_typography_update():
     # Send a request back to Boxer Lisp to update any fonts, colors, or sizes for the text in this row
-    if is_inside_tree():
-        $/root/Main.handle_boxer_func_unique("UPDATE-ROW-TYPOGRAPHY", boxer_row)
+    # if is_inside_tree():
+        # $/root/Main.handle_boxer_func_unique("UPDATE-ROW-TYPOGRAPHY", boxer_row)
+    pass
 
 func remove_cha(index) -> void:
     var cha = get_child(index)
