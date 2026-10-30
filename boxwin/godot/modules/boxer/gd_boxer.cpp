@@ -220,7 +220,10 @@ cl_object lisp_boxer_set_graphics_sheet_bit_array(cl_object box, cl_object width
 }
 
 Variant convert_ecl_to_godot (cl_object value) {
-    if (ECL_SINGLE_FLOAT_P(value)) {
+    if (value == ECL_NIL) {
+        return Variant();
+    }
+    else if (ECL_SINGLE_FLOAT_P(value)) {
         return Variant(ecl_single_float(value));
     }
     else if (ECL_DOUBLE_FLOAT_P(value)) {

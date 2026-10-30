@@ -96,7 +96,31 @@ func slide_chas_neg(start, distance):
 
 # For C++
 func set_superior_box(box):
-    parent_box = box
+    if box == null:
+        if parent_box: # TODO should we just be using the regular RowsBox parent rather than keeping track of a parent_box?
+            parent_box.delete_row(self)
+    else:
+        parent_box = box
+
+func set_next_row(next_row: Row) -> void:
+    # Analog of (setf next-row)
+    var parent := get_parent()
+    if parent == null:
+        push_error("insert_next_row: self has no parent.")
+        return
+
+    if next_row == self:
+        push_error("insert_next_row: cannot insert a node as its own sibling.")
+        return
+
+    # Detach next_row from wherever it currently lives in the tree.
+    var old_parent := next_row.get_parent()
+    if old_parent != null:
+        old_parent.remove_child(next_row)
+
+    # Add it to our parent, then move it to the slot right after self.
+    var row_no = self.get_index()  #parent_box.get_row_no(self)
+    parent_box.insert_row_at_row_no(next_row, row_no + 1)
 
 func sentence_end_xpos():
     "Finds the position of the end of the current sentence."

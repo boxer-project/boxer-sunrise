@@ -106,6 +106,10 @@
     (dotimes (cha-no (length world-name))
       (godot-insert-cha-signal godot-name-row (char world-name cha-no) cha-no))))
 
+(defmethod fetch-godot-obj (obj)
+  (format t "~%nil fetch-godot-obj~%")
+  nil)
+
 (defmethod fetch-godot-obj ((self box))
   (fixup-screen-obj self)
   (let* ((godot-box (getprop self :gdnode)))
@@ -362,6 +366,8 @@
       ;; TODO TODO TODO, this null pointer check is because I'm still figuring out how to get the name row...
       ;; because we make this box and try to get the name-row before it's added to the scene treee...
       ;; so I can add the turtle boxes now, but the names of the rows aren't showing up
+
+      ;; Name Row Stuff
       (cond
         ((and (name-row? row) (not (ffi:null-pointer-p godot-row)))
          (putprop row godot-row :gdnode)
@@ -369,26 +375,21 @@
          (godot-call godot-row "set_superior_box" godot-box))
         ((name-row? row) ;; must be null still, we'll set the special godot property to fill it in later
          (gdboxer-set-property godot-box "queued_name" (coerce (name sup-box) 'string))
-         (gdboxer-set-property godot-box "queued_name_row_boxerref" row))))))
+         (gdboxer-set-property godot-box "queued_name_row_boxerref" row)))))
+
+  (when (not (name-row? row))
+    (godot-call (fetch-godot-obj row) "set_superior_box" (fetch-godot-obj sup-box))))
 
 (defmethod (setf next-row) :after (value row)
   ;; We're going to implement this for cases where the value is not nil, meaning an
   ;; actual row is getting put in next.
   (when value
-    (let ((row-no (row-row-no (superior-box row) row))
-          (godot-box (fetch-godot-obj (superior-box row)))
-          (godot-value (fetch-godot-obj value)))
-      (when row-no
-        (godot-insert-row-at-row-no godot-box godot-value (1+ row-no))))))
+    (godot-call (fetch-godot-obj row) "set_next_row" (fetch-godot-obj value))))
 
 (defmethod delete-row-at-row-no :after ((box box) pos &optional (check-closet t))
   ;; TODO sgithens Does this get a negative value or something for the closet row?
-  (format t "TODO TODO TODO delete-row-at-row-no3.0: ~A pos: ~A check-closet: ~A~%" box pos check-closet)
   (let ((godot-box (fetch-godot-obj box)))
     (godot-call godot-box "delete_row_at_row_no" pos)))
-
-(defmethod delete-row ((self box) row &optional (check-closet t))
-  (break "TODO TODO TODO delete-row: ~A pos: ~A check-closet: ~A~%" box pos check-closet))
 
 (defmethod kill-box-contents :before ((self box) &optional (check-closet t))
   (let ((godot-box (fetch-godot-obj self)))
