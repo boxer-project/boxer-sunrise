@@ -20,7 +20,10 @@ read -p "Lispworks Build and Delivery [enter]"
 
 # /Applications/LispWorks\ 7.1\ \(64-bit\)/LispWorks\ \(64-bit\).app/Contents/MacOS/lispworks-7-1-0-amd64-darwin -build core/delivery-script.lisp
 # /Applications/LispWorks\ 8.0\ \(64-bit\)/LispWorks\ \(64-bit\).app/Contents/MacOS/lispworks-8-0-0-macos64-universal -build core/delivery-script.lisp
-/Applications/LispWorks\ 8.1\ \(64-bit\)/LispWorks\ \(64-bit\).app/Contents/MacOS/lispworks-8-1-0-macos64-universal -build core/delivery-script.lisp
+
+# /Applications/LispWorks\ 8.1\ \(64-bit\)/LispWorks\ \(64-bit\).app/Contents/MacOS/lispworks-8-1-0-macos64-universal -build core/delivery-script.lisp
+# Universal Binary Script that calls delivery-script
+/Applications/LispWorks\ 8.1\ \(64-bit\)/LispWorks\ \(64-bit\).app/Contents/MacOS/lispworks-8-1-0-macos64-universal -build core/save-universal.lisp
 
 read -p "Code sign with entitlements/hardened runtime, including freetype2 [enter]"
 
