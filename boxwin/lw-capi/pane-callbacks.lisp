@@ -24,7 +24,8 @@
   ;; canvas ignore
 
   (when *boxer-pane-initialized*
-    (box::check-for-window-resize))
+    (mp:with-lock (box::*repaint-lock*)
+      (box::check-for-window-resize)))
 
   (unless *boxer-pane-initialized*
     ;; modernGL inits

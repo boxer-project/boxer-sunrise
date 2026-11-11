@@ -112,6 +112,7 @@
 (defun repaint-window (&optional (window *boxer-pane*) (flush-buffer? t) &KEY (process-state-label "stopped"))
     (drawing-on-window (window)
       (REDISPLAYING-WINDOW (WINDOW)
+                         (set-main-viewport-res)
                          (update-gpu-matrices)
                          (clear-window (backdrop-color window))
                          (repaint-guts)
@@ -147,6 +148,16 @@
   ;; swap buffers here, after all drawing is complete
   (swap-graphics-buffers *boxer-pane*))
 
+(defun pane-backing-scale-factor (pane)
+  (let ((window (slot-value (capi-internals:representation *boxer-pane*) 'capi-cocoa-library::main-view)))
+    (if window
+        (objc:invoke window "backingScaleFactor")
+        1.0d0)))
+
+(defun set-main-viewport-res ()
+  (let ((scale (pane-backing-scale-factor *boxer-pane*)))
+    (opengl:gl-viewport 0 0 (round (* scale (aref (resolution) 0))) (round (* scale (aref (resolution) 1))))))
+
 (defun check-for-window-resize ()
   ;; fill up the *boxer-pane* width/height caches
   ;; reset the outermost screen box
@@ -167,7 +178,10 @@
   "A flag to quit boxer, so we can do it from the repaint function to be sure we're not in the middle
    of repainting when trying to close down. (Thusly spawning numerous openGL errors)")
 
+(defvar *repaint-lock* (mp:make-lock :name "Repaint Lock"))
+
 (defun repaint (&optional just-windows?)
+
   #+lispworks
   (if *quit-boxer*
     (lw:quit)
@@ -186,7 +200,8 @@
     (setf blinker-time 0.0))
 
   (adjust-global-scroll *boxer-pane*)
-   (opengl:rendering-on (*boxer-pane*)
+   (mp:with-lock (*repaint-lock*)
+    (opengl:rendering-on (*boxer-pane*)
 
     (when *reload-shaders*
       (update-boxgl-programs)
@@ -195,7 +210,7 @@
     (repaint-internal just-windows?)
 
     (let ((glerr (gl:get-error)))
-      (if (not (eq glerr :zero)) (break "GL Error: ~A" glerr)))))))
+      (if (not (eq glerr :zero)) (break "GL Error: ~A" glerr))))))))
 
 ;;;; Ephemera: cursors, regions
 (defun repaint-cursor (&optional (cursor *point*))
@@ -309,7 +324,8 @@
         (process-editor-mutation-queue-within-eval)
         (unless (null bw::*suppressed-actions*)
           (funcall (pop bw::*suppressed-actions*)))
-        (repaint-window *boxer-pane* t :process-state-label "eval")
+        (mp:with-lock (*repaint-lock*)
+          (repaint-window *boxer-pane* t :process-state-label "eval"))
         (let ((glerr (gl:get-error)))
           (if (not (eq glerr :zero)) (break "GL Error: ~A" glerr)))
         (setq *last-repaint-duration* (- (get-internal-real-time) now))))))

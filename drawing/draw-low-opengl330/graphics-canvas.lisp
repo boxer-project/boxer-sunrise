@@ -73,6 +73,7 @@
     (gl:clear :color-buffer-bit :depth-buffer-bit :stencil-buffer-bit)
 
     (gl:bind-framebuffer :framebuffer 0)
+    (boxer::set-main-viewport-res)
     togo))
 
 (defmethod clear ((self graphics-canvas))
@@ -150,7 +151,7 @@
   (setf (boxgl-device-projection-matrix device) (cached-projection-matrix self))
   (setf (boxgl-device-transform-matrix device) (cached-transform-matrix self))
   (setf (boxgl-device-model-matrix device) (cached-model-matrix self))
-  #+lispworks (opengl:gl-viewport 0 0 (aref (resolution) 0) (aref (resolution) 1))
+  (boxer::set-main-viewport-res)
   (update-matrices-ubo device))
 
 ;;;
