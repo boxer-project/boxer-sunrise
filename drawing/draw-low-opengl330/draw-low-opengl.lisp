@@ -180,7 +180,11 @@
 (defun ogl-reshape (width height)
   (setf (boxgl-device-projection-matrix bw::*boxgl-device*)
         (create-ortho-matrix width height))
-  (gl:viewport 0 0 width height))
+  (gl:viewport 0 0 width height)
+  #+lispworks (opengl::%resize-opengl-context (capi-internals:representation *boxer-pane*)
+                (opengl::context *boxer-pane*)
+                width height)
+                )
 
 ;;;; COLOR (incomplete)
 
