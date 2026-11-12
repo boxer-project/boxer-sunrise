@@ -146,9 +146,9 @@ cl_object lisp_boxer_update_screen_box(cl_object box, cl_object boxer_screen_box
     return ECL_NIL;
 }
 
-cl_object lisp_boxer_make_row(cl_object boxer_row) {
+cl_object lisp_boxer_make_row(cl_object boxer_screen_row) {
     BoxerLispRef* brow = memnew(BoxerLispRef);
-    brow->boxer_obj = boxer_row;
+    brow->boxer_obj = boxer_screen_row;
     Object *godot_row = main_boxer_node->call("make_row", Variant((Object *) brow));
     return ecl_make_foreign_data(ECL_NIL, 0, godot_row);
 }
@@ -220,7 +220,10 @@ cl_object lisp_boxer_set_graphics_sheet_bit_array(cl_object box, cl_object width
 }
 
 Variant convert_ecl_to_godot (cl_object value) {
-    if (ECL_SINGLE_FLOAT_P(value)) {
+    if (value == ECL_NIL) {
+        return Variant();
+    }
+    else if (ECL_SINGLE_FLOAT_P(value)) {
         return Variant(ecl_single_float(value));
     }
     else if (ECL_DOUBLE_FLOAT_P(value)) {
@@ -431,6 +434,8 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
 
 #ifdef BOXER_GDEXTENSION
     result = cl_eval(c_string_to_object("(load \"/Users/sgithens/code/boxer-sunrise/embedded/embedded-utils.lisp\")"));
+    ecl_print(result, ECL_T);
+    result = cl_eval(c_string_to_object("(load \"/Users/sgithens/code/boxer-sunrise/embedded/godot-advice.lisp\")"));
     ecl_print(result, ECL_T);
     result = cl_eval(c_string_to_object("(load \"/Users/sgithens/code/boxer-sunrise/embedded/music-prims.lisp\")"));
     ecl_print(result, ECL_T);

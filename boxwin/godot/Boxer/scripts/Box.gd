@@ -16,7 +16,6 @@ signal flipped(box)
 #@export var fixedSize = false
 #func set_fixed_size()
 
-var rows = []
 var first_inferior_row
 var current_row = null
 
@@ -214,14 +213,12 @@ func update_display_style(value):
 func add_row() -> Node:
     var row = row_scene.instantiate()
     row.parent_box = self
-    rows.append(row)
     %RowsBox.add_child(row)
     row_inserted.emit(row, 0)
     return row
 
 func insert_row_at_row_no(row: Node, row_no: int) -> Node:
     row.parent_box = self
-    rows.insert(row_no, row)
     if row.get_parent():
         var row_parent = row.get_parent()
         row_parent.remove_child(row)
@@ -232,9 +229,12 @@ func insert_row_at_row_no(row: Node, row_no: int) -> Node:
     return row
 
 func delete_row_at_row_no(pos: int) -> void:
-    var to_remove = rows.pop_at(pos)
+    var to_remove = %RowsBox.get_child(pos)
     if to_remove:
-        to_remove.queue_free()
+        %RowsBox.remove_child(to_remove)
+
+func delete_row(row: Row) -> void:
+    %RowsBox.remove_child(row)
 
 # rows_box and name_row are here because %var lookups don't work across threads in our queues
 @onready
@@ -269,7 +269,8 @@ func _ready() -> void:
             cha.text = ch
             %NameRow.set_cha(cha, %NameRow.get_child_count())
         queued_name = null
-        %NameRow.boxer_row = queued_name_row_boxerref
+        # TODO update this to use the screen row
+        # %NameRow.boxer_row = queued_name_row_boxerref
         %NameRow.boxer_screen_row = queued_name_screen_row
         queued_name_row_boxerref = null
         queued_name_screen_row = null

@@ -272,6 +272,12 @@ Modification History (most recent at top)
 (defmethod screen-objs ((self actual-obj-subclass))
   (mapcar #'cdr (actual-obj-screen-objs self)))
 
+(defmethod map-over-screen-objs ((self actual-obj-subclass) fn)
+  "Call fn with each screen-obj attached to this actual-obj."
+  (mapcar #'(lambda (dotted-scr-obj)
+              (funcall fn (cdr dotted-scr-obj)))
+          (actual-obj-screen-objs self)))
+
 ;;;; Instantiable Objects...
 
 (defclass row
