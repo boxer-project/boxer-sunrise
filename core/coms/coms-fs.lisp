@@ -256,7 +256,7 @@ Modification History (most recent at top)
         (mark-file-box-clean box))))
   boxer-eval::*novalue*)
 
-(defboxer-command com-open-box-file (&optional file-to-open)
+(defboxer-command com-open-box-file (&optional file-to-open unmark-box-as-file?)
   "Inserts the contents of a Boxer file"
   (if (name-row? (point-row))
     (boxer-editor-error "Can't insert a (file) box while in a name")
@@ -272,6 +272,10 @@ Modification History (most recent at top)
                          (string= (slot-value box 'name) "WORLD"))
                 (setf (slot-value box 'name) nil))
               (insert-cha *point* box)
+              (when unmark-box-as-file?
+                (boxer::mark-file-box-clean box)
+                (boxer::unmark-box-as-file box)
+                (boxer::modified box))
               ;; Add the newly opened file to the recents list
               (add-recent-file filename)))))
       ;; this marks the box superior to the box being loaded
