@@ -53,6 +53,7 @@
 ;;;;     bringing the cursor in to view.
 ;;;;   - comsa.lisp - Interesting. stuff here for creating bug email templates and primitives to do so.
 ;;;;     Plus a number of commands for printing the screen
+;;;;   - file-prims.lisp - Salvage world, this old system to save your box maybe via the terminal? If redisplay crashed.
 
 ;;;;
 ;;;; FILE: applefile.lisp
@@ -9918,6 +9919,35 @@ Modification History (most recent at the top)
 ;;;; FILE: disdef.lisp
 ;;;;
 
+;;; The various types of Ellipsi (Ellipses (?)) are stored as symbols in the screen-row
+;;; slots of the screen-box.  The drawing function is the DRAW-SELF property of the symbol
+
+(DEFVAR *DEFINED-BOX-ELLIPSIS-STYLES* NIL)
+
+(DEFMACRO DEFINE-BOX-ELLIPSIS-STYLE (NAME)
+          (let ((erase-name (intern (symbol-format nil "~A-ERASE-SELF" name)))
+                (size-name  (intern (symbol-format nil "~A-SIZE" name))))
+            `(PROGN 'COMPILE
+                    (PUSH ',NAME *DEFINED-BOX-ELLIPSIS-STYLES*)   ;; default erase adn size properties
+                    ;; we can overide this with some other definition later
+                    (defun ,erase-name (x-coord y-coord)
+                      (erase-rectangle *box-ellipsis-wid* *box-ellipsis-hei*
+                                       x-coord y-coord))
+                    (setf (get ',name 'erase-self) ',erase-name)
+                    (DEFUN ,size-name ()
+                            (VALUES *BOX-ELLIPSIS-WID* *BOX-ELLIPSIS-HEI*))
+                    (setf (get ',name 'size) ',size-name))))
+
+(DEFUN DRAW-PORT-BOX-ELLIPSIS (SCREEN-BOX X Y)
+  (FUNCALL (GET (SLOT-VALUE SCREEN-BOX 'SCREEN-ROWS) 'DRAW-SELF) X Y))
+
+;;; some styles...
+
+(define-box-ellipsis-style box-ellipsis-solid-lines)
+
+(setf (get 'box-ellipsis-solid-lines 'draw-self)
+      'box-ellipsis-solid-lines-draw-self)
+
 ;; sgithens 2024-09-02 This has been converted to a regular defclass
 (defstruct (graphics-screen-sheet (:conc-name graphics-screen-sheet-)
                                   (:predicate graphics-screen-sheet?)
@@ -14060,6 +14090,34 @@ Modification History (most recent at top)
 ;;;;
 ;;;; FILE: file-prims.lisp
 ;;;;
+
+;; sgithens 2026-09-28 I think we're safe to remove this...
+;; ;;; In case redisplay breaks,. people can still do...
+(defun salvage-boxer-world (&optional (save-name "salvaged-world") (verbose t))
+  (let ((world-save-name (merge-pathnames save-name *boxer-pathname-default*)))
+    ;; first make sure the name is ok
+    (loop (when (yes-or-no-p "~%Save Your Boxer World in ~A ? "
+           world-save-name)
+      ;; we are happy with the name, then save it away
+      ;; otherwise, prompt for a new name
+      (format t "~%New File Name to Save in: ")
+      (setq world-save-name
+      (merge-pathnames (read-line) world-save-name))))
+    ;; then save it away verbosely
+    (when verbose (format t "~%Dumping boxer world to ~A" world-save-name))
+    (dump-top-level-box *initial-box* world-save-name)
+    ;; now verify
+    (when verbose (format t "~%Verifying Saved file"))
+    (load-binary-box-internal world-save-name)
+    (format t "~%Boxer World Saved to ~A" world-save-name)
+    (values)))
+
+;;; spread it around
+#+lispworks (import 'salvage-boxer-world (find-package 'user))
+#+lispworks (import 'salvage-boxer-world (find-package :boxer-window))
+#+lispworks (import 'salvage-boxer-world (find-package :boxer-eval))
+;; might as well be paranoid...
+#+lispworks (import 'salvage-boxer-world (find-package :boxer-user))
 
 ;; sgithens 2024-02-21 In MCL, this is how we used to dynamically update the top macOS menus
 #| ;; this is now handled (as it should be) in the menu-update

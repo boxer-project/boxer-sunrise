@@ -25,8 +25,25 @@
        (AND (PORT-BOX? (SLOT-VALUE SCREEN-BOX 'ACTUAL-OBJ))
             (BOX-ELLIPSIS-STYLE? (SLOT-VALUE SCREEN-BOX 'SCREEN-ROWS))))
 
-(DEFUN DRAW-PORT-BOX-ELLIPSIS (SCREEN-BOX X Y)
-       (FUNCALL (GET (SLOT-VALUE SCREEN-BOX 'SCREEN-ROWS) 'DRAW-SELF) X Y))
+(defun DRAW-PORT-BOX-ELLIPSIS (screen-box x-coord y-coord)
+  (do ((x x-coord (+ x *box-ellipsis-thickness* *box-ellipsis-spacing*))
+       (y y-coord (+ y *box-ellipsis-thickness* *box-ellipsis-spacing*))
+       (wid (- *box-ellipsis-wid* (* 2 *box-ellipsis-thickness*))
+            (- wid (* 2 (+ *box-ellipsis-thickness* *box-ellipsis-spacing*))))
+       (hei *box-ellipsis-hei*
+            (- hei (* 2 (+ *box-ellipsis-thickness* *box-ellipsis-spacing*)))))
+    ((or (>= x (+ x-coord (floor (/ *box-ellipsis-wid* 2.))))
+         (>= y (+ y-coord (floor (/ *box-ellipsis-wid* 2.))))
+         (<= wid 0)
+         (<= hei 0)))
+    (draw-rectangle *box-ellipsis-thickness* hei x y)
+    (draw-rectangle wid *box-ellipsis-thickness*
+                    (+ x *box-ellipsis-thickness*) y)
+    (draw-rectangle *box-ellipsis-thickness* hei
+                    (+ x wid *box-ellipsis-thickness*) y)
+    (draw-rectangle wid *box-ellipsis-thickness*
+                    (+ x *box-ellipsis-thickness*)
+                    (+ y hei (- *box-ellipsis-thickness*)))))
 
 (defmethod gray-body ((self screen-box))
   (multiple-value-bind (il it ir ib)
@@ -117,6 +134,7 @@
                  (let ((row-y-pos (second (multiple-value-list (xy-position inf-screen-obj))))
                        (row-y-hei (screen-obj-hei inf-screen-obj))
                        (box-y-pos (second (multiple-value-list (xy-position self)))))
+                   (setf (screen-box inf-screen-obj) self)
                    (when (and (> (+ row-y-hei row-y-pos) box-y-pos)
                              (< row-y-pos (+ box-y-pos hei))
                              (within-boxer-pane inf-screen-obj))
@@ -124,6 +142,7 @@
                (repaint-cursors-regions self))))
             (t
               (do-vector-contents (inf-screen-obj screen-rows :index-var-name row-no)
+                (setf (screen-box inf-screen-obj) self)
                 (when (within-boxer-pane inf-screen-obj)
                   (repaint-pass-2-sr inf-screen-obj)))
               (repaint-cursors-regions self))))))

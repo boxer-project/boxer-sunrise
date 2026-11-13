@@ -1,9 +1,10 @@
 (defsystem "boxer-sunrise-embedded"
-  :version "3.4.28"
+  :version "3.4.29"
   :author "Steven Githens"
   :license ""
   :components ((:file "boxer-embedded")
               ;;  #+emscripten (:file "embedded-utils")
+              ;;  #+emscripten (:file "godot-advice")
               ;;  #+emscripten (:file "music-prims")
               ;;  #+emscripten (:file "video-prims")
                )

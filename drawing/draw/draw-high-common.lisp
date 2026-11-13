@@ -336,9 +336,6 @@ multifont row, the common reference point will be the baseline instead of the to
   (boxer-opengl::%flush-port-buffer pane))
 
 (defun gl-reshape (window-width window-height &optional (pane *boxer-pane*))
-  #+lispworks (opengl::%resize-opengl-context (capi-internals:representation *boxer-pane*)
-                (opengl::context *boxer-pane*)
-                window-width window-height)
   (boxer-opengl::ogl-reshape window-width window-height))
 
 ;;;

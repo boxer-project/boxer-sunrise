@@ -50,7 +50,7 @@ Modification History (most recent at top)
 
 (in-package :boxer)
 
-(defvar *boxer-version* "3.4.28 2026-08-31")
+(defvar *boxer-version* "3.4.29 2026-10-07")
 
 (defun boxer-component-version ()
   "Returns the current semver version of boxer based on it's asdf configuration."
@@ -271,6 +271,12 @@ Modification History (most recent at top)
 
 (defmethod screen-objs ((self actual-obj-subclass))
   (mapcar #'cdr (actual-obj-screen-objs self)))
+
+(defmethod map-over-screen-objs ((self actual-obj-subclass) fn)
+  "Call fn with each screen-obj attached to this actual-obj."
+  (mapcar #'(lambda (dotted-scr-obj)
+              (funcall fn (cdr dotted-scr-obj)))
+          (actual-obj-screen-objs self)))
 
 ;;;; Instantiable Objects...
 

@@ -1360,7 +1360,7 @@ Does Nothing if There is No Defined BoxTop"
     ((circular-port? box)
      (if (port-has-been-displayed-enough? box)
        (+& (vertical-border-width box)
-           (get *box-ellipsis-current-style* 'size))
+           (values *box-ellipsis-wid* *box-ellipsis-hei*))
        (progn
         (record-circular-port box)
         (+& (vertical-border-width box)

@@ -1211,35 +1211,6 @@ Modification History (most recent at top)
 
 
 
-;;; In case redisplay breaks,. people can still do...
-(defun salvage-boxer-world (&optional (save-name "salvaged-world") (verbose t))
-  (let ((world-save-name (merge-pathnames save-name *boxer-pathname-default*)))
-    ;; first make sure the name is ok
-    (loop (when (yes-or-no-p "~%Save Your Boxer World in ~A ? "
-           world-save-name)
-      ;; we are happy with the name, then save it away
-      ;; otherwise, prompt for a new name
-      (format t "~%New File Name to Save in: ")
-      (setq world-save-name
-      (merge-pathnames (read-line) world-save-name))))
-    ;; then save it away verbosely
-    (when verbose (format t "~%Dumping boxer world to ~A" world-save-name))
-    (dump-top-level-box *initial-box* world-save-name)
-    ;; now verify
-    (when verbose (format t "~%Verifying Saved file"))
-    (load-binary-box-internal world-save-name)
-    (format t "~%Boxer World Saved to ~A" world-save-name)
-    (values)))
-
-;;; spread it around
-#+lispworks (import 'salvage-boxer-world (find-package 'user))
-#+lispworks (import 'salvage-boxer-world (find-package :boxer-window))
-#+lispworks (import 'salvage-boxer-world (find-package :boxer-eval))
-;; might as well be paranoid...
-#+lispworks (import 'salvage-boxer-world (find-package :boxer-user))
-
-
-
 ;;;
 (boxer-eval::defboxer-primitive bu::storage-name ((bu::port-to box))
   (let ((target (box-or-port-target box)))

@@ -28,8 +28,6 @@ GDBoxer* the_gdboxer_node;
 Node* main_boxer_node;
 
 void GDBoxer::_bind_methods() {
-    // Action is: 0 - press/MOUSE-DOWN 1 - click/MOUSE-CLICK 2 - release/MOUSE-UP 3 - double click/ MOUSE-DOUBLE-CLICK
-    ClassDB::bind_method(D_METHOD("handle_mouse_input", "action", "row", "pos", "click", "bits", "area"), &GDBoxer::handle_mouse_input);
     ClassDB::bind_method(D_METHOD("handle_open_file", "path"), &GDBoxer::handle_open_file);
 
     ClassDB::bind_method(D_METHOD("startup_lisp"), &GDBoxer::startup_lisp);
@@ -60,18 +58,6 @@ void GDBoxer::handle_open_file(Variant path) {
     cl_funcall(2, handle_boxer_open_file_funname, ecl_make_simple_base_string(str_path.ascii(), str_path.length()));
     #endif
 
-}
-
-void GDBoxer::handle_mouse_input(int action, Variant boxer_row, int pos, int click, int bits, int area) {
-    BOXER_PRINT("\nGodot: handle_mouse_input");
-    cl_object handle_boxer_mouse_funname = ecl_make_symbol("GODOT-HANDLE-MOUSE-INPUT", "BOXER");
-    cl_funcall(7, handle_boxer_mouse_funname,
-        ecl_make_fixnum(action),
-        ((BoxerLispRef*) ((Object*) boxer_row))->boxer_obj,
-        ecl_make_fixnum(pos),
-        ecl_make_fixnum(click),
-        ecl_make_fixnum(bits),
-        ecl_make_fixnum(area));
 }
 
 /*
@@ -139,10 +125,12 @@ cl_object lisp_boxer_point_location(cl_object row, cl_object cha_no) {
  * Straightforard creation/make versions of functions to call from Boxer -> Godot
  */
 
-cl_object lisp_boxer_make_box(cl_object boxer_box) {
+cl_object lisp_boxer_make_box(cl_object boxer_box, cl_object boxer_screen_box) {
     BoxerLispRef* bbox = memnew(BoxerLispRef);
     bbox->boxer_obj = boxer_box;
-    Object* godot_box = main_boxer_node->call("make_box", Variant((Object *) bbox));
+    BoxerLispRef* bscreenbox = memnew(BoxerLispRef);
+    bscreenbox->boxer_obj = boxer_screen_box;
+    Object* godot_box = main_boxer_node->call("make_box", Variant((Object *) bbox), Variant((Object *) bscreenbox));
     return ecl_make_foreign_data(ECL_NIL, 0, godot_box);
 }
 
@@ -158,9 +146,9 @@ cl_object lisp_boxer_update_screen_box(cl_object box, cl_object boxer_screen_box
     return ECL_NIL;
 }
 
-cl_object lisp_boxer_make_row(cl_object boxer_row) {
+cl_object lisp_boxer_make_row(cl_object boxer_screen_row) {
     BoxerLispRef* brow = memnew(BoxerLispRef);
-    brow->boxer_obj = boxer_row;
+    brow->boxer_obj = boxer_screen_row;
     Object *godot_row = main_boxer_node->call("make_row", Variant((Object *) brow));
     return ecl_make_foreign_data(ECL_NIL, 0, godot_row);
 }
@@ -232,7 +220,10 @@ cl_object lisp_boxer_set_graphics_sheet_bit_array(cl_object box, cl_object width
 }
 
 Variant convert_ecl_to_godot (cl_object value) {
-    if (ECL_SINGLE_FLOAT_P(value)) {
+    if (value == ECL_NIL) {
+        return Variant();
+    }
+    else if (ECL_SINGLE_FLOAT_P(value)) {
         return Variant(ecl_single_float(value));
     }
     else if (ECL_DOUBLE_FLOAT_P(value)) {
@@ -362,7 +353,7 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
     // Constructing
     //
     cl_object aux = ecl_make_symbol("GDBOXER-MAKE-BOX", "BOXER");
-    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_make_box, 1);
+    ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_make_box, 2);
 
     aux = ecl_make_symbol("GDBOXER-UPDATE-SCREEN-BOX", "BOXER");
     ecl_def_c_function(aux, (cl_objectfn_fixed) lisp_boxer_update_screen_box, 2);
@@ -443,6 +434,8 @@ void GDBoxer::startup_lisp(Node* m_node, Node* world_node, Node* first_row_node)
 
 #ifdef BOXER_GDEXTENSION
     result = cl_eval(c_string_to_object("(load \"/Users/sgithens/code/boxer-sunrise/embedded/embedded-utils.lisp\")"));
+    ecl_print(result, ECL_T);
+    result = cl_eval(c_string_to_object("(load \"/Users/sgithens/code/boxer-sunrise/embedded/godot-advice.lisp\")"));
     ecl_print(result, ECL_T);
     result = cl_eval(c_string_to_object("(load \"/Users/sgithens/code/boxer-sunrise/embedded/music-prims.lisp\")"));
     ecl_print(result, ECL_T);
