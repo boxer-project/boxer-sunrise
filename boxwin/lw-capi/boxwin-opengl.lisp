@@ -280,6 +280,10 @@
    :message-callback 'handle-OSX-events
    ))
 
+(defun open-demo (name)
+  "Opens one of our bundled demos or widgets"
+  (box::com-open-box-file (merge-pathnames name boxer::*resources-dir*) t))
+
 (capi:define-interface boxer-search-toolbar (capi:interface)
   ()
   (:panes
@@ -636,34 +640,20 @@
                        (:component
                         (("Quit" :callback 'lw-quit)))))
     (advanced-menu "Demos" ((:component
-                                (("Tutorial" :callback #'(lambda (element hmm) (print "Tutorial")))
-                                 ("Annotated Cube" :callback #'(lambda (element hmm)
-                                   (print "Open Annotated Cube")
-                                   (box::com-open-box-file "/Users/sgithens/Dropbox/DailyLog/boxer-microworlds/demo-set/Annotated Cube.box" t)))
-                                 ("Button Factory" :callback #'(lambda (element hmm) (print "Button Factory")
-                                   (box::com-open-box-file "/Users/sgithens/Dropbox/DailyLog/boxer-microworlds/demo-set/Button Factory.box" t)))
-                                 ("Diffusion" :callback #'(lambda (element hmm) (print "Diffusion")
-                                   (box::com-open-box-file "/Users/sgithens/Dropbox/DailyLog/boxer-microworlds/demo-set/Diffusion for Citizen Schools.box" t)))
-                                 ("Database Tool" :callback #'(lambda (element hmm) (print "Database Tool")
-                                   (box::com-open-box-file "/Users/sgithens/Dropbox/DailyLog/boxer-microworlds/demo-set/Database Tool.box" t)))
-                                 ("Drop Sims" :callback #'(lambda (element hmm) (print "Drop Sims")
-                                   (box::com-open-box-file "/Users/sgithens/Dropbox/DailyLog/boxer-microworlds/demo-set/Drop Sims.box" t)))
-                                 ("Grapher" :callback #'(lambda (element hmm) (print "Grapher")
-                                   (box::com-open-box-file "/Users/sgithens/Dropbox/DailyLog/boxer-microworlds/demo-set/Grapher.box" t)))
-                                 ("Graph Widget" :callback #'(lambda (element hmm) (print "Graph Widget")
-                                   (box::com-open-box-file "/Users/sgithens/GraphWidget.box" t)))
+                                (("Annotated Cube" :callback #'(lambda (element obj) (open-demo "./demo-set/Annotated Cube.box")))
+                                 ("Button Factory" :callback #'(lambda (element obj) (open-demo "./demo-set/Button Factory.box")))
+                                 ("Database Tool" :callback #'(lambda (element obj) (open-demo "./demo-set/Database Tool.box")))
+                                 ("Diffusion" :callback #'(lambda (element obj) (open-demo "./demo-set/Diffusion for Citizen Schools.box")))
+                                 ("Drop Sims" :callback #'(lambda (element obj) (open-demo "./demo-set/Drop Sims.box")))
+                                 ("Grapher" :callback #'(lambda (element obj) (open-demo "./demo-set/Grapher.box")))
+                                 ("Hanoi" :callback #'(lambda (element obj) (open-demo  "./demo-set/Hanoi.box")))
+                                 ("Mankala" :callback #'(lambda (element obj) (open-demo "./demo-set/Mankala.box")))
+                                 ("Tinker" :callback #'(lambda (element obj) (open-demo "./demo-set/Tinker.box")))
+                                 ("Vectors" :callback #'(lambda (element obj) (open-demo "./demo-set/Vectors Demo.box")))
+                                 ("Wayfinding in Color Space" :callback #'(lambda (element obj) (open-demo "./demo-set/Wayfinding in Color Space.box")))
 
-                                 ("Hanoi" :callback #'(lambda (element hmm) (print "Hanoi")
-                                   (box::com-open-box-file "/Users/sgithens/Dropbox/DailyLog/boxer-microworlds/demo-set/Hanoi.box" t)))
-                                 ("Mankala" :callback #'(lambda (element hmm) (print "Mankala")
-                                   (box::com-open-box-file "/Users/sgithens/Dropbox/DailyLog/boxer-microworlds/demo-set/Mankala.box" t)))
-                                 ("Tinker" :callback #'(lambda (element hmm) (print "Tinker")
-                                   (box::com-open-box-file "/Users/sgithens/Dropbox/DailyLog/boxer-microworlds/demo-set/Tinker.box" t)))
-                                 ("Vectors" :callback #'(lambda (element hmm) (print "Vectors")
-                                   (box::com-open-box-file "/Users/sgithens/Dropbox/DailyLog/boxer-microworlds/demo-set/Vectors Demo.box" t)))
-
-                                ;;  ("Dev Overlay" :callback 'toggle-dev-overlay)
-                                ;;  ("Rotation Demo" :callback 'rotate-canvas-demo)
+                                 ;;  ("Dev Overlay" :callback 'toggle-dev-overlay)
+                                 ;;  ("Rotation Demo" :callback 'rotate-canvas-demo)
                                  ))))
     (edit-menu "Edit" ((:component
                         (("Cut" :accelerator #\x  :callback 'menu-cut-region)
