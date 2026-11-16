@@ -1,5 +1,10 @@
 # Change Log
 
+## 3.4.30 2026-11-12
+
+In addition to continuing work on the in progress Godot Frontend, this build is the first proper Universal
+Binary for macOS for both ARM and x86 versions of macOS.
+
 ## 3.4.29 2026-10-07
 
 This is largely a maintanence release for our stable Lispworks desktop Boxer, with an emphasis on improving
