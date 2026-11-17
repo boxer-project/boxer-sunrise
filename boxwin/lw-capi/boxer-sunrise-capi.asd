@@ -1,5 +1,4 @@
 (asdf:defsystem "boxer-sunrise-capi"
-  :version "3.4.30"
   :author "Steven Githens"
   :license "BSD-3-Clause"
   :depends-on ("boxer-sunrise-core"
