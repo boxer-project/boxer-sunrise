@@ -354,26 +354,20 @@ Modification History (most recent at top)
   (let ((gb (get-relevant-graphics-box)))
     (if (or (null gb) (eq gb :no-graphics))
         (boxer-eval::primitive-signal-error :graphics "Can't find a graphics box")
-        (let ((sb (car (displayed-screen-objs gb))))
+        (let ((sb (car (displayed-screen-objs gb)))
+              (gs (graphics-info gb)))
           (if (null sb)
               (boxer-eval::primitive-signal-error
                :graphics "Pixel at " x "," y "is not visible")
-              (multiple-value-bind (box-x box-y)
-                  (xy-position sb)
-                (multiple-value-bind (lef top rig bot)
-                    (box-borders-widths (box-type sb) sb)
-                  (declare (ignore rig bot))
-                  (with-graphics-vars-bound (gb)
-                    (let ((gb-x (fix-array-coordinate-x (float x)))
-                          (gb-y (fix-array-coordinate-y (float y))))
-                      (if (and (< 0 gb-x (screen-obj-wid sb))
-                               (< 0 gb-y (screen-obj-hei sb)))
-                          (make-color-box-from-pixel
-                           (window-pixel-color (floor (+ box-x lef gb-x))
-                                               (floor (+ box-y top gb-y))))
-                          (boxer-eval::primitive-signal-error
-                           :graphics
-                           "Pixel at " x "," y "is not visible")))))))))))
+              (with-graphics-vars-bound (gb)
+                (let ((gb-x (fix-array-coordinate-x (float x)))
+                      (gb-y (fix-array-coordinate-y (float y))))
+                  (if (graphics-sheet-coords-in-bounds? gs gb-x gb-y)
+                      (make-color-box-from-pixel
+                       (graphics-sheet-pixel-color gs sb gb-x gb-y))
+                      (boxer-eval::primitive-signal-error
+                       :graphics
+                       "Pixel at " x "," y "is not visible")))))))))
 
 (boxer-eval::defboxer-primitive bu::bg-color-at ((boxer-eval::numberize x) (boxer-eval::numberize y))
   (let ((gb (get-relevant-graphics-box)))
@@ -403,32 +397,20 @@ Modification History (most recent at top)
     (if (null gb)
         (boxer-eval::primitive-signal-error :graphics "Can't find a graphics box")
         (let* ((gs (graphics-info gb))
-               (sb (car (displayed-screen-objs gb)))
-               (bit-array (graphics-sheet-bit-array gs))
-               (background (graphics-sheet-background gs)))
+               (sb (car (displayed-screen-objs gb))))
           (if (null sb)
               (boxer-eval::primitive-signal-error
                :graphics "Pixel at " x "," y "is not visible")
-          (with-graphics-vars-bound-internal gs
-            (multiple-value-bind (box-x box-y)
-                  (xy-position sb)
-                (multiple-value-bind (lef top rig bot)
-                    (box-borders-widths (box-type sb) sb)
-                  (declare (ignore rig bot))
-                  (let ((gb-x (fix-array-coordinate-x (float x)))
-                        (gb-y (fix-array-coordinate-y (float y))))
-                    (if (and (< 0 gb-x (screen-obj-wid sb))
-                             (< 0 gb-y (screen-obj-hei sb)))
-                        (boxer-eval::boxer-boolean
-                         (color= (window-pixel-color (+ box-x lef gb-x)
-                                                     (+ box-y top gb-y))
-                                 (cond ((not (null bit-array))
-                                        (pixmap-pixel-color bit-array gb-x gb-y))
-                                       (t
-                                        (or background *background-color*)))))
-                        (boxer-eval::primitive-signal-error
-                         :graphics
-                         "Pixel at " x "," y "is not visible")))))))))))
+              (with-graphics-vars-bound-internal gs
+                (let ((gb-x (fix-array-coordinate-x (float x)))
+                      (gb-y (fix-array-coordinate-y (float y))))
+                  (if (graphics-sheet-coords-in-bounds? gs gb-x gb-y)
+                      (boxer-eval::boxer-boolean
+                       (color= (graphics-sheet-pixel-color gs sb gb-x gb-y)
+                               (graphics-sheet-composited-background-color gs gb-x gb-y)))
+                      (boxer-eval::primitive-signal-error
+                       :graphics
+                       "Pixel at " x "," y "is not visible")))))))))
 
 (defun color-from-box (box)
   (let ((gs (if (box? box)
@@ -448,28 +430,20 @@ Modification History (most recent at top)
            (boxer-eval::primitive-signal-error :graphics
                                          color "is not a color box"))
           (t
-           (let ((sb (car (displayed-screen-objs gb))))
+           (let ((sb (car (displayed-screen-objs gb)))
+                 (gs (graphics-info gb)))
              (if (null sb)
                  (boxer-eval::primitive-signal-error
                   :graphics "Pixel at " x "," y "is not visible")
-                 (multiple-value-bind (box-x box-y)
-                     (xy-position sb)
-                   (multiple-value-bind (lef top rig bot)
-                       (box-borders-widths (box-type sb) sb)
-                     (declare (ignore rig bot))
-                     (with-graphics-vars-bound (gb)
-                       (let ((gb-x (fix-array-coordinate-x (float x)))
-                             (gb-y (fix-array-coordinate-y (float y))))
-                         (if (and (< 0 gb-x (screen-obj-wid sb))
-                                  (< 0 gb-y (screen-obj-hei sb)))
-                             (boxer-eval::boxer-boolean
-                              (color=
-                               (window-pixel-color (+ box-x lef gb-x)
-                                                   (+ box-y top gb-y))
-                               c))
-                             (boxer-eval::primitive-signal-error
-                              :graphics
-                              "Pixel at " x "," y "is not visible"))))))))))))
+                 (with-graphics-vars-bound (gb)
+                   (let ((gb-x (fix-array-coordinate-x (float x)))
+                         (gb-y (fix-array-coordinate-y (float y))))
+                     (if (graphics-sheet-coords-in-bounds? gs gb-x gb-y)
+                         (boxer-eval::boxer-boolean
+                          (color= (graphics-sheet-pixel-color gs sb gb-x gb-y) c))
+                         (boxer-eval::primitive-signal-error
+                          :graphics
+                          "Pixel at " x "," y "is not visible"))))))))))
 
 ;;; Like COLOR= <color> BG-COLOR-AT <x> <y>
 ;;; except no color box consing

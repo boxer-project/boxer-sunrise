@@ -303,6 +303,27 @@ the window font (ie, draw-string) has to change it back for this to work.
   (%bitblt-from-screen 1 1 *screen-pixel-buffer* x y 0 0)
   (pixmap-pixel *screen-pixel-buffer*  0 0))
 
+(defun canvas-pixel (canvas x y)
+  "Returns the raw RGBA pixel (same packing as pixmap-pixel) at boxer coordinates X,Y
+   (top-left origin) from the offscreen framebuffer backing the opengl-graphics-canvas CANVAS.
+
+   Unlike %get-pixel this doesn't read the window, so it isn't affected by the contents of
+   the back buffer after a swap (undefined, and usually cleared on Apple Silicon) or by the
+   Retina backing scale factor. Only the read framebuffer binding is changed, so the current
+   draw framebuffer, viewport, and matrices are left alone.
+
+   Must be called inside an openGL context."
+  (let ((hei (ogl-pixmap-height (graphics-canvas-pixmap canvas))))
+    (gl:bind-framebuffer :read-framebuffer (graphics-canvas-framebuffer canvas))
+    (unwind-protect
+         (progn
+           (gl:pixel-store :pack-alignment 4)
+           (%gl:read-pixels (round x) (round (- hei y 1)) 1 1
+                            *pixmap-data-type* *pixmap-data-format*
+                            (ogl-pixmap-data *screen-pixel-buffer*)))
+      (gl:bind-framebuffer :read-framebuffer 0))
+    (pixmap-pixel *screen-pixel-buffer* 0 0)))
+
 (defun offscreen-pixel-color (x y pixmap)
   (pixel->color (pixmap-pixel pixmap x y)))
 

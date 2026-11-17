@@ -115,6 +115,71 @@
         (unless (graphics-command-list-hidden gl)
           (boxer-playback-graphics-list gl :translate? t))))))
 
+;;;
+;;; Sampling colors from a graphics sheet (COLOR-AT, COLOR-UNDER, etc)
+;;;
+
+(defun graphics-sheet-coords-in-bounds? (gs x y)
+  "Are the array coordinates X,Y (top-left origin) inside the drawing area of graphics sheet GS?"
+  (and (< -1 x (graphics-sheet-draw-wid gs))
+       (< -1 y (graphics-sheet-draw-hei gs))))
+
+(defun %composite-color-over (top bottom)
+  "Composites color TOP over color BOTTOM using the same blend as the screen
+   (:src-alpha :one-minus-src-alpha). Returns an opaque :rgb color."
+  (let* ((a (color-alpha top))
+         (1-a (- 1.0 a)))
+    `#(:rgb ,(float (+ (* (color-red top)   a) (* (color-red bottom)   1-a)))
+            ,(float (+ (* (color-green top) a) (* (color-green bottom) 1-a)))
+            ,(float (+ (* (color-blue top)  a) (* (color-blue bottom)  1-a)))
+            1.0)))
+
+(defun graphics-sheet-composited-background-color (gs x y)
+  "The opaque color of the background layers of graphics sheet GS at array coordinates X,Y:
+   the frozen/snipped bit-array (if any) drawn over the sheet background color, as repaint
+   draws them."
+  (let ((bit-array (graphics-sheet-bit-array gs))
+        (color (%composite-color-over (or (graphics-sheet-background gs) *background-color*)
+                                      *background-color*)))
+    (if (and bit-array
+             (< -1 x (ogl-pixmap-width bit-array))
+             (< -1 y (ogl-pixmap-height bit-array)))
+        (%composite-color-over (pixmap-pixel-color bit-array x y) color)
+        color)))
+
+(defun graphics-sheet-pixel-color (gs graphics-screen-box x y)
+  "Returns the :rgb color at array coordinates X,Y (top-left origin, i.e. already passed
+   through fix-array-coordinate-x/y) of the graphics sheet GS, as displayed in
+   GRAPHICS-SCREEN-BOX.
+
+   This rebuilds the layers drawn by repaint-inferiors-pass-2-sb, without reading the window:
+   the sheet background, then the frozen bit-array, then the graphics-list canvas (framebuffer).
+   Sprites are not included, so a turtle never samples its own shape.
+
+   If framebuffers are turned off, this falls back to reading the pixel from the window."
+  (cond
+    ((not *use-opengl-framebuffers*)
+     (multiple-value-bind (box-x box-y) (xy-position graphics-screen-box)
+       (multiple-value-bind (lef top rig bot)
+           (box-borders-widths (box-type graphics-screen-box) graphics-screen-box)
+         (declare (ignore rig bot))
+         (window-pixel-color (+ box-x lef x) (+ box-y top y)))))
+    (t
+     (let ((color (graphics-sheet-composited-background-color gs x y)))
+       ;; Graphics list, which is painted on to the framebuffer canvas
+       (unless (null (graphics-sheet-graphics-list gs))
+         (drawing-on-window (*boxer-pane*)
+           ;; The canvas normally only gets new graphics commands during repaint, so play back
+           ;; anything recorded since then. This is incremental, so repaint won't redo it.
+           (redisplay-graphics-sheet-graphics-list gs graphics-screen-box)
+           (let ((canvas (get-graphics-canvas-for-screen-obj graphics-screen-box
+                                                             (graphics-sheet-draw-wid gs)
+                                                             (graphics-sheet-draw-hei gs))))
+             (setf color (%composite-color-over
+                          (pixel->color (boxer-opengl::canvas-pixel canvas x y))
+                          color)))))
+       color))))
+
 (defun redisplay-graphics-sheet-sprites (gs graphics-screen-box)
   "Draws all the sprites in the the object-list slot of the related graphics-sheet.  Draws the sprites private
    graphcis-command-list and issues each sprites draw method."

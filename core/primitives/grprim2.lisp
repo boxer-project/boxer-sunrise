@@ -381,27 +381,19 @@
   (let ((gb (assoc-graphics-box turtle)))
     (if (null gb)
         (boxer-eval::primitive-signal-error :graphics "Can't find a graphics box")
-        (let ((sb (car (displayed-screen-objs gb))))
+        (let ((sb (car (displayed-screen-objs gb)))
+              (gs (graphics-sheet gb)))
           (if (null sb)
               (boxer-eval::primitive-signal-error
                :graphics "Pixel at sprite location is not visible")
-              (multiple-value-bind (box-x box-y)
-                  (xy-position sb)
-                (multiple-value-bind (lef top rig bot)
-                    (box-borders-widths (box-type sb) sb)
-                  (declare (ignore rig bot))
-                  (with-graphics-vars-bound (gb)
-                    (let ((gb-x (fix-array-coordinate-x (x-position turtle)))
-                          (gb-y (fix-array-coordinate-y (y-position turtle))))
-                      (if (and (<= 0 gb-x)
-                               (<  gb-x (screen-obj-wid sb))
-                               (<= 0 gb-y)
-                               (<  gb-y (screen-obj-hei sb)))
-                          (window-pixel-color (+ box-x lef gb-x)
-                                        (+ box-y top gb-y))
-                          (boxer-eval::primitive-signal-error
-                           :graphics
-                           "Pixel at sprite location is not visible")))))))))))
+              (with-graphics-vars-bound (gb)
+                (let ((gb-x (fix-array-coordinate-x (x-position turtle)))
+                      (gb-y (fix-array-coordinate-y (y-position turtle))))
+                  (if (graphics-sheet-coords-in-bounds? gs gb-x gb-y)
+                      (graphics-sheet-pixel-color gs sb gb-x gb-y)
+                      (boxer-eval::primitive-signal-error
+                       :graphics
+                       "Pixel at sprite location is not visible")))))))))
 
 (defun background-color-from-turtle (turtle)
   "Returns an :rgb color from the graphics boxes background where the center of
