@@ -205,6 +205,14 @@ Modification History (most recent at top)
            (setf (boxer::graphics-sheet-draw-wid (boxer::graphics-info shape-box)) (floor (* 2 (+ (abs (nth 0 new-extents)) (abs (nth 2 new-extents))))))
            (setf (boxer::graphics-sheet-draw-hei (boxer::graphics-info shape-box)) (floor (* 2 (+ (abs (nth 1 new-extents)) (abs (nth 3 new-extents))))))))))
 
+    ;; The turtle's shape is rendered through a framebuffer canvas kept on the turtle itself (not the
+    ;; shape box), which is only incrementally updated based on its op-count. Since we've just replaced
+    ;; the shape's graphics list, reset that canvas so the whole new shape is played back on the next
+    ;; repaint. Without this, if the shape box hasn't been made visible (diet sprites) and the canvas
+    ;; size doesn't change, the old shape remains displayed.
+    (when (typep self 'plist-subclass)
+      (clear-graphics-canvas self))
+
     ;; handle any box interface...
     ; (when (and (null dont-update-box)
     ;            (not (null (box-interface-box shape-slot))))
