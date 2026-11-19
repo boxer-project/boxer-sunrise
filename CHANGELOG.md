@@ -1,5 +1,20 @@
 # Change Log
 
+## 3.4.31 2026-11-17
+
+This is a small follow-up release that resolves from regressions with sprite displays being cached and not
+refreshing after using the setshape primitive. Additionally a regression with color sampling primitives (color-under,
+color-at, etc) has been fixed.
+
+regression
+  - Fixing up for ARM/Scrollbars/Retina displays to read directly from the framebuffer rather than the screen.
+    (bugs-193-color-tests)
+  - Fixing stale turtle framebuffers for sprite shapes.
+
+refactor Removing :version specs from asd files that don't need it. Keeping just for boxer sunrise core.
+
+doco Moving lispworks documentation from top level readme to boxwin readme
+
 ## 3.4.30 2026-11-12
 
 In addition to continuing work on the in progress Godot Frontend, this build is the first proper Universal
