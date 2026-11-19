@@ -12,6 +12,7 @@
   :license ""
   :depends-on ("uiop"
                (:feature (:not :shim-3d-math) :3d-matrices))
+  :serial t
   :components ((:file "package")
                (:file "boxlog" :if-feature :embedded-boxer)
                (:file "3d-math" :if-feature :shim-3d-math)
